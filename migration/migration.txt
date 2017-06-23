@@ -1,0 +1,46 @@
+# You can use this file with sed command to replace all old names with new ones
+# find /path/to/tf-configs -type f -name "*.tf" -exec sed -i .bak -f migration.txt {} +
+# The above command would replace old names as seen below with new ones in all files ending with tf and take backs up of your files by suffixing them bak
+# Caution: Make sure you don't run this in a git directory as it might corrupt your .git. You could exclude .git directory in your command or point 
+# specifically to the directory which contains terraform configuration files
+
+s/ibmcloud_cf_account/ibm_account/g
+s/ibmcloud_cf_app/ibm_app/g
+s/ibmcloud_cf_org/ibm_org/g
+s/ibmcloud_cf_private_domain/ibm_app_domain_private/g
+s/ibmcloud_cf_route/ibm_app_route/g
+s/ibmcloud_cf_service_instance/ibm_service_instance/g
+s/ibmcloud_cf_service_key/ibm_service_key/g
+s/ibmcloud_cf_service_plan/ibm_service_plan/g
+s/ibmcloud_cf_shared_domain/ibm_app_domain_shared/g
+s/ibmcloud_cf_space/ibm_space/g
+s/ibmcloud_cs_cluster_config/ibm_container_cluster_config/g
+s/ibmcloud_cs_cluster/ibm_container_cluster/g
+s/ibmcloud_cs_worker/ibm_container_cluster_worker/g
+s/ibmcloud_infra_dns_domain/ibm_dns_domain/g
+s/ibmcloud_infra_image_template/ibm_compute_image_template/g
+s/ibmcloud_infra_ssh_key/ibm_compute_ssh_key/g
+s/ibmcloud_infra_virtual_guest/ibm_compute_vm_instance/g
+s/ibmcloud_infra_vlan/ibm_network_vlan/g
+s/ibmcloud_cs_cluster_bind_service/ibm_container_bind_service/g
+s/ibmcloud_infra_bare_metal/ibm_compute_bare_metal/g
+s/ibmcloud_infra_basic_monitor/ibm_compute_monitor/g
+s/ibmcloud_infra_block_storage/ibm_storage_block/g
+s/ibmcloud_infra_dns_domain_record/ibm_dns_record/g
+s/ibmcloud_infra_file_storage/ibm_storage_file/g
+s/ibmcloud_infra_fw_hardware_dedicated_rules/ibm_firewall_policy/g
+s/ibmcloud_infra_fw_hardware_dedicated/ibm_firewall/g
+s/ibmcloud_infra_global_ip/ibm_network_public_ip/g
+s/ibmcloud_infra_lb_local_service_group/ibm_lb_service_group/g
+s/ibmcloud_infra_lb_local_service/ibm_lb_service/g
+s/ibmcloud_infra_lb_local/ibm_lb/g
+s/ibmcloud_infra_lb_vpx_ha/ibm_lb_vpx_ha/g
+s/ibmcloud_infra_lb_vpx_service/ibm_lb_vpx_service/g
+s/ibmcloud_infra_lb_vpx_vip/ibm_lb_vpx_vip/g
+s/ibmcloud_infra_lb_vpx/ibm_lb_vpx/g
+s/ibmcloud_infra_objectstorage_account/ibm_object_storage_account/g
+s/ibmcloud_infra_provisioning_hook/ibm_compute_provisioning_hook/g
+s/ibmcloud_infra_scale_group/ibm_compute_autoscale_group/g
+s/ibmcloud_infra_scale_policy/ibm_compute_autoscale_policy/g
+s/ibmcloud_infra_security_certificate/ibm_compute_ssl_certificate/g
+s/ibmcloud_infra_user/ibm_compute_user/g
