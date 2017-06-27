@@ -123,6 +123,7 @@ type ServiceInstances interface {
 	Update(instanceGUID string, req ServiceInstanceUpdateRequest) (*ServiceInstanceFields, error)
 	Delete(instanceGUID string) error
 	FindByName(instanceName string) (*ServiceInstance, error)
+	FindByNameInSpace(spaceGUID string, instanceName string) (*ServiceInstance, error)
 	Get(instanceGUID string, depth ...int) (*ServiceInstanceFields, error)
 	ListServiceBindings(instanceGUID string) ([]ServiceBinding, error)
 }
@@ -184,6 +185,27 @@ func (s *serviceInstance) FindByName(instanceName string) (*ServiceInstance, err
 	}
 	if len(services) == 0 {
 		return nil, fmt.Errorf("Service instance:  %q doesn't exist", instanceName)
+	}
+	return &services[0], nil
+}
+
+func (s *serviceInstance) FindByNameInSpace(spaceGUID string, instanceName string) (*ServiceInstance, error) {
+	req := rest.GetRequest(fmt.Sprintf("/v2/spaces/%s/service_instances", spaceGUID))
+	req.Query("return_user_provided_service_instances", "true")
+	if instanceName != "" {
+		req.Query("q", "name:"+instanceName)
+	}
+	httpReq, err := req.Build()
+	if err != nil {
+		return nil, err
+	}
+	path := httpReq.URL.String()
+	services, err := listServicesWithPath(s.client, path)
+	if err != nil {
+		return nil, err
+	}
+	if len(services) == 0 {
+		return nil, fmt.Errorf("Service instance:  %q doesn't exist in the space %s", instanceName, spaceGUID)
 	}
 	return &services[0], nil
 }
