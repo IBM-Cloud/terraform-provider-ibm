@@ -1,6 +1,8 @@
 package ibm
 
 import (
+	"fmt"
+
 	"github.com/IBM-Bluemix/bluemix-go/api/mccp/mccpv2"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -107,4 +109,12 @@ func flattenSpaceRoleUsers(in []mccpv2.SpaceRole) *schema.Set {
 		out = append(out, v.UserName)
 	}
 	return schema.NewSet(schema.HashString, out)
+}
+
+func flattenCredentials(creds map[string]interface{}) map[string]string {
+	out := make(map[string]string)
+	for k, v := range creds {
+		out[k] = fmt.Sprintf("%v", v)
+	}
+	return out
 }
