@@ -38,6 +38,7 @@ func resourceIBMServiceKey() *schema.Resource {
 			"credentials": {
 				Description: "Credentials asociated with the key",
 				Type:        schema.TypeMap,
+				Sensitive:   true,
 				Computed:    true,
 			},
 		},

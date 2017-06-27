@@ -13,6 +13,7 @@ func dataSourceIBMServiceKey() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"credentials": {
 				Description: "Credentials asociated with the key",
+				Sensitive:   true,
 				Type:        schema.TypeMap,
 				Computed:    true,
 			},
