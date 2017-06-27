@@ -18,9 +18,31 @@ func dataSourceIBMServiceInstance() *schema.Resource {
 			},
 
 			"credentials": {
-				Description: "Credentials asociated with the key",
+				Description: "The service broker-provided credentials to use this service.",
 				Type:        schema.TypeMap,
+				Sensitive:   true,
 				Computed:    true,
+			},
+
+			"service_keys": {
+				Description: "Service keys asociated with the service instance",
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The service key name",
+						},
+						"credentials": {
+							Type:        schema.TypeMap,
+							Computed:    true,
+							Sensitive:   true,
+							Description: "The service key credential details like port, username etc",
+						},
+					},
+				},
 			},
 
 			"service_plan_guid": {
@@ -44,13 +66,15 @@ func dataSourceIBMServiceInstanceRead(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 
-	serviceInstance, err := siAPI.Get(inst.GUID)
+	serviceInstance, err := siAPI.Get(inst.GUID, 1)
 	if err != nil {
 		return fmt.Errorf("Error retrieving service: %s", err)
 	}
 
 	d.SetId(serviceInstance.Metadata.GUID)
-	d.Set("credentials", serviceInstance.Entity.Credentials)
+	serviceKeys := serviceInstance.Entity.ServiceKeys
+	d.Set("credentials", flattenCredentials(serviceInstance.Entity.Credentials))
+	d.Set("service_keys", flattenServiceInstanceCredentials(serviceKeys))
 	d.Set("service_plan_guid", serviceInstance.Entity.ServicePlanGUID)
 
 	return nil

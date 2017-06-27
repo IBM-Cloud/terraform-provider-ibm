@@ -40,9 +40,31 @@ func resourceIBMServiceInstance() *schema.Resource {
 			},
 
 			"credentials": {
-				Description: "Credentials asociated with the key",
-				Computed:    true,
+				Description: "The service broker-provided credentials to use this service.",
 				Type:        schema.TypeMap,
+				Sensitive:   true,
+				Computed:    true,
+			},
+
+			"service_keys": {
+				Description: "The service keys asociated with the service instance",
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The service key name",
+						},
+						"credentials": {
+							Type:        schema.TypeMap,
+							Computed:    true,
+							Sensitive:   true,
+							Description: "The service key credential details like port, username etc",
+						},
+					},
+				},
 			},
 
 			"service_plan_guid": {
@@ -125,24 +147,22 @@ func resourceIBMServiceInstanceRead(d *schema.ResourceData, meta interface{}) er
 
 	serviceGUID := d.Id()
 
-	service, err := cfClient.ServiceInstances().Get(serviceGUID)
+	service, err := cfClient.ServiceInstances().Get(serviceGUID, 1)
 	if err != nil {
 		return fmt.Errorf("Error retrieving service: %s", err)
 	}
 
 	servicePlanGUID := service.Entity.ServicePlanGUID
 	d.Set("service_plan_guid", servicePlanGUID)
-	d.Set("credentials", service.Entity.Credentials)
+	serviceKeys := service.Entity.ServiceKeys
+	d.Set("service_keys", flattenServiceInstanceCredentials(serviceKeys))
+	d.Set("credentials", flattenCredentials(service.Entity.Credentials))
 	d.Set("tags", service.Entity.Tags)
 	d.Set("name", service.Entity.Name)
 
-	p, err := cfClient.ServicePlans().Get(servicePlanGUID)
-	if err != nil {
-		return err
-	}
-	d.Set("plan", p.Entity.Name)
+	d.Set("plan", service.Entity.ServicePlan.Entity.Name)
 
-	svcOff, err := cfClient.ServiceOfferings().Get(p.Entity.ServiceGUID)
+	svcOff, err := cfClient.ServiceOfferings().Get(service.Entity.ServicePlan.Entity.ServiceGUID)
 	if err != nil {
 		return err
 	}

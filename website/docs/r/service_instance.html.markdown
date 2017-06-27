@@ -43,5 +43,6 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - The ID of the new service instance.
-* `credentials` - The credentials associated with the service instance.
+* `credentials` - The service broker-provided credentials to use this service.
+* `service_keys` - The service keys associated with this service.
 * `service_plan_guid` - The plan of the service offering used by this service instance 

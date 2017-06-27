@@ -20,6 +20,7 @@ func TestAccIBMServiceKeyDataSource_basic(t *testing.T) {
 				Config: testAccCheckIBMServiceKeyDataSourceConfig(serviceName, serviceKey),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_service_key.testacc_ds_service_key", "name", serviceKey),
+					resource.TestCheckResourceAttr("data.ibm_service_key.testacc_ds_service_key", "credentials.%", "5"),
 				),
 			},
 		},
@@ -28,27 +29,27 @@ func TestAccIBMServiceKeyDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMServiceKeyDataSourceConfig(serviceName, serviceKey string) string {
 	return fmt.Sprintf(`
-	data "ibm_space" "spacedata" {
-			org    = "%s"
-			space  = "%s"
-		}
-		
-		resource "ibm_service_instance" "service" {
-			name              = "%s"
-			space_guid        = "${data.ibm_space.spacedata.id}"
-			service           = "cleardb"
-			plan              = "cb5"
-			tags               = ["cluster-service","cluster-bind"]
-		}
+data "ibm_space" "spacedata" {
+  org   = "%s"
+  space = "%s"
+}
 
-		resource "ibm_service_key" "servicekey" {
-			name = "%s"
-			service_instance_guid = "${ibm_service_instance.service.id}"
-		}
-		
-		data "ibm_service_key" "testacc_ds_service_key" {
-			name = "${ibm_service_key.servicekey.name}"
-			service_instance_name = "${ibm_service_instance.service.name}"
+resource "ibm_service_instance" "service" {
+  name       = "%s"
+  space_guid = "${data.ibm_space.spacedata.id}"
+  service    = "cloudantNoSQLDB"
+  plan       = "Lite"
+  tags       = ["cluster-service", "cluster-bind"]
+}
+
+resource "ibm_service_key" "servicekey" {
+  name                  = "%s"
+  service_instance_guid = "${ibm_service_instance.service.id}"
+}
+
+data "ibm_service_key" "testacc_ds_service_key" {
+  name                  = "${ibm_service_key.servicekey.name}"
+  service_instance_name = "${ibm_service_instance.service.name}"
 }`, cfOrganization, cfSpace, serviceName, serviceKey)
 
 }

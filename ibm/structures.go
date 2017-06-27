@@ -118,3 +118,18 @@ func flattenCredentials(creds map[string]interface{}) map[string]string {
 	}
 	return out
 }
+
+func flattenServiceKeyCredentials(creds map[string]interface{}) map[string]string {
+	return flattenCredentials(creds)
+}
+
+func flattenServiceInstanceCredentials(keys []mccpv2.ServiceKeyFields) []interface{} {
+	var out = make([]interface{}, len(keys), len(keys))
+	for i, k := range keys {
+		m := make(map[string]interface{})
+		m["name"] = k.Entity.Name
+		m["credentials"] = flattenServiceKeyCredentials(k.Entity.Credentials)
+		out[i] = m
+	}
+	return out
+}
