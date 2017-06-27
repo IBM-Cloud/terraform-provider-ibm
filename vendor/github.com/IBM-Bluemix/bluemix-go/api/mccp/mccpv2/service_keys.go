@@ -30,7 +30,7 @@ type ServiceKey struct {
 
 //ServiceKeyFields ...
 type ServiceKeyFields struct {
-	Metadata ServiceInstanceMetadata
+	Metadata ServiceKeyMetadata
 	Entity   ServiceKey
 }
 

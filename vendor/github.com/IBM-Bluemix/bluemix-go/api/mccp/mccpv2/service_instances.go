@@ -2,6 +2,7 @@ package mccpv2
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/IBM-Bluemix/bluemix-go/client"
 	"github.com/IBM-Bluemix/bluemix-go/rest"
@@ -41,6 +42,8 @@ type ServiceInstance struct {
 	ServicePlanURL    string                 `json:"service_plan_url"`
 	ServiceBindingURL string                 `json:"service_bindings_url"`
 	ServiceKeysURL    string                 `json:"service_keys_url"`
+	ServiceKeys       []ServiceKeyFields     `json:"service_keys"`
+	ServicePlan       ServicePlanFields      `json:"service_plan"`
 }
 
 //ServiceInstanceFields ...
@@ -86,6 +89,8 @@ type ServiceInstanceEntity struct {
 	ServicePlanURL    string                 `json:"service_plan_url"`
 	ServiceBindingURL string                 `json:"service_bindings_url"`
 	ServiceKeysURL    string                 `json:"service_keys_url"`
+	ServiceKeys       []ServiceKeyFields     `json:"service_keys"`
+	ServicePlan       ServicePlanFields      `json:"service_plan"`
 }
 
 //ToModel ...
@@ -118,7 +123,7 @@ type ServiceInstances interface {
 	Update(instanceGUID string, req ServiceInstanceUpdateRequest) (*ServiceInstanceFields, error)
 	Delete(instanceGUID string) error
 	FindByName(instanceName string) (*ServiceInstance, error)
-	Get(instanceGUID string) (*ServiceInstanceFields, error)
+	Get(instanceGUID string, depth ...int) (*ServiceInstanceFields, error)
 	ListServiceBindings(instanceGUID string) ([]ServiceBinding, error)
 }
 
@@ -142,14 +147,23 @@ func (s *serviceInstance) Create(req ServiceInstanceCreateRequest) (*ServiceInst
 	return &serviceFields, nil
 }
 
-func (s *serviceInstance) Get(instanceGUID string) (*ServiceInstanceFields, error) {
+func (s *serviceInstance) Get(instanceGUID string, depth ...int) (*ServiceInstanceFields, error) {
 	rawURL := fmt.Sprintf("/v2/service_instances/%s", instanceGUID)
-	serviceFields := ServiceInstanceFields{}
-	_, err := s.client.Get(rawURL, &serviceFields)
+	req := rest.GetRequest(rawURL)
+	if len(depth) > 0 {
+		req.Query("inline-relations-depth", strconv.Itoa(depth[0]))
+	}
+	httpReq, err := req.Build()
 	if err != nil {
 		return nil, err
 	}
+	path := httpReq.URL.String()
 
+	serviceFields := ServiceInstanceFields{}
+	_, err = s.client.Get(path, &serviceFields)
+	if err != nil {
+		return nil, err
+	}
 	return &serviceFields, err
 }
 
