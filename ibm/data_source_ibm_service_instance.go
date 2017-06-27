@@ -17,6 +17,12 @@ func dataSourceIBMServiceInstance() *schema.Resource {
 				Required:    true,
 			},
 
+			"space_guid": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The guid of the space in which the instance is present",
+			},
+
 			"credentials": {
 				Description: "The service broker-provided credentials to use this service.",
 				Type:        schema.TypeMap,
@@ -61,7 +67,8 @@ func dataSourceIBMServiceInstanceRead(d *schema.ResourceData, meta interface{}) 
 	}
 	siAPI := cfClient.ServiceInstances()
 	name := d.Get("name").(string)
-	inst, err := siAPI.FindByName(name)
+	spaceGUID := d.Get("space_guid").(string)
+	inst, err := siAPI.FindByNameInSpace(spaceGUID, name)
 	if err != nil {
 		return err
 	}

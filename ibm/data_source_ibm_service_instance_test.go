@@ -82,6 +82,7 @@ resource "ibm_service_key" "servicekey" {
 
 data "ibm_service_instance" "testacc_ds_service_instance" {
   name = "${ibm_service_instance.service.name}"
+	space_guid = "${data.ibm_space.spacedata.id}"
 }
 `, cfOrganization, cfSpace, serviceName, serviceKey)
 

@@ -17,7 +17,6 @@ func dataSourceIBMServiceKey() *schema.Resource {
 				Type:        schema.TypeMap,
 				Computed:    true,
 			},
-
 			"name": {
 				Description: "The name of the service key",
 				Type:        schema.TypeString,
@@ -27,6 +26,11 @@ func dataSourceIBMServiceKey() *schema.Resource {
 				Description: "Service instance name for example, cleardbinstance",
 				Type:        schema.TypeString,
 				Required:    true,
+			},
+			"space_guid": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The guid of the space in which the service instance is present",
 			},
 		},
 	}
@@ -40,8 +44,9 @@ func dataSourceIBMServiceKeyRead(d *schema.ResourceData, meta interface{}) error
 	siAPI := cfClient.ServiceInstances()
 	skAPI := cfClient.ServiceKeys()
 	serviceInstanceName := d.Get("service_instance_name").(string)
+	spaceGUID := d.Get("space_guid").(string)
 	name := d.Get("name").(string)
-	inst, err := siAPI.FindByName(serviceInstanceName)
+	inst, err := siAPI.FindByNameInSpace(spaceGUID, serviceInstanceName)
 	if err != nil {
 		return err
 	}

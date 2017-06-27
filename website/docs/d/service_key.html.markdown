@@ -13,9 +13,15 @@ Import the details of an existing IBM service key from IBM Bluemix as a read-onl
 ## Example Usage
 
 ```hcl
+data "ibm_space" "space" {
+  org   = "example.com"
+  space = "dev"
+}
+
 data "ibm_service_key" "serviceKeydata" {
   name                  = "mycloudantdbKey"
   service_instance_name = "mycloudantdb"
+  space_guid   = "${data.ibm_space.space.id}"
 }
 ```
 
@@ -25,6 +31,7 @@ The following arguments are supported:
 
 * `name` - (Required) The name of the service key. The value can be retrieved by running the `bx service keys` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
 * `service_instance_name` - (Required) The name of the service instance that the service key is associated with. The value can be retrieved by running the `bx service list` command in the Bluemix CLI.
+* `space_guid` - (Required, string) The GUID of the space where the service instance exists. The values can be retrieved from data source `ibm_space`.
 
 ## Attributes Reference
 
