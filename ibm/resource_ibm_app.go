@@ -216,7 +216,7 @@ func resourceIBMAppRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("space_guid", appData.Entity.SpaceGUID)
 	d.Set("disk_quota", appData.Entity.DiskQuota)
 	d.Set("buildpack", appData.Entity.BuildPack)
-	d.Set("environment_json", appData.Entity.EnvironmentJSON)
+	d.Set("environment_json", flattenMapInterfaceVal(appData.Entity.EnvironmentJSON))
 	d.Set("command", appData.Entity.Command)
 
 	route, err := appAPI.ListRoutes(appGUID)

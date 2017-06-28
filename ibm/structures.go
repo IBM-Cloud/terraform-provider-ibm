@@ -111,12 +111,16 @@ func flattenSpaceRoleUsers(in []mccpv2.SpaceRole) *schema.Set {
 	return schema.NewSet(schema.HashString, out)
 }
 
-func flattenCredentials(creds map[string]interface{}) map[string]string {
+func flattenMapInterfaceVal(m map[string]interface{}) map[string]string {
 	out := make(map[string]string)
-	for k, v := range creds {
+	for k, v := range m {
 		out[k] = fmt.Sprintf("%v", v)
 	}
 	return out
+}
+
+func flattenCredentials(creds map[string]interface{}) map[string]string {
+	return flattenMapInterfaceVal(creds)
 }
 
 func flattenServiceKeyCredentials(creds map[string]interface{}) map[string]string {

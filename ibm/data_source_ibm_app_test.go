@@ -29,8 +29,9 @@ func TestAccIBMAppDataSource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_app.ds", "id"),
 					resource.TestCheckResourceAttr("data.ibm_app.ds", "name", appName),
 					resource.TestCheckResourceAttr("data.ibm_app.ds", "buildpack", "sdk-for-nodejs"),
-					resource.TestCheckResourceAttr("data.ibm_app.ds", "environment_json.%", "1"),
+					resource.TestCheckResourceAttr("data.ibm_app.ds", "environment_json.%", "2"),
 					resource.TestCheckResourceAttr("data.ibm_app.ds", "environment_json.test", "test1"),
+					resource.TestCheckResourceAttr("data.ibm_app.ds", "environment_json.mockport", "443"),
 					resource.TestCheckResourceAttr("data.ibm_app.ds", "state", "STARTED"),
 					resource.TestCheckResourceAttr("data.ibm_app.ds", "package_state", "STAGED"),
 					resource.TestCheckResourceAttr("data.ibm_app.ds", "route_guid.#", "1"),
@@ -85,6 +86,7 @@ resource "ibm_app" "app" {
 
   environment_json = {
     "test" = "test1"
+    "mockport" = 443
   }
 }
 

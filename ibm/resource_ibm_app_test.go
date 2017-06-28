@@ -160,6 +160,8 @@ func TestAccIBMApp_with_service_instances(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_app.app", "memory", "128"),
 					resource.TestCheckResourceAttr("ibm_app.app", "disk_quota", "512"),
 					resource.TestCheckResourceAttr("ibm_app.app", "environment_json.test", "test1"),
+					resource.TestCheckResourceAttr("ibm_app.app", "environment_json.mockport", "443"),
+					resource.TestCheckResourceAttr("ibm_app.app", "environment_json.floatval", "0.67"),
 					resource.TestCheckResourceAttr("ibm_app.app", "route_guid.#", "1"),
 					resource.TestCheckResourceAttr("ibm_app.app", "service_instance_guid.#", "1"),
 				),
@@ -545,9 +547,11 @@ resource "ibm_app" "app" {
   memory                = 128
   instances             = 1
   disk_quota            = 512
-
+	
   environment_json = {
     "test" = "test1"
+    "mockport" = 443
+    "floatval" = 0.67
   }
 }`, cfOrganization, cfSpace, route1, serviceName1, serviceName2, name)
 
