@@ -28,8 +28,7 @@ func TestAccIBMServiceKey_Basic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMServiceKeyExists("ibm_service_key.serviceKey", &conf),
 					resource.TestCheckResourceAttr("ibm_service_key.serviceKey", "name", serviceKey),
-					resource.TestCheckResourceAttrSet(
-						"ibm_service_key.serviceKey", "credentials"),
+					resource.TestCheckResourceAttr("ibm_service_key.serviceKey", "credentials.%", "7"),
 				),
 			},
 		},
