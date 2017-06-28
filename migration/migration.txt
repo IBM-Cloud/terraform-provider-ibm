@@ -44,3 +44,4 @@ s/ibmcloud_infra_scale_group/ibm_compute_autoscale_group/g
 s/ibmcloud_infra_scale_policy/ibm_compute_autoscale_policy/g
 s/ibmcloud_infra_security_certificate/ibm_compute_ssl_certificate/g
 s/ibmcloud_infra_user/ibm_compute_user/g
+s/ibmcloud/ibm/g
