@@ -2,7 +2,9 @@ package ibm
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/IBM-Bluemix/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Bluemix/bluemix-go/api/mccp/mccpv2"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -136,4 +138,65 @@ func flattenServiceInstanceCredentials(keys []mccpv2.ServiceKeyFields) []interfa
 		out[i] = m
 	}
 	return out
+}
+
+func flattenIAMPolicyResource(list []iampapv1.Resources, iamClient iampapv1.IAMPAPAPI) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, len(list))
+	for _, i := range list {
+		name := i.ServiceName
+		var serviceName string
+		if name != "" {
+			serviceName, _ = iamClient.IAMService().GetServiceDispalyName(name)
+		} else {
+			serviceName = "All Identity and Access enbled services"
+		}
+		region := i.Region
+		resourceType := i.ResourceType
+		resource := i.Resource
+		spaceId := i.SpaceId
+		organizationId := i.OrganizationId
+		serviceInstance := i.ServiceInstance
+		ok, element := contains(serviceName, region, resourceType, resource, spaceId, organizationId, result)
+		if !ok {
+			l := map[string]interface{}{
+				"service_name":      serviceName,
+				"region":            region,
+				"resource_type":     resourceType,
+				"resource":          resource,
+				"space_guid":        spaceId,
+				"organization_guid": organizationId,
+			}
+			if serviceInstance != "" {
+				l["service_instance"] = []string{serviceInstance}
+			}
+			result = append(result, l)
+		} else {
+			v := element["service_instance"].([]string)
+			v = append(v, serviceInstance)
+			element["service_instance"] = v
+		}
+	}
+	return result
+}
+
+func contains(name, region, resourceType, resource, spaceGuid, organizationGuid string, value []map[string]interface{}) (bool, map[string]interface{}) {
+	for i := 0; i < len(value); i++ {
+		m := value[i]
+		if strings.Compare(m["service_name"].(string), name) == 0 && strings.Compare(m["region"].(string), region) == 0 && strings.Compare(m["resource_type"].(string), resourceType) == 0 && strings.Compare(m["resource"].(string), resource) == 0 && strings.Compare(m["space_guid"].(string), spaceGuid) == 0 && strings.Compare(m["organization_guid"].(string), organizationGuid) == 0 {
+			return true, m
+		}
+	}
+	return false, nil
+}
+
+func flattenIAMPolicyRoles(list []iampapv1.Roles, rolesMap map[string]string) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, len(list))
+	for _, i := range list {
+		l := map[string]interface{}{
+			"id": rolesMap[i.ID],
+		}
+
+		result = append(result, l)
+	}
+	return result
 }

@@ -197,6 +197,8 @@ func getDefaultAuthHeaders(serviceName bluemix.ServiceName, c *bluemix.Config) g
 		h.Set(authorizationHeader, c.IAMAccessToken)
 		h.Set(iamRefreshTokenHeader, c.IAMRefreshToken)
 		h.Set(uaaAccessTokenHeader, c.UAAAccessToken)
+	case bluemix.IAMPAPService, bluemix.AccountServicev1:
+		h.Set(authorizationHeader, c.IAMAccessToken)
 	default:
 		log.Println("Unknown service")
 	}

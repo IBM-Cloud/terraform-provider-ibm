@@ -14,6 +14,7 @@ type EndpointLocator interface {
 	MCCPAPIEndpoint() (string, error)
 	ContainerEndpoint() (string, error)
 	IAMEndpoint() (string, error)
+	IAMPAPEndpoint() (string, error)
 	UAAEndpoint() (string, error)
 }
 
@@ -41,7 +42,11 @@ var regionToEndpoint = map[string]map[string]string{
 		"au-syd":   "https://iam.au-syd.bluemix.net",
 		"eu-de":    "https://iam.eu-de.bluemix.net",
 	},
-
+	"iampap": {
+		"us-south": "https://iampap.ng.bluemix.net",
+		"eu-gb":    "https://iampap.eu-gb.bluemix.net",
+		"au-syd":   "https://iampap.au-syd.bluemix.net",
+	},
 	"uaa": {
 		"us-south": "https://login.ng.bluemix.net/UAALoginServerWAR",
 		"eu-gb":    "https://login.eu-gb.bluemix.net/UAALoginServerWAR",
@@ -117,6 +122,15 @@ func (e *endpointLocator) IAMEndpoint() (string, error) {
 
 	}
 	return "", bmxerror.New(ErrCodeServiceEndpoint, fmt.Sprintf("IAM  endpoint doesn't exist for region: %q", e.region))
+}
+
+func (e *endpointLocator) IAMPAPEndpoint() (string, error) {
+	if ep, ok := regionToEndpoint["iampap"][e.region]; ok {
+		//As the current list of regionToEndpoint above is not exhaustive we allow to read endpoints from the env
+		return helpers.EnvFallBack([]string{"IBMCLOUD_IAMPAP_API_ENDPOINT"}, ep), nil
+
+	}
+	return "", fmt.Errorf("IAMPAP  endpoint doesn't exist for region: %q", e.region)
 }
 
 func (e *endpointLocator) ContainerEndpoint() (string, error) {
