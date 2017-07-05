@@ -6,6 +6,7 @@ import (
 	"log"
 	"path"
 	"strings"
+	"sync"
 
 	gohttp "net/http"
 
@@ -33,6 +34,8 @@ type Client struct {
 	ServiceName      bluemix.ServiceName
 	TokenRefresher   TokenProvider
 	HandlePagination HandlePagination
+
+	headerLock sync.Mutex
 }
 
 //Config stores any generic service client configurations
@@ -43,9 +46,8 @@ type Config struct {
 
 //New ...
 func New(c *bluemix.Config, serviceName bluemix.ServiceName, refresher TokenProvider, pagination HandlePagination) *Client {
-	config := c.Copy()
 	return &Client{
-		Config:           config,
+		Config:           c,
 		ServiceName:      serviceName,
 		TokenRefresher:   refresher,
 		HandlePagination: pagination,
@@ -59,7 +61,6 @@ func (c *Client) SendRequest(r *rest.Request, respV interface{}) (*gohttp.Respon
 	if httpClient == nil {
 		httpClient = gohttp.DefaultClient
 	}
-
 	restClient := &rest.Client{
 		DefaultHeader: c.DefaultHeader,
 		HTTPClient:    httpClient,
@@ -72,17 +73,22 @@ func (c *Client) SendRequest(r *rest.Request, respV interface{}) (*gohttp.Respon
 	if resp == nil {
 		return new(gohttp.Response), err
 	}
-
 	if err != nil {
 		err = bmxerror.WrapNetworkErrors(resp.Request.URL.Host, err)
 	}
-
 	// if token is invalid, refresh and try again
 	if resp.StatusCode == 401 && c.TokenRefresher != nil {
+		log.Println("Authentication failed. Trying token refresh")
+		c.headerLock.Lock()
+		defer c.headerLock.Unlock()
 		_, err := c.TokenRefresher.RefreshToken()
 		switch err.(type) {
 		case nil:
 			restClient.DefaultHeader = getDefaultAuthHeaders(c.ServiceName, c.Config)
+			for k := range c.DefaultHeader {
+				r.Del(k)
+			}
+			c.DefaultHeader = restClient.DefaultHeader
 			resp, err = restClient.Do(r, respV, nil)
 		case *bmxerror.InvalidTokenError:
 			return resp, bmxerror.NewRequestFailure("InvalidToken", fmt.Sprintf("%v", err), 401)
@@ -197,6 +203,8 @@ func getDefaultAuthHeaders(serviceName bluemix.ServiceName, c *bluemix.Config) g
 		h.Set(authorizationHeader, c.IAMAccessToken)
 		h.Set(iamRefreshTokenHeader, c.IAMRefreshToken)
 		h.Set(uaaAccessTokenHeader, c.UAAAccessToken)
+	case bluemix.IAMPAPService, bluemix.AccountServicev1:
+		h.Set(authorizationHeader, c.IAMAccessToken)
 	default:
 		log.Println("Unknown service")
 	}

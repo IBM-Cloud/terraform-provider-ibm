@@ -105,6 +105,12 @@ func (r *Request) Add(key string, value string) *Request {
 	return r
 }
 
+// Del deletes the header as specified by the key.
+func (r *Request) Del(key string) *Request {
+	r.header.Del(http.CanonicalHeaderKey(key))
+	return r
+}
+
 // Set sets the header entries associated with key to the single element value.
 // It replaces any existing values associated with key.
 func (r *Request) Set(key string, value string) *Request {
