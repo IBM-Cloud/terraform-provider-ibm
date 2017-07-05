@@ -67,9 +67,9 @@ func dataSourceIBMAccountRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf("Error retrieving users in account: %s", err)
 	}
-	accountUsersMap := make([]map[string]interface{}, 0, len(accountUsers))
+	accountUsersMap := make([]map[string]string, 0, len(accountUsers))
 	for _, user := range accountUsers {
-		accountUser := make(map[string]interface{})
+		accountUser := make(map[string]string)
 		accountUser["id"] = user.Id
 		accountUser["email"] = user.Email
 		accountUser["state"] = user.State

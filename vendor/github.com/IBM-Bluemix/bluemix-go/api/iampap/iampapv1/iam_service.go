@@ -23,7 +23,7 @@ func newIAMServiceAPI(c *client.Client) IAMService {
 func (r *iamservice) GetServiceName(serviceDispName string) (string, error) {
 	serviceMap := make(map[string]string)
 	serviceMap["IBM Bluemix Container Service"] = "containers-kubernetes"
-	serviceMap["All Identity and Access enbled services"] = "All Identity and Access enbled services"
+	serviceMap["All Identity and Access enabled services"] = "All Identity and Access enabled services"
 	//rawURL := "/acms/v1/services"
 	//resp, err := r.client.Get(rawURL, &services)
 	return serviceMap[serviceDispName], nil
@@ -33,7 +33,7 @@ func (r *iamservice) GetServiceName(serviceDispName string) (string, error) {
 func (r *iamservice) GetServiceDispalyName(serviceName string) (string, error) {
 	serviceMap := make(map[string]string)
 	serviceMap["containers-kubernetes"] = "IBM Bluemix Container Service"
-	serviceMap["All Identity and Access enbled services"] = "All Identity and Access enbled services"
+	serviceMap["All Identity and Access enabled services"] = "All Identity and Access enabled services"
 	//rawURL := "/acms/v1/services"
 	//resp, err := r.client.Get(rawURL, &services)
 	return serviceMap[serviceName], nil

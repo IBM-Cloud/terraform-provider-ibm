@@ -2,7 +2,6 @@ package ibm
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -36,7 +35,7 @@ func dataSourceIBMIAMUserPolicy() *schema.Resource {
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"id": {
+									"name": {
 										Type: schema.TypeString,
 
 										Computed: true,
@@ -93,22 +92,29 @@ func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) er
 	if err != nil {
 		return err
 	}
+	accClient, err := meta.(ClientSession).BluemixAcccountAPI()
+	if err != nil {
+		return err
+	}
 
 	scope := d.Get("account_guid").(string)
 	ibmId := d.Get("ibm_id").(string)
+
+	account, err := accClient.Accounts().Get(scope)
+	if err != nil {
+		return fmt.Errorf("Error retrieving account: %s", err)
+	}
 	userId, err := getIBMUniqueIdOfUser(scope, ibmId, meta)
-	log.Println("praveen0", userId)
 	if userId == "" || err != nil {
-		return fmt.Errorf("User doesnot exist in the account", err)
+		return fmt.Errorf("User %q does not exist in the account:%q", ibmId, account.Name)
 	}
 
 	accessPolicyList, err := iamClient.IAMPolicy().List(scope, userId)
 	if err != nil {
-		return fmt.Errorf("Error retrieving list of policies %s", err)
+		return fmt.Errorf("Error retrieving policies %s", err)
 	}
 
 	policies := accessPolicyList.Policies
-	log.Println("praveen1", len(policies))
 	accountPolicyListMap := make([]map[string]interface{}, 0, len(policies))
 	for _, policy := range policies {
 
@@ -125,7 +131,6 @@ func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) er
 			"roles":     roles,
 			"resources": resources,
 		}
-		log.Println("praveen2", l)
 		accountPolicyListMap = append(accountPolicyListMap, l)
 	}
 	d.SetId(scope)

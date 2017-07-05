@@ -19,7 +19,7 @@ func TestAccIBMIAMUserPolicyDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.ibm_iam_user_policy.testacc_iam_policies", "policies.#", "1"),
 					resource.TestCheckResourceAttr("data.ibm_iam_user_policy.testacc_iam_policies", "policies.0.roles.#", "1"),
 					resource.TestCheckResourceAttr("data.ibm_iam_user_policy.testacc_iam_policies", "policies.0.resources.#", "1"),
-					resource.TestCheckResourceAttr("data.ibm_iam_user_policy.testacc_iam_policies", "policies.0.roles.0.id", "viewer"),
+					resource.TestCheckResourceAttr("data.ibm_iam_user_policy.testacc_iam_policies", "policies.0.roles.0.name", "viewer"),
 				),
 			},
 		},
@@ -40,7 +40,7 @@ resource "ibm_iam_user_policy" "testacc_iam_policy" {
         account_guid = "${data.ibm_account.testacc_acc.id}"
         ibm_id  = "%s"
         roles   = ["viewer"]
-        resources = [{"service_name" = "All Identity and Access enbled services"}]
+        resources = [{"service_name" = "All Identity and Access enabled services"}]
 }
 data "ibm_iam_user_policy" "testacc_iam_policies" {
         account_guid = "${data.ibm_account.testacc_acc.id}"

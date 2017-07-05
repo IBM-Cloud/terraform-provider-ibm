@@ -11,7 +11,7 @@ import (
 const (
 	VIEWER           = "viewer"
 	EDITOR           = "editor"
-	OPERATOR         = "getoperator"
+	OPERATOR         = "operator"
 	ADMINISTRATOR    = "administrator"
 	VIEWER_ID        = "crn:v1:bluemix:public:iam::::role:Viewer"
 	EDITOR_ID        = "crn:v1:bluemix:public:iam::::role:Editor"
@@ -84,6 +84,8 @@ func resourceIBMIAMUserPolicy() *schema.Resource {
 			"roles": {
 				Type:     schema.TypeSet,
 				Required: true,
+				MinItems: 1,
+				MaxItems: 4,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
 			},
@@ -206,26 +208,19 @@ func resourceIBMIAMUserPolicyUpdate(d *schema.ResourceData, meta interface{}) er
 
 	var resources []v1.Resources
 	var roles []v1.Roles
+	isUpdate := false
 	if d.HasChange("roles") {
-		_, newValue := d.GetChange("roles")
-		newroles := newValue.(*schema.Set)
-		roles = getRoles(newroles)
+		isUpdate = true
 	}
 	if d.HasChange("resources") {
-		_, newValue := d.GetChange("resources")
-		newResources := newValue.(*schema.Set)
-		resources = createResources(newResources, iamClient, accountGuid)
+		isUpdate = true
 	}
 
-	if len(roles) > 0 && len(resources) == 0 {
-		policyServices := d.Get("resources").(*schema.Set)
-		resources = createResources(policyServices, iamClient, accountGuid)
-	} else if len(roles) == 0 && len(resources) > 0 {
+	if isUpdate {
 		roleIdSet := d.Get("roles").(*schema.Set)
 		roles = getRoles(roleIdSet)
-	}
-
-	if len(roles) > 0 && len(resources) > 0 {
+		policyServices := d.Get("resources").(*schema.Set)
+		resources = createResources(policyServices, iamClient, accountGuid)
 		accessPolicy := v1.AccessPolicyRequest{
 			Roles:     roles,
 			Resources: resources,

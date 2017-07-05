@@ -51,7 +51,7 @@ resource "ibm_iam_user_policy" "testacc_iam_policy" {
         account_guid = "${data.ibm_account.testacc_acc.id}"
         ibm_id  = "%s"
         roles   = ["viewer"]
-        resources = [{"service_name" = "All Identity and Access enbled services"}]
+        resources = [{"service_name" = "All Identity and Access enabled services"}]
 }
 `, cfOrganization, IAMUser)
 }
@@ -70,7 +70,7 @@ resource "ibm_iam_user_policy" "testacc_iam_policy" {
         account_guid = "${data.ibm_account.testacc_acc.id}"
         ibm_id  = "%s"
         roles   = ["viewer","administrator"]
-        resources =  [{"service_name" = "All Identity and Access enbled services"}]
+        resources =  [{"service_name" = "All Identity and Access enabled services"}]
 }
 `, cfOrganization, IAMUser)
 }
