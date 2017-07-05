@@ -1,9 +1,10 @@
-package accountv2
+package accountv1
 
 import (
 	gohttp "net/http"
 
 	bluemix "github.com/IBM-Bluemix/bluemix-go"
+	"github.com/IBM-Bluemix/bluemix-go/api/account/accountv2"
 	"github.com/IBM-Bluemix/bluemix-go/authentication"
 	"github.com/IBM-Bluemix/bluemix-go/client"
 	"github.com/IBM-Bluemix/bluemix-go/http"
@@ -19,7 +20,7 @@ type AccountServiceAPI interface {
 //ErrCodeNoAccountExists ...
 const ErrCodeNoAccountExists = "NoAccountExists"
 
-//MccpService holds the client
+//CfService holds the client
 type accountService struct {
 	*client.Client
 }
@@ -27,14 +28,14 @@ type accountService struct {
 //New ...
 func New(sess *session.Session) (AccountServiceAPI, error) {
 	config := sess.Config.Copy()
-	err := config.ValidateConfigForService(bluemix.AccountService)
+	err := config.ValidateConfigForService(bluemix.AccountServicev1)
 	if err != nil {
 		return nil, err
 	}
 	if config.HTTPClient == nil {
 		config.HTTPClient = http.NewHTTPClient(config)
 	}
-	tokenRefreher, err := authentication.NewUAARepository(config, &rest.Client{
+	tokenRefreher, err := authentication.NewIAMAuthRepository(config, &rest.Client{
 		DefaultHeader: gohttp.Header{
 			"User-Agent": []string{http.UserAgent()},
 		},
@@ -43,7 +44,7 @@ func New(sess *session.Session) (AccountServiceAPI, error) {
 	if err != nil {
 		return nil, err
 	}
-	if config.UAAAccessToken == "" {
+	if config.IAMAccessToken == "" {
 		err := authentication.PopulateTokens(tokenRefreher, config)
 		if err != nil {
 			return nil, err
@@ -57,7 +58,7 @@ func New(sess *session.Session) (AccountServiceAPI, error) {
 		config.Endpoint = &ep
 	}
 	return &accountService{
-		Client: client.New(config, bluemix.AccountService, tokenRefreher, Paginate),
+		Client: client.New(config, bluemix.AccountServicev1, tokenRefreher, accountv2.Paginate),
 	}, nil
 }
 

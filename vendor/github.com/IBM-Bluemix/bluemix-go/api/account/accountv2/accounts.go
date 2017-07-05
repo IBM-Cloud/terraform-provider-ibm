@@ -88,10 +88,33 @@ func (resource AccountResource) ToModel() Account {
 	}
 }
 
+func (entity AccountEntity) ToModel() Account {
+
+	return Account{
+		Name:          entity.Name,
+		Type:          entity.Type,
+		State:         entity.State,
+		OwnerGUID:     entity.OwnerGUID,
+		OwnerUserID:   entity.OwnerUserID,
+		OwnerUniqueID: entity.OwnerUniqueID,
+		CustomerID:    entity.CustomerID,
+		CountryCode:   entity.CountryCode,
+		CurrencyCode:  entity.CurrencyCode,
+		Organizations: entity.Organizations,
+		Members:       entity.Members,
+	}
+}
+
 //AccountQueryResponse ...
 type AccountQueryResponse struct {
 	Metadata Metadata
 	Accounts []AccountResource `json:"resources"`
+}
+
+//AccountQueryResponse ...
+type AccountNameQueryResponse struct {
+	Metadata Metadata
+	Entity   AccountEntity
 }
 
 //Accounts ...
@@ -99,6 +122,7 @@ type Accounts interface {
 	List() ([]Account, error)
 	FindByOrg(orgGUID string, region string) (*Account, error)
 	FindByOwner(userID string) (*Account, error)
+	Get(accountId string) (*Account, error)
 }
 
 type account struct {
@@ -182,4 +206,23 @@ func (a *account) FindByOwner(userID string) (*Account, error) {
 	}
 	return nil, bmxerror.New(ErrCodeNoAccountExists,
 		fmt.Sprintf("No account exists for the user %q", userID))
+}
+
+//Get ...
+func (a *account) Get(accountId string) (*Account, error) {
+	queryResp := AccountNameQueryResponse{}
+	response, err := a.client.Get(fmt.Sprintf("/coe/v2/accounts/%s", accountId), &queryResp)
+	if err != nil {
+
+		if response.StatusCode == 404 {
+			return nil, bmxerror.New(ErrCodeNoAccountExists,
+				fmt.Sprintf("Account %q does not exists", accountId))
+		}
+		return nil, err
+
+	}
+
+	account := queryResp.Entity.ToModel()
+	return &account, nil
+
 }

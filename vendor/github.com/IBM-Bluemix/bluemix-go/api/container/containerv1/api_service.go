@@ -34,10 +34,14 @@ func New(sess *session.Session) (ContainerServiceAPI, error) {
 	if err != nil {
 		return nil, err
 	}
+	if config.HTTPClient == nil {
+		config.HTTPClient = http.NewHTTPClient(config)
+	}
 	tokenRefreher, err := authentication.NewIAMAuthRepository(config, &rest.Client{
 		DefaultHeader: gohttp.Header{
 			"User-Agent": []string{http.UserAgent()},
 		},
+		HTTPClient: config.HTTPClient,
 	})
 	if err != nil {
 		return nil, err
@@ -47,9 +51,6 @@ func New(sess *session.Session) (ContainerServiceAPI, error) {
 		if err != nil {
 			return nil, err
 		}
-	}
-	if config.HTTPClient == nil {
-		config.HTTPClient = http.NewHTTPClient(config)
 	}
 	if config.Endpoint == nil {
 		ep, err := config.EndpointLocator.ContainerEndpoint()
