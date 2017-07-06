@@ -3,6 +3,7 @@ package ibm
 import (
 	"fmt"
 
+	"github.com/IBM-Bluemix/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Bluemix/bluemix-go/api/mccp/mccpv2"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -136,4 +137,47 @@ func flattenServiceInstanceCredentials(keys []mccpv2.ServiceKeyFields) []interfa
 		out[i] = m
 	}
 	return out
+}
+
+func flattenIAMPolicyResource(list []iampapv1.Resources, iamClient iampapv1.IAMPAPAPI) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, len(list))
+	for _, i := range list {
+		name := i.ServiceName
+		var serviceName string
+		if name == "" {
+			name = "All Identity and Access enabled services"
+		}
+		serviceName, _ = iamClient.IAMService().GetServiceDispalyName(name)
+		region := i.Region
+		resourceType := i.ResourceType
+		resource := i.Resource
+		spaceId := i.SpaceId
+		organizationId := i.OrganizationId
+		serviceInstance := i.ServiceInstance
+		l := map[string]interface{}{
+			"service_name":      serviceName,
+			"region":            region,
+			"resource_type":     resourceType,
+			"resource":          resource,
+			"space_guid":        spaceId,
+			"organization_guid": organizationId,
+		}
+		if serviceInstance != "" {
+			l["service_instance"] = []string{serviceInstance}
+		}
+		result = append(result, l)
+	}
+	return result
+}
+
+func flattenIAMPolicyRoles(list []iampapv1.Roles, rolesMap map[string]string) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, len(list))
+	for _, i := range list {
+		l := map[string]interface{}{
+			"name": rolesMap[i.ID],
+		}
+
+		result = append(result, l)
+	}
+	return result
 }
