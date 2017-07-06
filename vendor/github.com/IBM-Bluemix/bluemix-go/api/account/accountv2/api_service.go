@@ -31,10 +31,14 @@ func New(sess *session.Session) (AccountServiceAPI, error) {
 	if err != nil {
 		return nil, err
 	}
+	if config.HTTPClient == nil {
+		config.HTTPClient = http.NewHTTPClient(config)
+	}
 	tokenRefreher, err := authentication.NewUAARepository(config, &rest.Client{
 		DefaultHeader: gohttp.Header{
 			"User-Agent": []string{http.UserAgent()},
 		},
+		HTTPClient: config.HTTPClient,
 	})
 	if err != nil {
 		return nil, err
@@ -45,11 +49,6 @@ func New(sess *session.Session) (AccountServiceAPI, error) {
 			return nil, err
 		}
 	}
-
-	if config.HTTPClient == nil {
-		config.HTTPClient = http.NewHTTPClient(config)
-	}
-
 	if config.Endpoint == nil {
 		ep, err := config.EndpointLocator.AccountManagementEndpoint()
 		if err != nil {
@@ -57,7 +56,6 @@ func New(sess *session.Session) (AccountServiceAPI, error) {
 		}
 		config.Endpoint = &ep
 	}
-
 	return &accountService{
 		Client: client.New(config, bluemix.AccountService, tokenRefreher, Paginate),
 	}, nil

@@ -3,6 +3,7 @@ package authentication
 import (
 	"encoding/base64"
 	"fmt"
+	"sync"
 
 	bluemix "github.com/IBM-Bluemix/bluemix-go"
 	"github.com/IBM-Bluemix/bluemix-go/bmxerror"
@@ -27,6 +28,8 @@ type UAARepository struct {
 	config   *bluemix.Config
 	client   *rest.Client
 	endpoint string
+
+	tokenLock sync.Mutex
 }
 
 //NewUAARepository ...
@@ -85,6 +88,8 @@ func (auth *UAARepository) RefreshToken() (string, error) {
 }
 
 func (auth *UAARepository) getToken(data map[string]string) error {
+	auth.tokenLock.Lock()
+	defer auth.tokenLock.Unlock()
 	request := rest.PostRequest(auth.endpoint+"/oauth/token").
 		Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte("cf:"))).
 		Field("scope", "")
