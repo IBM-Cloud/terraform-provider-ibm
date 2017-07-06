@@ -13,6 +13,7 @@ var cfOrganization string
 var cfSpace string
 var ibmid1 string
 var ibmid2 string
+var IAMUser string
 
 func init() {
 	cfOrganization = os.Getenv("IBM_ORG")
@@ -31,6 +32,11 @@ func init() {
 	ibmid2 = os.Getenv("IBM_ID2")
 	if ibmid2 == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_ID2 for testing ibm_space resource Some tests for that resource will fail if this is not set correctly")
+	}
+
+	IAMUser = os.Getenv("IBM_IAMUSER")
+	if IAMUser == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAMUSER for testing ibm_iam_user_policy resource Some tests for that resource will fail if this is not set correctly")
 	}
 }
 

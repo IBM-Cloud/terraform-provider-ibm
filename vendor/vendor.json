@@ -27,6 +27,12 @@
 			"revisionTime": "2017-07-05T11:30:55Z"
 		},
 		{
+			"checksumSHA1": "82PdvrB+ObI0ZqESk4d7VcIJQtE=",
+			"path": "github.com/IBM-Bluemix/bluemix-go/api/iampap/iampapv1",
+			"revision": "defd07a416a323cbcb64aeb477c84875a43061aa",
+			"revisionTime": "2017-07-05T11:30:55Z"
+		},
+		{
 			"checksumSHA1": "Dw1DdjlpCR2Q6F5nVZKq8LDAleI=",
 			"path": "github.com/IBM-Bluemix/bluemix-go/api/mccp/mccpv2",
 			"revision": "defd07a416a323cbcb64aeb477c84875a43061aa",

@@ -10,8 +10,10 @@ import (
 	slsession "github.com/softlayer/softlayer-go/session"
 
 	bluemix "github.com/IBM-Bluemix/bluemix-go"
+	"github.com/IBM-Bluemix/bluemix-go/api/account/accountv1"
 	"github.com/IBM-Bluemix/bluemix-go/api/account/accountv2"
 	"github.com/IBM-Bluemix/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Bluemix/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Bluemix/bluemix-go/api/mccp/mccpv2"
 	bxsession "github.com/IBM-Bluemix/bluemix-go/session"
 )
@@ -71,8 +73,10 @@ type ClientSession interface {
 	SoftLayerSession() *slsession.Session
 	BluemixSession() (*bxsession.Session, error)
 	ContainerAPI() (containerv1.ContainerServiceAPI, error)
+	IAMAPI() (iampapv1.IAMPAPAPI, error)
 	MccpAPI() (mccpv2.MccpServiceAPI, error)
 	BluemixAcccountAPI() (accountv2.AccountServiceAPI, error)
+	BluemixAcccountv1API() (accountv1.AccountServiceAPI, error)
 }
 
 type clientSession struct {
@@ -84,8 +88,14 @@ type clientSession struct {
 	cfConfigErr  error
 	cfServiceAPI mccpv2.MccpServiceAPI
 
+	iamConfigErr  error
+	iamServiceAPI iampapv1.IAMPAPAPI
+
 	accountConfigErr     error
 	bmxAccountServiceAPI accountv2.AccountServiceAPI
+
+	accountV1ConfigErr     error
+	bmxAccountv1ServiceAPI accountv1.AccountServiceAPI
 }
 
 // SoftLayerSession providers SoftLayer Session
@@ -101,6 +111,16 @@ func (sess clientSession) MccpAPI() (mccpv2.MccpServiceAPI, error) {
 // BluemixAcccountAPI ...
 func (sess clientSession) BluemixAcccountAPI() (accountv2.AccountServiceAPI, error) {
 	return sess.bmxAccountServiceAPI, sess.accountConfigErr
+}
+
+// BluemixAcccountAPI ...
+func (sess clientSession) BluemixAcccountv1API() (accountv1.AccountServiceAPI, error) {
+	return sess.bmxAccountv1ServiceAPI, sess.accountV1ConfigErr
+}
+
+// IAMAPI provides IAM PAP APIs ...
+func (sess clientSession) IAMAPI() (iampapv1.IAMPAPAPI, error) {
+	return sess.iamServiceAPI, sess.iamConfigErr
 }
 
 // ContainerAPI provides Container Service APIs ...
@@ -149,6 +169,18 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.csConfigErr = fmt.Errorf("Error occured while configuring Container Service for K8s cluster: %q", err)
 	}
 	session.csServiceAPI = clusterAPI
+
+	accv1API, err := accountv1.New(sess.BluemixSession)
+	if err != nil {
+		session.accountV1ConfigErr = fmt.Errorf("Error occured while configuring Bluemix Accountv1 Service: %q", err)
+	}
+	session.bmxAccountv1ServiceAPI = accv1API
+
+	iampap, err := iampapv1.New(sess.BluemixSession)
+	if err != nil {
+		session.iamConfigErr = fmt.Errorf("Error occured while configuring Bluemix IAMPAP Service: %q", err)
+	}
+	session.iamServiceAPI = iampap
 	return session, nil
 }
 
