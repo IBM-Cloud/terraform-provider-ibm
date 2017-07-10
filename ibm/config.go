@@ -148,6 +148,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.csConfigErr = errEmptyBluemixCredentials
 		session.cfConfigErr = errEmptyBluemixCredentials
 		session.accountConfigErr = errEmptyBluemixCredentials
+		session.accountV1ConfigErr = errEmptyBluemixCredentials
+		session.iamConfigErr = errEmptyBluemixCredentials
 		return session, nil
 	}
 
