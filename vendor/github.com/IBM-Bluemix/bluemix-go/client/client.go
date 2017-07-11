@@ -89,7 +89,11 @@ func (c *Client) SendRequest(r *rest.Request, respV interface{}) (*gohttp.Respon
 				r.Del(k)
 			}
 			c.DefaultHeader = restClient.DefaultHeader
-			resp, err = restClient.Do(r, respV, nil)
+			resp, err := restClient.Do(r, respV, nil)
+			if err != nil {
+				err = bmxerror.WrapNetworkErrors(resp.Request.URL.Host, err)
+			}
+			return resp, err
 		case *bmxerror.InvalidTokenError:
 			return resp, bmxerror.NewRequestFailure("InvalidToken", fmt.Sprintf("%v", err), 401)
 		default:
