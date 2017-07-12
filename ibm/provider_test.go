@@ -14,6 +14,10 @@ var cfSpace string
 var ibmid1 string
 var ibmid2 string
 var IAMUser string
+var datacenter string
+var machineType string
+var publicVlanID string
+var privateVlanID string
 
 func init() {
 	cfOrganization = os.Getenv("IBM_ORG")
@@ -37,6 +41,30 @@ func init() {
 	IAMUser = os.Getenv("IBM_IAMUSER")
 	if IAMUser == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_IAMUSER for testing ibm_iam_user_policy resource Some tests for that resource will fail if this is not set correctly")
+	}
+
+	datacenter = os.Getenv("IBM_DATACENTER")
+	if datacenter == "" {
+		datacenter = "ams03"
+		fmt.Println("[INFO] Set the environment variable IBM_DATACENTER for testing ibm_container_cluster resource else it is set to default value 'ams03'")
+	}
+
+	machineType = os.Getenv("IBM_MACHINE_TYPE")
+	if machineType == "" {
+		machineType = "u1c.2x4"
+		fmt.Println("[INFO] Set the environment variable IBM_MACHINE_TYPE for testing ibm_container_cluster resource else it is set to default value 'u1c.2x4'")
+	}
+
+	publicVlanID = os.Getenv("IBM_PUBLIC_VLAN_ID")
+	if publicVlanID == "" {
+		publicVlanID = "1764435"
+		fmt.Println("[INFO] Set the environment variable IBM_PUBLIC_VLAN_ID for testing ibm_container_cluster resource else it is set to default value '1764435'")
+	}
+
+	privateVlanID = os.Getenv("IBM_PRIVATE_VLAN_ID")
+	if privateVlanID == "" {
+		privateVlanID = "1764491"
+		fmt.Println("[INFO] Set the environment variable IBM_PRIVATE_VLAN_ID for testing ibm_container_cluster resource else it is set to default value '1764491'")
 	}
 }
 

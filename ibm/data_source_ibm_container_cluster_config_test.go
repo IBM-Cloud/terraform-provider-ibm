@@ -49,7 +49,7 @@ data "ibm_account" "testacc_acc" {
 
 resource "ibm_container_cluster" "testacc_cluster" {
     name = "%s"
-    datacenter = "dal10"
+    datacenter = "%s"
 	org_guid = "${data.ibm_org.testacc_ds_org.id}"
 	space_guid = "${data.ibm_space.testacc_ds_space.id}"
 	account_guid = "${data.ibm_account.testacc_acc.id}"
@@ -59,15 +59,15 @@ resource "ibm_container_cluster" "testacc_cluster" {
 
     action = "add"
   }]
-	machine_type = "free"
+	machine_type = "%s"
 	isolation = "public"
-	public_vlan_id = "vlan"
-	private_vlan_id = "vlan"
+	public_vlan_id = "%s"
+	private_vlan_id = "%s"
 }
 data "ibm_container_cluster_config" "testacc_ds_cluster" {
     cluster_name_id = "${ibm_container_cluster.testacc_cluster.id}"
 	org_guid = "${data.ibm_org.testacc_ds_org.id}"
 	space_guid = "${data.ibm_space.testacc_ds_space.id}"
 	account_guid = "${data.ibm_account.testacc_acc.id}"
-}`, cfOrganization, cfOrganization, cfSpace, clustername)
+}`, cfOrganization, cfOrganization, cfSpace, clustername, datacenter, machineType, publicVlanID, privateVlanID)
 }
