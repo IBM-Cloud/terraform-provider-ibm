@@ -41,15 +41,15 @@ data "ibm_account" "acc" {
 
 resource "ibm_container_cluster" "testacc_cluster" {
     name = "%s"
-    datacenter = "dal10"
+    datacenter = "%s"
     workers = [{
     name = "worker1"
     action = "add"
   },]
-	machine_type = "free"
+	machine_type = "%s"
 	isolation = "public"
-	public_vlan_id = "vlan"
-	private_vlan_id = "vlan"
+	public_vlan_id = "%s"
+	private_vlan_id = "%s"
 
     org_guid = "${data.ibm_org.org.id}"
 	space_guid = "${data.ibm_space.space.id}"
@@ -67,5 +67,5 @@ data "ibm_container_cluster_worker" "testacc_ds_worker" {
 	account_guid = "${data.ibm_account.acc.id}"
     worker_id = "${data.ibm_container_cluster.testacc_ds_cluster.workers[0]}"
 }
-`, cfOrganization, cfOrganization, cfSpace, clusterName)
+`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
 }
