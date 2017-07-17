@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -95,6 +96,8 @@ func TestAccIBMComputeVmInstance_basic(t *testing.T) {
 						configInstance, "secondary_ip_count", "4"),
 					resource.TestCheckResourceAttrSet(
 						configInstance, "secondary_ip_addresses.3"),
+					resource.TestCheckResourceAttr(
+						configInstance, "notes", "VM notes"),
 				),
 			},
 
@@ -123,6 +126,26 @@ func TestAccIBMComputeVmInstance_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						configInstance, "network_speed", networkSpeed2),
 				),
+			},
+		},
+	})
+}
+
+func TestAccIBMComputeVmInstance_InvalidNotes(t *testing.T) {
+	hostname := acctest.RandString(16)
+	domain := "terraformvmuat.ibm.com"
+	networkSpeed1 := "10"
+	cores1 := "1"
+	memory1 := "1024"
+	tags1 := "collectd"
+	userMetadata1 := "{\\\"value\\\":\\\"newvalue\\\"}"
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config:      testAccCheckIBMComputeVmInstance_InvalidNotes(hostname, domain, networkSpeed1, cores1, memory1, userMetadata1, tags1),
+				ExpectError: regexp.MustCompile("should not exceed 1000 characters"),
 			},
 		},
 	})
@@ -366,6 +389,30 @@ resource "ibm_compute_vm_instance" "terraform-acceptance-test-1" {
     local_disk = false
     ipv6_enabled = true
     secondary_ip_count = 4
+    notes = "VM notes"
+}`, hostname, domain, networkSpeed, cores, memory, userMetadata, tags)
+}
+
+func testAccCheckIBMComputeVmInstance_InvalidNotes(hostname, domain, networkSpeed, cores, memory, userMetadata, tags string) string {
+	return fmt.Sprintf(`
+resource "ibm_compute_vm_instance" "terraform-acceptance-test-1" {
+    hostname = "%s"
+    domain = "%s"
+    os_reference_code = "DEBIAN_7_64"
+    datacenter = "wdc04"
+    network_speed = %s
+    hourly_billing = true
+    private_network_only = false
+    cores = %s
+    memory = %s
+    disks = [25, 10, 20]
+    user_metadata = "%s"
+    tags = ["%s"]
+    dedicated_acct_host_only = true
+    local_disk = false
+    ipv6_enabled = true
+    secondary_ip_count = 4
+    notes = "This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very longThis notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long This notes is very long"
 }`, hostname, domain, networkSpeed, cores, memory, userMetadata, tags)
 }
 
@@ -460,7 +507,7 @@ resource "ibm_compute_vm_instance" "terraform-vsi-storage-access" {
     hourly_billing = true
 	file_storage_ids = ["${ibm_storage_file.fs1.id}"]
 	block_storage_ids = ["${ibm_storage_block.bs.id}"]
-
+    
     cores = 1
     memory = 1024
     local_disk = false
