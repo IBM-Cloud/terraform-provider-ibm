@@ -10,7 +10,7 @@ import (
 
 func TestAccIBMContainerClusterDataSource_basic(t *testing.T) {
 	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	serviceName := fmt.Sprintf("terraform-%d", acctest.RandInt())
 	serviceKeyName := fmt.Sprintf("terraform_%d", acctest.RandInt())
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
