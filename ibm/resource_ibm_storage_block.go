@@ -81,6 +81,11 @@ func resourceIBMStorageBlock() *schema.Resource {
 				},
 			},
 
+			"notes": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+
 			"allowed_virtual_guest_info": {
 				Type:     schema.TypeSet,
 				Computed: true,
@@ -319,6 +324,10 @@ func resourceIBMStorageBlockRead(d *schema.ResourceData, meta interface{}) error
 		d.Set("os_type", *storage.OsType.Name)
 	}
 
+	if storage.Notes != nil {
+		d.Set("notes", *storage.Notes)
+	}
+
 	return nil
 }
 
@@ -365,6 +374,14 @@ func resourceIBMStorageBlockUpdate(d *schema.ResourceData, meta interface{}) err
 	// Update allowed_hardware_ids
 	if d.HasChange("allowed_hardware_ids") {
 		err := updateAllowedHardwareIds(d, sess, storage)
+		if err != nil {
+			return fmt.Errorf("Error updating storage information: %s", err)
+		}
+	}
+
+	// Update notes
+	if d.HasChange("notes") {
+		err := updateNotes(d, sess, storage)
 		if err != nil {
 			return fmt.Errorf("Error updating storage information: %s", err)
 		}

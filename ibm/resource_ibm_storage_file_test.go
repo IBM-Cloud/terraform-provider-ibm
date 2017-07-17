@@ -32,6 +32,7 @@ func TestAccIBMStorageFile_Basic(t *testing.T) {
 						"ibm_storage_file.fs_endurance", "snapshot_capacity", "10"),
 					testAccCheckIBMResources("ibm_storage_file.fs_endurance", "datacenter",
 						"ibm_compute_vm_instance.storagevm1", "datacenter"),
+					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "notes", "endurance notes"),
 					// Performance Storage
 					testAccCheckIBMStorageFileExists("ibm_storage_file.fs_performance"),
 					resource.TestCheckResourceAttr(
@@ -42,6 +43,7 @@ func TestAccIBMStorageFile_Basic(t *testing.T) {
 						"ibm_storage_file.fs_performance", "iops", "200"),
 					testAccCheckIBMResources("ibm_storage_file.fs_performance", "datacenter",
 						"ibm_compute_vm_instance.storagevm1", "datacenter"),
+					resource.TestCheckResourceAttr("ibm_storage_file.fs_performance", "notes", "performance notes"),
 				),
 			},
 
@@ -52,6 +54,7 @@ func TestAccIBMStorageFile_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "allowed_virtual_guest_ids.#", "1"),
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "allowed_subnets.#", "1"),
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "allowed_ip_addresses.#", "1"),
+					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "notes", "updated endurance notes"),
 					// Performance Storage
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_performance", "allowed_virtual_guest_ids.#", "1"),
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_performance", "allowed_subnets.#", "1"),
@@ -152,6 +155,7 @@ resource "ibm_storage_file" "fs_endurance" {
         capacity = 20
         iops = 0.25
         snapshot_capacity = 10
+        notes = "endurance notes"
 }
 
 resource "ibm_storage_file" "fs_performance" {
@@ -159,6 +163,7 @@ resource "ibm_storage_file" "fs_performance" {
         datacenter = "${ibm_compute_vm_instance.storagevm1.datacenter}"
         capacity = 20
         iops = 200
+        notes = "performance notes"
 }
 `
 const testAccCheckIBMStorageFileConfig_update = `
@@ -185,6 +190,7 @@ resource "ibm_storage_file" "fs_endurance" {
         allowed_subnets = [ "${ibm_compute_vm_instance.storagevm1.private_subnet}" ]
         allowed_ip_addresses = [ "${ibm_compute_vm_instance.storagevm1.ipv4_address_private}" ]
         snapshot_capacity = 10
+        notes = "updated endurance notes"
 }
 
 resource "ibm_storage_file" "fs_performance" {

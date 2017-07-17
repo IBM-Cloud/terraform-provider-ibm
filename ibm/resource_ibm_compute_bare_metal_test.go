@@ -47,6 +47,8 @@ func TestAccIBMComputeBareMetal_Basic(t *testing.T) {
 						"ibm_compute_bare_metal.terraform-acceptance-test-1", "user_metadata", "{\"value\":\"newvalue\"}"),
 					resource.TestCheckResourceAttr(
 						"ibm_compute_bare_metal.terraform-acceptance-test-1", "fixed_config_preset", "S1270_32GB_1X1TBSATA_NORAID"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_bare_metal.terraform-acceptance-test-1", "notes", "baremetal notes"),
 					CheckStringSet(
 						"ibm_compute_bare_metal.terraform-acceptance-test-1",
 						"tags", []string{"collectd"},
@@ -186,6 +188,7 @@ resource "ibm_compute_bare_metal" "terraform-acceptance-test-1" {
     user_metadata = "{\"value\":\"newvalue\"}"
     fixed_config_preset = "S1270_32GB_1X1TBSATA_NORAID"
     tags = ["collectd"]
+    notes = "baremetal notes"
 }
 `, hostname)
 }

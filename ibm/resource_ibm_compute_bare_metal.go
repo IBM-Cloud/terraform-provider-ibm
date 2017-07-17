@@ -141,6 +141,11 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 				ForceNew: true,
 			},
 
+			"notes": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+
 			"file_storage_ids": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -335,6 +340,14 @@ func resourceIBMComputeBareMetalCreate(d *schema.ResourceData, meta interface{})
 		}
 	}
 
+	// Set notes
+	if d.Get("notes").(string) != "" {
+		err = setHardwareNotes(id, d, meta)
+		if err != nil {
+			return err
+		}
+	}
+
 	return resourceIBMComputeBareMetalRead(d, meta)
 }
 
@@ -349,7 +362,7 @@ func resourceIBMComputeBareMetalRead(d *schema.ResourceData, meta interface{}) e
 	result, err := service.Id(id).Mask(
 		"hostname,domain," +
 			"primaryIpAddress,primaryBackendIpAddress,privateNetworkOnlyFlag," +
-			"userData[value],tagReferences[id,tag[name]]," +
+			"notes,userData[value],tagReferences[id,tag[name]]," +
 			"allowedNetworkStorage[id,nasType]," +
 			"hourlyBillingFlag," +
 			"datacenter[id,name,longName]," +
@@ -390,6 +403,8 @@ func resourceIBMComputeBareMetalRead(d *schema.ResourceData, meta interface{}) e
 		d.Set("user_metadata", *userData[0].Value)
 	}
 
+	d.Set("notes", sl.Get(result.Notes, nil))
+
 	tagReferences := result.TagReferences
 	tagReferencesLen := len(tagReferences)
 	if tagReferencesLen > 0 {
@@ -423,6 +438,13 @@ func resourceIBMComputeBareMetalUpdate(d *schema.ResourceData, meta interface{})
 
 	if d.HasChange("tags") {
 		err := setHardwareTags(id, d, meta)
+		if err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("notes") {
+		err := setHardwareNotes(id, d, meta)
 		if err != nil {
 			return err
 		}
@@ -557,6 +579,24 @@ func setHardwareTags(id int, d *schema.ResourceData, meta interface{}) error {
 		if err != nil {
 			return fmt.Errorf("Could not set tags on bare metal server %d", id)
 		}
+	}
+
+	return nil
+}
+
+func setHardwareNotes(id int, d *schema.ResourceData, meta interface{}) error {
+	service := services.GetHardwareServerService(meta.(ClientSession).SoftLayerSession())
+
+	result, err := service.Id(id).GetObject()
+	if err != nil {
+		return err
+	}
+
+	result.Notes = sl.String(d.Get("notes").(string))
+
+	_, err = service.Id(id).EditObject(&result)
+	if err != nil {
+		return err
 	}
 
 	return nil

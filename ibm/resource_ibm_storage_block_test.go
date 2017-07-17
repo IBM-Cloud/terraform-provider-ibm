@@ -31,6 +31,8 @@ func TestAccIBMStorageBlock_Basic(t *testing.T) {
 						"ibm_storage_block.bs_endurance", "snapshot_capacity", "10"),
 					resource.TestCheckResourceAttr(
 						"ibm_storage_block.bs_endurance", "os_format_type", "Linux"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_block.bs_endurance", "notes", "endurance notes"),
 					testAccCheckIBMResources("ibm_storage_block.bs_endurance", "datacenter",
 						"ibm_compute_vm_instance.storagevm2", "datacenter"),
 					// Performance Storage
@@ -45,6 +47,7 @@ func TestAccIBMStorageBlock_Basic(t *testing.T) {
 						"ibm_storage_block.bs_endurance", "os_format_type", "Linux"),
 					testAccCheckIBMResources("ibm_storage_block.bs_performance", "datacenter",
 						"ibm_compute_vm_instance.storagevm2", "datacenter"),
+					resource.TestCheckResourceAttr("ibm_storage_block.bs_performance", "notes", "performance notes"),
 				),
 			},
 
@@ -54,6 +57,7 @@ func TestAccIBMStorageBlock_Basic(t *testing.T) {
 					// Endurance Storage
 					resource.TestCheckResourceAttr("ibm_storage_block.bs_endurance", "allowed_virtual_guest_ids.#", "1"),
 					resource.TestCheckResourceAttr("ibm_storage_block.bs_endurance", "allowed_ip_addresses.#", "1"),
+					resource.TestCheckResourceAttr("ibm_storage_block.bs_endurance", "notes", "updated endurance notes"),
 					// Performance Storage
 					resource.TestCheckResourceAttr("ibm_storage_block.bs_performance", "allowed_virtual_guest_ids.#", "1"),
 					resource.TestCheckResourceAttr("ibm_storage_block.bs_performance", "allowed_ip_addresses.#", "1"),
@@ -114,6 +118,7 @@ resource "ibm_storage_block" "bs_endurance" {
         iops = 0.25
         snapshot_capacity = 10
         os_format_type = "Linux"
+        notes = "endurance notes"
 }
 
 resource "ibm_storage_block" "bs_performance" {
@@ -122,6 +127,7 @@ resource "ibm_storage_block" "bs_performance" {
         capacity = 20
         iops = 100
         os_format_type = "Linux"
+        notes = "performance notes"
 }
 `
 const testAccCheckIBMStorageBlockConfig_update = `
@@ -148,6 +154,7 @@ resource "ibm_storage_block" "bs_endurance" {
         allowed_virtual_guest_ids = [ "${ibm_compute_vm_instance.storagevm2.id}" ]
         allowed_ip_addresses = [ "${ibm_compute_vm_instance.storagevm2.ipv4_address_private}" ]
         snapshot_capacity = 10
+        notes = "updated endurance notes"
 }
 
 resource "ibm_storage_block" "bs_performance" {

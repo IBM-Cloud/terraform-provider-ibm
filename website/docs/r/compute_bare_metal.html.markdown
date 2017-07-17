@@ -67,6 +67,7 @@ The following arguments are supported:
 
 * `post_install_script_uri` - (Optional, string) As defined in the [Bluemix Infrastructure (SoftLayer) API docs](https://sldn.softlayer.com/reference/datatypes/SoftLayer_Virtual_Guest_SupplementalCreateObjectOptions).
 *   `tags` - (Optional, array of strings) Set tags on this bare metal server. Permitted characters include: A-Z, 0-9, whitespace, _ (underscore), - (hyphen), . (period), and : (colon). All other characters will be removed.
+* `notes` - (Optional,string) Specifies a note to associate with the instance.
 
 ## Attributes Reference
 

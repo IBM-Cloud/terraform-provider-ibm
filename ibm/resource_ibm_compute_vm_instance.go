@@ -285,6 +285,12 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				Optional: true,
 			},
 
+			"notes": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateNotes,
+			},
+
 			"local_disk": {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -655,6 +661,13 @@ func resourceIBMComputeVmInstanceCreate(d *schema.ResourceData, meta interface{}
 			return err
 		}
 	}
+
+	// Set notes
+	err = setNotes(id, d, meta)
+	if err != nil {
+		return err
+	}
+
 	// wait for machine availability
 
 	_, err = WaitForVirtualGuestAvailable(d, meta)
@@ -680,7 +693,7 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 			"primaryIpAddress,primaryBackendIpAddress,privateNetworkOnlyFlag," +
 			"hourlyBillingFlag,localDiskFlag," +
 			"allowedNetworkStorage[id,nasType]," +
-			"userData[value],tagReferences[id,tag[name]]," +
+			"notes,userData[value],tagReferences[id,tag[name]]," +
 			"datacenter[id,name,longName]," +
 			"primaryNetworkComponent[networkVlan[id]," +
 			"primaryVersion6IpAddressRecord[subnet,guestNetworkComponentBinding[ipAddressId]]," +
@@ -779,6 +792,8 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 		}
 	}
 
+	d.Set("notes", sl.Get(result.Notes, nil))
+
 	tagReferences := result.TagReferences
 	tagReferencesLen := len(tagReferences)
 	if tagReferencesLen > 0 {
@@ -847,14 +862,23 @@ func resourceIBMComputeVmInstanceUpdate(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("Error retrieving virtual guest: %s", err)
 	}
 
+	isChanged := false
+
 	// Update "hostname" and "domain" fields if present and changed
 	// Those are the only fields, which could be updated
 	if d.HasChange("hostname") || d.HasChange("domain") {
 		result.Hostname = sl.String(d.Get("hostname").(string))
 		result.Domain = sl.String(d.Get("domain").(string))
+		isChanged = true
+	}
 
+	if d.HasChange("notes") {
+		result.Notes = sl.String(d.Get("notes").(string))
+		isChanged = true
+	}
+
+	if isChanged {
 		_, err = service.Id(id).EditObject(&result)
-
 		if err != nil {
 			return fmt.Errorf("Couldn't update virtual guest: %s", err)
 		}
@@ -1221,5 +1245,25 @@ func removeAccessToStorageList(sam storageAccessModifier, deviceID int, ids stor
 		log.Printf("[INFO] Devices's access to %q have been removed", ids)
 		break
 	}
+	return nil
+}
+
+func setNotes(id int, d *schema.ResourceData, meta interface{}) error {
+	service := services.GetVirtualGuestService(meta.(ClientSession).SoftLayerSession())
+
+	if notes := d.Get("notes").(string); notes != "" {
+		result, err := service.Id(id).GetObject()
+		if err != nil {
+			return fmt.Errorf("Error retrieving virtual guest: %s", err)
+		}
+
+		result.Notes = sl.String(notes)
+
+		_, err = service.Id(id).EditObject(&result)
+		if err != nil {
+			return fmt.Errorf("Could not set note on virtual guest %d", id)
+		}
+	}
+
 	return nil
 }

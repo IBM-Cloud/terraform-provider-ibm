@@ -88,6 +88,7 @@ The following arguments are supported:
 * `hour` - (Integer) Specifies the hour. Required if `scheduleType` is set to `DAILY` and `WEEKLY`.
 * `dayOfWeek` - (string) Specifies the day of the week. Required if the `scheduleType` is set to `WEEKLY`.
 * `enable` - (boolean) Specifies whether to disable the already created snapshot.
+* `notes` - (Optional,string) Specifies a note to associate with the file storage.
 
 ## Attributes Reference
 

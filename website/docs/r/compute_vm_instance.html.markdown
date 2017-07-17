@@ -84,6 +84,7 @@ The following arguments are supported:
 * `private_subnet` - (Optional) Private subnet for the private network interface of the instance. Accepted values are primary private networks and can be found in the  [subnets doc](https://control.softlayer.com/network/subnets).
 * `disks` - (Optional, array) Numeric disk sizes in GBs. Block device and disk image settings for the computing instance. Defaults to the smallest available capacity for the primary disk are used. If an image template is specified, the disk capacity is provided by the template.
 * `user_metadata` - (Optional) Arbitrary data to be made available to the computing instance.
+*   `notes` - (Optional) A note of up to 1000 characters about the VM instance.
 * `ssh_key_ids` - (Optional) An array of numbers. SSH key IDs to install on the computing instance upon provisioning.
     **NOTE**: If you don't know the ID(s) for your SSH keys, [you can reference your SSH keys by their labels](../d/compute_ssh_key.html).
 * `file_storage_ids` - (Optional) An array of numbers. File storage this computing instance should have access to. File storage need to be in the same data center. If you are using this resource to authorize access to file storage, then you shouldn't use the `allowed_virtual_guest_ids` argument in the `ibm_storage_file` resource in case the `ibm_storage_file` represents the same storage as the one being added to the current compute instance. 

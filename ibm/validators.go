@@ -118,3 +118,12 @@ func validateAppZipPath(v interface{}, k string) (ws []string, errors []error) {
 	return
 
 }
+
+func validateNotes(v interface{}, k string) (ws []string, errors []error) {
+	value := v.(string)
+	if len(value) > 1000 {
+		errors = append(errors, fmt.Errorf(
+			"%q should not exceed 1000 characters", k))
+	}
+	return
+}
