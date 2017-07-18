@@ -43,4 +43,5 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-`id` - Set to the ID of the image template.
+* `id` - Set to the ID of the VLAN.
+* `subnets` - List of subnets associated with this VLAN.
