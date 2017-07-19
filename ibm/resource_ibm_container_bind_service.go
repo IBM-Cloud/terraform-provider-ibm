@@ -2,8 +2,10 @@ package ibm
 
 import (
 	"fmt"
+	"strings"
 
 	v1 "github.com/IBM-Bluemix/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Bluemix/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -12,6 +14,7 @@ func resourceIBMContainerBindService() *schema.Resource {
 		Create:   resourceIBMContainerBindServiceCreate,
 		Read:     resourceIBMContainerBindServiceRead,
 		Delete:   resourceIBMContainerBindServiceDelete,
+		Exists:   resourceIBMContainerBindServiceExists,
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -97,9 +100,10 @@ func resourceIBMContainerBindServiceCreate(d *schema.ResourceData, meta interfac
 	if err != nil {
 		return err
 	}
-	//Fix me Id would be typically the returned ID from the API, proabably SecretName should be used
-	d.SetId(clusterNameID)
+
+	d.SetId(bindResp.SecretName)
 	d.Set("service_instance_name_id", serviceInstanceNameID)
+	d.Set("cluster_name_id", clusterNameID)
 	d.Set("namespace_id", namespaceID)
 	d.Set("space_guid", serviceInstanceSpaceGUID)
 	d.Set("secret_name", bindResp.SecretName)
@@ -108,7 +112,18 @@ func resourceIBMContainerBindServiceCreate(d *schema.ResourceData, meta interfac
 }
 
 func resourceIBMContainerBindServiceRead(d *schema.ResourceData, meta interface{}) error {
-	//No API to read back the credentials so leave schema as it is
+	csClient, err := meta.(ClientSession).ContainerAPI()
+	if err != nil {
+		return err
+	}
+	clusterID := d.Get("cluster_name_id").(string)
+	namespace := d.Get("namespace_id").(string)
+	serviceInstanceNameID := d.Get("service_instance_name_id").(string)
+	targetEnv := getClusterTargetHeader(d)
+	_, err = csClient.Clusters().FindServiceBoundToCluster(clusterID, serviceInstanceNameID, namespace, targetEnv)
+	if err != nil {
+		return fmt.Errorf("Error finding service: %s", err)
+	}
 	return nil
 }
 
@@ -117,7 +132,7 @@ func resourceIBMContainerBindServiceDelete(d *schema.ResourceData, meta interfac
 	if err != nil {
 		return err
 	}
-	clusterID := d.Id()
+	clusterID := d.Get("cluster_name_id").(string)
 	namespace := d.Get("namespace_id").(string)
 	serviceInstanceNameID := d.Get("service_instance_name_id").(string)
 	targetEnv := getClusterTargetHeader(d)
@@ -129,8 +144,24 @@ func resourceIBMContainerBindServiceDelete(d *schema.ResourceData, meta interfac
 	return nil
 }
 
-//Pure Aramda API not available, we can still find by using k8s api
-/*
 func resourceIBMContainerBindServiceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	csClient, err := meta.(ClientSession).ContainerAPI()
+	if err != nil {
+		return false, err
+	}
+	clusterID := d.Get("cluster_name_id").(string)
+	namespace := d.Get("namespace_id").(string)
+	serviceInstanceNameID := d.Get("service_instance_name_id").(string)
+	targetEnv := getClusterTargetHeader(d)
 
-}*/
+	service, err := csClient.Clusters().FindServiceBoundToCluster(clusterID, serviceInstanceNameID, namespace, targetEnv)
+	if err != nil {
+		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
+			if apiErr.StatusCode() == 404 {
+				return false, nil
+			}
+		}
+		return false, fmt.Errorf("Error communicating with the API: %s", err)
+	}
+	return (strings.Compare(serviceInstanceNameID, service.ServiceName) == 0 || strings.Compare(serviceInstanceNameID, service.ServiceID) == 0), nil
+}
