@@ -2,7 +2,6 @@ package ibm
 
 import (
 	"crypto/rand"
-	"encoding/base64"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -783,13 +782,7 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 
 	userData := result.UserData
 	if userData != nil && len(userData) > 0 {
-		data, err := base64.StdEncoding.DecodeString(*userData[0].Value)
-		if err != nil {
-			log.Printf("Can't base64 decode user data %s. error: %s", *userData[0].Value, err)
-			d.Set("user_metadata", *userData[0].Value)
-		} else {
-			d.Set("user_metadata", string(data))
-		}
+		d.Set("user_metadata", userData[0].Value)
 	}
 
 	d.Set("notes", sl.Get(result.Notes, nil))
