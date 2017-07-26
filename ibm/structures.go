@@ -104,6 +104,14 @@ func flattenBlockStorageID(in []datatypes.Network_Storage) *schema.Set {
 	return schema.NewSet(HashInt, out)
 }
 
+func flattenSSHKeyIDs(in []datatypes.Security_Ssh_Key) *schema.Set {
+	var out = []interface{}{}
+	for _, v := range in {
+		out = append(out, *v.Id)
+	}
+	return schema.NewSet(HashInt, out)
+}
+
 func flattenSpaceRoleUsers(in []mccpv2.SpaceRole) *schema.Set {
 	var out = []interface{}{}
 	for _, v := range in {

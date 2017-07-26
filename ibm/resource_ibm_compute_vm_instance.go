@@ -255,9 +255,12 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 			},
 
 			"ssh_key_ids": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeInt},
+				Set: func(v interface{}) int {
+					return v.(int)
+				},
 			},
 
 			"file_storage_ids": {
@@ -506,10 +509,11 @@ func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interf
 	}
 
 	// Get configured ssh_keys
-	sshKeys := d.Get("ssh_key_ids").([]interface{})
-	sshKeysLen := len(sshKeys)
-	if sshKeysLen > 0 {
-		opts.SshKeys = make([]datatypes.Security_Ssh_Key, 0, sshKeysLen)
+	sshKeySet := d.Get("ssh_key_ids").(*schema.Set)
+	sshKeys := sshKeySet.List()
+	sshKeyLen := len(sshKeys)
+	if sshKeyLen > 0 {
+		opts.SshKeys = make([]datatypes.Security_Ssh_Key, 0, sshKeyLen)
 		for _, sshKey := range sshKeys {
 			opts.SshKeys = append(opts.SshKeys, datatypes.Security_Ssh_Key{
 				Id: sl.Int(sshKey.(int)),
@@ -694,6 +698,7 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 			"allowedNetworkStorage[id,nasType]," +
 			"notes,userData[value],tagReferences[id,tag[name]]," +
 			"datacenter[id,name,longName]," +
+			"sshKeys," +
 			"primaryNetworkComponent[networkVlan[id]," +
 			"primaryVersion6IpAddressRecord[subnet,guestNetworkComponentBinding[ipAddressId]]," +
 			"primaryIpAddressRecord[subnet,guestNetworkComponentBinding[ipAddressId]]]," +
@@ -798,9 +803,12 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	storages := result.AllowedNetworkStorage
-	if len(storages) > 0 {
-		d.Set("block_storage_ids", flattenBlockStorageID(storages))
-		d.Set("file_storage_ids", flattenFileStorageID(storages))
+	d.Set("block_storage_ids", flattenBlockStorageID(storages))
+	d.Set("file_storage_ids", flattenFileStorageID(storages))
+
+	sshKeys := result.SshKeys
+	if len(sshKeys) > 0 {
+		d.Set("ssh_key_ids", flattenSSHKeyIDs(sshKeys))
 	}
 
 	// Set connection info

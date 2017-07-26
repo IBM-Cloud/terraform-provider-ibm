@@ -131,6 +131,69 @@ func TestAccIBMComputeVmInstance_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMComputeVmInstance_With_SSH_Keys(t *testing.T) {
+	var guest datatypes.Virtual_Guest
+
+	hostname := acctest.RandString(16)
+	domain := "tfsshkeyvmuat.ibm.com"
+	label := fmt.Sprintf("terraformsshuat_create_step_label_%d", acctest.RandInt())
+	notes := fmt.Sprintf("terraformsshuat_update_step_notes_%d", acctest.RandInt())
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+
+	configInstance := "ibm_compute_vm_instance.terraform-ssh-key"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccIBMComputeVmInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:  testComputeInstanceWithSSHKey(label, notes, publicKey, hostname, domain),
+				Destroy: false,
+				Check: resource.ComposeTestCheckFunc(
+					testAccIBMComputeVmInstanceExists(configInstance, &guest),
+					resource.TestCheckResourceAttr(
+						configInstance, "hostname", hostname),
+					resource.TestCheckResourceAttr(
+						configInstance, "domain", domain),
+					resource.TestCheckResourceAttr(
+						configInstance, "ssh_key_ids.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMComputeVmInstance_basic_import(t *testing.T) {
+	hostname := acctest.RandString(16)
+	domain := "tfsshkeyvmuat.ibm.com"
+	label := fmt.Sprintf("terraformsshuat_create_step_label_%d", acctest.RandInt())
+	notes := fmt.Sprintf("terraformsshuat_update_step_notes_%d", acctest.RandInt())
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+
+	resourceName := "ibm_compute_vm_instance.terraform-ssh-key"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccIBMComputeVmInstanceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testComputeInstanceWithSSHKey(label, notes, publicKey, hostname, domain),
+			},
+			resource.TestStep{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"wait_time_minutes", "disks.#", "disks.0"},
+			},
+		},
+	})
+}
+
 func TestAccIBMComputeVmInstance_InvalidNotes(t *testing.T) {
 	hostname := acctest.RandString(16)
 	domain := "terraformvmuat.ibm.com"
@@ -542,4 +605,23 @@ resource "ibm_compute_vm_instance" "terraform-vsi-storage-access" {
 
 `, hostname, domain, fsConfig2)
 
+}
+
+func testComputeInstanceWithSSHKey(sshLabel, sshNotes, sshPublicKey, hostname, domain string) (config string) {
+	config = testAccCheckIBMComputeSSHKeyConfig(sshLabel, sshNotes, sshPublicKey) + fmt.Sprintf(`
+resource "ibm_compute_vm_instance" "terraform-ssh-key" {
+    hostname = "%s"
+    domain = "%s"
+    datacenter = "wdc04"
+    network_speed = 10
+    hourly_billing = true
+    ssh_key_ids = ["${ibm_compute_ssh_key.testacc_ssh_key.id}"]
+    cores = 1
+    memory = 1024
+    local_disk = false
+    os_reference_code = "DEBIAN_7_64"
+    disks = [25]
+}
+`, hostname, domain)
+	return
 }
