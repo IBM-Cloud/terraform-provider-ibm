@@ -62,6 +62,8 @@ var regionToEndpoint = map[string]map[string]string{
 	"cs": {
 		"us-south": "https://us-south.containers.bluemix.net",
 		"eu-de":    "https://eu-central.containers.bluemix.net",
+		"au-syd":   "https://ap-south.containers.bluemix.net",
+		"eu-gb":    "https://uk-south.containers.bluemix.net",
 	},
 }
 
