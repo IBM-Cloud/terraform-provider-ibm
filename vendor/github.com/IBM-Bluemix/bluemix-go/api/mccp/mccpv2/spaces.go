@@ -163,7 +163,7 @@ func (r *spaces) FindByNameInOrg(orgGUID string, name string, region string) (*S
 	}
 	if len(spaces) == 0 {
 		return nil, bmxerror.New(ErrCodeSpaceDoesnotExist,
-			fmt.Sprintf("Given space:  %q doesn't exist in given org: %q", name, orgGUID))
+			fmt.Sprintf("Given space:  %q doesn't exist in given org: %q in the given region %q", name, orgGUID, region))
 
 	}
 	return &spaces[0], nil

@@ -152,7 +152,7 @@ func (o *organization) FindByName(name string, region string) (*Organization, er
 
 	//May not be found and no error
 	return nil, bmxerror.New(ErrCodeOrgDoesnotExist,
-		fmt.Sprintf("Given org %q doesn't exist", name))
+		fmt.Sprintf("Given org %q doesn't exist in the given region %q", name, region))
 
 }
 
