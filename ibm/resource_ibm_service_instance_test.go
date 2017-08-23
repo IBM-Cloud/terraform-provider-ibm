@@ -65,6 +65,35 @@ func TestAccIBMServiceInstance_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMServiceInstance_import(t *testing.T) {
+	var conf mccpv2.ServiceInstanceFields
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	resourceName := "ibm_service_instance.service"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMServiceInstanceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMServiceInstance_basic(serviceName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMServiceInstanceExists(resourceName, &conf),
+					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
+					resource.TestCheckResourceAttr(resourceName, "service", "cleardb"),
+					resource.TestCheckResourceAttr(resourceName, "plan", "cb5"),
+					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
+				),
+			},
+			resource.TestStep{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckIBMServiceInstanceDestroy(s *terraform.State) error {
 	cfClient, err := testAccProvider.Meta().(ClientSession).MccpAPI()
 	if err != nil {

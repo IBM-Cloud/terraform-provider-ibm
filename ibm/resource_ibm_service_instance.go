@@ -154,6 +154,7 @@ func resourceIBMServiceInstanceRead(d *schema.ResourceData, meta interface{}) er
 
 	servicePlanGUID := service.Entity.ServicePlanGUID
 	d.Set("service_plan_guid", servicePlanGUID)
+	d.Set("space_guid", service.Entity.SpaceGUID)
 	serviceKeys := service.Entity.ServiceKeys
 	d.Set("service_keys", flattenServiceInstanceCredentials(serviceKeys))
 	d.Set("credentials", flattenCredentials(service.Entity.Credentials))
