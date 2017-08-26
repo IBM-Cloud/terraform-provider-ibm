@@ -137,6 +137,11 @@ func resourceIBMLbVpx() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
+
+			"management_ip_address": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -474,7 +479,7 @@ func resourceIBMLbVpxRead(d *schema.ResourceData, meta interface{}) error {
 
 	getObjectResult, err := service.
 		Id(id).
-		Mask("id,name,type[name],datacenter,networkVlans[primaryRouter],networkVlans[primarySubnets],subnets[ipAddresses],description").
+		Mask("id,name,type[name],datacenter,networkVlans[primaryRouter],networkVlans[primarySubnets],subnets[ipAddresses],description,managementIpAddress").
 		GetObject()
 
 	if err != nil {
@@ -528,6 +533,7 @@ func resourceIBMLbVpxRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("vip_pool", vips)
 	d.Set("ip_count", ipCount)
+	d.Set("management_ip_address", *getObjectResult.ManagementIpAddress)
 
 	description := *getObjectResult.Description
 	r, _ := regexp.Compile(" [0-9]+Mbps")
