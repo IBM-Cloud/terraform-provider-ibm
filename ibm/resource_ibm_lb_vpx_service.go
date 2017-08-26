@@ -96,6 +96,12 @@ func resourceIBMLbVpxService() *schema.Resource {
 					return false
 				},
 			},
+
+			"usip": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "NO",
+			},
 		},
 	}
 }
@@ -247,6 +253,7 @@ func resourceIBMLbVpxServiceCreate101(d *schema.ResourceData, meta interface{}) 
 			Weight:               sl.Int(d.Get("weight").(int)),
 			HealthCheck:          sl.String(d.Get("health_check").(string)),
 			ConnectionLimit:      sl.Int(d.Get("connection_limit").(int)),
+			Usip:                 sl.String(d.Get("usip").(string)),
 		},
 	}
 
@@ -302,6 +309,7 @@ func resourceIBMLbVpxServiceCreate105(d *schema.ResourceData, meta interface{}) 
 			Ip:        op.String(d.Get("destination_ip_address").(string)),
 			Port:      op.Int(d.Get("destination_port").(int)),
 			Maxclient: op.String(strconv.Itoa(d.Get("connection_limit").(int))),
+			Usip:      op.String(d.Get("usip").(string)),
 		},
 	}
 
@@ -387,6 +395,7 @@ func resourceIBMLbVpxServiceRead101(d *schema.ResourceData, meta interface{}) er
 	d.Set("weight", *lbService.Weight)
 	d.Set("health_check", *lbService.HealthCheck)
 	d.Set("connection_limit", *lbService.ConnectionLimit)
+	d.Set("usip", *lbService.Usip)
 
 	return nil
 }
@@ -413,6 +422,7 @@ func resourceIBMLbVpxServiceRead105(d *schema.ResourceData, meta interface{}) er
 	d.Set("name", *svc.Service[0].Name)
 	d.Set("destination_ip_address", *svc.Service[0].Ipaddress)
 	d.Set("destination_port", *svc.Service[0].Port)
+	d.Set("usip", *svc.Service[0].Usip)
 
 	maxClientStr, err := strconv.Atoi(*svc.Service[0].Maxclient)
 	if err == nil {
@@ -469,6 +479,9 @@ func resourceIBMLbVpxServiceUpdate101(d *schema.ResourceData, meta interface{}) 
 	}
 	if data, ok := d.GetOk("connection_limit"); ok {
 		template.ConnectionLimit = sl.Int(data.(int))
+	}
+	if data, ok := d.GetOk("usip"); ok {
+		template.Usip = sl.String(data.(string))
 	}
 
 	lbVip := &datatypes.Network_LoadBalancer_VirtualIpAddress{
@@ -546,6 +559,11 @@ func resourceIBMLbVpxServiceUpdate105(d *schema.ResourceData, meta interface{}) 
 
 	if d.HasChange("connection_limit") {
 		svcReq.Service.Maxclient = op.String(strconv.Itoa(d.Get("connection_limit").(int)))
+		updateFlag = true
+	}
+
+	if d.HasChange("usip") {
+		svcReq.Service.Usip = op.String(d.Get("usip").(string))
 		updateFlag = true
 	}
 
