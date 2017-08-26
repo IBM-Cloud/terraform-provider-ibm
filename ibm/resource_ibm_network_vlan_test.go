@@ -91,6 +91,24 @@ func TestAccIBMNetworkVlan_With_Tag(t *testing.T) {
 	})
 }
 
+func TestAccIBMNetworkVlan_With_Multipe_Subnets(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMNetworkVlanConfigMultipleSubnets(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_network_vlan.test_vlan", "name", "tfuat_mult_subnet"),
+					resource.TestCheckResourceAttr(
+						"ibm_network_vlan.test_vlan", "subnet_size", "8"),
+				),
+			},
+		},
+	})
+}
+
 const testAccCheckIBMNetworkVlanConfig_basic = `
 resource "ibm_network_vlan" "test_vlan" {
    name = "test_vlan"
@@ -132,4 +150,25 @@ func testAccCheckIBMNetworkVlanConfigTagUpdate(tag1, tag2 string) string {
 		tags = ["%s", "%s"]
 	 }`, tag1, tag2)
 
+}
+
+func testAccCheckIBMNetworkVlanConfigMultipleSubnets() (config string) {
+	return `
+	resource "ibm_network_vlan" "test_vlan" {
+		name            = "tfuat_mult_subnet"
+		datacenter      = "lon02"
+		type            = "PRIVATE"
+		subnet_size     = 8
+		router_hostname = "bcr01a.lon02"
+	  }
+	  
+	  resource "ibm_subnet" "portable_subnet" {
+		type       = "Portable"
+		private    = true
+		ip_version = 4
+		capacity   = 4
+		vlan_id    = "${ibm_network_vlan.test_vlan.id}"
+		notes      = "portable_tfuat"
+	  }
+	 `
 }

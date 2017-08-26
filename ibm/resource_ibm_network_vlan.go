@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -102,6 +103,10 @@ func resourceIBMNetworkVlan() *schema.Resource {
 						"subnet_type": {
 							Type:     schema.TypeString,
 							Required: true,
+						},
+						"subnet_size": {
+							Type:     schema.TypeInt,
+							Optional: true,
 						},
 					},
 				},
@@ -206,16 +211,29 @@ func resourceIBMNetworkVlanRead(d *schema.ResourceData, meta interface{}) error 
 
 	// Subnets
 	subnets := make([]map[string]interface{}, 0)
+	primarySubnets := make([]map[string]interface{}, 0)
+	validPrimaryType := regexp.MustCompile(`.*PRIMARY.*`)
 
 	for _, elem := range vlan.Subnets {
 		subnet := make(map[string]interface{})
+		if validPrimaryType.MatchString(*elem.SubnetType) {
+			primarySubnet := map[string]interface{}{
+				"subnet":      fmt.Sprintf("%s/%d", *elem.NetworkIdentifier, *elem.Cidr),
+				"subnet_type": *elem.SubnetType,
+				"subnet_size": 1 << uint(32-*elem.Cidr),
+			}
+			primarySubnets = append(primarySubnets, primarySubnet)
+		}
 		subnet["subnet"] = fmt.Sprintf("%s/%s", *elem.NetworkIdentifier, strconv.Itoa(*elem.Cidr))
 		subnet["subnet_type"] = *elem.SubnetType
+		subnet["subnet_size"] = 1 << (uint)(32-*elem.Cidr)
 		subnets = append(subnets, subnet)
 	}
 	d.Set("subnets", subnets)
 
-	if vlan.Subnets != nil && len(vlan.Subnets) > 0 {
+	if primarySubnets != nil && len(primarySubnets) > 0 {
+		d.Set("subnet_size", primarySubnets[0]["subnet_size"])
+	} else if vlan.Subnets != nil && len(vlan.Subnets) > 0 {
 		d.Set("subnet_size", 1<<(uint)(32-*vlan.Subnets[0].Cidr))
 	} else {
 		d.Set("subnet_size", 0)
