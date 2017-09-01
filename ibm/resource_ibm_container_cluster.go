@@ -105,8 +105,9 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Computed: true,
 			},
 			"ingress_secret": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
 			},
 			"no_subnet": {
 				Type:     schema.TypeBool,

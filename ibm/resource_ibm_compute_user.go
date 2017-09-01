@@ -78,8 +78,9 @@ func resourceIBMComputeUser() *schema.Resource {
 				Default:  "ACTIVE",
 			},
 			"password": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:      schema.TypeString,
+				Optional:  true,
+				Sensitive: true,
 				StateFunc: func(v interface{}) string {
 					hash := sha1.Sum([]byte(v.(string)))
 					return hex.EncodeToString(hash[:])
@@ -97,9 +98,10 @@ func resourceIBMComputeUser() *schema.Resource {
 				Default:  false,
 			},
 			"api_key": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:      schema.TypeString,
+				Optional:  true,
+				Computed:  true,
+				Sensitive: true,
 			},
 			"ibm_id": &schema.Schema{
 				Type:     schema.TypeString,
