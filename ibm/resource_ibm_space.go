@@ -134,6 +134,7 @@ func resourceIBMSpaceRead(d *schema.ResourceData, meta interface{}) error {
 	spaceGUID := d.Id()
 
 	spaceAPI := cfClient.Spaces()
+	orgAPI := cfClient.Organizations()
 	spaceDetails, err := spaceAPI.Get(spaceGUID)
 	if err != nil {
 		return fmt.Errorf("Error retrieving space: %s", err)
@@ -166,7 +167,12 @@ func resourceIBMSpaceRead(d *schema.ResourceData, meta interface{}) error {
 		}
 		d.Set("space_quota", quota.Entity.Name)
 	}
-
+	d.Set("name", spaceDetails.Entity.Name)
+	org, err := orgAPI.Get(spaceDetails.Entity.OrgGUID)
+	if err != nil {
+		return fmt.Errorf("Error retrieving Organization details for space: %s", err)
+	}
+	d.Set("org", org.Entity.Name)
 	return nil
 }
 

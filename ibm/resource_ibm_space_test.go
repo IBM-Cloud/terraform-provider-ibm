@@ -43,6 +43,34 @@ func TestAccIBMSpace_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMSpace_Basic_Import(t *testing.T) {
+	var conf mccpv2.SpaceFields
+	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	resourceName := "ibm_space.space"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMSpaceDestroy,
+		Steps: []resource.TestStep{
+
+			resource.TestStep{
+				Config: testAccCheckIBMSpaceCreate(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMSpaceExists(resourceName, &conf),
+					resource.TestCheckResourceAttr(resourceName, "org", cfOrganization),
+					resource.TestCheckResourceAttr(resourceName, "name", name),
+				),
+			},
+			resource.TestStep{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccIBMSpace_with_roles(t *testing.T) {
 	var conf mccpv2.SpaceFields
 	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
