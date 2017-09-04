@@ -88,9 +88,12 @@ func (resource AccountResource) ToModel() Account {
 	}
 }
 
-func (entity AccountEntity) ToModel() Account {
+func (nameQueryResponse AccountNameQueryResponse) ToModel() Account {
+	entity := nameQueryResponse.Entity
+	guid := nameQueryResponse.Metadata.GUID
 
 	return Account{
+		GUID:          guid,
 		Name:          entity.Name,
 		Type:          entity.Type,
 		State:         entity.State,
@@ -222,7 +225,7 @@ func (a *account) Get(accountId string) (*Account, error) {
 
 	}
 
-	account := queryResp.Entity.ToModel()
+	account := queryResp.ToModel()
 	return &account, nil
 
 }

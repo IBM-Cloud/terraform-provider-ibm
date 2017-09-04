@@ -56,9 +56,16 @@ type Organization struct {
 	BillingEnabled bool
 }
 
+//OrganizationFields ...
+type OrganizationFields struct {
+	Metadata Metadata
+	Entity   OrgEntity
+}
+
 //Organizations ...
 type Organizations interface {
 	Create(name string) error
+	Get(orgGUID string) (*OrganizationFields, error)
 	List(region string) ([]Organization, error)
 	FindByName(orgName, region string) (*Organization, error)
 	Delete(guid string, recursive bool) error
@@ -83,6 +90,16 @@ func (o *organization) Create(name string) error {
 	}
 	_, err := o.client.Post("/v2/organizations", body, nil)
 	return err
+}
+
+func (o *organization) Get(orgGUID string) (*OrganizationFields, error) {
+	rawURL := fmt.Sprintf("/v2/organizations/%s", orgGUID)
+	orgFields := OrganizationFields{}
+	_, err := o.client.Get(rawURL, &orgFields)
+	if err != nil {
+		return nil, err
+	}
+	return &orgFields, err
 }
 
 func (o *organization) Update(guid string, newName string) error {
