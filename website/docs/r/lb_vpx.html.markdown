@@ -57,3 +57,4 @@ The following attributes are exported:
 * `id` - The internal identifier of a VPX load balancer
 * `name` - The internal name of a VPX load balancer.
 * `vip_pool` - List of virtual IP addresses for the VPX load balancer.
+* `management_ip_address` - Private address of VPX UI
