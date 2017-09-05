@@ -253,7 +253,6 @@ func resourceIBMLbVpxServiceCreate101(d *schema.ResourceData, meta interface{}) 
 			Weight:               sl.Int(d.Get("weight").(int)),
 			HealthCheck:          sl.String(d.Get("health_check").(string)),
 			ConnectionLimit:      sl.Int(d.Get("connection_limit").(int)),
-			Usip:                 sl.String(d.Get("usip").(string)),
 		},
 	}
 
@@ -395,7 +394,6 @@ func resourceIBMLbVpxServiceRead101(d *schema.ResourceData, meta interface{}) er
 	d.Set("weight", *lbService.Weight)
 	d.Set("health_check", *lbService.HealthCheck)
 	d.Set("connection_limit", *lbService.ConnectionLimit)
-	d.Set("usip", *lbService.Usip)
 
 	return nil
 }
@@ -479,9 +477,6 @@ func resourceIBMLbVpxServiceUpdate101(d *schema.ResourceData, meta interface{}) 
 	}
 	if data, ok := d.GetOk("connection_limit"); ok {
 		template.ConnectionLimit = sl.Int(data.(int))
-	}
-	if data, ok := d.GetOk("usip"); ok {
-		template.Usip = sl.String(data.(string))
 	}
 
 	lbVip := &datatypes.Network_LoadBalancer_VirtualIpAddress{
