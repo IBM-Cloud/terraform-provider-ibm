@@ -1,15 +1,9 @@
-/*
-* Licensed Materials - Property of IBM
-* (C) Copyright IBM Corp. 2017. All Rights Reserved.
-* US Government Users Restricted Rights - Use, duplication or
-* disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
- */
-
 package ibm
 
 import (
-	"github.com/hashicorp/terraform/helper/resource"
 	"testing"
+
+	"github.com/hashicorp/terraform/helper/resource"
 )
 
 func TestAccIBMNetworkVlan_Basic(t *testing.T) {
