@@ -60,3 +60,15 @@ In order to run the full suite of Acceptance tests, run `make testacc`.
 ```sh
 $ make testacc
 ```
+In order to run a particular Acceptance test, export the variable `TESTARGS`. For example
+
+```sh
+$ export TESTARGS="-run TestAccIBMNetworkVlan_Basic"
+```
+Issuing `make testacc` will now run the testcase with names matching `TestAccIBMNetworkVlan_Basic`. This particular testcase is present in 
+`ibm/resource_ibm_network_vlan_test.go`
+
+You will also need to export the following environment variables for running the Acceptance tests.
+* `BM_API_KEY`- The Bluemix API Key
+* `SL_API_KEY` - The SoftLayer API Key
+* `SL_USERNAME` - The SoftLayer username associated with the SoftLayer API Key.
