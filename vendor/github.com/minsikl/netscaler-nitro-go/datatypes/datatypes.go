@@ -22,6 +22,7 @@ type Service struct {
 	Port        *int    `json:"port,omitempty"`
 	Weight      *int    `json:"weight,omitempty"`
 	Maxclient   *string `json:"maxclient,omitempty"`
+	Usip        *string `json:"usip,omitempty"`
 }
 
 type ServiceReq struct {

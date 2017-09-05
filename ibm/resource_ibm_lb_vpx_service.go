@@ -96,6 +96,12 @@ func resourceIBMLbVpxService() *schema.Resource {
 					return false
 				},
 			},
+
+			"usip": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "NO",
+			},
 		},
 	}
 }
@@ -302,6 +308,7 @@ func resourceIBMLbVpxServiceCreate105(d *schema.ResourceData, meta interface{}) 
 			Ip:        op.String(d.Get("destination_ip_address").(string)),
 			Port:      op.Int(d.Get("destination_port").(int)),
 			Maxclient: op.String(strconv.Itoa(d.Get("connection_limit").(int))),
+			Usip:      op.String(d.Get("usip").(string)),
 		},
 	}
 
@@ -413,6 +420,7 @@ func resourceIBMLbVpxServiceRead105(d *schema.ResourceData, meta interface{}) er
 	d.Set("name", *svc.Service[0].Name)
 	d.Set("destination_ip_address", *svc.Service[0].Ipaddress)
 	d.Set("destination_port", *svc.Service[0].Port)
+	d.Set("usip", *svc.Service[0].Usip)
 
 	maxClientStr, err := strconv.Atoi(*svc.Service[0].Maxclient)
 	if err == nil {
@@ -546,6 +554,11 @@ func resourceIBMLbVpxServiceUpdate105(d *schema.ResourceData, meta interface{}) 
 
 	if d.HasChange("connection_limit") {
 		svcReq.Service.Maxclient = op.String(strconv.Itoa(d.Get("connection_limit").(int)))
+		updateFlag = true
+	}
+
+	if d.HasChange("usip") {
+		svcReq.Service.Usip = op.String(d.Get("usip").(string))
 		updateFlag = true
 	}
 
