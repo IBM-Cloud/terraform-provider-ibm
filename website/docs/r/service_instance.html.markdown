@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_service_instance
 
-Crate, update, or delete service instances on IBM Bluemix.
+Create, update, or delete service instances on IBM Bluemix.
 
 ## Example Usage
 
