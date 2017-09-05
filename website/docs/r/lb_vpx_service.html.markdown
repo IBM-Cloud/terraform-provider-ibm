@@ -25,6 +25,7 @@ resource "ibm_lb_vpx_service" "test_service" {
   weight = 55
   connection_limit = 5000
   health_check = "HTTP"
+  usip = "NO"
 }
 ```
 
@@ -41,6 +42,9 @@ The following arguments are supported:
     **NOTE**: In VPX 10.5, the weight value is ignored. 
 * `connection_limit` - (Required, integer) The connection limit for this service. Acceptable values are `0` ~ `4294967294`. See the [Citrix NetScaler docs](https://docs.citrix.com/en-us/netscaler/11/reference/netscaler-command-reference/basic/service.html) for details.
 * `health_check` - (Required, string) Set the health check type. See the [Bluemix Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_LoadBalancer_Service) for details.
+* `usip` - (Optional, String) Configures the service to report the source ip of the client to the service being load balanced. Acceptable values are "YES" or "NO". Default is "NO". See the [Citrix NetScaler docs](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/11.0/configuration/basic/service/service) for details.
+
+    **NOTE**: Only available for VPX 10.5
 
 ## Attributes Reference
 
