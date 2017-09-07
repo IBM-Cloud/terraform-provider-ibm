@@ -25,7 +25,7 @@ const (
 	AdditionalServicesNetworkVlanPackageType = "ADDITIONAL_SERVICES_NETWORK_VLAN"
 
 	VlanMask = "id,name,primaryRouter[datacenter[name]],primaryRouter[hostname],vlanNumber," +
-		"billingItem[recurringFee],guestNetworkComponentCount,subnets[networkIdentifier,cidr,subnetType]"
+		"billingItem[recurringFee],guestNetworkComponentCount,subnets[networkIdentifier,cidr,subnetType],tagReferences[id,tag[name]]"
 )
 
 func resourceIBMNetworkVlan() *schema.Resource {
@@ -106,6 +106,12 @@ func resourceIBMNetworkVlan() *schema.Resource {
 					},
 				},
 			},
+			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
 		},
 	}
 }
@@ -150,6 +156,17 @@ func resourceIBMNetworkVlanCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	d.SetId(fmt.Sprintf("%d", *vlan.Id))
+
+	id := *vlan.Id
+	// Set tags
+	tags := getTags(d)
+	if tags != "" {
+		//Try setting only when it is non empty as we are creating vlan
+		err = setVlanTags(id, tags, meta)
+		if err != nil {
+			return err
+		}
+	}
 	return resourceIBMNetworkVlanRead(d, meta)
 }
 
@@ -204,6 +221,16 @@ func resourceIBMNetworkVlanRead(d *schema.ResourceData, meta interface{}) error 
 		d.Set("subnet_size", 0)
 	}
 
+	tagRefs := vlan.TagReferences
+	tagRefsLen := len(tagRefs)
+	if tagRefsLen > 0 {
+		tags := make([]string, tagRefsLen, tagRefsLen)
+		for i, tagRef := range tagRefs {
+			tags[i] = *tagRef.Tag.Name
+		}
+		d.Set("tags", tags)
+	}
+
 	return nil
 }
 
@@ -218,15 +245,30 @@ func resourceIBMNetworkVlanUpdate(d *schema.ResourceData, meta interface{}) erro
 
 	opts := datatypes.Network_Vlan{}
 
+	isChanged := false
+
 	if d.HasChange("name") {
 		opts.Name = sl.String(d.Get("name").(string))
+		isChanged = true
 	}
 
-	_, err = service.Id(vlanId).EditObject(&opts)
-
-	if err != nil {
-		return fmt.Errorf("Error updating vlan: %s", err)
+	// Update tags
+	if d.HasChange("tags") {
+		tags := getTags(d)
+		err := setVlanTags(vlanId, tags, meta)
+		if err != nil {
+			return err
+		}
 	}
+
+	if isChanged {
+		_, err = service.Id(vlanId).EditObject(&opts)
+
+		if err != nil {
+			return fmt.Errorf("Error updating vlan: %s", err)
+		}
+	}
+
 	return resourceIBMNetworkVlanRead(d, meta)
 }
 
@@ -406,4 +448,13 @@ func buildVlanProductOrderContainer(d *schema.ResourceData, sess *session.Sessio
 	}
 
 	return &productOrderContainer, nil
+}
+
+func setVlanTags(id int, tags string, meta interface{}) error {
+	service := services.GetNetworkVlanService(meta.(ClientSession).SoftLayerSession())
+	_, err := service.Id(id).SetTags(sl.String(tags))
+	if err != nil {
+		return fmt.Errorf("Could not set tags on vlan %d", id)
+	}
+	return nil
 }
