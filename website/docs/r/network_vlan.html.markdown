@@ -26,6 +26,10 @@ resource "ibm_network_vlan" "test_vlan" {
    type = "PUBLIC"
    subnet_size = 8
    router_hostname = "fcr01a.dal06"
+   tags = [
+     "collectd",
+     "mesos-master"
+   ]
 }
 
 ```
@@ -39,6 +43,7 @@ The following arguments are supported:
 * `subnet_size` - (Required, integer) The size of the primary subnet for the VLAN. Accepted values are `8`, `16`, `32`, and `64`.
 * `name` - (Optional, string) The name of the VLAN.
 * `router_hostname` - (Optional, string) The hostname of the primary router that the VLAN is associated with.
+* `tags` - (Optional, array of strings) Set tags on the VLAN. Permitted characters include: A-Z, 0-9, whitespace, _ (underscore), - (hyphen), . (period), and : (colon). All other characters are removed
 
 ## Attributes Reference
 
