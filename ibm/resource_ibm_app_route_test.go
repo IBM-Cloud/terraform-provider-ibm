@@ -50,6 +50,33 @@ func TestAccIBMAppRoute_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMAppRoute_With_Tags(t *testing.T) {
+	var conf mccpv2.RouteFields
+	host := fmt.Sprintf("terraform_%d", acctest.RandInt())
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMAppRouteDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMAppRoute_with_tags(host),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMAppRouteExists("ibm_app_route.route", &conf),
+					resource.TestCheckResourceAttr("ibm_app_route.route", "tags.#", "1"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMAppRoute_with_updated_tags(host),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMAppRouteExists("ibm_app_route.route", &conf),
+					resource.TestCheckResourceAttr("ibm_app_route.route", "tags.#", "2"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMAppRouteDestroy(s *terraform.State) error {
 	cfClient, err := testAccProvider.Meta().(ClientSession).MccpAPI()
 	if err != nil {
@@ -158,4 +185,48 @@ func testAccCheckIBMAppRoute_updateHost(updateHost string) string {
 			host              = "%s"
 		}
 	`, cfOrganization, cfSpace, updateHost)
+}
+
+func testAccCheckIBMAppRoute_with_tags(host string) string {
+	return fmt.Sprintf(`
+	
+		data "ibm_space" "spacedata" {
+			org    = "%s"
+			space  = "%s"
+		}
+		
+		data "ibm_app_domain_shared" "domain" {
+			name        = "mybluemix.net"
+		}
+		
+		resource "ibm_app_route" "route" {
+			domain_guid       = "${data.ibm_app_domain_shared.domain.id}"
+			space_guid        = "${data.ibm_space.spacedata.id}"
+			host              = "%s"
+			path              = "/app"
+			tags              = ["one"]
+		}
+	`, cfOrganization, cfSpace, host)
+}
+
+func testAccCheckIBMAppRoute_with_updated_tags(host string) string {
+	return fmt.Sprintf(`
+	
+		data "ibm_space" "spacedata" {
+			org    = "%s"
+			space  = "%s"
+		}
+		
+		data "ibm_app_domain_shared" "domain" {
+			name        = "mybluemix.net"
+		}
+		
+		resource "ibm_app_route" "route" {
+			domain_guid       = "${data.ibm_app_domain_shared.domain.id}"
+			space_guid        = "${data.ibm_space.spacedata.id}"
+			host              = "%s"
+			path              = "/app"
+			tags              = ["one", "two"]
+		}
+	`, cfOrganization, cfSpace, host)
 }

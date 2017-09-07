@@ -13,6 +13,7 @@ func resourceIBMAppDomainShared() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMAppDomainSharedCreate,
 		Read:     resourceIBMAppDomainSharedRead,
+		Update:   resourceIBMAppDomainSharedUpdate,
 		Delete:   resourceIBMAppDomainSharedDelete,
 		Exists:   resourceIBMAppDomainSharedExists,
 		Importer: &schema.ResourceImporter{},
@@ -31,6 +32,13 @@ func resourceIBMAppDomainShared() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 				Description: "The guid of the router group.",
+			},
+
+			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
 			},
 		},
 	}
@@ -57,6 +65,11 @@ func resourceIBMAppDomainSharedCreate(d *schema.ResourceData, meta interface{}) 
 	d.SetId(shdomain.Metadata.GUID)
 
 	return resourceIBMAppDomainSharedRead(d, meta)
+}
+
+func resourceIBMAppDomainSharedUpdate(d *schema.ResourceData, meta interface{}) error {
+	//Only tags are updated and that too locally hence nothing to validate and update in terms of real API at this point
+	return nil
 }
 
 func resourceIBMAppDomainSharedRead(d *schema.ResourceData, meta interface{}) error {

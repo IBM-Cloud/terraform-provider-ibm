@@ -32,6 +32,34 @@ func TestAccIBMAppDomainShared_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMAppDomainShared_With_Tags(t *testing.T) {
+	var conf mccpv2.SharedDomainFields
+	name := fmt.Sprintf("terraform%d.com", acctest.RandInt())
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMAppDomainShared_with_tags(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMAppDomainSharedExists("ibm_app_domain_shared.domain", &conf),
+					resource.TestCheckResourceAttr("ibm_app_domain_shared.domain", "name", name),
+					resource.TestCheckResourceAttr("ibm_app_domain_shared.domain", "tags.#", "2"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMAppDomainShared_with_updated_tags(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMAppDomainSharedExists("ibm_app_domain_shared.domain", &conf),
+					resource.TestCheckResourceAttr("ibm_app_domain_shared.domain", "name", name),
+					resource.TestCheckResourceAttr("ibm_app_domain_shared.domain", "tags.#", "3"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMAppDomainSharedExists(n string, obj *mccpv2.SharedDomainFields) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
@@ -85,6 +113,26 @@ func testAccCheckIBMAppDomainShared_basic(name string) string {
 	
 		resource "ibm_app_domain_shared" "domain" {
 			name = "%s"
+		}
+	`, name)
+}
+
+func testAccCheckIBMAppDomainShared_with_tags(name string) string {
+	return fmt.Sprintf(`
+	
+		resource "ibm_app_domain_shared" "domain" {
+			name = "%s"
+			tags = ["one", "two"]
+		}
+	`, name)
+}
+
+func testAccCheckIBMAppDomainShared_with_updated_tags(name string) string {
+	return fmt.Sprintf(`
+	
+		resource "ibm_app_domain_shared" "domain" {
+			name = "%s"
+			tags = ["one", "two", "three"]
 		}
 	`, name)
 }

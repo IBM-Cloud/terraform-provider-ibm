@@ -53,6 +53,13 @@ func resourceIBMAppRoute() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validateRoutePath,
 			},
+
+			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
 		},
 	}
 }

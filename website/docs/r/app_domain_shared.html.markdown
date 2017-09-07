@@ -16,6 +16,7 @@ Create, update, or delete shared domain on IBM Bluemix.
 resource "ibm_app_domain_shared" "domain" {
   name              = "foo.com"
   router_group_guid = "3hG5jkjk4k34JH5666"
+  tags              = ["tag1", "tag2"]
 }
 ```
 
@@ -25,6 +26,9 @@ The following arguments are supported:
 
 * `name` - (Required, string) The name of the domain.
 * `router_group_guid` - (Optional, string) The GUID of the router group.
+* `tags` - (Optional, array of strings) Set tags on the application shared domain instance.
+
+**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attributes Reference
 

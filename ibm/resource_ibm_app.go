@@ -96,6 +96,12 @@ func resourceIBMApp() *schema.Resource {
 				Optional:    true,
 				Default:     20,
 			},
+			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
 		},
 	}
 }

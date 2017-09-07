@@ -35,6 +35,35 @@ func TestAccIBMServiceKey_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMServiceKey_With_Tags(t *testing.T) {
+	var conf mccpv2.ServiceKeyFields
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandInt())
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMServiceKeyDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMServiceKey_with_tags(serviceName, serviceKey),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMServiceKeyExists("ibm_service_key.serviceKey", &conf),
+					resource.TestCheckResourceAttr("ibm_service_key.serviceKey", "name", serviceKey),
+					resource.TestCheckResourceAttr("ibm_service_key.serviceKey", "tags.#", "1"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMServiceKey_with_updated_tags(serviceName, serviceKey),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMServiceKeyExists("ibm_service_key.serviceKey", &conf),
+					resource.TestCheckResourceAttr("ibm_service_key.serviceKey", "tags.#", "2"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMServiceKeyExists(n string, obj *mccpv2.ServiceKeyFields) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
@@ -102,6 +131,54 @@ func testAccCheckIBMServiceKey_basic(serviceName, serviceKey string) string {
 		resource "ibm_service_key" "serviceKey" {
 			name = "%s"
 			service_instance_guid = "${ibm_service_instance.service.id}"
+		}
+	`, cfSpace, cfOrganization, serviceName, serviceKey)
+}
+
+func testAccCheckIBMServiceKey_with_tags(serviceName, serviceKey string) string {
+	return fmt.Sprintf(`
+		
+		data "ibm_space" "spacedata" {
+			space  = "%s"
+			org    = "%s"
+		}
+		
+		resource "ibm_service_instance" "service" {
+			name              = "%s"
+			space_guid        = "${data.ibm_space.spacedata.id}"
+			service           = "cleardb"
+			plan              = "cb5"
+			tags               = ["cluster-service","cluster-bind"]
+		}
+
+		resource "ibm_service_key" "serviceKey" {
+			name = "%s"
+			service_instance_guid = "${ibm_service_instance.service.id}"
+			tags				  = ["one"]	
+		}
+	`, cfSpace, cfOrganization, serviceName, serviceKey)
+}
+
+func testAccCheckIBMServiceKey_with_updated_tags(serviceName, serviceKey string) string {
+	return fmt.Sprintf(`
+		
+		data "ibm_space" "spacedata" {
+			space  = "%s"
+			org    = "%s"
+		}
+		
+		resource "ibm_service_instance" "service" {
+			name              = "%s"
+			space_guid        = "${data.ibm_space.spacedata.id}"
+			service           = "cleardb"
+			plan              = "cb5"
+			tags               = ["cluster-service","cluster-bind"]
+		}
+
+		resource "ibm_service_key" "serviceKey" {
+			name = "%s"
+			service_instance_guid = "${ibm_service_instance.service.id}"
+			tags				  = ["one", "two"]	
 		}
 	`, cfSpace, cfOrganization, serviceName, serviceKey)
 }

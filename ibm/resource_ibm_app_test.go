@@ -171,6 +171,35 @@ func TestAccIBMApp_with_service_instances(t *testing.T) {
 
 }
 
+func TestAccIBMApp_With_Tags(t *testing.T) {
+	var conf mccpv2.AppFields
+	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMAppDestroy,
+		Steps: []resource.TestStep{
+
+			resource.TestStep{
+				Config: testAccCheckIBMAppCreate_With_Tags(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMAppExists("ibm_app.app", &conf),
+					resource.TestCheckResourceAttr("ibm_app.app", "name", name),
+					resource.TestCheckResourceAttr("ibm_app.app", "tags.#", "2"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMAppCreate_With_Updated_Tags(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_app.app", "name", name),
+					resource.TestCheckResourceAttr("ibm_app.app", "tags.#", "3"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMAppDestroy(s *terraform.State) error {
 	cfClient, err := testAccProvider.Meta().(ClientSession).MccpAPI()
 	if err != nil {
@@ -554,5 +583,43 @@ resource "ibm_app" "app" {
     "floatval" = 0.67
   }
 }`, cfOrganization, cfSpace, route1, serviceName1, serviceName2, name)
+
+}
+
+func testAccCheckIBMAppCreate_With_Tags(name string) string {
+	return fmt.Sprintf(`
+
+data "ibm_space" "space" {
+  org   = "%s"
+  space = "%s"
+}
+
+resource "ibm_app" "app" {
+  name              = "%s"
+  space_guid        = "${data.ibm_space.space.id}"
+  app_path          = "test-fixtures/app1.zip"
+  wait_time_minutes = 90
+	buildpack         = "sdk-for-nodejs"
+	tags							= ["one", "two"]
+}`, cfOrganization, cfSpace, name)
+
+}
+
+func testAccCheckIBMAppCreate_With_Updated_Tags(name string) string {
+	return fmt.Sprintf(`
+
+data "ibm_space" "space" {
+  org   = "%s"
+  space = "%s"
+}
+
+resource "ibm_app" "app" {
+  name              = "%s"
+  space_guid        = "${data.ibm_space.space.id}"
+  app_path          = "test-fixtures/app1.zip"
+  wait_time_minutes = 90
+	buildpack         = "sdk-for-nodejs"
+	tags							= ["one", "two", "three"]
+}`, cfOrganization, cfSpace, name)
 
 }

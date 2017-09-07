@@ -54,6 +54,12 @@ func resourceIBMSpace() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 			},
+			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
 		},
 	}
 }

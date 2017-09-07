@@ -34,7 +34,11 @@ The following arguments are supported:
 * `developers` - (Optional, set) The emails (associated with IBM ID) of the users who will be given developer role in this space. They can create and manage apps and services, and see logs and reports.
 * `auditors` - (Optional, set) The emails (associated with IBM ID) of the users who will be given auditor role in this space. They can view logs, reports, and settings on this space.
 
-**Note**: By default the newly created space doesn't have any user associated with it. You should add your email to one of the `managers` or `developers` field in order to be able to use the space correctly for the first time.
+**NOTE**: By default the newly created space doesn't have any user associated with it. You should add your email to one of the `managers` or `developers` field in order to be able to use the space correctly for the first time.
+
+* `tags` - (Optional, array of strings) Set tags on the application private domain instance.
+
+**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attributes Reference
 

@@ -11,6 +11,7 @@ func resourceIBMServiceKey() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMServiceKeyCreate,
 		Read:     resourceIBMServiceKeyRead,
+		Update:   resourceIBMServiceKeyUpdate,
 		Delete:   resourceIBMServiceKeyDelete,
 		Exists:   resourceIBMServiceKeyExists,
 		Importer: &schema.ResourceImporter{},
@@ -41,6 +42,12 @@ func resourceIBMServiceKey() *schema.Resource {
 				Sensitive:   true,
 				Computed:    true,
 			},
+			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
 		},
 	}
 }
@@ -66,6 +73,11 @@ func resourceIBMServiceKeyCreate(d *schema.ResourceData, meta interface{}) error
 	d.SetId(serviceKey.Metadata.GUID)
 
 	return resourceIBMServiceKeyRead(d, meta)
+}
+
+func resourceIBMServiceKeyUpdate(d *schema.ResourceData, meta interface{}) error {
+	//Only tags are updated and that too locally hence nothing to validate and update in terms of real API at this point
+	return nil
 }
 
 func resourceIBMServiceKeyRead(d *schema.ResourceData, meta interface{}) error {

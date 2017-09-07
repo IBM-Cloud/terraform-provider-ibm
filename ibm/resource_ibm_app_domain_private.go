@@ -13,6 +13,7 @@ func resourceIBMAppDomainPrivate() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMAppDomainPrivateCreate,
 		Read:     resourceIBMAppDomainPrivateRead,
+		Update:   resourceIBMAppDomainPrivateUpdate,
 		Delete:   resourceIBMAppDomainPrivateDelete,
 		Exists:   resourceIBMAppDomainPrivateExists,
 		Importer: &schema.ResourceImporter{},
@@ -31,6 +32,12 @@ func resourceIBMAppDomainPrivate() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Description: "The organization that owns the domain.",
+			},
+			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
 			},
 		},
 	}
@@ -57,6 +64,11 @@ func resourceIBMAppDomainPrivateCreate(d *schema.ResourceData, meta interface{})
 	d.SetId(prdomain.Metadata.GUID)
 
 	return resourceIBMAppDomainPrivateRead(d, meta)
+}
+
+func resourceIBMAppDomainPrivateUpdate(d *schema.ResourceData, meta interface{}) error {
+	//Only tags are updated and that too locally hence nothing to validate and update in terms of real API at this point
+	return nil
 }
 
 func resourceIBMAppDomainPrivateRead(d *schema.ResourceData, meta interface{}) error {

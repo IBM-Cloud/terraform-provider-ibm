@@ -108,6 +108,37 @@ func TestAccIBMSpace_with_roles(t *testing.T) {
 	})
 }
 
+func TestAccIBMSpace_With_Tags(t *testing.T) {
+	var conf mccpv2.SpaceFields
+	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMSpaceDestroy,
+		Steps: []resource.TestStep{
+
+			resource.TestStep{
+				Config: testAccCheckIBMSpaceWithTags(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMSpaceExists("ibm_space.space", &conf),
+					resource.TestCheckResourceAttr("ibm_space.space", "org", cfOrganization),
+					resource.TestCheckResourceAttr("ibm_space.space", "name", name),
+					resource.TestCheckResourceAttr("ibm_space.space", "tags.#", "1"),
+				),
+			},
+
+			resource.TestStep{
+				Config: testAccCheckIBMSpaceWithUpdatedTags(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_space.space", "org", cfOrganization),
+					resource.TestCheckResourceAttr("ibm_space.space", "tags.#", "2"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMSpaceExists(n string, obj *mccpv2.SpaceFields) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
@@ -197,5 +228,26 @@ resource "ibm_space" "space" {
 	managers = ["%s", "%s"]
 	developers = ["%s"]
 }`, cfOrganization, updatedName, ibmid2, ibmid2, ibmid1, ibmid2)
+
+}
+
+func testAccCheckIBMSpaceWithTags(name string) string {
+	return fmt.Sprintf(`
+	
+resource "ibm_space" "space" {
+    org = "%s"
+	name = "%s"
+	tags = ["one"]
+}`, cfOrganization, name)
+
+}
+func testAccCheckIBMSpaceWithUpdatedTags(name string) string {
+	return fmt.Sprintf(`
+	
+resource "ibm_space" "space" {
+    org = "%s"
+	name = "%s"
+	tags = ["one", "two"]
+}`, cfOrganization, name)
 
 }
