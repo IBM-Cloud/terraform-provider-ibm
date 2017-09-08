@@ -114,6 +114,64 @@ func TestAccIBMComputeBareMetal_With_Network_Storage_Access(t *testing.T) {
 	})
 }
 
+func TestAccSoftLayerBareMetalQuote_Basic(t *testing.T) {
+	var bareMetal datatypes.Hardware
+	hostname := acctest.RandString(16)
+	domain := "bm.quote.tfuat.com"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMComputeBareMetalDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:  testBareMetalQuoteConfigBasic(hostname, domain),
+				Destroy: false,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMComputeBareMetalExists("ibm_compute_bare_metal.bm-quote", &bareMetal),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_bare_metal.bm-quote", "hostname", hostname),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_bare_metal.bm-quote", "domain", domain),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_bare_metal.bm-quote", "user_metadata", "{\"value\":\"newvalue\"}"),
+					CheckStringSet(
+						"ibm_compute_bare_metal.bm-quote",
+						"tags", []string{"collectd"},
+					),
+				),
+			},
+		},
+	})
+}
+
+func TestAccSoftLayerBareMetalCustom_Basic(t *testing.T) {
+	var bareMetal datatypes.Hardware
+	hostname := acctest.RandString(14)
+	domain := "bm.custom.tfuat.com"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMComputeBareMetalDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:  testBareMetalCustomConfig(hostname, domain),
+				Destroy: false,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMComputeBareMetalExists("ibm_compute_bare_metal.bm-custom", &bareMetal),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_bare_metal.bm-custom", "memory", "32"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_bare_metal.bm-custom", "network_speed", "1000"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_bare_metal.bm-custom", "public_bandwidth", "500"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMComputeBareMetalDestroy(s *terraform.State) error {
 	service := services.GetHardwareService(testAccProvider.Meta().(ClientSession).SoftLayerSession())
 
@@ -258,4 +316,35 @@ resource "ibm_compute_bare_metal" "terraform-bm-storage-access" {
 
 `, hostname, domain, fsConfig2)
 
+}
+
+func testBareMetalQuoteConfigBasic(hostname, domain string) string {
+	return fmt.Sprintf(`
+resource "ibm_compute_bare_metal" "bm-quote" {
+    hostname = "%s"
+    domain = "%s"
+    user_metadata = "{\"value\":\"newvalue\"}"
+    quote_id = 2179879
+    tags = ["collectd"]
+}
+`, hostname, domain)
+}
+
+func testBareMetalCustomConfig(hostname, domain string) string {
+	return fmt.Sprintf(`
+resource "ibm_compute_bare_metal" "bm-custom" {
+    package_key_name = "2U_DUAL_E52600_12_DRIVES"
+    process_key_name = "INTEL_DUAL_INTEL_XEON_E52620_2_00"
+    memory = 32
+    os_key_name = "OS_WINDOWS_2012_R2_FULL_DC_64_BIT_2"
+    hostname = "%s"
+    domain = "%s"
+    datacenter = "dal05"
+    network_speed = 1000
+    public_bandwidth = 500
+    disk_key_names = [ "HARD_DRIVE_1_00_TB_SATA_2", "HARD_DRIVE_1_00_TB_SATA_2" ]
+    hourly_billing = false
+    redundant_power_supply = true
+}
+`, hostname, domain)
 }
