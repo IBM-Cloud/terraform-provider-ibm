@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"strconv"
 
+	"log"
+	"time"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -12,8 +15,6 @@ import (
 	"github.com/softlayer/softlayer-go/services"
 	"github.com/softlayer/softlayer-go/session"
 	"github.com/softlayer/softlayer-go/sl"
-	"log"
-	"time"
 )
 
 const (
@@ -21,13 +22,14 @@ const (
 
 	vlanMask = "firewallNetworkComponents,networkVlanFirewall.billingItem.orderItem.order.id,dedicatedFirewallFlag" +
 		",firewallGuestNetworkComponents,firewallInterfaces,firewallRules,highAvailabilityFirewallFlag"
-	fwMask = "id,networkVlan.highAvailabilityFirewallFlag"
+	fwMask = "id,networkVlan.highAvailabilityFirewallFlag,tagReferences[id,tag[name]]"
 )
 
 func resourceIBMFirewall() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMFirewallCreate,
 		Read:     resourceIBMFirewallRead,
+		Update:   resourceIBMFirewallUpdate,
 		Delete:   resourceIBMFirewallDelete,
 		Exists:   resourceIBMFirewallExists,
 		Importer: &schema.ResourceImporter{},
@@ -43,6 +45,12 @@ func resourceIBMFirewall() *schema.Resource {
 				Type:     schema.TypeInt,
 				Required: true,
 				ForceNew: true,
+			},
+			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
 			},
 		},
 	}
@@ -107,11 +115,22 @@ func resourceIBMFirewallCreate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error during creation of dedicated hardware firewall: %s", err)
 	}
 
-	d.SetId(fmt.Sprintf("%d", *vlan.NetworkVlanFirewall.Id))
+	id := *vlan.NetworkVlanFirewall.Id
+	d.SetId(fmt.Sprintf("%d", id))
 	d.Set("ha_enabled", *vlan.HighAvailabilityFirewallFlag)
 	d.Set("public_vlan_id", *vlan.Id)
 
 	log.Printf("[INFO] Firewall ID: %s", d.Id())
+
+	// Set tags
+	tags := getTags(d)
+	if tags != "" {
+		//Try setting only when it is non empty as we are creating Firewall
+		err = setFirewallTags(id, tags, meta)
+		if err != nil {
+			return err
+		}
+	}
 
 	return resourceIBMFirewallRead(d, meta)
 }
@@ -133,7 +152,35 @@ func resourceIBMFirewallRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("public_vlan_id", *fw.NetworkVlan.Id)
 	d.Set("ha_enabled", *fw.NetworkVlan.HighAvailabilityFirewallFlag)
 
+	tagRefs := fw.TagReferences
+	tagRefsLen := len(tagRefs)
+	if tagRefsLen > 0 {
+		tags := make([]string, tagRefsLen, tagRefsLen)
+		for i, tagRef := range tagRefs {
+			tags[i] = *tagRef.Tag.Name
+		}
+		d.Set("tags", tags)
+	}
+
 	return nil
+}
+
+func resourceIBMFirewallUpdate(d *schema.ResourceData, meta interface{}) error {
+
+	fwID, err := strconv.Atoi(d.Id())
+	if err != nil {
+		return fmt.Errorf("Not a valid firewall ID, must be an integer: %s", err)
+	}
+
+	// Update tags
+	if d.HasChange("tags") {
+		tags := getTags(d)
+		err := setFirewallTags(fwID, tags, meta)
+		if err != nil {
+			return err
+		}
+	}
+	return resourceIBMFirewallRead(d, meta)
 }
 
 func resourceIBMFirewallDelete(d *schema.ResourceData, meta interface{}) error {
@@ -231,4 +278,13 @@ func findDedicatedFirewallByOrderId(sess *session.Session, orderId int) (datatyp
 
 	return datatypes.Network_Vlan{},
 		fmt.Errorf("Cannot find Dedicated Firewall with order id '%d'", orderId)
+}
+
+func setFirewallTags(id int, tags string, meta interface{}) error {
+	service := services.GetNetworkVlanFirewallService(meta.(ClientSession).SoftLayerSession())
+	_, err := service.Id(id).SetTags(sl.String(tags))
+	if err != nil {
+		return fmt.Errorf("Could not set tags on firewall %d", id)
+	}
+	return nil
 }
