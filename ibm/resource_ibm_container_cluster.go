@@ -173,6 +173,12 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Optional: true,
 				Default:  90,
 			},
+			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
 		},
 	}
 }

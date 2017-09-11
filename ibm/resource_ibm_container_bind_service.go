@@ -11,6 +11,7 @@ func resourceIBMContainerBindService() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMContainerBindServiceCreate,
 		Read:     resourceIBMContainerBindServiceRead,
+		Update:   resourceIBMContainerBindServiceUpdate,
 		Delete:   resourceIBMContainerBindServiceDelete,
 		Importer: &schema.ResourceImporter{},
 
@@ -59,6 +60,12 @@ func resourceIBMContainerBindService() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
+			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
 		},
 	}
 }
@@ -106,6 +113,11 @@ func resourceIBMContainerBindServiceCreate(d *schema.ResourceData, meta interfac
 	d.Set("secret_name", bindResp.SecretName)
 
 	return resourceIBMContainerBindServiceRead(d, meta)
+}
+
+func resourceIBMContainerBindServiceUpdate(d *schema.ResourceData, meta interface{}) error {
+	//Only tags are updated and that too locally hence nothing to validate and update in terms of real API at this point
+	return nil
 }
 
 func resourceIBMContainerBindServiceRead(d *schema.ResourceData, meta interface{}) error {

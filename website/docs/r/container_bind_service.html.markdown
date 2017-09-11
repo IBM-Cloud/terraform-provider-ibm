@@ -37,6 +37,9 @@ The following arguments are supported:
 * `org_guid` - (Required) The GUID for the Bluemix organization that the cluster is associated with. The values can be retrieved from data source `ibm_org`, or by running the `bx iam orgs --guid` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
 * `space_guid` - (Required) The GUID for the Bluemix space that the cluster is associated with. The values can be retrieved from data source `ibm_space`, or by running the `bx iam space <space-name> --guid` command in the Bluemix CLI.
 * `account_guid` - (Optional) The GUID for the Bluemix account that the cluster is associated with. The values can be retrieved from data source `ibm_account`, or by running the `bx iam accounts` command in the Bluemix CLI.
+* `tags` - (Optional, array of strings) Set tags on the container bind service instance.
+
+**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
     
 ## Attributes Reference
 
