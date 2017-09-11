@@ -54,6 +54,41 @@ func TestAccIBMLbVpxService_Basic105(t *testing.T) {
 	})
 }
 
+func TestAccIBMLbVpxServiceWithTag(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMLbVpxServiceWithTag,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx_service.testacc_service1", "name", "test_load_balancer_service1"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx_service.testacc_service1", "destination_port", "89"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx_service.testacc_service1", "weight", "55"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx_service.testacc_service1", "tags.#", "2"),
+				),
+			},
+			{
+				Config: testAccCheckIBMLbVpxServiceWithUpdatedTag,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx_service.testacc_service1", "name", "test_load_balancer_service1"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx_service.testacc_service1", "destination_port", "89"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx_service.testacc_service1", "weight", "55"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx_service.testacc_service1", "tags.#", "3"),
+				),
+			},
+		},
+	})
+}
+
 var testAccCheckIBMLbVpxServiceConfig_basic = `
 
 resource "ibm_compute_vm_instance" "vm1" {
@@ -187,6 +222,94 @@ resource "ibm_lb_vpx_service" "testacc_service4" {
   weight = 55
   connection_limit = 5000
   health_check = "HTTP"
+}
+`
+var testAccCheckIBMLbVpxServiceWithTag = `
+
+resource "ibm_compute_vm_instance" "vm1" {
+    hostname = "vm1"
+    domain = "terraformuat.ibm.com"
+    os_reference_code = "DEBIAN_7_64"
+    datacenter = "dal09"
+    network_speed = 10
+    hourly_billing = true
+    private_network_only = false
+    cores = 1
+    memory = 1024
+    disks = [25]
+    local_disk = false
+}
+
+resource "ibm_lb_vpx" "testacc_vpx" {
+    datacenter = "dal09"
+    speed = 10
+    version = "10.1"
+    plan = "Standard"
+    ip_count = 2
+}
+
+resource "ibm_lb_vpx_vip" "testacc_vip" {
+    name = "test_load_balancer_vip"
+    nad_controller_id = "${ibm_lb_vpx.testacc_vpx.id}"
+    load_balancing_method = "lc"
+    source_port = 80
+    type = "HTTP"
+    virtual_ip_address = "${ibm_lb_vpx.testacc_vpx.vip_pool[0]}"
+}
+
+resource "ibm_lb_vpx_service" "testacc_service1" {
+  name = "test_load_balancer_service1"
+  vip_id = "${ibm_lb_vpx_vip.testacc_vip.id}"
+  destination_ip_address = "${ibm_compute_vm_instance.vm1.ipv4_address}"
+  destination_port = 89
+  weight = 55
+  connection_limit = 5000
+  health_check = "HTTP"
+  tags = ["one", "two"]
+}
+`
+var testAccCheckIBMLbVpxServiceWithUpdatedTag = `
+
+resource "ibm_compute_vm_instance" "vm1" {
+    hostname = "vm1"
+    domain = "terraformuat.ibm.com"
+    os_reference_code = "DEBIAN_7_64"
+    datacenter = "dal09"
+    network_speed = 10
+    hourly_billing = true
+    private_network_only = false
+    cores = 1
+    memory = 1024
+    disks = [25]
+    local_disk = false
+}
+
+resource "ibm_lb_vpx" "testacc_vpx" {
+    datacenter = "dal09"
+    speed = 10
+    version = "10.1"
+    plan = "Standard"
+    ip_count = 2
+}
+
+resource "ibm_lb_vpx_vip" "testacc_vip" {
+    name = "test_load_balancer_vip"
+    nad_controller_id = "${ibm_lb_vpx.testacc_vpx.id}"
+    load_balancing_method = "lc"
+    source_port = 80
+    type = "HTTP"
+    virtual_ip_address = "${ibm_lb_vpx.testacc_vpx.vip_pool[0]}"
+}
+
+resource "ibm_lb_vpx_service" "testacc_service1" {
+  name = "test_load_balancer_service1"
+  vip_id = "${ibm_lb_vpx_vip.testacc_vip.id}"
+  destination_ip_address = "${ibm_compute_vm_instance.vm1.ipv4_address}"
+  destination_port = 89
+  weight = 55
+  connection_limit = 5000
+  health_check = "HTTP"
+  tags = ["one", "two", "three"]
 }
 `
 

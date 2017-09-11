@@ -5,11 +5,12 @@ import (
 	"strconv"
 	"testing"
 
+	"regexp"
+
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/softlayer/softlayer-go/services"
-	"regexp"
 )
 
 func TestAccIBMNetworkPublicIp_Basic(t *testing.T) {
@@ -55,6 +56,39 @@ func TestAccIBMNetworkPublicIp_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMResources("ibm_network_public_ip.test-global-ip-3", "routes_to",
 						"ibm_compute_vm_instance.vm4", "ipv6_address"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMNetworkPublicIpWitTag(t *testing.T) {
+	hostname1 := acctest.RandString(16)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMNetworkPublicIpWithTag(hostname1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMNetworkPublicIpExists("ibm_network_public_ip.test-global-ip"),
+					resource.TestMatchResourceAttr("ibm_network_public_ip.test-global-ip", "ip_address",
+						regexp.MustCompile(`^(([01]?[0-9]?[0-9]|2([0-4][0-9]|5[0-5]))\.){3}([01]?[0-9]?[0-9]|2([0-4][0-9]|5[0-5]))$`)),
+					testAccCheckIBMResources("ibm_network_public_ip.test-global-ip", "routes_to",
+						"ibm_compute_vm_instance.vm1", "ipv4_address"),
+					resource.TestCheckResourceAttr(
+						"ibm_network_public_ip.test-global-ip", "tags.#", "2"),
+				),
+			},
+
+			resource.TestStep{
+				Config: testAccCheckIBMNetworkPublicIpWithUpdatedTag(hostname1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMResources("ibm_network_public_ip.test-global-ip", "routes_to",
+						"ibm_compute_vm_instance.vm1", "ipv4_address"),
+					resource.TestCheckResourceAttr(
+						"ibm_network_public_ip.test-global-ip", "tags.#", "3"),
 				),
 			},
 		},
@@ -253,3 +287,49 @@ resource "ibm_compute_vm_instance" "vm4" {
 resource "ibm_network_public_ip" "test-global-ip-3" {
     routes_to = "${ibm_compute_vm_instance.vm4.ipv6_address}"
 }`
+
+func testAccCheckIBMNetworkPublicIpWithTag(hostname1 string) string {
+	return fmt.Sprintf(`
+resource "ibm_compute_vm_instance" "vm1" {
+    hostname = "%s"
+    domain = "terraformuat.ibm.com"
+    os_reference_code = "DEBIAN_7_64"
+    datacenter = "dal06"
+    network_speed = 100
+    hourly_billing = true
+    private_network_only = false
+    cores = 1
+    memory = 1024
+    disks = [25]
+    local_disk = false
+}
+
+resource "ibm_network_public_ip" "test-global-ip" {
+    routes_to = "${ibm_compute_vm_instance.vm1.ipv4_address}"
+    tags = ["one", "two"]
+}
+`, hostname1)
+}
+
+func testAccCheckIBMNetworkPublicIpWithUpdatedTag(hostname1 string) string {
+	return fmt.Sprintf(`
+resource "ibm_compute_vm_instance" "vm1" {
+    hostname = "%s"
+    domain = "terraformuat.ibm.com"
+    os_reference_code = "DEBIAN_7_64"
+    datacenter = "dal06"
+    network_speed = 100
+    hourly_billing = true
+    private_network_only = false
+    cores = 1
+    memory = 1024
+    disks = [25]
+    local_disk = false
+}
+
+resource "ibm_network_public_ip" "test-global-ip" {
+    routes_to = "${ibm_compute_vm_instance.vm1.ipv4_address}"
+    tags = ["one", "two", "three"]
+}
+`, hostname1)
+}

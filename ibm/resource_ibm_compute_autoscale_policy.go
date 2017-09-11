@@ -128,6 +128,13 @@ func resourceIBMComputeAutoScalePolicy() *schema.Resource {
 				},
 				Set: resourceIBMComputeAutoScalePolicyTriggerHash,
 			},
+
+			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
 		},
 	}
 }

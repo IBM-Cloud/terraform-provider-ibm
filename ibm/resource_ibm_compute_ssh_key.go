@@ -49,6 +49,13 @@ func resourceIBMComputeSSHKey() *schema.Resource {
 				Optional: true,
 				Default:  nil,
 			},
+
+			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
 		},
 	}
 }

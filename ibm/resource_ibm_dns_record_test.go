@@ -91,6 +91,49 @@ func TestAccIBMDNSRecord_Types(t *testing.T) {
 	})
 }
 
+func TestAccIBMDNSRecordWithTag(t *testing.T) {
+	var dns_domain datatypes.Dns_Domain
+	var dns_domain_record datatypes.Dns_Domain_ResourceRecord
+
+	domainName := fmt.Sprintf("tfuatdomainr%s.ibm.com", acctest.RandString(9))
+	host1 := acctest.RandString(10) + "ibm.com"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMDNSDomainDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDNSRecordWithTag(domainName, host1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMDNSDomainExists("ibm_dns_domain.test_dns_domain_records", &dns_domain),
+					testAccCheckIBMDNSRecordExists("ibm_dns_record.recordA", &dns_domain_record),
+					resource.TestCheckResourceAttr("ibm_dns_record.recordA", "data", "127.0.0.1"),
+					resource.TestCheckResourceAttr("ibm_dns_record.recordA", "expire", "900"),
+					resource.TestCheckResourceAttr("ibm_dns_record.recordA", "minimum_ttl", "90"),
+					resource.TestCheckResourceAttr("ibm_dns_record.recordA", "mx_priority", "1"),
+					resource.TestCheckResourceAttr("ibm_dns_record.recordA", "refresh", "1"),
+					resource.TestCheckResourceAttr("ibm_dns_record.recordA", "host", host1),
+					resource.TestCheckResourceAttr("ibm_dns_record.recordA", "responsible_person", "user@softlayer.com"),
+					resource.TestCheckResourceAttr("ibm_dns_record.recordA", "ttl", "900"),
+					resource.TestCheckResourceAttr("ibm_dns_record.recordA", "retry", "1"),
+					resource.TestCheckResourceAttr("ibm_dns_record.recordA", "type", "a"),
+					resource.TestCheckResourceAttr("ibm_dns_record.recordA", "host", host1),
+					resource.TestCheckResourceAttr("ibm_dns_record.recordA", "tags", "2"),
+				),
+			},
+			{
+				Config: testAccCheckIBMDNSRecordWithUpdatedTag(domainName, host1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMDNSDomainExists("ibm_dns_domain.test_dns_domain_records", &dns_domain),
+					testAccCheckIBMDNSRecordExists("ibm_dns_record.recordA", &dns_domain_record),
+					resource.TestCheckResourceAttr("ibm_dns_record.recordA", "tags", "3"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMDNSRecordExists(n string, dns_domain_record *datatypes.Dns_Domain_ResourceRecord) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -218,3 +261,49 @@ resource "ibm_dns_record" "recordSRV" {
 	service = "_mail"
 }
 `
+
+func testAccCheckIBMDNSRecordWithTag(domainName, hostname string) string {
+	return fmt.Sprintf(`
+resource "ibm_dns_domain" "test_dns_domain_records" {
+	name = "%s"
+	target = "172.16.0.100"
+}
+
+resource "ibm_dns_record" "recordA" {
+    data = "127.0.0.1"
+    domain_id = "${ibm_dns_domain.test_dns_domain_records.id}"
+    expire = 900
+    minimum_ttl = 90
+    mx_priority = 1
+    refresh = 1
+    host = "%s"
+    responsible_person = "user@softlayer.com"
+    ttl = 900
+    retry = 1
+	type = "a"
+	tags = ["one", "two"]
+}`, domainName, hostname)
+}
+
+func testAccCheckIBMDNSRecordWithUpdatedTag(domainName, hostname string) string {
+	return fmt.Sprintf(`
+resource "ibm_dns_domain" "test_dns_domain_records" {
+	name = "%s"
+	target = "172.16.0.102"
+}
+
+resource "ibm_dns_record" "recordA" {
+    data = "127.0.0.1"
+    domain_id = "${ibm_dns_domain.test_dns_domain_records.id}"
+    expire = 900
+    minimum_ttl = 90
+    mx_priority = 1
+    refresh = 1
+    host = "%s"
+    responsible_person = "user@softlayer.com"
+    ttl = 900
+    retry = 1
+	type = "a"
+	tags = ["one", "two", "three"]
+}`, domainName, hostname)
+}

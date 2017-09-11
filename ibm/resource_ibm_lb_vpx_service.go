@@ -102,6 +102,13 @@ func resourceIBMLbVpxService() *schema.Resource {
 				Optional: true,
 				Default:  "NO",
 			},
+
+			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
 		},
 	}
 }

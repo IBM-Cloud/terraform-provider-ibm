@@ -214,6 +214,12 @@ func resourceIBMStorageFile() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
 		},
 	}
 }

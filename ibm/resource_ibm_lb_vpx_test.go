@@ -42,6 +42,61 @@ func TestAccIBMLbVpx_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMLbVpxWithTag(t *testing.T) {
+	var nadc datatypes.Network_Application_Delivery_Controller
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMLbVpxWithTag,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMLbVpxExists("ibm_lb_vpx.testacc_foobar_vpx", &nadc),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx.testacc_foobar_vpx", "type", "NetScaler VPX"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx.testacc_foobar_vpx", "datacenter", "dal09"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx.testacc_foobar_vpx", "speed", "10"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx.testacc_foobar_vpx", "plan", "Standard"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx.testacc_foobar_vpx", "ip_count", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx.testacc_foobar_vpx", "version", "10.1"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx.testacc_foobar_vpx", "vip_pool.#", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx.testacc_foobar_vpx", "tags.#", "2"),
+				),
+			},
+			{
+				Config: testAccCheckIBMLbVpxWithUpdatedTag,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMLbVpxExists("ibm_lb_vpx.testacc_foobar_vpx", &nadc),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx.testacc_foobar_vpx", "type", "NetScaler VPX"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx.testacc_foobar_vpx", "datacenter", "dal09"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx.testacc_foobar_vpx", "speed", "10"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx.testacc_foobar_vpx", "plan", "Standard"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx.testacc_foobar_vpx", "ip_count", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx.testacc_foobar_vpx", "version", "10.1"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx.testacc_foobar_vpx", "vip_pool.#", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx.testacc_foobar_vpx", "tags.#", "3"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMLbVpxExists(n string, nadc *datatypes.Network_Application_Delivery_Controller) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -79,4 +134,24 @@ resource "ibm_lb_vpx" "testacc_foobar_vpx" {
     version = "10.1"
     plan = "Standard"
     ip_count = 2
+}`
+
+const testAccCheckIBMLbVpxWithTag = `
+resource "ibm_lb_vpx" "testacc_foobar_vpx" {
+    datacenter = "dal09"
+    speed = 10
+    version = "10.1"
+    plan = "Standard"
+	ip_count = 2
+	tags = ["one", "two"]
+}`
+
+const testAccCheckIBMLbVpxWithUpdatedTag = `
+resource "ibm_lb_vpx" "testacc_foobar_vpx" {
+    datacenter = "dal09"
+    speed = 10
+    version = "10.1"
+    plan = "Standard"
+	ip_count = 2
+	tags = ["one", "two", "three"]
 }`

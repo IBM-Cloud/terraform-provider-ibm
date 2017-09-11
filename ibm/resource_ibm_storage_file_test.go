@@ -105,6 +105,45 @@ func TestAccIBMStorageFile_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMStorageFileWithTag(t *testing.T) {
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMStorageFileWithTag,
+				Check: resource.ComposeTestCheckFunc(
+					// Endurance Storage
+					testAccCheckIBMStorageFileExists("ibm_storage_file.fs_endurance"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_file.fs_endurance", "type", "Endurance"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_file.fs_endurance", "capacity", "20"),
+					resource.TestCheckResourceAttrSet("ibm_storage_file.fs_endurance", "mountpoint"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_file.fs_endurance", "iops", "0.25"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_file.fs_endurance", "snapshot_capacity", "10"),
+					testAccCheckIBMResources("ibm_storage_file.fs_endurance", "datacenter",
+						"ibm_compute_vm_instance.storagevm1", "datacenter"),
+					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "notes", "endurance notes"),
+					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "tags.#", "2"),
+				),
+			},
+
+			resource.TestStep{
+				Config: testAccCheckIBMStorageFileWithUpdatedTag,
+				Check: resource.ComposeTestCheckFunc(
+					// Endurance Storage
+					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "notes", "endurance notes"),
+					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "tags.#", "3"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMStorageFileExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -296,5 +335,57 @@ resource "ibm_storage_file" "fs_endurance" {
 			enable= false
 		},
  		]
+}
+`
+
+const testAccCheckIBMStorageFileWithTag = `
+resource "ibm_compute_vm_instance" "storagevm1" {
+    hostname = "storagevm1"
+    domain = "terraformuat.ibm.com"
+    os_reference_code = "DEBIAN_7_64"
+    datacenter = "dal06"
+    network_speed = 100
+    hourly_billing = true
+    private_network_only = false
+    cores = 1
+    memory = 1024
+    disks = [25]
+    local_disk = false
+}
+
+resource "ibm_storage_file" "fs_endurance" {
+        type = "Endurance"
+        datacenter = "${ibm_compute_vm_instance.storagevm1.datacenter}"
+        capacity = 20
+        iops = 0.25
+        snapshot_capacity = 10
+		notes = "endurance notes"
+		tags = ["one", "two"]
+}
+`
+
+const testAccCheckIBMStorageFileWithUpdatedTag = `
+resource "ibm_compute_vm_instance" "storagevm1" {
+    hostname = "storagevm1"
+    domain = "terraformuat.ibm.com"
+    os_reference_code = "DEBIAN_7_64"
+    datacenter = "dal06"
+    network_speed = 100
+    hourly_billing = true
+    private_network_only = false
+    cores = 1
+    memory = 1024
+    disks = [25]
+    local_disk = false
+}
+
+resource "ibm_storage_file" "fs_endurance" {
+        type = "Endurance"
+        datacenter = "${ibm_compute_vm_instance.storagevm1.datacenter}"
+        capacity = 20
+        iops = 0.25
+        snapshot_capacity = 10
+		notes = "endurance notes"
+		tags = ["one", "two", "three"]
 }
 `

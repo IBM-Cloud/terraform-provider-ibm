@@ -53,6 +53,12 @@ func resourceIBMLbService() *schema.Resource {
 				Type:     schema.TypeInt,
 				Required: true,
 			},
+			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
 		},
 	}
 }
