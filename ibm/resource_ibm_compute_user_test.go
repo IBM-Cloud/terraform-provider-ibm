@@ -104,6 +104,46 @@ func TestAccIBMComputeUser_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMComputeUserWithTag(t *testing.T) {
+	var user datatypes.User_Customer
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMComputeUserDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMComputeUserWithTag,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMComputeUserExists("ibm_compute_user.testuser", &user),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_user.testuser", "first_name", "first_name"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_user.testuser", "last_name", "last_name"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_user.testuser", "email", testAccRandomEmail),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_user.testuser", "tags.#", "2"),
+				),
+			},
+
+			resource.TestStep{
+				Config: testAccCheckIBMComputeUserWithUpdatedTag,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_compute_user.testuser", "first_name", "first_name"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_user.testuser", "last_name", "last_name"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_user.testuser", "email", testAccRandomEmail),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_user.testuser", "tags.#", "3"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMComputeUserDestroy(s *terraform.State) error {
 	client := services.GetUserCustomerService(testAccProvider.Meta().(ClientSession).SoftLayerSession())
 
@@ -222,3 +262,47 @@ func hash(v interface{}) string {
 	hash := sha1.Sum([]byte(v.(string)))
 	return hex.EncodeToString(hash[:])
 }
+
+var testAccCheckIBMComputeUserWithTag = fmt.Sprintf(`
+	resource "ibm_compute_user" "testuser" {
+		first_name = "first_name"
+		last_name = "last_name"
+		email = "%s"
+		company_name = "company_name"
+		address1 = "1 Main St."
+		address2 = "Suite 345"
+		city = "Atlanta"
+		state = "GA"
+		country = "US"
+		timezone = "EST"
+		username = "%s"
+		password = "%s"
+		permissions = [
+			"SERVER_ADD",
+			"ACCESS_ALL_GUEST"
+		]
+		has_api_key = true
+		tags = ["one", "two"]
+	}`, testAccRandomEmail, testAccRandomUser, testAccUserPassword)
+
+var testAccCheckIBMComputeUserWithUpdatedTag = fmt.Sprintf(`
+		resource "ibm_compute_user" "testuser" {
+			first_name = "first_name"
+			last_name = "last_name"
+			email = "%s"
+			company_name = "company_name"
+			address1 = "1 Main St."
+			address2 = "Suite 345"
+			city = "Atlanta"
+			state = "GA"
+			country = "US"
+			timezone = "EST"
+			username = "%s"
+			password = "%s"
+			permissions = [
+				"SERVER_ADD",
+				"ACCESS_ALL_GUEST"
+			]
+			has_api_key = true
+			tags = ["one", "two", "three"]
+		}`, testAccRandomEmail, testAccRandomUser, testAccUserPassword)

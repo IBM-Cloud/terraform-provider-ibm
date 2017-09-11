@@ -44,6 +44,48 @@ func TestAccIBMLbVpxVip_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMLbVpxVipWithTag(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMLbVpxVipDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMLbVpxVipWithTag,
+				Check: resource.ComposeTestCheckFunc(
+					// Test VPX 10.1
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx_vip.testacc_vip", "load_balancing_method", "lc"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx_vip.testacc_vip", "name", "test_load_balancer_vip"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx_vip.testacc_vip", "source_port", "80"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx_vip.testacc_vip", "type", "HTTP"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx_vip.testacc_vip", "tags.#", "2"),
+				),
+			},
+			{
+				Config: testAccCheckIBMLbVpxVipWithUpdatedTag,
+				Check: resource.ComposeTestCheckFunc(
+					// Test VPX 10.1
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx_vip.testacc_vip", "load_balancing_method", "lc"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx_vip.testacc_vip", "name", "test_load_balancer_vip"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx_vip.testacc_vip", "source_port", "80"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx_vip.testacc_vip", "type", "HTTP"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx_vip.testacc_vip", "tags.#", "3"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMLbVpxVipDestroy(s *terraform.State) error {
 	sess := testAccProvider.Meta().(ClientSession).SoftLayerSession()
 
@@ -98,5 +140,43 @@ resource "ibm_lb_vpx_vip" "testacc_vip105" {
     source_port = 80
     type = "HTTP"
     virtual_ip_address = "${ibm_lb_vpx.testacc_foobar_nadc105.vip_pool[0]}"
+}
+`
+var testAccCheckIBMLbVpxVipWithTag = `
+resource "ibm_lb_vpx" "testacc_foobar_nadc" {
+    datacenter = "dal09"
+    speed = 10
+    version = "10.1"
+    plan = "Standard"
+    ip_count = 2
+}
+
+resource "ibm_lb_vpx_vip" "testacc_vip" {
+    name = "test_load_balancer_vip"
+    nad_controller_id = "${ibm_lb_vpx.testacc_foobar_nadc.id}"
+    load_balancing_method = "lc"
+    source_port = 80
+    type = "HTTP"
+	virtual_ip_address = "${ibm_lb_vpx.testacc_foobar_nadc.vip_pool[0]}"
+	tags = ["one", "two"]
+}
+`
+var testAccCheckIBMLbVpxVipWithUpdatedTag = `
+resource "ibm_lb_vpx" "testacc_foobar_nadc" {
+    datacenter = "dal09"
+    speed = 10
+    version = "10.1"
+    plan = "Standard"
+    ip_count = 2
+}
+
+resource "ibm_lb_vpx_vip" "testacc_vip" {
+    name = "test_load_balancer_vip"
+    nad_controller_id = "${ibm_lb_vpx.testacc_foobar_nadc.id}"
+    load_balancing_method = "lc"
+    source_port = 80
+    type = "HTTP"
+	virtual_ip_address = "${ibm_lb_vpx.testacc_foobar_nadc.vip_pool[0]}"
+	tags = ["one", "two", "three"]
 }
 `

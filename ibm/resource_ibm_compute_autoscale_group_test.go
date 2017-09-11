@@ -118,6 +118,61 @@ func TestAccIBMComputeAutoScaleGroup_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMComputeAutoScaleGroupWithTag(t *testing.T) {
+	var scalegroup datatypes.Scale_Group
+	groupname := fmt.Sprintf("terraformuat_%d", acctest.RandInt())
+	hostname := acctest.RandString(16)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMComputeAutoScaleGroupDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMComputeAutoScaleGroupWithTag(groupname, hostname),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMComputeAutoScaleGroupExists("ibm_compute_autoscale_group.sample-http-cluster", &scalegroup),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_autoscale_group.sample-http-cluster", "name", groupname),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_autoscale_group.sample-http-cluster", "regional_group", "na-usa-central-1"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_autoscale_group.sample-http-cluster", "cooldown", "30"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_autoscale_group.sample-http-cluster", "minimum_member_count", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_autoscale_group.sample-http-cluster", "maximum_member_count", "10"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_autoscale_group.sample-http-cluster", "termination_policy", "CLOSEST_TO_NEXT_CHARGE"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_autoscale_group.sample-http-cluster", "tags.#", "2"),
+				),
+			},
+
+			resource.TestStep{
+				Config: testAccCheckIBMComputeAutoScaleGroupWithUpdatedTag(groupname, hostname),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMComputeAutoScaleGroupExists("ibm_compute_autoscale_group.sample-http-cluster", &scalegroup),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_autoscale_group.sample-http-cluster", "name", groupname),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_autoscale_group.sample-http-cluster", "regional_group", "na-usa-central-1"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_autoscale_group.sample-http-cluster", "minimum_member_count", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_autoscale_group.sample-http-cluster", "maximum_member_count", "12"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_autoscale_group.sample-http-cluster", "termination_policy", "NEWEST"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_autoscale_group.sample-http-cluster", "cooldown", "35"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_autoscale_group.sample-http-cluster", "tags.#", "3"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMComputeAutoScaleGroupDestroy(s *terraform.State) error {
 	service := services.GetScaleGroupService(testAccProvider.Meta().(ClientSession).SoftLayerSession())
 
@@ -284,4 +339,61 @@ resource "ibm_compute_autoscale_group" "sample-http-cluster" {
         user_metadata = "#!/bin/bash"
     }
 }`, updatedgroupname, updatedhostname)
+}
+
+func testAccCheckIBMComputeAutoScaleGroupWithTag(groupname, hostname string) string {
+	return fmt.Sprintf(`
+
+resource "ibm_compute_autoscale_group" "sample-http-cluster" {
+    name = "%s"
+    regional_group = "na-usa-central-1"
+    cooldown = 30
+    minimum_member_count = 1
+    maximum_member_count = 10
+    termination_policy = "CLOSEST_TO_NEXT_CHARGE"
+    
+    virtual_guest_member_template = {
+        hostname = "%s"
+        domain = "terraformuat.ibm.com"
+        cores = 1
+        memory = 4096
+        network_speed = 1000
+        hourly_billing = true
+        os_reference_code = "DEBIAN_7_64"
+        local_disk = false
+        disks = [25,100]
+        datacenter = "dal09"
+        post_install_script_uri = ""
+        user_metadata = "#!/bin/bash"
+	}
+	tags = ["one", "two"]
+}`, groupname, hostname)
+}
+
+func testAccCheckIBMComputeAutoScaleGroupWithUpdatedTag(groupname, hostname string) string {
+	return fmt.Sprintf(`
+resource "ibm_compute_autoscale_group" "sample-http-cluster" {
+    name = "%s"
+    regional_group = "na-usa-central-1"
+    cooldown = 35
+    minimum_member_count = 2
+    maximum_member_count = 12
+	termination_policy = "NEWEST"
+	
+    virtual_guest_member_template = {
+        hostname = "%s"
+        domain = "terraformuat.ibm.com"
+        cores = 2
+        memory = 8192
+        network_speed = 100
+        hourly_billing = true
+        os_reference_code = "CENTOS_7_64"
+        local_disk = false
+        disks = [25,100]
+        datacenter = "dal09"
+        post_install_script_uri = "https://www.google.com"
+        user_metadata = "#!/bin/bash"
+	}
+	tags = ["one", "two", "three"]
+}`, groupname, hostname)
 }

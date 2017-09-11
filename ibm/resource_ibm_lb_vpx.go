@@ -30,6 +30,7 @@ func resourceIBMLbVpx() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMLbVpxCreate,
 		Read:     resourceIBMLbVpxRead,
+		Update:   resourceIBMLbVpxUpdate,
 		Delete:   resourceIBMLbVpxDelete,
 		Exists:   resourceIBMLbVpxExists,
 		Importer: &schema.ResourceImporter{},
@@ -141,6 +142,13 @@ func resourceIBMLbVpx() *schema.Resource {
 			"management_ip_address": {
 				Type:     schema.TypeString,
 				Computed: true,
+			},
+
+			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
 			},
 		},
 	}
@@ -560,6 +568,11 @@ func resourceIBMLbVpxRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("plan", plan)
 	}
 
+	return nil
+}
+
+func resourceIBMLbVpxUpdate(d *schema.ResourceData, meta interface{}) error {
+	//Only tags are updated and that too locally hence nothing to validate and update in terms of real API at this point
 	return nil
 }
 

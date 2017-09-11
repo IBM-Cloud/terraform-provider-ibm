@@ -67,6 +67,49 @@ func TestAccIBMStorageBlock_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMStorageBlockwithTag(t *testing.T) {
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMStorageBlockWithTag,
+				Check: resource.ComposeTestCheckFunc(
+					// Endurance Storage
+					testAccCheckIBMStorageBlockExists("ibm_storage_block.bs_endurance"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_block.bs_endurance", "type", "Endurance"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_block.bs_endurance", "capacity", "20"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_block.bs_endurance", "iops", "0.25"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_block.bs_endurance", "snapshot_capacity", "10"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_block.bs_endurance", "os_format_type", "Linux"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_block.bs_endurance", "notes", "endurance notes"),
+					testAccCheckIBMResources("ibm_storage_block.bs_endurance", "datacenter",
+						"ibm_compute_vm_instance.storagevm2", "datacenter"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_block.bs_endurance", "tags.#", "2"),
+				),
+			},
+
+			resource.TestStep{
+				Config: testAccCheckIBMStorageBlockWithUpdatedTag,
+				Check: resource.ComposeTestCheckFunc(
+					// Endurance Storage
+					resource.TestCheckResourceAttr("ibm_storage_block.bs_endurance", "notes", "endurance notes"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_block.bs_endurance", "tags.#", "3"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMStorageBlockExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -165,5 +208,59 @@ resource "ibm_storage_block" "bs_performance" {
         os_format_type = "Linux"
         allowed_virtual_guest_ids = [ "${ibm_compute_vm_instance.storagevm2.id}" ]
         allowed_ip_addresses = [ "${ibm_compute_vm_instance.storagevm2.ipv4_address_private}" ]
+}
+`
+
+const testAccCheckIBMStorageBlockWithTag = `
+resource "ibm_compute_vm_instance" "storagevm2" {
+    hostname = "storagevm2"
+    domain = "example.com"
+    os_reference_code = "DEBIAN_7_64"
+    datacenter = "dal06"
+    network_speed = 100
+    hourly_billing = true
+    private_network_only = false
+    cores = 1
+    memory = 1024
+    disks = [25]
+    local_disk = false
+}
+
+resource "ibm_storage_block" "bs_endurance" {
+        type = "Endurance"
+        datacenter = "${ibm_compute_vm_instance.storagevm2.datacenter}"
+        capacity = 20
+        iops = 0.25
+        snapshot_capacity = 10
+        os_format_type = "Linux"
+		notes = "endurance notes"
+		tags = ["one", "two"]
+}
+`
+
+const testAccCheckIBMStorageBlockWithUpdatedTag = `
+resource "ibm_compute_vm_instance" "storagevm2" {
+    hostname = "storagevm2"
+    domain = "example.com"
+    os_reference_code = "DEBIAN_7_64"
+    datacenter = "dal06"
+    network_speed = 100
+    hourly_billing = true
+    private_network_only = false
+    cores = 1
+    memory = 1024
+    disks = [25]
+    local_disk = false
+}
+
+resource "ibm_storage_block" "bs_endurance" {
+        type = "Endurance"
+        datacenter = "${ibm_compute_vm_instance.storagevm2.datacenter}"
+        capacity = 20
+        iops = 0.25
+        snapshot_capacity = 10
+        os_format_type = "Linux"
+		notes = "endurance notes"
+		tags = ["one", "two", "thre"]
 }
 `

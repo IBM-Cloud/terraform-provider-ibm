@@ -75,6 +75,54 @@ func TestAccIBMComputeMonitor_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMComputeMonitorWithTag(t *testing.T) {
+	var basicMonitor datatypes.Network_Monitor_Version1_Query_Host
+
+	hostname := acctest.RandString(16)
+	domain := "terraformmonitoruat.ibm.com"
+
+	queryTypeID1 := "1"
+	responseActionID1 := "1"
+	waitCycles1 := "5"
+
+	notifiedUsers := []int{6575505}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMComputeMonitorDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMComputeMonitorWithTag(hostname, domain, queryTypeID1, responseActionID1, waitCycles1, notifiedUsers),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMComputeMonitorExists("ibm_compute_monitor.testacc_basic_monitor", &basicMonitor),
+					resource.TestCheckResourceAttrSet(
+						"ibm_compute_monitor.testacc_basic_monitor", "guest_id"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_compute_monitor.testacc_basic_monitor", "ip_address"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_monitor.testacc_basic_monitor", "tags.#", "2"),
+				),
+				Destroy: false,
+			},
+
+			{
+				Config: testAccCheckIBMComputeMonitorWithUpdatedTag(hostname, domain, queryTypeID1, responseActionID1, waitCycles1, notifiedUsers),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMComputeMonitorExists("ibm_compute_monitor.testacc_basic_monitor", &basicMonitor),
+					resource.TestCheckResourceAttrSet(
+						"ibm_compute_monitor.testacc_basic_monitor", "guest_id"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_compute_monitor.testacc_basic_monitor", "ip_address"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_monitor.testacc_basic_monitor", "tags.#", "3"),
+				),
+				Destroy: false,
+			},
+		},
+	})
+}
+
 func testAccCheckIBMComputeMonitorDestroy(s *terraform.State) error {
 	service := services.GetNetworkMonitorVersion1QueryHostService(testAccProvider.Meta().(ClientSession).SoftLayerSession())
 
@@ -173,7 +221,81 @@ resource "ibm_compute_monitor" "testacc_basic_monitor" {
     query_type_id = %s
     response_action_id = %s
     wait_cycles = %s     
-    notified_users = [%s]
+	notified_users = [%s]
+}`, hostname, domain, queryTypeID, responseActionID, waitCycles, formattedUser)
+	return config
+}
+
+func testAccCheckIBMComputeMonitorWithTag(hostname, domain, queryTypeID, responseActionID, waitCycles string, notifiedUsers []int) string {
+	users := []string{}
+	for _, v := range notifiedUsers {
+		text := strconv.Itoa(v)
+		users = append(users, text)
+	}
+	formattedUser := strings.Join(users, ",")
+
+	config := fmt.Sprintf(`
+resource "ibm_compute_vm_instance" "vg-basic-monitor-test" {
+    hostname = "%s"
+    domain = "%s"
+    os_reference_code = "DEBIAN_7_64"
+    datacenter = "dal06"
+    network_speed = 10
+    hourly_billing = true
+    private_network_only = false
+    cores = 1
+    memory = 1024
+    disks = [25, 10, 20]
+    dedicated_acct_host_only = true
+    local_disk = false
+    ipv6_enabled = true
+    secondary_ip_count = 4
+}
+resource "ibm_compute_monitor" "testacc_basic_monitor" {
+    guest_id = "${ibm_compute_vm_instance.vg-basic-monitor-test.id}"
+    ip_address = "${ibm_compute_vm_instance.vg-basic-monitor-test.ipv4_address}"
+    query_type_id = %s
+    response_action_id = %s
+    wait_cycles = %s     
+	notified_users = [%s]
+	tags = ["one", "two"]
+}`, hostname, domain, queryTypeID, responseActionID, waitCycles, formattedUser)
+	return config
+}
+
+func testAccCheckIBMComputeMonitorWithUpdatedTag(hostname, domain, queryTypeID, responseActionID, waitCycles string, notifiedUsers []int) string {
+	users := []string{}
+	for _, v := range notifiedUsers {
+		text := strconv.Itoa(v)
+		users = append(users, text)
+	}
+	formattedUser := strings.Join(users, ",")
+
+	config := fmt.Sprintf(`
+resource "ibm_compute_vm_instance" "vg-basic-monitor-test" {
+    hostname = "%s"
+    domain = "%s"
+    os_reference_code = "DEBIAN_7_64"
+    datacenter = "dal06"
+    network_speed = 10
+    hourly_billing = true
+    private_network_only = false
+    cores = 1
+    memory = 1024
+    disks = [25, 10, 20]
+    dedicated_acct_host_only = true
+    local_disk = false
+    ipv6_enabled = true
+    secondary_ip_count = 4
+}
+resource "ibm_compute_monitor" "testacc_basic_monitor" {
+    guest_id = "${ibm_compute_vm_instance.vg-basic-monitor-test.id}"
+    ip_address = "${ibm_compute_vm_instance.vg-basic-monitor-test.ipv4_address}"
+    query_type_id = %s
+    response_action_id = %s
+    wait_cycles = %s     
+	notified_users = [%s]
+	tags = ["one", "two", "three"]
 }`, hostname, domain, queryTypeID, responseActionID, waitCycles, formattedUser)
 	return config
 }

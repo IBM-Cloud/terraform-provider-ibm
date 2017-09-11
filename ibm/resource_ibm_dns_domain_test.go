@@ -64,6 +64,47 @@ func TestAccIBMDNSDomain_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMDNSDomainWithTag(t *testing.T) {
+	var dns_domain datatypes.Dns_Domain
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMDNSDomainDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(configWithTag, domainName1, target1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMDNSDomainExists("ibm_dns_domain.acceptance_test_dns_domain-1", &dns_domain),
+					testAccCheckIBMDNSDomainAttributes(&dns_domain),
+					saveIBMDNSDomainId(&dns_domain, &firstDnsId),
+					resource.TestCheckResourceAttr(
+						"ibm_dns_domain.acceptance_test_dns_domain-1", "name", domainName1),
+					resource.TestCheckResourceAttr(
+						"ibm_dns_domain.acceptance_test_dns_domain-1", "target", target1),
+					resource.TestCheckResourceAttr(
+						"ibm_dns_domain.acceptance_test_dns_domain-1", "tags.#", "2"),
+				),
+				Destroy: false,
+			},
+			{
+				Config: fmt.Sprintf(configWithUpdatedTag, domainName1, target1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMDNSDomainExists("ibm_dns_domain.acceptance_test_dns_domain-1", &dns_domain),
+					testAccCheckIBMDNSDomainAttributes(&dns_domain),
+					resource.TestCheckResourceAttr(
+						"ibm_dns_domain.acceptance_test_dns_domain-1", "name", domainName1),
+					resource.TestCheckResourceAttr(
+						"ibm_dns_domain.acceptance_test_dns_domain-1", "target", target1),
+					resource.TestCheckResourceAttr(
+						"ibm_dns_domain.acceptance_test_dns_domain-1", "tags.#", "3"),
+				),
+				Destroy: false,
+			},
+		},
+	})
+}
+
 func testAccCheckIBMDNSDomainDestroy(s *terraform.State) error {
 	service := services.GetDnsDomainService(testAccProvider.Meta().(ClientSession).SoftLayerSession())
 
@@ -173,6 +214,21 @@ var config = `
 resource "ibm_dns_domain" "acceptance_test_dns_domain-1" {
 	name = "%s"
 	target = "%s"
+}
+`
+
+var configWithTag = `
+resource "ibm_dns_domain" "acceptance_test_dns_domain-1" {
+	name = "%s"
+	target = "%s"
+	tags = ["one", "two"]
+}
+`
+var configWithUpdatedTag = `
+resource "ibm_dns_domain" "acceptance_test_dns_domain-1" {
+	name = "%s"
+	target = "%s"
+	tags = ["one", "two", "three"]
 }
 `
 

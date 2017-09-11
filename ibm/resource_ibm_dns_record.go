@@ -156,6 +156,13 @@ func resourceIBMDNSRecord() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
+
+			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
 		},
 	}
 }

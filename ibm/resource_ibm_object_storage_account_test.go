@@ -27,6 +27,36 @@ func TestAccIBMObjectStorageAccount_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMObjectStorageAccountWithTag(t *testing.T) {
+	var accountName string
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMObjectStorageAccountDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMObjectStorageAccountWithTag,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMObjectStorageAccountExists("ibm_object_storage_account.testacc_foobar", &accountName),
+					testAccCheckIBMObjectStorageAccountAttributes(&accountName),
+					resource.TestCheckResourceAttr(
+						"ibm_object_storage_account.testacc_foobar", "tags.#", "2"),
+				),
+			},
+			{
+				Config: testAccCheckIBMObjectStorageAccountWithUpdatedTag,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMObjectStorageAccountExists("ibm_object_storage_account.testacc_foobar", &accountName),
+					testAccCheckIBMObjectStorageAccountAttributes(&accountName),
+					resource.TestCheckResourceAttr(
+						"ibm_object_storage_account.testacc_foobar", "tags.#", "3"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMObjectStorageAccountDestroy(s *terraform.State) error {
 	return nil
 }
@@ -62,4 +92,14 @@ func testAccCheckIBMObjectStorageAccountAttributes(accountName *string) resource
 
 var testAccCheckIBMObjectStorageAccountConfig_basic = `
 resource "ibm_object_storage_account" "testacc_foobar" {
+}`
+
+var testAccCheckIBMObjectStorageAccountWithTag = `
+resource "ibm_object_storage_account" "testacc_foobar" {
+	tags = ["one", "two"]
+}`
+
+var testAccCheckIBMObjectStorageAccountWithUpdatedTag = `
+resource "ibm_object_storage_account" "testacc_foobar" {
+	tags = ["one", "two", "three"]
 }`

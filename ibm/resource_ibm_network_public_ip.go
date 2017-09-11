@@ -56,6 +56,12 @@ func resourceIBMNetworkPublicIp() *schema.Resource {
 					return newRoutesTo != nil && (newRoutesTo.String() == net.ParseIP(o).String())
 				},
 			},
+			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
 		},
 	}
 }

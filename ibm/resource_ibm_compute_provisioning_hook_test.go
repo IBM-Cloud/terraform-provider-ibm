@@ -51,6 +51,47 @@ func TestAccIBMComputeProvisioningHook_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMComputeProvisioningHookWithTag(t *testing.T) {
+	var hook datatypes.Provisioning_Hook
+
+	hookName1 := fmt.Sprintf("%s%s", "tfuathook", acctest.RandString(10))
+	uri1 := "http://www.weather.com"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMComputeProvisioningHookDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMComputeProvisioningHookWithTag(hookName1, uri1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMComputeProvisioningHookExists("ibm_compute_provisioning_hook.test-provisioning-hook", &hook),
+					testAccCheckIBMComputeProvisioningHookAttributes(&hook, hookName1, uri1),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_provisioning_hook.test-provisioning-hook", "name", hookName1),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_provisioning_hook.test-provisioning-hook", "uri", uri1),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_provisioning_hook.test-provisioning-hook", "tags.#", "2"),
+				),
+			},
+
+			resource.TestStep{
+				Config: testAccCheckIBMComputeProvisioningHookWithUpdatedTag(hookName1, uri1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMComputeProvisioningHookExists("ibm_compute_provisioning_hook.test-provisioning-hook", &hook),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_provisioning_hook.test-provisioning-hook", "name", hookName1),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_provisioning_hook.test-provisioning-hook", "uri", uri1),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_provisioning_hook.test-provisioning-hook", "tags.#", "3"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMComputeProvisioningHookDestroy(s *terraform.State) error {
 	service := services.GetProvisioningHookService(testAccProvider.Meta().(ClientSession).SoftLayerSession())
 
@@ -123,5 +164,23 @@ func testAccCheckIBMComputeProvisioningHookConfig(name, uri string) string {
 resource "ibm_compute_provisioning_hook" "test-provisioning-hook" {
     name = "%s"
     uri = "%s"
+}`, name, uri)
+}
+
+func testAccCheckIBMComputeProvisioningHookWithTag(name, uri string) string {
+	return fmt.Sprintf(`
+resource "ibm_compute_provisioning_hook" "test-provisioning-hook" {
+    name = "%s"
+	uri = "%s"
+	tags = ["one", "two"]
+}`, name, uri)
+}
+
+func testAccCheckIBMComputeProvisioningHookWithUpdatedTag(name, uri string) string {
+	return fmt.Sprintf(`
+resource "ibm_compute_provisioning_hook" "test-provisioning-hook" {
+    name = "%s"
+	uri = "%s"
+	tags = ["one", "two", "three"]
 }`, name, uri)
 }

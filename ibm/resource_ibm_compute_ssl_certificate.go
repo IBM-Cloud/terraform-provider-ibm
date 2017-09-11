@@ -17,6 +17,7 @@ func resourceIBMComputeSSLCertificate() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMComputeSSLCertificateCreate,
 		Read:     resourceIBMComputeSSLCertificateRead,
+		Update:   resourceIBMComputeSSLCertificateUpdate,
 		Delete:   resourceIBMComputeSSLCertificateDelete,
 		Exists:   resourceIBMComputeSSLCertificateExists,
 		Importer: &schema.ResourceImporter{},
@@ -89,6 +90,13 @@ func resourceIBMComputeSSLCertificate() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+
+			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
 		},
 	}
 }
@@ -148,6 +156,11 @@ func resourceIBMComputeSSLCertificateRead(d *schema.ResourceData, meta interface
 	d.Set("create_date", *cert.CreateDate)
 	d.Set("modify_date", *cert.ModifyDate)
 
+	return nil
+}
+
+func resourceIBMComputeSSLCertificateUpdate(d *schema.ResourceData, meta interface{}) error {
+	//Only tags are updated and that too locally hence nothing to validate and update in terms of real API at this point
 	return nil
 }
 

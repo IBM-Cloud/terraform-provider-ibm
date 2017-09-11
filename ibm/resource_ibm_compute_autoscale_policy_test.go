@@ -2,15 +2,16 @@ package ibm
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/services"
-	"strconv"
-	"strings"
-	"testing"
-	"time"
 )
 
 func TestAccIBMComputeAutoScalePolicy_Basic(t *testing.T) {
@@ -63,6 +64,43 @@ func TestAccIBMComputeAutoScalePolicy_Basic(t *testing.T) {
 					testAccCheckIBMComputeAutoScalePolicyContainsRepeatingTriggers(&scalepolicy, 2, "0 1 ? * MON,WED,SAT *"),
 					testAccCheckIBMComputeAutoScalePolicyContainsResourceUseTriggers(&scalepolicy, 130, "90"),
 					testAccCheckIBMComputeAutoScalePolicyContainsOneTimeTriggers(&scalepolicy, testOnetimeTriggerUpdatedDate),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMComputeAutoScaleWithTag(t *testing.T) {
+	var scalepolicy datatypes.Scale_Policy
+	groupname := fmt.Sprintf("terraformuat_%d", acctest.RandInt())
+	hostname := acctest.RandString(16)
+	policyname := acctest.RandString(16)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMComputeAutoScalePolicyDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMComputeAutoScalePolicyWithTag(groupname, hostname, policyname),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMComputeAutoScalePolicyExists("ibm_compute_autoscale_policy.sample-http-cluster-policy", &scalepolicy),
+					testAccCheckIBMComputeAutoScalePolicyAttributes(&scalepolicy, policyname),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_autoscale_policy.sample-http-cluster-policy", "name", policyname),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_autoscale_policy.sample-http-cluster-policy", "tags.#", "2"),
+				),
+			},
+
+			resource.TestStep{
+				Config: testAccCheckIBMComputeAutoScalePolicyWithUpdatedTag(groupname, hostname, policyname),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMComputeAutoScalePolicyExists("ibm_compute_autoscale_policy.sample-http-cluster-policy", &scalepolicy),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_autoscale_policy.sample-http-cluster-policy", "name", policyname),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_autoscale_policy.sample-http-cluster-policy", "tags.#", "3"),
 				),
 			},
 		},
@@ -297,6 +335,106 @@ resource "ibm_compute_autoscale_policy" "sample-http-cluster-policy" {
         date = "%s"
     }
 }`, groupname, hostname, updatedpolicyname, testOnetimeTriggerUpdatedDate)
+}
+
+func testAccCheckIBMComputeAutoScalePolicyWithTag(groupname, hostname, policyname string) string {
+	return fmt.Sprintf(`
+resource "ibm_compute_autoscale_group" "sample-http-cluster-with-policy" {
+    name = "%s"
+    regional_group = "na-usa-central-1"
+    cooldown = 30
+    minimum_member_count = 1
+    maximum_member_count = 10
+    termination_policy = "CLOSEST_TO_NEXT_CHARGE"
+    virtual_guest_member_template = {
+        hostname = "%s"
+        domain = "terraformuat.ibm.com"
+        cores = 1
+        memory = 4096
+        network_speed = 1000
+        hourly_billing = true
+        os_reference_code = "DEBIAN_7_64"
+        local_disk = false
+        datacenter = "dal09"
+    }
+}
+
+resource "ibm_compute_autoscale_policy" "sample-http-cluster-policy" {
+    name = "%s"
+    scale_type = "RELATIVE"
+    scale_amount = 1
+    cooldown = 30
+    scale_group_id = "${ibm_compute_autoscale_group.sample-http-cluster-with-policy.id}"
+    triggers = {
+        type = "RESOURCE_USE"
+        watches = {
+
+                    metric = "host.cpu.percent"
+                    operator = ">"
+                    value = "80"
+                    period = 120
+        }
+    }
+    triggers = {
+        type = "ONE_TIME"
+        date = "%s"
+    }
+    triggers = {
+        type = "REPEATING"
+        schedule = "0 1 ? * MON,WED *"
+	}
+	tags = ["one", "two"]
+
+}`, groupname, hostname, policyname, testOnetimeTriggerDate)
+}
+
+func testAccCheckIBMComputeAutoScalePolicyWithUpdatedTag(groupname, hostname, policyname string) string {
+	return fmt.Sprintf(`
+resource "ibm_compute_autoscale_group" "sample-http-cluster-with-policy" {
+    name = "%s"
+    regional_group = "na-usa-central-1"
+    cooldown = 30
+    minimum_member_count = 1
+    maximum_member_count = 10
+    termination_policy = "CLOSEST_TO_NEXT_CHARGE"
+    virtual_guest_member_template = {
+        hostname = "%s"
+        domain = "terraformuat.ibm.com"
+        cores = 1
+        memory = 4096
+        network_speed = 1000
+        hourly_billing = true
+        os_reference_code = "DEBIAN_7_64"
+        local_disk = false
+        datacenter = "dal09"
+    }
+}
+resource "ibm_compute_autoscale_policy" "sample-http-cluster-policy" {
+    name = "%s"
+    scale_type = "ABSOLUTE"
+    scale_amount = 2
+    cooldown = 35
+    scale_group_id = "${ibm_compute_autoscale_group.sample-http-cluster-with-policy.id}"
+    triggers = {
+        type = "RESOURCE_USE"
+        watches = {
+
+                    metric = "host.cpu.percent"
+                    operator = ">"
+                    value = "90"
+                    period = 130
+        }
+    }
+    triggers = {
+        type = "REPEATING"
+        schedule = "0 1 ? * MON,WED,SAT *"
+    }
+    triggers = {
+        type = "ONE_TIME"
+        date = "%s"
+	}
+	tags = ["one", "two", "three"]
+}`, groupname, hostname, policyname, testOnetimeTriggerUpdatedDate)
 }
 
 var testOnetimeTriggerUpdatedDate = time.Now().In(utcLoc).AddDate(0, 0, 2).Format(IBMComputeTestTimeFormat)
