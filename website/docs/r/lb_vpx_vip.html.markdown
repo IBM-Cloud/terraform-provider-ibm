@@ -89,6 +89,9 @@ The following arguments are supported:
 * `source_port` - (Required, integer) The source port for the VPX load balancer virtual IP address.
 * `type` - (Required, string) The connection type for the VPX load balancer virtual IP address. Accepted values are `HTTP`, `FTP`, `TCP`, `UDP`, `DNS`, and `SSL`. If SSL is configured, `security_certificate_id` is used as certification for SSL offload services.
 * `security_certificate_id` - (Optional, integer) Applies to NetScaler VPX 10.5 only. Provides security certification for SSL offload. For additional information, see the  [ibm_compute_ssl_certificate](compute_ssl_certificate.html) resource.
+* `tags` - (Optional, array of strings) Set tags on the VPX load balancer virtual IP instance.
+
+**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attributes Reference
 

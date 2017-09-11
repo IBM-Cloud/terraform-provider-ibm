@@ -25,6 +25,9 @@ resource "ibm_network_public_ip" "test_public_ip " {
 The following arguments are supported:
 
 * `routes_to` - (Required, string) Destination IP address that the public IP routes traffic through. The destination IP address can be a public IP address of IBM resources in the same account, such as a public IP address of vm and public virtual IP address of NetScaler VPXs. 
+* `tags` - (Optional, array of strings) Set tags on the public IP instance.
+
+**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attributes Reference
 

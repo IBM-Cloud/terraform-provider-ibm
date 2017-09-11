@@ -62,6 +62,9 @@ The following arguments are supported:
 * `allowed_hardware_ids` - (Optional, array of integers) Specifies allowed bare metal servers. Bare metal servers need to be in the same data center. You can also use this field to list the bare metals which were provided access to this storage through the `block_storage_ids` argument in the `ibm_compute_bare_metal` resource. 
 * `allowed_ip_addresses` - (Optional, array of string) Specifies allowed IP addresses. IP addresses need to be in the same data center.
 * `notes` - (Optional,string) Specifies a note to associate with the block storage.
+* `tags` - (Optional, array of strings) Set tags on the storage block instance.
+
+**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 
 ## Attributes Reference

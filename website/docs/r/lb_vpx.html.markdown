@@ -49,6 +49,9 @@ The following arguments are supported:
 * `private_vlan_id` - (Optional, integer) Private VLAN ID that is used for the private network interface of the VPX load balancer. Accepted values can be found [in the VLAN docs](https://control.softlayer.com/network/vlans). Click  the desired VLAN and note the ID in the resulting URL. Or, you can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
 * `public_subnet` - (Optional, string) Public subnet that is used for the public network interface of the VPX load balancer. Accepted values are primary public networks and can be found [in the subnet docs](https://control.softlayer.com/network/subnets).
 * `private_subnet` - (Optional, string) Public subnet that is used for the private network interface of the VPX load balancer. Accepted values are primary private networks and can be found [in the subnet docs](https://control.softlayer.com/network/subnets).
+* `tags` - (Optional, array of strings) Set tags on the VPX load balancer instance.
+
+**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attributes Reference
 

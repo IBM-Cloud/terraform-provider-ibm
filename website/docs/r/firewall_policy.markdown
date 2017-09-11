@@ -68,4 +68,7 @@ The following arguments are supported:
 * `rules.dst_port_range_end` - (Optional, string) The range of ports for TCP and UDP. Accepted values are `1` `65535`. 
 * `rules.notes` - (Optional, string) Comments for the rule.
 * `rules.protocol` - (Required, string) Protocol for the rule. Accepted values are `tcp`,`udp`,`icmp`,`gre`,`pptp`,`ah`,`esp`. 
+* `tags` - (Optional, array of strings) Set tags on the firewall policy instance.
+
+**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
     

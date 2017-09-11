@@ -64,6 +64,9 @@ The following arguments are supported:
 * `virtual_server_id` - (Optional, integer) Specifies the ID of a virtual server in a local load balancer. The ID can be found with the following URL: `https://api.softlayer.com/rest/v3/SoftLayer_Network_Application_Delivery_Controller_LoadBalancer_VirtualIpAddress/<load_balancer_ID>/getObject?objectMask=virtualServers`. Replace _[load_balancer_ID]_ with the target load balancer's ID and open the URL with a web browser. A Bluemix Infrastructure (SoftLayer) user name and API key are required.
 * `port` - (Optional, integer) The port number in a local load balancer. For example, `8080`.
 * `health_check` - (Optional, map) Specifies the type of health check in a local load balancer. For example, `HTTP`. You can also use this value to specify custom HTTP methods.
+* `tags` - (Optional, array of strings) Set tags on the auto scaling group instance.
+
+**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attributes Reference
 

@@ -28,6 +28,9 @@ The following arguments are supported:
 
 * `name` - (Required, string) A domain's name, including top-level domain. For example, "example.com". When the domain is created, proper `NS` and `SOA` records are created automatically for it.
 * `target` - (Optional, string) The primary target IP address that the domain resolves to. When created, an `A` record with a host value of `@`, and a data-target value of the IP address, are provided and associated with the new domain.
+* `tags` - (Optional, array of strings) Set tags on the DNS domain instance.
+
+**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attributes Reference
 

@@ -31,6 +31,9 @@ The following arguments are supported:
 * `ha_enabled` - (Required, boolean) Set whether the local load balancer needs to be HA enabled or not.
 * `security_certificate_id` - (Optional, integer) Set the ID of the security certificate associated with the local load balancer.
 * `dedicated` - (Optional, boolean) Set to `true` if the local load balancer should be dedicated. Default value: `false`.
+* `tags` - (Optional, array of strings) Set tags on the local load balancer instance.
+
+**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attributes Reference
 

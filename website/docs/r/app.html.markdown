@@ -48,7 +48,7 @@ If space quotas are defined, you can get them by running `bx cf space-quota <spa
 * `wait_time_minutes` - (Optional, integer) Define the timeout to wait for the application to restage/start. Default value: 20 minutes. A value of 0 means no wait period.
 * `app_path` - (Required, string) Define the path to the zip file of the application. The zip must contain all the application files directly within it and not inside a top-level folder. Typically, you should go to the directory where your application files reside and issue `zip -r myapplication.zip *`.
 * `app_version`	 - (Optional, string) Version of the application. If the application content in the file specified by _app_path_ changes, Terraform can't detect it. You can either change the application zip file name to let Terraform know that your zip content has changed, or you can use this attribute to let the provider know that the content changed without changing the _app_path_.
-* `tags` - (Optional, array of strings) Set tags on the application private domain instance.
+* `tags` - (Optional, array of strings) Set tags on the application instance.
 
 **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 

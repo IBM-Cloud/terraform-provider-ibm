@@ -46,6 +46,10 @@ The following arguments are supported:
 
     **NOTE**: Only available for VPX 10.5
 
+* `tags` - (Optional, array of strings) Set tags on the VPX load balancer service instance.
+
+**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
+
 ## Attributes Reference
 
 The following attributes are exported:
