@@ -54,6 +54,9 @@ Nested `resources` blocks have the following structure:
 * `resource` - (Optional, string) Resource 
 * `space_guid` - (Optional, string) The GUID of the Bluemix space where the service is deployed. The value can be retrieved with the `ibm_space` data source, or by running the `bx iam space <space_name> --guid` command in the Bluemix CLI. 
 * `organization_guid` - (Optional, string) The GUID of the Bluemix org. The value can be retrieved from the `ibm_org` data source, or by running the `bx iam orgs --guid` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
+* `tags` - (Optional, array of strings) Set tags on the IAM user policy instance.
+
+**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attributes Reference
 

@@ -64,7 +64,9 @@ The following arguments are supported:
 * `no_subnet` - (Optional) The option if you do not want to automatically create a portable subnet.
 * `webhook` - (Optional) The webhook that you want to add to the cluster.
 * `wait_time_minutes` - (Optional) The duration, expressed in minutes, to wait for the cluster to become available before declaring it as created. It is also the same amount of time waited for no active transactions before proceeding with an update or deletion. Default value: `90`.
+* `tags` - (Optional, array of strings) Set tags on the container cluster instance.
 
+**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 
     

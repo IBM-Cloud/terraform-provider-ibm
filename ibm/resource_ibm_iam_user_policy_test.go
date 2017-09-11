@@ -41,6 +41,42 @@ func TestAccIBMIAMUserPolicy_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMUserPolicy_Tag(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIAMUserPolicy_tag(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_iam_user_policy.testacc_iam_policy", "ibm_id", IAMUser),
+					resource.TestCheckResourceAttr(
+						"ibm_iam_user_policy.testacc_iam_policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_iam_user_policy.testacc_iam_policy", "resources.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_iam_user_policy.testacc_iam_policy", "tags.#", "1"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMIAMUserPolicyUpdate_tag(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_iam_user_policy.testacc_iam_policy", "ibm_id", IAMUser),
+					resource.TestCheckResourceAttr(
+						"ibm_iam_user_policy.testacc_iam_policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_iam_user_policy.testacc_iam_policy", "resources.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_iam_user_policy.testacc_iam_policy", "tags.#", "2"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMUserPolicy_InvalidRole(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -167,4 +203,44 @@ resource "ibm_iam_user_policy" "testacc_iam_policy" {
         resources = [{"service_name" = "All Identity and Access enabled services"}]
 }
 `, cfOrganization)
+}
+
+func testAccCheckIBMIAMUserPolicy_tag() string {
+	return fmt.Sprintf(`
+data "ibm_org" "testacc_ds_org" {
+    org = "%s"
+}
+
+data "ibm_account" "testacc_acc" {
+    org_guid = "${data.ibm_org.testacc_ds_org.id}"
+}
+
+resource "ibm_iam_user_policy" "testacc_iam_policy" {
+        account_guid = "${data.ibm_account.testacc_acc.id}"
+        ibm_id  = "%s"
+        roles   = ["viewer"]
+        resources = [{"service_name" = "All Identity and Access enabled services"}]
+        tags = ["one"]
+}
+`, cfOrganization, IAMUser)
+}
+
+func testAccCheckIBMIAMUserPolicyUpdate_tag() string {
+	return fmt.Sprintf(`
+data "ibm_org" "testacc_ds_org" {
+    org = "%s"
+}
+
+data "ibm_account" "testacc_acc" {
+    org_guid = "${data.ibm_org.testacc_ds_org.id}"
+}
+
+resource "ibm_iam_user_policy" "testacc_iam_policy" {
+        account_guid = "${data.ibm_account.testacc_acc.id}"
+        ibm_id  = "%s"
+        roles   = ["viewer"]
+        resources = [{"service_name" = "All Identity and Access enabled services"}]
+        tags = ["one", "two"]
+}
+`, cfOrganization, IAMUser)
 }
