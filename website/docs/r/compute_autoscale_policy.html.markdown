@@ -52,6 +52,9 @@ The following arguments are supported:
 * `cooldown` - (Optional, integer) The duration, expressed in seconds, that the policy waits after the last action date before performing another scaling action.
 * `scale_group_id` - (Required, integer) Specify the ID of the auto scale group this policy is on.
 * `triggers` - (Optional, array of integers and strings) The triggers to check for this group.
+* `tags` - (Optional, array of strings) Set tags on the auto scaling policy instance.
+
+**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attributes Reference
 

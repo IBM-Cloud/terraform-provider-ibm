@@ -32,6 +32,10 @@ The following arguments are supported:
 
 The `label` and `notes` fields are editable.
 
+* `tags` - (Optional, array of strings) Set tags on the SSH Key instance.
+
+**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
+
 ## Attributes Reference
 
 The following attributes are exported:

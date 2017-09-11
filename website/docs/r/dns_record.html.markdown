@@ -161,6 +161,9 @@ The following arguments are supported:
 * `port` - (`SVR` records only, integer) The TCP or UDP port on which the service is to be found.
 * `priority` - (`SVR` records only, integer) The priority of the target host. The lowest numerical value is given the highest priority.
 * `weight` - (`SVR` records only, integer) A relative weight for records that have the same priority.
+* `tags` - (Optional, array of strings) Set tags on the DNS domain record instance.
+
+**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attributes Reference
 

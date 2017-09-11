@@ -21,7 +21,9 @@ resource "ibm_object_storage_account" "foo" {
 
 ## Argument Reference
 
-No additional arguments needed.
+* `tags` - (Optional, array of strings) Set tags on the object storage account instance.
+
+**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Computed Fields
 

@@ -89,6 +89,9 @@ The following arguments are supported:
 * `dayOfWeek` - (string) Specifies the day of the week. Required if the `scheduleType` is set to `WEEKLY`.
 * `enable` - (boolean) Specifies whether to disable the already created snapshot.
 * `notes` - (Optional,string) Specifies a note to associate with the file storage.
+* `tags` - (Optional, array of strings) Set tags on the file storage instance.
+
+**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attributes Reference
 

@@ -36,7 +36,7 @@ The following arguments are supported:
 
 **NOTE**: By default the newly created space doesn't have any user associated with it. You should add your email to one of the `managers` or `developers` field in order to be able to use the space correctly for the first time.
 
-* `tags` - (Optional, array of strings) Set tags on the application private domain instance.
+* `tags` - (Optional, array of strings) Set tags on the space instance.
 
 **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
