@@ -16,11 +16,11 @@ Download a configuration for Kubernetes clusters on IBM Bluemix.
 
 ```hcl
 data "ibm_container_cluster_config" "cluster_foo" {
-  org_guid     = "test"
-  space_guid   = "test_space"
-  account_guid = "test_acc"
-  name         = "FOO"
-  config_dir   = "/home/foo_config"
+  org_guid        = "test"
+  space_guid      = "test_space"
+  account_guid    = "test_acc"
+  cluster_name_id = "FOO"
+  config_dir      = "/home/foo_config"
 }
 ```
 
