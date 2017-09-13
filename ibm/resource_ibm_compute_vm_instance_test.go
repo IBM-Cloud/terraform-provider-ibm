@@ -334,6 +334,72 @@ func TestAccIBMComputeVmInstance_With_Network_Storage_Access(t *testing.T) {
 	})
 }
 
+func TestAccIBMComputeVmInstance_With_Public_Bandwidth_Limited(t *testing.T) {
+	var guest datatypes.Virtual_Guest
+
+	hostname := acctest.RandString(16)
+	domain := "tfvmbandwidthuat.ibm.com"
+
+	configInstance := "ibm_compute_vm_instance.terraform-public-bandwidth"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccIBMComputeVmInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:  testComputeInstanceWithPublicBandWidth(hostname, domain),
+				Destroy: false,
+				Check: resource.ComposeTestCheckFunc(
+					testAccIBMComputeVmInstanceExists(configInstance, &guest),
+					resource.TestCheckResourceAttr(
+						configInstance, "hostname", hostname),
+					resource.TestCheckResourceAttr(
+						configInstance, "domain", domain),
+					resource.TestCheckResourceAttr(
+						configInstance, "public_bandwidth_limited", "1000"),
+				),
+			},
+			{
+				Config:  testComputeInstanceWithPublicBandWidthDefault(hostname, domain),
+				Destroy: false,
+				Check: resource.ComposeTestCheckFunc(
+					testAccIBMComputeVmInstanceExists(configInstance, &guest),
+					resource.TestCheckResourceAttr(
+						configInstance, "hostname", hostname),
+					resource.TestCheckResourceAttr(
+						configInstance, "domain", domain),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMComputeVmInstance_With_Public_Bandwidth_Unlimited(t *testing.T) {
+	var guest datatypes.Virtual_Guest
+
+	hostname := acctest.RandString(16)
+	domain := "tfvmbandwidthuat.ibm.com"
+
+	configInstance := "ibm_compute_vm_instance.terraform-public-bandwidth"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccIBMComputeVmInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:  testComputeInstanceWithPublicBandwidthUnlimited(hostname, domain),
+				Destroy: false,
+				Check: resource.ComposeTestCheckFunc(
+					testAccIBMComputeVmInstanceExists(configInstance, &guest),
+					resource.TestCheckResourceAttr(
+						configInstance, "hostname", hostname),
+					resource.TestCheckResourceAttr(
+						configInstance, "domain", domain),
+				),
+			},
+		},
+	})
+}
+
 func testAccIBMComputeVmInstanceDestroy(s *terraform.State) error {
 	service := services.GetVirtualGuestService(testAccProvider.Meta().(ClientSession).SoftLayerSession())
 
@@ -624,4 +690,57 @@ resource "ibm_compute_vm_instance" "terraform-ssh-key" {
 }
 `, hostname, domain)
 	return
+}
+
+func testComputeInstanceWithPublicBandWidthDefault(hostname, domain string) (config string) {
+	return fmt.Sprintf(`
+resource "ibm_compute_vm_instance" "terraform-public-bandwidth" {
+    hostname = "%s"
+    domain = "%s"
+    datacenter = "wdc04"
+    network_speed = 10
+    hourly_billing = false
+    cores = 1
+    memory = 1024
+    local_disk = false
+    os_reference_code = "DEBIAN_7_64"
+	disks = [25]
+}
+`, hostname, domain)
+}
+
+func testComputeInstanceWithPublicBandWidth(hostname, domain string) (config string) {
+	return fmt.Sprintf(`
+resource "ibm_compute_vm_instance" "terraform-public-bandwidth" {
+	hostname = "%s"
+	domain = "%s"
+	datacenter = "wdc04"
+	network_speed = 10
+	hourly_billing = false
+	cores = 1
+	memory = 1024
+	local_disk = false
+	os_reference_code = "DEBIAN_7_64"
+	disks = [25]
+	public_bandwidth_limited = 1000
+}
+`, hostname, domain)
+}
+
+func testComputeInstanceWithPublicBandwidthUnlimited(hostname, domain string) (config string) {
+	return fmt.Sprintf(`
+resource "ibm_compute_vm_instance" "terraform-public-bandwidth" {
+	hostname = "%s"
+	domain = "%s"
+	datacenter = "wdc04"
+	network_speed = 100
+	hourly_billing = false
+	cores = 1
+	memory = 1024
+	local_disk = false
+	os_reference_code = "DEBIAN_7_64"
+	disks = [25]
+	public_bandwidth_unlimited = true
+}
+`, hostname, domain)
 }

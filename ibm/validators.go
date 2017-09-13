@@ -127,3 +127,22 @@ func validateNotes(v interface{}, k string) (ws []string, errors []error) {
 	}
 	return
 }
+
+func validatePublicBandwidth(v interface{}, k string) (ws []string, errors []error) {
+	bandwidth := v.(int)
+	if bandwidth < 0 {
+		errors = append(errors, fmt.Errorf(
+			"%q (%q) must be greater than 0", k, bandwidth))
+		return
+	}
+	validBandwidths := []int{250, 1000, 5000, 10000, 20000}
+	for _, b := range validBandwidths {
+		if b == bandwidth {
+			return
+		}
+	}
+	errors = append(errors, fmt.Errorf(
+		"%q (%d) must be one of the value from %d", k, bandwidth, validBandwidths))
+	return
+
+}
