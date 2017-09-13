@@ -8,13 +8,13 @@ description: |-
 
 # ibm\_lb_vpx_vip
 
-Create, update, and delete a VPX load balancer virtual IP address.
+Provides a resource for VPX load balancer virtual IP addresses. This allows VPX load balancer virtual IP addresses to be created, updated, and deleted.
 
-**NOTE**: If NetScaler VPX 10.5 is used, Terraform uses NetScaler's [NITRO REST API](https://docs.citrix.com/en-us/netscaler/11/nitro-api.html)) to manage the resource. The NITRO API is only accessible in the Bluemix Infrastructure (SoftLayer) private network, so you need to be connected to the private network when running Terraform. You can also use the [SSL VPN](http://www.softlayer.com/VPN-Access) to access a private network connection.
+**NOTE**: If you use NetScaler VPX 10.5, Terraform uses NetScaler's [NITRO REST API](https://docs.citrix.com/en-us/netscaler/11/nitro-api.html) to manage the resource.  Terraform can only access the NITRO API in the Bluemix Infrastructure (SoftLayer) private network, so connect to the private network when running Terraform. You can also use the [SSL VPN](http://www.softlayer.com/VPN-Access) to access a private network connection.
 
 ## Example Usage
 
-The following configuration supports NetScaler VPX 10.1 and 10.5
+The following example configuration supports NetScaler VPX 10.1 and 10.5:
 
 ```hcl
 resource "ibm_lb_vpx_vip" "testacc_vip" {
@@ -27,7 +27,7 @@ resource "ibm_lb_vpx_vip" "testacc_vip" {
 }
 ```
 
-NetScaler VPX 10.5 provides additional options for `load_balancing_method` and `persistence`. A private IP address can be used as a `virtual_ip_address`.
+The following example configuration supports only NetScaler VPX 10.5. Additional options for the `load_balancing_method` and `persistence` arguments are shown. A private IP address can be used for the `virtual_ip_address` argument.
 
 ```hcl
 resource "ibm_lb_vpx_vip" "testacc_vip" {
@@ -41,7 +41,7 @@ resource "ibm_lb_vpx_vip" "testacc_vip" {
 }
 ```
 
-NetScaler VPX 10.5 supports SSL offload. If `type` is set to SSL and the `security_certificate_id` is configured, the `virtual_ip_address` provides `HTTPS` protocol. The following examples describe an SSL-offload configuration.
+NetScaler VPX 10.5 also supports SSL offload. If you set the `type` argument to `SSL` and configure the `security_certificate_id` argument, then the `virtual_ip_address` argument provides the `HTTPS` protocol. The following example shows an SSL-offload configuration:
 
 ```hcl
 # Create a NetScaler VPX 10.5
@@ -81,19 +81,18 @@ resource "ibm_lb_vpx_service" "testacc_service1" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The unique identifier for the VPX load balancer virtual IP address.
+* `name` - (Required, string) The ID of the VPX load balancer virtual IP address.
 * `nad_controller_id` - (Required, integer) The ID of the VPX load balancer that the virtual IP address is assigned to.
-* `load_balancing_method` - (Required, string) See the [Bluemix Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_LoadBalancer_VirtualIpAddress) for available methods. If NetScaler VPX 10.5 is used, see the [Citrix docs](https://docs.citrix.com/en-us/netscaler/10-5/ns-tmg-wrapper-10-con/ns-lb-wrapper-con-10/ns-lb-customizing-lbalgorithms-wrapper-con.html) for additional methods that can be used. 
+* `load_balancing_method` - (Required, string) See the [Bluemix Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_LoadBalancer_VirtualIpAddress) for available methods. If you use NetScaler VPX 10.5, see the [Citrix docs](https://docs.citrix.com/en-us/netscaler/10-5/ns-tmg-wrapper-10-con/ns-lb-wrapper-con-10/ns-lb-customizing-lbalgorithms-wrapper-con.html) for additional methods that you can use.
 * `persistence` - (Optional, string) Applies to NetScaler VPX 10.5 only. See the available persistence types in the [Citrix docs](https://docs.citrix.com/en-us/netscaler/10-5/ns-tmg-wrapper-10-con/ns-lb-wrapper-con-10/ns-lb-persistence-wrapper-con/ns-lb-persistence-about-con.html).  
-* `virtual_ip_address` - (Required, string) The public facing IP address for the VPX load balancer virtual IP.
+* `virtual_ip_address` - (Required, string) The public IP address for the VPX load balancer virtual IP.
 * `source_port` - (Required, integer) The source port for the VPX load balancer virtual IP address.
-* `type` - (Required, string) The connection type for the VPX load balancer virtual IP address. Accepted values are `HTTP`, `FTP`, `TCP`, `UDP`, `DNS`, and `SSL`. If SSL is configured, `security_certificate_id` is used as certification for SSL offload services.
-* `security_certificate_id` - (Optional, integer) Applies to NetScaler VPX 10.5 only. Provides security certification for SSL offload. For additional information, see the  [ibm_compute_ssl_certificate](compute_ssl_certificate.html) resource.
-* `tags` - (Optional, array of strings) Set tags on the VPX load balancer virtual IP instance.
+* `type` - (Required, string) The connection type for the VPX load balancer virtual IP address. Accepted values are `HTTP`, `FTP`, `TCP`, `UDP`, `DNS`, and `SSL`. If you set the type to `SSL`, then `security_certificate_id` provides certification for SSL offload services.
+* `security_certificate_id` - (Optional, integer) Applies to NetScaler VPX 10.5 only. The ID of a security certificate you want to use. This argument provides security certification for SSL offload services. For additional information, see the  [ibm_compute_ssl_certificate resource](compute_ssl_certificate.html).
+* `tags` - (Optional, array of strings) Tags associated with the VPX load balancer virtual IP instance.
+  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
-**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 

@@ -12,13 +12,14 @@ Provides a resource for local load balancers. This allows local load balancers t
 
 ## Example Usage
 
+In the following example, you can create a local load balancer:
+
 ```hcl
-# Create a local load balancer
 resource "ibm_lb" "test_lb_local" {
     connections = 1500
-    datacenter = "tok02"
-    ha_enabled = false
-    dedicated = false       
+    datacenter  = "tok02"
+    ha_enabled  = false
+    dedicated   = false       
 }
 ```
 
@@ -26,20 +27,19 @@ resource "ibm_lb" "test_lb_local" {
 
 The following arguments are supported:
 
-* `connections` - (Required, integer) Set the number of connections for the local load balancer.
-* `datacenter` - (Required, string) Set the data center for the local load balancer.
-* `ha_enabled` - (Required, boolean) Set whether the local load balancer needs to be HA enabled or not.
-* `security_certificate_id` - (Optional, integer) Set the ID of the security certificate associated with the local load balancer.
-* `dedicated` - (Optional, boolean) Set to `true` if the local load balancer should be dedicated. Default value: `false`.
-* `tags` - (Optional, array of strings) Set tags on the local load balancer instance.
+* `connections` - (Required, integer) The number of connections for the local load balancer.
+* `datacenter` - (Required, string) The data center for the local load balancer.
+* `ha_enabled` - (Required, boolean) Specifies whether the local load balancer must be HA-enabled.
+* `security_certificate_id` - (Optional, integer) The ID of the security certificate associated with the local load balancer.
+* `dedicated` - (Optional, boolean) Specifies whether the local load balancer must be dedicated. The default value is `false`.
+* `tags` - (Optional, array of strings) Tags associated with the local load balancer instance.
+  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
-**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - ID of the local load balancer.
-* `ip_address` - The IP Address of the local load balancer.
-* `subnet_id` - The ID of the subnet associated with the local load balancer.
-* `ssl_enabled` - If the local load balancer provides SSL capability or not.
+* `id` - The unique identifier of the local load balancer.
+* `ip_address` - The IP address of the local load balancer.
+* `subnet_id` - The unique identifier of the subnet associated with the local load balancer.
+* `ssl_enabled` - The status of whether the local load balancer provides SSL capability.

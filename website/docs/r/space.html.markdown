@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_space
 
-Create, update, or delete spaces for IBM Bluemix.
+Provides a space resource. This allows spaces to be created, updated, and deleted.
 
 ## Example Usage
 
@@ -17,9 +17,9 @@ resource "ibm_space" "space" {
   name        = "myspace"
   org         = "myorg"
   space_quota = "myspacequota"
-  managers = ["manager@example.com"]
-  auditors = ["auditor@example.com"]
-  developers = ["developer@example.com"]
+  managers    = ["manager@example.com"]
+  auditors    = ["auditor@example.com"]
+  developers  = ["developer@example.com"]
 }
 ```
 
@@ -27,21 +27,20 @@ resource "ibm_space" "space" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) A descriptive name used to identify a space.
-* `org` - (Required, string) Name of the org this space belongs to.
+* `name` - (Required, string) The descriptive name used to identify a space.
+* `org` - (Required, string) The name of the organization to which this space belongs.
 * `space_quota` - (Optional, string) The name of the Space Quota Definition associated with the space.
-* `managers` - (Optional, set) The emails (associated with IBM ID) of the users who will be given manager role in this space. They can invite and manage users, and enable features for a given space.
-* `developers` - (Optional, set) The emails (associated with IBM ID) of the users who will be given developer role in this space. They can create and manage apps and services, and see logs and reports.
-* `auditors` - (Optional, set) The emails (associated with IBM ID) of the users who will be given auditor role in this space. They can view logs, reports, and settings on this space.
+* `managers` - (Optional, set) The email addresses (associated with IBMids) of the users to whom you want to give a manager role in this space. Users with the manager role can invite users, manage users, and enable features for the given space.
+* `developers` - (Optional, set) The email addresses (associated with IBMids) of the users to whom you want to give a developer role in this space. Users with the developer role can create apps and services, manage apps and services, and see logs and reports in the given space.
+* `auditors` - (Optional, set) The email addresses (associated with IBMids) of the users to whom you want to give an auditor role in this space. Users with the auditor role can view logs, reports, and settings in the given space.
 
-**NOTE**: By default the newly created space doesn't have any user associated with it. You should add your email to one of the `managers` or `developers` field in order to be able to use the space correctly for the first time.
+**NOTE**: By default the newly created space has no user associated with it. Add your own email address to the `managers` or `developers` field in order to be able to use the space correctly for the first time.
 
-* `tags` - (Optional, array of strings) Set tags on the space instance.
+* `tags` - (Optional, array of strings) Tags associated with the space instance.
+  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
-**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - The ID of the new space.
+* `id` - The unique identifier of the new space.

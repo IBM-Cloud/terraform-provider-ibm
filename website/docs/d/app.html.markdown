@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_app
 
-Import the details of an existing IBM Bluemix app as a read-only data source. The fields of the data source can then be referenced by other resources within the same configuration by using interpolation syntax. 
+Import the details of an existing IBM Bluemix app as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
@@ -23,20 +23,23 @@ data "ibm_app" "testacc_ds_app" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The name of the application. The value can be retrieved by running the `bx app list` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
-* `space_guid` - (Required, string) The GUID of the Bluemix space where the application is deployed. The value can be retrieved with the `ibm_space` data source, or by running the `bx iam space <space-name> --guid` command in the Bluemix CLI.
+* `name` - (Required, string) The name of the application. You can retrieve the value by running the `bx app list` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
+* `space_guid` - (Required, string) The GUID of the Bluemix space where the application is deployed. You can retrieve the value with the `ibm_space` data source or by running the `bx iam space <space-name> --guid` command in the Bluemix CLI.
 
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - The ID of the application.
-* `memory` - Memory that is allocated to the application, specified in megabytes.
+* `id` - The unique identifier of the application.
+* `memory` - The memory, specified in megabytes, that is allocated to the application.
 * `instances` - The number of instances of the application.
 * `disk_quota` - The disk quota for an instance of the application, specified in megabytes.
-* `buildpack` - Buildpack used by the application. It can be a) Blank to indicate auto-detection, b) A Git URL pointing to a buildpack, or c) The name of an installed buildpack.
+* `buildpack` - The buildpack used by the application. It can be any of the following:
+    * Blank, to indicate auto-detection.
+    * A Git URL pointing to a buildpack.
+    * The name of an installed buildpack.
 * `environment_json` - Key/value pairs of all the environment variables. Does not include any system or service variables.
 * `route_guid` - The route GUIDs that are bound to the application.
 * `service_instance_guid` - The service instance GUIDs that are bound to the application.
-* `package_state` - The state of the application package, such as staged, pending.
+* `package_state` - The state of the application package, such as staged or pending.
 * `state` - The state of the application.
