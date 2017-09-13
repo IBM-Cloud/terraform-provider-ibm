@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_app_domain_shared
 
-Create, update, or delete shared domain on IBM Bluemix.
+Provides a shared domain resource. This allows shared domains to be created, updated, and deleted.
 
 ## Example Usage
 
@@ -26,13 +26,11 @@ The following arguments are supported:
 
 * `name` - (Required, string) The name of the domain.
 * `router_group_guid` - (Optional, string) The GUID of the router group.
-* `tags` - (Optional, array of strings) Set tags on the application shared domain instance.
+* `tags` - (Optional, array of strings) Tags associated with the application shared domain instance.
+  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
-**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - The ID of the shared domain.
-
+* `id` - The unique identifier of the shared domain.

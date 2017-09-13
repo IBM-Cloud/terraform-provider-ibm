@@ -9,7 +9,7 @@ description: |-
 # ibm\_container_cluster_config
 
 
-Download a configuration for Kubernetes clusters on IBM Bluemix.
+Download a configuration for Kubernetes clusters on IBM Bluemix. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 
 ## Example Usage
@@ -28,18 +28,18 @@ data "ibm_container_cluster_config" "cluster_foo" {
 
 The following arguments are supported:
 
-* `cluster_name_id` - (Required) Name or ID of the cluster.
-* `config_dir` - (Required) The directory where you want the cluster configuration to download.
-* `admin` - (Optional) Set to `true` to download config for the admin. Default value: `false`.
-* `download` - (Optional) Set to `false` to skip downloading the config for the admin. Default value: `true`. Since it is part of a data source, the config is downloaded for every `terraform` call by default. For a particular cluster name/ID, the config is guaranteed to be downloaded to the same path for a given `config_dir`.
-* `org_guid` - (Required) The GUID for the Bluemix organization that the cluster is associated with. The value can be retrieved from the `ibm_org` data source, or by running the `bx iam orgs --guid` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
-* `space_guid` - (Required) The GUID for the Bluemix space that the cluster is associated with. The value can be retrieved from the `ibm_space` data source, or by running the `bx iam space <space-name> --guid` command in the Bluemix CLI.
-* `account_guid` - (Required) The GUID for the Bluemix account that the cluster is associated with. The value can be retrieved from the `ibm_account` data source, or by running the `bx iam accounts` command in the Bluemix CLI.
+* `cluster_name_id` - (Required, string) The name or ID of the cluster.
+* `config_dir` - (Required, string) The directory where you want the cluster configuration to download.
+* `admin` - (Optional, boolean) Set the value to `true` to download the configuration for the administrator. The default value is `false`.
+* `download` - (Optional, boolean) Set the value to `false` to skip downloading the configuration for the administrator. The default value is `true`. Because it is part of a data source, by default the configuration is downloaded for every Terraform call. For a particular cluster name or ID, the configuration is guaranteed to be downloaded to the same path for a given `config_dir`.
+* `org_guid` - (Required, string) The GUID for the Bluemix organization associated with the cluster. You can retrieve the value from the `ibm_org` data source or by running the `bx iam orgs --guid` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
+* `space_guid` - (Required, string) The GUID for the Bluemix space associated with the cluster. You can retrieve the value from the `ibm_space` data source or by running the `bx iam space <space-name> --guid` command in the Bluemix CLI.
+* `account_guid` - (Required, string) The GUID for the Bluemix account associated with the cluster. You can retrieve the value from the `ibm_account` data source or by running the `bx iam accounts` command in the Bluemix CLI.
 
 
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - The unique identifier of the Cluster config 
-* `config_file_path` - The path to the cluster config file. Typically the Kubernetes YAML config file.
+* `id` - The unique identifier of the luster configuration.
+* `config_file_path` - The path to the cluster configuration file. This is typically the Kubernetes YAML configuration file.

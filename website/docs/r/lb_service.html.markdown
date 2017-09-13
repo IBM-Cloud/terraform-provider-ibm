@@ -14,8 +14,9 @@ For additional details, see the [Bluemix Infrastructure (SoftLayer) API docs](ht
 
 ## Example Usage
 
+In the following example, you can create a local load balancer service:
+
 ```hcl
-# Create a local load balancer service
 resource "ibm_lb_service" "test_lb_local_service" {
     port = 80
     enabled = true
@@ -31,12 +32,11 @@ resource "ibm_lb_service" "test_lb_local_service" {
 
 The following arguments are supported:
 
-* `service_group_id` - (Required, integer) Set the ID of the local load balancer service group.
-* `ip_address_id` - (Required, integer) Set the ID of the virtual server.
-* `port` - (Required, integer) Set the port for the local load balancer service.
-* `enabled` - (Required, boolean) Enable the load balancer service. Set to `true` to enable, otherwise set to `false`.
-* `health_check_type` - (Required, string) Set the health check type for the load balancer service.
-* `weight` - (Required, integer) Set the weight for the load balancer service.
-* `tags` - (Optional, array of strings) Set tags on the local load balancer service instance.
-
-**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
+* `service_group_id` - (Required, integer) The ID of the local load balancer service group.
+* `ip_address_id` - (Required, integer) The ID of the virtual server.
+* `port` - (Required, integer) The port for the local load balancer service.
+* `enabled` - (Required, boolean) Specifies whether you want to enable the load balancer service. The default value is `false`.
+* `health_check_type` - (Required, string) The health check type for the load balancer service.
+* `weight` - (Required, integer) The weight for the load balancer service.
+* `tags` - (Optional, array of strings) Tags associated with the local load balancer service instance.
+  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.

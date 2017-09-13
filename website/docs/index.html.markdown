@@ -8,10 +8,9 @@ description: |-
 
 # IBM Cloud Provider
 
-The IBM Cloud provider is used to manage IBM Cloud resources. The provider needs to be configured with the proper credentials before it can be used.
+The IBM Cloud provider is used to manage IBM Cloud resources. The provider must be configured with the proper credentials before it can be used.
 
-Use the navigation menu on the left to read about the available resources.
-
+Use the navigation menu on the left to read about the available data sources and resources.
 
 ## Example Usage
 
@@ -24,7 +23,7 @@ provider "ibm" {
   softlayer_api_key  = "${var.ibm_sl_api_key}"
 }
 
-# Create an SSH key. The SSH key surfaces in the SoftLayer console under Devices > Manage > SSH Keys.
+# Create an SSH key. You can find the SSH key surfaces in the SoftLayer console under Devices > Manage > SSH Keys
 resource "ibm_compute_ssh_key" "test_key_1" {
   label      = "test_key_1"
   public_key = "${file("~/.ssh/id_rsa_test_key_1.pub")}"
@@ -33,7 +32,7 @@ resource "ibm_compute_ssh_key" "test_key_1" {
   # public_key = "${file("C:\ssh\keys\path\id_rsa_test_key_1.pub")}"
 }
 
-# Create a virtual server with the SSH key.
+# Create a virtual server with the SSH key
 resource "ibm_compute_vm_instance" "my_server_2" {
   hostname          = "host-b.example.com"
   domain            = "example.com"
@@ -45,13 +44,13 @@ resource "ibm_compute_vm_instance" "my_server_2" {
   memory            = 1024
 }
 
-# Read details of IBM Bluemix Space
+# Reference details of the IBM Bluemix Space
 data "ibm_space" "space" {
   space = "${var.space}"
   org   = "${var.org}"
 }
 
-# Create an instance of a IBM service.
+# Create an instance of an IBM service
 resource "ibm_service_instance" "service" {
   name       = "${var.instance_name}"
   space_guid = "${data.ibm_space.space.id}"
@@ -70,7 +69,7 @@ The IBM Cloud provider offers a flexible means of providing credentials for auth
 
 ### Static credentials ###
 
-Static credentials can be provided by adding an `bluemix_api_key`, `softlayer_username`, `softlayer_api_key` in the IBM Cloud provider block.
+You can provide your static credentials by adding the `bluemix_api_key`, `softlayer_username`, and `softlayer_api_key` arguments in the IBM Cloud provider block.
 
 Usage:
 
@@ -86,7 +85,7 @@ provider "ibm" {
 
 ### Environment variables
 
-You can provide your credentials with the `BM_API_KEY`, `SL_USERNAME`, and `SL_API_KEY` environment variables, representing your Bluemix API key, SoftLayer user name, and SoftLayer API key, respectively.  
+You can provide your credentials by exporting the `BM_API_KEY`, `SL_USERNAME`, and `SL_API_KEY` environment variables, representing your Bluemix API key, SoftLayer user name, and SoftLayer API key, respectively.  
 
 ```
 provider "ibm" {}
@@ -105,14 +104,14 @@ $ terraform plan
 
 The following arguments are supported in the `provider` block:
 
-* `bluemix_api_key` - (Optional) The Bluemix API key. It must be provided, but it can also be sourced from the `BM_API_KEY` or `BLUEMIX_API_KEY` environment variable. The former variable has higher precedence. The key is required to provision Cloud Foundry or IBM Container Service resources, such as any resource that begins with `ibm` or `ibm_container`.
+* `bluemix_api_key` - (optional) The Bluemix API key. You must either add it as a credential in the provider block or source it from the `BM_API_KEY` (higher precedence) or `BLUEMIX_API_KEY` environment variable. The key is required to provision Cloud Foundry or IBM Container Service resources, such as any resource that begins with `ibm` or `ibm_container`.
 
-* `bluemix_timeout` - (Optional) The timeout, expressed in seconds, for the SoftLayer API key. It can also be sourced from the `BM_TIMEOUT` or `BLUEMIX_TIMEOUT` environment variable. The former variable has higher precedence. Default value: `60`.
+* `bluemix_timeout` - (optional) The timeout, expressed in seconds, for interacting with Bluemix APIs. You can also source the timeout from the `BM_TIMEOUT` (higher precedence) or `BLUEMIX_TIMEOUT` environment variable. The default value is `60`.
 
-* `softlayer_username` - (Optional) The SoftLayer user name. It must be provided, but it can also be sourced from the `SL_USERNAME` or `SOFTLAYER_USERNAME` environment variable. The former variable has higher precedence. 
+* `softlayer_username` - (optional) The SoftLayer user name. You must either add it as a credential in the provider block or source it from the `SL_USERNAME` (higher precedence) or `SOFTLAYER_USERNAME` environment variable.
 
-* `softlayer_api_key` - (Optional) The SoftLayer user name. It must be provided, but it can also be sourced from the `SL_API_KEY` or `SOFTLAYER_API_KEY` environment variable. The former variable has higher precedence. The key is required to provision SoftLayer resources, such as any resource that begins with `ibm_compute`.
+* `softlayer_api_key` - (optional) The SoftLayer API key. You must either add it as a credential in the provider block or source it from the `SL_API_KEY` (higher precedence) or `SOFTLAYER_API_KEY` environment variable. The key is required to provision SoftLayer resources, such as any resource that begins with `ibm_compute`.
 
-* `softlayer_timeout` - (Optional) The timeout, expressed in seconds, for the SoftLayer API key. It can also be sourced from the `SL_TIMEOUT` or `SOFTLAYER_TIMEOUT` environment variable. The former variable has higher precedence. Default value: `60`.
+* `softlayer_timeout` - (optional) The timeout, expressed in seconds, for the SoftLayer API key. You can also source the timeout from the `SL_TIMEOUT` (higher precedence) or `SOFTLAYER_TIMEOUT` environment variable. The default value is `60`.
 
-* `region` - (Optional) The Bluemix region. It can also be sourced from the `BM_REGION` or `BLUEMIX_REGION` environment variable. The former variable has higher precedence. Default value: `us-south`.
+* `region` - (optional) The Bluemix region. You can also source it from the `BM_REGION` (higher precedence) or `BLUEMIX_REGION` environment variable. The default value is `us-south`.

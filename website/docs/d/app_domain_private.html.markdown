@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_app_domain_private
 
-Import the details of an existing IBM Bluemix private domain as a read-only data source. The fields of the data source can then be referenced by other resources within the same configuration by using interpolation syntax. 
+Import the details of an existing IBM Bluemix private domain as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
@@ -22,9 +22,9 @@ data "ibm_app_domain_private" "private_domain" {
 
 The following arguments are supported:
 
-* `name` - (Required) The name of the private domain.
+* `name` - (Required, string) The name of the private domain.
 
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 

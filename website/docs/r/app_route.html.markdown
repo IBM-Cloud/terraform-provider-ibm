@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_app_route
 
-Create, update, or delete route on IBM Bluemix.
+Provides a route resource. This allows routes to be created, updated, and deleted.
 
 ## Example Usage
 
@@ -34,17 +34,16 @@ resource "ibm_app_route" "route" {
 
 The following arguments are supported:
 
-* `domain_guid` - (Required, string) The GUID of the associated domain. The values can be retrieved from data source `ibm_app_domain_shared` or `ibm_app_domain_private`.
-* `space_guid` - (Required, string) The GUID of the space where you want to create the route. The values can be retrieved from data source `ibm_space`, or by running the `bx iam space <space_name> --guid` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
-* `host` - (Optional, string) The host portion of the route. Required for shared-domains.
-* `port` - (Optional, integer) The port of the route. Supported for domains of TCP router groups only.
-* `path` - (Optional, string) The path for a route as raw text. Paths must be between 2 and 128 characters. Paths must start with a forward slash (/). Paths cannot contain a question mark (?).
-* `tags` - (Optional, array of strings) Set tags on the route instance.
+* `domain_guid` - (Required, string) The GUID of the associated domain. You can retrieve the value from data source `ibm_app_domain_shared` or `ibm_app_domain_private`.
+* `space_guid` - (Required, string) The GUID of the space where you want to create the route. You can retrieve the value from data source `ibm_space` or by running the `bx iam space <space_name> --guid` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
+* `host` - (Optional, string) The host portion of the route. Host is required for shared-domains.
+* `port` - (Optional, integer) The port of the route. Port is supported for domains of TCP router groups only.
+* `path` - (Optional, string) The path for a route as raw text. Paths must be 2 - 128 characters. Paths must start with a forward slash (/) and cannot contain a question mark (?).
+* `tags` - (Optional, array of strings) Tags associated with the route instance.
+    **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
-**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - The ID of the route.
+* `id` - The unique identifier of the route.

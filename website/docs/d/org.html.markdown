@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_org
 
-Import the details of an existing IBM Bluemix org as a read-only data source. The fields of the data source can then be referenced by other resources within the same configuration by using interpolation syntax. 
+Import the details of an existing IBM Bluemix org as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
@@ -22,10 +22,10 @@ data "ibm_org" "orgdata" {
 
 The following arguments are supported:
 
-* `org` - (Required) The name of the Bluemix org. The value can be retrieved by running the `bx iam orgs` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
+* `org` - (Required, string) The name of the Bluemix organization. You can retrieve the value by running the `bx iam orgs` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
 
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - The unique identifier of the org.  
+* `id` - The unique identifier of the organization.  

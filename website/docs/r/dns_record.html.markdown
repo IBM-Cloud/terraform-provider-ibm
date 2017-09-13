@@ -8,15 +8,17 @@ description: |-
 
 # ibm\_dns_record
 
-Represents a single-resource record entry in `ibm_dns_domain`. Each resource record contains a `host` and `data` property to define the name and target data of a resource.
+Provides a single-resource record entry in `ibm_dns_domain`. Each resource record contains a `host` and a `data` property to define the name and target data of a resource.
 
-The Bluemix Infrastructure (SoftLayer) object  [SoftLayer_Dns_Domain_ResourceRecord](https://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord) is used for most CRUD operations. For SRV record types, the Bluemix Infrastructure (SoftLayer) object [SoftLayer_Dns_Domain_ResourceRecord_SrvType](https://sldn.softlayer.com/reference/services/SoftLayer_Dns_Domain_ResourceRecord_SrvType) is used.
+The Bluemix Infrastructure (SoftLayer) object  [SoftLayer_Dns_Domain_ResourceRecord](https://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord) is used for most CRUD operations. The Bluemix Infrastructure (SoftLayer) object [SoftLayer_Dns_Domain_ResourceRecord_SrvType](https://sldn.softlayer.com/reference/services/SoftLayer_Dns_Domain_ResourceRecord_SrvType) is used for SRV record types.
 
-You cannot create SOA nor NS record types, as these are automatically created by Bluemix Infrastructure (SoftLayer) when the domain is created.
+You cannot create SOA or NS record types because these are automatically created by Bluemix Infrastructure (SoftLayer) when the domain is created.
 
 ## Example Usage
 
-### `A` Record | [SLDN](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_AType)
+### `A` Record
+
+Review the [Bluemix Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_AType) to properly implement the `A` record.
 
 ```hcl
 resource "ibm_dns_domain" "main" {
@@ -33,7 +35,9 @@ resource "ibm_dns_record" "www" {
 }
 ```
 
-### `AAAA` Record | [SLDN](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_AaaaType)
+### `AAAA` Record
+
+Review the [Bluemix Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_AaaaType) to properly implement the `AAAA` record.
 
 ```hcl
 resource "ibm_dns_record" "aaaa" {
@@ -46,7 +50,9 @@ resource "ibm_dns_record" "aaaa" {
 }
 ```
 
-### `CNAME` Record | [SLDN](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_CnameType)
+### `CNAME` Record
+
+Review the [Bluemix Infrastructure (SoftLayer) docs] to properly implement the `` record.
 
 ```hcl
 resource "ibm_dns_record" "cname" {
@@ -59,7 +65,9 @@ resource "ibm_dns_record" "cname" {
 }
 ```
 
-### `MX` Record | [SLDN](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_MxType)
+### `MX` Record
+
+Review the [Bluemix Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_MxType) to properly implement the `MX` record.
 
 ```hcl
 resource "sibm_dns_record" "recordMX-1" {
@@ -73,7 +81,9 @@ resource "sibm_dns_record" "recordMX-1" {
 }
 ```
 
-### `SPF` Record | [SLDN](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_SpfType)
+### `SPF` Record
+
+Review the [Bluemix Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_SpfType) to properly implement the `SPF` record.
 
 ```hcl
 resource "ibm_dns_record" "recordSPF" {
@@ -86,7 +96,9 @@ resource "ibm_dns_record" "recordSPF" {
 }
 ```
 
-### `TXT` Record | [SLDN](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_TxtType/)
+### `TXT` Record
+
+Review the [Bluemix Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_TxtType/) to properly implement the `TXT` record.
 
 ```hcl
 resource "ibm_dns_record" "recordTXT" {
@@ -99,7 +111,9 @@ resource "ibm_dns_record" "recordTXT" {
 }
 ```
 
-### `SRV` Record | [SLDN](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_SrvType)
+### `SRV` Record
+
+Review the [Bluemix Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_SrvType) to properly implement the `SRV` record.
 
 ```hcl
 resource "ibm_dns_record" "recordSRV" {
@@ -119,7 +133,7 @@ resource "ibm_dns_record" "recordSRV" {
 
 ### `PTR` Record
 
-Review the [Bluemix Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_PtrType/) to properly implement the `PTR` record. 
+Review the [Bluemix Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_PtrType/) to properly implement the `PTR` record.
 
 ```hcl
 resource "ibm_dns_record" "recordPTR" {
@@ -137,16 +151,16 @@ resource "ibm_dns_record" "recordPTR" {
 
 The following arguments are supported:
 
-* `data` - (Required, string) The value of a domain's resource record. This can be an IP address or a hostname. Fully qualified host and domain name data must end with the `.` character.
-* `domain_id` - (Required, integer) The identifier belonging to the domain that a resource record is associated with.
-* `expire` - (Integer) The duration, expressed in seconds, that a secondary name server (or servers) holds a zone before it is no longer considered authoritative.
+* `data` - (Required, string) The IP address or a hostname of a domain's resource record. Fully qualified host and domain name data must end with the `.` character.
+* `domain_id` - (Required, integer) The ID for the domain associated with the resource record.
+* `expire` - (Optional, integer) The duration, expressed in seconds, that a secondary name server (or servers) holds a zone before it is no longer considered authoritative.
 * `host` - (Required, string) The host defined by a resource record. The `@` symbol denotes a wildcard.
-* `minimum_ttl` - (Integer) The duration, expressed in seconds, that a domain's resource records are valid. This is also known as a minimum time to live (TTL), and can be overridden by an individual resource record's TTL.
-* `mx_priority` - (Integer) Useful in cases where a domain has more than one mail exchanger, the priority property is the priority of the MTA that delivers mail for a domain. A lower number denotes a higher priority, and mail will attempt to deliver through that MTA before moving to lower priority mail servers. Priority is defaulted to 10 upon resource record creation.
-* `refresh` - (Integer) The duration, expressed in seconds, that a secondary name server waits to check for a new copy of a DNS zone from the domain's primary name server. If a zone file has changed, the secondary DNS server updates its copy of the zone to match the primary DNS server's zone.
-* `responsible_person` - (Required, string) The email address of the person responsible for a domain, with the `@` symbol replaced with a `.`. Example usage: root@example.org SOA responsibility would be expressed as `root.example.org.`.
-* `retry` - (Integer) The duration, expressed in seconds, that a domain's primary name server (or servers) wait before attempting to refresh a domain's zone with the secondary name server. The retry action is triggered after a previous failed attempt to refresh by a secondary name server. 
-* `ttl` - (Required, integer) The time to live (TTL) duration, expressed in seconds, of a resource record. TTL is used by a name server to determine how long to cache a resource record. An SOA record's TTL value defines the domain's overall TTL.
+* `minimum_ttl` - (Optional, integer) The duration, expressed in seconds, that a domain's resource records are valid. This is also known as a minimum time to live (TTL), and can be overridden by an individual resource record's TTL.
+* `mx_priority` - (Optional, integer) The priority of the mail exchanger that delivers mail for a domain. This is useful in cases where a domain has more than one mail exchanger. A lower number denotes a higher priority, and mail will attempt to deliver through the highest priority exchanger before moving to lower priority exchangers. The default value is `10`.
+* `refresh` - (Optional, integer) The duration, expressed in seconds, that a secondary name server waits to check the domain's primary name server for a new copy of a DNS zone. If a zone file has changed, the secondary DNS server updates its copy of the zone to match the primary DNS server's zone.
+* `responsible_person` - (Required, string) The email address of the person responsible for a domain. Replace the `@` symbol in the address with a `.`. For example: root@example.org would be expressed as `root.example.org.`.
+* `retry` - (Optional, integer) The duration, expressed in seconds, that the domain's primary name server (or servers) waits before attempting to refresh the domain's zone with the secondary name server. A failed attempt to refresh by a secondary name server triggers the retry action.
+* `ttl` - (Required, integer) The time to live (TTL) duration, expressed in seconds, of a resource record. A name server uses TTL to determine how long to cache a resource record. An SOA record's TTL value defines the domain's overall TTL.
 * `type` - (Required, string) The type of domain resource record. Accepted values are as follows:
     * `a` for address records
     * `aaaa` for address records
@@ -155,18 +169,17 @@ The following arguments are supported:
     * `ptr` for pointer records in reverse domains
     * `spf` for sender policy framework records
     * `srv` for service records
-* `txt` - (String) Used for text records.
-* `service` - (`SRV` records only, string) The symbolic name of the desired service. 
-* `protocol` - (`SRV` records only, string) The protocol of the desired service; this is usually TCP or UDP.
-* `port` - (`SVR` records only, integer) The TCP or UDP port on which the service is to be found.
+* `txt` - (Optional, string) Used for text records.
+* `service` - (`SRV` records only, string) The symbolic name of the desired service.
+* `protocol` - (`SRV` records only, string) The protocol of the desired service. This is usually TCP or UDP.
+* `port` - (`SVR` records only, integer) The TCP or UDP port on which the service will be found.
 * `priority` - (`SVR` records only, integer) The priority of the target host. The lowest numerical value is given the highest priority.
 * `weight` - (`SVR` records only, integer) A relative weight for records that have the same priority.
-* `tags` - (Optional, array of strings) Set tags on the DNS domain record instance.
+* `tags` - (Optional, array of strings) Tags associated with the DNS domain record instance.
+  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
-**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - A domain resource record's internal identifier.
+* `id` - The internal identifier of the domain resource record.

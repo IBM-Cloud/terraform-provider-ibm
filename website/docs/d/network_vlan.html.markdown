@@ -9,7 +9,7 @@ description: |-
 # ibm\_network_vlan
 
 
-Import the details of an existing VLAN as a read-only data source. The fields of the data source can then be referenced by other resources within the same configuration using interpolation syntax. 
+Import the details of an existing VLAN as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 
 ## Example Usage
@@ -21,7 +21,7 @@ data "ibm_network_vlan" "vlan_foo" {
 ```
 
 
-The following example shows how you can use this data source to reference a VLAN ID in the _ibm_compute_bare_metal_ resource, since the numeric IDs are often unknown.
+The following example shows how you can use this data source to reference a VLAN ID in the _ibm_compute_bare_metal_ resource because the numeric IDs are often unknown.
 
 ```hcl
 resource "ibm_compute_bare_metal" "bm1" {
@@ -35,13 +35,13 @@ resource "ibm_compute_bare_metal" "bm1" {
 
 The following arguments are supported:
 
-* `name` - (Required if the number nor router hostname are provided) The name of the VLAN, as it was defined in Bluemix Infrastructure (SoftLayer). Names can be found in the [SoftLayer Customer Portal](https://control.softlayer.com/network/vlans), by navigating to **Network > IP Management > VLANs**.
-* `number` - (Required if the name is not provided) The VLAN number, which can be found in the [SoftLayer Customer Portal](https://control.softlayer.com/network/vlans).
-* `router_hostname` - (Required if the name is not provided) The primary VLAN router hostname, which can be found in the [SoftLayer Customer Portal](https://control.softlayer.com/network/vlans).
+* `name` - (Required if neither the number nor router hostname are provided, string) The name of the VLAN, as it was defined in Bluemix Infrastructure (SoftLayer). You can find names in the [SoftLayer Customer Portal](https://control.softlayer.com/network/vlans) by navigating to **Network > IP Management > VLANs**.
+* `number` - (Required if the name is not provided, integer) The VLAN number. You can find  numbers in the [SoftLayer Customer Portal](https://control.softlayer.com/network/vlans).
+* `router_hostname` - (Required if the name is not provided, string) The primary VLAN router hostname. You can find hostnames in the [SoftLayer Customer Portal](https://control.softlayer.com/network/vlans).
 
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - Set to the ID of the VLAN.
-* `subnets` - List of subnets associated with this VLAN.
+* `id` - The unique identifier of the VLAN.
+* `subnets` - A list of subnets associated with this VLAN.

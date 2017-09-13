@@ -8,14 +8,15 @@ description: |-
 
 # ibm\_lb_service_group
 
-Provides a resource for local load balancer groups. This allows local load balancer groups to be created, updated, and deleted.
+Provides a resource for local load balancer service groups. This allows local load balancer service groups to be created, updated, and deleted.
 
 For additional details, see the [Bluemix Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_Application_Delivery_Controller_LoadBalancer_Service_Group).
 
 ## Example Usage
 
+In the following example, you can create a local load balancer service group:
+
 ```hcl
-# Create a local load balancer service group
 resource "ibm_lb_service_group" "test_service_group" {
     port = 82
     routing_method = "CONSISTENT_HASH_IP"
@@ -29,18 +30,17 @@ resource "ibm_lb_service_group" "test_service_group" {
 
 The following arguments are supported:
 
-* `load_balancer_id` - (Required, integer) Set the ID of the local load balancer.
-* `allocation` - (Required, integer) Set the allocation field for the load balancer service group.
-* `port` - (Required, integer) Set the port for the local load balancer service group.
-* `routing_method` - (Required, string) Set the routing method for the load balancer group. For example, `CONSISTENT_HASH_IP`.
-* `routing_type` - (Required, string) Set the routing type for the group.
-* `tags` - (Optional, array of strings) Set tags on the local load balancer service group instance.
+* `load_balancer_id` - (Required, integer) The ID of the local load balancer.
+* `allocation` - (Required, integer) The connection allocation for the load balancer service group.
+* `port` - (Required, integer) The port for the local load balancer service group.
+* `routing_method` - (Required, string) The routing method for the load balancer group. For example, `CONSISTENT_HASH_IP`.
+* `routing_type` - (Required, string) The routing type for the group.
+* `tags` - (Optional, array of strings) Tags associated with the local load balancer service group instance.
+  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
-**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `virtual_server_id` - ID of the virtual server.
-* `service_group_id` - ID of the load balancer service group.
+* `virtual_server_id` - The unique identifier of the virtual server.
+* `service_group_id` - The unique identifier of the load balancer service group.
