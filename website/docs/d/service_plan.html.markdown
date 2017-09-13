@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_service_plan
 
-Import the details of an existing service plan from IBM Bluemix as a read-only data source. The fields of the data source can then be referenced by other resources within the same configuration by using interpolation syntax. 
+Import the details of an existing service plan from IBM Bluemix as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
@@ -23,10 +23,10 @@ data "ibm_service_plan" "service_plan" {
 
 The following arguments are supported:
 
-* `service` - (Required, string) The name of the service offering. You can run the `bx service offerings` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started) to find the name of the service.
-* `plan` - (Required, string) The name of the plan type supported by service. You can run the `bx service offerings` command in the Bluemix CLI to retrieve the plan type.
+* `service` - (Required, string) The name of the service offering. You can retrieve the name of the service by running the `bx service offerings` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
+* `plan` - (Required, string) The name of the plan type supported by the service. You can retrieve the plan type by running the `bx service offerings` command in the Bluemix CLI.
 
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 

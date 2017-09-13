@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_service_instance
 
-Import the details of an existing IBM service instance from IBM Bluemix as a read-only data source. The fields of the data source can then be referenced by other resources within the same configuration by using interpolation syntax. 
+Import the details of an existing IBM service instance from IBM Bluemix as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
@@ -28,15 +28,15 @@ data "ibm_service_instance" "serviceInstance" {
 
 The following arguments are supported:
 
-* `name` - (Required) The name of the service instance. The value can be retrieved by running the `bx service list` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
+* `name` - (Required, string) The name of the service instance. You can retrieve the value by running the `bx service list` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
 
-* `space_guid` - (Required, string) The GUID of the space where the service instance exists. The values can be retrieved from data source `ibm_space`.
+* `space_guid` - (Required, string) The GUID of the space where the service instance exists. You can retrieve the value from data source `ibm_space`.
 
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - The unique identifier of the service instance. 
-* `credentials` - The service broker-provided credentials to use this service.
+* `id` - The unique identifier of the service instance.
+* `credentials` - The credentials provided by the service broker to use this service.
 * `service_keys` - The service keys associated with this service.
-* `service_plan_guid` - The plan of the service offering used by this service instance.
+* `service_plan_guid` - The plan GUID for the service offering used by this service instance.

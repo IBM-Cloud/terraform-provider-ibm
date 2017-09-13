@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_network_public_ip
 
-Provides a public IP resource to route between servers. This allows public IPs to be created, updated, and deleted. public IPs are not restricted to routing within the same data center.
+Provides a public IP resource to route between servers. This allows public IPs to be created, updated, and deleted. Public IPs are not restricted to routing within the same data center.
 
 For additional details, see the [Bluemix Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/services/SoftLayer_Network_Subnet_IpAddress_Global) and [public IP address overview](https://knowledgelayer.softlayer.com/learning/global-ip-addresses).
 
@@ -24,14 +24,13 @@ resource "ibm_network_public_ip" "test_public_ip " {
 
 The following arguments are supported:
 
-* `routes_to` - (Required, string) Destination IP address that the public IP routes traffic through. The destination IP address can be a public IP address of IBM resources in the same account, such as a public IP address of vm and public virtual IP address of NetScaler VPXs. 
-* `tags` - (Optional, array of strings) Set tags on the public IP instance.
+* `routes_to` - (Required, string) The destination IP address that the public IP routes traffic through. The destination IP address can be a public IP address of IBM resources in the same account, such as a public IP address of a VM or public virtual IP addresses of NetScaler VPXs.
+* `tags` - (Optional, array of strings) Tags associated with the public IP instance.
+  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
-**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - ID of the public IP.
-* `ip_address` - Address of the public IP.
+* `id` - The unique identifier of the public IP.
+* `ip_address` - The address of the public IP.

@@ -8,8 +8,8 @@ description: |-
 
 # ibm\_iam_user_policy
 
+Import the details of an IAM (Identity and Access Management) user policy on IBM Bluemix as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
- 
 ## Example Usage
 
 ```hcl
@@ -25,7 +25,7 @@ resource "ibm_iam_user_policy" "iam_policy" {
   account_guid = "${data.ibm_account.ds_acc.id}"
   ibm_id       = "user@example.com"
   roles        = ["viewer"]
-  resources    = [{"service_name" = "sample-service", "service_instance"=["1refjnjb-vr4-vverr"]}]
+  resources    = [{"service_name" = "sample-service", "service_instance" = ["1refjnjb-vr4-vverr"]}]
 }
 
 data "ibm_iam_user_policy" "testacc_iam_policies" {
@@ -39,33 +39,22 @@ data "ibm_iam_user_policy" "testacc_iam_policies" {
 
 The following arguments are supported:
 
-* `account_guid` - (Required, string) The Guid of the account.The value can be retrieved from the `ibm_account` data source, or by running the `bx iam accounts` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
-* `ibm_id` - (Required, string) The IBM ID of the user whom to assign the policy
+* `account_guid` - (Required, string) The GUID of the Bluemix account. You can retrieve the value from the `ibm_account` data source or by running the `bx iam accounts` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
+* `ibm_id` - (Required, string) The IBM ID of the user to whom you want to assign the policy.
 
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `policies` - Nested block describing IAM Policies assigned to user in the account
-
-Nested `policies` blocks have the following structure:
-
-* `id` - IAM Policy ID
-* `roles` -  Nested block describing the roles assigned to the policy.
-* `resources` -  Nested block describing the IAM resources in the policy.
-
-Nested `roles` blocks have the following structure:
-
-* `name` - The IAM Role assigned to policy.
- 
-Nested `resources` blocks have the following structure:
-
-* `service_name` - Name of the service
-* `service_instance` - Service instance 
-* `region` - The region to which the service belongs
-* `resource_type` - Resource type
-* `resource` - Resource 
-* `space_guid` - The GUID of the Bluemix space. 
-* `organization_guid` - The GUID of the Bluemix org.
-
-    
+* `policies` - A nested block describing IAM Policies assigned to user in the account. Nested `policies` blocks have the following structure:
+  * `id` - The unique identifier of the IAM policy.
+  * `roles` -  A nested block describing the roles assigned to the policy.
+    * `name` - The IAM role assigned to the policy.
+  * `resources` -  A nested block describing the IAM resources in the policy.
+    * `service_name` - The name of the service.
+    * `service_instance` - The service instance.
+    * `region` - The region to which the service belongs.
+    * `resource_type` - The resource type.
+    * `resource` - The resource.
+    * `space_guid` - The GUID of the Bluemix space.
+    * `organization_guid` - The GUID of the Bluemix organization.

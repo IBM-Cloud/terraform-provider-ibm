@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_space
 
-Import the details of an existing IBM Bluemix space as a read-only data source. The fields of the data source can then be referenced by other resources within the same configuration by using interpolation syntax. 
+Import the details of an existing IBM Bluemix space as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
@@ -36,14 +36,14 @@ resource "ibm_service_instance" "service_instance" {
 
 The following arguments are supported:
 
-* `org` - (Required) The name of your Bluemix org. The value can be retrieved by running the `bx iam orgs` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
-* `space` - (Required) The name of your space. The value can be retrieved by running the `bx iam spaces` command in the Bluemix CLI.
+* `org` - (Required) The name of your Bluemix organization. You can retrieve the value by running the `bx iam orgs` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
+* `space` - (Required) The name of your space. You can retrieve the value by running the `bx iam spaces` command in the Bluemix CLI.
 
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
 * `id` - The unique identifier of the space.  
-* `managers` - The emails (associated with IBM ID) of the users who have manager role in this space
-* `auditors` - The emails (associated with IBM ID) of the users who have auditor role in this space
-* `developers` - The emails (associated with IBM ID) of the users who have developer role in this space
+* `managers` - The email addresses (associated with IBMid) of the users who have a manager role in this space.
+* `auditors` - The email addresses (associated with IBMid) of the users who have an auditor role in this space.
+* `developers` - The email addresses (associated with IBMid) of the users who have a developer role in this space.

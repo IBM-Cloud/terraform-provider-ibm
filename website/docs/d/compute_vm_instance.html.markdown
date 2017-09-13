@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_compute_vm_instance
 
-Import the details of an existing VM instance as a read-only data source. The fields of the data source can then be referenced by other resources within the same configuration using interpolation syntax.
+Import the details of an existing VM instance as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
@@ -24,17 +24,17 @@ data "ibm_compute_vm_instance" "vm_instance" {
 
 The following arguments are supported:
 
-* `hostname` - (Required) The hostname of the VM instance.
-* `domain` - (Required) The domain of the VM instance.
-* `most_recent` - (Optional) `True` or `False`. If `true` and multiple entries are found, the most recently created VM instance is used. If `false`, an error is returned.
+* `hostname` - (Required, string) The hostname of the VM instance.
+* `domain` - (Required, string) The domain of the VM instance.
+* `most_recent` - (Optional, boolean) If there are multiple VM instances, you can set this argument to `true` to import only the most recently created instance.
 
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - The ID of the vm instance.
-* `datacenter` - Data center in which the VM instance is deployed.
-* `cores` - Number of CPU cores.
+* `id` - The unique identifier of the VM instance.
+* `datacenter` - The data center in which the VM instance is deployed.
+* `cores` - The number of CPU cores.
 * `status` - The VSI status.
-* `last_known_power_state` - The last known power state of a VM instance, in the event the instance is turned off outside of IMS or has gone offline.
+* `last_known_power_state` - The last known power state of a VM instance, in the event the instance is turned off outside the information management system (IMS) or has gone offline.
 * `power_state` - The current power state of a VM instance.

@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_service_instance
 
-Create, update, or delete service instances on IBM Bluemix.
+Provides a service instance resource. This allows service instances to be created, updated, and deleted.
 
 ## Example Usage
 
@@ -32,17 +32,17 @@ resource "ibm_service_instance" "service_instance" {
 The following arguments are supported:
 
 * `name` - (Required, string) A descriptive name used to identify the service instance.
-* `space_guid` - (Required, string) The GUID of the space where you want to create the service. The values can be retrieved from data source `ibm_space`.
-* `service` - (Required, string) The name of the service offering. The value can be retrieved by running the `bx service offerings` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
-* `plan` - (Required, string) The name of the plan type supported by service. The value can be retrieved by running the `bx service offerings` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
-* `tags` - (Optional, list) User-provided tags.
-* `parameters` - (Optional, map) Arbitrary parameters to pass along to the service broker. Must be a JSON object.
+* `space_guid` - (Required, string) The GUID of the space where you want to create the service. You can retrieve the value from data source `ibm_space`.
+* `service` - (Required, string) The name of the service offering. You can retrieve the value by running the `bx service offerings` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
+* `plan` - (Required, string) The name of the plan type supported by service. You can retrieve the value by running the `bx service offerings` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
+* `tags` - (Optional, array of strings) Tags associated with the public IP instance.
+* `parameters` - (Optional, map) Arbitrary parameters to pass to the service broker. The value must be a JSON object.
 
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - The ID of the new service instance.
-* `credentials` - The service broker-provided credentials to use this service.
-* `service_keys` - The service keys associated with this service.
-* `service_plan_guid` - The plan of the service offering used by this service instance 
+* `id` - The unique identifier of the new service instance.
+* `credentials` - The credentials provided by the service broker to use the service.
+* `service_keys` - The service keys associated with the service.
+* `service_plan_guid` - The plan of the service offering used by this service instance.

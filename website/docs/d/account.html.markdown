@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_account
 
-Import the details of an existing IBM Bluemix account as a read-only data source. The fields of the data source can then be referenced by other resources within the same configuration by using interpolation syntax. 
+Import the details of an existing IBM Bluemix account as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
@@ -26,9 +26,9 @@ data "ibm_account" "accountData" {
 
 The following arguments are supported:
 
-* `org_guid` - (Required) The GUID of the Bluemix org. The value can be retrieved from the `ibm_org` data source, or by running the `bx iam orgs --guid` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
+* `org_guid` - (Required, string) The GUID of the Bluemix organization. You can retrieve the value from the `ibm_org` data source or by running the `bx iam orgs --guid` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
 
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
