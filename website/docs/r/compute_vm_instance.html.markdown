@@ -93,6 +93,10 @@ The following arguments are supported:
 * `tags` - (Optional, array of strings) Set tags on the VM instance. Permitted characters include: A-Z, 0-9, whitespace, _ (underscore), - (hyphen), . (period), and : (colon). All other characters are removed.
 * `ipv6_enabled` - (Optional) Provides a primary public IPv6 address. Default value: `false`.
 *  `secondary_ip_count` - (Optional) Provides secondary public IPv4 addresses. Accepted values are `4` and `8`. 
+* `public_bandwidth_limited` - (Optional, int). Allowed public network traffic(GB) per month. It can be greater than 0 when the server is a monthly based server. Defaults to the smallest available capacity for the public bandwidth are used.
+    **NOTE**: Conflicts with`private_network_only` and `public_bandwidth_unlimited`.
+* `public_bandwidth_unlimited` - (Optional, boolean). Allowed unlimited public network traffic(GB) per month for a monthly based server. The `network_speed` should be 100 Mbps. Default value: `false`.
+    **NOTE**: Conflicts with`private_network_only` and `public_bandwidth_limited`.
 *  `wait_time_minutes` - (Optional) The duration, expressed in minutes, to wait for the VM instance to become available before declaring it as created. It is also the same amount of time waited for no active transactions before proceeding with an update or deletion. Default value: `90`.
 
 
