@@ -44,6 +44,6 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - The unique identifier of the space.  
-* `managers` - The email addresses (associated with IBM ID) of the users who have a manager role in this space.
-* `auditors` - The email addresses (associated with IBM ID) of the users who have an auditor role in this space.
-* `developers` - The email addresses (associated with IBM ID) of the users who have a developer role in this space.
+* `managers` - The email addresses (associated with IBMid) of the users who have a manager role in this space.
+* `auditors` - The email addresses (associated with IBMid) of the users who have an auditor role in this space.
+* `developers` - The email addresses (associated with IBMid) of the users who have a developer role in this space.
