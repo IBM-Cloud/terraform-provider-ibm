@@ -52,7 +52,7 @@ resource "ibm_dns_record" "aaaa" {
 
 ### `CNAME` Record
 
-Review the [Bluemix Infrastructure (SoftLayer) docs] to properly implement the `` record.
+Review the [Bluemix Infrastructure (SoftLayer) docs] to properly implement the `CNAME` record.
 
 ```hcl
 resource "ibm_dns_record" "cname" {
@@ -170,11 +170,11 @@ The following arguments are supported:
     * `spf` for sender policy framework records
     * `srv` for service records
 * `txt` - (Optional, string) Used for text records.
-* `service` - (`SRV` records only, string) The symbolic name of the desired service.
-* `protocol` - (`SRV` records only, string) The protocol of the desired service. This is usually TCP or UDP.
-* `port` - (`SVR` records only, integer) The TCP or UDP port on which the service will be found.
-* `priority` - (`SVR` records only, integer) The priority of the target host. The lowest numerical value is given the highest priority.
-* `weight` - (`SVR` records only, integer) A relative weight for records that have the same priority.
+* `service` - (`SRV` records only, required, string) The symbolic name of the desired service.
+* `protocol` - (`SRV` records only, required, string) The protocol of the desired service. This is usually TCP or UDP.
+* `port` - (`SVR` records only, required, integer) The TCP or UDP port on which the service will be found.
+* `priority` - (`SVR` records only, required, integer) The priority of the target host. The lowest numerical value is given the highest priority.
+* `weight` - (`SVR` records only, required, integer) A relative weight for records that have the same priority.
 * `tags` - (Optional, array of strings) Tags associated with the DNS domain record instance.
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
