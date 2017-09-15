@@ -21,7 +21,7 @@ resource "ibm_network_vlan" "test_vlan_private" {
 resource "ibm_compute_ssh_key" "ssh_key" {
     label = "${var.ssh_label}"
     notes = "for public vlan test"
-    public_key = "${file(var.ssh_public_key)}"
+    public_key = "${var.ssh_public_key}"
 }
 
 # Create a new virtual guest using image "CENTOS_7_64"

@@ -27,10 +27,7 @@ provider "ibm" {
 # Create an SSH key. The SSH key surfaces in the SoftLayer console under Devices > Manage > SSH Keys.
 resource "ibm_compute_ssh_key" "test_key_1" {
   label      = "test_key_1"
-  public_key = "${file("~/.ssh/id_rsa_test_key_1.pub")}"
-
-  # Windows example:
-  # public_key = "${file("C:\ssh\keys\path\id_rsa_test_key_1.pub")}"
+  public_key = "${var.ssh_public_key}"
 }
 
 # Create a virtual server with the SSH key.

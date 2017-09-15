@@ -1,5 +1,4 @@
-variable "ssh_key_path" {
-  default = "~/.ssh/id_rsa.pub"
+variable "ssh_public_key" {
 }
 
 variable "ssh_key_label" {
