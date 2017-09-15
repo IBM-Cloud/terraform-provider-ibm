@@ -39,14 +39,14 @@ data "ibm_iam_user_policy" "testacc_iam_policies" {
 
 The following arguments are supported:
 
-* `account_guid` - (Required, string) * `account_guid` - (Required, string) The GUID for the Bluemix account associated with the cluster. You can retrieve the value from the `ibm_account` data source or by running the `bx iam accounts` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
+* `account_guid` - (Required, string) * `account_guid` - (Required, string) The GUID for the Bluemix account. You can retrieve the value from the `ibm_account` data source or by running the `bx iam accounts` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
 * `ibm_id` - (Required, string) The IBM ID of the user to whom you want to assign the policy.
 
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `policies` - Nested block describing IAM Policies assigned to user in the account
+* `policies` - Nested block describing IAM Policies assigned to user in the account.
 
 Nested `policies` blocks have the following structure:
 
