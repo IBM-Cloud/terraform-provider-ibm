@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_service_plan
 
-Import the details of an existing service plan from IBM Bluemix as a read-only data source. ou can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Import the details of an existing service plan from IBM Bluemix as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
