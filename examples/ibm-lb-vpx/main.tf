@@ -4,7 +4,7 @@ provider "ibm" {}
 resource "ibm_compute_ssh_key" "ssh_key_performance" {
   label      = "${var.ssh_key_label}"
   notes      = "for scale group"
-  public_key = "${file(var.ssh_key_path)}"
+  public_key = "${var.ssh_public_key}"
 }
 
 resource "ibm_compute_vm_instance" "virtualguest" {
