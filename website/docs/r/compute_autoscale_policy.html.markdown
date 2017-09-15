@@ -47,7 +47,7 @@ resource "ibm_compute_autoscale_policy" "test_scale_policy" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The ame of the auto scaling policy.
+* `name` - (Required, string) The name of the auto scaling policy.
 * `scale_type` - (Required, string) The scale type for the auto scaling policy. Accepted values are `ABSOLUTE`, `RELATIVE`, and `PERCENT`.
 * `scale_amount` - (Required, integer) A count of the scaling actions to perform upon any trigger hit.
 * `cooldown` - (Optional, integer) The duration, expressed in seconds, that the policy waits after the last action date before performing another scaling action. If you do not provide a value, the `scale_group` cooldown applies.
