@@ -162,7 +162,7 @@ The following arguments are supported:
     * `array_size` - (Optional, integer) The target RAID disk size, specific in gigabytes.
     * `partition_template_id` - (Optional, string) The partition template ID for the OS disk. Templates are different based on the target OS. To get the partition template ID, first find the OS ID in the [Softlayer API](https://api.softlayer.com/rest/v3/SoftLayer_Hardware_Component_Partition_OperatingSystem/getAllObjects). Then replace <OS_ID> with your OS ID in the following URL: `https://api.softlayer.com/rest/v3/SoftLayer_Hardware_Component_Partition_OperatingSystem/<OS_ID>/getPartitionTemplates`. Select you template ID in resulting available parition template IDs.  
 * `redundant_power_supply` - (Optional, boolean) When the value is `true`, an additional power supply is provided.
-* `tcp_monitoring` - (Optional) When the value is `false`, a ping monitoring service is provided. When the value is `true`, a ping monitoring service and a tcp monitoring service are provided.
+* `tcp_monitoring` - (Optional) When the value is `false`, a ping monitoring service is provided. When the value is `true`, a ping monitoring service and a TCP monitoring service are provided.
 
 ### Arguments for quote-based bare metal servers
 
