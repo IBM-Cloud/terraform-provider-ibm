@@ -10,20 +10,22 @@ To run, configure your IBM Cloud provider
 
 Running the example
 
+* Pass the public key while running terraform.
+
 For planning phase 
 
 ```
-terraform plan
+terraform plan -var 'ssh_public_key=<public_key_value>'
 ```
 
-For apply phase
+For apply phase 
 
 ```
-terraform apply
+terraform apply -var 'ssh_public_key=<public_key_value>'
 ```
 
 To remove the stack wait for few minutes and test the stack by launching a browser with cluster url.
 
 ```
- terraform destroy
+ terraform destroy -var 'ssh_public_key=<public_key_value>'
 ```

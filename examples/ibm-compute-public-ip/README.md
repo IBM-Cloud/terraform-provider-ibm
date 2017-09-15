@@ -5,9 +5,11 @@ Global IP's provide IP flexibility by allowing users to shift workloads between 
 
 To run, configure your IBMCLOUD provider
 
+* Pass the public key while running terraform.
+
 Running the example
 ```
-terraform apply
+terraform apply -var 'ssh_public_key=<public_key_value>'
 ```
 
 After the apply is done then type the global IP from outputs in your browser and see the nginx welcome page

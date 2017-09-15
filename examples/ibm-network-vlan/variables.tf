@@ -3,7 +3,6 @@ variable "ssh_label" {
 }
 
 variable "ssh_public_key" {
-  default = "~/.ssh/id_rsa.pub" 
 }
 
 variable "vm_hostname" {

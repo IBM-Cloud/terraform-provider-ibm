@@ -3,7 +3,7 @@ provider "ibm" {
 
 resource "ibm_compute_ssh_key" "ssh_key_gip" {
     label = "${var.ssh_label}"
-    public_key = "${file(var.ssh_key_path)}"
+    public_key = "${var.ssh_public_key}"
 }
 
 resource "ibm_compute_vm_instance" "vm1" {
