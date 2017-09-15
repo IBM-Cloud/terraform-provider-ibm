@@ -41,5 +41,5 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - The unique identifier of the luster configuration.
+* `id` - The unique identifier of the cluster configuration.
 * `config_file_path` - The path to the cluster configuration file. This is typically the Kubernetes YAML configuration file.
