@@ -10,7 +10,7 @@ description: |-
 
 Retrieve the account name for an existing Object Storage instance within your IBM account. If no Object Storage instance exists, you can use this resource to order an Object Storage instance and to store the account name.
 
-Do not use this resource for managing the lifecycle of an Object Storage instance in IBM. For lifecycle management, see the Swift API or Swift resources.
+Do not use this resource for managing the lifecycle of an Object Storage instance in IBM. For lifecycle management, see the [Swift API](https://developer.openstack.org/api-ref/object-store/) or [Swift resources](https://github.com/TheWeatherCompany/terraform-provider-swift).
 
 ## Example Usage
 
