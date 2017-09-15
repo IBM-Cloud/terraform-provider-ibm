@@ -7,6 +7,5 @@ variable "ssh_label" {
   default = "Personal"
 }
 
-variable "ssh_key_path" {
-  default = "~/.ssh/id2_rsa.pub"
+variable "ssh_public_key" {
 }
