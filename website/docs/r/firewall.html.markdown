@@ -31,4 +31,4 @@ The following arguments are supported:
 
 * `ha_enabled` - (Required, boolean) Set whether the local load balancer needs to be HA enabled or not.
 * `public_vlan_id` - (Required, integer) Target public VLAN ID to be protected by the firewall. Accepted values can be found [here](https://control.softlayer.com/network/vlans). Click the desired VLAN and note the ID on the resulting URL. Or, you can [refer to a VLAN by name using a data source](../d/network_vlan.html).
-* `tags` - (Optional, array of strings) Set tags on the VLAN. Permitted characters include: A-Z, 0-9, whitespace, _ (underscore), - (hyphen), . (period), and : (colon). All other characters are removed.
+* `tags` - (Optional, array of strings) Set tags on the firewall. Permitted characters include: A-Z, 0-9, whitespace, _ (underscore), - (hyphen), . (period), and : (colon). All other characters are removed.
