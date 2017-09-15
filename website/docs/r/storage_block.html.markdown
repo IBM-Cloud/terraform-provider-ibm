@@ -7,7 +7,7 @@ description: |-
 ---
 # ibm\_storage_block
 
-Provides a resource to create, update, and delete iSCSI-based [Endurance](https://knowledgelayer.softlayer.com/topic/endurance-storage) and [Performance](https://knowledgelayer.softlayer.com/topic/performance-storage) block storage.
+Provides a block storage resource. This allows iSCSI-based [Endurance](https://knowledgelayer.softlayer.com/topic/endurance-storage) and [Performance](https://knowledgelayer.softlayer.com/topic/performance-storage) block storage to be created, updated, and deleted.
 
 Block storage can be accessed and mounted through a Multipath I/O (MPIO) Internet Small Computer System Interface (iSCSI) connection.
 
@@ -53,26 +53,25 @@ resource "ibm_storage_block" "test2" {
 The following arguments are supported:
 
 * `type` - (Required, string) The type of the storage. Accepted values are `Endurance` and `Performance`.
-* `datacenter` - (Required, string) The data center the instance is to be provisioned in.
-* `capacity` - (Required, integer) The amount of storage capacity to allocate, specified in gigabytes.
+* `datacenter` - (Required, string) The data center where you want to provision the block storage instance.
+* `capacity` - (Required, integer) The amount of storage capacity you want to allocate, specified in gigabytes.
 * `iops` - (Required, float) The IOPS value for the storage. You can find available values for Endurance storage in the [Bluemix Infrastructure (SoftLayer) docs](https://knowledgelayer.softlayer.com/learning/introduction-endurance-storage).
-* `os_format_type` - (Required, string) Specifies which OS type to use when formatting the storage space. This should match the OS type that will be connecting to the LUN.
-* `snapshot_capacity` - (Optional, integer) The amount of snapshot capacity to allocate, specified in gigabytes. Only applies to Endurance storage.
-* `allowed_virtual_guest_ids` - (Optional, array of integers) Specifies allowed virtual guests. Virtual guests need to be in the same data center. You can also use this field to list the virtual guests which were provided access to this storage through the `block_storage_ids` argument in the `ibm_compute_vm_instance` resource. 
-* `allowed_hardware_ids` - (Optional, array of integers) Specifies allowed bare metal servers. Bare metal servers need to be in the same data center. You can also use this field to list the bare metals which were provided access to this storage through the `block_storage_ids` argument in the `ibm_compute_bare_metal` resource. 
-* `allowed_ip_addresses` - (Optional, array of string) Specifies allowed IP addresses. IP addresses need to be in the same data center.
-* `notes` - (Optional,string) Specifies a note to associate with the block storage.
-* `tags` - (Optional, array of strings) Set tags on the storage block instance.
+* `os_format_type` - (Required, string) The OS type used to format the storage space. This OS type must match the OS type that connects to the LUN.
+* `snapshot_capacity` - (Optional, integer) Applies to Endurance storage only. The amount of snapshot capacity to allocate, specified in gigabytes.
+* `allowed_virtual_guest_ids` - (Optional, array of integers) The virtual guests that you want to give access to this instance. Virtual guests must be in the same data center as the block storage. You can also use this field to import the list of virtual guests that have access to this storage from the `block_storage_ids` argument in the `ibm_compute_vm_instance` resource.
+* `allowed_hardware_ids` - (Optional, array of integers) The bare metal servers that you want to give access to this instance. Bare metal servers must be in the same data center as the block storage. You can also use this field to import the list of bare metal servers that have access to this storage from the `block_storage_ids` argument in the `ibm_compute_bare_metal` resource.
+* `allowed_ip_addresses` - (Optional, array of string) The IP addresses that you want to give access to this instance. IP addresses must be in the same data center as the block storage.
+* `notes` - (Optional, string) A descriptive note that you want to associate with the block storage.
+* `tags` - (Optional, array of strings) Tags associated with the storage block instance.
+  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
-**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - Identifier of the storage.
+* `id` - The unique identifier of the storage.
 * `hostname` - The fully qualified domain name of the storage.
 * `volumename` - The name of the storage volume.
-* `allowed_virtual_guest_info` - Contains user name, password and host IQN of the virtual guests with access to the storage.
-* `allowed_hardware_info` - Contains user name, password and host IQN of the bare metal servers with access to the storage.
+* `allowed_virtual_guest_info` - The user name, password, and host IQN of the virtual guests with access to the storage.
+* `allowed_hardware_info` - The user name, password, and host IQN of the bare metal servers with access to the storage.

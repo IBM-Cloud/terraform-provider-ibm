@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_service_key
 
-Create, update, or delete service keys for IBM Bluemix.
+Provides a service key resource. This allows service keys to be created, updated, and deleted.
 
 ## Example Usage
 
@@ -29,14 +29,12 @@ The following arguments are supported:
 
 * `name` - (Required, string) A descriptive name used to identify a service key.
 * `parameters` - (Optional, map) Arbitrary parameters to pass along to the service broker. Must be a JSON object.
-* `service_instance_guid` - (Required, string) The GUID of the service instance that the service key needs to be associated with.
-* `tags` - (Optional, array of strings) Set tags on the service key instance.
+* `service_instance_guid` - (Required, string) The GUID of the service instance associated with the service key.
+* `tags` - (Optional, array of strings) Tags associated with the service key instance.
+  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
-**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
-
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `credentials` - Credentials associated with the key.
+* `credentials` - The credentials associated with the key.

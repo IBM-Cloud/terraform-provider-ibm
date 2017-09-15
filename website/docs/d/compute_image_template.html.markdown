@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_compute_image_template
 
-Import the details of an existing image template as a read-only data source. The fields of the data source can then be referenced by other resources within the same configuration using interpolation syntax.
+Import the details of an existing image template as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
@@ -18,7 +18,7 @@ data "ibm_compute_image_template" "img_tpl" {
 }
 ```
 
-The following example shows how you can use this data source to reference the image template ID in the `ibm_compute_vm_instance` resource, since the numeric IDs are often unknown.
+The following example shows how you can use this data source to reference the image template ID in the `ibm_compute_vm_instance` resource because the numeric IDs are often unknown.
 
 ```hcl
 resource "ibm_compute_vm_instance" "vm1" {
@@ -32,10 +32,10 @@ resource "ibm_compute_vm_instance" "vm1" {
 
 The following arguments are supported:
 
-* `name` - (Required) The name of the image template as it was defined in Bluemix Infrastructure (SoftLayer). The names can be found in the [SoftLayer Customer Portal](https://control.softlayer.com), by navigating to **Devices > Manage > Images**.
+* `name` - (Required, string) The name of the image template as it was defined in Bluemix Infrastructure (SoftLayer). You can find the name in the [SoftLayer Customer Portal](https://control.softlayer.com) by navigating to **Devices > Manage > Images**.
 
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - The ID of the image template.
+* `id` - The unique identifier of the image template.

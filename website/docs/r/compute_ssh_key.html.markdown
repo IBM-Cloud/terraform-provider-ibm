@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_compute_ssh_key
 
-Provides SSH keys. This allows SSH keys to be created, updated, and deleted.
+Provide an SSH key resource. This allows SSH keys to be created, updated, and deleted.
 
 For additional details, see the [Bluemix Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Security_Ssh_Key).
 
@@ -26,19 +26,16 @@ resource "ibm_compute_ssh_key" "test_ssh_key" {
 
 The following arguments are supported:
 
-* `label` - (Required) A descriptive name used to identify an SSH key.
-* `public_key` - (Required) The public SSH key.
-* `notes` - (Optional) Descriptive text about an SSH key to use at your discretion.
-
-The `label` and `notes` fields are editable.
-
-* `tags` - (Optional, array of strings) Set tags on the SSH Key instance.
+* `label` - (Required, string) The descriptive name used to identify an SSH key.
+* `public_key` - (Required, string) The public SSH key.
+* `notes` - (Optional, string) Descriptive text about the SSH key.
+* `tags` - (Optional, array of strings) Tags associated with the SSH Key instance.
 
 **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - The ID of the new SSH key.
-* `fingerprint` - Sequence of bytes to authenticate or look up a longer SSH key.
+* `id` - The unique identifier of the new SSH key.
+* `fingerprint` - The sequence of bytes to authenticate or look up a longer SSH key.

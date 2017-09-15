@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_dns_domain
 
-Import the name of an existing domain as a read-only data source. The fields of the data source can then be referenced by other resources within the same configuration by using interpolation syntax.
+Import the name of an existing domain as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
@@ -32,9 +32,9 @@ resource "ibm_dns_record" "www" {
 
 The following arguments are supported:
 
-* `name` - (Required) The name of the domain, as it was defined in Bluemix Infrastructure (SoftLayer).
+* `name` - (Required, string) The name of the domain, as it was defined in Bluemix Infrastructure (SoftLayer).
 
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 

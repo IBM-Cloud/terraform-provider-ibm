@@ -9,14 +9,15 @@ description: |-
 
 # ibm\_compute_monitor
 
-Provides a resource to create, update, and delete a monitoring instance.
+Provides a monitoring instance resource. This allows monitoring instances to be created, updated, and deleted.
 
 For additional details, see the [Bluemix Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_Monitor_Version1_Query_Host).
 
 ## Example Usage
 
+In the following example, you can create a monitor:
+
 ```hcl
-# Create a monitor
 resource "ibm_compute_monitor" "test_monitor" {
     guest_id = ${ibm_compute_vm_instance.test_server.id}
     ip_address = ${ibm_compute_vm_instance.test_server.id.ipv4_address}
@@ -31,19 +32,18 @@ resource "ibm_compute_monitor" "test_monitor" {
 
 The following arguments are supported:
 
-* `guest_id` - (Required, integer) The ID of the virtual guest to be monitored.
-* `ip_address` - (Optional, strings) The IP address to be monitored.
+* `guest_id` - (Required, integer) The ID of the virtual guest you want to monitor.
+* `ip_address` - (Optional, strings) The IP address you want to monitor.
 * `query_type_id` - (Required, integer) The ID of the query type.
 * `response_action_id` - (Required, integer) The ID of the response action to take if the monitor fails. Accepted values are `1` or `2`.
 * `wait_cycles` - (Optional, integer) The number of five-minute cycles to wait before the response action is taken.
-* `notified_users` - (Optional, array of integers) The list of user IDs to be notified.
-* `tags` - (Optional, array of strings) Set tags on the monitoring instance.
+* `notified_users` - (Optional, array of integers) The list of user IDs that will be notified.
+* `tags` - (Optional, array of strings) Tags associated with the monitoring instance.
+  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
-**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - ID of the monitor.
-* `notified_users` - The list of user IDs to be notified.
+* `id` - The unique identifier of the monitor.
+* `notified_users` - The list of user IDs that will be notified.

@@ -18,7 +18,7 @@ For additional details, see the [Bluemix Infrastructure (SoftLayer) API docs](ht
 ```hcl
 resource "ibm_compute_provisioning_hook" "test_provisioning_hook" {
     name = "test_provisioning_hook_name"
-    uri = "https://raw.githubusercontent.com/test/slvm/master/test-script.sh"
+    uri  = "https://raw.githubusercontent.com/test/slvm/master/test-script.sh"
 }
 ```
 
@@ -26,17 +26,13 @@ resource "ibm_compute_provisioning_hook" "test_provisioning_hook" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) A descriptive name used to identify a provisioning hook.
-* `uri` - (Required, string) The endpoint that the script is downloaded or downloaded and executed from.
+* `name` - (Required, string) The descriptive name used to identify a provisioning hook.
+* `uri` - (Required, string) The endpoint from which the script is downloaded or downloaded and executed.
+* `tags` - (Optional, array of strings) Tags associated with the provisioning hook instance.
+  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
-The `name` and `uri` field are editable.
-
-* `tags` - (Optional, array of strings) Set tags on the provisioning hook instance.
-
-**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - ID of the new provisioning hook.
+* `id` - The unique identifier of the new provisioning hook.

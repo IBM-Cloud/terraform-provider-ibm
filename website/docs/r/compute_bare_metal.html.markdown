@@ -8,13 +8,11 @@ description: |-
 
 # ibm\_compute_bare_metal
 
-Provides a bare metal resource. This allows bare metal servers to be created, updated, and deleted. This resource supports both monthly bare metal servers and hourly bare metal servers. For more detail on bare metal seves, refer to the [link](https://www.ibm.com/cloud-computing/bluemix/bare-metal-servers)
+Provides a bare metal resource. This allows bare metal servers to be created, updated, and deleted. This resource supports both monthly bare metal servers and hourly bare metal servers. For more detail on bare metal severs, refer to the [IBM Bluemix bare metal server page](https://www.ibm.com/cloud-computing/bluemix/bare-metal-servers).
 
 
 ## Hourly bare metal server
-If the `ibm_compute_bare_metal` resource definition has a `fixed_config_preset` attribute, terraform will create an hourly
-bare metal server. The following example creates a new hourly bare metal server. Hardware specifications 
-are already defined in the `fixed_config_preset` attribute and cannot be modified.
+When the `ibm_compute_bare_metal` resource definition has a `fixed_config_preset` attribute, Terraform creates an hourly bare metal server. Hardware specifications are predefined in the `fixed_config_preset` attribute and cannot be modified. The following example shows you how to create a new hourly bare metal server.
 
 ### Example of an hourly bare metal server
 ```hcl
@@ -27,23 +25,7 @@ resource "ibm_compute_bare_metal" "hourly-bm1" {
     hourly_billing = true # Optional
     private_network_only = false # Optional
     fixed_config_preset = "S1270_8GB_2X1TBSATA_NORAID"
-}
-```
 
-In addition, users can use configure optional attributes such as `user_metadata`, `tags`, and `notes` attributes as follows:
-
-### Example of additional attributes for the hourly bare metal server
-```hcl
-resource "ibm_compute_bare_metal" "hourly-bm1" {
-    hostname = "hourly-bm1"
-    domain = "example.com"
-    os_reference_code = "UBUNTU_16_64"
-    datacenter = "dal01"
-    network_speed = 100 # Optional
-    hourly_billing = true # Optional
-    private_network_only = false # Optional
-    fixed_config_preset = "S1270_8GB_2X1TBSATA_NORAID"
-    
     user_metadata = "{\"value\":\"newvalue\"}" # Optional
     tags = [
       "collectd",
@@ -54,35 +36,13 @@ resource "ibm_compute_bare_metal" "hourly-bm1" {
 ```
 
 ## Monthly bare metal server
-If the `fixed_config_preset` attribute is not configured, terraform will consider it as a monthly bare metal server resource. It provides 
-options to configure process, memory, network, disk, and RAID. Users also can assign VLANs and subnets for the target monthly bare metal server. To configure the monthly bare 
-metal server, you need to provide additional attributes such as `package_key_name`, `proecss_key_name`, `disk_key_names`, and `os_key_name`. The following example describes a basic configuration
- of the monthly bare metal server.
+When the `fixed_config_preset` attribute is not configured, Terraform creates a monthly bare metal server resource. The monthly bare metal server resource provides options to configure process, memory, network, disk, and RAID. You can also can assign VLANs and subnets for the target monthly bare metal server. To configure the monthly bare metal server, you must provide additional attributes such as `package_key_name`, `proecss_key_name`, `disk_key_names`, and `os_key_name`. The following example shows you how to create a new monthly bare metal server.
 
 ### Example of a monthly bare metal server
 ```hcl
 resource "ibm_compute_bare_metal" "monthly_bm1" {
-    package_key_name = "DUAL_E52600_V4_12_DRIVES"
-    process_key_name = "INTEL_INTEL_XEON_E52620_V4_2_10"
-    memory = 64
-    os_key_name = "OS_WINDOWS_2012_R2_FULL_DC_64_BIT_2"
-    hostname = "cust-bm"
-    domain = "ms.com"
-    datacenter = "wdc04"
-    network_speed = 100
-    public_bandwidth = 500
-    disk_key_names = [ "HARD_DRIVE_800GB_SSD", "HARD_DRIVE_800GB_SSD", "HARD_DRIVE_800GB_SSD" ]
-    hourly_billing = false
-}
-```
 
-Users can configure additional options. The following example configures target VLANs, subnets, and a RAID controller. `storage_groups` 
-configures RAIDs and disk partitioning.
-### Example of a monthly bare metal server with additional options
-```hcl
-resource "ibm_compute_bare_metal" "monthly_bm1" {
-
-# Mandatory attributes
+# Mandatory fields
     package_key_name = "DUAL_E52600_V4_12_DRIVES"
     process_key_name = "INTEL_INTEL_XEON_E52620_V4_2_10"
     memory = 64
@@ -95,7 +55,7 @@ resource "ibm_compute_bare_metal" "monthly_bm1" {
     disk_key_names = [ "HARD_DRIVE_800GB_SSD", "HARD_DRIVE_800GB_SSD", "HARD_DRIVE_800GB_SSD" ]
     hourly_billing = false
 
-# Optional attributes
+# Optional fields
     private_network_only = false
     unbonded_network = true
     user_metadata = "{\"value\":\"newvalue\"}"
@@ -114,42 +74,27 @@ resource "ibm_compute_bare_metal" "monthly_bm1" {
        # Use three disks
        hard_drives = [ 0, 1, 2]
        array_size = 1600
-       # Basic partition template for windows
+       # Basic partition template for Windows
        partition_template_id = 17
     }
 }
 ```
 
-_Please Note_: Monthly bare metal servers does not support `immediate cancellation`. If the monthly bare metal server is deleted by terraform, `anniversary date cancellation` option will be used. 
+**Note**: Monthly bare metal servers do not support `immediate cancellation`. When Terraform deletes the monthly bare metal server, the `anniversary date cancellation` option is used.
 
 ## Create a bare metal server using quote ID
-If users already have a quote id for the bare metal server, they can create a new bare metal server with the quote id. The following example describes a basic configuration for a bare metal server with 
- quote_id.
-  
+If you already have a quote ID for the bare metal server, you can create a new bare metal server with the quote ID. The following example shows you how to create a new bare metal server with a quote ID.
+
 ### Example of a quote based ordering
 ```hcl
-# Create a new bare metal
-resource "ibm_compute_bare_metal" "quote_test" {
-    hostname = "quote-bm-test"
-    domain = "example.com"
-    quote_id = 2209349 
-}
-```
-
-Users can use additional options when they create a new bare metal server with `quote_id`. The following example defines target VLANs, subnets, 
- user metadata, and tags additionally. 
- 
-### Example of a quote based ordering with additional options
-```hcl
-# Create a new bare metal
 resource "ibm_compute_bare_metal" "quote_test" {
 
-# Mandatory attributes
+# Mandatory fields
     hostname = "quote-bm-test"
     domain = "example.com"
     quote_id = 2209349
 
-# Optional attributes
+# Optional fields
     user_metadata = "{\"value\":\"newvalue\"}"
     public_vlan_id = 12345678
     private_vlan_id = 87654321
@@ -166,71 +111,71 @@ resource "ibm_compute_bare_metal" "quote_test" {
 
 The following arguments are supported:
 
-* `hostname` - (Optional, string) Hostname for the computing instance.
-* `domain` - (Required, string) Domain for the computing instance.
+### Arguments for all bare metal server types
+
+* `hostname` - (Optional, string) The hostname for the computing instance.
+* `domain` - (Required, string) The domain for the computing instance.
 * `user_metadata` - (Optional, string) Arbitrary data to be made available to the computing instance.
-* `notes` - (Optional,string) Specifies a note to associate with the instance.
-* `ssh_key_ids` - (Optional, array) SSH key IDs to install on the computing instance upon provisioning.
+* `notes` - (Optional, string) Notes to associate with the instance.
+* `ssh_key_ids` - (Optional, array of numbers) The SSH key IDs to install on the computing instance when the instance is provisioned.
+    **NOTE:** If you don't know the ID(s) for your SSH keys, you can [reference your SSH keys by their labels](../d/compute_ssh_key.html).
+* `post_install_script_uri` - (Optional, string) The URI of the script to be downloaded and executed after installation is complete.
+*  `tags` - (Optional, array of strings) Tags associated with this bare metal server. Permitted characters include: A-Z, 0-9, whitespace, _ (underscore), - (hyphen), . (period), and : (colon). All other characters will be removed.
+* `file_storage_ids` - (Optional, array of numbers) File storage to which this computing instance should have access. File storage must be in the same data center as the bare metal server. If you use this argument to authorize access to file storage, do not use the `allowed_hardware_ids` argument in the `ibm_storage_file` resource in order to prevent the same storage being added twice.
+* `block_storage_ids` - (Optional, array of numbers) Block storage to which this computing instance should have access. Block storage must be in the same data center as the bare metal server. If you use this argument to authorize access to block storage, do not use the `allowed_hardware_ids` argument in the `ibm_storage_file` resource in order to prevent the same storage being added twice.
 
-    **NOTE:** If you don't know the ID(s) for your SSH keys, [you can reference your SSH keys by their labels](../d/compute_ssh_key.html).
-* `post_install_script_uri` - (Optional, string) As defined in the [Bluemix Infrastructure (SoftLayer) API docs](https://sldn.softlayer.com/reference/datatypes/SoftLayer_Virtual_Guest_SupplementalCreateObjectOptions).
-*  `tags` - (Optional, array of strings) Set tags on this bare metal server. Permitted characters include: A-Z, 0-9, whitespace, _ (underscore), - (hyphen), . (period), and : (colon). All other characters will be removed.
-* `file_storage_ids` - (Optional) An array of numbers. File storage this computing instance should have access to. File storage need to be in the same data center as the bare metal. If you are using this to authorize access to file storage, then you shouldn't use the `allowed_hardware_ids` argument in the `ibm_storage_file` resource in case `ibm_storage_file` represents the same storage as the one being added to the current bare metal. 
-* `block_storage_ids` - (Optional) An array of numbers. Block storage this computing instance should have access to. Block storage need to be in the same data center as the bare metal. If you are using this to authorize access to block storage, then you shouldn't use `allowed_hardware_ids` argument in the `ibm_storage_block` resource in case `ibm_storage_block` represents the same storage as the one being added to the current bare metal. 
+### Arguments for hourly bare metal servers
 
-**Monthly/Hourly bare metal server attributes**
-
-* `datacenter` - (Required, string) The data center the instance is to be provisioned in.
-* `hourly_billing` - (Required, boolean) The billing type for the instance. When set to `true`, the computing instance is billed on hourly usage, otherwise it is billed on a monthly basis. Default value: `true`.
-* `image_template_id` - (Optional, integer) The ID of the image template you want to use to provision the computing instance. This is not the global identifier (UUID), but the image template group ID that should point to a valid global identifier. You can get the image template ID from the SoftLayer Customer Portal. In the portal, navigate to **Devices > Manage > Images**, clock the desired image, and take note of the ID number in the browser URL location.
-
-    **NOTE**: Conflicts with `os_reference_code`. If you don't know the ID(s) of your image templates, [you can reference them by name](../d/compute_image_template.html).
-* `network_speed` - (Optional, integer) Specifies the connection speed (in Mbps) for the instance's network components. Default value: `100`.
-* `private_network_only` - (Optional, boolean) Specifies whether or not the instance only has access to the private network. When set to `true`, a compute instance only has access to the private network. Default value: `false`.
-
-**Hourly bare metal server only attributes**
-
-* `fixed_config_preset` - (Required, string) The configuration preset that the bare metal server will be provisioned with. This governs the type of CPU, number of cores, amount of RAM, and hard drives that the bare metal server will have. [Log in to the Bluemix Infrastructure (SoftLayer) API to see the available presets](https://api.softlayer.com/rest/v3/SoftLayer_Hardware/getCreateObjectOptions.json). Use your API key as the password. Log in and find the key called `fixedConfigurationPresets`. The presets are be identified by the key names.
-
-* `os_reference_code` - (Optional, string) An operating system reference code that provisions the computing instance. [Log in to the Bluemix Infrastructure (SoftLayer) API to see available OS reference codes](https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest_Block_Device_Template_Group/getVhdImportSoftwareDescriptions.json?objectMask=referenceCode). Use your API as the password to log in. 
-
+* `datacenter` - (Required, string) The datacenter in which you want to provision the instance.
+* `hourly_billing` - (Required, boolean) The billing type for the instance. When set to `true`, the computing instance is billed on hourly usage. Otherwise the instance is billed on a monthly basis. The default value is `true`.
+* `image_template_id` - (Optional, integer) The image template ID you want to use to provision the computing instance. This is not the global identifier (UUID), but the image template group ID that should point to a valid global identifier. To retrieve the image template ID from the SoftLayer Customer Portal, navigate to **Devices > Manage > Images**, click the desired image, and note the ID number in the resulting URL.
+    **NOTE**: Conflicts with `os_reference_code`. If you don't know the ID(s) of your image templates, you can [reference them by name](../d/compute_image_template.html).
+* `network_speed` - (Optional, integer) The connection speed, expressed in Mbps,  for the instance's network components. The default value is `100`.
+* `private_network_only` - (Optional, boolean) Specifies whether the instance only has access to the private network. When the value is `true`, a compute instance only has access to the private network. The default value is `false`.
+* `fixed_config_preset` - (Required, string) The configuration preset with which you want to provision the bare metal server. This preset governs the type of CPU, number of cores, amount of RAM, and number of hard drives that the bare metal server has. To see the available presets, log in to the [Bluemix Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3/SoftLayer_Hardware/getCreateObjectOptions.json) using your API key as the password. Find the key called `fixedConfigurationPresets`. The presets are identified by the key names.
+* `os_reference_code` - (Optional, string) An operating system reference code that provisions the computing instance. To see available OS reference codes, log in to the [Bluemix Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest_Block_Device_Template_Group/getVhdImportSoftwareDescriptions.json?objectMask=referenceCode), using your API key as the password.
     **NOTE**: Conflicts with `image_template_id`.  
 
-**Monthly / Quote based bare metal server provisioning attributes**
+### Arguments for monthly bare metal servers
 
-* `public_vlan_id` - (Optional, integer) Public VLAN to be used for the public network interface of the instance. Accepted values can be found [here](https://control.softlayer.com/network/vlans). Click the desired VLAN and note the ID number in the URL.
-* `private_vlan_id` - (Optional, integer) Private VLAN to be used for the private network interface of the instance. Accepted values can be found [here](https://control.softlayer.com/network/vlans). Click the desired VLAN and note the ID number in the URL.
-* `public_subnet` - (Optional, string) Public subnet to be used for the public network interface of the instance. Accepted values are primary public networks and can be found [here](https://control.softlayer.com/network/subnets).
-* `private_subnet` - (Optional, string) Private subnet to be used for the private network interface of the instance. Accepted values are primary private networks and can be found [here](https://control.softlayer.com/network/subnets).
+* `datacenter` - (Required, string) The datacenter in which you want to provision the instance.
+* `hourly_billing` - (Required, boolean) The billing type for the instance. When set to `true`, the computing instance is billed on hourly usage. Otherwise the instance is billed on a monthly basis. The default value is `true`.
+* `image_template_id` - (Optional, integer) The image template ID you want to use to provision the computing instance. This is not the global identifier (UUID), but the image template group ID that should point to a valid global identifier. To retrieve the image template ID from the SoftLayer Customer Portal, navigate to **Devices > Manage > Images**, click the desired image, and note the ID number in the resulting URL.
+    **NOTE**: Conflicts with `os_reference_code`. If you don't know the ID(s) of your image templates, you can [reference them by name](../d/compute_image_template.html).
+* `network_speed` - (Optional, integer) The connection speed, expressed in Mbps,  for the instance's network components. The default value is `100`.
+* `private_network_only` - (Optional, boolean) Specifies whether the instance only has access to the private network. When the value is `true`, a compute instance only has access to the private network. The default value is `false`.
+* `public_vlan_id` - (Optional, integer) The public VLAN to be used for the public network interface of the instance. You can find accepted values in the [VLAN docs](https://control.softlayer.com/network/vlans). Click the desired VLAN and note the ID in the resulting URL.
+* `private_vlan_id` - (Optional, integer) The private VLAN to be used for the private network interface of the instance. You can find accepted values in the [VLAN docs](https://control.softlayer.com/network/vlans). Click the desired VLAN and note the ID in the resulting URL.
+* `public_subnet` - (Optional, string) The public subnet to be used for the public network interface of the instance. Accepted values are primary public networks. You can find accepted values in the [subnets docs](https://control.softlayer.com/network/subnets).
+* `private_subnet` - (Optional, string) The private subnet to be used for the private network interface of the instance. Accepted values are primary private networks. You can find accepted values in the [subnets docs](https://control.softlayer.com/network/subnets).
+* `package_key_name` - (Optional, string) The key name for the monthly bare metal server's package. Only use this argument when you create a new monthly bare metal server. You can find available package key names in the [Softlayer API](https://api.softlayer.com/rest/v3/SoftLayer_Product_Package/getAllObjects?objectFilter={"type":{"keyName":{"operation":"BARE_METAL_CPU"}}}), using your API key as the password.
+* `process_key_name` - (Optional, string). The key name for the monthly bare metal server's process. Only use this argument when you create a new monthly bare metal server. To get a process key name, first find the package key name in the [Softlayer API](https://api.softlayer.com/rest/v3/SoftLayer_Product_Package/getAllObjects?objectFilter={"type":{"keyName":{"operation":"BARE_METAL_CPU"}}}). Then replace <PACKAGE_NAME> with your package key name in the following URL: `https://api.softlayer.com/rest/v3/SoftLayer_Product_Package/<PACKAGE_NAME>/getItems?objectMask=mask[prices[id,categories[id,name,categoryCode],capacityRestrictionType,capacityRestrictionMinimum,capacityRestrictionMaximum,locationGroupId]]`. Select a process key name from the resulting available process key names.
+* `disk_key_names` - (Optional, array of strings) The internal key names for the monthly bare metal server's disk. Only use this argument when you create a new monthly bare metal server. To get disk key names, first find the package key name in the [Softlayer API](https://api.softlayer.com/rest/v3/SoftLayer_Product_Package/getAllObjects?objectFilter={"type":{"keyName":{"operation":"BARE_METAL_CPU"}}}). Then replace <PACKAGE_NAME> with your package key name in the following URL: `https://api.softlayer.com/rest/v3/SoftLayer_Product_Package/PACKAGE_NAME/getItems?objectMask=mask[prices[id,categories[id,name,categoryCode],capacityRestrictionType,capacityRestrictionMinimum,capacityRestrictionMaximum,locationGroupId]]`. Select disk key names from the resulting available disk key names.
+* `os_key_name` - (Optional, string) The operating system key name that you want to use to provision the computing instance. To get disk key names, first find the package key name in the [Softlayer API](https://api.softlayer.com/rest/v3/SoftLayer_Product_Package/getAllObjects?objectFilter={"type":{"keyName":{"operation":"BARE_METAL_CPU"}}}). Then replace <PACKAGE_NAME> with your package key name in the following URL: `https://api.softlayer.com/rest/v3/SoftLayer_Product_Package/<PACKAGE_NAME>/getItems?objectMask=mask[prices[id,categories[id,name,categoryCode],capacityRestrictionType,capacityRestrictionMinimum,capacityRestrictionMaximum,locationGroupId]]`. Select an OS key name from the resulting available OS key names.
+* `redundant_network` - (Optional, boolean) When the value is `true`, two physical network interfaces are provided with a bonding configuration. The default value is `false`.
+* `unbonded_network` - (Optional, boolean) When the value is `true`, two physical network interfaces are provided without a bonding configuration. The default value is `false`.
+* `public_bandwidth` - (Optional, integer) The amount of public network traffic, specified in gigabytes, allowed per month. The value can be greater than 0 when `private_network_only` is set to `false` and the server is a monthly-based server.
+* `memory` - (Optional, integer) The amount of memory, specified in gigabytes, for the server.
+* `storage_groups` - (Optional, array of storage group objects) Configurations for RAID and partition. For more information on configuring `storage_groups`, refer to [Ordering RAID Through API](https://sldn.softlayer.com/blog/hansKristian/Ordering-RAID-through-API). Each storage group object has the following sub-arguments:
+    * `array_type_id` -(Required, integer) The RAID type. You can retrieve the value from the [Softlayer API](https://api.softlayer.com/rest/v3/SoftLayer_Configuration_Storage_Group_Array_Type/getAllObjects).
+    * `hard_drives` - (Required, array of integers) The index of hard drives for RAID configuration. The index starts at 0. For example, the array [0,1] is an index of two hard drives.
+    * `array_size` - (Optional, integer) The target RAID disk size, specific in gigabytes.
+    * `partition_template_id` - (Optional, string) The partition template ID for the OS disk. Templates are different based on the target OS. To get the partition template ID, first find the OS ID in the [Softlayer API](https://api.softlayer.com/rest/v3/SoftLayer_Hardware_Component_Partition_OperatingSystem/getAllObjects). Then replace <OS_ID> with your OS ID in the following URL: `https://api.softlayer.com/rest/v3/SoftLayer_Hardware_Component_Partition_OperatingSystem/<OS_ID>/getPartitionTemplates`. Select you template ID in resulting available parition template IDs.  
+* `redundant_power_supply` - (Optional, boolean) When the value is `true`, an additional power supply is provided.
+* `tcp_monitoring` - (Optional) When the value is `false`, a ping monitoring service is provided. When the value is `true`, a ping monitoring service and a TCP monitoring service are provided.
 
+### Arguments for quote-based bare metal servers
 
-**Monthly bare metal server only attributes**
+* `public_vlan_id` - (Optional, integer) The public VLAN to be used for the public network interface of the instance. You can find accepted values in the [VLAN docs](https://control.softlayer.com/network/vlans). Click the desired VLAN and note the ID in the resulting URL.
+* `private_vlan_id` - (Optional, integer) The private VLAN to be used for the private network interface of the instance. You can find accepted values in the [VLAN docs](https://control.softlayer.com/network/vlans). Click the desired VLAN and note the ID in the resulting URL.
+* `public_subnet` - (Optional, string) The public subnet to be used for the public network interface of the instance. Accepted values are primary public networks. You can find accepted values in the [subnets docs](https://control.softlayer.com/network/subnets).
+* `private_subnet` - (Optional, string) The private subnet to be used for the private network interface of the instance. Accepted values are primary private networks. You can find accepted values in the [subnets docs](https://control.softlayer.com/network/subnets).
+* `quote_id` - (Optional, string) When you define `quote_id`, Terraform uses specifications in the quote to create a bare metal server. You can find the quote ID in the [SoftLayer Customer Portal](https://control.softlayer.com) by navigating to **Account > Sales > Quotes**.
 
-* `package_key_name` - (Optional, string). Monthly bare metal server's package key name. This attribute is only used when a new monthly bare metal server is created. You can find available key names in the [link](https://api.softlayer.com/rest/v3/SoftLayer_Product_Package/getAllObjects?objectFilter={"type":{"keyName":{"operation":"BARE_METAL_CPU"}}}). You need your username and api_key to access to the page. 
-* `process_key_name` - (Optional, string). Monthly bare metal server's process key name. This attribute is only used when a new monthly bare metal server is created. Note the package key ID from the [link](https://api.softlayer.com/rest/v3/SoftLayer_Product_Package/getAllObjects?objectFilter={"type":{"keyName":{"operation":"BARE_METAL_CPU"}}}) and replace **PACKAGE_ID** in the [link](https://api.softlayer.com/rest/v3/SoftLayer_Product_Package/PACKAGE_ID/getItems?objectMask=mask[prices[id,categories[id,name,categoryCode],capacityRestrictionType,capacityRestrictionMinimum,capacityRestrictionMaximum,locationGroupId]]) to your package key ID. Select a process key name from available process key names.
-* `disk_key_names` - (Optional) An array of internal disk key names. This attribute is only used when a new monthly bare metal server is created. Note the package key ID from the [link](https://api.softlayer.com/rest/v3/SoftLayer_Product_Package/getAllObjects?objectFilter={"type":{"keyName":{"operation":"BARE_METAL_CPU"}}}) and replace **PACKAGE_ID** in the [link](https://api.softlayer.com/rest/v3/SoftLayer_Product_Package/PACKAGE_ID/getItems?objectMask=mask[prices[id,categories[id,name,categoryCode],capacityRestrictionType,capacityRestrictionMinimum,capacityRestrictionMaximum,locationGroupId]]) to your package key ID. Select a disk key name from available disk key names.
-* `os_key_name` - (Optional, string) An operating system key name that will be used to provision the computing instance. Note the package key ID from the [link](https://api.softlayer.com/rest/v3/SoftLayer_Product_Package/getAllObjects?objectFilter={"type":{"keyName":{"operation":"BARE_METAL_CPU"}}}) and replace **PACKAGE_ID** in the [link](https://api.softlayer.com/rest/v3/SoftLayer_Product_Package/PACKAGE_ID/getItems?objectMask=mask[prices[id,categories[id,name,categoryCode],capacityRestrictionType,capacityRestrictionMinimum,capacityRestrictionMaximum,locationGroupId]]) to your package key ID. Select a OS key name from available OS key names.
-* `redundant_network` -(Optional). If `redundant_network` is `true`, two physical network interfaces will be provided with a bonding configuration. Default value is `False`
-* `unbonded_network` - (Optional). If `unbonded_network` is `true`, two physical network interfaces will be provided.Default value is `False`
-* `public_bandwidth` - (Optional, int). Allowed public network traffic(GB) per month. It can be greater than 0 when `private_network_only` is `false` and the server is a monthly based server.
-* `memory` - (Optional). An amount of memory(GB) for the server.
-* `storage_groups` - (Optional) An array of storage group objects.RAID and partition configuration. Refer to the [link](https://sldn.softlayer.com/blog/hansKristian/Ordering-RAID-through-API) to configure `storage_groups`. Each storage group object has the following sub-attributes:
-    * `array_type_id` -(Required, int). It provides RAID type. You can find `array_type_id` from the [link](https://api.softlayer.com/rest/v3/SoftLayer_Configuration_Storage_Group_Array_Type/getAllObjects). 
-    * `hard_drives` - (Required) An array of integers. Index of hard drives for RAID configuration. The index starts from 0. For example, if you want to use first two hard drives, you will use the following expression: [0,1]
-    * `array_size`-(Optional, int) Target RAID disk size in GB unit. 
-    * `partition_template_id` - (Optional) Partition template id for OS disk. The templates are different based on the target OS. Check your OS with the [link](https://api.softlayer.com/rest/v3/SoftLayer_Hardware_Component_Partition_OperatingSystem/getAllObjects ). Note the id of the OS and  check available partition templates using the URL : https://api.softlayer.com/rest/v3/SoftLayer_Hardware_Component_Partition_OperatingSystem/OS_ID/getPartitionTemplates . Replace `OS_ID` to your OS ID from the URL and find your template id.  
-    
-* `redundant_power_supply` - (Optional) If `redundant_power_supply` is true, an additional power supply will be provided. 
-* `tcp_monitoring` - (Optional) If `tcp_monitoring` is `false`, ping monitoring service will be provided. If `tcp_monitoring` is `true`, ping and tcp monitoring service will be provided.
-
-**Quote based provisioning only attributes**
-
-* `quote_id` -(Optional). Create a bare metal server using the quote. If quote_id is defined, the terraform uses specifications in the quote to create a bare metal server.You can find the quote id by navigating on the portal to _Account > Sales > Quotes_.
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - Identifier of the bare metal server.
-* `public_ipv4_address` - Public IPv4 address of the bare metal server.
-* `private_ipv4_address` - Private IPv4 address of the bare metal server.
+* `id` - The unique identifier of the bare metal server.
+* `public_ipv4_address` - The public IPv4 address of the bare metal server.
+* `private_ipv4_address` - The private IPv4 address of the bare metal server.
