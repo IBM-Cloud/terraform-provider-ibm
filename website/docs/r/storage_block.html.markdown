@@ -29,6 +29,7 @@ resource "ibm_storage_block" "test1" {
         allowed_virtual_guest_ids = [ 27699397 ]
         allowed_ip_addresses = ["10.40.98.193", "10.40.98.200"]
         snapshot_capacity = 10
+        hourly_billing = true
 }
 ```
 
@@ -45,6 +46,7 @@ resource "ibm_storage_block" "test2" {
         # Optional fields
         allowed_virtual_guest_ids = [ 27699397 ]
         allowed_ip_addresses = ["10.40.98.193", "10.40.98.200"]
+        hourly_billing = true
 }
 ```
 
@@ -64,6 +66,9 @@ The following arguments are supported:
 * `notes` - (Optional, string) A descriptive note that you want to associate with the block storage.
 * `tags` - (Optional, array of strings) Tags associated with the storage block instance.
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
+* `hourly_billing` - (Optional,Boolean) Set true to enable hourly billing.Default is false
+**NOTE**: `Hourly billing` is only available in updated datacenters with improved capabilities.Plesae refer the link to get the updated list of datacenter. http://knowledgelayer.softlayer.com/articles/new-ibm-block-and-file-storage-location-and-features
+
 
 
 ## Attribute Reference

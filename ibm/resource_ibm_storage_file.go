@@ -20,11 +20,11 @@ import (
 )
 
 const (
-	storagePerformancePackageType = "ADDITIONAL_SERVICES_PERFORMANCE_STORAGE"
-	storageEndurancePackageType   = "ADDITIONAL_SERVICES_ENTERPRISE_STORAGE"
+	storagePerformancePackageType = "STORAGE_AS_A_SERVICE"
+	storageEndurancePackageType   = "STORAGE_AS_A_SERVICE"
 	storageMask                   = "id,billingItem.orderItem.order.id"
 	storageDetailMask             = "id,capacityGb,iops,storageType,username,serviceResourceBackendIpAddress,properties[type]" +
-		",serviceResourceName,allowedIpAddresses,allowedSubnets,allowedVirtualGuests[id,allowedHost[name,credential[username,password]]],snapshotCapacityGb,osType,notes"
+		",serviceResourceName,allowedIpAddresses,allowedSubnets,allowedVirtualGuests[id,allowedHost[name,credential[username,password]]],snapshotCapacityGb,osType,notes,billingItem[hourlyFlag]"
 	itemMask        = "id,capacity,description,units,keyName,prices[id,categories[id,name,categoryCode],capacityRestrictionMinimum,capacityRestrictionMaximum,locationGroupId]"
 	enduranceType   = "Endurance"
 	performanceType = "Performance"
@@ -50,6 +50,79 @@ var (
 		10:   1000,
 	}
 
+	// Map IOPS value to endurance storage space keyName in SoftLayer_Product_Item
+	enduranceStorageMap = map[float64]string{
+		0.25: "STORAGE_SPACE_FOR_0_25_IOPS_PER_GB",
+		2:    "STORAGE_SPACE_FOR_2_IOPS_PER_GB",
+		4:    "STORAGE_SPACE_FOR_4_IOPS_PER_GB",
+		10:   "STORAGE_SPACE_FOR_10_IOPS_PER_GB",
+	}
+
+	performanceStorageMap = map[int]string{
+		20:    "20_39_GBS",
+		40:    "40_79_GBS",
+		80:    "80_99_GBS",
+		100:   "100_499_GBS",
+		250:   "100_499_GBS",
+		500:   "500_999_GBS",
+		1000:  "1000_1999_GBS",
+		2000:  "2000_2999_GBS",
+		3000:  "3000_3999_GBS",
+		4000:  "4000_7999_GBS",
+		5000:  "4000_7999_GBS",
+		6000:  "4000_7999_GBS",
+		7000:  "4000_7999_GBS",
+		8000:  "8000_9999_GBS",
+		9000:  "8000_9999_GBS",
+		10000: "10000_12000_GBS",
+		11000: "10000_12000_GBS",
+		12000: "10000_12000_GBS",
+	}
+
+	// Map monthly storage value to performance IOPS keyName in SoftLayer_Product_Item
+	performanceMonthlyIopsMap = map[int]string{
+		20:    "100_1000_IOPS",
+		40:    "100_2000_IOPS",
+		80:    "100_4000_IOPS",
+		100:   "100_6000_IOPS",
+		250:   "100_6000_IOPS",
+		500:   "100_6000_IOPS",
+		1000:  "100_6000_IOPS",
+		2000:  "200_6000_IOPS",
+		3000:  "200_6000_IOPS",
+		4000:  "300_6000_IOPS",
+		5000:  "300_6000_IOPS",
+		6000:  "300_6000_IOPS",
+		7000:  "300_6000_IOPS",
+		8000:  "500_6000_IOPS",
+		9000:  "500_6000_IOPS",
+		10000: "1000_6000_IOPS",
+		11000: "1000_6000_IOPS",
+		12000: "1000_6000_IOPS",
+	}
+
+	// Map hourly storage value to performance IOPS keyName in SoftLayer_Product_Item
+	performanceHourlyIopsMap = map[int]string{
+		20:    "100_1000_IOPS",
+		40:    "100_2000_IOPS",
+		80:    "100_4000_IOPS",
+		100:   "100_6000_IOPS",
+		250:   "100_6000_IOPS",
+		500:   "100_10000_IOPS",
+		1000:  "100_20000_IOPS",
+		2000:  "200_40000_IOPS",
+		3000:  "200_48000_IOPS",
+		4000:  "300_48000_IOPS",
+		5000:  "300_48000_IOPS",
+		6000:  "300_48000_IOPS",
+		7000:  "300_48000_IOPS",
+		8000:  "500_48000_IOPS",
+		9000:  "500_48000_IOPS",
+		10000: "1000_48000_IOPS",
+		11000: "1000_48000_IOPS",
+		12000: "1000_48000_IOPS",
+	}
+
 	// storagePackageType is a storage package keyName for SoftLayer_Product_Package. It is used to filter storage package.
 	// iopsCategoryCode is a storage IOPS categoryCode for SoftLayer_Product_Item. It is used to filter storage IOPS price.
 	// storageProtocolCategoryCode is a storage protocol categoryCode for SoftLayer_Product_Item. It is used to filter storage protocol price.
@@ -58,7 +131,7 @@ var (
 			performanceType: {
 				"storagePackageType":          storagePerformancePackageType,
 				"iopsCategoryCode":            "performance_storage_iops",
-				"storageProtocolCategoryCode": "performance_storage_nfs",
+				"storageProtocolCategoryCode": "storage_file",
 			},
 			enduranceType: {
 				"storagePackageType":          storageEndurancePackageType,
@@ -70,7 +143,7 @@ var (
 			performanceType: {
 				"storagePackageType":          storagePerformancePackageType,
 				"iopsCategoryCode":            "performance_storage_iops",
-				"storageProtocolCategoryCode": "performance_storage_iscsi",
+				"storageProtocolCategoryCode": "storage_block",
 			},
 			enduranceType: {
 				"storagePackageType":          storageEndurancePackageType,
@@ -220,6 +293,12 @@ func resourceIBMStorageFile() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
 			},
+			"hourly_billing": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				ForceNew: true,
+			},
 		},
 	}
 }
@@ -232,8 +311,9 @@ func resourceIBMStorageFileCreate(d *schema.ResourceData, meta interface{}) erro
 	datacenter := d.Get("datacenter").(string)
 	capacity := d.Get("capacity").(int)
 	snapshotCapacity := d.Get("snapshot_capacity").(int)
+	hourlyBilling := d.Get("hourly_billing").(bool)
 
-	storageOrderContainer, err := buildStorageProductOrderContainer(sess, storageType, iops, capacity, snapshotCapacity, fileStorage, datacenter)
+	storageOrderContainer, err := buildStorageProductOrderContainer(sess, storageType, iops, capacity, snapshotCapacity, fileStorage, datacenter, hourlyBilling)
 	if err != nil {
 		return fmt.Errorf("Error while creating storage:%s", err)
 	}
@@ -245,15 +325,16 @@ func resourceIBMStorageFileCreate(d *schema.ResourceData, meta interface{}) erro
 	switch storageType {
 	case enduranceType:
 		receipt, err = services.GetProductOrderService(sess).PlaceOrder(
-			&datatypes.Container_Product_Order_Network_Storage_Enterprise{
+			&datatypes.Container_Product_Order_Network_Storage_AsAService{
 				Container_Product_Order: storageOrderContainer,
+				VolumeSize:              &capacity,
 			}, sl.Bool(false))
 	case performanceType:
 		receipt, err = services.GetProductOrderService(sess).PlaceOrder(
-			&datatypes.Container_Product_Order_Network_PerformanceStorage_Nfs{
-				Container_Product_Order_Network_PerformanceStorage: datatypes.Container_Product_Order_Network_PerformanceStorage{
-					Container_Product_Order: storageOrderContainer,
-				},
+			&datatypes.Container_Product_Order_Network_Storage_AsAService{
+				Container_Product_Order: storageOrderContainer,
+				VolumeSize:              &capacity,
+				Iops:                    sl.Int(int(iops)),
 			}, sl.Bool(false))
 	default:
 		return fmt.Errorf("Error during creation of storage: Invalid storageType %s", storageType)
@@ -370,6 +451,8 @@ func resourceIBMStorageFileRead(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Error retrieving storage information: %s", err)
 	}
 	d.Set("mountpoint", mountpoint)
+
+	d.Set("hourly_billing", storage.BillingItem.HourlyFlag)
 
 	return nil
 }
@@ -497,21 +580,26 @@ func buildStorageProductOrderContainer(
 	capacity int,
 	snapshotCapacity int,
 	storageProtocol string,
-	datacenter string) (datatypes.Container_Product_Order, error) {
+	datacenter string,
+	hourlyBilling bool) (datatypes.Container_Product_Order, error) {
 
 	// Build product item filters for performance storage
-	iopsKeyName, err := getIopsKeyName(iops, storageType)
+	iopsKeyName, err := getIopsKeyName(iops, capacity, storageType, hourlyBilling)
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
 	}
-	capacityKeyName := fmt.Sprintf("%d_GB_", capacity)
+
+	capacityKeyName, err := getCapacityKeyName(iops, capacity, storageType)
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+
 	snapshotCapacityKeyName := fmt.Sprintf("%d_GB_", snapshotCapacity)
 
-	storagePackageType := storagePackageMap[storageProtocol][storageType]["storagePackageType"]
 	iopsCategoryCode := storagePackageMap[storageProtocol][storageType]["iopsCategoryCode"]
 	storageProtocolCategoryCode := storagePackageMap[storageProtocol][storageType]["storageProtocolCategoryCode"]
-
-	// Get a package type
+	// Get a package type)
+	storagePackageType := storagePackageMap[storageProtocol][storageType]["storagePackageType"]
 	pkg, err := product.GetPackageByType(sess, storagePackageType)
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
@@ -563,14 +651,11 @@ func buildStorageProductOrderContainer(
 	}
 	targetItemPrices = append(targetItemPrices, storageProtocolPrice)
 
-	// Add Endurane Storage price
-	if storageType == enduranceType {
-		endurancePrice, err := getPrice(productItems, "CODENAME_PRIME_STORAGE_SERVICE", "storage_service_enterprise", "", 0)
-		if err != nil {
-			return datatypes.Container_Product_Order{}, err
-		}
-		targetItemPrices = append(targetItemPrices, endurancePrice)
+	endurancePrice, err := getPrice(productItems, "STORAGE_AS_A_SERVICE", "storage_as_a_service", "", 0)
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
 	}
+	targetItemPrices = append(targetItemPrices, endurancePrice)
 
 	// Add snapshot capacity price
 	if storageType == enduranceType && snapshotCapacity > 0 {
@@ -589,10 +674,11 @@ func buildStorageProductOrderContainer(
 	}
 
 	productOrderContainer := datatypes.Container_Product_Order{
-		PackageId: pkg.Id,
-		Location:  sl.String(strconv.Itoa(*dc.Id)),
-		Prices:    targetItemPrices,
-		Quantity:  sl.Int(1),
+		PackageId:        pkg.Id,
+		Location:         sl.String(strconv.Itoa(*dc.Id)),
+		Prices:           targetItemPrices,
+		Quantity:         sl.Int(1),
+		UseHourlyPricing: sl.Bool(hourlyBilling),
 	}
 
 	return productOrderContainer, nil
@@ -702,13 +788,25 @@ func WaitForStorageAvailable(d *schema.ResourceData, meta interface{}) (interfac
 	return stateConf.WaitForState()
 }
 
-func getIopsKeyName(iops float64, storageType string) (string, error) {
+func getIopsKeyName(iops float64, capacity int, storageType string, hourlyBilling bool) (string, error) {
 	switch storageType {
 	case enduranceType:
 		return enduranceIopsMap[iops], nil
 	case performanceType:
+		if hourlyBilling {
+			return performanceHourlyIopsMap[capacity], nil
+		}
+		return performanceMonthlyIopsMap[capacity], nil
+	}
+	return "", fmt.Errorf("Invalid storageType %s.", storageType)
+}
 
-		return fmt.Sprintf("%.f_IOPS", iops), nil
+func getCapacityKeyName(iops float64, capacity int, storageType string) (string, error) {
+	switch storageType {
+	case enduranceType:
+		return enduranceStorageMap[iops], nil
+	case performanceType:
+		return performanceStorageMap[capacity], nil
 	}
 	return "", fmt.Errorf("Invalid storageType %s.", storageType)
 }

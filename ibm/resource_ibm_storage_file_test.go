@@ -105,6 +105,45 @@ func TestAccIBMStorageFile_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMStorageFile_With_Hourly(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMStorageFileConfigWithHourlyBilling,
+				Check: resource.ComposeTestCheckFunc(
+					// Endurance Storage
+					testAccCheckIBMStorageFileExists("ibm_storage_file.fs_endurance"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_file.fs_endurance", "type", "Endurance"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_file.fs_endurance", "capacity", "20"),
+					resource.TestCheckResourceAttrSet("ibm_storage_file.fs_endurance", "mountpoint"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_file.fs_endurance", "iops", "0.25"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_file.fs_endurance", "snapshot_capacity", "10"),
+					testAccCheckIBMResources("ibm_storage_file.fs_endurance", "datacenter",
+						"ibm_compute_vm_instance.storagevm1", "datacenter"),
+					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "notes", "endurance for hourly billing"),
+					// Performance Storage
+					testAccCheckIBMStorageFileExists("ibm_storage_file.fs_performance"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_file.fs_performance", "type", "Performance"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_file.fs_performance", "capacity", "20"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_file.fs_performance", "iops", "200"),
+					testAccCheckIBMResources("ibm_storage_file.fs_performance", "datacenter",
+						"ibm_compute_vm_instance.storagevm1", "datacenter"),
+					resource.TestCheckResourceAttr("ibm_storage_file.fs_performance", "notes", "performance for hourly billing"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMStorageFileWithTag(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
@@ -387,5 +426,40 @@ resource "ibm_storage_file" "fs_endurance" {
         snapshot_capacity = 10
 		notes = "endurance notes"
 		tags = ["one", "two", "three"]
+}
+`
+
+const testAccCheckIBMStorageFileConfigWithHourlyBilling = `
+resource "ibm_compute_vm_instance" "storagevm1" {
+    hostname = "storagevm1"
+    domain = "terraformuat.ibm.com"
+    os_reference_code = "DEBIAN_7_64"
+    datacenter = "dal09"
+    network_speed = 100
+    hourly_billing = true
+    private_network_only = false
+    cores = 1
+    memory = 1024
+    disks = [25]
+    local_disk = false
+}
+
+resource "ibm_storage_file" "fs_endurance" {
+        type = "Endurance"
+        datacenter = "${ibm_compute_vm_instance.storagevm1.datacenter}"
+        capacity = 20
+        iops = 0.25
+        snapshot_capacity = 10
+        notes = "endurance for hourly billing"
+		hourly_billing = true
+}
+
+resource "ibm_storage_file" "fs_performance" {
+        type = "Performance"
+        datacenter = "${ibm_compute_vm_instance.storagevm1.datacenter}"
+        capacity = 20
+        iops = 200
+        notes = "performance for hourly billing"
+		hourly_billing = true
 }
 `

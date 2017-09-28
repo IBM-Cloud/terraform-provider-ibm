@@ -165,6 +165,12 @@ func resourceIBMStorageBlock() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
 			},
+			"hourly_billing": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				ForceNew: true,
+			},
 		},
 	}
 }
@@ -179,12 +185,13 @@ func resourceIBMStorageBlockCreate(d *schema.ResourceData, meta interface{}) err
 	snapshotCapacity := d.Get("snapshot_capacity").(int)
 	osFormatType := d.Get("os_format_type").(string)
 	osType, err := network.GetOsTypeByName(sess, osFormatType)
+	hourlyBilling := d.Get("hourly_billing").(bool)
 
 	if err != nil {
 		return err
 	}
 
-	storageOrderContainer, err := buildStorageProductOrderContainer(sess, storageType, iops, capacity, snapshotCapacity, blockStorage, datacenter)
+	storageOrderContainer, err := buildStorageProductOrderContainer(sess, storageType, iops, capacity, snapshotCapacity, blockStorage, datacenter, hourlyBilling)
 	if err != nil {
 		return fmt.Errorf("Error while creating storage:%s", err)
 	}
@@ -196,23 +203,24 @@ func resourceIBMStorageBlockCreate(d *schema.ResourceData, meta interface{}) err
 	switch storageType {
 	case enduranceType:
 		receipt, err = services.GetProductOrderService(sess).PlaceOrder(
-			&datatypes.Container_Product_Order_Network_Storage_Enterprise{
+			&datatypes.Container_Product_Order_Network_Storage_AsAService{
 				Container_Product_Order: storageOrderContainer,
 				OsFormatType: &datatypes.Network_Storage_Iscsi_OS_Type{
 					Id:      osType.Id,
 					KeyName: osType.KeyName,
 				},
+				VolumeSize: &capacity,
 			}, sl.Bool(false))
 	case performanceType:
 		receipt, err = services.GetProductOrderService(sess).PlaceOrder(
-			&datatypes.Container_Product_Order_Network_PerformanceStorage_Iscsi{
-				Container_Product_Order_Network_PerformanceStorage: datatypes.Container_Product_Order_Network_PerformanceStorage{
-					Container_Product_Order: storageOrderContainer,
-				},
+			&datatypes.Container_Product_Order_Network_Storage_AsAService{
+				Container_Product_Order: storageOrderContainer,
 				OsFormatType: &datatypes.Network_Storage_Iscsi_OS_Type{
 					Id:      osType.Id,
 					KeyName: osType.KeyName,
 				},
+				Iops:       sl.Int(int(iops)),
+				VolumeSize: &capacity,
 			}, sl.Bool(false))
 	default:
 		return fmt.Errorf("Error during creation of storage: Invalid storageType %s", storageType)
@@ -333,6 +341,8 @@ func resourceIBMStorageBlockRead(d *schema.ResourceData, meta interface{}) error
 	if storage.Notes != nil {
 		d.Set("notes", *storage.Notes)
 	}
+
+	d.Set("hourly_billing", storage.BillingItem.HourlyFlag)
 
 	return nil
 }

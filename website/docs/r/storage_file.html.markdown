@@ -30,6 +30,7 @@ resource "ibm_storage_file" "fs_endurance" {
         allowed_subnets = [ "10.146.139.64/26" ]
         allowed_ip_addresses = [ "10.146.139.84" ]
         snapshot_capacity = 10  
+        hourly_billing = true
 
         # Optional fields for snapshot
         snapshot = [
@@ -64,6 +65,7 @@ resource "ibm_storage_file" "fs_performance" {
         allowed_virtual_guest_ids = [ "28961689" ]
         allowed_subnets = [ "10.146.139.64/26" ]
         allowed_ip_addresses = [ "10.146.139.84" ]
+        hourly_billing = true
 }
 ```
 
@@ -90,6 +92,9 @@ The following arguments are supported:
 * `notes` - (Optional, string) Descriptive text to associate with the file storage.
 * `tags` - (Optional, array of strings) Tags associated with the file storage instance.
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
+* `hourly_billing` - (Optional,Boolean) Set true to enable hourly billing.Default is false
+**NOTE**: `Hourly billing` is only available in updated datacenters with improved capabilities.Plesae refer the link to get the updated list of datacenter. http://knowledgelayer.softlayer.com/articles/new-ibm-block-and-file-storage-location-and-features
+
 
 ## Attribute Reference
 
