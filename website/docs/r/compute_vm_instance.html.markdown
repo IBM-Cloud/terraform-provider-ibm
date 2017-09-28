@@ -93,6 +93,10 @@ The following arguments are supported:
 * `ipv6_enabled` - (Optional, boolean) The primary public IPv6 address. The default value is `false`.
 *  `secondary_ip_count` - (Optional, integer) Specifies secondary public IPv4 addresses. Accepted values are `4` and `8`.
 *  `wait_time_minutes` - (Optional, integer) The duration, expressed in minutes, to wait for the VM instance to become available before declaring it as created. It is also the same amount of time waited for no active transactions before proceeding with an update or deletion. The default value is `90`.
+* `public_bandwidth_limited` - (Optional, int). Allowed public network traffic(GB) per month. It can be greater than 0 when the server is a monthly based server. Defaults to the smallest available capacity for the public bandwidth are used.
+    **NOTE**: Conflicts with`private_network_only` and `public_bandwidth_unlimited`.
+* `public_bandwidth_unlimited` - (Optional, boolean). Allowed unlimited public network traffic(GB) per month for a monthly based server. The `network_speed` should be 100 Mbps. Default value: `false`.
+    **NOTE**: Conflicts with`private_network_only` and `public_bandwidth_limited`.
 
 
 ## Attribute Reference
