@@ -325,6 +325,28 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				Optional: true,
 				Default:  90,
 			},
+			// Monthly only
+			// Limited BandWidth
+			"public_bandwidth_limited": {
+				Type:             schema.TypeInt,
+				Optional:         true,
+				Computed:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: applyOnce,
+				ConflictsWith:    []string{"private_network_only", "public_bandwidth_unlimited"},
+				ValidateFunc:     validatePublicBandwidth,
+			},
+
+			// Monthly only
+			// Unlimited BandWidth
+			"public_bandwidth_unlimited": {
+				Type:             schema.TypeBool,
+				Optional:         true,
+				Default:          false,
+				ForceNew:         true,
+				DiffSuppressFunc: applyOnce,
+				ConflictsWith:    []string{"private_network_only", "public_bandwidth_limited"},
+			},
 		},
 	}
 }
@@ -621,7 +643,88 @@ func resourceIBMComputeVmInstanceCreate(d *schema.ResourceData, meta interface{}
 			},
 		)
 	}
+	// Add optional price ids.
+	// Add public bandwidth limited
+	if publicBandwidth, ok := d.GetOk("public_bandwidth_limited"); ok {
+		if *opts.HourlyBillingFlag {
+			return fmt.Errorf("Unable to configure a public bandwidth with a hourly_billing true")
+		}
+		// Remove Default bandwidth price
+		prices := make([]datatypes.Product_Item_Price, len(template.Prices))
+		i := 0
+		for _, p := range template.Prices {
+			item := p.Item
+			if item != nil {
+				if strings.Contains(*item.Description, "Bandwidth") {
+					continue
+				}
+			}
+			prices[i] = p
+			i++
+		}
+		template.Prices = prices[:i]
 
+		bandWidthItems, err := services.GetProductPackageService(sess).
+			Id(*template.PackageId).
+			Mask("id,capacity,description,units,keyName,prices[id,categories[id,name,categoryCode]]").
+			Filter(filter.Build(filter.Path("items.keyName").Eq("BANDWIDTH_" + strconv.Itoa(publicBandwidth.(int)) + "_GB"))).
+			GetItems()
+		if err != nil {
+			return fmt.Errorf("Error generating order template: %s", err)
+		}
+		if len(bandWidthItems) == 0 {
+			return fmt.Errorf("No product items matching BANDWIDTH_%d_GB could be found", publicBandwidth)
+		}
+		template.Prices = append(template.Prices,
+			datatypes.Product_Item_Price{
+				Id: bandWidthItems[0].Prices[0].Id,
+			},
+		)
+	}
+
+	// Add public bandwidth unlimited
+	publicUnlimitedBandwidth := d.Get("public_bandwidth_unlimited").(bool)
+	if publicUnlimitedBandwidth {
+		if *opts.HourlyBillingFlag {
+			return fmt.Errorf("Unable to configure a public bandwidth with a hourly_billing true")
+		}
+		networkSpeed := d.Get("network_speed").(int)
+		if networkSpeed != 100 {
+			return fmt.Errorf("Network speed must be 100 Mbps to configure public bandwidth unlimited")
+		}
+		// Remove Default bandwidth price
+		prices := make([]datatypes.Product_Item_Price, len(template.Prices))
+		i := 0
+		for _, p := range template.Prices {
+			item := p.Item
+			if item != nil {
+				if strings.Contains(*item.Description, "Bandwidth") {
+					continue
+				}
+			}
+			prices[i] = p
+			i++
+		}
+		template.Prices = prices[:i]
+
+		bandWidthItems, err := services.GetProductPackageService(sess).
+			Id(*template.PackageId).
+			Mask("id,capacity,description,units,keyName,prices[id,categories[id,name,categoryCode]]").
+			Filter(filter.Build(filter.Path("items.keyName").Eq("BANDWIDTH_UNLIMITED_100_MBPS_UPLINK"))).
+			GetItems()
+		if err != nil {
+			return fmt.Errorf("Error generating order template: %s", err)
+		}
+		if len(bandWidthItems) == 0 {
+			return fmt.Errorf("No product items matching BANDWIDTH_UNLIMITED_100_MBPS_UPLINK could be found")
+		}
+		template.Prices = append(template.Prices,
+			datatypes.Product_Item_Price{
+				Id: bandWidthItems[0].Prices[0].Id,
+			},
+		)
+
+	}
 	// GenerateOrderTemplate omits UserData, subnet, and maxSpeed, so configure virtual_guest.
 	template.VirtualGuests[0] = opts
 
