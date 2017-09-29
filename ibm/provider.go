@@ -108,6 +108,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_space":                     resourceIBMSpace(),
 			"ibm_storage_block":             resourceIBMStorageBlock(),
 			"ibm_storage_file":              resourceIBMStorageFile(),
+			"ibm_subnet":                    resourceIBMSubnet(),
 		},
 
 		ConfigureFunc: providerConfigure,
