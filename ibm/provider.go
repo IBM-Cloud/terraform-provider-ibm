@@ -63,6 +63,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_container_cluster_worker": dataSourceIBMContainerClusterWorker(),
 			"ibm_dns_domain":               dataSourceIBMDNSDomain(),
 			"ibm_iam_user_policy":          dataSourceIBMIAMUserPolicy(),
+			"ibm_lbaas":                    dataSourceIBMLbaas(),
 			"ibm_network_vlan":             dataSourceIBMNetworkVlan(),
 			"ibm_org":                      dataSourceIBMOrg(),
 			"ibm_service_instance":         dataSourceIBMServiceInstance(),
