@@ -8,9 +8,7 @@ description: |-
 
 # ibm\_lbaas
 
-The resource lbaas creates a Load Balancer as a service. Currently only one subnet is supported
-
-
+Provides a resource for a load balancer as a service. This allows a load balancer as a service to be created, updated, and deleted. Currently, only one subnet is supported.
  
 ## Example Usage
 
@@ -62,36 +60,29 @@ resource "ibm_lbaas" "lbaas" {
 The following arguments are supported:
 
 * `name` - (Required, string) The load balancer's name.
-* `description` - (Optional, string) Description of a load balancer.
-* `datacenter` - (Required, string) Datacenter, where load balancer is located.
-* `subnets` - (Required, array) The subnet where this Load Balancer will be provisioned.Only one subnet is supported.
-* `protocols` - (Optional, array) Nested block describing protocols assigned to load balancer.
-* `server_instances` - (Optional, array) Nested block describing the Server instances for this load balancer.
-
-Nested `protocols` blocks have the following structure:
-
-* `frontend_protocol` - (Required, string) Frontend protocol, one of 'TCP', 'HTTP', 'HTTPS'.
-* `frontend_port` - (Required, int)  Frontend Protocol port number. Should be in range (1, 65535)
-* `backend_protocol` - (Required, string) Backend protocol, one of 'TCP', 'HTTP', 'HTTPS'.
-* `backend_port` - (Required, int)  Backend Protocol port number. Should be in range (1, 65535)
-* `load_balancing_method` - (Optional, string) Load balancing algorithm: 'round_robin', 'weighted_round_robin', 'least_connection'. Default is 'round_robin'.
-* `session_stickiness` - (Optional, string) Session stickness. Valid values is SOURCE_IP
-* `max_conn` - (Optional, int) No. of connections the listener can accept. Should be between 1-64000 
-* `tls_certificate_id` - (Optional, int) This references to SSL/TLS certificate for a protocol. Should be specified when the frontend protocol is selected as HTTPS.
-
-Nested `server_instances` blocks have the following structure:
-
-* `private_ip_address` - (Required, string) The Private IP address of a load balancer member.
-* `weight` - (Optional, int) The weight of a load balancer member.
-
+* `description` - (Optional, string) A description of the load balancer.
+* `datacenter` - (Required, string) The datacenter where the load balancer is located.
+* `subnets` - (Required, array) The subnet where the load balancer will be provisioned. Only one subnet is supported.
+* `protocols` - (Optional, array) A nested block describing the protocols assigned to load balancer. Nested `protocols` blocks have the following structure:
+  * `frontend_protocol` - (Required, string) The frontend protocol. Accepted values are 'TCP', 'HTTP', and 'HTTPS'.
+  * `frontend_port` - (Required, integer) The frontend protocol port number. The port number must be in the range of 1 - 65535.
+  * `backend_protocol` - (Required, string) The backend protocol. Accepted values are 'TCP', 'HTTP', and 'HTTPS'.
+  * `backend_port` - (Required, integer) The backend protocol port number. The port number must be in the range of 1 - 65535.
+  * `load_balancing_method` - (Optional, string) The load balancing algorithm. Accepted values are 'round_robin', 'weighted_round_robin', and 'least_connection'. The default is 'round_robin'.
+  * `session_stickiness` - (Optional, string) The SOURCE_IP for session stickiness.
+  * `max_conn` - (Optional, integer) The maximum number of connections the listener can accept. The number must be 1 - 64000.
+  * `tls_certificate_id` - (Optional, integer) The ID of the SSL/TLS certificate being used for a protocol. This ID should be specified when `frontend protocol` has a value of `HTTPS`.
+* `server_instances` - (Optional, array) A nested block describing the server instances for the load balancer. Nested `server_instances` blocks have the following structure:
+  * `private_ip_address` - (Required, string) The private IP address of a load balancer member.
+  * `weight` - (Optional, integer) The weight of a load balancer member.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-* `id` - The id of policy created.
-* `type` - Specifies if a load balancer is public or private.
-* `status` - The operation status 'ONLINE' or 'OFFLINE' of a load balancer.
-* `vip` - The virtual ip address of this load balancer.
+* `id` - The unique identifier of the created policy.
+* `type` - Specifies whether a load balancer is `PUBLIC` or `PRIVATE`.
+* `status` - Specifies the operation status of the load balancer as `ONLINE` or `OFFLINE`.
+* `vip` - The virtual IP address of the load balancer.
 * `protocol_id` - The UUID of a load balancer protocol.
 * `member_id` - The UUID of a load balancer member.
