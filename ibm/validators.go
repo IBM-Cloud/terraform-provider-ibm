@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"net"
 	"strings"
 
 	"github.com/IBM-Bluemix/bluemix-go/helpers"
@@ -145,4 +146,38 @@ func validatePublicBandwidth(v interface{}, k string) (ws []string, errors []err
 		"%q (%d) must be one of the value from %d", k, bandwidth, validBandwidths))
 	return
 
+}
+
+func validateMaxConn(v interface{}, k string) (ws []string, errors []error) {
+	maxConn := v.(int)
+	if maxConn < 1 || maxConn > 64000 {
+		errors = append(errors, fmt.Errorf(
+			"%q must be between 1 and 64000",
+			k))
+		return
+	}
+	return
+}
+
+func validateWeight(v interface{}, k string) (ws []string, errors []error) {
+	weight := v.(int)
+	if weight < 0 || weight > 100 {
+		errors = append(errors, fmt.Errorf(
+			"%q must be between 1 and 100",
+			k))
+		return
+	}
+	return
+}
+
+//validateIP...
+func validateIP(v interface{}, k string) (ws []string, errors []error) {
+	address := v.(string)
+	if net.ParseIP(address) == nil {
+		errors = append(errors, fmt.Errorf(
+			"%q must be a valid ip address",
+			k))
+		return
+	}
+	return
 }

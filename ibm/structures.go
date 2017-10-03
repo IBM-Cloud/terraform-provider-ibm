@@ -7,6 +7,7 @@ import (
 	"github.com/IBM-Bluemix/bluemix-go/api/mccp/mccpv2"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
+	"github.com/softlayer/softlayer-go/sl"
 )
 
 //HashInt ...
@@ -179,6 +180,109 @@ func flattenIAMPolicyRoles(list []iampapv1.Roles) []map[string]interface{} {
 	for _, v := range list {
 		l := map[string]interface{}{
 			"name": roleIDToName[v.ID],
+		}
+		result = append(result, l)
+	}
+	return result
+}
+
+func expandProtocols(configured []interface{}) ([]datatypes.Network_LBaaS_LoadBalancerProtocolConfiguration, error) {
+	protocols := make([]datatypes.Network_LBaaS_LoadBalancerProtocolConfiguration, 0, len(configured))
+	for _, lRaw := range configured {
+		data := lRaw.(map[string]interface{})
+		p := &datatypes.Network_LBaaS_LoadBalancerProtocolConfiguration{
+			FrontendProtocol: sl.String(data["frontend_protocol"].(string)),
+			BackendProtocol:  sl.String(data["backend_protocol"].(string)),
+			FrontendPort:     sl.Int(data["frontend_port"].(int)),
+			BackendPort:      sl.Int(data["backend_port"].(int)),
+		}
+		if v, ok := data["session_stickiness"]; ok && v.(string) != "" {
+			p.SessionType = sl.String(v.(string))
+		}
+		if v, ok := data["max_conn"]; ok && v.(int) != 0 {
+			p.MaxConn = sl.Int(v.(int))
+		}
+		if v, ok := data["tls_certificate_id"]; ok && v.(int) != 0 {
+			p.TlsCertificateId = sl.Int(v.(int))
+		}
+		if v, ok := data["load_balancing_method"]; ok {
+			p.LoadBalancingMethod = sl.String(lbMethodToId[v.(string)])
+		}
+		if v, ok := data["protocol_id"]; ok && v.(string) != "" {
+			p.ListenerUuid = sl.String(v.(string))
+		}
+
+		var isValid bool
+		if p.TlsCertificateId != nil && *p.TlsCertificateId != 0 {
+			// validate the protocol is correct
+			if *p.FrontendProtocol == "HTTPS" {
+				isValid = true
+			}
+		} else {
+			isValid = true
+		}
+
+		if isValid {
+			protocols = append(protocols, *p)
+		} else {
+			return protocols, fmt.Errorf("tls_certificate_id may be set only when frontend protocol is 'HTTPS'")
+		}
+
+	}
+	return protocols, nil
+}
+
+func expandMembers(configured []interface{}) []datatypes.Network_LBaaS_LoadBalancerServerInstanceInfo {
+	members := make([]datatypes.Network_LBaaS_LoadBalancerServerInstanceInfo, 0, len(configured))
+	for _, lRaw := range configured {
+		data := lRaw.(map[string]interface{})
+		p := &datatypes.Network_LBaaS_LoadBalancerServerInstanceInfo{}
+		if v, ok := data["private_ip_address"]; ok && v.(string) != "" {
+			p.PrivateIpAddress = sl.String(v.(string))
+		}
+		if v, ok := data["weight"]; ok && v.(int) != 0 {
+			p.Weight = sl.Int(v.(int))
+		}
+
+		members = append(members, *p)
+	}
+	return members
+}
+
+func flattenServerInstances(list []datatypes.Network_LBaaS_Member) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, len(list))
+	for _, i := range list {
+		l := map[string]interface{}{
+			"private_ip_address": *i.Address,
+			"member_id":          *i.Uuid,
+		}
+		if i.Weight != nil {
+			l["weight"] = *i.Weight
+		}
+		result = append(result, l)
+	}
+	return result
+}
+
+func flattenProtocols(list []datatypes.Network_LBaaS_Listener) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, len(list))
+	for _, i := range list {
+		l := map[string]interface{}{
+			"frontend_protocol":     *i.Protocol,
+			"frontend_port":         *i.ProtocolPort,
+			"backend_protocol":      *i.DefaultPool.Protocol,
+			"backend_port":          *i.DefaultPool.ProtocolPort,
+			"load_balancing_method": lbIdToMethod[*i.DefaultPool.LoadBalancingAlgorithm],
+			"protocol_id":           *i.Uuid,
+		}
+		if i.DefaultPool.SessionAffinity != nil && i.DefaultPool.SessionAffinity.Type != nil && *i.DefaultPool.SessionAffinity.Type != "" {
+			l["session_stickiness"] = *i.DefaultPool.SessionAffinity.Type
+		}
+		if i.ConnectionLimit != nil && *i.ConnectionLimit != 0 {
+			l["max_conn"] = *i.ConnectionLimit
+		}
+		if i.TlsCertificateId != nil && *i.TlsCertificateId != 0 {
+			l["tls_certificate_id"] = *i.TlsCertificateId
 		}
 		result = append(result, l)
 	}
