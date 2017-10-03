@@ -6,7 +6,7 @@ import (
 
 // xmlrpcError represents errors returned on xmlrpc request.
 type XmlRpcError struct {
-	Code           string
+	Code           interface{}
 	Err            string
 	HttpStatusCode int
 }
@@ -14,7 +14,7 @@ type XmlRpcError struct {
 // Error() method implements Error interface
 func (e *XmlRpcError) Error() string {
 	return fmt.Sprintf(
-		"error: %s, code: %s, http status code: %d",
+		"error: %s, code: %v, http status code: %d",
 		e.Err, e.Code, e.HttpStatusCode)
 }
 

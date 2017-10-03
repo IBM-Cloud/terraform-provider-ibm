@@ -61,6 +61,34 @@ type Container_Account_Discount_Program struct {
 	RemainingCreditTax *Float64 `json:"remainingCreditTax,omitempty" xmlrpc:"remainingCreditTax,omitempty"`
 }
 
+// no documentation yet
+type Container_Account_External_Setup_ProvisioningHoldLifted struct {
+	Entity
+
+	// no documentation yet
+	AdditionalAttributes *Container_Account_External_Setup_ProvisioningHoldLifted_Attributes `json:"additionalAttributes,omitempty" xmlrpc:"additionalAttributes,omitempty"`
+
+	// no documentation yet
+	Code *string `json:"code,omitempty" xmlrpc:"code,omitempty"`
+
+	// no documentation yet
+	Error *string `json:"error,omitempty" xmlrpc:"error,omitempty"`
+
+	// no documentation yet
+	State *string `json:"state,omitempty" xmlrpc:"state,omitempty"`
+}
+
+// no documentation yet
+type Container_Account_External_Setup_ProvisioningHoldLifted_Attributes struct {
+	Entity
+
+	// no documentation yet
+	BrandKeyName *string `json:"brandKeyName,omitempty" xmlrpc:"brandKeyName,omitempty"`
+
+	// no documentation yet
+	SoftLayerBrandMoveDate *Time `json:"softLayerBrandMoveDate,omitempty" xmlrpc:"softLayerBrandMoveDate,omitempty"`
+}
+
 // SoftLayer_Container_Account_Graph_Outputs <<< EOT
 type Container_Account_Graph_Outputs struct {
 	Entity
@@ -1285,10 +1313,13 @@ type Container_Hardware_Server_Configuration struct {
 	ItemPrices []Product_Item_Price `json:"itemPrices,omitempty" xmlrpc:"itemPrices,omitempty"`
 
 	// A flag indicating that the provision should use LVM for all logical drives.
-	LvmFlag *bool `json:"lvmFlag,omitempty" xmlrpc:"lvmFlag,omitempty"`
+	LvmFlag *int `json:"lvmFlag,omitempty" xmlrpc:"lvmFlag,omitempty"`
 
 	// A flag indicating that the remote management cards password will be reset.
 	ResetIpmiPassword *int `json:"resetIpmiPassword,omitempty" xmlrpc:"resetIpmiPassword,omitempty"`
+
+	// The token of the requesting service. Do not set.
+	ServiceToken *string `json:"serviceToken,omitempty" xmlrpc:"serviceToken,omitempty"`
 
 	// IDs to SoftLayer_Security_Ssh_Key objects on the current account which will be added to the server for authentication. SSH Keys will not be added to servers with Microsoft Windows.
 	SshKeyIds []int `json:"sshKeyIds,omitempty" xmlrpc:"sshKeyIds,omitempty"`
@@ -1542,6 +1573,276 @@ type Container_Network_Bandwidth_Version1_Usage struct {
 
 	// The date and time that the bandwidth was used by a piece of hardware
 	RecordedDate *Time `json:"recordedDate,omitempty" xmlrpc:"recordedDate,omitempty"`
+}
+
+// no documentation yet
+type Container_Network_CdnMarketplace_Configuration_Cache_Purge struct {
+	Entity
+
+	// no documentation yet
+	Date *string `json:"date,omitempty" xmlrpc:"date,omitempty"`
+
+	// no documentation yet
+	Path *string `json:"path,omitempty" xmlrpc:"path,omitempty"`
+
+	// no documentation yet
+	Saved *string `json:"saved,omitempty" xmlrpc:"saved,omitempty"`
+
+	// no documentation yet
+	Status *string `json:"status,omitempty" xmlrpc:"status,omitempty"`
+}
+
+// no documentation yet
+type Container_Network_CdnMarketplace_Configuration_Input struct {
+	Entity
+
+	// no documentation yet
+	BucketName *string `json:"bucketName,omitempty" xmlrpc:"bucketName,omitempty"`
+
+	// no documentation yet
+	CertificateType *string `json:"certificateType,omitempty" xmlrpc:"certificateType,omitempty"`
+
+	// no documentation yet
+	Cname *string `json:"cname,omitempty" xmlrpc:"cname,omitempty"`
+
+	// no documentation yet
+	Domain *string `json:"domain,omitempty" xmlrpc:"domain,omitempty"`
+
+	// no documentation yet
+	FileExtension *string `json:"fileExtension,omitempty" xmlrpc:"fileExtension,omitempty"`
+
+	// no documentation yet
+	Header *string `json:"header,omitempty" xmlrpc:"header,omitempty"`
+
+	// no documentation yet
+	HttpPort *int `json:"httpPort,omitempty" xmlrpc:"httpPort,omitempty"`
+
+	// no documentation yet
+	HttpsPort *int `json:"httpsPort,omitempty" xmlrpc:"httpsPort,omitempty"`
+
+	// Used by the following method: updateOriginPath(). This property will store the path of the path record to be saved. The $path attribute stores the new path.
+	OldPath *string `json:"oldPath,omitempty" xmlrpc:"oldPath,omitempty"`
+
+	// no documentation yet
+	Origin *string `json:"origin,omitempty" xmlrpc:"origin,omitempty"`
+
+	// no documentation yet
+	OriginType *string `json:"originType,omitempty" xmlrpc:"originType,omitempty"`
+
+	// no documentation yet
+	Path *string `json:"path,omitempty" xmlrpc:"path,omitempty"`
+
+	// no documentation yet
+	PerformanceConfiguration *string `json:"performanceConfiguration,omitempty" xmlrpc:"performanceConfiguration,omitempty"`
+
+	// no documentation yet
+	Protocol *string `json:"protocol,omitempty" xmlrpc:"protocol,omitempty"`
+
+	// no documentation yet
+	RespectHeaders *string `json:"respectHeaders,omitempty" xmlrpc:"respectHeaders,omitempty"`
+
+	// no documentation yet
+	ServeStale *string `json:"serveStale,omitempty" xmlrpc:"serveStale,omitempty"`
+
+	// no documentation yet
+	Status *string `json:"status,omitempty" xmlrpc:"status,omitempty"`
+
+	// no documentation yet
+	UniqueId *string `json:"uniqueId,omitempty" xmlrpc:"uniqueId,omitempty"`
+
+	// no documentation yet
+	VendorName *string `json:"vendorName,omitempty" xmlrpc:"vendorName,omitempty"`
+}
+
+// no documentation yet
+type Container_Network_CdnMarketplace_Configuration_Mapping struct {
+	Entity
+
+	// no documentation yet
+	BucketName *string `json:"bucketName,omitempty" xmlrpc:"bucketName,omitempty"`
+
+	// no documentation yet
+	CertificateType *string `json:"certificateType,omitempty" xmlrpc:"certificateType,omitempty"`
+
+	// no documentation yet
+	Cname *string `json:"cname,omitempty" xmlrpc:"cname,omitempty"`
+
+	// no documentation yet
+	Domain *string `json:"domain,omitempty" xmlrpc:"domain,omitempty"`
+
+	// no documentation yet
+	FileExtension *string `json:"fileExtension,omitempty" xmlrpc:"fileExtension,omitempty"`
+
+	// no documentation yet
+	Header *string `json:"header,omitempty" xmlrpc:"header,omitempty"`
+
+	// no documentation yet
+	HttpPort *int `json:"httpPort,omitempty" xmlrpc:"httpPort,omitempty"`
+
+	// no documentation yet
+	HttpsPort *int `json:"httpsPort,omitempty" xmlrpc:"httpsPort,omitempty"`
+
+	// no documentation yet
+	OriginHost *string `json:"originHost,omitempty" xmlrpc:"originHost,omitempty"`
+
+	// no documentation yet
+	OriginType *string `json:"originType,omitempty" xmlrpc:"originType,omitempty"`
+
+	// no documentation yet
+	Path *string `json:"path,omitempty" xmlrpc:"path,omitempty"`
+
+	// no documentation yet
+	PerformanceConfiguration *string `json:"performanceConfiguration,omitempty" xmlrpc:"performanceConfiguration,omitempty"`
+
+	// no documentation yet
+	Protocol *string `json:"protocol,omitempty" xmlrpc:"protocol,omitempty"`
+
+	// no documentation yet
+	RespectHeaders *bool `json:"respectHeaders,omitempty" xmlrpc:"respectHeaders,omitempty"`
+
+	// no documentation yet
+	ServeStale *bool `json:"serveStale,omitempty" xmlrpc:"serveStale,omitempty"`
+
+	// no documentation yet
+	Status *string `json:"status,omitempty" xmlrpc:"status,omitempty"`
+
+	// no documentation yet
+	UniqueId *string `json:"uniqueId,omitempty" xmlrpc:"uniqueId,omitempty"`
+
+	// no documentation yet
+	VendorName *string `json:"vendorName,omitempty" xmlrpc:"vendorName,omitempty"`
+}
+
+// no documentation yet
+type Container_Network_CdnMarketplace_Configuration_Mapping_Path struct {
+	Entity
+
+	// no documentation yet
+	BucketName *string `json:"bucketName,omitempty" xmlrpc:"bucketName,omitempty"`
+
+	// no documentation yet
+	FileExtension *string `json:"fileExtension,omitempty" xmlrpc:"fileExtension,omitempty"`
+
+	// no documentation yet
+	HttpPort *int `json:"httpPort,omitempty" xmlrpc:"httpPort,omitempty"`
+
+	// no documentation yet
+	HttpsPort *int `json:"httpsPort,omitempty" xmlrpc:"httpsPort,omitempty"`
+
+	// no documentation yet
+	MappingUniqueId *int `json:"mappingUniqueId,omitempty" xmlrpc:"mappingUniqueId,omitempty"`
+
+	// no documentation yet
+	Origin *string `json:"origin,omitempty" xmlrpc:"origin,omitempty"`
+
+	// no documentation yet
+	OriginType *string `json:"originType,omitempty" xmlrpc:"originType,omitempty"`
+
+	// no documentation yet
+	Path *string `json:"path,omitempty" xmlrpc:"path,omitempty"`
+
+	// no documentation yet
+	Status *string `json:"status,omitempty" xmlrpc:"status,omitempty"`
+}
+
+// no documentation yet
+type Container_Network_CdnMarketplace_Metrics struct {
+	Entity
+
+	// no documentation yet
+	Names []string `json:"names,omitempty" xmlrpc:"names,omitempty"`
+
+	// no documentation yet
+	Percentage []string `json:"percentage,omitempty" xmlrpc:"percentage,omitempty"`
+
+	// no documentation yet
+	Time []int `json:"time,omitempty" xmlrpc:"time,omitempty"`
+
+	// no documentation yet
+	Totals []string `json:"totals,omitempty" xmlrpc:"totals,omitempty"`
+
+	// no documentation yet
+	Type *string `json:"type,omitempty" xmlrpc:"type,omitempty"`
+
+	// no documentation yet
+	Xaxis []string `json:"xaxis,omitempty" xmlrpc:"xaxis,omitempty"`
+
+	// no documentation yet
+	Yaxis1 []string `json:"yaxis1,omitempty" xmlrpc:"yaxis1,omitempty"`
+
+	// no documentation yet
+	Yaxis10 []string `json:"yaxis10,omitempty" xmlrpc:"yaxis10,omitempty"`
+
+	// no documentation yet
+	Yaxis11 []string `json:"yaxis11,omitempty" xmlrpc:"yaxis11,omitempty"`
+
+	// no documentation yet
+	Yaxis12 []string `json:"yaxis12,omitempty" xmlrpc:"yaxis12,omitempty"`
+
+	// no documentation yet
+	Yaxis13 []string `json:"yaxis13,omitempty" xmlrpc:"yaxis13,omitempty"`
+
+	// no documentation yet
+	Yaxis14 []string `json:"yaxis14,omitempty" xmlrpc:"yaxis14,omitempty"`
+
+	// no documentation yet
+	Yaxis15 []string `json:"yaxis15,omitempty" xmlrpc:"yaxis15,omitempty"`
+
+	// no documentation yet
+	Yaxis16 []string `json:"yaxis16,omitempty" xmlrpc:"yaxis16,omitempty"`
+
+	// no documentation yet
+	Yaxis17 []string `json:"yaxis17,omitempty" xmlrpc:"yaxis17,omitempty"`
+
+	// no documentation yet
+	Yaxis18 []string `json:"yaxis18,omitempty" xmlrpc:"yaxis18,omitempty"`
+
+	// no documentation yet
+	Yaxis19 []string `json:"yaxis19,omitempty" xmlrpc:"yaxis19,omitempty"`
+
+	// no documentation yet
+	Yaxis2 []string `json:"yaxis2,omitempty" xmlrpc:"yaxis2,omitempty"`
+
+	// no documentation yet
+	Yaxis20 []string `json:"yaxis20,omitempty" xmlrpc:"yaxis20,omitempty"`
+
+	// no documentation yet
+	Yaxis3 []string `json:"yaxis3,omitempty" xmlrpc:"yaxis3,omitempty"`
+
+	// no documentation yet
+	Yaxis4 []string `json:"yaxis4,omitempty" xmlrpc:"yaxis4,omitempty"`
+
+	// no documentation yet
+	Yaxis5 []string `json:"yaxis5,omitempty" xmlrpc:"yaxis5,omitempty"`
+
+	// no documentation yet
+	Yaxis6 []string `json:"yaxis6,omitempty" xmlrpc:"yaxis6,omitempty"`
+
+	// no documentation yet
+	Yaxis7 []string `json:"yaxis7,omitempty" xmlrpc:"yaxis7,omitempty"`
+
+	// no documentation yet
+	Yaxis8 []string `json:"yaxis8,omitempty" xmlrpc:"yaxis8,omitempty"`
+
+	// no documentation yet
+	Yaxis9 []string `json:"yaxis9,omitempty" xmlrpc:"yaxis9,omitempty"`
+}
+
+// no documentation yet
+type Container_Network_CdnMarketplace_Vendor struct {
+	Entity
+
+	// no documentation yet
+	FeatureSummary *string `json:"featureSummary,omitempty" xmlrpc:"featureSummary,omitempty"`
+
+	// no documentation yet
+	Features *string `json:"features,omitempty" xmlrpc:"features,omitempty"`
+
+	// no documentation yet
+	Status *string `json:"status,omitempty" xmlrpc:"status,omitempty"`
+
+	// no documentation yet
+	VendorName *string `json:"vendorName,omitempty" xmlrpc:"vendorName,omitempty"`
 }
 
 // SoftLayer_Container_Network_ContentDelivery_Authentication_Directory represents a token authentication directory on your CDN FTP or on your origin server.
@@ -2288,6 +2589,17 @@ type Container_Network_Port_Statistic struct {
 }
 
 // no documentation yet
+type Container_Network_SecurityGroup_Limit struct {
+	Entity
+
+	// A key value describing what type of limit.
+	TypeKey *string `json:"typeKey,omitempty" xmlrpc:"typeKey,omitempty"`
+
+	// The value of the security group limit.
+	Value *int `json:"value,omitempty" xmlrpc:"value,omitempty"`
+}
+
+// no documentation yet
 type Container_Network_Service_Resource_ObjectStorage_ConnectionInformation struct {
 	Entity
 
@@ -2543,9 +2855,6 @@ type Container_Network_Storage_NetworkConnectionInformation struct {
 type Container_Network_Storage_VolumeDuplicateParameters struct {
 	Entity
 
-	// The number of ongoing concurrentDuplicateOperations.
-	ConcurrentDuplicateOperations *int `json:"concurrentDuplicateOperations,omitempty" xmlrpc:"concurrentDuplicateOperations,omitempty"`
-
 	// The iopsPerGB of the volume
 	IopsPerGb *Float64 `json:"iopsPerGb,omitempty" xmlrpc:"iopsPerGb,omitempty"`
 
@@ -2575,9 +2884,6 @@ type Container_Network_Storage_VolumeDuplicateParameters struct {
 
 	// The minimumVolumeSize allowed for a duplicated volume
 	MinimumVolumeSize *int `json:"minimumVolumeSize,omitempty" xmlrpc:"minimumVolumeSize,omitempty"`
-
-	// The snapshotSpaceSize allowed for a cloned volume
-	SnapshotSpaceSize *int `json:"snapshotSpaceSize,omitempty" xmlrpc:"snapshotSpaceSize,omitempty"`
 
 	// The volume duplicate status description
 	Status *string `json:"status,omitempty" xmlrpc:"status,omitempty"`
@@ -3245,6 +3551,9 @@ type Container_Product_Order_Network_LoadBalancer_AsAService struct {
 	// A description of this Load Balancer.
 	Description *string `json:"description,omitempty" xmlrpc:"description,omitempty"`
 
+	// The [[SoftLayer_Network_LBaaS_LoadBalancerHealthMonitorConfiguration]]s for this Load Balancer.
+	HealthMonitorConfigurations []Network_LBaaS_LoadBalancerHealthMonitorConfiguration `json:"healthMonitorConfigurations,omitempty" xmlrpc:"healthMonitorConfigurations,omitempty"`
+
 	// A name to identify this Load Balancer.
 	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
 
@@ -3314,6 +3623,12 @@ type Container_Product_Order_Network_Protection_Firewall struct {
 // This is the datatype that needs to be populated and sent to SoftLayer_Product_Order::placeOrder. This datatype has everything required to place a hardware (dedicated) firewall order with SoftLayer.
 type Container_Product_Order_Network_Protection_Firewall_Dedicated struct {
 	Container_Product_Order
+
+	// no documentation yet
+	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
+
+	// no documentation yet
+	RouterId *int `json:"routerId,omitempty" xmlrpc:"routerId,omitempty"`
 
 	// generic properties.
 	Vlan *Network_Vlan `json:"vlan,omitempty" xmlrpc:"vlan,omitempty"`
@@ -3420,6 +3735,56 @@ type Container_Product_Order_Network_Storage_Iscsi_SnapshotSpace struct {
 
 	// the [[SoftLayer_Network_Storage_Iscsi_EqualLogic_Version3]] Id.
 	VolumeId *int `json:"volumeId,omitempty" xmlrpc:"volumeId,omitempty"`
+}
+
+// This datatype is to be used for mass data migration requests.
+type Container_Product_Order_Network_Storage_MassDataMigration_Request struct {
+	Container_Product_Order
+
+	// The number and street address the MDMS device will be delivered to
+	Address1 *string `json:"address1,omitempty" xmlrpc:"address1,omitempty"`
+
+	// First and last name of the customer on the shipping address
+	AddressAttention *string `json:"addressAttention,omitempty" xmlrpc:"addressAttention,omitempty"`
+
+	// The datacenter name where the MDMS device will be shipped to
+	AddressNickname *string `json:"addressNickname,omitempty" xmlrpc:"addressNickname,omitempty"`
+
+	// The shipping address city
+	City *string `json:"city,omitempty" xmlrpc:"city,omitempty"`
+
+	// Cloud Object Storage Account ID for the data offload destination
+	CosAccountId *string `json:"cosAccountId,omitempty" xmlrpc:"cosAccountId,omitempty"`
+
+	// Cloud Object Storage Bucket for the data offload destination
+	CosBucketName *string `json:"cosBucketName,omitempty" xmlrpc:"cosBucketName,omitempty"`
+
+	// Default Gateway used for pre-provisioning the Eth3 port on the MDMS device
+	Eth3DefaultGateway *string `json:"eth3DefaultGateway,omitempty" xmlrpc:"eth3DefaultGateway,omitempty"`
+
+	// Netmask used for pre-provisioning the Eth3 port on the MDMS device
+	Eth3Netmask *string `json:"eth3Netmask,omitempty" xmlrpc:"eth3Netmask,omitempty"`
+
+	// Static IP Address used for pre-provisioning the Eth3 port on the MDMS device
+	Eth3StaticIp *string `json:"eth3StaticIp,omitempty" xmlrpc:"eth3StaticIp,omitempty"`
+
+	// The e-mails of the MDMS key contacts
+	KeyContactEmails []string `json:"keyContactEmails,omitempty" xmlrpc:"keyContactEmails,omitempty"`
+
+	// The names of the MDMS key contacts
+	KeyContactNames []string `json:"keyContactNames,omitempty" xmlrpc:"keyContactNames,omitempty"`
+
+	// The phone numbers of the MDMS key contacts
+	KeyContactPhoneNumbers []string `json:"keyContactPhoneNumbers,omitempty" xmlrpc:"keyContactPhoneNumbers,omitempty"`
+
+	// The shipping address postal code
+	PostalCode *string `json:"postalCode,omitempty" xmlrpc:"postalCode,omitempty"`
+
+	// Name of the Mass Data Migration Service job request
+	RequestName *string `json:"requestName,omitempty" xmlrpc:"requestName,omitempty"`
+
+	// The shipping address state
+	State *string `json:"state,omitempty" xmlrpc:"state,omitempty"`
 }
 
 // The SoftLayer_Container_Product_Order_Network_Storage_Modification datatype has everything required to place a modification to an existing StorageLayer account with SoftLayer. Modifications, at present time, include upgrade and downgrades only. The ''volumeId'' property must be set to the network storage volume id to be upgraded. Once populated send this container to the [[SoftLayer_Product_Order::placeOrder]] method.
@@ -3677,6 +4042,11 @@ type Container_Product_Order_Storage_Group struct {
 	// The array type id from a [[SoftLayer_Configuration_Storage_Group_Array_Type]] object.
 	ArrayTypeId *int `json:"arrayTypeId,omitempty" xmlrpc:"arrayTypeId,omitempty"`
 
+	// Defines the disk controller to put the storage group and the hard drives on.
+	//
+	// This must match a disk controller price on the order. The disk controller index is 0-indexed. 'disk_controller' = 0 'disk_controller1' = 1 'disk_controller2' = 2
+	DiskControllerIndex *int `json:"diskControllerIndex,omitempty" xmlrpc:"diskControllerIndex,omitempty"`
+
 	// Integer array of drive indexes to use in the storage group.
 	HardDrives []int `json:"hardDrives,omitempty" xmlrpc:"hardDrives,omitempty"`
 
@@ -3684,6 +4054,9 @@ type Container_Product_Order_Storage_Group struct {
 	//
 	// If a drive is a hotspare for all arrays then a separate storage group with array type GLOBAL_HOT_SPARE should be used
 	HotSpareDrives []int `json:"hotSpareDrives,omitempty" xmlrpc:"hotSpareDrives,omitempty"`
+
+	// << EOT
+	LvmFlag *bool `json:"lvmFlag,omitempty" xmlrpc:"lvmFlag,omitempty"`
 
 	// The id for a [[SoftLayer_Hardware_Component_Partition_Template]] object, which will determine the partitions to add to the storage group.
 	//
@@ -4554,38 +4927,38 @@ type Container_Utility_Network_Subnet_Mask_Generic_Detail struct {
 	Mask *string `json:"mask,omitempty" xmlrpc:"mask,omitempty"`
 }
 
-// This type represents the structure to hold the allocation properties of a [[SoftLayer_Virtual_DedicatedHost]].
+// This data type represents the structure to hold the allocation properties of a [[SoftLayer_Virtual_DedicatedHost]].
 type Container_Virtual_DedicatedHost_AllocationStatus struct {
 	Entity
 
-	// Number of CPU cores allocated on the specified DedicatedHost
+	// Number of allocated CPU cores on the specified dedicated host.
 	CpuAllocated *int `json:"cpuAllocated,omitempty" xmlrpc:"cpuAllocated,omitempty"`
 
-	// Number of CPU cores available on the specified DedicatedHost
+	// Number of available CPU cores on the specified dedicated host.
 	CpuAvailable *int `json:"cpuAvailable,omitempty" xmlrpc:"cpuAvailable,omitempty"`
 
-	// Total number of cpu cores on the DedicatedHost
+	// Total number of CPU cores on the dedicated host.
 	CpuCount *int `json:"cpuCount,omitempty" xmlrpc:"cpuCount,omitempty"`
 
-	// Amount of disk space allocated on the specified DedicatedHost
+	// Amount of allocated disk space on the specified dedicated host.
 	DiskAllocated *int `json:"diskAllocated,omitempty" xmlrpc:"diskAllocated,omitempty"`
 
-	// Amount of disk space available on the specified DedicatedHost
+	// Amount of available disk space on the specified dedicated host.
 	DiskAvailable *int `json:"diskAvailable,omitempty" xmlrpc:"diskAvailable,omitempty"`
 
-	// Total amount of disk capacity on the DedicatedHost
+	// Total amount of disk capacity on the dedicated host.
 	DiskCapacity *int `json:"diskCapacity,omitempty" xmlrpc:"diskCapacity,omitempty"`
 
-	// Number of guests allocated on the specified DedicatedHost
+	// Number of allocated guests on the specified dedicated host.
 	GuestCount *int `json:"guestCount,omitempty" xmlrpc:"guestCount,omitempty"`
 
-	// Amount of memory allocated on the specified DedicatedHost
+	// Amount of allocated memory on the specified dedicated host.
 	MemoryAllocated *int `json:"memoryAllocated,omitempty" xmlrpc:"memoryAllocated,omitempty"`
 
-	// Amount of memory available on the specified DedicatedHost
+	// Amount of available memory on the specified dedicated host.
 	MemoryAvailable *int `json:"memoryAvailable,omitempty" xmlrpc:"memoryAvailable,omitempty"`
 
-	// Total amount of memory capacity on the DedicatedHost
+	// Total amount of memory capacity on the dedicated host.
 	MemoryCapacity *int `json:"memoryCapacity,omitempty" xmlrpc:"memoryCapacity,omitempty"`
 }
 
@@ -4705,6 +5078,18 @@ type Container_Virtual_Guest_Configuration struct {
 
 	//
 	// <div style="width: 200%">
+	// Available pre-defined configuration options.
+	//
+	//
+	// The <code>supplementalCreateObjectOptions.presetConfigurationKeyName</code> value in the template is an identifier for a particular pre-defined configuration. When provided exactly as shown in the template, that pre-defined configuration will be used.
+	//
+	//
+	// When providing a <code>supplementalCreateObjectOptions.presetConfigurationKeyName</code> option the other options relating to the configuration are still required and should be set according to the related pre-defined option.
+	// </div>
+	PresetConfigurations []Container_Virtual_Guest_Configuration_Option `json:"presetConfigurations,omitempty" xmlrpc:"presetConfigurations,omitempty"`
+
+	//
+	// <div style="width: 200%">
 	// Available processor options.
 	//
 	//
@@ -4721,6 +5106,10 @@ type Container_Virtual_Guest_Configuration_Option struct {
 	//
 	// Provides hourly and monthly costs (if either are applicable), and a description of the option.
 	ItemPrice *Product_Item_Price `json:"itemPrice,omitempty" xmlrpc:"itemPrice,omitempty"`
+
+	//
+	// Provides a description of a pre-defined configuration with monthly and hourly costs.
+	PresetConfiguration *Product_Package_Preset `json:"presetConfiguration,omitempty" xmlrpc:"presetConfiguration,omitempty"`
 
 	//
 	// Provides a fragment of the request with the properties and values that must be sent when creating a computing instance with the option.

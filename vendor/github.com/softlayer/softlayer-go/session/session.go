@@ -28,6 +28,14 @@ import (
 	"github.com/softlayer/softlayer-go/sl"
 )
 
+// Logger is the logger used by the SoftLayer session package. Can be overridden by the user.
+var Logger *log.Logger
+
+func init() {
+	// initialize the logger used by the session package.
+	Logger = log.New(os.Stderr, "", log.LstdFlags)
+}
+
 // DefaultEndpoint is the default endpoint for API calls, when no override
 // is provided.
 const DefaultEndpoint = "https://api.softlayer.com/rest/v3"

@@ -9,7 +9,7 @@ var (
 )
 
 type failedResponse struct {
-	Code  string `xmlrpc:"faultCode"`
+	Code  interface{} `xmlrpc:"faultCode"`
 	Error string `xmlrpc:"faultString"`
 	HttpStatusCode int
 }

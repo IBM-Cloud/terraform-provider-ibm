@@ -530,6 +530,17 @@ type Product_Item_Link_ThePlanet struct {
 	ServiceProvider *Service_Provider `json:"serviceProvider,omitempty" xmlrpc:"serviceProvider,omitempty"`
 }
 
+// no documentation yet
+type Product_Item_Overage_Price struct {
+	Entity
+
+	// no documentation yet
+	DefaultOverageItem *Product_Item `json:"defaultOverageItem,omitempty" xmlrpc:"defaultOverageItem,omitempty"`
+
+	// no documentation yet
+	Item *Product_Item `json:"item,omitempty" xmlrpc:"item,omitempty"`
+}
+
 // Represents the assignment of a policy to a product. The existence of a record means that the associated product is subject to the terms defined in the document content of the policy.
 type Product_Item_Policy_Assignment struct {
 	Entity
@@ -955,6 +966,17 @@ type Product_Item_Rule_Type struct {
 	KeyName *string `json:"keyName,omitempty" xmlrpc:"keyName,omitempty"`
 }
 
+// The SoftLayer_Product_Item_Server_Group data type details the type of compute service a [[SoftLayer_Product_Item (type)|SoftLayer_Product_Item]] or [[SoftLayer_Product_Package_Preset (type)|SoftLayer_Product_Package_Preset]] belongs to.
+type Product_Item_Server_Group struct {
+	Entity
+
+	// The server group's string identifier
+	KeyName *string `json:"keyName,omitempty" xmlrpc:"keyName,omitempty"`
+
+	// The server group's friendly name
+	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
+}
+
 // The SoftLayer_Product_Item_Tax_Category data type contains the tax categories that are associated with products.
 type Product_Item_Tax_Category struct {
 	Entity
@@ -1158,6 +1180,9 @@ type Product_Package struct {
 	// The premium price modifiers associated with the [[SoftLayer_Product_Item_Price]] and [[SoftLayer_Location]] objects in a package.
 	OrderPremiums []Product_Item_Price_Premium `json:"orderPremiums,omitempty" xmlrpc:"orderPremiums,omitempty"`
 
+	// This flag indicates if the package may be available in PoP locations in addition to Datacenters.
+	PopLocationAvailabilityFlag *bool `json:"popLocationAvailabilityFlag,omitempty" xmlrpc:"popLocationAvailabilityFlag,omitempty"`
+
 	// This flag indicates the package is pre-configured. (Deprecated)
 	PreconfiguredFlag *bool `json:"preconfiguredFlag,omitempty" xmlrpc:"preconfiguredFlag,omitempty"`
 
@@ -1176,7 +1201,7 @@ type Product_Package struct {
 	// Whether the package only has access to the private network.
 	PrivateNetworkOnlyFlag *bool `json:"privateNetworkOnlyFlag,omitempty" xmlrpc:"privateNetworkOnlyFlag,omitempty"`
 
-	// Whether the package is a specialized mass storage QuantaStor package.
+	// Whether the package is a specialized mass storage QuantaStor package. (Deprecated)
 	QuantaStorPackageFlag *bool `json:"quantaStorPackageFlag,omitempty" xmlrpc:"quantaStorPackageFlag,omitempty"`
 
 	// This flag indicates the package does not allow different disks with RAID.
@@ -1461,6 +1486,9 @@ type Product_Package_Preset struct {
 	// A count of the item categories that are included in this package preset configuration.
 	CategoryCount *uint `json:"categoryCount,omitempty" xmlrpc:"categoryCount,omitempty"`
 
+	// The compute family this configuration belongs to.
+	ComputeGroup *Product_Item_Server_Group `json:"computeGroup,omitempty" xmlrpc:"computeGroup,omitempty"`
+
 	// The preset configuration (category and price).
 	Configuration []Product_Package_Preset_Configuration `json:"configuration,omitempty" xmlrpc:"configuration,omitempty"`
 
@@ -1481,6 +1509,12 @@ type Product_Package_Preset struct {
 
 	// The key name of the package preset. For the base configuration of a package the preset key name is "DEFAULT".
 	KeyName *string `json:"keyName,omitempty" xmlrpc:"keyName,omitempty"`
+
+	// A count of the locations this preset configuration is available in. If empty the preset is available in all locations the package is available in.
+	LocationCount *uint `json:"locationCount,omitempty" xmlrpc:"locationCount,omitempty"`
+
+	// The locations this preset configuration is available in. If empty the preset is available in all locations the package is available in.
+	Locations []Location `json:"locations,omitempty" xmlrpc:"locations,omitempty"`
 
 	// The lowest server prices related to this package preset.
 	LowestPresetServerPrice *Product_Item_Price `json:"lowestPresetServerPrice,omitempty" xmlrpc:"lowestPresetServerPrice,omitempty"`

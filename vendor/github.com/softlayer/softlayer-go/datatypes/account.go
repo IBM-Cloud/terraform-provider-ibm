@@ -245,7 +245,7 @@ type Account struct {
 	// Private template group objects (parent and children) and the shared template group objects (parent only) for an account.
 	BlockDeviceTemplateGroups []Virtual_Guest_Block_Device_Template_Group `json:"blockDeviceTemplateGroups,omitempty" xmlrpc:"blockDeviceTemplateGroups,omitempty"`
 
-	// Indicates whether this account requires blue id authentication.
+	// This field is deprecated and should not be used.
 	BlueIdAuthenticationRequiredFlag *bool `json:"blueIdAuthenticationRequiredFlag,omitempty" xmlrpc:"blueIdAuthenticationRequiredFlag,omitempty"`
 
 	// Returns true if this account is linked to IBM Bluemix, false if not.
@@ -530,11 +530,17 @@ type Account struct {
 	// Unique identifier for a customer used throughout IBM.
 	IbmCustomerNumber *string `json:"ibmCustomerNumber,omitempty" xmlrpc:"ibmCustomerNumber,omitempty"`
 
+	// Indicates whether this account requires IBMid authentication.
+	IbmIdAuthenticationRequiredFlag *bool `json:"ibmIdAuthenticationRequiredFlag,omitempty" xmlrpc:"ibmIdAuthenticationRequiredFlag,omitempty"`
+
 	// Timestamp representing the point in time when an account is required to use IBMid authentication.
 	IbmIdMigrationExpirationTimestamp *string `json:"ibmIdMigrationExpirationTimestamp,omitempty" xmlrpc:"ibmIdMigrationExpirationTimestamp,omitempty"`
 
 	// A customer account's internal identifier. Account numbers are typically preceded by the string "SL" in the customer portal. Every SoftLayer account has at least one portal user whose username follows the "SL" + account number naming scheme.
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// An in progress request to switch billing systems.
+	InProgressExternalAccountSetup *Account_External_Setup `json:"inProgressExternalAccountSetup,omitempty" xmlrpc:"inProgressExternalAccountSetup,omitempty"`
 
 	// A count of
 	InternalNoteCount *uint `json:"internalNoteCount,omitempty" xmlrpc:"internalNoteCount,omitempty"`
@@ -658,12 +664,6 @@ type Account struct {
 
 	// An account's media transfer service requests.
 	MediaDataTransferRequests []Account_Media_Data_Transfer_Request `json:"mediaDataTransferRequests,omitempty" xmlrpc:"mediaDataTransferRequests,omitempty"`
-
-	// A count of an account's associated Message Queue accounts.
-	MessageQueueAccountCount *uint `json:"messageQueueAccountCount,omitempty" xmlrpc:"messageQueueAccountCount,omitempty"`
-
-	// An account's associated Message Queue accounts.
-	MessageQueueAccounts []Network_Message_Queue `json:"messageQueueAccounts,omitempty" xmlrpc:"messageQueueAccounts,omitempty"`
 
 	// The date an account was last modified.
 	ModifyDate *Time `json:"modifyDate,omitempty" xmlrpc:"modifyDate,omitempty"`
@@ -1851,6 +1851,35 @@ type Account_Contact_Type struct {
 
 	// no documentation yet
 	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
+}
+
+// no documentation yet
+type Account_External_Setup struct {
+	Entity
+
+	// The SoftLayer customer account the request belongs to.
+	AccountId *int `json:"accountId,omitempty" xmlrpc:"accountId,omitempty"`
+
+	// The currency requested after the billing switch.
+	CurrencyId *int `json:"currencyId,omitempty" xmlrpc:"currencyId,omitempty"`
+
+	// The unique identifier for this setup request.
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// The external system that will handle billing.
+	ServiceProviderId *int `json:"serviceProviderId,omitempty" xmlrpc:"serviceProviderId,omitempty"`
+
+	// The status of the account setup request.
+	StatusCode *string `json:"statusCode,omitempty" xmlrpc:"statusCode,omitempty"`
+
+	// no documentation yet
+	TypeCode *string `json:"typeCode,omitempty" xmlrpc:"typeCode,omitempty"`
+
+	// The transaction information related to verifying the customer credit card.
+	VerifyCardTransaction *Billing_Payment_Card_Transaction `json:"verifyCardTransaction,omitempty" xmlrpc:"verifyCardTransaction,omitempty"`
+
+	// The related credit card transaction record for card verification.
+	VerifyCardTransactionId *int `json:"verifyCardTransactionId,omitempty" xmlrpc:"verifyCardTransactionId,omitempty"`
 }
 
 // no documentation yet

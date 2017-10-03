@@ -137,6 +137,15 @@ func (r Locale_Country) GetCountries() (resp []datatypes.Locale_Country, err err
 }
 
 // no documentation yet
+func (r Locale_Country) GetCountriesAndStates(usFirstFlag *bool) (resp []datatypes.Container_Collection_Locale_CountryCode, err error) {
+	params := []interface{}{
+		usFirstFlag,
+	}
+	err = r.Session.DoRequest("SoftLayer_Locale_Country", "getCountriesAndStates", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
 func (r Locale_Country) GetObject() (resp datatypes.Locale_Country, err error) {
 	err = r.Session.DoRequest("SoftLayer_Locale_Country", "getObject", nil, &r.Options, &resp)
 	return
@@ -145,6 +154,15 @@ func (r Locale_Country) GetObject() (resp datatypes.Locale_Country, err error) {
 // Retrieve States that belong to this country.
 func (r Locale_Country) GetStates() (resp []datatypes.Locale_StateProvince, err error) {
 	err = r.Session.DoRequest("SoftLayer_Locale_Country", "getStates", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Locale_Country) IsEuropeanUnionCountry(iso2CountryCode *string) (resp bool, err error) {
+	params := []interface{}{
+		iso2CountryCode,
+	}
+	err = r.Session.DoRequest("SoftLayer_Locale_Country", "isEuropeanUnionCountry", params, &r.Options, &resp)
 	return
 }
 

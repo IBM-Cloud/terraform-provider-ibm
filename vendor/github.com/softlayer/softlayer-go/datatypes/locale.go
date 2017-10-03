@@ -45,6 +45,9 @@ type Locale_Country struct {
 	IsEuropeanUnionFlag *int `json:"isEuropeanUnionFlag,omitempty" xmlrpc:"isEuropeanUnionFlag,omitempty"`
 
 	// no documentation yet
+	IsoCodeAlphaThree *string `json:"isoCodeAlphaThree,omitempty" xmlrpc:"isoCodeAlphaThree,omitempty"`
+
+	// no documentation yet
 	LongName *string `json:"longName,omitempty" xmlrpc:"longName,omitempty"`
 
 	// no documentation yet

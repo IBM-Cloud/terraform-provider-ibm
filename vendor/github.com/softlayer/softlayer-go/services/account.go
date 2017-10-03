@@ -485,7 +485,7 @@ func (r Account) GetBlockDeviceTemplateGroups() (resp []datatypes.Virtual_Guest_
 	return
 }
 
-// Retrieve Indicates whether this account requires blue id authentication.
+// Retrieve This field is deprecated and should not be used.
 func (r Account) GetBlueIdAuthenticationRequiredFlag() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Account", "getBlueIdAuthenticationRequiredFlag", nil, &r.Options, &resp)
 	return
@@ -910,9 +910,21 @@ func (r Account) GetIbmCustomerNumber() (resp string, err error) {
 	return
 }
 
+// Retrieve Indicates whether this account requires IBMid authentication.
+func (r Account) GetIbmIdAuthenticationRequiredFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account", "getIbmIdAuthenticationRequiredFlag", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve Timestamp representing the point in time when an account is required to use IBMid authentication.
 func (r Account) GetIbmIdMigrationExpirationTimestamp() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Account", "getIbmIdMigrationExpirationTimestamp", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve An in progress request to switch billing systems.
+func (r Account) GetInProgressExternalAccountSetup() (resp datatypes.Account_External_Setup, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account", "getInProgressExternalAccountSetup", nil, &r.Options, &resp)
 	return
 }
 
@@ -1061,12 +1073,6 @@ func (r Account) GetMasterUser() (resp datatypes.User_Customer, err error) {
 // Retrieve An account's media transfer service requests.
 func (r Account) GetMediaDataTransferRequests() (resp []datatypes.Account_Media_Data_Transfer_Request, err error) {
 	err = r.Session.DoRequest("SoftLayer_Account", "getMediaDataTransferRequests", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve An account's associated Message Queue accounts.
-func (r Account) GetMessageQueueAccounts() (resp []datatypes.Network_Message_Queue, err error) {
-	err = r.Session.DoRequest("SoftLayer_Account", "getMessageQueueAccounts", nil, &r.Options, &resp)
 	return
 }
 
@@ -2679,6 +2685,67 @@ func (r Account_Contact) GetObject() (resp datatypes.Account_Contact, err error)
 // Retrieve
 func (r Account_Contact) GetType() (resp datatypes.Account_Contact_Type, err error) {
 	err = r.Session.DoRequest("SoftLayer_Account_Contact", "getType", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+type Account_External_Setup struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetAccountExternalSetupService returns an instance of the Account_External_Setup SoftLayer service
+func GetAccountExternalSetupService(sess *session.Session) Account_External_Setup {
+	return Account_External_Setup{Session: sess}
+}
+
+func (r Account_External_Setup) Id(id int) Account_External_Setup {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Account_External_Setup) Mask(mask string) Account_External_Setup {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Account_External_Setup) Filter(filter string) Account_External_Setup {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Account_External_Setup) Limit(limit int) Account_External_Setup {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Account_External_Setup) Offset(offset int) Account_External_Setup {
+	r.Options.Offset = &offset
+	return r
+}
+
+// Calling this method signals that the account with the provided account id is ready to be billed by the external billing system.
+func (r Account_External_Setup) FinalizeExternalBillingForAccount(accountId *int) (resp datatypes.Container_Account_External_Setup_ProvisioningHoldLifted, err error) {
+	params := []interface{}{
+		accountId,
+	}
+	err = r.Session.DoRequest("SoftLayer_Account_External_Setup", "finalizeExternalBillingForAccount", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Account_External_Setup) GetObject() (resp datatypes.Account_External_Setup, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_External_Setup", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The transaction information related to verifying the customer credit card.
+func (r Account_External_Setup) GetVerifyCardTransaction() (resp datatypes.Billing_Payment_Card_Transaction, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_External_Setup", "getVerifyCardTransaction", nil, &r.Options, &resp)
 	return
 }
 

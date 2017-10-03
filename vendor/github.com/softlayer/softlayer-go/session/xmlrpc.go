@@ -19,7 +19,6 @@ package session
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httputil"
 	"strings"
@@ -32,6 +31,7 @@ import (
 type debugRoundTripper struct{}
 
 func (mrt debugRoundTripper) RoundTrip(request *http.Request) (*http.Response, error) {
+	log := Logger
 	log.Println("->>>Request:")
 	dumpedReq, _ := httputil.DumpRequestOut(request, true)
 	log.Println(string(dumpedReq))
@@ -161,7 +161,7 @@ func (x *XmlRpcTransport) DoRequest(
 	if xmlRpcError, ok := err.(*xmlrpc.XmlRpcError); ok {
 		return sl.Error{
 			StatusCode: xmlRpcError.HttpStatusCode,
-			Exception:  xmlRpcError.Code,
+			Exception:  xmlRpcError.Code.(string),
 			Message:    xmlRpcError.Err,
 		}
 	}

@@ -689,9 +689,6 @@ type Hardware_Chassis struct {
 	BayCapacity *string `json:"bayCapacity,omitempty" xmlrpc:"bayCapacity,omitempty"`
 
 	// no documentation yet
-	BookCapacity *string `json:"bookCapacity,omitempty" xmlrpc:"bookCapacity,omitempty"`
-
-	// no documentation yet
 	DriveCapacity *string `json:"driveCapacity,omitempty" xmlrpc:"driveCapacity,omitempty"`
 
 	// no documentation yet
@@ -711,6 +708,9 @@ type Hardware_Chassis struct {
 
 	// A hardware chassis' manufacturer.
 	Manufacturer *string `json:"manufacturer,omitempty" xmlrpc:"manufacturer,omitempty"`
+
+	// no documentation yet
+	ModuleCapacity *string `json:"moduleCapacity,omitempty" xmlrpc:"moduleCapacity,omitempty"`
 
 	// A hardware chassis' name.
 	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
