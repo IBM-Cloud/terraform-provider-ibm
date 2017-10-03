@@ -3,6 +3,7 @@ package ibm
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -18,6 +19,9 @@ var datacenter string
 var machineType string
 var publicVlanID string
 var privateVlanID string
+var lbaasDatacenter string
+var lbaasSubnetId int
+var err error
 
 func init() {
 	cfOrganization = os.Getenv("IBM_ORG")
@@ -66,6 +70,22 @@ func init() {
 		privateVlanID = "1764491"
 		fmt.Println("[INFO] Set the environment variable IBM_PRIVATE_VLAN_ID for testing ibm_container_cluster resource else it is set to default value '1764491'")
 	}
+
+	lbaasDatacenter = os.Getenv("IBM_LBAAS_DATACENTER")
+	if lbaasDatacenter == "" {
+		lbaasDatacenter = "wdc04"
+		fmt.Println("[INFO] Set the environment variable IBM_LBAAS_DATACENTER for testing ibm_lbaas resource else it is set to default value 'wdc04'")
+	}
+
+	lbaasSubnetId, err = strconv.Atoi(os.Getenv("IBM_LBAAS_SUBNETID"))
+	if err != nil {
+		fmt.Errorf("Invalid subnet id provided ", err)
+	}
+	if lbaasSubnetId == 0 {
+		lbaasSubnetId = 1511875
+		fmt.Println("[INFO] Set the environment variable IBM_LBAAS_SUBNETID for testing ibm_lbaas resource else it is set to default value '1511875'")
+	}
+
 }
 
 var testAccProviders map[string]terraform.ResourceProvider
