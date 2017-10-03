@@ -50,7 +50,7 @@ The following attributes are exported:
 
 * `description` - A description of the load balancer.
 * `datacenter` - The datacenter where load balancer is located.
-* `protocols` - A nested block describing protocols assigned to the load balancer. Nested `protocols` blocks have the following structure:
+* `protocols` - A nested block describing the protocols assigned to the load balancer. Nested `protocols` blocks have the following structure:
   * `frontend_protocol` - The frontend protocol.
   * `frontend_port` - The frontend protocol port number.
   * `backend_protocol` - The backend protocol.
@@ -63,7 +63,7 @@ The following attributes are exported:
 * `server_instances` - A nested block describing the server instances for this load balancer. Nested `server_instances` blocks have the following structure:
   * `private_ip_address` - The private IP address of a load balancer member.
   * `weight` - The weight of a load balancer member.
-  * `status` - The status of a load balancer member whether it is UP/DOWN.
+  * `status` - Specifies the status of a load balancer member as `UP` or `DOWN`.
   * `member_id` - The UUID of a load balancer member.
 * `type` - Specifies whether a load balancer is public or private.
 * `status` - Specifies the operation status of the load balancer as 'ONLINE' or 'OFFLINE'.
