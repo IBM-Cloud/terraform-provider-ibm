@@ -251,12 +251,12 @@ func resourceIBMStorageFile() *schema.Resource {
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"scheduleType": {
+						"schedule_type": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
 
-						"retentionCount": {
+						"retention_count": {
 							Type:     schema.TypeInt,
 							Optional: true,
 						},
@@ -271,7 +271,7 @@ func resourceIBMStorageFile() *schema.Resource {
 							Optional: true,
 						},
 
-						"dayOfWeek": {
+						"day_of_week": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
@@ -1168,14 +1168,14 @@ func enableStorageSnapshot(d *schema.ResourceData, sess *session.Session, storag
 		if enable {
 			_, err := services.GetNetworkStorageService(sess).
 				Id(id).
-				EnableSnapshots(sl.String(value["scheduleType"].(string)), sl.Int(value["retentionCount"].(int)), sl.Int(value["minute"].(int)), sl.Int(value["hour"].(int)), sl.String(value["dayOfWeek"].(string)))
+				EnableSnapshots(sl.String(value["schedule_type"].(string)), sl.Int(value["retention_count"].(int)), sl.Int(value["minute"].(int)), sl.Int(value["hour"].(int)), sl.String(value["day_of_week"].(string)))
 			if err != nil {
 				return err
 			}
 		} else {
 			_, err := services.GetNetworkStorageService(sess).
 				Id(id).
-				DisableSnapshots(sl.String(value["scheduleType"].(string)))
+				DisableSnapshots(sl.String(value["schedule_type"].(string)))
 			if err != nil {
 				return err
 			}

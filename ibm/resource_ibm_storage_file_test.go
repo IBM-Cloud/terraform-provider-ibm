@@ -69,16 +69,16 @@ func TestAccIBMStorageFile_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ibm_storage_file.fs_endurance", "mountpoint"),
 					// Endurance Storage
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.#", "3"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.0.scheduleType", "WEEKLY"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.0.retentionCount", "5"),
+					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.0.schedule_type", "WEEKLY"),
+					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.0.retention_count", "5"),
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.0.minute", "2"),
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.0.hour", "13"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.0.dayOfWeek", "SUNDAY"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.1.scheduleType", "HOURLY"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.1.retentionCount", "5"),
+					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.0.day_of_week", "SUNDAY"),
+					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.1.schedule_type", "HOURLY"),
+					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.1.retention_count", "5"),
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.1.minute", "30"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.2.scheduleType", "DAILY"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.2.retentionCount", "6"),
+					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.2.schedule_type", "DAILY"),
+					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.2.retention_count", "6"),
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.2.minute", "2"),
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.2.hour", "15"),
 				),
@@ -89,13 +89,13 @@ func TestAccIBMStorageFile_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ibm_storage_file.fs_endurance", "mountpoint"),
 					// Endurance Storage
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.#", "3"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.0.retentionCount", "2"),
+					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.0.retention_count", "2"),
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.0.minute", "2"),
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.0.hour", "13"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.0.dayOfWeek", "MONDAY"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.1.retentionCount", "3"),
+					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.0.day_of_week", "MONDAY"),
+					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.1.retention_count", "3"),
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.1.minute", "40"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.2.retentionCount", "5"),
+					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.2.retention_count", "5"),
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.2.minute", "2"),
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.2.hour", "15"),
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.2.enable", "false"),
@@ -226,7 +226,6 @@ resource "ibm_compute_vm_instance" "storagevm1" {
     disks = [25]
     local_disk = false
 }
-
 resource "ibm_storage_file" "fs_endurance" {
         type = "Endurance"
         datacenter = "${ibm_compute_vm_instance.storagevm1.datacenter}"
@@ -235,7 +234,6 @@ resource "ibm_storage_file" "fs_endurance" {
         snapshot_capacity = 10
         notes = "endurance notes"
 }
-
 resource "ibm_storage_file" "fs_performance" {
         type = "Performance"
         datacenter = "${ibm_compute_vm_instance.storagevm1.datacenter}"
@@ -258,7 +256,6 @@ resource "ibm_compute_vm_instance" "storagevm1" {
     disks = [25]
     local_disk = false
 }
-
 resource "ibm_storage_file" "fs_endurance" {
         type = "Endurance"
         datacenter = "${ibm_compute_vm_instance.storagevm1.datacenter}"
@@ -270,7 +267,6 @@ resource "ibm_storage_file" "fs_endurance" {
         snapshot_capacity = 10
         notes = "updated endurance notes"
 }
-
 resource "ibm_storage_file" "fs_performance" {
         type = "Performance"
         datacenter = "${ibm_compute_vm_instance.storagevm1.datacenter}"
@@ -296,7 +292,6 @@ resource "ibm_compute_vm_instance" "storagevm1" {
     disks = [25]
     local_disk = false
 }
-
 resource "ibm_storage_file" "fs_endurance" {
         type = "Endurance"
         datacenter = "${ibm_compute_vm_instance.storagevm1.datacenter}"
@@ -305,23 +300,23 @@ resource "ibm_storage_file" "fs_endurance" {
         snapshot_capacity = 10
         snapshot_schedule = [
   		{
-			scheduleType="WEEKLY",
-			retentionCount= 5,
+			schedule_type="WEEKLY",
+			retention_count= 5,
 			minute= 2,
 			hour= 13,
-			dayOfWeek= "SUNDAY",
+			day_of_week= "SUNDAY",
 			enable= true
 		},
 		{
-			scheduleType="HOURLY",
-			retentionCount= 5,
+			schedule_type="HOURLY",
+			retention_count= 5,
 			minute= 30,
 			enable= true
 		},
 		
 		{
-			scheduleType="DAILY",
-			retentionCount= 6,
+			schedule_type="DAILY",
+			retention_count= 6,
 			minute= 2,
 			hour= 15
 			enable= true
@@ -343,7 +338,6 @@ resource "ibm_compute_vm_instance" "storagevm1" {
     disks = [25]
     local_disk = false
 }
-
 resource "ibm_storage_file" "fs_endurance" {
         type = "Endurance"
         datacenter = "${ibm_compute_vm_instance.storagevm1.datacenter}"
@@ -352,23 +346,23 @@ resource "ibm_storage_file" "fs_endurance" {
         snapshot_capacity = 10
         snapshot_schedule = [
   		{
-			scheduleType="WEEKLY",
-			retentionCount= 2,
+			schedule_type="WEEKLY",
+			retention_count= 2,
 			minute= 2,
 			hour= 13,
-			dayOfWeek= "MONDAY",
+			day_of_week= "MONDAY",
 			enable= true
 		},
 		{
-			scheduleType="HOURLY",
-			retentionCount= 3,
+			schedule_type="HOURLY",
+			retention_count= 3,
 			minute= 40,
 			enable= true
 		},
 		
 		{
-			scheduleType="DAILY",
-			retentionCount= 5,
+			schedule_type="DAILY",
+			retention_count= 5,
 			minute= 2,
 			hour= 15
 			enable= false
@@ -391,7 +385,6 @@ resource "ibm_compute_vm_instance" "storagevm1" {
     disks = [25]
     local_disk = false
 }
-
 resource "ibm_storage_file" "fs_endurance" {
         type = "Endurance"
         datacenter = "${ibm_compute_vm_instance.storagevm1.datacenter}"
@@ -417,7 +410,6 @@ resource "ibm_compute_vm_instance" "storagevm1" {
     disks = [25]
     local_disk = false
 }
-
 resource "ibm_storage_file" "fs_endurance" {
         type = "Endurance"
         datacenter = "${ibm_compute_vm_instance.storagevm1.datacenter}"
@@ -443,7 +435,6 @@ resource "ibm_compute_vm_instance" "storagevm1" {
     disks = [25]
     local_disk = false
 }
-
 resource "ibm_storage_file" "fs_endurance" {
         type = "Endurance"
         datacenter = "${ibm_compute_vm_instance.storagevm1.datacenter}"
@@ -453,7 +444,6 @@ resource "ibm_storage_file" "fs_endurance" {
         notes = "endurance for hourly billing"
 		hourly_billing = true
 }
-
 resource "ibm_storage_file" "fs_performance" {
         type = "Performance"
         datacenter = "${ibm_compute_vm_instance.storagevm1.datacenter}"

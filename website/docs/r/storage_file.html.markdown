@@ -20,35 +20,35 @@ In the following example, you can create 20G of Endurance file storage with a 10
 
 ```hcl
 resource "ibm_storage_file" "fs_endurance" {
-        type = "Endurance"
-        datacenter = "dal06"
-        capacity = 20
-        iops = 0.25
+  type       = "Endurance"
+  datacenter = "dal06"
+  capacity   = 20
+  iops       = 0.25
 
-        # Optional fields
-        allowed_virtual_guest_ids = [ "28961689" ]
-        allowed_subnets = [ "10.146.139.64/26" ]
-        allowed_ip_addresses = [ "10.146.139.84" ]
-        snapshot_capacity = 10  
-        hourly_billing = true
+  # Optional fields
+  allowed_virtual_guest_ids = ["28961689"]
+  allowed_subnets           = ["10.146.139.64/26"]
+  allowed_ip_addresses      = ["10.146.139.84"]
+  snapshot_capacity         = 10
+  hourly_billing            = true
 
-        # Optional fields for snapshot
-        snapshot = [
-      		{
-    			scheduleType = "WEEKLY",
-    			retentionCount = 20,
-    			minute = 2,
-    			hour = 13,
-    			dayOfWeek = "SUNDAY",
-    			enable = true
-      		},
-      		{
-      		scheduleType = "HOURLY",
-      		retentionCount = 20,
-      		minute = 2,
-      		enable = true
-      		},
-       	]		
+  # Optional fields for snapshot
+  snapshot = [
+    {
+      schedule_type   = "WEEKLY"
+      retention_count = 20
+      minute          = 2
+      hour            = 13
+      day_of_week     = "SUNDAY"
+      enable          = true
+    },
+    {
+      schedule_type   = "HOURLY"
+      retention_count = 20
+      minute          = 2
+      enable          = true
+    },
+  ]
 }
 
 ```
@@ -83,11 +83,11 @@ The following arguments are supported:
 * `allowed_subnets` - (Optional, array of integers) The subnets that you want to give access to this instance. Subnets must be in the same data center as the block storage.
 * `allowed_ip_addresses` - (Optional, array of string) The IP addresses that you want to allow. IP addresses must be in the same data center as the block storage.
 * `snapshot` - (Optional, array) Applies only to Endurance storage. Specifies the parameters required for a snapshot schedule.
-    * `scheduleType` - (String) The snapshot schedule type. Accepted values are `HOURLY`, `WEEKLY`, and `DAILY`.
-    * `retentionCount` - (Integer) The retention count for a snapshot schedule. Required for all types of `scheduleType`.
-    * `minute` - (Integer) The minute for a snapshot schedule. Required for all types of `scheduleType`.
-    * `hour` - (Integer) The hour for a snapshot schedule. Required if `scheduleType` is set to `DAILY` or `WEEKLY`.
-    * `dayOfWeek` - (String) The day of the week for a snapshot schedule. Required if the `scheduleType` is set to `WEEKLY`.
+    * `schedule_type` - (String) The snapshot schedule type. Accepted values are `HOURLY`, `WEEKLY`, and `DAILY`.
+    * `retention_count` - (Integer) The retention count for a snapshot schedule. Required for all types of `schedule_type`.
+    * `minute` - (Integer) The minute for a snapshot schedule. Required for all types of `schedule_type`.
+    * `hour` - (Integer) The hour for a snapshot schedule. Required if `schedule_type` is set to `DAILY` or `WEEKLY`.
+    * `day_of_week` - (String) The day of the week for a snapshot schedule. Required if the `schedule_type` is set to `WEEKLY`.
     * `enable` - (Boolean) Whether to disable an existing snapshot schedule.
 * `notes` - (Optional, string) Descriptive text to associate with the file storage.
 * `tags` - (Optional, array of strings) Tags associated with the file storage instance.

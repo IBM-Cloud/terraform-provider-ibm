@@ -215,7 +215,6 @@ resource "ibm_compute_vm_instance" "storagevm2" {
     disks = [25]
     local_disk = false
 }
-
 resource "ibm_storage_block" "bs_endurance" {
         type = "Endurance"
         datacenter = "${ibm_compute_vm_instance.storagevm2.datacenter}"
@@ -225,7 +224,6 @@ resource "ibm_storage_block" "bs_endurance" {
         os_format_type = "Linux"
         notes = "endurance notes"
 }
-
 resource "ibm_storage_block" "bs_performance" {
         type = "Performance"
         datacenter = "${ibm_compute_vm_instance.storagevm2.datacenter}"
@@ -249,7 +247,6 @@ resource "ibm_compute_vm_instance" "storagevm2" {
     disks = [25]
     local_disk = false
 }
-
 resource "ibm_storage_block" "bs_endurance" {
         type = "Endurance"
         datacenter = "${ibm_compute_vm_instance.storagevm2.datacenter}"
@@ -261,7 +258,6 @@ resource "ibm_storage_block" "bs_endurance" {
         snapshot_capacity = 10
         notes = "updated endurance notes"
 }
-
 resource "ibm_storage_block" "bs_performance" {
         type = "Performance"
         datacenter = "${ibm_compute_vm_instance.storagevm2.datacenter}"
@@ -287,7 +283,6 @@ resource "ibm_compute_vm_instance" "storagevm2" {
     disks = [25]
     local_disk = false
 }
-
 resource "ibm_storage_block" "bs_endurance" {
         type = "Endurance"
         datacenter = "${ibm_compute_vm_instance.storagevm2.datacenter}"
@@ -314,7 +309,6 @@ resource "ibm_compute_vm_instance" "storagevm2" {
     disks = [25]
     local_disk = false
 }
-
 resource "ibm_storage_block" "bs_endurance" {
         type = "Endurance"
         datacenter = "${ibm_compute_vm_instance.storagevm2.datacenter}"
@@ -328,7 +322,6 @@ resource "ibm_storage_block" "bs_endurance" {
 `
 
 const testAccCheckIBMStorageBlockConfig_hourly = `
-
 resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"
     domain = "example.com"
@@ -352,7 +345,6 @@ resource "ibm_storage_block" "bs_endurance" {
 		notes = "endurance notes"
 		hourly_billing = true
 }
-
 resource "ibm_storage_block" "bs_performance" {
         type = "Performance"
         datacenter = "${ibm_compute_vm_instance.storagevm2.datacenter}"
@@ -380,7 +372,6 @@ resource "ibm_compute_vm_instance" "storagevm2" {
     disks = [25]
     local_disk = false
 }
-
 resource "ibm_storage_block" "bs_endurance" {
         type = "Endurance"
         datacenter = "${ibm_compute_vm_instance.storagevm2.datacenter}"
