@@ -119,7 +119,7 @@ func TestAccIBMDNSRecordWithTag(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_dns_record.recordA", "retry", "1"),
 					resource.TestCheckResourceAttr("ibm_dns_record.recordA", "type", "a"),
 					resource.TestCheckResourceAttr("ibm_dns_record.recordA", "host", host1),
-					resource.TestCheckResourceAttr("ibm_dns_record.recordA", "tags", "2"),
+					resource.TestCheckResourceAttr("ibm_dns_record.recordA", "tags.#", "2"),
 				),
 			},
 			{
@@ -127,7 +127,7 @@ func TestAccIBMDNSRecordWithTag(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMDNSDomainExists("ibm_dns_domain.test_dns_domain_records", &dns_domain),
 					testAccCheckIBMDNSRecordExists("ibm_dns_record.recordA", &dns_domain_record),
-					resource.TestCheckResourceAttr("ibm_dns_record.recordA", "tags", "3"),
+					resource.TestCheckResourceAttr("ibm_dns_record.recordA", "tags.#", "3"),
 				),
 			},
 		},
@@ -203,7 +203,7 @@ resource "ibm_dns_record" "recordA" {
 }
 
 resource "ibm_dns_record" "recordAAAA" {
-    data = "fe80:0000:0000:0000:0202:b3ff:fe1e:8329"
+    data = "fe80::202:b3ff:fe1e:8329"
     domain_id = "${ibm_dns_domain.test_dns_domain_record_types.id}"
     host = "hosta-2.com"
     responsible_person = "user2changed@softlayer.com"
@@ -212,7 +212,7 @@ resource "ibm_dns_record" "recordAAAA" {
 }
 
 resource "ibm_dns_record" "recordCNAME" {
-    data = "testsssaaaass.com"
+    data = "testsssaaaass.com."
     domain_id = "${ibm_dns_domain.test_dns_domain_record_types.id}"
     host = "hosta-cname.com"
     responsible_person = "user@softlayer.com"
@@ -221,7 +221,7 @@ resource "ibm_dns_record" "recordCNAME" {
 }
 
 resource "ibm_dns_record" "recordMX" {
-    data = "email.example.com"
+    data = "email.example.com."
     domain_id = "${ibm_dns_domain.test_dns_domain_record_types.id}"
     host = "hosta-mx.com"
     responsible_person = "user@softlayer.com"
