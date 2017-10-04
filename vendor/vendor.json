@@ -21,10 +21,10 @@
 			"revisionTime": "2017-09-04T08:44:51Z"
 		},
 		{
-			"checksumSHA1": "c/XLHIQuME+ehHYhwihw+akrN0w=",
+			"checksumSHA1": "BzYmrJTJsi/hQQLDdbA3Yn2inQ0=",
 			"path": "github.com/IBM-Bluemix/bluemix-go/api/container/containerv1",
-			"revision": "b8566f7b6a82ef60be5c6c14150272cc52497456",
-			"revisionTime": "2017-09-04T08:44:51Z"
+			"revision": "b49bb614b336a07449499e79bc04c806d02d65d6",
+			"revisionTime": "2017-10-03T14:51:43Z"
 		},
 		{
 			"checksumSHA1": "82PdvrB+ObI0ZqESk4d7VcIJQtE=",
@@ -763,5 +763,5 @@
 			"revisionTime": "2017-06-09T11:26:06Z"
 		}
 	],
-	"rootPath": "github.com/terraform-providers/terraform-provider-ibm"
+	"rootPath": "github.com/terraform-providers/latest/terraform-provider-ibm"
 }
