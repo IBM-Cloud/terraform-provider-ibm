@@ -188,7 +188,10 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes", "disks.#", "disks.0"},
+					"wait_time_minutes",
+					"disks.#", "disks.0",
+					"public_bandwidth_unlimited",
+				},
 			},
 		},
 	})

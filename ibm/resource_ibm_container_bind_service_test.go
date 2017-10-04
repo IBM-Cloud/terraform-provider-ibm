@@ -9,9 +9,11 @@ import (
 )
 
 func TestAccIBMContainerBindService_basic(t *testing.T) {
-	serviceName := "testService"
-	serviceKey := "testKey"
+
+	serviceName := fmt.Sprintf("terraform-%d", acctest.RandInt())
+	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandInt())
 	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -23,6 +25,26 @@ func TestAccIBMContainerBindService_basic(t *testing.T) {
 						"ibm_container_bind_service.bind_service", "namespace_id", "default"),
 				),
 			},
+		},
+	})
+}
+
+func TestAccIBMContainerBindService_withTag(t *testing.T) {
+
+	serviceName := fmt.Sprintf("terraform-%d", acctest.RandInt())
+	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerBindServiceWithTag(clusterName, serviceName, serviceKey),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_container_bind_service.bind_service", "namespace_id", "default"),
+					resource.TestCheckResourceAttr("ibm_container_bind_service.bind_service", "tags.#", "1"),
+				)},
 		},
 	})
 }
