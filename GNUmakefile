@@ -10,7 +10,7 @@ tools:
 	@go get golang.org/x/tools/cmd/cover
 
 
-build: fmtcheck
+build: fmtcheck vet
 	go install
 
 bin: fmtcheck vet tools

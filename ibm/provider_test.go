@@ -79,7 +79,7 @@ func init() {
 
 	lbaasSubnetId, err = strconv.Atoi(os.Getenv("IBM_LBAAS_SUBNETID"))
 	if err != nil {
-		fmt.Errorf("Invalid subnet id provided ", err)
+		fmt.Println("[ WARN ]Invalid subnet id provided. LbaaS test will not work", err)
 	}
 	if lbaasSubnetId == 0 {
 		lbaasSubnetId = 1511875
