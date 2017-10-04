@@ -44,6 +44,7 @@ func TestAccIBMContainerBindService_withTag(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_container_bind_service.bind_service", "namespace_id", "default"),
 					resource.TestCheckResourceAttr("ibm_container_bind_service.bind_service", "tags.#", "1"),
+					resource.TestCheckResourceAttr("ibm_container_bind_service.bind_service", "cluster_name_id", clusterName),
 				)},
 		},
 	})
