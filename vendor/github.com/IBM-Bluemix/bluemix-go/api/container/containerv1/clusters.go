@@ -31,6 +31,18 @@ type ClusterInfo struct {
 	State             string
 	IsPaid            bool
 	WorkerCount       int
+	Vlans             []Vlan
+}
+
+type Vlan struct {
+	ID      string
+	Subnets []struct {
+		Cidr     string
+		ID       string
+		Ips      []string
+		IsByOIP  bool
+		IsPublic bool
+	}
 }
 
 //ClusterCreateResponse ...
@@ -168,7 +180,7 @@ func (r *clusters) List(target ClusterTargetHeader) ([]ClusterInfo, error) {
 
 //Find ...
 func (r *clusters) Find(name string, target ClusterTargetHeader) (ClusterInfo, error) {
-	rawURL := fmt.Sprintf("/v1/clusters/%s", name)
+	rawURL := fmt.Sprintf("/v1/clusters/%s?showResources=true", name)
 	cluster := ClusterInfo{}
 	_, err := r.client.Get(rawURL, &cluster, target.ToMap())
 	if err != nil {
