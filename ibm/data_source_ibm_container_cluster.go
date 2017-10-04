@@ -2,7 +2,6 @@ package ibm
 
 import (
 	"fmt"
-
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -46,6 +45,47 @@ func dataSourceIBMContainerCluster() *schema.Resource {
 						"namespace": {
 							Type:     schema.TypeString,
 							Computed: true,
+						},
+					},
+				},
+			},
+			"vlans": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"subnets": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"ips": {
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem:     &schema.Schema{Type: schema.TypeString},
+									},
+									"is_public": {
+										Type:     schema.TypeBool,
+										Computed: true,
+									},
+									"is_byoip": {
+										Type:     schema.TypeBool,
+										Computed: true,
+									},
+									"cidr": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
 						},
 					},
 				},
@@ -110,6 +150,7 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	d.Set("worker_count", clusterFields.WorkerCount)
 	d.Set("workers", workers)
 	d.Set("bounded_services", boundedServices)
+	d.Set("vlans", flattenVlans(clusterFields.Vlans))
 
 	return nil
 }
