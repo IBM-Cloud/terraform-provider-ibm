@@ -2,10 +2,12 @@ package ibm
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/terraform"
 )
 
 func TestAccIBMContainerClusterDataSource_basic(t *testing.T) {
@@ -21,10 +23,32 @@ func TestAccIBMContainerClusterDataSource_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_container_cluster.testacc_ds_cluster", "worker_count", "1"),
 					resource.TestCheckResourceAttr("data.ibm_container_cluster.testacc_ds_cluster", "bounded_services.#", "1"),
+					testAccIBMClusterVlansCheck("data.ibm_container_cluster.testacc_ds_cluster"),
 				),
 			},
 		},
 	})
+}
+
+func testAccIBMClusterVlansCheck(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+
+		r := s.RootModule().Resources[n]
+		a := r.Primary.Attributes
+
+		var (
+			vlansSize int
+			err       error
+		)
+
+		if vlansSize, err = strconv.Atoi(a["vlans.#"]); err != nil {
+			return err
+		}
+		if vlansSize < 1 {
+			return fmt.Errorf("No subnets found")
+		}
+		return nil
+	}
 }
 
 func testAccCheckIBMContainerClusterDataSource(clusterName, serviceName, serviceKeyName string) string {
@@ -51,8 +75,9 @@ resource "ibm_container_cluster" "testacc_cluster" {
   }]
     machine_type = "%s"
     isolation = "public"
-    public_vlan_id = "%s"
+    public_vlan_id  = "%s"
     private_vlan_id = "%s"
+    subnet_id       = ["%s"]
 }
 resource "ibm_service_instance" "service" {
   name       = "%s"
@@ -80,5 +105,5 @@ data "ibm_container_cluster" "testacc_ds_cluster" {
     account_guid = "${data.ibm_account.testacc_acc.id}"
     cluster_name_id = "${ibm_container_cluster.testacc_cluster.id}"
 }
-`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID, serviceName, serviceKeyName)
+`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID, subnetID, serviceName, serviceKeyName)
 }

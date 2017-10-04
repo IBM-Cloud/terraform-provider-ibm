@@ -19,6 +19,7 @@ var datacenter string
 var machineType string
 var publicVlanID string
 var privateVlanID string
+var subnetID string
 var lbaasDatacenter string
 var lbaasSubnetId int
 var err error
@@ -69,6 +70,12 @@ func init() {
 	if privateVlanID == "" {
 		privateVlanID = "1764491"
 		fmt.Println("[INFO] Set the environment variable IBM_PRIVATE_VLAN_ID for testing ibm_container_cluster resource else it is set to default value '1764491'")
+	}
+
+	subnetID = os.Getenv("IBM_SUBNET_ID")
+	if privateVlanID == "" {
+		privateVlanID = "1415689"
+		fmt.Println("[INFO] Set the environment variable IBM_SUBNET_ID for testing ibm_container_cluster resource else it is set to default value '1415689'")
 	}
 
 	lbaasDatacenter = os.Getenv("IBM_LBAAS_DATACENTER")

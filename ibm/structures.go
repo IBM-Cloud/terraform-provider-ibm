@@ -3,6 +3,7 @@ package ibm
 import (
 	"fmt"
 
+	"github.com/IBM-Bluemix/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Bluemix/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Bluemix/bluemix-go/api/mccp/mccpv2"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -287,4 +288,30 @@ func flattenProtocols(list []datatypes.Network_LBaaS_Listener) []map[string]inte
 		result = append(result, l)
 	}
 	return result
+}
+
+func flattenVlans(list []containerv1.Vlan) []map[string]interface{} {
+	vlans := make([]map[string]interface{}, len(list))
+	for i, vlanR := range list {
+		subnets := make([]map[string]interface{}, len(vlanR.Subnets))
+		for j, subnetR := range vlanR.Subnets {
+			subnet := make(map[string]interface{})
+			subnet["id"] = subnetR.ID
+			subnet["cidr"] = subnetR.Cidr
+			subnet["is_byoip"] = subnetR.IsByOIP
+			subnet["is_public"] = subnetR.IsPublic
+			ips := make([]string, len(subnetR.Ips))
+			for k, ip := range subnetR.Ips {
+				ips[k] = ip
+			}
+			subnet["ips"] = ips
+			subnets[j] = subnet
+		}
+		l := map[string]interface{}{
+			"id":      vlanR.ID,
+			"subnets": subnets,
+		}
+		vlans[i] = l
+	}
+	return vlans
 }
