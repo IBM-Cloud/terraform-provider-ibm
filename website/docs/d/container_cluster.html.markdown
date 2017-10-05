@@ -41,3 +41,11 @@ The following attributes are exported:
 * `worker_count` - The number of workers that are attached to the cluster.
 * `workers` - The IDs of the workers that are attached to the cluster.
 * `bounded_services` - The services that are bounded to the cluster.
+* `vlans` - The VLAN'S that are attached to the cluster. Nested `vlans` blocks have the following structure:
+	* `id` - The VLAN id.
+	* `subnets` - The list of subnets attached to VLAN belonging to the cluster. Nested `subnets` blocks have the following structure:
+		* `id` - The Subnet Id.
+		* `cidr` - The cidr range.
+		* `ips` - The list of ip's in the subnet.
+		* `is_byoip` - `true` if user provides a ip range else `false`.
+		* `is_public` - `true` if VLAN is public else `false`.
