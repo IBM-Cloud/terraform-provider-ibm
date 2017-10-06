@@ -37,4 +37,5 @@ The following arguments are supported:
 
 The following attributes are exported:
 
+* `id` - The unique identifier of the service key.
 * `credentials` - The credentials associated with the key.  
