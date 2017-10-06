@@ -39,7 +39,7 @@ data "ibm_iam_user_policy" "testacc_iam_policies" {
 
 The following arguments are supported:
 
-* `account_guid` - (Required, string) The GUID of the Bluemix account. You can retrieve the value from the `ibm_account` data source or by running the `bx iam accounts` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
+* `account_guid` - (Required, string) The GUID of the Bluemix account. You can retrieve the value from the `ibm_account` data source or by running the `bx iam accounts` command in the [Bluemix CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
 * `ibm_id` - (Required, string) The IBM ID of the user to whom you want to assign the policy.
 
 ## Attribute Reference

@@ -29,7 +29,7 @@ data "ibm_service_key" "serviceKeydata" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The name of the service key. You can retrieve the value by running the `bx service keys` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
+* `name` - (Required, string) The name of the service key. You can retrieve the value by running the `bx service keys` command in the [Bluemix CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
 * `service_instance_name` - (Required, string) The name of the service instance that the service key is associated with. You can retrieve the value by running the `bx service list` command in the Bluemix CLI.
 * `space_guid` - (Required, string) The GUID of the space where the service instance exists. You can retrieve the value from the data source `ibm_space`.
 

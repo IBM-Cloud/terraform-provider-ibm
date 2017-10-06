@@ -33,8 +33,8 @@ The following arguments are supported:
 
 * `name` - (Required, string) A descriptive name used to identify the service instance.
 * `space_guid` - (Required, string) The GUID of the space where you want to create the service. You can retrieve the value from data source `ibm_space`.
-* `service` - (Required, string) The name of the service offering. You can retrieve the value by running the `bx service offerings` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
-* `plan` - (Required, string) The name of the plan type supported by service. You can retrieve the value by running the `bx service offerings` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
+* `service` - (Required, string) The name of the service offering. You can retrieve the value by running the `bx service offerings` command in the [Bluemix CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `plan` - (Required, string) The name of the plan type supported by service. You can retrieve the value by running the `bx service offerings` command in the [Bluemix CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
 * `tags` - (Optional, array of strings) Tags associated with the public IP instance.
 * `parameters` - (Optional, map) Arbitrary parameters to pass to the service broker. The value must be a JSON object.
 
