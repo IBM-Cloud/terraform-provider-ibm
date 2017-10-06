@@ -33,3 +33,8 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - The unique identifier of the account.  
+* `account_users` - The list of account user's in the account. Nested `account_users` blocks have the following structure:
+  * `id` -  The account user Id.
+  * `email` - The account user email.
+  * `state` -  The account user state.
+  * `role` -  The account user role.
