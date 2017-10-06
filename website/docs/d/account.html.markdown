@@ -26,7 +26,7 @@ data "ibm_account" "accountData" {
 
 The following arguments are supported:
 
-* `org_guid` - (Required, string) The GUID of the Bluemix organization. You can retrieve the value from the `ibm_org` data source or by running the `bx iam orgs --guid` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
+* `org_guid` - (Required, string) The GUID of the Bluemix organization. You can retrieve the value from the `ibm_org` data source or by running the `bx iam orgs --guid` command in the [Bluemix CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
 
 ## Attribute Reference
 

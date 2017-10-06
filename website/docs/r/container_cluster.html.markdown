@@ -46,7 +46,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
 The following arguments are supported:
 
 * `name` - (Required, string) The name of the cluster.
-* `datacenter` - (Required, string)  The datacenter of the worker nodes. You can retrieve the value by running the `bluemix cs locations` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
+* `datacenter` - (Required, string)  The datacenter of the worker nodes. You can retrieve the value by running the `bluemix cs locations` command in the [Bluemix CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
 * `org_guid` - (Required, string) The GUID for the Bluemix organization associated with the cluster. You can retrieve the value from data source `ibm_org` or by running the `bx iam orgs --guid` command in the Bluemix CLI.
 * `space_guid` - (Required, string) The GUID for the Bluemix space associated with the cluster. You can retrieve the value from data source `ibm_space` or by running the `bx iam space <space-name> --guid` command in the Bluemix CLI.
 * `account_guid` - (Required, string) The GUID for the Bluemix account associated with the cluster. You can retrieve the value from data source `ibm_account` or by running the `bx iam accounts` command in the Bluemix CLI.

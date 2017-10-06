@@ -36,7 +36,7 @@ resource "ibm_service_instance" "service_instance" {
 
 The following arguments are supported:
 
-* `org` - (Required) The name of your Bluemix organization. You can retrieve the value by running the `bx iam orgs` command in the [Bluemix CLI](https://console.ng.bluemix.net/docs/cli/reference/bluemix_cli/index.html#getting-started).
+* `org` - (Required) The name of your Bluemix organization. You can retrieve the value by running the `bx iam orgs` command in the [Bluemix CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
 * `space` - (Required) The name of your space. You can retrieve the value by running the `bx iam spaces` command in the Bluemix CLI.
 
 ## Attribute Reference
