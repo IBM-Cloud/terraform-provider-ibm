@@ -23,7 +23,6 @@ resource "ibm_lbaas" "lbaas" {
   name        = "terraformLB"
   description = "delete this"
   subnets     = [1511875]
-  datacenter  = "wdc04"
 
   protocols = [{
     frontend_protocol     = "HTTPS"
@@ -61,7 +60,6 @@ The following arguments are supported:
 
 * `name` - (Required, string) The load balancer's name.
 * `description` - (Optional, string) A description of the load balancer.
-* `datacenter` - (Required, string) The datacenter where the load balancer is located.
 * `subnets` - (Required, array) The subnet where the load balancer will be provisioned. Only one subnet is supported.
 * `protocols` - (Optional, array) A nested block describing the protocols assigned to load balancer. Nested `protocols` blocks have the following structure:
   * `frontend_protocol` - (Required, string) The frontend protocol. Accepted values are 'TCP', 'HTTP', and 'HTTPS'.
@@ -76,11 +74,14 @@ The following arguments are supported:
   * `private_ip_address` - (Required, string) The private IP address of a load balancer member.
   * `weight` - (Optional, integer) The weight of a load balancer member.
 
+* `wait_time_minutes` - (Optional, integer) The duration, expressed in minutes, to wait for the lbaas instance to become available before declaring it as created. It is also the same amount of time waited for deletion to finish. The default value is `90`.
+
 ## Attributes Reference
 
 The following attributes are exported:
 
 * `id` - The unique identifier of the created policy.
+* `datacenter` - The datacenter where the load balancer is provisioned. This is based on the subnet chosen while creating load-balancer.
 * `type` - Specifies whether a load balancer is `PUBLIC` or `PRIVATE`.
 * `status` - Specifies the operation status of the load balancer as `ONLINE` or `OFFLINE`.
 * `vip` - The virtual IP address of the load balancer.

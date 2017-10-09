@@ -52,7 +52,6 @@ resource "ibm_lbaas" "lbaas" {
   name        = "%s"
   description = "updated desc-used for terraform uat"
   subnets     = [%d]
-  datacenter  = "%s"
 
   protocols = [{
 
@@ -72,5 +71,5 @@ resource "ibm_lbaas" "lbaas" {
     data "ibm_lbaas" "tfacc_lbaas" {
     name = "${ibm_lbaas.lbaas.name}"
 }
-`, lbaasDatacenter, name, lbaasSubnetId, lbaasDatacenter)
+`, lbaasDatacenter, name, lbaasSubnetId)
 }

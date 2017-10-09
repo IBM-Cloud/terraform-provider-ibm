@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/hashcode"
@@ -23,7 +24,7 @@ var lbIdToMethod = make(map[string]string)
 
 const (
 	lbActive        = "ACTIVE"
-	lbPending       = "PENDING"
+	lbPending       = "CREATE_PENDING"
 	lbUpdatePening  = "UPDATE_PENDING"
 	lbOnline        = "ONLINE"
 	lbDeletePending = "DELETE_PENDING"
@@ -31,6 +32,8 @@ const (
 )
 
 const NOT_FOUND = "SoftLayer_Exception_Network_LBaaS_ObjectNotFound"
+
+const productItemMaskWithPriceLocationGroupID = "id,capacity,description,units,keyName,prices[id,categories[id,name,categoryCode],locationGroupId]"
 
 func init() {
 
@@ -71,10 +74,8 @@ func resourceIBMLbaas() *schema.Resource {
 				Description: "Specifies if a load balancer is public or private",
 			},
 			"datacenter": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Datacenter, where load balancer is located.",
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"subnets": {
 				Type:        schema.TypeList,
@@ -159,7 +160,11 @@ func resourceIBMLbaas() *schema.Resource {
 				},
 				Set: resourceIBMLBProtocolHash,
 			},
-
+			"wait_time_minutes": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				Default:  90,
+			},
 			"server_instances": {
 				Type:        schema.TypeSet,
 				Description: "The Server instances for this load balancer",
@@ -208,7 +213,6 @@ func resourceIBMLbaasCreate(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf("Error during creation of Load balancer: %s", err)
 	}
-
 	//place order
 	_, err = services.GetProductOrderService(sess).
 		PlaceOrder(productOrderContainer, sl.Bool(false))
@@ -218,7 +222,7 @@ func resourceIBMLbaasCreate(d *schema.ResourceData, meta interface{}) error {
 
 	name := d.Get("name").(string)
 
-	lbaasLB, err := findLbaasLBByOrderId(sess, name)
+	lbaasLB, err := findLbaasLBByOrderId(sess, name, d)
 	if err != nil {
 		return fmt.Errorf("Error during creation of Load balancer: %s", err)
 	}
@@ -366,7 +370,11 @@ func resourceIBMLbaasDelete(d *schema.ResourceData, meta interface{}) error {
 
 	_, err := service.CancelLoadBalancer(sl.String(d.Id()))
 	if err != nil {
-		return fmt.Errorf("Error deleting load balancer: %s", err)
+		if strings.Contains(err.Error(), "DELETE_PENDING") {
+			log.Println("Deletion is already in progress, probably from previous runs")
+		} else {
+			return fmt.Errorf("Error deleting load balancer: %s", err)
+		}
 	}
 	_, err = waitForLbaasLBDelete(d, meta)
 	if err != nil {
@@ -383,7 +391,7 @@ func resourceIBMLbaasExists(d *schema.ResourceData, meta interface{}) (bool, err
 
 	result, err := service.GetLoadBalancer(sl.String(d.Id()))
 	if err != nil {
-		if apiErr, ok := err.(sl.Error); ok && apiErr.StatusCode == 404 {
+		if apiErr, ok := err.(sl.Error); ok && (apiErr.StatusCode == 404 || apiErr.Exception == NOT_FOUND) {
 			return false, nil
 		}
 		return false, fmt.Errorf("Error retrieving load balancer: %s", err)
@@ -395,6 +403,13 @@ func buildLbaasLBProductOrderContainer(d *schema.ResourceData, sess *session.Ses
 	// 1. Get a package
 	name := d.Get("name").(string)
 	subnets := d.Get("subnets").([]interface{})
+	subnetsParam := []datatypes.Network_Subnet{}
+	for _, subnet := range subnets {
+		subnetItem := datatypes.Network_Subnet{
+			Id: sl.Int(subnet.(int)),
+		}
+		subnetsParam = append(subnetsParam, subnetItem)
+	}
 
 	pkg, err := product.GetPackageByType(sess, packageType)
 	if err != nil {
@@ -402,24 +417,22 @@ func buildLbaasLBProductOrderContainer(d *schema.ResourceData, sess *session.Ses
 	}
 
 	// 2. Get all prices for the package
-	productItems, err := product.GetPackageProducts(sess, *pkg.Id)
+	productItems, err := product.GetPackageProducts(sess, *pkg.Id, productItemMaskWithPriceLocationGroupID)
 	if err != nil {
-		return nil, err
-	}
-	priceItems := []datatypes.Product_Item_Price{}
-	for _, item := range productItems {
-		priceItem := datatypes.Product_Item_Price{
-			Id: item.Prices[0].Id,
-		}
-		priceItems = append(priceItems, priceItem)
+		return &datatypes.Container_Product_Order_Network_LoadBalancer_AsAService{}, err
 	}
 
-	subnetsParam := []datatypes.Network_Subnet{}
-	for _, subnet := range subnets {
-		subnetItem := datatypes.Network_Subnet{
-			Id: sl.Int(subnet.(int)),
+	priceItems := []datatypes.Product_Item_Price{}
+	for _, item := range productItems {
+		for _, price := range item.Prices {
+			if price.LocationGroupId == nil {
+				priceItem := datatypes.Product_Item_Price{
+					Id: price.Id,
+				}
+				priceItems = append(priceItems, priceItem)
+				break
+			}
 		}
-		subnetsParam = append(subnetsParam, subnetItem)
 	}
 
 	productOrderContainer := datatypes.Container_Product_Order_Network_LoadBalancer_AsAService{
@@ -451,8 +464,9 @@ func buildLbaasLBProductOrderContainer(d *schema.ResourceData, sess *session.Ses
 	return &productOrderContainer, nil
 }
 
-func findLbaasLBByOrderId(sess *session.Session, name string) (*datatypes.Network_LBaaS_LoadBalancer, error) {
+func findLbaasLBByOrderId(sess *session.Session, name string, d *schema.ResourceData) (*datatypes.Network_LBaaS_LoadBalancer, error) {
 
+	isIDSet := false
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{lbPending},
 		Target:  []string{lbActive},
@@ -468,12 +482,19 @@ func findLbaasLBByOrderId(sess *session.Session, name string) (*datatypes.Networ
 			if err != nil {
 				return nil, "", err
 			}
-			if len(lb) == 1 && *lb[0].ProvisioningStatus == lbActive && *lb[0].OperatingStatus == lbOnline {
-				return lb[0], lbActive, nil
+			if len(lb) == 1 {
+				if *lb[0].ProvisioningStatus == lbActive && *lb[0].OperatingStatus == lbOnline {
+					return lb[0], lbActive, nil
+				}
+				if !isIDSet && lb[0].Uuid != nil {
+					d.SetId(*lb[0].Uuid)
+					isIDSet = true
+				}
+				return lb[0], lbPending, nil
 			}
 			return nil, lbPending, nil
 		},
-		Timeout:        30 * time.Minute,
+		Timeout:        time.Duration(d.Get("wait_time_minutes").(int)) * time.Minute,
 		Delay:          60 * time.Second,
 		MinTimeout:     3 * time.Second,
 		PollInterval:   60 * time.Second,
@@ -504,7 +525,7 @@ func waitForLbaasLBAvailable(d *schema.ResourceData, meta interface{}) (interfac
 		Refresh: func() (interface{}, string, error) {
 			lb, err := service.GetLoadBalancer(sl.String(d.Id()))
 			if err != nil {
-				if apiErr, ok := err.(sl.Error); ok && apiErr.StatusCode == 404 {
+				if apiErr, ok := err.(sl.Error); ok && (apiErr.StatusCode == 404 || apiErr.Exception == NOT_FOUND) {
 					return nil, "", fmt.Errorf("The load balancer %s does not exist anymore: %v", d.Id(), err)
 				}
 				return nil, "", err
@@ -512,11 +533,13 @@ func waitForLbaasLBAvailable(d *schema.ResourceData, meta interface{}) (interfac
 			if *lb.ProvisioningStatus == lbActive && *lb.OperatingStatus == lbOnline {
 				return lb, lbActive, nil
 			}
-			return nil, lbUpdatePening, nil
+			return lb, lbUpdatePening, nil
 		},
-		Timeout:    10 * time.Minute,
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
+		Timeout:        time.Duration(d.Get("wait_time_minutes").(int)) * time.Minute,
+		Delay:          60 * time.Second,
+		MinTimeout:     3 * time.Second,
+		PollInterval:   60 * time.Second,
+		NotFoundChecks: 40,
 	}
 
 	return stateConf.WaitForState()
@@ -532,19 +555,17 @@ func waitForLbaasLBDelete(d *schema.ResourceData, meta interface{}) (interface{}
 		Refresh: func() (interface{}, string, error) {
 			lb, err := service.GetLoadBalancer(sl.String(d.Id()))
 			if err != nil {
-				if apiErr, ok := err.(sl.Error); ok && apiErr.Exception == NOT_FOUND {
+				if apiErr, ok := err.(sl.Error); ok && (apiErr.StatusCode == 404 || apiErr.Exception == NOT_FOUND) {
 					return lb, lbDeleted, nil
 				}
 				return datatypes.Network_LBaaS_LoadBalancer{}, "", err
 			}
-			if *lb.ProvisioningStatus == lbDeletePending {
-				return lb, lbDeletePending, nil
-			}
-			return nil, lbDeleted, nil
+			return lb, lbDeletePending, nil
 		},
-		Timeout:    10 * time.Minute,
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
+		Timeout:      time.Duration(d.Get("wait_time_minutes").(int)) * time.Minute,
+		Delay:        60 * time.Second,
+		MinTimeout:   10 * time.Second,
+		PollInterval: 60 * time.Second,
 	}
 
 	return stateConf.WaitForState()

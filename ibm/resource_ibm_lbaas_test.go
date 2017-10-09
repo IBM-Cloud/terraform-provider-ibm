@@ -86,7 +86,7 @@ func TestAccIBMLbaas_importBasic(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"subnets.#", "subnets.0"},
+					"subnets.#", "subnets.0", "wait_time_minutes"},
 			},
 		},
 	})
@@ -219,7 +219,6 @@ resource "ibm_lbaas" "lbaas" {
   name        = "terraformLB"
   description = "desc-used for terraform uat"
   subnets     = [1511875]
-  datacenter  = "wdc04"
 
   protocols = [{
     "frontend_protocol" = "HTTP"
@@ -243,7 +242,6 @@ resource "ibm_lbaas" "lbaas" {
   name        = "%s"
   description = "desc-used for terraform uat"
   subnets     = [%d]
-  datacenter  = "%s"
 
   protocols = [{
     "frontend_protocol" = "HTTP"
@@ -260,7 +258,7 @@ resource "ibm_lbaas" "lbaas" {
   },
   ]
 }
-`, name, lbaasSubnetId, lbaasDatacenter)
+`, name, lbaasSubnetId)
 }
 
 const testAccCheckIBMLbaas_InvalidMaxConn = `
@@ -268,7 +266,6 @@ resource "ibm_lbaas" "lbaas" {
   name        = "terraformLB"
   description = "desc-used for terraform uat"
   subnets     = [1511875]
-  datacenter  = "wdc04"
 
   protocols = [{
     "frontend_protocol" = "HTTP"
@@ -292,7 +289,6 @@ resource "ibm_lbaas" "lbaas" {
   name        = "terraformLB"
   description = "desc-used for terraform uat"
   subnets     = [1511875]
-  datacenter  = "wdc04"
 
   protocols = [{
     "frontend_protocol" = "HTTP"
@@ -315,7 +311,6 @@ resource "ibm_lbaas" "lbaas" {
   name        = "terraformLB"
   description = "desc-used for terraform uat"
   subnets     = [1511875]
-  datacenter  = "wdc04"
 
   protocols = [{
     "frontend_protocol" = "HTTP"
@@ -338,7 +333,6 @@ resource "ibm_lbaas" "lbaas" {
   name        = "terraformLB"
   description = "desc-used for terraform uat"
   subnets     = [1511875]
-  datacenter  = "wdc04"
 
   protocols = [{
     "frontend_protocol" = "HTTP"
@@ -360,7 +354,7 @@ resource "ibm_lbaas" "lbaas" {
   name        = "terraformLB"
   description = "desc-used for terraform uat"
   subnets     = [1511875]
-  datacenter  = "wdc04"
+
 
   protocols = [{
     "frontend_protocol" = "HTTP"
@@ -384,9 +378,8 @@ resource "ibm_lbaas" "lbaas" {
   name        = "%s"
   description = "desc-used for terraform uat"
   subnets     = [%d]
-  datacenter  = "%s"
 }
-`, name, lbaasSubnetId, lbaasDatacenter)
+`, name, lbaasSubnetId)
 }
 
 func testAccCheckIBMLbaasConfig_update(name string) string {
@@ -411,7 +404,6 @@ resource "ibm_lbaas" "lbaas" {
   name        = "%s"
   description = "updated desc-used for terraform uat"
   subnets     = [%d]
-  datacenter  = "%s"
 
   protocols = [{
     "frontend_protocol" = "HTTP"
@@ -431,7 +423,7 @@ resource "ibm_lbaas" "lbaas" {
   },
   ]
 }
-`, lbaasDatacenter, name, lbaasSubnetId, lbaasDatacenter)
+`, lbaasDatacenter, name, lbaasSubnetId)
 }
 
 func testAccCheckIBMLbaasConfig_updateHTTPS(name string) string {
@@ -518,7 +510,7 @@ resource "ibm_lbaas" "lbaas" {
   name        = "%s"
   description = "updated desc-used for terraform uat"
   subnets     = [%d]
-  datacenter  = "%s"
+
 
   protocols = [{
     "frontend_protocol" = "HTTPS"
@@ -545,5 +537,5 @@ resource "ibm_lbaas" "lbaas" {
   },
   ]
 }
-`, lbaasDatacenter, name, lbaasSubnetId, lbaasDatacenter)
+`, lbaasDatacenter, name, lbaasSubnetId)
 }
