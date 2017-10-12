@@ -37,6 +37,54 @@ func TestAccIBMContainerCluster_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMContainerCluster_private_subnet(t *testing.T) {
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMContainerClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerCluster_private_subnet(clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "name", clusterName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "worker_num", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "ingress_hostname", ""),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "ingress_secret", ""),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMContainerCluster_private_and_public_subnet(t *testing.T) {
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMContainerClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerCluster_private_and_public_subnet(clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "name", clusterName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "worker_num", "1"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_container_cluster.testacc_cluster", "ingress_hostname"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_container_cluster.testacc_cluster", "ingress_secret"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMContainerCluster_Tag(t *testing.T) {
 	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
 	resource.Test(t, resource.TestCase{
@@ -173,7 +221,81 @@ resource "ibm_container_cluster" "testacc_cluster" {
   isolation       = "public"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
+  no_subnet		  = true
 }	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
+}
+
+func testAccCheckIBMContainerCluster_private_and_public_subnet(clusterName string) string {
+	return fmt.Sprintf(`
+
+data "ibm_org" "org" {
+    org = "%s"
+}
+
+data "ibm_space" "space" {
+  org    = "%s"
+  space  = "%s"
+}
+
+data "ibm_account" "acc" {
+   org_guid = "${data.ibm_org.org.id}"
+}
+
+resource "ibm_container_cluster" "testacc_cluster" {
+  name       = "%s"
+  datacenter = "%s"
+
+  org_guid = "${data.ibm_org.org.id}"
+	space_guid = "${data.ibm_space.space.id}"
+	account_guid = "${data.ibm_account.acc.id}"
+
+  workers = [{
+    name = "worker1"
+  }]
+
+  machine_type    = "%s"
+  isolation       = "public"
+  public_vlan_id  = "%s"
+  private_vlan_id = "%s"
+  subnet_id		  = ["%s","%s"]
+}	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID, privateSubnetID, publicSubnetID)
+}
+
+func testAccCheckIBMContainerCluster_private_subnet(clusterName string) string {
+	return fmt.Sprintf(`
+
+data "ibm_org" "org" {
+    org = "%s"
+}
+
+data "ibm_space" "space" {
+  org    = "%s"
+  space  = "%s"
+}
+
+data "ibm_account" "acc" {
+   org_guid = "${data.ibm_org.org.id}"
+}
+
+resource "ibm_container_cluster" "testacc_cluster" {
+  name       = "%s"
+  datacenter = "%s"
+
+  org_guid = "${data.ibm_org.org.id}"
+	space_guid = "${data.ibm_space.space.id}"
+	account_guid = "${data.ibm_account.acc.id}"
+
+  workers = [{
+    name = "worker1"
+  }]
+
+  machine_type    = "%s"
+  isolation       = "public"
+  public_vlan_id  = "%s"
+  private_vlan_id = "%s"
+  no_subnet		  = true
+  subnet_id		  = ["%s"]
+}	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID, privateSubnetID)
 }
 
 func testAccCheckIBMContainerClusterTag(clusterName string) string {
