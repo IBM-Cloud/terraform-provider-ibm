@@ -24,6 +24,8 @@ const (
 	subnetProvisioning  = "provisioning"
 )
 
+const PUBLIC_SUBNET_TYPE = "public"
+
 func resourceIBMContainerCluster() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMContainerClusterCreate,
@@ -230,16 +232,31 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 
 	subnetAPI := csClient.Subnets()
 	subnetIDs := d.Get("subnet_id").(*schema.Set)
+	var publicSubnetAdded bool
+	var subnets []v1.Subnet
+	if len(subnetIDs.List()) > 0 {
+		subnets, err = subnetAPI.List(targetEnv)
+		if err != nil {
+			return err
+		}
+	}
 	for _, subnetID := range subnetIDs.List() {
 		if subnetID != "" {
 			err = subnetAPI.AddSubnet(cls.ID, subnetID.(string), targetEnv)
 			if err != nil {
 				return err
 			}
+			subnet := getSubnet(subnets, subnetID.(string))
+			if subnet.Type == PUBLIC_SUBNET_TYPE {
+				publicSubnetAdded = true
+			}
+		} else {
+			return fmt.Errorf(
+				"subnet_id can not contain empty value")
 		}
 	}
 
-	if len(subnetIDs.List()) > 0 {
+	if publicSubnetAdded {
 		_, err = WaitForSubnetAvailable(d, meta, targetEnv)
 		if err != nil {
 			return fmt.Errorf(
@@ -419,11 +436,19 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		}
 	}
 	//TODO put subnet can't deleted in the error message if such case is observed in the chnages
-	var subnetAdd bool
 	if d.HasChange("subnet_id") {
 		oldSubnets, newSubnets := d.GetChange("subnet_id")
 		oldSubnet := oldSubnets.(*schema.Set)
 		newSubnet := newSubnets.(*schema.Set)
+		rem := oldSubnet.Difference(newSubnet).List()
+		if len(rem) > 0 {
+			return fmt.Errorf("Subnet(s) %v cannot be deleted", rem)
+		}
+		var publicSubnetAdded bool
+		subnets, err := subnetAPI.List(targetEnv)
+		if err != nil {
+			return err
+		}
 		for _, nS := range newSubnet.List() {
 			exists := false
 			for _, oS := range oldSubnet.List() {
@@ -436,10 +461,13 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 				if err != nil {
 					return err
 				}
-				subnetAdd = true
+				subnet := getSubnet(subnets, nS.(string))
+				if subnet.Type == PUBLIC_SUBNET_TYPE {
+					publicSubnetAdded = true
+				}
 			}
 		}
-		if subnetAdd {
+		if publicSubnetAdded {
 			_, err = WaitForSubnetAvailable(d, meta, targetEnv)
 			if err != nil {
 				return fmt.Errorf(
@@ -600,7 +628,7 @@ func subnetStateRefreshFunc(client v1.Clusters, instanceID string, d *schema.Res
 		if err != nil {
 			return nil, "", fmt.Errorf("Error retrieving cluster: %s", err)
 		}
-		if cluster.IngressHostname == "" && cluster.IngressSecretName == "" {
+		if cluster.IngressHostname == "" || cluster.IngressSecretName == "" {
 			return cluster, subnetProvisioning, nil
 		}
 		return cluster, subnetNormal, nil
@@ -627,4 +655,13 @@ func resourceIBMContainerClusterExists(d *schema.ResourceData, meta interface{})
 		return false, fmt.Errorf("Error communicating with the API: %s", err)
 	}
 	return cls.ID == clusterID, nil
+}
+
+func getSubnet(subnets []v1.Subnet, subnetId string) v1.Subnet {
+	for _, subnet := range subnets {
+		if subnet.ID == subnetId {
+			return subnet
+		}
+	}
+	return v1.Subnet{}
 }
