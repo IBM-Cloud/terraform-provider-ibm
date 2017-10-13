@@ -1,0 +1,30 @@
+sudo: false
+language: go
+go:
+- 1.8.1
+
+
+before_install:
+- mkdir -p $GOPATH/src/github.com/terraform-providers/terraform-provider-ibm
+- mv $TRAVIS_BUILD_DIR/* $GOPATH/src/github.com/terraform-providers/terraform-provider-ibm
+- cd $GOPATH/src/github.com/terraform-providers/terraform-provider-ibm
+
+install:
+# This script is used by the Travis build to install a cookie for
+# go.googlesource.com so rate limits are higher when using `go get` to fetch
+# packages that live there.
+# See: https://github.com/golang/go/issues/12933
+- bash scripts/gogetcookie.sh
+- go get github.com/kardianos/govendor
+
+script:
+- make test
+- make vet
+
+branches:
+  only:
+  - master
+matrix:
+  fast_finish: true
+  allow_failures:
+  - go: tip
