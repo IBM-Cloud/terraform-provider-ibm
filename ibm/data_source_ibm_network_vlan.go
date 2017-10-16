@@ -37,7 +37,26 @@ func dataSourceIBMNetworkVlan() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
-
+			"virtual_guests": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"domain": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"hostname": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
 			"subnets": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -59,7 +78,7 @@ func dataSourceIBMNetworkVlanRead(d *schema.ResourceData, meta interface{}) erro
 
 	if number != 0 && routerHostname != "" {
 		// Got vlan number and router, get vlan, and compute name
-		vlan, err = getVlan(number, routerHostname, meta)
+		vlan, err = getVlan(number, routerHostname, name, meta)
 		if err != nil {
 			return err
 		}
@@ -70,9 +89,17 @@ func dataSourceIBMNetworkVlanRead(d *schema.ResourceData, meta interface{}) erro
 		}
 	} else if name != "" {
 		// Got name, get vlan, and compute router hostname and vlan number
+		filters := filter.New(filter.Path("networkVlans.name").Eq(name))
+		if number != 0 {
+			filters = append(filters, filter.Path("networkVlans.vlanNumber").Eq(number))
+		}
 		networkVlans, err := service.
-			Mask("id,vlanNumber,name,primaryRouter[hostname],primarySubnets[networkIdentifier,cidr]").
-			Filter(filter.Path("networkVlans.name").Eq(name).Build()).
+			Mask("id,vlanNumber,name,primaryRouter[hostname],primarySubnets[networkIdentifier,cidr],virtualGuests[id,domain,hostname]").
+			Filter(
+				filter.Build(
+					filters...,
+				),
+			).
 			GetNetworkVlans()
 		if err != nil {
 			return fmt.Errorf("Error obtaining VLAN id: %s", err)
@@ -88,7 +115,7 @@ func dataSourceIBMNetworkVlanRead(d *schema.ResourceData, meta interface{}) erro
 			d.Set("router_hostname", *vlan.PrimaryRouter.Hostname)
 		}
 	} else {
-		return errors.New("Missing required properties. Need a VLAN name, or the VLAN's number and router hostname.")
+		return errors.New("missing required properties. Need a VLAN name, or the VLAN's number and router hostname")
 	}
 
 	// Get subnets in cidr format for display
@@ -100,19 +127,31 @@ func dataSourceIBMNetworkVlanRead(d *schema.ResourceData, meta interface{}) erro
 
 		d.Set("subnets", subnets)
 	}
-
+	vgs := make([]map[string]interface{}, len(vlan.VirtualGuests))
+	for i, vg := range vlan.VirtualGuests {
+		v := make(map[string]interface{})
+		v["id"] = *vg.Id
+		v["domain"] = *vg.Domain
+		v["hostname"] = *vg.Hostname
+		vgs[i] = v
+	}
+	d.Set("virtual_guests", vgs)
 	return nil
 }
 
-func getVlan(vlanNumber int, primaryRouterHostname string, meta interface{}) (*datatypes.Network_Vlan, error) {
+func getVlan(vlanNumber int, primaryRouterHostname string, name string, meta interface{}) (*datatypes.Network_Vlan, error) {
 	service := services.GetAccountService(meta.(ClientSession).SoftLayerSession())
 
+	filters := filter.New(filter.Path("networkVlans.primaryRouter.hostname").Eq(primaryRouterHostname),
+		filter.Path("networkVlans.vlanNumber").Eq(vlanNumber))
+	if name != "" {
+		filters = append(filters, filter.Path("networkVlans.name").Eq(name))
+	}
 	networkVlans, err := service.
-		Mask("id,name,primarySubnets[networkIdentifier,cidr]").
+		Mask("id,name,primarySubnets[networkIdentifier,cidr],virtualGuests[id,domain,hostname]").
 		Filter(
 			filter.Build(
-				filter.Path("networkVlans.primaryRouter.hostname").Eq(primaryRouterHostname),
-				filter.Path("networkVlans.vlanNumber").Eq(vlanNumber),
+				filters...,
 			),
 		).
 		GetNetworkVlans()

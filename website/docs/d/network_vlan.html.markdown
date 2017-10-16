@@ -45,3 +45,8 @@ The following attributes are exported:
 
 * `id` - The unique identifier of the VLAN.
 * `subnets` - A list of subnets associated with this VLAN.
+* `virtual_guests` - A nested block describing the VSIs attached to the VLAN. Nested `virtual_guests` blocks have the following structure:
+  * `id` - The ID of the virtual guest.
+  * `domain` - The domain of the virtual guest.
+  * `hostname` - The hostname of the virtual guest.
+
