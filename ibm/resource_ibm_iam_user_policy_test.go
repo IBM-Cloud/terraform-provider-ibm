@@ -77,6 +77,19 @@ func TestAccIBMIAMUserPolicy_Tag(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMUserPolicy_ServiceNameEmpty(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config:      testAccCheckIBMIAMUserPolicy_ServiceNameEmpty(),
+				ExpectError: regexp.MustCompile("service_name cannot be empty"),
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMUserPolicy_InvalidRole(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -241,6 +254,25 @@ resource "ibm_iam_user_policy" "testacc_iam_policy" {
         roles   = ["viewer"]
         resources = [{"service_name" = "All Identity and Access enabled services"}]
         tags = ["one", "two"]
+}
+`, cfOrganization, IAMUser)
+}
+
+func testAccCheckIBMIAMUserPolicy_ServiceNameEmpty() string {
+	return fmt.Sprintf(`
+data "ibm_org" "testacc_ds_org" {
+    org = "%s"
+}
+
+data "ibm_account" "testacc_acc" {
+    org_guid = "${data.ibm_org.testacc_ds_org.id}"
+}
+
+resource "ibm_iam_user_policy" "testacc_iam_policy" {
+        account_guid = "${data.ibm_account.testacc_acc.id}"
+        ibm_id  = "%s"
+        roles   = ["viewer"]
+        resources = [{"service_name" = ""}]
 }
 `, cfOrganization, IAMUser)
 }
