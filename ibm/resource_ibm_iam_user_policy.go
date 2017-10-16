@@ -3,6 +3,7 @@ package ibm
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	v1 "github.com/IBM-Bluemix/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Bluemix/bluemix-go/bmxerror"
@@ -272,9 +273,13 @@ func expandResources(policyServices *schema.Set, iamClient v1.IAMPAPAPI, account
 	for _, policyService := range policyServices.List() {
 		rpm, _ := policyService.(map[string]interface{})
 		serviceInstancesList := expandStringList(rpm["service_instance"].([]interface{}))
-		serviceName, err := iamClient.IAMService().GetServiceName(rpm["service_name"].(string))
+		sName := strings.TrimSpace(rpm["service_name"].(string))
+		if sName == "" {
+			return resources, fmt.Errorf("Error service_name cannot be empty")
+		}
+		serviceName, err := iamClient.IAMService().GetServiceName(sName)
 		if err != nil {
-			return resources, fmt.Errorf("Error retrieving service %s: %s", rpm["service_name"].(string), err)
+			return resources, fmt.Errorf("Error retrieving service %s: %s", sName, err)
 		}
 		serviceInstance := ""
 		if len(serviceInstancesList) > 0 {
@@ -295,11 +300,13 @@ func generateResource(rpm map[string]interface{}, serviceName, serviceInstance, 
 		AccountId:       accountGUID,
 		ServiceInstance: serviceInstance,
 		Region:          rpm["region"].(string),
-		ServiceName:     serviceName,
 		ResourceType:    rpm["resource_type"].(string),
 		Resource:        rpm["resource"].(string),
 		SpaceId:         rpm["space_guid"].(string),
 		OrganizationId:  rpm["organization_guid"].(string),
+	}
+	if serviceName != allIAMEnabledServices {
+		resourceParam.ServiceName = serviceName
 	}
 	return resourceParam
 }

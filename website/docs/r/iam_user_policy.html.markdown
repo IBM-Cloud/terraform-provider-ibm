@@ -10,7 +10,9 @@ description: |-
 
 Provides a resource for creating and assigning an IAM Access policy to a user. To assign a policy to one user, the user must exist in the account to which you assign the policy. To assign a policy to all of the services under an account, the value for `service name` must be `All Identity and Access enabled services`. To assign a policy to all of the service instances under a service, you must leave the value blank for `service instance`.
 
-**Note**: Currently only one service name and service instance supported.
+**Note**: Currently only one service name and service instance supported. Currently Supported Service names are
+1. IBM Bluemix Container Service
+2. All Identity and Access enabled services
 
 ## Example Usage
 
