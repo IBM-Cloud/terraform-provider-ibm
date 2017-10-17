@@ -89,6 +89,8 @@ func TestAccIBMServiceInstance_import(t *testing.T) {
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"wait_time_minutes"},
 			},
 		},
 	})
@@ -208,4 +210,71 @@ func testAccCheckIBMServiceInstance_newServiceType(updateName string) string {
 			tags               = ["cluster-service"]
 		}
 	`, cfSpace, cfOrganization, updateName)
+}
+
+func TestAccIBMServiceInstance_Discovery_Basic(t *testing.T) {
+	var conf mccpv2.ServiceInstanceFields
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMServiceInstanceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMServiceInstance_discovery_basic(serviceName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMServiceInstanceExists("ibm_service_instance.service", &conf),
+					resource.TestCheckResourceAttr("ibm_service_instance.service", "name", serviceName),
+					resource.TestCheckResourceAttr("ibm_service_instance.service", "service", "discovery"),
+					resource.TestCheckResourceAttr("ibm_service_instance.service", "plan", "lite"),
+					resource.TestCheckResourceAttr("ibm_service_instance.service", "tags.#", "2"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMServiceInstance_discovery_update(serviceName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMServiceInstanceExists("ibm_service_instance.service", &conf),
+					resource.TestCheckResourceAttr("ibm_service_instance.service", "name", serviceName),
+					resource.TestCheckResourceAttr("ibm_service_instance.service", "service", "discovery"),
+					resource.TestCheckResourceAttr("ibm_service_instance.service", "plan", "lite"),
+					resource.TestCheckResourceAttr("ibm_service_instance.service", "tags.#", "3"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMServiceInstance_discovery_basic(serviceName string) string {
+	return fmt.Sprintf(`
+		data "ibm_space" "spacedata" {
+			space  = "%s"
+			org    = "%s"
+		}
+		
+		resource "ibm_service_instance" "service" {
+			name              = "%s"
+			space_guid        = "${data.ibm_space.spacedata.id}"
+			service           = "discovery"
+			plan              = "lite"
+			tags               = ["cluster-service","cluster-bind"]
+		}
+	`, cfSpace, cfOrganization, serviceName)
+}
+
+func testAccCheckIBMServiceInstance_discovery_update(serviceName string) string {
+	return fmt.Sprintf(`
+		data "ibm_space" "spacedata" {
+			space  = "%s"
+			org    = "%s"
+		}
+		
+		resource "ibm_service_instance" "service" {
+			name              = "%s"
+			space_guid        = "${data.ibm_space.spacedata.id}"
+			service           = "discovery"
+			plan              = "lite"
+			tags               = ["cluster-service","cluster-bind","db"]
+		}
+	`, cfSpace, cfOrganization, serviceName)
 }

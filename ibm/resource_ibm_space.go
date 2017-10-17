@@ -222,7 +222,7 @@ func resourceIBMSpaceDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 	id := d.Id()
 
-	err = cfClient.Spaces().Delete(id)
+	err = cfClient.Spaces().Delete(id, false)
 	if err != nil {
 		return fmt.Errorf("Error deleting space: %s", err)
 	}

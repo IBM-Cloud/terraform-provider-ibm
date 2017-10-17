@@ -96,7 +96,7 @@ func resourceIBMAppDomainPrivateDelete(d *schema.ResourceData, meta interface{})
 
 	prdomainGUID := d.Id()
 
-	err = cfClient.PrivateDomains().Delete(prdomainGUID, true)
+	err = cfClient.PrivateDomains().Delete(prdomainGUID, false)
 	if err != nil {
 		return fmt.Errorf("Error deleting private domain: %s", err)
 	}
