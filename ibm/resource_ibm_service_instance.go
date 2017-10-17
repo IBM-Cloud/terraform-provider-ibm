@@ -2,11 +2,19 @@ package ibm
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/IBM-Bluemix/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Bluemix/bluemix-go/bmxerror"
 	"github.com/IBM-Bluemix/bluemix-go/helpers"
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+)
+
+const (
+	svcInstanceSuccessStatus  = "succeeded"
+	svcInstanceProgressStatus = "in progress"
+	svcInstanceFailStatus     = "failed"
 )
 
 func resourceIBMServiceInstance() *schema.Resource {
@@ -91,6 +99,12 @@ func resourceIBMServiceInstance() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
 			},
+			"wait_time_minutes": {
+				Description: "Define timeout to wait for the service instances to succeeded/deleted etc.",
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     10,
+			},
 		},
 	}
 }
@@ -135,6 +149,12 @@ func resourceIBMServiceInstanceCreate(d *schema.ResourceData, meta interface{}) 
 	}
 
 	d.SetId(service.Metadata.GUID)
+
+	_, err = waitForServiceInstanceAvailable(d, meta)
+	if err != nil {
+		return fmt.Errorf(
+			"Error waiting for create service (%s) to be succeeded: %s", d.Id(), err)
+	}
 
 	return resourceIBMServiceInstanceRead(d, meta)
 }
@@ -215,6 +235,12 @@ func resourceIBMServiceInstanceUpdate(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Error updating service: %s", err)
 	}
 
+	_, err = waitForServiceInstanceAvailable(d, meta)
+	if err != nil {
+		return fmt.Errorf(
+			"Error waiting for update service (%s) to be succeeded: %s", d.Id(), err)
+	}
+
 	return resourceIBMServiceInstanceRead(d, meta)
 }
 
@@ -225,9 +251,15 @@ func resourceIBMServiceInstanceDelete(d *schema.ResourceData, meta interface{}) 
 	}
 	id := d.Id()
 
-	err = cfClient.ServiceInstances().Delete(id)
+	err = cfClient.ServiceInstances().Delete(id, true)
 	if err != nil {
 		return fmt.Errorf("Error deleting service: %s", err)
+	}
+
+	_, err = waitForServiceInstanceDelete(d, meta)
+	if err != nil {
+		return fmt.Errorf(
+			"Error waiting for service (%s) to be deleted: %s", d.Id(), err)
 	}
 
 	d.SetId("")
@@ -268,4 +300,65 @@ func getServiceTags(d *schema.ResourceData) []string {
 		tags = append(tags, tag)
 	}
 	return tags
+}
+
+func waitForServiceInstanceAvailable(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	cfClient, err := meta.(ClientSession).MccpAPI()
+	if err != nil {
+		return false, err
+	}
+	serviceGUID := d.Id()
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{svcInstanceProgressStatus},
+		Target:  []string{svcInstanceSuccessStatus},
+		Refresh: func() (interface{}, string, error) {
+			service, err := cfClient.ServiceInstances().Get(serviceGUID)
+			if err != nil {
+				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
+					return nil, "", fmt.Errorf("The service instance %s does not exist anymore: %v", d.Id(), err)
+				}
+				return nil, "", err
+			}
+			if service.Entity.LastOperation.State == svcInstanceFailStatus {
+				return service, service.Entity.LastOperation.State, fmt.Errorf("The service instance %s failed: %v", d.Id(), err)
+			}
+			return service, service.Entity.LastOperation.State, nil
+		},
+		Timeout:    time.Duration(d.Get("wait_time_minutes").(int)) * time.Minute,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func waitForServiceInstanceDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	cfClient, err := meta.(ClientSession).MccpAPI()
+	if err != nil {
+		return false, err
+	}
+	serviceGUID := d.Id()
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{svcInstanceProgressStatus},
+		Target:  []string{svcInstanceSuccessStatus},
+		Refresh: func() (interface{}, string, error) {
+			service, err := cfClient.ServiceInstances().Get(serviceGUID)
+			if err != nil {
+				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
+					return service, svcInstanceSuccessStatus, nil
+				}
+				return nil, "", err
+			}
+			if service.Entity.LastOperation.State == svcInstanceFailStatus {
+				return service, service.Entity.LastOperation.State, fmt.Errorf("The service instance %s failed to delete: %v", d.Id(), err)
+			}
+			return service, service.Entity.LastOperation.State, nil
+		},
+		Timeout:    time.Duration(d.Get("wait_time_minutes").(int)) * time.Minute,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }

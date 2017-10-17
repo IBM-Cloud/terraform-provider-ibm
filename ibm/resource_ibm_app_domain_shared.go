@@ -97,7 +97,7 @@ func resourceIBMAppDomainSharedDelete(d *schema.ResourceData, meta interface{}) 
 
 	shdomainGUID := d.Id()
 
-	err = cfClient.SharedDomains().Delete(shdomainGUID, true)
+	err = cfClient.SharedDomains().Delete(shdomainGUID, false)
 	if err != nil {
 		return fmt.Errorf("Error deleting shared domain: %s", err)
 	}

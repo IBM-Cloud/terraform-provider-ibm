@@ -158,7 +158,7 @@ func resourceIBMAppRouteDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 	routeGUID := d.Id()
 
-	err = cfClient.Routes().Delete(routeGUID, true)
+	err = cfClient.Routes().Delete(routeGUID, false)
 	if err != nil {
 		return fmt.Errorf("Error deleting route: %s", err)
 	}
