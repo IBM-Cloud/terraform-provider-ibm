@@ -95,10 +95,10 @@ type Route struct {
 //Routes ...
 type Routes interface {
 	Find(hostname, domainGUID string) ([]Route, error)
-	Create(req RouteRequest) (*RouteFields, error)
+	Create(req RouteRequest, opts ...bool) (*RouteFields, error)
 	Get(routeGUID string) (*RouteFields, error)
-	Update(routeGUID string, req RouteUpdateRequest) (*RouteFields, error)
-	Delete(routeGUID string, async bool) error
+	Update(routeGUID string, req RouteUpdateRequest, opts ...bool) (*RouteFields, error)
+	Delete(routeGUID string, opts ...bool) error
 }
 
 type route struct {
@@ -136,8 +136,15 @@ func (r *route) Find(hostname, domainGUID string) ([]Route, error) {
 	return route, nil
 }
 
-func (r *route) Create(req RouteRequest) (*RouteFields, error) {
-	rawURL := "/v2/routes?async=true&inline-relations-depth=1"
+// opts is list of boolean parametes
+// opts[0] - async - Will run the create request in a background job. Recommended: 'true'. Default to 'true'.
+
+func (r *route) Create(req RouteRequest, opts ...bool) (*RouteFields, error) {
+	async := true
+	if len(opts) > 0 {
+		async = opts[0]
+	}
+	rawURL := fmt.Sprintf("/v2/routes?async=%t&inline-relations-depth=1", async)
 	routeFields := RouteFields{}
 	_, err := r.client.Post(rawURL, req, &routeFields)
 	if err != nil {
@@ -146,8 +153,15 @@ func (r *route) Create(req RouteRequest) (*RouteFields, error) {
 	return &routeFields, nil
 }
 
-func (r *route) Update(routeGUID string, req RouteUpdateRequest) (*RouteFields, error) {
-	rawURL := fmt.Sprintf("/v2/routes/%s", routeGUID)
+// opts is list of boolean parametes
+// opts[0] - async - Will run the update request in a background job. Recommended: 'true'. Default to 'true'.
+
+func (r *route) Update(routeGUID string, req RouteUpdateRequest, opts ...bool) (*RouteFields, error) {
+	async := true
+	if len(opts) > 0 {
+		async = opts[0]
+	}
+	rawURL := fmt.Sprintf("/v2/routes/%s?async=%t", routeGUID, async)
 	routeFields := RouteFields{}
 	_, err := r.client.Put(rawURL, req, &routeFields)
 	if err != nil {
@@ -156,18 +170,21 @@ func (r *route) Update(routeGUID string, req RouteUpdateRequest) (*RouteFields, 
 	return &routeFields, nil
 }
 
-func (r *route) Delete(routeGUID string, async bool) error {
-	rawURL := fmt.Sprintf("/v2/routes/%s", routeGUID)
-	req := rest.GetRequest(rawURL).Query("recursive", "true")
-	if async {
-		req.Query("async", "true")
+// opts is list of boolean parametes
+// opts[0] - async - Will run the delete request in a background job. Recommended: 'true'. Default to 'true'.
+// opts[1] - recursive - Will delete route service bindings and route mappings associated with the route. Default to 'false'.
+
+func (r *route) Delete(routeGUID string, opts ...bool) error {
+	async := true
+	recursive := false
+	if len(opts) > 0 {
+		async = opts[0]
 	}
-	httpReq, err := req.Build()
-	if err != nil {
-		return err
+	if len(opts) > 1 {
+		recursive = opts[1]
 	}
-	path := httpReq.URL.String()
-	_, err = r.client.Delete(path)
+	rawURL := fmt.Sprintf("/v2/routes/%s?async=%t&recursive=%t", routeGUID, async, recursive)
+	_, err := r.client.Delete(rawURL)
 	return err
 }
 

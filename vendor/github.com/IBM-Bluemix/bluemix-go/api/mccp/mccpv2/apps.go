@@ -3,6 +3,7 @@ package mccpv2
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/IBM-Bluemix/bluemix-go/bmxerror"
@@ -197,14 +198,14 @@ type App struct {
 
 //Apps ...
 type Apps interface {
-	Create(appPayload AppRequest) (*AppFields, error)
+	Create(appPayload AppRequest, opts ...bool) (*AppFields, error)
 	List() ([]App, error)
 	Get(appGUID string) (*AppFields, error)
-	Update(appGUID string, appPayload AppRequest) (*AppFields, error)
-	Delete(appGUID string, async bool, recursive bool) error
+	Update(appGUID string, appPayload AppRequest, opts ...bool) (*AppFields, error)
+	Delete(appGUID string, opts ...bool) error
 	FindByName(spaceGUID, name string) (*App, error)
 	Start(appGUID string, timeout time.Duration) (*AppState, error)
-	Upload(path string, name string) (*UploadBitFields, error)
+	Upload(path string, name string, opts ...bool) (*UploadBitFields, error)
 	Summary(appGUID string) (*AppSummaryFields, error)
 	Stat(appGUID string) (map[string]AppStats, error)
 	WaitForAppStatus(waitForThisState, appGUID string, timeout time.Duration) (string, error)
@@ -253,8 +254,14 @@ func (r *app) FindByName(spaceGUID string, name string) (*App, error) {
 	return &apps[0], nil
 }
 
-func (r *app) Create(appPayload AppRequest) (*AppFields, error) {
-	rawURL := "/v2/apps?async=true"
+// opts is list of boolean parametes
+// opts[0] - async - Will run the create request in a background job. Recommended: 'true'. Default to 'true'.
+func (r *app) Create(appPayload AppRequest, opts ...bool) (*AppFields, error) {
+	async := true
+	if len(opts) > 0 {
+		async = opts[0]
+	}
+	rawURL := fmt.Sprintf("/v2/apps?async=%t", async)
 	appFields := AppFields{}
 	_, err := r.client.Post(rawURL, appPayload, &appFields)
 	if err != nil {
@@ -315,8 +322,17 @@ func (r *app) listAppWithPath(path string) ([]App, error) {
 	return apps, err
 }
 
-func (r *app) Upload(appGUID string, zipPath string) (*UploadBitFields, error) {
-	req := rest.PutRequest(r.client.URL("/v2/apps/"+appGUID+"/bits")).Query("async", "false")
+// opts is list of boolean parametes
+// opts[0] - async - If true, a new asynchronous job is submitted to persist the bits and the job id is included in the response.
+// The client will need to poll the job's status until persistence is completed successfully.
+// If false, the request will block until the bits are persisted synchronously. Defaults to 'false'.
+
+func (r *app) Upload(appGUID string, zipPath string, opts ...bool) (*UploadBitFields, error) {
+	async := false
+	if len(opts) > 0 {
+		async = opts[0]
+	}
+	req := rest.PutRequest(r.client.URL("/v2/apps/"+appGUID+"/bits")).Query("async", strconv.FormatBool(async))
 	file, err := os.Open(zipPath)
 	if err != nil {
 		return nil, err
@@ -414,8 +430,14 @@ func (r *app) List() ([]App, error) {
 
 }
 
-func (r *app) Update(appGUID string, appPayload AppRequest) (*AppFields, error) {
-	rawURL := fmt.Sprintf("/v2/apps/%s", appGUID)
+// opts is list of boolean parametes
+// opts[0] - async - Will run the update request in a background job. Recommended: 'true'. Default to 'true'.
+func (r *app) Update(appGUID string, appPayload AppRequest, opts ...bool) (*AppFields, error) {
+	async := true
+	if len(opts) > 0 {
+		async = opts[0]
+	}
+	rawURL := fmt.Sprintf("/v2/apps/%s?async=%t", appGUID, async)
 	appFields := AppFields{}
 	_, err := r.client.Put(rawURL, appPayload, &appFields)
 	if err != nil {
@@ -424,20 +446,20 @@ func (r *app) Update(appGUID string, appPayload AppRequest) (*AppFields, error) 
 	return &appFields, nil
 }
 
-func (r *app) Delete(appGUID string, async bool, recursive bool) error {
-	req := rest.GetRequest(fmt.Sprintf("/v2/apps/%s", appGUID))
-	if async {
-		req.Query("async", "true")
+// opts is list of boolean parametes
+// opts[0] - async - Will run the delete request in a background job. Recommended: 'true'. Default to 'true'.
+// opts[1] - recursive - Will delete service bindings, and routes associated with the app. Default to 'false'.
+func (r *app) Delete(appGUID string, opts ...bool) error {
+	async := true
+	recursive := false
+	if len(opts) > 0 {
+		async = opts[0]
 	}
-	if recursive {
-		req.Query("recursive", "true")
+	if len(opts) > 1 {
+		recursive = opts[1]
 	}
-	httpReq, err := req.Build()
-	if err != nil {
-		return err
-	}
-	path := httpReq.URL.String()
-	_, err = r.client.Delete(path)
+	rawURL := fmt.Sprintf("/v2/apps/%s?async=%t&recursive=%t", appGUID, async, recursive)
+	_, err := r.client.Delete(rawURL)
 	return err
 }
 

@@ -116,9 +116,9 @@ type RouteFilter struct {
 type Spaces interface {
 	ListSpacesInOrg(orgGUID, region string) ([]Space, error)
 	FindByNameInOrg(orgGUID, name, region string) (*Space, error)
-	Create(req SpaceCreateRequest) (*SpaceFields, error)
-	Update(spaceGUID string, req SpaceUpdateRequest) (*SpaceFields, error)
-	Delete(spaceGUID string) error
+	Create(req SpaceCreateRequest, opts ...bool) (*SpaceFields, error)
+	Update(spaceGUID string, req SpaceUpdateRequest, opts ...bool) (*SpaceFields, error)
+	Delete(spaceGUID string, opts ...bool) error
 	Get(spaceGUID string) (*SpaceFields, error)
 	ListRoutes(spaceGUID string, req RouteFilter) ([]Route, error)
 	AssociateAuditor(spaceGUID, userMail string) (*SpaceFields, error)
@@ -208,8 +208,15 @@ func (r *spaces) listSpaceRolesWithPath(path string) ([]SpaceRole, error) {
 	return spaceRoles, err
 }
 
-func (r *spaces) Create(req SpaceCreateRequest) (*SpaceFields, error) {
-	rawURL := "/v2/spaces?accepts_incomplete=true&async=true"
+// opts is list of boolean parametes
+// opts[0] - async - Will run the create request in a background job. Recommended: 'true'. Default to 'true'.
+
+func (r *spaces) Create(req SpaceCreateRequest, opts ...bool) (*SpaceFields, error) {
+	async := true
+	if len(opts) > 0 {
+		async = opts[0]
+	}
+	rawURL := fmt.Sprintf("/v2/spaces?async=%t", async)
 	spaceFields := SpaceFields{}
 	_, err := r.client.Post(rawURL, req, &spaceFields)
 	if err != nil {
@@ -229,8 +236,15 @@ func (r *spaces) Get(spaceGUID string) (*SpaceFields, error) {
 	return &spaceFields, err
 }
 
-func (r *spaces) Update(spaceGUID string, req SpaceUpdateRequest) (*SpaceFields, error) {
-	rawURL := fmt.Sprintf("/v2/spaces/%s?accepts_incomplete=true&async=true", spaceGUID)
+// opts is list of boolean parametes
+// opts[0] - async - Will run the update request in a background job. Recommended: 'true'. Default to 'true'.
+
+func (r *spaces) Update(spaceGUID string, req SpaceUpdateRequest, opts ...bool) (*SpaceFields, error) {
+	async := true
+	if len(opts) > 0 {
+		async = opts[0]
+	}
+	rawURL := fmt.Sprintf("/v2/spaces/%s?async=%t", spaceGUID, async)
 	spaceFields := SpaceFields{}
 	_, err := r.client.Put(rawURL, req, &spaceFields)
 	if err != nil {
@@ -239,8 +253,20 @@ func (r *spaces) Update(spaceGUID string, req SpaceUpdateRequest) (*SpaceFields,
 	return &spaceFields, nil
 }
 
-func (r *spaces) Delete(spaceGUID string) error {
-	rawURL := fmt.Sprintf("/v2/spaces/%s", spaceGUID)
+// opts is list of boolean parametes
+// opts[0] - async - Will run the delete request in a background job. Recommended: 'true'. Default to 'true'.
+// opts[1] - recursive - Will delete all apps, services, routes, and service brokers associated with the space. Default to 'false'.
+
+func (r *spaces) Delete(spaceGUID string, opts ...bool) error {
+	async := true
+	recursive := false
+	if len(opts) > 0 {
+		async = opts[0]
+	}
+	if len(opts) > 1 {
+		recursive = opts[1]
+	}
+	rawURL := fmt.Sprintf("/v2/spaces/%s?async=%t&recursive=%t", spaceGUID, async, recursive)
 	_, err := r.client.Delete(rawURL)
 	return err
 }

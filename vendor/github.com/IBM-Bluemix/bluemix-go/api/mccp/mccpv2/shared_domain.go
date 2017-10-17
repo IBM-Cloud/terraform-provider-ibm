@@ -65,9 +65,9 @@ type SharedDomain struct {
 //SharedDomains ...
 type SharedDomains interface {
 	FindByName(domainName string) (*SharedDomain, error)
-	Create(req SharedDomainRequest) (*SharedDomainFields, error)
+	Create(req SharedDomainRequest, opts ...bool) (*SharedDomainFields, error)
 	Get(sharedDomainGUID string) (*SharedDomainFields, error)
-	Delete(sharedDomainGUID string, async bool) error
+	Delete(sharedDomainGUID string, opts ...bool) error
 }
 
 type sharedDomain struct {
@@ -110,8 +110,15 @@ func listSharedDomainWithPath(c *client.Client, path string) ([]SharedDomain, er
 	return sharedDomain, err
 }
 
-func (d *sharedDomain) Create(req SharedDomainRequest) (*SharedDomainFields, error) {
-	rawURL := "/v2/shared_domains"
+// opts is list of boolean parametes
+// opts[0] - async - Will run the create request in a background job. Recommended: 'true'. Default to 'true'
+
+func (d *sharedDomain) Create(req SharedDomainRequest, opts ...bool) (*SharedDomainFields, error) {
+	async := true
+	if len(opts) > 0 {
+		async = opts[0]
+	}
+	rawURL := fmt.Sprintf("/v2/shared_domains?async=%t", async)
 	sharedDomainFields := SharedDomainFields{}
 	_, err := d.client.Post(rawURL, req, &sharedDomainFields)
 	if err != nil {
@@ -130,17 +137,15 @@ func (d *sharedDomain) Get(sharedDomainGUID string) (*SharedDomainFields, error)
 	return &sharedDomainFields, nil
 }
 
-func (d *sharedDomain) Delete(sharedDomainGUID string, async bool) error {
-	rawURL := fmt.Sprintf("/v2/shared_domains/%s", sharedDomainGUID)
-	req := rest.GetRequest(rawURL).Query("recursive", "true")
-	if async {
-		req.Query("async", "true")
+// opts is list of boolean parametes
+// opts[0] - async - Will run the delete request in a background job. Recommended: 'true'. Default to 'true'
+
+func (d *sharedDomain) Delete(sharedDomainGUID string, opts ...bool) error {
+	async := true
+	if len(opts) > 0 {
+		async = opts[0]
 	}
-	httpReq, err := req.Build()
-	if err != nil {
-		return err
-	}
-	path := httpReq.URL.String()
-	_, err = d.client.Delete(path)
+	rawURL := fmt.Sprintf("/v2/shared_domains/%s?async=%t", sharedDomainGUID, async)
+	_, err := d.client.Delete(rawURL)
 	return err
 }
