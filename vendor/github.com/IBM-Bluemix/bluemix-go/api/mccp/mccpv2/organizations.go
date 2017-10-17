@@ -2,7 +2,6 @@ package mccpv2
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/IBM-Bluemix/bluemix-go/bmxerror"
 	"github.com/IBM-Bluemix/bluemix-go/client"
@@ -64,12 +63,12 @@ type OrganizationFields struct {
 
 //Organizations ...
 type Organizations interface {
-	Create(name string) error
+	Create(name string, opts ...bool) error
 	Get(orgGUID string) (*OrganizationFields, error)
 	List(region string) ([]Organization, error)
 	FindByName(orgName, region string) (*Organization, error)
-	Delete(guid string, recursive bool) error
-	Update(guid string, newName string) error
+	Delete(guid string, opts ...bool) error
+	Update(guid string, newName string, opts ...bool) error
 }
 
 type organization struct {
@@ -82,13 +81,21 @@ func newOrganizationAPI(c *client.Client) Organizations {
 	}
 }
 
-func (o *organization) Create(name string) error {
+// opts is list of boolean parametes
+// opts[0] - async - Will run the create request in a background job. Recommended: 'true'. Default to 'true'.
+
+func (o *organization) Create(name string, opts ...bool) error {
+	async := true
+	if len(opts) > 0 {
+		async = opts[0]
+	}
 	body := struct {
 		Name string `json:"name"`
 	}{
 		Name: name,
 	}
-	_, err := o.client.Post("/v2/organizations", body, nil)
+	rawURL := fmt.Sprintf("/v2/organizations?async=%t", async)
+	_, err := o.client.Post(rawURL, body, nil)
 	return err
 }
 
@@ -102,8 +109,15 @@ func (o *organization) Get(orgGUID string) (*OrganizationFields, error) {
 	return &orgFields, err
 }
 
-func (o *organization) Update(guid string, newName string) error {
-	rawURL := fmt.Sprintf("/v2/organizations/%s", guid)
+// opts is list of boolean parametes
+// opts[0] - async - Will run the update request in a background job. Recommended: 'true'. Default to 'true'.
+
+func (o *organization) Update(guid string, newName string, opts ...bool) error {
+	async := true
+	if len(opts) > 0 {
+		async = opts[0]
+	}
+	rawURL := fmt.Sprintf("/v2/organizations/%s?async=%t", guid, async)
 	body := struct {
 		Name string `json:"name"`
 	}{
@@ -113,16 +127,21 @@ func (o *organization) Update(guid string, newName string) error {
 	return err
 }
 
-func (o *organization) Delete(guid string, recursive bool) error {
-	req := rest.DeleteRequest(fmt.Sprintf("/v2/organizations/%s", guid)).
-		Query("recursive", strconv.FormatBool(recursive))
+// opts is list of boolean parametes
+// opts[0] - async - Will run the delete request in a background job. Recommended: 'true'. Default to 'true'.
+// opts[1] - recursive - Will delete all spaces, apps, services, routes, and private domains associated with the org. Default to 'false'.
 
-	path, pathErr := o.url(req)
-	if pathErr != nil {
-		return pathErr
+func (o *organization) Delete(guid string, opts ...bool) error {
+	async := true
+	recursive := false
+	if len(opts) > 0 {
+		async = opts[0]
 	}
-
-	_, err := o.client.Delete(path, nil, nil)
+	if len(opts) > 1 {
+		recursive = opts[1]
+	}
+	rawURL := fmt.Sprintf("/v2/organizations/%s?async=%t&recursive=%t", guid, async, recursive)
+	_, err := o.client.Delete(rawURL)
 	return err
 }
 

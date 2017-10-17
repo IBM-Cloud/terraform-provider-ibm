@@ -1,6 +1,8 @@
 # Bluemix SDK for Go
 
-[![GoDoc](https://godoc.org/github.com/IBM-Bluemix/bluemix-go?status.svg)](https://godoc.org/github.com/IBM-Bluemix/bluemix-go)
+[![Build Status](https://travis-ci.org/IBM-Bluemix/bluemix-go.svg?branch=master)](https://travis-ci.org/IBM-Bluemix/bluemix-go) [![GoDoc](https://godoc.org/github.com/IBM-Bluemix/bluemix-go?status.svg)](https://godoc.org/github.com/IBM-Bluemix/bluemix-go)
+
+bluemix-go provides the Go implementation for operating the IBM Bluemix platform, which is based on the [Cloud Foundry API][cloudfoundry_api].
 
 ## Installing
 
@@ -52,3 +54,4 @@ The default region is _us_south_. You can override it in the [Config struct][blu
 [bluemix_signup]: https://console.ng.bluemix.net/registration/?target=%2Fdashboard%2Fapps
 [bluemix_login]: https://console.ng.bluemix.net
 [bluemix_go_config]: https://godoc.org/github.com/IBM-Bluemix/bluemix-go#Config
+[cloudfoundry_api]: https://apidocs.cloudfoundry.org/264/

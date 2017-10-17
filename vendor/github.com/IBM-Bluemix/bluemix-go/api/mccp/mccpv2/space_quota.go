@@ -101,7 +101,7 @@ type SpaceQuotas interface {
 	FindByName(name, orgGUID string) (*SpaceQuota, error)
 	Create(createRequest SpaceQuotaCreateRequest) (*SpaceQuotaFields, error)
 	Update(updateRequest SpaceQuotaUpdateRequest, spaceQuotaGUID string) (*SpaceQuotaFields, error)
-	Delete(spaceQuotaGUID string) error
+	Delete(spaceQuotaGUID string, opts ...bool) error
 	Get(spaceQuotaGUID string) (*SpaceQuotaFields, error)
 }
 
@@ -158,7 +158,7 @@ func (r *spaceQuota) listSpaceQuotaWithPath(path string) ([]SpaceQuota, error) {
 }
 
 func (r *spaceQuota) Create(createRequest SpaceQuotaCreateRequest) (*SpaceQuotaFields, error) {
-	rawURL := "/v2/space_quota_definitions?accepts_incomplete=true&async=true"
+	rawURL := "/v2/space_quota_definitions"
 	spaceQuotaFields := SpaceQuotaFields{}
 	_, err := r.client.Post(rawURL, createRequest, &spaceQuotaFields)
 	if err != nil {
@@ -179,7 +179,7 @@ func (r *spaceQuota) Get(spaceQuotaGUID string) (*SpaceQuotaFields, error) {
 }
 
 func (r *spaceQuota) Update(updateRequest SpaceQuotaUpdateRequest, spaceQuotaGUID string) (*SpaceQuotaFields, error) {
-	rawURL := fmt.Sprintf("/v2/space_quota_definitions/%s?accepts_incomplete=true&async=true", spaceQuotaGUID)
+	rawURL := fmt.Sprintf("/v2/space_quota_definitions/%s", spaceQuotaGUID)
 	spaceQuotaFields := SpaceQuotaFields{}
 	_, err := r.client.Put(rawURL, updateRequest, &spaceQuotaFields)
 	if err != nil {
@@ -188,8 +188,15 @@ func (r *spaceQuota) Update(updateRequest SpaceQuotaUpdateRequest, spaceQuotaGUI
 	return &spaceQuotaFields, nil
 }
 
-func (r *spaceQuota) Delete(spaceQuotaGUID string) error {
-	rawURL := fmt.Sprintf("/v2/space_quota_definitions/%s", spaceQuotaGUID)
+// opts is list of boolean parametes
+// opts[0] - async - Will run the delete request in a background job. Recommended: 'true'. Default to 'true'.
+
+func (r *spaceQuota) Delete(spaceQuotaGUID string, opts ...bool) error {
+	async := true
+	if len(opts) > 0 {
+		async = opts[0]
+	}
+	rawURL := fmt.Sprintf("/v2/space_quota_definitions/%s?async=%t", spaceQuotaGUID, async)
 	_, err := r.client.Delete(rawURL)
 	return err
 }

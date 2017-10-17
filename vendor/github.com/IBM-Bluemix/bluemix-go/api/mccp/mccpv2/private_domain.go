@@ -69,9 +69,9 @@ type PrivateDomain struct {
 type PrivateDomains interface {
 	FindByNameInOrg(orgGUID, domainName string) (*PrivateDomain, error)
 	FindByName(domainName string) (*PrivateDomain, error)
-	Create(req PrivateDomainRequest) (*PrivateDomainFields, error)
+	Create(req PrivateDomainRequest, opts ...bool) (*PrivateDomainFields, error)
 	Get(privateDomainGUID string) (*PrivateDomainFields, error)
-	Delete(privateDomainGUID string, async bool) error
+	Delete(privateDomainGUID string, opts ...bool) error
 }
 
 type privateDomain struct {
@@ -132,8 +132,15 @@ func listPrivateDomainWithPath(c *client.Client, path string) ([]PrivateDomain, 
 	return privateDomain, err
 }
 
-func (d *privateDomain) Create(req PrivateDomainRequest) (*PrivateDomainFields, error) {
-	rawURL := "/v2/private_domains"
+/* opts is list of boolean parametes
+opts[0] - async - Will run the create request in a background job. Recommended: 'true'. Default to 'true'.
+*/
+func (d *privateDomain) Create(req PrivateDomainRequest, opts ...bool) (*PrivateDomainFields, error) {
+	async := true
+	if len(opts) > 0 {
+		async = opts[0]
+	}
+	rawURL := fmt.Sprintf("/v2/private_domains?async=%t", async)
 	privateDomainFields := PrivateDomainFields{}
 	_, err := d.client.Post(rawURL, req, &privateDomainFields)
 	if err != nil {
@@ -152,17 +159,15 @@ func (d *privateDomain) Get(privateDomainGUID string) (*PrivateDomainFields, err
 	return &privateDomainFields, nil
 }
 
-func (d *privateDomain) Delete(privateDomainGUID string, async bool) error {
-	rawURL := fmt.Sprintf("/v2/private_domains/%s", privateDomainGUID)
-	req := rest.GetRequest(rawURL).Query("recursive", "true")
-	if async {
-		req.Query("async", "true")
+// opts is list of boolean parametes
+// opts[0] - async - Will run the delete request in a background job. Recommended: 'true'. Default to 'true'.
+
+func (d *privateDomain) Delete(privateDomainGUID string, opts ...bool) error {
+	async := true
+	if len(opts) > 0 {
+		async = opts[0]
 	}
-	httpReq, err := req.Build()
-	if err != nil {
-		return err
-	}
-	path := httpReq.URL.String()
-	_, err = d.client.Delete(path)
+	rawURL := fmt.Sprintf("/v2/private_domains/%s?async=%t", privateDomainGUID, async)
+	_, err := d.client.Delete(rawURL)
 	return err
 }

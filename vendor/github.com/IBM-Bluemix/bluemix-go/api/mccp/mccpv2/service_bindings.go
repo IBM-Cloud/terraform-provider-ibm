@@ -64,7 +64,7 @@ func (resource ServiceBindingResource) ToFields() ServiceBinding {
 type ServiceBindings interface {
 	Create(req ServiceBindingRequest) (*ServiceBindingFields, error)
 	Get(guid string) (*ServiceBindingFields, error)
-	Delete(guid string, async bool) error
+	Delete(guid string, opts ...bool) error
 	List(filters ...string) ([]ServiceBinding, error)
 }
 
@@ -98,18 +98,16 @@ func (r *serviceBinding) Create(req ServiceBindingRequest) (*ServiceBindingField
 	return &sbFields, nil
 }
 
-func (r *serviceBinding) Delete(guid string, async bool) error {
-	rawURL := fmt.Sprintf("/v2/service_bindings/%s", guid)
-	req := rest.GetRequest(rawURL).Query("recursive", "true")
-	if async {
-		req.Query("async", "true")
+// opts is list of boolean parametes
+// opts[0] - async - Will run the delete request in a background job. Recommended: 'true'. Default to 'true'.
+
+func (r *serviceBinding) Delete(guid string, opts ...bool) error {
+	async := true
+	if len(opts) > 0 {
+		async = opts[0]
 	}
-	httpReq, err := req.Build()
-	if err != nil {
-		return err
-	}
-	path := httpReq.URL.String()
-	_, err = r.client.Delete(path)
+	rawURL := fmt.Sprintf("/v2/service_bindings/%s?async=%t", guid, async)
+	_, err := r.client.Delete(rawURL)
 	return err
 }
 
