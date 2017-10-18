@@ -172,6 +172,12 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 				DiffSuppressFunc: applyOnce,
 			},
 
+			"redundant_power_supply": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+			},
 			// Monthly only
 			"package_key_name": {
 				Type:             schema.TypeString,
@@ -237,14 +243,6 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 				ForceNew: true,
 				Computed: true,
 			},
-
-			// Monthly only
-			"redundant_power_supply": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: true,
-			},
-
 			// Monthly only
 			"storage_groups": {
 				Type:     schema.TypeList,
@@ -444,6 +442,19 @@ func resourceIBMComputeBareMetalCreate(d *schema.ResourceData, meta interface{})
 			return fmt.Errorf(
 				"Encountered problem trying to get the bare metal order template: %s", err)
 		}
+		if d.Get("redundant_power_supply").(bool) {
+			items, err := product.GetPackageProducts(sess, *order.PackageId, productItemMaskWithPriceLocationGroupID)
+			if err != nil {
+				return err
+			}
+			// Add the required redundant power supply
+			powerSupply, err := getItemPriceId(items, "power_supply", "REDUNDANT_POWER_SUPPLY")
+			if err != nil {
+				return err
+			}
+			order.Prices = append(order.Prices, powerSupply)
+		}
+
 	} else {
 		// Build a monthly bare metal server template
 		order, err = getMonthlyBareMetalOrder(d, meta)
@@ -565,6 +576,7 @@ func resourceIBMComputeBareMetalRead(d *schema.ResourceData, meta interface{}) e
 
 	d.Set("notes", sl.Get(result.Notes, nil))
 	d.Set("memory", *result.MemoryCapacity)
+
 	d.Set("redundant_power_supply", false)
 
 	if *result.PowerSupplyCount == 2 {
@@ -857,7 +869,7 @@ func getMonthlyBareMetalOrder(d *schema.ResourceData, meta interface{}) (datatyp
 	}
 
 	// 2. Get all prices for the package
-	items, err := product.GetPackageProducts(sess, *pkg.Id, "id,categories,capacity,description,units,keyName,prices[id,categories[id,name,categoryCode]]")
+	items, err := product.GetPackageProducts(sess, *pkg.Id, productItemMaskWithPriceLocationGroupID)
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
 	}
@@ -977,7 +989,6 @@ func getMonthlyBareMetalOrder(d *schema.ResourceData, meta interface{}) (datatyp
 		}
 		order.Prices = append(order.Prices, powerSupply)
 	}
-
 	// Add storage_groups for RAID configuration
 	diskController, err := getItemPriceId(items, "disk_controller", "DISK_CONTROLLER_NONRAID")
 	if err != nil {

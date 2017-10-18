@@ -49,6 +49,8 @@ func TestAccIBMComputeBareMetal_Basic(t *testing.T) {
 						"ibm_compute_bare_metal.terraform-acceptance-test-1", "fixed_config_preset", "S1270_32GB_1X1TBSATA_NORAID"),
 					resource.TestCheckResourceAttr(
 						"ibm_compute_bare_metal.terraform-acceptance-test-1", "notes", "baremetal notes"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_bare_metal.terraform-acceptance-test-1", "redundant_power_supply", "true"),
 					CheckStringSet(
 						"ibm_compute_bare_metal.terraform-acceptance-test-1",
 						"tags", []string{"collectd"},
@@ -236,35 +238,37 @@ func testAccCheckIBMComputeBareMetalExists(n string, bareMetal *datatypes.Hardwa
 func testAccCheckIBMComputeBareMetalConfig_basic(hostname string) string {
 	return fmt.Sprintf(`
 resource "ibm_compute_bare_metal" "terraform-acceptance-test-1" {
-    hostname = "%s"
-    domain = "terraformuat.ibm.com"
-    os_reference_code = "UBUNTU_16_64"
-    datacenter = "dal01"
-    network_speed = 100
-    hourly_billing = true
-	private_network_only = false
-    user_metadata = "{\"value\":\"newvalue\"}"
-    fixed_config_preset = "S1270_32GB_1X1TBSATA_NORAID"
-    tags = ["collectd"]
-    notes = "baremetal notes"
-}
+	hostname               = "%s"
+	domain                 = "terraformuat.ibm.com"
+	os_reference_code      = "UBUNTU_16_64"
+	datacenter             = "dal01"
+	network_speed          = 100
+	hourly_billing         = true
+	private_network_only   = false
+	user_metadata          = "{\"value\":\"newvalue\"}"
+	fixed_config_preset    = "S1270_32GB_1X1TBSATA_NORAID"
+	tags                   = ["collectd"]
+	notes                  = "baremetal notes"
+	redundant_power_supply = true
+	}
 `, hostname)
 }
 
 func testAccCheckIBMComputeBareMetalConfig_update(hostname string) string {
 	return fmt.Sprintf(`
 resource "ibm_compute_bare_metal" "terraform-acceptance-test-1" {
-    hostname = "%s"
-    domain = "terraformuat.ibm.com"
-    os_reference_code = "UBUNTU_16_64"
-    datacenter = "dal01"
-    network_speed = 100
-    hourly_billing = true
-    private_network_only = false
-    user_metadata = "{\"value\":\"newvalue\"}"
-    fixed_config_preset = "S1270_32GB_1X1TBSATA_NORAID"
-    tags = ["mesos-master"]
-}
+	hostname               = "%s"
+	domain                 = "terraformuat.ibm.com"
+	os_reference_code      = "UBUNTU_16_64"
+	datacenter             = "dal01"
+	network_speed          = 100
+	hourly_billing         = true
+	private_network_only   = false
+	user_metadata          = "{\"value\":\"newvalue\"}"
+	fixed_config_preset    = "S1270_32GB_1X1TBSATA_NORAID"
+	tags                   = ["mesos-master"]
+	redundant_power_supply = true
+	}
 `, hostname)
 }
 
@@ -324,7 +328,7 @@ resource "ibm_compute_bare_metal" "bm-quote" {
     hostname = "%s"
     domain = "%s"
     user_metadata = "{\"value\":\"newvalue\"}"
-    quote_id = 2179879
+    quote_id = 2282869
     tags = ["collectd"]
 }
 `, hostname, domain)
@@ -343,7 +347,7 @@ resource "ibm_compute_bare_metal" "bm-custom" {
     network_speed = 1000
     public_bandwidth = 500
     disk_key_names = [ "HARD_DRIVE_1_00_TB_SATA_2", "HARD_DRIVE_1_00_TB_SATA_2" ]
-    hourly_billing = false
+	hourly_billing = false
     redundant_power_supply = true
 }
 `, hostname, domain)
