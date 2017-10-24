@@ -76,7 +76,7 @@ func init() {
 
 	privateSubnetID = os.Getenv("IBM_PRIVATE_SUBNET_ID")
 	if privateSubnetID == "" {
-		privateSubnetID = "1574951"
+		privateSubnetID = "1571663"
 		fmt.Println("[INFO] Set the environment variable IBM_PRIVATE_SUBNET_ID for testing ibm_container_cluster resource else it is set to default value '1574951'")
 	}
 
@@ -87,8 +87,8 @@ func init() {
 	}
 
 	subnetID = os.Getenv("IBM_SUBNET_ID")
-	if privateVlanID == "" {
-		privateVlanID = "1415689"
+	if subnetID == "" {
+		subnetID = "1415689"
 		fmt.Println("[INFO] Set the environment variable IBM_SUBNET_ID for testing ibm_container_cluster resource else it is set to default value '1415689'")
 	}
 
