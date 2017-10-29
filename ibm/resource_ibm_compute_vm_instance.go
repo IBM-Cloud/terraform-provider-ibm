@@ -844,9 +844,9 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("dedicated_acct_host_only", *result.DedicatedAccountHostOnlyFlag)
 	if result.PrimaryIpAddress != nil {
 		d.Set("has_public_ip", *result.PrimaryIpAddress != "")
-		d.Set("ipv4_address", *result.PrimaryIpAddress)
 	}
-	d.Set("ipv4_address_private", *result.PrimaryBackendIpAddress)
+	d.Set("ipv4_address", result.PrimaryIpAddress)
+	d.Set("ipv4_address_private", result.PrimaryBackendIpAddress)
 	if result.PrimaryNetworkComponent.PrimaryIpAddressRecord != nil {
 		d.Set("ip_address_id", *result.PrimaryNetworkComponent.PrimaryIpAddressRecord.GuestNetworkComponentBinding.IpAddressId)
 	}
