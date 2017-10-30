@@ -403,6 +403,60 @@ func TestAccIBMComputeVmInstance_With_Public_Bandwidth_Unlimited(t *testing.T) {
 	})
 }
 
+func TestAccIBMComputeVmInstance_With_DedicatedHost_Name(t *testing.T) {
+	var guest datatypes.Virtual_Guest
+
+	hostname := acctest.RandString(16)
+	domain := "tfvmdedicateduat.ibm.com"
+
+	configInstance := "ibm_compute_vm_instance.terraform-vm-dedicatedhost"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccIBMComputeVmInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:  testComputeInstanceWithDedicatdHostName(hostname, domain),
+				Destroy: false,
+				Check: resource.ComposeTestCheckFunc(
+					testAccIBMComputeVmInstanceExists(configInstance, &guest),
+					resource.TestCheckResourceAttr(
+						configInstance, "hostname", hostname),
+					resource.TestCheckResourceAttr(
+						configInstance, "domain", domain),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMComputeVmInstance_With_DedicatedHost_ID(t *testing.T) {
+	var guest datatypes.Virtual_Guest
+
+	hostname := acctest.RandString(16)
+	domain := "tfvmdedicateduat.ibm.com"
+
+	configInstance := "ibm_compute_vm_instance.terraform-vm-dedicatedhost"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccIBMComputeVmInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:  testComputeInstanceWithDedicatdHostID(hostname, domain),
+				Destroy: false,
+				Check: resource.ComposeTestCheckFunc(
+					testAccIBMComputeVmInstanceExists(configInstance, &guest),
+					resource.TestCheckResourceAttr(
+						configInstance, "hostname", hostname),
+					resource.TestCheckResourceAttr(
+						configInstance, "domain", domain),
+				),
+			},
+		},
+	})
+}
+
 func testAccIBMComputeVmInstanceDestroy(s *terraform.State) error {
 	service := services.GetVirtualGuestService(testAccProvider.Meta().(ClientSession).SoftLayerSession())
 
@@ -746,4 +800,38 @@ resource "ibm_compute_vm_instance" "terraform-public-bandwidth" {
 	public_bandwidth_unlimited = true
 }
 `, hostname, domain)
+}
+
+func testComputeInstanceWithDedicatdHostName(hostname, domain string) (config string) {
+	return fmt.Sprintf(`
+resource "ibm_compute_vm_instance" "terraform-vm-dedicatedhost" {
+	hostname = "%s"
+	domain = "%s"
+	hourly_billing = true
+	datacenter = "dal10"
+	network_speed = 100
+	cores = 1
+	memory = 1024
+	os_reference_code = "DEBIAN_7_64"
+	disks                = [25, 10, 20]
+	dedicated_host_name  = "%s"
+}
+`, hostname, domain, dedicatedHostName)
+}
+
+func testComputeInstanceWithDedicatdHostID(hostname, domain string) (config string) {
+	return fmt.Sprintf(`
+resource "ibm_compute_vm_instance" "terraform-vm-dedicatedhost" {
+	hostname = "%s"
+	domain = "%s"
+	hourly_billing = true
+	datacenter = "dal10"
+	network_speed = 100
+	cores = 1
+	memory = 1024
+	os_reference_code = "DEBIAN_7_64"
+	disks                = [25, 10, 20]
+	dedicated_host_id  = "%s"
+}
+`, hostname, domain, dedicatedHostID)
 }
