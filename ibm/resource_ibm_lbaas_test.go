@@ -241,7 +241,7 @@ func testAccCheckIBMLbaas_certificate_with_http_invalid_config(name string) stri
 resource "ibm_lbaas" "lbaas" {
   name        = "%s"
   description = "desc-used for terraform uat"
-  subnets     = [%d]
+  subnets     = ["%s"]
 
   protocols = [{
     "frontend_protocol" = "HTTP"
@@ -377,7 +377,7 @@ func testAccCheckIBMLbaasConfig_basic(name string) string {
 resource "ibm_lbaas" "lbaas" {
   name        = "%s"
   description = "desc-used for terraform uat"
-  subnets     = [%d]
+  subnets     = ["%s"]
 }
 `, name, lbaasSubnetId)
 }
@@ -403,7 +403,7 @@ resource "ibm_compute_vm_instance" "vm1" {
 resource "ibm_lbaas" "lbaas" {
   name        = "%s"
   description = "updated desc-used for terraform uat"
-  subnets     = [%d]
+  subnets     = ["%s"]
 
   protocols = [{
     "frontend_protocol" = "HTTP"
@@ -509,7 +509,7 @@ ykXbeuyhK6AL6V3NsJyP454bM8dmZnxBrZvRo5FnqQInGgwGSjgc
 resource "ibm_lbaas" "lbaas" {
   name        = "%s"
   description = "updated desc-used for terraform uat"
-  subnets     = [%d]
+  subnets     = ["%s"]
 
 
   protocols = [{

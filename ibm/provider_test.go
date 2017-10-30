@@ -3,7 +3,6 @@ package ibm
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -23,7 +22,7 @@ var privateSubnetID string
 var publicSubnetID string
 var subnetID string
 var lbaasDatacenter string
-var lbaasSubnetId int
+var lbaasSubnetId string
 var err error
 
 func init() {
@@ -98,12 +97,9 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IBM_LBAAS_DATACENTER for testing ibm_lbaas resource else it is set to default value 'wdc04'")
 	}
 
-	lbaasSubnetId, err = strconv.Atoi(os.Getenv("IBM_LBAAS_SUBNETID"))
-	if err != nil {
-		fmt.Println("[ WARN ]Invalid subnet id provided. LbaaS test will not work", err)
-	}
-	if lbaasSubnetId == 0 {
-		lbaasSubnetId = 1511875
+	lbaasSubnetId = os.Getenv("IBM_LBAAS_SUBNETID")
+	if lbaasSubnetId == "" {
+		lbaasSubnetId = "1511875"
 		fmt.Println("[INFO] Set the environment variable IBM_LBAAS_SUBNETID for testing ibm_lbaas resource else it is set to default value '1511875'")
 	}
 

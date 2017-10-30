@@ -51,7 +51,7 @@ func testAccCheckIBMLbaasDataSourceConfig(name string) string {
 resource "ibm_lbaas" "lbaas" {
   name        = "%s"
   description = "updated desc-used for terraform uat"
-  subnets     = [%d]
+  subnets     = ["%s"]
 
   protocols = [{
 
