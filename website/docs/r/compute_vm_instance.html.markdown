@@ -67,9 +67,16 @@ The following arguments are supported:
 * `cores` - (Required, integer) The number of CPU cores that you want to allocate.
 * `memory` - (Required, integer) The amount of memory, expressed in megabytes, that you want to allocate.
 * `datacenter` - (Required, string) The datacenter in which you want to provision the instance.
+    **NOTE**: If `dedicated_host_name` or `dedicated_host_id`
+    is provided then the datacenter should be same as the dedicated host datacenter.
 * `hourly_billing` - (Optional, boolean) The billing type for the instance. When set to `true`, the computing instance is billed on hourly usage. Otherwise, the instance is billed on a monthly basis. The default value is `true`.
 * `local_disk`- (Optional, boolean) The disk type for the instance. When set to `true`, the disks for the computing instance are provisioned on the host that the instance runs. Otherwise, SAN disks are provisioned. The default value is `true`.
 * `dedicated_acct_host_only` - (Optional, boolean) Specifies whether the instance must only run on hosts with instances from the same account. The default value is `false`.
+     **NOTE**: Conflicts with `dedicated_host_name`, `dedicated_host_id`.
+* `dedicated_host_id` - (Optional, integer) Specifies [dedicated host](https://console.bluemix.net/docs/vsi/vsi_dedicated.html) for the instance by its id.
+     **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_name`.
+* `dedicated_host_name` - (Optional, string) Specifies [dedicated host](https://console.bluemix.net/docs/vsi/vsi_dedicated.html) for the instance by its name.
+     **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_id`.
 * `os_reference_code` - (Optional, string) The operating system reference code that is used to provision the computing instance. To see available OS reference codes, log in to the [Bluemix Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest_Block_Device_Template_Group/getVhdImportSoftwareDescriptions.json?objectMask=referenceCode), using your API key as the password.
     **NOTE**: Conflicts with`image_id`.
 *   `image_id` - (Optional, integer) The image template ID you want to use to provision the computing instance. This is not the global identifier (UUID), but the image template group ID that should point to a valid global identifier. To retrieve the image template ID from the SoftLayer Customer Portal, navigate to **Devices > Manage > Images**, click the desired image, and note the ID number in the resulting URL.

@@ -138,9 +138,32 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 			},
 
 			"dedicated_acct_host_only": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				ForceNew: true,
+				Type:          schema.TypeBool,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"dedicated_host_name", "dedicated_host_id"},
+			},
+
+			"dedicated_host_name": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"dedicated_acct_host_only", "dedicated_host_id"},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					_, ok := d.GetOk("dedicated_host_id")
+					return new == "" && ok
+				},
+			},
+
+			"dedicated_host_id": {
+				Type:          schema.TypeInt,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"dedicated_acct_host_only", "dedicated_host_name"},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					_, ok := d.GetOk("dedicated_host_name")
+					return new == "0" && ok
+				},
 			},
 
 			"public_vlan_id": {
@@ -449,6 +472,26 @@ func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interf
 
 	if dedicatedAcctHostOnly, ok := d.GetOk("dedicated_acct_host_only"); ok {
 		opts.DedicatedAccountHostOnlyFlag = sl.Bool(dedicatedAcctHostOnly.(bool))
+	} else if dedicatedHostID, ok := d.GetOk("dedicated_host_id"); ok {
+		opts.DedicatedHost = &datatypes.Virtual_DedicatedHost{
+			Id: sl.Int(dedicatedHostID.(int)),
+		}
+	} else if dedicatedHostName, ok := d.GetOk("dedicated_host_name"); ok {
+		hostName := dedicatedHostName.(string)
+		service := services.GetAccountService(meta.(ClientSession).SoftLayerSession())
+
+		hosts, err := service.
+			Mask("id").
+			Filter(filter.Path("dedicatedHosts.name").Eq(hostName).Build()).
+			GetDedicatedHosts()
+
+		if err != nil {
+			return opts, fmt.Errorf("Error looking up dedicated host '%s': %s", hostName, err)
+		} else if len(hosts) == 0 {
+			return opts, fmt.Errorf("Error looking up dedicated host '%s'", hostName)
+		}
+
+		opts.DedicatedHost = &hosts[0]
 	}
 
 	if imgID, ok := d.GetOk("image_id"); ok {
@@ -732,6 +775,10 @@ func resourceIBMComputeVmInstanceCreate(d *schema.ResourceData, meta interface{}
 		Container_Product_Order_Hardware_Server: datatypes.Container_Product_Order_Hardware_Server{Container_Product_Order: template},
 	}
 
+	if opts.DedicatedHost != nil {
+		order.HostId = opts.DedicatedHost.Id
+	}
+
 	orderService := services.GetProductOrderService(sess)
 	receipt, err := orderService.PlaceOrder(order, sl.Bool(false))
 	if err != nil {
@@ -829,6 +876,11 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 
 	if result.Datacenter != nil {
 		d.Set("datacenter", *result.Datacenter.Name)
+	}
+
+	if result.DedicatedHost != nil {
+		d.Set("dedicated_host_id", *result.DedicatedHost.Id)
+		d.Set("dedicated_host_name", *result.DedicatedHost.Name)
 	}
 
 	d.Set(

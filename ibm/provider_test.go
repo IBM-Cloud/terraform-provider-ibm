@@ -23,6 +23,8 @@ var publicSubnetID string
 var subnetID string
 var lbaasDatacenter string
 var lbaasSubnetId string
+var dedicatedHostName string
+var dedicatedHostID string
 var err error
 
 func init() {
@@ -101,6 +103,18 @@ func init() {
 	if lbaasSubnetId == "" {
 		lbaasSubnetId = "1511875"
 		fmt.Println("[INFO] Set the environment variable IBM_LBAAS_SUBNETID for testing ibm_lbaas resource else it is set to default value '1511875'")
+	}
+
+	dedicatedHostName = os.Getenv("IBM_DEDICATED_HOSTNAME")
+	if dedicatedHostName == "" {
+		dedicatedHostName = "terraform-dedicatedhost"
+		fmt.Println("[INFO] Set the environment variable IBM_DEDICATED_HOSTNAME for testing ibm_compute_vm_instance resource else it is set to default value 'terraform-dedicatedhost'")
+	}
+
+	dedicatedHostID = os.Getenv("IBM_DEDICATED_HOST_ID")
+	if dedicatedHostID == "" {
+		dedicatedHostID = "30301"
+		fmt.Println("[INFO] Set the environment variable IBM_DEDICATED_HOST_ID for testing ibm_compute_vm_instance resource else it is set to default value '30301'")
 	}
 
 }
