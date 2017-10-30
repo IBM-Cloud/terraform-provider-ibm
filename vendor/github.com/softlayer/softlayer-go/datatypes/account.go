@@ -263,6 +263,9 @@ type Account struct {
 	// The brand keyName.
 	BrandKeyName *string `json:"brandKeyName,omitempty" xmlrpc:"brandKeyName,omitempty"`
 
+	// The Business Partner details for the account. Country Enterprise Code, Channel ID, and Segment ID.
+	BusinessPartner *Account_Partner_Business `json:"businessPartner,omitempty" xmlrpc:"businessPartner,omitempty"`
+
 	// Indicating whether this account can order additional Vlans.
 	CanOrderAdditionalVlansFlag *bool `json:"canOrderAdditionalVlansFlag,omitempty" xmlrpc:"canOrderAdditionalVlansFlag,omitempty"`
 
@@ -1090,6 +1093,9 @@ type Account struct {
 
 	// Indicates whether newly created users under this account will be associated with IBMid via an email requiring a response, or not.
 	RequireSilentIBMidUserCreation *bool `json:"requireSilentIBMidUserCreation,omitempty" xmlrpc:"requireSilentIBMidUserCreation,omitempty"`
+
+	// The Reseller level of the account.
+	ResellerLevel *int `json:"resellerLevel,omitempty" xmlrpc:"resellerLevel,omitempty"`
 
 	// A count of an account's associated top-level resource groups.
 	ResourceGroupCount *uint `json:"resourceGroupCount,omitempty" xmlrpc:"resourceGroupCount,omitempty"`
@@ -2310,6 +2316,23 @@ type Account_Note_Type struct {
 
 	// no documentation yet
 	ValueExpression *string `json:"valueExpression,omitempty" xmlrpc:"valueExpression,omitempty"`
+}
+
+// The SoftLayer_Account_Partner_Business data type contains specific information concerning an Account's relationship with Business Partner Data, in the form of the Account's Country Experience Identifier (CEID), Channel ID, and Segment ID.
+type Account_Partner_Business struct {
+	Entity
+
+	// The SoftLayer customer account associated with this business partner data.
+	Account *Account `json:"account,omitempty" xmlrpc:"account,omitempty"`
+
+	// The Channel ID associated with the Account.
+	ChannelId *int `json:"channelId,omitempty" xmlrpc:"channelId,omitempty"`
+
+	// The Country Enterprise Code associated with the Account.
+	CountryEnterpriseCode *string `json:"countryEnterpriseCode,omitempty" xmlrpc:"countryEnterpriseCode,omitempty"`
+
+	// The Segment ID associated with the Account.
+	SegmentId *int `json:"segmentId,omitempty" xmlrpc:"segmentId,omitempty"`
 }
 
 // no documentation yet

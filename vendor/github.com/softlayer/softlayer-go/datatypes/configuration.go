@@ -112,6 +112,9 @@ type Configuration_Storage_Group_Order struct {
 type Configuration_Storage_Group_Template_Group struct {
 	Entity
 
+	// The disk controller for the array.
+	DiskControllerIndex *int `json:"diskControllerIndex,omitempty" xmlrpc:"diskControllerIndex,omitempty"`
+
 	// Flag to use all available space.
 	Grow *bool `json:"grow,omitempty" xmlrpc:"grow,omitempty"`
 

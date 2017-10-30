@@ -75,7 +75,7 @@ func GetDatacenterByName(sess *session.Session, name string, args ...interface{}
 	location, err := GetLocationByName(sess, name, "mask[id]")
 
 	if err != nil {
-		return datatypes.Location_Datacenter{}, nil
+		return datatypes.Location_Datacenter{}, err
 	}
 
 	// Now get the Datacenter record itself.

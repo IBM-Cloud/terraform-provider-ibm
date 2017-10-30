@@ -19,12 +19,13 @@ package product
 import (
 	"fmt"
 
+	"strings"
+
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/filter"
 	"github.com/softlayer/softlayer-go/services"
 	"github.com/softlayer/softlayer-go/session"
 	"github.com/softlayer/softlayer-go/sl"
-	"strings"
 )
 
 // CPUCategoryCode Category code for cpus
@@ -128,7 +129,6 @@ func GetPackageProducts(
 // {"guest_core": 8.0, "ram": 32.0}
 // public[0] checks type of network.
 // public[1] checks type of cores.
-
 func SelectProductPricesByCategory(
 	productItems []datatypes.Product_Item,
 	options map[string]float64,
@@ -146,12 +146,18 @@ func SelectProductPricesByCategory(
 		forPublicCores = public[1]
 	}
 
+	forDedicatedHost := false
+	if len(public) > 2 {
+		forDedicatedHost = public[2]
+	}
+
 	// Filter product items based on sets of category codes and capacity numbers
 	prices := []datatypes.Product_Item_Price{}
 	priceCheck := map[string]bool{}
 	for _, productItem := range productItems {
 		isPrivate := strings.Contains(sl.Get(productItem.KeyName, "").(string), "PRIVATE")
 		isPublic := strings.Contains(sl.Get(productItem.Description, "Public").(string), "Public")
+		isDedicated := strings.Contains(sl.Get(productItem.KeyName, "").(string), "DEDICATED")
 		for _, category := range productItem.Prices[0].Categories {
 			for categoryCode, capacity := range options {
 				if _, ok := priceCheck[categoryCode]; ok {
@@ -173,11 +179,11 @@ func SelectProductPricesByCategory(
 				// Logic taken from softlayer-python @ http://bit.ly/2bN9Gbu
 				switch categoryCode {
 				case CPUCategoryCode:
-					if forPublicCores == isPrivate {
+					if forPublicCores == isPrivate || forDedicatedHost != isDedicated {
 						continue
 					}
 				case NICSpeedCategoryCode:
-					if forPublicNetwork != isPublic {
+					if forPublicNetwork != isPublic || forDedicatedHost != isDedicated {
 						continue
 					}
 				}

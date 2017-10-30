@@ -676,6 +676,12 @@ func (r Hardware) GetDatacenterName() (resp string, err error) {
 	return
 }
 
+// Retrieve Number of day(s) a server have been in spare pool.
+func (r Hardware) GetDaysInSparePool() (resp int, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware", "getDaysInSparePool", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve All hardware that has uplink network connections to a piece of hardware.
 func (r Hardware) GetDownlinkHardware() (resp []datatypes.Hardware, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware", "getDownlinkHardware", nil, &r.Options, &resp)
@@ -1671,6 +1677,12 @@ func (r Hardware_Component_Model) GetCompatibleParentComponentModels() (resp []d
 	return
 }
 
+// Retrieve
+func (r Hardware_Component_Model) GetFirmwares() (resp []datatypes.Hardware_Component_Firmware, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_Component_Model", "getFirmwares", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve A hardware component model's physical components in inventory.
 func (r Hardware_Component_Model) GetHardwareComponents() (resp []datatypes.Hardware_Component, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Component_Model", "getHardwareComponents", nil, &r.Options, &resp)
@@ -2518,6 +2530,12 @@ func (r Hardware_Router) GetDatacenter() (resp datatypes.Location, err error) {
 // Retrieve The name of the datacenter in which a piece of hardware resides.
 func (r Hardware_Router) GetDatacenterName() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Router", "getDatacenterName", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Number of day(s) a server have been in spare pool.
+func (r Hardware_Router) GetDaysInSparePool() (resp int, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_Router", "getDaysInSparePool", nil, &r.Options, &resp)
 	return
 }
 
@@ -4248,6 +4266,12 @@ func (r Hardware_SecurityModule) GetDatacenter() (resp datatypes.Location, err e
 // Retrieve The name of the datacenter in which a piece of hardware resides.
 func (r Hardware_SecurityModule) GetDatacenterName() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "getDatacenterName", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Number of day(s) a server have been in spare pool.
+func (r Hardware_SecurityModule) GetDaysInSparePool() (resp int, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "getDaysInSparePool", nil, &r.Options, &resp)
 	return
 }
 
@@ -6440,6 +6464,12 @@ func (r Hardware_Server) GetDatacenter() (resp datatypes.Location, err error) {
 // Retrieve The name of the datacenter in which a piece of hardware resides.
 func (r Hardware_Server) GetDatacenterName() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "getDatacenterName", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Number of day(s) a server have been in spare pool.
+func (r Hardware_Server) GetDaysInSparePool() (resp int, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "getDaysInSparePool", nil, &r.Options, &resp)
 	return
 }
 
