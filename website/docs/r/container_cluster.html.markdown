@@ -53,7 +53,7 @@ The following arguments are supported:
 * `workers` - (Required, array) The worker nodes that you want to add to the cluster.
 * `machinetype` - (Optional, string) The machine type of the worker nodes. You can retrieve the value by running the `bx cs machine-types <data-center>` command in the Bluemix CLI.
 * `billing` - (Optional, string) The billing type for the instance. Accepted values are `hourly` or `monthly`.
-* `isolation` - (Optional, string) Accepted values are `public` or `private`.
+* `isolation` - (Optional, string) Accepted values are `public` or `private`. Use `private` if you want to have available physical resources dedicated to you only or `public` to allow physical resources to be shared with other IBM customers.
 * `public_vlan_id`- (Optional, string) The public VLAN of the worker node. You can retrieve the value by running the `bx cs vlans <data-center>` command in the Bluemix CLI.
 * `private_vlan_id` - (Optional, string) The private VLAN of the worker node. You can retrieve the value by running the `bx cs vlans <data-center>` command in the Bluemix CLI.
 * `subnet_id` - (Optional, string) The existing subnet ID that you want to add to the cluster. You can retrieve the value by running the `bx cs subnets` command in the Bluemix CLI.
