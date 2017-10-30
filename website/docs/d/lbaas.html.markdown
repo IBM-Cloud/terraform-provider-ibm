@@ -71,4 +71,3 @@ The following attributes are exported:
 * `server_instances_up` - The number of service instances which are in the `UP` health state.
 * `server_instances_down` - The number of service instances which are in the `DOWN` health state.
 * `active_connections` - The number of total established connections.
-* `active_sessions` - The number of total current sessions.

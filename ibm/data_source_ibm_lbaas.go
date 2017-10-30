@@ -49,10 +49,6 @@ func dataSourceIBMLbaas() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"active_sessions": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
 			"protocols": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -176,7 +172,6 @@ func dataSourceIBMLbaasRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("server_instances_up", lbStat.NumberOfMembersUp)
 	d.Set("server_instances_down", lbStat.NumberOfMembersDown)
 	d.Set("active_connections", lbStat.TotalConnections)
-	d.Set("active_sessions", lbStat.TotalCurrentSessions)
 	if result.Datacenter != nil {
 		d.Set("datacenter", result.Datacenter.Name)
 	}
