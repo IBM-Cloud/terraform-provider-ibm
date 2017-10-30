@@ -335,7 +335,7 @@ func resourceIBMStorageBlockRead(d *schema.ResourceData, meta interface{}) error
 	d.Set("allowed_hardware_info", allowedHardwareInfoList)
 
 	if storage.OsType != nil {
-		d.Set("os_type", *storage.OsType.Name)
+		d.Set("os_format_type", *storage.OsType.Name)
 	}
 
 	if storage.Notes != nil {
