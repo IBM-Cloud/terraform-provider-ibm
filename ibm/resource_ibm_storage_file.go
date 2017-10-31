@@ -452,8 +452,9 @@ func resourceIBMStorageFileRead(d *schema.ResourceData, meta interface{}) error 
 	}
 	d.Set("mountpoint", mountpoint)
 
-	d.Set("hourly_billing", storage.BillingItem.HourlyFlag)
-
+	if storage.BillingItem != nil {
+		d.Set("hourly_billing", storage.BillingItem.HourlyFlag)
+	}
 	return nil
 }
 

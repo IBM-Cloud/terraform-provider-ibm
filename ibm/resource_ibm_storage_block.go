@@ -342,7 +342,9 @@ func resourceIBMStorageBlockRead(d *schema.ResourceData, meta interface{}) error
 		d.Set("notes", *storage.Notes)
 	}
 
-	d.Set("hourly_billing", storage.BillingItem.HourlyFlag)
+	if storage.BillingItem != nil {
+		d.Set("hourly_billing", storage.BillingItem.HourlyFlag)
+	}
 
 	return nil
 }
