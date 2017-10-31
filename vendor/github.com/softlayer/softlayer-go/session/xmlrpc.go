@@ -97,7 +97,14 @@ func (x *XmlRpcTransport) DoRequest(
 		authenticate["complexType"] = "PortalLoginToken"
 	}
 
+	// For cases where session is built from the raw structure and not using New() , the UserAgent would be empty
+	if sess.userAgent == "" {
+		sess.userAgent = getDefaultUserAgent()
+	}
+
 	headers := map[string]interface{}{}
+	headers["User-Agent"] = sess.userAgent
+
 	if len(authenticate) > 0 {
 		headers["authenticate"] = authenticate
 	}

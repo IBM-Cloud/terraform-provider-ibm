@@ -21,6 +21,7 @@ import (
 	"log"
 	"os"
 	"os/user"
+	"runtime"
 	"strings"
 	"time"
 
@@ -107,10 +108,14 @@ type Session struct {
 	// session. Requests that take longer that the specified timeout
 	// will result in an error.
 	Timeout time.Duration
+
+	// The user agent to send with each API request
+	// User shouldn't be able to change or set the base user agent
+	userAgent string
 }
 
 // New creates and returns a pointer to a new session object.  It takes up to
-// three parameters, all of which are optional.  If specified, they will be
+// four parameters, all of which are optional.  If specified, they will be
 // interpreted in the following sequence:
 //
 // 1. UserName
@@ -185,9 +190,10 @@ func New(args ...interface{}) *Session {
 	}
 
 	sess := &Session{
-		UserName: values[keys["username"]],
-		APIKey:   values[keys["api_key"]],
-		Endpoint: endpointURL,
+		UserName:  values[keys["username"]],
+		APIKey:    values[keys["api_key"]],
+		Endpoint:  endpointURL,
+		userAgent: getDefaultUserAgent(),
 	}
 
 	timeout := values[keys["timeout"]]
@@ -215,6 +221,21 @@ func (r *Session) DoRequest(service string, method string, args []interface{}, o
 	return r.TransportHandler.DoRequest(r, service, method, args, options, pResult)
 }
 
+// AppendUserAgent allows higher level application to identify themselves by appending to the useragent string
+func (r *Session) AppendUserAgent(agent string) {
+	if r.userAgent == "" {
+		r.userAgent = getDefaultUserAgent()
+	}
+	if agent != "" {
+		r.userAgent += " " + agent
+	}
+}
+
+// ResetUserAgent resets the current user agent to the default value
+func (r *Session) ResetUserAgent() {
+	r.userAgent = getDefaultUserAgent()
+}
+
 func envFallback(keyName string, value *string) {
 	if *value == "" {
 		*value = os.Getenv(keyName)
@@ -231,4 +252,12 @@ func getDefaultTransport(endpointURL string) TransportHandler {
 	}
 
 	return transportHandler
+}
+
+func getDefaultUserAgent() string {
+	return fmt.Sprintf("softlayer-go/%s (%s;%s;%s)", sl.Version.String(),
+		runtime.Version(),
+		runtime.GOARCH,
+		runtime.GOOS,
+	)
 }
