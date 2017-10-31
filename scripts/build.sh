@@ -10,6 +10,9 @@ DIR="$( cd -P "$( dirname "$SOURCE" )/.." && pwd )"
 # Change into that directory
 cd "$DIR"
 
+# Package which has the version information, required to set the Version, GitCommit info
+VERSION_PACKAGE="github.com/terraform-providers/terraform-provider-ibm/version"
+
 # Get the git commit
 GIT_COMMIT=$(git rev-parse HEAD)
 GIT_DIRTY=$(test -n "`git status --porcelain`" && echo "+CHANGES" || true)
@@ -40,11 +43,11 @@ fi
 export CGO_ENABLED=0
 
 # Allow LD_FLAGS to be appended during development compilations
-LD_FLAGS="-X main.GitCommit=${GIT_COMMIT}${GIT_DIRTY} $LD_FLAGS"
+LD_FLAGS="-X ${VERSION_PACKAGE}.GitCommit=${GIT_COMMIT}${GIT_DIRTY} $LD_FLAGS"
 
 # In release mode we don't want debug information in the binary
 if [[ -n "${TF_RELEASE}" ]]; then
-    LD_FLAGS="-X main.GitCommit=${GIT_COMMIT}${GIT_DIRTY} -X main.VersionPrerelease= -s -w"
+    LD_FLAGS="-X ${VERSION_PACKAGE}.GitCommit=${GIT_COMMIT}${GIT_DIRTY} -X ${VERSION_PACKAGE}.VersionPrerelease= -s -w"
 fi
 
 # Build!

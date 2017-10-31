@@ -1,4 +1,4 @@
-package main
+package version
 
 import (
 	"github.com/hashicorp/go-version"

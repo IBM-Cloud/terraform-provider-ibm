@@ -8,6 +8,7 @@ import (
 	"time"
 
 	slsession "github.com/softlayer/softlayer-go/session"
+	"github.com/terraform-providers/terraform-provider-ibm/version"
 
 	bluemix "github.com/IBM-Bluemix/bluemix-go"
 	"github.com/IBM-Bluemix/bluemix-go/api/account/accountv1"
@@ -197,6 +198,7 @@ func newSession(c *Config) (*Session, error) {
 		APIKey:   c.SoftLayerAPIKey,
 		Debug:    os.Getenv("TF_LOG") != "",
 	}
+	softlayerSession.AppendUserAgent(fmt.Sprintf("terraform-provider-ibm/%s", version.Version))
 	ibmSession.SoftLayerSession = softlayerSession
 
 	if c.BluemixAPIKey != "" {
