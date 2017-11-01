@@ -531,7 +531,7 @@ func resourceIBMComputeBareMetalRead(d *schema.ResourceData, meta interface{}) e
 	result, err := service.Id(id).Mask(
 		"hostname,domain," +
 			"primaryIpAddress,primaryBackendIpAddress,privateNetworkOnlyFlag," +
-			"notes,userData[value],tagReferences[id,tag[name]]," +
+			"notes,postInstallScriptUri,userData[value],tagReferences[id,tag[name]]," +
 			"allowedNetworkStorage[id,nasType]," +
 			"hourlyBillingFlag," +
 			"datacenter[id,name,longName]," +
@@ -575,6 +575,7 @@ func resourceIBMComputeBareMetalRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	d.Set("notes", sl.Get(result.Notes, nil))
+	d.Set("post_install_script_uri", result.PostInstallScriptUri)
 	d.Set("memory", *result.MemoryCapacity)
 
 	d.Set("redundant_power_supply", false)

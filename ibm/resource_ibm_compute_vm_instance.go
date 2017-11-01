@@ -846,7 +846,7 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 			"primaryIpAddress,primaryBackendIpAddress,privateNetworkOnlyFlag," +
 			"hourlyBillingFlag,localDiskFlag," +
 			"allowedNetworkStorage[id,nasType]," +
-			"notes,userData[value],tagReferences[id,tag[name]]," +
+			"notes,postInstallScriptUri,userData[value],tagReferences[id,tag[name]]," +
 			"datacenter[id,name,longName]," +
 			"sshKeys," +
 			"primaryNetworkComponent[networkVlan[id]," +
@@ -946,6 +946,7 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	d.Set("notes", sl.Get(result.Notes, nil))
+	d.Set("post_install_script_uri", result.PostInstallScriptUri)
 
 	tagReferences := result.TagReferences
 	tagReferencesLen := len(tagReferences)
@@ -1000,7 +1001,6 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 			d.Set("secondary_ip_count", len(secondaryIps))
 		}
 	}
-
 	return nil
 }
 
