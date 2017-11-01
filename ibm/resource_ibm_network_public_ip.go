@@ -21,7 +21,7 @@ import (
 const (
 	AdditionalServicesGlobalIpAddressesPackageType = "ADDITIONAL_SERVICES_GLOBAL_IP_ADDRESSES"
 
-	GlobalIpMask = "id,ipAddress[ipAddress],destinationIpAddress[ipAddress]"
+	GlobalIpMask = "id,ipAddress[ipAddress,id,note],destinationIpAddress[ipAddress]"
 )
 
 func resourceIBMNetworkPublicIp() *schema.Resource {
@@ -62,6 +62,10 @@ func resourceIBMNetworkPublicIp() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
 			},
+			"notes": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -75,21 +79,21 @@ func resourceIBMNetworkPublicIpCreate(d *schema.ResourceData, meta interface{}) 
 		// Find price items with AdditionalServices
 		productOrderContainer, err = buildGlobalIpProductOrderContainer(d, sess, AdditionalServicesPackageType)
 		if err != nil {
-			return fmt.Errorf("Error creating global ip: %s", err)
+			return fmt.Errorf("Error creating network public ip: %s", err)
 		}
 	}
 
-	log.Println("[INFO] Creating global ip")
+	log.Println("[INFO] Creating network public ip")
 
 	receipt, err := services.GetProductOrderService(sess).
 		PlaceOrder(productOrderContainer, sl.Bool(false))
 	if err != nil {
-		return fmt.Errorf("Error during creation of global ip: %s", err)
+		return fmt.Errorf("Error during creation of network public ip: %s", err)
 	}
 
 	globalIp, err := findGlobalIpByOrderId(sess, *receipt.OrderId)
 	if err != nil {
-		return fmt.Errorf("Error during creation of global ip: %s", err)
+		return fmt.Errorf("Error during creation of network public ip: %s", err)
 	}
 
 	d.SetId(fmt.Sprintf("%d", *globalIp.Id))
@@ -104,18 +108,21 @@ func resourceIBMNetworkPublicIpRead(d *schema.ResourceData, meta interface{}) er
 
 	globalIpId, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf("Not a valid global ip ID, must be an integer: %s", err)
+		return fmt.Errorf("Not a valid network public ip ID, must be an integer: %s", err)
 	}
 
 	globalIp, err := service.Id(globalIpId).Mask(GlobalIpMask).GetObject()
 	if err != nil {
-		return fmt.Errorf("Error retrieving Global Ip: %s", err)
+		return fmt.Errorf("Error retrieving network public Ip: %s", err)
 	}
 
 	d.Set("id", *globalIp.Id)
 	d.Set("ip_address", *globalIp.IpAddress.IpAddress)
 	if globalIp.DestinationIpAddress != nil {
 		d.Set("routes_to", *globalIp.DestinationIpAddress.IpAddress)
+	}
+	if globalIp.IpAddress.Note != nil {
+		d.Set("notes", *globalIp.IpAddress.Note)
 	}
 	return nil
 }
@@ -126,7 +133,7 @@ func resourceIBMNetworkPublicIpUpdate(d *schema.ResourceData, meta interface{}) 
 
 	globalIpId, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf("Not a valid global ip ID, must be an integer: %s", err)
+		return fmt.Errorf("Not a valid network public ip ID, must be an integer: %s", err)
 	}
 
 	routes_to := d.Get("routes_to").(string)
@@ -147,8 +154,20 @@ func resourceIBMNetworkPublicIpUpdate(d *schema.ResourceData, meta interface{}) 
 
 	_, err = service.Id(globalIpId).Route(sl.String(routes_to))
 	if err != nil {
-		return fmt.Errorf("Error editing Global Ip: %s", err)
+		return fmt.Errorf("Error editing network public Ip: %s", err)
 	}
+	// Update notes
+	if d.HasChange("notes") {
+		publicIp, err := service.Id(globalIpId).Mask(GlobalIpMask).GetObject()
+		if err != nil {
+			return fmt.Errorf("Error updating network public Ip: %s", err)
+		}
+		err = updatePublicIPNotes(d, sess, publicIp)
+		if err != nil {
+			return fmt.Errorf("Error editing network public Ip: %s", err)
+		}
+	}
+
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"complete"},
@@ -170,7 +189,7 @@ func resourceIBMNetworkPublicIpUpdate(d *schema.ResourceData, meta interface{}) 
 	pendingResult, err := stateConf.WaitForState()
 
 	if err != nil {
-		return fmt.Errorf("Error waiting for global ip destination ip address to become active: %s", err)
+		return fmt.Errorf("Error waiting for network public ip destination ip address to become active: %s", err)
 	}
 
 	if _, ok := pendingResult.(datatypes.Network_Subnet_IpAddress_Global); ok {
@@ -186,12 +205,12 @@ func resourceIBMNetworkPublicIpDelete(d *schema.ResourceData, meta interface{}) 
 
 	globalIpId, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf("Not a valid global ip ID, must be an integer: %s", err)
+		return fmt.Errorf("Not a valid network public ip ID, must be an integer: %s", err)
 	}
 
 	billingItem, err := service.Id(globalIpId).GetBillingItem()
 	if err != nil {
-		return fmt.Errorf("Error deleting global ip: %s", err)
+		return fmt.Errorf("Error deleting network public ip: %s", err)
 	}
 
 	if billingItem.Id == nil {
@@ -217,7 +236,7 @@ func resourceIBMNetworkPublicIpExists(d *schema.ResourceData, meta interface{}) 
 		if apiErr, ok := err.(sl.Error); ok && apiErr.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("Error retrieving global ip: %s", err)
+		return false, fmt.Errorf("Error retrieving network public ip: %s", err)
 	}
 	return result.Id != nil && *result.Id == globalIpId, nil
 }
@@ -241,7 +260,7 @@ func findGlobalIpByOrderId(sess *session.Session, orderId int) (datatypes.Networ
 			} else if len(globalIps) == 0 || len(globalIps) == 1 {
 				return nil, "pending", nil
 			} else {
-				return nil, "", fmt.Errorf("Expected one global ip: %s", err)
+				return nil, "", fmt.Errorf("Expected one network public ip: %s", err)
 			}
 		},
 		Timeout:    10 * time.Minute,
@@ -260,7 +279,7 @@ func findGlobalIpByOrderId(sess *session.Session, orderId int) (datatypes.Networ
 	}
 
 	return datatypes.Network_Subnet_IpAddress_Global{},
-		fmt.Errorf("Cannot find global ip with order id '%d'", orderId)
+		fmt.Errorf("Cannot find network public ip with order id '%d'", orderId)
 }
 
 func buildGlobalIpProductOrderContainer(d *schema.ResourceData, sess *session.Session, packageType string) (
@@ -311,4 +330,20 @@ func buildGlobalIpProductOrderContainer(d *schema.ResourceData, sess *session.Se
 	}
 
 	return &productOrderContainer, nil
+}
+
+func updatePublicIPNotes(d *schema.ResourceData, sess *session.Session, publicIP datatypes.Network_Subnet_IpAddress_Global) error {
+	id := *publicIP.IpAddress.Id
+	notes := d.Get("notes").(string)
+
+	if (publicIP.IpAddress.Note != nil && *publicIP.IpAddress.Note != notes) || (publicIP.IpAddress.Note == nil && notes != "") {
+		_, err := services.GetNetworkSubnetIpAddressService(sess).
+			Id(id).
+			EditObject(&datatypes.Network_Subnet_IpAddress{Note: sl.String(notes)})
+		if err != nil {
+			return fmt.Errorf("Error adding note to network public IP (%d): %s", id, err)
+		}
+	}
+
+	return nil
 }
