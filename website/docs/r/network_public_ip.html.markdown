@@ -17,6 +17,7 @@ For additional details, see the [Bluemix Infrastructure (SoftLayer) API docs](ht
 ```hcl
 resource "ibm_network_public_ip" "test_public_ip " {
     routes_to = "119.81.82.163"
+    notes     = "public ip notes"
 }
 ```
 
@@ -25,7 +26,9 @@ resource "ibm_network_public_ip" "test_public_ip " {
 The following arguments are supported:
 
 * `routes_to` - (Required, string) The destination IP address that the public IP routes traffic through. The destination IP address can be a public IP address of IBM resources in the same account, such as a public IP address of a VM or public virtual IP addresses of NetScaler VPXs.
+* `notes` - (Optional, string) Descriptive text to associate with the public IP instance.
 * `tags` - (Optional, array of strings) Tags associated with the public IP instance.
+
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attribute Reference
