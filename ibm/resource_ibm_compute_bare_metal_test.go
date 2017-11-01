@@ -49,8 +49,6 @@ func TestAccIBMComputeBareMetal_Basic(t *testing.T) {
 						"ibm_compute_bare_metal.terraform-acceptance-test-1", "fixed_config_preset", "S1270_32GB_1X1TBSATA_NORAID"),
 					resource.TestCheckResourceAttr(
 						"ibm_compute_bare_metal.terraform-acceptance-test-1", "notes", "baremetal notes"),
-					resource.TestCheckResourceAttr(
-						"ibm_compute_bare_metal.terraform-acceptance-test-1", "redundant_power_supply", "true"),
 					CheckStringSet(
 						"ibm_compute_bare_metal.terraform-acceptance-test-1",
 						"tags", []string{"collectd"},
@@ -100,6 +98,8 @@ func TestAccIBMComputeBareMetal_With_Network_Storage_Access(t *testing.T) {
 						configInstance, "file_storage_ids.#", "1"),
 					resource.TestCheckResourceAttr(
 						configInstance, "block_storage_ids.#", "1"),
+					resource.TestCheckResourceAttr(
+						configInstance, "redundant_power_supply", "true"),
 				),
 			},
 			{
@@ -249,7 +249,6 @@ resource "ibm_compute_bare_metal" "terraform-acceptance-test-1" {
 	fixed_config_preset    = "S1270_32GB_1X1TBSATA_NORAID"
 	tags                   = ["collectd"]
 	notes                  = "baremetal notes"
-	redundant_power_supply = true
 	}
 `, hostname)
 }
@@ -267,7 +266,6 @@ resource "ibm_compute_bare_metal" "terraform-acceptance-test-1" {
 	user_metadata          = "{\"value\":\"newvalue\"}"
 	fixed_config_preset    = "S1270_32GB_1X1TBSATA_NORAID"
 	tags                   = ["mesos-master"]
-	redundant_power_supply = true
 	}
 `, hostname)
 }
@@ -288,6 +286,7 @@ resource "ibm_compute_bare_metal" "terraform-bm-storage-access" {
     tags = ["mesos-master"]
 	file_storage_ids = ["${ibm_storage_file.fs1.id}"]
 	block_storage_ids = ["${ibm_storage_block.bs.id}"]
+	redundant_power_supply = true
 }
 %s
 %s
@@ -313,6 +312,7 @@ resource "ibm_compute_bare_metal" "terraform-bm-storage-access" {
 	
     tags = ["mesos-master"]
 	file_storage_ids = ["${ibm_storage_file.fs2.id}"]
+	redundant_power_supply = true
 
 }
 
