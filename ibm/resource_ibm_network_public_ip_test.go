@@ -29,6 +29,7 @@ func TestAccIBMNetworkPublicIp_Basic(t *testing.T) {
 						regexp.MustCompile(`^(([01]?[0-9]?[0-9]|2([0-4][0-9]|5[0-5]))\.){3}([01]?[0-9]?[0-9]|2([0-4][0-9]|5[0-5]))$`)),
 					testAccCheckIBMResources("ibm_network_public_ip.test-global-ip", "routes_to",
 						"ibm_compute_vm_instance.vm1", "ipv4_address"),
+					resource.TestCheckResourceAttr("ibm_network_public_ip.test-global-ip", "notes", "public ip notes"),
 				),
 			},
 
@@ -37,6 +38,7 @@ func TestAccIBMNetworkPublicIp_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMResources("ibm_network_public_ip.test-global-ip", "routes_to",
 						"ibm_compute_vm_instance.vm2", "ipv4_address"),
+					resource.TestCheckResourceAttr("ibm_network_public_ip.test-global-ip", "notes", "updated public ip notes"),
 				),
 			},
 
@@ -48,6 +50,7 @@ func TestAccIBMNetworkPublicIp_Basic(t *testing.T) {
 						regexp.MustCompile(`^(([[:xdigit:]]{4}:){7})([[:xdigit:]]{4})$`)),
 					testAccCheckIBMResources("ibm_network_public_ip.test-global-ip-3", "routes_to",
 						"ibm_compute_vm_instance.vm3", "ipv6_address"),
+					resource.TestCheckResourceAttr("ibm_network_public_ip.test-global-ip-3", "notes", "public ip notes"),
 				),
 			},
 
@@ -56,6 +59,7 @@ func TestAccIBMNetworkPublicIp_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMResources("ibm_network_public_ip.test-global-ip-3", "routes_to",
 						"ibm_compute_vm_instance.vm4", "ipv6_address"),
+					resource.TestCheckResourceAttr("ibm_network_public_ip.test-global-ip-3", "notes", "updated public ip notes"),
 				),
 			},
 		},
@@ -178,6 +182,7 @@ resource "ibm_compute_vm_instance" "vm2" {
 
 resource "ibm_network_public_ip" "test-global-ip" {
     routes_to = "${ibm_compute_vm_instance.vm1.ipv4_address}"
+    notes = "public ip notes"
 }
 `, hostname1, hostname2)
 }
@@ -214,6 +219,7 @@ resource "ibm_compute_vm_instance" "vm2" {
 
 resource "ibm_network_public_ip" "test-global-ip" {
     routes_to = "${ibm_compute_vm_instance.vm2.ipv4_address}"
+     notes = "updated public ip notes"
 }
 `, hostname1, hostname2)
 }
@@ -251,6 +257,7 @@ resource "ibm_compute_vm_instance" "vm4" {
 
 resource "ibm_network_public_ip" "test-global-ip-3" {
     routes_to = "${ibm_compute_vm_instance.vm3.ipv6_address}"
+    notes = "public ip notes"
 }`
 
 const testAccCheckIBMNetworkPublicIpConfig_Ipv6Updated = `
@@ -286,6 +293,7 @@ resource "ibm_compute_vm_instance" "vm4" {
 
 resource "ibm_network_public_ip" "test-global-ip-3" {
     routes_to = "${ibm_compute_vm_instance.vm4.ipv6_address}"
+     notes = "updated public ip notes"
 }`
 
 func testAccCheckIBMNetworkPublicIpWithTag(hostname1 string) string {
