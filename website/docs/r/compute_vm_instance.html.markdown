@@ -33,6 +33,7 @@ resource "ibm_compute_vm_instance" "twc_terraform_sample" {
     local_disk = false
     public_vlan_id = 1391277
     private_vlan_id = 7721931
+    private_security_group_ids = [576973]
 }
 ```
 
@@ -84,8 +85,10 @@ The following arguments are supported:
     **NOTE**: Conflicts with `os_reference_code`. If you don't know the ID(s) of your image templates, you can [refer to an image template ID by name using a data source](../d/compute_image_template.html).
 *  `network_speed` - (Optional, integer) The connection speed (in Mbps) for the instance's network components. The default value is `100`.
 *  `private_network_only` - (Optional, boolean) When set to `true`, a compute instance only has access to the private network. The default value is `false`.
+*  `private_security_group_ids` - (Optional, array of integers) The ids of security groups to apply on the private interface.
 *  `public_vlan_id` - (Optional, integer) The public VLAN ID for the public network interface of the instance. Accepted values are in the [VLAN doc](https://control.softlayer.com/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
 * `private_vlan_id` - (Optional, integer) The private VLAN ID for the private network interface of the instance. You can find accepted values in the [VLAN doc](https://control.softlayer.com/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.md).
+* `public_security_group_ids` - (Optional, array of integers) The ids of security groups to apply on the public interface.
 * `public_subnet` - (Optional, string) The public subnet for the public network interface of the instance. Accepted values are primary public networks. You can find accepted values in the [subnets doc](https://control.softlayer.com/network/subnets).
 * `private_subnet` - (Optional, string) The private subnet for the private network interface of the instance. Accepted values are primary private networks. You can find accepted values in the [subnets doc](https://control.softlayer.com/network/subnets).
 * `disks` - (Optional, array of integers) The numeric disk sizes (in GBs) for the instance's block device and disk image settings. The default value is the smallest available capacity for the primary disk. If you specify an image template, the template provides the disk capacity.

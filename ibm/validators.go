@@ -165,7 +165,45 @@ func validateWeight(v interface{}, k string) (ws []string, errors []error) {
 		errors = append(errors, fmt.Errorf(
 			"%q must be between 1 and 100",
 			k))
-		return
+	}
+	return
+}
+func validateSecurityRuleDirection(v interface{}, k string) (ws []string, errors []error) {
+	validDirections := map[string]bool{
+		"ingress": true,
+		"egress":  true,
+	}
+
+	value := v.(string)
+	_, found := validDirections[value]
+	if !found {
+		strarray := make([]string, 0, len(validDirections))
+		for key := range validDirections {
+			strarray = append(strarray, key)
+		}
+		errors = append(errors, fmt.Errorf(
+			"%q contains an invalid security group rule direction %q. Valid types are %q.",
+			k, value, strings.Join(strarray, ",")))
+	}
+	return
+}
+
+func validateSecurityRuleEtherType(v interface{}, k string) (ws []string, errors []error) {
+	validEtherTypes := map[string]bool{
+		"IPv4": true,
+		"IPv6": true,
+	}
+
+	value := v.(string)
+	_, found := validEtherTypes[value]
+	if !found {
+		strarray := make([]string, 0, len(validEtherTypes))
+		for key := range validEtherTypes {
+			strarray = append(strarray, key)
+		}
+		errors = append(errors, fmt.Errorf(
+			"%q contains an invalid security group rule ethernet type %q. Valid types are %q.",
+			k, value, strings.Join(strarray, ",")))
 	}
 	return
 }
@@ -177,7 +215,52 @@ func validateIP(v interface{}, k string) (ws []string, errors []error) {
 		errors = append(errors, fmt.Errorf(
 			"%q must be a valid ip address",
 			k))
-		return
+	}
+	return
+}
+
+//validateCIDR...
+func validateCIDR(v interface{}, k string) (ws []string, errors []error) {
+	address := v.(string)
+	_, _, err := net.ParseCIDR(address)
+	if err != nil {
+		errors = append(errors, fmt.Errorf(
+			"%q must be a valid cidr address",
+			k))
+	}
+	return
+}
+
+//validateRemoteIP...
+func validateRemoteIP(v interface{}, k string) (ws []string, errors []error) {
+	_, err1 := validateCIDR(v, k)
+	_, err2 := validateIP(v, k)
+
+	if len(err1) != 0 && len(err2) != 0 {
+		errors = append(errors, fmt.Errorf(
+			"%q must be a valid remote ip address (cidr or ip)",
+			k))
+	}
+	return
+}
+
+func validateSecurityRuleProtocol(v interface{}, k string) (ws []string, errors []error) {
+	validProtocols := map[string]bool{
+		"icmp": true,
+		"tcp":  true,
+		"udp":  true,
+	}
+
+	value := v.(string)
+	_, found := validProtocols[value]
+	if !found {
+		strarray := make([]string, 0, len(validProtocols))
+		for key := range validProtocols {
+			strarray = append(strarray, key)
+		}
+		errors = append(errors, fmt.Errorf(
+			"%q contains an invalid security group rule ethernet type %q. Valid types are %q.",
+			k, value, strings.Join(strarray, ",")))
 	}
 	return
 }
