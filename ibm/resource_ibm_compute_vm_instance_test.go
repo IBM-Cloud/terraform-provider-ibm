@@ -457,6 +457,42 @@ func TestAccIBMComputeVmInstance_With_DedicatedHost_ID(t *testing.T) {
 	})
 }
 
+func TestAccIBMComputeVmInstance_With_Security_Groups(t *testing.T) {
+	var guest datatypes.Virtual_Guest
+	var pubsg datatypes.Network_SecurityGroup
+	var pvtsg datatypes.Network_SecurityGroup
+	sgName1 := fmt.Sprintf("terraformsguat_create_step_name_%d", acctest.RandInt())
+	sgDesc1 := fmt.Sprintf("terraformsguat_create_step_desc_%d", acctest.RandInt())
+	sgName2 := fmt.Sprintf("terraformsguat_create_step_name_%d", acctest.RandInt())
+	sgDesc2 := fmt.Sprintf("terraformsguat_create_step_desc_%d", acctest.RandInt())
+
+	hostname := acctest.RandString(16)
+
+	configInstance := "ibm_compute_vm_instance.tfuatvmwithgroups"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccIBMComputeVmInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:  testAccIBMComputeVMInstanceConfigWithSecurityGroups(sgName1, sgDesc1, sgName2, sgDesc2, hostname),
+				Destroy: false,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMSecurityGroupExists("ibm_security_group.pubsg", &pubsg),
+					testAccCheckIBMSecurityGroupExists("ibm_security_group.pvtsg", &pvtsg),
+					testAccIBMComputeVmInstanceExists(configInstance, &guest),
+					resource.TestCheckResourceAttr(
+						configInstance, "hostname", hostname),
+					resource.TestCheckResourceAttr(
+						configInstance, "public_security_group_ids.#", "1"),
+					resource.TestCheckResourceAttr(
+						configInstance, "private_security_group_ids.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 func testAccIBMComputeVmInstanceDestroy(s *terraform.State) error {
 	service := services.GetVirtualGuestService(testAccProvider.Meta().(ClientSession).SoftLayerSession())
 
@@ -834,4 +870,50 @@ resource "ibm_compute_vm_instance" "terraform-vm-dedicatedhost" {
 	dedicated_host_id  = "%s"
 }
 `, hostname, domain, dedicatedHostID)
+}
+
+func testAccIBMComputeVMInstanceConfigWithSecurityGroups(sgName1, sgDesc1, sgName2, sgDesc2, hostname string) string {
+	v := fmt.Sprintf(`
+		resource "ibm_security_group" "pubsg" {
+			name        = "%s"
+			description = "%s"
+		  } 
+		  resource "ibm_security_group_rule" "pubsgrule" {
+			direction         = "ingress"
+			port_range_min    = 80
+			port_range_max    = 8080
+			protocol          = "udp"
+			security_group_id = "${ibm_security_group.pubsg.id}"
+		  }
+		  resource "ibm_security_group" "pvtsg" {
+			name        = "%s"
+			description = "%s"
+		  }
+		  resource "ibm_security_group_rule" "pvtsgrule" {
+			direction         = "ingress"
+			port_range_min    = 80
+			port_range_max    = 8085
+			protocol          = "tcp"
+			security_group_id = "${ibm_security_group.pvtsg.id}"
+		  }
+		  resource "ibm_compute_vm_instance" "tfuatvmwithgroups" {
+			hostname                   = "%s"
+			domain                     = "tfvmuatsg.com"
+			os_reference_code          = "DEBIAN_7_64"
+			datacenter                 = "wdc07"
+			network_speed              = 10
+			hourly_billing             = true
+			private_network_only       = false
+			cores                      = 1
+			memory                     = 1024
+			disks                      = [25, 10, 20]
+			dedicated_acct_host_only   = true
+			local_disk                 = false
+			ipv6_enabled               = true
+			secondary_ip_count         = 4
+			notes                      = "VM notes"
+			public_security_group_ids  = ["${ibm_security_group.pubsg.id}"]
+			private_security_group_ids = ["${ibm_security_group.pvtsg.id}"]
+		  }`, sgName1, sgDesc1, sgName2, sgDesc2, hostname)
+	return v
 }

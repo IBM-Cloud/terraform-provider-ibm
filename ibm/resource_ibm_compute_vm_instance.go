@@ -180,6 +180,17 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				Computed: true,
 			},
 
+			"public_security_group_ids": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeInt},
+				Set: func(v interface{}) int {
+					return v.(int)
+				},
+				ForceNew: true,
+				MaxItems: 5,
+			},
+
 			"private_vlan_id": {
 				Type:     schema.TypeInt,
 				Optional: true,
@@ -192,6 +203,17 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 				Computed: true,
+			},
+
+			"private_security_group_ids": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeInt},
+				Set: func(v interface{}) int {
+					return v.(int)
+				},
+				ForceNew: true,
+				MaxItems: 5,
 			},
 
 			"disks": {
@@ -439,6 +461,22 @@ func getBlockDevices(d *schema.ResourceData) []datatypes.Virtual_Guest_Block_Dev
 	}
 	return blocks
 }
+
+func expandSecurityGroupBindings(securityGroupsList []interface{}) ([]datatypes.Virtual_Network_SecurityGroup_NetworkComponentBinding, error) {
+	if len(securityGroupsList) == 0 {
+		return nil, nil
+	}
+	sgBindings := make([]datatypes.Virtual_Network_SecurityGroup_NetworkComponentBinding,
+		len(securityGroupsList))
+	for i, v := range securityGroupsList {
+		sgid := v.(int)
+		sgBindings[i] = datatypes.Virtual_Network_SecurityGroup_NetworkComponentBinding{
+			SecurityGroupId: sl.Int(sgid),
+		}
+	}
+	return sgBindings, nil
+}
+
 func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interface{}) (datatypes.Virtual_Guest, error) {
 
 	dc := datatypes.Location{
@@ -527,8 +565,11 @@ func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interf
 		NetworkVlan: &datatypes.Network_Vlan{},
 	}
 
+	usePrimaryNetworkComponent := false
+
 	if publicVlanID > 0 {
 		primaryNetworkComponent.NetworkVlan.Id = &publicVlanID
+		usePrimaryNetworkComponent = true
 	}
 
 	// Apply public subnet if provided
@@ -538,9 +579,21 @@ func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interf
 			return opts, fmt.Errorf("Error creating virtual guest: %s", err)
 		}
 		primaryNetworkComponent.NetworkVlan.PrimarySubnetId = &primarySubnetID
+		usePrimaryNetworkComponent = true
 	}
 
-	if publicVlanID > 0 || publicSubnet != "" {
+	// Apply security groups if provided
+	publicSecurityGroupIDList := d.Get("public_security_group_ids").(*schema.Set).List()
+	sgb, err := expandSecurityGroupBindings(publicSecurityGroupIDList)
+	if err != nil {
+		return opts, err
+	}
+	if sgb != nil {
+		primaryNetworkComponent.SecurityGroupBindings = sgb
+		usePrimaryNetworkComponent = true
+	}
+
+	if usePrimaryNetworkComponent {
 		opts.PrimaryNetworkComponent = &primaryNetworkComponent
 	}
 
@@ -548,8 +601,11 @@ func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interf
 		NetworkVlan: &datatypes.Network_Vlan{},
 	}
 
+	usePrimaryBackendNetworkComponent := false
+
 	if privateVlanID > 0 {
 		primaryBackendNetworkComponent.NetworkVlan.Id = &privateVlanID
+		usePrimaryBackendNetworkComponent = true
 	}
 
 	// Apply private subnet if provided
@@ -559,9 +615,21 @@ func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interf
 			return opts, fmt.Errorf("Error creating virtual guest: %s", err)
 		}
 		primaryBackendNetworkComponent.NetworkVlan.PrimarySubnetId = &primarySubnetID
+		usePrimaryBackendNetworkComponent = true
 	}
 
-	if privateVlanID > 0 || privateSubnet != "" {
+	// Apply security groups if provided
+	privateSecurityGroupIDList := d.Get("private_security_group_ids").(*schema.Set).List()
+	sgb, err = expandSecurityGroupBindings(privateSecurityGroupIDList)
+	if err != nil {
+		return opts, err
+	}
+	if sgb != nil {
+		primaryBackendNetworkComponent.SecurityGroupBindings = sgb
+		usePrimaryBackendNetworkComponent = true
+	}
+
+	if usePrimaryBackendNetworkComponent {
 		opts.PrimaryBackendNetworkComponent = &primaryBackendNetworkComponent
 	}
 
@@ -851,9 +919,11 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 			"sshKeys," +
 			"primaryNetworkComponent[networkVlan[id]," +
 			"primaryVersion6IpAddressRecord[subnet,guestNetworkComponentBinding[ipAddressId]]," +
-			"primaryIpAddressRecord[subnet,guestNetworkComponentBinding[ipAddressId]]]," +
+			"primaryIpAddressRecord[subnet,guestNetworkComponentBinding[ipAddressId]]," +
+			"securityGroupBindings[securityGroup]]," +
 			"primaryBackendNetworkComponent[networkVlan[id]," +
-			"primaryIpAddressRecord[subnet,guestNetworkComponentBinding[ipAddressId]]]",
+			"primaryIpAddressRecord[subnet,guestNetworkComponentBinding[ipAddressId]]," +
+			"securityGroupBindings[securityGroup]]",
 	).GetObject()
 
 	if err != nil {
@@ -922,11 +992,27 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 		)
 	}
 
+	if result.PrimaryNetworkComponent.SecurityGroupBindings != nil {
+		var sgs []int
+		for _, sg := range result.PrimaryNetworkComponent.SecurityGroupBindings {
+			sgs = append(sgs, *sg.SecurityGroup.Id)
+		}
+		d.Set("public_security_group_ids", sgs)
+	}
+
 	privateSubnet := result.PrimaryBackendNetworkComponent.PrimaryIpAddressRecord.Subnet
 	d.Set(
 		"private_subnet",
 		fmt.Sprintf("%s/%d", *privateSubnet.NetworkIdentifier, *privateSubnet.Cidr),
 	)
+
+	if result.PrimaryBackendNetworkComponent.SecurityGroupBindings != nil {
+		var sgs []int
+		for _, sg := range result.PrimaryBackendNetworkComponent.SecurityGroupBindings {
+			sgs = append(sgs, *sg.SecurityGroup.Id)
+		}
+		d.Set("private_security_group_ids", sgs)
+	}
 
 	d.Set("ipv6_enabled", false)
 	if result.PrimaryNetworkComponent.PrimaryVersion6IpAddressRecord != nil {
@@ -1133,7 +1219,8 @@ func modifyStorageAccess(sam storageAccessModifier, deviceID int, meta interface
 }
 
 func resourceIBMComputeVmInstanceDelete(d *schema.ResourceData, meta interface{}) error {
-	service := services.GetVirtualGuestService(meta.(ClientSession).SoftLayerSession())
+	sess := meta.(ClientSession).SoftLayerSession()
+	service := services.GetVirtualGuestService(sess)
 
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -1145,9 +1232,11 @@ func resourceIBMComputeVmInstanceDelete(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return fmt.Errorf("Error deleting virtual guest, couldn't wait for zero active transactions: %s", err)
 	}
-
+	err = detachSecurityGroupNetworkComponentBindings(d, meta, id)
+	if err != nil {
+		return err
+	}
 	ok, err := service.Id(id).DeleteObject()
-
 	if err != nil {
 		return fmt.Errorf("Error deleting virtual guest: %s", err)
 	}
@@ -1157,6 +1246,53 @@ func resourceIBMComputeVmInstanceDelete(d *schema.ResourceData, meta interface{}
 			"API reported it was unsuccessful in removing the virtual guest '%d'", id)
 	}
 
+	return nil
+}
+
+func detachSecurityGroupNetworkComponentBindings(d *schema.ResourceData, meta interface{}, id int) error {
+	sess := meta.(ClientSession).SoftLayerSession()
+	service := services.GetVirtualGuestService(sess)
+	publicSgIDs := d.Get("public_security_group_ids").(*schema.Set).List()
+	privateSgIDS := d.Get("private_security_group_ids").(*schema.Set).List()
+	if len(publicSgIDs) == 0 && len(privateSgIDS) == 0 {
+		log.Println("No security groups specified, hence no detachment required before delete operation")
+		return nil
+	}
+	vsi, err := service.Id(id).Mask(
+		"primaryNetworkComponent[id,securityGroupBindings[securityGroupId,networkComponentId]]," +
+			"primaryBackendNetworkComponent[id,securityGroupBindings[securityGroupId,networkComponentId]]",
+	).GetObject()
+
+	if err != nil {
+		return err
+	}
+	sgService := services.GetNetworkSecurityGroupService(sess)
+	//Detach security group as destroy might fail if the security group is attempted
+	//to be destroyed in the same terraform configuration file. VSI destroy takes
+	//some time andif during the same time security group which was referred in the VSI
+	//is attempted to be destroyed it will fail.
+	for _, v := range publicSgIDs {
+		sgID := v.(int)
+		for _, v := range vsi.PrimaryNetworkComponent.SecurityGroupBindings {
+			if sgID == *v.SecurityGroupId {
+				_, err := sgService.Id(sgID).DetachNetworkComponents([]int{*v.NetworkComponentId})
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+	for _, v := range privateSgIDS {
+		sgID := v.(int)
+		for _, v := range vsi.PrimaryBackendNetworkComponent.SecurityGroupBindings {
+			if sgID == *v.SecurityGroupId {
+				_, err := sgService.Id(sgID).DetachNetworkComponents([]int{*v.NetworkComponentId})
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
 	return nil
 }
 
