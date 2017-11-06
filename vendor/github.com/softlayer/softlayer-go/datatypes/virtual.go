@@ -1081,7 +1081,7 @@ type Virtual_Guest_Network_Component struct {
 	SecurityGroupBindingCount *uint `json:"securityGroupBindingCount,omitempty" xmlrpc:"securityGroupBindingCount,omitempty"`
 
 	// The bindings associating security groups to this network component
-	//SecurityGroupBindings []Virtual_Network_SecurityGroup_NetworkComponentBinding `json:"securityGroupBindings,omitempty" xmlrpc:"securityGroupBindings,omitempty"`
+	SecurityGroupBindings []Virtual_Network_SecurityGroup_NetworkComponentBinding `json:"securityGroupBindings,omitempty" xmlrpc:"securityGroupBindings,omitempty"`
 
 	// A computing instance network component's speed, measured in Mbit per second.
 	Speed *int `json:"speed,omitempty" xmlrpc:"speed,omitempty"`
