@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM: security_group"
+page_title: "IBM: ibm_security_group"
 sidebar_current: "docs-ibm-resource-security-group"
 description: |-
   Manages IBM Security Groups
