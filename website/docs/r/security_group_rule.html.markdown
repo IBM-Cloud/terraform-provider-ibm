@@ -29,7 +29,7 @@ resource "ibm_security_group_rule" "allow_port_8080" {
 
 The following arguments are supported:
 
-* `direction` - (Optional, string) Direction of traffic: ingress or egress
+* `direction` - (Required, string) Direction of traffic: ingress or egress
 * `ether_type` - (Optional, string) IP version: IPv4 or IPv6 (case sensitive). Defaults to 'IPv4'
 * `port_range_min` - (Optional, int) Lower bound of port range to allow
 * `port_range_max` - (Optional, int) Upper bound of port range to allow
