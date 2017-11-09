@@ -120,5 +120,8 @@ The following attributes are exported:
 * `ip_address_id` - The unique identifier for the public IPv4 address assigned to the VM instance.
 * `ipv6_address` - The public IPv6 address of the VM instance provided when `ipv6_enabled` is set to `true`.
 * `ipv6_address_id` - The unique identifier for the public IPv6 address assigned to the VM instance provided when `ipv6_enabled` is set to `true`.
+* `private_subnet_id` - The unique identifier of the subnet `ipv4_address_private` belongs to.
 * `public_ipv6_subnet` - The public IPv6 subnet provided when `ipv6_enabled` is set to `true`.
+* `public_ipv6_subnet_id` - The unique identifier of the subnet `ipv6_address` belongs to.
+* `public_subnet_id` - The unique identifier of the subnet `ipv4_address` belongs to.
 * `secondary_ip_addresses` - The public secondary IPv4 addresses of the VM instance.

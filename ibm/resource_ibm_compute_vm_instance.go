@@ -180,6 +180,11 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				Computed: true,
 			},
 
+			"public_subnet_id": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+
 			"public_security_group_ids": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -202,6 +207,11 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
+				Computed: true,
+			},
+
+			"private_subnet_id": {
+				Type:     schema.TypeInt,
 				Computed: true,
 			},
 
@@ -276,6 +286,11 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 			// SoftLayer does not support public_ipv6_subnet configuration in vm creation. So, public_ipv6_subnet
 			// is defined as a computed parameter.
 			"public_ipv6_subnet": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"public_ipv6_subnet_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -990,6 +1005,7 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 			"public_subnet",
 			fmt.Sprintf("%s/%d", *publicSubnet.NetworkIdentifier, *publicSubnet.Cidr),
 		)
+		d.Set("public_subnet_id", result.PrimaryNetworkComponent.PrimaryIpAddressRecord.SubnetId)
 	}
 
 	if result.PrimaryNetworkComponent.SecurityGroupBindings != nil {
@@ -1005,6 +1021,7 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 		"private_subnet",
 		fmt.Sprintf("%s/%d", *privateSubnet.NetworkIdentifier, *privateSubnet.Cidr),
 	)
+	d.Set("private_subnet_id", result.PrimaryBackendNetworkComponent.PrimaryIpAddressRecord.SubnetId)
 
 	if result.PrimaryBackendNetworkComponent.SecurityGroupBindings != nil {
 		var sgs []int
@@ -1024,6 +1041,7 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 			"public_ipv6_subnet",
 			fmt.Sprintf("%s/%d", *publicSubnet.NetworkIdentifier, *publicSubnet.Cidr),
 		)
+		d.Set("public_ipv6_subnet_id", result.PrimaryNetworkComponent.PrimaryVersion6IpAddressRecord.SubnetId)
 	}
 
 	userData := result.UserData
