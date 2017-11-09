@@ -34,6 +34,8 @@ The following attributes are exported:
 
 * `id` - The unique identifier of the VM instance.
 * `datacenter` - The data center in which the VM instance is deployed.
+* `public_interface_id` - The ID of the primary public interface.
+* `private_interface_id` - The ID of the primary private interface.
 * `cores` - The number of CPU cores.
 * `status` - The VSI status.
 * `last_known_power_state` - The last known power state of a VM instance, in the event the instance is turned off outside the information management system (IMS) or has gone offline.

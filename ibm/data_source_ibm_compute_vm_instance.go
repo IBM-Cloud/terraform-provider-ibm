@@ -49,6 +49,15 @@ func dataSourceIBMComputeVmInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"public_interface_id": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"private_interface_id": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+
 			"power_state": &schema.Schema{
 				Description: "The current power state of a virtual guest.",
 				Type:        schema.TypeString,
@@ -76,7 +85,7 @@ func dataSourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}
 	vgs, err := service.
 		Filter(filter.Build(filter.Path("virtualGuests.hostname").Eq(hostname),
 			filter.Path("virtualGuests.domain").Eq(domain))).Mask(
-		"hostname,domain,startCpus,datacenter[id,name,longName],statusId,status,id,powerState,lastKnownPowerState,createDate",
+		"hostname,domain,startCpus,datacenter[id,name,longName],statusId,status,id,powerState,lastKnownPowerState,createDate,primaryNetworkComponent[id],primaryBackendNetworkComponent[id]",
 	).GetVirtualGuests()
 
 	if err != nil {
@@ -117,6 +126,8 @@ func dataSourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}
 	if vg.LastKnownPowerState != nil {
 		d.Set("last_known_power_state", vg.LastKnownPowerState.KeyName)
 	}
+	d.Set("public_interface_id", vg.PrimaryNetworkComponent.Id)
+	d.Set("private_interface_id", vg.PrimaryBackendNetworkComponent.Id)
 
 	return nil
 }

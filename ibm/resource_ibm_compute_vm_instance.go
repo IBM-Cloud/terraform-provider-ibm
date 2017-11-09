@@ -172,7 +172,10 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				ForceNew: true,
 				Computed: true,
 			},
-
+			"public_interface_id": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
 			"public_subnet": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -183,6 +186,7 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 			"public_security_group_ids": {
 				Type:     schema.TypeSet,
 				Optional: true,
+				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeInt},
 				Set: func(v interface{}) int {
 					return v.(int)
@@ -197,7 +201,10 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				ForceNew: true,
 				Computed: true,
 			},
-
+			"private_interface_id": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
 			"private_subnet": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -208,6 +215,7 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 			"private_security_group_ids": {
 				Type:     schema.TypeSet,
 				Optional: true,
+				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeInt},
 				Set: func(v interface{}) int {
 					return v.(int)
@@ -972,8 +980,10 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 	if result.PrimaryNetworkComponent.PrimaryIpAddressRecord != nil {
 		d.Set("ip_address_id", *result.PrimaryNetworkComponent.PrimaryIpAddressRecord.GuestNetworkComponentBinding.IpAddressId)
 	}
+	d.Set("public_interface_id", result.PrimaryNetworkComponent.Id)
 	d.Set("ip_address_id_private",
 		*result.PrimaryBackendNetworkComponent.PrimaryIpAddressRecord.GuestNetworkComponentBinding.IpAddressId)
+	d.Set("private_interface_id", result.PrimaryBackendNetworkComponent.Id)
 	d.Set("private_network_only", *result.PrivateNetworkOnlyFlag)
 	d.Set("hourly_billing", *result.HourlyBillingFlag)
 	d.Set("local_disk", *result.LocalDiskFlag)

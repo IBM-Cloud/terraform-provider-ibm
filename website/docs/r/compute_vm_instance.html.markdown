@@ -122,3 +122,5 @@ The following attributes are exported:
 * `ipv6_address_id` - The unique identifier for the public IPv6 address assigned to the VM instance provided when `ipv6_enabled` is set to `true`.
 * `public_ipv6_subnet` - The public IPv6 subnet provided when `ipv6_enabled` is set to `true`.
 * `secondary_ip_addresses` - The public secondary IPv4 addresses of the VM instance.
+* `public_interface_id` - The ID of the primary public interface.
+* `private_interface_id` - The ID of the primary private interface.
