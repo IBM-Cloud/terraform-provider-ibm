@@ -1,0 +1,996 @@
+package ibm
+
+import (
+	"fmt"
+	"log"
+	"softlayer-go/filter"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/softlayer/softlayer-go/datatypes"
+	//"github.com/softlayer/softlayer-go/filter"
+	"github.com/softlayer/softlayer-go/helpers/location"
+	"github.com/softlayer/softlayer-go/helpers/product"
+	"github.com/softlayer/softlayer-go/services"
+	"github.com/softlayer/softlayer-go/session"
+	"github.com/softlayer/softlayer-go/sl"
+)
+
+func resourceIBMNetworkGateway() *schema.Resource {
+	return &schema.Resource{
+		Create:   resourceIBMNetworkGatewayCreate,
+		Read:     resourceIBMNetworkGatewayRead,
+		Update:   resourceIBMNetworkGatewayUpdate,
+		Delete:   resourceIBMNetworkGatewayDelete,
+		Exists:   resourceIBMNetworkGatewayExists,
+		Importer: &schema.ResourceImporter{},
+
+		Schema: map[string]*schema.Schema{
+			"id": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+
+			"hostname": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				DefaultFunc: genID,
+				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
+					// FIXME: Work around another bug in terraform.
+					// When a default function is used with an optional property,
+					// terraform will always execute it on apply, even when the property
+					// already has a value in the state for it. This causes a false diff.
+					// Making the property Computed:true does not make a difference.
+					if strings.HasPrefix(o, "terraformed-") && strings.HasPrefix(n, "terraformed-") {
+						return true
+					}
+					return o == n
+				},
+			},
+
+			"domain": {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+			},
+
+			"user_metadata": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
+
+			"notes": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+
+			"post_install_script_uri": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          nil,
+				ForceNew:         true,
+				DiffSuppressFunc: applyOnce,
+			},
+
+			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
+
+			// Hourly only
+			"os_reference_code": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+			},
+
+			"datacenter": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+			},
+
+			"network_speed": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				Default:  100,
+				ForceNew: true,
+			},
+
+			"tcp_monitoring": {
+				Type:             schema.TypeBool,
+				Optional:         true,
+				Default:          false,
+				ForceNew:         true,
+				DiffSuppressFunc: applyOnce,
+			},
+
+			"redundant_power_supply": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+			},
+			// Monthly only
+			"package_key_name": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: applyOnce,
+			},
+
+			// Monthly only
+			"process_key_name": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: applyOnce,
+			},
+
+			// Monthly only
+			"os_key_name": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: applyOnce,
+			},
+
+			// Monthly only
+			"disk_key_names": {
+				Type:             schema.TypeList,
+				Optional:         true,
+				ForceNew:         true,
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				DiffSuppressFunc: applyOnce,
+			},
+
+			// Monthly only
+			"redundant_network": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				ForceNew: true,
+			},
+
+			// Monthly only
+			"unbonded_network": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				ForceNew: true,
+			},
+
+			// Monthly only
+			"public_bandwidth": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: applyOnce,
+			},
+
+			// Monthly only
+			"memory": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				ForceNew: true,
+			},
+			// Monthly only
+			"storage_groups": {
+				Type:     schema.TypeList,
+				Optional: true,
+				ForceNew: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"array_type_id": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"hard_drives": {
+							Type:     schema.TypeList,
+							Elem:     &schema.Schema{Type: schema.TypeInt},
+							Required: true,
+						},
+						"array_size": {
+							Type:     schema.TypeInt,
+							Optional: true,
+						},
+						"partition_template_id": {
+							Type:     schema.TypeInt,
+							Optional: true,
+						},
+					},
+				},
+				DiffSuppressFunc: applyOnce,
+			},
+
+			// Quote based provisioning only
+			"quote_id": {
+				Type:             schema.TypeInt,
+				Optional:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: applyOnce,
+			},
+
+			// Quote based provisioning, Monthly
+			"public_vlan_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+			},
+
+			// Quote based provisioning, Monthly
+			"public_subnet": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+			},
+
+			// Quote based provisioning, Monthly
+			"private_vlan_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+			},
+
+			// Quote based provisioning, Monthly
+			"private_subnet": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+			},
+
+			"public_ipv4_address": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"private_ipv4_address": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"ipv6_enabled": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				ForceNew: true,
+				Default:  true,
+			},
+
+			"ipv6_address": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"ipv6_address_id": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+
+			// SoftLayer does not support public_ipv6_subnet configuration in vm creation. So, public_ipv6_subnet
+			// is defined as a computed parameter.
+			"public_ipv6_subnet": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"router_hostname": {
+				Type:     schema.TypeString,
+				Computed: true,
+				Optional: true,
+				ForceNew: true,
+			},
+			"vlan_number": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"private_network_only": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				ForceNew: true,
+			},
+			"debug": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  true,
+				ForceNew: true,
+			},
+		},
+	}
+}
+func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) error {
+	sess := meta.(ClientSession).SoftLayerSession()
+	hwService := services.GetHardwareService(sess)
+	var order datatypes.Container_Product_Order
+	var err error
+	quote_id := d.Get("quote_id").(int)
+	hardware := datatypes.Hardware{
+		Hostname: sl.String(d.Get("hostname").(string)),
+		Domain:   sl.String(d.Get("domain").(string)),
+	}
+
+	if quote_id > 0 {
+		// Build a Network Gateway from a quote.
+		order, err = services.GetBillingOrderQuoteService(sess).
+			Id(quote_id).GetRecalculatedOrderContainer(nil, sl.Bool(false))
+		if err != nil {
+			return fmt.Errorf(
+				"Encountered problem trying to get the Network Gateway order template from quote: %s", err)
+		}
+		order.Quantity = sl.Int(1)
+		order.Hardware = make([]datatypes.Hardware, 0, 1)
+		order.Hardware = append(
+			order.Hardware,
+			hardware,
+		)
+	} else {
+		// Build a montly Network gateway
+		order, err = getMonthlyGatewayOrder(d, meta)
+		if err != nil {
+			return fmt.Errorf(
+				"Encountered problem trying to get the Gateway order template: %s", err)
+		}
+	}
+
+	order, err = setCommonGatewayOrderOptions(d, meta, order)
+	if err != nil {
+		return fmt.Errorf(
+			"Encountered problem trying to configure Gateway options: %s", err)
+	}
+
+	var ProductOrder datatypes.Container_Product_Order
+	ProductOrder.OrderContainers = make([]datatypes.Container_Product_Order, 1)
+	ProductOrder.OrderContainers[0] = order
+
+	DebugMode := (d.Get("debug").(bool))
+	if DebugMode == true {
+		verification, err := services.GetProductOrderService(sess).VerifyOrder(&ProductOrder)
+		if err != nil {
+			return fmt.Errorf(
+				"Encountered problem trying to verify the order: %s", err)
+		}
+		log.Println("####################ORDER VERIFIED####################", verification.Message)
+		log.Println("IBM Provider for Network Gateway running in DEBUG mode")
+		return resourceIBMNetworkGatewayRead(d, meta)
+		//os.Exit(1)
+	} else {
+		receipt, err := services.GetProductOrderService(sess).PlaceOrder(&ProductOrder, sl.Bool(false))
+		if err != nil {
+			return fmt.Errorf(
+				"Encountered problem trying to verify the order: %s", err)
+		}
+		log.Printf("[INFO] Gateway ID: %s", d.Id())
+
+		bm, err := waitForNetworkGatewayProvision(&hardware, meta)
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for Gateway (%s) to become ready: %s", d.Id(), err)
+		}
+
+		id := *bm.(datatypes.Hardware).Id
+		d.SetId(fmt.Sprintf("%d", id))
+
+		// Set tags
+		err = setHardwareTags(id, d, meta)
+		if err != nil {
+			return err
+		}
+
+		var storageIds []int
+		if storageIdsSet := d.Get("file_storage_ids").(*schema.Set); len(storageIdsSet.List()) > 0 {
+			storageIds = expandIntList(storageIdsSet.List())
+
+		}
+		if storageIdsSet := d.Get("block_storage_ids").(*schema.Set); len(storageIdsSet.List()) > 0 {
+			storageIds = append(storageIds, expandIntList(storageIdsSet.List())...)
+		}
+		if len(storageIds) > 0 {
+			err := addAccessToStorageList(hwService.Id(id), id, storageIds, meta)
+			if err != nil {
+				return err
+			}
+		}
+
+		// Set notes
+		if d.Get("notes").(string) != "" {
+			err = setHardwareNotes(id, d, meta)
+			if err != nil {
+				return err
+			}
+		}
+
+		return resourceIBMNetworkGatewayRead(d, meta)
+	}
+}
+
+func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) error {
+	service := services.GetHardwareService(meta.(ClientSession).SoftLayerSession())
+
+	id, err := strconv.Atoi(d.Id())
+	if err != nil {
+		return fmt.Errorf("Not a valid ID, must be an integer: %s", err)
+	}
+
+	result, err := service.Id(id).Mask(
+		"hostname,domain," +
+			"primaryIpAddress,primaryBackendIpAddress,privateNetworkOnlyFlag," +
+			"notes,userData[value],tagReferences[id,tag[name]]," +
+			"allowedNetworkStorage[id,nasType]," +
+			"hourlyBillingFlag," +
+			"datacenter[id,name,longName]," +
+			"primaryNetworkComponent[networkVlan[id,primaryRouter,vlanNumber],maxSpeed]," +
+			"primaryBackendNetworkComponent[networkVlan[id,primaryRouter,vlanNumber],maxSpeed,redundancyEnabledFlag]," +
+			"memoryCapacity,powerSupplyCount," +
+			"operatingSystem[softwareLicense[softwareDescription[referenceCode]]]",
+	).GetObject()
+
+	if err != nil {
+		return fmt.Errorf("Error retrieving Network Gateway: %s", err)
+	}
+
+	d.Set("hostname", *result.Hostname)
+	d.Set("domain", *result.Domain)
+
+	if result.Datacenter != nil {
+		d.Set("datacenter", *result.Datacenter.Name)
+	}
+
+	d.Set("network_speed", *result.PrimaryNetworkComponent.MaxSpeed)
+	if result.PrimaryIpAddress != nil {
+		d.Set("public_ipv4_address", *result.PrimaryIpAddress)
+	}
+	d.Set("private_ipv4_address", *result.PrimaryBackendIpAddress)
+
+	d.Set("private_network_only", *result.PrivateNetworkOnlyFlag)
+	d.Set("hourly_billing", *result.HourlyBillingFlag)
+
+	if result.PrimaryNetworkComponent.NetworkVlan != nil {
+		d.Set("public_vlan_id", *result.PrimaryNetworkComponent.NetworkVlan.Id)
+	}
+
+	if result.PrimaryBackendNetworkComponent.NetworkVlan != nil {
+		d.Set("private_vlan_id", *result.PrimaryBackendNetworkComponent.NetworkVlan.Id)
+	}
+
+	userData := result.UserData
+	if len(userData) > 0 && userData[0].Value != nil {
+		d.Set("user_metadata", *userData[0].Value)
+	}
+
+	d.Set("notes", sl.Get(result.Notes, nil))
+	d.Set("memory", *result.MemoryCapacity)
+
+	d.Set("redundant_power_supply", false)
+
+	if *result.PowerSupplyCount == 2 {
+		d.Set("redundant_power_supply", true)
+	}
+
+	d.Set("redundant_network", false)
+	d.Set("unbonded_network", false)
+
+	backendNetworkComponent, err := service.Filter(
+		filter.Build(
+			filter.Path("backendNetworkComponents.status").Eq("ACTIVE"),
+		),
+	).Id(id).GetBackendNetworkComponents()
+
+	if err != nil {
+		return fmt.Errorf("Error retrieving bare metal server network: %s", err)
+	}
+
+	if len(backendNetworkComponent) > 2 && result.PrimaryBackendNetworkComponent != nil {
+		if *result.PrimaryBackendNetworkComponent.RedundancyEnabledFlag {
+			d.Set("redundant_network", true)
+		} else {
+			d.Set("unbonded_network", true)
+		}
+	}
+
+	if result.OperatingSystem != nil &&
+		result.OperatingSystem.SoftwareLicense != nil &&
+		result.OperatingSystem.SoftwareLicense.SoftwareDescription != nil &&
+		result.OperatingSystem.SoftwareLicense.SoftwareDescription.ReferenceCode != nil {
+		d.Set("os_reference_code", *result.OperatingSystem.SoftwareLicense.SoftwareDescription.ReferenceCode)
+	}
+
+	tagReferences := result.TagReferences
+	tagReferencesLen := len(tagReferences)
+	if tagReferencesLen > 0 {
+		tags := make([]string, 0, tagReferencesLen)
+		for _, tagRef := range tagReferences {
+			tags = append(tags, *tagRef.Tag.Name)
+		}
+		d.Set("tags", tags)
+	}
+
+	storages := result.AllowedNetworkStorage
+	if len(storages) > 0 {
+		d.Set("block_storage_ids", flattenBlockStorageID(storages))
+		d.Set("file_storage_ids", flattenFileStorageID(storages))
+	}
+
+	connInfo := map[string]string{"type": "ssh"}
+	if !*result.PrivateNetworkOnlyFlag && result.PrimaryIpAddress != nil {
+		connInfo["host"] = *result.PrimaryIpAddress
+	} else {
+		connInfo["host"] = *result.PrimaryBackendIpAddress
+	}
+	d.SetConnInfo(connInfo)
+
+	return nil
+}
+func resourceIBMNetworkGatewayUpdate(d *schema.ResourceData, meta interface{}) error {
+	id, _ := strconv.Atoi(d.Id())
+	service := services.GetHardwareService(meta.(ClientSession).SoftLayerSession())
+
+	if d.HasChange("tags") {
+		err := setHardwareTags(id, d, meta)
+		if err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("notes") {
+		err := setHardwareNotes(id, d, meta)
+		if err != nil {
+			return err
+		}
+	}
+	err := modifyStorageAccess(service.Id(id), id, meta, d)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func resourceIBMNetworkGatewayDelete(d *schema.ResourceData, meta interface{}) error {
+	sess := meta.(ClientSession).SoftLayerSession()
+	service := services.GetHardwareService(sess)
+
+	id, err := strconv.Atoi(d.Id())
+	if err != nil {
+		return fmt.Errorf("Not a valid ID, must be an integer: %s", err)
+	}
+
+	_, err = waitForNoBareMetalActiveTransactions(id, meta)
+	if err != nil {
+		return fmt.Errorf("Error deleting Network Gateway while waiting for zero active transactions: %s", err)
+	}
+
+	billingItem, err := service.Id(id).GetBillingItem()
+	if err != nil {
+		return fmt.Errorf("Error getting billing item for Network Gateway: %s", err)
+	}
+
+	// Monthly  Softlayer items only support an anniversary date cancellation option.
+	billingItemService := services.GetBillingItemService(sess)
+	_, err = billingItemService.Id(*billingItem.Id).CancelItem(
+		sl.Bool(d.Get("hourly_billing").(bool)), sl.Bool(true), sl.String("No longer required"), sl.String("Please cancel this Network Gateway"),
+	)
+	if err != nil {
+		return fmt.Errorf("Error canceling the Network Gateway (%d): %s", id, err)
+	}
+
+	return nil
+}
+
+func resourceIBMNetworkGatewayExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	service := services.GetHardwareService(meta.(ClientSession).SoftLayerSession())
+
+	id, err := strconv.Atoi(d.Id())
+	if err != nil {
+		return false, fmt.Errorf("Not a valid ID, must be an integer: %s", err)
+	}
+
+	result, err := service.Id(id).GetObject()
+	if err != nil {
+		if apiErr, ok := err.(sl.Error); !ok || apiErr.StatusCode != 404 {
+			return false, fmt.Errorf("Error trying to retrieve Network Gateway: %s", err)
+		}
+	}
+
+	return result.Id != nil && *result.Id == id, nil
+}
+
+func getMonthlyGatewayOrder(d *schema.ResourceData, meta interface{}) (datatypes.Container_Product_Order, error) {
+
+	d.Set("package_key_name", "NETWORK_GATEWAY_APPLIANCE")
+	d.Set("os_reference_code", "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT")
+	d.Set("process_key_name", "INTEL_SINGLE_XEON_1270_3_40_2")
+	d.Set("os_key_name", "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT")
+	d.Set("public_bandwidth", "BANDWIDTH_20000_GB")
+
+	//moving it here did not work
+	sess := meta.(ClientSession).SoftLayerSession()
+	// Validate attributes for network gateway ordering.
+
+	model, ok := d.GetOk("package_key_name")
+	if !ok {
+		return datatypes.Container_Product_Order{}, fmt.Errorf("The attribute 'package_key_name' is not defined.")
+	}
+
+	datacenter, ok := d.GetOk("datacenter")
+	if !ok {
+		return datatypes.Container_Product_Order{}, fmt.Errorf("The attribute 'datacenter' is not defined.")
+	}
+
+	osKeyName, ok := d.GetOk("os_key_name")
+	if !ok {
+		return datatypes.Container_Product_Order{}, fmt.Errorf("The attribute 'os_key_name' is not defined.")
+	}
+
+	process_key_name, ok := d.GetOk("process_key_name")
+	if !ok {
+		return datatypes.Container_Product_Order{}, fmt.Errorf("The attribute 'process_key_name' is not defined.")
+	}
+
+	dc, err := location.GetDatacenterByName(sess, datacenter.(string), "id")
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+
+	// 1. Find a package id using Gateway package key name.
+	pkg, err := getPackageByModelGateway(sess, model.(string))
+
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+
+	if pkg.Id == nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+
+	// 2. Get all prices for the package
+	items, err := product.GetPackageProducts(sess, *pkg.Id, productItemMaskWithPriceLocationGroupID)
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+
+	// 3. Build price items
+	server, err := getItemPriceIdGateway(items, "server", process_key_name.(string))
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+
+	os, err := getItemPriceIdGateway(items, "os", osKeyName.(string))
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+
+	ram, err := findMemoryItemPriceIdGateway(items, d)
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+
+	portSpeed, err := findNetworkItemPriceIdGateway(items, d)
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+
+	monitoring, err := getItemPriceIdGateway(items, "monitoring", "MONITORING_HOST_PING")
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+	if d.Get("tcp_monitoring").(bool) {
+		monitoring, err = getItemPriceIdGateway(items, "monitoring", "MONITORING_HOST_PING_AND_TCP_SERVICE")
+		if err != nil {
+			return datatypes.Container_Product_Order{}, err
+		}
+	}
+	// Other common default options
+	priIpAddress, err := getItemPriceIdGateway(items, "pri_ip_addresses", "1_IP_ADDRESS")
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+
+	pri_ipv6_addresses, err := getItemPriceIdGateway(items, "pri_ipv6_addresses", "1_IPV6_ADDRESS")
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+
+	remoteManagement, err := getItemPriceIdGateway(items, "remote_management", "REBOOT_KVM_OVER_IP")
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+	vpnManagement, err := getItemPriceIdGateway(items, "vpn_management", "UNLIMITED_SSL_VPN_USERS_1_PPTP_VPN_USER_PER_ACCOUNT")
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+
+	notification, err := getItemPriceIdGateway(items, "notification", "NOTIFICATION_EMAIL_AND_TICKET")
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+	response, err := getItemPriceIdGateway(items, "response", "AUTOMATED_NOTIFICATION")
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+	vulnerabilityScanner, err := getItemPriceIdGateway(items, "vulnerability_scanner", "NESSUS_VULNERABILITY_ASSESSMENT_REPORTING")
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+
+	// Define an order object using basic paramters.
+
+	order := datatypes.Container_Product_Order{
+		ContainerIdentifier: sl.String(d.Get("hostname").(string)),
+		Quantity:            sl.Int(1),
+		Hardware: []datatypes.Hardware{{
+			Hostname: sl.String(d.Get("hostname").(string)),
+			Domain:   sl.String(d.Get("domain").(string)),
+		},
+		},
+		Location:  sl.String(strconv.Itoa(*dc.Id)),
+		PackageId: pkg.Id,
+		Prices: []datatypes.Product_Item_Price{
+			server,
+			os,
+			ram,
+			portSpeed,
+			priIpAddress,
+			pri_ipv6_addresses,
+			remoteManagement,
+			vpnManagement,
+			monitoring,
+			notification,
+			response,
+			vulnerabilityScanner,
+		},
+	}
+
+	// Add optional price ids.
+	// Add public bandwidth
+	publicBandwidth, ok := d.GetOk("public_bandwidth")
+	bandwidth, err := getItemPriceIdGateway(items, "bandwidth", publicBandwidth.(string))
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+	order.Prices = append(order.Prices, bandwidth)
+
+	// Add prices of disks.
+	var arrayDrives []interface{}
+	var arrayDrivestemp []string
+	arrayDrivestemp = append(arrayDrivestemp, "HARD_DRIVE_1_00_TB_SATA_III")
+	arrayDrivestemp = append(arrayDrivestemp, "HARD_DRIVE_2_00TB_SATA_II")
+
+	for _, val := range arrayDrivestemp {
+		arrayDrives = append(arrayDrives, val)
+	}
+
+	diskLen := len(arrayDrives)
+	if diskLen > 0 {
+		for i, disk := range arrayDrives {
+			diskPrice, err := getItemPriceIdGateway(items, "disk"+strconv.Itoa(i), disk.(string))
+			if err != nil {
+				return datatypes.Container_Product_Order{}, err
+			}
+			order.Prices = append(order.Prices, diskPrice)
+		}
+	}
+
+	// Add storage_groups for RAID configuration
+	//hard coded support for disk controller, just RAID 1 is supported in this release of the resource
+	diskController, err := getItemPriceIdGateway(items, "disk_controller", "DISK_CONTROLLER_RAID_1")
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+
+	order.Prices = append(order.Prices, diskController)
+
+	return order, nil
+}
+func getPackageByModelGateway(sess *session.Session, model string) (datatypes.Product_Package, error) {
+	objectMask := "id,keyName,name,description,isActive,type[keyName],categories[id,name,categoryCode]"
+	service := services.GetProductPackageService(sess)
+	availableModels := ""
+	filterStr := "{\"items\": {\"categories\": {\"categoryCode\": {\"operation\":\"server\"}}},\"type\": {\"keyName\": {\"operation\":\"BARE_METAL_GATEWAY\"}}}"
+
+	// Get package id
+	packages, err := service.Mask(objectMask).
+		Filter(filterStr).GetAllObjects()
+	if err != nil {
+		return datatypes.Product_Package{}, err
+	}
+	for _, pkg := range packages {
+		availableModels = availableModels + *pkg.KeyName
+		if pkg.Description != nil {
+			availableModels = availableModels + " ( " + *pkg.Description + " ), "
+		} else {
+			availableModels = availableModels + ", "
+		}
+		if *pkg.KeyName == model {
+			return pkg, nil
+		}
+	}
+	return datatypes.Product_Package{}, fmt.Errorf("No Gateway package key name for %s. Available package key name(s) is(are) %s", model, availableModels)
+}
+
+func getItemPriceIdGateway(items []datatypes.Product_Item, categoryCode string, keyName string) (datatypes.Product_Item_Price, error) {
+	availableItems := ""
+	for _, item := range items {
+		for _, itemCategory := range item.Categories {
+			if *itemCategory.CategoryCode == categoryCode {
+				availableItems = availableItems + *item.KeyName + " ( " + *item.Description + " ) , "
+				if *item.KeyName == keyName {
+					for _, price := range item.Prices {
+						if price.LocationGroupId == nil {
+							return datatypes.Product_Item_Price{Id: price.Id}, nil
+						}
+					}
+				}
+			}
+		}
+	}
+	return datatypes.Product_Item_Price{},
+		fmt.Errorf("Could not find the matching item with categorycode %s and keyName %s. Available item(s) is(are) %s", categoryCode, keyName, availableItems)
+}
+
+func setCommonGatewayOrderOptions(d *schema.ResourceData, meta interface{}, order datatypes.Container_Product_Order) (datatypes.Container_Product_Order, error) {
+	public_vlan_id := d.Get("public_vlan_id").(int)
+
+	if public_vlan_id > 0 {
+		order.Hardware[0].PrimaryNetworkComponent = &datatypes.Network_Component{
+			NetworkVlan: &datatypes.Network_Vlan{Id: sl.Int(public_vlan_id)},
+		}
+	}
+
+	private_vlan_id := d.Get("private_vlan_id").(int)
+	if private_vlan_id > 0 {
+		order.Hardware[0].PrimaryBackendNetworkComponent = &datatypes.Network_Component{
+			NetworkVlan: &datatypes.Network_Vlan{Id: sl.Int(private_vlan_id)},
+		}
+	}
+
+	return order, nil
+}
+
+func waitForNoGatewayActiveTransactions(id int, meta interface{}) (interface{}, error) {
+	log.Printf("Waiting for Gateway (%d) to have zero active transactions", id)
+	service := services.GetHardwareServerService(meta.(ClientSession).SoftLayerSession())
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"retry", "active"},
+		Target:  []string{"idle"},
+		Refresh: func() (interface{}, string, error) {
+			bm, err := service.Id(id).Mask("id,activeTransactionCount").GetObject()
+			if err != nil {
+				return false, "retry", nil
+			}
+
+			if bm.ActiveTransactionCount != nil && *bm.ActiveTransactionCount == 0 {
+				return bm, "idle", nil
+			}
+			return bm, "active", nil
+
+		},
+		Timeout:        24 * time.Hour,
+		Delay:          10 * time.Second,
+		MinTimeout:     1 * time.Minute,
+		NotFoundChecks: 24 * 60,
+	}
+
+	return stateConf.WaitForState()
+}
+
+// Network gateways or Bare metal creation does not return a  object with an Id.
+// Have to wait on provision date to become available on server that matches
+// hostname and domain.
+// http://sldn.softlayer.com/blog/bpotter/ordering-bare-metal-servers-using-softlayer-api
+func waitForNetworkGatewayProvision(d *datatypes.Hardware, meta interface{}) (interface{}, error) {
+	hostname := *d.Hostname
+	domain := *d.Domain
+	log.Printf("Waiting for Gateway (%s.%s) to be provisioned", hostname, domain)
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"retry", "pending"},
+		Target:  []string{"provisioned"},
+		Refresh: func() (interface{}, string, error) {
+			service := services.GetAccountService(meta.(ClientSession).SoftLayerSession())
+			bms, err := service.Filter(
+				filter.Build(
+					filter.Path("hardware.hostname").Eq(hostname),
+					filter.Path("hardware.domain").Eq(domain),
+				),
+			).Mask("id,provisionDate").GetHardware()
+			if err != nil {
+				return false, "retry", nil
+			}
+
+			if len(bms) == 0 || bms[0].ProvisionDate == nil {
+				return datatypes.Hardware{}, "pending", nil
+			} else {
+				return bms[0], "provisioned", nil
+			}
+		},
+		Timeout:        24 * time.Hour,
+		Delay:          10 * time.Second,
+		MinTimeout:     1 * time.Minute,
+		NotFoundChecks: 24 * 60,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func findMemoryItemPriceIdGateway(items []datatypes.Product_Item, d *schema.ResourceData) (datatypes.Product_Item_Price, error) {
+	memory := d.Get("memory").(int)
+	memoryStr := "RAM_" + strconv.Itoa(memory) + "_GB"
+	availableMemories := ""
+
+	for _, item := range items {
+		for _, itemCategory := range item.Categories {
+			if *itemCategory.CategoryCode == "ram" {
+				availableMemories = availableMemories + *item.KeyName + "(" + *item.Description + ")" + ", "
+				if strings.HasPrefix(*item.KeyName, memoryStr) {
+					for _, price := range item.Prices {
+						if price.LocationGroupId == nil {
+							return datatypes.Product_Item_Price{Id: price.Id}, nil
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return datatypes.Product_Item_Price{},
+		fmt.Errorf("Could not find the price item for %d GB memory. Available items are %s", memory, availableMemories)
+}
+func findNetworkItemPriceIdGateway(items []datatypes.Product_Item, d *schema.ResourceData) (datatypes.Product_Item_Price, error) {
+	networkSpeed := d.Get("network_speed").(int)
+	redundantNetwork := d.Get("redundant_network").(bool)
+	unbondedNetwork := d.Get("unbonded_network").(bool)
+	privateNetworkOnly := d.Get("private_network_only").(bool)
+	unbondedNetworkStr := ""
+
+	networkSpeedStr := "_MBPS_"
+	redundantNetworkStr := ""
+
+	if networkSpeed < 1000 {
+		networkSpeedStr = strconv.Itoa(networkSpeed) + networkSpeedStr
+	} else {
+		networkSpeedStr = strconv.Itoa(networkSpeed/1000) + "_GBPS"
+	}
+	if redundantNetwork {
+		redundantNetworkStr = "_REDUNDANT"
+	}
+
+	if unbondedNetwork {
+		unbondedNetworkStr = "_UNBONDED"
+	}
+
+	for _, item := range items {
+		for _, itemCategory := range item.Categories {
+			if *itemCategory.CategoryCode == "port_speed" &&
+				strings.HasPrefix(*item.KeyName, networkSpeedStr) &&
+				strings.Contains(*item.KeyName, redundantNetworkStr) &&
+				strings.Contains(*item.KeyName, unbondedNetworkStr) {
+				if (privateNetworkOnly && strings.Contains(*item.KeyName, "_PUBLIC_PRIVATE")) ||
+					(!privateNetworkOnly && !strings.Contains(*item.KeyName, "_PUBLIC_PRIVATE")) ||
+					(!unbondedNetwork && strings.Contains(*item.KeyName, "_UNBONDED")) ||
+					!redundantNetwork && strings.Contains(*item.KeyName, "_REDUNDANT") {
+					break
+				}
+				for _, price := range item.Prices {
+					if price.LocationGroupId == nil {
+						return datatypes.Product_Item_Price{Id: price.Id}, nil
+					}
+				}
+			}
+		}
+	}
+	return datatypes.Product_Item_Price{},
+		fmt.Errorf("Could not find the network to create")
+}
