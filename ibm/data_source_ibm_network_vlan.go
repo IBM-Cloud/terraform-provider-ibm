@@ -15,11 +15,6 @@ func dataSourceIBMNetworkVlan() *schema.Resource {
 		Read: dataSourceIBMNetworkVlanRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
-
 			"name": {
 				Type:     schema.TypeString,
 				Optional: true,

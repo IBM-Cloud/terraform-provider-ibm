@@ -15,12 +15,6 @@ func dataSourceIBMComputeImageTemplate() *schema.Resource {
 		// TODO: based on need add properties for visibility, type of image,
 		// notes, size, shared on accounts if needed
 		Schema: map[string]*schema.Schema{
-			"id": {
-				Description: "The internal id of the image template",
-				Type:        schema.TypeInt,
-				Computed:    true,
-			},
-
 			"name": {
 				Description: "The name of this image template",
 				Type:        schema.TypeString,
