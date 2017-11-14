@@ -179,7 +179,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	userConfig, err := fetchUserDetails(sess.BluemixSession)
 	if err != nil {
-		log.Printf("Error occured fetching the account id/user id %v", err.Error())
+		session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
 	}
 
 	session.bmxUserDetails = userConfig
@@ -266,8 +266,8 @@ func fetchUserDetails(sess *bxsession.Session) (*UserConfig, error) {
 	}
 
 	bluemixToken := config.IAMAccessToken[7:len(config.IAMAccessToken)]
-	config.IAMRefreshToken = ""
 	config.UAAAccessToken = ""
+	config.UAARefreshToken = ""
 	token, err := jwt.Parse(bluemixToken, func(token *jwt.Token) (interface{}, error) {
 		if err != nil {
 			return nil, err

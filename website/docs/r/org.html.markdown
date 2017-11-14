@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_org
 
-Provides a organization resource. This allows organizations to be created, updated, and deleted.
+Provides an organization resource. This allows organizations to be created, updated, and deleted.
 
 ## Example Usage
 
@@ -35,7 +35,7 @@ The following arguments are supported:
 * `auditors` - (Optional, set) The email addresses (associated with IBMids) of the users to whom you want to give an auditor role in this org. Users with the auditor role can also view the users in the organization and their assigned roles, and the quota for the organization.
 * `billing_managers` - (Optional, set) The email addresses (associated with IBMids) of the users to whom you want to give an billing manager role in this org. Users with the billing managers can view runtime and service usage information for the organization on the Usage Dashboard page.
 
-**NOTE**: By default the newly created org will have your own  email address to the `managers` or `users` field .
+**NOTE**: By default the user creating this resource will have the manager and user role as per the Cloud Foundry API behavior. This information will not be persisted in the state file to avoid any spurious diffs.
 
 * `tags` - (Optional, array of strings) Tags associated with the org instance.
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.

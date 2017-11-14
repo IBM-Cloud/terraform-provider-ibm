@@ -176,17 +176,21 @@ func resourceIBMOrgRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error retrieving users in space: %s", err)
 	}
 
-	d.Set("auditors", flattenOrgRole(auditors))
-	d.Set("managers", flattenOrgRoleManagerUsers(managers, orgOwnerID))
-	d.Set("billing_managers", flattenOrgRole(billingManager))
-	d.Set("users", flattenOrgRoleManagerUsers(users, orgOwnerID))
-
+	if len(auditors) > 0 {
+		d.Set("auditors", flattenOrgRole(auditors, ""))
+	}
+	if len(managers) > 0 {
+		d.Set("managers", flattenOrgRole(managers, orgOwnerID))
+	}
+	if len(billingManager) > 0 {
+		d.Set("billing_managers", flattenOrgRole(billingManager, ""))
+	}
+	if len(users) > 0 {
+		d.Set("users", flattenOrgRole(users, orgOwnerID))
+	}
 	if orgFields.Entity.OrgQuotaDefinitionGUID != "" {
 		d.Set("org_quota_definition_guid", orgFields.Entity.OrgQuotaDefinitionGUID)
 	}
-
-	d.Set("status", orgFields.Entity.Status)
-	d.Set("billing_enabled", orgFields.Entity.BillingEnabled)
 	return nil
 }
 
@@ -240,7 +244,7 @@ func resourceIBMOrgDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 	orgAPI := cfAPI.Organizations()
 	id := d.Id()
-	err = orgAPI.Delete(id)
+	err = orgAPI.Delete(id, false)
 	if err != nil {
 		return fmt.Errorf("Error deleting organisation: %s", err)
 	}
