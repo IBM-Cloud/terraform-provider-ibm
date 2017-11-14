@@ -7,6 +7,10 @@ import (
 	"os"
 	"time"
 
+	gohttp "net/http"
+
+	jwt "github.com/dgrijalva/jwt-go"
+
 	slsession "github.com/softlayer/softlayer-go/session"
 	"github.com/terraform-providers/terraform-provider-ibm/version"
 
@@ -16,6 +20,10 @@ import (
 	"github.com/IBM-Bluemix/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Bluemix/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Bluemix/bluemix-go/api/mccp/mccpv2"
+	"github.com/IBM-Bluemix/bluemix-go/authentication"
+	"github.com/IBM-Bluemix/bluemix-go/http"
+	"github.com/IBM-Bluemix/bluemix-go/rest"
+
 	bxsession "github.com/IBM-Bluemix/bluemix-go/session"
 )
 
@@ -29,6 +37,12 @@ var (
 	errEmptySoftLayerCredentials = errors.New("softlayer_username and softlayer_api_key must be provided. Please see the documentation on how to configure them")
 	errEmptyBluemixCredentials   = errors.New("bluemix_api_key must be provided. Please see the documentation on how to configure it")
 )
+
+//UserConfig ...
+type UserConfig struct {
+	userID    string
+	userEmail string
+}
 
 //Config stores user provider input
 type Config struct {
@@ -78,6 +92,7 @@ type ClientSession interface {
 	MccpAPI() (mccpv2.MccpServiceAPI, error)
 	BluemixAcccountAPI() (accountv2.AccountServiceAPI, error)
 	BluemixAcccountv1API() (accountv1.AccountServiceAPI, error)
+	BluemixUserDetails() (*UserConfig, error)
 }
 
 type clientSession struct {
@@ -97,6 +112,9 @@ type clientSession struct {
 
 	accountV1ConfigErr     error
 	bmxAccountv1ServiceAPI accountv1.AccountServiceAPI
+
+	bmxUserDetails  *UserConfig
+	bmxUserFetchErr error
 }
 
 // SoftLayerSession providers SoftLayer Session
@@ -134,6 +152,11 @@ func (sess clientSession) BluemixSession() (*bxsession.Session, error) {
 	return sess.session.BluemixSession, sess.cfConfigErr
 }
 
+// BluemixUserDetails ...
+func (sess clientSession) BluemixUserDetails() (*UserConfig, error) {
+	return sess.bmxUserDetails, sess.bmxUserFetchErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -153,6 +176,13 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.iamConfigErr = errEmptyBluemixCredentials
 		return session, nil
 	}
+
+	userConfig, err := fetchUserDetails(sess.BluemixSession)
+	if err != nil {
+		log.Printf("Error occured fetching the account id/user id %v", err.Error())
+	}
+
+	session.bmxUserDetails = userConfig
 
 	BluemixRegion = sess.BluemixSession.Config.Region
 	cfAPI, err := mccpv2.New(sess.BluemixSession)
@@ -220,4 +250,33 @@ func newSession(c *Config) (*Session, error) {
 	}
 
 	return ibmSession, nil
+}
+
+func fetchUserDetails(sess *bxsession.Session) (*UserConfig, error) {
+	config := sess.Config
+	user := UserConfig{}
+	tokenRefresher, err := authentication.NewIAMAuthRepository(config, &rest.Client{
+		DefaultHeader: gohttp.Header{
+			"User-Agent": []string{http.UserAgent()},
+		},
+	})
+	err = tokenRefresher.AuthenticateAPIKey(config.BluemixAPIKey)
+	if err != nil {
+		return &user, err
+	}
+
+	bluemixToken := config.IAMAccessToken[7:len(config.IAMAccessToken)]
+	config.IAMRefreshToken = ""
+	config.UAAAccessToken = ""
+	token, err := jwt.Parse(bluemixToken, func(token *jwt.Token) (interface{}, error) {
+		if err != nil {
+			return nil, err
+		}
+		return "", nil
+	})
+
+	claims := token.Claims.(jwt.MapClaims)
+	user.userEmail = claims["email"].(string)
+	user.userID = claims["id"].(string)
+	return &user, nil
 }

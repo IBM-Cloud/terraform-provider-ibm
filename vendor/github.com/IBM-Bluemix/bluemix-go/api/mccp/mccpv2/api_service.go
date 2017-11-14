@@ -23,6 +23,7 @@ type MccpServiceAPI interface {
 	ServicePlans() ServicePlans
 	ServiceOfferings() ServiceOfferings
 	SpaceQuotas() SpaceQuotas
+	OrgQuotas() OrgQuotas
 	Apps() Apps
 	Routes() Routes
 	SharedDomains() SharedDomains
@@ -106,6 +107,11 @@ func (c *mccpService) ServiceKeys() ServiceKeys {
 //SpaceQuotas implements SpaceQuota APIs
 func (c *mccpService) SpaceQuotas() SpaceQuotas {
 	return newSpaceQuotasAPI(c.Client)
+}
+
+//OrgQuotas implements OrgQuota APIs
+func (c *mccpService) OrgQuotas() OrgQuotas {
+	return newOrgQuotasAPI(c.Client)
 }
 
 //ServiceBindings implements ServiceBindings APIs
