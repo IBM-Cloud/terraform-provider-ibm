@@ -3,7 +3,6 @@ package ibm
 import (
 	"fmt"
 	"log"
-	"softlayer-go/filter"
 	"strconv"
 	"strings"
 	"time"
@@ -11,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
-	//"github.com/softlayer/softlayer-go/filter"
+	"github.com/softlayer/softlayer-go/filter"
 	"github.com/softlayer/softlayer-go/helpers/location"
 	"github.com/softlayer/softlayer-go/helpers/product"
 	"github.com/softlayer/softlayer-go/services"
@@ -84,11 +83,10 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				Set:      schema.HashString,
 			},
 
-			// Hourly only
 			"os_reference_code": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Computed: true,
+				Default:  "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT",
 				ForceNew: true,
 			},
 
@@ -103,6 +101,13 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 				Default:  100,
+				ForceNew: true,
+			},
+			//Does not apply for Network gateway but is required for cancellation
+			"hourly_billing": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
 				ForceNew: true,
 			},
 
@@ -125,6 +130,7 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				ForceNew:         true,
+				Default:          "NETWORK_GATEWAY_APPLIANCE",
 				DiffSuppressFunc: applyOnce,
 			},
 
@@ -133,6 +139,7 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				ForceNew:         true,
+				Default:          "INTEL_SINGLE_XEON_1270_3_40_2",
 				DiffSuppressFunc: applyOnce,
 			},
 
@@ -141,6 +148,7 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				ForceNew:         true,
+				Default:          "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT",
 				DiffSuppressFunc: applyOnce,
 			},
 
@@ -173,8 +181,8 @@ func resourceIBMNetworkGateway() *schema.Resource {
 			"public_bandwidth": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				Computed:         true,
 				ForceNew:         true,
+				Default:          "BANDWIDTH_20000_GB",
 				DiffSuppressFunc: applyOnce,
 			},
 
@@ -301,15 +309,10 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				Default:  false,
 				ForceNew: true,
 			},
-			"debug": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  true,
-				ForceNew: true,
-			},
 		},
 	}
 }
+
 func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	hwService := services.GetHardwareService(sess)
@@ -354,65 +357,58 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 	ProductOrder.OrderContainers = make([]datatypes.Container_Product_Order, 1)
 	ProductOrder.OrderContainers[0] = order
 
-	DebugMode := (d.Get("debug").(bool))
-	if DebugMode == true {
-		verification, err := services.GetProductOrderService(sess).VerifyOrder(&ProductOrder)
-		if err != nil {
-			return fmt.Errorf(
-				"Encountered problem trying to verify the order: %s", err)
-		}
-		log.Println("####################ORDER VERIFIED####################", verification.Message)
-		log.Println("IBM Provider for Network Gateway running in DEBUG mode")
-		return resourceIBMNetworkGatewayRead(d, meta)
-		//os.Exit(1)
-	} else {
-		receipt, err := services.GetProductOrderService(sess).PlaceOrder(&ProductOrder, sl.Bool(false))
-		if err != nil {
-			return fmt.Errorf(
-				"Encountered problem trying to verify the order: %s", err)
-		}
-		log.Printf("[INFO] Gateway ID: %s", d.Id())
+	_, err = services.GetProductOrderService(sess).VerifyOrder(&ProductOrder)
+	if err != nil {
+		return fmt.Errorf(
+			"Encountered problem trying to verify the order: %s", err)
+	}
+	_, err = services.GetProductOrderService(sess).PlaceOrder(&ProductOrder, sl.Bool(false))
+	if err != nil {
+		return fmt.Errorf(
+			"Encountered problem trying to place the order: %s", err)
+	}
 
-		bm, err := waitForNetworkGatewayProvision(&hardware, meta)
-		if err != nil {
-			return fmt.Errorf(
-				"Error waiting for Gateway (%s) to become ready: %s", d.Id(), err)
-		}
+	log.Printf("[INFO] Gateway ID: %s", d.Id())
 
-		id := *bm.(datatypes.Hardware).Id
-		d.SetId(fmt.Sprintf("%d", id))
+	bm, err := waitForNetworkGatewayProvision(&hardware, meta)
+	if err != nil {
+		return fmt.Errorf(
+			"Error waiting for Gateway (%s) to become ready: %s", d.Id(), err)
+	}
 
-		// Set tags
-		err = setHardwareTags(id, d, meta)
+	id := *bm.(datatypes.Hardware).Id
+	d.SetId(fmt.Sprintf("%d", id))
+
+	// Set tags
+	err = setHardwareTags(id, d, meta)
+	if err != nil {
+		return err
+	}
+
+	var storageIds []int
+	if storageIdsSet := d.Get("file_storage_ids").(*schema.Set); len(storageIdsSet.List()) > 0 {
+		storageIds = expandIntList(storageIdsSet.List())
+
+	}
+	if storageIdsSet := d.Get("block_storage_ids").(*schema.Set); len(storageIdsSet.List()) > 0 {
+		storageIds = append(storageIds, expandIntList(storageIdsSet.List())...)
+	}
+	if len(storageIds) > 0 {
+		err := addAccessToStorageList(hwService.Id(id), id, storageIds, meta)
 		if err != nil {
 			return err
 		}
-
-		var storageIds []int
-		if storageIdsSet := d.Get("file_storage_ids").(*schema.Set); len(storageIdsSet.List()) > 0 {
-			storageIds = expandIntList(storageIdsSet.List())
-
-		}
-		if storageIdsSet := d.Get("block_storage_ids").(*schema.Set); len(storageIdsSet.List()) > 0 {
-			storageIds = append(storageIds, expandIntList(storageIdsSet.List())...)
-		}
-		if len(storageIds) > 0 {
-			err := addAccessToStorageList(hwService.Id(id), id, storageIds, meta)
-			if err != nil {
-				return err
-			}
-		}
-
-		// Set notes
-		if d.Get("notes").(string) != "" {
-			err = setHardwareNotes(id, d, meta)
-			if err != nil {
-				return err
-			}
-		}
-
-		return resourceIBMNetworkGatewayRead(d, meta)
 	}
+
+	// Set notes
+	if d.Get("notes").(string) != "" {
+		err = setHardwareNotes(id, d, meta)
+		if err != nil {
+			return err
+		}
+	}
+
+	return resourceIBMNetworkGatewayRead(d, meta)
 }
 
 func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) error {
@@ -532,6 +528,7 @@ func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) err
 
 	return nil
 }
+
 func resourceIBMNetworkGatewayUpdate(d *schema.ResourceData, meta interface{}) error {
 	id, _ := strconv.Atoi(d.Id())
 	service := services.GetHardwareService(meta.(ClientSession).SoftLayerSession())
@@ -572,7 +569,7 @@ func resourceIBMNetworkGatewayDelete(d *schema.ResourceData, meta interface{}) e
 	}
 
 	billingItem, err := service.Id(id).GetBillingItem()
-	if err != nil {
+	if err != nil || *billingItem.Id == 0 {
 		return fmt.Errorf("Error getting billing item for Network Gateway: %s", err)
 	}
 
@@ -607,17 +604,9 @@ func resourceIBMNetworkGatewayExists(d *schema.ResourceData, meta interface{}) (
 }
 
 func getMonthlyGatewayOrder(d *schema.ResourceData, meta interface{}) (datatypes.Container_Product_Order, error) {
-
-	d.Set("package_key_name", "NETWORK_GATEWAY_APPLIANCE")
-	d.Set("os_reference_code", "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT")
-	d.Set("process_key_name", "INTEL_SINGLE_XEON_1270_3_40_2")
-	d.Set("os_key_name", "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT")
-	d.Set("public_bandwidth", "BANDWIDTH_20000_GB")
-
-	//moving it here did not work
 	sess := meta.(ClientSession).SoftLayerSession()
-	// Validate attributes for network gateway ordering.
 
+	// Validate attributes for network gateway ordering.
 	model, ok := d.GetOk("package_key_name")
 	if !ok {
 		return datatypes.Container_Product_Order{}, fmt.Errorf("The attribute 'package_key_name' is not defined.")
@@ -661,65 +650,65 @@ func getMonthlyGatewayOrder(d *schema.ResourceData, meta interface{}) (datatypes
 	}
 
 	// 3. Build price items
-	server, err := getItemPriceIdGateway(items, "server", process_key_name.(string))
+	server, err := getItemPriceId(items, "server", process_key_name.(string))
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
 	}
 
-	os, err := getItemPriceIdGateway(items, "os", osKeyName.(string))
+	os, err := getItemPriceId(items, "os", osKeyName.(string))
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
 	}
 
-	ram, err := findMemoryItemPriceIdGateway(items, d)
+	ram, err := findMemoryItemPriceId(items, d)
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
 	}
 
-	portSpeed, err := findNetworkItemPriceIdGateway(items, d)
+	portSpeed, err := findNetworkItemPriceId(items, d)
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
 	}
 
-	monitoring, err := getItemPriceIdGateway(items, "monitoring", "MONITORING_HOST_PING")
+	monitoring, err := getItemPriceId(items, "monitoring", "MONITORING_HOST_PING")
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
 	}
 	if d.Get("tcp_monitoring").(bool) {
-		monitoring, err = getItemPriceIdGateway(items, "monitoring", "MONITORING_HOST_PING_AND_TCP_SERVICE")
+		monitoring, err = getItemPriceId(items, "monitoring", "MONITORING_HOST_PING_AND_TCP_SERVICE")
 		if err != nil {
 			return datatypes.Container_Product_Order{}, err
 		}
 	}
 	// Other common default options
-	priIpAddress, err := getItemPriceIdGateway(items, "pri_ip_addresses", "1_IP_ADDRESS")
+	priIpAddress, err := getItemPriceId(items, "pri_ip_addresses", "1_IP_ADDRESS")
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
 	}
 
-	pri_ipv6_addresses, err := getItemPriceIdGateway(items, "pri_ipv6_addresses", "1_IPV6_ADDRESS")
+	pri_ipv6_addresses, err := getItemPriceId(items, "pri_ipv6_addresses", "1_IPV6_ADDRESS")
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
 	}
 
-	remoteManagement, err := getItemPriceIdGateway(items, "remote_management", "REBOOT_KVM_OVER_IP")
+	remoteManagement, err := getItemPriceId(items, "remote_management", "REBOOT_KVM_OVER_IP")
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
 	}
-	vpnManagement, err := getItemPriceIdGateway(items, "vpn_management", "UNLIMITED_SSL_VPN_USERS_1_PPTP_VPN_USER_PER_ACCOUNT")
+	vpnManagement, err := getItemPriceId(items, "vpn_management", "UNLIMITED_SSL_VPN_USERS_1_PPTP_VPN_USER_PER_ACCOUNT")
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
 	}
 
-	notification, err := getItemPriceIdGateway(items, "notification", "NOTIFICATION_EMAIL_AND_TICKET")
+	notification, err := getItemPriceId(items, "notification", "NOTIFICATION_EMAIL_AND_TICKET")
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
 	}
-	response, err := getItemPriceIdGateway(items, "response", "AUTOMATED_NOTIFICATION")
+	response, err := getItemPriceId(items, "response", "AUTOMATED_NOTIFICATION")
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
 	}
-	vulnerabilityScanner, err := getItemPriceIdGateway(items, "vulnerability_scanner", "NESSUS_VULNERABILITY_ASSESSMENT_REPORTING")
+	vulnerabilityScanner, err := getItemPriceId(items, "vulnerability_scanner", "NESSUS_VULNERABILITY_ASSESSMENT_REPORTING")
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
 	}
@@ -755,7 +744,7 @@ func getMonthlyGatewayOrder(d *schema.ResourceData, meta interface{}) (datatypes
 	// Add optional price ids.
 	// Add public bandwidth
 	publicBandwidth, ok := d.GetOk("public_bandwidth")
-	bandwidth, err := getItemPriceIdGateway(items, "bandwidth", publicBandwidth.(string))
+	bandwidth, err := getItemPriceId(items, "bandwidth", publicBandwidth.(string))
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
 	}
@@ -774,7 +763,7 @@ func getMonthlyGatewayOrder(d *schema.ResourceData, meta interface{}) (datatypes
 	diskLen := len(arrayDrives)
 	if diskLen > 0 {
 		for i, disk := range arrayDrives {
-			diskPrice, err := getItemPriceIdGateway(items, "disk"+strconv.Itoa(i), disk.(string))
+			diskPrice, err := getItemPriceId(items, "disk"+strconv.Itoa(i), disk.(string))
 			if err != nil {
 				return datatypes.Container_Product_Order{}, err
 			}
@@ -784,7 +773,7 @@ func getMonthlyGatewayOrder(d *schema.ResourceData, meta interface{}) (datatypes
 
 	// Add storage_groups for RAID configuration
 	//hard coded support for disk controller, just RAID 1 is supported in this release of the resource
-	diskController, err := getItemPriceIdGateway(items, "disk_controller", "DISK_CONTROLLER_RAID_1")
+	diskController, err := getItemPriceId(items, "disk_controller", "DISK_CONTROLLER_RAID_1")
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
 	}
@@ -793,6 +782,7 @@ func getMonthlyGatewayOrder(d *schema.ResourceData, meta interface{}) (datatypes
 
 	return order, nil
 }
+
 func getPackageByModelGateway(sess *session.Session, model string) (datatypes.Product_Package, error) {
 	objectMask := "id,keyName,name,description,isActive,type[keyName],categories[id,name,categoryCode]"
 	service := services.GetProductPackageService(sess)
@@ -817,26 +807,6 @@ func getPackageByModelGateway(sess *session.Session, model string) (datatypes.Pr
 		}
 	}
 	return datatypes.Product_Package{}, fmt.Errorf("No Gateway package key name for %s. Available package key name(s) is(are) %s", model, availableModels)
-}
-
-func getItemPriceIdGateway(items []datatypes.Product_Item, categoryCode string, keyName string) (datatypes.Product_Item_Price, error) {
-	availableItems := ""
-	for _, item := range items {
-		for _, itemCategory := range item.Categories {
-			if *itemCategory.CategoryCode == categoryCode {
-				availableItems = availableItems + *item.KeyName + " ( " + *item.Description + " ) , "
-				if *item.KeyName == keyName {
-					for _, price := range item.Prices {
-						if price.LocationGroupId == nil {
-							return datatypes.Product_Item_Price{Id: price.Id}, nil
-						}
-					}
-				}
-			}
-		}
-	}
-	return datatypes.Product_Item_Price{},
-		fmt.Errorf("Could not find the matching item with categorycode %s and keyName %s. Available item(s) is(are) %s", categoryCode, keyName, availableItems)
 }
 
 func setCommonGatewayOrderOptions(d *schema.ResourceData, meta interface{}, order datatypes.Container_Product_Order) (datatypes.Container_Product_Order, error) {
@@ -923,74 +893,4 @@ func waitForNetworkGatewayProvision(d *datatypes.Hardware, meta interface{}) (in
 	}
 
 	return stateConf.WaitForState()
-}
-
-func findMemoryItemPriceIdGateway(items []datatypes.Product_Item, d *schema.ResourceData) (datatypes.Product_Item_Price, error) {
-	memory := d.Get("memory").(int)
-	memoryStr := "RAM_" + strconv.Itoa(memory) + "_GB"
-	availableMemories := ""
-
-	for _, item := range items {
-		for _, itemCategory := range item.Categories {
-			if *itemCategory.CategoryCode == "ram" {
-				availableMemories = availableMemories + *item.KeyName + "(" + *item.Description + ")" + ", "
-				if strings.HasPrefix(*item.KeyName, memoryStr) {
-					for _, price := range item.Prices {
-						if price.LocationGroupId == nil {
-							return datatypes.Product_Item_Price{Id: price.Id}, nil
-						}
-					}
-				}
-			}
-		}
-	}
-
-	return datatypes.Product_Item_Price{},
-		fmt.Errorf("Could not find the price item for %d GB memory. Available items are %s", memory, availableMemories)
-}
-func findNetworkItemPriceIdGateway(items []datatypes.Product_Item, d *schema.ResourceData) (datatypes.Product_Item_Price, error) {
-	networkSpeed := d.Get("network_speed").(int)
-	redundantNetwork := d.Get("redundant_network").(bool)
-	unbondedNetwork := d.Get("unbonded_network").(bool)
-	privateNetworkOnly := d.Get("private_network_only").(bool)
-	unbondedNetworkStr := ""
-
-	networkSpeedStr := "_MBPS_"
-	redundantNetworkStr := ""
-
-	if networkSpeed < 1000 {
-		networkSpeedStr = strconv.Itoa(networkSpeed) + networkSpeedStr
-	} else {
-		networkSpeedStr = strconv.Itoa(networkSpeed/1000) + "_GBPS"
-	}
-	if redundantNetwork {
-		redundantNetworkStr = "_REDUNDANT"
-	}
-
-	if unbondedNetwork {
-		unbondedNetworkStr = "_UNBONDED"
-	}
-
-	for _, item := range items {
-		for _, itemCategory := range item.Categories {
-			if *itemCategory.CategoryCode == "port_speed" &&
-				strings.HasPrefix(*item.KeyName, networkSpeedStr) &&
-				strings.Contains(*item.KeyName, redundantNetworkStr) &&
-				strings.Contains(*item.KeyName, unbondedNetworkStr) {
-				if (privateNetworkOnly && strings.Contains(*item.KeyName, "_PUBLIC_PRIVATE")) ||
-					(!privateNetworkOnly && !strings.Contains(*item.KeyName, "_PUBLIC_PRIVATE")) ||
-					(!unbondedNetwork && strings.Contains(*item.KeyName, "_UNBONDED")) ||
-					!redundantNetwork && strings.Contains(*item.KeyName, "_REDUNDANT") {
-					break
-				}
-				for _, price := range item.Prices {
-					if price.LocationGroupId == nil {
-						return datatypes.Product_Item_Price{Id: price.Id}, nil
-					}
-				}
-			}
-		}
-	}
-	return datatypes.Product_Item_Price{},
-		fmt.Errorf("Could not find the network to create")
 }
