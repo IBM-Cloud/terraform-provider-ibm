@@ -122,6 +122,20 @@ func flattenSpaceRoleUsers(in []mccpv2.SpaceRole) *schema.Set {
 	return schema.NewSet(schema.HashString, out)
 }
 
+func flattenOrgRole(in []mccpv2.OrgRole, excludeUsername string) *schema.Set {
+	var out = []interface{}{}
+	for _, v := range in {
+		if excludeUsername == "" {
+			out = append(out, v.UserName)
+		} else {
+			if v.UserName != excludeUsername {
+				out = append(out, v.UserName)
+			}
+		}
+	}
+	return schema.NewSet(schema.HashString, out)
+}
+
 func flattenMapInterfaceVal(m map[string]interface{}) map[string]string {
 	out := make(map[string]string)
 	for k, v := range m {
