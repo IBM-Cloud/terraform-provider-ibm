@@ -2,6 +2,7 @@ package mccpv2
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/IBM-Bluemix/bluemix-go/bmxerror"
 	"github.com/IBM-Bluemix/bluemix-go/client"
@@ -30,9 +31,11 @@ type OrgResource struct {
 
 //OrgEntity ...
 type OrgEntity struct {
-	Name           string `json:"name"`
-	Region         string `json:"region"`
-	BillingEnabled bool   `json:"billing_enabled"`
+	Name                   string `json:"name"`
+	Region                 string `json:"region"`
+	BillingEnabled         bool   `json:"billing_enabled"`
+	Status                 string `json:"status"`
+	OrgQuotaDefinitionGUID string `json:"quota_definition_guid"`
 }
 
 //ToFields ..
@@ -40,19 +43,36 @@ func (resource OrgResource) ToFields() Organization {
 	entity := resource.Entity
 
 	return Organization{
-		GUID:           resource.Metadata.GUID,
-		Name:           entity.Name,
-		Region:         entity.Region,
-		BillingEnabled: entity.BillingEnabled,
+		GUID:                   resource.Metadata.GUID,
+		Name:                   entity.Name,
+		Region:                 entity.Region,
+		BillingEnabled:         entity.BillingEnabled,
+		Status:                 entity.Status,
+		OrgQuotaDefinitionGUID: entity.OrgQuotaDefinitionGUID,
 	}
+}
+
+//OrgCreateRequest ...
+type OrgCreateRequest struct {
+	Name                   string `json:"name"`
+	OrgQuotaDefinitionGUID string `json:"quota_definition_guid,omitempty"`
+	Status                 string `json:"status,omitempty"`
+}
+
+//OrgUpdateRequest ...
+type OrgUpdateRequest struct {
+	Name                   *string `json:"name,omitempty"`
+	OrgQuotaDefinitionGUID string  `json:"quota_definition_guid,omitempty"`
 }
 
 //Organization model
 type Organization struct {
-	GUID           string
-	Name           string
-	Region         string
-	BillingEnabled bool
+	GUID                   string
+	Name                   string
+	Region                 string
+	BillingEnabled         bool
+	Status                 string
+	OrgQuotaDefinitionGUID string
 }
 
 //OrganizationFields ...
@@ -61,14 +81,60 @@ type OrganizationFields struct {
 	Entity   OrgEntity
 }
 
+//OrgRole ...
+type OrgRole struct {
+	UserGUID string
+	Admin    bool
+	UserName string
+}
+
+//OrgRoleResource ...
+type OrgRoleResource struct {
+	Resource
+	Entity OrgRoleEntity
+}
+
+//OrgRoleEntity ...
+type OrgRoleEntity struct {
+	UserGUID string `json:"guid"`
+	Admin    bool   `json:"bool"`
+	UserName string `json:"username"`
+}
+
+//ToFields ...
+func (resource *OrgRoleResource) ToFields() OrgRole {
+	entity := resource.Entity
+
+	return OrgRole{
+		UserGUID: resource.Metadata.GUID,
+		Admin:    entity.Admin,
+		UserName: entity.UserName,
+	}
+}
+
 //Organizations ...
 type Organizations interface {
-	Create(name string, opts ...bool) error
+	Create(req OrgCreateRequest, opts ...bool) (*OrganizationFields, error)
 	Get(orgGUID string) (*OrganizationFields, error)
 	List(region string) ([]Organization, error)
 	FindByName(orgName, region string) (*Organization, error)
 	Delete(guid string, opts ...bool) error
-	Update(guid string, newName string, opts ...bool) error
+	Update(guid string, req OrgUpdateRequest, opts ...bool) (*OrganizationFields, error)
+
+	AssociateBillingManager(orgGUID string, userMail string) (*OrganizationFields, error)
+	AssociateAuditor(orgGUID string, userMail string) (*OrganizationFields, error)
+	AssociateManager(orgGUID string, userMail string) (*OrganizationFields, error)
+	AssociateUser(orgGUID string, userMail string) (*OrganizationFields, error)
+
+	ListBillingManager(orgGUID string, filters ...string) ([]OrgRole, error)
+	ListAuditors(orgGUID string, filters ...string) ([]OrgRole, error)
+	ListManager(orgGUID string, filters ...string) ([]OrgRole, error)
+	ListUsers(orgGUID string, filters ...string) ([]OrgRole, error)
+
+	DisassociateBillingManager(orgGUID string, userMail string) error
+	DisassociateManager(orgGUID string, userMail string) error
+	DisassociateAuditor(orgGUID string, userMail string) error
+	DisassociateUser(orgGUID string, userMail string) error
 }
 
 type organization struct {
@@ -84,19 +150,18 @@ func newOrganizationAPI(c *client.Client) Organizations {
 // opts is list of boolean parametes
 // opts[0] - async - Will run the create request in a background job. Recommended: 'true'. Default to 'true'.
 
-func (o *organization) Create(name string, opts ...bool) error {
+func (o *organization) Create(req OrgCreateRequest, opts ...bool) (*OrganizationFields, error) {
 	async := true
+	orgFields := OrganizationFields{}
 	if len(opts) > 0 {
 		async = opts[0]
 	}
-	body := struct {
-		Name string `json:"name"`
-	}{
-		Name: name,
-	}
 	rawURL := fmt.Sprintf("/v2/organizations?async=%t", async)
-	_, err := o.client.Post(rawURL, body, nil)
-	return err
+	_, err := o.client.Post(rawURL, req, &orgFields)
+	if err != nil {
+		return nil, err
+	}
+	return &orgFields, err
 }
 
 func (o *organization) Get(orgGUID string) (*OrganizationFields, error) {
@@ -112,19 +177,16 @@ func (o *organization) Get(orgGUID string) (*OrganizationFields, error) {
 // opts is list of boolean parametes
 // opts[0] - async - Will run the update request in a background job. Recommended: 'true'. Default to 'true'.
 
-func (o *organization) Update(guid string, newName string, opts ...bool) error {
+func (o *organization) Update(guid string, req OrgUpdateRequest, opts ...bool) (*OrganizationFields, error) {
 	async := true
 	if len(opts) > 0 {
 		async = opts[0]
 	}
+	orgFields := OrganizationFields{}
 	rawURL := fmt.Sprintf("/v2/organizations/%s?async=%t", guid, async)
-	body := struct {
-		Name string `json:"name"`
-	}{
-		Name: newName,
-	}
-	_, err := o.client.Put(rawURL, body, nil)
-	return err
+
+	_, err := o.client.Put(rawURL, req, &orgFields)
+	return &orgFields, err
 }
 
 // opts is list of boolean parametes
@@ -219,4 +281,100 @@ func (o *organization) url(req *rest.Request) (string, error) {
 		return "", err
 	}
 	return httpReq.URL.String(), nil
+}
+
+func (o *organization) associateOrgRole(url, userMail string) (*OrganizationFields, error) {
+	orgFields := OrganizationFields{}
+	_, err := o.client.Put(url, map[string]string{"username": userMail}, &orgFields)
+	if err != nil {
+		return nil, err
+	}
+	return &orgFields, nil
+}
+
+func (o *organization) removeOrgRole(url, userMail string) error {
+	orgFields := OrganizationFields{}
+	_, err := o.client.DeleteWithBody(url, map[string]string{"username": userMail}, &orgFields)
+	return err
+}
+func (o *organization) AssociateBillingManager(orgGUID string, userMail string) (*OrganizationFields, error) {
+	rawURL := fmt.Sprintf("/v2/organizations/%s/billing_managers", orgGUID)
+	return o.associateOrgRole(rawURL, userMail)
+
+}
+func (o *organization) AssociateAuditor(orgGUID string, userMail string) (*OrganizationFields, error) {
+	rawURL := fmt.Sprintf("/v2/organizations/%s/auditors", orgGUID)
+	return o.associateOrgRole(rawURL, userMail)
+}
+func (o *organization) AssociateManager(orgGUID string, userMail string) (*OrganizationFields, error) {
+	rawURL := fmt.Sprintf("/v2/organizations/%s/managers", orgGUID)
+	return o.associateOrgRole(rawURL, userMail)
+}
+
+func (o *organization) AssociateUser(orgGUID string, userMail string) (*OrganizationFields, error) {
+	rawURL := fmt.Sprintf("/v2/organizations/%s/users", orgGUID)
+	return o.associateOrgRole(rawURL, userMail)
+}
+
+func (o *organization) DisassociateBillingManager(orgGUID string, userMail string) error {
+	rawURL := fmt.Sprintf("/v2/organizations/%s/billing_managers", orgGUID)
+	return o.removeOrgRole(rawURL, userMail)
+
+}
+func (o *organization) DisassociateAuditor(orgGUID string, userMail string) error {
+	rawURL := fmt.Sprintf("/v2/organizations/%s/auditors", orgGUID)
+	return o.removeOrgRole(rawURL, userMail)
+}
+func (o *organization) DisassociateManager(orgGUID string, userMail string) error {
+	rawURL := fmt.Sprintf("/v2/organizations/%s/managers", orgGUID)
+	return o.removeOrgRole(rawURL, userMail)
+}
+
+func (o *organization) DisassociateUser(orgGUID string, userMail string) error {
+	rawURL := fmt.Sprintf("/v2/organizations/%s/users", orgGUID)
+	return o.removeOrgRole(rawURL, userMail)
+}
+
+func (o *organization) listOrgRolesWithPath(path string) ([]OrgRole, error) {
+	var orgRoles []OrgRole
+	_, err := o.client.GetPaginated(path, OrgRoleResource{}, func(resource interface{}) bool {
+		if orgRoleResource, ok := resource.(OrgRoleResource); ok {
+			orgRoles = append(orgRoles, orgRoleResource.ToFields())
+			return true
+		}
+		return false
+	})
+	return orgRoles, err
+}
+func (o *organization) listOrgRoles(rawURL string, filters ...string) ([]OrgRole, error) {
+	req := rest.GetRequest(rawURL)
+	if len(filters) > 0 {
+		req.Query("q", strings.Join(filters, ""))
+	}
+	httpReq, err := req.Build()
+	if err != nil {
+		return nil, err
+	}
+	path := httpReq.URL.String()
+	return o.listOrgRolesWithPath(path)
+}
+
+func (o *organization) ListBillingManager(orgGUID string, filters ...string) ([]OrgRole, error) {
+	rawURL := fmt.Sprintf("/v2/organizations/%s/billing_managers", orgGUID)
+	return o.listOrgRoles(rawURL, filters...)
+}
+
+func (o *organization) ListManager(orgGUID string, filters ...string) ([]OrgRole, error) {
+	rawURL := fmt.Sprintf("/v2/organizations/%s/managers", orgGUID)
+	return o.listOrgRoles(rawURL, filters...)
+}
+
+func (o *organization) ListAuditors(orgGUID string, filters ...string) ([]OrgRole, error) {
+	rawURL := fmt.Sprintf("/v2/organizations/%s/auditors", orgGUID)
+	return o.listOrgRoles(rawURL, filters...)
+}
+
+func (o *organization) ListUsers(orgGUID string, filters ...string) ([]OrgRole, error) {
+	rawURL := fmt.Sprintf("/v2/organizations/%s/users", orgGUID)
+	return o.listOrgRoles(rawURL, filters...)
 }
