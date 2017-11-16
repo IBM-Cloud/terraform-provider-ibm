@@ -1,12 +1,21 @@
 package ibm
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/IBM-Bluemix/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Bluemix/bluemix-go/bmxerror"
 	"github.com/IBM-Bluemix/bluemix-go/helpers"
 	"github.com/hashicorp/terraform/helper/schema"
+)
+
+var (
+	errManagerRoleAssociation = errors.New("please remove your email from the manager role and try again. " +
+		"This is done to avoid spurious diffs because a user creating an organization gets the manager role by default.")
+
+	errUserRoleAssociation = errors.New("please remove your email from the user role and try again. " +
+		"This is done to avoid spurious diffs because a user creating an organization automatically gets the userrole by default.")
 )
 
 func resourceIBMOrg() *schema.Resource {
@@ -83,43 +92,8 @@ func resourceIBMOrgCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 	orgGUID := orgFields.Metadata.GUID
 	d.SetId(orgGUID)
-	if billingManagerSet := d.Get("billing_managers").(*schema.Set); len(billingManagerSet.List()) > 0 {
-		billingManagers := expandStringList(billingManagerSet.List())
-		for _, d := range billingManagers {
-			_, err := orgAPI.AssociateBillingManager(orgGUID, d)
-			if err != nil {
-				return fmt.Errorf("Error associating billing manager %s with org %s : %s", d, orgGUID, err)
-			}
-		}
-	}
-	if auditorSet := d.Get("auditors").(*schema.Set); len(auditorSet.List()) > 0 {
-		auditors := expandStringList(auditorSet.List())
-		for _, d := range auditors {
-			_, err := orgAPI.AssociateAuditor(orgGUID, d)
-			if err != nil {
-				return fmt.Errorf("Error associating auditor %s with org %s : %s", d, orgGUID, err)
-			}
-		}
-	}
-	if managerSet := d.Get("managers").(*schema.Set); len(managerSet.List()) > 0 {
-		managers := expandStringList(managerSet.List())
-		for _, d := range managers {
-			_, err := orgAPI.AssociateManager(orgGUID, d)
-			if err != nil {
-				return fmt.Errorf("Error associating manager %s with org %s : %s", d, orgGUID, err)
-			}
-		}
-	}
-	if userSet := d.Get("users").(*schema.Set); len(userSet.List()) > 0 {
-		users := expandStringList(userSet.List())
-		for _, d := range users {
-			_, err := orgAPI.AssociateUser(orgGUID, d)
-			if err != nil {
-				return fmt.Errorf("Error associating users %s with org %s : %s", d, orgGUID, err)
-			}
-		}
-	}
-	return resourceIBMOrgRead(d, meta)
+
+	return resourceIBMOrgUpdate(d, meta)
 }
 
 func resourceIBMOrgRead(d *schema.ResourceData, meta interface{}) error {
@@ -129,9 +103,7 @@ func resourceIBMOrgRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	orgAPI := cfAPI.Organizations()
 	id := d.Id()
-	if err != nil {
-		return err
-	}
+
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
@@ -196,7 +168,7 @@ func resourceIBMOrgUpdate(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	err = updateOrgManagers(orgAPI, id, d)
+	err = updateOrgManagers(meta, id, d)
 	if err != nil {
 		return err
 	}
@@ -204,7 +176,7 @@ func resourceIBMOrgUpdate(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	err = updateOrgUsers(orgAPI, id, d)
+	err = updateOrgUsers(meta, id, d)
 	if err != nil {
 		return err
 	}
@@ -259,7 +231,7 @@ func updateOrgBillingManagers(api mccpv2.Organizations, orgGUID string, d *schem
 		for _, d := range add {
 			_, err := api.AssociateBillingManager(orgGUID, d)
 			if err != nil {
-				return fmt.Errorf("Error associating billing manager %s with org %s : %s", d, orgGUID, err)
+				return fmt.Errorf("Error associating billing manager (%s) with org %s : %s", d, orgGUID, err)
 			}
 		}
 	}
@@ -267,7 +239,7 @@ func updateOrgBillingManagers(api mccpv2.Organizations, orgGUID string, d *schem
 		for _, d := range remove {
 			err := api.DisassociateBillingManager(orgGUID, d)
 			if err != nil {
-				return fmt.Errorf("Error dis-associating billing manager %s with org %s : %s", d, orgGUID, err)
+				return fmt.Errorf("Error dis-associating billing manager (%s) with org %s : %s", d, orgGUID, err)
 			}
 		}
 	}
@@ -275,21 +247,37 @@ func updateOrgBillingManagers(api mccpv2.Organizations, orgGUID string, d *schem
 	return nil
 }
 
-func updateOrgManagers(api mccpv2.Organizations, orgGUID string, d *schema.ResourceData) error {
+func updateOrgManagers(meta interface{}, orgGUID string, d *schema.ResourceData) error {
 	if !d.HasChange("managers") {
 		return nil
 	}
+	cfAPI, err := meta.(ClientSession).MccpAPI()
+	if err != nil {
+		return err
+	}
+	api := cfAPI.Organizations()
+
 	var remove, add []string
 	o, n := d.GetChange("managers")
 	os := o.(*schema.Set)
 	ns := n.(*schema.Set)
 	remove = expandStringList(os.Difference(ns).List())
 	add = expandStringList(ns.Difference(os).List())
+
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return err
+	}
+	orgOwnerID := userDetails.userEmail
+
 	if len(add) > 0 {
 		for _, d := range add {
+			if d == orgOwnerID {
+				return fmt.Errorf("Error associating user (%s) with manager role, %v", d, errManagerRoleAssociation)
+			}
 			_, err := api.AssociateManager(orgGUID, d)
 			if err != nil {
-				return fmt.Errorf("Error associating manager %s with org %s : %s", d, orgGUID, err)
+				return fmt.Errorf("Error associating manager (%s) with org %s : %s", d, orgGUID, err)
 			}
 		}
 	}
@@ -297,7 +285,7 @@ func updateOrgManagers(api mccpv2.Organizations, orgGUID string, d *schema.Resou
 		for _, d := range remove {
 			err := api.DisassociateManager(orgGUID, d)
 			if err != nil {
-				return fmt.Errorf("Error dis-associating manager %s with org %s : %s", d, orgGUID, err)
+				return fmt.Errorf("Error dis-associating manager (%s) with org %s : %s", d, orgGUID, err)
 			}
 		}
 	}
@@ -318,7 +306,7 @@ func updateOrgAuditors(api mccpv2.Organizations, orgGUID string, d *schema.Resou
 		for _, d := range add {
 			_, err := api.AssociateAuditor(orgGUID, d)
 			if err != nil {
-				return fmt.Errorf("Error associating auditor %s with org %s : %s", d, orgGUID, err)
+				return fmt.Errorf("Error associating auditor (%s) with org %s : %s", d, orgGUID, err)
 			}
 		}
 	}
@@ -326,7 +314,7 @@ func updateOrgAuditors(api mccpv2.Organizations, orgGUID string, d *schema.Resou
 		for _, d := range remove {
 			err := api.DisassociateAuditor(orgGUID, d)
 			if err != nil {
-				return fmt.Errorf("Error dis-associating auditor %s with org %s : %s", d, orgGUID, err)
+				return fmt.Errorf("Error dis-associating auditor (%s) with org %s : %s", d, orgGUID, err)
 			}
 		}
 	}
@@ -334,7 +322,7 @@ func updateOrgAuditors(api mccpv2.Organizations, orgGUID string, d *schema.Resou
 	return nil
 }
 
-func updateOrgUsers(api mccpv2.Organizations, orgGUID string, d *schema.ResourceData) error {
+func updateOrgUsers(meta interface{}, orgGUID string, d *schema.ResourceData) error {
 	if !d.HasChange("users") {
 		return nil
 	}
@@ -344,11 +332,24 @@ func updateOrgUsers(api mccpv2.Organizations, orgGUID string, d *schema.Resource
 	ns := n.(*schema.Set)
 	remove = expandStringList(os.Difference(ns).List())
 	add = expandStringList(ns.Difference(os).List())
+	cfAPI, err := meta.(ClientSession).MccpAPI()
+	if err != nil {
+		return err
+	}
+	api := cfAPI.Organizations()
 	if len(add) > 0 {
+		userDetails, err := meta.(ClientSession).BluemixUserDetails()
+		if err != nil {
+			return err
+		}
+		orgOwnerID := userDetails.userEmail
 		for _, d := range add {
+			if d == orgOwnerID {
+				return fmt.Errorf("Error associating user (%s) with User role, %v", d, errUserRoleAssociation)
+			}
 			_, err := api.AssociateUser(orgGUID, d)
 			if err != nil {
-				return fmt.Errorf("Error associating user %s with org %s : %s", d, orgGUID, err)
+				return fmt.Errorf("Error associating user (%s) with org %s : %s", d, orgGUID, err)
 			}
 		}
 	}
@@ -356,7 +357,7 @@ func updateOrgUsers(api mccpv2.Organizations, orgGUID string, d *schema.Resource
 		for _, d := range remove {
 			err := api.DisassociateUser(orgGUID, d)
 			if err != nil {
-				return fmt.Errorf("Error dis-associating user %s with org %s : %s", d, orgGUID, err)
+				return fmt.Errorf("Error dis-associating user (%s) with org %s : %s", d, orgGUID, err)
 			}
 		}
 	}
