@@ -27,18 +27,26 @@ resource "ibm_org" "testacc_org" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The descriptive name used to identify a org.
-* `org_quota_definition_guid` - (Optional, string) The guid of the Org Quota Definition associated with the org.
-* `managers` - (Optional, set) The email addresses (associated with IBMids) of the users to whom you want to give a manager role in this org. Users with the manager role  can create, view, edit, or delete spaces within the organization, view the organization's usage and quota, invite users to the organization, manage who has access to the organization and their roles in the organization, and manage custom domains for the organization.
-* `users` - (Optional, set) The email addresses (associated with IBMids) of the users to whom you want add at the org level. 
-* `auditors` - (Optional, set) The email addresses (associated with IBMids) of the users to whom you want to give an auditor role in this org. Users with the auditor role can also view the users in the organization and their assigned roles, and the quota for the organization.
-* `billing_managers` - (Optional, set) The email addresses (associated with IBMids) of the users to whom you want to give an billing manager role in this org. Users with the billing managers can view runtime and service usage information for the organization on the Usage Dashboard page.
-**NOTE**: By default the user creating this resource will have the manager and user role as per the Cloud Foundry API behavior. This information will not be persisted in the state file to avoid any spurious diffs.
-* `tags` - (Optional, array of strings) Tags associated with the org instance.
-  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
+* `name` - (Required, string) The descriptive name used to identify a org. The org name must be unique in IBM Cloud and cannot be in use by another IBM Cloud user. 
+* `org_quota_definition_guid` - (Optional, string) The GUID for the quota associated with the org. The quota sets memory, service, and instance limits for the org.
+* `managers` - (Optional, set) The email addresses for users that you want to assign manager access to. The email address needs to be associated with an IBMid. Managers have the following permissions within the org:
+  * Can create, view, edit, or delete spaces.
+  * Can view usage and quota information.
+  * Can invite users and manage user access.
+  * Can assign roles to users.
+  * Can manage custom domains.
+* `users` - (Optional, set) The email addresses for the users that you want to grant org-level access to. The email address needs to be associated with an IBMid. 
+* `auditors` - (Optional, set) The email addresses for the users that you want to assign auditor access to. The email address needs to be associated with an IBMid. Auditors have the following permissions within the org:
+  * Can view users and their assigned roles.
+  * Can view quota information.
+* `billing_managers` - (Optional, set) The email addresses for the users that you want to assign billing manager access to. The email address needs to be associated with an IBMid. Billing managers have the following permissions within the org:
+  * Can view runtime and service usage information on the usage dashboard.
+**NOTE**: By default, the user creating this resource has the manager and user role per Cloud Foundry API behavior. This information is not persisted in the state file to avoid any spurious diffs.
+* `tags` - (Optional, array of strings) Tags associated with the org.
+  **NOTE**: Tags are managed locally and not stored on the IBM Cloud service endpoint.
 
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - The unique identifier of the organization.  
+* `id` - The unique identifier of the org.  
