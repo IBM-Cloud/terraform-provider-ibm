@@ -173,10 +173,10 @@ func resourceIBMNetworkGateway() *schema.Resource {
 
 			// Monthly only
 			"public_bandwidth": {
-				Type:             schema.TypeString,
+				Type:             schema.TypeInt,
 				Optional:         true,
 				ForceNew:         true,
-				Default:          "20000",
+				Default:          20000,
 				DiffSuppressFunc: applyOnce,
 			},
 

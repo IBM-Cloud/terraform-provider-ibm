@@ -48,8 +48,6 @@ func TestAccIBMNetworkGateway_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_network_gateway.terraform-acceptance-test-1", "tcp_monitoring", "true"),
 					resource.TestCheckResourceAttr(
-						"ibm_network_gateway.terraform-acceptance-test-1", "package_key_name", "{\"value\":\"newvalue\"}"),
-					resource.TestCheckResourceAttr(
 						"ibm_network_gateway.terraform-acceptance-test-1", "process_key_name", "{\"value\":\"newvalue\"}"),
 					resource.TestCheckResourceAttr(
 						"ibm_network_gateway.terraform-acceptance-test-1", "os_key_name", "{\"value\":\"newvalue\"}"),
@@ -83,11 +81,10 @@ resource "ibm_network_gateway" "terraform-acceptance-test-1" {
 			private_network_only   = false
 			user_metadata          = "No metadata"
 			tcp_monitoring         = true
-			package_key_name       = "NETWORK_GATEWAY_APPLIANCE"
 			process_key_name       = "INTEL_SINGLE_XEON_1270_3_40_2"
 			os_key_name            = "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT"
 			redundant_network      = false
-			public_bandwidth       = "BANDWIDTH_20000_GB"
+			public_bandwidth       = 20000
 			memory                 = 4
 			ipv6_enabled           = true
 		  }
