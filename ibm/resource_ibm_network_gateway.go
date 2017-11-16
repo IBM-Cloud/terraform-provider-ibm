@@ -18,6 +18,8 @@ import (
 	"github.com/softlayer/softlayer-go/sl"
 )
 
+const packageKeyName = "NETWORK_GATEWAY_APPLIANCE"
+
 func resourceIBMNetworkGateway() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMNetworkGatewayCreate,
@@ -125,14 +127,6 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				Computed: true,
 				ForceNew: true,
 			},
-			// Monthly only
-			"package_key_name": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ForceNew:         true,
-				Default:          "NETWORK_GATEWAY_APPLIANCE",
-				DiffSuppressFunc: applyOnce,
-			},
 
 			// Monthly only
 			"process_key_name": {
@@ -182,7 +176,7 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				ForceNew:         true,
-				Default:          "BANDWIDTH_20000_GB",
+				Default:          "20000",
 				DiffSuppressFunc: applyOnce,
 			},
 
@@ -569,8 +563,13 @@ func resourceIBMNetworkGatewayDelete(d *schema.ResourceData, meta interface{}) e
 	}
 
 	billingItem, err := service.Id(id).GetBillingItem()
-	if err != nil || *billingItem.Id == 0 {
+
+	if err != nil {
 		return fmt.Errorf("Error getting billing item for Network Gateway: %s", err)
+	}
+
+	if billingItem.Id == nil {
+		return fmt.Errorf("Error identifying the resource to delete, billing item is empty, please check the resource has not been deleted directly in Softlayer: %s", err)
 	}
 
 	// Monthly  Softlayer items only support an anniversary date cancellation option.
@@ -607,10 +606,7 @@ func getMonthlyGatewayOrder(d *schema.ResourceData, meta interface{}) (datatypes
 	sess := meta.(ClientSession).SoftLayerSession()
 
 	// Validate attributes for network gateway ordering.
-	model, ok := d.GetOk("package_key_name")
-	if !ok {
-		return datatypes.Container_Product_Order{}, fmt.Errorf("The attribute 'package_key_name' is not defined.")
-	}
+	model := packageKeyName
 
 	datacenter, ok := d.GetOk("datacenter")
 	if !ok {
@@ -633,7 +629,7 @@ func getMonthlyGatewayOrder(d *schema.ResourceData, meta interface{}) (datatypes
 	}
 
 	// 1. Find a package id using Gateway package key name.
-	pkg, err := getPackageByModelGateway(sess, model.(string))
+	pkg, err := getPackageByModelGateway(sess, model)
 
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
@@ -743,12 +739,15 @@ func getMonthlyGatewayOrder(d *schema.ResourceData, meta interface{}) (datatypes
 
 	// Add optional price ids.
 	// Add public bandwidth
-	publicBandwidth, ok := d.GetOk("public_bandwidth")
-	bandwidth, err := getItemPriceId(items, "bandwidth", publicBandwidth.(string))
-	if err != nil {
-		return datatypes.Container_Product_Order{}, err
+
+	if publicBandwidth, ok := d.GetOk("public_bandwidth"); ok {
+		publicBandwidthStr := "BANDWIDTH_" + strconv.Itoa(publicBandwidth.(int)) + "_GB"
+		bandwidth, err := getItemPriceId(items, "bandwidth", publicBandwidthStr)
+		if err != nil {
+			return datatypes.Container_Product_Order{}, err
+		}
+		order.Prices = append(order.Prices, bandwidth)
 	}
-	order.Prices = append(order.Prices, bandwidth)
 
 	// Add prices of disks.
 	var arrayDrives []interface{}

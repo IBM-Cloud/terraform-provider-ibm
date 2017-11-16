@@ -1,36 +1,28 @@
 package ibm
 
 import (
-	"fmt"
-	//"log"
-	"strconv"
-	//"strings"
-	//"time"
 	"errors"
+	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	//"github.com/hashicorp/terraform/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
-	//"github.com/softlayer/softlayer-go/filter"
-	//"github.com/softlayer/softlayer-go/helpers/location"
-	//"github.com/softlayer/softlayer-go/helpers/product"
 	"github.com/softlayer/softlayer-go/services"
-	//"github.com/softlayer/softlayer-go/session"
-	//"github.com/softlayer/softlayer-go/sl"
+	"github.com/softlayer/softlayer-go/sl"
 )
 
 func TestAccIBMNetworkGateway_Basic(t *testing.T) {
 	var networkGateway datatypes.Hardware
-	//could also be datatypes.hardware
 
 	hostname := acctest.RandString(16)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMNetworkGatewayDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config:  testAccCheckIBMNetworkGatewayConfig_basic(hostname),
@@ -135,4 +127,29 @@ func testAccCheckIBMNetworkGatewayExists(n string, networkGateway *datatypes.Har
 
 		return nil
 	}
+}
+func testAccCheckIBMNetworkGatewayDestroy(s *terraform.State) error {
+	service := services.GetHardwareService(testAccProvider.Meta().(ClientSession).SoftLayerSession())
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_network_gateway" {
+			continue
+		}
+
+		id, _ := strconv.Atoi(rs.Primary.ID)
+
+		// Try to find the Network Gateway
+		_, err := service.Id(id).GetObject()
+
+		// Wait
+		if err != nil {
+			if apiErr, ok := err.(sl.Error); !ok || apiErr.StatusCode != 404 {
+				return fmt.Errorf(
+					"Error waiting for Network Gateway (%d) to be destroyed: %s",
+					id, err)
+			}
+		}
+	}
+
+	return nil
 }
