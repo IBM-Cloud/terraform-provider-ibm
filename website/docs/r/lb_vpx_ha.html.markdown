@@ -10,7 +10,7 @@ description: |-
 
 Configure a high availability (HA) pair with two NetScaler VPX devices. The two NetScaler VPXs must be version 10.5 and located in the same subnet. A primary NetScaler VPX provides load balancing services in active mode, and a secondary NetScaler VPX provides load balancing services when the primary NetScaler VPX fails. For additional details, refer to the  [Citrix support docs](https://support.citrix.com/article/CTX116748) and the [KnowledgeLayer NetScaler docs](http://knowledgelayer.softlayer.com/articles/netscaler-vpx-10-high-availability-setup).
 
-**NOTE**: This resource only supports NetScaler VPX 10.5. The [NITRO API](https://docs.citrix.com/en-us/netscaler/11/nitro-api.html) is used to configure HA. Terraform can only access the NITRO API in the Bluemix Infrastructure (SoftLayer) private network, so connect to the private network when running Terraform. You can also use the [SSL VPN](http://www.softlayer.com/VPN-Access) to access a private network connection.
+**NOTE**: This resource only supports NetScaler VPX 10.5. The [NITRO API](https://docs.citrix.com/en-us/netscaler/11/nitro-api.html) is used to configure HA. Terraform can only access the NITRO API in the IBM Cloud Infrastructure (SoftLayer) private network, so connect to the private network when running Terraform. You can also use the [SSL VPN](http://www.softlayer.com/VPN-Access) to access a private network connection.
 
 The two NetScaler VPXs use the same password in HA mode. When you create this resource, Terraform changes the password of the secondary NetScaler VPX to the password of the primary NetScaler VPX. When you destroy this resource, Terraform restores the original password of the secondary NetScaler VPX.
 

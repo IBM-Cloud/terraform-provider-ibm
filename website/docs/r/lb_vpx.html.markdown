@@ -20,7 +20,7 @@ https://<userName>:<apiKey>@api.softlayer.com/rest/v3/SoftLayer_Product_Package/
 
 ## Example Usage
 
-Review the [Bluemix Infrastructure (SoftLayer) docs]((http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_Application_Delivery_Controller) for more information.
+Review the [IBM Cloud Infrastructure (SoftLayer) docs]((http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_Application_Delivery_Controller) for more information.
 
 ```hcl
 resource "ibm_lb_vpx" "test_vpx" {

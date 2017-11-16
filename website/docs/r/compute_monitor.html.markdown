@@ -11,7 +11,7 @@ description: |-
 
 Provides a monitoring instance resource. This allows monitoring instances to be created, updated, and deleted.
 
-For additional details, see the [Bluemix Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_Monitor_Version1_Query_Host).
+For additional details, see the [IBM Cloud Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_Monitor_Version1_Query_Host).
 
 ## Example Usage
 

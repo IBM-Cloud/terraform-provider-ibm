@@ -3,12 +3,12 @@ layout: "ibm"
 page_title: "IBM: ibm_app_domain_shared"
 sidebar_current: "docs-ibm-datasource-app-domain-shared"
 description: |-
-  Get information about an IBM Bluemix shared domain.
+  Get information about an IBM Cloud shared domain.
 ---
 
 # ibm\_app_domain_shared
 
-Import the details of an existing IBM Bluemix shared domain as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Import the details of an existing IBM Cloud shared domain as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 

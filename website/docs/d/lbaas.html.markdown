@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_lbaas
 
-Import the details of an existing IBM Bluemix load balancer as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Import the details of an existing IBM Cloud load balancer as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
  
 ## Example Usage
 

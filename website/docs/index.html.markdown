@@ -41,7 +41,7 @@ resource "ibm_compute_vm_instance" "my_server_2" {
   memory            = 1024
 }
 
-# Reference details of the IBM Bluemix Space
+# Reference details of the IBM Cloud Space
 data "ibm_space" "space" {
   space = "${var.space}"
   org   = "${var.org}"
@@ -82,7 +82,7 @@ provider "ibm" {
 
 ### Environment variables
 
-You can provide your credentials by exporting the `BM_API_KEY`, `SL_USERNAME`, and `SL_API_KEY` environment variables, representing your Bluemix API key, SoftLayer user name, and SoftLayer API key, respectively.  
+You can provide your credentials by exporting the `BM_API_KEY`, `SL_USERNAME`, and `SL_API_KEY` environment variables, representing your IBM Cloud API key, SoftLayer user name, and SoftLayer API key, respectively.  
 
 ```
 provider "ibm" {}
@@ -101,9 +101,9 @@ $ terraform plan
 
 The following arguments are supported in the `provider` block:
 
-* `bluemix_api_key` - (optional) The Bluemix API key. You must either add it as a credential in the provider block or source it from the `BM_API_KEY` (higher precedence) or `BLUEMIX_API_KEY` environment variable. The key is required to provision Cloud Foundry or IBM Container Service resources, such as any resource that begins with `ibm` or `ibm_container`.
+* `bluemix_api_key` - (optional) The IBM Cloud API key. You must either add it as a credential in the provider block or source it from the `BM_API_KEY` (higher precedence) or `BLUEMIX_API_KEY` environment variable. The key is required to provision Cloud Foundry or IBM Container Service resources, such as any resource that begins with `ibm` or `ibm_container`.
 
-* `bluemix_timeout` - (optional) The timeout, expressed in seconds, for interacting with Bluemix APIs. You can also source the timeout from the `BM_TIMEOUT` (higher precedence) or `BLUEMIX_TIMEOUT` environment variable. The default value is `60`.
+* `bluemix_timeout` - (optional) The timeout, expressed in seconds, for interacting with IBM Cloud APIs. You can also source the timeout from the `BM_TIMEOUT` (higher precedence) or `BLUEMIX_TIMEOUT` environment variable. The default value is `60`.
 
 * `softlayer_username` - (optional) The SoftLayer user name. You must either add it as a credential in the provider block or source it from the `SL_USERNAME` (higher precedence) or `SOFTLAYER_USERNAME` environment variable.
 
@@ -111,5 +111,5 @@ The following arguments are supported in the `provider` block:
 
 * `softlayer_timeout` - (optional) The timeout, expressed in seconds, for the SoftLayer API key. You can also source the timeout from the `SL_TIMEOUT` (higher precedence) or `SOFTLAYER_TIMEOUT` environment variable. The default value is `60`.
 
-* `region` - (optional) The Bluemix region. You can also source it from the `BM_REGION` (higher precedence) or `BLUEMIX_REGION` environment variable. The default value is `us-south`.
+* `region` - (optional) The IBM Cloud region. You can also source it from the `BM_REGION` (higher precedence) or `BLUEMIX_REGION` environment variable. The default value is `us-south`.
 

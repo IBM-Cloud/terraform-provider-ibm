@@ -35,7 +35,7 @@ resource "ibm_compute_bare_metal" "bm1" {
 
 The following arguments are supported:
 
-* `name` - (Required if neither the number nor router hostname are provided, string) The name of the VLAN, as it was defined in Bluemix Infrastructure (SoftLayer). You can find names in the [SoftLayer Customer Portal](https://control.softlayer.com/network/vlans) by navigating to **Network > IP Management > VLANs**.
+* `name` - (Required if neither the number nor router hostname are provided, string) The name of the VLAN, as it was defined in IBM Cloud Infrastructure (SoftLayer). You can find names in the [SoftLayer Customer Portal](https://control.softlayer.com/network/vlans) by navigating to **Network > IP Management > VLANs**.
 * `number` - (Required if the name is not provided, integer) The VLAN number. You can find  numbers in the [SoftLayer Customer Portal](https://control.softlayer.com/network/vlans).
 * `router_hostname` - (Required if the name is not provided, string) The primary VLAN router hostname. You can find hostnames in the [SoftLayer Customer Portal](https://control.softlayer.com/network/vlans).
 

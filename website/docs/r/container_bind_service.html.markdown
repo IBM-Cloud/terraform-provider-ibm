@@ -34,9 +34,9 @@ The following arguments are supported:
 * `service_instance_space_guid` - (Required, string) The space GUID associated with the service instance.
 * `service_instance_name_id` - (Required, string) The name or ID of the service that you want to bind to the cluster.
 * `namespace_id` - (Required, string) The Kubernetes namespace.
-* `org_guid` - (Required, string) The GUID for the Bluemix organization associated with the cluster. You can retrieve the value from data source `ibm_org` or by running the `bx iam orgs --guid` command in the [Bluemix CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
-* `space_guid` - (Required, string) The GUID for the Bluemix space associated with the cluster. You can retrieve the value from data source `ibm_space` or by running the `bx iam space <space-name> --guid` command in the Bluemix CLI.
-* `account_guid` - (Optional, string) The GUID for the Bluemix account associated with the cluster. You can retrieve the value from data source `ibm_account` or by running the `bx iam accounts` command in the Bluemix CLI.
+* `org_guid` - (Required, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from data source `ibm_org` or by running the `bx iam orgs --guid` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `space_guid` - (Required, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from data source `ibm_space` or by running the `bx iam space <space-name> --guid` command in the IBM Cloud CLI.
+* `account_guid` - (Optional, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from data source `ibm_account` or by running the `bx iam accounts` command in the IBM Cloud CLI.
 * `tags` - (Optional, array of strings) Tags associated with the container bind service instance.
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
@@ -46,5 +46,5 @@ The following attributes are exported:
 
 * `service_instance_name_id` - The name or ID of the service that is bound to the cluster.
 * `namespace_id` -  The Kubernetes namespace.
-* `space_guid` - The Bluemix space GUID.
+* `space_guid` - The IBM Cloud space GUID.
 * `secret_name` - The secret name.

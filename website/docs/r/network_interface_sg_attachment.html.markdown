@@ -10,7 +10,7 @@ description: |-
 
 Provide a resource to attach security group to a network interface. This allows attachments to be created and deleted.
 
-For additional details, see the [Bluemix Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Virtual_Network_SecurityGroup_NetworkComponentBinding).
+For additional details, see the [IBM Cloud Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Virtual_Network_SecurityGroup_NetworkComponentBinding).
 
 ## Example Usage
 
