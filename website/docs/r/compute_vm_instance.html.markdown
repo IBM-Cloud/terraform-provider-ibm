@@ -10,7 +10,7 @@ description: |-
 
 Provides a resource for VM instances. This allows VM instances to be created, updated, and deleted.
 
-For additional details, see the [Bluemix Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/services/SoftLayer_Virtual_Guest).
+For additional details, see the [IBM Cloud Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/services/SoftLayer_Virtual_Guest).
 
 ## Example Usage
 
@@ -78,7 +78,7 @@ The following arguments are supported:
      **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_name`.
 * `dedicated_host_name` - (Optional, string) Specifies [dedicated host](https://console.bluemix.net/docs/vsi/vsi_dedicated.html) for the instance by its name.
      **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_id`.
-* `os_reference_code` - (Optional, string) The operating system reference code that is used to provision the computing instance. To see available OS reference codes, log in to the [Bluemix Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest_Block_Device_Template_Group/getVhdImportSoftwareDescriptions.json?objectMask=referenceCode), using your API key as the password.
+* `os_reference_code` - (Optional, string) The operating system reference code that is used to provision the computing instance. To see available OS reference codes, log in to the [IBM Cloud Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest_Block_Device_Template_Group/getVhdImportSoftwareDescriptions.json?objectMask=referenceCode), using your API key as the password.
     **NOTE**: Conflicts with`image_id`.
 *   `image_id` - (Optional, integer) The image template ID you want to use to provision the computing instance. This is not the global identifier (UUID), but the image template group ID that should point to a valid global identifier. To retrieve the image template ID from the SoftLayer Customer Portal, navigate to **Devices > Manage > Images**, click the desired image, and note the ID number in the resulting URL.
 

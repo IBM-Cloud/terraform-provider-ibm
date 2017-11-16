@@ -10,7 +10,7 @@ description: |-
 
 Provides an auto scaling policy resource. This allows policies for auto scale groups to be created, updated, and deleted.
 
-For additional details, see the [Bluemix Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Scale_Policy).
+For additional details, see the [IBM Cloud Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Scale_Policy).
 
 ## Example Usage
 

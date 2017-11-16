@@ -32,7 +32,7 @@ resource "ibm_compute_vm_instance" "vm1" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The name of the image template as it was defined in Bluemix Infrastructure (SoftLayer). You can find the name in the [SoftLayer Customer Portal](https://control.softlayer.com) by navigating to **Devices > Manage > Images**.
+* `name` - (Required, string) The name of the image template as it was defined in IBM Cloud Infrastructure (SoftLayer). You can find the name in the [SoftLayer Customer Portal](https://control.softlayer.com) by navigating to **Devices > Manage > Images**.
 
 ## Attribute Reference
 

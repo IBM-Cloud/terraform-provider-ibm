@@ -32,8 +32,8 @@ resource "ibm_compute_vm_instance" "vm1" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The name of the security group, as it was defined in Bluemix Infrastructure (SoftLayer).
-* `description` - (Optional, string) The description of the security group, as it was defined in Bluemix Infrastructure (SoftLayer).
+* `name` - (Required, string) The name of the security group, as it was defined in IBM Cloud Infrastructure (SoftLayer).
+* `description` - (Optional, string) The description of the security group, as it was defined in IBM Cloud Infrastructure (SoftLayer).
 * `most_recent` - (Optional, boolean) If more than one security group  matches the name and/or description, you can set this argument to `true` to import only the most recent security group.
   **NOTE**: The search must return only one match. More or less than one match causes Terraform to fail. Ensure that your name and description combinations are specific enough to return a single security group  key only, or use the `most_recent` argument.
 

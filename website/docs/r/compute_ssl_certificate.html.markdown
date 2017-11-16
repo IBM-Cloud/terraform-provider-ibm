@@ -10,7 +10,7 @@ description: |-
 
 Provides an SSL certificate resource. This allows SSL certificates to be created, updated, and deleted.
 
-For additional details, see the [Bluemix Infrastructure (SoftLayer) security certificates docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Security_Certificate).
+For additional details, see the [IBM Cloud Infrastructure (SoftLayer) security certificates docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Security_Certificate).
 
 ## Example Usage
 

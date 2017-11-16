@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_dns_domain
 
-Provides a single DNS domain managed on Bluemix Infrastructure (SoftLayer). Domains contain general information about the domain name, such as the name and serial number.
+Provides a single DNS domain managed on IBM Cloud Infrastructure (SoftLayer). Domains contain general information about the domain name, such as the name and serial number.
 
 Individual records, such as `A`, `AAAA`, `CTYPE`, and `MX` records, are stored in the domain's associated resource records using the [`ibm_dns_record` resource](../r/dns_record.html).
 

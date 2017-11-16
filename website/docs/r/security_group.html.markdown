@@ -10,7 +10,7 @@ description: |-
 
 Provide a Security Group resource. This allows Groups to be created, updated and deleted.
 
-For additional details, see the [Bluemix Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_SecurityGroup).
+For additional details, see the [IBM Cloud Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_SecurityGroup).
 
 ## Example Usage
 

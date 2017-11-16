@@ -3,12 +3,12 @@ layout: "ibm"
 page_title: "IBM: ibm_app_domain_private"
 sidebar_current: "docs-ibm-datasource-app-domian-private"
 description: |-
-  Get information about an IBM Bluemix domain private.
+  Get information about an IBM Cloud domain private.
 ---
 
 # ibm\_app_domain_private
 
-Import the details of an existing IBM Bluemix private domain as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Import the details of an existing IBM Cloud private domain as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 

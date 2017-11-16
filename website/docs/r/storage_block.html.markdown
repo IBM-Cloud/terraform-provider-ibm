@@ -57,7 +57,7 @@ The following arguments are supported:
 * `type` - (Required, string) The type of the storage. Accepted values are `Endurance` and `Performance`.
 * `datacenter` - (Required, string) The data center where you want to provision the block storage instance.
 * `capacity` - (Required, integer) The amount of storage capacity you want to allocate, specified in gigabytes.
-* `iops` - (Required, float) The IOPS value for the storage. You can find available values for Endurance storage in the [Bluemix Infrastructure (SoftLayer) docs](https://knowledgelayer.softlayer.com/learning/introduction-endurance-storage).
+* `iops` - (Required, float) The IOPS value for the storage. You can find available values for Endurance storage in the [IBM Cloud Infrastructure (SoftLayer) docs](https://knowledgelayer.softlayer.com/learning/introduction-endurance-storage).
 * `os_format_type` - (Required, string) The OS type used to format the storage space. This OS type must match the OS type that connects to the LUN.
 * `snapshot_capacity` - (Optional, integer) Applies to Endurance storage only. The amount of snapshot capacity to allocate, specified in gigabytes.
 * `allowed_virtual_guest_ids` - (Optional, array of integers) The virtual guests that you want to give access to this instance. Virtual guests must be in the same data center as the block storage. You can also use this field to import the list of virtual guests that have access to this storage from the `block_storage_ids` argument in the `ibm_compute_vm_instance` resource.

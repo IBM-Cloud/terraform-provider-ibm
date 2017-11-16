@@ -3,12 +3,12 @@ layout: "ibm"
 page_title: "IBM: ibm_org_quota"
 sidebar_current: "docs-ibm-datasource-org-quota"
 description: |-
-  Get information about an IBM Bluemix organization quota.
+  Get information about an IBM Cloud organization quota.
 ---
 
 # ibm\_org_quota
 
-Import the details of an existing IBM Bluemix org quota as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Import the details of an existing IBM Cloud org quota as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
@@ -22,7 +22,7 @@ data "ibm_org_quota" "orgquotadata" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The name of the Bluemix organization quota. You can retrieve the value by running the `bx cf quotas` command in the [Bluemix CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `name` - (Required, string) The name of the IBM Cloud organization quota. You can retrieve the value by running the `bx cf quotas` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
 
 ## Attribute Reference
 

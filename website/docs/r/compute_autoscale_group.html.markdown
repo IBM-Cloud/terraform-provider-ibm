@@ -10,7 +10,7 @@ description: |-
 
 Provides a resource for auto scaling groups. This allows auto scaling groups to be created, updated, and deleted.
 
-For additional details, see the [Bluemix Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Scale_Group).
+For additional details, see the [IBM Cloud Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Scale_Group).
 
 ## Example Usage
 
@@ -62,7 +62,7 @@ The following arguments are supported:
 * `termination_policy` - (Required, string) The termination policy for the auto scaling group.
 * `virtual_guest_member_template` - (Required, array) The template with which to create guest members. Only one template can be configured. You can find accepted values in the [ibm_compute_vm_instance](compute_vm_instance.html) resource.
 * `network_vlan_ids` - (Optional, array) The collection of VLAN IDs for the auto scaling group. You can find accepted values in the [VLAN docs](https://control.softlayer.com/network/vlans). Click the desired VLAN and note the ID in the resulting URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
-* `virtual_server_id` - (Optional, integer) The ID of a virtual server in a local load balancer. You can find the ID with the following URL: `https://api.softlayer.com/rest/v3/SoftLayer_Network_Application_Delivery_Controller_LoadBalancer_VirtualIpAddress/<load_balancer_ID>/getObject?objectMask=virtualServers`. Replace _<load_balancer_ID>_ with the ID of the target load balancer. A Bluemix Infrastructure (SoftLayer) user name and API key are required.
+* `virtual_server_id` - (Optional, integer) The ID of a virtual server in a local load balancer. You can find the ID with the following URL: `https://api.softlayer.com/rest/v3/SoftLayer_Network_Application_Delivery_Controller_LoadBalancer_VirtualIpAddress/<load_balancer_ID>/getObject?objectMask=virtualServers`. Replace _<load_balancer_ID>_ with the ID of the target load balancer. An IBM Cloud Infrastructure (SoftLayer) user name and API key are required.
 * `port` - (Optional, integer) The port number in a local load balancer. For example, `8080`.
 * `health_check` - (Optional, map) The type of health check in a local load balancer. For example, `HTTP`. You can also use this value to specify custom HTTP methods.
 * `tags` - (Optional, array of strings) Tags associated with the auto scaling group instance.

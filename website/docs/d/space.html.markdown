@@ -3,12 +3,12 @@ layout: "ibm"
 page_title: "IBM: ibm_space"
 sidebar_current: "docs-ibm-datasource-space"
 description: |-
-  Get information about an IBM Bluemix space.
+  Get information about an IBM Cloud space.
 ---
 
 # ibm\_space
 
-Import the details of an existing IBM Bluemix space as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Import the details of an existing IBM Cloud space as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
@@ -36,8 +36,8 @@ resource "ibm_service_instance" "service_instance" {
 
 The following arguments are supported:
 
-* `org` - (Required) The name of your Bluemix organization. You can retrieve the value by running the `bx iam orgs` command in the [Bluemix CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
-* `space` - (Required) The name of your space. You can retrieve the value by running the `bx iam spaces` command in the Bluemix CLI.
+* `org` - (Required) The name of your IBM Cloud organization. You can retrieve the value by running the `bx iam orgs` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `space` - (Required) The name of your space. You can retrieve the value by running the `bx iam spaces` command in the IBM Cloud CLI.
 
 ## Attribute Reference
 
