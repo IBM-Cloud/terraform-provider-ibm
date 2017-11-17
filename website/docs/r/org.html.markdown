@@ -41,7 +41,8 @@ The following arguments are supported:
   * Can view quota information.
 * `billing_managers` - (Optional, set) The email addresses for the users that you want to assign billing manager access to. The email address needs to be associated with an IBMid. Billing managers have the following permissions within the org:
   * Can view runtime and service usage information on the usage dashboard.
-**NOTE**: By default, the user creating this resource has the manager and user role per Cloud Foundry API behavior. This information is not persisted in the state file to avoid any spurious diffs.
+
+**NOTE**: By default the user creating this resource will have the manager role as per the Cloud Foundry API behavior. Terraform will throw error if you add yourself to the manager role or as a user. This information is not persisted in the state file to avoid any spurious diffs.
 * `tags` - (Optional, array of strings) Tags associated with the org.
   **NOTE**: Tags are managed locally and not stored on the IBM Cloud service endpoint.
 
@@ -50,3 +51,13 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - The unique identifier of the org.  
+
+
+## Import
+
+Org can be imported using the `id`, e.g.
+
+```
+$ terraform import ibm_org.myorg abde-12345
+```
+Once you bring your current org under terraform management, you can perform others operations like adding user or assigning them required roles.
