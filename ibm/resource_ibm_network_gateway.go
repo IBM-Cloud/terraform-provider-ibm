@@ -105,13 +105,6 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				Default:  100,
 				ForceNew: true,
 			},
-			//Does not apply for Network gateway but is required for cancellation
-			"hourly_billing": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
-				ForceNew: true,
-			},
 
 			"tcp_monitoring": {
 				Type:             schema.TypeBool,
@@ -418,7 +411,6 @@ func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) err
 			"primaryIpAddress,primaryBackendIpAddress,privateNetworkOnlyFlag," +
 			"notes,userData[value],tagReferences[id,tag[name]]," +
 			"allowedNetworkStorage[id,nasType]," +
-			"hourlyBillingFlag," +
 			"datacenter[id,name,longName]," +
 			"primaryNetworkComponent[networkVlan[id,primaryRouter,vlanNumber],maxSpeed]," +
 			"primaryBackendNetworkComponent[networkVlan[id,primaryRouter,vlanNumber],maxSpeed,redundancyEnabledFlag]," +
@@ -444,7 +436,6 @@ func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) err
 	d.Set("private_ipv4_address", *result.PrimaryBackendIpAddress)
 
 	d.Set("private_network_only", *result.PrivateNetworkOnlyFlag)
-	d.Set("hourly_billing", *result.HourlyBillingFlag)
 
 	if result.PrimaryNetworkComponent.NetworkVlan != nil {
 		d.Set("public_vlan_id", *result.PrimaryNetworkComponent.NetworkVlan.Id)
@@ -575,7 +566,7 @@ func resourceIBMNetworkGatewayDelete(d *schema.ResourceData, meta interface{}) e
 	// Monthly  Softlayer items only support an anniversary date cancellation option.
 	billingItemService := services.GetBillingItemService(sess)
 	_, err = billingItemService.Id(*billingItem.Id).CancelItem(
-		sl.Bool(d.Get("hourly_billing").(bool)), sl.Bool(true), sl.String("No longer required"), sl.String("Please cancel this Network Gateway"),
+		sl.Bool(false), sl.Bool(true), sl.String("No longer required"), sl.String("Please cancel this Network Gateway"),
 	)
 	if err != nil {
 		return fmt.Errorf("Error canceling the Network Gateway (%d): %s", id, err)

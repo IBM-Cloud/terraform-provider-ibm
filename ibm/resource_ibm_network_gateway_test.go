@@ -34,13 +34,9 @@ func TestAccIBMNetworkGateway_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_network_gateway.terraform-acceptance-test-1", "domain", "terraformuat.ibm.com"),
 					resource.TestCheckResourceAttr(
-						"ibm_network_gateway.terraform-acceptance-test-1", "os_reference_code", "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT"),
-					resource.TestCheckResourceAttr(
 						"ibm_network_gateway.terraform-acceptance-test-1", "datacenter", "ams01"),
 					resource.TestCheckResourceAttr(
 						"ibm_network_gateway.terraform-acceptance-test-1", "network_speed", "100"),
-					resource.TestCheckResourceAttr(
-						"ibm_network_gateway.terraform-acceptance-test-1", "hourly_billing", "false"),
 					resource.TestCheckResourceAttr(
 						"ibm_network_gateway.terraform-acceptance-test-1", "private_network_only", "false"),
 					resource.TestCheckResourceAttr(
@@ -74,10 +70,8 @@ func testAccCheckIBMNetworkGatewayConfig_basic(hostname string) string {
 resource "ibm_network_gateway" "terraform-acceptance-test-1" {
 			hostname               = "%s"
 			domain                 = "terraformuat.ibm.com"
-			os_reference_code      = "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT"
 			datacenter             = "ams01"
 			network_speed          = 100
-			hourly_billing         = true
 			private_network_only   = false
 			user_metadata          = "No metadata"
 			tcp_monitoring         = true
