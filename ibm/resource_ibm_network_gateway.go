@@ -59,30 +59,9 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				ForceNew: true,
 			},
 
-			"user_metadata": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-			},
-
 			"notes": {
 				Type:     schema.TypeString,
 				Optional: true,
-			},
-
-			"post_install_script_uri": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Default:          nil,
-				ForceNew:         true,
-				DiffSuppressFunc: applyOnce,
-			},
-
-			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
 			},
 
 			"os_reference_code": {
@@ -114,13 +93,6 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				DiffSuppressFunc: applyOnce,
 			},
 
-			"redundant_power_supply": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
-			},
-
 			// Monthly only
 			"process_key_name": {
 				Type:             schema.TypeString,
@@ -136,15 +108,6 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				Optional:         true,
 				ForceNew:         true,
 				Default:          "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT",
-				DiffSuppressFunc: applyOnce,
-			},
-
-			// Monthly only
-			"disk_key_names": {
-				Type:             schema.TypeList,
-				Optional:         true,
-				ForceNew:         true,
-				Elem:             &schema.Schema{Type: schema.TypeString},
 				DiffSuppressFunc: applyOnce,
 			},
 
@@ -179,34 +142,34 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
-			// Monthly only
-			"storage_groups": {
-				Type:     schema.TypeList,
-				Optional: true,
-				ForceNew: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"array_type_id": {
-							Type:     schema.TypeInt,
-							Required: true,
-						},
-						"hard_drives": {
-							Type:     schema.TypeList,
-							Elem:     &schema.Schema{Type: schema.TypeInt},
-							Required: true,
-						},
-						"array_size": {
-							Type:     schema.TypeInt,
-							Optional: true,
-						},
-						"partition_template_id": {
-							Type:     schema.TypeInt,
-							Optional: true,
-						},
-					},
-				},
-				DiffSuppressFunc: applyOnce,
-			},
+			// // Base for Gateway vlans array
+			// "storage_groups": {
+			// 	Type:     schema.TypeList,
+			// 	Optional: true,
+			// 	ForceNew: true,
+			// 	Elem: &schema.Resource{
+			// 		Schema: map[string]*schema.Schema{
+			// 			"array_type_id": {
+			// 				Type:     schema.TypeInt,
+			// 				Required: true,
+			// 			},
+			// 			"hard_drives": {
+			// 				Type:     schema.TypeList,
+			// 				Elem:     &schema.Schema{Type: schema.TypeInt},
+			// 				Required: true,
+			// 			},
+			// 			"array_size": {
+			// 				Type:     schema.TypeInt,
+			// 				Optional: true,
+			// 			},
+			// 			"partition_template_id": {
+			// 				Type:     schema.TypeInt,
+			// 				Optional: true,
+			// 			},
+			// 		},
+			// 	},
+			// 	DiffSuppressFunc: applyOnce,
+			// },
 
 			// Quote based provisioning only
 			"quote_id": {
@@ -225,24 +188,8 @@ func resourceIBMNetworkGateway() *schema.Resource {
 			},
 
 			// Quote based provisioning, Monthly
-			"public_subnet": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Computed: true,
-			},
-
-			// Quote based provisioning, Monthly
 			"private_vlan_id": {
 				Type:     schema.TypeInt,
-				Optional: true,
-				ForceNew: true,
-				Computed: true,
-			},
-
-			// Quote based provisioning, Monthly
-			"private_subnet": {
-				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 				Computed: true,
@@ -279,12 +226,6 @@ func resourceIBMNetworkGateway() *schema.Resource {
 			"public_ipv6_subnet": {
 				Type:     schema.TypeString,
 				Computed: true,
-			},
-			"router_hostname": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
-				ForceNew: true,
 			},
 			"vlan_number": {
 				Type:     schema.TypeInt,
@@ -445,19 +386,8 @@ func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) err
 		d.Set("private_vlan_id", *result.PrimaryBackendNetworkComponent.NetworkVlan.Id)
 	}
 
-	userData := result.UserData
-	if len(userData) > 0 && userData[0].Value != nil {
-		d.Set("user_metadata", *userData[0].Value)
-	}
-
 	d.Set("notes", sl.Get(result.Notes, nil))
 	d.Set("memory", *result.MemoryCapacity)
-
-	d.Set("redundant_power_supply", false)
-
-	if *result.PowerSupplyCount == 2 {
-		d.Set("redundant_power_supply", true)
-	}
 
 	d.Set("redundant_network", false)
 	d.Set("unbonded_network", false)
@@ -469,7 +399,7 @@ func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) err
 	).Id(id).GetBackendNetworkComponents()
 
 	if err != nil {
-		return fmt.Errorf("Error retrieving bare metal server network: %s", err)
+		return fmt.Errorf("Error retrieving Network Gateway network: %s", err)
 	}
 
 	if len(backendNetworkComponent) > 2 && result.PrimaryBackendNetworkComponent != nil {
