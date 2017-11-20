@@ -44,10 +44,11 @@ The following arguments are supported:
 * `private_vlan_id` - (Optional) The Private VLAN where the Network Gateway would be provisioned.
 * `public_vlan_id` - (Optional) The Public VLAN where the Network Gateway would be provisioned.
 * `notes` - (Optional) additional notes added to the description of the Network Gateway.
-* `process_key_name` - (Optional) Model of the processor to include in the Network Gateway order, consult Softlayer documentation to identify the possible options for your account.
-* `os_key_name` - (Optional) Operating system for the Network Gateway, Soflayer supported are limited to Brocade options.
+* `process_key_name` - (Optional) Model of the processor to include in the Network Gateway order, consult Softlayer documentation to identify the possible options for your account. The default value INTEL_SINGLE_XEON_1270_3_40_2 corresponds to the minimum Intel Xeon processor that could be ordered to support a Network Gateway
+* `os_key_name` - (Optional) Operating system for the Network Gateway, Soflayer supported are limited to Brocade options. The default value is OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT which is the key name for the Subscription edition of the Brocade Vyatta 56XX Operating System.
 * `ipv6_enabled` - (Required) Indicates if the Network Gateway has ipv6 support, Softlayer default requires it to be true.
-* `public_bandwidth` - (Optional) Bandwidth is measured from the port onto which your Network Gateway is connected to the Public Network.
+* `public_bandwidth` - (Optional) Bandwidth is measured from the port onto which your Network Gateway is connected to the Public Network. The default value 2000 is a middle point for most configurations but unlimited bandwith is also supported for details on this please contact Softlayer sales , it is measured in GB.
+* `RAID_CONTROLLER` - (reference) this version support a single RAID 1 controller pre configured with two hard drives 1 TB SATA drives
 
 
 ## Attribute Reference

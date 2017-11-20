@@ -30,10 +30,6 @@ func resourceIBMNetworkGateway() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
 
 			"hostname": {
 				Type:        schema.TypeString,
@@ -64,13 +60,6 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				Optional: true,
 			},
 
-			"os_reference_code": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT",
-				ForceNew: true,
-			},
-
 			"datacenter": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -93,7 +82,6 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				DiffSuppressFunc: applyOnce,
 			},
 
-			// Monthly only
 			"process_key_name": {
 				Type:             schema.TypeString,
 				Optional:         true,
@@ -102,7 +90,6 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				DiffSuppressFunc: applyOnce,
 			},
 
-			// Monthly only
 			"os_key_name": {
 				Type:             schema.TypeString,
 				Optional:         true,
@@ -111,7 +98,6 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				DiffSuppressFunc: applyOnce,
 			},
 
-			// Monthly only
 			"redundant_network": {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -119,7 +105,6 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				ForceNew: true,
 			},
 
-			// Monthly only
 			"unbonded_network": {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -127,7 +112,6 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				ForceNew: true,
 			},
 
-			// Monthly only
 			"public_bandwidth": {
 				Type:             schema.TypeInt,
 				Optional:         true,
@@ -136,7 +120,6 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				DiffSuppressFunc: applyOnce,
 			},
 
-			// Monthly only
 			"memory": {
 				Type:     schema.TypeInt,
 				Optional: true,
@@ -243,7 +226,6 @@ func resourceIBMNetworkGateway() *schema.Resource {
 
 func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
-	hwService := services.GetHardwareService(sess)
 	var order datatypes.Container_Product_Order
 	var err error
 	quote_id := d.Get("quote_id").(int)
@@ -311,21 +293,6 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 	err = setHardwareTags(id, d, meta)
 	if err != nil {
 		return err
-	}
-
-	var storageIds []int
-	if storageIdsSet := d.Get("file_storage_ids").(*schema.Set); len(storageIdsSet.List()) > 0 {
-		storageIds = expandIntList(storageIdsSet.List())
-
-	}
-	if storageIdsSet := d.Get("block_storage_ids").(*schema.Set); len(storageIdsSet.List()) > 0 {
-		storageIds = append(storageIds, expandIntList(storageIdsSet.List())...)
-	}
-	if len(storageIds) > 0 {
-		err := addAccessToStorageList(hwService.Id(id), id, storageIds, meta)
-		if err != nil {
-			return err
-		}
 	}
 
 	// Set notes
@@ -408,13 +375,6 @@ func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) err
 		} else {
 			d.Set("unbonded_network", true)
 		}
-	}
-
-	if result.OperatingSystem != nil &&
-		result.OperatingSystem.SoftwareLicense != nil &&
-		result.OperatingSystem.SoftwareLicense.SoftwareDescription != nil &&
-		result.OperatingSystem.SoftwareLicense.SoftwareDescription.ReferenceCode != nil {
-		d.Set("os_reference_code", *result.OperatingSystem.SoftwareLicense.SoftwareDescription.ReferenceCode)
 	}
 
 	tagReferences := result.TagReferences
@@ -534,15 +494,9 @@ func getMonthlyGatewayOrder(d *schema.ResourceData, meta interface{}) (datatypes
 		return datatypes.Container_Product_Order{}, fmt.Errorf("The attribute 'datacenter' is not defined.")
 	}
 
-	osKeyName, ok := d.GetOk("os_key_name")
-	if !ok {
-		return datatypes.Container_Product_Order{}, fmt.Errorf("The attribute 'os_key_name' is not defined.")
-	}
+	osKeyName := d.Get("os_key_name")
 
-	process_key_name, ok := d.GetOk("process_key_name")
-	if !ok {
-		return datatypes.Container_Product_Order{}, fmt.Errorf("The attribute 'process_key_name' is not defined.")
-	}
+	process_key_name := d.Get("process_key_name")
 
 	dc, err := location.GetDatacenterByName(sess, datacenter.(string), "id")
 	if err != nil {
@@ -661,14 +615,13 @@ func getMonthlyGatewayOrder(d *schema.ResourceData, meta interface{}) (datatypes
 	// Add optional price ids.
 	// Add public bandwidth
 
-	if publicBandwidth, ok := d.GetOk("public_bandwidth"); ok {
-		publicBandwidthStr := "BANDWIDTH_" + strconv.Itoa(publicBandwidth.(int)) + "_GB"
-		bandwidth, err := getItemPriceId(items, "bandwidth", publicBandwidthStr)
-		if err != nil {
-			return datatypes.Container_Product_Order{}, err
-		}
-		order.Prices = append(order.Prices, bandwidth)
+	publicBandwidth := d.Get("public_bandwidth")
+	publicBandwidthStr := "BANDWIDTH_" + strconv.Itoa(publicBandwidth.(int)) + "_GB"
+	bandwidth, err := getItemPriceId(items, "bandwidth", publicBandwidthStr)
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
 	}
+	order.Prices = append(order.Prices, bandwidth)
 
 	// Add prices of disks.
 	var arrayDrives []interface{}
