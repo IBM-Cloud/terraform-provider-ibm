@@ -27,6 +27,16 @@ resource "ibm_network_gateway" "gateway01" {
     private_vlan_id = 123456
     public_vlan_id =  123456
     ipv6_enabled =    true
+    associated_vlans = [
+     {
+       "networkVlanID" = 645086
+       "bypass" = true
+     },
+     {
+       "networkVlanID" = 637374
+       "bypass" = true
+     }
+   ]
 }
 
 ```
@@ -49,6 +59,7 @@ The following arguments are supported:
 * `ipv6_enabled` - (Required) Indicates if the Network Gateway has ipv6 support, Softlayer default requires it to be true.
 * `public_bandwidth` - (Optional) Bandwidth is measured from the port onto which your Network Gateway is connected to the Public Network. The default value 2000 is a middle point for most configurations but unlimited bandwith is also supported for details on this please contact Softlayer sales , it is measured in GB.
 * `RAID_CONTROLLER` - (reference) this version support a single RAID 1 controller pre configured with two hard drives 1 TB SATA drives
+* `associated_vlans` - (Optional) Map with values networkVlanID and bypass representing the VLAN id and whether (false / true) to route the VLAN after being associated with the network gateway
 
 
 ## Attribute Reference
