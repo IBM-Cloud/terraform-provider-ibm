@@ -220,6 +220,31 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				Default:  false,
 				ForceNew: true,
 			},
+			"associated_vlans": {
+				Type:        schema.TypeSet,
+				Description: "The VLAN instances associated with this Network Gateway",
+				Optional:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"networkVlanID": {
+							Type:        schema.TypeInt,
+							Description: "The Identifier of the VLAN to be associated",
+							Optional:    true,
+						},
+						"bypass": {
+							Type:        schema.TypeBool,
+							Description: "Indicates if the VLAN should be in bypass or routed modes",
+							Default:     true,
+							Optional:    true,
+						},
+						"networkGatewayID": {
+							Type:        schema.TypeInt,
+							Description: "The identifier of the Network Gateway where the VLAN should be configured",
+							Optional:    true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -288,6 +313,11 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 
 	id := *bm.(datatypes.Hardware).Id
 	d.SetId(fmt.Sprintf("%d", id))
+
+	if v, ok := d.GetOk("associated_vlans"); ok && v.(*schema.Set).Len() > 0 {
+		debugvar := expandVlans(v.(*schema.Set).List())
+		resourceIBMNetworkGatewayVlanAssociate(d, meta, debugvar, id)
+	}
 
 	// Set tags
 	err = setHardwareTags(id, d, meta)
@@ -385,12 +415,6 @@ func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) err
 			tags = append(tags, *tagRef.Tag.Name)
 		}
 		d.Set("tags", tags)
-	}
-
-	storages := result.AllowedNetworkStorage
-	if len(storages) > 0 {
-		d.Set("block_storage_ids", flattenBlockStorageID(storages))
-		d.Set("file_storage_ids", flattenFileStorageID(storages))
 	}
 
 	connInfo := map[string]string{"type": "ssh"}
@@ -766,4 +790,60 @@ func waitForNetworkGatewayProvision(d *datatypes.Hardware, meta interface{}) (in
 	}
 
 	return stateConf.WaitForState()
+}
+
+func flattenVLANInstances(list []datatypes.Network_Gateway_Vlan) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, len(list))
+	for _, i := range list {
+		l := map[string]interface{}{
+			"bypass":           *i.BypassFlag,
+			"networkGatewayID": *i.NetworkGatewayId,
+			"networkVlanID":    *i.NetworkVlanId,
+		}
+		result = append(result, l)
+	}
+	return result
+}
+
+func expandVlans(configured []interface{}) []datatypes.Network_Gateway_Vlan {
+	vlans := make([]datatypes.Network_Gateway_Vlan, 0, len(configured))
+	for _, lRaw := range configured {
+		data := lRaw.(map[string]interface{})
+		p := &datatypes.Network_Gateway_Vlan{}
+		if v, ok := data["networkVlanID"]; ok && v.(int) != 0 {
+			p.NetworkVlanId = sl.Int(v.(int))
+		}
+		if v, ok := data["bypass"]; ok {
+			p.BypassFlag = sl.Bool(v.(bool))
+		}
+		if v, ok := data["networkGatewayID"]; ok && v.(int) != 0 {
+			p.NetworkGatewayId = sl.Int(v.(int))
+		}
+
+		vlans = append(vlans, *p)
+	}
+	return vlans
+}
+
+func resourceIBMNetworkGatewayVlanAssociate(d *schema.ResourceData, meta interface{}, vlanObject []datatypes.Network_Gateway_Vlan, id int) error {
+	sess := meta.(ClientSession).SoftLayerSession()
+	processingarray := vlanObject
+
+	for i := 0; i < len(processingarray); i++ {
+		bypass := *processingarray[i].BypassFlag
+		networkGatewayID := id
+		networkVlanID := *processingarray[i].NetworkVlanId
+		vlanObjectTemplate := datatypes.Network_Gateway_Vlan{
+			BypassFlag:       &bypass,
+			NetworkGatewayId: &networkGatewayID,
+			NetworkVlanId:    &networkVlanID,
+		}
+		_, err := services.GetNetworkGatewayVlanService(sess).CreateObject(&vlanObjectTemplate)
+		if err != nil {
+			return fmt.Errorf(
+				"Encountered problem trying to associate the VLAN %d : %s", networkVlanID, err)
+		}
+	}
+	return nil
+
 }
