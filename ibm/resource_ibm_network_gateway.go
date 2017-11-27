@@ -315,8 +315,8 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 	d.SetId(fmt.Sprintf("%d", id))
 
 	if v, ok := d.GetOk("associated_vlans"); ok && v.(*schema.Set).Len() > 0 {
-		debugvar := expandVlans(v.(*schema.Set).List())
-		resourceIBMNetworkGatewayVlanAssociate(d, meta, debugvar, id)
+		associatedVlans := expandVlans(v.(*schema.Set).List())
+		resourceIBMNetworkGatewayVlanAssociate(d, meta, associatedVlans, id)
 	}
 
 	// Set tags
@@ -790,19 +790,6 @@ func waitForNetworkGatewayProvision(d *datatypes.Hardware, meta interface{}) (in
 	}
 
 	return stateConf.WaitForState()
-}
-
-func flattenVLANInstances(list []datatypes.Network_Gateway_Vlan) []map[string]interface{} {
-	result := make([]map[string]interface{}, 0, len(list))
-	for _, i := range list {
-		l := map[string]interface{}{
-			"bypass":           *i.BypassFlag,
-			"networkGatewayID": *i.NetworkGatewayId,
-			"networkVlanID":    *i.NetworkVlanId,
-		}
-		result = append(result, l)
-	}
-	return result
 }
 
 func expandVlans(configured []interface{}) []datatypes.Network_Gateway_Vlan {
