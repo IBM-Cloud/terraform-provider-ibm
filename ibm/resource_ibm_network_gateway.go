@@ -214,6 +214,10 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
+			"networkGatewayId": {
+				Type:     schema.TypeInt,
+				Computed: false,
+			},
 			"private_network_only": {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -346,14 +350,13 @@ func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) err
 
 	result, err := service.Id(id).Mask(
 		"hostname,domain," +
-			"primaryIpAddress,primaryBackendIpAddress,privateNetworkOnlyFlag," +
+			"primaryIpAddress,primaryBackendIpAddress," +
 			"notes,userData[value],tagReferences[id,tag[name]]," +
-			"allowedNetworkStorage[id,nasType]," +
 			"datacenter[id,name,longName]," +
 			"primaryNetworkComponent[networkVlan[id,primaryRouter,vlanNumber],maxSpeed]," +
 			"primaryBackendNetworkComponent[networkVlan[id,primaryRouter,vlanNumber],maxSpeed,redundancyEnabledFlag]," +
-			"memoryCapacity,powerSupplyCount," +
-			"operatingSystem[softwareLicense[softwareDescription[referenceCode]]]",
+			"networkGatewayMember[networkGatewayId]," +
+			"memoryCapacity,powerSupplyCount,",
 	).GetObject()
 
 	if err != nil {
@@ -362,6 +365,7 @@ func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) err
 
 	d.Set("hostname", *result.Hostname)
 	d.Set("domain", *result.Domain)
+	d.Set("networkGatewayId", *result.NetworkGatewayMember.NetworkGatewayId)
 
 	if result.Datacenter != nil {
 		d.Set("datacenter", *result.Datacenter.Name)
@@ -424,6 +428,7 @@ func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) err
 		connInfo["host"] = *result.PrimaryBackendIpAddress
 	}
 	d.SetConnInfo(connInfo)
+	d.Set("associated_vlans", resourceIBMNetworkGatewayVlanAssociatedReader(d, meta))
 
 	return nil
 }
@@ -832,5 +837,18 @@ func resourceIBMNetworkGatewayVlanAssociate(d *schema.ResourceData, meta interfa
 		}
 	}
 	return nil
+
+}
+
+func resourceIBMNetworkGatewayVlanAssociatedReader(d *schema.ResourceData, meta interface{}) interface{} {
+	sess := meta.(ClientSession).SoftLayerSession()
+	networkGatewayID := d.Get("networkGatewayId").(int)
+	allgateways, err := services.GetNetworkGatewayService(sess).GetInsideVlans()
+	if err != nil {
+		return fmt.Errorf(
+			"Encountered problem trying to read the VLANs associated with  %d : %s", networkGatewayID, err)
+	}
+
+	return allgateways
 
 }
