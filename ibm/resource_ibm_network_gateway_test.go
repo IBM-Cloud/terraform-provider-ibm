@@ -78,6 +78,8 @@ resource "ibm_network_gateway" "terraform-acceptance-test-1" {
 			public_bandwidth       = 20000
 			memory                 = 4
 			ipv6_enabled           = true
+			server_instances       = [{"networkVlanID" = 645086,"bypass" = true},
+			                          {"networkVlanID" = 637374,"bypass" = true}]
 		  }
 `, hostname)
 }
