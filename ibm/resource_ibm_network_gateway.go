@@ -435,8 +435,6 @@ func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) err
 
 func resourceIBMNetworkGatewayUpdate(d *schema.ResourceData, meta interface{}) error {
 	id, _ := strconv.Atoi(d.Id())
-	service := services.GetHardwareService(meta.(ClientSession).SoftLayerSession())
-
 	if d.HasChange("tags") {
 		err := setHardwareTags(id, d, meta)
 		if err != nil {
@@ -450,9 +448,12 @@ func resourceIBMNetworkGatewayUpdate(d *schema.ResourceData, meta interface{}) e
 			return err
 		}
 	}
-	err := modifyStorageAccess(service.Id(id), id, meta, d)
-	if err != nil {
-		return err
+
+	if d.HasChange("associated_vlans") {
+		if v, ok := d.GetOk("associated_vlans"); ok && v.(*schema.Set).Len() > 0 {
+			associatedVlans := expandVlans(v.(*schema.Set).List())
+			resourceIBMNetworkGatewayVlanAssociate(d, meta, associatedVlans, id)
+		}
 	}
 
 	return nil
