@@ -217,6 +217,8 @@ func resourceIBMNetworkGateway() *schema.Resource {
 			"networkGatewayId": {
 				Type:     schema.TypeInt,
 				Computed: false,
+				Optional: true,
+				Default:  1,
 			},
 			"private_network_only": {
 				Type:     schema.TypeBool,

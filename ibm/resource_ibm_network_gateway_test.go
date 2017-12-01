@@ -53,6 +53,8 @@ func TestAccIBMNetworkGateway_Basic(t *testing.T) {
 						"ibm_network_gateway.terraform-acceptance-test-1", "memory", "{\"value\":\"newvalue\"}"),
 					resource.TestCheckResourceAttr(
 						"ibm_network_gateway.terraform-acceptance-test-1", "ipv6_enabled", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_network_gateway.terraform-acceptance-test-1", "associated_vlans", "none"),
 					CheckStringSet(
 						"ibm_network_gateway.terraform-acceptance-test-1",
 						"tags", []string{"collectd"},
@@ -78,7 +80,7 @@ resource "ibm_network_gateway" "terraform-acceptance-test-1" {
 			public_bandwidth       = 20000
 			memory                 = 4
 			ipv6_enabled           = true
-			server_instances       = [{"networkVlanID" = 645086,"bypass" = true},
+			associated_vlans       = [{"networkVlanID" = 645086,"bypass" = true},
 			                          {"networkVlanID" = 637374,"bypass" = true}]
 		  }
 `, hostname)
