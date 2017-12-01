@@ -959,7 +959,8 @@ func getMonthlyBareMetalOrder(d *schema.ResourceData, meta interface{}) (datatyp
 
 	// Add optional price ids.
 	// Add public bandwidth
-	if publicBandwidth, ok := d.GetOk("public_bandwidth"); ok {
+	privateNetworkOnly := d.Get("private_network_only").(bool)
+	if publicBandwidth, ok := d.GetOk("public_bandwidth"); ok || privateNetworkOnly {
 		publicBandwidthStr := "BANDWIDTH_" + strconv.Itoa(publicBandwidth.(int)) + "_GB"
 		bandwidth, err := getItemPriceId(items, "bandwidth", publicBandwidthStr)
 		if err != nil {
