@@ -243,14 +243,6 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 			"network_speed": {
 				Type:     schema.TypeInt,
 				Optional: true,
-				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
-					if privateNetworkOnly, ok := d.GetOk("private_network_only"); ok {
-						if privateNetworkOnly.(bool) {
-							return true
-						}
-					}
-					return o == n
-				},
 				Default: 100,
 			},
 
