@@ -203,6 +203,22 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 			},
 
 			// Monthly only
+			"gpu_key_name": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: applyOnce,
+			},
+
+			// Monthly only
+			"gpu_secondary_key_name": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: applyOnce,
+			},
+
+			// Monthly only
 			"disk_key_names": {
 				Type:             schema.TypeList,
 				Optional:         true,
@@ -442,19 +458,18 @@ func resourceIBMComputeBareMetalCreate(d *schema.ResourceData, meta interface{})
 			return fmt.Errorf(
 				"Encountered problem trying to get the bare metal order template: %s", err)
 		}
-		if d.Get("redundant_power_supply").(bool) {
-			items, err := product.GetPackageProducts(sess, *order.PackageId, productItemMaskWithPriceLocationGroupID)
-			if err != nil {
-				return err
-			}
-			// Add the required redundant power supply
-			powerSupply, err := getItemPriceId(items, "power_supply", "REDUNDANT_POWER_SUPPLY")
-			if err != nil {
-				return err
-			}
-			order.Prices = append(order.Prices, powerSupply)
+		items, err := product.GetPackageProducts(sess, *order.PackageId, productItemMaskWithPriceLocationGroupID)
+		if err != nil {
+			return err
 		}
-
+		err = setRedundantPowerSupplyPrice(d, items, &order)
+		if err != nil {
+			return err
+		}
+		err = setGPUPrices(d, items, &order)
+		if err != nil {
+			return err
+		}
 	} else {
 		// Build a monthly bare metal server template
 		order, err = getMonthlyBareMetalOrder(d, meta)
@@ -819,8 +834,10 @@ func getItemPriceId(items []datatypes.Product_Item, categoryCode string, keyName
 				availableItems = availableItems + *item.KeyName + " ( " + *item.Description + " ) , "
 				if *item.KeyName == keyName {
 					for _, price := range item.Prices {
-						if price.LocationGroupId == nil {
-							return datatypes.Product_Item_Price{Id: price.Id}, nil
+						for _, category := range price.Categories {
+							if *category.CategoryCode == categoryCode && price.LocationGroupId == nil {
+								return datatypes.Product_Item_Price{Id: price.Id}, nil
+							}
 						}
 					}
 				}
@@ -873,7 +890,6 @@ func getMonthlyBareMetalOrder(d *schema.ResourceData, meta interface{}) (datatyp
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
 	}
-
 	// 3. Build price items
 	server, err := getItemPriceId(items, "server", d.Get("process_key_name").(string))
 	if err != nil {
@@ -983,12 +999,9 @@ func getMonthlyBareMetalOrder(d *schema.ResourceData, meta interface{}) (datatyp
 	}
 
 	// Add redundant power supply
-	if d.Get("redundant_power_supply").(bool) {
-		powerSupply, err := getItemPriceId(items, "power_supply", "REDUNDANT_POWER_SUPPLY")
-		if err != nil {
-			return datatypes.Container_Product_Order{}, err
-		}
-		order.Prices = append(order.Prices, powerSupply)
+	err = setRedundantPowerSupplyPrice(d, items, &order)
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
 	}
 	// Add storage_groups for RAID configuration
 	diskController, err := getItemPriceId(items, "disk_controller", "DISK_CONTROLLER_NONRAID")
@@ -1005,7 +1018,41 @@ func getMonthlyBareMetalOrder(d *schema.ResourceData, meta interface{}) (datatyp
 	}
 	order.Prices = append(order.Prices, diskController)
 
+	err = setGPUPrices(d, items, &order)
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+
 	return order, nil
+}
+
+func setRedundantPowerSupplyPrice(d *schema.ResourceData, items []datatypes.Product_Item, order *datatypes.Container_Product_Order) error {
+	if d.Get("redundant_power_supply").(bool) {
+		powerSupply, err := getItemPriceId(items, "power_supply", "REDUNDANT_POWER_SUPPLY")
+		if err != nil {
+			return err
+		}
+		order.Prices = append(order.Prices, powerSupply)
+	}
+	return nil
+}
+func setGPUPrices(d *schema.ResourceData, items []datatypes.Product_Item, order *datatypes.Container_Product_Order) error {
+	if gpu0, ok := d.GetOk("gpu_key_name"); ok {
+		gpu0Price, err := getItemPriceId(items, "gpu0", gpu0.(string))
+		if err != nil {
+			return err
+		}
+		order.Prices = append(order.Prices, gpu0Price)
+	}
+
+	if gpu1, ok := d.GetOk("gpu_secondary_key_name"); ok {
+		gpu1Price, err := getItemPriceId(items, "gpu1", gpu1.(string))
+		if err != nil {
+			return err
+		}
+		order.Prices = append(order.Prices, gpu1Price)
+	}
+	return nil
 }
 
 // Set common parameters for server ordering.

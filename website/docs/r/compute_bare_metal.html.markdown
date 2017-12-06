@@ -140,6 +140,9 @@ The following arguments are supported:
 ### Arguments for monthly bare metal servers
 
 * `datacenter` - (Required, string) The datacenter in which you want to provision the instance.
+* `gpu_key_name` - (Optional, string) The key name for the primary Graphics Processing Unit (GPU). For example - `GPU_NVIDIA_GRID_K2`.
+Locate your package ID. See `package_key_name` attribute. Once you have the ID fetch its [details](https://api.softlayer.com/rest/v3/SoftLayer_Product_Package/<PACKAGE_ID>/getItems?objectMask=mask[prices[id,categories[id,name,categoryCode],capacityRestrictionType,capacityRestrictionMinimum,capacityRestrictionMaximum,locationGroupId]]). Select a gpu key name from the resulting available gpu key names.
+* `gpu_secondary_key_name` - (Optional, string) The key name for the secondary Graphics Processing Unit (GPU). For example - `GPU_NVIDIA_GRID_K2`. Key names can be fetched in the similar way as `gpu_key_name`
 * `hourly_billing` - (Required, boolean) The billing type for the instance. When set to `true`, the computing instance is billed on hourly usage. Otherwise the instance is billed on a monthly basis. The default value is `true`.
 * `image_template_id` - (Optional, integer) The image template ID you want to use to provision the computing instance. This is not the global identifier (UUID), but the image template group ID that should point to a valid global identifier. To retrieve the image template ID from the SoftLayer Customer Portal, navigate to **Devices > Manage > Images**, click the desired image, and note the ID number in the resulting URL.
     **NOTE**: Conflicts with `os_reference_code`. If you don't know the ID(s) of your image templates, you can [reference them by name](../d/compute_image_template.html).

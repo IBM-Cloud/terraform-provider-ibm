@@ -174,6 +174,33 @@ func TestAccSoftLayerBareMetalCustom_Basic(t *testing.T) {
 	})
 }
 
+func TestAccSoftLayerBareMetalCustom_with_gpus(t *testing.T) {
+	var bareMetal datatypes.Hardware
+	hostname := acctest.RandString(14)
+	domain := "bm.custom.tfuat.gpus.com"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMComputeBareMetalDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:  testBareMetalCustomConfigWithGpus(hostname, domain),
+				Destroy: false,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMComputeBareMetalExists("ibm_compute_bare_metal.bm-custom", &bareMetal),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_bare_metal.bm-custom", "memory", "32"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_bare_metal.bm-custom", "network_speed", "1000"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_bare_metal.bm-custom", "public_bandwidth", "500"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMComputeBareMetalDestroy(s *terraform.State) error {
 	service := services.GetHardwareService(testAccProvider.Meta().(ClientSession).SoftLayerSession())
 
@@ -350,5 +377,25 @@ resource "ibm_compute_bare_metal" "bm-custom" {
 	hourly_billing = false
     redundant_power_supply = true
 }
+`, hostname, domain)
+}
+
+func testBareMetalCustomConfigWithGpus(hostname, domain string) string {
+	return fmt.Sprintf(`
+	resource "ibm_compute_bare_metal" "bm-custom" {
+		package_key_name       = "DUAL_E52600_V4_12_DRIVES"
+		process_key_name       = "INTEL_INTEL_XEON_E52620_V4_2_10"
+		gpu_key_name           = "GPU_NVIDIA_GRID_K2"
+		gpu_secondary_key_name = "GPU_NVIDIA_GRID_K2"
+		memory                 = 32
+		os_key_name            = "OS_WINDOWS_2012_R2_FULL_DC_64_BIT_2"
+		hostname               = "%s"
+		domain                 = "%s"
+		datacenter             = "ams01"
+		network_speed          = 1000
+		public_bandwidth       = 500
+		disk_key_names         = ["HARD_DRIVE_1_00_TB_SATA_2", "HARD_DRIVE_1_00_TB_SATA_2"]
+		hourly_billing         = false
+		}
 `, hostname, domain)
 }
