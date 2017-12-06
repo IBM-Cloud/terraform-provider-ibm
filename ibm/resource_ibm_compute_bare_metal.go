@@ -227,7 +227,7 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 				DiffSuppressFunc: applyOnce,
 			},
 
-			// Monthly only
+			// Monthly/Hourly  only
 			"redundant_network": {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -235,7 +235,7 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 				ForceNew: true,
 			},
 
-			// Monthly only
+			// Monthly/Hourly only
 			"unbonded_network": {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -470,6 +470,27 @@ func resourceIBMComputeBareMetalCreate(d *schema.ResourceData, meta interface{})
 		if err != nil {
 			return err
 		}
+		redundantNetwork := d.Get("redundant_network").(bool)
+		unbondedNetwork := d.Get("unbonded_network").(bool)
+
+		if redundantNetwork || unbondedNetwork {
+			// Remove network price
+			prices := make([]datatypes.Product_Item_Price, len(order.Prices))
+			i := 0
+			for _, p := range order.Prices {
+				if !strings.Contains(*p.Item.Description, "Network Uplink") {
+					prices[i] = p
+					i++
+				}
+			}
+			portSpeed, err := findNetworkItemPriceId(items, d)
+			if err != nil {
+				return err
+			}
+			prices[i] = portSpeed
+			order.Prices = prices
+		}
+
 	} else {
 		// Build a monthly bare metal server template
 		order, err = getMonthlyBareMetalOrder(d, meta)

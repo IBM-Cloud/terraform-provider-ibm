@@ -71,6 +71,51 @@ func TestAccIBMComputeBareMetal_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMComputeBareMetal_With_Unbonded_Port_Speed(t *testing.T) {
+	var bareMetal datatypes.Hardware
+
+	hostname := acctest.RandString(16)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMComputeBareMetalDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:  testAccCheckIBMComputeBareMetalConfig_with_unbonded_port_speed(hostname),
+				Destroy: false,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMComputeBareMetalExists("ibm_compute_bare_metal.terraform-acceptance-test-1", &bareMetal),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_bare_metal.terraform-acceptance-test-1", "hostname", hostname),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_bare_metal.terraform-acceptance-test-1", "domain", "terraformuat.ibm.com"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_bare_metal.terraform-acceptance-test-1", "os_reference_code", "UBUNTU_16_64"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_bare_metal.terraform-acceptance-test-1", "datacenter", "dal01"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_bare_metal.terraform-acceptance-test-1", "network_speed", "1000"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_bare_metal.terraform-acceptance-test-1", "hourly_billing", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_bare_metal.terraform-acceptance-test-1", "private_network_only", "false"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_bare_metal.terraform-acceptance-test-1", "user_metadata", "{\"value\":\"newvalue\"}"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_bare_metal.terraform-acceptance-test-1", "fixed_config_preset", "S1270_32GB_1X1TBSATA_NORAID"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_bare_metal.terraform-acceptance-test-1", "notes", "baremetal notes"),
+					CheckStringSet(
+						"ibm_compute_bare_metal.terraform-acceptance-test-1",
+						"tags", []string{"collectd"},
+					),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMComputeBareMetal_With_Network_Storage_Access(t *testing.T) {
 	var bareMetal datatypes.Hardware
 	hostname := acctest.RandString(16)
@@ -398,4 +443,23 @@ func testBareMetalCustomConfigWithGpus(hostname, domain string) string {
 		hourly_billing         = false
 		}
 `, hostname, domain)
+}
+
+func testAccCheckIBMComputeBareMetalConfig_with_unbonded_port_speed(hostname string) string {
+	return fmt.Sprintf(`
+resource "ibm_compute_bare_metal" "terraform-acceptance-test-1" {
+	hostname               = "%s"
+	domain                 = "terraformuat.ibm.com"
+	os_reference_code      = "UBUNTU_16_64"
+	datacenter             = "dal01"
+	network_speed          = 1000
+	unbonded_network       = true
+	hourly_billing         = true
+	private_network_only   = false
+	user_metadata          = "{\"value\":\"newvalue\"}"
+	fixed_config_preset    = "S1270_32GB_1X1TBSATA_NORAID"
+	tags                   = ["collectd"]
+	notes                  = "baremetal notes"
+	}
+`, hostname)
 }
