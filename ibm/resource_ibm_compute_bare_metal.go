@@ -337,6 +337,40 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"secondary_ip_count": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: validateSecondaryIPCount,
+				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
+					// secondary_ip_count is only used when a virtual_guest resource is created.
+					if d.State() == nil {
+						return false
+					}
+					return true
+				},
+			},
+			"secondary_ip_addresses": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"ipv6_enabled": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				ForceNew: true,
+				Default:  false,
+			},
+			"ipv6_address": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"ipv6_static_enabled": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				ForceNew: true,
+				Default:  false,
+			},
 		},
 	}
 }
@@ -462,14 +496,6 @@ func resourceIBMComputeBareMetalCreate(d *schema.ResourceData, meta interface{})
 		if err != nil {
 			return err
 		}
-		err = setRedundantPowerSupplyPrice(d, items, &order)
-		if err != nil {
-			return err
-		}
-		err = setGPUPrices(d, items, &order)
-		if err != nil {
-			return err
-		}
 		redundantNetwork := d.Get("redundant_network").(bool)
 		unbondedNetwork := d.Get("unbonded_network").(bool)
 
@@ -489,6 +515,10 @@ func resourceIBMComputeBareMetalCreate(d *schema.ResourceData, meta interface{})
 			}
 			prices[i] = portSpeed
 			order.Prices = prices
+		}
+		err = setMonthlyHourlyCommonOrder(d, items, &order)
+		if err != nil {
+			return err
 		}
 
 	} else {
@@ -515,7 +545,7 @@ func resourceIBMComputeBareMetalCreate(d *schema.ResourceData, meta interface{})
 	log.Printf("[INFO] Bare Metal Server ID: %s", d.Id())
 
 	// wait for machine availability
-	bm, err := waitForBareMetalProvision(&hardware, meta)
+	bm, err := waitForBareMetalProvision(&hardware, d, meta)
 	if err != nil {
 		return fmt.Errorf(
 			"Error waiting for bare metal server (%s) to become ready: %s", d.Id(), err)
@@ -571,7 +601,8 @@ func resourceIBMComputeBareMetalRead(d *schema.ResourceData, meta interface{}) e
 			"allowedNetworkStorage[id,nasType]," +
 			"hourlyBillingFlag," +
 			"datacenter[id,name,longName]," +
-			"primaryNetworkComponent[networkVlan[id,primaryRouter,vlanNumber],maxSpeed]," +
+			"primaryNetworkComponent[networkVlan[id,primaryRouter,vlanNumber],maxSpeed," +
+			"primaryVersion6IpAddressRecord[subnet,guestNetworkComponentBinding[ipAddressId]]]," +
 			"primaryBackendNetworkComponent[networkVlan[id,primaryRouter,vlanNumber],maxSpeed,redundancyEnabledFlag]," +
 			"memoryCapacity,powerSupplyCount," +
 			"operatingSystem[softwareLicense[softwareDescription[referenceCode]]]",
@@ -671,7 +702,14 @@ func resourceIBMComputeBareMetalRead(d *schema.ResourceData, meta interface{}) e
 	}
 	d.SetConnInfo(connInfo)
 
-	return nil
+	d.Set("ipv6_enabled", false)
+	if result.PrimaryNetworkComponent.PrimaryVersion6IpAddressRecord != nil {
+		d.Set("ipv6_enabled", true)
+		d.Set("ipv6_address", *result.PrimaryNetworkComponent.PrimaryVersion6IpAddressRecord.IpAddress)
+	}
+	err = readSecondaryIPAddresses(d, meta, result.PrimaryIpAddress)
+	return err
+
 }
 
 func resourceIBMComputeBareMetalUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -752,16 +790,17 @@ func resourceIBMComputeBareMetalExists(d *schema.ResourceData, meta interface{})
 // Have to wait on provision date to become available on server that matches
 // hostname and domain.
 // http://sldn.softlayer.com/blog/bpotter/ordering-bare-metal-servers-using-softlayer-api
-func waitForBareMetalProvision(d *datatypes.Hardware, meta interface{}) (interface{}, error) {
-	hostname := *d.Hostname
-	domain := *d.Domain
+func waitForBareMetalProvision(hw *datatypes.Hardware, d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	hostname := *hw.Hostname
+	domain := *hw.Domain
 	log.Printf("Waiting for server (%s.%s) to have to be provisioned", hostname, domain)
 
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"retry", "pending"},
 		Target:  []string{"provisioned"},
 		Refresh: func() (interface{}, string, error) {
-			service := services.GetAccountService(meta.(ClientSession).SoftLayerSession())
+			sess := meta.(ClientSession).SoftLayerSession()
+			service := services.GetAccountService(sess)
 			bms, err := service.Filter(
 				filter.Build(
 					filter.Path("hardware.hostname").Eq(hostname),
@@ -775,6 +814,21 @@ func waitForBareMetalProvision(d *datatypes.Hardware, meta interface{}) (interfa
 			if len(bms) == 0 || bms[0].ProvisionDate == nil {
 				return datatypes.Hardware{}, "pending", nil
 			}
+			// Check Secondary IP address availability.
+			if d.Get("secondary_ip_count").(int) > 0 {
+				log.Println("Refreshing secondary IPs state.")
+				secondarySubnetResult, err := services.GetAccountService(sess).
+					Mask("ipAddresses[id,ipAddress]").
+					Filter(filter.Build(filter.Path("publicSubnets.endPointIpAddress.hardware.id").Eq(bms[0].Id))).
+					GetPublicSubnets()
+				if err != nil {
+					return nil, "", fmt.Errorf("Error retrieving secondary ip address: %s", err)
+				}
+				if len(secondarySubnetResult) == 0 {
+					return datatypes.Hardware{}, "pending", nil
+				}
+			}
+
 			return bms[0], "provisioned", nil
 
 		},
@@ -1019,11 +1073,6 @@ func getMonthlyBareMetalOrder(d *schema.ResourceData, meta interface{}) (datatyp
 		}
 	}
 
-	// Add redundant power supply
-	err = setRedundantPowerSupplyPrice(d, items, &order)
-	if err != nil {
-		return datatypes.Container_Product_Order{}, err
-	}
 	// Add storage_groups for RAID configuration
 	diskController, err := getItemPriceId(items, "disk_controller", "DISK_CONTROLLER_NONRAID")
 	if err != nil {
@@ -1039,15 +1088,14 @@ func getMonthlyBareMetalOrder(d *schema.ResourceData, meta interface{}) (datatyp
 	}
 	order.Prices = append(order.Prices, diskController)
 
-	err = setGPUPrices(d, items, &order)
+	err = setMonthlyHourlyCommonOrder(d, items, &order)
 	if err != nil {
-		return datatypes.Container_Product_Order{}, err
+		return order, err
 	}
-
 	return order, nil
 }
 
-func setRedundantPowerSupplyPrice(d *schema.ResourceData, items []datatypes.Product_Item, order *datatypes.Container_Product_Order) error {
+func setMonthlyHourlyCommonOrder(d *schema.ResourceData, items []datatypes.Product_Item, order *datatypes.Container_Product_Order) error {
 	if d.Get("redundant_power_supply").(bool) {
 		powerSupply, err := getItemPriceId(items, "power_supply", "REDUNDANT_POWER_SUPPLY")
 		if err != nil {
@@ -1055,9 +1103,6 @@ func setRedundantPowerSupplyPrice(d *schema.ResourceData, items []datatypes.Prod
 		}
 		order.Prices = append(order.Prices, powerSupply)
 	}
-	return nil
-}
-func setGPUPrices(d *schema.ResourceData, items []datatypes.Product_Item, order *datatypes.Container_Product_Order) error {
 	if gpu0, ok := d.GetOk("gpu_key_name"); ok {
 		gpu0Price, err := getItemPriceId(items, "gpu0", gpu0.(string))
 		if err != nil {
@@ -1072,6 +1117,47 @@ func setGPUPrices(d *schema.ResourceData, items []datatypes.Product_Item, order 
 			return err
 		}
 		order.Prices = append(order.Prices, gpu1Price)
+	}
+
+	secondaryIPCount := d.Get("secondary_ip_count").(int)
+	privateNetworkOnly := d.Get("private_network_only").(bool)
+	if secondaryIPCount > 0 {
+		if privateNetworkOnly {
+			return fmt.Errorf("Unable to configure public secondary addresses with a private_network_only option")
+		}
+		keyName := strconv.Itoa(secondaryIPCount) + "_PUBLIC_IP_ADDRESSES"
+
+		price, err := getItemPriceId(items, "sec_ip_addresses", keyName)
+		if err != nil {
+			return err
+		}
+		order.Prices = append(order.Prices, price)
+	}
+
+	if d.Get("ipv6_enabled").(bool) {
+		if privateNetworkOnly {
+			return fmt.Errorf("Unable to configure a public IPv6 address with a private_network_only option")
+		}
+		keyName := "1_IPV6_ADDRESS"
+
+		price, err := getItemPriceId(items, "pri_ipv6_addresses", keyName)
+		if err != nil {
+			return err
+		}
+		order.Prices = append(order.Prices, price)
+	}
+
+	if d.Get("ipv6_static_enabled").(bool) {
+		if privateNetworkOnly {
+			return fmt.Errorf("Unable to configure a public static IPv6 address with a private_network_only option")
+		}
+		keyName := "64_BLOCK_STATIC_PUBLIC_IPV6_ADDRESSES"
+
+		price, err := getItemPriceId(items, "static_ipv6_addresses", keyName)
+		if err != nil {
+			return err
+		}
+		order.Prices = append(order.Prices, price)
 	}
 	return nil
 }

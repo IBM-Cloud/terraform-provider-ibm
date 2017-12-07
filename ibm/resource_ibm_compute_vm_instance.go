@@ -273,6 +273,13 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				Default:  false,
 			},
 
+			"ipv6_static_enabled": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				ForceNew: true,
+				Default:  false,
+			},
+
 			"ipv6_address": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -296,9 +303,10 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 			},
 
 			"secondary_ip_count": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				ForceNew: true,
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: validateSecondaryIPCount,
 				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
 					// secondary_ip_count is only used when a virtual_guest resource is created.
 					if d.State() == nil {
@@ -718,57 +726,48 @@ func resourceIBMComputeVmInstanceCreate(d *schema.ResourceData, meta interface{}
 		}
 	}
 
-	// Add an IPv6 price item
-	privateNetworkOnly := d.Get("private_network_only").(bool)
-
-	if d.Get("ipv6_enabled").(bool) {
-		if privateNetworkOnly {
-			return fmt.Errorf("Unable to configure a public IPv6 address with a private_network_only option")
-		}
-
-		ipv6Items, err := services.GetProductPackageService(sess).
-			Id(*template.PackageId).
-			Mask("id,capacity,description,units,keyName,prices[id,categories[id,name,categoryCode]]").
-			Filter(filter.Build(filter.Path("items.keyName").Eq("1_IPV6_ADDRESS"))).
-			GetItems()
-		if err != nil {
-			return fmt.Errorf("Error generating order template: %s", err)
-		}
-		if len(ipv6Items) == 0 {
-			return fmt.Errorf("No product items matching 1_IPV6_ADDRESS could be found")
-		}
-
-		template.Prices = append(template.Prices,
-			datatypes.Product_Item_Price{
-				Id: ipv6Items[0].Prices[0].Id,
-			},
-		)
+	items, err := product.GetPackageProducts(sess, *template.PackageId, productItemMaskWithPriceLocationGroupID)
+	if err != nil {
+		return fmt.Errorf("Error generating order template: %s", err)
 	}
 
-	// Configure secondary IPs
+	privateNetworkOnly := d.Get("private_network_only").(bool)
+
 	secondaryIPCount := d.Get("secondary_ip_count").(int)
 	if secondaryIPCount > 0 {
 		if privateNetworkOnly {
 			return fmt.Errorf("Unable to configure public secondary addresses with a private_network_only option")
 		}
-		staticIPItems, err := services.GetProductPackageService(sess).
-			Id(*template.PackageId).
-			Mask("id,capacity,description,units,keyName,prices[id,categories[id,name,categoryCode]]").
-			Filter(filter.Build(filter.Path("items.keyName").Eq(strconv.Itoa(secondaryIPCount) + "_PUBLIC_IP_ADDRESSES"))).
-			GetItems()
+		keyName := strconv.Itoa(secondaryIPCount) + "_PUBLIC_IP_ADDRESSES"
+		price, err := getItemPriceId(items, "sec_ip_addresses", keyName)
+		if err != nil {
+			return err
+		}
+		template.Prices = append(template.Prices, price)
+	}
+
+	if d.Get("ipv6_enabled").(bool) {
+		if privateNetworkOnly {
+			return fmt.Errorf("Unable to configure a public IPv6 address with a private_network_only option")
+		}
+		price, err := getItemPriceId(items, "pri_ipv6_addresses", "1_IPV6_ADDRESS")
 		if err != nil {
 			return fmt.Errorf("Error generating order template: %s", err)
 		}
-		if len(staticIPItems) == 0 {
-			return fmt.Errorf("No product items matching %d_PUBLIC_IP_ADDRESSES could be found", secondaryIPCount)
-		}
-
-		template.Prices = append(template.Prices,
-			datatypes.Product_Item_Price{
-				Id: staticIPItems[0].Prices[0].Id,
-			},
-		)
+		template.Prices = append(template.Prices, price)
 	}
+
+	if d.Get("ipv6_static_enabled").(bool) {
+		if privateNetworkOnly {
+			return fmt.Errorf("Unable to configure a public static IPv6 address with a private_network_only option")
+		}
+		price, err := getItemPriceId(items, "static_ipv6_addresses", "64_BLOCK_STATIC_PUBLIC_IPV6_ADDRESSES")
+		if err != nil {
+			return fmt.Errorf("Error generating order template: %s", err)
+		}
+		template.Prices = append(template.Prices, price)
+	}
+
 	// Add optional price ids.
 	// Add public bandwidth limited
 	if publicBandwidth, ok := d.GetOk("public_bandwidth_limited"); ok {
@@ -789,23 +788,12 @@ func resourceIBMComputeVmInstanceCreate(d *schema.ResourceData, meta interface{}
 			i++
 		}
 		template.Prices = prices[:i]
-
-		bandWidthItems, err := services.GetProductPackageService(sess).
-			Id(*template.PackageId).
-			Mask("id,capacity,description,units,keyName,prices[id,categories[id,name,categoryCode]]").
-			Filter(filter.Build(filter.Path("items.keyName").Eq("BANDWIDTH_" + strconv.Itoa(publicBandwidth.(int)) + "_GB"))).
-			GetItems()
+		keyName := "BANDWIDTH_" + strconv.Itoa(publicBandwidth.(int)) + "_GB"
+		price, err := getItemPriceId(items, "bandwidth", keyName)
 		if err != nil {
 			return fmt.Errorf("Error generating order template: %s", err)
 		}
-		if len(bandWidthItems) == 0 {
-			return fmt.Errorf("No product items matching BANDWIDTH_%d_GB could be found", publicBandwidth)
-		}
-		template.Prices = append(template.Prices,
-			datatypes.Product_Item_Price{
-				Id: bandWidthItems[0].Prices[0].Id,
-			},
-		)
+		template.Prices = append(template.Prices, price)
 	}
 
 	// Add public bandwidth unlimited
@@ -832,24 +820,11 @@ func resourceIBMComputeVmInstanceCreate(d *schema.ResourceData, meta interface{}
 			i++
 		}
 		template.Prices = prices[:i]
-
-		bandWidthItems, err := services.GetProductPackageService(sess).
-			Id(*template.PackageId).
-			Mask("id,capacity,description,units,keyName,prices[id,categories[id,name,categoryCode]]").
-			Filter(filter.Build(filter.Path("items.keyName").Eq("BANDWIDTH_UNLIMITED_100_MBPS_UPLINK"))).
-			GetItems()
+		price, err := getItemPriceId(items, "bandwidth", "BANDWIDTH_UNLIMITED_100_MBPS_UPLINK")
 		if err != nil {
 			return fmt.Errorf("Error generating order template: %s", err)
 		}
-		if len(bandWidthItems) == 0 {
-			return fmt.Errorf("No product items matching BANDWIDTH_UNLIMITED_100_MBPS_UPLINK could be found")
-		}
-		template.Prices = append(template.Prices,
-			datatypes.Product_Item_Price{
-				Id: bandWidthItems[0].Prices[0].Id,
-			},
-		)
-
+		template.Prices = append(template.Prices, price)
 	}
 	// GenerateOrderTemplate omits UserData, subnet, and maxSpeed, so configure virtual_guest.
 	template.VirtualGuests[0] = opts
@@ -1081,12 +1056,16 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 	}
 	d.SetConnInfo(connInfo)
 
-	// Read secondary IP addresses
+	err = readSecondaryIPAddresses(d, meta, result.PrimaryIpAddress)
+	return err
+}
+
+func readSecondaryIPAddresses(d *schema.ResourceData, meta interface{}, primaryIPAddress *string) error {
 	d.Set("secondary_ip_addresses", nil)
-	if result.PrimaryIpAddress != nil {
+	if primaryIPAddress != nil {
 		secondarySubnetResult, err := services.GetAccountService(meta.(ClientSession).SoftLayerSession()).
 			Mask("ipAddresses[id,ipAddress],subnetType").
-			Filter(filter.Build(filter.Path("publicSubnets.endPointIpAddress.ipAddress").Eq(*result.PrimaryIpAddress))).
+			Filter(filter.Build(filter.Path("publicSubnets.endPointIpAddress.ipAddress").Eq(*primaryIPAddress))).
 			GetPublicSubnets()
 		if err != nil {
 			log.Printf("Error getting secondary Ip addresses: %s", err)
@@ -1106,10 +1085,8 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 			d.Set("secondary_ip_count", len(secondaryIps))
 		}
 	}
-
 	return nil
 }
-
 func resourceIBMComputeVmInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetVirtualGuestService(sess)

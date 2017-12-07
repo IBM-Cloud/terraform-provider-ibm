@@ -10,6 +10,15 @@ import (
 	homedir "github.com/mitchellh/go-homedir"
 )
 
+func validateSecondaryIPCount(v interface{}, k string) (ws []string, errors []error) {
+	value := v.(int)
+	if value != 4 && value != 8 {
+		errors = append(errors, fmt.Errorf(
+			"%q must be either 4 or 8", k))
+	}
+	return
+}
+
 func validateServiceTags(v interface{}, k string) (ws []string, errors []error) {
 	value := v.(string)
 	if len(value) > 2048 {
