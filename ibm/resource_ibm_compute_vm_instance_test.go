@@ -849,7 +849,7 @@ resource "ibm_compute_vm_instance" "terraform-vm-dedicatedhost" {
 	cores = 1
 	memory = 1024
 	os_reference_code = "DEBIAN_7_64"
-	disks                = [25, 10, 20]
+	disks                = [25, 25, 100]
 	dedicated_host_name  = "%s"
 }
 `, hostname, domain, dedicatedHostName)
@@ -866,7 +866,7 @@ resource "ibm_compute_vm_instance" "terraform-vm-dedicatedhost" {
 	cores = 1
 	memory = 1024
 	os_reference_code = "DEBIAN_7_64"
-	disks                = [25, 10, 20]
+	disks                = [25, 100, 25]
 	dedicated_host_id  = "%s"
 }
 `, hostname, domain, dedicatedHostID)
