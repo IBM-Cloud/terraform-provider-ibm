@@ -144,7 +144,6 @@ Locate your package ID. See `package_key_name` attribute. Once you have the ID f
 
 ### Arguments for hourly bare metal servers
 
-
 * `fixed_config_preset` - (Required, string) The configuration preset with which you want to provision the bare metal server. This preset governs the type of CPU, number of cores, amount of RAM, and number of hard drives that the bare metal server has. To see the available presets, log in to the [IBM Cloud Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3/SoftLayer_Hardware/getCreateObjectOptions.json) using your API key as the password. Find the key called `fixedConfigurationPresets`. The presets are identified by the key names.
 * `os_reference_code` - (Optional, string) An operating system reference code that provisions the computing instance. To see available OS reference codes, log in to the [IBM Cloud Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest_Block_Device_Template_Group/getVhdImportSoftwareDescriptions.json?objectMask=referenceCode), using your API key as the password.
     **NOTE**: Conflicts with `image_template_id`.  
@@ -166,6 +165,7 @@ Locate your package ID. See `package_key_name` attribute. Once you have the ID f
     * `hard_drives` - (Required, array of integers) The index of hard drives for RAID configuration. The index starts at 0. For example, the array [0,1] is an index of two hard drives.
     * `array_size` - (Optional, integer) The target RAID disk size, specific in gigabytes.
     * `partition_template_id` - (Optional, string) The partition template ID for the OS disk. Templates are different based on the target OS. To get the partition template ID, first find the OS ID in the [Softlayer API](https://api.softlayer.com/rest/v3/SoftLayer_Hardware_Component_Partition_OperatingSystem/getAllObjects). Then replace <OS_ID> with your OS ID in the following URL: `https://api.softlayer.com/rest/v3/SoftLayer_Hardware_Component_Partition_OperatingSystem/<OS_ID>/getPartitionTemplates`. Select you template ID in resulting available parition template IDs.  
+* `restricted_network` - (Optional, boolean) The non-datacenter restricted port speed. The default value is `false`.
 * `tcp_monitoring` - (Optional) When the value is `false`, a ping monitoring service is provided. When the value is `true`, a ping monitoring service and a TCP monitoring service are provided.
 
 ### Arguments for quote-based bare metal servers

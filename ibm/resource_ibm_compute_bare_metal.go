@@ -243,6 +243,14 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 				ForceNew: true,
 			},
 
+			// Monthly only. For controlling datacenter restricted port speed
+			"restricted_network": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				ForceNew: true,
+			},
+
 			// Monthly only
 			"public_bandwidth": {
 				Type:             schema.TypeInt,
@@ -1230,11 +1238,13 @@ func findNetworkItemPriceId(items []datatypes.Product_Item, d *schema.ResourceDa
 	networkSpeed := d.Get("network_speed").(int)
 	redundantNetwork := d.Get("redundant_network").(bool)
 	unbondedNetwork := d.Get("unbonded_network").(bool)
+	restrictedNetwork := d.Get("restricted_network").(bool)
 	privateNetworkOnly := d.Get("private_network_only").(bool)
 
 	networkSpeedStr := "_MBPS_"
 	redundantNetworkStr := ""
 	unbondedNetworkStr := ""
+	restrictedNetworkStr := ""
 
 	if networkSpeed < 1000 {
 		networkSpeedStr = strconv.Itoa(networkSpeed) + networkSpeedStr
@@ -1249,16 +1259,22 @@ func findNetworkItemPriceId(items []datatypes.Product_Item, d *schema.ResourceDa
 		unbondedNetworkStr = "_UNBONDED"
 	}
 
+	if restrictedNetwork {
+		restrictedNetworkStr = "_NON_DATACENTER_RESTRICTED"
+	}
+
 	for _, item := range items {
 		for _, itemCategory := range item.Categories {
 			if *itemCategory.CategoryCode == "port_speed" &&
 				strings.HasPrefix(*item.KeyName, networkSpeedStr) &&
 				strings.Contains(*item.KeyName, redundantNetworkStr) &&
+				strings.Contains(*item.KeyName, restrictedNetworkStr) &&
 				strings.Contains(*item.KeyName, unbondedNetworkStr) {
 				if (privateNetworkOnly && strings.Contains(*item.KeyName, "_PUBLIC_PRIVATE")) ||
 					(!privateNetworkOnly && !strings.Contains(*item.KeyName, "_PUBLIC_PRIVATE")) ||
 					(!unbondedNetwork && strings.Contains(*item.KeyName, "_UNBONDED")) ||
-					!redundantNetwork && strings.Contains(*item.KeyName, "_REDUNDANT") {
+					(!redundantNetwork && strings.Contains(*item.KeyName, "_REDUNDANT")) ||
+					(!restrictedNetwork && strings.Contains(*item.KeyName, "_DATACENTER_RESTRICTED")) {
 					break
 				}
 				for _, price := range item.Prices {
