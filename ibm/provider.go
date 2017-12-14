@@ -51,6 +51,12 @@ func Provider() terraform.ResourceProvider {
 				Description: "The timeout (in seconds) to set for any SoftLayer API calls made.",
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"SL_TIMEOUT", "SOFTLAYER_TIMEOUT"}, 60),
 			},
+			"max_retries": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The retry count to set for any SoftLayer API calls.",
+				DefaultFunc: schema.EnvDefaultFunc("MAX_RETRIES", 5),
+			},
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -134,6 +140,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	softlayerTimeout := d.Get("softlayer_timeout").(int)
 	bluemixTimeout := d.Get("bluemix_timeout").(int)
 	region := d.Get("region").(string)
+	retryCount := d.Get("max_retries").(int)
 
 	config := Config{
 		BluemixAPIKey:        bluemixAPIKey,
@@ -142,9 +149,9 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		SoftLayerTimeout:     time.Duration(softlayerTimeout) * time.Second,
 		SoftLayerUserName:    softlayerUsername,
 		SoftLayerAPIKey:      softlayerAPIKey,
-		RetryCount:           3,
-		RetryDelay:           30 * time.Millisecond,
+		RetryCount:           retryCount,
 		SoftLayerEndpointURL: SoftlayerRestEndpoint,
+		RetryDelay:           RetryAPIDelay,
 	}
 
 	return config.ClientSession()

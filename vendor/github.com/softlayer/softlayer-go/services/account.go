@@ -499,9 +499,9 @@ func (r Account) GetBlockDeviceTemplateGroups() (resp []datatypes.Virtual_Guest_
 	return
 }
 
-// Retrieve This field is deprecated and should not be used.
-func (r Account) GetBlueIdAuthenticationRequiredFlag() (resp bool, err error) {
-	err = r.Session.DoRequest("SoftLayer_Account", "getBlueIdAuthenticationRequiredFlag", nil, &r.Options, &resp)
+// Retrieve The Bluemix account link associated with this SoftLayer account, if one exists.
+func (r Account) GetBluemixAccountLink() (resp datatypes.Account_Link_Bluemix, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account", "getBluemixAccountLink", nil, &r.Options, &resp)
 	return
 }
 
@@ -2901,6 +2901,112 @@ func (r Account_Historical_Report) GetUrlUptimeGraphData(configurationValueId *i
 		endDate,
 	}
 	err = r.Session.DoRequest("SoftLayer_Account_Historical_Report", "getUrlUptimeGraphData", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+type Account_Internal_Ibm struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetAccountInternalIbmService returns an instance of the Account_Internal_Ibm SoftLayer service
+func GetAccountInternalIbmService(sess *session.Session) Account_Internal_Ibm {
+	return Account_Internal_Ibm{Session: sess}
+}
+
+func (r Account_Internal_Ibm) Id(id int) Account_Internal_Ibm {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Account_Internal_Ibm) Mask(mask string) Account_Internal_Ibm {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Account_Internal_Ibm) Filter(filter string) Account_Internal_Ibm {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Account_Internal_Ibm) Limit(limit int) Account_Internal_Ibm {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Account_Internal_Ibm) Offset(offset int) Account_Internal_Ibm {
+	r.Options.Offset = &offset
+	return r
+}
+
+// Validates request and, if the request is approved, returns a list of allowed uses for an automatically created IBMer IaaS account.
+func (r Account_Internal_Ibm) GetAccountTypes() (resp []string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_Internal_Ibm", "getAccountTypes", nil, &r.Options, &resp)
+	return
+}
+
+// Gets the URL used to perform manager validation.
+func (r Account_Internal_Ibm) GetAuthorizationUrl(requestId *int) (resp string, err error) {
+	params := []interface{}{
+		requestId,
+	}
+	err = r.Session.DoRequest("SoftLayer_Account_Internal_Ibm", "getAuthorizationUrl", params, &r.Options, &resp)
+	return
+}
+
+// Exchanges a code for a token during manager validation.
+func (r Account_Internal_Ibm) GetEmployeeAccessToken(unverifiedAuthenticationCode *string) (resp string, err error) {
+	params := []interface{}{
+		unverifiedAuthenticationCode,
+	}
+	err = r.Session.DoRequest("SoftLayer_Account_Internal_Ibm", "getEmployeeAccessToken", params, &r.Options, &resp)
+	return
+}
+
+// After validating the requesting user through the access token, generates a container with the relevant request information and returns it.
+func (r Account_Internal_Ibm) GetManagerPreview(requestId *int, accessToken *string) (resp datatypes.Container_Account_Internal_Ibm_Request, err error) {
+	params := []interface{}{
+		requestId,
+		accessToken,
+	}
+	err = r.Session.DoRequest("SoftLayer_Account_Internal_Ibm", "getManagerPreview", params, &r.Options, &resp)
+	return
+}
+
+// Applies manager approval to a pending internal IBM account request. If cost recovery is already configured, this will create an account. If not, this will remind the internal team to configure cost recovery and create the account when possible.
+func (r Account_Internal_Ibm) ManagerApprove(requestId *int, accessToken *string) (err error) {
+	var resp datatypes.Void
+	params := []interface{}{
+		requestId,
+		accessToken,
+	}
+	err = r.Session.DoRequest("SoftLayer_Account_Internal_Ibm", "managerApprove", params, &r.Options, &resp)
+	return
+}
+
+// Denies a pending request and prevents additional requests from the same applicant for as long as the manager remains the same.
+func (r Account_Internal_Ibm) ManagerDeny(requestId *int, accessToken *string) (err error) {
+	var resp datatypes.Void
+	params := []interface{}{
+		requestId,
+		accessToken,
+	}
+	err = r.Session.DoRequest("SoftLayer_Account_Internal_Ibm", "managerDeny", params, &r.Options, &resp)
+	return
+}
+
+// Validates request and kicks off the approval process.
+func (r Account_Internal_Ibm) RequestAccount(requestContainer *datatypes.Container_Account_Internal_Ibm_Request) (err error) {
+	var resp datatypes.Void
+	params := []interface{}{
+		requestContainer,
+	}
+	err = r.Session.DoRequest("SoftLayer_Account_Internal_Ibm", "requestAccount", params, &r.Options, &resp)
 	return
 }
 

@@ -103,7 +103,7 @@ func resourceIBMComputeSSLCertificate() *schema.Resource {
 
 func resourceIBMComputeSSLCertificateCreate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
-	service := services.GetSecurityCertificateService(sess)
+	service := services.GetSecurityCertificateService(sess.SetRetries(0))
 
 	template := datatypes.Security_Certificate{
 		Certificate:             sl.String(d.Get("certificate").(string)),

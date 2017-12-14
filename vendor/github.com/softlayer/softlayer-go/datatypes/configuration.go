@@ -121,6 +121,9 @@ type Configuration_Storage_Group_Template_Group struct {
 	// Comma delimited integers of drive indexes for the array. This can also be the string 'all' to specify all drives in the server
 	HardDrivesString *string `json:"hardDrivesString,omitempty" xmlrpc:"hardDrivesString,omitempty"`
 
+	// Comma delimited integers of drive indexes for hot spares on the array.
+	HotSpareDrivesString *string `json:"hotSpareDrivesString,omitempty" xmlrpc:"hotSpareDrivesString,omitempty"`
+
 	// The order of the arrays in the template.
 	OrderIndex *int `json:"orderIndex,omitempty" xmlrpc:"orderIndex,omitempty"`
 

@@ -257,7 +257,7 @@ func getVirtualGuestTemplate(vGuestTemplateList []interface{}, meta interface{})
 
 func resourceIBMComputeAutoScaleGroupCreate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
-	service := services.GetScaleGroupService(sess)
+	accountServiceNoRetry := services.GetScaleGroupService(sess.SetRetries(0))
 
 	virtualGuestTemplateOpts, err := getVirtualGuestTemplate(d.Get("virtual_guest_member_template").([]interface{}), meta)
 	if err != nil {
@@ -295,7 +295,7 @@ func resourceIBMComputeAutoScaleGroupCreate(d *schema.ResourceData, meta interfa
 		return fmt.Errorf("Error creating Scale Group: %s", err)
 	}
 
-	res, err := service.CreateObject(&opts)
+	res, err := accountServiceNoRetry.CreateObject(&opts)
 	if err != nil {
 		return fmt.Errorf("Error creating Scale Group: %s", err)
 	}
@@ -464,10 +464,12 @@ func populateMemberTemplateResourceData(template datatypes.Virtual_Guest) []map[
 }
 
 func resourceIBMComputeAutoScaleGroupUpdate(d *schema.ResourceData, meta interface{}) error {
+
 	sess := meta.(ClientSession).SoftLayerSession()
 	scaleGroupService := services.GetScaleGroupService(sess)
 	scaleNetworkVlanService := services.GetScaleNetworkVlanService(sess)
 	scaleLoadBalancerService := services.GetScaleLoadBalancerService(sess)
+	scaleGroupServiceNoRetry := services.GetScaleGroupService(sess.SetRetries(0))
 
 	groupId, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -541,7 +543,7 @@ func resourceIBMComputeAutoScaleGroupUpdate(d *schema.ResourceData, meta interfa
 		groupObj.VirtualGuestMemberTemplate = &virtualGuestTemplateOpts
 
 	}
-	_, err = scaleGroupService.Id(groupId).EditObject(&groupObj)
+	_, err = scaleGroupServiceNoRetry.Id(groupId).EditObject(&groupObj)
 	if err != nil {
 		return fmt.Errorf("Error received while editing autoscale_group: %s", err)
 	}
@@ -648,6 +650,7 @@ func waitForActiveStatus(d *schema.ResourceData, meta interface{}) (interface{},
 }
 
 func resourceIBMComputeAutoScaleGroupExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+
 	sess := meta.(ClientSession).SoftLayerSession()
 	scaleGroupService := services.GetScaleGroupService(sess)
 

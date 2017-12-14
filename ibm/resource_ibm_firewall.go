@@ -105,7 +105,7 @@ func resourceIBMFirewallCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Println("[INFO] Creating dedicated hardware firewall")
 
-	receipt, err := services.GetProductOrderService(sess).
+	receipt, err := services.GetProductOrderService(sess.SetRetries(0)).
 		PlaceOrder(&productOrderContainer, sl.Bool(false))
 	if err != nil {
 		return fmt.Errorf("Error during creation of dedicated hardware firewall: %s", err)

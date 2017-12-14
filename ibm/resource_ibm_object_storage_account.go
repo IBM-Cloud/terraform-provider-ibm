@@ -56,7 +56,7 @@ func resourceIBMObjectStorageAccountCreate(d *schema.ResourceData, meta interfac
 
 	if len(objectStorageAccounts) == 0 {
 		// Order the account
-		productOrderService := services.GetProductOrderService(sess)
+		productOrderService := services.GetProductOrderService(sess.SetRetries(0))
 
 		receipt, err := productOrderService.PlaceOrder(&datatypes.Container_Product_Order{
 			Quantity:  sl.Int(1),
@@ -110,8 +110,7 @@ func WaitForOrderCompletion(
 			var err error
 			var completed bool
 
-			sess := meta.(ClientSession).SoftLayerSession()
-			completed, billingOrderItem, err = order.CheckBillingOrderComplete(sess, receipt)
+			completed, billingOrderItem, err = order.CheckBillingOrderComplete(meta.(ClientSession).SoftLayerSession(), receipt)
 			if err != nil {
 				return nil, "", err
 			}

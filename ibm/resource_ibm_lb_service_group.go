@@ -98,7 +98,7 @@ func resourceIBMLbServiceGroupCreate(d *schema.ResourceData, meta interface{}) e
 
 	log.Println("[INFO] Creating load balancer service group")
 
-	err = updateLoadBalancerService(sess, vipID, &vip)
+	err = updateLoadBalancerService(sess.SetRetries(0), vipID, &vip)
 
 	if err != nil {
 		return fmt.Errorf("Error creating load balancer service group: %s", err)
@@ -157,7 +157,7 @@ func resourceIBMLbServiceGroupUpdate(d *schema.ResourceData, meta interface{}) e
 
 	log.Println("[INFO] Updating load balancer service group")
 
-	err = updateLoadBalancerService(sess, vipID, &vip)
+	err = updateLoadBalancerService(sess.SetRetries(0), vipID, &vip)
 
 	if err != nil {
 		return fmt.Errorf("Error creating load balancer service group: %s", err)

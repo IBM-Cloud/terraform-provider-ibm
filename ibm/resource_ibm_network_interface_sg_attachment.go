@@ -48,6 +48,7 @@ func resourceIBMNetworkInterfaceSGAttachmentCreate(d *schema.ResourceData, meta 
 
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetNetworkSecurityGroupService(sess)
+	ncs := services.GetVirtualGuestNetworkComponentService(sess)
 
 	sgID := d.Get("security_group_id").(int)
 	interfaceID := d.Get("network_interface_id").(int)
@@ -61,7 +62,6 @@ func resourceIBMNetworkInterfaceSGAttachmentCreate(d *schema.ResourceData, meta 
 	// If user has not explicity disabled soft reboot
 	if ok := d.Get("soft_reboot").(bool); ok {
 		//Check if a soft reboot is required and perform it
-		ncs := services.GetVirtualGuestNetworkComponentService(sess)
 		ready, err := ncs.Id(interfaceID).SecurityGroupsReady()
 		if err != nil {
 			return err

@@ -4644,6 +4644,15 @@ func (r Network_Interconnect_Tenant) GetDatacenterName() (resp string, err error
 }
 
 // no documentation yet
+func (r Network_Interconnect_Tenant) GetDirectLinkSpeeds(offeringType *string) (resp string, err error) {
+	params := []interface{}{
+		offeringType,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_Interconnect_Tenant", "getDirectLinkSpeeds", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
 func (r Network_Interconnect_Tenant) GetNetworkZones() (resp []string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Interconnect_Tenant", "getNetworkZones", nil, &r.Options, &resp)
 	return
@@ -12336,6 +12345,70 @@ func (r Network_Storage_Iscsi_OS_Type) GetObject() (resp datatypes.Network_Stora
 	return
 }
 
+// no documentation yet
+type Network_Storage_MassDataMigration_CrossRegion_Country_Xref struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetNetworkStorageMassDataMigrationCrossRegionCountryXrefService returns an instance of the Network_Storage_MassDataMigration_CrossRegion_Country_Xref SoftLayer service
+func GetNetworkStorageMassDataMigrationCrossRegionCountryXrefService(sess *session.Session) Network_Storage_MassDataMigration_CrossRegion_Country_Xref {
+	return Network_Storage_MassDataMigration_CrossRegion_Country_Xref{Session: sess}
+}
+
+func (r Network_Storage_MassDataMigration_CrossRegion_Country_Xref) Id(id int) Network_Storage_MassDataMigration_CrossRegion_Country_Xref {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Network_Storage_MassDataMigration_CrossRegion_Country_Xref) Mask(mask string) Network_Storage_MassDataMigration_CrossRegion_Country_Xref {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Network_Storage_MassDataMigration_CrossRegion_Country_Xref) Filter(filter string) Network_Storage_MassDataMigration_CrossRegion_Country_Xref {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Network_Storage_MassDataMigration_CrossRegion_Country_Xref) Limit(limit int) Network_Storage_MassDataMigration_CrossRegion_Country_Xref {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Network_Storage_MassDataMigration_CrossRegion_Country_Xref) Offset(offset int) Network_Storage_MassDataMigration_CrossRegion_Country_Xref {
+	r.Options.Offset = &offset
+	return r
+}
+
+// no documentation yet
+func (r Network_Storage_MassDataMigration_CrossRegion_Country_Xref) GetAllObjects() (resp []datatypes.Network_Storage_MassDataMigration_CrossRegion_Country_Xref, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_MassDataMigration_CrossRegion_Country_Xref", "getAllObjects", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve SoftLayer_Locale_Country Id.
+func (r Network_Storage_MassDataMigration_CrossRegion_Country_Xref) GetCountry() (resp datatypes.Locale_Country, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_MassDataMigration_CrossRegion_Country_Xref", "getCountry", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Location Group ID of CleverSafe cross region.
+func (r Network_Storage_MassDataMigration_CrossRegion_Country_Xref) GetLocationGroup() (resp datatypes.Location_Group, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_MassDataMigration_CrossRegion_Country_Xref", "getLocationGroup", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Storage_MassDataMigration_CrossRegion_Country_Xref) GetObject() (resp datatypes.Network_Storage_MassDataMigration_CrossRegion_Country_Xref, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_MassDataMigration_CrossRegion_Country_Xref", "getObject", nil, &r.Options, &resp)
+	return
+}
+
 // The SoftLayer_Network_Storage_MassDataMigration_Request data type contains information on a single Mass Data Migration request. Creation of these requests is limited to SoftLayer customers through the SoftLayer Customer Portal.
 type Network_Storage_MassDataMigration_Request struct {
 	Session *session.Session
@@ -12460,6 +12533,12 @@ func (r Network_Storage_MassDataMigration_Request) GetModifyUser() (resp datatyp
 // no documentation yet
 func (r Network_Storage_MassDataMigration_Request) GetObject() (resp datatypes.Network_Storage_MassDataMigration_Request, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_MassDataMigration_Request", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// Returns placeholder MDMS requests for any MDMS order pending approval.
+func (r Network_Storage_MassDataMigration_Request) GetPendingRequests() (resp []datatypes.Network_Storage_MassDataMigration_Request, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_MassDataMigration_Request", "getPendingRequests", nil, &r.Options, &resp)
 	return
 }
 
@@ -13018,12 +13097,6 @@ func (r Network_Subnet) GetHardware() (resp []datatypes.Hardware, err error) {
 // Retrieve All the ip addresses associated with a subnet.
 func (r Network_Subnet) GetIpAddresses() (resp []datatypes.Network_Subnet_IpAddress, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Subnet", "getIpAddresses", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve A subnet's associated network component.
-func (r Network_Subnet) GetNetworkComponent() (resp datatypes.Network_Component, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_Subnet", "getNetworkComponent", nil, &r.Options, &resp)
 	return
 }
 
@@ -15039,6 +15112,18 @@ func (r Network_Vlan_Firewall) GetRules() (resp []datatypes.Network_Vlan_Firewal
 // Retrieve
 func (r Network_Vlan_Firewall) GetTagReferences() (resp []datatypes.Tag_Reference, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Vlan_Firewall", "getTagReferences", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A firewall's associated upgrade request object, if any.
+func (r Network_Vlan_Firewall) GetUpgradeRequest() (resp datatypes.Product_Upgrade_Request, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Vlan_Firewall", "getUpgradeRequest", nil, &r.Options, &resp)
+	return
+}
+
+// Whether this firewall qualifies for High Availability upgrade.
+func (r Network_Vlan_Firewall) IsHighAvailabilityUpgradeAvailable() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Vlan_Firewall", "isHighAvailabilityUpgradeAvailable", nil, &r.Options, &resp)
 	return
 }
 

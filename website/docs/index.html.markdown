@@ -113,3 +113,4 @@ The following arguments are supported in the `provider` block:
 
 * `region` - (optional) The IBM Cloud region. You can also source it from the `BM_REGION` (higher precedence) or `BLUEMIX_REGION` environment variable. The default value is `us-south`.
 
+* `max_retries` - (Optional) This is the maximum number of times a Softlayer API call is retried, in the case where requests are getting network related timeout and rate limit exceeded error code. You can also source it from the `MAX_RETRIES` environment variable. The default value is `5`.

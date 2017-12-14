@@ -24,6 +24,9 @@ package datatypes
 type Hardware struct {
 	Entity
 
+	// Determine if hardware object has Software Guard Extension (SGX) enabled.
+	SGXEnabled *bool `json:"SGXEnabled,omitempty" xmlrpc:"SGXEnabled,omitempty"`
+
 	// The account associated with a piece of hardware.
 	Account *Account `json:"account,omitempty" xmlrpc:"account,omitempty"`
 
@@ -741,6 +744,9 @@ type Hardware_Component struct {
 	// A count of a components sub components. Devices that are usually integrated or in some way attached to a component.
 	ChildrenCount *uint `json:"childrenCount,omitempty" xmlrpc:"childrenCount,omitempty"`
 
+	// A component's Revision.
+	ComponentRevision *string `json:"componentRevision,omitempty" xmlrpc:"componentRevision,omitempty"`
+
 	// A count of
 	DownlinkHardwareComponentCount *uint `json:"downlinkHardwareComponentCount,omitempty" xmlrpc:"downlinkHardwareComponentCount,omitempty"`
 
@@ -993,6 +999,9 @@ type Hardware_Component_Model struct {
 
 	// A count of
 	FirmwareCount *uint `json:"firmwareCount,omitempty" xmlrpc:"firmwareCount,omitempty"`
+
+	// no documentation yet
+	FirmwareQuantity *uint `json:"firmwareQuantity,omitempty" xmlrpc:"firmwareQuantity,omitempty"`
 
 	// no documentation yet
 	Firmwares []Hardware_Component_Firmware `json:"firmwares,omitempty" xmlrpc:"firmwares,omitempty"`
@@ -1394,6 +1403,9 @@ type Hardware_Component_RemoteManagement_User struct {
 type Hardware_Component_Revision struct {
 	Entity
 
+	// The firmware build date
+	BiosDate *Time `json:"biosDate,omitempty" xmlrpc:"biosDate,omitempty"`
+
 	// The Firmware installed on this record's Hardware Component.
 	Firmware *Hardware_Component_Firmware `json:"firmware,omitempty" xmlrpc:"firmware,omitempty"`
 
@@ -1408,6 +1420,9 @@ type Hardware_Component_Revision struct {
 
 	// no documentation yet
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// The firmware revision
+	Revision *string `json:"revision,omitempty" xmlrpc:"revision,omitempty"`
 }
 
 // The SoftLayer_Hardware_Component_SecurityDevice is used to determine the security devices attached to the hardware component.

@@ -38,7 +38,7 @@ func resourceIBMSecurityGroup() *schema.Resource {
 
 func resourceIBMSecurityGroupCreate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
-	service := services.GetNetworkSecurityGroupService(sess)
+	service := services.GetNetworkSecurityGroupService(sess.SetRetries(0))
 
 	name := d.Get("name").(string)
 	description := d.Get("description").(string)
@@ -115,7 +115,7 @@ func resourceIBMSecurityGroupUpdate(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("Not a valid ID, must be an integer: %s", err)
 	}
 
-	group, err := service.Id(groupID).GetObject()
+	group, err := services.GetNetworkSecurityGroupService(sess).Id(groupID).GetObject()
 	if err != nil {
 		return fmt.Errorf("Error retrieving Security Group: %s", err)
 	}

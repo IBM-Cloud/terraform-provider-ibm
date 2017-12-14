@@ -44,7 +44,7 @@ func resourceIBMComputeProvisioningHook() *schema.Resource {
 
 func resourceIBMComputeProvisioningHookCreate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
-	service := services.GetProvisioningHookService(sess)
+	service := services.GetProvisioningHookService(sess.SetRetries(0))
 
 	opts := datatypes.Provisioning_Hook{
 		Name: sl.String(d.Get("name").(string)),
@@ -88,7 +88,7 @@ func resourceIBMComputeProvisioningHookRead(d *schema.ResourceData, meta interfa
 
 func resourceIBMComputeProvisioningHookUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
-	service := services.GetProvisioningHookService(sess)
+	service := services.GetProvisioningHookService(sess.SetRetries(0))
 
 	hookId, _ := strconv.Atoi(d.Id())
 

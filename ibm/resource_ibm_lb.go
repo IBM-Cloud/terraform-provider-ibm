@@ -87,6 +87,7 @@ func resourceIBMLb() *schema.Resource {
 }
 
 func resourceIBMLbCreate(d *schema.ResourceData, meta interface{}) error {
+
 	sess := meta.(ClientSession).SoftLayerSession()
 
 	connections := d.Get("connections").(int)
@@ -182,7 +183,7 @@ func resourceIBMLbCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Println("[INFO] Creating load balancer")
 
-	receipt, err := services.GetProductOrderService(sess).
+	receipt, err := services.GetProductOrderService(sess.SetRetries(0)).
 		PlaceOrder(&productOrderContainer, sl.Bool(false))
 	if err != nil {
 		return fmt.Errorf("Error during creation of load balancer: %s", err)
@@ -223,7 +224,6 @@ func resourceIBMLbUpdate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceIBMLbRead(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
-
 	vipID, _ := strconv.Atoi(d.Id())
 
 	vip, err := services.GetNetworkApplicationDeliveryControllerLoadBalancerVirtualIpAddressService(sess).
@@ -252,7 +252,6 @@ func resourceIBMLbRead(d *schema.ResourceData, meta interface{}) error {
 func resourceIBMLbDelete(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	vipService := services.GetNetworkApplicationDeliveryControllerLoadBalancerVirtualIpAddressService(sess)
-
 	vipID, _ := strconv.Atoi(d.Id())
 
 	var billingItem datatypes.Billing_Item_Network_LoadBalancer

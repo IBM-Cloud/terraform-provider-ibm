@@ -144,6 +144,7 @@ func getPermissions(d *schema.ResourceData) []datatypes.User_Customer_CustomerPe
 func resourceIBMComputeUserCreate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetUserCustomerService(sess)
+	serviceNoRetry := services.GetUserCustomerService(sess.SetRetries(0))
 
 	timezoneID, err := getTimezoneIDByName(sess, d.Get("timezone").(string))
 	if err != nil {
@@ -182,7 +183,7 @@ func resourceIBMComputeUserCreate(d *schema.ResourceData, meta interface{}) erro
 		pass = nil
 	}
 
-	res, err := service.CreateObject(&opts, pass, nil)
+	res, err := serviceNoRetry.CreateObject(&opts, pass, nil)
 
 	if err != nil {
 		return fmt.Errorf("Error creating IBM Cloud User: %s", err)
@@ -229,7 +230,6 @@ func resourceIBMComputeUserCreate(d *schema.ResourceData, meta interface{}) erro
 
 func resourceIBMComputeUserRead(d *schema.ResourceData, meta interface{}) error {
 	service := services.GetUserCustomerService(meta.(ClientSession).SoftLayerSession())
-
 	userID, _ := strconv.Atoi(d.Id())
 
 	mask := strings.Join([]string{
@@ -300,8 +300,10 @@ func resourceIBMComputeUserRead(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceIBMComputeUserUpdate(d *schema.ResourceData, meta interface{}) error {
+
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetUserCustomerService(sess)
+	serviceNoRetry := services.GetUserCustomerService(sess.SetRetries(0))
 
 	sluid, _ := strconv.Atoi(d.Id())
 
@@ -372,7 +374,7 @@ func resourceIBMComputeUserUpdate(d *schema.ResourceData, meta interface{}) erro
 		userObj.UserStatusId = &userStatusID
 	}
 
-	_, err = service.EditObject(&userObj)
+	_, err = serviceNoRetry.Id(sluid).EditObject(&userObj)
 	if err != nil {
 		return fmt.Errorf("Error received while editing ibm_compute_user: %s", err)
 	}

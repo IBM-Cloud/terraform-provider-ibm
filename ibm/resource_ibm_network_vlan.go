@@ -122,6 +122,7 @@ func resourceIBMNetworkVlan() *schema.Resource {
 }
 
 func resourceIBMNetworkVlanCreate(d *schema.ResourceData, meta interface{}) error {
+
 	sess := meta.(ClientSession).SoftLayerSession()
 	router := d.Get("router_hostname").(string)
 	name := d.Get("name").(string)
@@ -144,7 +145,7 @@ func resourceIBMNetworkVlanCreate(d *schema.ResourceData, meta interface{}) erro
 
 	log.Println("[INFO] Creating vlan")
 
-	receipt, err := services.GetProductOrderService(sess).
+	receipt, err := services.GetProductOrderService(sess.SetRetries(0)).
 		PlaceOrder(productOrderContainer, sl.Bool(false))
 	if err != nil {
 		return fmt.Errorf("Error during creation of vlan: %s", err)

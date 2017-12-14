@@ -364,9 +364,8 @@ func prepareHardwareOptions(d *schema.ResourceData, meta interface{}) ([]datatyp
 
 func resourceIBMLbVpxCreate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
-
-	productOrderService := services.GetProductOrderService(sess)
 	NADCService := services.GetNetworkApplicationDeliveryControllerService(sess)
+	productOrderService := services.GetProductOrderService(sess.SetRetries(0))
 	var err error
 
 	opts := datatypes.Container_Product_Order{

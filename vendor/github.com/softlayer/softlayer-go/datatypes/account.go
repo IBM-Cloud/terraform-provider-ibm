@@ -245,8 +245,8 @@ type Account struct {
 	// Private template group objects (parent and children) and the shared template group objects (parent only) for an account.
 	BlockDeviceTemplateGroups []Virtual_Guest_Block_Device_Template_Group `json:"blockDeviceTemplateGroups,omitempty" xmlrpc:"blockDeviceTemplateGroups,omitempty"`
 
-	// This field is deprecated and should not be used.
-	BlueIdAuthenticationRequiredFlag *bool `json:"blueIdAuthenticationRequiredFlag,omitempty" xmlrpc:"blueIdAuthenticationRequiredFlag,omitempty"`
+	// The Bluemix account link associated with this SoftLayer account, if one exists.
+	BluemixAccountLink *Account_Link_Bluemix `json:"bluemixAccountLink,omitempty" xmlrpc:"bluemixAccountLink,omitempty"`
 
 	// Returns true if this account is linked to IBM Bluemix, false if not.
 	BluemixLinkedFlag *bool `json:"bluemixLinkedFlag,omitempty" xmlrpc:"bluemixLinkedFlag,omitempty"`
@@ -1890,6 +1890,11 @@ type Account_External_Setup struct {
 
 // no documentation yet
 type Account_Historical_Report struct {
+	Entity
+}
+
+// no documentation yet
+type Account_Internal_Ibm struct {
 	Entity
 }
 
