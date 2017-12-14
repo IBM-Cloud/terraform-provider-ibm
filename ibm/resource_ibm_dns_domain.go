@@ -54,7 +54,7 @@ func resourceIBMDNSDomain() *schema.Resource {
 
 func resourceIBMDNSDomainCreate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
-	service := services.GetDnsDomainService(sess)
+	service := services.GetDnsDomainService(sess.SetRetries(0))
 
 	// prepare creation parameters
 	opts := datatypes.Dns_Domain{
@@ -120,8 +120,12 @@ func resourceIBMDNSDomainRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceIBMDNSDomainUpdate(d *schema.ResourceData, meta interface{}) error {
-	// If the target has been updated, find the corresponding dns record and update its data.
+	// If the target has been updated, find the corresponding dns record and update its data
+
 	sess := meta.(ClientSession).SoftLayerSession()
+	domainService := services.GetDnsDomainService(sess)
+	service := services.GetDnsDomainResourceRecordService(sess.SetRetries(0))
+
 	domainId, _ := strconv.Atoi(d.Id())
 
 	if !d.HasChange("target") { // target is the only editable field
@@ -131,7 +135,6 @@ func resourceIBMDNSDomainUpdate(d *schema.ResourceData, meta interface{}) error 
 	newTarget := d.Get("target").(string)
 
 	// retrieve domain state
-	domainService := services.GetDnsDomainService(sess)
 	domain, err := domainService.Id(domainId).Mask(
 		"id,name,updateDate,resourceRecords",
 	).GetObject()
@@ -154,8 +157,7 @@ func resourceIBMDNSDomainUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	record.Data = sl.String(newTarget)
 
-	_, err = services.GetDnsDomainResourceRecordService(sess).
-		Id(*record.Id).EditObject(&record)
+	_, err = service.Id(*record.Id).EditObject(&record)
 
 	if err != nil {
 		return fmt.Errorf("Error editing DNS target record for domain %s (%d): %s",

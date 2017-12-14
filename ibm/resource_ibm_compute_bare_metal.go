@@ -545,7 +545,7 @@ func resourceIBMComputeBareMetalCreate(d *schema.ResourceData, meta interface{})
 	}
 
 	log.Println("[INFO] Ordering bare metal server")
-	_, err = services.GetProductOrderService(sess).PlaceOrder(&order, sl.Bool(false))
+	_, err = services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(&order, sl.Bool(false))
 	if err != nil {
 		return fmt.Errorf("Error ordering bare metal server: %s\n%+v\n", err, order)
 	}
@@ -748,7 +748,6 @@ func resourceIBMComputeBareMetalUpdate(d *schema.ResourceData, meta interface{})
 func resourceIBMComputeBareMetalDelete(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetHardwareService(sess)
-
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return fmt.Errorf("Not a valid ID, must be an integer: %s", err)
@@ -890,7 +889,8 @@ func setHardwareTags(id int, d *schema.ResourceData, meta interface{}) error {
 }
 
 func setHardwareNotes(id int, d *schema.ResourceData, meta interface{}) error {
-	service := services.GetHardwareServerService(meta.(ClientSession).SoftLayerSession())
+	sess := meta.(ClientSession).SoftLayerSession()
+	service := services.GetHardwareServerService(sess)
 
 	result, err := service.Id(id).GetObject()
 	if err != nil {

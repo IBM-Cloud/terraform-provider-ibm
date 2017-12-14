@@ -73,7 +73,7 @@ func resourceIBMComputeMonitor() *schema.Resource {
 func resourceIBMComputeMonitorCreate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	virtualGuestService := services.GetVirtualGuestService(sess)
-	monitorService := services.GetNetworkMonitorVersion1QueryHostService(sess)
+	monitorService := services.GetNetworkMonitorVersion1QueryHostService(sess.SetRetries(0))
 
 	guestId := d.Get("guest_id").(int)
 	ipAddress := d.Get("ip_address").(string)
@@ -122,7 +122,7 @@ func resourceIBMComputeMonitorCreate(d *schema.ResourceData, meta interface{}) e
 func createNotifications(d *schema.ResourceData, meta interface{}, guestId int) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	virtualGuestService := services.GetVirtualGuestService(sess)
-	notificationService := services.GetUserCustomerNotificationVirtualGuestService(sess)
+	notificationService := services.GetUserCustomerNotificationVirtualGuestService(sess.SetRetries(0))
 
 	// Create a user notification
 	// This represents a link between a monitored guest instance and a user account
@@ -160,6 +160,7 @@ func notificationExists(notificationLinks []datatypes.User_Customer_Notification
 }
 
 func resourceIBMComputeMonitorRead(d *schema.ResourceData, meta interface{}) error {
+
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetNetworkMonitorVersion1QueryHostService(sess)
 	virtualGuestService := services.GetVirtualGuestService(sess)
@@ -221,7 +222,9 @@ func resourceIBMComputeMonitorRead(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceIBMComputeMonitorUpdate(d *schema.ResourceData, meta interface{}) error {
+
 	sess := meta.(ClientSession).SoftLayerSession()
+	serviceNoRetry := services.GetNetworkMonitorVersion1QueryHostService(sess.SetRetries(0))
 	service := services.GetNetworkMonitorVersion1QueryHostService(sess)
 
 	basicMonitorId, _ := strconv.Atoi(d.Id())
@@ -241,7 +244,7 @@ func resourceIBMComputeMonitorUpdate(d *schema.ResourceData, meta interface{}) e
 		basicMonitor.WaitCycles = sl.Int(d.Get("wait_cycles").(int))
 	}
 
-	_, err = service.Id(basicMonitorId).EditObject(&basicMonitor)
+	_, err = serviceNoRetry.Id(basicMonitorId).EditObject(&basicMonitor)
 	if err != nil {
 		return fmt.Errorf("Error editing Basic Monitor : %s", err)
 	}

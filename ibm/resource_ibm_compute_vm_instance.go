@@ -540,7 +540,6 @@ func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interf
 	} else if dedicatedHostName, ok := d.GetOk("dedicated_host_name"); ok {
 		hostName := dedicatedHostName.(string)
 		service := services.GetAccountService(meta.(ClientSession).SoftLayerSession())
-
 		hosts, err := service.
 			Mask("id").
 			Filter(filter.Path("dedicatedHosts.name").Eq(hostName).Build()).
@@ -681,8 +680,9 @@ func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interf
 }
 
 func resourceIBMComputeVmInstanceCreate(d *schema.ResourceData, meta interface{}) error {
-	service := services.GetVirtualGuestService(meta.(ClientSession).SoftLayerSession())
+
 	sess := meta.(ClientSession).SoftLayerSession()
+	service := services.GetVirtualGuestService(sess)
 
 	opts, err := getVirtualGuestTemplateFromResourceData(d, meta)
 	if err != nil {
@@ -836,8 +836,7 @@ func resourceIBMComputeVmInstanceCreate(d *schema.ResourceData, meta interface{}
 	if opts.DedicatedHost != nil {
 		order.HostId = opts.DedicatedHost.Id
 	}
-
-	orderService := services.GetProductOrderService(sess)
+	orderService := services.GetProductOrderService(sess.SetRetries(0))
 	receipt, err := orderService.PlaceOrder(order, sl.Bool(false))
 	if err != nil {
 		return fmt.Errorf("Error ordering virtual guest: %s", err)
@@ -1088,6 +1087,7 @@ func readSecondaryIPAddresses(d *schema.ResourceData, meta interface{}, primaryI
 	return nil
 }
 func resourceIBMComputeVmInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
+
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetVirtualGuestService(sess)
 
@@ -1164,7 +1164,7 @@ func resourceIBMComputeVmInstanceUpdate(d *schema.ResourceData, meta interface{}
 	}
 
 	if len(upgradeOptions) > 0 {
-		_, err = virtual.UpgradeVirtualGuest(sess, &result, upgradeOptions)
+		_, err = virtual.UpgradeVirtualGuest(sess.SetRetries(0), &result, upgradeOptions)
 		if err != nil {
 			return fmt.Errorf("Couldn't upgrade virtual guest: %s", err)
 		}
@@ -1538,7 +1538,8 @@ func removeAccessToStorageList(sam storageAccessModifier, deviceID int, ids stor
 }
 
 func setNotes(id int, d *schema.ResourceData, meta interface{}) error {
-	service := services.GetVirtualGuestService(meta.(ClientSession).SoftLayerSession())
+	sess := meta.(ClientSession).SoftLayerSession()
+	service := services.GetVirtualGuestService(sess)
 
 	if notes := d.Get("notes").(string); notes != "" {
 		result, err := service.Id(id).GetObject()

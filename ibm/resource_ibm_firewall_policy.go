@@ -154,6 +154,7 @@ func getFirewallContextAccessControlListId(fwId int, sess *session.Session) (int
 
 func resourceIBMFirewallPolicyCreate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
+
 	fwId := d.Get("firewall_id").(int)
 	rules := prepareRules(d)
 
@@ -169,7 +170,7 @@ func resourceIBMFirewallPolicyCreate(d *schema.ResourceData, meta interface{}) e
 
 	log.Println("[INFO] Creating dedicated hardware firewall rules")
 
-	_, err = services.GetNetworkFirewallUpdateRequestService(sess).CreateObject(&ruleTemplate)
+	_, err = services.GetNetworkFirewallUpdateRequestService(sess.SetRetries(0)).CreateObject(&ruleTemplate)
 	if err != nil {
 		return fmt.Errorf("Error during creation of dedicated hardware firewall rules: %s", err)
 	}
@@ -252,6 +253,7 @@ func appendAnyOpenRule(rules []datatypes.Network_Firewall_Update_Request_Rule, p
 
 func resourceIBMFirewallPolicyUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
+
 	fwId, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return fmt.Errorf("Not a valid firewall ID, must be an integer: %s", err)
@@ -270,7 +272,7 @@ func resourceIBMFirewallPolicyUpdate(d *schema.ResourceData, meta interface{}) e
 
 	log.Println("[INFO] Updating dedicated hardware firewall rules")
 
-	_, err = services.GetNetworkFirewallUpdateRequestService(sess).CreateObject(&ruleTemplate)
+	_, err = services.GetNetworkFirewallUpdateRequestService(sess.SetRetries(0)).CreateObject(&ruleTemplate)
 	if err != nil {
 		return fmt.Errorf("Error during updating of dedicated hardware firewall rules: %s", err)
 	}
@@ -305,7 +307,7 @@ func resourceIBMFirewallPolicyDelete(d *schema.ResourceData, meta interface{}) e
 
 	log.Println("[INFO] Deleting dedicated hardware firewall rules")
 
-	_, err = services.GetNetworkFirewallUpdateRequestService(sess).CreateObject(&ruleTemplate)
+	_, err = services.GetNetworkFirewallUpdateRequestService(sess.SetRetries(0)).CreateObject(&ruleTemplate)
 	if err != nil {
 		return fmt.Errorf("Error during deleting of dedicated hardware firewall rules: %s", err)
 	}

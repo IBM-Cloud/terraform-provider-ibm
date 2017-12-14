@@ -198,6 +198,7 @@ func resourceIBMLbaas() *schema.Resource {
 }
 
 func resourceIBMLbaasCreate(d *schema.ResourceData, meta interface{}) error {
+
 	sess := meta.(ClientSession).SoftLayerSession()
 
 	// Find price items
@@ -214,7 +215,7 @@ func resourceIBMLbaasCreate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error during creation of Load balancer: %s", err)
 	}
 	//place order
-	_, err = services.GetProductOrderService(sess).
+	_, err = services.GetProductOrderService(sess.SetRetries(0)).
 		PlaceOrder(productOrderContainer, sl.Bool(false))
 	if err != nil {
 		return fmt.Errorf("Error during creation of Load balancer: %s", err)
@@ -264,7 +265,7 @@ func resourceIBMLbaasRead(d *schema.ResourceData, meta interface{}) error {
 
 func resourceIBMLbaasUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
-	service := services.GetNetworkLBaaSLoadBalancerService(sess)
+	service := services.GetNetworkLBaaSLoadBalancerService(sess.SetRetries(0))
 	d.Partial(true)
 
 	if d.HasChange("description") {
@@ -274,7 +275,7 @@ func resourceIBMLbaasUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		d.SetPartial("description")
 	}
-	listenerService := services.GetNetworkLBaaSListenerService(sess)
+	listenerService := services.GetNetworkLBaaSListenerService(sess.SetRetries(0))
 	if d.HasChange("protocols") {
 		o, n := d.GetChange("protocols")
 		os := o.(*schema.Set)

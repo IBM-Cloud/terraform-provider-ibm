@@ -171,7 +171,7 @@ func resourceIBMDNSRecord() *schema.Resource {
 //  https://sldn.softlayer.com/reference/services/SoftLayer_Dns_Domain_ResourceRecord/createObject
 func resourceIBMDNSRecordCreate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
-	service := services.GetDnsDomainResourceRecordService(sess)
+	service := services.GetDnsDomainResourceRecordService(sess.SetRetries(0))
 
 	opts := datatypes.Dns_Domain_ResourceRecord{
 		Data:     sl.String(d.Get("data").(string)),
@@ -305,9 +305,10 @@ func resourceIBMDNSRecordRead(d *schema.ResourceData, meta interface{}) error {
 //  https://sldn.softlayer.com/reference/services/SoftLayer_Dns_Domain_ResourceRecord/editObject
 func resourceIBMDNSRecordUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
-	recordId, _ := strconv.Atoi(d.Id())
-
 	service := services.GetDnsDomainResourceRecordService(sess)
+	serviceNoRetry := services.GetDnsDomainResourceRecordService(sess.SetRetries(0))
+
+	recordId, _ := strconv.Atoi(d.Id())
 	record, err := service.Id(recordId).GetObject()
 	if err != nil {
 		return fmt.Errorf("Error retrieving DNS Resource Record: %s", err)
@@ -381,10 +382,10 @@ func resourceIBMDNSRecordUpdate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if recordType == "srv" {
-		_, err = services.GetDnsDomainResourceRecordSrvTypeService(sess).
+		_, err = services.GetDnsDomainResourceRecordSrvTypeService(sess.SetRetries(0)).
 			Id(recordId).EditObject(&recordSrv)
 	} else {
-		_, err = service.Id(recordId).EditObject(&record)
+		_, err = serviceNoRetry.Id(recordId).EditObject(&record)
 	}
 
 	if err != nil {

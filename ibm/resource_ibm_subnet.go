@@ -138,7 +138,7 @@ func resourceIBMSubnetCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Println("[INFO] Creating subnet")
 
-	receipt, err := services.GetProductOrderService(sess).
+	receipt, err := services.GetProductOrderService(sess.SetRetries(0)).
 		PlaceOrder(productOrderContainer, sl.Bool(false))
 	if err != nil {
 		return fmt.Errorf("Error during creation of subnet: %s", err)

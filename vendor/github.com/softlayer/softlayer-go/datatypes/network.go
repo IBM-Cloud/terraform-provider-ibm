@@ -2006,6 +2006,9 @@ type Network_Interconnect_Tenant struct {
 	// no documentation yet
 	DatacenterName *string `json:"datacenterName,omitempty" xmlrpc:"datacenterName,omitempty"`
 
+	// no documentation yet
+	ErrorMessage *string `json:"errorMessage,omitempty" xmlrpc:"errorMessage,omitempty"`
+
 	// The Direct Link connectivity to all SoftLayer data centers if globalRoutingFlag = 1 and local connectivity if globalRoutingFlag = 0.
 	GlobalRoutingFlag *bool `json:"globalRoutingFlag,omitempty" xmlrpc:"globalRoutingFlag,omitempty"`
 
@@ -2060,6 +2063,9 @@ type Network_LBaaS_HealthMonitor struct {
 	CreateDate *Time `json:"createDate,omitempty" xmlrpc:"createDate,omitempty"`
 
 	// no documentation yet
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// no documentation yet
 	Interval *int `json:"interval,omitempty" xmlrpc:"interval,omitempty"`
 
 	// no documentation yet
@@ -2096,6 +2102,9 @@ type Network_LBaaS_Listener struct {
 
 	// no documentation yet
 	DefaultPool *Network_LBaaS_Pool `json:"defaultPool,omitempty" xmlrpc:"defaultPool,omitempty"`
+
+	// no documentation yet
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
 
 	// Specifies when the listener was updated previously.
 	ModifyDate *Time `json:"modifyDate,omitempty" xmlrpc:"modifyDate,omitempty"`
@@ -2140,6 +2149,9 @@ type Network_LBaaS_LoadBalancer struct {
 
 	// Health monitors for the backend members.
 	HealthMonitors []Network_LBaaS_HealthMonitor `json:"healthMonitors,omitempty" xmlrpc:"healthMonitors,omitempty"`
+
+	// no documentation yet
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
 
 	// Specifies if a load balancer is public=1 or private=0.
 	IsPublic *int `json:"isPublic,omitempty" xmlrpc:"isPublic,omitempty"`
@@ -2253,14 +2265,14 @@ type Network_LBaaS_LoadBalancerServerInstanceInfo struct {
 	Weight *int `json:"weight,omitempty" xmlrpc:"weight,omitempty"`
 }
 
-// SoftLayer_Network_LBaaS_LoadBalancerStatistics is a collection of metrics retrieved from a load balancer instance. The available metrics are: <ul> <li>Total number of current sessions</li> <li>Total number of error requests</li> <li>Total number of received packets</li> <li>Total number of transmitted packets</li> <li>Total number of accepted/alive connections</li> <li>Request rate</li> <li>Number of members down</li> <li>NUmber of members up</li> <li>Throughput</li> <li>Connection rate</li> </ul>
+// SoftLayer_Network_LBaaS_LoadBalancerStatistics is a collection of metrics retrieved from a load balancer instance. The available metrics are: <ul> <li>NUmber of members up</li> <li>Number of members down</li> <li>Total number of active connections</li> <li>Throughput</li> <li>Data processed by month</li> <li>Connection rate</li> </ul>
 type Network_LBaaS_LoadBalancerStatistics struct {
 	Entity
 
 	// Number of connections seen at the
 	ConnectionRate *int `json:"connectionRate,omitempty" xmlrpc:"connectionRate,omitempty"`
 
-	// dataProcessedByMonth is the total of bin and bout
+	// Data processed by month is the total of bin and bout
 	DataProcessedByMonth *int `json:"dataProcessedByMonth,omitempty" xmlrpc:"dataProcessedByMonth,omitempty"`
 
 	// Number of members in DOWN health state
@@ -2285,6 +2297,9 @@ type Network_LBaaS_Member struct {
 
 	// Specifies when a load balancers
 	CreateDate *Time `json:"createDate,omitempty" xmlrpc:"createDate,omitempty"`
+
+	// no documentation yet
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
 
 	// Specifies when a load balancers
 	ModifyDate *Time `json:"modifyDate,omitempty" xmlrpc:"modifyDate,omitempty"`
@@ -3189,6 +3204,9 @@ type Network_SecurityGroup_OrderBinding struct {
 
 	// The unique ID for a security group, order, binding
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// The order associated with the binding
+	Order *Billing_Order `json:"order,omitempty" xmlrpc:"order,omitempty"`
 
 	// The ID of the order associated with the security group.
 	OrderId *int `json:"orderId,omitempty" xmlrpc:"orderId,omitempty"`
@@ -4314,6 +4332,26 @@ type Network_Storage_Iscsi_OS_Type struct {
 	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
 }
 
+// no documentation yet
+type Network_Storage_MassDataMigration_CrossRegion_Country_Xref struct {
+	Entity
+
+	// SoftLayer_Locale_Country Id.
+	Country *Locale_Country `json:"country,omitempty" xmlrpc:"country,omitempty"`
+
+	// no documentation yet
+	CountryId *int `json:"countryId,omitempty" xmlrpc:"countryId,omitempty"`
+
+	// no documentation yet
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// Location Group ID of CleverSafe cross region.
+	LocationGroup *Location_Group `json:"locationGroup,omitempty" xmlrpc:"locationGroup,omitempty"`
+
+	// no documentation yet
+	LocationGroupId *int `json:"locationGroupId,omitempty" xmlrpc:"locationGroupId,omitempty"`
+}
+
 // The SoftLayer_Network_Storage_MassDataMigration_Request data type contains information on a single Mass Data Migration request. Creation of these requests is limited to SoftLayer customers through the SoftLayer Customer Portal.
 type Network_Storage_MassDataMigration_Request struct {
 	Entity
@@ -4891,9 +4929,6 @@ type Network_Subnet struct {
 
 	// A bitmask in dotted-quad format that is used to separate a subnet's network address from it's host addresses. This performs the same function as the ''cidr'' property, but is expressed in a string format.
 	Netmask *string `json:"netmask,omitempty" xmlrpc:"netmask,omitempty"`
-
-	// A subnet's associated network component.
-	NetworkComponent *Network_Component `json:"networkComponent,omitempty" xmlrpc:"networkComponent,omitempty"`
 
 	// The upstream network component firewall.
 	NetworkComponentFirewall *Network_Component_Firewall `json:"networkComponentFirewall,omitempty" xmlrpc:"networkComponentFirewall,omitempty"`
@@ -5912,6 +5947,9 @@ type Network_Vlan_Firewall struct {
 
 	// no documentation yet
 	TagReferences []Tag_Reference `json:"tagReferences,omitempty" xmlrpc:"tagReferences,omitempty"`
+
+	// A firewall's associated upgrade request object, if any.
+	UpgradeRequest *Product_Upgrade_Request `json:"upgradeRequest,omitempty" xmlrpc:"upgradeRequest,omitempty"`
 }
 
 // A SoftLayer_Network_Component_Firewall_Rule object type represents a currently running firewall rule and contains relative information. Use the [[SoftLayer Network Firewall Update Request]] service to submit a firewall update request. Use the [[SoftLayer Network Firewall Template]] service to pull SoftLayer recommended rule set templates.

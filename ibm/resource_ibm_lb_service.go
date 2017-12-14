@@ -125,7 +125,7 @@ func resourceIBMLbServiceCreate(d *schema.ResourceData, meta interface{}) error 
 
 	log.Println("[INFO] Creating load balancer service")
 
-	err = updateLoadBalancerService(sess, vipID, &vip)
+	err = updateLoadBalancerService(sess.SetRetries(0), vipID, &vip)
 
 	if err != nil {
 		return fmt.Errorf("Error creating load balancer service: %s", err)
@@ -212,7 +212,7 @@ func resourceIBMLbServiceUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	log.Println("[INFO] Updating load balancer service")
 
-	err = updateLoadBalancerService(sess, vipID, &vip)
+	err = updateLoadBalancerService(sess.SetRetries(0), vipID, &vip)
 
 	if err != nil {
 		return fmt.Errorf("Error updating load balancer service: %s", err)

@@ -71,6 +71,7 @@ func resourceIBMNetworkPublicIp() *schema.Resource {
 }
 
 func resourceIBMNetworkPublicIpCreate(d *schema.ResourceData, meta interface{}) error {
+
 	sess := meta.(ClientSession).SoftLayerSession()
 
 	// Find price items with AdditionalServicesGlobalIpAddresses
@@ -85,7 +86,7 @@ func resourceIBMNetworkPublicIpCreate(d *schema.ResourceData, meta interface{}) 
 
 	log.Println("[INFO] Creating network public ip")
 
-	receipt, err := services.GetProductOrderService(sess).
+	receipt, err := services.GetProductOrderService(sess.SetRetries(0)).
 		PlaceOrder(productOrderContainer, sl.Bool(false))
 	if err != nil {
 		return fmt.Errorf("Error during creation of network public ip: %s", err)

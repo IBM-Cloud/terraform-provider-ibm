@@ -30,6 +30,9 @@ import (
 //SoftlayerRestEndpoint rest endpoint of SoftLayer
 const SoftlayerRestEndpoint = "https://api.softlayer.com/rest/v3"
 
+//RetryDelay
+const RetryAPIDelay = 5 * time.Second
+
 //BluemixRegion ...
 var BluemixRegion string
 
@@ -166,6 +169,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session := clientSession{
 		session: sess,
 	}
+
 	if sess.BluemixSession == nil {
 		//Can be nil only  if bluemix_api_key is not provided
 		log.Println("Skipping Bluemix Clients configuration")
@@ -220,13 +224,15 @@ func (c *Config) ClientSession() (interface{}, error) {
 func newSession(c *Config) (*Session, error) {
 	ibmSession := &Session{}
 
-	log.Println("Configuring SoftLayer Session ")
+	log.Println("Configuring SoftLayer Session")
 	softlayerSession := &slsession.Session{
-		Endpoint: c.SoftLayerEndpointURL,
-		Timeout:  c.SoftLayerTimeout,
-		UserName: c.SoftLayerUserName,
-		APIKey:   c.SoftLayerAPIKey,
-		Debug:    os.Getenv("TF_LOG") != "",
+		Endpoint:  c.SoftLayerEndpointURL,
+		Timeout:   c.SoftLayerTimeout,
+		UserName:  c.SoftLayerUserName,
+		APIKey:    c.SoftLayerAPIKey,
+		Debug:     os.Getenv("TF_LOG") != "",
+		Retries:   c.RetryCount,
+		RetryWait: c.RetryDelay,
 	}
 	softlayerSession.AppendUserAgent(fmt.Sprintf("terraform-provider-ibm/%s", version.Version))
 	ibmSession.SoftLayerSession = softlayerSession

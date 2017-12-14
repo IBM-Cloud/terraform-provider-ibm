@@ -202,7 +202,7 @@ func resourceIBMStorageBlockCreate(d *schema.ResourceData, meta interface{}) err
 
 	switch storageType {
 	case enduranceType:
-		receipt, err = services.GetProductOrderService(sess).PlaceOrder(
+		receipt, err = services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(
 			&datatypes.Container_Product_Order_Network_Storage_AsAService{
 				Container_Product_Order: storageOrderContainer,
 				OsFormatType: &datatypes.Network_Storage_Iscsi_OS_Type{
@@ -212,7 +212,7 @@ func resourceIBMStorageBlockCreate(d *schema.ResourceData, meta interface{}) err
 				VolumeSize: &capacity,
 			}, sl.Bool(false))
 	case performanceType:
-		receipt, err = services.GetProductOrderService(sess).PlaceOrder(
+		receipt, err = services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(
 			&datatypes.Container_Product_Order_Network_Storage_AsAService{
 				Container_Product_Order: storageOrderContainer,
 				OsFormatType: &datatypes.Network_Storage_Iscsi_OS_Type{

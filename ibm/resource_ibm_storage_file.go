@@ -324,13 +324,13 @@ func resourceIBMStorageFileCreate(d *schema.ResourceData, meta interface{}) erro
 
 	switch storageType {
 	case enduranceType:
-		receipt, err = services.GetProductOrderService(sess).PlaceOrder(
+		receipt, err = services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(
 			&datatypes.Container_Product_Order_Network_Storage_AsAService{
 				Container_Product_Order: storageOrderContainer,
 				VolumeSize:              &capacity,
 			}, sl.Bool(false))
 	case performanceType:
-		receipt, err = services.GetProductOrderService(sess).PlaceOrder(
+		receipt, err = services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(
 			&datatypes.Container_Product_Order_Network_Storage_AsAService{
 				Container_Product_Order: storageOrderContainer,
 				VolumeSize:              &capacity,
@@ -375,6 +375,7 @@ func resourceIBMStorageFileCreate(d *schema.ResourceData, meta interface{}) erro
 
 func resourceIBMStorageFileRead(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
+
 	storageId, _ := strconv.Atoi(d.Id())
 
 	storage, err := services.GetNetworkStorageService(sess).
@@ -528,7 +529,6 @@ func resourceIBMStorageFileUpdate(d *schema.ResourceData, meta interface{}) erro
 func resourceIBMStorageFileDelete(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	storageService := services.GetNetworkStorageService(sess)
-
 	storageID, _ := strconv.Atoi(d.Id())
 
 	// Get billing item associated with the storage
@@ -740,7 +740,6 @@ func WaitForStorageAvailable(d *schema.ResourceData, meta interface{}) (interfac
 		return nil, fmt.Errorf("The storage ID %s must be numeric", d.Id())
 	}
 	sess := meta.(ClientSession).SoftLayerSession()
-
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"retry", "provisioning"},
 		Target:  []string{"available"},

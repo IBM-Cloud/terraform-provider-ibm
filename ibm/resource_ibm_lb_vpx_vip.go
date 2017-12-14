@@ -232,7 +232,7 @@ func resourceIBMLbVpxVipCreate101(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	sess := meta.(ClientSession).SoftLayerSession()
-	service := services.GetNetworkApplicationDeliveryControllerService(sess)
+	service := services.GetNetworkApplicationDeliveryControllerService(sess.SetRetries(0))
 
 	nadcId := d.Get("nad_controller_id").(int)
 	vipName := d.Get("name").(string)
@@ -459,7 +459,7 @@ func resourceIBMLbVpxVipRead105(d *schema.ResourceData, meta interface{}) error 
 
 func resourceIBMLbVpxVipUpdate101(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
-	service := services.GetNetworkApplicationDeliveryControllerService(sess)
+	service := services.GetNetworkApplicationDeliveryControllerService(sess.SetRetries(0))
 
 	nadcId := d.Get("nad_controller_id").(int)
 	template := datatypes.Network_LoadBalancer_VirtualIpAddress{
@@ -662,6 +662,7 @@ func configureSecurityCertificate(nClient *client.NitroClient, sess *session.Ses
 	// Read security_certificate
 	service := services.GetSecurityCertificateService(sess)
 	cert, err := service.Id(securityCertificateId).GetObject()
+
 	if err != nil {
 		return fmt.Errorf("Unable to get Security Certificate: %s", err)
 	}
