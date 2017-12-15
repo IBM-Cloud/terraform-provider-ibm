@@ -906,7 +906,7 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 			"notes,userData[value],tagReferences[id,tag[name]]," +
 			"datacenter[id,name,longName]," +
 			"sshKeys," +
-			"primaryNetworkComponent[networkVlan[id]," +
+			"primaryNetworkComponent[networkVlan[id],subnets," +
 			"primaryVersion6IpAddressRecord[subnet,guestNetworkComponentBinding[ipAddressId]]," +
 			"primaryIpAddressRecord[subnet,guestNetworkComponentBinding[ipAddressId]]," +
 			"securityGroupBindings[securityGroup]]," +
@@ -1008,16 +1008,23 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	d.Set("ipv6_enabled", false)
+	d.Set("ipv6_static_enabled", false)
 	if result.PrimaryNetworkComponent.PrimaryVersion6IpAddressRecord != nil {
 		d.Set("ipv6_enabled", true)
 		d.Set("ipv6_address", *result.PrimaryNetworkComponent.PrimaryVersion6IpAddressRecord.IpAddress)
 		d.Set("ipv6_address_id", *result.PrimaryNetworkComponent.PrimaryVersion6IpAddressRecord.GuestNetworkComponentBinding.IpAddressId)
 		publicSubnet := result.PrimaryNetworkComponent.PrimaryVersion6IpAddressRecord.Subnet
+		log.Println("DUDE", *publicSubnet, result.PrimaryNetworkComponent.PrimaryVersion6IpAddressRecord.SubnetId)
 		d.Set(
 			"public_ipv6_subnet",
 			fmt.Sprintf("%s/%d", *publicSubnet.NetworkIdentifier, *publicSubnet.Cidr),
 		)
 		d.Set("public_ipv6_subnet_id", result.PrimaryNetworkComponent.PrimaryVersion6IpAddressRecord.SubnetId)
+	}
+	for _, subnet := range result.PrimaryNetworkComponent.Subnets {
+		if *subnet.SubnetType == "STATIC_IP_ROUTED_6" {
+			d.Set("ipv6_static_enabled", true)
+		}
 	}
 
 	userData := result.UserData
