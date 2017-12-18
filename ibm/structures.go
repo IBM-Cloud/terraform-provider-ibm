@@ -544,3 +544,21 @@ func isEmpty(object interface{}) bool {
 	}
 	return false
 }
+
+func filterTriggerAnnotations(in whisk.KeyValueArr) (string, error) {
+	noFeed := make(whisk.KeyValueArr, 0, len(in))
+	for _, v := range in {
+		if v.Key == "feed" {
+			continue
+		}
+		noFeed = append(noFeed, v)
+	}
+	return flattenParameters(noFeed)
+}
+
+func flattenFeed(feedName string) []interface{} {
+	att := make(map[string]interface{})
+	att["name"] = feedName
+	att["parameters"] = "[]"
+	return []interface{}{att}
+}
