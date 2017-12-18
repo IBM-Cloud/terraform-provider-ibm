@@ -3,6 +3,7 @@ package ibm
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/IBM-Bluemix/bluemix-go/api/container/containerv1"
@@ -480,4 +481,66 @@ func filterActionParameters(in whisk.KeyValueArr) (string, error) {
 		noAction = append(noAction, v)
 	}
 	return flattenParameters(noAction)
+}
+
+func filterPackageAnnotations(bindedAnnotations, annotations whisk.KeyValueArr) whisk.KeyValueArr {
+	userDefinedAnnotations := make(whisk.KeyValueArr, 0)
+	for _, a := range annotations {
+		insert := false
+		if a.Key == "binding" {
+			insert = false
+			break
+		}
+		for _, b := range bindedAnnotations {
+			if a.Key == b.Key && reflect.DeepEqual(a.Value, b.Value) {
+				insert = false
+				break
+			}
+			insert = true
+		}
+		if insert {
+			userDefinedAnnotations = append(userDefinedAnnotations, a)
+		}
+	}
+	return userDefinedAnnotations
+}
+
+func filterPackageParameters(bindedParameters, parameters whisk.KeyValueArr) whisk.KeyValueArr {
+	userDefinedParameters := make(whisk.KeyValueArr, 0)
+	for _, p := range parameters {
+		insert := false
+		for _, b := range bindedParameters {
+			if p.Key == b.Key && reflect.DeepEqual(p.Value, b.Value) {
+				insert = false
+				break
+			}
+			insert = true
+		}
+		if insert {
+			userDefinedParameters = append(userDefinedParameters, p)
+		}
+
+	}
+	return userDefinedParameters
+}
+
+func isEmpty(object interface{}) bool {
+	//First check normal definitions of empty
+	if object == nil {
+		return true
+	} else if object == "" {
+		return true
+	} else if object == false {
+		return true
+	}
+
+	//Then see if it's a struct
+	if reflect.ValueOf(object).Kind() == reflect.Struct {
+		// and create an empty copy of the struct object to compare against
+		empty := reflect.New(reflect.TypeOf(object)).Elem().Interface()
+		if reflect.DeepEqual(object, empty) {
+			return true
+		}
+	}
+	return false
 }

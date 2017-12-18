@@ -99,6 +99,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_app_domain_shared":               resourceIBMAppDomainShared(),
 			"ibm_app_route":                       resourceIBMAppRoute(),
 			"ibm_cloud_functions_action":          resourceIBMCloudFunctionsAction(),
+			"ibm_cloud_functions_package":         resourceIBMCloudFunctionsPackage(),
 			"ibm_compute_autoscale_group":         resourceIBMComputeAutoScaleGroup(),
 			"ibm_compute_autoscale_policy":        resourceIBMComputeAutoScalePolicy(),
 			"ibm_compute_bare_metal":              resourceIBMComputeBareMetal(),
