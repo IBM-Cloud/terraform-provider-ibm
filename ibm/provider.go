@@ -72,6 +72,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_app_domain_private":       dataSourceIBMAppDomainPrivate(),
 			"ibm_app_domain_shared":        dataSourceIBMAppDomainShared(),
 			"ibm_app_route":                dataSourceIBMAppRoute(),
+			"ibm_cloud_functions_action":   dataSourceIBMCloudFunctionsAction(),
 			"ibm_compute_image_template":   dataSourceIBMComputeImageTemplate(),
 			"ibm_compute_ssh_key":          dataSourceIBMComputeSSHKey(),
 			"ibm_compute_vm_instance":      dataSourceIBMComputeVmInstance(),
