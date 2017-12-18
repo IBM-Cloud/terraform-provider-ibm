@@ -102,6 +102,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_app_route":                       resourceIBMAppRoute(),
 			"ibm_cloud_functions_action":          resourceIBMCloudFunctionsAction(),
 			"ibm_cloud_functions_package":         resourceIBMCloudFunctionsPackage(),
+			"ibm_cloud_functions_rule":            resourceIBMCloudFunctionsRule(),
 			"ibm_cloud_functions_trigger":         resourceIBMCloudFunctionsTrigger(),
 			"ibm_compute_autoscale_group":         resourceIBMComputeAutoScaleGroup(),
 			"ibm_compute_autoscale_policy":        resourceIBMComputeAutoScalePolicy(),
