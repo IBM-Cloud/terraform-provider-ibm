@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"regexp"
 	"strings"
 
 	"github.com/IBM-Bluemix/bluemix-go/helpers"
@@ -357,4 +358,36 @@ func stringInSlice(str string, list []string) bool {
 		}
 	}
 	return false
+}
+
+func validateCloudFunctionsName(v interface{}, k string) (ws []string, errors []error) {
+	value := v.(string)
+
+	var validName = regexp.MustCompile(`\A([\w]|[\w][\w@ .-]*[\w@.-]+)\z`)
+	if !validName.MatchString(value) {
+		errors = append(errors, fmt.Errorf(
+			"%q (%q) The name contains illegal characters", k, value))
+
+	}
+	return
+}
+
+func validateBindedPackageName(v interface{}, k string) (ws []string, errors []error) {
+	value := v.(string)
+
+	if !(strings.HasPrefix(value, "/")) {
+		errors = append(errors, fmt.Errorf(
+			"%q (%q) must start with a forward slash '/'.The package name should be '/whisk.system/cloudant', '/test@in.ibm.com_new/utils' or '/_/utils'", k, value))
+
+	}
+
+	index := strings.LastIndex(value, "/")
+
+	if index < 2 || index == len(value)-1 {
+		errors = append(errors, fmt.Errorf(
+			"%q (%q) is not a valid bind package name.The package name should be '/whisk.system/cloudant','/test@in.ibm.com_new/utils' or '/_/utils'", k, value))
+
+	}
+
+	return
 }
