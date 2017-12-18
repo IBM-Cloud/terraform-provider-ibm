@@ -74,6 +74,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_app_route":                dataSourceIBMAppRoute(),
 			"ibm_cloud_functions_action":   dataSourceIBMCloudFunctionsAction(),
 			"ibm_cloud_functions_package":  dataSourceIBMCloudFunctionsPackage(),
+			"ibm_cloud_functions_rule":     dataSourceIBMCloudFunctionsRule(),
 			"ibm_cloud_functions_trigger":  dataSourceIBMCloudFunctionsTrigger(),
 			"ibm_compute_image_template":   dataSourceIBMComputeImageTemplate(),
 			"ibm_compute_ssh_key":          dataSourceIBMComputeSSHKey(),
