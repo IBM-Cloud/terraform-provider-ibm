@@ -55,6 +55,16 @@ resource "ibm_service_instance" "service" {
   plan       = "cb5"
   tags       = ["cluster-service", "cluster-bind"]
 }
+
+# Create an cloud functions Action
+resource "ibm_cloud_functions_action" "nodehello" {
+  name = "action-name"
+  exec = {
+    kind = "nodejs:6"
+    code = "${file("hellonode.js")}"
+  }
+}
+
 ```
 
 ## Authentication
@@ -114,3 +124,5 @@ The following arguments are supported in the `provider` block:
 * `region` - (optional) The IBM Cloud region. You can also source it from the `BM_REGION` (higher precedence) or `BLUEMIX_REGION` environment variable. The default value is `us-south`.
 
 * `max_retries` - (Optional) This is the maximum number of times a Softlayer API call is retried, in the case where requests are getting network related timeout and rate limit exceeded error code. You can also source it from the `MAX_RETRIES` environment variable. The default value is `5`.
+
+* `cloud_functions_namespace` - (Optional) Your Cloud Functions namespace is composed from your IBM Cloud org and space like <org>_<space>. This attribute is required only for creating Cloud Functions resource. It must be provided when you are creating such resources in IBM Cloud. You can also source it from CLOUD_FUNCTIONS_NAMESPACE environment variable.
