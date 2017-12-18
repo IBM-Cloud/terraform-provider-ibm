@@ -9,6 +9,8 @@ import (
 
 	gohttp "net/http"
 
+	"github.com/apache/incubator-openwhisk-client-go/whisk"
+
 	jwt "github.com/dgrijalva/jwt-go"
 
 	slsession "github.com/softlayer/softlayer-go/session"
@@ -75,6 +77,9 @@ type Config struct {
 	RetryCount int
 	//Constant Retry Delay for API calls
 	RetryDelay time.Duration
+
+	// CloudFunctionsNameSpace ...
+	CloudFunctionsNameSpace string
 }
 
 //Session stores the information required for communication with the SoftLayer and Bluemix API
@@ -96,6 +101,7 @@ type ClientSession interface {
 	BluemixAcccountAPI() (accountv2.AccountServiceAPI, error)
 	BluemixAcccountv1API() (accountv1.AccountServiceAPI, error)
 	BluemixUserDetails() (*UserConfig, error)
+	CloudFunctionsClient() (*whisk.Client, error)
 }
 
 type clientSession struct {
@@ -118,6 +124,9 @@ type clientSession struct {
 
 	bmxUserDetails  *UserConfig
 	bmxUserFetchErr error
+
+	cloudFunctionsConfigErr error
+	cloudFunctionsClient    *whisk.Client
 }
 
 // SoftLayerSession providers SoftLayer Session
@@ -160,6 +169,11 @@ func (sess clientSession) BluemixUserDetails() (*UserConfig, error) {
 	return sess.bmxUserDetails, sess.bmxUserFetchErr
 }
 
+// CloudFunctionsClient ...
+func (sess clientSession) CloudFunctionsClient() (*whisk.Client, error) {
+	return sess.cloudFunctionsClient, sess.cloudFunctionsConfigErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -178,15 +192,24 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.accountConfigErr = errEmptyBluemixCredentials
 		session.accountV1ConfigErr = errEmptyBluemixCredentials
 		session.iamConfigErr = errEmptyBluemixCredentials
+		session.cloudFunctionsConfigErr = errEmptyBluemixCredentials
 		return session, nil
 	}
-
-	userConfig, err := fetchUserDetails(sess.BluemixSession)
+	err = authenticateAPIKey(sess.BluemixSession)
 	if err != nil {
 		session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
-	}
+		session.cloudFunctionsConfigErr = fmt.Errorf("Error occured while fetching auth key for cloud functions: %q", err)
+	} else {
+		userConfig, err := fetchUserDetails(sess.BluemixSession)
+		if err != nil {
+			session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
+		}
+		session.bmxUserDetails = userConfig
 
-	session.bmxUserDetails = userConfig
+		session.cloudFunctionsClient, session.cloudFunctionsConfigErr = CloudFunctionsClient(sess.BluemixSession.Config, c.CloudFunctionsNameSpace)
+	}
+	sess.BluemixSession.Config.UAAAccessToken = ""
+	sess.BluemixSession.Config.UAARefreshToken = ""
 
 	BluemixRegion = sess.BluemixSession.Config.Region
 	cfAPI, err := mccpv2.New(sess.BluemixSession)
@@ -258,27 +281,30 @@ func newSession(c *Config) (*Session, error) {
 	return ibmSession, nil
 }
 
-func fetchUserDetails(sess *bxsession.Session) (*UserConfig, error) {
+func authenticateAPIKey(sess *bxsession.Session) error {
 	config := sess.Config
-	user := UserConfig{}
 	tokenRefresher, err := authentication.NewIAMAuthRepository(config, &rest.Client{
 		DefaultHeader: gohttp.Header{
 			"User-Agent": []string{http.UserAgent()},
 		},
 	})
-	err = tokenRefresher.AuthenticateAPIKey(config.BluemixAPIKey)
 	if err != nil {
-		return &user, err
+		return err
 	}
+	return tokenRefresher.AuthenticateAPIKey(config.BluemixAPIKey)
+}
+
+func fetchUserDetails(sess *bxsession.Session) (*UserConfig, error) {
+	config := sess.Config
+	user := UserConfig{}
+
 	bluemixToken := config.IAMAccessToken[7:len(config.IAMAccessToken)]
-	config.UAAAccessToken = ""
-	config.UAARefreshToken = ""
 	token, err := jwt.Parse(bluemixToken, func(token *jwt.Token) (interface{}, error) {
-		if err != nil {
-			return nil, err
-		}
 		return "", nil
 	})
+	if err != nil {
+		return &user, nil
+	}
 	claims := token.Claims.(jwt.MapClaims)
 	user.userEmail = claims["email"].(string)
 	user.userID = claims["id"].(string)
