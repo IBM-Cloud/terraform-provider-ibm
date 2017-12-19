@@ -30,8 +30,8 @@ The following attributes are exported:
 
 * `id` - The ID of the action.
 * `version` - Semantic version of the item.
-* `annotations` -  Annotations to describe the action, including those set by you or by the service.
-* `parameters` -  Parameters passed to the action when the action is invoked, including those set by you or by the service.
+* `annotations` -  Annotations to describe the action, including those set by you or by IBM Cloud Functions.
+* `parameters` -  Parameters passed to the action when the action is invoked, including those set by you or by IBM Cloud Functions.
 * `limits` - A nested block to describe assigned limits. Nested `limits` blocks have the following structure:
     * `timeout` -  The timeout limit to terminate the action, specified in milliseconds. Default value: `60000`.
     * `memory` -  The maximum memory for the action, specified in MBs. Default value: `256`.

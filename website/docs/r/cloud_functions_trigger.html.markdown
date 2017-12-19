@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_cloud_functions_trigger
 
-Create, update, or delete for [IBM Cloud Functions trigger](https://console.bluemix.net/docs/openwhisk/openwhisk_triggers_rules.html#openwhisk_triggers).
+Create, update, or delete for [IBM Cloud Functions trigger](https://console.bluemix.net/docs/openwhisk/openwhisk_triggers_rules.html#openwhisk_triggers). Events from external and internal event sources are channeled through a trigger, and rules allow your actions to react to these events. To set rules, use the `cloud_functions_rule` resource.
 
 ## Example Usage
 

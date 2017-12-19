@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_cloud_functions_action
 
-Create, update, or delete [IBM Cloud Functions actions](https://console.bluemix.net/docs/openwhisk/openwhisk_actions.html#openwhisk_actions).
+Create, update, or delete [IBM Cloud Functions actions](https://console.bluemix.net/docs/openwhisk/openwhisk_actions.html#openwhisk_actions). Actions are stateless code snippets that run on the IBM Cloud Functions platform. An action can be written as a JavaScript, Swift, or Python function, a Java method, or a custom executable program packaged in a Docker container. To bundle and share related actions, use the `cloud_functions_package` resource.
 
 
 ## Example Usage
@@ -108,8 +108,8 @@ The following arguments are supported:
     * `main` - (Optional, string) The name of the action entry point (function or fully-qualified method name, when applicable). **NOTE**: Conflicts with `exec.components`, `exec.image`.
     * `components` - (Optional, string) The list of fully qualified actions. **NOTE**: Conflicts with `exec.code`, `exec.image`.
 * `publish` - (Optional, boolean) Action visibility.
-* `user_defined_annotations` - (Optional, string) Annotation values in key value format.
-* `user_defined_parameters` - (Optional, string) Parameters values in key value format. Parameter bindings included in the context passed to the action. Cloud Function backend/API.
+* `user_defined_annotations` - (Optional, string) Annotations defined in key value format.
+* `user_defined_parameters` - (Optional, string) Parameters defined in key value format. Parameter bindings included in the context passed to the action. Cloud Function backend/API.
 
 ## Attributes Reference
 
@@ -117,8 +117,8 @@ The following attributes are exported:
 
 * `id` - The ID of the new action.
 * `version` - Semantic version of the item.
-* `annotations` -  All annotations to describe the action, including those set by you or by the service.
-* `parameters` - All parameters passed to the action when the action is invoked, including those set by you or by the service.
+* `annotations` -  All annotations to describe the action, including those set by you or by IBM Cloud Functions.
+* `parameters` - All parameters passed to the action when the action is invoked, including those set by you or by IBM Cloud Functions.
 
 
 ## Import
