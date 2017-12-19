@@ -278,8 +278,8 @@ func validateSecurityRuleProtocol(v interface{}, k string) (ws []string, errors 
 }
 
 func validateNamespace(ns string) error {
-	orgSpace := strings.Split(ns, "_")
-	if len(orgSpace) != 2 {
+	os := strings.Split(ns, "_")
+	if len(os) < 2 || (len(os) == 2 && (len(os[0]) == 0 || len(os[1]) == 0)) {
 		return fmt.Errorf(
 			"Namespace is (%s), it must be of the form <org>_<space>, provider can't find the auth key if you use _ as well", ns)
 	}

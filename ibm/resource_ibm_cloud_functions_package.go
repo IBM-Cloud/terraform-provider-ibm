@@ -201,13 +201,13 @@ func resourceIBMCloudFunctionsPackageRead(d *schema.ResourceData, meta interface
 			return fmt.Errorf("Error retrieving Binded IBM Cloud Functions package %s : %s", pkg.Binding.Name, err)
 		}
 
-		userAnnotations, err := flattenAnnotations(filterPackageParameters(bindedPkg.Annotations, pkg.Annotations))
+		userAnnotations, err := flattenAnnotations(filterInheritedAnnotations(bindedPkg.Annotations, pkg.Annotations))
 		if err != nil {
 			return err
 		}
 		d.Set("user_defined_annotations", userAnnotations)
 
-		userParameters, err := flattenParameters(filterPackageParameters(bindedPkg.Parameters, pkg.Parameters))
+		userParameters, err := flattenParameters(filterInheritedParameters(bindedPkg.Parameters, pkg.Parameters))
 		if err != nil {
 			return err
 		}

@@ -483,15 +483,15 @@ func filterActionParameters(in whisk.KeyValueArr) (string, error) {
 	return flattenParameters(noAction)
 }
 
-func filterPackageAnnotations(bindedAnnotations, annotations whisk.KeyValueArr) whisk.KeyValueArr {
+func filterInheritedAnnotations(inheritedAnnotations, annotations whisk.KeyValueArr) whisk.KeyValueArr {
 	userDefinedAnnotations := make(whisk.KeyValueArr, 0)
 	for _, a := range annotations {
 		insert := false
-		if a.Key == "binding" {
+		if a.Key == "binding" || a.Key == "exec" {
 			insert = false
 			break
 		}
-		for _, b := range bindedAnnotations {
+		for _, b := range inheritedAnnotations {
 			if a.Key == b.Key && reflect.DeepEqual(a.Value, b.Value) {
 				insert = false
 				break
@@ -505,11 +505,15 @@ func filterPackageAnnotations(bindedAnnotations, annotations whisk.KeyValueArr) 
 	return userDefinedAnnotations
 }
 
-func filterPackageParameters(bindedParameters, parameters whisk.KeyValueArr) whisk.KeyValueArr {
+func filterInheritedParameters(inheritedParameters, parameters whisk.KeyValueArr) whisk.KeyValueArr {
 	userDefinedParameters := make(whisk.KeyValueArr, 0)
 	for _, p := range parameters {
 		insert := false
-		for _, b := range bindedParameters {
+		if p.Key == "_actions" {
+			insert = false
+			break
+		}
+		for _, b := range inheritedParameters {
 			if p.Key == b.Key && reflect.DeepEqual(p.Value, b.Value) {
 				insert = false
 				break

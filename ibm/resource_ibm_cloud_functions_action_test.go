@@ -363,7 +363,7 @@ func testAccCheckCloudFunctionsActionPython(name string) string {
 			name = "%s"		  
 			exec = {
 			  kind = "python"
-			  code = "${file("test-fixtures/hellopython.py")}"
+			  code = "${file("test-fixtures/hellopPython.py")}"
 			}
 		  }
 	
