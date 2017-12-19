@@ -79,7 +79,7 @@ The following arguments are supported:
     * `name` - (Required, string) Trigger feed `ACTION_NAME`.
     * `parameters` - (Optional, string) Parameters definitions in key value format. Parameter bindings are included in the context and passed when the action is invoked.
 * `user_defined_annotations` - (Optional, string) Annotation definitions in key value format.
-* `user_defined_parameters` - (Optional, string) Parameters definitinos in key value format. Parameter bindings are included in the context and passed to the trigger.
+* `user_defined_parameters` - (Optional, string) Parameters definitions in key value format. Parameter bindings are included in the context and passed to the trigger.
 
 ## Attributes Reference
 
@@ -88,7 +88,7 @@ The following attributes are exported:
 * `id` - The ID of the new trigger.
 * `publish` - Trigger visibility.
 * `version` - Semantic version of the item.
-* `annotations` -  All annotations to describe the trigger, including those set by you or by IBM Cloud Functions.
+* `annotations` - All annotations to describe the trigger, including those set by you or by IBM Cloud Functions.
 * `parameters` - All parameters passed to the trigger, including those set by you or by IBM Cloud Functions.
 
 ## Import

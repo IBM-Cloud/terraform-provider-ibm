@@ -92,7 +92,7 @@ The following attributes are exported:
 
 * `id` - The ID of the new package.
 * `version` - Semantic version of the item.
-* `annotations` -  All annotations to describe the package, including those set by you or by IBM Cloud Functions.
+* `annotations` - All annotations to describe the package, including those set by you or by IBM Cloud Functions.
 * `parameters` - All parameters passed to the package, including those set by you or by IBM Cloud Functions.
 
 ## Import

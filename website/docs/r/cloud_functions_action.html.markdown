@@ -26,7 +26,7 @@ resource "ibm_cloud_functions_action" "nodehello" {
 }
 
 ```
-### Passing parameters to action
+### Passing parameters to an action
 
 ```hcl
 resource "ibm_cloud_functions_action" "nodehellowithparameter" {
@@ -97,8 +97,8 @@ The following arguments are supported:
 
 * `name` - (Required, string) The name of the action.
 * `limits` - (Optional, set) A nested block to describe assigned limits. Nested `limits` blocks have the following structure:
-    * `timeout` -  The timeout limit to terminate the action, specified in milliseconds. Default value: `60000`.
-    * `memory` -  The maximum memory for the action, specified in MBs. Default value: `256`.
+    * `timeout` - The timeout limit to terminate the action, specified in milliseconds. Default value: `60000`.
+    * `memory` - The maximum memory for the action, specified in MBs. Default value: `256`.
     * `log_size` - The maximum log size for the action, specified in MBs. Default value: `10`.
 * `exec` - (Required, set) A nested block to describe executable binaries. Nested `exec` blocks have the following structure:
     * `image` - (Optional, string) When using the `blackbox` executable, the name of the container image name. **NOTE**: Conflicts with `exec.components`, `exec.code`.
@@ -117,7 +117,7 @@ The following attributes are exported:
 
 * `id` - The ID of the new action.
 * `version` - Semantic version of the item.
-* `annotations` -  All annotations to describe the action, including those set by you or by IBM Cloud Functions.
+* `annotations` - All annotations to describe the action, including those set by you or by IBM Cloud Functions.
 * `parameters` - All parameters passed to the action when the action is invoked, including those set by you or by IBM Cloud Functions.
 
 
