@@ -3,6 +3,7 @@ package ibm
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"strings"
 
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
@@ -238,24 +239,45 @@ func resourceIBMCloudFunctionsActionRead(d *schema.ResourceData, meta interface{
 	}
 	d.Set("parameters", parameters)
 
-	userDefinedAnnotations, err := filterActionAnnotations(action.Annotations)
-	if err != nil {
-		return err
-	}
-	d.Set("user_defined_annotations", userDefinedAnnotations)
-
-	userDefinedParameters, err := filterActionParameters(action.Parameters)
-	if err != nil {
-		return err
-	}
-	d.Set("user_defined_parameters", userDefinedParameters)
-
 	temp := strings.Split(action.Namespace, "/")
 
 	if len(temp) == 2 {
 		d.Set("name", fmt.Sprintf("%s/%s", temp[1], action.Name))
+		c, err := whisk.NewClient(http.DefaultClient, &whisk.Config{
+			Namespace: wskClient.Namespace,
+			AuthToken: wskClient.AuthToken,
+			Host:      wskClient.Host,
+		})
+		pkg, _, err := c.Packages.Get(temp[1])
+
+		if err != nil {
+			return fmt.Errorf("Error retrieving package IBM Cloud Functions package %s : %s", temp[1], err)
+		}
+
+		userAnnotations, err := flattenAnnotations(filterInheritedAnnotations(pkg.Annotations, pkg.Annotations))
+		if err != nil {
+			return err
+		}
+		d.Set("user_defined_annotations", userAnnotations)
+
+		userParameters, err := flattenParameters(filterInheritedParameters(pkg.Parameters, pkg.Parameters))
+		if err != nil {
+			return err
+		}
+		d.Set("user_defined_parameters", userParameters)
 	} else {
 		d.Set("name", action.Name)
+		userDefinedAnnotations, err := filterActionAnnotations(action.Annotations)
+		if err != nil {
+			return err
+		}
+		d.Set("user_defined_annotations", userDefinedAnnotations)
+
+		userDefinedParameters, err := filterActionParameters(action.Parameters)
+		if err != nil {
+			return err
+		}
+		d.Set("user_defined_parameters", userDefinedParameters)
 	}
 	return nil
 }
