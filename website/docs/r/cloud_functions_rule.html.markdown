@@ -53,23 +53,24 @@ resource "ibm_cloud_functions_rule" "rule" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) Name of rule.
-* `trigger_name` - (Required, string) Name of trigger.
-* `action_name` - (Required, string) Name of action.
+* `name` - (Required, string) The name of the rule.
+* `trigger_name` - (Required, string) The name of the trigger.
+* `action_name` - (Required, string) The name of the action.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
 * `id` - The ID of the new rule.
-* `publish` - Rule visbility.
+* `publish` - Rule visibility.
 * `version` - Semantic version of the item.
-* `status` - Status of the rule.
+* `status` - The status of the rule.
 
 ## Import
 
-ibm_cloud_functions_rule can be imported using their id, e.g.
+`ibm_cloud_functions_rule` can be imported using the ID.
 
+Example: 
 ```
 $ terraform import ibm_cloud_functions_rule.sampleRule alarmrule
 

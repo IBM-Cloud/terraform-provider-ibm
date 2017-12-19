@@ -22,15 +22,15 @@ data "ibm_cloud_functions_rule" "rule" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) Name of the rule.
+* `name` - (Required, string) The name of the rule.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
 * `id` - The ID of the trigger.
-* `publish` - Trigger Visibility.
+* `publish` - Trigger visibility.
 * `version` - Semantic version of the trigger.
-* `status` - Status of the rule.
-* `trigger_name` - Name of the trigger.
-* `action_name` - Name of the action.
+* `status` - The status of the rule.
+* `trigger_name` - The name of the trigger.
+* `action_name` - The name of the action.
