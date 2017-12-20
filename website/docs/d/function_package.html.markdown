@@ -1,19 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : cloud_functions_package"
-sidebar_current: "docs-ibm-datasource-cloud-functions-package"
+page_title: "IBM : function_package"
+sidebar_current: "docs-ibm-datasource-function-package"
 description: |-
   Get information on an IBM Cloud Functions Package.
 ---
 
-# ibm\_cloud_functions_package
+# ibm\_function_package
 
 Import the details of an existing [IBM Cloud Functions package](https://console.bluemix.net/docs/openwhisk/openwhisk_packages.html#openwhisk_packages) as a read-only data source. The fields of the data source can then be referenced by other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "ibm_cloud_functions_package" "package" {
+data "ibm_function_package" "package" {
   name = "package_name"
 }
 ```

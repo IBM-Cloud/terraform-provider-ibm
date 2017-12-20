@@ -1,21 +1,21 @@
 ---
 layout: "ibm"
-page_title: "IBM : cloud-functions-package"
-sidebar_current: "docs-ibm-resource-cloud-functions-package"
+page_title: "IBM : function-package"
+sidebar_current: "docs-ibm-resource-function-package"
 description: |-
   Manages IBM Cloud Functions package.
 ---
 
 # ibm\_openwhisk_package
 
-Create, update, or delete [IBM Cloud Functions packages](https://console.bluemix.net/docs/openwhisk/openwhisk_packages.html#openwhisk_packages). You can use packages to bundle together a set of related actions, and share them with others. To create actions, use the `cloud_functions_action` resource.
+Create, update, or delete [IBM Cloud Functions packages](https://console.bluemix.net/docs/openwhisk/openwhisk_packages.html#openwhisk_packages). You can use packages to bundle together a set of related actions, and share them with others. To create actions, use the `function_action` resource.
 
 ## Example Usage
 
 ### Create a package
 
 ```hcl
-resource "ibm_cloud_functions_package" "package" {
+resource "ibm_function_package" "package" {
   name = "package-name"
 
   user_defined_annotations = <<EOF
@@ -48,7 +48,7 @@ EOF
 ### Create a package using a binding
 
 ``` hcl
-resource "ibm_cloud_functions_package" "bindpackage" {
+resource "ibm_function_package" "bindpackage" {
   name              = "bindalaram"
   bind_package_name = "/whisk.system/alarms/alarm"
 
@@ -97,10 +97,10 @@ The following attributes are exported:
 
 ## Import
 
-`ibm_cloud_functions_package` can be imported using the ID, 
+`ibm_function_package` can be imported using the ID, 
 
 Example:
 ```
-$ terraform import ibm_cloud_functions_package.sample hello
+$ terraform import ibm_function_package.sample hello
 
 ```

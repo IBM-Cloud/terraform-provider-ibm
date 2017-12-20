@@ -1,19 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : cloud_functions_action"
-sidebar_current: "docs-ibm-datasource-cloud-functions-action"
+page_title: "IBM : function_action"
+sidebar_current: "docs-ibm-datasource-cloud-function-action"
 description: |- 
     Get information on a IBM Cloud Functions action.
 ---
 
-# ibm\_cloud_functions_action
+# ibm\_function_action
 
 Import the details of an existing [IBM Cloud Functions action](https://console.bluemix.net/docs/openwhisk/openwhisk_actions.html#openwhisk_actions) as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "ibm_cloud_functions_action" "nodehello" {
+data "ibm_function_action" "nodehello" {
     name = "action-name"		  
 }
 ```
