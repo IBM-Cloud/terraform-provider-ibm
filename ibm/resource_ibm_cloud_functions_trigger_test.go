@@ -59,6 +59,7 @@ func TestAccCloudFunctionsTrigger_Feed_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cloud_functions_trigger.feedtrigger", "name", name),
 					resource.TestCheckResourceAttr("ibm_cloud_functions_trigger.feedtrigger", "version", "0.0.1"),
 					resource.TestCheckResourceAttr("ibm_cloud_functions_trigger.feedtrigger", "publish", "false"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_trigger.feedtrigger", "feed.0.name", "/whisk.system/alarms/alarm"),
 				),
 			},
 
@@ -68,6 +69,7 @@ func TestAccCloudFunctionsTrigger_Feed_Basic(t *testing.T) {
 					testAccCheckCloudFunctionsTriggerExists("ibm_cloud_functions_trigger.feedtrigger", &conf),
 					resource.TestCheckResourceAttr("ibm_cloud_functions_trigger.feedtrigger", "name", name),
 					resource.TestCheckResourceAttr("ibm_cloud_functions_trigger.feedtrigger", "version", "0.0.2"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_trigger.feedtrigger", "feed.0.name", "/whisk.system/alarms/alarm"),
 				),
 			},
 		},

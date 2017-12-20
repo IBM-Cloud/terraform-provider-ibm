@@ -26,7 +26,10 @@ func TestAccCloudFunctionsAction_NodeJS(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckCloudFunctionsActionExists("ibm_cloud_functions_action.nodehello", &conf),
 					resource.TestCheckResourceAttr("ibm_cloud_functions_action.nodehello", "name", name),
-					resource.TestCheckResourceAttr("ibm_cloud_functions_action.nodehello", "exec.1729670059.kind", "nodejs:6"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.nodehello", "exec.0.kind", "nodejs:6"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.nodehello", "limits.0.log_size", "10"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.nodehello", "limits.0.timeout", "60000"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.nodehello", "limits.0.memory", "256"),
 				),
 			},
 		},
@@ -47,7 +50,10 @@ func TestAccCloudFunctionsAction_NodeJSWithParams(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckCloudFunctionsActionExists("ibm_cloud_functions_action.nodehellowithparameter", &conf),
 					resource.TestCheckResourceAttr("ibm_cloud_functions_action.nodehellowithparameter", "name", name),
-					resource.TestCheckResourceAttr("ibm_cloud_functions_action.nodehellowithparameter", "exec.2223737754.kind", "nodejs:6"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.nodehellowithparameter", "exec.0.kind", "nodejs:6"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.nodehellowithparameter", "limits.0.log_size", "10"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.nodehellowithparameter", "limits.0.timeout", "60000"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.nodehellowithparameter", "limits.0.memory", "256"),
 				),
 			},
 		},
@@ -68,7 +74,10 @@ func TestAccCloudFunctionsAction_NodeJSZip(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckCloudFunctionsActionExists("ibm_cloud_functions_action.nodezip", &conf),
 					resource.TestCheckResourceAttr("ibm_cloud_functions_action.nodezip", "name", name),
-					resource.TestCheckResourceAttr("ibm_cloud_functions_action.nodezip", "exec.915916944.kind", "nodejs:6"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.nodezip", "exec.0.kind", "nodejs:6"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.nodezip", "limits.0.log_size", "10"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.nodezip", "limits.0.timeout", "60000"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.nodezip", "limits.0.memory", "256"),
 				),
 			},
 		},
@@ -89,7 +98,10 @@ func TestAccCloudFunctionsAction_Python(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckCloudFunctionsActionExists("ibm_cloud_functions_action.pythonhello", &conf),
 					resource.TestCheckResourceAttr("ibm_cloud_functions_action.pythonhello", "name", name),
-					resource.TestCheckResourceAttr("ibm_cloud_functions_action.pythonhello", "exec.2177277460.kind", "python"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.pythonhello", "exec.0.kind", "python"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.pythonhello", "limits.0.log_size", "10"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.pythonhello", "limits.0.timeout", "60000"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.pythonhello", "limits.0.memory", "256"),
 				),
 			},
 		},
@@ -110,7 +122,10 @@ func TestAccCloudFunctionsAction_PythonZip(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckCloudFunctionsActionExists("ibm_cloud_functions_action.pythonzip", &conf),
 					resource.TestCheckResourceAttr("ibm_cloud_functions_action.pythonzip", "name", name),
-					resource.TestCheckResourceAttr("ibm_cloud_functions_action.pythonzip", "exec.799663035.kind", "python"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.pythonzip", "exec.0.kind", "python"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.pythonzip", "limits.0.log_size", "10"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.pythonzip", "limits.0.timeout", "60000"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.pythonzip", "limits.0.memory", "256"),
 				),
 			},
 		},
@@ -131,7 +146,10 @@ func TestAccCloudFunctionsAction_PHP(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckCloudFunctionsActionExists("ibm_cloud_functions_action.phphello", &conf),
 					resource.TestCheckResourceAttr("ibm_cloud_functions_action.phphello", "name", name),
-					resource.TestCheckResourceAttr("ibm_cloud_functions_action.phphello", "exec.2196642062.kind", "php:7.1"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.phphello", "exec.0.kind", "php:7.1"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.phphello", "limits.0.log_size", "10"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.phphello", "limits.0.timeout", "60000"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.phphello", "limits.0.memory", "256"),
 				),
 			},
 		},
@@ -152,7 +170,10 @@ func TestAccCloudFunctionsAction_PHPZip(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckCloudFunctionsActionExists("ibm_cloud_functions_action.phpzip", &conf),
 					resource.TestCheckResourceAttr("ibm_cloud_functions_action.phpzip", "name", name),
-					resource.TestCheckResourceAttr("ibm_cloud_functions_action.phpzip", "exec.36392495.kind", "php:7.1"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.phpzip", "exec.0.kind", "php:7.1"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.phpzip", "limits.0.log_size", "10"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.phpzip", "limits.0.timeout", "60000"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.phpzip", "limits.0.memory", "256"),
 				),
 			},
 		},
@@ -173,7 +194,10 @@ func TestAccCloudFunctionsAction_Swift(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckCloudFunctionsActionExists("ibm_cloud_functions_action.swifthello", &conf),
 					resource.TestCheckResourceAttr("ibm_cloud_functions_action.swifthello", "name", name),
-					resource.TestCheckResourceAttr("ibm_cloud_functions_action.swifthello", "exec.455016215.kind", "swift:3.1.1"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.swifthello", "exec.0.kind", "swift:3.1.1"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.swifthello", "limits.0.log_size", "10"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.swifthello", "limits.0.timeout", "60000"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.swifthello", "limits.0.memory", "256"),
 				),
 			},
 		},
@@ -194,7 +218,10 @@ func TestAccCloudFunctionsAction_Sequence(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckCloudFunctionsActionExists("ibm_cloud_functions_action.sequence", &conf),
 					resource.TestCheckResourceAttr("ibm_cloud_functions_action.sequence", "name", name),
-					resource.TestCheckResourceAttr("ibm_cloud_functions_action.sequence", "exec.3443818261.kind", "sequence"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.sequence", "exec.0.kind", "sequence"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.sequence", "limits.0.log_size", "10"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.sequence", "limits.0.timeout", "60000"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.sequence", "limits.0.memory", "256"),
 				),
 			},
 		},
@@ -217,6 +244,9 @@ func TestAccCloudFunctionsAction_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cloud_functions_action.action", "name", name),
 					resource.TestCheckResourceAttr("ibm_cloud_functions_action.action", "version", "0.0.1"),
 					resource.TestCheckResourceAttr("ibm_cloud_functions_action.action", "publish", "false"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.action", "limits.0.log_size", "10"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.action", "limits.0.timeout", "60000"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.action", "limits.0.memory", "256"),
 				),
 			},
 
@@ -227,6 +257,9 @@ func TestAccCloudFunctionsAction_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cloud_functions_action.action", "name", name),
 					resource.TestCheckResourceAttr("ibm_cloud_functions_action.action", "version", "0.0.2"),
 					resource.TestCheckResourceAttr("ibm_cloud_functions_action.action", "publish", "true"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.action", "limits.0.log_size", "5"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.action", "limits.0.timeout", "50000"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.action", "limits.0.memory", "256"),
 				),
 			},
 		},
@@ -363,7 +396,7 @@ func testAccCheckCloudFunctionsActionPython(name string) string {
 			name = "%s"		  
 			exec = {
 			  kind = "python"
-			  code = "${file("test-fixtures/hellopPython.py")}"
+			  code = "${file("test-fixtures/helloPython.py")}"
 			}
 		  }
 	
@@ -449,6 +482,9 @@ func testAccCheckCloudFunctionsActionCreate(name string) string {
 			  kind = "nodejs:6"
 			  code = "${file("test-fixtures/hellonode.js")}"
 			}
+			limits = {
+
+			}
 			}
 `, name)
 
@@ -458,7 +494,11 @@ func testAccCheckCloudFunctionsActionUpdate(name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cloud_functions_action" "action" {
 			name = "%s"	
-			publish = "true"	  
+			publish = "true"
+			limits = {
+				log_size = 5
+				timeout = 50000
+				}	  
 			exec = {
 			  kind = "nodejs:6"
 			  code = "${file("test-fixtures/hellonodewithparameter.js")}"
