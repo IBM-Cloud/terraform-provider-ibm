@@ -96,11 +96,11 @@ resource "ibm_cloud_functions_action" "swifthello" {
 The following arguments are supported:
 
 * `name` - (Required, string) The name of the action.
-* `limits` - (Optional, set) A nested block to describe assigned limits. Nested `limits` blocks have the following structure:
+* `limits` - (Optional, list) A nested block to describe assigned limits. Nested `limits` blocks have the following structure:
     * `timeout` - The timeout limit to terminate the action, specified in milliseconds. Default value: `60000`.
     * `memory` - The maximum memory for the action, specified in MBs. Default value: `256`.
     * `log_size` - The maximum log size for the action, specified in MBs. Default value: `10`.
-* `exec` - (Required, set) A nested block to describe executable binaries. Nested `exec` blocks have the following structure:
+* `exec` - (Required, list) A nested block to describe executable binaries. Nested `exec` blocks have the following structure:
     * `image` - (Optional, string) When using the `blackbox` executable, the name of the container image name. **NOTE**: Conflicts with `exec.components`, `exec.code`.
     * `init` - (Optional, string) When using `nodejs`, the optional zipfile reference. **NOTE**: Conflicts with `exec.components`, `exec.image`.
     * `code` - (Optional, string) When not using the `blackbox` executable, the code to execute. **NOTE**: Conflicts with `exec.components`, `exec.image`.

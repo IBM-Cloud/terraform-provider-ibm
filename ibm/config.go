@@ -303,7 +303,7 @@ func fetchUserDetails(sess *bxsession.Session) (*UserConfig, error) {
 		return "", nil
 	})
 	if err != nil {
-		return &user, nil
+		return &user, err
 	}
 	claims := token.Claims.(jwt.MapClaims)
 	user.userEmail = claims["email"].(string)

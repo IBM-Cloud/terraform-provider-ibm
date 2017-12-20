@@ -20,7 +20,7 @@ func TestAccCloudFunctionsActionDataSourceBasic(t *testing.T) {
 				Config: testAccCheckCloudFunctionsActionDataSource(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_cloud_functions_action.pythonzip", "name", name),
-					resource.TestCheckResourceAttr("ibm_cloud_functions_action.pythonzip", "exec.799663035.kind", "python"),
+					resource.TestCheckResourceAttr("ibm_cloud_functions_action.pythonzip", "exec.0.kind", "python"),
 					resource.TestCheckResourceAttr("data.ibm_cloud_functions_action.action", "name", name),
 				),
 			},
