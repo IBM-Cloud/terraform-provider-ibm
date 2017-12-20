@@ -1,14 +1,14 @@
 ---
 layout: "ibm"
-page_title: "IBM : cloud_functions_action"
-sidebar_current: "docs-ibm-resource-cloud-functions-action"
+page_title: "IBM : function_action"
+sidebar_current: "docs-ibm-resource-function-action"
 description: |-
   Manages IBM Cloud Functions actions.
 ---
 
-# ibm\_cloud_functions_action
+# ibm\_function_action
 
-Create, update, or delete [IBM Cloud Functions actions](https://console.bluemix.net/docs/openwhisk/openwhisk_actions.html#openwhisk_actions). Actions are stateless code snippets that run on the IBM Cloud Functions platform. An action can be written as a JavaScript, Swift, or Python function, a Java method, or a custom executable program packaged in a Docker container. To bundle and share related actions, use the `cloud_functions_package` resource.
+Create, update, or delete [IBM Cloud Functions actions](https://console.bluemix.net/docs/openwhisk/openwhisk_actions.html#openwhisk_actions). Actions are stateless code snippets that run on the IBM Cloud Functions platform. An action can be written as a JavaScript, Swift, or Python function, a Java method, or a custom executable program packaged in a Docker container. To bundle and share related actions, use the `function_package` resource.
 
 
 ## Example Usage
@@ -16,7 +16,7 @@ Create, update, or delete [IBM Cloud Functions actions](https://console.bluemix.
 ###  Simple JavaScript action
 
 ```hcl
-resource "ibm_cloud_functions_action" "nodehello" {
+resource "ibm_function_action" "nodehello" {
   name = "action-name"
 
   exec = {
@@ -29,7 +29,7 @@ resource "ibm_cloud_functions_action" "nodehello" {
 ### Passing parameters to an action
 
 ```hcl
-resource "ibm_cloud_functions_action" "nodehellowithparameter" {
+resource "ibm_function_action" "nodehellowithparameter" {
   name = "hellonodeparam"
 
   exec = {
@@ -52,7 +52,7 @@ resource "ibm_cloud_functions_action" "nodehellowithparameter" {
 ### Packaging an action as a Node.js module
 
 ``` hcl
-resource "ibm_cloud_functions_action" "nodezip" {
+resource "ibm_function_action" "nodezip" {
   name = "nodezip"
 
   exec = {
@@ -66,7 +66,7 @@ resource "ibm_cloud_functions_action" "nodezip" {
 ### Creating action sequences
 
 ``` hcl
-resource "ibm_cloud_functions_action" "swifthello" {
+resource "ibm_function_action" "swifthello" {
   name = "actionsequence"
 
   exec = {
@@ -80,7 +80,7 @@ resource "ibm_cloud_functions_action" "swifthello" {
 ## Creating Docker actions
 
 ``` hcl
-resource "ibm_cloud_functions_action" "swifthello" {
+resource "ibm_function_action" "swifthello" {
   name = "dockeraction"
 
   exec = {
@@ -123,11 +123,11 @@ The following attributes are exported:
 
 ## Import
 
-`ibm_cloud_functions_action` can be imported using the ID.
+`ibm_function_action` can be imported using the ID.
 
 Example:
 
 ```
-$ terraform import ibm_cloud_functions_action.nodeAction hello
+$ terraform import ibm_function_action.nodeAction hello
 
 ```

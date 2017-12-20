@@ -1,21 +1,21 @@
 ---
 layout: "ibm"
-page_title: "IBM : cloud_functions_trigger"
-sidebar_current: "docs-ibm-resource-cloud-functions-trigger"
+page_title: "IBM : function_trigger"
+sidebar_current: "docs-ibm-resource-function-trigger"
 description: |-
   Manages IBM Cloud Functions trigger.
 ---
 
-# ibm\_cloud_functions_trigger
+# ibm\_function_trigger
 
-Create, update, or delete [IBM Cloud Functions triggers](https://console.bluemix.net/docs/openwhisk/openwhisk_triggers_rules.html#openwhisk_triggers). Events from external and internal event sources are channeled through a trigger, and rules allow your actions to react to these events. To set rules, use the `cloud_functions_rule` resource.
+Create, update, or delete [IBM Cloud Functions triggers](https://console.bluemix.net/docs/openwhisk/openwhisk_triggers_rules.html#openwhisk_triggers). Events from external and internal event sources are channeled through a trigger, and rules allow your actions to react to these events. To set rules, use the `function_rule` resource.
 
 ## Example Usage
 
 ### Creating triggers
 
 ```hcl
-resource "ibm_cloud_functions_trigger" "trigger" {
+resource "ibm_function_trigger" "trigger" {
   name = "trigger-name"
 
   user_defined_parameters = <<EOF
@@ -40,7 +40,7 @@ resource "ibm_cloud_functions_trigger" "trigger" {
 
 ### Creating a trigger feed
 ```hcl
-resource "ibm_cloud_functions_trigger" "feedtrigger" {
+resource "ibm_function_trigger" "feedtrigger" {
   name = "alarmFeed"
 
   feed = [
@@ -93,10 +93,10 @@ The following attributes are exported:
 
 ## Import
 
-`ibm_cloud_functions_trigger` can be imported using the ID.
+`ibm_function_trigger` can be imported using the ID.
 
 Example:
 ```
-$ terraform import ibm_cloud_functions_trigger.alaramtrigger alaram
+$ terraform import ibm_function_trigger.alaramtrigger alaram
 
 ```

@@ -1,19 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : cloud_functions_rule"
-sidebar_current: "docs-ibm-resource-cloud-functions-rule"
+page_title: "IBM : function_rule"
+sidebar_current: "docs-ibm-resource-function-rule"
 description: |-
   Manages IBM Cloud Functions rule.
 ---
 
-# ibm\_cloud_functions_rule
+# ibm\_function_rule
 
-Create, update, or delete [IBM Cloud Functions triggers](https://console.bluemix.net/docs/openwhisk/openwhisk_triggers_rules.html#openwhisk_triggers). Events from external and internal event sources are channeled through a trigger, and rules allow your actions to react to these events. To set triggers, use the `cloud_functions_trigger` resource.
+Create, update, or delete [IBM Cloud Functions triggers](https://console.bluemix.net/docs/openwhisk/openwhisk_triggers_rules.html#openwhisk_triggers). Events from external and internal event sources are channeled through a trigger, and rules allow your actions to react to these events. To set triggers, use the `function_trigger` resource.
 
 ## Example Usage
 
 ```hcl
-resource "ibm_cloud_functions_action" "action" {
+resource "ibm_function_action" "action" {
   name = "hello"
 
   exec = {
@@ -22,7 +22,7 @@ resource "ibm_cloud_functions_action" "action" {
   }
 }
 
-resource "ibm_cloud_functions_trigger" "trigger" {
+resource "ibm_function_trigger" "trigger" {
   name = "alarmtrigger"
 
   feed = [
@@ -41,10 +41,10 @@ resource "ibm_cloud_functions_trigger" "trigger" {
   ]
 }
 
-resource "ibm_cloud_functions_rule" "rule" {
+resource "ibm_function_rule" "rule" {
   name         = "alarmrule"
-  trigger_name = "${ibm_cloud_functions_trigger.trigger.name}"
-  action_name  = "${ibm_cloud_functions_action.action.name}"
+  trigger_name = "${ibm_function_trigger.trigger.name}"
+  action_name  = "${ibm_function_action.action.name}"
 }
 
 ```
@@ -68,10 +68,10 @@ The following attributes are exported:
 
 ## Import
 
-`ibm_cloud_functions_rule` can be imported using the ID.
+`ibm_function_rule` can be imported using the ID.
 
 Example: 
 ```
-$ terraform import ibm_cloud_functions_rule.sampleRule alarmrule
+$ terraform import ibm_function_rule.sampleRule alarmrule
 
 ```

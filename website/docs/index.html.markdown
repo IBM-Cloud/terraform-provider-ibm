@@ -57,7 +57,7 @@ resource "ibm_service_instance" "service" {
 }
 
 # Create a Cloud Functions action
-resource "ibm_cloud_functions_action" "nodehello" {
+resource "ibm_function_action" "nodehello" {
   name = "action-name"
   exec = {
     kind = "nodejs:6"
@@ -125,4 +125,4 @@ The following arguments are supported in the `provider` block:
 
 * `max_retries` - (Optional) This is the maximum number of times an IBM Cloud infrastructure API call is retried, in the case where requests are getting network related timeout and rate limit exceeded error code. You can also source it from the `MAX_RETRIES` environment variable. The default value is `5`.
 
-* `cloud_functions_namespace` - (Optional) Your Cloud Functions namespace is composed from your IBM Cloud org and space like <org>_<space>. This attribute is required only when creating a Cloud Functions resource. It must be provided when you are creating such resources in IBM Cloud. You can also source it from the CLOUD_FUNCTIONS_NAMESPACE environment variable.
+* `function_namespace` - (Optional) Your Cloud Functions namespace is composed from your IBM Cloud org and space like <org>_<space>. This attribute is required only when creating a Cloud Functions resource. It must be provided when you are creating such resources in IBM Cloud. You can also source it from the FUNCTION_NAMESPACE environment variable.
