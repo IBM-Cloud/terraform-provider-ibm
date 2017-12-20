@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	gohttp "net/http"
@@ -302,7 +303,8 @@ func fetchUserDetails(sess *bxsession.Session) (*UserConfig, error) {
 	token, err := jwt.Parse(bluemixToken, func(token *jwt.Token) (interface{}, error) {
 		return "", nil
 	})
-	if err != nil {
+	//TODO validate with key
+	if err != nil && !strings.Contains(err.Error(), "key is of invalid type") {
 		return &user, err
 	}
 	claims := token.Claims.(jwt.MapClaims)
