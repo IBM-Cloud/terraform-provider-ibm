@@ -15,13 +15,13 @@ const feedAuthKey = "authKey"
 const feedCreate = "CREATE"
 const feedDelete = "DELETE"
 
-func resourceIBMCloudFunctionsTrigger() *schema.Resource {
+func resourceIBMFunctionTrigger() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMCloudFunctionsTriggerCreate,
-		Read:     resourceIBMCloudFunctionsTriggerRead,
-		Update:   resourceIBMCloudFunctionsTriggerUpdate,
-		Delete:   resourceIBMCloudFunctionsTriggerDelete,
-		Exists:   resourceIBMCloudFunctionsTriggerExists,
+		Create:   resourceIBMFunctionTriggerCreate,
+		Read:     resourceIBMFunctionTriggerRead,
+		Update:   resourceIBMFunctionTriggerUpdate,
+		Delete:   resourceIBMFunctionTriggerDelete,
+		Exists:   resourceIBMFunctionTriggerExists,
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -30,7 +30,7 @@ func resourceIBMCloudFunctionsTrigger() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				Description:  "Name of Trigger.",
-				ValidateFunc: validateCloudFunctionsName,
+				ValidateFunc: validateFunctionName,
 			},
 			"feed": {
 				Type:        schema.TypeList,
@@ -117,8 +117,8 @@ func resourceIBMCloudFunctionsTrigger() *schema.Resource {
 	}
 }
 
-func resourceIBMCloudFunctionsTriggerCreate(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+func resourceIBMFunctionTriggerCreate(d *schema.ResourceData, meta interface{}) error {
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
@@ -162,10 +162,10 @@ func resourceIBMCloudFunctionsTriggerCreate(d *schema.ResourceData, meta interfa
 		payload.Annotations = payload.Annotations.AppendKeyValueArr(feedArray)
 	}
 
-	log.Println("[INFO] Creating IBM Cloud Functions trigger")
+	log.Println("[INFO] Creating IBM Cloud Function trigger")
 	result, _, err := triggerService.Insert(&payload, false)
 	if err != nil {
-		return fmt.Errorf("Error creating IBM Cloud Functions trigger: %s", err)
+		return fmt.Errorf("Error creating IBM Cloud Function trigger: %s", err)
 	}
 
 	d.SetId(result.Name)
@@ -187,7 +187,7 @@ func resourceIBMCloudFunctionsTriggerCreate(d *schema.ResourceData, meta interfa
 		if feedQualifiedName, err = NewQualifiedName(actionName); err != nil {
 			_, _, delerr := triggerService.Delete(name)
 			if delerr != nil {
-				return fmt.Errorf("Error creating IBM Cloud Functions trigger with feed: %s", err)
+				return fmt.Errorf("Error creating IBM Cloud Function trigger with feed: %s", err)
 			}
 			return NewQualifiedNameError(actionName, err)
 		}
@@ -202,24 +202,24 @@ func resourceIBMCloudFunctionsTriggerCreate(d *schema.ResourceData, meta interfa
 			Host:      wskClient.Host,
 		})
 		actionService := c.Actions
-		_, _, err = actionService.Invoke(feedQualifiedName.GetEntityName(), feedPayload, true, false)
+		_, _, err = actionService.Invoke(feedQualifiedName.GetEntityName(), feedPayload, true, true)
 		if err != nil {
 			_, _, delerr := triggerService.Delete(name)
 			if delerr != nil {
-				return fmt.Errorf("Error creating IBM Cloud Functions trigger with feed: %s", err)
+				return fmt.Errorf("Error creating IBM Cloud Function trigger with feed: %s", err)
 			}
 			d.SetId("")
-			return fmt.Errorf("Error creating IBM Cloud Functions trigger with feed: %s", err)
+			return fmt.Errorf("Error creating IBM Cloud Function trigger with feed: %s", err)
 		}
 	}
 
 	d.SetId(result.Name)
 
-	return resourceIBMCloudFunctionsTriggerRead(d, meta)
+	return resourceIBMFunctionTriggerRead(d, meta)
 }
 
-func resourceIBMCloudFunctionsTriggerRead(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+func resourceIBMFunctionTriggerRead(d *schema.ResourceData, meta interface{}) error {
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
@@ -228,7 +228,7 @@ func resourceIBMCloudFunctionsTriggerRead(d *schema.ResourceData, meta interface
 
 	trigger, _, err := triggerService.Get(id)
 	if err != nil {
-		return fmt.Errorf("Error retrieving IBM Cloud Functions Trigger %s : %s", id, err)
+		return fmt.Errorf("Error retrieving IBM Cloud Function Trigger %s : %s", id, err)
 	}
 
 	d.SetId(trigger.Name)
@@ -262,8 +262,8 @@ func resourceIBMCloudFunctionsTriggerRead(d *schema.ResourceData, meta interface
 	return nil
 }
 
-func resourceIBMCloudFunctionsTriggerUpdate(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+func resourceIBMFunctionTriggerUpdate(d *schema.ResourceData, meta interface{}) error {
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
@@ -302,19 +302,19 @@ func resourceIBMCloudFunctionsTriggerUpdate(d *schema.ResourceData, meta interfa
 	}
 
 	if ischanged {
-		log.Println("[INFO] Update IBM Cloud Functions Trigger")
+		log.Println("[INFO] Update IBM Cloud Function Trigger")
 
 		_, _, err = triggerService.Insert(&payload, true)
 		if err != nil {
-			return fmt.Errorf("Error updating IBM Cloud Functions Trigger: %s", err)
+			return fmt.Errorf("Error updating IBM Cloud Function Trigger: %s", err)
 		}
 	}
 
-	return resourceIBMCloudFunctionsTriggerRead(d, meta)
+	return resourceIBMFunctionTriggerRead(d, meta)
 }
 
-func resourceIBMCloudFunctionsTriggerDelete(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+func resourceIBMFunctionTriggerDelete(d *schema.ResourceData, meta interface{}) error {
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
@@ -328,7 +328,7 @@ func resourceIBMCloudFunctionsTriggerDelete(d *schema.ResourceData, meta interfa
 	}
 	trigger, _, err := triggerService.Get(id)
 	if err != nil {
-		return fmt.Errorf("Error retrieving IBM Cloud Functions Trigger %s : %s", id, err)
+		return fmt.Errorf("Error retrieving IBM Cloud Function Trigger %s : %s", id, err)
 	}
 	found := trigger.Annotations.FindKeyValue("feed")
 	if found >= 0 {
@@ -350,24 +350,24 @@ func resourceIBMCloudFunctionsTriggerDelete(d *schema.ResourceData, meta interfa
 			Host:      wskClient.Host,
 		})
 		actionService := c.Actions
-		_, _, err = actionService.Invoke(feedQualifiedName.GetEntityName(), feedPayload, true, false)
+		_, _, err = actionService.Invoke(feedQualifiedName.GetEntityName(), feedPayload, true, true)
 		if err != nil {
-			return fmt.Errorf("Error deleting IBM Cloud Functions trigger with feed: %s", err)
+			return fmt.Errorf("Error deleting IBM Cloud Function trigger with feed: %s", err)
 		}
 		wskClient.Namespace = qualifiedName.GetNamespace()
 	}
 
 	_, _, err = triggerService.Delete(id)
 	if err != nil {
-		return fmt.Errorf("Error deleting IBM Cloud Functions Trigger: %s", err)
+		return fmt.Errorf("Error deleting IBM Cloud Function Trigger: %s", err)
 	}
 
 	d.SetId("")
 	return nil
 }
 
-func resourceIBMCloudFunctionsTriggerExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+func resourceIBMFunctionTriggerExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return false, err
 	}
@@ -378,7 +378,7 @@ func resourceIBMCloudFunctionsTriggerExists(d *schema.ResourceData, meta interfa
 		if resp.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("Error communicating with IBM Cloud Functions Client : %s", err)
+		return false, fmt.Errorf("Error communicating with IBM Cloud Function Client : %s", err)
 	}
 	return trigger.Name == id, nil
 }

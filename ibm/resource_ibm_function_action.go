@@ -10,13 +10,13 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func resourceIBMCloudFunctionsAction() *schema.Resource {
+func resourceIBMFunctionAction() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMCloudFunctionsActionCreate,
-		Read:     resourceIBMCloudFunctionsActionRead,
-		Update:   resourceIBMCloudFunctionsActionUpdate,
-		Delete:   resourceIBMCloudFunctionsActionDelete,
-		Exists:   resourceIBMCloudFunctionsActionExists,
+		Create:   resourceIBMFunctionActionCreate,
+		Read:     resourceIBMFunctionActionRead,
+		Update:   resourceIBMFunctionActionUpdate,
+		Delete:   resourceIBMFunctionActionDelete,
+		Exists:   resourceIBMFunctionActionExists,
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -149,8 +149,8 @@ func resourceIBMCloudFunctionsAction() *schema.Resource {
 	}
 }
 
-func resourceIBMCloudFunctionsActionCreate(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+func resourceIBMFunctionActionCreate(d *schema.ResourceData, meta interface{}) error {
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
@@ -193,10 +193,10 @@ func resourceIBMCloudFunctionsActionCreate(d *schema.ResourceData, meta interfac
 		payload.Publish = &p
 	}
 
-	log.Println("[INFO] Creating IBM Cloud Functions Action")
+	log.Println("[INFO] Creating IBM Cloud Function Action")
 	action, _, err := actionService.Insert(&payload, false)
 	if err != nil {
-		return fmt.Errorf("Error creating IBM Cloud Functions Action: %s", err)
+		return fmt.Errorf("Error creating IBM Cloud Function Action: %s", err)
 	}
 
 	temp := strings.Split(action.Namespace, "/")
@@ -207,11 +207,11 @@ func resourceIBMCloudFunctionsActionCreate(d *schema.ResourceData, meta interfac
 		d.SetId(action.Name)
 	}
 
-	return resourceIBMCloudFunctionsActionRead(d, meta)
+	return resourceIBMFunctionActionRead(d, meta)
 }
 
-func resourceIBMCloudFunctionsActionRead(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+func resourceIBMFunctionActionRead(d *schema.ResourceData, meta interface{}) error {
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
@@ -221,7 +221,7 @@ func resourceIBMCloudFunctionsActionRead(d *schema.ResourceData, meta interface{
 
 	action, _, err := actionService.Get(id)
 	if err != nil {
-		return fmt.Errorf("Error retrieving IBM Cloud Functions Action %s : %s", id, err)
+		return fmt.Errorf("Error retrieving IBM Cloud Function Action %s : %s", id, err)
 	}
 
 	d.Set("limits", flattenLimits(action.Limits))
@@ -251,7 +251,7 @@ func resourceIBMCloudFunctionsActionRead(d *schema.ResourceData, meta interface{
 		pkg, _, err := c.Packages.Get(temp[1])
 
 		if err != nil {
-			return fmt.Errorf("Error retrieving package IBM Cloud Functions package %s : %s", temp[1], err)
+			return fmt.Errorf("Error retrieving package IBM Cloud Function package %s : %s", temp[1], err)
 		}
 
 		userAnnotations, err := flattenAnnotations(filterInheritedAnnotations(pkg.Annotations, pkg.Annotations))
@@ -282,8 +282,8 @@ func resourceIBMCloudFunctionsActionRead(d *schema.ResourceData, meta interface{
 	return nil
 }
 
-func resourceIBMCloudFunctionsActionUpdate(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+func resourceIBMFunctionActionUpdate(d *schema.ResourceData, meta interface{}) error {
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
@@ -342,19 +342,19 @@ func resourceIBMCloudFunctionsActionUpdate(d *schema.ResourceData, meta interfac
 	}
 
 	if ischanged {
-		log.Println("[INFO] Update IBM Cloud Functions Action")
+		log.Println("[INFO] Update IBM Cloud Function Action")
 
 		_, _, err = actionService.Insert(&payload, true)
 		if err != nil {
-			return fmt.Errorf("Error updating IBM Cloud Functions Action: %s", err)
+			return fmt.Errorf("Error updating IBM Cloud Function Action: %s", err)
 		}
 	}
 
-	return resourceIBMCloudFunctionsActionRead(d, meta)
+	return resourceIBMFunctionActionRead(d, meta)
 }
 
-func resourceIBMCloudFunctionsActionDelete(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+func resourceIBMFunctionActionDelete(d *schema.ResourceData, meta interface{}) error {
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
@@ -363,15 +363,15 @@ func resourceIBMCloudFunctionsActionDelete(d *schema.ResourceData, meta interfac
 
 	_, err = actionService.Delete(id)
 	if err != nil {
-		return fmt.Errorf("Error deleting IBM Cloud Functions Action: %s", err)
+		return fmt.Errorf("Error deleting IBM Cloud Function Action: %s", err)
 	}
 
 	d.SetId("")
 	return nil
 }
 
-func resourceIBMCloudFunctionsActionExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+func resourceIBMFunctionActionExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return false, err
 	}
@@ -383,7 +383,7 @@ func resourceIBMCloudFunctionsActionExists(d *schema.ResourceData, meta interfac
 		if resp.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("Error communicating with IBM Cloud Functions Client : %s", err)
+		return false, fmt.Errorf("Error communicating with IBM Cloud Function Client : %s", err)
 	}
 
 	temp := strings.Split(action.Namespace, "/")

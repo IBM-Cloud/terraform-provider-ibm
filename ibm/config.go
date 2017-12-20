@@ -79,8 +79,8 @@ type Config struct {
 	//Constant Retry Delay for API calls
 	RetryDelay time.Duration
 
-	// CloudFunctionsNameSpace ...
-	CloudFunctionsNameSpace string
+	// FunctionNameSpace ...
+	FunctionNameSpace string
 }
 
 //Session stores the information required for communication with the SoftLayer and Bluemix API
@@ -102,7 +102,7 @@ type ClientSession interface {
 	BluemixAcccountAPI() (accountv2.AccountServiceAPI, error)
 	BluemixAcccountv1API() (accountv1.AccountServiceAPI, error)
 	BluemixUserDetails() (*UserConfig, error)
-	CloudFunctionsClient() (*whisk.Client, error)
+	FunctionClient() (*whisk.Client, error)
 }
 
 type clientSession struct {
@@ -126,8 +126,8 @@ type clientSession struct {
 	bmxUserDetails  *UserConfig
 	bmxUserFetchErr error
 
-	cloudFunctionsConfigErr error
-	cloudFunctionsClient    *whisk.Client
+	functionConfigErr error
+	functionClient    *whisk.Client
 }
 
 // SoftLayerSession providers SoftLayer Session
@@ -170,9 +170,9 @@ func (sess clientSession) BluemixUserDetails() (*UserConfig, error) {
 	return sess.bmxUserDetails, sess.bmxUserFetchErr
 }
 
-// CloudFunctionsClient ...
-func (sess clientSession) CloudFunctionsClient() (*whisk.Client, error) {
-	return sess.cloudFunctionsClient, sess.cloudFunctionsConfigErr
+// FunctionClient ...
+func (sess clientSession) FunctionClient() (*whisk.Client, error) {
+	return sess.functionClient, sess.functionConfigErr
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -193,13 +193,13 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.accountConfigErr = errEmptyBluemixCredentials
 		session.accountV1ConfigErr = errEmptyBluemixCredentials
 		session.iamConfigErr = errEmptyBluemixCredentials
-		session.cloudFunctionsConfigErr = errEmptyBluemixCredentials
+		session.functionConfigErr = errEmptyBluemixCredentials
 		return session, nil
 	}
 	err = authenticateAPIKey(sess.BluemixSession)
 	if err != nil {
 		session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
-		session.cloudFunctionsConfigErr = fmt.Errorf("Error occured while fetching auth key for cloud functions: %q", err)
+		session.functionConfigErr = fmt.Errorf("Error occured while fetching auth key for function: %q", err)
 	} else {
 		userConfig, err := fetchUserDetails(sess.BluemixSession)
 		if err != nil {
@@ -207,7 +207,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		}
 		session.bmxUserDetails = userConfig
 
-		session.cloudFunctionsClient, session.cloudFunctionsConfigErr = CloudFunctionsClient(sess.BluemixSession.Config, c.CloudFunctionsNameSpace)
+		session.functionClient, session.functionConfigErr = FunctionClient(sess.BluemixSession.Config, c.FunctionNameSpace)
 	}
 	sess.BluemixSession.Config.UAAAccessToken = ""
 	sess.BluemixSession.Config.UAARefreshToken = ""

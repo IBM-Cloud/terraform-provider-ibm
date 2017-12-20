@@ -360,7 +360,7 @@ func stringInSlice(str string, list []string) bool {
 	return false
 }
 
-func validateCloudFunctionsName(v interface{}, k string) (ws []string, errors []error) {
+func validateFunctionName(v interface{}, k string) (ws []string, errors []error) {
 	value := v.(string)
 
 	var validName = regexp.MustCompile(`\A([\w]|[\w][\w@ .-]*[\w@.-]+)\z`)

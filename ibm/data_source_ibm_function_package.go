@@ -6,10 +6,10 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func dataSourceIBMCloudFunctionsPackage() *schema.Resource {
+func dataSourceIBMFunctionPackage() *schema.Resource {
 	return &schema.Resource{
 
-		Read: dataSourceIBMCloudFunctionsPackageRead,
+		Read: dataSourceIBMFunctionPackageRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -49,8 +49,8 @@ func dataSourceIBMCloudFunctionsPackage() *schema.Resource {
 	}
 }
 
-func dataSourceIBMCloudFunctionsPackageRead(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+func dataSourceIBMFunctionPackageRead(d *schema.ResourceData, meta interface{}) error {
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func dataSourceIBMCloudFunctionsPackageRead(d *schema.ResourceData, meta interfa
 
 	pkg, _, err := packageService.Get(name)
 	if err != nil {
-		return fmt.Errorf("Error retrieving IBM Cloud Functions package %s : %s", name, err)
+		return fmt.Errorf("Error retrieving IBM Cloud Function package %s : %s", name, err)
 	}
 
 	d.SetId(pkg.Name)
