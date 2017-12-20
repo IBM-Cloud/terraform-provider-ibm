@@ -22,7 +22,7 @@ data "ibm_cloud_functions_package" "package" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) Name of package.
+* `name` - (Required, string) The name of the package.
 
 
 ## Attributes Reference
@@ -31,6 +31,6 @@ The following attributes are exported:
 
 * `id` - The ID of the package.
 * `version` - Semantic version of the package.
-* `publish` - Package Visibility.
-* `annotations` - All annotations set on package by user and those set by the IBM Cloud Function backend/API.
-* `parameters` - All parameters set on package by user and those set by the IBM Cloud Function backend/API.
+* `publish` - Package visibility.
+* `annotations` - All annotations to describe the package, including those set by you or by IBM Cloud Functions.
+* `parameters` - All parameters passed to the package, including those set by you or by IBM Cloud Functions.

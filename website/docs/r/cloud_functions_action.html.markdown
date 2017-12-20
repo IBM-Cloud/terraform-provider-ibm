@@ -3,12 +3,12 @@ layout: "ibm"
 page_title: "IBM : cloud_functions_action"
 sidebar_current: "docs-ibm-resource-cloud-functions-action"
 description: |-
-  Manages IBM Cloud Functions action.
+  Manages IBM Cloud Functions actions.
 ---
 
 # ibm\_cloud_functions_action
 
-Create, update, or delete  [IBM Cloud Functions action](https://console.bluemix.net/docs/openwhisk/openwhisk_actions.html#openwhisk_actions).
+Create, update, or delete [IBM Cloud Functions actions](https://console.bluemix.net/docs/openwhisk/openwhisk_actions.html#openwhisk_actions). Actions are stateless code snippets that run on the IBM Cloud Functions platform. An action can be written as a JavaScript, Swift, or Python function, a Java method, or a custom executable program packaged in a Docker container. To bundle and share related actions, use the `cloud_functions_package` resource.
 
 
 ## Example Usage
@@ -26,7 +26,7 @@ resource "ibm_cloud_functions_action" "nodehello" {
 }
 
 ```
-### Passing Parameters to action
+### Passing parameters to an action
 
 ```hcl
 resource "ibm_cloud_functions_action" "nodehellowithparameter" {
@@ -77,7 +77,7 @@ resource "ibm_cloud_functions_action" "swifthello" {
 
 ```
 
-## Creating docker actions
+## Creating Docker actions
 
 ``` hcl
 resource "ibm_cloud_functions_action" "swifthello" {
@@ -95,21 +95,21 @@ resource "ibm_cloud_functions_action" "swifthello" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) Name of action.
-* `limits` - (Optional, set) A nested block describing the limits assigned to . Nested `limits` blocks have the following structure:
-    * `timeout` - (Optional, integer) The timeout LIMIT in milliseconds after which the action is terminated. Default value is 60000.
-    * `memory` - (Optional, integer) The maximum memory LIMIT in MB for the action. Default is 256.
-    * `log_size` - (Optional, integer) The maximum log size LIMIT in MB for the action. Default value is 10.
-* `exec` - (Required, set) A nested block describing the exec assigned to . Nested `exec` blocks have the following structure:
-    * `image` - (Optional, string) Container image name when kind is 'blackbox'. **NOTE**: Conflicts with `exec.components`, `exec.code`.
-    * `init` - (Optional, string) Optional zipfile reference. **NOTE**: Conflicts with `exec.components`, `exec.image`.
-    * `code` - (Optional, string) The code to execute when kind is not 'blackbox'. **NOTE**: Conflicts with `exec.components`, `exec.image`.
-    * `kind` - (Required, string) The type of action. Possible values: php:7.1, nodejs:8, swift:3, nodejs, blackbox, java, sequence, nodejs:6, python:3, python, python:2, swift, swift:3.1.1.
-    * `main` - (Optional, string) The name of the action entry point (function or fully-qualified method name when applicable). **NOTE**: Conflicts with `exec.components`, `exec.image`.
-    * `components` - (Optional, string) The List of fully qualified action. **NOTE**: Conflicts with `exec.code`, `exec.image`.
-* `publish` - (Optional, boolean) Action visibilty.
-* `user_defined_annotations` - (Optional, string) Annotation values in KEY VALUE format.
-* `user_defined_parameters` - (Optional, string) Parameters values in KEY VALUE format. Parameter bindings included in the context passed to the action.Cloud Function backend/API.
+* `name` - (Required, string) The name of the action.
+* `limits` - (Optional, set) A nested block to describe assigned limits. Nested `limits` blocks have the following structure:
+    * `timeout` - The timeout limit to terminate the action, specified in milliseconds. Default value: `60000`.
+    * `memory` - The maximum memory for the action, specified in MBs. Default value: `256`.
+    * `log_size` - The maximum log size for the action, specified in MBs. Default value: `10`.
+* `exec` - (Required, set) A nested block to describe executable binaries. Nested `exec` blocks have the following structure:
+    * `image` - (Optional, string) When using the `blackbox` executable, the name of the container image name. **NOTE**: Conflicts with `exec.components`, `exec.code`.
+    * `init` - (Optional, string) When using `nodejs`, the optional zipfile reference. **NOTE**: Conflicts with `exec.components`, `exec.image`.
+    * `code` - (Optional, string) When not using the `blackbox` executable, the code to execute. **NOTE**: Conflicts with `exec.components`, `exec.image`.
+    * `kind` - (Required, string) The type of action. Accepted values: `php:7.1`, `nodejs:8`, `swift:3`, `nodejs`, `blackbox`, `java`, `sequence`, `nodejs:6`, `python:3`, `python`, `python:2`, `swift`, `swift:3.1.1`.
+    * `main` - (Optional, string) The name of the action entry point (function or fully-qualified method name, when applicable). **NOTE**: Conflicts with `exec.components`, `exec.image`.
+    * `components` - (Optional, string) The list of fully qualified actions. **NOTE**: Conflicts with `exec.code`, `exec.image`.
+* `publish` - (Optional, boolean) Action visibility.
+* `user_defined_annotations` - (Optional, string) Annotations defined in key value format.
+* `user_defined_parameters` - (Optional, string) Parameters defined in key value format. Parameter bindings included in the context passed to the action. Cloud Function backend/API.
 
 ## Attributes Reference
 
@@ -117,13 +117,15 @@ The following attributes are exported:
 
 * `id` - The ID of the new action.
 * `version` - Semantic version of the item.
-* `annotations` -  All annotations set on action by user and those set by the IBM Cloud Function backend/API.
-* `parameters` - All parameters set on action by user and those set by the IBM Cloud Function backend/API.
+* `annotations` - All annotations to describe the action, including those set by you or by IBM Cloud Functions.
+* `parameters` - All parameters passed to the action when the action is invoked, including those set by you or by IBM Cloud Functions.
 
 
 ## Import
 
-ibm_cloud_functions_action can be imported using their id, e.g.
+`ibm_cloud_functions_action` can be imported using the ID.
+
+Example:
 
 ```
 $ terraform import ibm_cloud_functions_action.nodeAction hello

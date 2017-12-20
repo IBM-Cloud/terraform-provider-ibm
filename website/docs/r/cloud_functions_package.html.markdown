@@ -8,11 +8,11 @@ description: |-
 
 # ibm\_openwhisk_package
 
-Create, update, or delete [IBM Cloud Functions package](https://console.bluemix.net/docs/openwhisk/openwhisk_packages.html#openwhisk_packages).
+Create, update, or delete [IBM Cloud Functions packages](https://console.bluemix.net/docs/openwhisk/openwhisk_packages.html#openwhisk_packages). You can use packages to bundle together a set of related actions, and share them with others. To create actions, use the `cloud_functions_action` resource.
 
 ## Example Usage
 
-### Create package
+### Create a package
 
 ```hcl
 resource "ibm_cloud_functions_package" "package" {
@@ -45,7 +45,7 @@ EOF
 }
 ```
 
-### Create package using binding
+### Create a package using a binding
 
 ``` hcl
 resource "ibm_cloud_functions_package" "bindpackage" {
@@ -80,10 +80,10 @@ EOF
 
 The following arguments are supported:
 
-* `name` - (Required, string) Name of package.
-* `publish` - (Optional, boolean) Package visibilty.
-* `user_defined_annotations` - (Optional, string) Annotation values in KEY VALUE format.
-* `user_defined_parameters` - (Optional, string) Parameters values in KEY VALUE format. Parameter bindings included in the context passed to the package.
+* `name` - (Required, string) The name of the package.
+* `publish` - (Optional, boolean) Package visibility.
+* `user_defined_annotations` - (Optional, string) Annotations defined in key value format.
+* `user_defined_parameters` - (Optional, string) Parameters defined in key value format. Parameter bindings included in the context passed to the package.
 * `bind_package_name` - (Optional, string) Name of package to be binded.
 
 ## Attributes Reference
@@ -92,13 +92,14 @@ The following attributes are exported:
 
 * `id` - The ID of the new package.
 * `version` - Semantic version of the item.
-* `annotations` -  All annotations set on package by user and those set by the IBM Cloud Function backend/API.
-* `parameters` - All parameters set on package by user and those set by the IBM Cloud Function backend/API.
+* `annotations` - All annotations to describe the package, including those set by you or by IBM Cloud Functions.
+* `parameters` - All parameters passed to the package, including those set by you or by IBM Cloud Functions.
 
 ## Import
 
-ibm_cloud_functions_package can be imported using their id, e.g.
+`ibm_cloud_functions_package` can be imported using the ID, 
 
+Example:
 ```
 $ terraform import ibm_cloud_functions_package.sample hello
 

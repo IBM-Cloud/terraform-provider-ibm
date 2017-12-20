@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_cloud_functions_trigger
 
-Create, update, or delete for [IBM Cloud Functions trigger](https://console.bluemix.net/docs/openwhisk/openwhisk_triggers_rules.html#openwhisk_triggers).
+Create, update, or delete [IBM Cloud Functions triggers](https://console.bluemix.net/docs/openwhisk/openwhisk_triggers_rules.html#openwhisk_triggers). Events from external and internal event sources are channeled through a trigger, and rules allow your actions to react to these events. To set rules, use the `cloud_functions_rule` resource.
 
 ## Example Usage
 
@@ -38,7 +38,7 @@ resource "ibm_cloud_functions_trigger" "trigger" {
 }
 ```
 
-### Creating trigger feed
+### Creating a trigger feed
 ```hcl
 resource "ibm_cloud_functions_trigger" "feedtrigger" {
   name = "alarmFeed"
@@ -74,27 +74,28 @@ resource "ibm_cloud_functions_trigger" "feedtrigger" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) Name of trigger.
-* `feed` - (Optional, set) A nested block describing the feed assigned to . Nested `feed` blocks have   the following structure:
-    * `name` - (Required, string) Trigger feed ACTION_NAME
-    * `parameters` - (Optinal, string) Parameters values in KEY VALUE format. Parameter bindings included in the context passed to the action invoke.
-* `user_defined_annotations` - (Optional, string) Annotation values in KEY VALUE format.
-* `user_defined_parameters` - (Optional, string) Parameters values in KEY VALUE format. Parameter bindings included in the context passed to the trigger.
+* `name` - (Required, string) The name of the trigger.
+* `feed` - (Optional, set) A nested block to describe the feed. Nested `feed` blocks have the following structure:
+    * `name` - (Required, string) Trigger feed `ACTION_NAME`.
+    * `parameters` - (Optional, string) Parameters definitions in key value format. Parameter bindings are included in the context and passed when the action is invoked.
+* `user_defined_annotations` - (Optional, string) Annotation definitions in key value format.
+* `user_defined_parameters` - (Optional, string) Parameters definitions in key value format. Parameter bindings are included in the context and passed to the trigger.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
 * `id` - The ID of the new trigger.
-* `publish` - Trigger visbility.
+* `publish` - Trigger visibility.
 * `version` - Semantic version of the item.
-* `annotations` -  All annotations set on trigger by user and those set by the IBM Cloud Function backend/API.
-* `parameters` - All parameters set on trigger by user and those set by the IBM Cloud Function backend/API.
+* `annotations` - All annotations to describe the trigger, including those set by you or by IBM Cloud Functions.
+* `parameters` - All parameters passed to the trigger, including those set by you or by IBM Cloud Functions.
 
 ## Import
 
-ibm_cloud_functions_trigger can be imported using their id, e.g.
+`ibm_cloud_functions_trigger` can be imported using the ID.
 
+Example:
 ```
 $ terraform import ibm_cloud_functions_trigger.alaramtrigger alaram
 

@@ -23,14 +23,14 @@ data "ibm_cloud_functions_trigger" "trigger" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) Name of trigger.
+* `name` - (Required, string) The name of the trigger.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
 * `id` - The ID of the trigger.
-* `publish` - Trigger Visibility.
+* `publish` - Trigger visibility.
 * `version` - Semantic version of the trigger.
-* `annotations` - All annotations set on trigger by user and those set by the IBM Cloud Function backend/API.
-* `parameters` - All parameters set on trigger by user and those set by the IBM Cloud Function backend/API.
+* `annotations` - All annotations to describe the trigger, including those set by you or by IBM Cloud Functions.
+* `parameters` - All parameters passed to the trigger, including those set by you or by IBM Cloud Functions.
