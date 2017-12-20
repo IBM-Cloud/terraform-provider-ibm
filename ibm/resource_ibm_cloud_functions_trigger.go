@@ -1,13 +1,11 @@
 package ibm
 
 import (
-	"bytes"
 	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
-	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -35,7 +33,7 @@ func resourceIBMCloudFunctionsTrigger() *schema.Resource {
 				ValidateFunc: validateCloudFunctionsName,
 			},
 			"feed": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				ForceNew:    true,
 				Optional:    true,
 				MaxItems:    1,
@@ -70,7 +68,6 @@ func resourceIBMCloudFunctionsTrigger() *schema.Resource {
 						},
 					},
 				},
-				Set: resourceIBMCloudFunctionsTriggerFeedHash,
 			},
 			"publish": {
 				Type:        schema.TypeBool,
@@ -155,7 +152,7 @@ func resourceIBMCloudFunctionsTriggerCreate(d *schema.ResourceData, meta interfa
 
 	if v, ok := d.GetOk("feed"); ok {
 		feed = true
-		value := v.(*schema.Set).List()[0].(map[string]interface{})
+		value := v.([]interface{})[0].(map[string]interface{})
 		feedPaylod := whisk.KeyValue{
 			Key:   "feed",
 			Value: value["name"],
@@ -174,7 +171,7 @@ func resourceIBMCloudFunctionsTriggerCreate(d *schema.ResourceData, meta interfa
 	d.SetId(result.Name)
 
 	if feed {
-		feed := d.Get("feed").(*schema.Set).List()[0].(map[string]interface{})
+		feed := d.Get("feed").([]interface{})[0].(map[string]interface{})
 		actionName := feed["name"].(string)
 		parameters := feed["parameters"].(string)
 		var err error
@@ -384,13 +381,4 @@ func resourceIBMCloudFunctionsTriggerExists(d *schema.ResourceData, meta interfa
 		return false, fmt.Errorf("Error communicating with IBM Cloud Functions Client : %s", err)
 	}
 	return trigger.Name == id, nil
-}
-
-func resourceIBMCloudFunctionsTriggerFeedHash(v interface{}) int {
-	var buf bytes.Buffer
-	m := v.(map[string]interface{})
-	buf.WriteString(fmt.Sprintf("%s-",
-		m["name"].(string)))
-
-	return hashcode.String(buf.String())
 }

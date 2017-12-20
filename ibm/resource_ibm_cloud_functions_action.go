@@ -28,7 +28,7 @@ func resourceIBMCloudFunctionsAction() *schema.Resource {
 				ValidateFunc: validateActionName,
 			},
 			"limits": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Optional: true,
 				MaxItems: 1,
 				Computed: true,
@@ -56,7 +56,7 @@ func resourceIBMCloudFunctionsAction() *schema.Resource {
 				},
 			},
 			"exec": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Required: true,
 				MaxItems: 1,
 				Elem: &schema.Resource{
@@ -169,7 +169,7 @@ func resourceIBMCloudFunctionsActionCreate(d *schema.ResourceData, meta interfac
 		Namespace: qualifiedName.GetNamespace(),
 	}
 
-	exec := d.Get("exec").(*schema.Set)
+	exec := d.Get("exec").([]interface{})
 	payload.Exec = expandExec(exec)
 
 	userDefinedAnnotations := d.Get("user_defined_annotations").(string)
@@ -184,8 +184,8 @@ func resourceIBMCloudFunctionsActionCreate(d *schema.ResourceData, meta interfac
 		return err
 	}
 
-	if v := d.Get("limits").(*schema.Set); len(v.List()) > 0 {
-		payload.Limits = expandLimits(v.List())
+	if v, ok := d.GetOk("limits"); ok {
+		payload.Limits = expandLimits(v.([]interface{}))
 	}
 
 	if publish, ok := d.GetOk("publish"); ok {
@@ -330,8 +330,14 @@ func resourceIBMCloudFunctionsActionUpdate(d *schema.ResourceData, meta interfac
 	}
 
 	if d.HasChange("exec") {
-		exec := d.Get("exec").(*schema.Set)
+		exec := d.Get("exec").([]interface{})
 		payload.Exec = expandExec(exec)
+		ischanged = true
+	}
+
+	if d.HasChange("limits") {
+		limits := d.Get("limits").([]interface{})
+		payload.Limits = expandLimits(limits)
 		ischanged = true
 	}
 

@@ -410,8 +410,8 @@ func flattenLimits(in *whisk.Limits) []interface{} {
 	return []interface{}{att}
 }
 
-func expandExec(execs *schema.Set) *whisk.Exec {
-	for _, exec := range execs.List() {
+func expandExec(execs []interface{}) *whisk.Exec {
+	for _, exec := range execs {
 		e, _ := exec.(map[string]interface{})
 		obj := &whisk.Exec{
 			Image:      e["image"].(string),
