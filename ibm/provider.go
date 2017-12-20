@@ -58,11 +58,11 @@ func Provider() terraform.ResourceProvider {
 				Description: "The retry count to set for any SoftLayer API calls.",
 				DefaultFunc: schema.EnvDefaultFunc("MAX_RETRIES", 5),
 			},
-			"cloud_functions_namespace": {
+			"function_namespace": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The IBM Cloud Functions namespace",
-				DefaultFunc: schema.EnvDefaultFunc("CLOUD_FUNCTIONS_NAMESPACE", ""),
+				Description: "The IBM Cloud Function namespace",
+				DefaultFunc: schema.EnvDefaultFunc("FUNCTION_NAMESPACE", ""),
 			},
 		},
 
@@ -72,10 +72,10 @@ func Provider() terraform.ResourceProvider {
 			"ibm_app_domain_private":       dataSourceIBMAppDomainPrivate(),
 			"ibm_app_domain_shared":        dataSourceIBMAppDomainShared(),
 			"ibm_app_route":                dataSourceIBMAppRoute(),
-			"ibm_cloud_functions_action":   dataSourceIBMCloudFunctionsAction(),
-			"ibm_cloud_functions_package":  dataSourceIBMCloudFunctionsPackage(),
-			"ibm_cloud_functions_rule":     dataSourceIBMCloudFunctionsRule(),
-			"ibm_cloud_functions_trigger":  dataSourceIBMCloudFunctionsTrigger(),
+			"ibm_function_action":          dataSourceIBMFunctionAction(),
+			"ibm_function_package":         dataSourceIBMFunctionPackage(),
+			"ibm_function_rule":            dataSourceIBMFunctionRule(),
+			"ibm_function_trigger":         dataSourceIBMFunctionTrigger(),
 			"ibm_compute_image_template":   dataSourceIBMComputeImageTemplate(),
 			"ibm_compute_ssh_key":          dataSourceIBMComputeSSHKey(),
 			"ibm_compute_vm_instance":      dataSourceIBMComputeVmInstance(),
@@ -101,10 +101,10 @@ func Provider() terraform.ResourceProvider {
 			"ibm_app_domain_private":              resourceIBMAppDomainPrivate(),
 			"ibm_app_domain_shared":               resourceIBMAppDomainShared(),
 			"ibm_app_route":                       resourceIBMAppRoute(),
-			"ibm_cloud_functions_action":          resourceIBMCloudFunctionsAction(),
-			"ibm_cloud_functions_package":         resourceIBMCloudFunctionsPackage(),
-			"ibm_cloud_functions_rule":            resourceIBMCloudFunctionsRule(),
-			"ibm_cloud_functions_trigger":         resourceIBMCloudFunctionsTrigger(),
+			"ibm_function_action":                 resourceIBMFunctionAction(),
+			"ibm_function_package":                resourceIBMFunctionPackage(),
+			"ibm_function_rule":                   resourceIBMFunctionRule(),
+			"ibm_function_trigger":                resourceIBMFunctionTrigger(),
 			"ibm_compute_autoscale_group":         resourceIBMComputeAutoScaleGroup(),
 			"ibm_compute_autoscale_policy":        resourceIBMComputeAutoScalePolicy(),
 			"ibm_compute_bare_metal":              resourceIBMComputeBareMetal(),
@@ -156,28 +156,28 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	bluemixTimeout := d.Get("bluemix_timeout").(int)
 	region := d.Get("region").(string)
 	retryCount := d.Get("max_retries").(int)
-	wskNameSpace := d.Get("cloud_functions_namespace").(string)
+	wskNameSpace := d.Get("function_namespace").(string)
 
-	wskEnvVal, err := schema.EnvDefaultFunc("CLOUD_FUNCTIONS_NAMESPACE", "")()
+	wskEnvVal, err := schema.EnvDefaultFunc("FUNCTION_NAMESPACE", "")()
 	if err != nil {
 		return nil, err
 	}
-	//Set environment variable to be used in DiffSupressFunctions
+	//Set environment variable to be used in DiffSupressFunction
 	if wskEnvVal.(string) == "" {
-		os.Setenv("CLOUD_FUNCTIONS_NAMESPACE", wskNameSpace)
+		os.Setenv("FUNCTION_NAMESPACE", wskNameSpace)
 	}
 
 	config := Config{
-		BluemixAPIKey:           bluemixAPIKey,
-		Region:                  region,
-		BluemixTimeout:          time.Duration(bluemixTimeout) * time.Second,
-		SoftLayerTimeout:        time.Duration(softlayerTimeout) * time.Second,
-		SoftLayerUserName:       softlayerUsername,
-		SoftLayerAPIKey:         softlayerAPIKey,
-		RetryCount:              retryCount,
-		SoftLayerEndpointURL:    SoftlayerRestEndpoint,
-		RetryDelay:              RetryAPIDelay,
-		CloudFunctionsNameSpace: wskNameSpace,
+		BluemixAPIKey:        bluemixAPIKey,
+		Region:               region,
+		BluemixTimeout:       time.Duration(bluemixTimeout) * time.Second,
+		SoftLayerTimeout:     time.Duration(softlayerTimeout) * time.Second,
+		SoftLayerUserName:    softlayerUsername,
+		SoftLayerAPIKey:      softlayerAPIKey,
+		RetryCount:           retryCount,
+		SoftLayerEndpointURL: SoftlayerRestEndpoint,
+		RetryDelay:           RetryAPIDelay,
+		FunctionNameSpace:    wskNameSpace,
 	}
 
 	return config.ClientSession()

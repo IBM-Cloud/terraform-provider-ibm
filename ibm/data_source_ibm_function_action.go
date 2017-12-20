@@ -7,10 +7,10 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func dataSourceIBMCloudFunctionsAction() *schema.Resource {
+func dataSourceIBMFunctionAction() *schema.Resource {
 	return &schema.Resource{
 
-		Read: dataSourceIBMCloudFunctionsActionRead,
+		Read: dataSourceIBMFunctionActionRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -104,9 +104,9 @@ func dataSourceIBMCloudFunctionsAction() *schema.Resource {
 	}
 }
 
-func dataSourceIBMCloudFunctionsActionRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMFunctionActionRead(d *schema.ResourceData, meta interface{}) error {
 
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
@@ -116,7 +116,7 @@ func dataSourceIBMCloudFunctionsActionRead(d *schema.ResourceData, meta interfac
 
 	action, _, err := actionService.Get(name)
 	if err != nil {
-		return fmt.Errorf("Error retrieving IBM Cloud Functions Action %s : %s", name, err)
+		return fmt.Errorf("Error retrieving IBM Cloud Function Action %s : %s", name, err)
 	}
 
 	temp := strings.Split(action.Namespace, "/")

@@ -10,13 +10,13 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func resourceIBMCloudFunctionsRule() *schema.Resource {
+func resourceIBMFunctionRule() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMCloudFunctionsRuleCreate,
-		Read:     resourceIBMCloudFunctionsRuleRead,
-		Update:   resourceIBMCloudFunctionsRuleUpdate,
-		Delete:   resourceIBMCloudFunctionsRuleDelete,
-		Exists:   resourceIBMCloudFunctionsRuleExists,
+		Create:   resourceIBMFunctionRuleCreate,
+		Read:     resourceIBMFunctionRuleRead,
+		Update:   resourceIBMFunctionRuleUpdate,
+		Delete:   resourceIBMFunctionRuleDelete,
+		Exists:   resourceIBMFunctionRuleExists,
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -25,7 +25,7 @@ func resourceIBMCloudFunctionsRule() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				Description:  "Name of rule.",
-				ValidateFunc: validateCloudFunctionsName,
+				ValidateFunc: validateFunctionName,
 			},
 			"trigger_name": {
 				Type:        schema.TypeString,
@@ -41,13 +41,13 @@ func resourceIBMCloudFunctionsRule() *schema.Resource {
 						return false
 					}
 					if strings.HasPrefix(n, "/_") {
-						temp := strings.Replace(n, "/_", "/"+os.Getenv("CLOUD_FUNCTIONS_NAMESPACE"), 1)
+						temp := strings.Replace(n, "/_", "/"+os.Getenv("FUNCTION_NAMESPACE"), 1)
 						if strings.Compare(temp, o) == 0 {
 							return true
 						}
 					}
 					if !strings.HasPrefix(n, "/") {
-						if strings.HasPrefix(o, "/"+os.Getenv("CLOUD_FUNCTIONS_NAMESPACE")) {
+						if strings.HasPrefix(o, "/"+os.Getenv("FUNCTION_NAMESPACE")) {
 							return true
 						}
 					}
@@ -73,8 +73,8 @@ func resourceIBMCloudFunctionsRule() *schema.Resource {
 	}
 }
 
-func resourceIBMCloudFunctionsRuleCreate(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+func resourceIBMFunctionRuleCreate(d *schema.ResourceData, meta interface{}) error {
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
@@ -101,19 +101,19 @@ func resourceIBMCloudFunctionsRuleCreate(d *schema.ResourceData, meta interface{
 		Action:    actionName,
 	}
 
-	log.Println("[INFO] Creating IBM Cloud Functions rule")
+	log.Println("[INFO] Creating IBM Cloud Function rule")
 	result, _, err := ruleService.Insert(&payload, true)
 	if err != nil {
-		return fmt.Errorf("Error creating IBM Cloud Functions rule: %s", err)
+		return fmt.Errorf("Error creating IBM Cloud Function rule: %s", err)
 	}
 
 	d.SetId(result.Name)
 
-	return resourceIBMCloudFunctionsRuleRead(d, meta)
+	return resourceIBMFunctionRuleRead(d, meta)
 }
 
-func resourceIBMCloudFunctionsRuleRead(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+func resourceIBMFunctionRuleRead(d *schema.ResourceData, meta interface{}) error {
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
@@ -122,7 +122,7 @@ func resourceIBMCloudFunctionsRuleRead(d *schema.ResourceData, meta interface{})
 
 	rule, _, err := ruleService.Get(id)
 	if err != nil {
-		return fmt.Errorf("Error retrieving IBM Cloud Functions rule %s : %s", id, err)
+		return fmt.Errorf("Error retrieving IBM Cloud Function rule %s : %s", id, err)
 	}
 
 	d.Set("name", rule.Name)
@@ -136,8 +136,8 @@ func resourceIBMCloudFunctionsRuleRead(d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func resourceIBMCloudFunctionsRuleUpdate(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+func resourceIBMFunctionRuleUpdate(d *schema.ResourceData, meta interface{}) error {
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
@@ -168,22 +168,22 @@ func resourceIBMCloudFunctionsRuleUpdate(d *schema.ResourceData, meta interface{
 	}
 
 	if ischanged {
-		log.Println("[INFO] Update IBM Cloud Functions Rule")
+		log.Println("[INFO] Update IBM Cloud Function Rule")
 		result, _, err := ruleService.Insert(&payload, true)
 		if err != nil {
-			return fmt.Errorf("Error updating IBM Cloud Functions Rule: %s", err)
+			return fmt.Errorf("Error updating IBM Cloud Function Rule: %s", err)
 		}
 		_, _, err = ruleService.SetState(result.Name, "active")
 		if err != nil {
-			return fmt.Errorf("Error updating IBM Cloud Functions Rule: %s", err)
+			return fmt.Errorf("Error updating IBM Cloud Function Rule: %s", err)
 		}
 	}
 
-	return resourceIBMCloudFunctionsRuleRead(d, meta)
+	return resourceIBMFunctionRuleRead(d, meta)
 }
 
-func resourceIBMCloudFunctionsRuleDelete(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+func resourceIBMFunctionRuleDelete(d *schema.ResourceData, meta interface{}) error {
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
@@ -192,15 +192,15 @@ func resourceIBMCloudFunctionsRuleDelete(d *schema.ResourceData, meta interface{
 
 	_, err = ruleService.Delete(id)
 	if err != nil {
-		return fmt.Errorf("Error deleting IBM Cloud Functions Rule: %s", err)
+		return fmt.Errorf("Error deleting IBM Cloud Function Rule: %s", err)
 	}
 
 	d.SetId("")
 	return nil
 }
 
-func resourceIBMCloudFunctionsRuleExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+func resourceIBMFunctionRuleExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return false, err
 	}
@@ -212,7 +212,7 @@ func resourceIBMCloudFunctionsRuleExists(d *schema.ResourceData, meta interface{
 		if resp.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("Error communicating with IBM Cloud Functions Client : %s", err)
+		return false, fmt.Errorf("Error communicating with IBM Cloud Function Client : %s", err)
 	}
 	return rule.Name == id, nil
 }

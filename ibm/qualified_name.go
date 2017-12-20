@@ -151,7 +151,7 @@ func addLeadSlash(name string) string {
 //  getNamespaceFromProp() returns a namespace from Properties if one exists,
 //      else defaults to returning "_"
 func getNamespaceFromProp() string {
-	namespace := os.Getenv("CLOUD_FUNCTIONS_NAMESPACE")
+	namespace := os.Getenv("FUNCTION_NAMESPACE")
 	return namespace
 }
 
