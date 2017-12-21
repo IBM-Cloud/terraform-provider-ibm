@@ -909,8 +909,9 @@ type dataRetriever interface {
 type gatewayMember map[string]interface{}
 
 func (m gatewayMember) Get(k string) interface{} {
-	if k == "restricted_network" {
+	if k == "restricted_network" || k == "hourly_billing" {
 		//findNetworkItemPriceId is used from bare metal and that looks for this key
+		//deleteHardware looks for hourly_billing
 		//We won't need this when we support those speed on the gateway
 		return false
 	}
