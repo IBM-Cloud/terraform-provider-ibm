@@ -59,7 +59,7 @@ func resourceIBMNetworkGatewayVlanAttachmentCreate(d *schema.ResourceData, meta 
 	if err != nil {
 		return err
 	}
-	d.SetId(fmt.Sprintf("%d", resp.Id))
+	d.SetId(fmt.Sprintf("%d", *resp.Id))
 	_, err = waitForNetworkGatewayActiveState(gatewayID, meta)
 	if err != nil {
 		return err

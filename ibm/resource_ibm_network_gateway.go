@@ -403,7 +403,7 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf(
 			"Encountered problem trying to verify the order: %s", err)
 	}
-	_, err = services.GetProductOrderService(sess).PlaceOrder(&productOrder, sl.Bool(false))
+	_, err = services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(&productOrder, sl.Bool(false))
 	if err != nil {
 		return fmt.Errorf(
 			"Encountered problem trying to place the order: %s", err)
@@ -536,7 +536,7 @@ func addGatewayMember(gwID int, member gatewayMember, meta interface{}) error {
 		return fmt.Errorf(
 			"Encountered problem trying to verify the order: %s", err)
 	}
-	_, err = services.GetProductOrderService(sess).PlaceOrder(&haOrder, sl.Bool(false))
+	_, err = services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(&haOrder, sl.Bool(false))
 	if err != nil {
 		return fmt.Errorf(
 			"Encountered problem trying to place the order: %s", err)
