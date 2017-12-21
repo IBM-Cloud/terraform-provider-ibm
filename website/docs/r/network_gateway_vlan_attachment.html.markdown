@@ -1,7 +1,7 @@
 ---
 layout: "ibm"
 page_title: "IBM: network_gateway_vlan_attachment"
-sidebar_current: "docs-ibm-resource-network-gateway-vlan-attachment
+sidebar_current: "docs-ibm-resource-network-gateway-vlan-attachment"
 description: |-
   Manages attach and detach of VLAN to Gateway.
 ---

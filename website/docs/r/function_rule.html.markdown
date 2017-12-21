@@ -71,6 +71,7 @@ The following attributes are exported:
 `ibm_function_rule` can be imported using the ID.
 
 Example: 
+
 ```
 $ terraform import ibm_function_rule.sampleRule alarmrule
 

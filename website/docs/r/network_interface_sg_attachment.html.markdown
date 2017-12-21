@@ -1,7 +1,7 @@
 ---
 layout: "ibm"
 page_title: "IBM: ibm_network_interface_sg_attachment"
-sidebar_current: "docs-ibm-resource-network-interface-sg-attachment"
+sidebar_current:      "docs-ibm-resource-network-interface-sg-attachment"
 description: |-
   Manages binding between a security group and a network interface
 ---

@@ -192,7 +192,7 @@ resource "ibm_network_gateway" "standalone" {
 	       name   = "%s"
 	       members {
 				hostname               = "%s"
-				domain                 = "terraformuat1.ibm.com"
+				domain                 = "terraformuat.ibm.com"
 				datacenter             = "ams01"
 				network_speed          = 100
 				private_network_only   = false
