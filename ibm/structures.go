@@ -566,3 +566,80 @@ func flattenFeed(feedName string) []interface{} {
 	att["parameters"] = "[]"
 	return []interface{}{att}
 }
+
+func flattenGatewayVlans(list []datatypes.Network_Gateway_Vlan) []map[string]interface{} {
+	vlans := make([]map[string]interface{}, len(list))
+	for i, ele := range list {
+		vlan := make(map[string]interface{})
+		vlan["bypass"] = *ele.BypassFlag
+		vlan["network_vlan_id"] = *ele.NetworkVlanId
+		vlan["vlan_id"] = *ele.Id
+		vlans[i] = vlan
+	}
+	return vlans
+}
+
+func flattenGatewayMembers(d *schema.ResourceData, list []datatypes.Network_Gateway_Member) []map[string]interface{} {
+	members := make([]map[string]interface{}, len(list))
+
+	for i, ele := range list {
+		hardware := *ele.Hardware
+		member := make(map[string]interface{})
+		member["member_id"] = *ele.HardwareId
+		member["hostname"] = *hardware.Hostname
+		member["domain"] = *hardware.Domain
+		if hardware.Notes != nil {
+			member["notes"] = *hardware.Notes
+		}
+		if hardware.Datacenter != nil {
+			member["datacenter"] = *hardware.Datacenter.Name
+		}
+		if hardware.PrimaryNetworkComponent.MaxSpeed != nil {
+			member["network_speed"] = *hardware.PrimaryNetworkComponent.MaxSpeed
+		}
+		member["redundant_network"] = false
+		member["unbonded_network"] = false
+		backendNetworkComponent := ele.Hardware.BackendNetworkComponents
+
+		if len(backendNetworkComponent) > 2 && ele.Hardware.PrimaryBackendNetworkComponent != nil {
+			if *hardware.PrimaryBackendNetworkComponent.RedundancyEnabledFlag {
+				member["redundant_network"] = true
+			} else {
+				member["unbonded_network"] = true
+			}
+		}
+		tagReferences := ele.Hardware.TagReferences
+		tagReferencesLen := len(tagReferences)
+		if tagReferencesLen > 0 {
+			tags := make([]interface{}, 0, tagReferencesLen)
+			for _, tagRef := range tagReferences {
+				tags = append(tags, *tagRef.Tag.Name)
+			}
+			member["tags"] = schema.NewSet(schema.HashString, tags)
+		}
+
+		member["memory"] = *hardware.MemoryCapacity
+		member["public_vlan_id"] = *hardware.NetworkVlans[1].Id
+		member["private_vlan_id"] = *hardware.NetworkVlans[0].Id
+
+		if hardware.PrimaryIpAddress != nil {
+			member["public_ipv4_address"] = *hardware.PrimaryIpAddress
+		}
+		if hardware.PrimaryBackendIpAddress != nil {
+			member["private_ipv4_address"] = *hardware.PrimaryBackendIpAddress
+		}
+		member["ipv6_enabled"] = false
+		if ele.Hardware.PrimaryNetworkComponent.PrimaryVersion6IpAddressRecord != nil {
+			member["ipv6_enabled"] = true
+			member["ipv6_address"] = *hardware.PrimaryNetworkComponent.PrimaryVersion6IpAddressRecord.IpAddress
+		}
+
+		member["private_network_only"] = *hardware.PrivateNetworkOnlyFlag
+		userData := hardware.UserData
+		if len(userData) > 0 && userData[0].Value != nil {
+			d.Set("user_metadata", *userData[0].Value)
+		}
+		members[i] = member
+	}
+	return members
+}

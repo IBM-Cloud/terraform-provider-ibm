@@ -267,7 +267,10 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 				ForceNew: true,
-				Computed: true,
+				//Sometime memory returns back as different. Since this resource is immutable at this point
+				//and memory can't be really updated , suppress the change until we figure out how to handle it
+				DiffSuppressFunc: applyOnce,
+				Computed:         true,
 			},
 			// Monthly only
 			"storage_groups": {
@@ -748,6 +751,10 @@ func resourceIBMComputeBareMetalUpdate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceIBMComputeBareMetalDelete(d *schema.ResourceData, meta interface{}) error {
+	return deleteHardware(d, meta)
+}
+
+func deleteHardware(d dataRetriever, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetHardwareService(sess)
 	id, err := strconv.Atoi(d.Id())
@@ -878,7 +885,7 @@ func waitForNoBareMetalActiveTransactions(id int, meta interface{}) (interface{}
 	return stateConf.WaitForState()
 }
 
-func setHardwareTags(id int, d *schema.ResourceData, meta interface{}) error {
+func setHardwareTags(id int, d dataRetriever, meta interface{}) error {
 	service := services.GetHardwareService(meta.(ClientSession).SoftLayerSession())
 
 	tags := getTags(d)
@@ -890,7 +897,7 @@ func setHardwareTags(id int, d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func setHardwareNotes(id int, d *schema.ResourceData, meta interface{}) error {
+func setHardwareNotes(id int, d dataRetriever, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetHardwareServerService(sess)
 
@@ -1236,7 +1243,7 @@ func setCommonBareMetalOrderOptions(d *schema.ResourceData, meta interface{}, or
 }
 
 // Find price item using network options
-func findNetworkItemPriceId(items []datatypes.Product_Item, d *schema.ResourceData) (datatypes.Product_Item_Price, error) {
+func findNetworkItemPriceId(items []datatypes.Product_Item, d dataRetriever) (datatypes.Product_Item_Price, error) {
 	networkSpeed := d.Get("network_speed").(int)
 	redundantNetwork := d.Get("redundant_network").(bool)
 	unbondedNetwork := d.Get("unbonded_network").(bool)
@@ -1293,7 +1300,7 @@ func findNetworkItemPriceId(items []datatypes.Product_Item, d *schema.ResourceDa
 }
 
 // Find memory price item using memory size.
-func findMemoryItemPriceId(items []datatypes.Product_Item, d *schema.ResourceData) (datatypes.Product_Item_Price, error) {
+func findMemoryItemPriceId(items []datatypes.Product_Item, d dataRetriever) (datatypes.Product_Item_Price, error) {
 	memory := d.Get("memory").(int)
 	memoryStr := "RAM_" + strconv.Itoa(memory) + "_GB"
 	availableMemories := ""
@@ -1349,7 +1356,7 @@ func getPackageByModel(sess *session.Session, model string) (datatypes.Product_P
 	return datatypes.Product_Package{}, fmt.Errorf("No custom bare metal package key name for %s. Available package key name(s) is(are) %s", model, availableModels)
 }
 
-func getStorageGroupsFromResourceData(d *schema.ResourceData) []datatypes.Container_Product_Order_Storage_Group {
+func getStorageGroupsFromResourceData(d dataRetriever) []datatypes.Container_Product_Order_Storage_Group {
 	storageGroupLists := d.Get("storage_groups").([]interface{})
 	storageGroups := make([]datatypes.Container_Product_Order_Storage_Group, 0)
 
