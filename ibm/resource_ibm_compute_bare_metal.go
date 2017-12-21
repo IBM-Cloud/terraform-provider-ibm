@@ -229,18 +229,20 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 
 			// Monthly/Hourly  only
 			"redundant_network": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
-				ForceNew: true,
+				Type:             schema.TypeBool,
+				Optional:         true,
+				Default:          false,
+				ForceNew:         true,
+				DiffSuppressFunc: applyOnce,
 			},
 
 			// Monthly/Hourly only
 			"unbonded_network": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
-				ForceNew: true,
+				Type:             schema.TypeBool,
+				Optional:         true,
+				Default:          false,
+				ForceNew:         true,
+				DiffSuppressFunc: applyOnce,
 			},
 
 			// Monthly only. For controlling datacenter restricted port speed
