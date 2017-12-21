@@ -105,7 +105,7 @@ func testAccCheckIBMNetworkGatewayVlanAttachment_basic(gatewayName, hostName1, h
 				tags                 = ["gateway tags 1", "terraform test tags 1"]
 
 			  },{
-			    hostname             = "%s-1"
+			    hostname             = "%s"
 			    domain               = "terraformuat.ibm.com"
 				datacenter           = "ams01"
 			    public_vlan_id       = 2225905
@@ -157,7 +157,7 @@ func testAccCheckIBMNetworkGatewayVlanAttachment_update(gatewayName, hostName1, 
 			tags                 = ["gateway tags 1", "terraform test tags 1"]
 
 		  },{
-			hostname             = "%s-1"
+			hostname             = "%s"
 			domain               = "terraformuat.ibm.com"
 			datacenter           = "ams01"
 			public_vlan_id       = 2225905
