@@ -17,7 +17,7 @@ Getting started documentation can be found [here](https://console.bluemix.net/do
 
 ## Example Usage
 
-```
+```hcl
 resource "ibm_network_gateway" "gateway" {
   name = "my-gateway"
 
@@ -55,32 +55,31 @@ The following arguments are supported:
 Nested `members` blocks have the following structure:
   * `hostname` - (Optional, string) Hostname of the member.
   * `domain` - (Required, string) The domain of the member
-  * `notes` - (Optional, integer) Descriptive text of up to 1000 characters about the member.
+  * `notes` - (Optional, string) Descriptive text of up to 1000 characters about the member.
   * `datacenter` - (Required, string) The datacenter in which you want to provision the member.
   * `network_speed` - (Optional, interger) The connection speed (in Mbps) for the member network components. The default value is `100`.
   * `tcp_monitoring` - (Optional, boolean) Whether to enable tcp monitoring for the member. Default is `false`.
-  * `process_key_name` - (Optional, string) The process key name for the member. Default is 'INTEL_SINGLE_XEON_1270_3_40_2'. Refer to the same attribute on the `ibm_compute_bare_metal` to know more about this field.
-  * `os_key_name` - (Optional, string) The os key name for member. The default is 'OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT'. Refer to the same attribute on the `ibm_compute_bare_metal` to know more about this field.
-  * `redundant_network` - (Optional, boolean) Whether to enable redundant network for the member. The default value is `false`.
-  * `unbonded_network` - (Optional, boolean) Whether to enable unbounded network for the member. The default value is `false`.
+  * `process_key_name` - (Optional, string) The process key name for the member. Default is `INTEL_SINGLE_XEON_1270_3_40_2`. Refer to the same attribute on the `ibm_compute_bare_metal` to know more about this field.
+  * `os_key_name` - (Optional, string) The os key name for member. The default is `OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT`. Refer to the same attribute on the `ibm_compute_bare_metal` to know more about this field.
+  * `redundant_network` - (Optional, boolean) When the value is `true`, two physical network interfaces are provided with a bonding configuration. The default value is `false`.
+  * `unbonded_network` - (Optional, boolean) When the value is `true`, two physical network interfaces are provided without a bonding configuration. The default value is `false`.
   * `tags` - (Optional, set) Tags associated with the VM instance. Permitted characters include: A-Z, 0-9, whitespace, _ (underscore), - (hyphen), . (period), and : (colon). All other characters are removed.
   * `public_bandwidth` - (Optional, integer) Allowed public network traffic(GB) per month. Default value is `20000`.
   * `memory` - (Required, integer) The amount of memory, expressed in megabytes, that you want to allocate.
   * `storage_groups` - (Optional, list) A nested block describing the strorage group for the member of network gateway. Nested `storage_groups` blocks have the following structure:
-    * `array_type_id` - (Required, integer) The ID of the array type.
-    * `hard_drives` - (Required, list) The list og hard drive associated with gateway member.
-    * `array_size` - (Optional, integer) The size of the array.
-    * `partition_template_id` - (Optional, integer) The partition template id for the member.
+      * `array_type_id` - (Required, integer) The ID of the array type.
+      * `hard_drives` - (Required, list) The list og hard drive associated with gateway member.
+      * `array_size` - (Optional, integer) The size of the array.
+      * `partition_template_id` - (Optional, integer) The partition template id for the member.
   * `ssh_key_ids` - (Optional, list) The SSH key IDs to install on the member.
-  * `post_install_script_uri` - (Optional, string) The URI of the script to be downloaded and executed on member.The Default value is 'nil'.
+  * `post_install_script_uri` - (Optional, string) The URI of the script to be downloaded and executed on member.The Default value is `nil`.
   * `user_metadata` - (Optional, string) Arbitrary data to be made available to the member.
   * `disk_key_names` - (Optional, list) Provide the disk key name. Refer to the same attribute on the `ibm_compute_bare_metal` to know more about this field.
   * `public_vlan_id` - (Optional, integer) ID of the public vlan.
   * `private_vlan_id` - (Optional, integer) ID of the private vlan.
-
-  **NOTE** : If there are two members in this gateway then both should have same value for `public_vlan_id` and `private_vlan_id`.
+    **NOTE** : If there are two members in this gateway then both should have same value for `public_vlan_id` and `private_vlan_id`.
   * `ipv6_enabled` - (Optional, boolean) Whether to enable ipv6 . Default is `true`.
-  * `private_network_only` - (Optional, integer) Whether to enable private network only.The default vale is 'false'.
+  * `private_network_only` - (Optional, integer) Whether to enable private network only.The default vale is `false`.
 
 ## Attribute Reference
 

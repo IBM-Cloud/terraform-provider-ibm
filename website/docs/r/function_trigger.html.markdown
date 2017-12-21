@@ -96,7 +96,8 @@ The following attributes are exported:
 `ibm_function_trigger` can be imported using the ID.
 
 Example:
+
 ```
-$ terraform import ibm_function_trigger.alaramtrigger alaram
+$ terraform import ibm_function_trigger.trigger alaram
 
 ```
