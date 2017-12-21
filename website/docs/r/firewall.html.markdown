@@ -10,7 +10,7 @@ description: |-
 
 Provides a firewall in IBM. One firewall protects one public VLAN and provides in-bound network packet filtering.
 
-You can order or find firewalls in the SoftLayer Customer Portal by navigating to **Network > IP Management > VLANs** and clicking the **Gateway/Firewall** column.
+You can order or find firewalls in the IBM Cloud infrastructure customer portal by navigating to **Network > IP Management > VLANs** and clicking the **Gateway/Firewall** column.
 
 For more information about how to configure a firewall, see the [docs](https://knowledgelayer.softlayer.com/procedure/configure-hardware-firewall-dedicated).
 

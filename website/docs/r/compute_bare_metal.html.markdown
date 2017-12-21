@@ -139,7 +139,7 @@ Locate your package ID. See `package_key_name` attribute. Once you have the ID f
 * `ipv6_enabled` - (Optional, boolean) The primary public IPv6 address. The default value is `false`.
 * `ipv6_static_enabled` - (Optional, boolean) The public static IPv6 address block of `/64`. The default value is `false`.
 * `secondary_ip_count` - (Optional, integer) Specifies secondary public IPv4 addresses. Accepted values are `4` and `8`.
-* `image_template_id` - (Optional, integer) The image template ID you want to use to provision the computing instance. This is not the global identifier (UUID), but the image template group ID that should point to a valid global identifier. To retrieve the image template ID from the SoftLayer Customer Portal, navigate to **Devices > Manage > Images**, click the desired image, and note the ID number in the resulting URL.
+* `image_template_id` - (Optional, integer) The image template ID you want to use to provision the computing instance. This is not the global identifier (UUID), but the image template group ID that should point to a valid global identifier. To retrieve the image template ID from the IBM Cloud infrastructure customer portal, navigate to **Devices > Manage > Images**, click the desired image, and note the ID number in the resulting URL.
     **NOTE**: Conflicts with `os_reference_code`. If you don't know the ID(s) of your image templates, you can [reference them by name](../d/compute_image_template.html).
 
 ### Arguments for hourly bare metal servers
@@ -174,7 +174,7 @@ Locate your package ID. See `package_key_name` attribute. Once you have the ID f
 * `private_vlan_id` - (Optional, integer) The private VLAN to be used for the private network interface of the instance. You can find accepted values in the [VLAN docs](https://control.softlayer.com/network/vlans). Click the desired VLAN and note the ID in the resulting URL.
 * `public_subnet` - (Optional, string) The public subnet to be used for the public network interface of the instance. Accepted values are primary public networks. You can find accepted values in the [subnets docs](https://control.softlayer.com/network/subnets).
 * `private_subnet` - (Optional, string) The private subnet to be used for the private network interface of the instance. Accepted values are primary private networks. You can find accepted values in the [subnets docs](https://control.softlayer.com/network/subnets).
-* `quote_id` - (Optional, string) When you define `quote_id`, Terraform uses specifications in the quote to create a bare metal server. You can find the quote ID in the [SoftLayer Customer Portal](https://control.softlayer.com) by navigating to **Account > Sales > Quotes**.
+* `quote_id` - (Optional, string) When you define `quote_id`, Terraform uses specifications in the quote to create a bare metal server. You can find the quote ID in the [IBM Cloud infrastructure customer portal](https://control.softlayer.com) by navigating to **Account > Sales > Quotes**.
 
 ## Attribute Reference
 
