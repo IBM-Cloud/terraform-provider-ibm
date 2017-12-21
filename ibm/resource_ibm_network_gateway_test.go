@@ -233,7 +233,6 @@ func testAccCheckIBMNetworkGatewaySameHardwareConfig(gatewayName, hostname1, hos
 			  disk_key_names       = ["HARD_DRIVE_2_00TB_SATA_II"]
 			  public_bandwidth     = 20000
 			  memory               = 8
-			  unbonded_network     = true
 			  tags                 = ["gateway tags 1", "terraform test tags 1"]
 			  notes                = "gateway notes 1"
 			  ipv6_enabled         = true
@@ -252,7 +251,6 @@ func testAccCheckIBMNetworkGatewaySameHardwareConfig(gatewayName, hostname1, hos
 			  disk_key_names       = ["HARD_DRIVE_2_00TB_SATA_II"]
 			  public_bandwidth     = 20000
 			  memory               = 8
-			  unbonded_network     = true
 			  tags                 = ["gateway tags 2", "terraform test tags 2"]
 			  notes                = "gateway notes 2"
 			  ipv6_enabled         = true
