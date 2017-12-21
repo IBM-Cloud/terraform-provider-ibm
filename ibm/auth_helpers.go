@@ -32,14 +32,14 @@ type AuthPayload struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
-func CloudFunctionsClient(c *bluemix.Config, namespace string) (*whisk.Client, error) {
+func FunctionClient(c *bluemix.Config, namespace string) (*whisk.Client, error) {
 	err := validateNamespace(namespace)
 	if err != nil {
 		return nil, err
 	}
 
 	if c.UAAAccessToken == "" && c.UAARefreshToken == "" {
-		return nil, fmt.Errorf("Couldn't retrieve auth key for IBM Cloud Functions")
+		return nil, fmt.Errorf("Couldn't retrieve auth key for IBM Cloud Function")
 	}
 	baseEndpoint := fmt.Sprintf("https://openwhisk.ng.bluemix.net")
 	if c.Region != "us-south" {
@@ -74,12 +74,12 @@ func CloudFunctionsClient(c *bluemix.Config, namespace string) (*whisk.Client, e
 			if os.Getenv("TF_LOG") != "" {
 				whisk.SetDebug(true)
 			}
-			cloudFunctionsClient, err := whisk.NewClient(http.DefaultClient, &whisk.Config{
+			functionsClient, err := whisk.NewClient(http.DefaultClient, &whisk.Config{
 				Namespace: namespace,
 				AuthToken: fmt.Sprintf("%s:%s", n.UUID, n.Key),
 				Host:      u.Host,
 			})
-			return cloudFunctionsClient, err
+			return functionsClient, err
 		}
 	}
 	return nil, fmt.Errorf("Couldn't find Whisk Auth Key for namespace %s. Available namespaces are %s", namespace, allNamespaces)

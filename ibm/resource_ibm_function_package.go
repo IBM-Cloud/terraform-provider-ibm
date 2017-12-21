@@ -11,13 +11,13 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func resourceIBMCloudFunctionsPackage() *schema.Resource {
+func resourceIBMFunctionPackage() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMCloudFunctionsPackageCreate,
-		Read:     resourceIBMCloudFunctionsPackageRead,
-		Update:   resourceIBMCloudFunctionsPackageUpdate,
-		Delete:   resourceIBMCloudFunctionsPackageDelete,
-		Exists:   resourceIBMCloudFunctionsPackageExists,
+		Create:   resourceIBMFunctionPackageCreate,
+		Read:     resourceIBMFunctionPackageRead,
+		Update:   resourceIBMFunctionPackageUpdate,
+		Delete:   resourceIBMFunctionPackageDelete,
+		Exists:   resourceIBMFunctionPackageExists,
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -26,7 +26,7 @@ func resourceIBMCloudFunctionsPackage() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				Description:  "Name of package.",
-				ValidateFunc: validateCloudFunctionsName,
+				ValidateFunc: validateFunctionName,
 			},
 			"publish": {
 				Type:        schema.TypeBool,
@@ -84,7 +84,7 @@ func resourceIBMCloudFunctionsPackage() *schema.Resource {
 						return false
 					}
 					if strings.HasPrefix(n, "/_") {
-						temp := strings.Replace(n, "/_", "/"+os.Getenv("CLOUD_FUNCTIONS_NAMESPACE"), 1)
+						temp := strings.Replace(n, "/_", "/"+os.Getenv("FUNCTION_NAMESPACE"), 1)
 						if strings.Compare(temp, o) == 0 {
 							return true
 						}
@@ -96,8 +96,8 @@ func resourceIBMCloudFunctionsPackage() *schema.Resource {
 	}
 }
 
-func resourceIBMCloudFunctionsPackageCreate(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+func resourceIBMFunctionPackageCreate(d *schema.ResourceData, meta interface{}) error {
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
@@ -144,19 +144,19 @@ func resourceIBMCloudFunctionsPackageCreate(d *schema.ResourceData, meta interfa
 		}
 		payload.Binding = &BindingPayload
 	}
-	log.Println("[INFO] Creating IBM CLoud Functions package")
+	log.Println("[INFO] Creating IBM CLoud Function package")
 	result, _, err := packageService.Insert(&payload, false)
 	if err != nil {
-		return fmt.Errorf("Error creating IBM CLoud Functions package: %s", err)
+		return fmt.Errorf("Error creating IBM CLoud Function package: %s", err)
 	}
 
 	d.SetId(result.Name)
 
-	return resourceIBMCloudFunctionsPackageRead(d, meta)
+	return resourceIBMFunctionPackageRead(d, meta)
 }
 
-func resourceIBMCloudFunctionsPackageRead(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+func resourceIBMFunctionPackageRead(d *schema.ResourceData, meta interface{}) error {
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
@@ -165,7 +165,7 @@ func resourceIBMCloudFunctionsPackageRead(d *schema.ResourceData, meta interface
 
 	pkg, _, err := packageService.Get(id)
 	if err != nil {
-		return fmt.Errorf("Error retrieving IBM Cloud Functions package %s : %s", id, err)
+		return fmt.Errorf("Error retrieving IBM Cloud Function package %s : %s", id, err)
 	}
 
 	d.SetId(pkg.Name)
@@ -198,7 +198,7 @@ func resourceIBMCloudFunctionsPackageRead(d *schema.ResourceData, meta interface
 		bindedPkg, _, err := c.Packages.Get(pkg.Binding.Name)
 
 		if err != nil {
-			return fmt.Errorf("Error retrieving Binded IBM Cloud Functions package %s : %s", pkg.Binding.Name, err)
+			return fmt.Errorf("Error retrieving Binded IBM Cloud Function package %s : %s", pkg.Binding.Name, err)
 		}
 
 		userAnnotations, err := flattenAnnotations(filterInheritedAnnotations(bindedPkg.Annotations, pkg.Annotations))
@@ -216,8 +216,8 @@ func resourceIBMCloudFunctionsPackageRead(d *schema.ResourceData, meta interface
 	return nil
 }
 
-func resourceIBMCloudFunctionsPackageUpdate(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+func resourceIBMFunctionPackageUpdate(d *schema.ResourceData, meta interface{}) error {
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
@@ -259,18 +259,18 @@ func resourceIBMCloudFunctionsPackageUpdate(d *schema.ResourceData, meta interfa
 	}
 
 	if ischanged {
-		log.Println("[INFO] Update IBM Cloud Functions Package")
+		log.Println("[INFO] Update IBM Cloud Function Package")
 		_, _, err = packageService.Insert(&payload, true)
 		if err != nil {
-			return fmt.Errorf("Error updating IBM Cloud Functions Package: %s", err)
+			return fmt.Errorf("Error updating IBM Cloud Function Package: %s", err)
 		}
 	}
 
-	return resourceIBMCloudFunctionsPackageRead(d, meta)
+	return resourceIBMFunctionPackageRead(d, meta)
 }
 
-func resourceIBMCloudFunctionsPackageDelete(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+func resourceIBMFunctionPackageDelete(d *schema.ResourceData, meta interface{}) error {
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
@@ -279,15 +279,15 @@ func resourceIBMCloudFunctionsPackageDelete(d *schema.ResourceData, meta interfa
 
 	_, err = packageService.Delete(id)
 	if err != nil {
-		return fmt.Errorf("Error deleting IBM Cloud Functions Package: %s", err)
+		return fmt.Errorf("Error deleting IBM Cloud Function Package: %s", err)
 	}
 
 	d.SetId("")
 	return nil
 }
 
-func resourceIBMCloudFunctionsPackageExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+func resourceIBMFunctionPackageExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return false, err
 	}
@@ -299,7 +299,7 @@ func resourceIBMCloudFunctionsPackageExists(d *schema.ResourceData, meta interfa
 		if resp.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("Error communicating with IBM Cloud Functions Client : %s", err)
+		return false, fmt.Errorf("Error communicating with IBM Cloud Function Client : %s", err)
 	}
 	return pkg.Name == id, nil
 }

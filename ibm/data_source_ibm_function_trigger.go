@@ -6,10 +6,10 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func dataSourceIBMCloudFunctionsTrigger() *schema.Resource {
+func dataSourceIBMFunctionTrigger() *schema.Resource {
 	return &schema.Resource{
 
-		Read: dataSourceIBMCloudFunctionsTriggerRead,
+		Read: dataSourceIBMFunctionTriggerRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -42,8 +42,8 @@ func dataSourceIBMCloudFunctionsTrigger() *schema.Resource {
 	}
 }
 
-func dataSourceIBMCloudFunctionsTriggerRead(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+func dataSourceIBMFunctionTriggerRead(d *schema.ResourceData, meta interface{}) error {
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func dataSourceIBMCloudFunctionsTriggerRead(d *schema.ResourceData, meta interfa
 
 	trigger, _, err := triggerService.Get(name)
 	if err != nil {
-		return fmt.Errorf("Error retrieving IBM Cloud Functions Trigger %s : %s", name, err)
+		return fmt.Errorf("Error retrieving IBM Cloud Function Trigger %s : %s", name, err)
 	}
 
 	d.SetId(trigger.Name)

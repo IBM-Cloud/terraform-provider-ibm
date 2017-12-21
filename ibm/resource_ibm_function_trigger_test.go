@@ -12,89 +12,91 @@ import (
 	"github.com/IBM-Bluemix/bluemix-go/bmxerror"
 )
 
-func TestAccCloudFunctionsTrigger_Basic(t *testing.T) {
+func TestAccFunctionTrigger_Basic(t *testing.T) {
 	var conf whisk.Trigger
 	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckCloudFunctionsTriggerDestroy,
+		CheckDestroy: testAccCheckFunctionTriggerDestroy,
 		Steps: []resource.TestStep{
 
 			resource.TestStep{
-				Config: testAccCheckCloudFunctionsTriggerCreate(name),
+				Config: testAccCheckFunctionTriggerCreate(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckCloudFunctionsTriggerExists("ibm_cloud_functions_trigger.trigger", &conf),
-					resource.TestCheckResourceAttr("ibm_cloud_functions_trigger.trigger", "name", name),
-					resource.TestCheckResourceAttr("ibm_cloud_functions_trigger.trigger", "version", "0.0.1"),
-					resource.TestCheckResourceAttr("ibm_cloud_functions_trigger.trigger", "publish", "false"),
+					testAccCheckFunctionTriggerExists("ibm_function_trigger.trigger", &conf),
+					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "version", "0.0.1"),
+					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "publish", "false"),
 				),
 			},
 
 			resource.TestStep{
-				Config: testAccCheckCloudFunctionsTriggerUpdate(name),
+				Config: testAccCheckFunctionTriggerUpdate(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckCloudFunctionsTriggerExists("ibm_cloud_functions_trigger.trigger", &conf),
-					resource.TestCheckResourceAttr("ibm_cloud_functions_trigger.trigger", "name", name),
-					resource.TestCheckResourceAttr("ibm_cloud_functions_trigger.trigger", "version", "0.0.2"),
+					testAccCheckFunctionTriggerExists("ibm_function_trigger.trigger", &conf),
+					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "version", "0.0.2"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccCloudFunctionsTrigger_Feed_Basic(t *testing.T) {
+func TestAccFunctionTrigger_Feed_Basic(t *testing.T) {
 	var conf whisk.Trigger
 	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckCloudFunctionsTriggerDestroy,
+		CheckDestroy: testAccCheckFunctionTriggerDestroy,
 		Steps: []resource.TestStep{
 
 			resource.TestStep{
-				Config: testAccCheckCloudFunctionsTriggerFeedCreate(name),
+				Config: testAccCheckFunctionTriggerFeedCreate(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckCloudFunctionsTriggerExists("ibm_cloud_functions_trigger.feedtrigger", &conf),
-					resource.TestCheckResourceAttr("ibm_cloud_functions_trigger.feedtrigger", "name", name),
-					resource.TestCheckResourceAttr("ibm_cloud_functions_trigger.feedtrigger", "version", "0.0.1"),
-					resource.TestCheckResourceAttr("ibm_cloud_functions_trigger.feedtrigger", "publish", "false"),
+					testAccCheckFunctionTriggerExists("ibm_function_trigger.feedtrigger", &conf),
+					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "version", "0.0.1"),
+					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "publish", "false"),
+					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "feed.0.name", "/whisk.system/alarms/alarm"),
 				),
 			},
 
 			resource.TestStep{
-				Config: testAccCheckCloudFunctionsTriggerFeedUpdate(name),
+				Config: testAccCheckFunctionTriggerFeedUpdate(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckCloudFunctionsTriggerExists("ibm_cloud_functions_trigger.feedtrigger", &conf),
-					resource.TestCheckResourceAttr("ibm_cloud_functions_trigger.feedtrigger", "name", name),
-					resource.TestCheckResourceAttr("ibm_cloud_functions_trigger.feedtrigger", "version", "0.0.2"),
+					testAccCheckFunctionTriggerExists("ibm_function_trigger.feedtrigger", &conf),
+					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "version", "0.0.2"),
+					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "feed.0.name", "/whisk.system/alarms/alarm"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccCloudFunctionsTrigger_Import(t *testing.T) {
+func TestAccFunctionTrigger_Import(t *testing.T) {
 	var conf whisk.Trigger
 	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckCloudFunctionsTriggerDestroy,
+		CheckDestroy: testAccCheckFunctionTriggerDestroy,
 		Steps: []resource.TestStep{
 
 			resource.TestStep{
-				Config: testAccCheckCloudFunctionsTriggerImport(name),
+				Config: testAccCheckFunctionTriggerImport(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckCloudFunctionsTriggerExists("ibm_cloud_functions_trigger.import", &conf),
-					resource.TestCheckResourceAttr("ibm_cloud_functions_trigger.import", "name", name),
-					resource.TestCheckResourceAttr("ibm_cloud_functions_trigger.import", "version", "0.0.1"),
-					resource.TestCheckResourceAttr("ibm_cloud_functions_trigger.import", "publish", "false"),
+					testAccCheckFunctionTriggerExists("ibm_function_trigger.import", &conf),
+					resource.TestCheckResourceAttr("ibm_function_trigger.import", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_trigger.import", "version", "0.0.1"),
+					resource.TestCheckResourceAttr("ibm_function_trigger.import", "publish", "false"),
 				),
 			},
 
 			resource.TestStep{
-				ResourceName:      "ibm_cloud_functions_trigger.import",
+				ResourceName:      "ibm_function_trigger.import",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -102,7 +104,7 @@ func TestAccCloudFunctionsTrigger_Import(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudFunctionsTriggerExists(n string, obj *whisk.Trigger) resource.TestCheckFunc {
+func testAccCheckFunctionTriggerExists(n string, obj *whisk.Trigger) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -110,7 +112,7 @@ func testAccCheckCloudFunctionsTriggerExists(n string, obj *whisk.Trigger) resou
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		client, err := testAccProvider.Meta().(ClientSession).CloudFunctionsClient()
+		client, err := testAccProvider.Meta().(ClientSession).FunctionClient()
 		if err != nil {
 			return err
 		}
@@ -126,14 +128,14 @@ func testAccCheckCloudFunctionsTriggerExists(n string, obj *whisk.Trigger) resou
 	}
 }
 
-func testAccCheckCloudFunctionsTriggerDestroy(s *terraform.State) error {
-	client, err := testAccProvider.Meta().(ClientSession).CloudFunctionsClient()
+func testAccCheckFunctionTriggerDestroy(s *terraform.State) error {
+	client, err := testAccProvider.Meta().(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_cloud_functions_trigger" {
+		if rs.Type != "ibm_function_trigger" {
 			continue
 		}
 
@@ -142,25 +144,25 @@ func testAccCheckCloudFunctionsTriggerDestroy(s *terraform.State) error {
 
 		if err != nil {
 			if apierr, ok := err.(bmxerror.RequestFailure); ok && apierr.StatusCode() != 404 {
-				return fmt.Errorf("Error waiting for IBM Cloud Functions Trigger (%s) to be destroyed: %s", rs.Primary.ID, err)
+				return fmt.Errorf("Error waiting for IBM Cloud Function Trigger (%s) to be destroyed: %s", rs.Primary.ID, err)
 			}
 		}
 	}
 	return nil
 }
 
-func testAccCheckCloudFunctionsTriggerCreate(name string) string {
+func testAccCheckFunctionTriggerCreate(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_cloud_functions_trigger" "trigger" {
+		resource "ibm_function_trigger" "trigger" {
 			name = "%s"		  
 			}
 `, name)
 
 }
 
-func testAccCheckCloudFunctionsTriggerUpdate(name string) string {
+func testAccCheckFunctionTriggerUpdate(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_cloud_functions_trigger" "trigger" {
+		resource "ibm_function_trigger" "trigger" {
 			name = "%s"		  
 			user_defined_parameters = <<EOF
 			[
@@ -183,9 +185,9 @@ func testAccCheckCloudFunctionsTriggerUpdate(name string) string {
 
 }
 
-func testAccCheckCloudFunctionsTriggerFeedCreate(name string) string {
+func testAccCheckFunctionTriggerFeedCreate(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_cloud_functions_trigger" "feedtrigger" {
+		resource "ibm_function_trigger" "feedtrigger" {
 			name = "%s"
 			feed = [
 				{
@@ -215,9 +217,9 @@ func testAccCheckCloudFunctionsTriggerFeedCreate(name string) string {
 
 }
 
-func testAccCheckCloudFunctionsTriggerFeedUpdate(name string) string {
+func testAccCheckFunctionTriggerFeedUpdate(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_cloud_functions_trigger" "feedtrigger" {
+		resource "ibm_function_trigger" "feedtrigger" {
 			name = "%s"	
 			feed = [
     {
@@ -256,9 +258,9 @@ func testAccCheckCloudFunctionsTriggerFeedUpdate(name string) string {
 
 }
 
-func testAccCheckCloudFunctionsTriggerImport(name string) string {
+func testAccCheckFunctionTriggerImport(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_cloud_functions_trigger" "import" {
+		resource "ibm_function_trigger" "import" {
 			name = "%s"	
 			user_defined_parameters = <<EOF
 			[

@@ -23,7 +23,7 @@ provider "ibm" {
   softlayer_api_key  = "${var.ibm_sl_api_key}"
 }
 
-# Create an SSH key. You can find the SSH key surfaces in the SoftLayer console under Devices > Manage > SSH Keys
+# Create an IBM Cloud infrastructure SSH key. You can find the SSH key surfaces in the infrastructure console under Devices > Manage > SSH Keys
 resource "ibm_compute_ssh_key" "test_key_1" {
   label      = "test_key_1"
   public_key = "${var.ssh_public_key}"
@@ -41,7 +41,7 @@ resource "ibm_compute_vm_instance" "my_server_2" {
   memory            = 1024
 }
 
-# Reference details of the IBM Cloud Space
+# Reference details of the IBM Cloud space
 data "ibm_space" "space" {
   space = "${var.space}"
   org   = "${var.org}"
@@ -56,8 +56,8 @@ resource "ibm_service_instance" "service" {
   tags       = ["cluster-service", "cluster-bind"]
 }
 
-# Create an cloud functions Action
-resource "ibm_cloud_functions_action" "nodehello" {
+# Create a Cloud Functions action
+resource "ibm_function_action" "nodehello" {
   name = "action-name"
   exec = {
     kind = "nodejs:6"
@@ -92,7 +92,7 @@ provider "ibm" {
 
 ### Environment variables
 
-You can provide your credentials by exporting the `BM_API_KEY`, `SL_USERNAME`, and `SL_API_KEY` environment variables, representing your IBM Cloud API key, SoftLayer user name, and SoftLayer API key, respectively.  
+You can provide your credentials by exporting the `BM_API_KEY`, `SL_USERNAME`, and `SL_API_KEY` environment variables, representing your IBM Cloud platform API key, IBM Cloud infrastructure (SoftLayer) user name, and IBM Cloud infrastructure API key, respectively.  
 
 ```
 provider "ibm" {}
@@ -111,18 +111,18 @@ $ terraform plan
 
 The following arguments are supported in the `provider` block:
 
-* `bluemix_api_key` - (optional) The IBM Cloud API key. You must either add it as a credential in the provider block or source it from the `BM_API_KEY` (higher precedence) or `BLUEMIX_API_KEY` environment variable. The key is required to provision Cloud Foundry or IBM Container Service resources, such as any resource that begins with `ibm` or `ibm_container`.
+* `bluemix_api_key` - (optional) The IBM Cloud platform API key. You must either add it as a credential in the provider block or source it from the `BM_API_KEY` (higher precedence) or `BLUEMIX_API_KEY` environment variable. The key is required to provision Cloud Foundry or IBM Cloud Container Service resources, such as any resource that begins with `ibm` or `ibm_container`.
 
 * `bluemix_timeout` - (optional) The timeout, expressed in seconds, for interacting with IBM Cloud APIs. You can also source the timeout from the `BM_TIMEOUT` (higher precedence) or `BLUEMIX_TIMEOUT` environment variable. The default value is `60`.
 
-* `softlayer_username` - (optional) The SoftLayer user name. You must either add it as a credential in the provider block or source it from the `SL_USERNAME` (higher precedence) or `SOFTLAYER_USERNAME` environment variable.
+* `softlayer_username` - (optional) The IBM Cloud infrastructure (SoftLayer) user name. You must either add it as a credential in the provider block or source it from the `SL_USERNAME` (higher precedence) or `SOFTLAYER_USERNAME` environment variable.
 
-* `softlayer_api_key` - (optional) The SoftLayer API key. You must either add it as a credential in the provider block or source it from the `SL_API_KEY` (higher precedence) or `SOFTLAYER_API_KEY` environment variable. The key is required to provision SoftLayer resources, such as any resource that begins with `ibm_compute`.
+* `softlayer_api_key` - (optional) The IBM Cloud infrastructure API key. You must either add it as a credential in the provider block or source it from the `SL_API_KEY` (higher precedence) or `SOFTLAYER_API_KEY` environment variable. The key is required to provision infrastructure resources, such as any resource that begins with `ibm_compute`.
 
-* `softlayer_timeout` - (optional) The timeout, expressed in seconds, for the SoftLayer API key. You can also source the timeout from the `SL_TIMEOUT` (higher precedence) or `SOFTLAYER_TIMEOUT` environment variable. The default value is `60`.
+* `softlayer_timeout` - (optional) The timeout, expressed in seconds, for the IBM Cloud infrastructure API key. You can also source the timeout from the `SL_TIMEOUT` (higher precedence) or `SOFTLAYER_TIMEOUT` environment variable. The default value is `60`.
 
 * `region` - (optional) The IBM Cloud region. You can also source it from the `BM_REGION` (higher precedence) or `BLUEMIX_REGION` environment variable. The default value is `us-south`.
 
-* `max_retries` - (Optional) This is the maximum number of times a Softlayer API call is retried, in the case where requests are getting network related timeout and rate limit exceeded error code. You can also source it from the `MAX_RETRIES` environment variable. The default value is `5`.
+* `max_retries` - (Optional) This is the maximum number of times an IBM Cloud infrastructure API call is retried, in the case where requests are getting network related timeout and rate limit exceeded error code. You can also source it from the `MAX_RETRIES` environment variable. The default value is `5`.
 
-* `cloud_functions_namespace` - (Optional) Your Cloud Functions namespace is composed from your IBM Cloud org and space like <org>_<space>. This attribute is required only for creating Cloud Functions resource. It must be provided when you are creating such resources in IBM Cloud. You can also source it from CLOUD_FUNCTIONS_NAMESPACE environment variable.
+* `function_namespace` - (Optional) Your Cloud Functions namespace is composed from your IBM Cloud org and space like <org>_<space>. This attribute is required only when creating a Cloud Functions resource. It must be provided when you are creating such resources in IBM Cloud. You can also source it from the FUNCTION_NAMESPACE environment variable.

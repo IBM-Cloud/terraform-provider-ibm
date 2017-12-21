@@ -6,10 +6,10 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func dataSourceIBMCloudFunctionsRule() *schema.Resource {
+func dataSourceIBMFunctionRule() *schema.Resource {
 	return &schema.Resource{
 
-		Read: dataSourceIBMCloudFunctionsRuleRead,
+		Read: dataSourceIBMFunctionRuleRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -46,8 +46,8 @@ func dataSourceIBMCloudFunctionsRule() *schema.Resource {
 	}
 }
 
-func dataSourceIBMCloudFunctionsRuleRead(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).CloudFunctionsClient()
+func dataSourceIBMFunctionRuleRead(d *schema.ResourceData, meta interface{}) error {
+	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
@@ -56,7 +56,7 @@ func dataSourceIBMCloudFunctionsRuleRead(d *schema.ResourceData, meta interface{
 
 	rule, _, err := ruleService.Get(name)
 	if err != nil {
-		return fmt.Errorf("Error retrieving IBM Cloud Functions Rule %s : %s", name, err)
+		return fmt.Errorf("Error retrieving IBM Cloud Function Rule %s : %s", name, err)
 	}
 
 	d.SetId(rule.Name)

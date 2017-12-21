@@ -1473,7 +1473,7 @@ func resourceIBMComputeVmInstanceExists(d *schema.ResourceData, meta interface{}
 	return result.Id != nil && *result.Id == guestID, nil
 }
 
-func getTags(d *schema.ResourceData) string {
+func getTags(d dataRetriever) string {
 	tagSet := d.Get("tags").(*schema.Set)
 
 	if tagSet.Len() == 0 {
