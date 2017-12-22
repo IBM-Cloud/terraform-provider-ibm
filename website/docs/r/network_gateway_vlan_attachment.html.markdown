@@ -8,12 +8,11 @@ description: |-
 
 # ibm\_network_gateway_vlan_attachment
 
-Provide a resource to associate VLAN with a network gateway. The VLANS could later be disassociated or updated to be bypassed or
-routed.
+Provide a resource to associate a VLAN with a network gateway. The VLANs can be disassociated or updated later to be bypassed or routed.
 
-For additional details, see the [IBM Cloud Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/services/SoftLayer_Network_Gateway_Vlan).
+For additional details, see the [IBM Cloud infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/services/SoftLayer_Network_Gateway_Vlan).
 
-Getting started documentation can be found [here](https://console.bluemix.net/docs/infrastructure/virtual-router-appliance/getting-started.html#getting-started)
+For more information about getting started, see the [IBM Virtual Router Appliance docs](https://console.bluemix.net/docs/infrastructure/virtual-router-appliance/getting-started.html#getting-started).
 
 ## Example Usage
 
@@ -49,13 +48,13 @@ resource "ibm_network_gateway_vlan_attachment" "gateway_vlan_association" {
 
 The following arguments are supported:
 
-* `gateway_id` - (Required, int) The ID of the network gateway.
-* `network_vlan_id` - (Required, int) The ID of the network VLAN to be associated.
-* `bypass` - (Optional, boolean) Default `true`. Indicates if the VLAN should be in bypass or routed modes.
+* `gateway_id` - (Required, integer) The ID of the network gateway.
+* `network_vlan_id` - (Required, integer) The ID of the network VLAN to associate with the network gateway.
+* `bypass` - (Optional, boolean) Indicates if the VLAN should be in bypass or routed mode. Default value: `true`. 
 
 
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - The unique identifier of the gateway/vlan association.
+* `id` - The unique identifier of the gateway/VLAN association.
