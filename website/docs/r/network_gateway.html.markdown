@@ -124,9 +124,9 @@ Nested `members` blocks have the following structure:
   * `user_metadata` - (Optional, string) Arbitrary data to be made available to the member.
   * `disk_key_names` - (Optional, list) Provide the disk key name. Refer to the same attribute in the `ibm_compute_bare_metal` resource.
   * `public_vlan_id` - (Optional, integer) ID of the public VLAN.
-  * `private_vlan_id` - (Optional, integer) ID of the private VLAN.
-
-  **NOTE**: If there are two members in this gateway, then both should have same value for `public_vlan_id` and `private_vlan_id`.
+  * `private_vlan_id` - (Optional, integer) ID of the private VLAN.  
+    **NOTE**: If there are two members in this gateway, then both should have same value for `public_vlan_id` and `private_vlan_id`.
+    
   * `ipv6_enabled` - (Optional, boolean) Whether to enable IPv6. Default value: `true`.
   * `private_network_only` - (Optional, boolean) Whether to enable a private network only. Default value: `false`.
 
@@ -151,4 +151,3 @@ Nested `members` blocks export the following attributes:
   * `public_ipv4_address` - Public IPv4 address associated with the member.
   * `private_ipv4_address` - Private IPv4 address associated with the member.
   * `ipv6_address` -  IPv6 address associated with the member.
-
