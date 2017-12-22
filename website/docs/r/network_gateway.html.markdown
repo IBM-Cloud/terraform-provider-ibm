@@ -124,9 +124,9 @@ Nested `members` blocks have the following structure:
   * `user_metadata` - (Optional, string) Arbitrary data to be made available to the member.
   * `disk_key_names` - (Optional, list) Provide the disk key name. Refer to the same attribute in the `ibm_compute_bare_metal` resource.
   * `public_vlan_id` - (Optional, integer) ID of the public VLAN.
-  * `private_vlan_id` - (Optional, integer) ID of the private VLAN.
-
-  **NOTE**: If there are two members in this gateway, then both should have same value for `public_vlan_id` and `private_vlan_id`.
+  * `private_vlan_id` - (Optional, integer) ID of the private VLAN.  
+    **NOTE**: If there are two members in this gateway, then both should have same value for `public_vlan_id` and `private_vlan_id`.
+    
   * `ipv6_enabled` - (Optional, boolean) Whether to enable IPv6. Default value: `true`.
   * `private_network_only` - (Optional, boolean) Whether to enable a private network only. Default value: `false`.
 
@@ -135,10 +135,12 @@ Nested `members` blocks have the following structure:
 The following attributes are exported:
 
 * `id` - The unique identifier of the network gateway.
-* `private_ip_address_id` - The private IP address of the network gateway.
+* `public_ipv4_address` - The public IP address of the network gateway.
+* `private_ipv4_address` - The private IP address of the network gateway.
+* `private_ip_address_id` - The private IP address ID of the network gateway.
 * `private_vlan_id` - The private VLAN ID of the network gateway.
-* `public_ip_address_id` - The public IP address of the network gateway.
-* `public_ipv6_address_id` - The public IPv6 address for the network gateway.
+* `public_ip_address_id` - The public IP address ID of the network gateway.
+* `public_ipv6_address_id` - The public IPv6 address ID for the network gateway.
 * `public_vlan_id` - The public VLAN ID for the network gateway.
 * `status` - Status of the network gateway.
 * `associated_vlans` - A nested block describing the associated VLANs for the member of the network gateway. Nested `associated_vlans` blocks export the following attributes:
@@ -151,4 +153,3 @@ Nested `members` blocks export the following attributes:
   * `public_ipv4_address` - Public IPv4 address associated with the member.
   * `private_ipv4_address` - Private IPv4 address associated with the member.
   * `ipv6_address` -  IPv6 address associated with the member.
-
