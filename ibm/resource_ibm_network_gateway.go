@@ -61,6 +61,14 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				Computed: true,
 			},
 
+			"private_ipv4_address": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"public_ipv4_address": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"private_vlan_id": {
 				Type:     schema.TypeInt,
 				Computed: true,
@@ -306,7 +314,7 @@ func resourceIBMNetworkGateway() *schema.Resource {
 			},
 
 			"associated_vlans": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Description: "The VLAN instances associated with this Network Gateway",
 				Computed:    true,
 				Elem: &schema.Resource{
@@ -470,10 +478,10 @@ func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) err
 		return fmt.Errorf("Not a valid ID, must be an integer: %s", err)
 	}
 	result, err := service.Id(id).Mask(
-		"insideVlans,members,status," +
+		"insideVlans,members,status,privateIpAddress[ipAddress],publicIpAddress[ipAddress]," +
 			"members[hardware],members[hardware[datacenter]]," +
 			"members[hardware[primaryNetworkComponent]],members[hardware[backendNetworkComponents,primaryBackendNetworkComponent[redundancyEnabledFlag]," +
-			"tagReferences,primaryIpAddress,primaryBackendIpAddress," +
+			"tagReferences,primaryIpAddress,primaryBackendIpAddress,userData," +
 			"primaryNetworkComponent[primaryVersion6IpAddressRecord],privateNetworkOnlyFlag," +
 			"powerSupplyCount,primaryNetworkComponent[networkVlan],memoryCapacity,networkVlans[id,vlanNumber]]]",
 	).GetObject()
@@ -481,6 +489,12 @@ func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) err
 		return fmt.Errorf("Error retrieving Network Gateway: %s", err)
 	}
 	d.Set("name", result.Name)
+	if result.PrivateIpAddress != nil {
+		d.Set("private_ipv4_address", result.PrivateIpAddress.IpAddress)
+	}
+	if result.PublicIpAddress != nil {
+		d.Set("public_ipv4_address", result.PublicIpAddress.IpAddress)
+	}
 	d.Set("private_ip_address_id", result.PrivateIpAddressId)
 	d.Set("private_vlan_id", result.PrivateVlanId)
 	d.Set("public_ip_address_id", result.PublicIpAddressId)
