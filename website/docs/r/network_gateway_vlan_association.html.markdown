@@ -1,12 +1,12 @@
 ---
 layout: "ibm"
-page_title: "IBM: network_gateway_vlan_attachment"
-sidebar_current: "docs-ibm-resource-network-gateway-vlan-attachment"
+page_title: "IBM: network_gateway_vlan_association"
+sidebar_current: "docs-ibm-resource-network-gateway-vlan-association"
 description: |-
-  Manages attach and detach of VLAN to Gateway.
+  Manages association and dis-association of VLAN to Gateway.
 ---
 
-# ibm\_network_gateway_vlan_attachment
+# ibm\_network_gateway_vlan_association
 
 Provide a resource to associate a VLAN with a network gateway. The VLANs can be disassociated or updated later to be bypassed or routed.
 
@@ -37,7 +37,7 @@ resource "ibm_network_gateway" "gateway" {
   }
 }
 
-resource "ibm_network_gateway_vlan_attachment" "gateway_vlan_association" {
+resource "ibm_network_gateway_vlan_association" "gateway_vlan_association" {
   gateway_id      = "${ibm_network_gateway.gateway.id}"
   network_vlan_id = 645086
 }

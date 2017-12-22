@@ -24,7 +24,7 @@ func TestAccIBMNetworkGatewayVlanAtachment_Basic(t *testing.T) {
 				Config: testAccCheckIBMNetworkGatewayVlanAttachment_basic(gatewayName, hostname1, hostname1),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"ibm_network_gateway_vlan_attachment.attachment", "bypass", "true"),
+						"ibm_network_gateway_vlan_association.attachment", "bypass", "true"),
 					resource.TestCheckResourceAttr(
 						config, "members.#", "2"),
 					resource.TestCheckResourceAttr(
@@ -74,7 +74,7 @@ func TestAccIBMNetworkGatewayVlanAtachment_Basic(t *testing.T) {
 				Config: testAccCheckIBMNetworkGatewayVlanAttachment_update(gatewayName, hostname1, hostname2),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"ibm_network_gateway_vlan_attachment.attachment", "bypass", "false"),
+						"ibm_network_gateway_vlan_association.attachment", "bypass", "false"),
 				),
 			},
 		},
@@ -127,7 +127,7 @@ func testAccCheckIBMNetworkGatewayVlanAttachment_basic(gatewayName, hostName1, h
 			  }
 			  ]
 		  }
-		  resource "ibm_network_gateway_vlan_attachment" "attachment"{
+		  resource "ibm_network_gateway_vlan_association" "attachment"{
 			  gateway_id = "${ibm_network_gateway.gw.id}"
 			  network_vlan_id = 2225915
 		  }
@@ -179,7 +179,7 @@ func testAccCheckIBMNetworkGatewayVlanAttachment_update(gatewayName, hostName1, 
 		  }
 		  ]
 		  }
-		  resource "ibm_network_gateway_vlan_attachment" "attachment"{
+		  resource "ibm_network_gateway_vlan_association" "attachment"{
 			  gateway_id = "${ibm_network_gateway.gw.id}"
 			  network_vlan_id = 2225915
 			  bypass = false
