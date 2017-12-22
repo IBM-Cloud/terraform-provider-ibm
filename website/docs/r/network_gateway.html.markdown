@@ -18,6 +18,8 @@ For more information about getting started, see the [IBM Virtual Router Applianc
 
 ## Example Usage
 
+### Standalone configuration
+
 ```hcl
 resource "ibm_network_gateway" "gateway" {
   name = "my-gateway"
@@ -27,7 +29,6 @@ resource "ibm_network_gateway" "gateway" {
     domain               = "terraformuat1.ibm.com"
     datacenter           = "ams01"
     network_speed        = 100
-    private_network_only = false
     public_vlan_id       = 1234
     private_vlan_id      = 4567
     tcp_monitoring       = true
@@ -44,6 +45,51 @@ resource "ibm_network_gateway" "gateway" {
 }
 
 ```
+### HA configuration
+
+```hcl
+resource "ibm_network_gateway" "gateway" {
+  name = "my-ha-gateway"
+
+  members {
+    hostname             = "host-name-1"
+    domain               = "ibm.com"
+    datacenter           = "ams01"
+    network_speed        = 100
+    public_vlan_id       = 1234
+    private_vlan_id      = 4567
+    tcp_monitoring       = true
+    ssh_key_ids          = [1234]
+    tags                 = ["gateway"]
+    notes                = "my gateway"
+    process_key_name     = "INTEL_SINGLE_XEON_1270_3_40_2"
+    os_key_name          = "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT"
+    disk_key_names       = ["HARD_DRIVE_2_00TB_SATA_II"]
+    public_bandwidth     = 20000
+    memory               = 4
+    ipv6_enabled         = true
+  }
+  members {
+    hostname             = "host-name-2"
+    domain               = "ibm.com"
+    datacenter           = "ams01"
+    network_speed        = 100
+    public_vlan_id       = 1234
+    private_vlan_id      = 4567
+    tcp_monitoring       = true
+    ssh_key_ids          = [1234, 5687]
+    tags                 = ["my ha gateway"]
+    notes                = "my ha mode gateway"
+    process_key_name     = "INTEL_SINGLE_XEON_1270_3_40_2"
+    os_key_name          = "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT"
+    disk_key_names       = ["HARD_DRIVE_2_00TB_SATA_II"]
+    public_bandwidth     = 20000
+    memory               = 4
+    ipv6_enabled         = true
+  }
+}
+```
+
 
 ## Argument Reference
 
