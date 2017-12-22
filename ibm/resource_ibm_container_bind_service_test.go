@@ -66,6 +66,19 @@ data "ibm_account" "acc" {
    org_guid = "${data.ibm_org.org.id}"
 }
 
+resource "ibm_service_instance" "service" {
+  name       = "%s"
+  space_guid = "${data.ibm_space.space.id}"
+  service    = "cloudantNoSQLDB"
+  plan       = "Lite"
+  tags       = ["cluster-service", "cluster-bind"]
+}
+
+resource "ibm_service_key" "serviceKey" {
+	name = "%s"
+	service_instance_guid = "${ibm_service_instance.service.id}"
+}
+
 resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
   datacenter = "%s"
@@ -84,20 +97,6 @@ resource "ibm_container_cluster" "testacc_cluster" {
   isolation       = "public"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
-}
-
-
-resource "ibm_service_instance" "service" {
-  name       = "%s"
-  space_guid = "${data.ibm_space.space.id}"
-  service    = "cloudantNoSQLDB"
-  plan       = "Lite"
-  tags       = ["cluster-service", "cluster-bind"]
-}
-
-resource "ibm_service_key" "serviceKey" {
-	name = "%s"
-	service_instance_guid = "${ibm_service_instance.service.id}"
 }
 
 resource "ibm_container_bind_service" "bind_service" {
@@ -128,6 +127,19 @@ data "ibm_account" "acc" {
    org_guid = "${data.ibm_org.org.id}"
 }
 
+resource "ibm_service_instance" "service" {
+  name       = "%s"
+  space_guid = "${data.ibm_space.space.id}"
+  service    = "cloudantNoSQLDB"
+  plan       = "Lite"
+  tags       = ["cluster-service", "cluster-bind"]
+}
+
+resource "ibm_service_key" "serviceKey" {
+	name = "%s"
+	service_instance_guid = "${ibm_service_instance.service.id}"
+}
+
 resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
   datacenter = "%s"
@@ -146,20 +158,6 @@ resource "ibm_container_cluster" "testacc_cluster" {
   isolation       = "public"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
-}
-
-
-resource "ibm_service_instance" "service" {
-  name       = "%s"
-  space_guid = "${data.ibm_space.space.id}"
-  service    = "cloudantNoSQLDB"
-  plan       = "Lite"
-  tags       = ["cluster-service", "cluster-bind"]
-}
-
-resource "ibm_service_key" "serviceKey" {
-	name = "%s"
-	service_instance_guid = "${ibm_service_instance.service.id}"
 }
 
 resource "ibm_container_bind_service" "bind_service" {
