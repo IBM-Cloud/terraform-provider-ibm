@@ -38,9 +38,9 @@ func TestAccIBMNetworkGatewayVlanAtachment_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						config, "members.0.private_network_only", "false"),
 					resource.TestCheckResourceAttr(
-						config, "members.0.tcp_monitoring", "true"),
-					resource.TestCheckResourceAttr(
 						config, "members.0.ipv6_enabled", "true"),
+					resource.TestCheckResourceAttr(
+						config, "members.0.user_metadata", "{\"value\":\"newvalue\"}"),
 					resource.TestCheckResourceAttr(
 						config, "members.0.notes", "member 1"),
 					CheckStringSet(
@@ -58,7 +58,7 @@ func TestAccIBMNetworkGatewayVlanAtachment_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						config, "members.1.private_network_only", "false"),
 					resource.TestCheckResourceAttr(
-						config, "members.1.tcp_monitoring", "true"),
+						config, "members.1.user_metadata", "{\"value\":\"newvalue\"}"),
 					resource.TestCheckResourceAttr(
 						config, "members.1.ipv6_enabled", "true"),
 					resource.TestCheckResourceAttr(
@@ -101,6 +101,7 @@ func testAccCheckIBMNetworkGatewayVlanAttachment_basic(gatewayName, hostName1, h
 			    ipv6_enabled         = true
 			    public_vlan_id       = 2225905
 				private_vlan_id      = 2225915
+				user_metadata        = "{\"value\":\"newvalue\"}"
 				notes                = "member 1"
 				tags                 = ["gateway tags 1", "terraform test tags 1"]
 
@@ -117,7 +118,8 @@ func testAccCheckIBMNetworkGatewayVlanAttachment_basic(gatewayName, hostName1, h
 			    os_key_name          = "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT"
 			    redundant_network    = false
 			    disk_key_names       = ["HARD_DRIVE_1_00_TB_SATA_III"]
-			    public_bandwidth     = 20000
+				public_bandwidth     = 20000
+				user_metadata        = "{\"value\":\"newvalue\"}"
 			    memory               = 16
 				ipv6_enabled         = true
 				notes                = "member 2"

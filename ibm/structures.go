@@ -637,7 +637,7 @@ func flattenGatewayMembers(d *schema.ResourceData, list []datatypes.Network_Gate
 		member["private_network_only"] = *hardware.PrivateNetworkOnlyFlag
 		userData := hardware.UserData
 		if len(userData) > 0 && userData[0].Value != nil {
-			d.Set("user_metadata", *userData[0].Value)
+			member["user_metadata"] = *userData[0].Value
 		}
 		members[i] = member
 	}

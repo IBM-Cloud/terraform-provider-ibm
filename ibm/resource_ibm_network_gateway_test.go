@@ -36,7 +36,7 @@ func TestAccIBMNetworkGateway_standalone(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						config, "members.0.hostname", hostname),
 					resource.TestCheckResourceAttr(
-						config, "members.0.name", gatewayName),
+						config, "name", gatewayName),
 					resource.TestCheckResourceAttr(
 						config, "members.0.domain", "terraformuat.ibm.com"),
 					resource.TestCheckResourceAttr(
@@ -45,8 +45,6 @@ func TestAccIBMNetworkGateway_standalone(t *testing.T) {
 						config, "members.0.network_speed", "100"),
 					resource.TestCheckResourceAttr(
 						config, "members.0.private_network_only", "false"),
-					resource.TestCheckResourceAttr(
-						config, "members.0.tcp_monitoring", "true"),
 					resource.TestCheckResourceAttr(
 						config, "members.0.ipv6_enabled", "true"),
 					CheckStringSet(
@@ -91,8 +89,6 @@ func TestAccIBMNetworkGateway_ha_similar_members(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						config, "members.0.private_network_only", "false"),
 					resource.TestCheckResourceAttr(
-						config, "members.0.tcp_monitoring", "true"),
-					resource.TestCheckResourceAttr(
 						config, "members.0.ipv6_enabled", "true"),
 					resource.TestCheckResourceAttr(
 						config, "members.0.notes", "gateway notes 1"),
@@ -110,8 +106,6 @@ func TestAccIBMNetworkGateway_ha_similar_members(t *testing.T) {
 						config, "members.1.network_speed", "100"),
 					resource.TestCheckResourceAttr(
 						config, "members.1.private_network_only", "false"),
-					resource.TestCheckResourceAttr(
-						config, "members.1.tcp_monitoring", "true"),
 					resource.TestCheckResourceAttr(
 						config, "members.1.ipv6_enabled", "true"),
 					resource.TestCheckResourceAttr(

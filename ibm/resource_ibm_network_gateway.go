@@ -487,11 +487,7 @@ func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) err
 	d.Set("public_ipv6_address_id", result.PublicIpv6AddressId)
 	d.Set("public_vlan_id", result.PublicVlanId)
 	d.Set("status", result.Status.Name)
-
-	err = d.Set("members", flattenGatewayMembers(d, result.Members))
-	if err != nil {
-		return err
-	}
+	d.Set("members", flattenGatewayMembers(d, result.Members))
 	d.Set("associated_vlans", flattenGatewayVlans(result.InsideVlans))
 
 	return nil
