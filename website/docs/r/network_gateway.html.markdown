@@ -26,7 +26,7 @@ resource "ibm_network_gateway" "gateway" {
 
   members {
     hostname             = "host-name"
-    domain               = "terraformuat1.ibm.com"
+    domain               = "ibm.com"
     datacenter           = "ams01"
     network_speed        = 100
     public_vlan_id       = 1234
@@ -105,8 +105,10 @@ Nested `members` blocks have the following structure:
   * `notes` - (Optional, string) Descriptive text of up to 1000 characters about the member.
   * `datacenter` - (Required, string) The data center in which you want to provision the member.
   * `network_speed` - (Optional, integer) The connection speed (in Mbps) for the member network components. Default value: `100`.
+  * `redundant_power_supply` - (Optional, boolean) When the value is `true`, an additional power supply is provided. Default value: `false`
   * `tcp_monitoring` - (Optional, boolean) Whether to enable TCP monitoring for the member. Default value: `false`.
   * `process_key_name` - (Optional, string) The process key name for the member. Default value:  `INTEL_SINGLE_XEON_1270_3_40_2`. Refer to the same attribute on the `ibm_compute_bare_metal` resource.
+  * `package_key_name` - (Optional, string) The key name for the network gateway package. You can find available package key names in the [Softlayer API](https://api.softlayer.com/rest/v3/SoftLayer_Product_Package/getAllObjects?objectFilter={"type":{"keyName":{"operation":"BARE_METAL_GATEWAY"}}}), using your API key as the password. Default value: `NETWORK_GATEWAY_APPLIANCE`. The default will allow to order Single Processor Multi-Core Servers. Use `2U_NETWORK_GATEWAY_APPLIANCE_1O_GBPS` for ordering Dual Processor Multi-Core Servers.
   * `os_key_name` - (Optional, string) The os key name for member. Default value:  `OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT`. Refer to the same attribute on the `ibm_compute_bare_metal` resource.
   * `redundant_network` - (Optional, boolean) When the value is `true`, two physical network interfaces are provided with a bonding configuration. Default value: `false`. 
   * `unbonded_network` - (Optional, boolean) When the value is `true`, two physical network interfaces are provided without a bonding configuration. Default value: `false`. 

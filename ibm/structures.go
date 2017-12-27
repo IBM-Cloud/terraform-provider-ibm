@@ -581,7 +581,6 @@ func flattenGatewayVlans(list []datatypes.Network_Gateway_Vlan) []map[string]int
 
 func flattenGatewayMembers(d *schema.ResourceData, list []datatypes.Network_Gateway_Member) []map[string]interface{} {
 	members := make([]map[string]interface{}, len(list))
-
 	for i, ele := range list {
 		hardware := *ele.Hardware
 		member := make(map[string]interface{})
@@ -618,6 +617,11 @@ func flattenGatewayMembers(d *schema.ResourceData, list []datatypes.Network_Gate
 			member["tags"] = schema.NewSet(schema.HashString, tags)
 		}
 
+		member["redundant_power_supply"] = false
+
+		if *hardware.PowerSupplyCount == 2 {
+			member["redundant_power_supply"] = true
+		}
 		member["memory"] = *hardware.MemoryCapacity
 		member["public_vlan_id"] = *hardware.NetworkVlans[1].Id
 		member["private_vlan_id"] = *hardware.NetworkVlans[0].Id
