@@ -19,8 +19,6 @@ import (
 	"github.com/softlayer/softlayer-go/sl"
 )
 
-const packageKeyName = "NETWORK_GATEWAY_APPLIANCE"
-
 const highAvailability = "HA"
 
 func resourceIBMNetworkGateway() *schema.Resource {
@@ -150,6 +148,22 @@ func resourceIBMNetworkGateway() *schema.Resource {
 						},
 
 						"tcp_monitoring": {
+							Type:             schema.TypeBool,
+							Optional:         true,
+							Default:          false,
+							ForceNew:         true,
+							DiffSuppressFunc: applyOnce,
+						},
+
+						"package_key_name": {
+							Type:             schema.TypeString,
+							Optional:         true,
+							Default:          "NETWORK_GATEWAY_APPLIANCE",
+							ForceNew:         true,
+							DiffSuppressFunc: applyOnce,
+						},
+
+						"redundant_power_supply": {
 							Type:             schema.TypeBool,
 							Optional:         true,
 							Default:          false,
@@ -411,6 +425,7 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf(
 			"Encountered problem trying to verify the order: %s", err)
 	}
+
 	_, err = services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(&productOrder, sl.Bool(false))
 	if err != nil {
 		return fmt.Errorf(
@@ -620,7 +635,7 @@ func getMonthlyGatewayOrder(d dataRetriever, meta interface{}) (datatypes.Contai
 	sess := meta.(ClientSession).SoftLayerSession()
 
 	// Validate attributes for network gateway ordering.
-	model := packageKeyName
+	model := d.Get("package_key_name")
 
 	datacenter := d.Get("datacenter")
 
@@ -634,7 +649,7 @@ func getMonthlyGatewayOrder(d dataRetriever, meta interface{}) (datatypes.Contai
 	}
 
 	// 1. Find a package id using Gateway package key name.
-	pkg, err := getPackageByModelGateway(sess, model)
+	pkg, err := getPackageByModelGateway(sess, model.(string))
 
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
@@ -759,6 +774,15 @@ func getMonthlyGatewayOrder(d dataRetriever, meta interface{}) (datatypes.Contai
 		}
 		order.Prices = append(order.Prices, price)
 	}
+
+	if d.Get("redundant_power_supply").(bool) {
+		powerSupply, err := getItemPriceId(items, "power_supply", "REDUNDANT_POWER_SUPPLY")
+		if err != nil {
+			return datatypes.Container_Product_Order{}, err
+		}
+		order.Prices = append(order.Prices, powerSupply)
+	}
+
 	// Add prices of disks.
 	disks := d.Get("disk_key_names").([]interface{})
 	diskLen := len(disks)
