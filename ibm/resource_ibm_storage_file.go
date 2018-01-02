@@ -746,7 +746,7 @@ func WaitForStorageAvailable(d *schema.ResourceData, meta interface{}) (interfac
 		Refresh: func() (interface{}, string, error) {
 			// Check active transactions
 			service := services.GetNetworkStorageService(sess)
-			result, err := service.Id(id).Mask("activeTransactions").GetObject()
+			result, err := service.Id(id).Mask("activeTransactionCount").GetObject()
 			if err != nil {
 				if apiErr, ok := err.(sl.Error); ok && apiErr.StatusCode == 404 {
 					return nil, "", fmt.Errorf("Error retrieving storage: %s", err)
@@ -755,7 +755,7 @@ func WaitForStorageAvailable(d *schema.ResourceData, meta interface{}) (interfac
 			}
 
 			log.Println("Checking active transactions.")
-			if len(result.ActiveTransactions) > 0 {
+			if *result.ActiveTransactionCount > 0 {
 				return result, "provisioning", nil
 			}
 
