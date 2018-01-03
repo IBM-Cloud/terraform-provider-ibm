@@ -186,6 +186,10 @@ func SelectProductPricesByCategory(
 					if forPublicNetwork != isPublic || forDedicatedHost != isDedicated {
 						continue
 					}
+				case MemoryCategoryCode:
+					if forDedicatedHost != isDedicated {
+						continue
+					}
 				}
 
 				prices = append(prices, productItem.Prices[0])
