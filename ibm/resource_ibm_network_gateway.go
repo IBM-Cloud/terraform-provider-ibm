@@ -519,6 +519,15 @@ func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) err
 	d.Set("members", flattenGatewayMembers(d, result.Members))
 	d.Set("associated_vlans", flattenGatewayVlans(result.InsideVlans))
 
+	//Set default connection info
+	connInfo := map[string]string{"type": "ssh", "user": "vyatta"}
+	if result.PublicIpAddress != nil {
+		connInfo["host"] = *result.PublicIpAddress.IpAddress
+	} else {
+		connInfo["host"] = *result.PrivateIpAddress.IpAddress
+	}
+	d.SetConnInfo(connInfo)
+
 	return nil
 }
 
