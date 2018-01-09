@@ -108,6 +108,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_compute_autoscale_group":          resourceIBMComputeAutoScaleGroup(),
 			"ibm_compute_autoscale_policy":         resourceIBMComputeAutoScalePolicy(),
 			"ibm_compute_bare_metal":               resourceIBMComputeBareMetal(),
+			"ibm_compute_dedicated_host":           resourceIBMComputeDedicatedHost(),
 			"ibm_compute_monitor":                  resourceIBMComputeMonitor(),
 			"ibm_compute_provisioning_hook":        resourceIBMComputeProvisioningHook(),
 			"ibm_compute_ssh_key":                  resourceIBMComputeSSHKey(),
