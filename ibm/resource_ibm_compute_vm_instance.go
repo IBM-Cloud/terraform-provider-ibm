@@ -1175,23 +1175,25 @@ func resourceIBMComputeVmInstanceUpdate(d *schema.ResourceData, meta interface{}
 		oldDisks, newDisks := d.GetChange("disks")
 		oldDisk := oldDisks.([]interface{})
 		newDisk := newDisks.([]interface{})
-		//Remove is not supported
+		//Remove is not supported for now.
 		if len(oldDisk) > len(newDisk) {
-			return fmt.Errorf("Removing drives is not supported. To remove a drive, please create a new support ticket.")
+			return fmt.Errorf("Removing drives is not supported.")
 		}
-		for i := 0; i < len(newDisk); i++ {
-			if len(oldDisk) > i && newDisk[i].(int) == oldDisk[i].(int) {
-				continue
-			} else if len(oldDisk) > i && newDisk[i].(int) != oldDisk[i].(int) {
-				diskName := fmt.Sprintf("guest_disk%d", i)
-				capacity := newDisk[i].(int)
-				upgradeOptions[diskName] = float64(capacity)
-			} else {
+		//Update the disks if any change
+		for i := 0; i < len(oldDisk); i++ {
+			if newDisk[i].(int) != oldDisk[i].(int) {
 				diskName := fmt.Sprintf("guest_disk%d", i)
 				capacity := newDisk[i].(int)
 				upgradeOptions[diskName] = float64(capacity)
 			}
 		}
+		//Add new disks
+		for i := len(oldDisk); i < len(newDisk); i++ {
+			diskName := fmt.Sprintf("guest_disk%d", i)
+			capacity := newDisk[i].(int)
+			upgradeOptions[diskName] = float64(capacity)
+		}
+
 	}
 	if len(upgradeOptions) > 0 {
 
