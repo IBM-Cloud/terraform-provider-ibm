@@ -127,6 +127,22 @@ func TestAccIBMComputeVmInstance_basic(t *testing.T) {
 						configInstance, "network_speed", networkSpeed2),
 				),
 			},
+
+			{
+				Config:  testAccIBMComputeVmInstanceConfigUpdate(hostname, domain, networkSpeed2, cores2, memory2, userMetadata2, tags2),
+				Destroy: false,
+				Check: resource.ComposeTestCheckFunc(
+					testAccIBMComputeVmInstanceExists(configInstance, &guest),
+					resource.TestCheckResourceAttr(
+						configInstance, "disks.0", "25"),
+					resource.TestCheckResourceAttr(
+						configInstance, "disks.1", "10"),
+					resource.TestCheckResourceAttr(
+						configInstance, "disks.2", "10"),
+					resource.TestCheckResourceAttr(
+						configInstance, "disks.3", "20"),
+				),
+			},
 		},
 	})
 }
@@ -189,7 +205,6 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
 					"wait_time_minutes",
-					"disks.#", "disks.0",
 					"public_bandwidth_unlimited",
 				},
 			},
@@ -605,6 +620,29 @@ resource "ibm_compute_vm_instance" "terraform-acceptance-test-1" {
     cores = %s
     memory = %s
     disks = [25, 10, 20]
+    user_metadata = "%s"
+    tags = ["%s"]
+    dedicated_acct_host_only = true
+    local_disk = false
+    ipv6_enabled = true
+    secondary_ip_count = 4
+    notes = "VM notes"
+}`, hostname, domain, networkSpeed, cores, memory, userMetadata, tags)
+}
+
+func testAccIBMComputeVmInstanceConfigUpdate(hostname, domain, networkSpeed, cores, memory, userMetadata, tags string) string {
+	return fmt.Sprintf(`
+resource "ibm_compute_vm_instance" "terraform-acceptance-test-1" {
+    hostname = "%s"
+    domain = "%s"
+    os_reference_code = "DEBIAN_7_64"
+    datacenter = "wdc04"
+    network_speed = %s
+    hourly_billing = true
+    private_network_only = false
+    cores = %s
+    memory = %s
+    disks = [25, 10, 10, 20]
     user_metadata = "%s"
     tags = ["%s"]
     dedicated_acct_host_only = true
