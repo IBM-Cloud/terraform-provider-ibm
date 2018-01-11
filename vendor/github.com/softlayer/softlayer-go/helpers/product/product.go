@@ -192,6 +192,17 @@ func SelectProductPricesByCategory(
 					}
 				}
 
+				if strings.HasPrefix(categoryCode, "guest_disk") {
+					categories := productItem.Prices[0].Categories
+					var deviceCategories []datatypes.Product_Item_Category
+					for _, reqCategory := range categories {
+						if *reqCategory.CategoryCode == categoryCode {
+							deviceCategories = append(deviceCategories, reqCategory)
+						}
+					}
+					productItem.Prices[0].Categories = deviceCategories
+				}
+
 				prices = append(prices, productItem.Prices[0])
 				priceCheck[categoryCode] = true
 			}

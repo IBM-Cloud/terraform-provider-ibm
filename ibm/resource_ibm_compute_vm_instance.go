@@ -899,7 +899,7 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	result, err := service.Id(id).Mask(
-		"hostname,domain,startCpus,maxMemory,dedicatedAccountHostOnlyFlag,operatingSystemReferenceCode,blockDeviceTemplateGroup[id]," +
+		"hostname,domain,blockDevices[diskImage],startCpus,maxMemory,dedicatedAccountHostOnlyFlag,operatingSystemReferenceCode,blockDeviceTemplateGroup[id]," +
 			"primaryIpAddress,primaryBackendIpAddress,privateNetworkOnlyFlag," +
 			"hourlyBillingFlag,localDiskFlag," +
 			"allowedNetworkStorage[id,nasType]," +
@@ -950,6 +950,7 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 			d.Get("network_speed").(int),
 		),
 	)
+	d.Set("disks", flattenDisks(result.BlockDevices))
 	d.Set("cores", *result.StartCpus)
 	d.Set("memory", *result.MaxMemory)
 	d.Set("dedicated_acct_host_only", *result.DedicatedAccountHostOnlyFlag)
@@ -1170,7 +1171,32 @@ func resourceIBMComputeVmInstanceUpdate(d *schema.ResourceData, meta interface{}
 		upgradeOptions[product.NICSpeedCategoryCode] = float64(d.Get("network_speed").(int))
 	}
 
+	if d.HasChange("disks") {
+		oldDisks, newDisks := d.GetChange("disks")
+		oldDisk := oldDisks.([]interface{})
+		newDisk := newDisks.([]interface{})
+		//Remove is not supported for now.
+		if len(oldDisk) > len(newDisk) {
+			return fmt.Errorf("Removing drives is not supported.")
+		}
+		//Update the disks if any change
+		for i := 0; i < len(oldDisk); i++ {
+			if newDisk[i].(int) != oldDisk[i].(int) {
+				diskName := fmt.Sprintf("guest_disk%d", i)
+				capacity := newDisk[i].(int)
+				upgradeOptions[diskName] = float64(capacity)
+			}
+		}
+		//Add new disks
+		for i := len(oldDisk); i < len(newDisk); i++ {
+			diskName := fmt.Sprintf("guest_disk%d", i)
+			capacity := newDisk[i].(int)
+			upgradeOptions[diskName] = float64(capacity)
+		}
+
+	}
 	if len(upgradeOptions) > 0 {
+
 		_, err = virtual.UpgradeVirtualGuest(sess.SetRetries(0), &result, upgradeOptions)
 		if err != nil {
 			return fmt.Errorf("Couldn't upgrade virtual guest: %s", err)

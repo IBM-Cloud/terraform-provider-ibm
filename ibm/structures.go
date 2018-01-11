@@ -647,3 +647,14 @@ func flattenGatewayMembers(d *schema.ResourceData, list []datatypes.Network_Gate
 	}
 	return members
 }
+
+func flattenDisks(blkDevices []datatypes.Virtual_Guest_Block_Device) []int {
+	var out = make([]int, 0)
+	for _, v := range blkDevices {
+		// skip 1,7 which is reserved for the swap disk and metadata
+		if *v.Device != "1" && *v.Device != "7" {
+			out = append(out, *v.DiskImage.Capacity)
+		}
+	}
+	return out
+}
