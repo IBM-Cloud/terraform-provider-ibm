@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
 func TestAccIBMNetworkVlan_Basic(t *testing.T) {
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -43,7 +43,6 @@ func TestAccIBMNetworkVlan_Basic(t *testing.T) {
 }
 
 func TestAccIBMNetworkVlan_With_Tag(t *testing.T) {
-	fmt.Println("*******")
 	tags1 := "collectd"
 	tags2 := "mesos-master"
 	resource.Test(t, resource.TestCase{
@@ -103,6 +102,46 @@ func TestAccIBMNetworkVlan_With_Multipe_Subnets(t *testing.T) {
 						"ibm_network_vlan.test_vlan", "name", "tfuat_mult_subnet"),
 					resource.TestCheckResourceAttr(
 						"ibm_network_vlan.test_vlan", "subnet_size", "8"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMNetworkVlan_with_vm(t *testing.T) {
+
+	hostname := acctest.RandString(16)
+	domain := "vlan.tfmvmuat.ibm.com"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMNetworkVlanConfigWithVM(hostname, domain),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_network_vlan.pvt", "name", "tfuat_pvt_subnet"),
+					resource.TestCheckResourceAttr(
+						"ibm_network_vlan.pvt", "datacenter", "lon02"),
+					resource.TestCheckResourceAttr(
+						"ibm_network_vlan.pvt", "type", "PRIVATE"),
+					resource.TestCheckResourceAttr(
+						"ibm_network_vlan.pvt", "router_hostname", "bcr01a.lon02"),
+					resource.TestCheckResourceAttr(
+						"ibm_network_vlan.pvt", "subnet_size", "8"),
+					resource.TestCheckResourceAttr(
+						"ibm_network_vlan.pub", "name", "tfuat_pub_subnet"),
+					resource.TestCheckResourceAttr(
+						"ibm_network_vlan.pub", "datacenter", "lon02"),
+					resource.TestCheckResourceAttr(
+						"ibm_network_vlan.pub", "type", "PUBLIC"),
+					resource.TestCheckResourceAttr(
+						"ibm_network_vlan.pub", "router_hostname", "fcr01a.lon02"),
+					resource.TestCheckResourceAttr(
+						"ibm_network_vlan.pub", "subnet_size", "8"),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_vm_instance.vm", "hostname", hostname),
 				),
 			},
 		},
@@ -171,4 +210,41 @@ func testAccCheckIBMNetworkVlanConfigMultipleSubnets() (config string) {
 		notes      = "portable_tfuat"
 	  }
 	 `
+}
+
+func testAccCheckIBMNetworkVlanConfigWithVM(hostname, domain string) (config string) {
+	return `
+	resource "ibm_network_vlan" "pvt" {
+		name            = "tfuat_pvt_subnet"
+		datacenter      = "lon02"
+		type            = "PRIVATE"
+		subnet_size     = 8
+		router_hostname = "bcr01a.lon02"
+	  }
+
+	  resource "ibm_network_vlan" "pub" {
+		name            = "tfuat_pub_subnet"
+		datacenter      = "lon02"
+		type            = "PUBLIC"
+		subnet_size     = 8
+		router_hostname = "fcr01a.lon02"
+	  }
+	 ` +
+		fmt.Sprintf(`
+		resource "ibm_compute_vm_instance" "vm" {
+			hostname = "%s"
+			domain = "%s"
+			os_reference_code = "DEBIAN_7_64"
+			datacenter = "lon02"
+			network_speed = 10
+			hourly_billing = true
+			private_vlan_id = "${ibm_network_vlan.pvt.id}"
+			public_vlan_id  = "${ibm_network_vlan.pub.id}"
+			private_network_only = false
+			cores = 1
+			memory = 1024
+			disks = [25, 10, 20]
+			local_disk = false
+			notes = "VM notes"
+		}`, hostname, domain)
 }

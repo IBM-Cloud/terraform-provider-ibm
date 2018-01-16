@@ -46,6 +46,11 @@ The following arguments are supported:
 * `router_hostname` - (Optional, string) The hostname of the primary router associated with the VLAN.
 * `tags` - (Optional, array of strings) Tags associated with the VLAN. Permitted characters include: A-Z, 0-9, whitespace, _ (underscore), - (hyphen), . (period), and : (colon). All other characters are removed.
 
+### Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) for certain actions:
+* `delete` - (Defaults to 10 mins) Used when deleting the VLAN. There might be some resources(like Virtual Guests) on the VLAN. The VLAN delete request is issued once there are no Virtual Guests on the VLAN.
+
 ## Attribute Reference
 
 The following attributes are exported:

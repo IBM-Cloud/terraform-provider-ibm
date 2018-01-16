@@ -38,6 +38,10 @@ func resourceIBMNetworkVlan() *schema.Resource {
 		Exists:   resourceIBMNetworkVlanExists,
 		Importer: &schema.ResourceImporter{},
 
+		Timeouts: &schema.ResourceTimeout{
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
+
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:     schema.TypeInt,
@@ -298,6 +302,35 @@ func resourceIBMNetworkVlanDelete(d *schema.ResourceData, meta interface{}) erro
 	vlanId, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return fmt.Errorf("Not a valid vlan ID, must be an integer: %s", err)
+	}
+
+	const (
+		noVms          = "There are no vms on the VLAN"
+		vmsStillOnVlan = "VMs are still present on the VLAN"
+	)
+
+	//Wait till all the VMs are disconnected before trying to delete
+	stateConf := &resource.StateChangeConf{
+		Target:     []string{noVms},
+		Pending:    []string{vmsStillOnVlan},
+		Timeout:    d.Timeout(schema.TimeoutDelete),
+		MinTimeout: 10 * time.Second,
+		Delay:      30 * time.Second, // Wait 30 secs before starting
+		Refresh: func() (interface{}, string, error) {
+			vms, err := service.Id(vlanId).GetVirtualGuests()
+			if err != nil {
+				log.Printf("[ERROR] Received error while fetching virtual guests on VLAN to see if VLAN can be cancelled now: %#v", err)
+				return vms, "Error", err
+			}
+			if len(vms) != 0 {
+				return vms, vmsStillOnVlan, nil
+			}
+			return vms, noVms, nil
+		},
+	}
+	_, err = stateConf.WaitForState()
+	if err != nil {
+		return err
 	}
 
 	billingItem, err := service.Id(vlanId).GetBillingItem()
