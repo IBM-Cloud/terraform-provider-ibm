@@ -76,6 +76,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_function_package":         dataSourceIBMFunctionPackage(),
 			"ibm_function_rule":            dataSourceIBMFunctionRule(),
 			"ibm_function_trigger":         dataSourceIBMFunctionTrigger(),
+			"ibm_compute_bare_metal":       dataSourceIBMComputeBareMetal(),
 			"ibm_compute_image_template":   dataSourceIBMComputeImageTemplate(),
 			"ibm_compute_ssh_key":          dataSourceIBMComputeSSHKey(),
 			"ibm_compute_vm_instance":      dataSourceIBMComputeVmInstance(),
