@@ -47,10 +47,12 @@ The following arguments are supported:
 
 * `name` - (Required, string) The name of the cluster.
 * `datacenter` - (Required, string)  The datacenter of the worker nodes. You can retrieve the value by running the `bluemix cs locations` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `kube_version` - (Optional, string) The desired Kubernetes version of the created cluster. If present, at least major.minor must be specified.
+* `worker_count` - (Optional, int) The number of worker nodes that you want to add to the cluster.
 * `org_guid` - (Required, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from data source `ibm_org` or by running the `bx iam orgs --guid` command in the IBM Cloud CLI.
 * `space_guid` - (Required, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from data source `ibm_space` or by running the `bx iam space <space-name> --guid` command in the IBM Cloud CLI.
 * `account_guid` - (Required, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from data source `ibm_account` or by running the `bx iam accounts` command in the IBM Cloud CLI.
-* `workers` - (Required, array) The worker nodes that you want to add to the cluster.
+* `workers` - (Optional, array) The worker nodes that you want to add to the cluster.
 * `machinetype` - (Optional, string) The machine type of the worker nodes. You can retrieve the value by running the `bx cs machine-types <data-center>` command in the IBM Cloud CLI.
 * `billing` - (Optional, string) The billing type for the instance. Accepted values are `hourly` or `monthly`.
 * `isolation` - (Optional, string) Accepted values are `public` or `private`. Use `private` if you want to have available physical resources dedicated to you only or `public` to allow physical resources to be shared with other IBM customers.
@@ -75,3 +77,4 @@ The following attributes are exported:
 * `worker_num` - The number of worker nodes for this cluster.
 * `workers` - The worker nodes attached to this cluster.
 * `subnet_id` - The subnets attached to this cluster.
+* `workers_info` - The id's of workers attached to this cluster.
