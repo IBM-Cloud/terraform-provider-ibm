@@ -8,24 +8,36 @@ import (
 
 //Worker ...
 type Worker struct {
-	Billing      string
-	ErrorMessage string
-	ID           string
-	Isolation    string
-	KubeVersion  string
-	MachineType  string
-	PrivateIP    string
-	PrivateVlan  string
-	PublicIP     string
-	PublicVlan   string
-	State        string
-	Status       string
+	Billing       string `json:"billing,omitempty"`
+	ErrorMessage  string `json:"errorMessage"`
+	ID            string `json:"id"`
+	Isolation     string `json:"isolation"`
+	KubeVersion   string `json:"kubeVersion"`
+	MachineType   string `json:"machineType"`
+	PrivateIP     string `json:"privateIP"`
+	PrivateVlan   string `json:"privateVlan"`
+	PublicIP      string `json:"publicIP"`
+	PublicVlan    string `json:"publicVlan"`
+	State         string `json:"state"`
+	Status        string `json:"status"`
+	TargetVersion string `json:"targetVersion"`
 }
 
 //WorkerParam ...
 type WorkerParam struct {
-	Action string
-	Count  int
+	MachineType string `json:"machineType,omitempty" description:"The worker's machine type"`
+	PrivateVlan string `json:"privateVlan,omitempty" description:"The worker's private vlan"`
+	PublicVlan  string `json:"publicVlan,omitempty" description:"The worker's public vlan"`
+	Isolation   string `json:"isolation,omitempty" description:"Can be 'public' or 'private'"`
+	WorkerNum   int    `json:"workerNum,omitempty" binding:"required" description:"The number of workers"`
+	Prefix      string `json:"prefix,omitempty" description:"hostname prefix for new workers"`
+	Action      string `json:"action,omitempty"`
+	Count       int    `json:"count,omitempty"`
+}
+
+//WorkerUpdateParam ...
+type WorkerUpdateParam struct {
+	Action string `json:"action" binding:"required" description:"Action to perform of the worker"`
 }
 
 //Workers ...
@@ -34,7 +46,7 @@ type Workers interface {
 	Get(clusterName string, target ClusterTargetHeader) (Worker, error)
 	Add(clusterName string, params WorkerParam, target ClusterTargetHeader) error
 	Delete(clusterName string, workerD string, target ClusterTargetHeader) error
-	Update(clusterName string, workerID string, params WorkerParam, target ClusterTargetHeader) error
+	Update(clusterName string, workerID string, params WorkerUpdateParam, target ClusterTargetHeader) error
 }
 
 type worker struct {
@@ -73,7 +85,7 @@ func (r *worker) Delete(name string, workerID string, target ClusterTargetHeader
 }
 
 //Update ...
-func (r *worker) Update(name string, workerID string, params WorkerParam, target ClusterTargetHeader) error {
+func (r *worker) Update(name string, workerID string, params WorkerUpdateParam, target ClusterTargetHeader) error {
 	rawURL := fmt.Sprintf("/v1/clusters/%s/workers/%s", name, workerID)
 	_, err := r.client.Put(rawURL, params, nil, target.ToMap())
 	return err

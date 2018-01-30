@@ -9,6 +9,10 @@ description: |-
 # ibm\_container_cluster
 
 Create, update, or delete a Kubernetes cluster. An existing subnet can be attached to the cluster by passing the subnet ID. A webhook can be registered to a cluster, and you can add multiple worker nodes with the `workers` option.
+During the creation of cluster the workers are created with the kube version by default. During update user need to specify the version of worker to update the worker.
+
+**Before updating the version of cluster and workers via terraform get the list of available updates and their pre and post update instructions at https://console.bluemix.net/docs/containers/cs_versions.html#version_types. Also please go through the instructions at https://console.bluemix.net/docs/containers/cs_cluster_update.html#update.
+_Users must read these docs carefully before updating the version via terraform_.**
 
 ## Example Usage
 
@@ -47,10 +51,14 @@ The following arguments are supported:
 
 * `name` - (Required, string) The name of the cluster.
 * `datacenter` - (Required, string)  The datacenter of the worker nodes. You can retrieve the value by running the `bluemix cs locations` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `kube_version` - (Optional, string) The desired Kubernetes version of the created cluster. If present, at least major.minor must be specified.
 * `org_guid` - (Required, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from data source `ibm_org` or by running the `bx iam orgs --guid` command in the IBM Cloud CLI.
 * `space_guid` - (Required, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from data source `ibm_space` or by running the `bx iam space <space-name> --guid` command in the IBM Cloud CLI.
 * `account_guid` - (Required, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from data source `ibm_account` or by running the `bx iam accounts` command in the IBM Cloud CLI.
-* `workers` - (Required, array) The worker nodes that you want to add to the cluster.
+* `workers` - (Required, array) The worker nodes that you want to add to the cluster. Nested `workers` blocks have the following structure:
+	* `action` - valid actions are add, reboot and reload.
+	* `name` - Name of the worker.
+	* `version` - worker version.
 * `machinetype` - (Optional, string) The machine type of the worker nodes. You can retrieve the value by running the `bx cs machine-types <data-center>` command in the IBM Cloud CLI.
 * `billing` - (Optional, string) The billing type for the instance. Accepted values are `hourly` or `monthly`.
 * `isolation` - (Optional, string) Accepted values are `public` or `private`. Use `private` if you want to have available physical resources dedicated to you only or `public` to allow physical resources to be shared with other IBM customers.
@@ -75,3 +83,5 @@ The following attributes are exported:
 * `worker_num` - The number of worker nodes for this cluster.
 * `workers` - The worker nodes attached to this cluster.
 * `subnet_id` - The subnets attached to this cluster.
+* `workers` -  Exported attributes are:
+	* `id` - The id of the worker
