@@ -384,6 +384,12 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 				ForceNew: true,
 				Default:  false,
 			},
+
+			"global_identifier": &schema.Schema{
+				Description: "The unique global identifier of the bare metal server",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -550,15 +556,18 @@ func resourceIBMComputeBareMetalCreate(d *schema.ResourceData, meta interface{})
 	}
 
 	log.Println("[INFO] Ordering bare metal server")
-	_, err = services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(&order, sl.Bool(false))
+	orderReceipt, err := services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(&order, sl.Bool(false))
 	if err != nil {
 		return fmt.Errorf("Error ordering bare metal server: %s\n%+v\n", err, order)
 	}
 
+	gID := *orderReceipt.OrderDetails.Hardware[0].GlobalIdentifier
+
 	log.Printf("[INFO] Bare Metal Server ID: %s", d.Id())
+	log.Printf("[INFO] Bare Metal Server global ID: %s", gID)
 
 	// wait for machine availability
-	bm, err := waitForBareMetalProvision(&hardware, d, meta)
+	bm, err := waitForBareMetalProvision(&hardware, d, meta, gID)
 	if err != nil {
 		return fmt.Errorf(
 			"Error waiting for bare metal server (%s) to become ready: %s", d.Id(), err)
@@ -608,7 +617,7 @@ func resourceIBMComputeBareMetalRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	result, err := service.Id(id).Mask(
-		"hostname,domain," +
+		"hostname,domain,globalIdentifier," +
 			"primaryIpAddress,primaryBackendIpAddress,privateNetworkOnlyFlag," +
 			"notes,userData[value],tagReferences[id,tag[name]]," +
 			"allowedNetworkStorage[id,nasType]," +
@@ -627,6 +636,7 @@ func resourceIBMComputeBareMetalRead(d *schema.ResourceData, meta interface{}) e
 
 	d.Set("hostname", *result.Hostname)
 	d.Set("domain", *result.Domain)
+	d.Set("global_identifier", result.GlobalIdentifier)
 
 	if result.Datacenter != nil {
 		d.Set("datacenter", *result.Datacenter.Name)
@@ -806,7 +816,7 @@ func resourceIBMComputeBareMetalExists(d *schema.ResourceData, meta interface{})
 // Have to wait on provision date to become available on server that matches
 // hostname and domain.
 // http://sldn.softlayer.com/blog/bpotter/ordering-bare-metal-servers-using-softlayer-api
-func waitForBareMetalProvision(hw *datatypes.Hardware, d *schema.ResourceData, meta interface{}) (interface{}, error) {
+func waitForBareMetalProvision(hw *datatypes.Hardware, d *schema.ResourceData, meta interface{}, globalIdentifier string) (interface{}, error) {
 	hostname := *hw.Hostname
 	domain := *hw.Domain
 	log.Printf("Waiting for server (%s.%s) to have to be provisioned", hostname, domain)
@@ -819,10 +829,7 @@ func waitForBareMetalProvision(hw *datatypes.Hardware, d *schema.ResourceData, m
 			service := services.GetAccountService(sess)
 			bms, err := service.Filter(
 				filter.Build(
-					filter.Path("hardware.hostname").Eq(hostname),
-					filter.Path("hardware.domain").Eq(domain),
-				),
-			).Mask("id,provisionDate").GetHardware()
+					filter.Path("hardware.globalIdentifier").Eq(globalIdentifier))).Mask("id,provisionDate").GetHardware()
 			if err != nil {
 				return false, "retry", nil
 			}
