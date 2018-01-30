@@ -18,15 +18,24 @@ data "ibm_compute_bare_metal" "bare_metal" {
   domain      = "example.com"
   most_recent = true
 }
+
+data "ibm_compute_bare_metal" "bare_metal" {
+  global_identifier = "a471e9a6-82e7-41a7-ac8d-39ced672c0ed"
+}
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `hostname` - (Required, string) The hostname of the bare metal server.
-* `domain` - (Required, string) The domain of the bare metal server.
-* `most_recent` - (Optional, boolean) If there are multiple bare metals, you can set this argument to `true` to import only the most recently created server.
+* `hostname` - (Optional, string) The hostname of the bare metal server.  
+  **NOTE**: Conflicts with `global_identifier`.
+* `domain` - (Optional, string) The domain of the bare metal server.  
+  **NOTE**: Conflicts with `global_identifier`.
+* `global_identifier` - (Optional, string) The unique global identifier of the bare metal server. To see global identifier, log in to the [IBM Cloud Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3.1/SoftLayer_Account/getHardware.json), using your API key as the password.  
+  **NOTE**: Conflicts with `hostname`, `domain`, `most_recent`.
+* `most_recent` - (Optional, boolean) If there are multiple bare metals, you can set this argument to `true` to import only the most recently created server.  
+   **NOTE**: Conflicts with `global_identifier`.
 
 ## Attribute Reference
 

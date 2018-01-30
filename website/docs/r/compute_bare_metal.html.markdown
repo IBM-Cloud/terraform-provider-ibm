@@ -185,3 +185,5 @@ The following attributes are exported:
 * `private_ipv4_address` - The private IPv4 address of the bare metal server.
 * `ipv6_address` - The public IPv6 address of the bare metal server instance provided when `ipv6_enabled` is set to `true`.
 * `secondary_ip_addresses` - The public secondary IPv4 addresses of the bare metal server instance when `secondary_ip_count` is set to non-zero value.
+* `global_identifier` - The unique global identifier of the bare metal server.
+
