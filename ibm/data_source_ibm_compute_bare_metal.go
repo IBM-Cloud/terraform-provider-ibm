@@ -11,22 +11,48 @@ import (
 	"github.com/softlayer/softlayer-go/sl"
 )
 
+const (
+	BareMetalMask = "globalIdentifier,hostname,domain,bandwidthAllocation,provisionDate,id," +
+		"primaryIpAddress,primaryBackendIpAddress,privateNetworkOnlyFlag," +
+		"notes,userData[value],tagReferences[id,tag[name]]," +
+		"allowedNetworkStorage[id,nasType]," +
+		"hourlyBillingFlag," +
+		"datacenter[id,name,longName]," +
+		"primaryNetworkComponent[primarySubnet[networkVlan[id,primaryRouter,vlanNumber],id],maxSpeed," +
+		"primaryVersion6IpAddressRecord[subnet,guestNetworkComponentBinding[ipAddressId]]]," +
+		"primaryBackendNetworkComponent[primarySubnet[networkVlan[id,primaryRouter,vlanNumber],id],maxSpeed,redundancyEnabledFlag]," +
+		"memoryCapacity,powerSupplyCount," +
+		"operatingSystem[softwareLicense[softwareDescription[referenceCode]]]"
+)
+
 func dataSourceIBMComputeBareMetal() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMComputeBareMetalRead,
 
 		Schema: map[string]*schema.Schema{
 
+			"global_identifier": &schema.Schema{
+				Description:   "The unique global identifier of the bare metal server",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"hostname", "domain", "most_recent"},
+			},
+
 			"hostname": &schema.Schema{
-				Description: "The hostname of the bare metal server",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:   "The hostname of the bare metal server",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"global_identifier"},
 			},
 
 			"domain": &schema.Schema{
-				Description: "The domain of the bare metal server",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:   "The domain of the bare metal server",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"global_identifier"},
 			},
 
 			"datacenter": &schema.Schema{
@@ -185,9 +211,10 @@ func dataSourceIBMComputeBareMetal() *schema.Resource {
 			"most_recent": &schema.Schema{
 				Description: "If true and multiple entries are found, the most recently created bare metal is used. " +
 					"If false, an error is returned",
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:          schema.TypeBool,
+				Optional:      true,
+				Default:       false,
+				ConflictsWith: []string{"global_identifier"},
 			},
 		},
 	}
@@ -197,32 +224,54 @@ func dataSourceIBMComputeBareMetalRead(d *schema.ResourceData, meta interface{})
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetAccountService(sess)
 
-	hostname := d.Get("hostname").(string)
-	domain := d.Get("domain").(string)
-	mostRecent := d.Get("most_recent").(bool)
+	var hostname, domain, globalIdentifier string
+	var mostRecent bool
+	var bms []datatypes.Hardware
+	var err error
 
-	bms, err := service.
-		Filter(filter.Build(filter.Path("hardware.hostname").Eq(hostname),
-			filter.Path("hardware.domain").Eq(domain))).Mask(
-		"hostname,domain,bandwidthAllocation,provisionDate,id," +
-			"primaryIpAddress,primaryBackendIpAddress,privateNetworkOnlyFlag," +
-			"notes,userData[value],tagReferences[id,tag[name]]," +
-			"allowedNetworkStorage[id,nasType]," +
-			"hourlyBillingFlag," +
-			"datacenter[id,name,longName]," +
-			"primaryNetworkComponent[primarySubnet[networkVlan[id,primaryRouter,vlanNumber],id],maxSpeed," +
-			"primaryVersion6IpAddressRecord[subnet,guestNetworkComponentBinding[ipAddressId]]]," +
-			"primaryBackendNetworkComponent[primarySubnet[networkVlan[id,primaryRouter,vlanNumber],id],maxSpeed,redundancyEnabledFlag]," +
-			"memoryCapacity,powerSupplyCount," +
-			"operatingSystem[softwareLicense[softwareDescription[referenceCode]]]",
-	).GetHardware()
+	if host, ok := d.GetOk("hostname"); ok {
+		hostname = host.(string)
+	}
 
-	if err != nil {
-		return fmt.Errorf("Error retrieving virtual guest details for host %s: %s", hostname, err)
+	if dmn, ok := d.GetOk("domain"); ok {
+		domain = dmn.(string)
 	}
-	if len(bms) == 0 {
-		return fmt.Errorf("No virtual guest with hostname %s and domain  %s", hostname, domain)
+
+	if mrcnt, ok := d.GetOk("most_recent"); ok {
+		mostRecent = mrcnt.(bool)
 	}
+
+	if gID, ok := d.GetOk("global_identifier"); ok {
+		globalIdentifier = gID.(string)
+	}
+
+	if globalIdentifier != "" {
+		bms, err = service.
+			Filter(filter.Build(filter.Path("hardware.globalIdentifier").Eq(globalIdentifier))).Mask(
+			BareMetalMask).GetHardware()
+
+		if err != nil {
+			return fmt.Errorf("Error retrieving bare metal server details for %s: %s", globalIdentifier, err)
+		}
+		if len(bms) == 0 {
+			return fmt.Errorf("No bare metal server found with identifier %s", globalIdentifier)
+		}
+
+	} else {
+		bms, err = service.
+			Filter(filter.Build(filter.Path("hardware.hostname").Eq(hostname),
+				filter.Path("hardware.domain").Eq(domain))).Mask(
+			BareMetalMask).GetHardware()
+
+		if err != nil {
+			return fmt.Errorf("Error retrieving bare metal server for host %s: %s", hostname, err)
+		}
+		if len(bms) == 0 {
+			return fmt.Errorf("No bare metal server with hostname %s and domain  %s", hostname, domain)
+		}
+
+	}
+
 	var bm datatypes.Hardware
 
 	if len(bms) > 1 {
@@ -239,6 +288,7 @@ func dataSourceIBMComputeBareMetalRead(d *schema.ResourceData, meta interface{})
 	}
 
 	d.SetId(fmt.Sprintf("%d", *bm.Id))
+	d.Set("global_identifier", bm.GlobalIdentifier)
 	d.Set("hostname", bm.Hostname)
 	d.Set("domain", bm.Domain)
 

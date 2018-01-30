@@ -426,13 +426,14 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 			"Encountered problem trying to verify the order: %s", err)
 	}
 
-	_, err = services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(&productOrder, sl.Bool(false))
+	orderReceipt, err := services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(&productOrder, sl.Bool(false))
 	if err != nil {
 		return fmt.Errorf(
 			"Encountered problem trying to place the order: %s", err)
 	}
 
-	bm, err := waitForNetworkGatewayMemberProvision(&order.Hardware[0], meta)
+	gID := *orderReceipt.OrderDetails.Hardware[0].GlobalIdentifier
+	bm, err := waitForNetworkGatewayMemberProvision(&order.Hardware[0], meta, gID)
 	if err != nil {
 		return fmt.Errorf(
 			"Error waiting for Gateway (%s) to become ready: %s", d.Id(), err)
@@ -454,7 +455,8 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 
 	if sameOrder {
 		// If we ordered HA and then wait for other member
-		bm, err := waitForNetworkGatewayMemberProvision(&order.Hardware[1], meta)
+		gID1 := *orderReceipt.OrderDetails.Hardware[1].GlobalIdentifier
+		bm, err := waitForNetworkGatewayMemberProvision(&order.Hardware[1], meta, gID1)
 		if err != nil {
 			return fmt.Errorf(
 				"Error waiting for Gateway (%s) to become ready: %s", d.Id(), err)
@@ -570,13 +572,15 @@ func addGatewayMember(gwID int, member gatewayMember, meta interface{}) error {
 		return fmt.Errorf(
 			"Encountered problem trying to verify the order: %s", err)
 	}
-	_, err = services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(&haOrder, sl.Bool(false))
+	orderReceipt, err := services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(&haOrder, sl.Bool(false))
 	if err != nil {
 		return fmt.Errorf(
 			"Encountered problem trying to place the order: %s", err)
 	}
 
-	bm, err := waitForNetworkGatewayMemberProvision(&order.Hardware[0], meta)
+	gID := *orderReceipt.OrderDetails.Hardware[0].GlobalIdentifier
+
+	bm, err := waitForNetworkGatewayMemberProvision(&order.Hardware[0], meta, gID)
 	if err != nil {
 		return fmt.Errorf(
 			"Error waiting for Gateway (%d) to become ready: %s", gwID, err)
@@ -892,7 +896,7 @@ func setHardwareOptions(m gatewayMember, hardware *datatypes.Hardware) error {
 // Have to wait on provision date to become available on server that matches
 // hostname and domain.
 // http://sldn.softlayer.com/blog/bpotter/ordering-bare-metal-servers-using-softlayer-api
-func waitForNetworkGatewayMemberProvision(d *datatypes.Hardware, meta interface{}) (interface{}, error) {
+func waitForNetworkGatewayMemberProvision(d *datatypes.Hardware, meta interface{}, globalIdentifier string) (interface{}, error) {
 	hostname := *d.Hostname
 	domain := *d.Domain
 	log.Printf("Waiting for Gateway (%s.%s) to be provisioned", hostname, domain)
@@ -904,9 +908,7 @@ func waitForNetworkGatewayMemberProvision(d *datatypes.Hardware, meta interface{
 			service := services.GetAccountService(meta.(ClientSession).SoftLayerSession())
 			bms, err := service.Filter(
 				filter.Build(
-					filter.Path("hardware.hostname").Eq(hostname),
-					filter.Path("hardware.domain").Eq(domain),
-				),
+					filter.Path("hardware.globalIdentifier").Eq(globalIdentifier)),
 			).Mask("id,provisionDate,networkGatewayMember[networkGatewayId]").GetHardware()
 			if err != nil {
 				return false, "retry", nil
