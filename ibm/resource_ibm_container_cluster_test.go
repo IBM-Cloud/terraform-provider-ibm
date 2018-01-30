@@ -30,7 +30,28 @@ func TestAccIBMContainerCluster_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "name", clusterName),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "worker_num", "1"),
+						"ibm_container_cluster.testacc_cluster", "worker_num", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "kube_version", "1.7.4"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "workers.0.version", "1.7.4"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "workers.1.version", "1.7.4"),
+				),
+			},
+			{
+				Config: testAccCheckIBMContainerCluster_update(clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "name", clusterName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "worker_num", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "kube_version", "1.8.6"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "workers.0.version", "1.8.6"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "workers.1.version", "1.7.4"),
 				),
 			},
 		},
@@ -215,8 +236,51 @@ resource "ibm_container_cluster" "testacc_cluster" {
 
   workers = [{
     name = "worker1"
-  }]
+  },{
+    name = "worker2"
+    }]
 
+  kube_version    = "1.7.4"
+  machine_type    = "%s"
+  isolation       = "public"
+  public_vlan_id  = "%s"
+  private_vlan_id = "%s"
+  no_subnet		  = true
+}	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
+}
+
+func testAccCheckIBMContainerCluster_update(clusterName string) string {
+	return fmt.Sprintf(`
+
+data "ibm_org" "org" {
+    org = "%s"
+}
+
+data "ibm_space" "space" {
+  org    = "%s"
+  space  = "%s"
+}
+
+data "ibm_account" "acc" {
+   org_guid = "${data.ibm_org.org.id}"
+}
+
+resource "ibm_container_cluster" "testacc_cluster" {
+  name       = "%s"
+  datacenter = "%s"
+
+  org_guid = "${data.ibm_org.org.id}"
+	space_guid = "${data.ibm_space.space.id}"
+	account_guid = "${data.ibm_account.acc.id}"
+
+  workers = [{
+    name = "worker1"
+    version = "1.8.6"
+    },{
+    name = "worker2"
+    }]
+
+  kube_version    = "1.8.6"
   machine_type    = "%s"
   isolation       = "public"
   public_vlan_id  = "%s"
