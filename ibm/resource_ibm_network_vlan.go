@@ -102,15 +102,23 @@ func resourceIBMNetworkVlan() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"subnet": {
 							Type:     schema.TypeString,
-							Required: true,
+							Computed: true,
 						},
 						"subnet_type": {
 							Type:     schema.TypeString,
-							Required: true,
+							Computed: true,
 						},
 						"subnet_size": {
 							Type:     schema.TypeInt,
-							Optional: true,
+							Computed: true,
+						},
+						"gateway": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"cidr": {
+							Type:     schema.TypeInt,
+							Computed: true,
 						},
 					},
 				},
@@ -226,12 +234,20 @@ func resourceIBMNetworkVlanRead(d *schema.ResourceData, meta interface{}) error 
 				"subnet":      fmt.Sprintf("%s/%d", *elem.NetworkIdentifier, *elem.Cidr),
 				"subnet_type": *elem.SubnetType,
 				"subnet_size": 1 << uint(32-*elem.Cidr),
+				"cidr":        *elem.Cidr,
+			}
+			if elem.Gateway != nil {
+				primarySubnet["gateway"] = *elem.Gateway
 			}
 			primarySubnets = append(primarySubnets, primarySubnet)
 		}
 		subnet["subnet"] = fmt.Sprintf("%s/%s", *elem.NetworkIdentifier, strconv.Itoa(*elem.Cidr))
 		subnet["subnet_type"] = *elem.SubnetType
 		subnet["subnet_size"] = 1 << (uint)(32-*elem.Cidr)
+		subnet["cidr"] = *elem.Cidr
+		if elem.Gateway != nil {
+			subnet["gateway"] = *elem.Gateway
+		}
 		subnets = append(subnets, subnet)
 	}
 	d.Set("subnets", subnets)

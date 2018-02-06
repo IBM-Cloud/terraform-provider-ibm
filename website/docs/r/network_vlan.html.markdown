@@ -60,3 +60,8 @@ The following attributes are exported:
 * `softlayer_managed` - Whether or not Softlayer manages the VLAN. If Softlayer creates the VLAN automatically when Softlayer creates other resources, this attribute is set to `true`. If a user creates the VLAN using the SoftLayer API, portal, or ticket, this attribute is set to `false`.
 * `child_resource_count` - A count of the resources, such as virtual servers and other network components, that are connected to the VLAN.
 * `subnets` - The collection of subnets associated with the VLAN.
+    * `subnet` - The subnet for the vlan.
+    * `subnet-type` - A subnet can be one of several types. `PRIMARY, ADDITIONAL_PRIMARY, SECONDARY, ROUTED_TO_VLAN, SECONDARY_ON_VLAN, STORAGE_NETWORK, and STATIC_IP_ROUTED`. A `PRIMARY` subnet is the primary network bound to a VLAN within the softlayer network. An `ADDITIONAL_PRIMARY` subnet is bound to a network VLAN to augment the pool of available primary IP addresses that may be assigned to a server. A `SECONDARY` subnet is any of the secondary subnet's bound to a VLAN interface. A `ROUTED_TO_VLAN` subnet is a portable subnet that can be routed to any server on a vlan. A `SECONDARY_ON_VLAN` subnet also doesn't exist as a VLAN interface, but is routed directly to a VLAN instead of a single IP address by SoftLayer's.
+    * `subnet-size` - The size of the subnet for the VLAN.
+    * `gateway` - A subnet's gateway address.
+    * `cidr` - A subnet's Classless Inter-Domain Routing prefix. This is a number between 0 and 32 signifying the number of bits in a subnet's netmask. 
