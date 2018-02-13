@@ -775,7 +775,6 @@ func getMonthlyGatewayOrder(d dataRetriever, meta interface{}) (datatypes.Contai
 		return datatypes.Container_Product_Order{}, err
 	}
 	order.Prices = append(order.Prices, bandwidth)
-	privateNetworkOnly := d.Get("private_network_only").(bool)
 	if d.Get("ipv6_enabled").(bool) {
 		keyName := "1_IPV6_ADDRESS"
 		price, err := getItemPriceId(items, "pri_ipv6_addresses", keyName)
