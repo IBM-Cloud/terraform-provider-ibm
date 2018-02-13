@@ -623,7 +623,9 @@ func flattenGatewayMembers(d *schema.ResourceData, list []datatypes.Network_Gate
 			member["redundant_power_supply"] = true
 		}
 		member["memory"] = *hardware.MemoryCapacity
-		member["public_vlan_id"] = *hardware.NetworkVlans[1].Id
+		if !(*hardware.PrivateNetworkOnlyFlag) {
+			member["public_vlan_id"] = *hardware.NetworkVlans[1].Id
+		}
 		member["private_vlan_id"] = *hardware.NetworkVlans[0].Id
 
 		if hardware.PrimaryIpAddress != nil {

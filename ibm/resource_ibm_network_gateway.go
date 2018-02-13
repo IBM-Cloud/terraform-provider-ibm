@@ -432,7 +432,7 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 			"Encountered problem trying to place the order: %s", err)
 	}
 
-	gID := *orderReceipt.OrderDetails.Hardware[0].GlobalIdentifier
+	gID := *orderReceipt.OrderDetails.OrderContainers[0].Hardware[0].GlobalIdentifier
 	bm, err := waitForNetworkGatewayMemberProvision(&order.Hardware[0], meta, gID)
 	if err != nil {
 		return fmt.Errorf(
@@ -455,7 +455,7 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 
 	if sameOrder {
 		// If we ordered HA and then wait for other member
-		gID1 := *orderReceipt.OrderDetails.Hardware[1].GlobalIdentifier
+		gID1 := *orderReceipt.OrderDetails.OrderContainers[0].Hardware[1].GlobalIdentifier
 		bm, err := waitForNetworkGatewayMemberProvision(&order.Hardware[1], meta, gID1)
 		if err != nil {
 			return fmt.Errorf(
@@ -777,9 +777,6 @@ func getMonthlyGatewayOrder(d dataRetriever, meta interface{}) (datatypes.Contai
 	order.Prices = append(order.Prices, bandwidth)
 	privateNetworkOnly := d.Get("private_network_only").(bool)
 	if d.Get("ipv6_enabled").(bool) {
-		if privateNetworkOnly {
-			return datatypes.Container_Product_Order{}, fmt.Errorf("Unable to configure a public IPv6 address with a private_network_only option")
-		}
 		keyName := "1_IPV6_ADDRESS"
 		price, err := getItemPriceId(items, "pri_ipv6_addresses", keyName)
 		if err != nil {
