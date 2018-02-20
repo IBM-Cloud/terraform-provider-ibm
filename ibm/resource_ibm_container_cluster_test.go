@@ -58,6 +58,33 @@ func TestAccIBMContainerCluster_basic(t *testing.T) {
 	})
 }
 
+//testAccCheckIBMContainerClusterOptionalOrgSpace_basic
+func TestAccIBMContainerClusterOptionalOrgSpace_basic(t *testing.T) {
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMContainerClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerClusterOptionalOrgSpace_basic(clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "name", clusterName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "worker_num", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "kube_version", "1.7.4"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "workers.0.version", "1.7.4"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "workers.1.version", "1.7.4"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMContainerCluster_private_subnet(t *testing.T) {
 	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
 	resource.Test(t, resource.TestCase{
@@ -247,6 +274,38 @@ resource "ibm_container_cluster" "testacc_cluster" {
   private_vlan_id = "%s"
   no_subnet		  = true
 }	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
+}
+
+func testAccCheckIBMContainerClusterOptionalOrgSpace_basic(clusterName string) string {
+	return fmt.Sprintf(`
+
+data "ibm_org" "org" {
+    org = "%s"
+}
+
+data "ibm_account" "acc" {
+   org_guid = "${data.ibm_org.org.id}"
+}
+
+resource "ibm_container_cluster" "testacc_cluster" {
+  name       = "%s"
+  datacenter = "%s"
+
+  account_guid = "${data.ibm_account.acc.id}"
+
+  workers = [{
+    name = "worker1"
+  },{
+    name = "worker2"
+    }]
+
+  kube_version    = "1.7.4"
+  machine_type    = "%s"
+  isolation       = "public"
+  public_vlan_id  = "%s"
+  private_vlan_id = "%s"
+  no_subnet		  = true
+}	`, cfOrganization, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
 }
 
 func testAccCheckIBMContainerCluster_update(clusterName string) string {
