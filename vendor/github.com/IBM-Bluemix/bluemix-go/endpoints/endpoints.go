@@ -26,41 +26,48 @@ const (
 var regionToEndpoint = map[string]map[string]string{
 	"cf": {
 		"us-south": "https://api.ng.bluemix.net",
+		"us-east":  "https://api.us-east.bluemix.net",
 		"eu-gb":    "https://api.eu-gb.bluemix.net",
 		"au-syd":   "https://api.au-syd.bluemix.net",
 		"eu-de":    "https://api.eu-de.bluemix.net",
 	},
 	"mccp": {
 		"us-south": "https://mccp.ng.bluemix.net",
+		"us-east":  "https://mccp.us-east.bluemix.net",
 		"eu-gb":    "https://mccp.eu-gb.bluemix.net",
 		"au-syd":   "https://mccp.au-syd.bluemix.net",
 		"eu-de":    "https://mccp.eu-de.bluemix.net",
 	},
 	"iam": {
 		"us-south": "https://iam.ng.bluemix.net",
+		"us-east":  "https://iam.us-east.bluemix.net",
 		"eu-gb":    "https://iam.eu-gb.bluemix.net",
 		"au-syd":   "https://iam.au-syd.bluemix.net",
 		"eu-de":    "https://iam.eu-de.bluemix.net",
 	},
 	"iampap": {
 		"us-south": "https://iampap.ng.bluemix.net",
+		"us-east":  "https://iam.us-east.bluemix.net",
 		"eu-gb":    "https://iampap.eu-gb.bluemix.net",
 		"au-syd":   "https://iampap.au-syd.bluemix.net",
 	},
 	"uaa": {
 		"us-south": "https://login.ng.bluemix.net/UAALoginServerWAR",
+		"us-east":  "https://login.us-east.bluemix.net/UAALoginServerWAR",
 		"eu-gb":    "https://login.eu-gb.bluemix.net/UAALoginServerWAR",
 		"au-syd":   "https://login.au-syd.bluemix.net/UAALoginServerWAR",
 		"eu-de":    "https://login.eu-de.bluemix.net/UAALoginServerWAR",
 	},
 	"account": {
 		"us-south": "https://accountmanagement.ng.bluemix.net",
+		"us-east":  "https://accountmanagement.us-east.bluemix.net",
 		"eu-gb":    "https://accountmanagement.eu-gb.bluemix.net",
 		"au-syd":   "https://accountmanagement.au-syd.bluemix.net",
 		"eu-de":    "https://accountmanagement.eu-de.bluemix.net",
 	},
 	"cs": {
 		"us-south": "https://us-south.containers.bluemix.net",
+		"us-east":  "https://us-east.containers.bluemix.net",
 		"eu-de":    "https://eu-central.containers.bluemix.net",
 		"au-syd":   "https://ap-south.containers.bluemix.net",
 		"eu-gb":    "https://uk-south.containers.bluemix.net",
