@@ -178,7 +178,7 @@ resource "ibm_compute_vm_instance" "subnetvm1" {
     ipv6_enabled = true
 
     lifecycle {
-        ignore_changes = ["ipv6_static_enableds"]
+        ignore_changes = ["ipv6_static_enabled"]
     }
 }
 
@@ -221,6 +221,7 @@ resource "ibm_subnet" "static_subnet_v6" {
 
 const testAccCheckIBMSubnetConfigNotesUpdate = `
 resource "ibm_compute_vm_instance" "subnetvm1" {
+    hostname = "subnetvm1"
     domain = "example.com"
     os_reference_code = "DEBIAN_7_64"
     datacenter = "wdc04"
