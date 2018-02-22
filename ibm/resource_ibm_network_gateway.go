@@ -432,7 +432,7 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 			"Encountered problem trying to place the order: %s", err)
 	}
 
-	gID := *orderReceipt.OrderDetails.Hardware[0].GlobalIdentifier
+	gID := *orderReceipt.OrderDetails.OrderContainers[0].Hardware[0].GlobalIdentifier
 	bm, err := waitForNetworkGatewayMemberProvision(&order.Hardware[0], meta, gID)
 	if err != nil {
 		return fmt.Errorf(
@@ -455,7 +455,7 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 
 	if sameOrder {
 		// If we ordered HA and then wait for other member
-		gID1 := *orderReceipt.OrderDetails.Hardware[1].GlobalIdentifier
+		gID1 := *orderReceipt.OrderDetails.OrderContainers[0].Hardware[1].GlobalIdentifier
 		bm, err := waitForNetworkGatewayMemberProvision(&order.Hardware[1], meta, gID1)
 		if err != nil {
 			return fmt.Errorf(
@@ -497,7 +497,7 @@ func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) err
 	result, err := service.Id(id).Mask(
 		"insideVlans,members,status,privateIpAddress[ipAddress],publicIpAddress[ipAddress]," +
 			"members[hardware],members[hardware[datacenter]]," +
-			"members[hardware[primaryNetworkComponent]],members[hardware[backendNetworkComponents,primaryBackendNetworkComponent[redundancyEnabledFlag]," +
+			"members[hardware[primaryNetworkComponent[primaryVersion6IpAddressRecord]]],members[hardware[backendNetworkComponents,primaryBackendNetworkComponent[redundancyEnabledFlag]," +
 			"tagReferences,primaryIpAddress,primaryBackendIpAddress,userData," +
 			"primaryNetworkComponent[primaryVersion6IpAddressRecord],privateNetworkOnlyFlag," +
 			"powerSupplyCount,primaryNetworkComponent[networkVlan],memoryCapacity,networkVlans[id,vlanNumber]]]",
