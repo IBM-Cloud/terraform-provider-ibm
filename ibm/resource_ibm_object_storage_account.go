@@ -74,17 +74,17 @@ func resourceIBMObjectStorageAccountCreate(d *schema.ResourceData, meta interfac
 		GetAllObjects()
 	if err != nil {
 		return fmt.Errorf(
-			"resource_ibm_object_storage: Error ordering object storage account: %s", err)
+			"resource_ibm_object_storage_account: Error ordering object storage account: %s", err)
 	}
 	ObjectStorages, err := product.GetPackageProducts(sess, *packages[0].Id, objectStorageMask)
 	if err != nil {
 		return fmt.Errorf(
-			"resource_ibm_object_storage: Error ordering object storage account: %s", err)
+			"resource_ibm_object_storage_account: Error ordering object storage account: %s", err)
 	}
 
 	if len(ObjectStorages) == 0 {
 		return fmt.Errorf(
-			"resource_ibm_object_storage: Error getting Package Data: %s", err)
+			"resource_ibm_object_storage_account: Error getting Package Data: %s", err)
 	}
 	// Order the account
 	productOrderService := services.GetProductOrderService(sess.SetRetries(0))
@@ -107,21 +107,19 @@ func resourceIBMObjectStorageAccountCreate(d *schema.ResourceData, meta interfac
 		}
 	}
 
-	productOrderContainer := datatypes.Container_Product_Order_Network_Storage_Hub{
-		Container_Product_Order: datatypes.Container_Product_Order{
-			PackageId: sl.Int(*packages[0].Id),
-			Prices: []datatypes.Product_Item_Price{
-				{
-					Id: itemPriceID,
-				},
+	productOrderContainer := datatypes.Container_Product_Order{
+		PackageId: sl.Int(*packages[0].Id),
+		Prices: []datatypes.Product_Item_Price{
+			{
+				Id: itemPriceID,
 			},
-			Quantity: sl.Int(1),
 		},
+		Quantity: sl.Int(1),
 	}
 	receipt, err := productOrderService.PlaceOrder(&productOrderContainer, sl.Bool(false))
 	if err != nil {
 		return fmt.Errorf(
-			"resource_ibm_s3_object_storage: Error ordering s3 object storage: %s", err)
+			"resource_ibm_object_storage_account: Error ordering object storage: %s", err)
 	}
 
 	// Wait for the object storage account order to complete.
