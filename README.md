@@ -18,7 +18,7 @@ Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provi
 
 ```sh
 $ mkdir -p $GOPATH/src/github.com/terraform-providers; cd $GOPATH/src/github.com/terraform-providers
-$ git clone git@github.com:IBM-Bluemix/terraform-provider-ibm.git
+$ git clone git@github.com:sumit-tembe-ibm/terraform-provider-ibm.git
 ```
 
 Enter the provider directory and build the provider
