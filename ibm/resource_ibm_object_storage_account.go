@@ -43,7 +43,7 @@ func resourceIBMObjectStorageAccount() *schema.Resource {
 			},
 			"accountType": &schema.Schema{
 				Type:     schema.TypeString,
-				Default:  swift,
+				Default:  "SWIFT",
 				Optional: true,
 			},
 			"local_note": &schema.Schema{
