@@ -215,7 +215,7 @@ func getPublicIpItemKeyName(ipCount int) string {
 		name = "STATIC_PUBLIC_IP_ADDRESS"
 	}
 	ipCountString := strconv.Itoa(ipCount)
-	
+
 	return strings.Join([]string{ipCountString, name}, DELIMITER)
 }
 
