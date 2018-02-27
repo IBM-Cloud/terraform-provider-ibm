@@ -8,7 +8,8 @@ import (
 	"strconv"
 	"testing"
 )
-//Testcase for SWIFT object storage account 
+
+//Testcase for SWIFT object storage account
 func TestAccIBMObjectStorageAccount_Basic(t *testing.T) {
 	var accountName string
 
@@ -27,6 +28,7 @@ func TestAccIBMObjectStorageAccount_Basic(t *testing.T) {
 		},
 	})
 }
+
 //Testcase for S3 object storage account
 func TestAccIBMObjectStorageS3Account_Basic(t *testing.T) {
 	var accountName string
