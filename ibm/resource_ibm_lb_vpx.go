@@ -209,9 +209,13 @@ func getVPXPriceItemKeyName(version string, speed int, plan string) string {
 }
 
 func getPublicIpItemKeyName(ipCount int) string {
-	name := "STATIC_PUBLIC_IP_ADDRESSES"
-	ipCountString := strconv.Itoa(ipCount)
 
+	name := "STATIC_PUBLIC_IP_ADDRESSES"
+	if ipCount == 1 {
+		name = "STATIC_PUBLIC_IP_ADDRESS"
+	}
+	ipCountString := strconv.Itoa(ipCount)
+	
 	return strings.Join([]string{ipCountString, name}, DELIMITER)
 }
 
