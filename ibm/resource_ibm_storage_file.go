@@ -22,12 +22,14 @@ import (
 const (
 	storagePerformancePackageType = "STORAGE_AS_A_SERVICE"
 	storageEndurancePackageType   = "STORAGE_AS_A_SERVICE"
+	storageNasPackageType         = "ADDITIONAL_SERVICES_NETWORK_ATTACHED_STORAGE"
 	storageMask                   = "id,billingItem.orderItem.order.id"
 	storageDetailMask             = "id,capacityGb,iops,storageType,username,serviceResourceBackendIpAddress,properties[type]" +
 		",serviceResourceName,allowedIpAddresses,allowedSubnets,allowedVirtualGuests[id,allowedHost[name,credential[username,password]]],snapshotCapacityGb,osType,notes,billingItem[hourlyFlag]"
 	itemMask        = "id,capacity,description,units,keyName,prices[id,categories[id,name,categoryCode],capacityRestrictionMinimum,capacityRestrictionMaximum,locationGroupId]"
 	enduranceType   = "Endurance"
 	performanceType = "Performance"
+	nasType         = "NAS/FTP"
 	fileStorage     = "FILE_STORAGE"
 	blockStorage    = "BLOCK_STORAGE"
 	retryTime       = 5
@@ -170,9 +172,10 @@ func resourceIBMStorageFile() *schema.Resource {
 			},
 
 			"type": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validateStorageType,
 			},
 
 			"datacenter": {
@@ -189,7 +192,7 @@ func resourceIBMStorageFile() *schema.Resource {
 
 			"iops": {
 				Type:     schema.TypeFloat,
-				Required: true,
+				Optional: true,
 				ForceNew: true,
 			},
 
@@ -313,7 +316,19 @@ func resourceIBMStorageFileCreate(d *schema.ResourceData, meta interface{}) erro
 	snapshotCapacity := d.Get("snapshot_capacity").(int)
 	hourlyBilling := d.Get("hourly_billing").(bool)
 
-	storageOrderContainer, err := buildStorageProductOrderContainer(sess, storageType, iops, capacity, snapshotCapacity, fileStorage, datacenter, hourlyBilling)
+	var (
+		storageOrderContainer datatypes.Container_Product_Order
+		err                   error
+	)
+
+	if storageType == nasType {
+		if _, ok := d.GetOk("iops"); ok {
+			return fmt.Errorf("Error while creating storage: iops value can't be specified if type is %s", nasType)
+		}
+		storageOrderContainer, err = buildNasProductOrderContainer(sess, capacity, datacenter, hourlyBilling)
+	} else {
+		storageOrderContainer, err = buildStorageProductOrderContainer(sess, storageType, iops, capacity, snapshotCapacity, fileStorage, datacenter, hourlyBilling)
+	}
 	if err != nil {
 		return fmt.Errorf("Error while creating storage:%s", err)
 	}
@@ -336,6 +351,12 @@ func resourceIBMStorageFileCreate(d *schema.ResourceData, meta interface{}) erro
 				VolumeSize:              &capacity,
 				Iops:                    sl.Int(int(iops)),
 			}, sl.Bool(false))
+	case nasType:
+		receipt, err = services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(
+			&datatypes.Container_Product_Order_Network_Storage_Nas{
+				Container_Product_Order: storageOrderContainer,
+			}, sl.Bool(false))
+
 	default:
 		return fmt.Errorf("Error during creation of storage: Invalid storageType %s", storageType)
 	}
@@ -387,19 +408,25 @@ func resourceIBMStorageFileRead(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Error retrieving storage information: %s", err)
 	}
 
-	storageType := strings.Fields(*storage.StorageType.Description)[0]
-
-	// Calculate IOPS
-	iops, err := getIops(storage, storageType)
+	storageType, err := getStorageTypeFromKeyName(*storage.StorageType.KeyName)
 	if err != nil {
 		return fmt.Errorf("Error retrieving storage information: %s", err)
+	}
+
+	if storageType != nasType {
+		// Calculate IOPS
+		iops, err := getIops(storage, storageType)
+		if err != nil {
+			return fmt.Errorf("Error retrieving storage information: %s", err)
+		}
+		d.Set("iops", iops)
 	}
 
 	d.Set("type", storageType)
 	d.Set("capacity", *storage.CapacityGb)
 	d.Set("volumename", *storage.Username)
 	d.Set("hostname", *storage.ServiceResourceBackendIpAddress)
-	d.Set("iops", iops)
+
 	if storage.SnapshotCapacityGb != nil {
 		snapshotCapacity, _ := strconv.Atoi(*storage.SnapshotCapacityGb)
 		d.Set("snapshot_capacity", snapshotCapacity)
@@ -409,7 +436,7 @@ func resourceIBMStorageFileRead(d *schema.ResourceData, meta interface{}) error 
 	// if SoftLayer API returns "'serviceResourceName': 'PerfStor Aggr aggr_staasdal0601_p01'",
 	// the data center short name is "dal06".
 	r, _ := regexp.Compile("[a-zA-Z]{3}[0-9]{2}")
-	d.Set("datacenter", r.FindString(*storage.ServiceResourceName))
+	d.Set("datacenter", strings.ToLower(r.FindString(*storage.ServiceResourceName)))
 
 	// Read allowed_ip_addresses
 	allowedIpaddressesList := make([]string, 0, len(storage.AllowedIpAddresses))
@@ -574,6 +601,47 @@ func resourceIBMStorageFileExists(d *schema.ResourceData, meta interface{}) (boo
 	return true, nil
 }
 
+func buildNasProductOrderContainer(
+	sess *session.Session,
+	capacity int,
+	datacenter string,
+	hourlyBilling bool) (datatypes.Container_Product_Order, error) {
+
+	pkg, err := product.GetPackageByType(sess, storageNasPackageType)
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+
+	// Get all prices
+	productItems, err := product.GetPackageProducts(sess, *pkg.Id, itemMask)
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+
+	targetItemPrices := []datatypes.Product_Item_Price{}
+
+	capacityPrice, err := getPrice(productItems, fmt.Sprintf("NAS_%d_GB", capacity), "nas", "", 0)
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+
+	// Lookup the data center ID
+	dc, err := location.GetDatacenterByName(sess, datacenter)
+	if err != nil {
+		return datatypes.Container_Product_Order{},
+			fmt.Errorf("No data centers matching %s could be found", datacenter)
+	}
+
+	targetItemPrices = append(targetItemPrices, capacityPrice)
+	productOrderContainer := datatypes.Container_Product_Order{
+		PackageId:        pkg.Id,
+		Location:         sl.String(strconv.Itoa(*dc.Id)),
+		Prices:           targetItemPrices,
+		Quantity:         sl.Int(1),
+		UseHourlyPricing: sl.Bool(hourlyBilling),
+	}
+	return productOrderContainer, nil
+}
 func buildStorageProductOrderContainer(
 	sess *session.Session,
 	storageType string,
@@ -740,6 +808,7 @@ func WaitForStorageAvailable(d *schema.ResourceData, meta interface{}) (interfac
 		return nil, fmt.Errorf("The storage ID %s must be numeric", d.Id())
 	}
 	sess := meta.(ClientSession).SoftLayerSession()
+	storageType := d.Get("type").(string)
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"retry", "provisioning"},
 		Target:  []string{"available"},
@@ -760,22 +829,24 @@ func WaitForStorageAvailable(d *schema.ResourceData, meta interface{}) (interfac
 			}
 
 			// Check volume status.
-			log.Println("Checking volume status.")
-			resultStr := ""
-			err = sess.DoRequest(
-				"SoftLayer_Network_Storage",
-				"getObject",
-				nil,
-				&sl.Options{Id: &id, Mask: "volumeStatus"},
-				&resultStr,
-			)
-			if err != nil {
-				return false, "retry", nil
-			}
+			if storageType != nasType {
+				log.Println("Checking volume status.")
+				resultStr := ""
+				err = sess.DoRequest(
+					"SoftLayer_Network_Storage",
+					"getObject",
+					nil,
+					&sl.Options{Id: &id, Mask: "volumeStatus"},
+					&resultStr,
+				)
+				if err != nil {
+					return false, "retry", nil
+				}
 
-			if !strings.Contains(resultStr, "PROVISION_COMPLETED") &&
-				!strings.Contains(resultStr, "Volume Provisioning has completed") {
-				return result, "provisioning", nil
+				if !strings.Contains(resultStr, "PROVISION_COMPLETED") &&
+					!strings.Contains(resultStr, "Volume Provisioning has completed") {
+					return result, "provisioning", nil
+				}
 			}
 
 			return result, "available", nil
@@ -1199,4 +1270,16 @@ func updateNotes(d *schema.ResourceData, sess *session.Session, storage datatype
 	}
 
 	return nil
+}
+
+func getStorageTypeFromKeyName(key string) (string, error) {
+	switch key {
+	case "FILE_STORAGE":
+		return nasType, nil
+	case "ENDURANCE_FILE_STORAGE":
+		return enduranceType, nil
+	case "PERFORMANCE_FILE_STORAGE":
+		return performanceType, nil
+	}
+	return "", fmt.Errorf("Couldn't find storage type for key %s", key)
 }
