@@ -49,6 +49,46 @@ func resourceIBMNetworkGatewayVlanAttachmentCreate(d *schema.ResourceData, meta 
 	networkVlanID := d.Get("network_vlan_id").(int)
 	bypass := d.Get("bypass").(bool)
 
+	sess := meta.(ClientSession).SoftLayerSession()
+	service := services.GetNetworkGatewayService(sess)
+	vlanService := services.GetNetworkGatewayVlanService(sess)
+	result, err := service.Id(gatewayID).Mask(
+		"insideVlans",
+	).GetObject()
+	if err == nil && len(result.InsideVlans) > 0 {
+		insideVlans := result.InsideVlans
+		for _, i := range insideVlans {
+			if *i.NetworkVlanId == networkVlanID {
+				if bypass != *i.BypassFlag {
+					if !bypass {
+						err = vlanService.Id(*i.Id).Unbypass()
+						if err != nil {
+							return err
+						}
+					} else {
+						err = vlanService.Id(*i.Id).Bypass()
+						if err != nil {
+							return err
+						}
+					}
+					_, err = waitForNetworkGatewayActiveState(*i.NetworkGatewayId, meta)
+					if err != nil {
+						return err
+					}
+				}
+				vlan, err := vlanService.Id(*i.Id).GetObject()
+				if err != nil {
+					return fmt.Errorf("Error trying to retrieve Network Gateway Vlan: %s", err)
+				}
+				d.SetId(fmt.Sprintf("%d", *vlan.Id))
+				d.Set("bypass", vlan.BypassFlag)
+				d.Set("gateway_id", vlan.NetworkGatewayId)
+				d.Set("network_vlan_id", vlan.NetworkVlanId)
+				return nil
+			}
+		}
+	}
+
 	vlan := datatypes.Network_Gateway_Vlan{
 		NetworkGatewayId: sl.Int(gatewayID),
 		BypassFlag:       sl.Bool(bypass),
@@ -194,8 +234,8 @@ func waitForNetworkGatewayActiveState(id int, meta interface{}) (interface{}, er
 				log.Printf("Gateway (%d) is active", id)
 				return gw, "Active", nil
 			}
-			log.Printf("Gateway (%d) is active", id)
-			return gw, "Active", nil
+			log.Printf("Gateway (%d) status is %s", id, *gw.Name)
+			return gw, "updating", nil
 
 		},
 		Timeout:        24 * time.Hour,
