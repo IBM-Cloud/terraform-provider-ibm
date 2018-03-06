@@ -110,7 +110,7 @@ func resourceIBMFirewallCreate(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf("Error during creation of dedicated hardware firewall: %s", err)
 	}
-	vlan, err := findDedicatedFirewallByOrderId(sess, *receipt.OrderId)
+	vlan, err := findDedicatedFirewallByOrderID(sess, *receipt.OrderId)
 	if err != nil {
 		return fmt.Errorf("Error during creation of dedicated hardware firewall: %s", err)
 	}
@@ -234,7 +234,7 @@ func resourceIBMFirewallExists(d *schema.ResourceData, meta interface{}) (bool, 
 	return true, nil
 }
 
-func findDedicatedFirewallByOrderId(sess *session.Session, orderId int) (datatypes.Network_Vlan, error) {
+func findDedicatedFirewallByOrderID(sess *session.Session, orderId int) (datatypes.Network_Vlan, error) {
 	filterPath := "networkVlans.networkVlanFirewall.billingItem.orderItem.order.id"
 
 	stateConf := &resource.StateChangeConf{
@@ -259,9 +259,10 @@ func findDedicatedFirewallByOrderId(sess *session.Session, orderId int) (datatyp
 				return nil, "", fmt.Errorf("Expected one dedicated firewall: %s", err)
 			}
 		},
-		Timeout:    45 * time.Minute,
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
+		Timeout:        2 * time.Hour,
+		Delay:          10 * time.Second,
+		MinTimeout:     10 * time.Second,
+		NotFoundChecks: 24 * 60,
 	}
 
 	pendingResult, err := stateConf.WaitForState()
