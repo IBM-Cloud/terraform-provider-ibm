@@ -18,6 +18,7 @@ install:
 - go get github.com/kardianos/govendor
 
 script:
+- make fmt
 - make test
 - make vet
 
