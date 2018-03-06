@@ -97,7 +97,6 @@ var testingcdn = `
   }
 `
 
-//var hostname = fmt.Sprintf("www.%s.com", acctest.RandString(10))
 var hostname = "www.test1.com"
 var vendor_name = "akamai"
 var origin_address = "222.222.222.2"

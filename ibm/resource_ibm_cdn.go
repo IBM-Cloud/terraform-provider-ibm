@@ -63,10 +63,10 @@ func resourceIBMCDN() *schema.Resource {
 }
 
 func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
-	//create  session
+	//screate  session
 	sess := meta.(ClientSession).SoftLayerSession()
-	//log.Println("ordering cdn service...")
-	//get the value of all the parameters
+	log.Println("ordering cdn service...")
+	//sget the value of all the parameters
 	domain := d.Get("hostname").(string)
 	vendorname := d.Get("vendor_name").(string)
 	origintype := d.Get("origin_type").(string)
@@ -162,7 +162,6 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 		log.Println(err)
 		d.SetId(*receipt6[0].UniqueId)
 	}
-	//e := d.Id()
 
 	return nil
 }
@@ -182,7 +181,7 @@ func resourceIBMCDNRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
-	// Nothing to update for now. Not supported.
+	/// Nothing to update for now. Not supported.
 	sess := meta.(ClientSession).SoftLayerSession()
 	log.Println("Updating cdn service...")
 	domain := d.Get("hostname").(string)
@@ -193,7 +192,7 @@ func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
 	httpport := d.Get("httpport").(int)
 	e := d.Id()
 	service := services.GetNetworkCdnMarketplaceConfigurationMappingService(sess)
-	//pass the changed as well as unchanged parameters to update the resource.
+	///pass the changed as well as unchanged parameters to update the resource.
 	update, err := service.UpdateDomainMapping(&datatypes.Container_Network_CdnMarketplace_Configuration_Input{
 		Origin:     sl.String(originaddress),
 		VendorName: sl.String(vendorname),
@@ -246,7 +245,5 @@ func resourceIBMCDNExists(d *schema.ResourceData, meta interface{}) (bool, error
 		}
 		return false, fmt.Errorf("Error retrieving CDN mapping info: %s", err)
 	}
-	//log.Println("id found")
 	return true, nil
-	//return false, nil
 }
