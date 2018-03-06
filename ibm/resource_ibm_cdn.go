@@ -63,10 +63,10 @@ func resourceIBMCDN() *schema.Resource {
 }
 
 func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
-	//screate  session
+	///create  session
 	sess := meta.(ClientSession).SoftLayerSession()
 	log.Println("ordering cdn service...")
-	//sget the value of all the parameters
+	///get the value of all the parameters
 	domain := d.Get("hostname").(string)
 	vendorname := d.Get("vendor_name").(string)
 	origintype := d.Get("origin_type").(string)
