@@ -391,3 +391,24 @@ func validateBindedPackageName(v interface{}, k string) (ws []string, errors []e
 
 	return
 }
+
+func validateStorageType(v interface{}, k string) (ws []string, errors []error) {
+	validEtherTypes := map[string]bool{
+		"Endurance":   true,
+		"Performance": true,
+		"NAS/FTP":     true,
+	}
+
+	value := v.(string)
+	_, found := validEtherTypes[value]
+	if !found {
+		strarray := make([]string, 0, len(validEtherTypes))
+		for key := range validEtherTypes {
+			strarray = append(strarray, key)
+		}
+		errors = append(errors, fmt.Errorf(
+			"%q contains an invalid storage type %q. Valid types are %q.",
+			k, value, strings.Join(strarray, ",")))
+	}
+	return
+}
