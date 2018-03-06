@@ -283,4 +283,3 @@ func resourceIBMCDNExists(d *schema.ResourceData, meta interface{}) (bool, error
 	}
 	return true, nil
 }
-
