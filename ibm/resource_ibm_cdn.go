@@ -58,14 +58,14 @@ func resourceIBMCDN() *schema.Resource {
 				Default:  false,
 			},
 			"cname": &schema.Schema{
-				Type:     schema.TypeInt,
+				Type:     schema.TypeString,
 				Optional: true,
 				Default:  false,
 			},
 			"path": &schema.Schema{
-				Type:     schema.TypeInt,
+				Type:     schema.TypeString,
 				Optional: true,
-				Default:  false,
+				Default:  "",
 			},
 		},
 	}
@@ -75,6 +75,7 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 	///create  session
 	sess := meta.(ClientSession).SoftLayerSession()
 	log.Println("ordering cdn service...")
+	str := ".cdnedge.bluemix.net"
 	///get the value of all the parameters
 	domain := d.Get("hostname").(string)
 	vendorname := d.Get("vendor_name").(string)
@@ -86,7 +87,7 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 	bucketname := d.Get("bucketname").(string)
 	path := d.Get("path").(string)
 	cname := d.Get("cname").(string)
-
+	cname = cname + str
 	///creat an object of CDN service
 	service := services.GetNetworkCdnMarketplaceConfigurationMappingService(sess)
 	//////pass the parameters to create domain mapping
