@@ -24,6 +24,8 @@ resource "ibm_cdn" "test_cdn1" {
 ## Argument Reference
 
 * `hostname` - (Required,  string) Hostname associated with the cdn domain mapping.
+* `cname` - (Optional,  string) enter a unique cname for your cdn.
+* `path` - (Optional,  string) enter the path for the cdn .
 * `vendor_name` - (Required,  string) only “akamai” is supported for now.
 * `origin_type` - (Required,  string) mention the type of storage. It can be “HOST_SERVER” or “OBJECT_STORAGE”.
 * `origin_address` - (Required,  string) Provide the IP address for domain mapping.
