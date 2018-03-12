@@ -286,7 +286,7 @@ func resourceIBMFirewallPolicyRead(d *schema.ResourceData, meta interface{}) err
 		}
 		r["protocol"] = *rule.Protocol
 
-		if len(*rule.Notes) > 0 {
+		if rule.Notes != nil && len(*rule.Notes) > 0 {
 			r["notes"] = *rule.Notes
 		}
 		rules = append(rules, r)
