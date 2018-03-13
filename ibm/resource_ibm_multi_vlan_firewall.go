@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
+	"github.com/softlayer/softlayer-go/filter"
 	"github.com/softlayer/softlayer-go/helpers/location"
 	"github.com/softlayer/softlayer-go/services"
 	slsession "github.com/softlayer/softlayer-go/session"
@@ -17,8 +18,9 @@ import (
 func resourceIBMMultiVlanFirewall() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMNetworkMultiVlanCreate,
-		Read:     resourceIBMFirewallRead,
-		Delete:   resourceIBMMultiVlanFirewallDelete,
+		Read:     resourceIBMMultiVlanFirewallRead,
+		Delete:   resourceIBMFirewallDelete,
+		Exists:   resourceIBMFirewallExists,
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -45,14 +47,28 @@ func resourceIBMMultiVlanFirewall() *schema.Resource {
 
 			"public_vlan_id": {
 				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Computed: true,
+			},
+
+			"private_vlan_id": {
+				Type:     schema.TypeInt,
+				Computed: true,
 			},
 
 			"firewall_type": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
+			},
+
+			"public_ip": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"private_ip": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 
 			"addon_configuration": {
@@ -70,6 +86,7 @@ const (
 	complextype               = "SoftLayer_Container_Product_Order_Network_Protection_Firewall_Dedicated"
 	productpackageservicemask = "description,prices.locationGroupId,prices.id"
 	mandatoryfirewalltype     = "FortiGate Security Appliance"
+	multivlansmask            = "id,customerManagedFlag,datacenter.name,bandwidthAllocation"
 )
 
 func resourceIBMNetworkMultiVlanCreate(d *schema.ResourceData, meta interface{}) error {
@@ -82,7 +99,6 @@ func resourceIBMNetworkMultiVlanCreate(d *schema.ResourceData, meta interface{})
 	podservice := services.GetNetworkPodService(sess)
 	podfilter := strings.Replace(`{"datacenterName":{"operation":"datacentername"}}`, "datacentername", datacenter, -1)
 	podmask := `frontendRouterId,name`
-	publicVlanID := d.Get("public_vlan_id").(int)
 
 	// 1.Getting the router ID
 	routerids, err := podservice.Filter(podfilter).Mask(podmask).GetAllObjects()
@@ -162,7 +178,6 @@ func resourceIBMNetworkMultiVlanCreate(d *schema.ResourceData, meta interface{})
 		},
 		Name:     sl.String(name),
 		RouterId: &routerid,
-		VlanId:   &publicVlanID,
 	}
 
 	//8.Calling verify order
@@ -178,14 +193,14 @@ func resourceIBMNetworkMultiVlanCreate(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return fmt.Errorf("Error during Place order for Creating: %s", err)
 	}
-	vlan, err := findDedicatedFirewallByOrderID(sess, *receipt.OrderId)
+	_, vlan, err := findDedicatedFirewallByOrderID(sess, *receipt.OrderId, d)
 	if err != nil {
 		return fmt.Errorf("Error during creation of dedicated hardware firewall: %s", err)
 	}
-	id := *vlan.NetworkVlanFirewall.Id
+	id := *vlan.NetworkFirewall.Id
 	d.SetId(fmt.Sprintf("%d", id))
 	log.Printf("[INFO] Firewall ID: %s", d.Id())
-	return err
+	return resourceIBMMultiVlanFirewallRead(d, meta)
 }
 
 func returnpriceidaccordingtopackageid(addon string, listofpriceids []int, sess *slsession.Session) (int, error) {
@@ -213,46 +228,24 @@ func returnpriceidaccordingtopackageid(addon string, listofpriceids []int, sess 
 	return 0, nil
 }
 
-func resourceIBMMultiVlanFirewallDelete(d *schema.ResourceData, meta interface{}) error {
-	sess := meta.(ClientSession).SoftLayerSession()
-	fwService := services.GetNetworkVlanFirewallService(sess)
-
-	fwID, _ := strconv.Atoi(d.Id())
-
-	// Get billing item associated with the firewall
-	billingItem, err := fwService.Id(fwID).GetBillingItem()
-
-	if err != nil {
-		return fmt.Errorf("Error while looking up billing item associated with the firewall: %s", err)
-	}
-
-	if billingItem.Id == nil {
-		return fmt.Errorf("Error while looking up billing item associated with the firewall: No billing item for ID:%d", fwID)
-	}
-
-	success, err := services.GetBillingItemService(sess).Id(*billingItem.Id).CancelService()
-	if err != nil {
-		return err
-	}
-
-	if !success {
-		return fmt.Errorf("SoftLayer reported an unsuccessful cancellation")
-	}
-
-	return resourceIBMMultiVlanFirewallRead(d, meta)
-}
 func resourceIBMMultiVlanFirewallRead(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 
 	fwID, _ := strconv.Atoi(d.Id())
 
-	_, err := services.GetNetworkVlanFirewallService(sess).
-		Id(fwID).
-		Mask(fwMask).
-		GetObject()
-
+	firewalls, err := services.GetAccountService(sess).
+		Filter(filter.Build(
+			filter.Path("networkGateways.networkFirewall.id").
+				Eq(strconv.Itoa(fwID)))).
+		Mask(multivlanmask).
+		GetNetworkGateways()
 	if err != nil {
 		return fmt.Errorf("Error retrieving firewall information: %s", err)
 	}
+	d.Set("name", *firewalls[0].Name)
+	d.Set("public_ip", *firewalls[0].PublicIpAddress.IpAddress)
+	d.Set("private_ip", *firewalls[0].PrivateIpAddress.IpAddress)
+	d.Set("public_vlan_id", *firewalls[0].PublicVlan.Id)
+	d.Set("private_vlan_id", *firewalls[0].PrivateVlan.Id)
 	return nil
 }
