@@ -397,6 +397,7 @@ func validateStorageType(v interface{}, k string) (ws []string, errors []error) 
 		"Endurance":   true,
 		"Performance": true,
 		"NAS/FTP":     true,
+		"Portable":    true,
 	}
 
 	value := v.(string)
