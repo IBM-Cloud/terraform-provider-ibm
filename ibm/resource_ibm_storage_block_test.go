@@ -206,7 +206,7 @@ resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"
     domain = "example.com"
     os_reference_code = "DEBIAN_7_64"
-    datacenter = "dal06"
+    datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
     private_network_only = false
@@ -238,7 +238,7 @@ resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"
     domain = "example.com"
     os_reference_code = "DEBIAN_7_64"
-    datacenter = "dal06"
+    datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
     private_network_only = false
@@ -274,7 +274,7 @@ resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"
     domain = "example.com"
     os_reference_code = "DEBIAN_7_64"
-    datacenter = "dal06"
+    datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
     private_network_only = false
@@ -300,7 +300,7 @@ resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"
     domain = "example.com"
     os_reference_code = "DEBIAN_7_64"
-    datacenter = "dal06"
+    datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
     private_network_only = false
