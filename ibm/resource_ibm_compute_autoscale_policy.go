@@ -128,7 +128,12 @@ func resourceIBMComputeAutoScalePolicy() *schema.Resource {
 				},
 				Set: resourceIBMComputeAutoScalePolicyTriggerHash,
 			},
-
+			"append_triggers_to_existing": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				ForceNew: true,
+			},
 			"tags": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -140,63 +145,75 @@ func resourceIBMComputeAutoScalePolicy() *schema.Resource {
 }
 
 func resourceIBMComputeAutoScalePolicyCreate(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("Entered in create")
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetScalePolicyService(sess.SetRetries(0))
-
+	appendtriggerstoexisting := d.Get("append_triggers_to_existing").(bool)
+	
 	var err error
 
-	// Build up creation options
-	opts := datatypes.Scale_Policy{
-		Name:         sl.String(d.Get("name").(string)),
-		ScaleGroupId: sl.Int(d.Get("scale_group_id").(int)),
-		Cooldown:     sl.Int(d.Get("cooldown").(int)),
-	}
-
-	if *opts.Cooldown <= 0 || *opts.Cooldown > 864000 {
-		return fmt.Errorf("Error retrieving scalePolicy: %s", "cooldown must be between 0 seconds and 10 days.")
-	}
-
-	opts.ScaleActions = []datatypes.Scale_Policy_Action_Scale{{
-		Amount:    sl.Int(d.Get("scale_amount").(int)),
-		ScaleType: sl.String(d.Get("scale_type").(string)),
-	},
-	}
-	opts.ScaleActions[0].TypeId = sl.Int(1)
-	if *opts.ScaleActions[0].ScaleType != "ABSOLUTE" && *opts.ScaleActions[0].ScaleType != "RELATIVE" && *opts.ScaleActions[0].ScaleType != "PERCENT" {
-		return fmt.Errorf("Error retrieving scalePolicy: %s", "scale_type should be ABSOLUTE, RELATIVE, or PERCENT.")
-	}
-
-	if _, ok := d.GetOk("triggers"); ok {
-		err = validateTriggerTypes(d)
-		if err != nil {
-			return fmt.Errorf("Error retrieving scalePolicy: %s", err)
+	//to check whether to update the existing policy or create new policy
+	if appendtriggerstoexisting {
+		resourceIBMComputeAutoScalePolicyUpdate(d, meta)
+		return nil
+	} else {
+		// Build up creation options
+		opts := datatypes.Scale_Policy{
+			Name:         sl.String(d.Get("name").(string)),
+			ScaleGroupId: sl.Int(d.Get("scale_group_id").(int)),
+			Cooldown:     sl.Int(d.Get("cooldown").(int)),
 		}
 
-		opts.OneTimeTriggers, err = prepareOneTimeTriggers(d)
-		if err != nil {
-			return fmt.Errorf("Error retrieving scalePolicy: %s", err)
+		if *opts.Cooldown <= 0 || *opts.Cooldown > 864000 {
+			return fmt.Errorf("Error retrieving scalePolicy: %s", "cooldown must be between 0 seconds and 10 days.")
 		}
 
-		opts.RepeatingTriggers, err = prepareRepeatingTriggers(d)
-		if err != nil {
-			return fmt.Errorf("Error retrieving scalePolicy: %s", err)
+		opts.ScaleActions = []datatypes.Scale_Policy_Action_Scale{{
+			Amount:    sl.Int(d.Get("scale_amount").(int)),
+			ScaleType: sl.String(d.Get("scale_type").(string)),
+		},
+		}
+		opts.ScaleActions[0].TypeId = sl.Int(1)
+
+		if *opts.ScaleActions[0].Amount <= 0 {
+			return fmt.Errorf("Error retrieving scalePolicy: %s", "scale_amount should be greater than 0.")
+		}
+		if *opts.ScaleActions[0].ScaleType != "ABSOLUTE" && *opts.ScaleActions[0].ScaleType != "RELATIVE" && *opts.ScaleActions[0].ScaleType != "PERCENT" {
+			return fmt.Errorf("Error retrieving scalePolicy: %s", "scale_type should be ABSOLUTE, RELATIVE, or PERCENT.")
 		}
 
-		opts.ResourceUseTriggers, err = prepareResourceUseTriggers(d)
-		if err != nil {
-			return fmt.Errorf("Error retrieving scalePolicy: %s", err)
+		if _, ok := d.GetOk("triggers"); ok {
+			err = validateTriggerTypes(d)
+			if err != nil {
+				return fmt.Errorf("Error retrieving scalePolicy: %s", err)
+			}
+
+			opts.OneTimeTriggers, err = prepareOneTimeTriggers(d)
+			if err != nil {
+				return fmt.Errorf("Error retrieving scalePolicy: %s", err)
+			}
+
+			opts.RepeatingTriggers, err = prepareRepeatingTriggers(d)
+			if err != nil {
+				return fmt.Errorf("Error retrieving scalePolicy: %s", err)
+			}
+
+			opts.ResourceUseTriggers, err = prepareResourceUseTriggers(d)
+			if err != nil {
+				return fmt.Errorf("Error retrieving scalePolicy: %s", err)
+			}
 		}
+
+		res, err := service.CreateObject(&opts)
+		if err != nil {
+			return fmt.Errorf("Error creating Scale Policy: %s $s", err)
+		}
+
+		d.SetId(strconv.Itoa(*res.Id))
+		log.Printf("[INFO] Scale Policy: %d", res.Id)
+
+		return resourceIBMComputeAutoScalePolicyRead(d, meta)
 	}
-
-	res, err := service.CreateObject(&opts)
-	if err != nil {
-		return fmt.Errorf("Error creating Scale Policy: %s $s", err)
-	}
-
-	d.SetId(strconv.Itoa(*res.Id))
-	log.Printf("[INFO] Scale Polocy: %d", res.Id)
-
-	return resourceIBMComputeAutoScalePolicyRead(d, meta)
 }
 
 func resourceIBMComputeAutoScalePolicyRead(d *schema.ResourceData, meta interface{}) error {
@@ -205,7 +222,7 @@ func resourceIBMComputeAutoScalePolicyRead(d *schema.ResourceData, meta interfac
 
 	scalePolicyId, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf("Not a valid scale policy ID, must be an integer: %s", err)
+		return fmt.Errorf("Not a valid scale policy ID, IN READ must be an integer: %s", err)
 	}
 
 	log.Printf("[INFO] Reading Scale Polocy: %d", scalePolicyId)
@@ -230,18 +247,31 @@ func resourceIBMComputeAutoScalePolicyRead(d *schema.ResourceData, meta interfac
 }
 
 func resourceIBMComputeAutoScalePolicyUpdate(d *schema.ResourceData, meta interface{}) error {
-
 	sess := meta.(ClientSession).SoftLayerSession()
 	scalePolicyService := services.GetScalePolicyService(sess)
+	serviceScaleGroup := services.GetScaleGroupService(sess)
 	scalePolicyTriggerService := services.GetScalePolicyTriggerService(sess)
 	scalePolicyServiceNoRetry := services.GetScalePolicyService(sess.SetRetries(0))
+	appendtriggerstoexisting := d.Get("append_triggers_to_existing").(bool)
+	groupId := d.Get("scale_group_id").(int)
 
-	scalePolicyId, err := strconv.Atoi(d.Id())
+	policyName := d.Get("name").(string)
+
+	data, err := serviceScaleGroup.Id(groupId).Mask("mask[id,name]").GetPolicies()
+
+	var scalePolicyId int
+	for index, element := range data {
+		log.Printf("%d", index)
+		if *element.Name == policyName {
+			scalePolicyId = *element.Id
+		}
+	}
 	if err != nil {
-		return fmt.Errorf("Not a valid scale policy ID, must be an integer: %s", err)
+		return fmt.Errorf("Not a valid scale policy ID, IN UPDATE must be an integer: %s", err)
 	}
 
 	scalePolicy, err := scalePolicyService.Id(scalePolicyId).Mask(strings.Join(IBMComputeAutoScalePolicyObjectMask, ";")).GetObject()
+
 	if err != nil {
 		return fmt.Errorf("Error retrieving scalePolicy: %s", err)
 	}
@@ -296,17 +326,19 @@ func resourceIBMComputeAutoScalePolicyUpdate(d *schema.ResourceData, meta interf
 		}
 	}
 
-	for _, triggerList := range scalePolicy.Triggers {
-		log.Printf("[INFO] DELETE TRIGGERS %d", *triggerList.Id)
-		scalePolicyTriggerService.Id(*triggerList.Id).DeleteObject()
+	// this condition deletes the existing triggers and update the newly added which does not support for updating the triggers in autoscale policy
+	if !appendtriggerstoexisting {
+		for _, triggerList := range scalePolicy.Triggers {
+			log.Printf("[INFO] DELETE TRIGGERS %d", *triggerList.Id)
+			scalePolicyTriggerService.Id(*triggerList.Id).DeleteObject()
+		}
 	}
-
 	time.Sleep(60)
 	log.Printf("[INFO] Updating scale policy: %d", scalePolicyId)
 	_, err = scalePolicyServiceNoRetry.Id(scalePolicyId).EditObject(&template)
 
 	if err != nil {
-		return fmt.Errorf("Error updating scalie policy: %s", err)
+		return fmt.Errorf("Error updating scale policy: %s", err)
 	}
 
 	return nil
