@@ -209,10 +209,10 @@ func resourceIBMNetworkGateway() *schema.Resource {
 							Set:      schema.HashString,
 						},
 						"public_bandwidth": {
-							Type:             schema.TypeInt,
+							Type:             schema.TypeString,
 							Optional:         true,
 							ForceNew:         true,
-							Default:          20000,
+							Default:          "BANDWIDTH_20000_GB",
 							DiffSuppressFunc: applyOnce,
 						},
 						"memory": {
@@ -769,7 +769,7 @@ func getMonthlyGatewayOrder(d dataRetriever, meta interface{}) (datatypes.Contai
 	// Add public bandwidth
 
 	publicBandwidth := d.Get("public_bandwidth")
-	publicBandwidthStr := "BANDWIDTH_" + strconv.Itoa(publicBandwidth.(int)) + "_GB"
+	publicBandwidthStr := publicBandwidth.(string)
 	bandwidth, err := getItemPriceId(items, "bandwidth", publicBandwidthStr)
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
