@@ -195,7 +195,7 @@ resource "ibm_network_gateway" "standalone" {
 				os_key_name            = "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT"
 				redundant_network      = false
 				disk_key_names         = [ "HARD_DRIVE_2_00TB_SATA_II" ]
-				public_bandwidth       = 20000
+				public_bandwidth       = "BANDWIDTH_20000_GB"
 				memory                 = 4
 				ipv6_enabled           = true
 				tags                   = ["gateway_test", "terraform_test"]
@@ -225,7 +225,7 @@ func testAccCheckIBMNetworkGatewaySameHardwareConfig(gatewayName, hostname1, hos
 			  os_key_name          = "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT"
 			  redundant_network    = false
 			  disk_key_names       = ["HARD_DRIVE_2_00TB_SATA_II"]
-			  public_bandwidth     = 20000
+			  public_bandwidth     = "BANDWIDTH_20000_GB"
 			  memory               = 8
 			  tags                 = ["gateway tags 1", "terraform test tags 1"]
 			  notes                = "gateway notes 1"
@@ -243,7 +243,7 @@ func testAccCheckIBMNetworkGatewaySameHardwareConfig(gatewayName, hostname1, hos
 			  os_key_name          = "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT"
 			  redundant_network    = false
 			  disk_key_names       = ["HARD_DRIVE_2_00TB_SATA_II"]
-			  public_bandwidth     = 20000
+			  public_bandwidth     = "BANDWIDTH_20000_GB"
 			  memory               = 8
 			  tags                 = ["gateway tags 2", "terraform test tags 2"]
 			  notes                = "gateway notes 2"
