@@ -59,13 +59,13 @@ func resourceIBMServiceKeyCreate(d *schema.ResourceData, meta interface{}) error
 	}
 	name := d.Get("name").(string)
 	serviceInstanceGUID := d.Get("service_instance_guid").(string)
-	var parameters map[string]interface{}
+	var keyParams map[string]interface{}
 
 	if parameters, ok := d.GetOk("parameters"); ok {
-		parameters = parameters.(map[string]interface{})
+		keyParams = parameters.(map[string]interface{})
 	}
 
-	serviceKey, err := cfClient.ServiceKeys().Create(serviceInstanceGUID, name, parameters)
+	serviceKey, err := cfClient.ServiceKeys().Create(serviceInstanceGUID, name, keyParams)
 	if err != nil {
 		return fmt.Errorf("Error creating service key: %s", err)
 	}
