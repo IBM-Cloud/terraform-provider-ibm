@@ -57,6 +57,16 @@ func resourceIBMCDN() *schema.Resource {
 				Optional: true,
 				Default:  false,
 			},
+			"cname": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  false,
+			},
+			"path": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "",
+			},
 		},
 	}
 }
@@ -65,6 +75,7 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 	///create  session
 	sess := meta.(ClientSession).SoftLayerSession()
 	log.Println("ordering cdn service...")
+	str := ".cdnedge.bluemix.net"
 	///get the value of all the parameters
 	domain := d.Get("hostname").(string)
 	vendorname := d.Get("vendor_name").(string)
@@ -74,7 +85,9 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 	httpport := d.Get("httpport").(int)
 	httpsport := d.Get("httpsport").(int)
 	bucketname := d.Get("bucketname").(string)
-
+	path := d.Get("path").(string)
+	cname := d.Get("cname").(string)
+	cname = cname + str
 	///creat an object of CDN service
 	service := services.GetNetworkCdnMarketplaceConfigurationMappingService(sess)
 	//////pass the parameters to create domain mapping
@@ -83,6 +96,8 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			Origin:     sl.String(originaddress),
 			VendorName: sl.String(vendorname),
 			Domain:     sl.String(domain),
+			Path:       sl.String(path),
+			Cname:      sl.String(cname),
 			Protocol:   sl.String(protocol),
 			HttpPort:   sl.Int(httpport),
 			OriginType: sl.String(origintype),
@@ -102,6 +117,8 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			Origin:     sl.String(originaddress),
 			VendorName: sl.String(vendorname),
 			Domain:     sl.String(domain),
+			Path:       sl.String(path),
+			Cname:      sl.String(cname),
 			Protocol:   sl.String(protocol),
 			HttpsPort:  sl.Int(httpsport),
 			OriginType: sl.String(origintype),
@@ -121,6 +138,8 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			Origin:     sl.String(originaddress),
 			VendorName: sl.String(vendorname),
 			Domain:     sl.String(domain),
+			Path:       sl.String(path),
+			Cname:      sl.String(cname),
 			Protocol:   sl.String(protocol),
 			HttpPort:   sl.Int(httpport),
 			HttpsPort:  sl.Int(httpsport),
@@ -141,6 +160,8 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			Origin:     sl.String(originaddress),
 			VendorName: sl.String(vendorname),
 			Domain:     sl.String(domain),
+			Path:       sl.String(path),
+			Cname:      sl.String(cname),
 			Protocol:   sl.String(protocol),
 			HttpPort:   sl.Int(httpport),
 			OriginType: sl.String(origintype),
@@ -159,6 +180,8 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			Origin:     sl.String(originaddress),
 			VendorName: sl.String(vendorname),
 			Domain:     sl.String(domain),
+			Path:       sl.String(path),
+			Cname:      sl.String(cname),
 			Protocol:   sl.String(protocol),
 			HttpsPort:  sl.Int(httpsport),
 			OriginType: sl.String(origintype),
@@ -177,6 +200,8 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			Origin:     sl.String(originaddress),
 			VendorName: sl.String(vendorname),
 			Domain:     sl.String(domain),
+			Path:       sl.String(path),
+			Cname:      sl.String(cname),
 			Protocol:   sl.String(protocol),
 			HttpPort:   sl.Int(httpport),
 			HttpsPort:  sl.Int(httpsport),
