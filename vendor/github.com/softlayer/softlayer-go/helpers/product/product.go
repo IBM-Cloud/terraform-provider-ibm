@@ -222,6 +222,9 @@ func Returnpriceidaccordingtopackageid(addon string, listofpriceids []int, sess 
 		return 0, err
 	}
 	m := make(map[int]int)
+	if len(listofpriceids) == 0 {
+		listofpriceids = append(listofpriceids, 1)
+	}
 	for _, item := range listofpriceids {
 		for _, items := range resp {
 			for _, temp := range items.Prices {

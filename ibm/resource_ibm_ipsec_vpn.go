@@ -1,11 +1,7 @@
 package ibm
 
 import (
-	"strings"
 	"fmt"
-	"log"
-	"strconv"
-	"time"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -15,6 +11,10 @@ import (
 	"github.com/softlayer/softlayer-go/services"
 	"github.com/softlayer/softlayer-go/session"
 	"github.com/softlayer/softlayer-go/sl"
+	"log"
+	"strconv"
+	"strings"
+	"time"
 )
 
 func resourceIBMIPSecVPN() *schema.Resource {
@@ -99,7 +99,7 @@ func resourceIBMIPSecVPN() *schema.Resource {
 					},
 				},
 			},
-			"address_translation": {
+			"address_translation": { //Parameters for creating an adress translation
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
@@ -131,11 +131,11 @@ func resourceIBMIPSecVPN() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
-			"remote_subnet_id": {
+			"remote_subnet_id": { //customer subnet id . need atleast one customer subnet id for applying the configuratons
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
-			"remote_subnet": {
+			"remote_subnet": { //parameters to be populated for creating a customer subnet. Specify only one parameter:- remote subnet/remote subnet id
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
@@ -145,9 +145,9 @@ func resourceIBMIPSecVPN() *schema.Resource {
 							Required: true,
 						},
 						"Remote_IP_CIDR": {
-							Type:     schema.TypeString,
+							Type:         schema.TypeString,
 							ValidateFunc: validateCIDR,
-							Required: true,
+							Required:     true,
 						},
 						"AccountID": {
 							Type:     schema.TypeInt,
@@ -218,7 +218,7 @@ func resourceIBMIPSecVpnCreate(d *schema.ResourceData, meta interface{}) error {
 	id := *vpn.Id
 	d.SetId(fmt.Sprintf("%d", id))
 	log.Printf("[INFO] IPSec VPN ID: %s", d.Id())
-	return resourceIBMIPSecVPNRead(d, meta)
+	return resourceIBMIPSecVPNUpdate(d, meta)
 }
 
 func findIPSecVpnByOrderID(sess *session.Session, orderID int, d *schema.ResourceData) (datatypes.Network_Tunnel_Module_Context, error) {
@@ -419,8 +419,8 @@ func resourceIBMIPSecVPNUpdate(d *schema.ResourceData, meta interface{}) error {
 			notes := value["notes"].(string)
 			addresstranslation.Notes = &notes
 		}
-		_,err = services.GetNetworkTunnelModuleContextService(sess).Id(vpnID).CreateAddressTranslation(&addresstranslation)
-		if err!=nil{
+		_, err = services.GetNetworkTunnelModuleContextService(sess).Id(vpnID).CreateAddressTranslation(&addresstranslation)
+		if err != nil {
 			return fmt.Errorf("Unable to create the address translation: %s", err)
 		}
 	}
@@ -429,28 +429,36 @@ func resourceIBMIPSecVPNUpdate(d *schema.ResourceData, meta interface{}) error {
 			remoteSubnet := datatypes.Network_Customer_Subnet{}
 			value := e.(map[string]interface{})
 			customerIP := value["Remote_ip_adress"].(string)
-			s := strings.Split(customerIP,"/")
-			ip,cidr := s[0],s[1]
-			actualcidr,_ := strconv.Atoi(cidr)
+			s := strings.Split(customerIP, "/")
+			ip, cidr := s[0], s[1]
+			actualcidr, _ := strconv.Atoi(cidr)
 			accountID := value["AccountID"].(int)
 			remoteSubnet.NetworkIdentifier = &ip
 			remoteSubnet.Cidr = &actualcidr
 			remoteSubnet.AccountId = &accountID
-			subnet,err := services.GetNetworkCustomerSubnetService(sess).Id(vpnID).CreateObject(&remoteSubnet)
-			if err!=nil{
-				return fmt.Errorf("Some error occured creating the customer subnet resource %s" ,err)
+			subnet, err := services.GetNetworkCustomerSubnetService(sess).Id(vpnID).CreateObject(&remoteSubnet)
+			if err != nil {
+				return fmt.Errorf("Some error occured creating the customer subnet resource %s", err)
 			}
-			_,err = services.GetNetworkTunnelModuleContextService(sess).Id(vpnID).AddCustomerSubnetToNetworkTunnel(subnet.Id)
-			if err!= nil {
-				return fmt.Errorf("Some error occured adding the customer subnet to the network tunnel module %s" ,err)
+			_, err = services.GetNetworkTunnelModuleContextService(sess).Id(vpnID).AddCustomerSubnetToNetworkTunnel(subnet.Id)
+			if err != nil {
+				return fmt.Errorf("Some error occured adding the customer subnet to the network tunnel module %s", err)
 			}
-			
+
 		}
 	}
+	if _,ok := d.GetOk("remote_subnet_id") ; ok {
+
 	_, err = services.GetNetworkTunnelModuleContextService(sess).Id(vpnID).ApplyConfigurationsToDevice()
-	if err!=nil{
+	if err != nil {
 		return fmt.Errorf("There is some erorr applying the configuration %s", err)
 	}
+} else if _,ok := d.GetOk("remote_subnet") ; ok {
+	_, err = services.GetNetworkTunnelModuleContextService(sess).Id(vpnID).ApplyConfigurationsToDevice()
+	if err != nil {
+		return fmt.Errorf("There is some erorr applying the configuration %s", err)
+	}
+}
 
 	return resourceIBMIPSecVPNRead(d, meta)
 }

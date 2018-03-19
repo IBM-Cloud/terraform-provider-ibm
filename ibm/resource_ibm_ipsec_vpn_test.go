@@ -2,14 +2,14 @@ package ibm
 
 import (
 	"fmt"
-	"regexp"
-	"strconv"
-	"github.com/softlayer/softlayer-go/services"
-	"github.com/softlayer/softlayer-go/sl"
-	"testing"
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
+	"github.com/softlayer/softlayer-go/services"
+	"github.com/softlayer/softlayer-go/sl"
+	"regexp"
+	"strconv"
+	"testing"
 )
 
 func TestAccIBMIPSec_Basic(t *testing.T) {
@@ -66,13 +66,12 @@ func testAccCheckIBMIPSecDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_ipsec_vpn" {
 			continue
 		}
-		id,_ := strconv.Atoi(rs.Primary.ID)
+		id, _ := strconv.Atoi(rs.Primary.ID)
 
 		// Try to find the key
 		_, err = services.GetNetworkTunnelModuleContextService(sess).
-		Id(id).
-		GetObject()
-
+			Id(id).
+			GetObject()
 
 		if err == nil {
 			return fmt.Errorf("ipsec vpn (%s) to be destroyed still exists", rs.Primary.ID)
@@ -104,5 +103,5 @@ func testAccCheckIBMIPSECConfig_update(name string) string {
 			remote_subnet_id = %s
 			}
 			
-`, customerpeerip,customersubnetid)
+`, customerpeerip, customersubnetid)
 }
