@@ -10,8 +10,8 @@ import (
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/filter"
 	"github.com/softlayer/softlayer-go/helpers/location"
+	"github.com/softlayer/softlayer-go/helpers/product"
 	"github.com/softlayer/softlayer-go/services"
-	slsession "github.com/softlayer/softlayer-go/session"
 	"github.com/softlayer/softlayer-go/sl"
 )
 
@@ -150,7 +150,7 @@ func resourceIBMNetworkMultiVlanCreate(d *schema.ResourceData, meta interface{})
 	//5. Getting the priceids of items which have to be ordered
 	priceItems := []datatypes.Product_Item_Price{}
 	for _, addon := range actualaddons {
-		actualpriceid, err := returnpriceidaccordingtopackageid(addon, listofpriceids, sess, 863)
+		actualpriceid, err := product.Returnpriceidaccordingtopackageid(addon, listofpriceids, sess, 863)
 		if err != nil || actualpriceid == 0 {
 			return fmt.Errorf("The addon or the firewall is not available for the datacenter you have selected. Please enter a different datacenter")
 		}
@@ -201,31 +201,6 @@ func resourceIBMNetworkMultiVlanCreate(d *schema.ResourceData, meta interface{})
 	d.SetId(fmt.Sprintf("%d", id))
 	log.Printf("[INFO] Firewall ID: %s", d.Id())
 	return resourceIBMMultiVlanFirewallRead(d, meta)
-}
-
-func returnpriceidaccordingtopackageid(addon string, listofpriceids []int, sess *slsession.Session, packageid int) (int, error) {
-	productpackageservice := services.GetProductPackageService(sess)
-	productpackageservicefilter := strings.Replace(`{"items":{"description":{"operation":"appliance"}}}`, "appliance", addon, -1)
-	resp, err := productpackageservice.Mask(productpackageservicemask).Filter(productpackageservicefilter).Id(packageid).GetItems()
-	if err != nil {
-		return 0, err
-	}
-	m := make(map[int]int)
-	for _, item := range listofpriceids {
-		for _, items := range resp {
-			for _, temp := range items.Prices {
-				if temp.LocationGroupId == nil {
-					m[item] = *temp.Id
-				} else if item == *temp.LocationGroupId {
-					m[*temp.LocationGroupId] = *temp.Id
-				}
-			}
-		}
-		if val, ok := m[item]; ok {
-			return val, nil
-		}
-	}
-	return 0, nil
 }
 
 func resourceIBMMultiVlanFirewallRead(d *schema.ResourceData, meta interface{}) error {
