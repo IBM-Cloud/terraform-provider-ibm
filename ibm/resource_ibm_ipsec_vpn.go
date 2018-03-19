@@ -11,6 +11,7 @@ import (
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/filter"
 	"github.com/softlayer/softlayer-go/helpers/location"
+	"github.com/softlayer/softlayer-go/helpers/product"
 	"github.com/softlayer/softlayer-go/services"
 	"github.com/softlayer/softlayer-go/session"
 	"github.com/softlayer/softlayer-go/sl"
@@ -183,7 +184,7 @@ func resourceIBMIPSecVpnCreate(d *schema.ResourceData, meta interface{}) error {
 	for _, priceidd := range priceidds {
 		listofpriceids = append(listofpriceids, *priceidd.Id)
 	}
-	actualpriceid, err := returnpriceidaccordingtopackageid("IPSEC - Standard", listofpriceids, sess, 0)
+	actualpriceid, err := product.Returnpriceidaccordingtopackageid("IPSEC - Standard", listofpriceids, sess, 0)
 	priceItems := []datatypes.Product_Item_Price{}
 	priceItem := datatypes.Product_Item_Price{
 		Id: &actualpriceid,
