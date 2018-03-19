@@ -74,7 +74,7 @@ func resourceIBMDNSRecord() *schema.Resource {
 			"mx_priority": {
 				Type:     schema.TypeInt,
 				Optional: true,
-				Computed: true,
+				Default:  0,
 			},
 
 			"refresh": {
@@ -189,9 +189,8 @@ func resourceIBMDNSRecordCreate(d *schema.ResourceData, meta interface{}) error 
 		opts.Minimum = sl.Int(minimum.(int))
 	}
 
-	if mxPriority, ok := d.GetOk("mx_priority"); ok {
-		opts.MxPriority = sl.Int(mxPriority.(int))
-	}
+	mxPriority := d.Get("mx_priority")
+	opts.MxPriority = sl.Int(mxPriority.(int))
 
 	if refresh, ok := d.GetOk("refresh"); ok {
 		opts.Refresh = sl.Int(refresh.(int))
@@ -340,8 +339,8 @@ func resourceIBMDNSRecordUpdate(d *schema.ResourceData, meta interface{}) error 
 		record.Minimum = sl.Int(minimum_ttl.(int))
 	}
 
-	if mx_priority, ok := d.GetOk("mx_priority"); ok && d.HasChange("mx_priority") {
-		record.MxPriority = sl.Int(mx_priority.(int))
+	if d.HasChange("mx_priority") {
+		record.MxPriority = sl.Int(d.Get("mx_priority").(int))
 	}
 
 	if refresh, ok := d.GetOk("refresh"); ok && d.HasChange("refresh") {
