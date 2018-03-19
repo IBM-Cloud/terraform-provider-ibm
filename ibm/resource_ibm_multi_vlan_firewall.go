@@ -150,7 +150,7 @@ func resourceIBMNetworkMultiVlanCreate(d *schema.ResourceData, meta interface{})
 	//5. Getting the priceids of items which have to be ordered
 	priceItems := []datatypes.Product_Item_Price{}
 	for _, addon := range actualaddons {
-		actualpriceid, err := returnpriceidaccordingtopackageid(addon, listofpriceids, sess)
+		actualpriceid, err := returnpriceidaccordingtopackageid(addon, listofpriceids, sess, 863)
 		if err != nil || actualpriceid == 0 {
 			return fmt.Errorf("The addon or the firewall is not available for the datacenter you have selected. Please enter a different datacenter")
 		}
@@ -203,10 +203,10 @@ func resourceIBMNetworkMultiVlanCreate(d *schema.ResourceData, meta interface{})
 	return resourceIBMMultiVlanFirewallRead(d, meta)
 }
 
-func returnpriceidaccordingtopackageid(addon string, listofpriceids []int, sess *slsession.Session) (int, error) {
+func returnpriceidaccordingtopackageid(addon string, listofpriceids []int, sess *slsession.Session, packageid int) (int, error) {
 	productpackageservice := services.GetProductPackageService(sess)
 	productpackageservicefilter := strings.Replace(`{"items":{"description":{"operation":"appliance"}}}`, "appliance", addon, -1)
-	resp, err := productpackageservice.Mask(productpackageservicemask).Filter(productpackageservicefilter).Id(863).GetItems()
+	resp, err := productpackageservice.Mask(productpackageservicemask).Filter(productpackageservicefilter).Id(packageid).GetItems()
 	if err != nil {
 		return 0, err
 	}
