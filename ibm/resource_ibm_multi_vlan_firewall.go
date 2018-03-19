@@ -167,7 +167,7 @@ func resourceIBMNetworkMultiVlanCreate(d *schema.ResourceData, meta interface{})
 		productid = *packageid.Id
 	}
 
-	//7. Populate the container which needs to be sent for verify order and place order
+	//7. Populate the container which needs to be sent for Verify order and Place order
 	productOrderContainer := datatypes.Container_Product_Order_Network_Protection_Firewall_Dedicated{
 		Container_Product_Order: datatypes.Container_Product_Order{
 			PackageId:   &productid,
