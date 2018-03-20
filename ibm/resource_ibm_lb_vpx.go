@@ -202,14 +202,30 @@ func getVPXVersion(id int, sess *session.Session) (string, error) {
 func getVPXPriceItemKeyName(version string, speed int, plan string) string {
 	name := "CITRIX_NETSCALER_VPX"
 	speedMeasurements := "MBPS"
-	versionReplaced := strings.Replace(version, ".", DELIMITER, -1)
+
+	floatVersion, err := strconv.ParseFloat(version, 10)
+	if err != nil {
+		return ("Invalid Version :" + version)
+	}
+
+	newVersion := strconv.FormatFloat(floatVersion, 'f', -1, 64)
+
+	versionReplaced := strings.Replace(newVersion, ".", DELIMITER, -1)
+
 	speedString := strconv.Itoa(speed) + speedMeasurements
 
 	return strings.Join([]string{name, versionReplaced, speedString, strings.ToUpper(plan)}, DELIMITER)
 }
 
 func getPublicIpItemKeyName(ipCount int) string {
-	name := "STATIC_PUBLIC_IP_ADDRESSES"
+
+	var name string
+
+	if ipCount == 1 {
+		name = "STATIC_PUBLIC_IP_ADDRESS"
+	} else {
+		name = "STATIC_PUBLIC_IP_ADDRESSES"
+	}
 	ipCountString := strconv.Itoa(ipCount)
 
 	return strings.Join([]string{ipCountString, name}, DELIMITER)
