@@ -30,6 +30,7 @@ func resourceIBMIPSecVPN() *schema.Resource {
 			"datacenter": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"internal_peer_ip_address": {
 				Type:     schema.TypeString,
