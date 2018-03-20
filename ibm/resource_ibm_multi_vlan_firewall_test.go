@@ -1,9 +1,8 @@
 package ibm
 
 import (
-	"testing"
-
 	"github.com/hashicorp/terraform/helper/resource"
+	"testing"
 )
 
 func TestAccIBMMultiVlanFirewall_Basic(t *testing.T) {
@@ -25,7 +24,7 @@ func TestAccIBMMultiVlanFirewall_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_multi_vlan_firewall.firewall_first", "firewall_type", "FortiGate Firewall Appliance"),
 					resource.TestCheckResourceAttr(
-						"ibm_multi_vlan_firewall.firewall_first", "addon_configuration.#", "3"),	
+						"ibm_multi_vlan_firewall.firewall_first", "addon_configuration.#", "3"),
 				),
 			},
 		},
@@ -52,13 +51,12 @@ func TestAccIBMMultiVlanFirewallHA_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_multi_vlan_firewall.firewall_first", "firewall_type", "FortiGate Firewall Appliance HA Option"),
 					resource.TestCheckResourceAttr(
-						"ibm_multi_vlan_firewall.firewall_first", "addon_configuration.#", "3"),	
+						"ibm_multi_vlan_firewall.firewall_first", "addon_configuration.#", "3"),
 				),
 			},
 		},
 	})
 }
-
 
 const testAccCheckIBMMultiVlanFirewallConfig_basic = `
 resource "ibm_multi_vlan_firewall" "firewall_first" {
