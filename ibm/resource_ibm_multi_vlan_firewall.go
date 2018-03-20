@@ -56,9 +56,10 @@ func resourceIBMMultiVlanFirewall() *schema.Resource {
 			},
 
 			"firewall_type": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"FortiGate Firewall Appliance HA Option", "FortiGate Security Appliance"}),
 			},
 
 			"public_ip": {
@@ -72,10 +73,11 @@ func resourceIBMMultiVlanFirewall() *schema.Resource {
 			},
 
 			"addon_configuration": {
-				Type:     schema.TypeList,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeList,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Required:    true,
+				ForceNew:    true,
+				Description: `"Allowed Values:- ["FortiGate Security Appliance - Web Filtering Add-on (High Availability)","FortiGate Security Appliance - NGFW Add-on (High Availability)","FortiGate Security Appliance - AV Add-on (High Availability)"] or ["FortiGate Security Appliance - Web Filtering Add-on","FortiGate Security Appliance - NGFW Add-on","FortiGate Security Appliance - AV Add-on"]"`,
 			},
 		},
 	}
