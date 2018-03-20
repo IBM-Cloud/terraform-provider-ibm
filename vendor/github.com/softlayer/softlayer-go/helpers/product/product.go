@@ -212,16 +212,19 @@ func SelectProductPricesByCategory(
 	return prices
 }
 
-//Returnpriceidaccordingtopackageid Return the priceids according to datacenter location group ids and the product sent to it 
-func Returnpriceidaccordingtopackageid(addon string, listofpriceids []int, sess *session.Session) (int, error) {
+// Returnpriceidaccordingtopackageid return the priceids of the items according to the location group ids of the datacenter u specify
+func Returnpriceidaccordingtopackageid(addon string, listofpriceids []int, sess *session.Session, packageid int) (int, error) {
 	productpackageservice := services.GetProductPackageService(sess)
 	productpackageservicefilter := strings.Replace(`{"items":{"description":{"operation":"appliance"}}}`, "appliance", addon, -1)
 	productpackageservicemask := "description,prices.locationGroupId,prices.id"
-	resp, err := productpackageservice.Mask(productpackageservicemask).Filter(productpackageservicefilter).Id(863).GetItems()
+	resp, err := productpackageservice.Mask(productpackageservicemask).Filter(productpackageservicefilter).Id(packageid).GetItems()
 	if err != nil {
 		return 0, err
 	}
 	m := make(map[int]int)
+	if len(listofpriceids) == 0 {
+		listofpriceids = append(listofpriceids, 1)
+	}
 	for _, item := range listofpriceids {
 		for _, items := range resp {
 			for _, temp := range items.Prices {
