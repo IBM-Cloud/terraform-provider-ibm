@@ -448,18 +448,18 @@ func resourceIBMIPSecVPNUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		}
 	}
-	if _,ok := d.GetOk("remote_subnet_id") ; ok {
+	if _, ok := d.GetOk("remote_subnet_id"); ok {
 
-	_, err = services.GetNetworkTunnelModuleContextService(sess).Id(vpnID).ApplyConfigurationsToDevice()
-	if err != nil {
-		return fmt.Errorf("There is some erorr applying the configuration %s", err)
+		_, err = services.GetNetworkTunnelModuleContextService(sess).Id(vpnID).ApplyConfigurationsToDevice()
+		if err != nil {
+			return fmt.Errorf("There is some erorr applying the configuration %s", err)
+		}
+	} else if _, ok := d.GetOk("remote_subnet"); ok {
+		_, err = services.GetNetworkTunnelModuleContextService(sess).Id(vpnID).ApplyConfigurationsToDevice()
+		if err != nil {
+			return fmt.Errorf("There is some erorr applying the configuration %s", err)
+		}
 	}
-} else if _,ok := d.GetOk("remote_subnet") ; ok {
-	_, err = services.GetNetworkTunnelModuleContextService(sess).Id(vpnID).ApplyConfigurationsToDevice()
-	if err != nil {
-		return fmt.Errorf("There is some erorr applying the configuration %s", err)
-	}
-}
 
 	return resourceIBMIPSecVPNRead(d, meta)
 }
