@@ -213,7 +213,8 @@ func resourceIBMFirewallPolicyRead(d *schema.ResourceData, meta interface{}) err
 			r["dst_port_range_end"] = *rule.DestinationPortRangeEnd
 		}
 		r["protocol"] = *rule.Protocol
-		if len(*rule.Notes) > 0 {
+		//Check if notes is not nil
+		if rule.Notes != nil {
 			r["notes"] = *rule.Notes
 		}
 		rules = append(rules, r)
