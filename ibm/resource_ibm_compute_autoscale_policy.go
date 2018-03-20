@@ -148,7 +148,7 @@ func resourceIBMComputeAutoScalePolicyCreate(d *schema.ResourceData, meta interf
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetScalePolicyService(sess.SetRetries(0))
 	appendtriggerstoexisting := d.Get("append_triggers_to_existing").(bool)
-	
+
 	var err error
 
 	//to check whether to update the existing policy or create new policy
