@@ -143,9 +143,11 @@ func resourceIBMObjectStorageAccountCreate(d *schema.ResourceData, meta interfac
 		return fmt.Errorf("resource_ibm_object_storage_account: Expected one object storage account.")
 	}
 
-	d.SetId(fmt.Sprintf("%d", *objectStorageAccounts[0].Id))
-	d.Set("username", *objectStorageAccounts[0].Username)
 	log.Printf("[INFO] Storage Account ID: %s", d.Id())
+	log.Printf("[INFO] Storage Account Name: %s", *objectStorageAccounts[0].Username)
+
+	d.SetId(fmt.Sprintf("%d", *objectStorageAccounts[0].Id))
+	d.Set("name", *objectStorageAccounts[0].Username)
 
 	return resourceIBMObjectStorageAccountRead(d, meta)
 }

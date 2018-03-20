@@ -32,7 +32,8 @@ func resourceIBMCDN() *schema.Resource {
 
 			"origin_type": &schema.Schema{
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
+				Default:  "HOST_SERVER",
 			},
 			"origin_address": &schema.Schema{
 				Type:     schema.TypeString,
@@ -55,12 +56,27 @@ func resourceIBMCDN() *schema.Resource {
 			"httpsport": &schema.Schema{
 				Type:     schema.TypeInt,
 				Optional: true,
-				Default:  false,
+				Default:  443,
 			},
 			"cname": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  false,
+			},
+			"header": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "",
+			},
+			"respectheaders": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "true",
+			},
+			"fileExtension": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "",
 			},
 			"path": &schema.Schema{
 				Type:     schema.TypeString,
@@ -86,22 +102,33 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 	httpsport := d.Get("httpsport").(int)
 	bucketname := d.Get("bucketname").(string)
 	path := d.Get("path").(string)
+	header := d.Get("header").(string)
+	fileExtension := d.Get("fileExtension").(string)
+	respectheaders := d.Get("respectheaders").(string)
 	cname := d.Get("cname").(string)
-	cname = cname + str
+	if cname != "0" {
+		cname = cname + str
+	}
+	if cname == "0" {
+		cname = ""
+	}
 	///creat an object of CDN service
 	service := services.GetNetworkCdnMarketplaceConfigurationMappingService(sess)
 	//////pass the parameters to create domain mapping
 	if origintype == "OBJECT_STORAGE" && protocol == "HTTP" {
 		receipt1, err := service.CreateDomainMapping(&datatypes.Container_Network_CdnMarketplace_Configuration_Input{
-			Origin:     sl.String(originaddress),
-			VendorName: sl.String(vendorname),
-			Domain:     sl.String(domain),
-			Path:       sl.String(path),
-			Cname:      sl.String(cname),
-			Protocol:   sl.String(protocol),
-			HttpPort:   sl.Int(httpport),
-			OriginType: sl.String(origintype),
-			BucketName: sl.String(bucketname),
+			Origin:         sl.String(originaddress),
+			VendorName:     sl.String(vendorname),
+			Domain:         sl.String(domain),
+			Path:           sl.String(path),
+			Cname:          sl.String(cname),
+			Protocol:       sl.String(protocol),
+			HttpPort:       sl.Int(httpport),
+			FileExtension:  sl.String(fileExtension),
+			OriginType:     sl.String(origintype),
+			BucketName:     sl.String(bucketname),
+			Header:         sl.String(header),
+			RespectHeaders: sl.String(respectheaders),
 		})
 		///Print the response of the requested the service.
 		log.Print("Response for cdn order")
@@ -114,15 +141,18 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 	if origintype == "OBJECT_STORAGE" && protocol == "HTTPS" {
 		receipt2, err := service.CreateDomainMapping(&datatypes.Container_Network_CdnMarketplace_Configuration_Input{
-			Origin:     sl.String(originaddress),
-			VendorName: sl.String(vendorname),
-			Domain:     sl.String(domain),
-			Path:       sl.String(path),
-			Cname:      sl.String(cname),
-			Protocol:   sl.String(protocol),
-			HttpsPort:  sl.Int(httpsport),
-			OriginType: sl.String(origintype),
-			BucketName: sl.String(bucketname),
+			Origin:         sl.String(originaddress),
+			VendorName:     sl.String(vendorname),
+			Domain:         sl.String(domain),
+			Path:           sl.String(path),
+			Cname:          sl.String(cname),
+			Protocol:       sl.String(protocol),
+			HttpsPort:      sl.Int(httpsport),
+			FileExtension:  sl.String(fileExtension),
+			OriginType:     sl.String(origintype),
+			BucketName:     sl.String(bucketname),
+			Header:         sl.String(header),
+			RespectHeaders: sl.String(respectheaders),
 		})
 		///Print the response of the requested the service.
 		log.Print("Response for cdn order")
@@ -135,16 +165,19 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 	if origintype == "OBJECT_STORAGE" && protocol == "HTTP_AND_HTTPS" {
 		receipt3, err := service.CreateDomainMapping(&datatypes.Container_Network_CdnMarketplace_Configuration_Input{
-			Origin:     sl.String(originaddress),
-			VendorName: sl.String(vendorname),
-			Domain:     sl.String(domain),
-			Path:       sl.String(path),
-			Cname:      sl.String(cname),
-			Protocol:   sl.String(protocol),
-			HttpPort:   sl.Int(httpport),
-			HttpsPort:  sl.Int(httpsport),
-			OriginType: sl.String(origintype),
-			BucketName: sl.String(bucketname),
+			Origin:         sl.String(originaddress),
+			VendorName:     sl.String(vendorname),
+			Domain:         sl.String(domain),
+			Path:           sl.String(path),
+			Cname:          sl.String(cname),
+			Protocol:       sl.String(protocol),
+			HttpPort:       sl.Int(httpport),
+			HttpsPort:      sl.Int(httpsport),
+			FileExtension:  sl.String(fileExtension),
+			OriginType:     sl.String(origintype),
+			BucketName:     sl.String(bucketname),
+			Header:         sl.String(header),
+			RespectHeaders: sl.String(respectheaders),
 		})
 		///Print the response of the requested the service.
 		log.Print("Response for cdn order")
@@ -157,14 +190,16 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 	if origintype == "HOST_SERVER" && protocol == "HTTP" {
 		receipt4, err := service.CreateDomainMapping(&datatypes.Container_Network_CdnMarketplace_Configuration_Input{
-			Origin:     sl.String(originaddress),
-			VendorName: sl.String(vendorname),
-			Domain:     sl.String(domain),
-			Path:       sl.String(path),
-			Cname:      sl.String(cname),
-			Protocol:   sl.String(protocol),
-			HttpPort:   sl.Int(httpport),
-			OriginType: sl.String(origintype),
+			Origin:         sl.String(originaddress),
+			VendorName:     sl.String(vendorname),
+			Domain:         sl.String(domain),
+			Path:           sl.String(path),
+			Cname:          sl.String(cname),
+			Protocol:       sl.String(protocol),
+			HttpPort:       sl.Int(httpport),
+			OriginType:     sl.String(origintype),
+			Header:         sl.String(header),
+			RespectHeaders: sl.String(respectheaders),
 		})
 		///Print the response of the requested the service.
 		log.Print("Response for cdn order")
@@ -177,14 +212,16 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 	if origintype == "HOST_SERVER" && protocol == "HTTPS" {
 		receipt5, err := service.CreateDomainMapping(&datatypes.Container_Network_CdnMarketplace_Configuration_Input{
-			Origin:     sl.String(originaddress),
-			VendorName: sl.String(vendorname),
-			Domain:     sl.String(domain),
-			Path:       sl.String(path),
-			Cname:      sl.String(cname),
-			Protocol:   sl.String(protocol),
-			HttpsPort:  sl.Int(httpsport),
-			OriginType: sl.String(origintype),
+			Origin:         sl.String(originaddress),
+			VendorName:     sl.String(vendorname),
+			Domain:         sl.String(domain),
+			Path:           sl.String(path),
+			Cname:          sl.String(cname),
+			Protocol:       sl.String(protocol),
+			HttpsPort:      sl.Int(httpsport),
+			OriginType:     sl.String(origintype),
+			Header:         sl.String(header),
+			RespectHeaders: sl.String(respectheaders),
 		})
 		///Print the response of the requested the service.
 		log.Print("Response for cdn order")
@@ -197,15 +234,17 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 	if origintype == "HOST_SERVER" && protocol == "HTTP_AND_HTTPS" {
 		receipt6, err := service.CreateDomainMapping(&datatypes.Container_Network_CdnMarketplace_Configuration_Input{
-			Origin:     sl.String(originaddress),
-			VendorName: sl.String(vendorname),
-			Domain:     sl.String(domain),
-			Path:       sl.String(path),
-			Cname:      sl.String(cname),
-			Protocol:   sl.String(protocol),
-			HttpPort:   sl.Int(httpport),
-			HttpsPort:  sl.Int(httpsport),
-			OriginType: sl.String(origintype),
+			Origin:         sl.String(originaddress),
+			VendorName:     sl.String(vendorname),
+			Domain:         sl.String(domain),
+			Path:           sl.String(path),
+			Cname:          sl.String(cname),
+			Protocol:       sl.String(protocol),
+			HttpPort:       sl.Int(httpport),
+			HttpsPort:      sl.Int(httpsport),
+			OriginType:     sl.String(origintype),
+			Header:         sl.String(header),
+			RespectHeaders: sl.String(respectheaders),
 		})
 		///Print the response of the requested the service.
 		log.Print("Response for cdn order")
