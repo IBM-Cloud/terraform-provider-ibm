@@ -3,6 +3,8 @@ package ibm
 import (
 	"fmt"
 
+	"github.com/hashicorp/terraform/flatmap"
+
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -59,6 +61,6 @@ func dataSourceIBMServiceKeyRead(d *schema.ResourceData, meta interface{}) error
 		return fmt.Errorf("Error retrieving service key: %s", err)
 	}
 	d.SetId(serviceKey.GUID)
-	d.Set("credentials", flattenServiceKeyCredentials(serviceKey.Credentials))
+	d.Set("credentials", flatmap.Flatten(serviceKey.Credentials))
 	return nil
 }

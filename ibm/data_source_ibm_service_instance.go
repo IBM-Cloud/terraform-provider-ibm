@@ -3,6 +3,8 @@ package ibm
 import (
 	"fmt"
 
+	"github.com/hashicorp/terraform/flatmap"
+
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -80,7 +82,7 @@ func dataSourceIBMServiceInstanceRead(d *schema.ResourceData, meta interface{}) 
 
 	d.SetId(serviceInstance.Metadata.GUID)
 	serviceKeys := serviceInstance.Entity.ServiceKeys
-	d.Set("credentials", flattenCredentials(serviceInstance.Entity.Credentials))
+	d.Set("credentials", flatmap.Flatten(serviceInstance.Entity.Credentials))
 	d.Set("service_keys", flattenServiceInstanceCredentials(serviceKeys))
 	d.Set("service_plan_guid", serviceInstance.Entity.ServicePlanGUID)
 

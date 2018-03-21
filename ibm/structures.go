@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/hashicorp/terraform/flatmap"
+
 	"github.com/IBM-Bluemix/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Bluemix/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Bluemix/bluemix-go/api/mccp/mccpv2"
@@ -161,7 +163,7 @@ func flattenServiceInstanceCredentials(keys []mccpv2.ServiceKeyFields) []interfa
 	for i, k := range keys {
 		m := make(map[string]interface{})
 		m["name"] = k.Entity.Name
-		m["credentials"] = flattenServiceKeyCredentials(k.Entity.Credentials)
+		m["credentials"] = flatmap.Flatten(k.Entity.Credentials)
 		out[i] = m
 	}
 	return out

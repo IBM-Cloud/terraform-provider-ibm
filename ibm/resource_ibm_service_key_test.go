@@ -80,7 +80,7 @@ func TestAccIBMServiceKey_Parameters(t *testing.T) {
 					testAccCheckIBMServiceKeyExists("ibm_service_key.serviceKey", &conf),
 					resource.TestCheckResourceAttr("ibm_service_key.serviceKey", "name", serviceKey),
 					resource.TestCheckResourceAttr("ibm_service_key.serviceKey", "parameters.%", "1"),
-					resource.TestCheckResourceAttr("ibm_service_key.serviceKey", "credentials.%", "8"),
+					resource.TestCheckResourceAttr("ibm_service_key.serviceKey", "credentials.%", "9"),
 				),
 			},
 		},
