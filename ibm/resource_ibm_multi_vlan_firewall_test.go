@@ -3,6 +3,7 @@ package ibm
 import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"testing"
+	"regexp"
 )
 
 func TestAccIBMMultiVlanFirewall_Basic(t *testing.T) {
