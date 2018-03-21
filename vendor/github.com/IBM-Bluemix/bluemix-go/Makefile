@@ -1,5 +1,5 @@
 .PHONY : test
-test: vet test_deps
+test: test_deps vet
 	go test ./...
 
 .PHONY : test_deps

@@ -28,6 +28,8 @@ type AccountUser struct {
 //Accounts ...
 type Accounts interface {
 	GetAccountUsers(accountGuid string) ([]AccountUser, error)
+	InviteAccountUser(accountGuid string, userEmail string) (AccountInviteResponse, error)
+	DeleteAccountUser(accountGuid string, userGuid string) error
 }
 
 type account struct {
@@ -69,6 +71,13 @@ type Identity struct {
 	UserName   string `json:"username"`
 	Realmid    string `json:"realmid"`
 	Identifier string `json:"identifier"`
+}
+
+// Account Invites ...
+type AccountInviteResponse struct {
+	Id    string `json:"id"`
+	Email string `json:"email"`
+	State string `json:"state"`
 }
 
 func (resource AccountUserResource) ToModel() AccountUser {
@@ -118,4 +127,33 @@ func (a *account) GetAccountUsers(accountGuid string) ([]AccountUser, error) {
 	}
 
 	return users, err
+}
+
+func (a *account) InviteAccountUser(accountGuid string, userEmail string) (AccountInviteResponse, error) {
+	type userEntity struct {
+		Email       string `json:"email"`
+		AccountRole string `json:"account_role"`
+	}
+
+	payload := struct {
+		Users []userEntity `json:"users"`
+	}{
+		Users: []userEntity{
+			{
+				Email:       userEmail,
+				AccountRole: "MEMBER",
+			},
+		},
+	}
+
+	resp := AccountInviteResponse{}
+
+	_, err := a.client.Post(fmt.Sprintf("/v1/accounts/%s/users", accountGuid), payload, &resp)
+	return resp, err
+}
+
+func (a *account) DeleteAccountUser(accountGuid string, userGuid string) error {
+	_, err := a.client.Delete(fmt.Sprintf("/v1/accounts/%s/users/%s", accountGuid, userGuid))
+
+	return err
 }
