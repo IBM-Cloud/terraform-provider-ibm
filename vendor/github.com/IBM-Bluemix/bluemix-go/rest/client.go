@@ -123,7 +123,9 @@ func (c *Client) Do(r *Request, respV interface{}, errV interface{}) (*http.Resp
 		case io.Writer:
 			_, err = io.Copy(respV.(io.Writer), resp.Body)
 		default:
-			err = json.NewDecoder(resp.Body).Decode(respV)
+			dc := json.NewDecoder(resp.Body)
+			dc.UseNumber()
+			err = dc.Decode(respV)
 			if err == io.EOF {
 				err = ErrEmptyResponseBody
 			}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strings"
 
 	"github.com/IBM-Bluemix/bluemix-go/client"
 )
@@ -26,7 +27,9 @@ func NewPaginatedResources(resource interface{}) PaginatedResources {
 //Resources ...
 func (pr PaginatedResources) Resources() ([]interface{}, error) {
 	slicePtr := reflect.New(reflect.SliceOf(pr.resourceType))
-	err := json.Unmarshal([]byte(pr.ResourcesBytes), slicePtr.Interface())
+	dc := json.NewDecoder(strings.NewReader(string(pr.ResourcesBytes)))
+	dc.UseNumber()
+	err := dc.Decode(slicePtr.Interface())
 	slice := reflect.Indirect(slicePtr)
 
 	contents := make([]interface{}, 0, slice.Len())

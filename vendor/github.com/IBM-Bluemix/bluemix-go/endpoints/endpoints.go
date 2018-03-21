@@ -46,10 +46,11 @@ var regionToEndpoint = map[string]map[string]string{
 		"eu-de":    "https://iam.eu-de.bluemix.net",
 	},
 	"iampap": {
-		"us-south": "https://iampap.ng.bluemix.net",
-		"us-east":  "https://iam.us-east.bluemix.net",
-		"eu-gb":    "https://iampap.eu-gb.bluemix.net",
-		"au-syd":   "https://iampap.au-syd.bluemix.net",
+		"us-south": "https://iam.bluemix.net",
+		"us-east":  "https://iam.bluemix.net",
+		"eu-gb":    "https://iam.bluemix.net",
+		"au-syd":   "https://iam.bluemix.net",
+		"eu-de":    "https://iam.bluemix.net",
 	},
 	"uaa": {
 		"us-south": "https://login.ng.bluemix.net/UAALoginServerWAR",
