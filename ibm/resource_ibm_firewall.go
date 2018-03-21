@@ -22,7 +22,7 @@ const (
 
 	vlanMask = "firewallNetworkComponents,networkVlanFirewall.billingItem.orderItem.order.id,dedicatedFirewallFlag" +
 		",firewallGuestNetworkComponents,firewallInterfaces,firewallRules,highAvailabilityFirewallFlag"
-	fwMask        = "id,networkVlan.highAvailabilityFirewallFlag,tagReferences[id,tag[name]]"
+	fwMask        = "id,datacenter,primaryIpAddress,networkVlan.highAvailabilityFirewallFlag,tagReferences[id,tag[name]]"
 	multivlanmask = "id,name,networkFirewall[id,customerManagedFlag,datacenter.name,billingItem.orderItem.order.id],publicIpAddress.ipAddress,publicVlan[id,primaryRouter.hostname],privateVlan[id,primaryRouter.hostname],privateIpAddress.ipAddress,insideVlans[id],memberCount,status.keyName"
 )
 
