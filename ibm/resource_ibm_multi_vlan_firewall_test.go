@@ -2,8 +2,8 @@ package ibm
 
 import (
 	"github.com/hashicorp/terraform/helper/resource"
-	"testing"
 	"regexp"
+	"testing"
 )
 
 func TestAccIBMMultiVlanFirewall_Basic(t *testing.T) {
@@ -60,8 +60,8 @@ func TestAccIBMMultiVlanFirewallHA_Basic(t *testing.T) {
 }
 func TestAccIBMMultiVlanFirewall_InvalidFirewallType(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config:      testAccCheckIBMMultiVlanFirewallFirewallTypeConfig_InvalidFirewallType,
@@ -70,7 +70,6 @@ func TestAccIBMMultiVlanFirewall_InvalidFirewallType(t *testing.T) {
 		},
 	})
 }
-
 
 const testAccCheckIBMMultiVlanFirewallConfig_basic = `
 resource "ibm_multi_vlan_firewall" "firewall_first" {
@@ -100,6 +99,3 @@ const testAccCheckIBMMultiVlanFirewallFirewallTypeConfig_InvalidFirewallType = `
 		firewall_type = "FortiGate Firewall Appliance ABC"
 		addon_configuration = ["FortiGate Security Appliance - Web Filtering Add-on (High Availability)","FortiGate Security Appliance - NGFW Add-on (High Availability)","FortiGate Security Appliance - AV Add-on (High Availability)"]
 		}`
-
-
-
