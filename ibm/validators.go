@@ -163,7 +163,7 @@ func validateEncyptionProtocol(v interface{}, k string) (ws []string, errors []e
 	encyptionProtocol := v.(string)
 	if encyptionProtocol != "DES" && encyptionProtocol != "3DES" && encyptionProtocol != "AES128" && encyptionProtocol != "AES192" && encyptionProtocol != "AES256" {
 		errors = append(errors, fmt.Errorf(
-			"%q auth protocol can be DES or 3DES or AES128 or AES192 or AES256", k))
+			"%q encryption protocol can be DES or 3DES or AES128 or AES192 or AES256", k))
 	}
 	return
 }
@@ -172,7 +172,7 @@ func validateDiffieHellmanGroup(v interface{}, k string) (ws []string, errors []
 	diffieHellmanGroup := v.(int)
 	if diffieHellmanGroup != 0 && diffieHellmanGroup != 1 && diffieHellmanGroup != 2 && diffieHellmanGroup != 5 {
 		errors = append(errors, fmt.Errorf(
-			"%q auth protocol can be 0 or 1 or 2 or 5", k))
+			"%q Diffie Hellman Group can be 0 or 1 or 2 or 5", k))
 	}
 	return
 }
@@ -442,6 +442,7 @@ func validateStorageType(v interface{}, k string) (ws []string, errors []error) 
 		"Endurance":   true,
 		"Performance": true,
 		"NAS/FTP":     true,
+		"Portable":    true,
 	}
 
 	value := v.(string)

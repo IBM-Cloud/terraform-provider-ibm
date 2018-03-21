@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/services"
@@ -31,6 +33,8 @@ func TestAccIBMComputeAutoScalePolicy_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMComputeAutoScalePolicyExists("ibm_compute_autoscale_policy.sample-http-cluster-policy", &scalepolicy),
 					testAccCheckIBMComputeAutoScalePolicyAttributes(&scalepolicy, policyname),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_autoscale_policy.sample-http-cluster-policy", "append_triggers_to_existing", "true"),
 					resource.TestCheckResourceAttr(
 						"ibm_compute_autoscale_policy.sample-http-cluster-policy", "name", policyname),
 					resource.TestCheckResourceAttr(
@@ -260,7 +264,8 @@ resource "ibm_compute_autoscale_policy" "sample-http-cluster-policy" {
     scale_type = "RELATIVE"
     scale_amount = 1
     cooldown = 30
-    scale_group_id = "${ibm_compute_autoscale_group.sample-http-cluster-with-policy.id}"
+	scale_group_id = "${ibm_compute_autoscale_group.sample-http-cluster-with-policy.id}"
+	append_triggers_to_existing=true
     triggers = {
         type = "RESOURCE_USE"
         watches = {
@@ -315,7 +320,8 @@ resource "ibm_compute_autoscale_policy" "sample-http-cluster-policy" {
     scale_type = "ABSOLUTE"
     scale_amount = 2
     cooldown = 35
-    scale_group_id = "${ibm_compute_autoscale_group.sample-http-cluster-with-policy.id}"
+	scale_group_id = "${ibm_compute_autoscale_group.sample-http-cluster-with-policy.id}"
+	append_triggers_to_existing=true
     triggers = {
         type = "RESOURCE_USE"
         watches = {
@@ -438,3 +444,340 @@ resource "ibm_compute_autoscale_policy" "sample-http-cluster-policy" {
 }
 
 var testOnetimeTriggerUpdatedDate = time.Now().In(utcLoc).AddDate(0, 0, 2).Format(IBMComputeTestTimeFormat)
+
+func Test_resourceIBMComputeAutoScalePolicy(t *testing.T) {
+	tests := []struct {
+		name string
+		want *schema.Resource
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		if got := resourceIBMComputeAutoScalePolicy(); !reflect.DeepEqual(got, tt.want) {
+			t.Errorf("%q. resourceIBMComputeAutoScalePolicy() = %v, want %v", tt.name, got, tt.want)
+		}
+	}
+}
+
+func Test_resourceIBMComputeAutoScalePolicyCreate(t *testing.T) {
+	type args struct {
+		d    *schema.ResourceData
+		meta interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		if err := resourceIBMComputeAutoScalePolicyCreate(tt.args.d, tt.args.meta); (err != nil) != tt.wantErr {
+			t.Errorf("%q. resourceIBMComputeAutoScalePolicyCreate() error = %v, wantErr %v", tt.name, err, tt.wantErr)
+		}
+	}
+}
+
+func Test_resourceIBMComputeAutoScalePolicyRead(t *testing.T) {
+	type args struct {
+		d    *schema.ResourceData
+		meta interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		if err := resourceIBMComputeAutoScalePolicyRead(tt.args.d, tt.args.meta); (err != nil) != tt.wantErr {
+			t.Errorf("%q. resourceIBMComputeAutoScalePolicyRead() error = %v, wantErr %v", tt.name, err, tt.wantErr)
+		}
+	}
+}
+
+func Test_resourceIBMComputeAutoScalePolicyUpdate(t *testing.T) {
+	type args struct {
+		d    *schema.ResourceData
+		meta interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		if err := resourceIBMComputeAutoScalePolicyUpdate(tt.args.d, tt.args.meta); (err != nil) != tt.wantErr {
+			t.Errorf("%q. resourceIBMComputeAutoScalePolicyUpdate() error = %v, wantErr %v", tt.name, err, tt.wantErr)
+		}
+	}
+}
+
+func Test_resourceIBMComputeAutoScalePolicyDelete(t *testing.T) {
+	type args struct {
+		d    *schema.ResourceData
+		meta interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		if err := resourceIBMComputeAutoScalePolicyDelete(tt.args.d, tt.args.meta); (err != nil) != tt.wantErr {
+			t.Errorf("%q. resourceIBMComputeAutoScalePolicyDelete() error = %v, wantErr %v", tt.name, err, tt.wantErr)
+		}
+	}
+}
+
+func Test_resourceIBMComputeAutoScalePolicyExists(t *testing.T) {
+	type args struct {
+		d    *schema.ResourceData
+		meta interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    bool
+		wantErr bool
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		got, err := resourceIBMComputeAutoScalePolicyExists(tt.args.d, tt.args.meta)
+		if (err != nil) != tt.wantErr {
+			t.Errorf("%q. resourceIBMComputeAutoScalePolicyExists() error = %v, wantErr %v", tt.name, err, tt.wantErr)
+			continue
+		}
+		if got != tt.want {
+			t.Errorf("%q. resourceIBMComputeAutoScalePolicyExists() = %v, want %v", tt.name, got, tt.want)
+		}
+	}
+}
+
+func Test_validateTriggerTypes(t *testing.T) {
+	type args struct {
+		d *schema.ResourceData
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		if err := validateTriggerTypes(tt.args.d); (err != nil) != tt.wantErr {
+			t.Errorf("%q. validateTriggerTypes() error = %v, wantErr %v", tt.name, err, tt.wantErr)
+		}
+	}
+}
+
+func Test_prepareOneTimeTriggers(t *testing.T) {
+	type args struct {
+		d *schema.ResourceData
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []datatypes.Scale_Policy_Trigger_OneTime
+		wantErr bool
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		got, err := prepareOneTimeTriggers(tt.args.d)
+		if (err != nil) != tt.wantErr {
+			t.Errorf("%q. prepareOneTimeTriggers() error = %v, wantErr %v", tt.name, err, tt.wantErr)
+			continue
+		}
+		if !reflect.DeepEqual(got, tt.want) {
+			t.Errorf("%q. prepareOneTimeTriggers() = %v, want %v", tt.name, got, tt.want)
+		}
+	}
+}
+
+func Test_prepareRepeatingTriggers(t *testing.T) {
+	type args struct {
+		d *schema.ResourceData
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []datatypes.Scale_Policy_Trigger_Repeating
+		wantErr bool
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		got, err := prepareRepeatingTriggers(tt.args.d)
+		if (err != nil) != tt.wantErr {
+			t.Errorf("%q. prepareRepeatingTriggers() error = %v, wantErr %v", tt.name, err, tt.wantErr)
+			continue
+		}
+		if !reflect.DeepEqual(got, tt.want) {
+			t.Errorf("%q. prepareRepeatingTriggers() = %v, want %v", tt.name, got, tt.want)
+		}
+	}
+}
+
+func Test_prepareResourceUseTriggers(t *testing.T) {
+	type args struct {
+		d *schema.ResourceData
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []datatypes.Scale_Policy_Trigger_ResourceUse
+		wantErr bool
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		got, err := prepareResourceUseTriggers(tt.args.d)
+		if (err != nil) != tt.wantErr {
+			t.Errorf("%q. prepareResourceUseTriggers() error = %v, wantErr %v", tt.name, err, tt.wantErr)
+			continue
+		}
+		if !reflect.DeepEqual(got, tt.want) {
+			t.Errorf("%q. prepareResourceUseTriggers() = %v, want %v", tt.name, got, tt.want)
+		}
+	}
+}
+
+func Test_prepareWatches(t *testing.T) {
+	type args struct {
+		d *schema.Set
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []datatypes.Scale_Policy_Trigger_ResourceUse_Watch
+		wantErr bool
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		got, err := prepareWatches(tt.args.d)
+		if (err != nil) != tt.wantErr {
+			t.Errorf("%q. prepareWatches() error = %v, wantErr %v", tt.name, err, tt.wantErr)
+			continue
+		}
+		if !reflect.DeepEqual(got, tt.want) {
+			t.Errorf("%q. prepareWatches() = %v, want %v", tt.name, got, tt.want)
+		}
+	}
+}
+
+func Test_readOneTimeTriggers(t *testing.T) {
+	type args struct {
+		list []datatypes.Scale_Policy_Trigger_OneTime
+	}
+	tests := []struct {
+		name string
+		args args
+		want []map[string]interface{}
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		if got := readOneTimeTriggers(tt.args.list); !reflect.DeepEqual(got, tt.want) {
+			t.Errorf("%q. readOneTimeTriggers() = %v, want %v", tt.name, got, tt.want)
+		}
+	}
+}
+
+func Test_readRepeatingTriggers(t *testing.T) {
+	type args struct {
+		list []datatypes.Scale_Policy_Trigger_Repeating
+	}
+	tests := []struct {
+		name string
+		args args
+		want []map[string]interface{}
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		if got := readRepeatingTriggers(tt.args.list); !reflect.DeepEqual(got, tt.want) {
+			t.Errorf("%q. readRepeatingTriggers() = %v, want %v", tt.name, got, tt.want)
+		}
+	}
+}
+
+func Test_readResourceUseTriggers(t *testing.T) {
+	type args struct {
+		list []datatypes.Scale_Policy_Trigger_ResourceUse
+	}
+	tests := []struct {
+		name string
+		args args
+		want []map[string]interface{}
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		if got := readResourceUseTriggers(tt.args.list); !reflect.DeepEqual(got, tt.want) {
+			t.Errorf("%q. readResourceUseTriggers() = %v, want %v", tt.name, got, tt.want)
+		}
+	}
+}
+
+func Test_readResourceUseWatches(t *testing.T) {
+	type args struct {
+		list []datatypes.Scale_Policy_Trigger_ResourceUse_Watch
+	}
+	tests := []struct {
+		name string
+		args args
+		want []interface{}
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		if got := readResourceUseWatches(tt.args.list); !reflect.DeepEqual(got, tt.want) {
+			t.Errorf("%q. readResourceUseWatches() = %v, want %v", tt.name, got, tt.want)
+		}
+	}
+}
+
+func Test_resourceIBMComputeAutoScalePolicyTriggerHash(t *testing.T) {
+	type args struct {
+		v interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		if got := resourceIBMComputeAutoScalePolicyTriggerHash(tt.args.v); got != tt.want {
+			t.Errorf("%q. resourceIBMComputeAutoScalePolicyTriggerHash() = %v, want %v", tt.name, got, tt.want)
+		}
+	}
+}
+
+func Test_resourceIBMComputeAutoScalePolicyHandlerHash(t *testing.T) {
+	type args struct {
+		v interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		if got := resourceIBMComputeAutoScalePolicyHandlerHash(tt.args.v); got != tt.want {
+			t.Errorf("%q. resourceIBMComputeAutoScalePolicyHandlerHash() = %v, want %v", tt.name, got, tt.want)
+		}
+	}
+}
