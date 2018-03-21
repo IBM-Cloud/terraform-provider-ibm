@@ -147,6 +147,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_storage_block":                    resourceIBMStorageBlock(),
 			"ibm_storage_file":                     resourceIBMStorageFile(),
 			"ibm_subnet":                           resourceIBMSubnet(),
+			"ibm_multi_vlan_firewall":              resourceIBMMultiVlanFirewall(),
 			"ibm_cdn":                              resourceIBMCDN(),
 			"ibm_ipsec_vpn":                        resourceIBMIPSecVPN(),
 		},
