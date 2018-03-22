@@ -25,7 +25,7 @@ const (
 	storageNasPackageType         = "ADDITIONAL_SERVICES_NETWORK_ATTACHED_STORAGE"
 	storageMask                   = "id,billingItem.orderItem.order.id"
 	storageDetailMask             = "id,capacityGb,iops,storageType,username,serviceResourceBackendIpAddress,properties[type]" +
-		",serviceResourceName,allowedIpAddresses,allowedSubnets,allowedVirtualGuests[id,allowedHost[name,credential[username,password]]],snapshotCapacityGb,osType,notes,billingItem[hourlyFlag]"
+		",serviceResourceName,allowedIpAddresses,allowedSubnets,allowedVirtualGuests[id,allowedHost[name,credential[username,password]]],snapshotCapacityGb,osType,notes,billingItem[hourlyFlag],serviceResource[datacenter[name]]"
 	itemMask        = "id,capacity,description,units,keyName,prices[id,categories[id,name,categoryCode],capacityRestrictionMinimum,capacityRestrictionMaximum,locationGroupId]"
 	enduranceType   = "Endurance"
 	performanceType = "Performance"
@@ -432,12 +432,17 @@ func resourceIBMStorageFileRead(d *schema.ResourceData, meta interface{}) error 
 		d.Set("snapshot_capacity", snapshotCapacity)
 	}
 
-	// Parse data center short name from ServiceResourceName. For example,
-	// if SoftLayer API returns "'serviceResourceName': 'PerfStor Aggr aggr_staasdal0601_p01'",
-	// the data center short name is "dal06".
-	r, _ := regexp.Compile("[a-zA-Z]{3}[0-9]{2}")
-	d.Set("datacenter", strings.ToLower(r.FindString(*storage.ServiceResourceName)))
-
+	if storageType == nasType {
+		if storage.ServiceResource != nil {
+			d.Set("datacenter", *storage.ServiceResource.Datacenter.Name)
+		}
+	} else {
+		// Parse data center short name from ServiceResourceName. For example,
+		// if SoftLayer API returns "'serviceResourceName': 'PerfStor Aggr aggr_staasdal0601_p01'",
+		// the data center short name is "dal06".
+		r, _ := regexp.Compile("[a-zA-Z]{3}[0-9]{2}")
+		d.Set("datacenter", strings.ToLower(r.FindString(*storage.ServiceResourceName)))
+	}
 	// Read allowed_ip_addresses
 	allowedIpaddressesList := make([]string, 0, len(storage.AllowedIpAddresses))
 	for _, allowedIpaddress := range storage.AllowedIpAddresses {
