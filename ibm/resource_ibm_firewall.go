@@ -65,7 +65,7 @@ func resourceIBMFirewall() *schema.Resource {
 }
 
 // keyName is in between:[HARDWARE_FIREWALL_DEDICATED, HARDWARE_FIREWALL_HIGH_AVAILABILITY,
-//                        FORTIGATE_SECURITY_APPLIANCE, FORTIGATE_SECURITY_APPLIANCE_HIGH_AVAILABILITY]
+//                         FORTIGATE_SECURITY_APPLIANCE, FORTIGATE_SECURITY_APPLIANCE_HIGH_AVAILABILITY]
 func resourceIBMFirewallCreate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 
