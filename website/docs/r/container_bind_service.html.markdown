@@ -34,8 +34,8 @@ The following arguments are supported:
 * `service_instance_space_guid` - (Required, string) The space GUID associated with the service instance.
 * `service_instance_name_id` - (Required, string) The name or ID of the service that you want to bind to the cluster.
 * `namespace_id` - (Required, string) The Kubernetes namespace.
-* `org_guid` - (Required, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from data source `ibm_org` or by running the `bx iam orgs --guid` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
-* `space_guid` - (Required, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from data source `ibm_space` or by running the `bx iam space <space-name> --guid` command in the IBM Cloud CLI.
+* `org_guid` - (Optional, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from data source `ibm_org` or by running the `bx iam orgs --guid` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `space_guid` - (Optional, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from data source `ibm_space` or by running the `bx iam space <space-name> --guid` command in the IBM Cloud CLI.
 * `account_guid` - (Optional, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from data source `ibm_account` or by running the `bx iam accounts` command in the IBM Cloud CLI.
 * `tags` - (Optional, array of strings) Tags associated with the container bind service instance.
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.

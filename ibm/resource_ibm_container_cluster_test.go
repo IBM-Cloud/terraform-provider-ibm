@@ -283,15 +283,9 @@ data "ibm_org" "org" {
     org = "%s"
 }
 
-data "ibm_account" "acc" {
-   org_guid = "${data.ibm_org.org.id}"
-}
-
 resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
   datacenter = "%s"
-
-  account_guid = "${data.ibm_account.acc.id}"
 
   workers = [{
     name = "worker1"
