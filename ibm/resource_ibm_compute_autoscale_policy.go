@@ -340,7 +340,10 @@ func resourceIBMComputeAutoScalePolicyUpdate(d *schema.ResourceData, meta interf
 		return fmt.Errorf("Error updating scale policy: %s", err)
 	}
 
-	return nil
+	d.SetId(strconv.Itoa(scalePolicyId))
+	log.Printf("[INFO] Scale Policy: %s", d.Id())
+
+	return resourceIBMComputeAutoScalePolicyRead(d, meta)
 }
 
 func resourceIBMComputeAutoScalePolicyDelete(d *schema.ResourceData, meta interface{}) error {
