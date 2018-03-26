@@ -69,9 +69,9 @@ func resourceIBMCDN() *schema.Resource {
 				Default:  "",
 			},
 			"respectheaders": &schema.Schema{
-				Type:     schema.TypeString,
+				Type:     schema.TypeBool,
 				Optional: true,
-				Default:  "true",
+				Default:  true,
 			},
 			"fileExtension": &schema.Schema{
 				Type:     schema.TypeString,
@@ -104,7 +104,7 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 	path := d.Get("path").(string)
 	header := d.Get("header").(string)
 	fileExtension := d.Get("fileExtension").(string)
-	respectheaders := d.Get("respectheaders").(string)
+	respectheaders := d.Get("respectheaders").(bool)
 	cname := d.Get("cname").(string)
 	if cname != "0" {
 		cname = cname + str
@@ -128,7 +128,7 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			OriginType:     sl.String(origintype),
 			BucketName:     sl.String(bucketname),
 			Header:         sl.String(header),
-			RespectHeaders: sl.String(respectheaders),
+			RespectHeaders: sl.Bool(respectheaders),
 		})
 		///Print the response of the requested the service.
 		log.Print("Response for cdn order")
@@ -152,7 +152,7 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			OriginType:     sl.String(origintype),
 			BucketName:     sl.String(bucketname),
 			Header:         sl.String(header),
-			RespectHeaders: sl.String(respectheaders),
+			RespectHeaders: sl.Bool(respectheaders),
 		})
 		///Print the response of the requested the service.
 		log.Print("Response for cdn order")
@@ -177,7 +177,7 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			OriginType:     sl.String(origintype),
 			BucketName:     sl.String(bucketname),
 			Header:         sl.String(header),
-			RespectHeaders: sl.String(respectheaders),
+			RespectHeaders: sl.Bool(respectheaders),
 		})
 		///Print the response of the requested the service.
 		log.Print("Response for cdn order")
@@ -199,7 +199,7 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			HttpPort:       sl.Int(httpport),
 			OriginType:     sl.String(origintype),
 			Header:         sl.String(header),
-			RespectHeaders: sl.String(respectheaders),
+			RespectHeaders: sl.Bool(respectheaders),
 		})
 		///Print the response of the requested the service.
 		log.Print("Response for cdn order")
@@ -221,7 +221,7 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			HttpsPort:      sl.Int(httpsport),
 			OriginType:     sl.String(origintype),
 			Header:         sl.String(header),
-			RespectHeaders: sl.String(respectheaders),
+			RespectHeaders: sl.Bool(respectheaders),
 		})
 		///Print the response of the requested the service.
 		log.Print("Response for cdn order")
@@ -244,7 +244,7 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			HttpsPort:      sl.Int(httpsport),
 			OriginType:     sl.String(origintype),
 			Header:         sl.String(header),
-			RespectHeaders: sl.String(respectheaders),
+			RespectHeaders: sl.Bool(respectheaders),
 		})
 		///Print the response of the requested the service.
 		log.Print("Response for cdn order")
