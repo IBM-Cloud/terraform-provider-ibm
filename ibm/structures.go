@@ -588,8 +588,8 @@ func flattenGatewayMembers(d *schema.ResourceData, list []datatypes.Network_Gate
 		member["hostname"] = *hardware.Hostname
 		member["domain"] = *hardware.Domain
 		member["priority"] = *ele.Priority
-		passwords := make([]map[string]string, len(hardware.OperatingSystem.Passwords))
 		if hardware.OperatingSystem != nil && hardware.OperatingSystem.Passwords != nil {
+			passwords := make([]map[string]string, len(hardware.OperatingSystem.Passwords))
 			OperatingSystem := *hardware.OperatingSystem
 			for index := range OperatingSystem.Passwords {
 				creds := make(map[string]string)
@@ -597,8 +597,8 @@ func flattenGatewayMembers(d *schema.ResourceData, list []datatypes.Network_Gate
 				creds["password"] = *OperatingSystem.Passwords[index].Password
 				passwords[index] = creds
 			}
+			member["passwords"] = passwords
 		}
-		member["passwords"] = passwords
 		if hardware.Notes != nil {
 			member["notes"] = *hardware.Notes
 		}
