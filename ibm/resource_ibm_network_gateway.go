@@ -54,35 +54,35 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				DiffSuppressFunc: applyOnce,
 			},
 
-			"private_ip_address_id": {
+			"gateway_private_ip_address_id": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
 
-			"private_ipv4_address": {
+			"gateway_private_ipv4_address": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"public_ipv4_address": {
+			"gateway_public_ipv4_address": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"private_vlan_id": {
+			"gateway_private_vlan_id": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
 
-			"public_ip_address_id": {
+			"gateway_public_ip_address_id": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
 
-			"public_ipv6_address_id": {
+			"gateway_public_ipv6_address_id": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
 
-			"public_vlan_id": {
+			"gateway_public_vlan_id": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
@@ -375,12 +375,12 @@ func resourceIBMNetworkGateway() *schema.Resource {
 				},
 			},
 
-			"private_vlan": {
+			"gateway_private_vlan": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
 
-			"publice_vlan": {
+			"gateway_publice_vlan": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
@@ -541,26 +541,26 @@ func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) err
 	}
 	d.Set("name", result.Name)
 	if result.PrivateIpAddress != nil {
-		d.Set("private_ipv4_address", result.PrivateIpAddress.IpAddress)
+		d.Set("gateway_private_ipv4_address", result.PrivateIpAddress.IpAddress)
 	}
 	if result.PublicIpAddress != nil {
-		d.Set("public_ipv4_address", result.PublicIpAddress.IpAddress)
+		d.Set("gateway_public_ipv4_address", result.PublicIpAddress.IpAddress)
 	}
-	d.Set("private_ip_address_id", result.PrivateIpAddressId)
-	d.Set("private_vlan_id", result.PrivateVlanId)
-	d.Set("public_ip_address_id", result.PublicIpAddressId)
-	d.Set("public_ipv6_address_id", result.PublicIpv6AddressId)
+	d.Set("gateway_private_ip_address_id", result.PrivateIpAddressId)
+	d.Set("gateway_private_vlan_id", result.PrivateVlanId)
+	d.Set("gateway_public_ip_address_id", result.PublicIpAddressId)
+	d.Set("gateway_public_ipv6_address_id", result.PublicIpv6AddressId)
 	d.Set("public_vlan_id", result.PublicVlanId)
 	d.Set("status", result.Status.Name)
 	d.Set("members", flattenGatewayMembers(d, result.Members))
 	d.Set("associated_vlans", flattenGatewayVlans(result.InsideVlans))
 	if result.PrivateVlan != nil {
 		// d.Set("privateVlan", *result.PrivateVlan.PrimaryRouter.Hostname+"."+strconv.Itoa(*result.PrivateVlan.VlanNumber))
-		d.Set("private_vlan", result.PrivateVlan.VlanNumber)
+		d.Set("gateway_private_vlan", result.PrivateVlan.VlanNumber)
 	}
 	if result.PublicVlan != nil {
 		// d.Set("publicVlan", *result.PublicVlan.PrimaryRouter.Hostname+"."+strconv.Itoa(*result.PublicVlan.VlanNumber))
-		d.Set("public_vlan", result.PublicVlan.VlanNumber)
+		d.Set("gateway_public_vlan", result.PublicVlan.VlanNumber)
 	}
 
 	//Set default connection info
