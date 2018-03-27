@@ -22,7 +22,7 @@ const (
 
 	vlanMask = "firewallNetworkComponents,networkVlanFirewall.billingItem.orderItem.order.id,dedicatedFirewallFlag" +
 		",firewallGuestNetworkComponents,firewallInterfaces,firewallRules,highAvailabilityFirewallFlag"
-	fwMask        = "id,networkVlan.highAvailabilityFirewallFlag,tagReferences[id,tag[name]]"
+	fwMask        = "id,datacenter,primaryIpAddress,networkVlan.highAvailabilityFirewallFlag,tagReferences[id,tag[name]]"
 	multivlanmask = "id,name,networkFirewall[id,customerManagedFlag,datacenter.name,billingItem.orderItem.order.id],publicIpAddress.ipAddress,publicVlan[id,primaryRouter.hostname],privateVlan[id,primaryRouter.hostname],privateIpAddress.ipAddress,insideVlans[id],memberCount,status.keyName"
 )
 
@@ -52,6 +52,14 @@ func resourceIBMFirewall() *schema.Resource {
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
+			},
+			"location": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"primary_ip": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
@@ -152,6 +160,8 @@ func resourceIBMFirewallRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("public_vlan_id", *fw.NetworkVlan.Id)
 	d.Set("ha_enabled", *fw.NetworkVlan.HighAvailabilityFirewallFlag)
+	d.Set("location", *fw.Datacenter.Name)
+	d.Set("primary_ip", *fw.PrimaryIpAddress)
 
 	tagRefs := fw.TagReferences
 	tagRefsLen := len(tagRefs)
