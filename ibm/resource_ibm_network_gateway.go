@@ -104,6 +104,29 @@ func resourceIBMNetworkGateway() *schema.Resource {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
+
+						"priority": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+
+						"passwords": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"username": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"password": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
+
 						"hostname": {
 							Type:        schema.TypeString,
 							Optional:    true,
@@ -351,6 +374,16 @@ func resourceIBMNetworkGateway() *schema.Resource {
 					},
 				},
 			},
+
+			"private_vlan": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+
+			"publice_vlan": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -496,11 +529,12 @@ func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) err
 	}
 	result, err := service.Id(id).Mask(
 		"insideVlans,members,status,privateIpAddress[ipAddress],publicIpAddress[ipAddress]," +
-			"members[hardware],members[hardware[datacenter]]," +
-			"members[hardware[primaryNetworkComponent[primaryVersion6IpAddressRecord]]],members[hardware[backendNetworkComponents,primaryBackendNetworkComponent[redundancyEnabledFlag]," +
+			"members[priority],members[hardwareId]," +
+			"members[hardware[primaryNetworkComponent[primaryVersion6IpAddressRecord]]],members[hardware[datacenter,backendNetworkComponents,primaryBackendNetworkComponent[redundancyEnabledFlag]," +
 			"tagReferences,primaryIpAddress,primaryBackendIpAddress,userData," +
 			"primaryNetworkComponent[primaryVersion6IpAddressRecord],privateNetworkOnlyFlag," +
-			"powerSupplyCount,primaryNetworkComponent[networkVlan],memoryCapacity,networkVlans[id,vlanNumber]]]",
+			"powerSupplyCount,primaryNetworkComponent[networkVlan],memoryCapacity,operatingSystem[id,passwords[username,password]],networkVlans[id,vlanNumber]]]," +
+			"privateVlan[id,vlanNumber,primaryRouter[hostname]],publicVlan[vlanNumber,primaryRouter[hostname]]",
 	).GetObject()
 	if err != nil {
 		return fmt.Errorf("Error retrieving Network Gateway: %s", err)
@@ -520,6 +554,14 @@ func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) err
 	d.Set("status", result.Status.Name)
 	d.Set("members", flattenGatewayMembers(d, result.Members))
 	d.Set("associated_vlans", flattenGatewayVlans(result.InsideVlans))
+	if result.PrivateVlan != nil {
+		// d.Set("privateVlan", *result.PrivateVlan.PrimaryRouter.Hostname+"."+strconv.Itoa(*result.PrivateVlan.VlanNumber))
+		d.Set("private_vlan", result.PrivateVlan.VlanNumber)
+	}
+	if result.PublicVlan != nil {
+		// d.Set("publicVlan", *result.PublicVlan.PrimaryRouter.Hostname+"."+strconv.Itoa(*result.PublicVlan.VlanNumber))
+		d.Set("public_vlan", result.PublicVlan.VlanNumber)
+	}
 
 	//Set default connection info
 	connInfo := map[string]string{"type": "ssh", "user": "vyatta"}
