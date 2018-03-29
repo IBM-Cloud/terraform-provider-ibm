@@ -207,7 +207,7 @@ resource "ibm_network_gateway" "standalone" {
 func testAccCheckIBMNetworkGatewaySameHardwareConfig(gatewayName, hostname1, hostname2 string) string {
 	return fmt.Sprintf(`
 		data "ibm_compute_ssh_key" "key" {
-			label       = "ssh_lbaas"
+			label       = "test-lbaas"
 			most_recent = true
 		  }
 		  resource "ibm_network_gateway" "ha_same_conf" {
@@ -221,7 +221,7 @@ func testAccCheckIBMNetworkGatewaySameHardwareConfig(gatewayName, hostname1, hos
 			  private_network_only = false
 			  ssh_key_ids          = ["${data.ibm_compute_ssh_key.key.id}"]
 			  tcp_monitoring       = true
-			  process_key_name     = "INTEL_SINGLE_XEON_1270_3_40_2"
+			  process_key_name     = "INTEL_SINGLE_XEON_1270_3_50"
 			  os_key_name          = "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT"
 			  redundant_network    = false
 			  disk_key_names       = ["HARD_DRIVE_2_00TB_SATA_II"]
@@ -239,7 +239,7 @@ func testAccCheckIBMNetworkGatewaySameHardwareConfig(gatewayName, hostname1, hos
 			  private_network_only = false
 			  ssh_key_ids          = ["${data.ibm_compute_ssh_key.key.id}"]
 			  tcp_monitoring       = true
-			  process_key_name     = "INTEL_SINGLE_XEON_1270_3_40_2"
+			  process_key_name     = "INTEL_SINGLE_XEON_1270_3_50"
 			  os_key_name          = "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT"
 			  redundant_network    = false
 			  disk_key_names       = ["HARD_DRIVE_2_00TB_SATA_II"]
