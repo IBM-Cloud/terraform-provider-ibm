@@ -114,14 +114,25 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				ForceNew: true,
 			},
 
+			"flavor_key_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Flavor key name used to provision vm.",
+			},
+
 			"cores": {
-				Type:     schema.TypeInt,
-				Required: true,
+
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"flavor_key_name"},
 			},
 
 			"memory": {
 				Type:     schema.TypeInt,
-				Required: true,
+				Optional: true,
+				Computed: true,
 				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
 					memoryInMB := float64(v.(int))
 
@@ -135,6 +146,7 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 
 					return
 				},
+				ConflictsWith: []string{"flavor_key_name"},
 			},
 
 			"dedicated_acct_host_only": {
@@ -464,16 +476,28 @@ func getNameForBlockDevice(i int) string {
 	return strconv.Itoa(i + 1)
 }
 
+func getNameForBlockDeviceWithFlavor(i int) string {
+	// skip 0, which is taken from flavor.
+	// skip 1, which is reserved for the swap disk.
+	// so we get  2, 3, 4, 5 ...
+
+	return strconv.Itoa(i + 2)
+}
+
 func getBlockDevices(d *schema.ResourceData) []datatypes.Virtual_Guest_Block_Device {
 	numBlocks := d.Get("disks.#").(int)
 	if numBlocks == 0 {
 		return nil
 	}
-
 	blocks := make([]datatypes.Virtual_Guest_Block_Device, 0, numBlocks)
 	for i := 0; i < numBlocks; i++ {
+		var name string
 		blockRef := fmt.Sprintf("disks.%d", i)
-		name := getNameForBlockDevice(i)
+		if _, ok := d.GetOk("flavor_key_name"); ok {
+			name = getNameForBlockDeviceWithFlavor(i)
+		} else {
+			name = getNameForBlockDevice(i)
+		}
 		capacity := d.Get(blockRef).(int)
 		block := datatypes.Virtual_Guest_Block_Device{
 			Device: &name,
@@ -483,6 +507,7 @@ func getBlockDevices(d *schema.ResourceData) []datatypes.Virtual_Guest_Block_Dev
 		}
 		blocks = append(blocks, block)
 	}
+
 	return blocks
 }
 
@@ -524,12 +549,24 @@ func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interf
 		HourlyBillingFlag:      sl.Bool(d.Get("hourly_billing").(bool)),
 		PrivateNetworkOnlyFlag: sl.Bool(d.Get("private_network_only").(bool)),
 		Datacenter:             &dc,
-		StartCpus:              sl.Int(d.Get("cores").(int)),
-		MaxMemory:              sl.Int(d.Get("memory").(int)),
 		NetworkComponents:      []datatypes.Virtual_Guest_Network_Component{networkComponent},
 		BlockDevices:           getBlockDevices(d),
 		LocalDiskFlag:          sl.Bool(d.Get("local_disk").(bool)),
 		PostInstallScriptUri:   sl.String(d.Get("post_install_script_uri").(string)),
+	}
+
+	if startCPUs, ok := d.GetOk("cores"); ok {
+		opts.StartCpus = sl.Int(startCPUs.(int))
+	}
+	if maxMemory, ok := d.GetOk("memory"); ok {
+		opts.MaxMemory = sl.Int(maxMemory.(int))
+	}
+
+	if flavor, ok := d.GetOk("flavor_key_name"); ok {
+		flavorComponenet := datatypes.Virtual_Guest_SupplementalCreateObjectOptions{
+			FlavorKeyName: sl.String(flavor.(string)),
+		}
+		opts.SupplementalCreateObjectOptions = &flavorComponenet
 	}
 
 	if dedicatedAcctHostOnly, ok := d.GetOk("dedicated_acct_host_only"); ok {
@@ -901,6 +938,7 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 
 	result, err := service.Id(id).Mask(
 		"hostname,domain,blockDevices[diskImage],startCpus,maxMemory,dedicatedAccountHostOnlyFlag,operatingSystemReferenceCode,blockDeviceTemplateGroup[id]," +
+			"billingItem[orderItem[preset[keyName]]]," +
 			"primaryIpAddress,primaryBackendIpAddress,privateNetworkOnlyFlag," +
 			"hourlyBillingFlag,localDiskFlag," +
 			"allowedNetworkStorage[id,nasType]," +
@@ -922,6 +960,11 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 
 	d.Set("hostname", *result.Hostname)
 	d.Set("domain", *result.Domain)
+
+	if _, ok := d.GetOk("flavor_key_name"); ok {
+
+		d.Set("flavor_key_name", *result.BillingItem.OrderItem.Preset.KeyName)
+	}
 
 	if result.BlockDeviceTemplateGroup != nil {
 		d.Set("image_id", result.BlockDeviceTemplateGroup.Id)
@@ -951,7 +994,7 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 			d.Get("network_speed").(int),
 		),
 	)
-	d.Set("disks", flattenDisks(result.BlockDevices))
+	d.Set("disks", flattenDisks(result, d))
 	d.Set("cores", *result.StartCpus)
 	d.Set("memory", *result.MaxMemory)
 	d.Set("dedicated_acct_host_only", *result.DedicatedAccountHostOnlyFlag)
@@ -1183,6 +1226,7 @@ func resourceIBMComputeVmInstanceUpdate(d *schema.ResourceData, meta interface{}
 		//Update the disks if any change
 		for i := 0; i < len(oldDisk); i++ {
 			if newDisk[i].(int) != oldDisk[i].(int) {
+
 				diskName := fmt.Sprintf("guest_disk%d", i)
 				capacity := newDisk[i].(int)
 				upgradeOptions[diskName] = float64(capacity)
