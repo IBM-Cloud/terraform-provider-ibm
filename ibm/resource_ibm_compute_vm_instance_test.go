@@ -147,6 +147,82 @@ func TestAccIBMComputeVmInstance_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMComputeVmInstanceWithFlavor(t *testing.T) {
+	var guest datatypes.Virtual_Guest
+
+	hostname := acctest.RandString(16)
+	domain := "terraformvmuat.ibm.com"
+	networkSpeed1 := "10"
+	cores1 := "1"
+	memory1 := "2048"
+	tags1 := "collectd"
+	flavor := "B1_1X2X25"
+	userMetadata1 := "{\\\"value\\\":\\\"newvalue\\\"}"
+	userMetadata1Unquoted, _ := strconv.Unquote(`"` + userMetadata1 + `"`)
+
+	configInstance := "ibm_compute_vm_instance.terraform-acceptance-test-1"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccIBMComputeVmInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:  testAccIBMComputeVmInstanceConfigFlavor(hostname, domain, networkSpeed1, flavor, userMetadata1, tags1),
+				Destroy: false,
+				Check: resource.ComposeTestCheckFunc(
+					testAccIBMComputeVmInstanceExists(configInstance, &guest),
+					resource.TestCheckResourceAttr(
+						configInstance, "hostname", hostname),
+					resource.TestCheckResourceAttr(
+						configInstance, "domain", domain),
+					resource.TestCheckResourceAttr(
+						configInstance, "datacenter", "wdc04"),
+					resource.TestCheckResourceAttr(
+						configInstance, "network_speed", networkSpeed1),
+					resource.TestCheckResourceAttr(
+						configInstance, "hourly_billing", "true"),
+					resource.TestCheckResourceAttr(
+						configInstance, "private_network_only", "false"),
+					resource.TestCheckResourceAttr(
+						configInstance, "flavor_key_name", flavor),
+					resource.TestCheckResourceAttr(
+						configInstance, "cores", cores1),
+					resource.TestCheckResourceAttr(
+						configInstance, "memory", memory1),
+					resource.TestCheckResourceAttr(
+						configInstance, "disks.0", "10"),
+					resource.TestCheckResourceAttr(
+						configInstance, "disks.1", "20"),
+					resource.TestCheckResourceAttr(
+						configInstance, "user_metadata", userMetadata1Unquoted),
+					resource.TestCheckResourceAttr(
+						configInstance, "local_disk", "false"),
+					resource.TestCheckResourceAttr(
+						configInstance, "dedicated_acct_host_only", "false"),
+					CheckStringSet(
+						configInstance,
+						"tags", []string{tags1},
+					),
+					resource.TestCheckResourceAttrSet(
+						configInstance, "ipv6_enabled"),
+					resource.TestCheckResourceAttrSet(
+						configInstance, "ipv6_address"),
+					resource.TestCheckResourceAttrSet(
+						configInstance, "ipv6_address_id"),
+					resource.TestCheckResourceAttrSet(
+						configInstance, "public_ipv6_subnet"),
+					resource.TestCheckResourceAttr(
+						configInstance, "secondary_ip_count", "4"),
+					resource.TestCheckResourceAttrSet(
+						configInstance, "secondary_ip_addresses.3"),
+					resource.TestCheckResourceAttr(
+						configInstance, "notes", "VM notes"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMComputeVmInstance_With_SSH_Keys(t *testing.T) {
 	var guest datatypes.Virtual_Guest
 
@@ -954,4 +1030,25 @@ func testAccIBMComputeVMInstanceConfigWithSecurityGroups(sgName1, sgDesc1, sgNam
 			private_security_group_ids = ["${ibm_security_group.pvtsg.id}"]
 		  }`, sgName1, sgDesc1, sgName2, sgDesc2, hostname)
 	return v
+}
+
+func testAccIBMComputeVmInstanceConfigFlavor(hostname, domain, networkSpeed, flavor, userMetadata, tags string) string {
+	return fmt.Sprintf(`
+	resource "ibm_compute_vm_instance" "terraform-acceptance-test-1" {
+	    hostname = "%s"
+	    domain = "%s"
+	    os_reference_code = "DEBIAN_7_64"
+	    datacenter = "wdc04"
+	    network_speed = %s
+	    hourly_billing = true
+	    private_network_only = false
+	    flavor_key_name = "%s"
+	    user_metadata = "%s"
+		tags = ["%s"]
+		disks = [10 ,20]
+	    local_disk = false
+	    ipv6_enabled = true
+	    secondary_ip_count = 4
+	    notes = "VM notes"
+	}`, hostname, domain, networkSpeed, flavor, userMetadata, tags)
 }

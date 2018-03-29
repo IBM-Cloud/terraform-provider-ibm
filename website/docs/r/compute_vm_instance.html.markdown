@@ -65,14 +65,18 @@ The following arguments are supported:
 
 * `hostname` - (Optional, string) The hostname for the computing instance.
 * `domain` - (Required, string)  The domain for the computing instance.
-* `cores` - (Required, integer) The number of CPU cores that you want to allocate.
-* `memory` - (Required, integer) The amount of memory, expressed in megabytes, that you want to allocate.
+* `cores` - (Optional, integer) The number of CPU cores that you want to allocate.
+    **NOTE**: Conflicts with`flavor_key_name`.
+* `memory` - (Optional, integer) The amount of memory, expressed in megabytes, that you want to allocate.
+    **NOTE**: Conflicts with`flavor_key_name`.
+* `flavor_key_name` - (Optional, string) The flavor key name that you want to use to provision the instance. To see available Flavor key name, log in to the [IBM Cloud Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest/getCreateObjectOptions.json), using your API key as the password.
+    **NOTE**: Conflicts with `cores` and `memory`. Currently upgrade is not supported.
 * `datacenter` - (Required, string) The datacenter in which you want to provision the instance.
     **NOTE**: If `dedicated_host_name` or `dedicated_host_id`
     is provided then the datacenter should be same as the dedicated host datacenter.
 * `hourly_billing` - (Optional, boolean) The billing type for the instance. When set to `true`, the computing instance is billed on hourly usage. Otherwise, the instance is billed on a monthly basis. The default value is `true`.
 * `local_disk`- (Optional, boolean) The disk type for the instance. When set to `true`, the disks for the computing instance are provisioned on the host that the instance runs. Otherwise, SAN disks are provisioned. The default value is `true`.
-* `dedicated_acct_host_only` - (Optional, boolean) Specifies whether the instance must only run on hosts with instances from the same account. The default value is `false`.
+* `dedicated_acct_host_only` - (Optional, boolean) Specifies whether the instance must only run on hosts with instances from the same account. The default value is `false`. If VM is provisioned using flavorKeyName, value should be set to `false`.
      **NOTE**: Conflicts with `dedicated_host_name`, `dedicated_host_id`.
 * `dedicated_host_id` - (Optional, integer) Specifies [dedicated host](https://console.bluemix.net/docs/vsi/vsi_dedicated.html) for the instance by its id.
      **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_name`.
@@ -93,7 +97,7 @@ This attribute can't be updated. This is provided so that you can apply security
 This attribute can't be updated. This is provided so that you can apply security groups to  your VSI right from the beginning, the first time it comes up. If you would like to add or remove security groups in the future to this VSI then you should consider using `ibm_network_interface_sg_attachment` resource. If you use this attribute in addition to `ibm_network_interface_sg_attachment` resource you might get some spurious diffs. So use one of these consistently for a particular VSI.
 * `public_subnet` - (Optional, string) The public subnet for the public network interface of the instance. Accepted values are primary public networks. You can find accepted values in the [subnets doc](https://control.softlayer.com/network/subnets).
 * `private_subnet` - (Optional, string) The private subnet for the private network interface of the instance. Accepted values are primary private networks. You can find accepted values in the [subnets doc](https://control.softlayer.com/network/subnets).
-* `disks` - (Optional, array of integers) The numeric disk sizes (in GBs) for the instance's block device and disk image settings. The default value is the smallest available capacity for the primary disk. If you specify an image template, the template provides the disk capacity.
+* `disks` - (Optional, array of integers) The numeric disk sizes (in GBs) for the instance's block device and disk image settings. The default value is the smallest available capacity for the primary disk. If you specify an image template, the template provides the disk capacity. If you specify the flavorKeyName, first disk is provided by the flavor.
 * `user_metadata` - (Optional, string) Arbitrary data to be made available to the computing instance.
 *  `notes` - (Optional, string) Descriptive text of up to 1000 characters about the VM instance.
 * `ssh_key_ids` - (Optional, array of numbers) The SSH key IDs to install on the computing instance when the instance provisions.
