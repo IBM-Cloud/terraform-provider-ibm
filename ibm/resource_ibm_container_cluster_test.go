@@ -47,9 +47,9 @@ func TestAccIBMContainerCluster_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "worker_num", "2"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "kube_version", "1.8.6"),
+						"ibm_container_cluster.testacc_cluster", "kube_version", "1.8.8"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "workers.0.version", "1.8.6"),
+						"ibm_container_cluster.testacc_cluster", "workers.0.version", "1.8.8"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "workers.1.version", "1.7.4"),
 				),
@@ -334,12 +334,12 @@ resource "ibm_container_cluster" "testacc_cluster" {
 
   workers = [{
     name = "worker1"
-    version = "1.8.6"
+    version = "1.8.8"
     },{
     name = "worker2"
     }]
 
-  kube_version    = "1.8.6"
+  kube_version    = "1.8.8"
   machine_type    = "%s"
   isolation       = "public"
   public_vlan_id  = "%s"
