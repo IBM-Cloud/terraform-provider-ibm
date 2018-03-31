@@ -34,23 +34,11 @@ func TestAccIBMNetworkGateway_standalone(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						config, "members.#", "1"),
 					resource.TestCheckResourceAttr(
-						config, "members.0.hostname", hostname),
-					resource.TestCheckResourceAttr(
 						config, "name", gatewayName),
 					resource.TestCheckResourceAttr(
-						config, "members.0.domain", "terraformuat.ibm.com"),
+						config, "associated_vlans.#", "0"),
 					resource.TestCheckResourceAttr(
-						config, "members.0.datacenter", "ams01"),
-					resource.TestCheckResourceAttr(
-						config, "members.0.network_speed", "100"),
-					resource.TestCheckResourceAttr(
-						config, "members.0.private_network_only", "false"),
-					resource.TestCheckResourceAttr(
-						config, "members.0.ipv6_enabled", "true"),
-					CheckStringSet(
-						config,
-						"members.0.tags", []string{"gateway_test", "terraform_test"},
-					),
+						config, "status", "Active"),
 				),
 			},
 		},
@@ -79,41 +67,9 @@ func TestAccIBMNetworkGateway_ha_similar_members(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						config, "members.#", "2"),
 					resource.TestCheckResourceAttr(
-						config, "members.0.hostname", hostname1),
+						config, "associated_vlans.#", "0"),
 					resource.TestCheckResourceAttr(
-						config, "members.0.domain", "terraformuat.ibm.com"),
-					resource.TestCheckResourceAttr(
-						config, "members.0.datacenter", "ams01"),
-					resource.TestCheckResourceAttr(
-						config, "members.0.network_speed", "100"),
-					resource.TestCheckResourceAttr(
-						config, "members.0.private_network_only", "false"),
-					resource.TestCheckResourceAttr(
-						config, "members.0.ipv6_enabled", "true"),
-					resource.TestCheckResourceAttr(
-						config, "members.0.notes", "gateway notes 1"),
-					CheckStringSet(
-						config,
-						"members.0.tags", []string{"gateway tags 1", "terraform test tags 1"},
-					),
-					resource.TestCheckResourceAttr(
-						config, "members.1.hostname", hostname2),
-					resource.TestCheckResourceAttr(
-						config, "members.1.domain", "terraformuat.ibm.com"),
-					resource.TestCheckResourceAttr(
-						config, "members.1.datacenter", "ams01"),
-					resource.TestCheckResourceAttr(
-						config, "members.1.network_speed", "100"),
-					resource.TestCheckResourceAttr(
-						config, "members.1.private_network_only", "false"),
-					resource.TestCheckResourceAttr(
-						config, "members.1.ipv6_enabled", "true"),
-					resource.TestCheckResourceAttr(
-						config, "members.1.notes", "gateway notes 2"),
-					CheckStringSet(
-						config,
-						"members.1.tags", []string{"gateway tags 2", "terraform test tags 2"},
-					),
+						config, "status", "Active"),
 				),
 			},
 		},
@@ -191,7 +147,7 @@ resource "ibm_network_gateway" "standalone" {
 				network_speed          = 100
 				private_network_only   = false
 				tcp_monitoring         = true
-				process_key_name       = "INTEL_SINGLE_XEON_1270_3_40_2"
+				process_key_name       = "INTEL_SINGLE_XEON_1270_3_50"
 				os_key_name            = "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT"
 				redundant_network      = false
 				disk_key_names         = [ "HARD_DRIVE_2_00TB_SATA_II" ]
