@@ -24,26 +24,25 @@ For more information about getting started, see the [IBM Virtual Router Applianc
 resource "ibm_network_gateway" "gateway" {
   name = "my-gateway"
 
-  members {
+  members = [{
     hostname             = "host-name"
     domain               = "ibm.com"
     datacenter           = "ams01"
     network_speed        = 100
-    public_vlan_id       = 1234
-    private_vlan_id      = 4567
+    private_network_only = false
     tcp_monitoring       = true
-    ssh_key_ids          = [1234]
-    tags                 = ["gateway"]
-    notes                = "my gateway"
-    process_key_name     = "INTEL_SINGLE_XEON_1270_3_40_2"
+    process_key_name     = "INTEL_SINGLE_XEON_1270_3_50"
     os_key_name          = "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT"
+    redundant_network    = false
     disk_key_names       = ["HARD_DRIVE_2_00TB_SATA_II"]
     public_bandwidth     = 20000
-    memory               = 4
+    memory               = 8
+    tags                 = ["gateway tags 1", "terraform test tags 1"]
+    notes                = "gateway notes 1"
     ipv6_enabled         = true
-  }
+  },
+  ]
 }
-
 ```
 ### HA configuration
 
@@ -51,42 +50,41 @@ resource "ibm_network_gateway" "gateway" {
 resource "ibm_network_gateway" "gateway" {
   name = "my-ha-gateway"
 
-  members {
+  members = [{
     hostname             = "host-name-1"
     domain               = "ibm.com"
     datacenter           = "ams01"
     network_speed        = 100
-    public_vlan_id       = 1234
-    private_vlan_id      = 4567
+    private_network_only = false
     tcp_monitoring       = true
-    ssh_key_ids          = [1234]
-    tags                 = ["gateway"]
-    notes                = "my gateway"
-    process_key_name     = "INTEL_SINGLE_XEON_1270_3_40_2"
+    process_key_name     = "INTEL_SINGLE_XEON_1270_3_50"
     os_key_name          = "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT"
+    redundant_network    = false
     disk_key_names       = ["HARD_DRIVE_2_00TB_SATA_II"]
     public_bandwidth     = 20000
-    memory               = 4
+    memory               = 8
+    tags                 = ["gateway tags", "terraform test tags 1"]
+    notes                = "gateway notes"
     ipv6_enabled         = true
-  }
-  members {
-    hostname             = "host-name-2"
-    domain               = "ibm.com"
-    datacenter           = "ams01"
-    network_speed        = 100
-    public_vlan_id       = 1234
-    private_vlan_id      = 4567
-    tcp_monitoring       = true
-    ssh_key_ids          = [1234, 5687]
-    tags                 = ["my ha gateway"]
-    notes                = "my ha mode gateway"
-    process_key_name     = "INTEL_SINGLE_XEON_1270_3_40_2"
-    os_key_name          = "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT"
-    disk_key_names       = ["HARD_DRIVE_2_00TB_SATA_II"]
-    public_bandwidth     = 20000
-    memory               = 4
-    ipv6_enabled         = true
-  }
+  },
+    {
+      hostname             = "host-name-2"
+      domain               = "ibm.com"
+      datacenter           = "ams01"
+      network_speed        = 100
+      private_network_only = false
+      tcp_monitoring       = true
+      process_key_name     = "INTEL_SINGLE_XEON_1270_3_50"
+      os_key_name          = "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT"
+      redundant_network    = false
+      disk_key_names       = ["HARD_DRIVE_2_00TB_SATA_II"]
+      public_bandwidth     = 20000
+      memory               = 8
+      tags                 = ["gateway tags 1", "terraform test tags 1"]
+      notes                = "my ha mode gateway"
+      ipv6_enabled         = true
+    },
+  ]
 }
 ```
 
