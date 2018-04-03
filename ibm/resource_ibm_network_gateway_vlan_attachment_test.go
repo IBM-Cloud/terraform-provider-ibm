@@ -58,12 +58,29 @@ func TestAccIBMNetworkGatewayVlanAtachment_Import_Update(t *testing.T) {
 
 func testAccCheckIBMNetworkGatewayVlanAttachment_basic(gatewayName, hostName1 string) string {
 	return fmt.Sprintf(`
-	resource "ibm_network_gateway" "gw" {
-	       name   = "%s"
-			members = [{
+			resource "ibm_network_vlan" "test_vlan" {
+			  name            = "test_vlan"
+			  datacenter      = "lon02"
+			  type            = "PUBLIC"
+			  subnet_size     = 8
+			  router_hostname = "fcr01a.lon02"
+			}
+			
+			resource "ibm_network_vlan" "test_vlan_p" {
+			  name            = "tfuat_mult_subnet"
+			  datacenter      = "lon02"
+			  type            = "PRIVATE"
+			  subnet_size     = 8
+			  router_hostname = "bcr01a.lon02"
+			}
+			
+			resource "ibm_network_gateway" "gw" {
+			  name = "%s"
+			
+			  members = [{
 			    hostname             = "%s"
 			    domain               = "terraformuat.ibm.com"
-			    datacenter           = "ams01"
+			    datacenter           = "lon02"
 			    network_speed        = 100
 			    private_network_only = false
 			    tcp_monitoring       = true
@@ -74,18 +91,16 @@ func testAccCheckIBMNetworkGatewayVlanAttachment_basic(gatewayName, hostName1 st
 			    public_bandwidth     = 20000
 			    memory               = 8
 			    ipv6_enabled         = true
-			    public_vlan_id       = 2246087
-			    private_vlan_id      = 2246075
-				user_metadata        = "{\"value\":\"newvalue\"}"
-				notes                = "member 1"
-				tags                 = ["gateway tags 1", "terraform test tags 1"]
-
-			  },
-			  ]
-		  }
+			    public_vlan_id       = "${ibm_network_vlan.test_vlan.id}"
+			    private_vlan_id      = "${ibm_network_vlan.test_vlan_p.id}"
+			    user_metadata        = "{\"value\":\"newvalue\"}"
+			    notes                = "member 1"
+			    tags                 = ["gateway tags 1", "terraform test tags 1"]
+			  }]
+			}
 		  resource "ibm_network_gateway_vlan_association" "attachment"{
 			  gateway_id = "${ibm_network_gateway.gw.id}"
-			  network_vlan_id = 2246087
+			  network_vlan_id = "${ibm_network_gateway.gw.associated_vlans.0.network_vlan_id }"
 		  }
 		  `, gatewayName, hostName1)
 
@@ -93,67 +108,99 @@ func testAccCheckIBMNetworkGatewayVlanAttachment_basic(gatewayName, hostName1 st
 
 func testAccCheckIBMNetworkGatewayVlanAttachment_update(gatewayName, hostName1 string) string {
 	return fmt.Sprintf(`
-		resource "ibm_network_gateway" "gw" {
-	       name   = "%s"
-		   members = [{
-			hostname             = "%s"
-			domain               = "terraformuat.ibm.com"
-			datacenter           = "ams01"
-			network_speed        = 100
-			private_network_only = false
-			tcp_monitoring       = true
-			process_key_name     = "INTEL_SINGLE_XEON_1270_3_40_2"
-			os_key_name          = "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT"
-			redundant_network    = false
-			disk_key_names       = ["HARD_DRIVE_2_00TB_SATA_II"]
-			public_bandwidth     = 20000
-			memory               = 8
-			ipv6_enabled         = true
-			public_vlan_id       = 2246087
-			private_vlan_id      = 2246075
-			notes                = "member 1"
-			tags                 = ["gateway tags 1", "terraform test tags 1"]
-
-		  },
-		  ]
-		  }
-		  resource "ibm_network_gateway_vlan_association" "attachment"{
-			  gateway_id = "${ibm_network_gateway.gw.id}"
-			  network_vlan_id = 2246087
-			  bypass = false
-		  }		  `, gatewayName, hostName1)
-
-}
-
-func testAccCheckIBMNetworkGatewayVlanAttachment_import_update(gatewayName, hostName1 string) string {
-	return fmt.Sprintf(`
-	resource "ibm_network_gateway" "gw" {
-	       name   = "%s"
-			members = [{
+					resource "ibm_network_vlan" "test_vlan" {
+			  name            = "test_vlan"
+			  datacenter      = "lon02"
+			  type            = "PUBLIC"
+			  subnet_size     = 8
+			  router_hostname = "fcr01a.lon02"
+			}
+			
+			resource "ibm_network_vlan" "test_vlan_p" {
+			  name            = "tfuat_mult_subnet"
+			  datacenter      = "lon02"
+			  type            = "PRIVATE"
+			  subnet_size     = 8
+			  router_hostname = "bcr01a.lon02"
+			}
+			
+			resource "ibm_network_gateway" "gw" {
+			  name = "%s"
+			
+			  members = [{
 			    hostname             = "%s"
 			    domain               = "terraformuat.ibm.com"
-			    datacenter           = "ams01"
+			    datacenter           = "lon02"
 			    network_speed        = 100
 			    private_network_only = false
 			    tcp_monitoring       = true
-			    process_key_name     = "INTEL_SINGLE_XEON_1270_3_40_2"
+			    process_key_name     = "INTEL_SINGLE_XEON_1270_3_50"
 			    os_key_name          = "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT"
 			    redundant_network    = false
 			    disk_key_names       = ["HARD_DRIVE_2_00TB_SATA_II"]
 			    public_bandwidth     = 20000
 			    memory               = 8
 			    ipv6_enabled         = true
-			    public_vlan_id       = 2246087
-				private_vlan_id      = 2246075
-				user_metadata        = "{\"value\":\"newvalue\"}"
-				notes                = "member 1"
-				tags                 = ["gateway tags 1", "terraform test tags 1"]
-			  },
-			  ]
-		  }
+			    public_vlan_id       = "${ibm_network_vlan.test_vlan.id}"
+			    private_vlan_id      = "${ibm_network_vlan.test_vlan_p.id}"
+			    user_metadata        = "{\"value\":\"newvalue\"}"
+			    notes                = "member 1"
+			    tags                 = ["gateway tags 1", "terraform test tags 1"]
+			  }]
+			}
+			  resource "ibm_network_gateway_vlan_association" "attachment"{
+				  gateway_id = "${ibm_network_gateway.gw.id}"
+				  network_vlan_id = "${ibm_network_gateway.gw.associated_vlans.0.network_vlan_id }"
+				  bypass = false
+			  }		  `, gatewayName, hostName1)
+
+}
+
+func testAccCheckIBMNetworkGatewayVlanAttachment_import_update(gatewayName, hostName1 string) string {
+	return fmt.Sprintf(`
+				resource "ibm_network_vlan" "test_vlan" {
+			  name            = "test_vlan"
+			  datacenter      = "lon02"
+			  type            = "PUBLIC"
+			  subnet_size     = 8
+			  router_hostname = "fcr01a.lon02"
+			}
+			
+			resource "ibm_network_vlan" "test_vlan_p" {
+			  name            = "tfuat_mult_subnet"
+			  datacenter      = "lon02"
+			  type            = "PRIVATE"
+			  subnet_size     = 8
+			  router_hostname = "bcr01a.lon02"
+			}
+			
+			resource "ibm_network_gateway" "gw" {
+			  name = "%s"
+			
+			  members = [{
+			    hostname             = "%s"
+			    domain               = "terraformuat.ibm.com"
+			    datacenter           = "lon02"
+			    network_speed        = 100
+			    private_network_only = false
+			    tcp_monitoring       = true
+			    process_key_name     = "INTEL_SINGLE_XEON_1270_3_50"
+			    os_key_name          = "OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT"
+			    redundant_network    = false
+			    disk_key_names       = ["HARD_DRIVE_2_00TB_SATA_II"]
+			    public_bandwidth     = 20000
+			    memory               = 8
+			    ipv6_enabled         = true
+			    public_vlan_id       = "${ibm_network_vlan.test_vlan.id}"
+			    private_vlan_id      = "${ibm_network_vlan.test_vlan_p.id}"
+			    user_metadata        = "{\"value\":\"newvalue\"}"
+			    notes                = "member 1"
+			    tags                 = ["gateway tags 1", "terraform test tags 1"]
+			  }]
+			}
 		  resource "ibm_network_gateway_vlan_association" "attachment"{
 			  gateway_id = "${ibm_network_gateway.gw.id}"
-			  network_vlan_id = 2246087
+			  network_vlan_id = "${ibm_network_gateway.gw.associated_vlans.0.network_vlan_id }"
 			  bypass = true
 		  }
 		  `, gatewayName, hostName1)
