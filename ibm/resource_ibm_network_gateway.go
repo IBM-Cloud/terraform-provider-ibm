@@ -179,7 +179,7 @@ func resourceIBMNetworkGateway() *schema.Resource {
 							Type:             schema.TypeString,
 							Optional:         true,
 							ForceNew:         true,
-							Default:          "INTEL_SINGLE_XEON_1270_3_40_2",
+							Default:          "INTEL_SINGLE_XEON_1270_3_50",
 							DiffSuppressFunc: applyOnce,
 						},
 

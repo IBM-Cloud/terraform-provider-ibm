@@ -65,6 +65,13 @@ func testAccCheckIBMNetworkGatewayVlanAttachment_basic(gatewayName, hostName1 st
 			  subnet_size     = 8
 			  router_hostname = "fcr01a.lon02"
 			}
+			resource "ibm_network_vlan" "test_vlan_assoc" {
+			   name = "test_vlan_assoc"
+			   datacenter = "lon02"
+			   type = "PUBLIC"
+			   subnet_size = 8
+			   router_hostname = "fcr01a.lon02"
+			}
 			
 			resource "ibm_network_vlan" "test_vlan_p" {
 			  name            = "tfuat_mult_subnet"
@@ -100,7 +107,7 @@ func testAccCheckIBMNetworkGatewayVlanAttachment_basic(gatewayName, hostName1 st
 			}
 		  resource "ibm_network_gateway_vlan_association" "attachment"{
 			  gateway_id = "${ibm_network_gateway.gw.id}"
-			  network_vlan_id = "${ibm_network_gateway.gw.associated_vlans.0.network_vlan_id }"
+			  network_vlan_id = "${ibm_network_vlan.test_vlan_assoc.id}"
 		  }
 		  `, gatewayName, hostName1)
 
@@ -114,6 +121,14 @@ func testAccCheckIBMNetworkGatewayVlanAttachment_update(gatewayName, hostName1 s
 			  type            = "PUBLIC"
 			  subnet_size     = 8
 			  router_hostname = "fcr01a.lon02"
+			}
+			
+			resource "ibm_network_vlan" "test_vlan_assoc" {
+			   name = "test_vlan_assoc"
+			   datacenter = "lon02"
+			   type = "PUBLIC"
+			   subnet_size = 8
+			   router_hostname = "fcr01a.lon02"
 			}
 			
 			resource "ibm_network_vlan" "test_vlan_p" {
@@ -150,7 +165,7 @@ func testAccCheckIBMNetworkGatewayVlanAttachment_update(gatewayName, hostName1 s
 			}
 			  resource "ibm_network_gateway_vlan_association" "attachment"{
 				  gateway_id = "${ibm_network_gateway.gw.id}"
-				  network_vlan_id = "${ibm_network_gateway.gw.associated_vlans.0.network_vlan_id }"
+				  network_vlan_id = "${ibm_network_vlan.test_vlan_assoc.id}"
 				  bypass = false
 			  }		  `, gatewayName, hostName1)
 
@@ -164,6 +179,14 @@ func testAccCheckIBMNetworkGatewayVlanAttachment_import_update(gatewayName, host
 			  type            = "PUBLIC"
 			  subnet_size     = 8
 			  router_hostname = "fcr01a.lon02"
+			}
+			
+			resource "ibm_network_vlan" "test_vlan_assoc" {
+			   name = "test_vlan_assoc"
+			   datacenter = "lon02"
+			   type = "PUBLIC"
+			   subnet_size = 8
+			   router_hostname = "fcr01a.lon02"
 			}
 			
 			resource "ibm_network_vlan" "test_vlan_p" {
@@ -200,7 +223,7 @@ func testAccCheckIBMNetworkGatewayVlanAttachment_import_update(gatewayName, host
 			}
 		  resource "ibm_network_gateway_vlan_association" "attachment"{
 			  gateway_id = "${ibm_network_gateway.gw.id}"
-			  network_vlan_id = "${ibm_network_gateway.gw.associated_vlans.0.network_vlan_id }"
+			  network_vlan_id = "${ibm_network_vlan.test_vlan_assoc.id}"
 			  bypass = true
 		  }
 		  `, gatewayName, hostName1)
