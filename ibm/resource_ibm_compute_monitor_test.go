@@ -202,7 +202,7 @@ func testAccCheckIBMComputeMonitorConfigBasic(hostname, domain, queryTypeID, res
 resource "ibm_compute_vm_instance" "vg-basic-monitor-test" {
     hostname = "%s"
     domain = "%s"
-    os_reference_code = "DEBIAN_7_64"
+    os_reference_code = "DEBIAN_8_64"
     datacenter = "dal06"
     network_speed = 10
     hourly_billing = true
@@ -238,7 +238,7 @@ func testAccCheckIBMComputeMonitorWithTag(hostname, domain, queryTypeID, respons
 resource "ibm_compute_vm_instance" "vg-basic-monitor-test" {
     hostname = "%s"
     domain = "%s"
-    os_reference_code = "DEBIAN_7_64"
+    os_reference_code = "DEBIAN_8_64"
     datacenter = "dal06"
     network_speed = 10
     hourly_billing = true
@@ -275,7 +275,7 @@ func testAccCheckIBMComputeMonitorWithUpdatedTag(hostname, domain, queryTypeID, 
 resource "ibm_compute_vm_instance" "vg-basic-monitor-test" {
     hostname = "%s"
     domain = "%s"
-    os_reference_code = "DEBIAN_7_64"
+    os_reference_code = "DEBIAN_8_64"
     datacenter = "dal06"
     network_speed = 10
     hourly_billing = true

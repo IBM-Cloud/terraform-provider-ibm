@@ -60,7 +60,7 @@ func TestAccIBMComputeAutoScaleGroup_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_compute_autoscale_group.sample-http-cluster", "virtual_guest_member_template.0.hourly_billing", "true"),
 					resource.TestCheckResourceAttr(
-						"ibm_compute_autoscale_group.sample-http-cluster", "virtual_guest_member_template.0.os_reference_code", "DEBIAN_7_64"),
+						"ibm_compute_autoscale_group.sample-http-cluster", "virtual_guest_member_template.0.os_reference_code", "DEBIAN_8_64"),
 					resource.TestCheckResourceAttr(
 						"ibm_compute_autoscale_group.sample-http-cluster", "virtual_guest_member_template.0.local_disk", "false"),
 					resource.TestCheckResourceAttr(
@@ -284,7 +284,7 @@ resource "ibm_compute_autoscale_group" "sample-http-cluster" {
         memory = 4096
         network_speed = 1000
         hourly_billing = true
-        os_reference_code = "DEBIAN_7_64"
+        os_reference_code = "DEBIAN_8_64"
         local_disk = false
         disks = [25,100]
         datacenter = "dal09"
@@ -359,7 +359,7 @@ resource "ibm_compute_autoscale_group" "sample-http-cluster" {
         memory = 4096
         network_speed = 1000
         hourly_billing = true
-        os_reference_code = "DEBIAN_7_64"
+        os_reference_code = "DEBIAN_8_64"
         local_disk = false
         disks = [25,100]
         datacenter = "dal09"
