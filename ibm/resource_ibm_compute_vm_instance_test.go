@@ -688,7 +688,7 @@ func testAccIBMComputeVmInstanceConfigBasic(hostname, domain, networkSpeed, core
 resource "ibm_compute_vm_instance" "terraform-acceptance-test-1" {
     hostname = "%s"
     domain = "%s"
-    os_reference_code = "DEBIAN_7_64"
+    os_reference_code = "DEBIAN_8_64"
     datacenter = "wdc04"
     network_speed = %s
     hourly_billing = true
@@ -711,7 +711,7 @@ func testAccIBMComputeVmInstanceConfigUpdate(hostname, domain, networkSpeed, cor
 resource "ibm_compute_vm_instance" "terraform-acceptance-test-1" {
     hostname = "%s"
     domain = "%s"
-    os_reference_code = "DEBIAN_7_64"
+    os_reference_code = "DEBIAN_8_64"
     datacenter = "wdc04"
     network_speed = %s
     hourly_billing = true
@@ -734,7 +734,7 @@ func testAccCheckIBMComputeVmInstance_InvalidNotes(hostname, domain, networkSpee
 resource "ibm_compute_vm_instance" "terraform-acceptance-test-1" {
     hostname = "%s"
     domain = "%s"
-    os_reference_code = "DEBIAN_7_64"
+    os_reference_code = "DEBIAN_8_64"
     datacenter = "wdc04"
     network_speed = %s
     hourly_billing = true
@@ -757,7 +757,7 @@ func testAccIBMComputeVmInstanceConfigPostInstallScriptURI(hostname, domain stri
 resource "ibm_compute_vm_instance" "terraform-acceptance-test-pISU" {
     hostname = "%s"
     domain = "%s"
-    os_reference_code = "DEBIAN_7_64"
+    os_reference_code = "DEBIAN_8_64"
     datacenter = "wdc04"
     network_speed = 10
     hourly_billing = true
@@ -847,7 +847,7 @@ resource "ibm_compute_vm_instance" "terraform-vsi-storage-access" {
     cores = 1
     memory = 1024
     local_disk = false
-    os_reference_code = "DEBIAN_7_64"
+    os_reference_code = "DEBIAN_8_64"
     disks = [25, 10]
 }
 %s
@@ -870,7 +870,7 @@ resource "ibm_compute_vm_instance" "terraform-vsi-storage-access" {
     cores = 1
     memory = 1024
     local_disk = false
-    os_reference_code = "DEBIAN_7_64"
+    os_reference_code = "DEBIAN_8_64"
     disks = [25, 10]
 }
 
@@ -892,7 +892,7 @@ resource "ibm_compute_vm_instance" "terraform-ssh-key" {
     cores = 1
     memory = 1024
     local_disk = false
-    os_reference_code = "DEBIAN_7_64"
+    os_reference_code = "DEBIAN_8_64"
     disks = [25]
 }
 `, hostname, domain)
@@ -910,7 +910,7 @@ resource "ibm_compute_vm_instance" "terraform-public-bandwidth" {
 	cores = 1
 	memory = 1024
 	local_disk = false
-	os_reference_code = "DEBIAN_7_64"
+	os_reference_code = "DEBIAN_8_64"
 	disks = [25]
 }
 `, hostname, domain)
@@ -927,7 +927,7 @@ resource "ibm_compute_vm_instance" "terraform-public-bandwidth" {
 	cores = 1
 	memory = 1024
 	local_disk = false
-	os_reference_code = "DEBIAN_7_64"
+	os_reference_code = "DEBIAN_8_64"
 	disks = [25]
 	public_bandwidth_limited = 1000
 }
@@ -945,7 +945,7 @@ resource "ibm_compute_vm_instance" "terraform-public-bandwidth" {
 	cores = 1
 	memory = 1024
 	local_disk = false
-	os_reference_code = "DEBIAN_7_64"
+	os_reference_code = "DEBIAN_8_64"
 	disks = [25]
 	public_bandwidth_unlimited = true
 }
@@ -962,7 +962,7 @@ resource "ibm_compute_vm_instance" "terraform-vm-dedicatedhost" {
 	network_speed = 100
 	cores = 1
 	memory = 1024
-	os_reference_code = "DEBIAN_7_64"
+	os_reference_code = "DEBIAN_8_64"
 	disks                = [25, 25, 100]
 	dedicated_host_name  = "%s"
 }
@@ -979,7 +979,7 @@ resource "ibm_compute_vm_instance" "terraform-vm-dedicatedhost" {
 	network_speed = 100
 	cores = 1
 	memory = 1024
-	os_reference_code = "DEBIAN_7_64"
+	os_reference_code = "DEBIAN_8_64"
 	disks                = [25, 100, 25]
 	dedicated_host_id  = "%s"
 }
@@ -1013,7 +1013,7 @@ func testAccIBMComputeVMInstanceConfigWithSecurityGroups(sgName1, sgDesc1, sgNam
 		  resource "ibm_compute_vm_instance" "tfuatvmwithgroups" {
 			hostname                   = "%s"
 			domain                     = "tfvmuatsg.com"
-			os_reference_code          = "DEBIAN_7_64"
+			os_reference_code          = "DEBIAN_8_64"
 			datacenter                 = "wdc07"
 			network_speed              = 10
 			hourly_billing             = true
@@ -1037,7 +1037,7 @@ func testAccIBMComputeVmInstanceConfigFlavor(hostname, domain, networkSpeed, fla
 	resource "ibm_compute_vm_instance" "terraform-acceptance-test-1" {
 	    hostname = "%s"
 	    domain = "%s"
-	    os_reference_code = "DEBIAN_7_64"
+	    os_reference_code = "DEBIAN_8_64"
 	    datacenter = "wdc04"
 	    network_speed = %s
 	    hourly_billing = true

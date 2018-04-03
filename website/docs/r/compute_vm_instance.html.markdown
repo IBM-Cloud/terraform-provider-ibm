@@ -20,7 +20,7 @@ In the following example, you can create a VM instance using a Debian image:
 resource "ibm_compute_vm_instance" "twc_terraform_sample" {
     hostname = "twc-terraform-sample-name"
     domain = "bar.example.com"
-    os_reference_code = "DEBIAN_7_64"
+    os_reference_code = "DEBIAN_8_64"
     datacenter = "wdc01"
     network_speed = 10
     hourly_billing = true
@@ -65,7 +65,7 @@ In the following example, you can create a VM instance using a flavor:
 resource "ibm_compute_vm_instance" "terraform-sample-flavor" {
     hostname = "terraform-sample-flavor"
     domain = "bar.example.com"
-    os_reference_code = "DEBIAN_7_64"
+    os_reference_code = "DEBIAN_8_64"
     datacenter = "dal06"
     network_speed = 10
     hourly_billing = true

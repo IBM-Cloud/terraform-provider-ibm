@@ -205,7 +205,7 @@ const testAccCheckIBMStorageBlockConfig_basic = `
 resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"
     domain = "example.com"
-    os_reference_code = "DEBIAN_7_64"
+    os_reference_code = "DEBIAN_8_64"
     datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
@@ -237,7 +237,7 @@ const testAccCheckIBMStorageBlockConfig_update = `
 resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"
     domain = "example.com"
-    os_reference_code = "DEBIAN_7_64"
+    os_reference_code = "DEBIAN_8_64"
     datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
@@ -273,7 +273,7 @@ const testAccCheckIBMStorageBlockWithTag = `
 resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"
     domain = "example.com"
-    os_reference_code = "DEBIAN_7_64"
+    os_reference_code = "DEBIAN_8_64"
     datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
@@ -299,7 +299,7 @@ const testAccCheckIBMStorageBlockWithUpdatedTag = `
 resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"
     domain = "example.com"
-    os_reference_code = "DEBIAN_7_64"
+    os_reference_code = "DEBIAN_8_64"
     datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
@@ -325,7 +325,7 @@ const testAccCheckIBMStorageBlockConfig_hourly = `
 resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"
     domain = "example.com"
-    os_reference_code = "DEBIAN_7_64"
+    os_reference_code = "DEBIAN_8_64"
     datacenter = "dal10"
     network_speed = 100
     hourly_billing = true
@@ -362,7 +362,7 @@ const testAccCheckIBMStorageBlockConfig_hourly_update = `
 resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"
     domain = "example.com"
-    os_reference_code = "DEBIAN_7_64"
+    os_reference_code = "DEBIAN_8_64"
     datacenter = "dal10"
     network_speed = 100
     hourly_billing = true
