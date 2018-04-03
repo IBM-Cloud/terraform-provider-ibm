@@ -152,7 +152,7 @@ resource "ibm_network_gateway" "standalone" {
 				redundant_network      = false
 				disk_key_names         = [ "HARD_DRIVE_2_00TB_SATA_II" ]
 				public_bandwidth       = 20000
-				memory                 = 4
+				memory                 = 8
 				ipv6_enabled           = true
 				tags                   = ["gateway_test", "terraform_test"]
 		   }

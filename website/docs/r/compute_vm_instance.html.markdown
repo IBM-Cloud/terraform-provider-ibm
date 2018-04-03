@@ -59,6 +59,32 @@ resource "ibm_compute_vm_instance" "terraform-sample-BDTGroup" {
 }
 ```
 
+In the following example, you can create a VM instance using a flavor:
+
+```hcl
+resource "ibm_compute_vm_instance" "terraform-sample-flavor" {
+    hostname = "terraform-sample-flavor"
+    domain = "bar.example.com"
+    os_reference_code = "DEBIAN_7_64"
+    datacenter = "dal06"
+    network_speed = 10
+    hourly_billing = true
+    local_disk = false
+    private_network_only = false
+    flavor_key_name = "B1_2X8X25"
+    user_metadata = "{\\\"value\\\":\\\"newvalue\\\"}"
+    // provide disk 3, 4, 5 and so on
+    disks = [10, 20, 30]
+    tags = ["collectd"]
+    // It should be false
+    dedicated_acct_host_only = false
+    ipv6_enabled = true
+    secondary_ip_count = 4
+    notes = "VM notes"
+}
+```
+
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -66,11 +92,11 @@ The following arguments are supported:
 * `hostname` - (Optional, string) The hostname for the computing instance.
 * `domain` - (Required, string)  The domain for the computing instance.
 * `cores` - (Optional, integer) The number of CPU cores that you want to allocate.
-    **NOTE**: Conflicts with`flavor_key_name`.
+    **NOTE**: Conflicts with `flavor_key_name`.
 * `memory` - (Optional, integer) The amount of memory, expressed in megabytes, that you want to allocate.
-    **NOTE**: Conflicts with`flavor_key_name`.
+    **NOTE**: Conflicts with `flavor_key_name`.
 * `flavor_key_name` - (Optional, string) The flavor key name that you want to use to provision the instance. To see available Flavor key name, log in to the [IBM Cloud Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest/getCreateObjectOptions.json), using your API key as the password.
-    **NOTE**: Conflicts with `cores` and `memory`. Currently upgrade is not supported.
+    **NOTE**: Conflicts with `cores` and `memory`. Currently upgrade for flavor is not supported.
 * `datacenter` - (Required, string) The datacenter in which you want to provision the instance.
     **NOTE**: If `dedicated_host_name` or `dedicated_host_id`
     is provided then the datacenter should be same as the dedicated host datacenter.
@@ -83,7 +109,7 @@ The following arguments are supported:
 * `dedicated_host_name` - (Optional, string) Specifies [dedicated host](https://console.bluemix.net/docs/vsi/vsi_dedicated.html) for the instance by its name.
      **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_id`.
 * `os_reference_code` - (Optional, string) The operating system reference code that is used to provision the computing instance. To see available OS reference codes, log in to the [IBM Cloud Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest_Block_Device_Template_Group/getVhdImportSoftwareDescriptions.json?objectMask=referenceCode), using your API key as the password.
-    **NOTE**: Conflicts with`image_id`.
+    **NOTE**: Conflicts with `image_id`.
 *   `image_id` - (Optional, integer) The image template ID you want to use to provision the computing instance. This is not the global identifier (UUID), but the image template group ID that should point to a valid global identifier. To retrieve the image template ID from the IBM Cloud infrastructure customer portal, navigate to **Devices > Manage > Images**, click the desired image, and note the ID number in the resulting URL.
 
     **NOTE**: Conflicts with `os_reference_code`. If you don't know the ID(s) of your image templates, you can [refer to an image template ID by name using a data source](../d/compute_image_template.html).
@@ -111,9 +137,9 @@ This attribute can't be updated. This is provided so that you can apply security
 *  `secondary_ip_count` - (Optional, integer) Specifies secondary public IPv4 addresses. Accepted values are `4` and `8`.
 *  `wait_time_minutes` - (Optional, integer) The duration, expressed in minutes, to wait for the VM instance to become available before declaring it as created. It is also the same amount of time waited for no active transactions before proceeding with an update or deletion. The default value is `90`.
 * `public_bandwidth_limited` - (Optional, int). Allowed public network traffic(GB) per month. It can be greater than 0 when the server is a monthly based server. Defaults to the smallest available capacity for the public bandwidth are used.
-    **NOTE**: Conflicts with`private_network_only` and `public_bandwidth_unlimited`.
+    **NOTE**: Conflicts with `private_network_only` and `public_bandwidth_unlimited`.
 * `public_bandwidth_unlimited` - (Optional, boolean). Allowed unlimited public network traffic(GB) per month for a monthly based server. The `network_speed` should be 100 Mbps. Default value: `false`.
-    **NOTE**: Conflicts with`private_network_only` and `public_bandwidth_limited`.
+    **NOTE**: Conflicts with `private_network_only` and `public_bandwidth_limited`.
 
 
 ## Attribute Reference
