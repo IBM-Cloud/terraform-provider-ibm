@@ -130,13 +130,12 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			Header:         sl.String(header),
 			RespectHeaders: sl.Bool(respectheaders),
 		})
+		if err != nil {
+			return fmt.Errorf("Error creating CDN: %s", err)
+		}
 		///Print the response of the requested the service.
 		log.Print("Response for cdn order")
 		log.Println(receipt1)
-		if err != nil {
-			log.Print("Error creating : ")
-			log.Println(err)
-		}
 		d.SetId(*receipt1[0].UniqueId)
 	}
 	if origintype == "OBJECT_STORAGE" && protocol == "HTTPS" {
@@ -154,13 +153,12 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			Header:         sl.String(header),
 			RespectHeaders: sl.Bool(respectheaders),
 		})
+		if err != nil {
+			return fmt.Errorf("Error creating CDN: %s", err)
+		}
 		///Print the response of the requested the service.
 		log.Print("Response for cdn order")
 		log.Println(receipt2)
-		if err != nil {
-			log.Println("error creating")
-			log.Println(err)
-		}
 		d.SetId(*receipt2[0].UniqueId)
 	}
 	if origintype == "OBJECT_STORAGE" && protocol == "HTTP_AND_HTTPS" {
@@ -179,13 +177,12 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			Header:         sl.String(header),
 			RespectHeaders: sl.Bool(respectheaders),
 		})
+		if err != nil {
+			return fmt.Errorf("Error creating CDN: %s", err)
+		}
 		///Print the response of the requested the service.
 		log.Print("Response for cdn order")
 		log.Println(receipt3)
-		if err != nil {
-			log.Println("error creating")
-			log.Println(err)
-		}
 		d.SetId(*receipt3[0].UniqueId)
 	}
 	if origintype == "HOST_SERVER" && protocol == "HTTP" {
@@ -201,13 +198,12 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			Header:         sl.String(header),
 			RespectHeaders: sl.Bool(respectheaders),
 		})
+		if err != nil {
+			return fmt.Errorf("Error creating CDN: %s", err)
+		}
 		///Print the response of the requested the service.
 		log.Print("Response for cdn order")
 		log.Println(receipt4)
-		if err != nil {
-			log.Println("error creating")
-			log.Println(err)
-		}
 		d.SetId(*receipt4[0].UniqueId)
 	}
 	if origintype == "HOST_SERVER" && protocol == "HTTPS" {
@@ -223,13 +219,12 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			Header:         sl.String(header),
 			RespectHeaders: sl.Bool(respectheaders),
 		})
+		if err != nil {
+			return fmt.Errorf("Error creating CDN: %s", err)
+		}
 		///Print the response of the requested the service.
 		log.Print("Response for cdn order")
 		log.Println(receipt5)
-		if err != nil {
-			log.Println("error creating")
-			log.Println(err)
-		}
 		d.SetId(*receipt5[0].UniqueId)
 	}
 	if origintype == "HOST_SERVER" && protocol == "HTTP_AND_HTTPS" {
@@ -246,13 +241,12 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			Header:         sl.String(header),
 			RespectHeaders: sl.Bool(respectheaders),
 		})
+		if err != nil {
+			return fmt.Errorf("Error creating CDN: %s", err)
+		}
 		///Print the response of the requested the service.
 		log.Print("Response for cdn order")
 		log.Println(receipt6)
-		if err != nil {
-			log.Println("error creating")
-			log.Println(err)
-		}
 		d.SetId(*receipt6[0].UniqueId)
 	}
 	return nil
