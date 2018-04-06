@@ -61,10 +61,12 @@ func TestAccIBMStorageBlock_Basic(t *testing.T) {
 					// Endurance Storage
 					resource.TestCheckResourceAttr("ibm_storage_block.bs_endurance", "allowed_virtual_guest_ids.#", "1"),
 					resource.TestCheckResourceAttr("ibm_storage_block.bs_endurance", "allowed_ip_addresses.#", "1"),
+					resource.TestCheckResourceAttr("ibm_storage_block.bs_endurance", "allowed_host_info.#", "2"),
 					resource.TestCheckResourceAttr("ibm_storage_block.bs_endurance", "notes", "updated endurance notes"),
 					// Performance Storage
 					resource.TestCheckResourceAttr("ibm_storage_block.bs_performance", "allowed_virtual_guest_ids.#", "1"),
 					resource.TestCheckResourceAttr("ibm_storage_block.bs_performance", "allowed_ip_addresses.#", "1"),
+					resource.TestCheckResourceAttr("ibm_storage_block.bs_performance", "allowed_host_info.#", "2"),
 				),
 			},
 		},
@@ -165,6 +167,7 @@ func TestAccIBMStorageBlock_hourly(t *testing.T) {
 					// Endurance Storage
 					resource.TestCheckResourceAttr("ibm_storage_block.bs_endurance", "allowed_virtual_guest_ids.#", "1"),
 					resource.TestCheckResourceAttr("ibm_storage_block.bs_endurance", "allowed_ip_addresses.#", "1"),
+					resource.TestCheckResourceAttr("ibm_storage_block.bs_endurance", "allowed_host_info.#", "2"),
 					resource.TestCheckResourceAttr("ibm_storage_block.bs_endurance", "notes", "updated endurance notes"),
 				),
 			},
