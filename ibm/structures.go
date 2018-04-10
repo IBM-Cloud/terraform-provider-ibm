@@ -587,6 +587,18 @@ func flattenGatewayMembers(d *schema.ResourceData, list []datatypes.Network_Gate
 		member["member_id"] = *ele.HardwareId
 		member["hostname"] = *hardware.Hostname
 		member["domain"] = *hardware.Domain
+		member["priority"] = *ele.Priority
+		if hardware.OperatingSystem != nil && hardware.OperatingSystem.Passwords != nil {
+			passwords := make([]map[string]string, len(hardware.OperatingSystem.Passwords))
+			OperatingSystem := *hardware.OperatingSystem
+			for index := range OperatingSystem.Passwords {
+				creds := make(map[string]string)
+				creds["username"] = *OperatingSystem.Passwords[index].Username
+				creds["password"] = *OperatingSystem.Passwords[index].Password
+				passwords[index] = creds
+			}
+			member["passwords"] = passwords
+		}
 		if hardware.Notes != nil {
 			member["notes"] = *hardware.Notes
 		}
@@ -623,11 +635,12 @@ func flattenGatewayMembers(d *schema.ResourceData, list []datatypes.Network_Gate
 			member["redundant_power_supply"] = true
 		}
 		member["memory"] = *hardware.MemoryCapacity
-		if !(*hardware.PrivateNetworkOnlyFlag) {
+		if !(*hardware.PrivateNetworkOnlyFlag) && hardware.NetworkVlans[1].Id != nil {
 			member["public_vlan_id"] = *hardware.NetworkVlans[1].Id
 		}
-		member["private_vlan_id"] = *hardware.NetworkVlans[0].Id
-
+		if hardware.NetworkVlans[0].Id != nil {
+			member["private_vlan_id"] = *hardware.NetworkVlans[0].Id
+		}
 		if hardware.PrimaryIpAddress != nil {
 			member["public_ipv4_address"] = *hardware.PrimaryIpAddress
 		}

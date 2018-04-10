@@ -173,10 +173,6 @@ func resourceIBMComputeAutoScalePolicyCreate(d *schema.ResourceData, meta interf
 		},
 		}
 		opts.ScaleActions[0].TypeId = sl.Int(1)
-
-		if *opts.ScaleActions[0].Amount <= 0 {
-			return fmt.Errorf("Error retrieving scalePolicy: %s", "scale_amount should be greater than 0.")
-		}
 		if *opts.ScaleActions[0].ScaleType != "ABSOLUTE" && *opts.ScaleActions[0].ScaleType != "RELATIVE" && *opts.ScaleActions[0].ScaleType != "PERCENT" {
 			return fmt.Errorf("Error retrieving scalePolicy: %s", "scale_type should be ABSOLUTE, RELATIVE, or PERCENT.")
 		}
@@ -340,7 +336,11 @@ func resourceIBMComputeAutoScalePolicyUpdate(d *schema.ResourceData, meta interf
 		return fmt.Errorf("Error updating scale policy: %s", err)
 	}
 
-	return nil
+	d.SetId(strconv.Itoa(scalePolicyId))
+	log.Printf("[INFO] Scale Policy: %s", d.Id())
+
+	return resourceIBMComputeAutoScalePolicyRead(d, meta)
+
 }
 
 func resourceIBMComputeAutoScalePolicyDelete(d *schema.ResourceData, meta interface{}) error {
