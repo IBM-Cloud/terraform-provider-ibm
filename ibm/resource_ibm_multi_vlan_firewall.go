@@ -75,7 +75,7 @@ func resourceIBMMultiVlanFirewall() *schema.Resource {
 			"addon_configuration": {
 				Type:        schema.TypeList,
 				Elem:        &schema.Schema{Type: schema.TypeString},
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
 				Description: `"Allowed Values:- ["FortiGate Security Appliance - Web Filtering Add-on (High Availability)","FortiGate Security Appliance - NGFW Add-on (High Availability)","FortiGate Security Appliance - AV Add-on (High Availability)"] or ["FortiGate Security Appliance - Web Filtering Add-on","FortiGate Security Appliance - NGFW Add-on","FortiGate Security Appliance - AV Add-on"]"`,
 			},
@@ -134,10 +134,14 @@ func resourceIBMNetworkMultiVlanCreate(d *schema.ResourceData, meta interface{})
 	}
 
 	//4.get the addons that are specified
-	addonconfigurations, ok := d.Get("addon_configuration").([]interface{})
-	if !ok {
-		return fmt.Errorf("Addons is an array of strings")
+	var addonconfigurations []interface{}
+	if _, ok := d.GetOk("addon_configuration"); ok {
+		addonconfigurations, ok = d.Get("addon_configuration").([]interface{})
+		if !ok {
+			return fmt.Errorf("Addons is an array of strings")
+		}
 	}
+
 	var actualaddons []string
 	for _, addons := range addonconfigurations {
 		actualaddons = append(actualaddons, addons.(string))
