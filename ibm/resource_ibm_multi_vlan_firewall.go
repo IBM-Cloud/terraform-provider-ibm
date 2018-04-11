@@ -67,7 +67,27 @@ func resourceIBMMultiVlanFirewall() *schema.Resource {
 				Computed: true,
 			},
 
+			"public_ipv6": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
 			"private_ip": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"type": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"username": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"password": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -205,6 +225,8 @@ func resourceIBMNetworkMultiVlanCreate(d *schema.ResourceData, meta interface{})
 	}
 	id := *vlan.NetworkFirewall.Id
 	d.SetId(fmt.Sprintf("%d", id))
+	d.Set("datacenter", datacentername)
+	d.Set("type", firewalltype)
 	log.Printf("[INFO] Firewall ID: %s", d.Id())
 	return resourceIBMMultiVlanFirewallRead(d, meta)
 }
@@ -225,8 +247,11 @@ func resourceIBMMultiVlanFirewallRead(d *schema.ResourceData, meta interface{}) 
 	}
 	d.Set("name", *firewalls[0].Name)
 	d.Set("public_ip", *firewalls[0].PublicIpAddress.IpAddress)
+	d.Set("public_ipv6", firewalls[0].PublicIpv6Address.IpAddress)
 	d.Set("private_ip", *firewalls[0].PrivateIpAddress.IpAddress)
 	d.Set("public_vlan_id", *firewalls[0].PublicVlan.Id)
 	d.Set("private_vlan_id", *firewalls[0].PrivateVlan.Id)
+	d.Set("username", *firewalls[0].NetworkFirewall.ManagementCredentials.Username)
+	d.Set("password", *firewalls[0].NetworkFirewall.ManagementCredentials.Password)
 	return nil
 }
