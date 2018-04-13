@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"strings"
 
-	v1 "github.com/IBM-Bluemix/bluemix-go/api/iampap/iampapv1"
-	"github.com/IBM-Bluemix/bluemix-go/bmxerror"
+	v1 "github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 

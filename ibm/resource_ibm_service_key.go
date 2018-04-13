@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform/flatmap"
 
-	"github.com/IBM-Bluemix/bluemix-go/bmxerror"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
