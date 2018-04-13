@@ -17,17 +17,17 @@ import (
 	slsession "github.com/softlayer/softlayer-go/session"
 	"github.com/terraform-providers/terraform-provider-ibm/version"
 
-	bluemix "github.com/IBM-Bluemix/bluemix-go"
-	"github.com/IBM-Bluemix/bluemix-go/api/account/accountv1"
-	"github.com/IBM-Bluemix/bluemix-go/api/account/accountv2"
-	"github.com/IBM-Bluemix/bluemix-go/api/container/containerv1"
-	"github.com/IBM-Bluemix/bluemix-go/api/iampap/iampapv1"
-	"github.com/IBM-Bluemix/bluemix-go/api/mccp/mccpv2"
-	"github.com/IBM-Bluemix/bluemix-go/authentication"
-	"github.com/IBM-Bluemix/bluemix-go/http"
-	"github.com/IBM-Bluemix/bluemix-go/rest"
+	bluemix "github.com/IBM-Cloud/bluemix-go"
+	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
+	"github.com/IBM-Cloud/bluemix-go/api/account/accountv2"
+	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
+	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
+	"github.com/IBM-Cloud/bluemix-go/authentication"
+	"github.com/IBM-Cloud/bluemix-go/http"
+	"github.com/IBM-Cloud/bluemix-go/rest"
 
-	bxsession "github.com/IBM-Bluemix/bluemix-go/session"
+	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 )
 
 //SoftlayerRestEndpoint rest endpoint of SoftLayer

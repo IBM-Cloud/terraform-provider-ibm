@@ -3,8 +3,8 @@ package ibm
 import (
 	"fmt"
 
-	v2 "github.com/IBM-Bluemix/bluemix-go/api/mccp/mccpv2"
-	"github.com/IBM-Bluemix/bluemix-go/helpers"
+	v2 "github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
+	"github.com/IBM-Cloud/bluemix-go/helpers"
 
 	"github.com/hashicorp/terraform/helper/schema"
 )

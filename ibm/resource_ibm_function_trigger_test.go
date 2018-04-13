@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 
-	"github.com/IBM-Bluemix/bluemix-go/bmxerror"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
 
 func TestAccFunctionTrigger_Basic(t *testing.T) {

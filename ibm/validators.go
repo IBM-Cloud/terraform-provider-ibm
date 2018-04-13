@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/IBM-Bluemix/bluemix-go/helpers"
+	"github.com/IBM-Cloud/bluemix-go/helpers"
 	"github.com/hashicorp/terraform/helper/schema"
 	homedir "github.com/mitchellh/go-homedir"
 )

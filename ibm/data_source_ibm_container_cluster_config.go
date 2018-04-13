@@ -5,8 +5,8 @@ import (
 	"log"
 	"path/filepath"
 
-	v1 "github.com/IBM-Bluemix/bluemix-go/api/container/containerv1"
-	"github.com/IBM-Bluemix/bluemix-go/helpers"
+	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Cloud/bluemix-go/helpers"
 	"github.com/hashicorp/terraform/helper/schema"
 	homedir "github.com/mitchellh/go-homedir"
 )
