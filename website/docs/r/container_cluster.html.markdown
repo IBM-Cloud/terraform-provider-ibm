@@ -66,6 +66,7 @@ The following arguments are supported:
 * `private_vlan_id` - (Optional, string) The private VLAN of the worker node. You can retrieve the value by running the `bx cs vlans <data-center>` command in the IBM Cloud CLI.
 * `subnet_id` - (Optional, string) The existing subnet ID that you want to add to the cluster. You can retrieve the value by running the `bx cs subnets` command in the IBM Cloud CLI.
 * `no_subnet` - (Optional, boolean) Set to `true` if you do not want to automatically create a portable subnet.
+* `disk_encryption` - (Optional, boolean) Set to `false` to disable encryption on a worker.
 * `webhook` - (Optional, string) The webhook that you want to add to the cluster.
 * `wait_time_minutes` - (Optional, integer) The duration, expressed in minutes, to wait for the cluster to become available before declaring it as created. It is also the same amount of time waited for no active transactions before proceeding with an update or deletion. The default value is `90`.
 * `tags` - (Optional, array of strings) Tags associated with the container cluster instance.
