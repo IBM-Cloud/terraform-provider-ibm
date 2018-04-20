@@ -86,7 +86,7 @@ func main() {
 		log.Fatalf("Org obtained from FindByName and Get doesn't  match %s != %s", updatedOrg.GUID, getOrgByGUID.Metadata.GUID)
 	}
 
-	err = orgAPI.Delete(updatedOrg.GUID, true)
+	err = orgAPI.DeleteByRegion(updatedOrg.GUID, region, true)
 	if err != nil {
 		log.Fatal(err)
 	}

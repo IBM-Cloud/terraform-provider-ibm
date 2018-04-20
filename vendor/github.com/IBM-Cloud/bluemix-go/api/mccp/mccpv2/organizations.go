@@ -118,6 +118,7 @@ type Organizations interface {
 	Get(orgGUID string) (*OrganizationFields, error)
 	List(region string) ([]Organization, error)
 	FindByName(orgName, region string) (*Organization, error)
+	DeleteByRegion(guid string, region string, opts ...bool) error
 	Delete(guid string, opts ...bool) error
 	Update(guid string, req OrgUpdateRequest, opts ...bool) (*OrganizationFields, error)
 
@@ -192,7 +193,7 @@ func (o *organization) Update(guid string, req OrgUpdateRequest, opts ...bool) (
 // opts is list of boolean parametes
 // opts[0] - async - Will run the delete request in a background job. Recommended: 'true'. Default to 'true'.
 // opts[1] - recursive - Will delete all spaces, apps, services, routes, and private domains associated with the org. Default to 'false'.
-
+// Deprecated: Use DeleteByRegion instead.
 func (o *organization) Delete(guid string, opts ...bool) error {
 	async := true
 	recursive := false
@@ -203,6 +204,25 @@ func (o *organization) Delete(guid string, opts ...bool) error {
 		recursive = opts[1]
 	}
 	rawURL := fmt.Sprintf("/v2/organizations/%s?async=%t&recursive=%t", guid, async, recursive)
+	_, err := o.client.Delete(rawURL)
+	return err
+}
+
+// opts is list of boolean parametes
+// opts[0] - async - Will run the delete request in a background job. Recommended: 'true'. Default to 'true'.
+// opts[1] - recursive - Will delete all spaces, apps, services, routes, and private domains associated with the org. Default to 'false'.
+// region - specify the region where the org to be deleted. If org to be deleted in all region's pass the region as 'all'.
+func (o *organization) DeleteByRegion(guid string, region string, opts ...bool) error {
+	async := true
+	recursive := false
+	if len(opts) > 0 {
+		async = opts[0]
+	}
+	if len(opts) > 1 {
+		recursive = opts[1]
+	}
+
+	rawURL := fmt.Sprintf("/v2/organizations/%s?async=%t&recursive=%t&region=%s", guid, async, recursive, region)
 	_, err := o.client.Delete(rawURL)
 	return err
 }

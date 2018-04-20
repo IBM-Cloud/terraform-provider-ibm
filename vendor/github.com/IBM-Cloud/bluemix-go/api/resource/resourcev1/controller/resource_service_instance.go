@@ -7,7 +7,6 @@ import (
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/client"
-	"github.com/IBM-Cloud/bluemix-go/crn"
 	"github.com/IBM-Cloud/bluemix-go/helpers"
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM-Cloud/bluemix-go/rest"
@@ -20,7 +19,7 @@ type CreateServiceInstanceRequest struct {
 	Crn             string                 `json:"crn,omitempty"`
 	Tags            []string               `json:"tags,omitempty"`
 	Parameters      map[string]interface{} `json:"parameters,omitempty"`
-	TargetCrn       crn.CRN                `json:"target_crn"`
+	TargetCrn       string                 `json:"target_crn"`
 }
 
 type UpdateServiceInstanceRequest struct {
