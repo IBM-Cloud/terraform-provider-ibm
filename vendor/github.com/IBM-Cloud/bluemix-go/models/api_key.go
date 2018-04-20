@@ -14,4 +14,5 @@ type APIKey struct {
 	APIKey       string `json:"apiKey,omitempty"`
 	APIKeyID     string `json:"apiKeyId,omitempty"`
 	APIKeySecret string `json:"apiKeySecret,omitempty"`
+	Locked       bool   `json:"locked,omitempty"`
 }

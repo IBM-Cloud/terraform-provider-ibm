@@ -7,11 +7,11 @@ import (
 )
 
 type Service struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-	CRN  string `json:"catalog_crn"`
-	URL  string `json:"url"`
-	Kind string `json:"kind"`
+	ID         string `json:"id"`
+	Name       string `json:"name"`
+	CatalogCRN string `json:"catalog_crn"`
+	URL        string `json:"url"`
+	Kind       string `json:"kind"`
 
 	Metadata json.RawMessage `json:"metadata"`
 	Children []Service       `json:"children"`
@@ -44,16 +44,18 @@ func (c Service) GetMetadata() ServiceMetadata {
 }
 
 type ServicePlan struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-	CRN  string `json:"crn"`
-	URL  string `json:"url"`
-	Kind string `json:"kind"`
+	ID         string `json:"id"`
+	Name       string `json:"name"`
+	CatalogCRN string `json:"catalog_crn"`
+	URL        string `json:"url"`
+	Kind       string `json:"kind"`
 }
 
 type ServiceDeployment struct {
-	ID       string             `json:"id"`
-	Metadata DeploymentMetaData `json:"metadata,omitempty"`
+	ID         string             `json:"id"`
+	Name       string             `json:"name"`
+	CatalogCRN string             `json:"catalog_crn"`
+	Metadata   DeploymentMetaData `json:"metadata,omitempty"`
 }
 
 type ServiceDeploymentAlias struct {
@@ -61,9 +63,10 @@ type ServiceDeploymentAlias struct {
 }
 
 type DeploymentMetaData struct {
-	RCCompatible bool                       `json:"rc_compatible"`
-	Deployment   MetadataDeploymentFragment `json:"deployment,omitempty"`
-	Service      MetadataServiceFragment    `json:"service,omitempty"`
+	RCCompatible  bool                       `json:"rc_compatible"`
+	IAMCompatible bool                       `json:"iam_compatible"`
+	Deployment    MetadataDeploymentFragment `json:"deployment,omitempty"`
+	Service       MetadataServiceFragment    `json:"service,omitempty"`
 }
 
 type MetadataDeploymentFragment struct {

@@ -6,13 +6,14 @@ import (
 	"log"
 	"os"
 
+	"github.com/IBM-Cloud/bluemix-go/crn"
+	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM-Cloud/bluemix-go/utils"
 
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/catalog"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
-	"github.com/IBM-Cloud/bluemix-go/crn"
 	"github.com/IBM-Cloud/bluemix-go/session"
 	"github.com/IBM-Cloud/bluemix-go/trace"
 )
@@ -83,29 +84,36 @@ func main() {
 		servicePlanID = serviceplan
 	}
 
-	var crn crn.CRN
 	deployments, err := resCatalogAPI.ListDeployments(servicePlanID)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	found := false
-	var supportedLocations []string
-	for _, deployment := range deployments {
-		deploymentLocation := utils.GetLocationFromTargetCRN(deployment.Metadata.Deployment.TargetCrn.Resource)
-		if deploymentLocation == location {
-			crn = deployment.Metadata.Deployment.TargetCrn
-			found = true
-			break
-		} else {
-			supportedLocations = append(supportedLocations, deploymentLocation)
+	if len(deployments) == 0 {
+
+		log.Printf("No deployment found for service plan : %s", serviceplan)
+		os.Exit(1)
+	}
+
+	supportedDeployments := []models.ServiceDeployment{}
+	supportedLocations := make(map[string]bool)
+	for _, d := range deployments {
+		if d.Metadata.RCCompatible {
+			deploymentLocation := d.Metadata.Deployment.Location
+			supportedLocations[deploymentLocation] = true
+			if deploymentLocation == location {
+				supportedDeployments = append(supportedDeployments, d)
+			}
 		}
 	}
 
-	if !found {
-		log.Printf("The location %s you specified is not valid to the service plan %s. Valid location(s) are: %q", location, serviceplan, supportedLocations)
+	if len(supportedDeployments) == 0 {
+		locationList := make([]string, 0, len(supportedLocations))
+		for l := range supportedLocations {
+			locationList = append(locationList, l)
+		}
+		log.Printf("No deployment found for service plan %s at location %s.\nValid location(s) are: %q.\nUse service instance example if the service is a Cloud Foundry service.", serviceplan, location, locationList)
 		os.Exit(1)
-
 	}
 
 	managementClient, err := management.New(sess)
@@ -149,7 +157,7 @@ func main() {
 		Name:            name,
 		ServicePlanID:   servicePlanID,
 		ResourceGroupID: resourceGroupID,
-		TargetCrn:       crn,
+		TargetCrn:       supportedDeployments[0].CatalogCRN,
 	}
 
 	serviceInstance, err := resServiceInstanceAPI.CreateInstance(serviceInstancePayload)
@@ -205,6 +213,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	var crn crn.CRN
 	crn = utils.GenerateSpaceCRN(*region, orgrsp.GUID, spacersp.GUID)
 
 	serviceAliasAPI := controllerClient.ResourceServiceAlias()
