@@ -96,7 +96,7 @@ The following arguments are supported:
 * `memory` - (Optional, integer) The amount of memory, expressed in megabytes, that you want to allocate.
     **NOTE**: Conflicts with `flavor_key_name`.
 * `flavor_key_name` - (Optional, string) The flavor key name that you want to use to provision the instance. To see available Flavor key name, log in to the [IBM Cloud Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest/getCreateObjectOptions.json), using your API key as the password.
-    **NOTE**: Conflicts with `cores` and `memory`. Currently upgrade for flavor is not supported.
+    **NOTE**: Conflicts with `cores` and `memory`.
 * `datacenter` - (Required, string) The datacenter in which you want to provision the instance.
     **NOTE**: If `dedicated_host_name` or `dedicated_host_id`
     is provided then the datacenter should be same as the dedicated host datacenter.

@@ -115,10 +115,10 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 			},
 
 			"flavor_key_name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "Flavor key name used to provision vm.",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "Flavor key name used to provision vm.",
+				ConflictsWith: []string{"cores", "memory"},
 			},
 
 			"cores": {
@@ -1219,41 +1219,65 @@ func resourceIBMComputeVmInstanceUpdate(d *schema.ResourceData, meta interface{}
 		oldDisks, newDisks := d.GetChange("disks")
 		oldDisk := oldDisks.([]interface{})
 		newDisk := newDisks.([]interface{})
+
 		//Remove is not supported for now.
 		if len(oldDisk) > len(newDisk) {
 			return fmt.Errorf("Removing drives is not supported.")
 		}
+
+		var diskName string
 		//Update the disks if any change
 		for i := 0; i < len(oldDisk); i++ {
 			if newDisk[i].(int) != oldDisk[i].(int) {
 
-				diskName := fmt.Sprintf("guest_disk%d", i)
+				if _, ok := d.GetOk("flavor_key_name"); ok {
+					diskName = fmt.Sprintf("guest_disk%d", i+1)
+				} else {
+					diskName = fmt.Sprintf("guest_disk%d", i)
+				}
 				capacity := newDisk[i].(int)
 				upgradeOptions[diskName] = float64(capacity)
 			}
 		}
 		//Add new disks
 		for i := len(oldDisk); i < len(newDisk); i++ {
-			diskName := fmt.Sprintf("guest_disk%d", i)
+			if _, ok := d.GetOk("flavor_key_name"); ok {
+				diskName = fmt.Sprintf("guest_disk%d", i+1)
+			} else {
+				diskName = fmt.Sprintf("guest_disk%d", i)
+			}
 			capacity := newDisk[i].(int)
 			upgradeOptions[diskName] = float64(capacity)
 		}
 
 	}
-	if len(upgradeOptions) > 0 {
+	if len(upgradeOptions) > 0 || d.HasChange("flavor_key_name") {
 
-		_, err = virtual.UpgradeVirtualGuest(sess.SetRetries(0), &result, upgradeOptions)
-		if err != nil {
-			return fmt.Errorf("Couldn't upgrade virtual guest: %s", err)
+		if _, ok := d.GetOk("flavor_key_name"); ok {
+			presetKeyName := d.Get("flavor_key_name").(string)
+			_, err = virtual.UpgradeVirtualGuestWithPreset(sess.SetRetries(0), &result, presetKeyName, upgradeOptions)
+			if err != nil {
+				return fmt.Errorf("Couldn't upgrade virtual guest: %s", err)
+			}
+
+		} else {
+			_, err = virtual.UpgradeVirtualGuest(sess.SetRetries(0), &result, upgradeOptions)
+			if err != nil {
+				return fmt.Errorf("Couldn't upgrade virtual guest: %s", err)
+			}
 		}
 
 		// Wait for softlayer to start upgrading...
 		_, err = WaitForUpgradeTransactionsToAppear(d, meta)
-
+		if err != nil {
+			return err
+		}
 		// Wait for upgrade transactions to finish
 		_, err = WaitForNoActiveTransactions(d, meta)
+		if err != nil {
+			return err
+		}
 
-		return err
 	}
 
 	return resourceIBMComputeVmInstanceRead(d, meta)
