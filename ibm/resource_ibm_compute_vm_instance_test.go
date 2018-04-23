@@ -159,6 +159,10 @@ func TestAccIBMComputeVmInstanceWithFlavor(t *testing.T) {
 	flavor := "B1_1X2X25"
 	userMetadata1 := "{\\\"value\\\":\\\"newvalue\\\"}"
 	userMetadata1Unquoted, _ := strconv.Unquote(`"` + userMetadata1 + `"`)
+	updated_flavor := "B1_4X8X25"
+	networkSpeed2 := "100"
+	cores2 := "4"
+	memory2 := "8192"
 
 	configInstance := "ibm_compute_vm_instance.terraform-acceptance-test-1"
 	resource.Test(t, resource.TestCase{
@@ -167,8 +171,7 @@ func TestAccIBMComputeVmInstanceWithFlavor(t *testing.T) {
 		CheckDestroy: testAccIBMComputeVmInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:  testAccIBMComputeVmInstanceConfigFlavor(hostname, domain, networkSpeed1, flavor, userMetadata1, tags1),
-				Destroy: false,
+				Config: testAccIBMComputeVmInstanceConfigFlavor(hostname, domain, networkSpeed1, flavor, userMetadata1, tags1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccIBMComputeVmInstanceExists(configInstance, &guest),
 					resource.TestCheckResourceAttr(
@@ -217,6 +220,26 @@ func TestAccIBMComputeVmInstanceWithFlavor(t *testing.T) {
 						configInstance, "secondary_ip_addresses.3"),
 					resource.TestCheckResourceAttr(
 						configInstance, "notes", "VM notes"),
+				),
+			},
+			{
+				Config: testAccIBMComputeVMInstanceConfigFlavorUpdate(hostname, domain, networkSpeed2, updated_flavor, userMetadata1, tags1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccIBMComputeVmInstanceExists(configInstance, &guest),
+					resource.TestCheckResourceAttr(
+						configInstance, "disks.0", "10"),
+					resource.TestCheckResourceAttr(
+						configInstance, "disks.1", "20"),
+					resource.TestCheckResourceAttr(
+						configInstance, "disks.2", "20"),
+					resource.TestCheckResourceAttr(
+						configInstance, "flavor_key_name", updated_flavor),
+					resource.TestCheckResourceAttr(
+						configInstance, "cores", cores2),
+					resource.TestCheckResourceAttr(
+						configInstance, "memory", memory2),
+					resource.TestCheckResourceAttr(
+						configInstance, "network_speed", networkSpeed2),
 				),
 			},
 		},
@@ -1046,6 +1069,27 @@ func testAccIBMComputeVmInstanceConfigFlavor(hostname, domain, networkSpeed, fla
 	    user_metadata = "%s"
 		tags = ["%s"]
 		disks = [10 ,20]
+	    local_disk = false
+	    ipv6_enabled = true
+	    secondary_ip_count = 4
+	    notes = "VM notes"
+	}`, hostname, domain, networkSpeed, flavor, userMetadata, tags)
+}
+
+func testAccIBMComputeVMInstanceConfigFlavorUpdate(hostname, domain, networkSpeed, flavor, userMetadata, tags string) string {
+	return fmt.Sprintf(`
+	resource "ibm_compute_vm_instance" "terraform-acceptance-test-1" {
+	    hostname = "%s"
+	    domain = "%s"
+	    os_reference_code = "DEBIAN_8_64"
+	    datacenter = "wdc04"
+	    network_speed = %s
+	    hourly_billing = true
+	    private_network_only = false
+	    flavor_key_name = "%s"
+	    user_metadata = "%s"
+		tags = ["%s"]
+		disks = [10 ,20, 20]
 	    local_disk = false
 	    ipv6_enabled = true
 	    secondary_ip_count = 4

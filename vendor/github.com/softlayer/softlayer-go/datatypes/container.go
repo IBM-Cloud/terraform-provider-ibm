@@ -3218,6 +3218,9 @@ type Container_Product_Item_Discount_Program struct {
 type Container_Product_Order struct {
 	Entity
 
+	// Used to identify which items on an order belong in the same cluster.
+	ClusterIdentifier *string `json:"clusterIdentifier,omitempty" xmlrpc:"clusterIdentifier,omitempty"`
+
 	// Flag for identifying an order for Big Data Deployment.
 	BigDataOrderFlag *bool `json:"bigDataOrderFlag,omitempty" xmlrpc:"bigDataOrderFlag,omitempty"`
 
