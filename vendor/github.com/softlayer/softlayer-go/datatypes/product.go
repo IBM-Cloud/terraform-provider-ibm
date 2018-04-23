@@ -177,10 +177,10 @@ type Product_Item struct {
 	// A product's internal identification number
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
 
-	// An item's inventory status per datacenter.
+	// DEPRECATED. An item's inventory status per datacenter.
 	Inventory []Product_Package_Inventory `json:"inventory,omitempty" xmlrpc:"inventory,omitempty"`
 
-	// A count of an item's inventory status per datacenter.
+	// A count of dEPRECATED. An item's inventory status per datacenter.
 	InventoryCount *uint `json:"inventoryCount,omitempty" xmlrpc:"inventoryCount,omitempty"`
 
 	// Flag to indicate the server product is engineered for a multi-server solution. (Deprecated)
@@ -618,12 +618,6 @@ type Product_Item_Price struct {
 
 	// The unique identifier of a Product Item Price.
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
-
-	// An item price's inventory status per datacenter.
-	Inventory []Product_Package_Inventory `json:"inventory,omitempty" xmlrpc:"inventory,omitempty"`
-
-	// A count of an item price's inventory status per datacenter.
-	InventoryCount *uint `json:"inventoryCount,omitempty" xmlrpc:"inventoryCount,omitempty"`
 
 	// The product item a price is tied to.
 	Item *Product_Item `json:"item,omitempty" xmlrpc:"item,omitempty"`
@@ -1141,6 +1135,9 @@ type Product_Package struct {
 	// Determines whether the package contains prices that can be ordered hourly.
 	HourlyBillingAvailableFlag *bool `json:"hourlyBillingAvailableFlag,omitempty" xmlrpc:"hourlyBillingAvailableFlag,omitempty"`
 
+	// Packages with this flag do not allow monthly orders.
+	HourlyOnlyOrders *bool `json:"hourlyOnlyOrders,omitempty" xmlrpc:"hourlyOnlyOrders,omitempty"`
+
 	// A package's internal identifier. Everything regarding a SoftLayer_Product_Package is tied back to this id.
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
 
@@ -1194,6 +1191,9 @@ type Product_Package struct {
 
 	// The description of the package. For server packages, this is usually a detailed description of processor type and count.
 	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
+
+	// Whether the package is not in compliance with EU support.
+	NonEuCompliantFlag *bool `json:"nonEuCompliantFlag,omitempty" xmlrpc:"nonEuCompliantFlag,omitempty"`
 
 	// A count of the premium price modifiers associated with the [[SoftLayer_Product_Item_Price]] and [[SoftLayer_Location]] objects in a package.
 	OrderPremiumCount *uint `json:"orderPremiumCount,omitempty" xmlrpc:"orderPremiumCount,omitempty"`
@@ -1281,37 +1281,35 @@ type Product_Package_Attribute_Type struct {
 	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
 }
 
-// SoftLayer keeps near real-time track of the number of items available in it's product catalog inventory. The SoftLayer_Product_Package_Inventory data type models one of these inventory records. SoftLayer tracks inventory per product package and item per datacenter. This type is useful if you need to purchase specific servers in a specific location, and wish to check their availability before ordering.
-//
-// The data from this type is used primarily on the SoftLayer outlet website.
+// This is deprecated.
 type Product_Package_Inventory struct {
 	Entity
 
-	// The number of units available for purchase in SoftLayer's inventory for a single item in a single datacenter.
+	// DEPRECATED. The number of units available for purchase in inventory for a single item in a single datacenter.
 	AvailableInventoryCount *int `json:"availableInventoryCount,omitempty" xmlrpc:"availableInventoryCount,omitempty"`
 
 	// The product package item that is associated with an inventory record.
 	Item *Product_Item `json:"item,omitempty" xmlrpc:"item,omitempty"`
 
-	// The unique identifier of the product item that an inventory record is associated with.
+	// DEPRECATED. The unique identifier of the product item that an inventory record is associated with.
 	ItemId *int `json:"itemId,omitempty" xmlrpc:"itemId,omitempty"`
 
 	// The datacenter that an inventory record is located in.
 	Location *Location `json:"location,omitempty" xmlrpc:"location,omitempty"`
 
-	// The unique identifier of the datacenter that an inventory record is located in.
+	// DEPRECATED. The unique identifier of the datacenter that an inventory record is located in.
 	LocationId *int `json:"locationId,omitempty" xmlrpc:"locationId,omitempty"`
 
-	// The date that an inventory record was last updated.
+	// DEPRECATED. The date that an inventory record was last updated.
 	ModifyDate *Time `json:"modifyDate,omitempty" xmlrpc:"modifyDate,omitempty"`
 
-	// Whether an inventory record is marked as "overstock". Overstock records appear at the top portion of the SoftLayer outlet website.
+	// DEPRECATED. Whether an inventory record is marked as "overstock".
 	OverstockFlag *int `json:"overstockFlag,omitempty" xmlrpc:"overstockFlag,omitempty"`
 
 	// The product package that is associated with an inventory record.
 	Package *Product_Package `json:"package,omitempty" xmlrpc:"package,omitempty"`
 
-	// The unique identifier of the product package that an inventory record is associated with.
+	// DEPRECATED. The unique identifier of the product package that an inventory record is associated with.
 	PackageId *int `json:"packageId,omitempty" xmlrpc:"packageId,omitempty"`
 }
 
@@ -1519,6 +1517,9 @@ type Product_Package_Preset struct {
 	// A description of the package preset.
 	Description *string `json:"description,omitempty" xmlrpc:"description,omitempty"`
 
+	// When true this preset is only allowed to upgrade/downgrade to other presets in the same compute family.
+	DisallowedComputeGroupUpgradeFlag *bool `json:"disallowedComputeGroupUpgradeFlag,omitempty" xmlrpc:"disallowedComputeGroupUpgradeFlag,omitempty"`
+
 	// A package preset with this flag set will not allow the price's defined in the preset configuration to be overriden during order placement.
 	FixedConfigurationFlag *bool `json:"fixedConfigurationFlag,omitempty" xmlrpc:"fixedConfigurationFlag,omitempty"`
 
@@ -1686,7 +1687,7 @@ type Product_Package_Server struct {
 	// no documentation yet
 	NetworkGatewayApplianceRoleFlag *bool `json:"networkGatewayApplianceRoleFlag,omitempty" xmlrpc:"networkGatewayApplianceRoleFlag,omitempty"`
 
-	// Indicates whether or not the server is being sold as part of an outlet package.
+	// DEPRECATED. Indicates whether or not the server is being sold as part of an outlet package.
 	OutletFlag *bool `json:"outletFlag,omitempty" xmlrpc:"outletFlag,omitempty"`
 
 	// no documentation yet

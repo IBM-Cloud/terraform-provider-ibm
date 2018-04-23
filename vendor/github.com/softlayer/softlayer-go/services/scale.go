@@ -285,7 +285,7 @@ func (r Scale_Group) Offset(offset int) Scale_Group {
 	return r
 }
 
-// no documentation yet
+// Create a scale group. If minimumMemberCount is greater than zero or desiredMemberCount is present, guest members will be created right away.
 func (r Scale_Group) CreateObject(templateObject *datatypes.Scale_Group) (resp datatypes.Scale_Group, err error) {
 	params := []interface{}{
 		templateObject,
@@ -294,13 +294,15 @@ func (r Scale_Group) CreateObject(templateObject *datatypes.Scale_Group) (resp d
 	return
 }
 
-// no documentation yet
+// Delete this group. This can only be done on an empty, active group. This means that minimumMemberCount must be 0 since it is the only way for a group to have no group members. To delete a group and all of its members at the same time, use forceDeleteObject.
 func (r Scale_Group) DeleteObject() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Scale_Group", "deleteObject", nil, &r.Options, &resp)
 	return
 }
 
-// no documentation yet
+// Edit this group. The name can be edited at any time. The minimumMemberCount and maximumMemberCount fields can also be edited at any time provided they don't force a scale up or scale down to bring the group into the proper range. Otherwise, the group's status must be active to set those fields. If the group member count is less than the new minimumMemberCount and the group is active, it will scale up the group members to reach the new minimum. Similarly if the group member count is greater than the new maximumMemberCount and the group is active, it will scale down the group members to reach the new maximum.
+//
+// When editing an active group, a special field can be provided: desiredMemberCount. When given, the group members are automatically scaled up or down to reach that number.
 func (r Scale_Group) EditObject(templateObject *datatypes.Scale_Group) (resp bool, err error) {
 	params := []interface{}{
 		templateObject,
@@ -321,7 +323,7 @@ func (r Scale_Group) GetAccount() (resp datatypes.Account, err error) {
 	return
 }
 
-// no documentation yet
+// This returns the number of hourly instances an account can add from this point. It is essentially the same as [[SoftLayer_Account/hourlyInstanceLimit|hourlyInstanceLimit]] minus existing hourly instances and ones spoken for as part of a scaling group (as determined by the group's maximum). This number can be used to help determine a maximum member count for a new group to ensure it won't go over the account limit. This can return a negative value if the current hourly instance count combined with the unused-but-possible count (based on other scale group maximums) is over the limit.
 func (r Scale_Group) GetAvailableHourlyInstanceLimit() (resp int, err error) {
 	err = r.Session.DoRequest("SoftLayer_Scale_Group", "getAvailableHourlyInstanceLimit", nil, &r.Options, &resp)
 	return
@@ -393,14 +395,14 @@ func (r Scale_Group) GetVirtualGuestMembers() (resp []datatypes.Scale_Member_Vir
 	return
 }
 
-// no documentation yet
+// Resume this group. The group must be in a suspended status to do this. By doing this, the group's status will become active.
 func (r Scale_Group) Resume() (err error) {
 	var resp datatypes.Void
 	err = r.Session.DoRequest("SoftLayer_Scale_Group", "resume", nil, &r.Options, &resp)
 	return
 }
 
-// no documentation yet
+// Scale this group up or down by the amount given. If the number is negative, the given amount of guest members are removed. Similarly, if the number is positive, the given amount of guest members are added. Note, this call will add or remove as much as asked for, but will NOT go beyond the limits set by minimumMemberCount and maximumMemberCount. The result is a collection of SoftLayer_Scale_Member instances that were either removed or added. This call can only be invoked on an active group and does not respect cooldown (i.e. even if in a cooldown period, the scaling will still occur).
 func (r Scale_Group) Scale(delta *int) (resp []datatypes.Scale_Member, err error) {
 	params := []interface{}{
 		delta,
@@ -409,7 +411,7 @@ func (r Scale_Group) Scale(delta *int) (resp []datatypes.Scale_Member, err error
 	return
 }
 
-// no documentation yet
+// Scale this group up or down to the number given. This call will add or remove as many guests as necessary, but will NOT go beyond the limits set by minimumMemberCount and maximumMemberCount. This call and its result are the equivalent of calling scale(number - virtualGuestMemberCount). This call can only be invoked on an active group and does not respect cooldown (i.e. even if in a cooldown period, the scaling will still occur).
 func (r Scale_Group) ScaleTo(number *int) (resp []datatypes.Scale_Member, err error) {
 	params := []interface{}{
 		number,
@@ -418,7 +420,7 @@ func (r Scale_Group) ScaleTo(number *int) (resp []datatypes.Scale_Member, err er
 	return
 }
 
-// no documentation yet
+// Suspend this group. The group must be in an active status to do this. While suspended, a group cannot add or remove guest members for any reason. Changes to group settings that will cause a member to be added or deleted is also not allowed.
 func (r Scale_Group) Suspend() (err error) {
 	var resp datatypes.Void
 	err = r.Session.DoRequest("SoftLayer_Scale_Group", "suspend", nil, &r.Options, &resp)
@@ -517,7 +519,9 @@ func (r Scale_LoadBalancer) Offset(offset int) Scale_LoadBalancer {
 	return r
 }
 
-// no documentation yet
+// Create a load balancer for a scale group. Once created, the configuration will be used to configure the load balancers for autoscaled members.
+//
+// If the given virtual server port exists for the given virtual IP address, it is reused here if all the other values match. Otherwise, the virtual server port will be created.
 func (r Scale_LoadBalancer) CreateObject(templateObject *datatypes.Scale_LoadBalancer) (resp datatypes.Scale_LoadBalancer, err error) {
 	params := []interface{}{
 		templateObject,
@@ -526,13 +530,13 @@ func (r Scale_LoadBalancer) CreateObject(templateObject *datatypes.Scale_LoadBal
 	return
 }
 
-// no documentation yet
+// Delete this load balancer configuration. Note, this does not affect existing scaled members. Once deleted however, future scaled members will not be load balanced with this configuration.
 func (r Scale_LoadBalancer) DeleteObject() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Scale_LoadBalancer", "deleteObject", nil, &r.Options, &resp)
 	return
 }
 
-// no documentation yet
+// Edit this load balancer configuration. Note, this does not affect existing scaled members. Once edited however, future scaled members will be load balanced with this configuration.
 func (r Scale_LoadBalancer) EditObject(templateObject *datatypes.Scale_LoadBalancer) (resp bool, err error) {
 	params := []interface{}{
 		templateObject,
@@ -693,7 +697,7 @@ func (r Scale_Member_Virtual_Guest) Offset(offset int) Scale_Member_Virtual_Gues
 	return r
 }
 
-// no documentation yet
+// Delete this group member. Note, this can only be done on an active group when it wont cause the group to go below its minimumMemberCount. This is not the recommended way to delete members. Instead, users should invoke scale(-1) on SoftLayer_Scale_Group so it can choose the best guest member to remove.
 func (r Scale_Member_Virtual_Guest) DeleteObject() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Scale_Member_Virtual_Guest", "deleteObject", nil, &r.Options, &resp)
 	return
@@ -908,7 +912,7 @@ func (r Scale_Policy) GetTriggers() (resp []datatypes.Scale_Policy_Trigger, err 
 	return
 }
 
-// no documentation yet
+// Manually trigger the actions on this policy. Returns members if the trigger has an effect, or an empty set of members if there is no effect. Sometimes this may not have an effect if the group is not active, in cooldown, or the result would violate the group range. If this call fails, the group is suspended, the failure logged, and a ticket is created.
 func (r Scale_Policy) Trigger() (resp []datatypes.Scale_Member, err error) {
 	err = r.Session.DoRequest("SoftLayer_Scale_Policy", "trigger", nil, &r.Options, &resp)
 	return

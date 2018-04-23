@@ -21,6 +21,7 @@ import (
 	"log"
 	"math/rand"
 	"net"
+	"net/http"
 	"os"
 	"os/user"
 	"runtime"
@@ -110,6 +111,9 @@ type Session struct {
 	// (e.g., REST).  Set automatically for a new Session, based on the
 	// provided Endpoint.
 	TransportHandler TransportHandler
+
+	// HTTPClient This allows a custom user configured HTTP Client.
+	HTTPClient *http.Client
 
 	// Timeout specifies a time limit for http requests made by this
 	// session. Requests that take longer that the specified timeout
