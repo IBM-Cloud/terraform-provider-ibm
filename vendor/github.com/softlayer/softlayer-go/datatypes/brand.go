@@ -38,6 +38,12 @@ type Brand struct {
 	// This flag indicates if creation of accounts is allowed.
 	AllowAccountCreationFlag *bool `json:"allowAccountCreationFlag,omitempty" xmlrpc:"allowAccountCreationFlag,omitempty"`
 
+	// Business Partner details for the brand. Country Enterprise Code, Channel, Segment, Reseller Level.
+	BusinessPartner *Brand_Business_Partner `json:"businessPartner,omitempty" xmlrpc:"businessPartner,omitempty"`
+
+	// Flag indicating if the brand is a business partner.
+	BusinessPartnerFlag *bool `json:"businessPartnerFlag,omitempty" xmlrpc:"businessPartnerFlag,omitempty"`
+
 	// The Product Catalog for the Brand
 	Catalog *Product_Catalog `json:"catalog,omitempty" xmlrpc:"catalog,omitempty"`
 
@@ -98,6 +104,9 @@ type Brand struct {
 	// Active accounts owned by the brand.
 	OwnedAccounts []Account `json:"ownedAccounts,omitempty" xmlrpc:"ownedAccounts,omitempty"`
 
+	// no documentation yet
+	SecurityLevel *Security_Level `json:"securityLevel,omitempty" xmlrpc:"securityLevel,omitempty"`
+
 	// A count of
 	TicketCount *uint `json:"ticketCount,omitempty" xmlrpc:"ticketCount,omitempty"`
 
@@ -129,6 +138,32 @@ type Brand_Attribute struct {
 
 	// no documentation yet
 	Brand *Brand `json:"brand,omitempty" xmlrpc:"brand,omitempty"`
+}
+
+// Contains business partner details associated with a brand. Country Enterprise Identifier (CEID), Channel ID, Segment ID and Reseller Level.
+type Brand_Business_Partner struct {
+	Entity
+
+	// Brand associated with the business partner data
+	Brand *Brand `json:"brand,omitempty" xmlrpc:"brand,omitempty"`
+
+	// Channel indicator used to categorize business partner revenue.
+	Channel *Business_Partner_Channel `json:"channel,omitempty" xmlrpc:"channel,omitempty"`
+
+	// Brand business partner channel identifier
+	ChannelId *int `json:"channelId,omitempty" xmlrpc:"channelId,omitempty"`
+
+	// Brand business partner country enterprise code
+	CountryEnterpriseCode *string `json:"countryEnterpriseCode,omitempty" xmlrpc:"countryEnterpriseCode,omitempty"`
+
+	// Reseller level of a brand business partner
+	ResellerLevel *int `json:"resellerLevel,omitempty" xmlrpc:"resellerLevel,omitempty"`
+
+	// Segment indicator used to categorize business partner revenue.
+	Segment *Business_Partner_Segment `json:"segment,omitempty" xmlrpc:"segment,omitempty"`
+
+	// Brand business partner segment identifier
+	SegmentId *int `json:"segmentId,omitempty" xmlrpc:"segmentId,omitempty"`
 }
 
 // SoftLayer_Brand_Contact contains the contact information for the brand such as Corporate or Support contact information

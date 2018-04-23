@@ -24,9 +24,6 @@ package datatypes
 type Hardware struct {
 	Entity
 
-	// Determine if hardware object has Software Guard Extension (SGX) enabled.
-	SGXEnabled *bool `json:"SGXEnabled,omitempty" xmlrpc:"SGXEnabled,omitempty"`
-
 	// The account associated with a piece of hardware.
 	Account *Account `json:"account,omitempty" xmlrpc:"account,omitempty"`
 
@@ -420,6 +417,9 @@ type Hardware struct {
 	// The total public outbound bandwidth for this hardware for the current billing cycle.
 	OutboundPublicBandwidthUsage *Float64 `json:"outboundPublicBandwidthUsage,omitempty" xmlrpc:"outboundPublicBandwidthUsage,omitempty"`
 
+	// Blade Bay
+	ParentBay *Hardware_Blade `json:"parentBay,omitempty" xmlrpc:"parentBay,omitempty"`
+
 	// Parent Hardware.
 	ParentHardware *Hardware `json:"parentHardware,omitempty" xmlrpc:"parentHardware,omitempty"`
 
@@ -684,6 +684,38 @@ type Hardware_Benchmark_Certification struct {
 	HardwareId *int `json:"hardwareId,omitempty" xmlrpc:"hardwareId,omitempty"`
 }
 
+// no documentation yet
+type Hardware_Blade struct {
+	Entity
+
+	// no documentation yet
+	CreateDate *Time `json:"createDate,omitempty" xmlrpc:"createDate,omitempty"`
+
+	// no documentation yet
+	Disabled *int `json:"disabled,omitempty" xmlrpc:"disabled,omitempty"`
+
+	// no documentation yet
+	HardwareChild *Hardware `json:"hardwareChild,omitempty" xmlrpc:"hardwareChild,omitempty"`
+
+	// no documentation yet
+	HardwareChildId *int `json:"hardwareChildId,omitempty" xmlrpc:"hardwareChildId,omitempty"`
+
+	// no documentation yet
+	HardwareParent *Hardware `json:"hardwareParent,omitempty" xmlrpc:"hardwareParent,omitempty"`
+
+	// no documentation yet
+	HardwareParentId *int `json:"hardwareParentId,omitempty" xmlrpc:"hardwareParentId,omitempty"`
+
+	// no documentation yet
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// no documentation yet
+	ModifyDate *Time `json:"modifyDate,omitempty" xmlrpc:"modifyDate,omitempty"`
+
+	// The name of this blade as referenced by the operating system.
+	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
+}
+
 // Every piece of hardware in SoftLayer's datacenters, including customer servers, are housed in one of many hardware chassis. The SoftLayer_Hardware_Chassis data type defines these chassis.
 type Hardware_Chassis struct {
 	Entity
@@ -880,6 +912,12 @@ type Hardware_Component_DriveController struct {
 // no documentation yet
 type Hardware_Component_Firmware struct {
 	Entity
+
+	// A count of
+	AttributeCount *uint `json:"attributeCount,omitempty" xmlrpc:"attributeCount,omitempty"`
+
+	// no documentation yet
+	Attributes []Hardware_Component_Firmware_Attribute `json:"attributes,omitempty" xmlrpc:"attributes,omitempty"`
 
 	// no documentation yet
 	BuildDate *Time `json:"buildDate,omitempty" xmlrpc:"buildDate,omitempty"`
@@ -1719,6 +1757,11 @@ type Hardware_SecurityModule struct {
 	Hardware_Server
 }
 
+// no documentation yet
+type Hardware_SecurityModule750 struct {
+	Hardware_SecurityModule
+}
+
 // The SoftLayer_Hardware_Server data type contains general information relating to a single SoftLayer server.
 type Hardware_Server struct {
 	Hardware
@@ -1833,6 +1876,9 @@ type Hardware_Server struct {
 
 	// User(s) who have access to issue commands and/or interact with the server's remote management card.
 	RemoteManagementUsers []Hardware_Component_RemoteManagement_User `json:"remoteManagementUsers,omitempty" xmlrpc:"remoteManagementUsers,omitempty"`
+
+	// Determine if hardware object has Software Guard Extension (SGX) enabled.
+	SoftwareGuardExtensionEnabled *bool `json:"softwareGuardExtensionEnabled,omitempty" xmlrpc:"softwareGuardExtensionEnabled,omitempty"`
 
 	// A server's remote management card used for statistics.
 	StatisticsRemoteManagement *Hardware_Component_RemoteManagement `json:"statisticsRemoteManagement,omitempty" xmlrpc:"statisticsRemoteManagement,omitempty"`

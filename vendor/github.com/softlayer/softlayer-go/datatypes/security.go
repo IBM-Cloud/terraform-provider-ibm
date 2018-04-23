@@ -216,6 +216,17 @@ type Security_Directory_Service_Host_Xref_Hardware struct {
 	Host *Hardware `json:"host,omitempty" xmlrpc:"host,omitempty"`
 }
 
+// The SoftLayer_Security_Level data type contains the security level restriction for the account
+type Security_Level struct {
+	Entity
+
+	// The unique name of the security level the account is under
+	KeyName *string `json:"keyName,omitempty" xmlrpc:"keyName,omitempty"`
+
+	// The name of the security level the account is under
+	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
+}
+
 // Encryption algorithm intended for use in SSL/TLS communications
 type Security_SecureTransportCipher struct {
 	Entity

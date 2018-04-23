@@ -1417,16 +1417,6 @@ type Billing_Item_Network_Message_Delivery struct {
 	Resource *Network_Message_Delivery `json:"resource,omitempty" xmlrpc:"resource,omitempty"`
 }
 
-// The SoftLayer_Billing_Item_Network_Message_Queue data describes the related billing item.
-type Billing_Item_Network_Message_Queue struct {
-	Billing_Item
-}
-
-// The SoftLayer_Billing_Item_Network_Message_Queue data describes the related billing item.
-type Billing_Item_Network_Message_Queue_Delivery struct {
-	Billing_Item_Network_Message_Queue
-}
-
 // The SoftLayer_Billing_Item_Network_PerformanceStorage_Iscsi data type contains general information relating to a single SoftLayer billing item whose item category code is 'performance_storage_iscsi'
 type Billing_Item_Network_PerformanceStorage_Iscsi struct {
 	Billing_Item_Network_Storage
@@ -1504,7 +1494,7 @@ type Billing_Item_Network_Tunnel struct {
 type Billing_Item_Network_Vlan struct {
 	Billing_Item
 
-	// The resource for a network vlan related billing item.
+	// The network vlan resource for this billing item.
 	Resource *Network_Vlan `json:"resource,omitempty" xmlrpc:"resource,omitempty"`
 }
 

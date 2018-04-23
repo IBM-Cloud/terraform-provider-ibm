@@ -105,6 +105,12 @@ func (r Product_Item_Category) GetCustomUsageRatesCategories(resetCache *bool) (
 	return
 }
 
+// no documentation yet
+func (r Product_Item_Category) GetExternalResourceCategories() (resp []datatypes.Product_Item_Category, err error) {
+	err = r.Session.DoRequest("SoftLayer_Product_Item_Category", "getExternalResourceCategories", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve This invoice item's "item category group".
 func (r Product_Item_Category) GetGroup() (resp datatypes.Product_Item_Category_Group, err error) {
 	err = r.Session.DoRequest("SoftLayer_Product_Item_Category", "getGroup", nil, &r.Options, &resp)
@@ -411,12 +417,6 @@ func (r Product_Item_Price) GetDedicatedHostInstanceFlag() (resp bool, err error
 // Retrieve Whether this price defines a software license for its product item.
 func (r Product_Item_Price) GetDefinedSoftwareLicenseFlag() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Product_Item_Price", "getDefinedSoftwareLicenseFlag", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve An item price's inventory status per datacenter.
-func (r Product_Item_Price) GetInventory() (resp []datatypes.Product_Package_Inventory, err error) {
-	err = r.Session.DoRequest("SoftLayer_Product_Item_Price", "getInventory", nil, &r.Options, &resp)
 	return
 }
 
@@ -747,11 +747,6 @@ func (r Product_Order) GetVlans(locationId *int, packageId *int, selectedItems *
 //     <td>Content delivery network Addon</td>
 //     <td>[[SoftLayer_Container_Product_Order_Network_ContentDelivery_Account_Addon (type)|Network_ContentDelivery_Account_Addon]]</td>
 //     <td>ADDITIONAL_SERVICES_CDN_ADDON</td>
-//   </tr>
-//   <tr>
-//     <td>Message queue</td>
-//     <td>[[SoftLayer_Container_Product_Order_Network_Message_Queue (type)|Network_Message_Queue]]</td>
-//     <td>ADDITIONAL_SERVICES_MESSAGE_QUEUE</td>
 //   </tr>
 //   <tr>
 //     <td>Hardware & software firewalls</td>
@@ -1408,6 +1403,12 @@ func (r Product_Package) GetHourlyBillingAvailableFlag() (resp bool, err error) 
 	return
 }
 
+// Retrieve Packages with this flag do not allow monthly orders.
+func (r Product_Package) GetHourlyOnlyOrders() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Product_Package", "getHourlyOnlyOrders", nil, &r.Options, &resp)
+	return
+}
+
 // Returns a collection of SoftLayer_Product_Item_Attribute_Type objects.  These item attribute types specifically deal with when an item, SoftLayer_Product_Item, from the product catalog may no longer be available.  The keynames for these attribute types start with 'UNAVAILABLE_AFTER_DATE_*', where the '*' may represent any string.  For example, 'UNAVAILABLE_AFTER_DATE_NEW_ORDERS', signifies that the item is not available for new orders.  There is a catch all attribute type, 'UNAVAILABLE_AFTER_DATE_ALL'.  If an item has one of these availability attributes set, the value should be a valid date in MM/DD/YYYY, indicating the date after which the item will no longer be available.
 func (r Product_Package) GetItemAvailabilityTypes() (resp []datatypes.Product_Item_Attribute_Type, err error) {
 	err = r.Session.DoRequest("SoftLayer_Product_Package", "getItemAvailabilityTypes", nil, &r.Options, &resp)
@@ -1497,6 +1498,12 @@ func (r Product_Package) GetMinimumPortSpeed() (resp uint, err error) {
 // Retrieve This flag indicates that this is a MongoDB engineered package. (Deprecated)
 func (r Product_Package) GetMongoDbEngineeredFlag() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Product_Package", "getMongoDbEngineeredFlag", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Whether the package is not in compliance with EU support.
+func (r Product_Package) GetNonEuCompliantFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Product_Package", "getNonEuCompliantFlag", nil, &r.Options, &resp)
 	return
 }
 
@@ -1683,6 +1690,12 @@ func (r Product_Package_Preset) GetComputeGroup() (resp datatypes.Product_Item_S
 // Retrieve The preset configuration (category and price).
 func (r Product_Package_Preset) GetConfiguration() (resp []datatypes.Product_Package_Preset_Configuration, err error) {
 	err = r.Session.DoRequest("SoftLayer_Product_Package_Preset", "getConfiguration", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve When true this preset is only allowed to upgrade/downgrade to other presets in the same compute family.
+func (r Product_Package_Preset) GetDisallowedComputeGroupUpgradeFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Product_Package_Preset", "getDisallowedComputeGroupUpgradeFlag", nil, &r.Options, &resp)
 	return
 }
 

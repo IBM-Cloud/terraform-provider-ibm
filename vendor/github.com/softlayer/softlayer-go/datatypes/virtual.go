@@ -60,6 +60,12 @@ type Virtual_DedicatedHost struct {
 	// The dedicated host's associated unique id.
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
 
+	// A count of
+	InternalTagReferenceCount *uint `json:"internalTagReferenceCount,omitempty" xmlrpc:"internalTagReferenceCount,omitempty"`
+
+	// no documentation yet
+	InternalTagReferences []Tag_Reference `json:"internalTagReferences,omitempty" xmlrpc:"internalTagReferences,omitempty"`
+
 	// The capacity that the dedicated host's memory allocation is restricted to.
 	MemoryCapacity *int `json:"memoryCapacity,omitempty" xmlrpc:"memoryCapacity,omitempty"`
 
@@ -68,6 +74,15 @@ type Virtual_DedicatedHost struct {
 
 	// The dedicated host's name.
 	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
+
+	// A note of up to 1,000 characters about a dedicated host.
+	Notes *string `json:"notes,omitempty" xmlrpc:"notes,omitempty"`
+
+	// A count of
+	TagReferenceCount *uint `json:"tagReferenceCount,omitempty" xmlrpc:"tagReferenceCount,omitempty"`
+
+	// no documentation yet
+	TagReferences []Tag_Reference `json:"tagReferences,omitempty" xmlrpc:"tagReferences,omitempty"`
 }
 
 // The virtual disk image data type presents the structure in which a virtual disk image will be presented.
@@ -638,6 +653,9 @@ type Virtual_Guest struct {
 	// no documentation yet
 	TagReferences []Tag_Reference `json:"tagReferences,omitempty" xmlrpc:"tagReferences,omitempty"`
 
+	// Whether or not a computing instance is a Transient Instance.
+	TransientGuestFlag *bool `json:"transientGuestFlag,omitempty" xmlrpc:"transientGuestFlag,omitempty"`
+
 	// The type of this virtual guest.
 	Type *Virtual_Guest_Type `json:"type,omitempty" xmlrpc:"type,omitempty"`
 
@@ -1148,6 +1166,9 @@ type Virtual_Guest_Status struct {
 type Virtual_Guest_SupplementalCreateObjectOptions struct {
 	Entity
 
+	// The mode used to boot the [[SoftLayer_Virtual_Guest]].  Supported values are 'PV' and 'HVM'.
+	BootMode *string `json:"bootMode,omitempty" xmlrpc:"bootMode,omitempty"`
+
 	// When set the startCpus and maxMemory are defined by the flavor. If the flavor includes local storage blockDevice 0 is also defined by the flavor. When startCpus, maxMemory, or blockDevice 0 are also provided on the template object they are validated against the flavor provided.
 	FlavorKeyName *string `json:"flavorKeyName,omitempty" xmlrpc:"flavorKeyName,omitempty"`
 
@@ -1170,6 +1191,16 @@ type Virtual_Guest_Type struct {
 
 	// no documentation yet
 	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
+}
+
+// no documentation yet
+type Virtual_Guest_Vpc_IpAllocation struct {
+	Entity
+}
+
+// no documentation yet
+type Virtual_Guest_Vpc_Subnet struct {
+	Entity
 }
 
 // The virtual host represents the platform on which virtual guests reside. At times a virtual host has no allocations on the physical server, however with many modern platforms it is a virtual machine with small CPU and Memory allocations that runs in the Control Domain.
