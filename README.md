@@ -31,7 +31,7 @@ $ make build
 Using the provider
 ----------------------
 
-See the [IBM Provider documentation](https://ibm-cloud.github.io/tf-ibm-docs/v0.6.0/) to get started using the IBM provider.
+See the [IBM Provider documentation](https://ibm-cloud.github.io/tf-ibm-docs/) to get started using the IBM provider.
 
 Developing the Provider
 ---------------------------
