@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/bluemix-go/api/iam/iamv1"
+
 	gohttp "net/http"
 
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
@@ -101,7 +103,8 @@ type ClientSession interface {
 	SoftLayerSession() *slsession.Session
 	BluemixSession() (*bxsession.Session, error)
 	ContainerAPI() (containerv1.ContainerServiceAPI, error)
-	IAMAPI() (iampapv1.IAMPAPAPI, error)
+	IAMAPI() (iamv1.IAMServiceAPI, error)
+	IAMPAPAPI() (iampapv1.IAMPAPAPI, error)
 	MccpAPI() (mccpv2.MccpServiceAPI, error)
 	BluemixAcccountAPI() (accountv2.AccountServiceAPI, error)
 	BluemixAcccountv1API() (accountv1.AccountServiceAPI, error)
@@ -121,8 +124,11 @@ type clientSession struct {
 	cfConfigErr  error
 	cfServiceAPI mccpv2.MccpServiceAPI
 
+	iamPAPConfigErr  error
+	iamPAPServiceAPI iampapv1.IAMPAPAPI
+
 	iamConfigErr  error
-	iamServiceAPI iampapv1.IAMPAPAPI
+	iamServiceAPI iamv1.IAMServiceAPI
 
 	accountConfigErr     error
 	bmxAccountServiceAPI accountv2.AccountServiceAPI
@@ -167,8 +173,13 @@ func (sess clientSession) BluemixAcccountv1API() (accountv1.AccountServiceAPI, e
 }
 
 // IAMAPI provides IAM PAP APIs ...
-func (sess clientSession) IAMAPI() (iampapv1.IAMPAPAPI, error) {
+func (sess clientSession) IAMAPI() (iamv1.IAMServiceAPI, error) {
 	return sess.iamServiceAPI, sess.iamConfigErr
+}
+
+// IAMPAPAPI provides IAM PAP APIs ...
+func (sess clientSession) IAMPAPAPI() (iampapv1.IAMPAPAPI, error) {
+	return sess.iamPAPServiceAPI, sess.iamConfigErr
 }
 
 // ContainerAPI provides Container Service APIs ...
@@ -272,7 +283,13 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if err != nil {
 		session.iamConfigErr = fmt.Errorf("Error occured while configuring Bluemix IAMPAP Service: %q", err)
 	}
-	session.iamServiceAPI = iampap
+	session.iamPAPServiceAPI = iampap
+
+	iam, err := iamv1.New(sess.BluemixSession)
+	if err != nil {
+		session.iamConfigErr = fmt.Errorf("Error occured while configuring Bluemix IAM Service: %q", err)
+	}
+	session.iamServiceAPI = iam
 
 	resourceCatalogAPI, err := catalog.New(sess.BluemixSession)
 	if err != nil {
