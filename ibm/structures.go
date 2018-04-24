@@ -670,3 +670,8 @@ func flattenDisks(result datatypes.Virtual_Guest, d *schema.ResourceData) []int 
 
 	return out
 }
+
+func filterResourceKeyParameters(params map[string]interface{}) map[string]interface{} {
+	delete(params, "role_crn")
+	return params
+}
