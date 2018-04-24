@@ -117,7 +117,7 @@ func TestAccIBMIAMUserPolicy_InvalidUser(t *testing.T) {
 }
 
 func testAccCheckIBMIAMUserPolicyDestroy(s *terraform.State) error {
-	client, err := testAccProvider.Meta().(ClientSession).IAMAPI()
+	client, err := testAccProvider.Meta().(ClientSession).IAMPAPAPI()
 	if err != nil {
 		return fmt.Errorf("Error checking IAM Policy %s", err)
 	}
