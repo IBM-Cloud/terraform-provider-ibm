@@ -3,6 +3,7 @@ package ibm
 import (
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -60,7 +61,34 @@ func dataSourceIBMNetworkVlan() *schema.Resource {
 			"subnets": {
 				Type:     schema.TypeList,
 				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"subnet": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"subnet_type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"subnet_size": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"id": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"cidr": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"gateway": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
 			},
 		},
 	}
@@ -94,7 +122,7 @@ func dataSourceIBMNetworkVlanRead(d *schema.ResourceData, meta interface{}) erro
 			filters = append(filters, filter.Path("networkVlans.vlanNumber").Eq(number))
 		}
 		networkVlans, err := service.
-			Mask("id,vlanNumber,name,primaryRouter[hostname],primarySubnets[networkIdentifier,cidr],virtualGuests[id,domain,hostname]").
+			Mask("id,vlanNumber,name,primaryRouter[hostname],subnets[networkIdentifier,cidr,subnetType,id,gateway],virtualGuests[id,domain,hostname]").
 			Filter(
 				filter.Build(
 					filters...,
@@ -119,14 +147,22 @@ func dataSourceIBMNetworkVlanRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	// Get subnets in cidr format for display
-	if len(vlan.PrimarySubnets) > 0 {
-		subnets := make([]string, len(vlan.PrimarySubnets))
-		for i, subnet := range vlan.PrimarySubnets {
-			subnets[i] = fmt.Sprintf("%s/%d", *subnet.NetworkIdentifier, *subnet.Cidr)
+	sbns := make([]map[string]interface{}, len(vlan.Subnets))
+	for i, elem := range vlan.Subnets {
+		subnet := make(map[string]interface{})
+		subnet["subnet"] = fmt.Sprintf("%s/%s", *elem.NetworkIdentifier, strconv.Itoa(*elem.Cidr))
+		subnet["subnet_type"] = *elem.SubnetType
+		subnet["subnet_size"] = 1 << (uint)(32-*elem.Cidr)
+		subnet["cidr"] = *elem.Cidr
+		subnet["id"] = *elem.Id
+		if elem.Gateway != nil {
+			subnet["gateway"] = *elem.Gateway
 		}
+		sbns[i] = subnet
 
-		d.Set("subnets", subnets)
 	}
+	d.Set("subnets", sbns)
+
 	vgs := make([]map[string]interface{}, len(vlan.VirtualGuests))
 	for i, vg := range vlan.VirtualGuests {
 		v := make(map[string]interface{})
@@ -148,7 +184,7 @@ func getVlan(vlanNumber int, primaryRouterHostname string, name string, meta int
 		filters = append(filters, filter.Path("networkVlans.name").Eq(name))
 	}
 	networkVlans, err := service.
-		Mask("id,name,primarySubnets[networkIdentifier,cidr],virtualGuests[id,domain,hostname]").
+		Mask("id,name,subnets[networkIdentifier,cidr,subnetType,id,gateway],virtualGuests[id,domain,hostname]").
 		Filter(
 			filter.Build(
 				filters...,
