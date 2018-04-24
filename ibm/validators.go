@@ -412,3 +412,28 @@ func validateStorageType(v interface{}, k string) (ws []string, errors []error) 
 	}
 	return
 }
+
+func validateRole(v interface{}, k string) (ws []string, errors []error) {
+	validRolesTypes := map[string]bool{
+		"Writer":        true,
+		"Reader":        true,
+		"Manager":       true,
+		"Administrator": true,
+		"Operator":      true,
+		"Viewer":        true,
+		"Editor":        true,
+	}
+
+	value := v.(string)
+	_, found := validRolesTypes[value]
+	if !found {
+		strarray := make([]string, 0, len(validRolesTypes))
+		for key := range validRolesTypes {
+			strarray = append(strarray, key)
+		}
+		errors = append(errors, fmt.Errorf(
+			"%q contains an invalid role %q. Valid roles are %q.",
+			k, value, strings.Join(strarray, ",")))
+	}
+	return
+}

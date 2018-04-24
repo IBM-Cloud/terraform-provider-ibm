@@ -142,6 +142,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_object_storage_account":           resourceIBMObjectStorageAccount(),
 			"ibm_org":                              resourceIBMOrg(),
 			"ibm_resource_instance":                resourceIBMResourceInstance(),
+			"ibm_resource_key":                     resourceIBMResourceKey(),
 			"ibm_security_group":                   resourceIBMSecurityGroup(),
 			"ibm_security_group_rule":              resourceIBMSecurityGroupRule(),
 			"ibm_service_instance":                 resourceIBMServiceInstance(),
