@@ -20,20 +20,20 @@ func TestAccIBMDnsSecondary_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMDnsSecondaryZoneExists("ibm_dns_secondary.dns-secondary-zone-1"),
 					resource.TestCheckResourceAttr(
-						"ibm_dns_secondary.dns-secondary-zone-1", "zoneName", "new-secondary-zone1.com"),
+						"ibm_dns_secondary.dns-secondary-zone-1", "zone_name", "new-secondary-zone1.com"),
 					resource.TestCheckResourceAttr(
-						"ibm_dns_secondary.dns-secondary-zone-1", "transferFrequency", "10"),
+						"ibm_dns_secondary.dns-secondary-zone-1", "transfer_frequency", "10"),
 					resource.TestCheckResourceAttr(
-						"ibm_dns_secondary.dns-secondary-zone-1", "masterIpAddress", "172.16.0.1"),
+						"ibm_dns_secondary.dns-secondary-zone-1", "master_ip_address", "172.16.0.1"),
 				),
 			},
 			{
 				Config: testAccCheckIBMDnsSecondaryConfig_updated,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"ibm_dns_secondary.dns-secondary-zone-1", "transferFrequency", "15"),
+						"ibm_dns_secondary.dns-secondary-zone-1", "transfer_frequency", "15"),
 					resource.TestCheckResourceAttr(
-						"ibm_dns_secondary.dns-secondary-zone-1", "masterIpAddress", "172.16.0.2"),
+						"ibm_dns_secondary.dns-secondary-zone-1", "master_ip_address", "172.16.0.2"),
 				),
 			},
 		},
