@@ -71,16 +71,16 @@ func testAccCheckIBMDnsSecondaryZoneExists(n string) resource.TestCheckFunc {
 
 const testAccCheckIBMDnsSecondaryConfig_basic = `
 resource "ibm_dns_secondary" "dns-secondary-zone-1" {
-    zoneName = "new-secondary-zone1.com"
-    transferFrequency = 10
-    masterIpAddress = "172.16.0.1"
+    zone_name = "new-secondary-zone1.com"
+    transfer_frequency = 10
+    master_ip_address = "172.16.0.1"
 }
 `
 
 const testAccCheckIBMDnsSecondaryConfig_updated = `
 resource "ibm_dns_secondary" "dns-secondary-zone-1" {
-    zoneName = "new-secondary-zone1.com"
-    transferFrequency = 15
-    masterIpAddress = "172.16.0.2"
+    zone_name = "new-secondary-zone1.com"
+    transfer_frequency = 15
+    master_ip_address = "172.16.0.2"
 }
 `
