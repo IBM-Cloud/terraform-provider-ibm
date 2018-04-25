@@ -16,9 +16,9 @@ In the following example, you can create a VPX load balancer:
 
 ```hcl
 resource "ibm_dns_secondary" "dns-secondary-zone-1" {
-   zone_name = "${var.zone_name}"
-   transfer_frequency = "${var.transfer_frequency}"
-   master_ip_address = "${var.master_ip_address}"
+   zone_name = "new-secondary-zone1.com"
+   transfer_frequency = "10"
+   master_ip_address = "172.12.10.1"
 }
 ```
 
