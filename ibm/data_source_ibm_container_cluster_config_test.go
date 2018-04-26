@@ -31,6 +31,28 @@ func TestAccIBMContainerClusterConfigDataSource_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMContainerClusterConfigDataSource_WithoutOptionalFields(t *testing.T) {
+	homeDir, err := homedir.Dir()
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	if err != nil {
+		t.Fatalf("Error fetching homedir: %s", err)
+	}
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMContainerClusterDataSourceConfigWithoutOptionalFields(clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_container_cluster_config.testacc_ds_cluster", "config_dir", homeDir),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_container_cluster_config.testacc_ds_cluster", "config_file_path"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMContainerClusterDataSourceConfig(clustername string) string {
 	return fmt.Sprintf(`
 data "ibm_org" "testacc_ds_org" {
@@ -70,4 +92,25 @@ data "ibm_container_cluster_config" "testacc_ds_cluster" {
 	space_guid = "${data.ibm_space.testacc_ds_space.id}"
 	account_guid = "${data.ibm_account.testacc_acc.id}"
 }`, cfOrganization, cfOrganization, cfSpace, clustername, datacenter, machineType, publicVlanID, privateVlanID)
+}
+
+func testAccCheckIBMContainerClusterDataSourceConfigWithoutOptionalFields(clustername string) string {
+	return fmt.Sprintf(`
+resource "ibm_container_cluster" "testacc_cluster" {
+    name = "%s"
+    datacenter = "%s"
+
+   workers = [{
+    name = "worker1"
+
+    action = "add"
+  }]
+	machine_type = "%s"
+	isolation = "public"
+	public_vlan_id = "%s"
+	private_vlan_id = "%s"
+}
+data "ibm_container_cluster_config" "testacc_ds_cluster" {
+    cluster_name_id = "${ibm_container_cluster.testacc_cluster.id}"
+}`, clustername, datacenter, machineType, publicVlanID, privateVlanID)
 }

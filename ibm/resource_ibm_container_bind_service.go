@@ -45,19 +45,19 @@ func resourceIBMContainerBindService() *schema.Resource {
 			"org_guid": {
 				Description: "The bluemix organization guid this cluster belongs to",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
 			},
 			"space_guid": {
 				Description: "The bluemix space guid this cluster belongs to",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
 			},
 			"account_guid": {
 				Description: "The bluemix account guid this cluster belongs to",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
 			},
 			"tags": {
