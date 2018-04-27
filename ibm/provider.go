@@ -92,6 +92,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_org_quota":                  dataSourceIBMOrgQuota(),
 			"ibm_resource_group":             dataSourceIBMResourceGroup(),
 			"ibm_resource_instance":          dataSourceIBMResourceInstance(),
+			"ibm_resource_key":               dataSourceIBMResourceKey(),
 			"ibm_security_group":             dataSourceIBMSecurityGroup(),
 			"ibm_service_instance":           dataSourceIBMServiceInstance(),
 			"ibm_service_key":                dataSourceIBMServiceKey(),
