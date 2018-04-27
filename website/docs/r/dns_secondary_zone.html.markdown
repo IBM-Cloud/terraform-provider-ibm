@@ -12,7 +12,7 @@ SoftLayer provides Secondary DNS standard to all customers to cache primary DNS 
 
 ## Example Usage
 
-In the following example, you can create a VPX load balancer:
+In the following example, you can create a DNS Secondary Zone:
 
 ```hcl
 resource "ibm_dns_secondary" "dns-secondary-zone-1" {
