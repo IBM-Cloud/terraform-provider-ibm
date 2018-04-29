@@ -77,6 +77,13 @@ func resourceIBMContainerCluster() *schema.Resource {
 				},
 			},
 
+			"disk_encryption": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				ForceNew: true,
+				Default:  true,
+			},
+
 			"kube_version": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -213,17 +220,19 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	webhooks := d.Get("webhook").([]interface{})
 	noSubnet := d.Get("no_subnet").(bool)
 	isolation := d.Get("isolation").(string)
+	diskEncryption := d.Get("disk_encryption").(bool)
 
 	params := v1.ClusterCreateRequest{
-		Name:        name,
-		Datacenter:  datacenter,
-		WorkerNum:   len(workers),
-		Billing:     billing,
-		MachineType: machineType,
-		PublicVlan:  publicVlanID,
-		PrivateVlan: privateVlanID,
-		NoSubnet:    noSubnet,
-		Isolation:   isolation,
+		Name:           name,
+		Datacenter:     datacenter,
+		WorkerNum:      len(workers),
+		Billing:        billing,
+		MachineType:    machineType,
+		PublicVlan:     publicVlanID,
+		PrivateVlan:    privateVlanID,
+		NoSubnet:       noSubnet,
+		Isolation:      isolation,
+		DiskEncryption: diskEncryption,
 	}
 
 	if v, ok := d.GetOk("kube_version"); ok {
