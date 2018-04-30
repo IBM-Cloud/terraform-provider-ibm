@@ -3,6 +3,7 @@ package ibm
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -53,6 +54,69 @@ func TestAccIBMContainerCluster_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "workers.1.version", "1.7.4"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccIBMContainerCluster_worker_count(t *testing.T) {
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMContainerClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerCluster_worker_count(clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "name", clusterName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "worker_num", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "workers_info.#", "1"),
+				),
+			},
+			{
+				Config: testAccCheckIBMContainerCluster_worker_count_update(clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "name", clusterName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "worker_num", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "workers_info.#", "2"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMContainerCluster_without_workers_worker_num(t *testing.T) {
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMContainerClusterDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config:      testAccCheckIBMContainerCluster_without_workers_worker_num(clusterName),
+				ExpectError: regexp.MustCompile(" Please set either the wokers with valid array"),
+			},
+		},
+	})
+}
+
+func TestAccIBMContainerCluster_with_worker_num_zero(t *testing.T) {
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMContainerClusterDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config:      testAccCheckIBMContainerCluster_with_worker_num_zero(clusterName),
+				ExpectError: regexp.MustCompile("must be greater than 0"),
 			},
 		},
 	})
@@ -288,6 +352,66 @@ resource "ibm_container_cluster" "testacc_cluster" {
     }]
 
   kube_version    = "1.7.4"
+  machine_type    = "%s"
+  isolation       = "public"
+  public_vlan_id  = "%s"
+  private_vlan_id = "%s"
+  no_subnet		  = true
+}	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
+}
+
+func testAccCheckIBMContainerCluster_without_workers_worker_num(clusterName string) string {
+	return fmt.Sprintf(`
+
+data "ibm_org" "org" {
+    org = "%s"
+}
+
+data "ibm_space" "space" {
+  org    = "%s"
+  space  = "%s"
+}
+
+data "ibm_account" "acc" {
+   org_guid = "${data.ibm_org.org.id}"
+}
+
+resource "ibm_container_cluster" "testacc_cluster" {
+  name       = "%s"
+  datacenter = "%s"
+
+  account_guid = "${data.ibm_account.acc.id}"
+
+  machine_type    = "%s"
+  isolation       = "public"
+  public_vlan_id  = "%s"
+  private_vlan_id = "%s"
+  no_subnet		  = true
+}	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
+}
+
+func testAccCheckIBMContainerCluster_with_worker_num_zero(clusterName string) string {
+	return fmt.Sprintf(`
+
+data "ibm_org" "org" {
+    org = "%s"
+}
+
+data "ibm_space" "space" {
+  org    = "%s"
+  space  = "%s"
+}
+
+data "ibm_account" "acc" {
+   org_guid = "${data.ibm_org.org.id}"
+}
+
+resource "ibm_container_cluster" "testacc_cluster" {
+  name       = "%s"
+  datacenter = "%s"
+
+  account_guid = "${data.ibm_account.acc.id}"
+  worker_num = 0
   machine_type    = "%s"
   isolation       = "public"
   public_vlan_id  = "%s"
@@ -550,5 +674,67 @@ resource "ibm_container_cluster" "testacc_cluster" {
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   tags = ["test","once"]
+}	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
+}
+
+func testAccCheckIBMContainerCluster_worker_count(clusterName string) string {
+	return fmt.Sprintf(`
+
+data "ibm_org" "org" {
+    org = "%s"
+}
+
+data "ibm_space" "space" {
+  org    = "%s"
+  space  = "%s"
+}
+
+data "ibm_account" "acc" {
+   org_guid = "${data.ibm_org.org.id}"
+}
+
+resource "ibm_container_cluster" "testacc_cluster" {
+  name       = "%s"
+  datacenter = "%s"
+
+	account_guid = "${data.ibm_account.acc.id}"
+
+  worker_num = 1
+
+  machine_type    = "%s"
+  isolation       = "public"
+  public_vlan_id  = "%s"
+  private_vlan_id = "%s"
+  no_subnet		  = true
+}	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
+}
+
+func testAccCheckIBMContainerCluster_worker_count_update(clusterName string) string {
+	return fmt.Sprintf(`
+
+data "ibm_org" "org" {
+    org = "%s"
+}
+
+data "ibm_space" "space" {
+  org    = "%s"
+  space  = "%s"
+}
+
+data "ibm_account" "acc" {
+   org_guid = "${data.ibm_org.org.id}"
+}
+
+resource "ibm_container_cluster" "testacc_cluster" {
+  name       = "%s"
+  datacenter = "%s"
+
+	account_guid = "${data.ibm_account.acc.id}"
+  worker_num = 2
+  machine_type    = "%s"
+  isolation       = "public"
+  public_vlan_id  = "%s"
+  private_vlan_id = "%s"
+  no_subnet		  = true
 }	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
 }

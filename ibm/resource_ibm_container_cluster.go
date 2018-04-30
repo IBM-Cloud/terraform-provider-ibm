@@ -50,8 +50,9 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Description: "The datacenter where this cluster will be deployed",
 			},
 			"workers": {
-				Type:     schema.TypeList,
-				Required: true,
+				Type:          schema.TypeList,
+				Optional:      true,
+				ConflictsWith: []string{"worker_num"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -75,6 +76,22 @@ func resourceIBMContainerCluster() *schema.Resource {
 						},
 					},
 				},
+			},
+
+			"worker_num": {
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
+				Description:   "Number of worker nodes",
+				ConflictsWith: []string{"workers"},
+				ValidateFunc:  validateWorkerNum,
+			},
+
+			"workers_info": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "The IDs of the worker node",
 			},
 
 			"disk_encryption": {
@@ -140,10 +157,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"worker_num": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
+
 			"subnet_id": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -212,7 +226,6 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 
 	name := d.Get("name").(string)
 	datacenter := d.Get("datacenter").(string)
-	workers := d.Get("workers").([]interface{})
 	billing := d.Get("billing").(string)
 	machineType := d.Get("machine_type").(string)
 	publicVlanID := d.Get("public_vlan_id").(string)
@@ -221,11 +234,26 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	noSubnet := d.Get("no_subnet").(bool)
 	isolation := d.Get("isolation").(string)
 	diskEncryption := d.Get("disk_encryption").(bool)
+	var workers []interface{}
+	var workerNum int
+	if v, ok := d.GetOk("workers"); ok {
+		workers = v.([]interface{})
+		workerNum = len(workers)
+	}
+
+	if v, ok := d.GetOk("worker_num"); ok {
+		workerNum = v.(int)
+	}
+
+	if workerNum == 0 {
+		return fmt.Errorf(
+			"Please set either the wokers with valid array or worker_num with value grater than 0")
+	}
 
 	params := v1.ClusterCreateRequest{
 		Name:           name,
 		Datacenter:     datacenter,
-		WorkerNum:      len(workers),
+		WorkerNum:      workerNum,
 		Billing:        billing,
 		MachineType:    machineType,
 		PublicVlan:     publicVlanID,
@@ -333,6 +361,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return err
 	}
+	wrkAPI := csClient.Workers()
 
 	targetEnv := getClusterTargetHeader(d)
 
@@ -342,12 +371,22 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("Error retrieving armada cluster: %s", err)
 	}
 
+	workerFields, err := wrkAPI.List(clusterID, targetEnv)
+	if err != nil {
+		return fmt.Errorf("Error retrieving workers for cluster: %s", err)
+	}
+	workers := make([]string, len(workerFields))
+	for i, worker := range workerFields {
+		workers[i] = worker.ID
+	}
+
 	d.Set("name", cls.Name)
 	d.Set("server_url", cls.ServerURL)
 	d.Set("ingress_hostname", cls.IngressHostname)
 	d.Set("ingress_secret", cls.IngressSecretName)
 	d.Set("worker_num", cls.WorkerCount)
 	d.Set("subnet_id", d.Get("subnet_id").(*schema.Set))
+	d.Set("workers_info", workers)
 	d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0])
 	return nil
 }
@@ -389,6 +428,46 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 	}
 
 	workersInfo := []map[string]string{}
+	if d.HasChange("worker_num") {
+		old, new := d.GetChange("worker_num")
+		oldCount := old.(int)
+		newCount := new.(int)
+		if newCount > oldCount {
+			count := newCount - oldCount
+			machineType := d.Get("machine_type").(string)
+			publicVlanID := d.Get("public_vlan_id").(string)
+			privateVlanID := d.Get("private_vlan_id").(string)
+			isolation := d.Get("isolation").(string)
+			params := v1.WorkerParam{
+				WorkerNum:   count,
+				MachineType: machineType,
+				PublicVlan:  publicVlanID,
+				PrivateVlan: privateVlanID,
+				Isolation:   isolation,
+			}
+			wrkAPI.Add(clusterID, params, targetEnv)
+		} else if oldCount > newCount {
+			count := oldCount - newCount
+			workerFields, err := wrkAPI.List(clusterID, targetEnv)
+			if err != nil {
+				return fmt.Errorf("Error retrieving workers for cluster: %s", err)
+			}
+			for i := 0; i < count; i++ {
+				err := wrkAPI.Delete(clusterID, workerFields[i].ID, targetEnv)
+				if err != nil {
+					return fmt.Errorf(
+						"Error deleting workers of cluster (%s): %s", d.Id(), err)
+				}
+			}
+		}
+
+		_, err = WaitForWorkerAvailable(d, meta, targetEnv)
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for workers of cluster (%s) to become ready: %s", d.Id(), err)
+		}
+
+	}
 	if d.HasChange("workers") {
 		oldWorkers, newWorkers := d.GetChange("workers")
 		oldWorker := oldWorkers.([]interface{})

@@ -116,6 +116,16 @@ func validateAppInstance(v interface{}, k string) (ws []string, errors []error) 
 
 }
 
+func validateWorkerNum(v interface{}, k string) (ws []string, errors []error) {
+	workerNum := v.(int)
+	if workerNum <= 0 {
+		errors = append(errors, fmt.Errorf(
+			"%q  must be greater than 0", k))
+	}
+	return
+
+}
+
 func validateAppZipPath(v interface{}, k string) (ws []string, errors []error) {
 	path := v.(string)
 	applicationZip, err := homedir.Expand(path)
