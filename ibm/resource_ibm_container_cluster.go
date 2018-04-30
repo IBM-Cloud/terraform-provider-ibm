@@ -286,6 +286,9 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	subnetAPI := csClient.Subnets()
 	subnetIDs := d.Get("subnet_id").(*schema.Set)
 	var publicSubnetAdded bool
+	if noSubnet == false {
+		publicSubnetAdded = true
+	}
 	var subnets []v1.Subnet
 	if len(subnetIDs.List()) > 0 {
 		subnets, err = subnetAPI.List(targetEnv)
