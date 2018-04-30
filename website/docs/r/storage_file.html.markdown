@@ -93,7 +93,7 @@ The following arguments are supported:
 * `allowed_hardware_ids` - (Optional, array of integers) The bare metal servers that you want to give access to this instance. Bare metal servers must be in the same data center as the block storage. You can also use this field to import the list of bare metal servers that have access to this storage from the `block_storage_ids` argument in the `ibm_compute_bare_metal` resource. This attribute shouldn't be set when `type` is `NAS/FTP`.
 * `allowed_subnets` - (Optional, array of integers) The subnets that you want to give access to this instance. Subnets must be in the same data center as the block storage. This attribute shouldn't be set when `type` is `NAS/FTP`.
 * `allowed_ip_addresses` - (Optional, array of string) The IP addresses that you want to allow. IP addresses must be in the same data center as the block storage. This attribute shouldn't be set when `type` is `NAS/FTP`.
-* `snapshot` - (Optional, array) Applies only to Endurance storage. Specifies the parameters required for a snapshot schedule. This attribute shouldn't be set when `type` is `NAS/FTP`.
+* `snapshot_schedule` - (Optional, array) Applies only to Endurance storage. Specifies the parameters required for a snapshot schedule. This attribute shouldn't be set when `type` is `NAS/FTP`.
     * `schedule_type` - (String) The snapshot schedule type. Accepted values are `HOURLY`, `WEEKLY`, and `DAILY`.
     * `retention_count` - (Integer) The retention count for a snapshot schedule. Required for all types of `schedule_type`.
     * `minute` - (Integer) The minute for a snapshot schedule. Required for all types of `schedule_type`.
