@@ -437,3 +437,73 @@ func validateRole(v interface{}, k string) (ws []string, errors []error) {
 	}
 	return
 }
+
+func validateDayOfWeek(v interface{}, k string) (ws []string, errors []error) {
+	validDayTypes := map[string]bool{
+		"SUNDAY":    true,
+		"MONDAY":    true,
+		"TUESDAY":   true,
+		"WEDNESDAY": true,
+		"THURSDAY":  true,
+		"FRIDAY":    true,
+		"SATURDAY":  true,
+	}
+
+	value := v.(string)
+	_, found := validDayTypes[value]
+	if !found {
+		strarray := make([]string, 0, len(validDayTypes))
+		for key := range validDayTypes {
+			strarray = append(strarray, key)
+		}
+		errors = append(errors, fmt.Errorf(
+			"%q contains an invalid day %q. Valid days are %q.",
+			k, value, strings.Join(strarray, ",")))
+	}
+	return
+}
+
+func validateScheduleType(v interface{}, k string) (ws []string, errors []error) {
+	validSchdTypes := map[string]bool{
+		"HOURLY": true,
+		"DAILY":  true,
+		"WEEKLY": true,
+	}
+
+	value := v.(string)
+	_, found := validSchdTypes[value]
+	if !found {
+		strarray := make([]string, 0, len(validSchdTypes))
+		for key := range validSchdTypes {
+			strarray = append(strarray, key)
+		}
+		errors = append(errors, fmt.Errorf(
+			"%q contains an invalid schedule type %q. Valid schedules are %q.",
+			k, value, strings.Join(strarray, ",")))
+	}
+	return
+}
+
+func validateHour(start, end int) func(v interface{}, k string) (ws []string, errors []error) {
+	f := func(v interface{}, k string) (ws []string, errors []error) {
+		value := v.(int)
+		if (value < start) || (value > end) {
+			errors = append(errors, fmt.Errorf(
+				"%q (%d) must be in the range of %d to %d", k, value, start, end))
+		}
+		return
+	}
+	return f
+}
+
+func validateMinute(start, end int) func(v interface{}, k string) (ws []string, errors []error) {
+	f := func(v interface{}, k string) (ws []string, errors []error) {
+		value := v.(int)
+		if (value < start) || (value > end) {
+			errors = append(errors, fmt.Errorf(
+				"%q (%d) must be in the range of %d to %d", k, value, start, end))
+		}
+		return
+	}
+	return f
+}
