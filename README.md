@@ -28,6 +28,15 @@ $ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-ibm
 $ make build
 ```
 
+Docker Image For The Provider
+-----------------------------
+
+You can also pull the docker image for the ibmcloud terraform provider :
+
+```sh
+ $ docker pull ibmterraform/terraform-provider-ibm-docker
+```
+
 Using the provider
 ----------------------
 
