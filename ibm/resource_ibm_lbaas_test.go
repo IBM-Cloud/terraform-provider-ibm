@@ -66,6 +66,32 @@ func TestAccIBMLbaas_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMLbaas_with_more_protocols(t *testing.T) {
+	name := fmt.Sprintf("terraform-%d", acctest.RandInt())
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMLbaasDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMLbaasConfig_MoreThanTwoProtocols(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "description", "desc-used for terraform uat"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "datacenter", lbaasDatacenter),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "subnets.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "protocols.#", "3"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMLbaas_importBasic(t *testing.T) {
 	name := fmt.Sprintf("terraform-%d", acctest.RandInt())
 	resource.Test(t, resource.TestCase{
@@ -278,6 +304,42 @@ resource "ibm_lbaas" "lbaas" {
   name        = "%s"
   description = "desc-used for terraform uat"
   subnets     = ["%s"]
+}
+`, name, lbaasSubnetId)
+}
+
+func testAccCheckIBMLbaasConfig_MoreThanTwoProtocols(name string) string {
+	return fmt.Sprintf(`
+resource "ibm_lbaas" "lbaas" {
+  name        = "%s"
+  description = "desc-used for terraform uat"
+  subnets     = ["%s"]
+  protocols = [{
+    "frontend_protocol" = "HTTP"
+    "frontend_port" = 9090
+    "backend_protocol" = "HTTP"
+    "backend_port" = 80
+    "load_balancing_method" = "round_robin"
+    "session_stickiness" = "SOURCE_IP"
+  },
+  {
+
+    "frontend_protocol" = "HTTP"
+    "frontend_port" = 80
+    "backend_protocol" = "HTTP"
+    "backend_port" = 80
+
+    "load_balancing_method" = "round_robin"
+  },
+  {
+
+    "frontend_protocol" = "HTTP"
+    "frontend_port" = 8081
+    "backend_protocol" = "HTTP"
+    "backend_port" = 80
+
+    "load_balancing_method" = "round_robin"
+  }]
 }
 `, name, lbaasSubnetId)
 }

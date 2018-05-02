@@ -100,7 +100,6 @@ func resourceIBMLbaas() *schema.Resource {
 				Type:        schema.TypeSet,
 				Description: "Protocols to be assigned to this load balancer.",
 				Optional:    true,
-				MaxItems:    2,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"frontend_protocol": {
@@ -230,6 +229,24 @@ func resourceIBMLbaasCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(*lbaasLB.Uuid)
+
+	if v, ok := d.GetOk("protocols"); ok && v.(*schema.Set).Len() > 0 {
+		listenerService := services.GetNetworkLBaaSListenerService(sess.SetRetries(0))
+		protocolParam, err := expandProtocols(v.(*schema.Set).List())
+		if err != nil {
+			return fmt.Errorf("Error adding protocols to Load balancer: %s", err)
+		}
+		_, err = listenerService.UpdateLoadBalancerProtocols(sl.String(d.Id()), protocolParam)
+		if err != nil {
+			return fmt.Errorf("Error adding protocols: %#v", err)
+		}
+		_, err = waitForLbaasLBAvailable(d, meta)
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for load balancer (%s) to become ready: %s", d.Id(), err)
+		}
+
+	}
 
 	return resourceIBMLbaasRead(d, meta)
 }
@@ -407,14 +424,6 @@ func buildLbaasLBProductOrderContainer(d *schema.ResourceData, sess *session.Ses
 	}
 	if d, ok := d.GetOk("description"); ok {
 		productOrderContainer.Description = sl.String(d.(string))
-	}
-
-	if v, ok := d.GetOk("protocols"); ok && v.(*schema.Set).Len() > 0 {
-		protocolParam, err := expandProtocols(v.(*schema.Set).List())
-		if err != nil {
-			return &datatypes.Container_Product_Order_Network_LoadBalancer_AsAService{}, err
-		}
-		productOrderContainer.ProtocolConfigurations = protocolParam
 	}
 
 	return &productOrderContainer, nil
