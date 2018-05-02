@@ -100,7 +100,7 @@ func resourceIBMLbaas() *schema.Resource {
 				Type:        schema.TypeSet,
 				Description: "Protocols to be assigned to this load balancer.",
 				Optional:    true,
-				MaxItems:    4,
+				MaxItems:    2,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"frontend_protocol": {
@@ -169,6 +169,7 @@ func resourceIBMLbaas() *schema.Resource {
 				Type:        schema.TypeSet,
 				Description: "The Server instances for this load balancer",
 				Optional:    true,
+				Removed:     "Please use the server instance resource instead",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"private_ip_address": {
@@ -259,7 +260,6 @@ func resourceIBMLbaasRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("status", result.OperatingStatus)
 	d.Set("vip", result.Address)
 	d.Set("protocols", flattenProtocols(result.Listeners))
-	d.Set("server_instances", flattenServerInstances(result.Members))
 	return nil
 }
 
@@ -318,47 +318,6 @@ func resourceIBMLbaasUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		d.SetPartial("protocols")
-	}
-	memberService := services.GetNetworkLBaaSMemberService(sess)
-	if d.HasChange("server_instances") {
-		o, n := d.GetChange("server_instances")
-		os := o.(*schema.Set)
-		ns := n.(*schema.Set)
-
-		add := expandMembers(ns.Difference(os).List())
-		rem := os.Difference(ns).List()
-		removeList := make([]string, len(rem), len(rem))
-		for i, remove := range rem {
-			data := remove.(map[string]interface{})
-			if v, ok := data["member_id"]; ok && v.(string) != "" {
-				removeList[i] = v.(string)
-			}
-		}
-		if len(removeList) > 0 {
-			_, err := memberService.DeleteLoadBalancerMembers(sl.String(d.Id()), removeList)
-			if err != nil {
-				return fmt.Errorf("Error removing server instances: %#v", err)
-			}
-			_, err = waitForLbaasLBAvailable(d, meta)
-			if err != nil {
-				return fmt.Errorf(
-					"Error waiting for load balancer (%s) to become ready: %s", d.Id(), err)
-			}
-		}
-
-		if len(add) > 0 {
-			_, err := memberService.AddLoadBalancerMembers(sl.String(d.Id()), add)
-			if err != nil {
-				return fmt.Errorf("Error adding server instances: %#v", err)
-			}
-			_, err = waitForLbaasLBAvailable(d, meta)
-			if err != nil {
-				return fmt.Errorf(
-					"Error waiting for load balancer (%s) to become ready: %s", d.Id(), err)
-			}
-		}
-
-		d.SetPartial("server_instances")
 	}
 	d.Partial(false)
 
@@ -456,10 +415,6 @@ func buildLbaasLBProductOrderContainer(d *schema.ResourceData, sess *session.Ses
 			return &datatypes.Container_Product_Order_Network_LoadBalancer_AsAService{}, err
 		}
 		productOrderContainer.ProtocolConfigurations = protocolParam
-	}
-
-	if v, ok := d.GetOk("server_instances"); ok && v.(*schema.Set).Len() > 0 {
-		productOrderContainer.ServerInstancesInformation = expandMembers(v.(*schema.Set).List())
 	}
 
 	return &productOrderContainer, nil
