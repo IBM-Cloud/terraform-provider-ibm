@@ -151,6 +151,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_cdn":                              resourceIBMCDN(),
 			"ibm_ipsec_vpn":                        resourceIBMIPSecVPN(),
                         "ibm_dns_secondary":                    resourceIBMDnsSecondary(),
+			"ibm_dns_reverse_record":               resourceIBMDNSREVERSERecord(),
 		},
 
 		ConfigureFunc: providerConfigure,

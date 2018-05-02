@@ -24,7 +24,7 @@ The following example creates a private portable subnet which has one available 
 ```hcl
 resource "ibm_subnet" "portable_subnet" {
   type = "Portable"
-  private = true
+  network_type = "private"
   ip_version = 4
   capacity = 4
   vlan_id = 1234567
@@ -38,7 +38,7 @@ The following example creates a public static subnet which has four available IP
 ```hcl
 resource "ibm_subnet" "static_subnet" {
   type = "Static"
-  private = false
+  network_type = "public"
   ip_version = 4
   capacity = 4
   endpoint_ip="151.1.1.1"
@@ -51,7 +51,7 @@ Users can use Terraform built-in functions to get IP addresses from `subnet`. Th
 ```hcl
 resource "ibm_subnet" "test" {
   type = "Static"
-  private = false
+  network_type = "public"
   ip_version = 4
   capacity = 4
   endpoint_ip="159.8.181.82"
@@ -68,7 +68,7 @@ output "first_ip_address" {
 
 The following arguments are supported:
 
-* `private` - (Optional, boolean) Specifies whether the network is public or private.
+* `network_type` - (Optional, string) Specifies whether the network is public or private. Accepted values are `private` and `public`.
 * `type` - (Required, string) The type of the subnet. Accepted values are `portable` and `static`.
 * `ip_version` - (Optional, integer) The IP version of the subnet. Accepted values are 4 and 6.
 * `capacity` - (Required, integer) The size of the subnet.
