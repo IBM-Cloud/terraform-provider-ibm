@@ -3,7 +3,7 @@ package ibm
 import (
 	"fmt"
 
-	v1 "github.com/IBM-Bluemix/bluemix-go/api/container/containerv1"
+	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 

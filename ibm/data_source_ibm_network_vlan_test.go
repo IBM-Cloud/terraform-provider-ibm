@@ -25,6 +25,7 @@ func TestAccIBMNetworkVlanDataSource_Basic(t *testing.T) {
 					//resource.TestCheckResourceAttr("data.ibm_network_vlan.tfacc_vlan", "number", number),
 					resource.TestCheckResourceAttr("data.ibm_network_vlan.tfacc_vlan", "name", name),
 					resource.TestMatchResourceAttr("data.ibm_network_vlan.tfacc_vlan", "id", regexp.MustCompile("^[0-9]+$")),
+					resource.TestCheckResourceAttr("data.ibm_network_vlan.tfacc_vlan", "subnets.#", "1"),
 				),
 			},
 		},

@@ -143,17 +143,21 @@ func (r Account) CreateUser(templateObject *datatypes.User_Customer, password *s
 	return
 }
 
-// disableEuLocalizedProcessing will disable the EU localized processing flag on the account. Disabling the flag allows personnel and systems in non-EU countries to perform processing activities on the account's systems and data.
-func (r Account) DisableEuLocalizedProcessing() (err error) {
+// <p style="color:red"><strong>Warning</strong>: If you remove the EU Supported account flag, you are removing the restriction that limits Processing activities to EU personnel.</p>
+func (r Account) DisableEuSupport() (err error) {
 	var resp datatypes.Void
-	err = r.Session.DoRequest("SoftLayer_Account", "disableEuLocalizedProcessing", nil, &r.Options, &resp)
+	err = r.Session.DoRequest("SoftLayer_Account", "disableEuSupport", nil, &r.Options, &resp)
 	return
 }
 
-// enableEuLocalizedProcessing will enable the EU localized processing flag on the account. This flag indicates that an account should have all resources located in EU compliant datacenters.
-func (r Account) EnableEuLocalizedProcessing() (err error) {
+// <p> If you select the EU Supported option, the most common Support issues will be limited to IBM Cloud staff located in the EU.  In the event your issue requires non-EU expert assistance, it will be reviewed and approval given prior to any non-EU intervention.  Additionally, in order to support and update the services, cross-border Processing of your data may still occur.  Please ensure you take the necessary actions to allow this Processing, as detailed in the <strong><a href="http://www-03.ibm.com/software/sla/sladb.nsf/sla/bm-6605-12">Cloud Service Terms</a></strong>. A standard Data Processing Addendum is available <strong><a href="https://www-05.ibm.com/support/operations/zz/en/dpa.html">here</a></strong>. </p>
+//
+// <p> <strong>Important note (you will only see this once):</strong> Orders using the API will proceed without additional notifications. The terms related to selecting products, services, or locations outside the EU apply to API orders. Users you create and API keys you generate will have the ability to order products, services, and locations outside of the EU. It is your responsibility to educate anyone you grant access to your account on the consequences and requirements if they make a selection that is not in the EU Supported option.  In order to meet EU Supported requirements, the current PPTP VPN solution will no longer be offered or supported. </p>
+//
+// <p> If PPTP has been selected as an option for any users in your account by itself (or in combination with another VPN offering), you will need to disable PPTP before selecting the EU Supported account feature. For more information on VPN changes, click <strong><a href="http://knowledgelayer.softlayer.com/procedure/activate-or-deactivate-pptp-vpn-access-user"> here</a></strong>. </p>
+func (r Account) EnableEuSupport() (err error) {
 	var resp datatypes.Void
-	err = r.Session.DoRequest("SoftLayer_Account", "enableEuLocalizedProcessing", nil, &r.Options, &resp)
+	err = r.Session.DoRequest("SoftLayer_Account", "enableEuSupport", nil, &r.Options, &resp)
 	return
 }
 
@@ -267,7 +271,7 @@ func (r Account) GetActiveNotificationSubscribers() (resp []datatypes.Notificati
 	return
 }
 
-// This method pulls all the active packages. This will give you a basic description of the packages within the SoftLayer Outlet store that are currently active and from which you can order a server or additional services.
+// This is deprecated and will not return any results.
 func (r Account) GetActiveOutletPackages() (resp []datatypes.Product_Package, err error) {
 	err = r.Session.DoRequest("SoftLayer_Account", "getActiveOutletPackages", nil, &r.Options, &resp)
 	return
@@ -529,8 +533,8 @@ func (r Account) GetBrandKeyName() (resp string, err error) {
 	return
 }
 
-// Retrieve The Business Partner details for the account. Country Enterprise Code, Channel ID, and Segment ID.
-func (r Account) GetBusinessPartner() (resp datatypes.Account_Partner_Business, err error) {
+// Retrieve The Business Partner details for the account. Country Enterprise Code, Channel, Segment, Reseller Level.
+func (r Account) GetBusinessPartner() (resp datatypes.Account_Business_Partner, err error) {
 	err = r.Session.DoRequest("SoftLayer_Account", "getBusinessPartner", nil, &r.Options, &resp)
 	return
 }
@@ -671,6 +675,12 @@ func (r Account) GetDomainsWithoutSecondaryDnsRecords() (resp []datatypes.Dns_Do
 	return
 }
 
+// Retrieve Boolean flag dictating whether or not this account has the EU Supported flag. This flag indicates that this account uses IBM Cloud services to process EU citizen's personal data.
+func (r Account) GetEuSupportedFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account", "getEuSupportedFlag", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve The total capacity of Legacy EVault Volumes on an account, in GB.
 func (r Account) GetEvaultCapacityGB() (resp uint, err error) {
 	err = r.Session.DoRequest("SoftLayer_Account", "getEvaultCapacityGB", nil, &r.Options, &resp)
@@ -725,6 +735,12 @@ func (r Account) GetFlexibleCreditProgramInfo(forNextBillCycle *bool) (resp data
 		forNextBillCycle,
 	}
 	err = r.Session.DoRequest("SoftLayer_Account", "getFlexibleCreditProgramInfo", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve Timestamp representing the point in time when an account is required to link with PaaS.
+func (r Account) GetForcePaasAccountLinkDate() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account", "getForcePaasAccountLinkDate", nil, &r.Options, &resp)
 	return
 }
 
@@ -1543,6 +1559,12 @@ func (r Account) GetPrivateSubnets() (resp []datatypes.Network_Subnet, err error
 	return
 }
 
+// Retrieve Boolean flag indicating whether or not this account is a Proof of Concept account.
+func (r Account) GetProofOfConceptAccountFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account", "getProofOfConceptAccountFlag", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve DEPRECATED - This information can be pulled directly through tapping keys now - DEPRECATED. The allotments for this account and their servers. The public inbound and outbound bandwidth is calculated for each server in addition to the daily average network traffic since the last billing date.
 func (r Account) GetPublicAllotmentHardwareBandwidthDetails() (resp []datatypes.Network_Bandwidth_Version1_Allotment, err error) {
 	err = r.Session.DoRequest("SoftLayer_Account", "getPublicAllotmentHardwareBandwidthDetails", nil, &r.Options, &resp)
@@ -1684,6 +1706,12 @@ func (r Account) GetSecurityCertificates() (resp []datatypes.Security_Certificat
 // Retrieve The security groups belonging to this account.
 func (r Account) GetSecurityGroups() (resp []datatypes.Network_SecurityGroup, err error) {
 	err = r.Session.DoRequest("SoftLayer_Account", "getSecurityGroups", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Account) GetSecurityLevel() (resp datatypes.Security_Level, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account", "getSecurityLevel", nil, &r.Options, &resp)
 	return
 }
 
@@ -1978,6 +2006,12 @@ func (r Account) HourlyServerLimit() (resp int, err error) {
 // Returns true if this account is eligible for the local currency program, false otherwise.
 func (r Account) IsEligibleForLocalCurrencyProgram() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Account", "isEligibleForLocalCurrencyProgram", nil, &r.Options, &resp)
+	return
+}
+
+// Returns true if this account is eligible to link with PaaS. False otherwise.
+func (r Account) IsEligibleToLinkWithPaas() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account", "isEligibleToLinkWithPaas", nil, &r.Options, &resp)
 	return
 }
 
@@ -2631,6 +2665,70 @@ func (r Account_Authentication_Saml) GetObject() (resp datatypes.Account_Authent
 	return
 }
 
+// Contains business partner details associated with an account. Country Enterprise Identifier (CEID), Channel ID, Segment ID and Reseller Level.
+type Account_Business_Partner struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetAccountBusinessPartnerService returns an instance of the Account_Business_Partner SoftLayer service
+func GetAccountBusinessPartnerService(sess *session.Session) Account_Business_Partner {
+	return Account_Business_Partner{Session: sess}
+}
+
+func (r Account_Business_Partner) Id(id int) Account_Business_Partner {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Account_Business_Partner) Mask(mask string) Account_Business_Partner {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Account_Business_Partner) Filter(filter string) Account_Business_Partner {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Account_Business_Partner) Limit(limit int) Account_Business_Partner {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Account_Business_Partner) Offset(offset int) Account_Business_Partner {
+	r.Options.Offset = &offset
+	return r
+}
+
+// Retrieve Account associated with the business partner data
+func (r Account_Business_Partner) GetAccount() (resp datatypes.Account, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_Business_Partner", "getAccount", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Channel indicator used to categorize business partner revenue.
+func (r Account_Business_Partner) GetChannel() (resp datatypes.Business_Partner_Channel, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_Business_Partner", "getChannel", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Account_Business_Partner) GetObject() (resp datatypes.Account_Business_Partner, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_Business_Partner", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Segment indicator used to categorize business partner revenue.
+func (r Account_Business_Partner) GetSegment() (resp datatypes.Business_Partner_Segment, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_Business_Partner", "getSegment", nil, &r.Options, &resp)
+	return
+}
+
 // no documentation yet
 type Account_Contact struct {
 	Session *session.Session
@@ -2959,6 +3057,12 @@ func (r Account_Internal_Ibm) GetAuthorizationUrl(requestId *int) (resp string, 
 	return
 }
 
+// no documentation yet
+func (r Account_Internal_Ibm) GetBmsCountryList() (resp []string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_Internal_Ibm", "getBmsCountryList", nil, &r.Options, &resp)
+	return
+}
+
 // Exchanges a code for a token during manager validation.
 func (r Account_Internal_Ibm) GetEmployeeAccessToken(unverifiedAuthenticationCode *string) (resp string, err error) {
 	params := []interface{}{
@@ -2975,6 +3079,16 @@ func (r Account_Internal_Ibm) GetManagerPreview(requestId *int, accessToken *str
 		accessToken,
 	}
 	err = r.Session.DoRequest("SoftLayer_Account_Internal_Ibm", "getManagerPreview", params, &r.Options, &resp)
+	return
+}
+
+// Checks for an existing request which would block an IBMer from submitting a new request. Such a request could be denied, approved, or awaiting manager action.
+func (r Account_Internal_Ibm) HasExistingRequest(employeeUid *string, managerUid *string) (resp bool, err error) {
+	params := []interface{}{
+		employeeUid,
+		managerUid,
+	}
+	err = r.Session.DoRequest("SoftLayer_Account_Internal_Ibm", "hasExistingRequest", params, &r.Options, &resp)
 	return
 }
 
@@ -3900,6 +4014,226 @@ func (r Account_Password) GetObject() (resp datatypes.Account_Password, err erro
 // Retrieve The service that an account/password combination is tied to.
 func (r Account_Password) GetType() (resp datatypes.Account_Password_Type, err error) {
 	err = r.Session.DoRequest("SoftLayer_Account_Password", "getType", nil, &r.Options, &resp)
+	return
+}
+
+// This class represents a Proof of Concept account approver.
+type Account_ProofOfConcept_Approver struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetAccountProofOfConceptApproverService returns an instance of the Account_ProofOfConcept_Approver SoftLayer service
+func GetAccountProofOfConceptApproverService(sess *session.Session) Account_ProofOfConcept_Approver {
+	return Account_ProofOfConcept_Approver{Session: sess}
+}
+
+func (r Account_ProofOfConcept_Approver) Id(id int) Account_ProofOfConcept_Approver {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Account_ProofOfConcept_Approver) Mask(mask string) Account_ProofOfConcept_Approver {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Account_ProofOfConcept_Approver) Filter(filter string) Account_ProofOfConcept_Approver {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Account_ProofOfConcept_Approver) Limit(limit int) Account_ProofOfConcept_Approver {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Account_ProofOfConcept_Approver) Offset(offset int) Account_ProofOfConcept_Approver {
+	r.Options.Offset = &offset
+	return r
+}
+
+// no documentation yet
+func (r Account_ProofOfConcept_Approver) GetObject() (resp datatypes.Account_ProofOfConcept_Approver, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_ProofOfConcept_Approver", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Account_ProofOfConcept_Approver) GetRole() (resp datatypes.Account_ProofOfConcept_Approver_Role, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_ProofOfConcept_Approver", "getRole", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Account_ProofOfConcept_Approver) GetType() (resp datatypes.Account_ProofOfConcept_Approver_Type, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_ProofOfConcept_Approver", "getType", nil, &r.Options, &resp)
+	return
+}
+
+// This class represents a Proof of Concept account approver type. The current roles are Primary and Backup approvers.
+type Account_ProofOfConcept_Approver_Role struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetAccountProofOfConceptApproverRoleService returns an instance of the Account_ProofOfConcept_Approver_Role SoftLayer service
+func GetAccountProofOfConceptApproverRoleService(sess *session.Session) Account_ProofOfConcept_Approver_Role {
+	return Account_ProofOfConcept_Approver_Role{Session: sess}
+}
+
+func (r Account_ProofOfConcept_Approver_Role) Id(id int) Account_ProofOfConcept_Approver_Role {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Account_ProofOfConcept_Approver_Role) Mask(mask string) Account_ProofOfConcept_Approver_Role {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Account_ProofOfConcept_Approver_Role) Filter(filter string) Account_ProofOfConcept_Approver_Role {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Account_ProofOfConcept_Approver_Role) Limit(limit int) Account_ProofOfConcept_Approver_Role {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Account_ProofOfConcept_Approver_Role) Offset(offset int) Account_ProofOfConcept_Approver_Role {
+	r.Options.Offset = &offset
+	return r
+}
+
+// no documentation yet
+func (r Account_ProofOfConcept_Approver_Role) GetObject() (resp datatypes.Account_ProofOfConcept_Approver_Role, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_ProofOfConcept_Approver_Role", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// This class represents a Proof of Concept account approver type.
+type Account_ProofOfConcept_Approver_Type struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetAccountProofOfConceptApproverTypeService returns an instance of the Account_ProofOfConcept_Approver_Type SoftLayer service
+func GetAccountProofOfConceptApproverTypeService(sess *session.Session) Account_ProofOfConcept_Approver_Type {
+	return Account_ProofOfConcept_Approver_Type{Session: sess}
+}
+
+func (r Account_ProofOfConcept_Approver_Type) Id(id int) Account_ProofOfConcept_Approver_Type {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Account_ProofOfConcept_Approver_Type) Mask(mask string) Account_ProofOfConcept_Approver_Type {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Account_ProofOfConcept_Approver_Type) Filter(filter string) Account_ProofOfConcept_Approver_Type {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Account_ProofOfConcept_Approver_Type) Limit(limit int) Account_ProofOfConcept_Approver_Type {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Account_ProofOfConcept_Approver_Type) Offset(offset int) Account_ProofOfConcept_Approver_Type {
+	r.Options.Offset = &offset
+	return r
+}
+
+// Retrieve
+func (r Account_ProofOfConcept_Approver_Type) GetApprovers() (resp []datatypes.Account_ProofOfConcept_Approver, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_ProofOfConcept_Approver_Type", "getApprovers", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Account_ProofOfConcept_Approver_Type) GetObject() (resp datatypes.Account_ProofOfConcept_Approver_Type, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_ProofOfConcept_Approver_Type", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+type Account_ProofOfConcept_Funding_Type struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetAccountProofOfConceptFundingTypeService returns an instance of the Account_ProofOfConcept_Funding_Type SoftLayer service
+func GetAccountProofOfConceptFundingTypeService(sess *session.Session) Account_ProofOfConcept_Funding_Type {
+	return Account_ProofOfConcept_Funding_Type{Session: sess}
+}
+
+func (r Account_ProofOfConcept_Funding_Type) Id(id int) Account_ProofOfConcept_Funding_Type {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Account_ProofOfConcept_Funding_Type) Mask(mask string) Account_ProofOfConcept_Funding_Type {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Account_ProofOfConcept_Funding_Type) Filter(filter string) Account_ProofOfConcept_Funding_Type {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Account_ProofOfConcept_Funding_Type) Limit(limit int) Account_ProofOfConcept_Funding_Type {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Account_ProofOfConcept_Funding_Type) Offset(offset int) Account_ProofOfConcept_Funding_Type {
+	r.Options.Offset = &offset
+	return r
+}
+
+// no documentation yet
+func (r Account_ProofOfConcept_Funding_Type) GetAllObjects() (resp []datatypes.Account_ProofOfConcept_Funding_Type, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_ProofOfConcept_Funding_Type", "getAllObjects", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Account_ProofOfConcept_Funding_Type) GetApproverTypes() (resp []datatypes.Account_ProofOfConcept_Approver_Type, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_ProofOfConcept_Funding_Type", "getApproverTypes", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Account_ProofOfConcept_Funding_Type) GetApprovers() (resp []datatypes.Account_ProofOfConcept_Approver, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_ProofOfConcept_Funding_Type", "getApprovers", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Account_ProofOfConcept_Funding_Type) GetObject() (resp datatypes.Account_ProofOfConcept_Funding_Type, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_ProofOfConcept_Funding_Type", "getObject", nil, &r.Options, &resp)
 	return
 }
 

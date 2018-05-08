@@ -89,7 +89,7 @@ func dataSourceIBMIAMUserPolicy() *schema.Resource {
 }
 
 func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) error {
-	iamClient, err := meta.(ClientSession).IAMAPI()
+	iamClient, err := meta.(ClientSession).IAMPAPAPI()
 	if err != nil {
 		return err
 	}

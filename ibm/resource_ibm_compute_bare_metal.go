@@ -1232,10 +1232,12 @@ func setCommonBareMetalOrderOptions(d *schema.ResourceData, meta interface{}, or
 	// Get configured ssh_keys
 	ssh_key_ids := d.Get("ssh_key_ids").([]interface{})
 	if len(ssh_key_ids) > 0 {
-		order.Hardware[0].SshKeys = make([]datatypes.Security_Ssh_Key, 0, len(ssh_key_ids))
+		order.SshKeys = make([]datatypes.Container_Product_Order_SshKeys, 0, len(ssh_key_ids))
 		for _, ssh_key_id := range ssh_key_ids {
-			order.Hardware[0].SshKeys = append(order.Hardware[0].SshKeys, datatypes.Security_Ssh_Key{
-				Id: sl.Int(ssh_key_id.(int)),
+			sshKeyA := make([]int, 1)
+			sshKeyA[0] = ssh_key_id.(int)
+			order.SshKeys = append(order.SshKeys, datatypes.Container_Product_Order_SshKeys{
+				SshKeyIds: sshKeyA,
 			})
 		}
 	}

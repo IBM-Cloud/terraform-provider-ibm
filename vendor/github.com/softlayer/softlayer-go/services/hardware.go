@@ -1104,6 +1104,12 @@ func (r Hardware) GetOutboundPublicBandwidthUsage() (resp datatypes.Float64, err
 	return
 }
 
+// Retrieve Blade Bay
+func (r Hardware) GetParentBay() (resp datatypes.Hardware_Blade, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware", "getParentBay", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve Parent Hardware.
 func (r Hardware) GetParentHardware() (resp datatypes.Hardware, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware", "getParentHardware", nil, &r.Options, &resp)
@@ -1253,12 +1259,6 @@ func (r Hardware) GetResourceGroups() (resp []datatypes.Resource_Group, err erro
 // Retrieve A hardware's routers.
 func (r Hardware) GetRouters() (resp []datatypes.Hardware, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware", "getRouters", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve Determine if hardware object has Software Guard Extension (SGX) enabled.
-func (r Hardware) GetSGXEnabled() (resp bool, err error) {
-	err = r.Session.DoRequest("SoftLayer_Hardware", "getSGXEnabled", nil, &r.Options, &resp)
 	return
 }
 
@@ -1610,6 +1610,64 @@ func (r Hardware_Benchmark_Certification) GetObject() (resp datatypes.Hardware_B
 // Attempt to retrieve the file associated with a benchmark certification result, if such a file exists.  If there is no file for this benchmark certification result, calling this method throws an exception. The "getResultFile" method attempts to retrieve the file associated with a benchmark certification result, if such a file exists. If no file exists for the benchmark certification, an exception is thrown.
 func (r Hardware_Benchmark_Certification) GetResultFile() (resp []byte, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Benchmark_Certification", "getResultFile", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+type Hardware_Blade struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetHardwareBladeService returns an instance of the Hardware_Blade SoftLayer service
+func GetHardwareBladeService(sess *session.Session) Hardware_Blade {
+	return Hardware_Blade{Session: sess}
+}
+
+func (r Hardware_Blade) Id(id int) Hardware_Blade {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Hardware_Blade) Mask(mask string) Hardware_Blade {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Hardware_Blade) Filter(filter string) Hardware_Blade {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Hardware_Blade) Limit(limit int) Hardware_Blade {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Hardware_Blade) Offset(offset int) Hardware_Blade {
+	r.Options.Offset = &offset
+	return r
+}
+
+// Retrieve
+func (r Hardware_Blade) GetHardwareChild() (resp datatypes.Hardware, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_Blade", "getHardwareChild", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Hardware_Blade) GetHardwareParent() (resp datatypes.Hardware, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_Blade", "getHardwareParent", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Hardware_Blade) GetObject() (resp datatypes.Hardware_Blade, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_Blade", "getObject", nil, &r.Options, &resp)
 	return
 }
 
@@ -2979,6 +3037,12 @@ func (r Hardware_Router) GetOutboundPublicBandwidthUsage() (resp datatypes.Float
 	return
 }
 
+// Retrieve Blade Bay
+func (r Hardware_Router) GetParentBay() (resp datatypes.Hardware_Blade, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_Router", "getParentBay", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve Parent Hardware.
 func (r Hardware_Router) GetParentHardware() (resp datatypes.Hardware, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Router", "getParentHardware", nil, &r.Options, &resp)
@@ -3128,12 +3192,6 @@ func (r Hardware_Router) GetResourceGroups() (resp []datatypes.Resource_Group, e
 // Retrieve A hardware's routers.
 func (r Hardware_Router) GetRouters() (resp []datatypes.Hardware, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Router", "getRouters", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve Determine if hardware object has Software Guard Extension (SGX) enabled.
-func (r Hardware_Router) GetSGXEnabled() (resp bool, err error) {
-	err = r.Session.DoRequest("SoftLayer_Hardware_Router", "getSGXEnabled", nil, &r.Options, &resp)
 	return
 }
 
@@ -4823,6 +4881,12 @@ func (r Hardware_SecurityModule) GetPMInfo() (resp []datatypes.Container_RemoteM
 	return
 }
 
+// Retrieve Blade Bay
+func (r Hardware_SecurityModule) GetParentBay() (resp datatypes.Hardware_Blade, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "getParentBay", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve Parent Hardware.
 func (r Hardware_SecurityModule) GetParentHardware() (resp datatypes.Hardware, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "getParentHardware", nil, &r.Options, &resp)
@@ -5119,12 +5183,6 @@ func (r Hardware_SecurityModule) GetRouters() (resp []datatypes.Hardware, err er
 	return
 }
 
-// Retrieve Determine if hardware object has Software Guard Extension (SGX) enabled.
-func (r Hardware_SecurityModule) GetSGXEnabled() (resp bool, err error) {
-	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "getSGXEnabled", nil, &r.Options, &resp)
-	return
-}
-
 // Retrieve Collection of scale assets this hardware corresponds to.
 func (r Hardware_SecurityModule) GetScaleAssets() (resp []datatypes.Scale_Asset, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "getScaleAssets", nil, &r.Options, &resp)
@@ -5188,6 +5246,12 @@ func (r Hardware_SecurityModule) GetServiceProvider() (resp datatypes.Service_Pr
 // Retrieve Information regarding a piece of hardware's installed software.
 func (r Hardware_SecurityModule) GetSoftwareComponents() (resp []datatypes.Software_Component, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "getSoftwareComponents", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Determine if hardware object has Software Guard Extension (SGX) enabled.
+func (r Hardware_SecurityModule) GetSoftwareGuardExtensionEnabled() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "getSoftwareGuardExtensionEnabled", nil, &r.Options, &resp)
 	return
 }
 
@@ -5437,13 +5501,13 @@ func (r Hardware_SecurityModule) Ping() (resp string, err error) {
 }
 
 // no documentation yet
-func (r Hardware_SecurityModule) PopulateServer(hardwareId *int, serialString *string) (err error) {
+func (r Hardware_SecurityModule) PopulateServerRam(hardwareId *int, ramSerialString *string) (err error) {
 	var resp datatypes.Void
 	params := []interface{}{
 		hardwareId,
-		serialString,
+		ramSerialString,
 	}
-	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "populateServer", params, &r.Options, &resp)
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "populateServerRam", params, &r.Options, &resp)
 	return
 }
 
@@ -5631,6 +5695,2216 @@ func (r Hardware_SecurityModule) ValidatePartitionsForOperatingSystem(operatingS
 		partitions,
 	}
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "validatePartitionsForOperatingSystem", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+type Hardware_SecurityModule750 struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetHardwareSecurityModule750Service returns an instance of the Hardware_SecurityModule750 SoftLayer service
+func GetHardwareSecurityModule750Service(sess *session.Session) Hardware_SecurityModule750 {
+	return Hardware_SecurityModule750{Session: sess}
+}
+
+func (r Hardware_SecurityModule750) Id(id int) Hardware_SecurityModule750 {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Hardware_SecurityModule750) Mask(mask string) Hardware_SecurityModule750 {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Hardware_SecurityModule750) Filter(filter string) Hardware_SecurityModule750 {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Hardware_SecurityModule750) Limit(limit int) Hardware_SecurityModule750 {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Hardware_SecurityModule750) Offset(offset int) Hardware_SecurityModule750 {
+	r.Options.Offset = &offset
+	return r
+}
+
+// Activates the private network port
+func (r Hardware_SecurityModule750) ActivatePrivatePort() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "activatePrivatePort", nil, &r.Options, &resp)
+	return
+}
+
+// Activates the public network port
+func (r Hardware_SecurityModule750) ActivatePublicPort() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "activatePublicPort", nil, &r.Options, &resp)
+	return
+}
+
+// This method is used to allow access to a SoftLayer_Network_Storage volume that supports host- or network-level access control.
+func (r Hardware_SecurityModule750) AllowAccessToNetworkStorage(networkStorageTemplateObject *datatypes.Network_Storage) (resp bool, err error) {
+	params := []interface{}{
+		networkStorageTemplateObject,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "allowAccessToNetworkStorage", params, &r.Options, &resp)
+	return
+}
+
+// This method is used to allow access to multiple SoftLayer_Network_Storage volumes that support host- or network-level access control.
+func (r Hardware_SecurityModule750) AllowAccessToNetworkStorageList(networkStorageTemplateObjects []datatypes.Network_Storage) (resp bool, err error) {
+	params := []interface{}{
+		networkStorageTemplateObjects,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "allowAccessToNetworkStorageList", params, &r.Options, &resp)
+	return
+}
+
+// The Rescue Kernel is designed to provide you with the ability to bring a server online in order to troubleshoot system problems that would normally only be resolved by an OS Reload. The correct Rescue Kernel will be selected based upon the currently installed operating system. When the rescue kernel process is initiated, the server will shutdown and reboot on to the public network with the same IP's assigned to the server to allow for remote connections. It will bring your server offline for approximately 10 minutes while the rescue is in progress. The root/administrator password will be the same as what is listed in the portal for the server.
+func (r Hardware_SecurityModule750) BootToRescueLayer(noOsBootEnvironment *string) (resp bool, err error) {
+	params := []interface{}{
+		noOsBootEnvironment,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "bootToRescueLayer", params, &r.Options, &resp)
+	return
+}
+
+// Captures a Flex Image of the hard disk on the physical machine, based on the capture template parameter. Returns the image template group containing the disk image.
+func (r Hardware_SecurityModule750) CaptureImage(captureTemplate *datatypes.Container_Disk_Image_Capture_Template) (resp datatypes.Virtual_Guest_Block_Device_Template_Group, err error) {
+	params := []interface{}{
+		captureTemplate,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "captureImage", params, &r.Options, &resp)
+	return
+}
+
+// Returns monitoring alarm detailed history
+func (r Hardware_SecurityModule750) CloseAlarm(alarmId *string) (resp bool, err error) {
+	params := []interface{}{
+		alarmId,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "closeAlarm", params, &r.Options, &resp)
+	return
+}
+
+// You can launch firmware updates by selecting from your server list. It will bring your server offline for approximately 20 minutes while the updates are in progress.
+//
+// In the event of a hardware failure during this test our datacenter engineers will be notified of the problem automatically. They will then replace any failed components to bring your server back online, and will be contacting you to ensure that impact on your server is minimal.
+func (r Hardware_SecurityModule750) CreateFirmwareUpdateTransaction(ipmi *int, raidController *int, bios *int, harddrive *int) (resp bool, err error) {
+	params := []interface{}{
+		ipmi,
+		raidController,
+		bios,
+		harddrive,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "createFirmwareUpdateTransaction", params, &r.Options, &resp)
+	return
+}
+
+//
+// <style type="text/css">.create_object > li > div { padding-top: .5em; padding-bottom: .5em}</style>
+// createObject() enables the creation of servers on an account. This
+// method is a simplified alternative to interacting with the ordering system directly.
+//
+//
+// In order to create a server, a template object must be sent in with a few required
+// values.
+//
+//
+// When this method returns an order will have been placed for a server of the specified configuration.
+//
+//
+// To determine when the server is available you can poll the server via [[SoftLayer_Hardware/getObject|getObject]],
+// checking the <code>provisionDate</code> property.
+// When <code>provisionDate</code> is not null, the server will be ready. Be sure to use the <code>globalIdentifier</code>
+// as your initialization parameter.
+//
+//
+// <b>Warning:</b> Servers created via this method will incur charges on your account. For testing input parameters see [[SoftLayer_Hardware/generateOrderTemplate|generateOrderTemplate]].
+//
+//
+// <b>Input</b> - [[SoftLayer_Hardware (type)|SoftLayer_Hardware]]
+// <ul class="create_object">
+//     <li><code>hostname</code>
+//         <div>Hostname for the server.</div><ul>
+//             <li><b>Required</b></li>
+//             <li><b>Type</b> - string</li>
+//         </ul>
+//         <br />
+//     </li>
+//     <li><code>domain</code>
+//         <div>Domain for the server.</div><ul>
+//             <li><b>Required</b></li>
+//             <li><b>Type</b> - string</li>
+//         </ul>
+//         <br />
+//     </li>
+//     <li><code>processorCoreAmount</code>
+//         <div>The number of logical CPU cores to allocate.</div><ul>
+//             <li><b>Required</b></li>
+//             <li><b>Type</b> - int</li>
+//             <li>See [[SoftLayer_Hardware/getCreateObjectOptions|getCreateObjectOptions]] for available options.</li>
+//         </ul>
+//         <br />
+//     </li>
+//     <li><code>memoryCapacity</code>
+//         <div>The amount of memory to allocate in gigabytes.</div><ul>
+//             <li><b>Required</b></li>
+//             <li><b>Type</b> - int</li>
+//             <li>See [[SoftLayer_Hardware/getCreateObjectOptions|getCreateObjectOptions]] for available options.</li>
+//         </ul>
+//         <br />
+//     </li>
+//     <li><code>hourlyBillingFlag</code>
+//         <div>Specifies the billing type for the server.</div><ul>
+//             <li><b>Required</b></li>
+//             <li><b>Type</b> - boolean</li>
+//             <li>When true the server will be billed on hourly usage, otherwise it will be billed on a monthly basis.</li>
+//         </ul>
+//         <br />
+//     </li>
+//     <li><code>operatingSystemReferenceCode</code>
+//         <div>An identifier for the operating system to provision the server with.</div><ul>
+//             <li><b>Required</b></li>
+//             <li><b>Type</b> - string</li>
+//             <li>See [[SoftLayer_Hardware/getCreateObjectOptions|getCreateObjectOptions]] for available options.</li>
+//         </ul>
+//         <br />
+//     </li>
+//     <li><code>datacenter.name</code>
+//         <div>Specifies which datacenter the server is to be provisioned in.</div><ul>
+//             <li><b>Required</b></li>
+//             <li><b>Type</b> - string</li>
+//             <li>The <code>datacenter</code> property is a [[SoftLayer_Location (type)|location]] structure with the <code>name</code> field set.</li>
+//             <li>See [[SoftLayer_Hardware/getCreateObjectOptions|getCreateObjectOptions]] for available options.</li>
+//         </ul>
+//         <http title="Example">{
+//     "datacenter": {
+//         "name": "dal05"
+//     }
+// }</http>
+//         <br />
+//     </li>
+//     <li><code>networkComponents.maxSpeed</code>
+//         <div>Specifies the connection speed for the server's network components.</div><ul>
+//             <li><b>Optional</b></li>
+//             <li><b>Type</b> - int</li>
+//             <li><b>Default</b> - The highest available zero cost port speed will be used.</li>
+//             <li><b>Description</b> - The <code>networkComponents</code> property is an array with a single [[SoftLayer_Network_Component (type)|network component]] structure. The <code>maxSpeed</code> property must be set to specify the network uplink speed, in megabits per second, of the server.</li>
+//             <li>See [[SoftLayer_Hardware/getCreateObjectOptions|getCreateObjectOptions]] for available options.</li>
+//         </ul>
+//             <http title="Example">{
+//     "networkComponents": [
+//         {
+//             "maxSpeed": 1000
+//         }
+//     ]
+// }</http>
+//         <br />
+//     </li>
+//     <li><code>networkComponents.redundancyEnabledFlag</code>
+//         <div>Specifies whether or not the server's network components should be in redundancy groups.</div><ul>
+//             <li><b>Optional</b></li>
+//             <li><b>Type</b> - bool</li>
+//             <li><b>Default</b> - <code>false</code></li>
+//             <li><b>Description</b> - The <code>networkComponents</code> property is an array with a single [[SoftLayer_Network_Component (type)|network component]] structure. When the <code>redundancyEnabledFlag</code> property is true the server's network components will be in redundancy groups.</li>
+//         </ul>
+//             <http title="Example">{
+//     "networkComponents": [
+//         {
+//             "redundancyEnabledFlag": false
+//         }
+//     ]
+// }</http>
+//         <br />
+//     </li>
+//     <li><code>privateNetworkOnlyFlag</code>
+//         <div>Specifies whether or not the server only has access to the private network</div><ul>
+//             <li><b>Optional</b></li>
+//             <li><b>Type</b> - boolean</li>
+//             <li><b>Default</b> - <code>false</code></li>
+//             <li>When true this flag specifies that a server is to only have access to the private network.</li>
+//         </ul>
+//         <br />
+//     </li>
+//     <li><code>primaryNetworkComponent.networkVlan.id</code>
+//         <div>Specifies the network vlan which is to be used for the frontend interface of the server.</div><ul>
+//             <li><b>Optional</b></li>
+//             <li><b>Type</b> - int</li>
+//             <li><b>Description</b> - The <code>primaryNetworkComponent</code> property is a [[SoftLayer_Network_Component (type)|network component]] structure with the <code>networkVlan</code> property populated with a [[SoftLayer_Network_Vlan (type)|vlan]] structure. The <code>id</code> property must be set to specify the frontend network vlan of the server.</li>
+//         </ul>
+//         <http title="Example">{
+//     "primaryNetworkComponent": {
+//         "networkVlan": {
+//             "id": 1
+//         }
+//     }
+// }</http>
+//         <br />
+//     </li>
+//     <li><code>primaryBackendNetworkComponent.networkVlan.id</code>
+//         <div>Specifies the network vlan which is to be used for the backend interface of the server.</div><ul>
+//             <li><b>Optional</b></li>
+//             <li><b>Type</b> - int</li>
+//             <li><b>Description</b> - The <code>primaryBackendNetworkComponent</code> property is a [[SoftLayer_Network_Component (type)|network component]] structure with the <code>networkVlan</code> property populated with a [[SoftLayer_Network_Vlan (type)|vlan]] structure. The <code>id</code> property must be set to specify the backend network vlan of the server.</li>
+//         </ul>
+//         <http title="Example">{
+//     "primaryBackendNetworkComponent": {
+//         "networkVlan": {
+//             "id": 2
+//         }
+//     }
+// }</http>
+//         <br />
+//     </li>
+//     <li><code>fixedConfigurationPreset.keyName</code>
+//         <div></div><ul>
+//             <li><b>Optional</b></li>
+//             <li><b>Type</b> - string</li>
+//             <li><b>Description</b> - The <code>fixedConfigurationPreset</code> property is a [[SoftLayer_Product_Package_Preset (type)|fixed configuration preset]] structure. The <code>keyName</code> property must be set to specify preset to use.</li>
+//             <li>If a fixed configuration preset is used <code>processorCoreAmount</code>, <code>memoryCapacity</code> and <code>hardDrives</code> properties must not be set.</li>
+//             <li>See [[SoftLayer_Hardware/getCreateObjectOptions|getCreateObjectOptions]] for available options.</li>
+//         </ul>
+//         <http title="Example">{
+//     "fixedConfigurationPreset": {
+//         "keyName": "SOME_KEY_NAME"
+//     }
+// }</http>
+//         <br />
+//     </li>
+//     <li><code>userData.value</code>
+//         <div>Arbitrary data to be made available to the server.</div><ul>
+//             <li><b>Optional</b></li>
+//             <li><b>Type</b> - string</li>
+//             <li><b>Description</b> - The <code>userData</code> property is an array with a single [[SoftLayer_Hardware_Attribute (type)|attribute]] structure with the <code>value</code> property set to an arbitrary value.</li>
+//             <li>This value can be retrieved via the [[SoftLayer_Resource_Metadata/getUserMetadata|getUserMetadata]] method from a request originating from the server. This is primarily useful for providing data to software that may be on the server and configured to execute upon first boot.</li>
+//         </ul>
+//         <http title="Example">{
+//     "userData": [
+//         {
+//             "value": "someValue"
+//         }
+//     ]
+// }</http>
+//         <br />
+//     </li>
+//     <li><code>hardDrives</code>
+//         <div>Hard drive settings for the server</div><ul>
+//             <li><b>Optional</b></li>
+//             <li><b>Type</b> - SoftLayer_Hardware_Component</li>
+//             <li><b>Default</b> - The largest available capacity for a zero cost primary disk will be used.</li>
+//             <li><b>Description</b> - The <code>hardDrives</code> property is an array of [[SoftLayer_Hardware_Component (type)|hardware component]] structures.</i>
+//             <li>Each hard drive must specify the <code>capacity</code> property.</li>
+//             <li>See [[SoftLayer_Hardware/getCreateObjectOptions|getCreateObjectOptions]] for available options.</li>
+//         </ul>
+//         <http title="Example">{
+//     "hardDrives": [
+//         {
+//             "capacity": 500
+//         }
+//     ]
+// }</http>
+//         <br />
+//     </li>
+//     <li id="hardware-create-object-ssh-keys"><code>sshKeys</code>
+//         <div>SSH keys to install on the server upon provisioning.</div><ul>
+//             <li><b>Optional</b></li>
+//             <li><b>Type</b> - array of [[SoftLayer_Security_Ssh_Key (type)|SoftLayer_Security_Ssh_Key]]</li>
+//             <li><b>Description</b> - The <code>sshKeys</code> property is an array of [[SoftLayer_Security_Ssh_Key (type)|SSH Key]] structures with the <code>id</code> property set to the value of an existing SSH key.</li>
+//             <li>To create a new SSH key, call [[SoftLayer_Security_Ssh_Key/createObject|createObject]] on the [[SoftLayer_Security_Ssh_Key]] service.</li>
+//             <li>To obtain a list of existing SSH keys, call [[SoftLayer_Account/getSshKeys|getSshKeys]] on the [[SoftLayer_Account]] service.
+//         </ul>
+//         <http title="Example">{
+//     "sshKeys": [
+//         {
+//             "id": 123
+//         }
+//     ]
+// }</http>
+//         <br />
+//     </li>
+//     <li><code>postInstallScriptUri</code>
+//         <div>Specifies the uri location of the script to be downloaded and run after installation is complete.</div><ul>
+//             <li><b>Optional</b></li>
+//             <li><b>Type</b> - string</li>
+//         </ul>
+//         <br />
+//     </li>
+// </ul>
+//
+//
+// <h1>REST Example</h1>
+// <http title="Request">curl -X POST -d '{
+//  "parameters":[
+//      {
+//          "hostname": "host1",
+//          "domain": "example.com",
+//          "processorCoreAmount": 2,
+//          "memoryCapacity": 2,
+//          "hourlyBillingFlag": true,
+//          "operatingSystemReferenceCode": "UBUNTU_LATEST"
+//      }
+//  ]
+// }' https://api.softlayer.com/rest/v3/SoftLayer_Hardware.json
+// </http>
+// <http title="Response">HTTP/1.1 201 Created
+// Location: https://api.softlayer.com/rest/v3/SoftLayer_Hardware/f5a3fcff-db1d-4b7c-9fa0-0349e41c29c5/getObject
+//
+//
+// {
+//     "accountId": 232298,
+//     "bareMetalInstanceFlag": null,
+//     "domain": "example.com",
+//     "hardwareStatusId": null,
+//     "hostname": "host1",
+//     "id": null,
+//     "serviceProviderId": null,
+//     "serviceProviderResourceId": null,
+//     "globalIdentifier": "f5a3fcff-db1d-4b7c-9fa0-0349e41c29c5",
+//     "hourlyBillingFlag": true,
+//     "memoryCapacity": 2,
+//     "operatingSystemReferenceCode": "UBUNTU_LATEST",
+//     "processorCoreAmount": 2
+// }
+// </http>
+func (r Hardware_SecurityModule750) CreateObject(templateObject *datatypes.Hardware_SecurityModule750) (resp datatypes.Hardware_SecurityModule750, err error) {
+	params := []interface{}{
+		templateObject,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "createObject", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Hardware_SecurityModule750) CreatePostSoftwareInstallTransaction(installCodes []string, returnBoolean *bool) (resp bool, err error) {
+	params := []interface{}{
+		installCodes,
+		returnBoolean,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "createPostSoftwareInstallTransaction", params, &r.Options, &resp)
+	return
+}
+
+//
+// This method will cancel a server effective immediately. For servers billed hourly, the charges will stop immediately after the method returns.
+func (r Hardware_SecurityModule750) DeleteObject() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "deleteObject", nil, &r.Options, &resp)
+	return
+}
+
+// Delete software component passwords.
+func (r Hardware_SecurityModule750) DeleteSoftwareComponentPasswords(softwareComponentPasswords []datatypes.Software_Component_Password) (resp bool, err error) {
+	params := []interface{}{
+		softwareComponentPasswords,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "deleteSoftwareComponentPasswords", params, &r.Options, &resp)
+	return
+}
+
+// Edit a server's properties
+func (r Hardware_SecurityModule750) EditObject(templateObject *datatypes.Hardware_Server) (resp bool, err error) {
+	params := []interface{}{
+		templateObject,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "editObject", params, &r.Options, &resp)
+	return
+}
+
+// Edit the properties of a software component password such as the username, password, and notes.
+func (r Hardware_SecurityModule750) EditSoftwareComponentPasswords(softwareComponentPasswords []datatypes.Software_Component_Password) (resp bool, err error) {
+	params := []interface{}{
+		softwareComponentPasswords,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "editSoftwareComponentPasswords", params, &r.Options, &resp)
+	return
+}
+
+// Download and run remote script from uri on the hardware.
+func (r Hardware_SecurityModule750) ExecuteRemoteScript(uri *string) (err error) {
+	var resp datatypes.Void
+	params := []interface{}{
+		uri,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "executeRemoteScript", params, &r.Options, &resp)
+	return
+}
+
+// The '''findByIpAddress''' method finds hardware using its primary public or private IP address. IP addresses that have a secondary subnet tied to the hardware will not return the hardware - alternate means of locating the hardware must be used (see '''Associated Methods'''). If no hardware is found, no errors are generated and no data is returned.
+func (r Hardware_SecurityModule750) FindByIpAddress(ipAddress *string) (resp datatypes.Hardware, err error) {
+	params := []interface{}{
+		ipAddress,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "findByIpAddress", params, &r.Options, &resp)
+	return
+}
+
+//
+// Obtain an [[SoftLayer_Container_Product_Order_Hardware_Server (type)|order container]] that can be sent to [[SoftLayer_Product_Order/verifyOrder|verifyOrder]] or [[SoftLayer_Product_Order/placeOrder|placeOrder]].
+//
+//
+// This is primarily useful when there is a necessity to confirm the price which will be charged for an order.
+//
+//
+// See [[SoftLayer_Hardware/createObject|createObject]] for specifics on the requirements of the template object parameter.
+func (r Hardware_SecurityModule750) GenerateOrderTemplate(templateObject *datatypes.Hardware) (resp datatypes.Container_Product_Order, err error) {
+	params := []interface{}{
+		templateObject,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "generateOrderTemplate", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve The account associated with a piece of hardware.
+func (r Hardware_SecurityModule750) GetAccount() (resp datatypes.Account, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getAccount", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A piece of hardware's active physical components.
+func (r Hardware_SecurityModule750) GetActiveComponents() (resp []datatypes.Hardware_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getActiveComponents", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The billing item for a server's attached network firewall.
+func (r Hardware_SecurityModule750) GetActiveNetworkFirewallBillingItem() (resp datatypes.Billing_Item, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getActiveNetworkFirewallBillingItem", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A piece of hardware's active network monitoring incidents.
+func (r Hardware_SecurityModule750) GetActiveNetworkMonitorIncident() (resp []datatypes.Network_Monitor_Version1_Incident, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getActiveNetworkMonitorIncident", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Hardware_SecurityModule750) GetActiveTickets() (resp []datatypes.Ticket, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getActiveTickets", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Transaction currently running for server.
+func (r Hardware_SecurityModule750) GetActiveTransaction() (resp datatypes.Provisioning_Version1_Transaction, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getActiveTransaction", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Any active transaction(s) that are currently running for the server (example: os reload).
+func (r Hardware_SecurityModule750) GetActiveTransactions() (resp []datatypes.Provisioning_Version1_Transaction, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getActiveTransactions", nil, &r.Options, &resp)
+	return
+}
+
+// The '''getAlarmHistory''' method retrieves a detailed history for the monitoring alarm. When calling this method, a start and end date for the history to be retrieved must be entered.
+func (r Hardware_SecurityModule750) GetAlarmHistory(startDate *datatypes.Time, endDate *datatypes.Time, alarmId *string) (resp []datatypes.Container_Monitoring_Alarm_History, err error) {
+	params := []interface{}{
+		startDate,
+		endDate,
+		alarmId,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getAlarmHistory", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Hardware_SecurityModule750) GetAllPowerComponents() (resp []datatypes.Hardware_Power_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getAllPowerComponents", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The SoftLayer_Network_Storage_Allowed_Host information to connect this server to Network Storage volumes that require access control lists.
+func (r Hardware_SecurityModule750) GetAllowedHost() (resp datatypes.Network_Storage_Allowed_Host, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getAllowedHost", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The SoftLayer_Network_Storage objects that this SoftLayer_Hardware has access to.
+func (r Hardware_SecurityModule750) GetAllowedNetworkStorage() (resp []datatypes.Network_Storage, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getAllowedNetworkStorage", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The SoftLayer_Network_Storage objects whose Replica that this SoftLayer_Hardware has access to.
+func (r Hardware_SecurityModule750) GetAllowedNetworkStorageReplicas() (resp []datatypes.Network_Storage, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getAllowedNetworkStorageReplicas", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding an antivirus/spyware software component object.
+func (r Hardware_SecurityModule750) GetAntivirusSpywareSoftwareComponent() (resp datatypes.Software_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getAntivirusSpywareSoftwareComponent", nil, &r.Options, &resp)
+	return
+}
+
+// This method is retrieve a list of SoftLayer_Network_Storage volumes that are authorized access to this SoftLayer_Hardware.
+func (r Hardware_SecurityModule750) GetAttachedNetworkStorages(nasType *string) (resp []datatypes.Network_Storage, err error) {
+	params := []interface{}{
+		nasType,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getAttachedNetworkStorages", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding a piece of hardware's specific attributes.
+func (r Hardware_SecurityModule750) GetAttributes() (resp []datatypes.Hardware_Attribute, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getAttributes", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve An object that stores the maximum level for the monitoring query types and response types.
+func (r Hardware_SecurityModule750) GetAvailableMonitoring() (resp []datatypes.Network_Monitor_Version1_Query_Host_Stratum, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getAvailableMonitoring", nil, &r.Options, &resp)
+	return
+}
+
+// This method retrieves a list of SoftLayer_Network_Storage volumes that can be authorized to this SoftLayer_Hardware.
+func (r Hardware_SecurityModule750) GetAvailableNetworkStorages(nasType *string) (resp []datatypes.Network_Storage, err error) {
+	params := []interface{}{
+		nasType,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getAvailableNetworkStorages", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve The average daily total bandwidth usage for the current billing cycle.
+func (r Hardware_SecurityModule750) GetAverageDailyBandwidthUsage() (resp datatypes.Float64, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getAverageDailyBandwidthUsage", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The average daily private bandwidth usage for the current billing cycle.
+func (r Hardware_SecurityModule750) GetAverageDailyPrivateBandwidthUsage() (resp datatypes.Float64, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getAverageDailyPrivateBandwidthUsage", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The average daily public bandwidth usage for the current billing cycle.
+func (r Hardware_SecurityModule750) GetAverageDailyPublicBandwidthUsage() (resp datatypes.Float64, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getAverageDailyPublicBandwidthUsage", nil, &r.Options, &resp)
+	return
+}
+
+// Use this method to return an array of private bandwidth utilization records between a given date range.
+//
+// This method represents the NEW version of getFrontendBandwidthUse
+func (r Hardware_SecurityModule750) GetBackendBandwidthUsage(startDate *datatypes.Time, endDate *datatypes.Time) (resp []datatypes.Metric_Tracking_Object_Data, err error) {
+	params := []interface{}{
+		startDate,
+		endDate,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getBackendBandwidthUsage", params, &r.Options, &resp)
+	return
+}
+
+// Use this method to return an array of private bandwidth utilization records between a given date range.
+func (r Hardware_SecurityModule750) GetBackendBandwidthUse(startDate *datatypes.Time, endDate *datatypes.Time) (resp []datatypes.Network_Bandwidth_Version1_Usage_Detail, err error) {
+	params := []interface{}{
+		startDate,
+		endDate,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getBackendBandwidthUse", params, &r.Options, &resp)
+	return
+}
+
+// The '''getBackendIncomingBandwidth''' method retrieves the amount of incoming private network traffic used between the given start date and end date parameters. When entering start and end dates, only the month, day and year are used to calculate bandwidth totals - the time (HH:MM:SS) is ignored and defaults to midnight. The amount of bandwidth retrieved is measured in gigabytes.
+func (r Hardware_SecurityModule750) GetBackendIncomingBandwidth(startDate *datatypes.Time, endDate *datatypes.Time) (resp datatypes.Float64, err error) {
+	params := []interface{}{
+		startDate,
+		endDate,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getBackendIncomingBandwidth", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve A piece of hardware's back-end or private network components.
+func (r Hardware_SecurityModule750) GetBackendNetworkComponents() (resp []datatypes.Network_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getBackendNetworkComponents", nil, &r.Options, &resp)
+	return
+}
+
+// The '''getBackendOutgoingBandwidth''' method retrieves the amount of outgoing private network traffic used between the given start date and end date parameters. When entering start and end dates, only the month, day and year are used to calculate bandwidth totals - the time (HH:MM:SS) is ignored and defaults to midnight. The amount of bandwidth retrieved is measured in gigabytes.
+func (r Hardware_SecurityModule750) GetBackendOutgoingBandwidth(startDate *datatypes.Time, endDate *datatypes.Time) (resp datatypes.Float64, err error) {
+	params := []interface{}{
+		startDate,
+		endDate,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getBackendOutgoingBandwidth", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve A hardware's backend or private router.
+func (r Hardware_SecurityModule750) GetBackendRouters() (resp []datatypes.Hardware, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getBackendRouters", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A hardware's allotted bandwidth (measured in GB).
+func (r Hardware_SecurityModule750) GetBandwidthAllocation() (resp datatypes.Float64, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getBandwidthAllocation", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A hardware's allotted detail record. Allotment details link bandwidth allocation with allotments.
+func (r Hardware_SecurityModule750) GetBandwidthAllotmentDetail() (resp datatypes.Network_Bandwidth_Version1_Allotment_Detail, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getBandwidthAllotmentDetail", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve a collection of bandwidth data from an individual public or private network tracking object. Data is ideal if you with to employ your own traffic storage and graphing systems.
+func (r Hardware_SecurityModule750) GetBandwidthForDateRange(startDate *datatypes.Time, endDate *datatypes.Time) (resp []datatypes.Metric_Tracking_Object_Data, err error) {
+	params := []interface{}{
+		startDate,
+		endDate,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getBandwidthForDateRange", params, &r.Options, &resp)
+	return
+}
+
+// Use this method when needing a bandwidth image for a single server.  It will gather the correct input parameters for the generic graphing utility automatically based on the snapshot specified.  Use the $draw flag to suppress the generation of the actual binary PNG image.
+func (r Hardware_SecurityModule750) GetBandwidthImage(networkType *string, snapshotRange *string, draw *bool, dateSpecified *datatypes.Time, dateSpecifiedEnd *datatypes.Time) (resp datatypes.Container_Bandwidth_GraphOutputs, err error) {
+	params := []interface{}{
+		networkType,
+		snapshotRange,
+		draw,
+		dateSpecified,
+		dateSpecifiedEnd,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getBandwidthImage", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding a piece of hardware's benchmark certifications.
+func (r Hardware_SecurityModule750) GetBenchmarkCertifications() (resp []datatypes.Hardware_Benchmark_Certification, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getBenchmarkCertifications", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The raw bandwidth usage data for the current billing cycle. One object will be returned for each network this server is attached to.
+func (r Hardware_SecurityModule750) GetBillingCycleBandwidthUsage() (resp []datatypes.Network_Bandwidth_Usage, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getBillingCycleBandwidthUsage", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The raw private bandwidth usage data for the current billing cycle.
+func (r Hardware_SecurityModule750) GetBillingCyclePrivateBandwidthUsage() (resp datatypes.Network_Bandwidth_Usage, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getBillingCyclePrivateBandwidthUsage", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The raw public bandwidth usage data for the current billing cycle.
+func (r Hardware_SecurityModule750) GetBillingCyclePublicBandwidthUsage() (resp datatypes.Network_Bandwidth_Usage, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getBillingCyclePublicBandwidthUsage", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding the billing item for a server.
+func (r Hardware_SecurityModule750) GetBillingItem() (resp datatypes.Billing_Item_Hardware, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getBillingItem", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A flag indicating that a billing item exists.
+func (r Hardware_SecurityModule750) GetBillingItemFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getBillingItemFlag", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Determines whether the hardware is ineligible for cancellation because it is disconnected.
+func (r Hardware_SecurityModule750) GetBlockCancelBecauseDisconnectedFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getBlockCancelBecauseDisconnectedFlag", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Status indicating whether or not a piece of hardware has business continuance insurance.
+func (r Hardware_SecurityModule750) GetBusinessContinuanceInsuranceFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getBusinessContinuanceInsuranceFlag", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Child hardware.
+func (r Hardware_SecurityModule750) GetChildrenHardware() (resp []datatypes.Hardware, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getChildrenHardware", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Hardware_SecurityModule750) GetComponentDetailsXML() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getComponentDetailsXML", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A piece of hardware's components.
+func (r Hardware_SecurityModule750) GetComponents() (resp []datatypes.Hardware_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getComponents", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Hardware_SecurityModule750) GetContainsSolidStateDrivesFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getContainsSolidStateDrivesFlag", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A continuous data protection/server backup software component object.
+func (r Hardware_SecurityModule750) GetContinuousDataProtectionSoftwareComponent() (resp datatypes.Software_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getContinuousDataProtectionSoftwareComponent", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A server's control panel.
+func (r Hardware_SecurityModule750) GetControlPanel() (resp datatypes.Software_Component_ControlPanel, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getControlPanel", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The total cost of a server, measured in US Dollars ($USD).
+func (r Hardware_SecurityModule750) GetCost() (resp datatypes.Float64, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getCost", nil, &r.Options, &resp)
+	return
+}
+
+//
+// There are many options that may be provided while ordering a server, this method can be used to determine what these options are.
+//
+//
+// Detailed information on the return value can be found on the data type page for [[SoftLayer_Container_Hardware_Configuration (type)]].
+func (r Hardware_SecurityModule750) GetCreateObjectOptions() (resp datatypes.Container_Hardware_Configuration, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getCreateObjectOptions", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve An object that provides commonly used bandwidth summary components for the current billing cycle.
+func (r Hardware_SecurityModule750) GetCurrentBandwidthSummary() (resp datatypes.Metric_Tracking_Object_Bandwidth_Summary, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getCurrentBandwidthSummary", nil, &r.Options, &resp)
+	return
+}
+
+// Attempt to retrieve the file associated with the current benchmark certification result, if such a file exists.  If there is no file for this benchmark certification result, calling this method throws an exception.
+func (r Hardware_SecurityModule750) GetCurrentBenchmarkCertificationResultFile() (resp []byte, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getCurrentBenchmarkCertificationResultFile", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The current billable public outbound bandwidth for this hardware for the current billing cycle.
+func (r Hardware_SecurityModule750) GetCurrentBillableBandwidthUsage() (resp datatypes.Float64, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getCurrentBillableBandwidthUsage", nil, &r.Options, &resp)
+	return
+}
+
+// Get the billing detail for this instance for the current billing period. This does not include bandwidth usage.
+func (r Hardware_SecurityModule750) GetCurrentBillingDetail() (resp []datatypes.Billing_Item, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getCurrentBillingDetail", nil, &r.Options, &resp)
+	return
+}
+
+// The '''getCurrentBillingTotal''' method retrieves the total bill amount in US Dollars ($) for the current billing period. In addition to the total bill amount, the billing detail also includes all bandwidth used up to the point the method is called on the piece of hardware.
+func (r Hardware_SecurityModule750) GetCurrentBillingTotal() (resp datatypes.Float64, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getCurrentBillingTotal", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve bandwidth graph by date.
+func (r Hardware_SecurityModule750) GetCustomBandwidthDataByDate(graphData *datatypes.Container_Graph) (resp datatypes.Container_Graph, err error) {
+	params := []interface{}{
+		graphData,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getCustomBandwidthDataByDate", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve Indicates if a server has a Customer Installed OS
+func (r Hardware_SecurityModule750) GetCustomerInstalledOperatingSystemFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getCustomerInstalledOperatingSystemFlag", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Indicates if a server is a customer owned device.
+func (r Hardware_SecurityModule750) GetCustomerOwnedFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getCustomerOwnedFlag", nil, &r.Options, &resp)
+	return
+}
+
+// The '''getDailyAverage''' method calculates the average daily network traffic used by the selected server. Using the required parameter ''dateTime'' to enter a start and end date, the user retrieves this average, measure in gigabytes (GB) for the specified date range. When entering parameters, only the month, day and year are required - time entries are omitted as this method defaults the time to midnight in order to account for the entire day.
+func (r Hardware_SecurityModule750) GetDailyAverage(startDate *datatypes.Time, endDate *datatypes.Time) (resp datatypes.Float64, err error) {
+	params := []interface{}{
+		startDate,
+		endDate,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getDailyAverage", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding the datacenter in which a piece of hardware resides.
+func (r Hardware_SecurityModule750) GetDatacenter() (resp datatypes.Location, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getDatacenter", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The name of the datacenter in which a piece of hardware resides.
+func (r Hardware_SecurityModule750) GetDatacenterName() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getDatacenterName", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Number of day(s) a server have been in spare pool.
+func (r Hardware_SecurityModule750) GetDaysInSparePool() (resp int, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getDaysInSparePool", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve All hardware that has uplink network connections to a piece of hardware.
+func (r Hardware_SecurityModule750) GetDownlinkHardware() (resp []datatypes.Hardware, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getDownlinkHardware", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve All hardware that has uplink network connections to a piece of hardware.
+func (r Hardware_SecurityModule750) GetDownlinkNetworkHardware() (resp []datatypes.Hardware, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getDownlinkNetworkHardware", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding all servers attached to a piece of network hardware.
+func (r Hardware_SecurityModule750) GetDownlinkServers() (resp []datatypes.Hardware, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getDownlinkServers", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding all virtual guests attached to a piece of network hardware.
+func (r Hardware_SecurityModule750) GetDownlinkVirtualGuests() (resp []datatypes.Virtual_Guest, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getDownlinkVirtualGuests", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve All hardware downstream from a network device.
+func (r Hardware_SecurityModule750) GetDownstreamHardwareBindings() (resp []datatypes.Network_Component_Uplink_Hardware, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getDownstreamHardwareBindings", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve All network hardware downstream from the selected piece of hardware.
+func (r Hardware_SecurityModule750) GetDownstreamNetworkHardware() (resp []datatypes.Hardware, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getDownstreamNetworkHardware", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve All network hardware with monitoring warnings or errors that are downstream from the selected piece of hardware.
+func (r Hardware_SecurityModule750) GetDownstreamNetworkHardwareWithIncidents() (resp []datatypes.Hardware, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getDownstreamNetworkHardwareWithIncidents", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding all servers attached downstream to a piece of network hardware.
+func (r Hardware_SecurityModule750) GetDownstreamServers() (resp []datatypes.Hardware, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getDownstreamServers", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding all virtual guests attached to a piece of network hardware.
+func (r Hardware_SecurityModule750) GetDownstreamVirtualGuests() (resp []datatypes.Virtual_Guest, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getDownstreamVirtualGuests", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The drive controllers contained within a piece of hardware.
+func (r Hardware_SecurityModule750) GetDriveControllers() (resp []datatypes.Hardware_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getDriveControllers", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding a piece of hardware's associated EVault network storage service account.
+func (r Hardware_SecurityModule750) GetEvaultNetworkStorage() (resp []datatypes.Network_Storage, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getEvaultNetworkStorage", nil, &r.Options, &resp)
+	return
+}
+
+// Get the subnets associated with this server that are protectable by a network component firewall.
+func (r Hardware_SecurityModule750) GetFirewallProtectableSubnets() (resp []datatypes.Network_Subnet, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getFirewallProtectableSubnets", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding a piece of hardware's firewall services.
+func (r Hardware_SecurityModule750) GetFirewallServiceComponent() (resp datatypes.Network_Component_Firewall, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getFirewallServiceComponent", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Defines the fixed components in a fixed configuration bare metal server.
+func (r Hardware_SecurityModule750) GetFixedConfigurationPreset() (resp datatypes.Product_Package_Preset, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getFixedConfigurationPreset", nil, &r.Options, &resp)
+	return
+}
+
+// Use this method to return an array of public bandwidth utilization records between a given date range.
+//
+// This method represents the NEW version of getFrontendBandwidthUse
+func (r Hardware_SecurityModule750) GetFrontendBandwidthUsage(startDate *datatypes.Time, endDate *datatypes.Time) (resp []datatypes.Metric_Tracking_Object_Data, err error) {
+	params := []interface{}{
+		startDate,
+		endDate,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getFrontendBandwidthUsage", params, &r.Options, &resp)
+	return
+}
+
+// Use this method to return an array of public bandwidth utilization records between a given date range.
+func (r Hardware_SecurityModule750) GetFrontendBandwidthUse(startDate *datatypes.Time, endDate *datatypes.Time) (resp []datatypes.Network_Bandwidth_Version1_Usage_Detail, err error) {
+	params := []interface{}{
+		startDate,
+		endDate,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getFrontendBandwidthUse", params, &r.Options, &resp)
+	return
+}
+
+// The '''getFrontendIncomingBandwidth''' method retrieves the amount of incoming public network traffic used by a server between the given start and end date parameters. When entering the ''dateTime'' parameter, only the month, day and year of the start and end dates are required - the time (hour, minute and second) are set to midnight by default and cannot be changed. The amount of bandwidth retrieved is measured in gigabytes (GB).
+func (r Hardware_SecurityModule750) GetFrontendIncomingBandwidth(startDate *datatypes.Time, endDate *datatypes.Time) (resp datatypes.Float64, err error) {
+	params := []interface{}{
+		startDate,
+		endDate,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getFrontendIncomingBandwidth", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve A piece of hardware's front-end or public network components.
+func (r Hardware_SecurityModule750) GetFrontendNetworkComponents() (resp []datatypes.Network_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getFrontendNetworkComponents", nil, &r.Options, &resp)
+	return
+}
+
+// The '''getFrontendOutgoingBandwidth''' method retrieves the amount of outgoing public network traffic used by a server between the given start and end date parameters. The ''dateTime'' parameter requires only the day, month and year to be entered - the time (hour, minute and second) are set to midnight be default in order to gather the data for the entire start and end date indicated in the parameter. The amount of bandwidth retrieved is measured in gigabytes (GB).
+func (r Hardware_SecurityModule750) GetFrontendOutgoingBandwidth(startDate *datatypes.Time, endDate *datatypes.Time) (resp datatypes.Float64, err error) {
+	params := []interface{}{
+		startDate,
+		endDate,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getFrontendOutgoingBandwidth", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve A hardware's frontend or public router.
+func (r Hardware_SecurityModule750) GetFrontendRouters() (resp []datatypes.Hardware, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getFrontendRouters", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A hardware's universally unique identifier.
+func (r Hardware_SecurityModule750) GetGlobalIdentifier() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getGlobalIdentifier", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The hard drives contained within a piece of hardware.
+func (r Hardware_SecurityModule750) GetHardDrives() (resp []datatypes.Hardware_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getHardDrives", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve a server by searching for the primary IP address.
+func (r Hardware_SecurityModule750) GetHardwareByIpAddress(ipAddress *string) (resp datatypes.Hardware_Server, err error) {
+	params := []interface{}{
+		ipAddress,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getHardwareByIpAddress", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve The chassis that a piece of hardware is housed in.
+func (r Hardware_SecurityModule750) GetHardwareChassis() (resp datatypes.Hardware_Chassis, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getHardwareChassis", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A hardware's function.
+func (r Hardware_SecurityModule750) GetHardwareFunction() (resp datatypes.Hardware_Function, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getHardwareFunction", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A hardware's function.
+func (r Hardware_SecurityModule750) GetHardwareFunctionDescription() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getHardwareFunctionDescription", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A hardware's status.
+func (r Hardware_SecurityModule750) GetHardwareStatus() (resp datatypes.Hardware_Status, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getHardwareStatus", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Determine in hardware object has TPM enabled.
+func (r Hardware_SecurityModule750) GetHasTrustedPlatformModuleBillingItemFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getHasTrustedPlatformModuleBillingItemFlag", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding a host IPS software component object.
+func (r Hardware_SecurityModule750) GetHostIpsSoftwareComponent() (resp datatypes.Software_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getHostIpsSoftwareComponent", nil, &r.Options, &resp)
+	return
+}
+
+// The '''getHourlyBandwidth''' method retrieves all bandwidth updates hourly for the specified hardware. Because the potential number of data points can become excessive, the method limits the user to obtain data in 24-hour intervals. The required ''dateTime'' parameter is used as the starting point for the query and will be calculated for the 24-hour period starting with the specified date and time. For example, entering a parameter of
+//
+// '02/01/2008 0:00'
+//
+// results in a return of all bandwidth data for the entire day of February 1, 2008, as 0:00 specifies a midnight start date. Please note that the time entered should be completed using a 24-hour clock (military time, astronomical time).
+//
+// For data spanning more than a single 24-hour period, refer to the getBandwidthData function on the metricTrackingObject for the piece of hardware.
+func (r Hardware_SecurityModule750) GetHourlyBandwidth(mode *string, day *datatypes.Time) (resp []datatypes.Metric_Tracking_Object_Data, err error) {
+	params := []interface{}{
+		mode,
+		day,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getHourlyBandwidth", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve A server's hourly billing status.
+func (r Hardware_SecurityModule750) GetHourlyBillingFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getHourlyBillingFlag", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The sum of all the inbound network traffic data for the last 30 days.
+func (r Hardware_SecurityModule750) GetInboundBandwidthUsage() (resp datatypes.Float64, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getInboundBandwidthUsage", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The total private inbound bandwidth for this hardware for the current billing cycle.
+func (r Hardware_SecurityModule750) GetInboundPrivateBandwidthUsage() (resp datatypes.Float64, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getInboundPrivateBandwidthUsage", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The total public inbound bandwidth for this hardware for the current billing cycle.
+func (r Hardware_SecurityModule750) GetInboundPublicBandwidthUsage() (resp datatypes.Float64, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getInboundPublicBandwidthUsage", nil, &r.Options, &resp)
+	return
+}
+
+// Return a collection of SoftLayer_Item_Price objects from a collection of SoftLayer_Software_Description
+func (r Hardware_SecurityModule750) GetItemPricesFromSoftwareDescriptions(softwareDescriptions []datatypes.Software_Description, includeTranslationsFlag *bool, returnAllPricesFlag *bool) (resp []datatypes.Product_Item, err error) {
+	params := []interface{}{
+		softwareDescriptions,
+		includeTranslationsFlag,
+		returnAllPricesFlag,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getItemPricesFromSoftwareDescriptions", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve The last transaction that a server's operating system was loaded.
+func (r Hardware_SecurityModule750) GetLastOperatingSystemReload() (resp datatypes.Provisioning_Version1_Transaction, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getLastOperatingSystemReload", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding the last transaction a server performed.
+func (r Hardware_SecurityModule750) GetLastTransaction() (resp datatypes.Provisioning_Version1_Transaction, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getLastTransaction", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A piece of hardware's latest network monitoring incident.
+func (r Hardware_SecurityModule750) GetLatestNetworkMonitorIncident() (resp datatypes.Network_Monitor_Version1_Incident, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getLatestNetworkMonitorIncident", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Where a piece of hardware is located within SoftLayer's location hierarchy.
+func (r Hardware_SecurityModule750) GetLocation() (resp datatypes.Location, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getLocation", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Hardware_SecurityModule750) GetLocationPathString() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getLocationPathString", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding a lockbox account associated with a server.
+func (r Hardware_SecurityModule750) GetLockboxNetworkStorage() (resp datatypes.Network_Storage, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getLockboxNetworkStorage", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A flag indicating that the hardware is a managed resource.
+func (r Hardware_SecurityModule750) GetManagedResourceFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getManagedResourceFlag", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve the remote management network component attached with this server.
+func (r Hardware_SecurityModule750) GetManagementNetworkComponent() (resp datatypes.Network_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getManagementNetworkComponent", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding a piece of hardware's memory.
+func (r Hardware_SecurityModule750) GetMemory() (resp []datatypes.Hardware_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getMemory", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The amount of memory a piece of hardware has, measured in gigabytes.
+func (r Hardware_SecurityModule750) GetMemoryCapacity() (resp uint, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getMemoryCapacity", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A piece of hardware's metric tracking object.
+func (r Hardware_SecurityModule750) GetMetricTrackingObject() (resp datatypes.Metric_Tracking_Object_HardwareServer, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getMetricTrackingObject", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The metric tracking object id for this server.
+func (r Hardware_SecurityModule750) GetMetricTrackingObjectId() (resp int, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getMetricTrackingObjectId", nil, &r.Options, &resp)
+	return
+}
+
+// Returns open monitoring alarms for a given time period
+func (r Hardware_SecurityModule750) GetMonitoringActiveAlarms(startDate *datatypes.Time, endDate *datatypes.Time) (resp []datatypes.Container_Monitoring_Alarm_History, err error) {
+	params := []interface{}{
+		startDate,
+		endDate,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getMonitoringActiveAlarms", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding the monitoring agents associated with a piece of hardware.
+func (r Hardware_SecurityModule750) GetMonitoringAgents() (resp []datatypes.Monitoring_Agent, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getMonitoringAgents", nil, &r.Options, &resp)
+	return
+}
+
+// Returns closed monitoring alarms for a given time period
+func (r Hardware_SecurityModule750) GetMonitoringClosedAlarms(startDate *datatypes.Time, endDate *datatypes.Time) (resp []datatypes.Container_Monitoring_Alarm_History, err error) {
+	params := []interface{}{
+		startDate,
+		endDate,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getMonitoringClosedAlarms", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding the hardware's monitoring robot.
+func (r Hardware_SecurityModule750) GetMonitoringRobot() (resp datatypes.Monitoring_Robot, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getMonitoringRobot", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding a piece of hardware's network monitoring services.
+func (r Hardware_SecurityModule750) GetMonitoringServiceComponent() (resp datatypes.Network_Monitor_Version1_Query_Host_Stratum, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getMonitoringServiceComponent", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The monitoring service flag eligibility status for a piece of hardware.
+func (r Hardware_SecurityModule750) GetMonitoringServiceEligibilityFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getMonitoringServiceEligibilityFlag", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The service flag status for a piece of hardware.
+func (r Hardware_SecurityModule750) GetMonitoringServiceFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getMonitoringServiceFlag", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The monitoring notification objects for this hardware. Each object links this hardware instance to a user account that will be notified if monitoring on this hardware object fails
+func (r Hardware_SecurityModule750) GetMonitoringUserNotification() (resp []datatypes.User_Customer_Notification_Hardware, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getMonitoringUserNotification", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding a piece of hardware's motherboard.
+func (r Hardware_SecurityModule750) GetMotherboard() (resp datatypes.Hardware_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getMotherboard", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding a piece of hardware's network cards.
+func (r Hardware_SecurityModule750) GetNetworkCards() (resp []datatypes.Hardware_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getNetworkCards", nil, &r.Options, &resp)
+	return
+}
+
+// Get the IP addresses associated with this server that are protectable by a network component firewall. Note, this may not return all values for IPv6 subnets for this server. Please use getFirewallProtectableSubnets to get all protectable subnets.
+func (r Hardware_SecurityModule750) GetNetworkComponentFirewallProtectableIpAddresses() (resp []datatypes.Network_Subnet_IpAddress, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getNetworkComponentFirewallProtectableIpAddresses", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Returns a hardware's network components.
+func (r Hardware_SecurityModule750) GetNetworkComponents() (resp []datatypes.Network_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getNetworkComponents", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The gateway member if this device is part of a network gateway.
+func (r Hardware_SecurityModule750) GetNetworkGatewayMember() (resp datatypes.Network_Gateway_Member, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getNetworkGatewayMember", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Whether or not this device is part of a network gateway.
+func (r Hardware_SecurityModule750) GetNetworkGatewayMemberFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getNetworkGatewayMemberFlag", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A piece of hardware's network management IP address.
+func (r Hardware_SecurityModule750) GetNetworkManagementIpAddress() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getNetworkManagementIpAddress", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve All servers with failed monitoring that are attached downstream to a piece of hardware.
+func (r Hardware_SecurityModule750) GetNetworkMonitorAttachedDownHardware() (resp []datatypes.Hardware, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getNetworkMonitorAttachedDownHardware", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Virtual guests that are attached downstream to a hardware that have failed monitoring
+func (r Hardware_SecurityModule750) GetNetworkMonitorAttachedDownVirtualGuests() (resp []datatypes.Virtual_Guest, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getNetworkMonitorAttachedDownVirtualGuests", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The status of all of a piece of hardware's network monitoring incidents.
+func (r Hardware_SecurityModule750) GetNetworkMonitorIncidents() (resp []datatypes.Network_Monitor_Version1_Incident, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getNetworkMonitorIncidents", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding a piece of hardware's network monitors.
+func (r Hardware_SecurityModule750) GetNetworkMonitors() (resp []datatypes.Network_Monitor_Version1_Query_Host, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getNetworkMonitors", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The value of a hardware's network status attribute.
+func (r Hardware_SecurityModule750) GetNetworkStatus() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getNetworkStatus", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The hardware's related network status attribute.
+func (r Hardware_SecurityModule750) GetNetworkStatusAttribute() (resp datatypes.Hardware_Attribute, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getNetworkStatusAttribute", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding a piece of hardware's associated network storage service account.
+func (r Hardware_SecurityModule750) GetNetworkStorage() (resp []datatypes.Network_Storage, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getNetworkStorage", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The network virtual LANs (VLANs) associated with a piece of hardware's network components.
+func (r Hardware_SecurityModule750) GetNetworkVlans() (resp []datatypes.Network_Vlan, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getNetworkVlans", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A hardware's allotted bandwidth for the next billing cycle (measured in GB).
+func (r Hardware_SecurityModule750) GetNextBillingCycleBandwidthAllocation() (resp datatypes.Float64, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getNextBillingCycleBandwidthAllocation", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Hardware_SecurityModule750) GetNotesHistory() (resp []datatypes.Hardware_Note, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getNotesHistory", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Hardware_SecurityModule750) GetObject() (resp datatypes.Hardware_SecurityModule750, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve An open ticket requesting cancellation of this server, if one exists.
+func (r Hardware_SecurityModule750) GetOpenCancellationTicket() (resp datatypes.Ticket, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getOpenCancellationTicket", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding a piece of hardware's operating system.
+func (r Hardware_SecurityModule750) GetOperatingSystem() (resp datatypes.Software_Component_OperatingSystem, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getOperatingSystem", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A hardware's operating system software description.
+func (r Hardware_SecurityModule750) GetOperatingSystemReferenceCode() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getOperatingSystemReferenceCode", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The sum of all the outbound network traffic data for the last 30 days.
+func (r Hardware_SecurityModule750) GetOutboundBandwidthUsage() (resp datatypes.Float64, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getOutboundBandwidthUsage", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The total private outbound bandwidth for this hardware for the current billing cycle.
+func (r Hardware_SecurityModule750) GetOutboundPrivateBandwidthUsage() (resp datatypes.Float64, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getOutboundPrivateBandwidthUsage", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The total public outbound bandwidth for this hardware for the current billing cycle.
+func (r Hardware_SecurityModule750) GetOutboundPublicBandwidthUsage() (resp datatypes.Float64, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getOutboundPublicBandwidthUsage", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Whether the bandwidth usage for this hardware for the current billing cycle exceeds the allocation.
+func (r Hardware_SecurityModule750) GetOverBandwidthAllocationFlag() (resp int, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getOverBandwidthAllocationFlag", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve a server's hardware state via its internal sensors. Remote sensor data is transmitted to the SoftLayer API by way of the server's remote management card. Sensor data measures system temperatures, voltages, and other local server settings. Sensor data is cached for 30 seconds. Calls made to getSensorData for the same server within 30 seconds of each other will return the same data. Subsequent calls will return new data once the cache expires.
+func (r Hardware_SecurityModule750) GetPMInfo() (resp []datatypes.Container_RemoteManagement_PmInfo, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPMInfo", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Blade Bay
+func (r Hardware_SecurityModule750) GetParentBay() (resp datatypes.Hardware_Blade, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getParentBay", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Parent Hardware.
+func (r Hardware_SecurityModule750) GetParentHardware() (resp datatypes.Hardware, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getParentHardware", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding the Point of Presence (PoP) location in which a piece of hardware resides.
+func (r Hardware_SecurityModule750) GetPointOfPresenceLocation() (resp datatypes.Location, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPointOfPresenceLocation", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The power components for a hardware object.
+func (r Hardware_SecurityModule750) GetPowerComponents() (resp []datatypes.Hardware_Power_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPowerComponents", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding a piece of hardware's power supply.
+func (r Hardware_SecurityModule750) GetPowerSupply() (resp []datatypes.Hardware_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPowerSupply", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The hardware's primary private IP address.
+func (r Hardware_SecurityModule750) GetPrimaryBackendIpAddress() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPrimaryBackendIpAddress", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding the hardware's primary back-end network component.
+func (r Hardware_SecurityModule750) GetPrimaryBackendNetworkComponent() (resp datatypes.Network_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPrimaryBackendNetworkComponent", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Hardware_SecurityModule750) GetPrimaryDriveSize() (resp int, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPrimaryDriveSize", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The hardware's primary public IP address.
+func (r Hardware_SecurityModule750) GetPrimaryIpAddress() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPrimaryIpAddress", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding the hardware's primary public network component.
+func (r Hardware_SecurityModule750) GetPrimaryNetworkComponent() (resp datatypes.Network_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPrimaryNetworkComponent", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve a graph of a server's private network bandwidth usage over the specified timeframe. If no timeframe is specified then getPublicBandwidthGraphImage retrieves the last 24 hours of public bandwidth usage. getPrivateBandwidthGraphImage returns a PNG image measuring 827 pixels by 293 pixels.
+func (r Hardware_SecurityModule750) GetPrivateBandwidthData(startTime *int, endTime *int) (resp []datatypes.Metric_Tracking_Object_Data, err error) {
+	params := []interface{}{
+		startTime,
+		endTime,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPrivateBandwidthData", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve a brief summary of a server's private network bandwidth usage. getPrivateBandwidthDataSummary retrieves a server's bandwidth allocation for its billing period, its estimated usage during its billing period, and an estimation of how much bandwidth it will use during its billing period based on its current usage. A server's projected bandwidth usage increases in accuracy as it progresses through its billing period.
+func (r Hardware_SecurityModule750) GetPrivateBandwidthDataSummary() (resp datatypes.Container_Network_Bandwidth_Data_Summary, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPrivateBandwidthDataSummary", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve a graph of a server's private network bandwidth usage over the specified time frame. If no time frame is specified then getPublicBandwidthGraphImage retrieves the last 24 hours of public bandwidth usage. getPublicBandwidthGraphImage returns a PNG image
+func (r Hardware_SecurityModule750) GetPrivateBandwidthGraphImage(startTime *string, endTime *string) (resp []byte, err error) {
+	params := []interface{}{
+		startTime,
+		endTime,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPrivateBandwidthGraphImage", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve A server's primary private IP address.
+func (r Hardware_SecurityModule750) GetPrivateIpAddress() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPrivateIpAddress", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve the private network component attached with this server.
+func (r Hardware_SecurityModule750) GetPrivateNetworkComponent() (resp datatypes.Network_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPrivateNetworkComponent", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Whether the hardware only has access to the private network.
+func (r Hardware_SecurityModule750) GetPrivateNetworkOnlyFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPrivateNetworkOnlyFlag", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve the backend VLAN for the primary IP address of the server
+func (r Hardware_SecurityModule750) GetPrivateVlan() (resp datatypes.Network_Vlan, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPrivateVlan", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve a backend network VLAN by searching for an IP address
+func (r Hardware_SecurityModule750) GetPrivateVlanByIpAddress(ipAddress *string) (resp datatypes.Network_Vlan, err error) {
+	params := []interface{}{
+		ipAddress,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPrivateVlanByIpAddress", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve The total number of processor cores, summed from all processors that are attached to a piece of hardware
+func (r Hardware_SecurityModule750) GetProcessorCoreAmount() (resp uint, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getProcessorCoreAmount", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The total number of physical processor cores, summed from all processors that are attached to a piece of hardware
+func (r Hardware_SecurityModule750) GetProcessorPhysicalCoreAmount() (resp uint, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getProcessorPhysicalCoreAmount", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding a piece of hardware's processors.
+func (r Hardware_SecurityModule750) GetProcessors() (resp []datatypes.Hardware_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getProcessors", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Whether the bandwidth usage for this hardware for the current billing cycle is projected to exceed the allocation.
+func (r Hardware_SecurityModule750) GetProjectedOverBandwidthAllocationFlag() (resp int, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getProjectedOverBandwidthAllocationFlag", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The projected public outbound bandwidth for this hardware for the current billing cycle.
+func (r Hardware_SecurityModule750) GetProjectedPublicBandwidthUsage() (resp datatypes.Float64, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getProjectedPublicBandwidthUsage", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Hardware_SecurityModule750) GetProvisionDate() (resp datatypes.Time, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getProvisionDate", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve a graph of a server's public network bandwidth usage over the specified timeframe. If no timeframe is specified then getPublicBandwidthGraphImage retrieves the last 24 hours of public bandwidth usage. getPublicBandwidthGraphImage returns a PNG image measuring 827 pixels by 293 pixels.
+func (r Hardware_SecurityModule750) GetPublicBandwidthData(startTime *int, endTime *int) (resp []datatypes.Metric_Tracking_Object_Data, err error) {
+	params := []interface{}{
+		startTime,
+		endTime,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPublicBandwidthData", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve a brief summary of a server's public network bandwidth usage. getPublicBandwidthDataSummary retrieves a server's bandwidth allocation for its billing period, its estimated usage during its billing period, and an estimation of how much bandwidth it will use during its billing period based on its current usage. A server's projected bandwidth usage increases in accuracy as it progresses through its billing period.
+func (r Hardware_SecurityModule750) GetPublicBandwidthDataSummary() (resp datatypes.Container_Network_Bandwidth_Data_Summary, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPublicBandwidthDataSummary", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve a graph of a server's public network bandwidth usage over the specified time frame. If no time frame is specified then getPublicBandwidthGraphImage retrieves the last 24 hours of public bandwidth usage. getPublicBandwidthGraphImage returns a PNG image measuring 827 pixels by 293 pixels.  THIS METHOD GENERATES GRAPHS BASED ON THE NEW DATA WAREHOUSE REPOSITORY.
+func (r Hardware_SecurityModule750) GetPublicBandwidthGraphImage(startTime *datatypes.Time, endTime *datatypes.Time) (resp []byte, err error) {
+	params := []interface{}{
+		startTime,
+		endTime,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPublicBandwidthGraphImage", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve the total number of bytes used by a server over a specified time period via the data warehouse tracking objects for this hardware.
+func (r Hardware_SecurityModule750) GetPublicBandwidthTotal(startTime *int, endTime *int) (resp uint, err error) {
+	params := []interface{}{
+		startTime,
+		endTime,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPublicBandwidthTotal", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve a SoftLayer server's public network component. Some servers are only connected to the private network and may not have a public network component. In that case getPublicNetworkComponent returns a null object.
+func (r Hardware_SecurityModule750) GetPublicNetworkComponent() (resp datatypes.Network_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPublicNetworkComponent", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve the frontend VLAN for the primary IP address of the server
+func (r Hardware_SecurityModule750) GetPublicVlan() (resp datatypes.Network_Vlan, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPublicVlan", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve the frontend network Vlan by searching the hostname of a server
+func (r Hardware_SecurityModule750) GetPublicVlanByHostname(hostname *string) (resp datatypes.Network_Vlan, err error) {
+	params := []interface{}{
+		hostname,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getPublicVlanByHostname", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Hardware_SecurityModule750) GetRack() (resp datatypes.Location, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getRack", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The RAID controllers contained within a piece of hardware.
+func (r Hardware_SecurityModule750) GetRaidControllers() (resp []datatypes.Hardware_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getRaidControllers", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Recent events that impact this hardware.
+func (r Hardware_SecurityModule750) GetRecentEvents() (resp []datatypes.Notification_Occurrence_Event, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getRecentEvents", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The last five commands issued to the server's remote management card.
+func (r Hardware_SecurityModule750) GetRecentRemoteManagementCommands() (resp []datatypes.Hardware_Component_RemoteManagement_Command_Request, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getRecentRemoteManagementCommands", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Hardware_SecurityModule750) GetRegionalInternetRegistry() (resp datatypes.Network_Regional_Internet_Registry, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getRegionalInternetRegistry", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A server's remote management card.
+func (r Hardware_SecurityModule750) GetRemoteManagement() (resp datatypes.Hardware_Component_RemoteManagement, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getRemoteManagement", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve User credentials to issue commands and/or interact with the server's remote management card.
+func (r Hardware_SecurityModule750) GetRemoteManagementAccounts() (resp []datatypes.Hardware_Component_RemoteManagement_User, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getRemoteManagementAccounts", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A hardware's associated remote management component. This is normally IPMI.
+func (r Hardware_SecurityModule750) GetRemoteManagementComponent() (resp datatypes.Network_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getRemoteManagementComponent", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve User(s) who have access to issue commands and/or interact with the server's remote management card.
+func (r Hardware_SecurityModule750) GetRemoteManagementUsers() (resp []datatypes.Hardware_Component_RemoteManagement_User, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getRemoteManagementUsers", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Hardware_SecurityModule750) GetResourceConfigurations() (resp []datatypes.Hardware_Resource_Configuration, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getResourceConfigurations", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Hardware_SecurityModule750) GetResourceGroupMemberReferences() (resp []datatypes.Resource_Group_Member, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getResourceGroupMemberReferences", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Hardware_SecurityModule750) GetResourceGroupRoles() (resp []datatypes.Resource_Group_Role, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getResourceGroupRoles", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The resource groups in which this hardware is a member.
+func (r Hardware_SecurityModule750) GetResourceGroups() (resp []datatypes.Resource_Group, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getResourceGroups", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve the reverse domain records associated with this server.
+func (r Hardware_SecurityModule750) GetReverseDomainRecords() (resp []datatypes.Dns_Domain, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getReverseDomainRecords", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A hardware's routers.
+func (r Hardware_SecurityModule750) GetRouters() (resp []datatypes.Hardware, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getRouters", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Collection of scale assets this hardware corresponds to.
+func (r Hardware_SecurityModule750) GetScaleAssets() (resp []datatypes.Scale_Asset, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getScaleAssets", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding a piece of hardware's vulnerability scan requests.
+func (r Hardware_SecurityModule750) GetSecurityScanRequests() (resp []datatypes.Network_Security_Scanner_Request, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getSecurityScanRequests", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve a server's hardware state via its internal sensors. Remote sensor data is transmitted to the SoftLayer API by way of the server's remote management card. Sensor data measures system temperatures, voltages, and other local server settings. Sensor data is cached for 30 seconds. Calls made to getSensorData for the same server within 30 seconds of each other will return the same data. Subsequent calls will return new data once the cache expires.
+func (r Hardware_SecurityModule750) GetSensorData() (resp []datatypes.Container_RemoteManagement_SensorReading, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getSensorData", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieves the raw data returned from the server's remote management card.  For more details of what is returned please refer to the getSensorData method.  Along with the raw data, graphs for the cpu and system temperatures and fan speeds are also returned.
+func (r Hardware_SecurityModule750) GetSensorDataWithGraphs() (resp datatypes.Container_RemoteManagement_SensorReadingsWithGraphs, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getSensorDataWithGraphs", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve a server's hardware components, software, and network components. getServerDetails is an aggregation function that combines the results of [[SoftLayer_Hardware_Server::getComponents]], [[SoftLayer_Hardware_Server::getSoftware]], and [[SoftLayer_Hardware_Server::getNetworkComponents]] in a single container.
+func (r Hardware_SecurityModule750) GetServerDetails() (resp datatypes.Container_Hardware_Server_Details, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getServerDetails", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve the server's fan speeds and displays them using tachometer graphs.  Data used to construct graphs is retrieved from the server's remote management card.  All graphs returned will have a title associated with it.
+func (r Hardware_SecurityModule750) GetServerFanSpeedGraphs() (resp []datatypes.Container_RemoteManagement_Graphs_SensorSpeed, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getServerFanSpeedGraphs", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieves the power state for the server.  The server's power status is retrieved from its remote management card.  This will return 'on' or 'off'.
+func (r Hardware_SecurityModule750) GetServerPowerState() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getServerPowerState", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding the server room in which the hardware is located.
+func (r Hardware_SecurityModule750) GetServerRoom() (resp datatypes.Location, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getServerRoom", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve the server's temperature and displays them using thermometer graphs.  Temperatures retrieved are CPU(s) and system temperatures.  Data used to construct graphs is retrieved from the server's remote management card.  All graphs returned will have a title associated with it.
+func (r Hardware_SecurityModule750) GetServerTemperatureGraphs() (resp []datatypes.Container_RemoteManagement_Graphs_SensorTemperature, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getServerTemperatureGraphs", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding the piece of hardware's service provider.
+func (r Hardware_SecurityModule750) GetServiceProvider() (resp datatypes.Service_Provider, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getServiceProvider", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding a piece of hardware's installed software.
+func (r Hardware_SecurityModule750) GetSoftwareComponents() (resp []datatypes.Software_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getSoftwareComponents", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Determine if hardware object has Software Guard Extension (SGX) enabled.
+func (r Hardware_SecurityModule750) GetSoftwareGuardExtensionEnabled() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getSoftwareGuardExtensionEnabled", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding the billing item for a spare pool server.
+func (r Hardware_SecurityModule750) GetSparePoolBillingItem() (resp datatypes.Billing_Item_Hardware, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getSparePoolBillingItem", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve SSH keys to be installed on the server during provisioning or an OS reload.
+func (r Hardware_SecurityModule750) GetSshKeys() (resp []datatypes.Security_Ssh_Key, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getSshKeys", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A server's remote management card used for statistics.
+func (r Hardware_SecurityModule750) GetStatisticsRemoteManagement() (resp datatypes.Hardware_Component_RemoteManagement, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getStatisticsRemoteManagement", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Hardware_SecurityModule750) GetStorageNetworkComponents() (resp []datatypes.Network_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getStorageNetworkComponents", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Hardware_SecurityModule750) GetTagReferences() (resp []datatypes.Tag_Reference, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getTagReferences", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Hardware_SecurityModule750) GetTopLevelLocation() (resp datatypes.Location, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getTopLevelLocation", nil, &r.Options, &resp)
+	return
+}
+
+//
+// This method will query transaction history for a piece of hardware.
+func (r Hardware_SecurityModule750) GetTransactionHistory() (resp []datatypes.Provisioning_Version1_Transaction_History, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getTransactionHistory", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve a list of upgradeable items available to this piece of hardware. Currently, getUpgradeItemPrices retrieves upgrades available for a server's memory, hard drives, network port speed, bandwidth allocation and GPUs.
+func (r Hardware_SecurityModule750) GetUpgradeItemPrices() (resp []datatypes.Product_Item_Price, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getUpgradeItemPrices", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve An account's associated upgrade request object, if any.
+func (r Hardware_SecurityModule750) GetUpgradeRequest() (resp datatypes.Product_Upgrade_Request, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getUpgradeRequest", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The network device connected to a piece of hardware.
+func (r Hardware_SecurityModule750) GetUplinkHardware() (resp datatypes.Hardware, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getUplinkHardware", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding the network component that is one level higher than a piece of hardware on the network infrastructure.
+func (r Hardware_SecurityModule750) GetUplinkNetworkComponents() (resp []datatypes.Network_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getUplinkNetworkComponents", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A string containing custom user data for a hardware order.
+func (r Hardware_SecurityModule750) GetUserData() (resp []datatypes.Hardware_Attribute, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getUserData", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A list of users that have access to this computing instance.
+func (r Hardware_SecurityModule750) GetUsers() (resp []datatypes.User_Customer, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getUsers", nil, &r.Options, &resp)
+	return
+}
+
+// This method will return the list of block device template groups that are valid to the host. For instance, it will only retrieve FLEX images.
+func (r Hardware_SecurityModule750) GetValidBlockDeviceTemplateGroups(visibility *string) (resp []datatypes.Virtual_Guest_Block_Device_Template_Group, err error) {
+	params := []interface{}{
+		visibility,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getValidBlockDeviceTemplateGroups", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding the virtual chassis for a piece of hardware.
+func (r Hardware_SecurityModule750) GetVirtualChassis() (resp datatypes.Hardware_Group, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getVirtualChassis", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding the virtual chassis siblings for a piece of hardware.
+func (r Hardware_SecurityModule750) GetVirtualChassisSiblings() (resp []datatypes.Hardware, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getVirtualChassisSiblings", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A hardware server's virtual servers.
+func (r Hardware_SecurityModule750) GetVirtualGuests() (resp []datatypes.Virtual_Guest, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getVirtualGuests", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A piece of hardware's virtual host record.
+func (r Hardware_SecurityModule750) GetVirtualHost() (resp datatypes.Virtual_Host, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getVirtualHost", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding a piece of hardware's virtual software licenses.
+func (r Hardware_SecurityModule750) GetVirtualLicenses() (resp []datatypes.Software_VirtualLicense, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getVirtualLicenses", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Information regarding the bandwidth allotment to which a piece of hardware belongs.
+func (r Hardware_SecurityModule750) GetVirtualRack() (resp datatypes.Network_Bandwidth_Version1_Allotment, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getVirtualRack", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The name of the bandwidth allotment belonging to a piece of hardware.
+func (r Hardware_SecurityModule750) GetVirtualRackId() (resp int, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getVirtualRackId", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The name of the bandwidth allotment belonging to a piece of hardware.
+func (r Hardware_SecurityModule750) GetVirtualRackName() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getVirtualRackName", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A piece of hardware's virtualization platform software.
+func (r Hardware_SecurityModule750) GetVirtualizationPlatform() (resp datatypes.Software_Component, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getVirtualizationPlatform", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve a list of Windows updates available for a server from the local SoftLayer Windows Server Update Services (WSUS) server. Windows servers provisioned by SoftLayer are configured to use the local WSUS server via the private network by default.
+func (r Hardware_SecurityModule750) GetWindowsUpdateAvailableUpdates() (resp []datatypes.Container_Utility_Microsoft_Windows_UpdateServices_UpdateItem, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getWindowsUpdateAvailableUpdates", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve a list of Windows updates installed on a server as reported by the local SoftLayer Windows Server Update Services (WSUS) server. Windows servers provisioned by SoftLayer are configured to use the local WSUS server via the private network by default.
+func (r Hardware_SecurityModule750) GetWindowsUpdateInstalledUpdates() (resp []datatypes.Container_Utility_Microsoft_Windows_UpdateServices_UpdateItem, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getWindowsUpdateInstalledUpdates", nil, &r.Options, &resp)
+	return
+}
+
+// This method returns an update status record for this server.  That record will specify if the server is missing updates, or has updates that must be reinstalled or require a reboot to go into affect.
+func (r Hardware_SecurityModule750) GetWindowsUpdateStatus() (resp datatypes.Container_Utility_Microsoft_Windows_UpdateServices_Status, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getWindowsUpdateStatus", nil, &r.Options, &resp)
+	return
+}
+
+// The '''importVirtualHost''' method attempts to import the host record for the virtualization platform running on a server.
+func (r Hardware_SecurityModule750) ImportVirtualHost() (resp datatypes.Virtual_Host, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "importVirtualHost", nil, &r.Options, &resp)
+	return
+}
+
+// Idera Bare Metal Server Restore is a backup agent designed specifically for making full system restores made with Idera Server Backup.
+func (r Hardware_SecurityModule750) InitiateIderaBareMetalRestore() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "initiateIderaBareMetalRestore", nil, &r.Options, &resp)
+	return
+}
+
+// R1Soft Bare Metal Server Restore is an R1Soft disk agent designed specifically for making full system restores made with R1Soft CDP Server backup.
+func (r Hardware_SecurityModule750) InitiateR1SoftBareMetalRestore() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "initiateR1SoftBareMetalRestore", nil, &r.Options, &resp)
+	return
+}
+
+// Issues a ping command and returns the success (true) or failure (false) of the ping command.
+func (r Hardware_SecurityModule750) IsBackendPingable() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "isBackendPingable", nil, &r.Options, &resp)
+	return
+}
+
+// Issues a ping command and returns the success (true) or failure (false) of the ping command.
+func (r Hardware_SecurityModule750) IsPingable() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "isPingable", nil, &r.Options, &resp)
+	return
+}
+
+// Determine if the server runs any version of the Microsoft Windows operating systems. Return ''true'' if it does and ''false if otherwise.
+func (r Hardware_SecurityModule750) IsWindowsServer() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "isWindowsServer", nil, &r.Options, &resp)
+	return
+}
+
+// You can launch firmware updates by selecting from your server list. It will bring your server offline for approximately 20 minutes while the updates are in progress.
+//
+// In the event of a hardware failure during this test our datacenter engineers will be notified of the problem automatically. They will then replace any failed components to bring your server back online, and will be contacting you to ensure that impact on your server is minimal.
+func (r Hardware_SecurityModule750) MassFirmwareUpdate(hardwareIds []int, ipmi *bool, raidController *bool, bios *bool, harddrive *bool) (resp []datatypes.Container_Hardware_Server_Request, err error) {
+	params := []interface{}{
+		hardwareIds,
+		ipmi,
+		raidController,
+		bios,
+		harddrive,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "massFirmwareUpdate", params, &r.Options, &resp)
+	return
+}
+
+// Reloads current or customer specified operating system configuration.
+//
+// This service has a confirmation protocol for proceeding with the reload. To proceed with the reload without confirmation, simply pass in 'FORCE' as the token parameter. To proceed with the reload with confirmation, simply call the service with no parameter. A token string will be returned by this service. The token will remain active for 10 minutes. Use this token as the parameter to confirm that a reload is to be performed for the server.
+//
+// As a precaution, we strongly  recommend backing up all data before reloading the operating system. The reload will format the primary disk and will reconfigure the server to the current specifications on record.
+//
+// The reload will take AT MINIMUM 66 minutes.
+func (r Hardware_SecurityModule750) MassReloadOperatingSystem(hardwareIds []string, token *string, config *datatypes.Container_Hardware_Server_Configuration) (resp string, err error) {
+	params := []interface{}{
+		hardwareIds,
+		token,
+		config,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "massReloadOperatingSystem", params, &r.Options, &resp)
+	return
+}
+
+// The ability to place multiple bare metal servers in a state where they are powered down and ports closed yet still allocated to the customer as a part of the Spare Pool program.
+func (r Hardware_SecurityModule750) MassSparePool(hardwareIds []string, action *string, newOrder *bool) (resp []datatypes.Container_Hardware_Server_Request, err error) {
+	params := []interface{}{
+		hardwareIds,
+		action,
+		newOrder,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "massSparePool", params, &r.Options, &resp)
+	return
+}
+
+// Issues a ping command to the server and returns the ping response.
+func (r Hardware_SecurityModule750) Ping() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "ping", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Hardware_SecurityModule750) PopulateServerRam(hardwareId *int, ramSerialString *string) (err error) {
+	var resp datatypes.Void
+	params := []interface{}{
+		hardwareId,
+		ramSerialString,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "populateServerRam", params, &r.Options, &resp)
+	return
+}
+
+// Power off then power on the server via powerstrip.  The power cycle command is equivalent to unplugging the server from the powerstrip and then plugging the server back into the powerstrip.  This should only be used as a last resort.  If a reboot command has been issued successfully in the past 20 minutes, another remote management command (rebootSoft, rebootHard, powerOn, powerOff and powerCycle) will not be allowed. This is to avoid any type of server failures.
+func (r Hardware_SecurityModule750) PowerCycle() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "powerCycle", nil, &r.Options, &resp)
+	return
+}
+
+// This method will power off the server via the server's remote management card.
+func (r Hardware_SecurityModule750) PowerOff() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "powerOff", nil, &r.Options, &resp)
+	return
+}
+
+// Power on server via its remote management card.  If a reboot command has been issued successfully in the past 20 minutes, another remote management command (rebootSoft, rebootHard, powerOn, powerOff and powerCycle) will not be allowed.  This is to avoid any type of server failures.
+func (r Hardware_SecurityModule750) PowerOn() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "powerOn", nil, &r.Options, &resp)
+	return
+}
+
+// Attempts to reboot the server by issuing a reset (soft reboot) command to the server's remote management card. If the reset (soft reboot) attempt is unsuccessful, a power cycle command will be issued via the powerstrip. The power cycle command is equivalent to unplugging the server from the powerstrip and then plugging the server back into the powerstrip.  If a reboot command has been issued successfully in the past 20 minutes, another remote management command (rebootSoft, rebootHard, powerOn, powerOff and powerCycle) will not be allowed.  This is to avoid any type of server failures.
+func (r Hardware_SecurityModule750) RebootDefault() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "rebootDefault", nil, &r.Options, &resp)
+	return
+}
+
+// Reboot the server by issuing a cycle command to the server's remote management card.  This is equivalent to pressing the 'Reset' button on the server.  This command is issued immediately and will not wait for processes to shutdown. After this command is issued, the server may take a few moments to boot up as server may run system disks checks. If a reboot command has been issued successfully in the past 20 minutes, another remote management command (rebootSoft, rebootHard, powerOn, powerOff and powerCycle) will not be allowed.  This is to avoid any type of server failures.
+func (r Hardware_SecurityModule750) RebootHard() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "rebootHard", nil, &r.Options, &resp)
+	return
+}
+
+// Reboot the server by issuing a reset command to the server's remote management card.  This is a graceful reboot. The servers will allow all process to shutdown gracefully before rebooting.  If a reboot command has been issued successfully in the past 20 minutes, another remote management command (rebootSoft, rebootHard, powerOn, powerOff and powerCycle) will not be allowed.  This is to avoid any type of server failures.
+func (r Hardware_SecurityModule750) RebootSoft() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "rebootSoft", nil, &r.Options, &resp)
+	return
+}
+
+// Reloads current operating system configuration.
+//
+// This service has a confirmation protocol for proceeding with the reload. To proceed with the reload without confirmation, simply pass in 'FORCE' as the token parameter. To proceed with the reload with confirmation, simply call the service with no parameter. A token string will be returned by this service. The token will remain active for 10 minutes. Use this token as the parameter to confirm that a reload is to be performed for the server.
+//
+// As a precaution, we strongly  recommend backing up all data before reloading the operating system. The reload will format the primary disk and will reconfigure the server to the current specifications on record.
+//
+// The reload will take AT MINIMUM 66 minutes.
+func (r Hardware_SecurityModule750) ReloadCurrentOperatingSystemConfiguration(token *string) (resp string, err error) {
+	params := []interface{}{
+		token,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "reloadCurrentOperatingSystemConfiguration", params, &r.Options, &resp)
+	return
+}
+
+// Reloads current or customer specified operating system configuration.
+//
+// This service has a confirmation protocol for proceeding with the reload. To proceed with the reload without confirmation, simply pass in 'FORCE' as the token parameter. To proceed with the reload with confirmation, simply call the service with no parameter. A token string will be returned by this service. The token will remain active for 10 minutes. Use this token as the parameter to confirm that a reload is to be performed for the server.
+//
+// As a precaution, we strongly  recommend backing up all data before reloading the operating system. The reload will format the primary disk and will reconfigure the server to the current specifications on record.
+//
+// The reload will take AT MINIMUM 66 minutes.
+func (r Hardware_SecurityModule750) ReloadOperatingSystem(token *string, config *datatypes.Container_Hardware_Server_Configuration) (resp string, err error) {
+	params := []interface{}{
+		token,
+		config,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "reloadOperatingSystem", params, &r.Options, &resp)
+	return
+}
+
+// This method is used to remove access to s SoftLayer_Network_Storage volumes that supports host- or network-level access control.
+func (r Hardware_SecurityModule750) RemoveAccessToNetworkStorage(networkStorageTemplateObject *datatypes.Network_Storage) (resp bool, err error) {
+	params := []interface{}{
+		networkStorageTemplateObject,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "removeAccessToNetworkStorage", params, &r.Options, &resp)
+	return
+}
+
+// This method is used to allow access to multiple SoftLayer_Network_Storage volumes that support host- or network-level access control.
+func (r Hardware_SecurityModule750) RemoveAccessToNetworkStorageList(networkStorageTemplateObjects []datatypes.Network_Storage) (resp bool, err error) {
+	params := []interface{}{
+		networkStorageTemplateObjects,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "removeAccessToNetworkStorageList", params, &r.Options, &resp)
+	return
+}
+
+// You can launch a new Passmark hardware test by selecting from your server list. It will bring your server offline for approximately 20 minutes while the testing is in progress, and will publish a certificate with the results to your hardware details page.
+//
+// While the hard drives are tested for the initial deployment, the Passmark Certificate utility will not test the hard drives on your live server. This is to ensure that no data is overwritten. If you would like to test the server's hard drives, you can have the full Passmark suite installed to your server free of charge through a new Support ticket.
+//
+// While the test itself does not overwrite any data on the server, it is recommended that you make full off-server backups of all data prior to launching the test. The Passmark hardware test is designed to force any latent hardware issues to the surface, so hardware failure is possible.
+//
+// In the event of a hardware failure during this test our datacenter engineers will be notified of the problem automatically. They will then replace any failed components to bring your server back online, and will be contacting you to ensure that impact on your server is minimal.
+func (r Hardware_SecurityModule750) RunPassmarkCertificationBenchmark() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "runPassmarkCertificationBenchmark", nil, &r.Options, &resp)
+	return
+}
+
+// Changes the password that we have stored in our database for a servers' Operating System
+func (r Hardware_SecurityModule750) SetOperatingSystemPassword(newPassword *string) (resp bool, err error) {
+	params := []interface{}{
+		newPassword,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "setOperatingSystemPassword", params, &r.Options, &resp)
+	return
+}
+
+// Sets the private network interface speed to the new speed. Speed values can only be 0 (Disconnect), 10, 100, 1000, and 10000. The new speed must be equal to or less than the max speed of the interface.
+//
+// It will take less than a minute to update the switch port speed. The server uplink will not be operational again until the server interface speed is updated.
+func (r Hardware_SecurityModule750) SetPrivateNetworkInterfaceSpeed(newSpeed *int) (resp bool, err error) {
+	params := []interface{}{
+		newSpeed,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "setPrivateNetworkInterfaceSpeed", params, &r.Options, &resp)
+	return
+}
+
+// Sets the public network interface speed to the new speed. Speed values can only be 0 (Disconnect), 10, 100, 1000, and 10000. The new speed must be equal to or less than the max speed of the interface.
+//
+// It will take less than a minute to update the switch port speed. The server uplink will not be operational again until the server interface speed is updated.
+func (r Hardware_SecurityModule750) SetPublicNetworkInterfaceSpeed(newSpeed *int) (resp bool, err error) {
+	params := []interface{}{
+		newSpeed,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "setPublicNetworkInterfaceSpeed", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Hardware_SecurityModule750) SetTags(tags *string) (resp bool, err error) {
+	params := []interface{}{
+		tags,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "setTags", params, &r.Options, &resp)
+	return
+}
+
+// Sets the data that will be written to the configuration drive.
+func (r Hardware_SecurityModule750) SetUserMetadata(metadata []string) (resp []datatypes.Hardware_Attribute, err error) {
+	params := []interface{}{
+		metadata,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "setUserMetadata", params, &r.Options, &resp)
+	return
+}
+
+// Shuts down the public network port
+func (r Hardware_SecurityModule750) ShutdownPrivatePort() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "shutdownPrivatePort", nil, &r.Options, &resp)
+	return
+}
+
+// Shuts down the public network port
+func (r Hardware_SecurityModule750) ShutdownPublicPort() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "shutdownPublicPort", nil, &r.Options, &resp)
+	return
+}
+
+// The ability to place bare metal servers in a state where they are powered down, and ports closed yet still allocated to the customer as a part of the Spare Pool program.
+func (r Hardware_SecurityModule750) SparePool(action *string, newOrder *bool) (resp bool, err error) {
+	params := []interface{}{
+		action,
+		newOrder,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "sparePool", params, &r.Options, &resp)
+	return
+}
+
+// This method will update the root IPMI password on this SoftLayer_Hardware.
+func (r Hardware_SecurityModule750) UpdateIpmiPassword(password *string) (resp bool, err error) {
+	params := []interface{}{
+		password,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "updateIpmiPassword", params, &r.Options, &resp)
+	return
+}
+
+// Validates a collection of partitions for an operating system
+func (r Hardware_SecurityModule750) ValidatePartitionsForOperatingSystem(operatingSystem *datatypes.Software_Description, partitions []datatypes.Hardware_Component_Partition) (resp bool, err error) {
+	params := []interface{}{
+		operatingSystem,
+		partitions,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "validatePartitionsForOperatingSystem", params, &r.Options, &resp)
 	return
 }
 
@@ -7027,6 +9301,12 @@ func (r Hardware_Server) GetPMInfo() (resp []datatypes.Container_RemoteManagemen
 	return
 }
 
+// Retrieve Blade Bay
+func (r Hardware_Server) GetParentBay() (resp datatypes.Hardware_Blade, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "getParentBay", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve Parent Hardware.
 func (r Hardware_Server) GetParentHardware() (resp datatypes.Hardware, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "getParentHardware", nil, &r.Options, &resp)
@@ -7323,12 +9603,6 @@ func (r Hardware_Server) GetRouters() (resp []datatypes.Hardware, err error) {
 	return
 }
 
-// Retrieve Determine if hardware object has Software Guard Extension (SGX) enabled.
-func (r Hardware_Server) GetSGXEnabled() (resp bool, err error) {
-	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "getSGXEnabled", nil, &r.Options, &resp)
-	return
-}
-
 // Retrieve Collection of scale assets this hardware corresponds to.
 func (r Hardware_Server) GetScaleAssets() (resp []datatypes.Scale_Asset, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "getScaleAssets", nil, &r.Options, &resp)
@@ -7392,6 +9666,12 @@ func (r Hardware_Server) GetServiceProvider() (resp datatypes.Service_Provider, 
 // Retrieve Information regarding a piece of hardware's installed software.
 func (r Hardware_Server) GetSoftwareComponents() (resp []datatypes.Software_Component, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "getSoftwareComponents", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Determine if hardware object has Software Guard Extension (SGX) enabled.
+func (r Hardware_Server) GetSoftwareGuardExtensionEnabled() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "getSoftwareGuardExtensionEnabled", nil, &r.Options, &resp)
 	return
 }
 
@@ -7641,13 +9921,13 @@ func (r Hardware_Server) Ping() (resp string, err error) {
 }
 
 // no documentation yet
-func (r Hardware_Server) PopulateServer(hardwareId *int, serialString *string) (err error) {
+func (r Hardware_Server) PopulateServerRam(hardwareId *int, ramSerialString *string) (err error) {
 	var resp datatypes.Void
 	params := []interface{}{
 		hardwareId,
-		serialString,
+		ramSerialString,
 	}
-	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "populateServer", params, &r.Options, &resp)
+	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "populateServerRam", params, &r.Options, &resp)
 	return
 }
 

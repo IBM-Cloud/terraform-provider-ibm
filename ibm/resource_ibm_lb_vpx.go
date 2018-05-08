@@ -217,24 +217,28 @@ because the getVPXPriceItemKeyName was getting cmputed as CITRIX_NETSCALER_VPX_1
 func getVPXPriceItemKeyName(version string, speed int, plan string) string {
 	name := "CITRIX_NETSCALER_VPX"
 	speedMeasurements := "MBPS"
-	float_version, err := strconv.ParseFloat(version, 10)
+
+	floatVersion, err := strconv.ParseFloat(version, 10)
 	if err != nil {
-		return ("InvalidVersion")
+		return ("Invalid Version :" + version)
 	}
-	final_version := version
-	if isIntegral(float_version) {
-		final_version = strconv.Itoa(int(float_version))
-	}
-	versionReplaced := strings.Replace(final_version, ".", DELIMITER, -1)
+
+	newVersion := strconv.FormatFloat(floatVersion, 'f', -1, 64)
+
+	versionReplaced := strings.Replace(newVersion, ".", DELIMITER, -1)
+
 	speedString := strconv.Itoa(speed) + speedMeasurements
 	return strings.Join([]string{name, versionReplaced, speedString, strings.ToUpper(plan)}, DELIMITER)
 }
 
 func getPublicIpItemKeyName(ipCount int) string {
 
-	name := "STATIC_PUBLIC_IP_ADDRESSES"
+	var name string
+
 	if ipCount == 1 {
 		name = "STATIC_PUBLIC_IP_ADDRESS"
+	} else {
+		name = "STATIC_PUBLIC_IP_ADDRESSES"
 	}
 	ipCountString := strconv.Itoa(ipCount)
 

@@ -6,8 +6,8 @@ import (
 	"net/url"
 	"os"
 
-	bluemix "github.com/IBM-Bluemix/bluemix-go"
-	"github.com/IBM-Bluemix/bluemix-go/rest"
+	bluemix "github.com/IBM-Cloud/bluemix-go"
+	"github.com/IBM-Cloud/bluemix-go/rest"
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
 	"github.com/terraform-providers/terraform-provider-ibm/version"
 )

@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/bluemix-go/api/iam/iamv1"
+
 	gohttp "net/http"
 
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
@@ -17,17 +19,20 @@ import (
 	slsession "github.com/softlayer/softlayer-go/session"
 	"github.com/terraform-providers/terraform-provider-ibm/version"
 
-	bluemix "github.com/IBM-Bluemix/bluemix-go"
-	"github.com/IBM-Bluemix/bluemix-go/api/account/accountv1"
-	"github.com/IBM-Bluemix/bluemix-go/api/account/accountv2"
-	"github.com/IBM-Bluemix/bluemix-go/api/container/containerv1"
-	"github.com/IBM-Bluemix/bluemix-go/api/iampap/iampapv1"
-	"github.com/IBM-Bluemix/bluemix-go/api/mccp/mccpv2"
-	"github.com/IBM-Bluemix/bluemix-go/authentication"
-	"github.com/IBM-Bluemix/bluemix-go/http"
-	"github.com/IBM-Bluemix/bluemix-go/rest"
+	bluemix "github.com/IBM-Cloud/bluemix-go"
+	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
+	"github.com/IBM-Cloud/bluemix-go/api/account/accountv2"
+	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
+	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
+	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/catalog"
+	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
+	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
+	"github.com/IBM-Cloud/bluemix-go/authentication"
+	"github.com/IBM-Cloud/bluemix-go/http"
+	"github.com/IBM-Cloud/bluemix-go/rest"
 
-	bxsession "github.com/IBM-Bluemix/bluemix-go/session"
+	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 )
 
 //SoftlayerRestEndpoint rest endpoint of SoftLayer
@@ -46,8 +51,9 @@ var (
 
 //UserConfig ...
 type UserConfig struct {
-	userID    string
-	userEmail string
+	userID      string
+	userEmail   string
+	userAccount string
 }
 
 //Config stores user provider input
@@ -97,12 +103,16 @@ type ClientSession interface {
 	SoftLayerSession() *slsession.Session
 	BluemixSession() (*bxsession.Session, error)
 	ContainerAPI() (containerv1.ContainerServiceAPI, error)
-	IAMAPI() (iampapv1.IAMPAPAPI, error)
+	IAMAPI() (iamv1.IAMServiceAPI, error)
+	IAMPAPAPI() (iampapv1.IAMPAPAPI, error)
 	MccpAPI() (mccpv2.MccpServiceAPI, error)
 	BluemixAcccountAPI() (accountv2.AccountServiceAPI, error)
 	BluemixAcccountv1API() (accountv1.AccountServiceAPI, error)
 	BluemixUserDetails() (*UserConfig, error)
 	FunctionClient() (*whisk.Client, error)
+	ResourceCatalogAPI() (catalog.ResourceCatalogAPI, error)
+	ResourceManagementAPI() (management.ResourceManagementAPI, error)
+	ResourceControllerAPI() (controller.ResourceControllerAPI, error)
 }
 
 type clientSession struct {
@@ -114,8 +124,11 @@ type clientSession struct {
 	cfConfigErr  error
 	cfServiceAPI mccpv2.MccpServiceAPI
 
+	iamPAPConfigErr  error
+	iamPAPServiceAPI iampapv1.IAMPAPAPI
+
 	iamConfigErr  error
-	iamServiceAPI iampapv1.IAMPAPAPI
+	iamServiceAPI iamv1.IAMServiceAPI
 
 	accountConfigErr     error
 	bmxAccountServiceAPI accountv2.AccountServiceAPI
@@ -128,6 +141,15 @@ type clientSession struct {
 
 	functionConfigErr error
 	functionClient    *whisk.Client
+
+	resourceControllerConfigErr  error
+	resourceControllerServiceAPI controller.ResourceControllerAPI
+
+	resourceManagementConfigErr  error
+	resourceManagementServiceAPI management.ResourceManagementAPI
+
+	resourceCatalogConfigErr  error
+	resourceCatalogServiceAPI catalog.ResourceCatalogAPI
 }
 
 // SoftLayerSession providers SoftLayer Session
@@ -151,8 +173,13 @@ func (sess clientSession) BluemixAcccountv1API() (accountv1.AccountServiceAPI, e
 }
 
 // IAMAPI provides IAM PAP APIs ...
-func (sess clientSession) IAMAPI() (iampapv1.IAMPAPAPI, error) {
+func (sess clientSession) IAMAPI() (iamv1.IAMServiceAPI, error) {
 	return sess.iamServiceAPI, sess.iamConfigErr
+}
+
+// IAMPAPAPI provides IAM PAP APIs ...
+func (sess clientSession) IAMPAPAPI() (iampapv1.IAMPAPAPI, error) {
+	return sess.iamPAPServiceAPI, sess.iamConfigErr
 }
 
 // ContainerAPI provides Container Service APIs ...
@@ -173,6 +200,21 @@ func (sess clientSession) BluemixUserDetails() (*UserConfig, error) {
 // FunctionClient ...
 func (sess clientSession) FunctionClient() (*whisk.Client, error) {
 	return sess.functionClient, sess.functionConfigErr
+}
+
+// ResourceCatalogAPI ...
+func (sess clientSession) ResourceCatalogAPI() (catalog.ResourceCatalogAPI, error) {
+	return sess.resourceCatalogServiceAPI, sess.resourceCatalogConfigErr
+}
+
+// ResourceManagementAPI ...
+func (sess clientSession) ResourceManagementAPI() (management.ResourceManagementAPI, error) {
+	return sess.resourceManagementServiceAPI, sess.resourceManagementConfigErr
+}
+
+// ResourceControllerAPI ...
+func (sess clientSession) ResourceControllerAPI() (controller.ResourceControllerAPI, error) {
+	return sess.resourceControllerServiceAPI, sess.resourceControllerConfigErr
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -241,7 +283,32 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if err != nil {
 		session.iamConfigErr = fmt.Errorf("Error occured while configuring Bluemix IAMPAP Service: %q", err)
 	}
-	session.iamServiceAPI = iampap
+	session.iamPAPServiceAPI = iampap
+
+	iam, err := iamv1.New(sess.BluemixSession)
+	if err != nil {
+		session.iamConfigErr = fmt.Errorf("Error occured while configuring Bluemix IAM Service: %q", err)
+	}
+	session.iamServiceAPI = iam
+
+	resourceCatalogAPI, err := catalog.New(sess.BluemixSession)
+	if err != nil {
+		session.resourceCatalogConfigErr = fmt.Errorf("Error occured while configuring Resource Catalog service: %q", err)
+	}
+	session.resourceCatalogServiceAPI = resourceCatalogAPI
+
+	resourceManagementAPI, err := management.New(sess.BluemixSession)
+	if err != nil {
+		session.resourceManagementConfigErr = fmt.Errorf("Error occured while configuring Resource Management service: %q", err)
+	}
+	session.resourceManagementServiceAPI = resourceManagementAPI
+
+	resourceControllerAPI, err := controller.New(sess.BluemixSession)
+	if err != nil {
+		session.resourceControllerConfigErr = fmt.Errorf("Error occured while configuring Resource Controller service: %q", err)
+	}
+	session.resourceControllerServiceAPI = resourceControllerAPI
+
 	return session, nil
 }
 
@@ -310,5 +377,6 @@ func fetchUserDetails(sess *bxsession.Session) (*UserConfig, error) {
 	claims := token.Claims.(jwt.MapClaims)
 	user.userEmail = claims["email"].(string)
 	user.userID = claims["id"].(string)
+	user.userAccount = claims["account"].(map[string]interface{})["bss"].(string)
 	return &user, nil
 }

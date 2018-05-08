@@ -212,32 +212,78 @@ func SelectProductPricesByCategory(
 	return prices
 }
 
-// Returnpriceidaccordingtopackageid return the priceids of the items according to the location group ids of the datacenter u specify
-func Returnpriceidaccordingtopackageid(addon string, listofpriceids []int, sess *session.Session, packageid int) (int, error) {
-	productpackageservice := services.GetProductPackageService(sess)
-	productpackageservicefilter := strings.Replace(`{"items":{"description":{"operation":"appliance"}}}`, "appliance", addon, -1)
-	productpackageservicemask := "description,prices.locationGroupId,prices.id"
-	resp, err := productpackageservice.Mask(productpackageservicemask).Filter(productpackageservicefilter).Id(packageid).GetItems()
+// GetPresetByKeyName Get the Product_Package_Preset which matches the specified
+// preset key name
+func GetPresetByKeyName(
+	sess *session.Session,
+	pkgID int,
+	presetKeyName string,
+	mask ...string,
+) (datatypes.Product_Package_Preset, error) {
+
+	objectMask := "id, name, keyName, description"
+	if len(mask) > 0 {
+		objectMask = mask[0]
+	}
+
+	service := services.GetProductPackageService(sess)
+
+	// Get preset id
+	preset, err := service.
+		Id(pkgID).
+		Mask(objectMask).
+		Filter(
+			filter.Build(
+				filter.Path("activePresets.keyName").Eq(presetKeyName),
+			),
+		).
+		Limit(1).
+		GetActivePresets()
 	if err != nil {
-		return 0, err
+		return datatypes.Product_Package_Preset{}, err
 	}
-	m := make(map[int]int)
-	if len(listofpriceids) == 0 {
-		listofpriceids = append(listofpriceids, 1)
+
+	if len(preset) == 0 {
+		return datatypes.Product_Package_Preset{}, fmt.Errorf("No product preset found for %s", presetKeyName)
 	}
-	for _, item := range listofpriceids {
-		for _, items := range resp {
-			for _, temp := range items.Prices {
-				if temp.LocationGroupId == nil {
-					m[item] = *temp.Id
-				} else if item == *temp.LocationGroupId {
-					m[*temp.LocationGroupId] = *temp.Id
-				}
-			}
-		}
-		if val, ok := m[item]; ok {
-			return val, nil
-		}
+
+	return preset[0], nil
+}
+
+// GetPackageByKeyName Get the Product_Package which matches the specified
+// package key name
+func GetPackageByKeyName(
+	sess *session.Session,
+	packageKeyName string,
+	mask ...string,
+) (datatypes.Product_Package, error) {
+
+	objectMask := "id,name,description,isActive,keyName"
+	if len(mask) > 0 {
+		objectMask = mask[0]
 	}
-	return 0, nil
+
+	service := services.GetProductPackageService(sess)
+
+	// Get package id
+	packages, err := service.
+		Mask(objectMask).
+		Filter(
+			filter.Build(
+				filter.Path("keyName").Eq(packageKeyName),
+			),
+		).
+		Limit(1).
+		GetAllObjects()
+	if err != nil {
+		return datatypes.Product_Package{}, err
+	}
+
+	packages = rejectOutletPackages(packages)
+
+	if len(packages) == 0 {
+		return datatypes.Product_Package{}, fmt.Errorf("No product packages found for %s", packageKeyName)
+	}
+
+	return packages[0], nil
 }

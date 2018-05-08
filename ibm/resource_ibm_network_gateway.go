@@ -1,13 +1,16 @@
 package ibm
 
 import (
+	"bytes"
 	"fmt"
 	"log"
+	"math/rand"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -20,6 +23,7 @@ import (
 )
 
 const highAvailability = "HA"
+const GATEWAY_APPLIANCE_CLUSTER = "NETWORK_GATEWAY_APPLIANCE_CLUSTER"
 
 func resourceIBMNetworkGateway() *schema.Resource {
 	return &schema.Resource{
@@ -93,7 +97,7 @@ func resourceIBMNetworkGateway() *schema.Resource {
 			},
 
 			"members": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Description: "The hardware members of this network Gateway",
 				Required:    true,
 				MinItems:    1,
@@ -198,7 +202,7 @@ func resourceIBMNetworkGateway() *schema.Resource {
 							Type:             schema.TypeString,
 							Optional:         true,
 							ForceNew:         true,
-							Default:          "INTEL_SINGLE_XEON_1270_3_40_2",
+							Default:          "INTEL_SINGLE_XEON_1270_3_50",
 							DiffSuppressFunc: applyOnce,
 						},
 
@@ -348,6 +352,7 @@ func resourceIBMNetworkGateway() *schema.Resource {
 						},
 					},
 				},
+				Set: resourceIBMMemberHostHash,
 			},
 
 			"associated_vlans": {
@@ -391,7 +396,7 @@ func resourceIBMNetworkGateway() *schema.Resource {
 func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	members := []gatewayMember{}
-	for _, v := range d.Get("members").([]interface{}) {
+	for _, v := range d.Get("members").(*schema.Set).List() {
 		m := v.(map[string]interface{})
 		members = append(members, m)
 	}
@@ -420,6 +425,25 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 	// and differ only in hostname, domain, user_metadata, post_install_script_uri etc
 	sameOrder := canBeOrderedTogether(members)
 
+	// Set SSH Key on main order
+	ssh_key_ids := d.Get("ssh_key_ids").([]interface{})
+	if len(ssh_key_ids) > 0 {
+		order.SshKeys = make([]datatypes.Container_Product_Order_SshKeys, 0)
+		ids := make([]int, len(ssh_key_ids))
+		for i, ssh_key_id := range ssh_key_ids {
+			ids[i] = ssh_key_id.(int)
+		}
+		order.SshKeys = append(order.SshKeys, datatypes.Container_Product_Order_SshKeys{
+			SshKeyIds: ids,
+		})
+	}
+	// Set post_install_script_uri on main order
+	if v, ok := d.GetOk("post_install_script_uri"); ok {
+		order.ProvisionScripts = []string{v.(string)}
+	}
+
+	var productOrder datatypes.Container_Product_Order
+
 	if sameOrder {
 		//Ordering HA
 		order.Quantity = sl.Int(2)
@@ -432,33 +456,84 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 			return fmt.Errorf(
 				"Encountered problem trying to configure Gateway options: %s", err)
 		}
+
 	}
-	// Set SSH Key on main order
-	ssh_key_ids := d.Get("ssh_key_ids").([]interface{})
-	if len(ssh_key_ids) > 0 {
-		order.SshKeys = make([]datatypes.Container_Product_Order_SshKeys, 0, len(ssh_key_ids))
-		for _, ssh_key_id := range ssh_key_ids {
-			sshKeyA := make([]int, 1)
-			sshKeyA[0] = ssh_key_id.(int)
-			order.SshKeys = append(order.SshKeys, datatypes.Container_Product_Order_SshKeys{
-				SshKeyIds: sshKeyA,
+
+	mSshKeys := make([]datatypes.Container_Product_Order_SshKeys, 0)
+	for _, h := range order.Hardware {
+		ids := make([]int, 0)
+		for _, id := range h.SshKeys {
+			ids = append(ids, *id.Id)
+		}
+		if len(ids) > 0 {
+			mSshKeys = append(mSshKeys, datatypes.Container_Product_Order_SshKeys{
+				SshKeyIds: ids,
 			})
 		}
 	}
-	// Set post_install_script_uri on main order
-	if v, ok := d.GetOk("post_install_script_uri"); ok {
-		order.ProvisionScripts = []string{v.(string)}
+
+	//Create the Gateway Appliance order
+	// 1. Find a package id using Gateway package key name.
+	pkg, err := getPackageByModelGateway(sess, GATEWAY_APPLIANCE_CLUSTER, false)
+
+	if err != nil {
+		return err
 	}
 
-	var productOrder datatypes.Container_Product_Order
-	productOrder.OrderContainers = []datatypes.Container_Product_Order{order}
+	if pkg.Id == nil {
+		return err
+	}
+
+	// 2. Get all prices for the package
+	items, err := product.GetPackageProducts(sess, *pkg.Id, productItemMaskWithPriceLocationGroupID)
+	if err != nil {
+		return err
+	}
+
+	// 3. Build price items
+	gwCluster, err := getItemPriceId(items, "gateway_resource_group", "GATEWAY_APPLIANCE_CLUSTER")
+	if err != nil {
+		return err
+	}
+
+	clusterIdentifier := randomString(8)
+
+	productOrder = datatypes.Container_Product_Order{
+		OrderContainers: []datatypes.Container_Product_Order{
+			{
+				ComplexType:       sl.String("SoftLayer_Container_Product_Order_Hardware_Server_Gateway_Appliance"),
+				Quantity:          order.Quantity,
+				PackageId:         order.PackageId,
+				Prices:            order.Prices,
+				Hardware:          order.Hardware,
+				Location:          order.Location,
+				ClusterIdentifier: sl.String(clusterIdentifier),
+			},
+			{
+				ComplexType: sl.String("SoftLayer_Container_Product_Order_Gateway_Appliance_Cluster"),
+				Quantity:    sl.Int(1),
+				PackageId:   pkg.Id,
+				Prices: []datatypes.Product_Item_Price{
+					gwCluster,
+				},
+				ClusterIdentifier: sl.String(clusterIdentifier),
+			},
+		},
+	}
+
+	if len(mSshKeys) > 0 {
+		productOrder.OrderContainers[0].SshKeys = mSshKeys
+	}
+
+	if len(order.SshKeys) > 0 {
+		productOrder.OrderContainers[1].SshKeys = order.SshKeys
+	}
 
 	_, err = services.GetProductOrderService(sess).VerifyOrder(&productOrder)
 	if err != nil {
 		return fmt.Errorf(
 			"Encountered problem trying to verify the order: %s", err)
 	}
-
 	orderReceipt, err := services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(&productOrder, sl.Bool(false))
 	if err != nil {
 		return fmt.Errorf(
@@ -519,6 +594,28 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 
 	d.Partial(false)
 	return resourceIBMNetworkGatewayRead(d, meta)
+}
+
+func randomString(length int) string {
+	charset :=
+		"abcdefghijklmnopqrstuvwxyz" +
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	var seededRand *rand.Rand = rand.New(
+		rand.NewSource(time.Now().UnixNano()))
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[seededRand.Intn(len(charset))]
+	}
+	return string(b)
+}
+
+func resourceIBMMemberHostHash(v interface{}) int {
+	var buf bytes.Buffer
+	m := v.(map[string]interface{})
+	buf.WriteString(fmt.Sprintf("%s-",
+		m["hostname"].(string)))
+
+	return hashcode.String(buf.String())
 }
 
 func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) error {
@@ -608,6 +705,17 @@ func addGatewayMember(gwID int, member gatewayMember, meta interface{}) error {
 	haOrder.Prices = order.Prices
 	haOrder.ClusterResourceId = sl.Int(gwID)
 	haOrder.ClusterOrderType = sl.String(highAvailability)
+	ssh_key_ids := member.Get("ssh_key_ids").([]interface{})
+	if len(ssh_key_ids) > 0 {
+		sshKeyS := make([]int, len(ssh_key_ids))
+		for i, ssh_key_id := range ssh_key_ids {
+			sshKeyS[i] = ssh_key_id.(int)
+		}
+		haOrder.SshKeys = make([]datatypes.Container_Product_Order_SshKeys, 1)
+		haOrder.SshKeys[0] = datatypes.Container_Product_Order_SshKeys{
+			SshKeyIds: sshKeyS,
+		}
+	}
 
 	_, err = services.GetProductOrderService(sess).VerifyOrder(&haOrder)
 	if err != nil {
@@ -704,7 +812,7 @@ func getMonthlyGatewayOrder(d dataRetriever, meta interface{}) (datatypes.Contai
 	}
 
 	// 1. Find a package id using Gateway package key name.
-	pkg, err := getPackageByModelGateway(sess, model.(string))
+	pkg, err := getPackageByModelGateway(sess, model.(string), true)
 
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
@@ -869,11 +977,16 @@ func getMonthlyGatewayOrder(d dataRetriever, meta interface{}) (datatypes.Contai
 	return order, nil
 }
 
-func getPackageByModelGateway(sess *session.Session, model string) (datatypes.Product_Package, error) {
+func getPackageByModelGateway(sess *session.Session, model string, isGateway bool) (datatypes.Product_Package, error) {
 	objectMask := "id,keyName,name,description,isActive,type[keyName],categories[id,name,categoryCode]"
 	service := services.GetProductPackageService(sess)
 	availableModels := ""
-	filterStr := "{\"items\": {\"categories\": {\"categoryCode\": {\"operation\":\"server\"}}},\"type\": {\"keyName\": {\"operation\":\"BARE_METAL_GATEWAY\"}}}"
+	filterStr := ""
+	if isGateway {
+		filterStr = "{\"items\": {\"categories\": {\"categoryCode\": {\"operation\":\"server\"}}},\"type\": {\"keyName\": {\"operation\":\"BARE_METAL_GATEWAY\"}}}"
+	} else {
+		filterStr = "{\"type\": {\"keyName\": {\"operation\":\"GATEWAY_RESOURCE_GROUP\"}}}"
+	}
 
 	// Get package id
 	packages, err := service.Mask(objectMask).
@@ -894,7 +1007,6 @@ func getPackageByModelGateway(sess *session.Session, model string) (datatypes.Pr
 	}
 	return datatypes.Product_Package{}, fmt.Errorf("No Gateway package key name for %s. Available package key name(s) is(are) %s", model, availableModels)
 }
-
 func setHardwareOptions(m gatewayMember, hardware *datatypes.Hardware) error {
 	public_vlan_id := m.Get("public_vlan_id").(int)
 	if public_vlan_id > 0 {

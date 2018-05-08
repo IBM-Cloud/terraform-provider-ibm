@@ -101,6 +101,12 @@ type Ticket struct {
 	// no documentation yet
 	EmployeeAttachments []User_Employee `json:"employeeAttachments,omitempty" xmlrpc:"employeeAttachments,omitempty"`
 
+	// A ticket's associated EU compliant record
+	EuSupportedFlag *bool `json:"euSupportedFlag,omitempty" xmlrpc:"euSupportedFlag,omitempty"`
+
+	// no documentation yet
+	EuSupportedLocationId *int `json:"euSupportedLocationId,omitempty" xmlrpc:"euSupportedLocationId,omitempty"`
+
 	// Feedback left by a portal or API user on their experiences in a ticket. Final comments may be created after a ticket is closed.
 	FinalComments *string `json:"finalComments,omitempty" xmlrpc:"finalComments,omitempty"`
 
@@ -480,6 +486,17 @@ type Ticket_Chat_TranscriptLine_Customer struct {
 // no documentation yet
 type Ticket_Chat_TranscriptLine_Employee struct {
 	Ticket_Chat_TranscriptLine
+}
+
+// no documentation yet
+type Ticket_EuCompliance struct {
+	Entity
+
+	// no documentation yet
+	Datacenter *Location `json:"datacenter,omitempty" xmlrpc:"datacenter,omitempty"`
+
+	// no documentation yet
+	Ticket *Ticket `json:"ticket,omitempty" xmlrpc:"ticket,omitempty"`
 }
 
 // SoftLayer tickets have the ability to be assigned to one of SoftLayer's internal departments. The department that a ticket is assigned to is modeled by the SoftLayer_Ticket_Group data type. Ticket groups help to ensure that the proper department is handling a ticket. Standard support tickets are created from a number of pre-determined subjects. These subjects help determine which group a standard ticket is assigned to.

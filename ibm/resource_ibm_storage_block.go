@@ -91,7 +91,7 @@ func resourceIBMStorageBlock() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-
+			//TODO in v0.9.0
 			"allowed_virtual_guest_info": {
 				Type:     schema.TypeSet,
 				Computed: true,
@@ -119,6 +119,7 @@ func resourceIBMStorageBlock() *schema.Resource {
 					virtualGuest := v.(map[string]interface{})
 					return virtualGuest["id"].(int)
 				},
+				Deprecated: "Please use 'allowed_host_info' instead",
 			},
 
 			"allowed_hardware_ids": {
@@ -131,6 +132,7 @@ func resourceIBMStorageBlock() *schema.Resource {
 				},
 			},
 
+			//TODO in v0.9.0
 			"allowed_hardware_info": {
 				Type:     schema.TypeSet,
 				Computed: true,
@@ -158,6 +160,7 @@ func resourceIBMStorageBlock() *schema.Resource {
 					baremetal := v.(map[string]interface{})
 					return baremetal["id"].(int)
 				},
+				Deprecated: "Please use 'allowed_host_info' instead",
 			},
 
 			"allowed_ip_addresses": {
@@ -176,6 +179,30 @@ func resourceIBMStorageBlock() *schema.Resource {
 				Optional: true,
 				Default:  false,
 				ForceNew: true,
+			},
+			"allowed_host_info": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"username": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"password": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"host_iqn": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
 			},
 		},
 	}
@@ -394,9 +421,54 @@ func resourceIBMStorageBlockRead(d *schema.ResourceData, meta interface{}) error
 		d.Set("allowed_hardware_ids", allowedHardwareIdsList)
 		d.Set("allowed_hardware_info", allowedHardwareInfoList)
 
-		if storage.OsType != nil {
-			d.Set("os_format_type", *storage.OsType.Name)
-		}
+	allowedHostInfoList := make([]map[string]interface{}, 0)
+
+	// Read allowed_ip_addresses
+	allowedIpaddressesList := make([]string, 0, len(storage.AllowedIpAddresses))
+	for _, allowedIpaddress := range storage.AllowedIpAddresses {
+		singleHost := make(map[string]interface{})
+		singleHost["id"] = *allowedIpaddress.SubnetId
+		singleHost["username"] = *allowedIpaddress.AllowedHost.Credential.Username
+		singleHost["password"] = *allowedIpaddress.AllowedHost.Credential.Password
+		singleHost["host_iqn"] = *allowedIpaddress.AllowedHost.Name
+		allowedHostInfoList = append(allowedHostInfoList, singleHost)
+		allowedIpaddressesList = append(allowedIpaddressesList, *allowedIpaddress.IpAddress)
+	}
+	d.Set("allowed_ip_addresses", allowedIpaddressesList)
+
+	// Read allowed_virtual_guest_ids and allowed_host_info
+	allowedVirtualGuestInfoList := make([]map[string]interface{}, 0)
+	allowedVirtualGuestIdsList := make([]int, 0, len(storage.AllowedVirtualGuests))
+
+	for _, allowedVirtualGuest := range storage.AllowedVirtualGuests {
+		singleVirtualGuest := make(map[string]interface{})
+		singleVirtualGuest["id"] = *allowedVirtualGuest.Id
+		singleVirtualGuest["username"] = *allowedVirtualGuest.AllowedHost.Credential.Username
+		singleVirtualGuest["password"] = *allowedVirtualGuest.AllowedHost.Credential.Password
+		singleVirtualGuest["host_iqn"] = *allowedVirtualGuest.AllowedHost.Name
+		allowedHostInfoList = append(allowedHostInfoList, singleVirtualGuest)
+		allowedVirtualGuestInfoList = append(allowedVirtualGuestInfoList, singleVirtualGuest)
+		allowedVirtualGuestIdsList = append(allowedVirtualGuestIdsList, *allowedVirtualGuest.Id)
+	}
+	d.Set("allowed_virtual_guest_ids", allowedVirtualGuestIdsList)
+	d.Set("allowed_virtual_guest_info", allowedVirtualGuestInfoList)
+
+	// Read allowed_hardware_ids and allowed_host_info
+	allowedHardwareInfoList := make([]map[string]interface{}, 0)
+	allowedHardwareIdsList := make([]int, 0, len(storage.AllowedHardware))
+	for _, allowedHW := range storage.AllowedHardware {
+		singleHardware := make(map[string]interface{})
+		singleHardware["id"] = *allowedHW.Id
+		singleHardware["username"] = *allowedHW.AllowedHost.Credential.Username
+		singleHardware["password"] = *allowedHW.AllowedHost.Credential.Password
+		singleHardware["host_iqn"] = *allowedHW.AllowedHost.Name
+		allowedHostInfoList = append(allowedHostInfoList, singleHardware)
+		allowedHardwareInfoList = append(allowedHardwareInfoList, singleHardware)
+		allowedHardwareIdsList = append(allowedHardwareIdsList, *allowedHW.Id)
+	}
+	d.Set("allowed_hardware_ids", allowedHardwareIdsList)
+	d.Set("allowed_hardware_info", allowedHardwareInfoList)
+	d.Set("allowed_host_info", allowedHostInfoList)
 
 		if storage.Notes != nil {
 			d.Set("notes", *storage.Notes)

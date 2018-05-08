@@ -9,7 +9,7 @@ resource "ibm_compute_ssh_key" "ssh_key_gip" {
 resource "ibm_compute_vm_instance" "vm1" {
     hostname = "terraform-ibm"
     domain = "example.com"
-    os_reference_code = "DEBIAN_7_64"
+    os_reference_code = "DEBIAN_8_64"
     datacenter = "${var.datacenter}"
     network_speed = 100
     hourly_billing = true
