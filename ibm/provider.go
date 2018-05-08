@@ -123,6 +123,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_container_cluster":                resourceIBMContainerCluster(),
 			"ibm_container_bind_service":           resourceIBMContainerBindService(),
 			"ibm_dns_domain":                       resourceIBMDNSDomain(),
+			"ibm_dns_secondary":                    resourceIBMDNSSecondary(),
 			"ibm_dns_record":                       resourceIBMDNSRecord(),
 			"ibm_firewall":                         resourceIBMFirewall(),
 			"ibm_firewall_policy":                  resourceIBMFirewallPolicy(),
