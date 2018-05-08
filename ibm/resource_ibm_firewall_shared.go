@@ -55,6 +55,7 @@ func resourceIBMFirewallSharedCreate(d *schema.ResourceData, meta interface{}) e
 	guestType := d.Get("guest_type").(string)
 	machineId := d.Get("guest_id").(int)
 
+	//var productOrderContainer *string
 	pkg, err := product.GetPackageByType(sess, FwHardwarePackageType)
 	if err != nil {
 		return err
@@ -94,64 +95,41 @@ func resourceIBMFirewallSharedCreate(d *schema.ResourceData, meta interface{}) e
 				},
 			},
 		}
-		log.Println("[INFO] Creating hardware firewall shared")
-
 		receipt, err := services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(&productOrderContainer, sl.Bool(false))
-		if err != nil {
-			return fmt.Errorf("Error during creation of hardware firewall: %s", err)
-		}
 		log.Print(*receipt.OrderId)
-		//machine, _, err := findFirewallByOrderID(sess, *receipt.OrderId, d)
 		if err != nil {
 			return fmt.Errorf("Error during creation of hardware firewall: %s", err)
-		}
-
-		d.Set("firewall_type", keyName)
-		d.Set("guest_id", machineId)
-		d.Set("guest_type", guestType)
-
-		return resourceIBMFirewallSharedRead(d, meta)
-	} else {
-		if guestType == "baremetal" {
-			productOrderContainer := datatypes.Container_Product_Order_Network_Protection_Firewall{
-				Container_Product_Order: datatypes.Container_Product_Order{
-					PackageId: pkg.Id,
-					Prices: []datatypes.Product_Item_Price{
-						{
-							Id: targetItems[0].Prices[0].Id,
-						},
-					},
-					Quantity: sl.Int(1),
-					Hardware: []datatypes.Hardware{{
-						Id: sl.Int(machineId),
-					},
-					},
-				},
-			}
-			//	}
-			//}
-
-			log.Println("[INFO] Creating hardware firewall shared")
-
-			receipt, err := services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(&productOrderContainer, sl.Bool(false))
-			if err != nil {
-				return fmt.Errorf("Error during creation of hardware firewall: %s", err)
-			}
-			log.Print(*receipt.OrderId)
-			//machine, _, err := findFirewallByOrderID(sess, *receipt.OrderId, d)
-			if err != nil {
-				return fmt.Errorf("Error during creation of hardware firewall: %s", err)
-			}
-
-			d.Set("firewall_type", keyName)
-			d.Set("guest_id", machineId)
-			d.Set("guest_type", guestType)
-
-			return resourceIBMFirewallSharedRead(d, meta)
 		}
 	}
-	return nil
-	// return resourceIBMFirewallSharedRead(d, meta) //need to change for conditions accordingly
+	if guestType == "baremetal" {
+		productOrderContainer := datatypes.Container_Product_Order_Network_Protection_Firewall{
+			Container_Product_Order: datatypes.Container_Product_Order{
+				PackageId: pkg.Id,
+				Prices: []datatypes.Product_Item_Price{
+					{
+						Id: targetItems[0].Prices[0].Id,
+					},
+				},
+				Quantity: sl.Int(1),
+				Hardware: []datatypes.Hardware{{
+					Id: sl.Int(machineId),
+				},
+				},
+			},
+		}
+		receipt, err := services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(&productOrderContainer, sl.Bool(false))
+		log.Print(*receipt.OrderId)
+		if err != nil {
+			return fmt.Errorf("Error during creation of hardware firewall: %s", err)
+		}
+	}
+	log.Println("[INFO] Creating hardware firewall shared")
+
+	d.Set("firewall_type", keyName)
+	d.Set("guest_id", machineId)
+	d.Set("guest_type", guestType)
+
+	return resourceIBMFirewallSharedRead(d, meta)
 }
 
 func resourceIBMFirewallSharedRead(d *schema.ResourceData, meta interface{}) error {
