@@ -32,6 +32,7 @@ const (
 	itemMask        = "id,capacity,description,units,keyName,prices[id,categories[id,name,categoryCode],capacityRestrictionMinimum,capacityRestrictionMaximum,locationGroupId]"
 	enduranceType   = "Endurance"
 	performanceType = "Performance"
+	portableType    = "Portable"
 	nasType         = "NAS/FTP"
 	fileStorage     = "FILE_STORAGE"
 	blockStorage    = "BLOCK_STORAGE"
@@ -639,7 +640,7 @@ func resourceIBMStorageFileDelete(d *schema.ResourceData, meta interface{}) erro
 	var billingItem datatypes.Billing_Item
 	var err error
 	storageID, _ := strconv.Atoi(d.Id())
-	if d.Get("type") == portablestorageType {
+	if d.Get("type") == portableType {
 		billingItems, err := services.GetVirtualDiskImageService(sess).Id(storageID).GetBillingItem()
 		billingItem = billingItems.Billing_Item
 		if err != nil {
@@ -677,7 +678,7 @@ func resourceIBMStorageFileExists(d *schema.ResourceData, meta interface{}) (boo
 	if err != nil {
 		return false, fmt.Errorf("Not a valid ID, must be an integer: %s", err)
 	}
-	if d.Get("type") == portablestorageType {
+	if d.Get("type") == portableType {
 		_, err = services.GetVirtualDiskImageService(sess).Id(storageID).GetObject()
 	} else {
 		_, err = services.GetNetworkStorageService(sess).
@@ -780,7 +781,7 @@ func buildStorageProductOrderContainer(
 	}
 	targetItemPrices = append(targetItemPrices, capacityPrice)
 
-	if storageType != portablestorageType {
+	if storageType != portableType {
 		iopsKeyName, err := getIopsKeyName(iops, capacity, storageType, hourlyBilling)
 		if err != nil {
 			return datatypes.Container_Product_Order{}, err
@@ -856,7 +857,7 @@ func findStorageByOrderId(sess *session.Session, orderId int, storagetype string
 		Pending: []string{"pending"},
 		Target:  []string{"complete"},
 		Refresh: func() (interface{}, string, error) {
-			if storagetype != portablestorageType {
+			if storagetype != portableType {
 				storage, err = services.GetAccountService(sess).
 					Filter(filter.Build(
 						filter.Path(filterPath).
@@ -900,7 +901,7 @@ func findStorageByOrderId(sess *session.Session, orderId int, storagetype string
 	}
 
 	var result, ok = pendingResult.(datatypes.Network_Storage)
-	if storagetype == portablestorageType {
+	if storagetype == portableType {
 		if result, ok := pendingResult.(datatypes.Virtual_Disk_Image); ok {
 			return datatypes.Network_Storage{}, result, nil
 		}
@@ -945,7 +946,7 @@ func WaitForStorageAvailable(d *schema.ResourceData, meta interface{}, storagety
 			}
 
 			// Check volume status.
-			if storageType != nasType || storagetype != portablestorageType {
+			if storageType != nasType || storagetype != portableType {
 				log.Println("Checking volume status.")
 				resultStr := ""
 				err = sess.DoRequest(
@@ -994,7 +995,7 @@ func getCapacityKeyName(iops float64, capacity int, storageType string) (string,
 		return enduranceStorageMap[iops], nil
 	case performanceType:
 		return performanceStorageMap[capacity], nil
-	case portablestorageType:
+	case portableType:
 		return portablestorageMap[capacity], nil
 	}
 	return "", fmt.Errorf("Invalid storageType %s.", storageType)
