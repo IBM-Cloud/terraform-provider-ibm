@@ -288,7 +288,7 @@ func GetPackageByKeyName(
 	return packages[0], nil
 }
 
-/ Returnpriceidaccordingtopackageid return the priceids of the items according to the location group ids of the datacenter u specify
+// Returnpriceidaccordingtopackageid return the priceids of the items according to the location group ids of the datacenter u specify
 func Returnpriceidaccordingtopackageid(addon string, listofpriceids []int, sess *session.Session, packageid int) (int, error) {
 	productpackageservice := services.GetProductPackageService(sess)
 	productpackageservicefilter := strings.Replace(`{"items":{"description":{"operation":"appliance"}}}`, "appliance", addon, -1)
