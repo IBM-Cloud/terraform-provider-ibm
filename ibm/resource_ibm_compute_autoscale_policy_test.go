@@ -450,7 +450,7 @@ func Test_resourceIBMComputeAutoScalePolicy(t *testing.T) {
 		name string
 		want *schema.Resource
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		if got := resourceIBMComputeAutoScalePolicy(); !reflect.DeepEqual(got, tt.want) {
@@ -469,7 +469,7 @@ func Test_resourceIBMComputeAutoScalePolicyCreate(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		if err := resourceIBMComputeAutoScalePolicyCreate(tt.args.d, tt.args.meta); (err != nil) != tt.wantErr {
@@ -488,7 +488,7 @@ func Test_resourceIBMComputeAutoScalePolicyRead(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		if err := resourceIBMComputeAutoScalePolicyRead(tt.args.d, tt.args.meta); (err != nil) != tt.wantErr {
@@ -507,7 +507,7 @@ func Test_resourceIBMComputeAutoScalePolicyUpdate(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		if err := resourceIBMComputeAutoScalePolicyUpdate(tt.args.d, tt.args.meta); (err != nil) != tt.wantErr {
@@ -526,7 +526,7 @@ func Test_resourceIBMComputeAutoScalePolicyDelete(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		if err := resourceIBMComputeAutoScalePolicyDelete(tt.args.d, tt.args.meta); (err != nil) != tt.wantErr {
@@ -546,7 +546,7 @@ func Test_resourceIBMComputeAutoScalePolicyExists(t *testing.T) {
 		want    bool
 		wantErr bool
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		got, err := resourceIBMComputeAutoScalePolicyExists(tt.args.d, tt.args.meta)
@@ -569,7 +569,7 @@ func Test_validateTriggerTypes(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		if err := validateTriggerTypes(tt.args.d); (err != nil) != tt.wantErr {
@@ -588,7 +588,7 @@ func Test_prepareOneTimeTriggers(t *testing.T) {
 		want    []datatypes.Scale_Policy_Trigger_OneTime
 		wantErr bool
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		got, err := prepareOneTimeTriggers(tt.args.d)
@@ -612,7 +612,7 @@ func Test_prepareRepeatingTriggers(t *testing.T) {
 		want    []datatypes.Scale_Policy_Trigger_Repeating
 		wantErr bool
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		got, err := prepareRepeatingTriggers(tt.args.d)
@@ -636,7 +636,7 @@ func Test_prepareResourceUseTriggers(t *testing.T) {
 		want    []datatypes.Scale_Policy_Trigger_ResourceUse
 		wantErr bool
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		got, err := prepareResourceUseTriggers(tt.args.d)
@@ -660,7 +660,7 @@ func Test_prepareWatches(t *testing.T) {
 		want    []datatypes.Scale_Policy_Trigger_ResourceUse_Watch
 		wantErr bool
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		got, err := prepareWatches(tt.args.d)
@@ -683,7 +683,7 @@ func Test_readOneTimeTriggers(t *testing.T) {
 		args args
 		want []map[string]interface{}
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		if got := readOneTimeTriggers(tt.args.list); !reflect.DeepEqual(got, tt.want) {
@@ -701,7 +701,7 @@ func Test_readRepeatingTriggers(t *testing.T) {
 		args args
 		want []map[string]interface{}
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		if got := readRepeatingTriggers(tt.args.list); !reflect.DeepEqual(got, tt.want) {
@@ -719,7 +719,7 @@ func Test_readResourceUseTriggers(t *testing.T) {
 		args args
 		want []map[string]interface{}
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		if got := readResourceUseTriggers(tt.args.list); !reflect.DeepEqual(got, tt.want) {
@@ -737,7 +737,7 @@ func Test_readResourceUseWatches(t *testing.T) {
 		args args
 		want []interface{}
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		if got := readResourceUseWatches(tt.args.list); !reflect.DeepEqual(got, tt.want) {
@@ -755,7 +755,7 @@ func Test_resourceIBMComputeAutoScalePolicyTriggerHash(t *testing.T) {
 		args args
 		want int
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		if got := resourceIBMComputeAutoScalePolicyTriggerHash(tt.args.v); got != tt.want {
@@ -773,7 +773,7 @@ func Test_resourceIBMComputeAutoScalePolicyHandlerHash(t *testing.T) {
 		args args
 		want int
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		if got := resourceIBMComputeAutoScalePolicyHandlerHash(tt.args.v); got != tt.want {

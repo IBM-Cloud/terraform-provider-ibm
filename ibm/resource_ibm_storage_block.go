@@ -421,54 +421,54 @@ func resourceIBMStorageBlockRead(d *schema.ResourceData, meta interface{}) error
 		d.Set("allowed_hardware_ids", allowedHardwareIdsList)
 		d.Set("allowed_hardware_info", allowedHardwareInfoList)
 
-	allowedHostInfoList := make([]map[string]interface{}, 0)
+		allowedHostInfoList := make([]map[string]interface{}, 0)
 
-	// Read allowed_ip_addresses
-	allowedIpaddressesList := make([]string, 0, len(storage.AllowedIpAddresses))
-	for _, allowedIpaddress := range storage.AllowedIpAddresses {
-		singleHost := make(map[string]interface{})
-		singleHost["id"] = *allowedIpaddress.SubnetId
-		singleHost["username"] = *allowedIpaddress.AllowedHost.Credential.Username
-		singleHost["password"] = *allowedIpaddress.AllowedHost.Credential.Password
-		singleHost["host_iqn"] = *allowedIpaddress.AllowedHost.Name
-		allowedHostInfoList = append(allowedHostInfoList, singleHost)
-		allowedIpaddressesList = append(allowedIpaddressesList, *allowedIpaddress.IpAddress)
-	}
-	d.Set("allowed_ip_addresses", allowedIpaddressesList)
+		// Read allowed_ip_addresses
+		allowedIpaddressesList := make([]string, 0, len(storage.AllowedIpAddresses))
+		for _, allowedIpaddress := range storage.AllowedIpAddresses {
+			singleHost := make(map[string]interface{})
+			singleHost["id"] = *allowedIpaddress.SubnetId
+			singleHost["username"] = *allowedIpaddress.AllowedHost.Credential.Username
+			singleHost["password"] = *allowedIpaddress.AllowedHost.Credential.Password
+			singleHost["host_iqn"] = *allowedIpaddress.AllowedHost.Name
+			allowedHostInfoList = append(allowedHostInfoList, singleHost)
+			allowedIpaddressesList = append(allowedIpaddressesList, *allowedIpaddress.IpAddress)
+		}
+		d.Set("allowed_ip_addresses", allowedIpaddressesList)
 
-	// Read allowed_virtual_guest_ids and allowed_host_info
-	allowedVirtualGuestInfoList := make([]map[string]interface{}, 0)
-	allowedVirtualGuestIdsList := make([]int, 0, len(storage.AllowedVirtualGuests))
+		// Read allowed_virtual_guest_ids and allowed_host_info
+		allowedVirtualGuestInfoList := make([]map[string]interface{}, 0)
+		allowedVirtualGuestIdsList := make([]int, 0, len(storage.AllowedVirtualGuests))
 
-	for _, allowedVirtualGuest := range storage.AllowedVirtualGuests {
-		singleVirtualGuest := make(map[string]interface{})
-		singleVirtualGuest["id"] = *allowedVirtualGuest.Id
-		singleVirtualGuest["username"] = *allowedVirtualGuest.AllowedHost.Credential.Username
-		singleVirtualGuest["password"] = *allowedVirtualGuest.AllowedHost.Credential.Password
-		singleVirtualGuest["host_iqn"] = *allowedVirtualGuest.AllowedHost.Name
-		allowedHostInfoList = append(allowedHostInfoList, singleVirtualGuest)
-		allowedVirtualGuestInfoList = append(allowedVirtualGuestInfoList, singleVirtualGuest)
-		allowedVirtualGuestIdsList = append(allowedVirtualGuestIdsList, *allowedVirtualGuest.Id)
-	}
-	d.Set("allowed_virtual_guest_ids", allowedVirtualGuestIdsList)
-	d.Set("allowed_virtual_guest_info", allowedVirtualGuestInfoList)
+		for _, allowedVirtualGuest := range storage.AllowedVirtualGuests {
+			singleVirtualGuest := make(map[string]interface{})
+			singleVirtualGuest["id"] = *allowedVirtualGuest.Id
+			singleVirtualGuest["username"] = *allowedVirtualGuest.AllowedHost.Credential.Username
+			singleVirtualGuest["password"] = *allowedVirtualGuest.AllowedHost.Credential.Password
+			singleVirtualGuest["host_iqn"] = *allowedVirtualGuest.AllowedHost.Name
+			allowedHostInfoList = append(allowedHostInfoList, singleVirtualGuest)
+			allowedVirtualGuestInfoList = append(allowedVirtualGuestInfoList, singleVirtualGuest)
+			allowedVirtualGuestIdsList = append(allowedVirtualGuestIdsList, *allowedVirtualGuest.Id)
+		}
+		d.Set("allowed_virtual_guest_ids", allowedVirtualGuestIdsList)
+		d.Set("allowed_virtual_guest_info", allowedVirtualGuestInfoList)
 
-	// Read allowed_hardware_ids and allowed_host_info
-	allowedHardwareInfoList := make([]map[string]interface{}, 0)
-	allowedHardwareIdsList := make([]int, 0, len(storage.AllowedHardware))
-	for _, allowedHW := range storage.AllowedHardware {
-		singleHardware := make(map[string]interface{})
-		singleHardware["id"] = *allowedHW.Id
-		singleHardware["username"] = *allowedHW.AllowedHost.Credential.Username
-		singleHardware["password"] = *allowedHW.AllowedHost.Credential.Password
-		singleHardware["host_iqn"] = *allowedHW.AllowedHost.Name
-		allowedHostInfoList = append(allowedHostInfoList, singleHardware)
-		allowedHardwareInfoList = append(allowedHardwareInfoList, singleHardware)
-		allowedHardwareIdsList = append(allowedHardwareIdsList, *allowedHW.Id)
-	}
-	d.Set("allowed_hardware_ids", allowedHardwareIdsList)
-	d.Set("allowed_hardware_info", allowedHardwareInfoList)
-	d.Set("allowed_host_info", allowedHostInfoList)
+		// Read allowed_hardware_ids and allowed_host_info
+		allowedHardwareInfoList := make([]map[string]interface{}, 0)
+		allowedHardwareIdsList := make([]int, 0, len(storage.AllowedHardware))
+		for _, allowedHW := range storage.AllowedHardware {
+			singleHardware := make(map[string]interface{})
+			singleHardware["id"] = *allowedHW.Id
+			singleHardware["username"] = *allowedHW.AllowedHost.Credential.Username
+			singleHardware["password"] = *allowedHW.AllowedHost.Credential.Password
+			singleHardware["host_iqn"] = *allowedHW.AllowedHost.Name
+			allowedHostInfoList = append(allowedHostInfoList, singleHardware)
+			allowedHardwareInfoList = append(allowedHardwareInfoList, singleHardware)
+			allowedHardwareIdsList = append(allowedHardwareIdsList, *allowedHW.Id)
+		}
+		d.Set("allowed_hardware_ids", allowedHardwareIdsList)
+		d.Set("allowed_hardware_info", allowedHardwareInfoList)
+		d.Set("allowed_host_info", allowedHostInfoList)
 
 		if storage.Notes != nil {
 			d.Set("notes", *storage.Notes)
