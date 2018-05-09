@@ -12,13 +12,13 @@ import (
 	"github.com/softlayer/softlayer-go/sl"
 )
 
-func resourceIBMDnsSecondary() *schema.Resource {
+func resourceIBMDNSSecondary() *schema.Resource {
 	return &schema.Resource{
-		Exists:   resourceIBMDnsSecondaryExists,
-		Create:   resourceIBMDnsSecondaryCreate,
-		Read:     resourceIBMDnsSecondaryRead,
-		Update:   resourceIBMDnsSecondaryUpdate,
-		Delete:   resourceIBMDnsSecondaryDelete,
+		Exists:   resourceIBMDNSSecondaryExists,
+		Create:   resourceIBMDNSSecondaryCreate,
+		Read:     resourceIBMDNSSecondaryRead,
+		Update:   resourceIBMDNSSecondaryUpdate,
+		Delete:   resourceIBMDNSSecondaryDelete,
 		Importer: &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{
 			"master_ip_address": {
@@ -46,11 +46,18 @@ func resourceIBMDnsSecondary() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+
+			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
 		},
 	}
 }
 
-func resourceIBMDnsSecondaryCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMDNSSecondaryCreate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetDnsSecondaryService(sess)
 
@@ -73,10 +80,10 @@ func resourceIBMDnsSecondaryCreate(d *schema.ResourceData, meta interface{}) err
 	log.Printf("[INFO] Created Dns Secondary Zone: %d", id)
 
 	// read remote state
-	return resourceIBMDnsSecondaryRead(d, meta)
+	return resourceIBMDNSSecondaryRead(d, meta)
 }
 
-func resourceIBMDnsSecondaryRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMDNSSecondaryRead(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetDnsSecondaryService(sess)
 
@@ -98,7 +105,7 @@ func resourceIBMDnsSecondaryRead(d *schema.ResourceData, meta interface{}) error
 	return nil
 }
 
-func resourceIBMDnsSecondaryUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMDNSSecondaryUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	domainId, _ := strconv.Atoi(d.Id())
 	hasChange := false
@@ -126,7 +133,7 @@ func resourceIBMDnsSecondaryUpdate(d *schema.ResourceData, meta interface{}) err
 	return nil
 }
 
-func resourceIBMDnsSecondaryDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMDNSSecondaryDelete(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetDnsSecondaryService(sess)
 
@@ -149,7 +156,7 @@ func resourceIBMDnsSecondaryDelete(d *schema.ResourceData, meta interface{}) err
 	return nil
 }
 
-func resourceIBMDnsSecondaryExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+func resourceIBMDNSSecondaryExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetDnsSecondaryService(sess)
 
