@@ -32,8 +32,8 @@ The following arguments are supported:
 * `config_dir` - (Required, string) The directory where you want the cluster configuration to download.
 * `admin` - (Optional, boolean) Set the value to `true` to download the configuration for the administrator. The default value is `false`.
 * `download` - (Optional, boolean) Set the value to `false` to skip downloading the configuration for the administrator. The default value is `true`. Because it is part of a data source, by default the configuration is downloaded for every Terraform call. For a particular cluster name or ID, the configuration is guaranteed to be downloaded to the same path for a given `config_dir`.
-* `org_guid` - (Required, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from the `ibm_org` data source or by running the `bx iam orgs --guid` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
-* `space_guid` - (Required, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from the `ibm_space` data source or by running the `bx iam space <space-name> --guid` command in the IBM Cloud CLI.
+* `org_guid` - (Optional, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from the `ibm_org` data source or by running the `bx iam orgs --guid` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `space_guid` - (Optional, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from the `ibm_space` data source or by running the `bx iam space <space-name> --guid` command in the IBM Cloud CLI.
 * `account_guid` - (Required, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from the `ibm_account` data source or by running the `bx iam accounts` command in the IBM Cloud CLI.
 
 
