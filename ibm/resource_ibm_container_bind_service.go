@@ -45,13 +45,13 @@ func resourceIBMContainerBindService() *schema.Resource {
 			"org_guid": {
 				Description: "The bluemix organization guid this cluster belongs to",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
 			},
 			"space_guid": {
 				Description: "The bluemix space guid this cluster belongs to",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
 			},
 			"account_guid": {
@@ -109,7 +109,7 @@ func resourceIBMContainerBindServiceCreate(d *schema.ResourceData, meta interfac
 	d.SetId(clusterNameID)
 	d.Set("service_instance_name_id", serviceInstanceNameID)
 	d.Set("namespace_id", namespaceID)
-	d.Set("space_guid", serviceInstanceSpaceGUID)
+	d.Set("service_instance_space_guid", serviceInstanceSpaceGUID)
 	d.Set("secret_name", bindResp.SecretName)
 
 	return resourceIBMContainerBindServiceRead(d, meta)
