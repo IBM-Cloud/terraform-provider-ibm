@@ -25,6 +25,8 @@ func TestAccIBMLbaasDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.ibm_lbaas.tfacc_lbaas", "protocols.0.load_balancing_method", "round_robin"),
 					resource.TestCheckResourceAttr("data.ibm_lbaas.tfacc_lbaas", "protocols.#", "1"),
 					resource.TestCheckResourceAttr("data.ibm_lbaas.tfacc_lbaas", "server_instances.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas_server_instance_attachment.lbaas_member", "weight", "20"),
 				),
 			},
 		},
@@ -33,7 +35,7 @@ func TestAccIBMLbaasDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMLbaasDataSourceConfig(name string) string {
 	return fmt.Sprintf(`
-	resource "ibm_compute_vm_instance" "vm1" {
+resource "ibm_compute_vm_instance" "vm1" {
     hostname = "lbass-test"
     os_reference_code = "CENTOS_7_64"
     domain = "terraform.com"
@@ -62,13 +64,13 @@ resource "ibm_lbaas" "lbaas" {
 
     "load_balancing_method" = "round_robin"
   }]
-
-  server_instances = [{
-    "private_ip_address" = "${ibm_compute_vm_instance.vm1.ipv4_address_private}",
-  },
-  ]
 }
-    data "ibm_lbaas" "tfacc_lbaas" {
+resource "ibm_lbaas_server_instance_attachment" "lbaas_member" {
+  private_ip_address = "${ibm_compute_vm_instance.vm1.ipv4_address_private}"
+  weight             = 20
+  lbaas_id           = "${ibm_lbaas.lbaas.id}"
+}
+data "ibm_lbaas" "tfacc_lbaas" {
     name = "${ibm_lbaas.lbaas.name}"
 }
 `, lbaasDatacenter, name, lbaasSubnetId)

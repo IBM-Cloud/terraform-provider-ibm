@@ -22,6 +22,21 @@ func TestAccIBMContainerClusterVersionsDataSource_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMContainerClusterVersionsDataSource_WithoutOptionalFields(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMContainerClusterVersionsDataSourceWithoutOptionalFields(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_container_cluster_versions.versions", "valid_kube_versions.0"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMContainerClusterVersionsDataSource() string {
 	return fmt.Sprintf(`
 data "ibm_org" "testacc_ds_org" {
@@ -40,4 +55,18 @@ data "ibm_container_cluster_versions" "versions" {
     account_guid = "${data.ibm_account.testacc_acc.id}"
 }
 `, cfOrganization, cfOrganization, cfSpace)
+}
+
+func testAccCheckIBMContainerClusterVersionsDataSourceWithoutOptionalFields() string {
+	return fmt.Sprintf(`
+data "ibm_org" "testacc_ds_org" {
+    org = "%s"
+}
+data "ibm_account" "testacc_acc" {
+    org_guid = "${data.ibm_org.testacc_ds_org.id}"
+}
+data "ibm_container_cluster_versions" "versions" {
+	account_guid = "${data.ibm_account.testacc_acc.id}"
+}
+`, cfOrganization)
 }
