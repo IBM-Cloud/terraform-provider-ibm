@@ -63,11 +63,16 @@ func resourceIBMLbaasServerInstanceAttachmentCreate(d *schema.ResourceData, meta
 	p.Weight = sl.Int(weight)
 	members := make([]datatypes.Network_LBaaS_LoadBalancerServerInstanceInfo, 0, 1)
 	members = append(members, *p)
-	_, err := memberService.AddLoadBalancerMembers(sl.String(lbaasId), members)
+	_, err := waitForLbaasLBActive(d, meta)
+	if err != nil {
+		return fmt.Errorf(
+			"Error checking for load balancer (%s) is active: %s", d.Id(), err)
+	}
+	_, err = memberService.AddLoadBalancerMembers(sl.String(lbaasId), members)
 	if err != nil {
 		return fmt.Errorf("Error adding server instances: %#v", err)
 	}
-	_, err = waitForLbaasLBAvailbleAfterAttachment(d, meta)
+	_, err = waitForLbaasLBActive(d, meta)
 	if err != nil {
 		return fmt.Errorf(
 			"Error waiting for load balancer (%s) to become ready: %s", d.Id(), err)
@@ -116,8 +121,16 @@ func resourceIBMLbaasServerInstanceAttachmentUpdate(d *schema.ResourceData, meta
 		updateParam.Address = sl.String(privateIpAddress)
 		members := make([]datatypes.Network_LBaaS_Member, 0, 1)
 		members = append(members, *updateParam)
-		_, err := memberService.UpdateLoadBalancerMembers(sl.String(lbaasId), members)
-		_, err = waitForLbaasLBAvailbleAfterAttachment(d, meta)
+		_, err := waitForLbaasLBActive(d, meta)
+		if err != nil {
+			return fmt.Errorf(
+				"Error checking for load balancer (%s) is active: %s", d.Id(), err)
+		}
+		_, err = memberService.UpdateLoadBalancerMembers(sl.String(lbaasId), members)
+		if err != nil {
+			return fmt.Errorf("Error updating loadbalnacer: %#v", err)
+		}
+		_, err = waitForLbaasLBActive(d, meta)
 		if err != nil {
 			return fmt.Errorf(
 				"Error waiting for load balancer (%s) to become ready: %s", lbaasId, err)
@@ -148,11 +161,16 @@ func resourceIBMLbaasServerInstanceAttachmentDelete(d *schema.ResourceData, meta
 	lbaasId := d.Get("lbaas_id").(string)
 	removeList := make([]string, 0, 1)
 	removeList = append(removeList, d.Get("uuid").(string))
-	_, err := memberService.DeleteLoadBalancerMembers(sl.String(lbaasId), removeList)
+	_, err := waitForLbaasLBActive(d, meta)
+	if err != nil {
+		return fmt.Errorf(
+			"Error checking for load balancer (%s) is active: %s", d.Id(), err)
+	}
+	_, err = memberService.DeleteLoadBalancerMembers(sl.String(lbaasId), removeList)
 	if err != nil {
 		return fmt.Errorf("Error removing server instances: %#v", err)
 	}
-	_, err = waitForLbaasLBAvailbleAfterAttachment(d, meta)
+	_, err = waitForLbaasLBActive(d, meta)
 	if err != nil {
 		return fmt.Errorf(
 			"Error waiting for load balancer (%s) to become ready: %s", d.Id(), err)
@@ -160,7 +178,7 @@ func resourceIBMLbaasServerInstanceAttachmentDelete(d *schema.ResourceData, meta
 	return nil
 }
 
-func waitForLbaasLBAvailbleAfterAttachment(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+func waitForLbaasLBActive(d *schema.ResourceData, meta interface{}) (interface{}, error) {
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetNetworkLBaaSLoadBalancerService(sess)
 	lbaasId := d.Get("lbaas_id").(string)
