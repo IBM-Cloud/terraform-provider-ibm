@@ -87,6 +87,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dns_domain":                 dataSourceIBMDNSDomain(),
 			"ibm_dns_secondary":              dataSourceIBMDNSSecondary(),
 			"ibm_iam_user_policy":            dataSourceIBMIAMUserPolicy(),
+			"ibm_iam_service_id":             dataSourceIBMIAMServiceID(),
 			"ibm_lbaas":                      dataSourceIBMLbaas(),
 			"ibm_network_vlan":               dataSourceIBMNetworkVlan(),
 			"ibm_org":                        dataSourceIBMOrg(),
