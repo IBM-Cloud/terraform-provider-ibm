@@ -133,7 +133,7 @@ func resourceIBMFirewallSharedCreate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceIBMFirewallSharedRead(d *schema.ResourceData, meta interface{}) error {
-	
+
 	macId := (d.Get("guest_id").(int))
 
 	guestType := (d.Get("guest_type").(string))
@@ -144,7 +144,6 @@ func resourceIBMFirewallSharedRead(d *schema.ResourceData, meta interface{}) err
 		service := services.GetVirtualGuestService(meta.(ClientSession).SoftLayerSession())
 
 		result, err := service.Id(macId).Mask(masked).GetObject()
-
 
 		if err != nil {
 			return fmt.Errorf("Error retrieving firewall information: %s", err)
@@ -159,7 +158,6 @@ func resourceIBMFirewallSharedRead(d *schema.ResourceData, meta interface{}) err
 			service := services.GetHardwareService(meta.(ClientSession).SoftLayerSession())
 
 			resultNew, err := service.Id(macId).Mask(masked).GetObject()
-
 
 			if err != nil {
 				return fmt.Errorf("Error retrieving firewall information: %s", err)
