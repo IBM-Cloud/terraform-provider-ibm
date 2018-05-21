@@ -23,15 +23,20 @@ func TestAccIBMLbaasServerInstanceAttachment_Basic(t *testing.T) {
 				Config: testAccCheckIBMLbaasServerInstanceAttachmentConfig_basic(name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"ibm_lbaas_server_instance_attachment.lbaas_member", "weight", "20"),
-					resource.TestCheckResourceAttrSet("ibm_lbaas_server_instance_attachment.lbaas_member", "uuid"),
+						"ibm_lbaas_server_instance_attachment.lbaas_member1", "weight", "20"),
+					resource.TestCheckResourceAttrSet("ibm_lbaas_server_instance_attachment.lbaas_member1", "uuid"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas_server_instance_attachment.lbaas_member2", "weight", "20"),
+					resource.TestCheckResourceAttrSet("ibm_lbaas_server_instance_attachment.lbaas_member2", "uuid"),
 				),
 			},
 			{
 				Config: testAccCheckIBMLbaasServerInstanceAttachmentConfig_update(name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"ibm_lbaas_server_instance_attachment.lbaas_member", "weight", "40"),
+						"ibm_lbaas_server_instance_attachment.lbaas_member1", "weight", "40"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas_server_instance_attachment.lbaas_member2", "weight", "40"),
 				),
 			},
 		},
@@ -48,10 +53,40 @@ func TestAccIBMLbaasServerInstanceAttachment_Dynamic_SI_Attachment(t *testing.T)
 			resource.TestStep{
 				Config: testAccCheckIBMLbaasServerInstanceAttachmentConfig_lbaas_dynamic_association(name),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(
-						"ibm_lbaas_server_instance_attachment.lbaas_member.0", "uuid"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_lbaas_server_instance_attachment.lbaas_member.1", "uuid"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "description", "desc-used for terraform uat"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "datacenter", lbaasDatacenter),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "subnets.#", "1"),
+				),
+			},
+			{
+				Config: testAccCheckIBMLbaasServerInstanceAttachmentConfig_lbaas_dynamic_association_attach(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "description", "desc-used for terraform uat"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "datacenter", lbaasDatacenter),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "subnets.#", "1"),
+				),
+			},
+			{
+				Config: testAccCheckIBMLbaasServerInstanceAttachmentConfig_lbaas_dynamic_association_dettach(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "description", "desc-used for terraform uat"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "datacenter", lbaasDatacenter),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "subnets.#", "1"),
 				),
 			},
 		},
@@ -142,20 +177,72 @@ resource "ibm_compute_vm_instance" "vm1" {
     dedicated_acct_host_only = true
     local_disk = false
 }
+resource "ibm_compute_vm_instance" "vm2" {
+    hostname = "lbass-test"
+    os_reference_code = "CENTOS_7_64"
+    domain = "terraform.com"
+    datacenter = "%s"
+    network_speed = "10"
+    hourly_billing = true
+    private_network_only = false
+    cores = "1"
+    memory = "1024"
+    disks = ["25"]
+    user_metadata = "{\"value\":\"newvalue\"}"
+    dedicated_acct_host_only = true
+    local_disk = false
+}
+resource "ibm_lbaas" "lbaas" {
+  name        = "%s"
+  description = "desc-used for terraform uat"
+  subnets     = ["%s"]
+}
+resource "ibm_lbaas_server_instance_attachment" "lbaas_member1" {
+  private_ip_address = "${ibm_compute_vm_instance.vm1.ipv4_address_private}"
+  weight             = 20
+  lbaas_id           = "${ibm_lbaas.lbaas.id}"
+}
+resource "ibm_lbaas_server_instance_attachment" "lbaas_member2" {
+  private_ip_address = "${ibm_compute_vm_instance.vm2.ipv4_address_private}"
+  weight             = 20
+  lbaas_id           = "${ibm_lbaas.lbaas.id}"
+}
+`, lbaasDatacenter, lbaasDatacenter, name, lbaasSubnetId)
+}
+
+func testAccCheckIBMLbaasServerInstanceAttachmentConfig_lbaas_dynamic_association(name string) string {
+	return fmt.Sprintf(`
+resource "ibm_compute_vm_instance" "vm1" {
+	count = 1
+    hostname = "lbass-test"
+    os_reference_code = "CENTOS_7_64"
+    domain = "terraform.com"
+    datacenter = "%s"
+    network_speed = "10"
+    hourly_billing = true
+    private_network_only = false
+    cores = "1"
+    memory = "1024"
+    disks = ["25"]
+    user_metadata = "{\"value\":\"newvalue\"}"
+    dedicated_acct_host_only = true
+    local_disk = false
+}
 resource "ibm_lbaas" "lbaas" {
   name        = "%s"
   description = "desc-used for terraform uat"
   subnets     = ["%s"]
 }
 resource "ibm_lbaas_server_instance_attachment" "lbaas_member" {
-  private_ip_address = "${ibm_compute_vm_instance.vm1.ipv4_address_private}"
+  count = 1
+  private_ip_address = "${element(ibm_compute_vm_instance.vm1.*.ipv4_address_private,count.index)}"
   weight             = 20
   lbaas_id           = "${ibm_lbaas.lbaas.id}"
 }
 `, lbaasDatacenter, name, lbaasSubnetId)
 }
 
-func testAccCheckIBMLbaasServerInstanceAttachmentConfig_lbaas_dynamic_association(name string) string {
+func testAccCheckIBMLbaasServerInstanceAttachmentConfig_lbaas_dynamic_association_attach(name string) string {
 	return fmt.Sprintf(`
 resource "ibm_compute_vm_instance" "vm1" {
 	count = 2
@@ -181,7 +268,39 @@ resource "ibm_lbaas" "lbaas" {
 resource "ibm_lbaas_server_instance_attachment" "lbaas_member" {
   count = 2
   private_ip_address = "${element(ibm_compute_vm_instance.vm1.*.ipv4_address_private,count.index)}"
-  weight             = 20
+  weight             = 40
+  lbaas_id           = "${ibm_lbaas.lbaas.id}"
+}
+`, lbaasDatacenter, name, lbaasSubnetId)
+}
+
+func testAccCheckIBMLbaasServerInstanceAttachmentConfig_lbaas_dynamic_association_dettach(name string) string {
+	return fmt.Sprintf(`
+resource "ibm_compute_vm_instance" "vm1" {
+	count = 2
+    hostname = "lbass-test"
+    os_reference_code = "CENTOS_7_64"
+    domain = "terraform.com"
+    datacenter = "%s"
+    network_speed = "10"
+    hourly_billing = true
+    private_network_only = false
+    cores = "1"
+    memory = "1024"
+    disks = ["25"]
+    user_metadata = "{\"value\":\"newvalue\"}"
+    dedicated_acct_host_only = true
+    local_disk = false
+}
+resource "ibm_lbaas" "lbaas" {
+  name        = "%s"
+  description = "desc-used for terraform uat"
+  subnets     = ["%s"]
+}
+resource "ibm_lbaas_server_instance_attachment" "lbaas_member" {
+  count = 1
+  private_ip_address = "${element(ibm_compute_vm_instance.vm1.*.ipv4_address_private,count.index)}"
+  weight             = 40
   lbaas_id           = "${ibm_lbaas.lbaas.id}"
 }
 `, lbaasDatacenter, name, lbaasSubnetId)
@@ -204,15 +323,35 @@ resource "ibm_compute_vm_instance" "vm1" {
     dedicated_acct_host_only = true
     local_disk = false
 }
+resource "ibm_compute_vm_instance" "vm2" {
+    hostname = "lbass-test"
+    os_reference_code = "CENTOS_7_64"
+    domain = "terraform.com"
+    datacenter = "%s"
+    network_speed = "10"
+    hourly_billing = true
+    private_network_only = false
+    cores = "1"
+    memory = "1024"
+    disks = ["25"]
+    user_metadata = "{\"value\":\"newvalue\"}"
+    dedicated_acct_host_only = true
+    local_disk = false
+}
 resource "ibm_lbaas" "lbaas" {
   name        = "%s"
   description = "desc-used for terraform uat"
   subnets     = ["%s"]
 }
-resource "ibm_lbaas_server_instance_attachment" "lbaas_member" {
+resource "ibm_lbaas_server_instance_attachment" "lbaas_member1" {
   private_ip_address = "${ibm_compute_vm_instance.vm1.ipv4_address_private}"
   weight             = 40
   lbaas_id           = "${ibm_lbaas.lbaas.id}"
 }
-`, lbaasDatacenter, name, lbaasSubnetId)
+resource "ibm_lbaas_server_instance_attachment" "lbaas_member2" {
+  private_ip_address = "${ibm_compute_vm_instance.vm2.ipv4_address_private}"
+  weight             = 40
+  lbaas_id           = "${ibm_lbaas.lbaas.id}"
+}
+`, lbaasDatacenter, lbaasDatacenter, name, lbaasSubnetId)
 }

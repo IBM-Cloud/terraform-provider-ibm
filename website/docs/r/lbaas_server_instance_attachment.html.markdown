@@ -43,7 +43,8 @@ resource "ibm_lbaas" "lbaas" {
 }
 
 resource "ibm_lbaas_server_instance_attachment" "lbaas_member" {
-  private_ip_address = "${ibm_compute_vm_instance.vm_instances.ipv4_address_private}"
+  count				 = 2
+  private_ip_address = "${element(ibm_compute_vm_instance.vm_instances.*.ipv4_address_private,count.index)}"
   weight             = 40
   lbaas_id           = "${ibm_lbaas.lbaas.id}"
 }
