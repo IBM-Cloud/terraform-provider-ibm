@@ -153,6 +153,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dns_secondary":                    resourceIBMDnsSecondary(),
 			"ibm_dns_reverse_record":               resourceIBMDNSREVERSERecord(),
 			"ibm_ssl_certificate":                  resourceIBMSSLCertificate(),
+			"ibm_firewall_shared":                  resourceIBMFirewallShared(),
 		},
 
 		ConfigureFunc: providerConfigure,
