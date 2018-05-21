@@ -25,8 +25,18 @@ resource "ibm_compute_vm_instance" "vsi"{
 resource "ibm_network_interface_sg_attachment" "sg1" {
     security_group_id = "${data.ibm_security_group.allowssh.id}"
     network_interface_id = "${ibm_compute_vm_instance.vsi.public_interface_id}"
+    //User can increase timeouts 
+    timeouts {
+      create = "15m"
+    }
 }
 ```
+
+## Timeouts
+
+ibm_network_interface_sg_attachment provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+
+* `create` - (Default 15 minutes) Used for Creating Instance.
 
 ## Argument Reference
 
