@@ -33,117 +33,386 @@ func resourceIBMSSLCertificate() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"csr": &schema.Schema{
+			"id": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+
+			"serverCount": {
+				Type:     schema.TypeInt,
+				Required: true,
+			},
+
+			"serverType": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
 			},
 
-			"address1": &schema.Schema{
+			"validityMonths": {
+				Type:     schema.TypeInt,
+				Required: true,
+			},
+
+			"sslType": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
 
-			"address2": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-
-			"city": &schema.Schema{
+			"certificateSigningRequest": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
 			},
 
-			"country_code": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-			},
-
-			"postal_code": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-			},
-
-			"state": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-			},
-
-			"org_name": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-			},
-
-			"phone_no": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-			},
-
-			"email": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-			},
-
-			"first_name": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-			},
-
-			"last_name": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-			},
-
-			"renewal": {
+			"renewalFlag": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  true,
 			},
 
-			"server_count": {
-				Type:     schema.TypeInt,
-				Required: true,
-			},
-
-			"server_type": &schema.Schema{
+			"orderApproverEmailAddress": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
 			},
 
-			"validity_month": {
-				Type:     schema.TypeInt,
-				Required: true,
+			"technicalContactSameAsOrgAddressFlag": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
 			},
 
-			"ssl_type": {
-				Type:     schema.TypeString,
-				Required: true,
+			"administrativeContactSameAsTechnicalFlag": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
 			},
 
-			/*"common_name": {
-				Type:     schema.TypeString,
-				Required: true,
-			},*/
+			"billingContactSameAsTechnicalFlag": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 
-			"title": &schema.Schema{
-				Type:     schema.TypeString,
+			"organizationInformation": {
+				Type:     schema.TypeSet,
 				Required: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+
+						"org_address": {
+							Type:     schema.TypeSet,
+							Required: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+
+									"org_addressLine1": &schema.Schema{
+										Type:     schema.TypeString,
+										Required: true,
+									},
+
+									"org_addressLine2": &schema.Schema{
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+
+									"org_city": &schema.Schema{
+										Type:     schema.TypeString,
+										Required: true,
+									},
+
+									"org_countryCode": &schema.Schema{
+										Type:     schema.TypeString,
+										Required: true,
+									},
+
+									"org_postalCode": &schema.Schema{
+										Type:     schema.TypeString,
+										Required: true,
+									},
+
+									"org_state": &schema.Schema{
+										Type:     schema.TypeString,
+										Required: true,
+									},
+								},
+							},
+						},
+						"org_organizationName": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+
+						"org_phoneNumber": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+
+						"org_faxNumber": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
+			},
+
+			"technicalContact": {
+				Type:     schema.TypeSet,
+				Required: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+
+						"tech_address": {
+							Type:     schema.TypeSet,
+							Optional: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"tech_addressLine1": &schema.Schema{
+										Type:     schema.TypeString,
+										Required: true,
+									},
+
+									"tech_addressLine2": &schema.Schema{
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+
+									"tech_city": &schema.Schema{
+										Type:     schema.TypeString,
+										Required: true,
+									},
+
+									"tech_countryCode": &schema.Schema{
+										Type:     schema.TypeString,
+										Required: true,
+									},
+
+									"tech_postalCode": &schema.Schema{
+										Type:     schema.TypeString,
+										Required: true,
+									},
+
+									"tech_state": &schema.Schema{
+										Type:     schema.TypeString,
+										Required: true,
+									},
+								},
+							},
+						},
+						"tech_organizationName": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"tech_firstName": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+
+						"tech_lastName": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+
+						"tech_emailAddress": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+
+						"tech_phoneNumber": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+
+						"tech_faxNumber": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+
+						"tech_title": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
+			"billingContact": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+
+						"billing_address": {
+							Type:     schema.TypeSet,
+							Optional: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"billing_addressLine1": &schema.Schema{
+										Type:     schema.TypeString,
+										Required: true,
+									},
+
+									"billing_addressLine2": &schema.Schema{
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+
+									"billing_city": &schema.Schema{
+										Type:     schema.TypeString,
+										Required: true,
+									},
+
+									"billing_countryCode": &schema.Schema{
+										Type:     schema.TypeString,
+										Required: true,
+									},
+
+									"billing_postalCode": &schema.Schema{
+										Type:     schema.TypeString,
+										Required: true,
+									},
+
+									"billing_state": &schema.Schema{
+										Type:     schema.TypeString,
+										Required: true,
+									},
+								},
+							},
+						},
+						"billing_organizationName": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"billing_firstName": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+
+						"billing_lastName": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+
+						"billing_emailAddress": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+
+						"billing_phoneNumber": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+
+						"billing_faxNumber": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+
+						"billing_title": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
+
+			"administrativeContact": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+
+						"admin_address": {
+							Type:     schema.TypeSet,
+							Optional: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"admin_addressLine1": &schema.Schema{
+										Type:     schema.TypeString,
+										Required: true,
+									},
+
+									"admin_addressLine2": &schema.Schema{
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+
+									"admin_city": &schema.Schema{
+										Type:     schema.TypeString,
+										Required: true,
+									},
+
+									"admin_countryCode": &schema.Schema{
+										Type:     schema.TypeString,
+										Required: true,
+									},
+
+									"admin_postalCode": &schema.Schema{
+										Type:     schema.TypeString,
+										Required: true,
+									},
+
+									"admin_state": &schema.Schema{
+										Type:     schema.TypeString,
+										Required: true,
+									},
+								},
+							},
+						},
+						"admin_organizationName": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"admin_firstName": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+
+						"admin_lastName": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+
+						"admin_emailAddress": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+
+						"admin_phoneNumber": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"admin_faxNumber": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"admin_title": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
 			},
 		},
 	}
 }
-
 func resourceIBMSSLCertificateCreate(d *schema.ResourceData, m interface{}) error {
 	sess := m.(ClientSession).SoftLayerSession()
 	service := services.GetSecurityCertificateRequestService(sess.SetRetries(0))
-	sslKeyName := sl.String(d.Get("ssl_type").(string))
-	/*commonName := sl.String(d.Get("common_name").(string))
-
-	common_name, err := service.GetAdministratorEmailDomains(commonName)
-	if err != nil {
-		return err
-	}
-
-	log.Println(common_name)*/
+	sslKeyName := sl.String(d.Get("sslType").(string))
 	pkg, err := product.GetPackageByType(sess, AdditionalServicesSSLCertificatePackageType)
 	if err != nil {
 		return err
@@ -158,12 +427,10 @@ func resourceIBMSSLCertificateCreate(d *schema.ResourceData, m interface{}) erro
 			itemId = item.Id
 		}
 	}
-	log.Printf("///////////////////===%d===////////////////////", *itemId)
-	validCSR, err := service.ValidateCsr(sl.String(d.Get("csr").(string)), sl.Int(d.Get("validity_month").(int)), itemId, sl.String(d.Get("server_type").(string)))
+	validCSR, err := service.ValidateCsr(sl.String(d.Get("certificateSigningRequest").(string)), sl.Int(d.Get("validityMonths").(int)), itemId, sl.String(d.Get("serverType").(string)))
 	if err != nil {
 		return fmt.Errorf("Error during validation of CSR: %s", err)
 	}
-	log.Println(validCSR)
 	if validCSR == true {
 		productOrderContainer, err := buildSSLProductOrderContainer(d, sess, AdditionalServicesSSLCertificatePackageType)
 		if err != nil {
@@ -173,18 +440,15 @@ func resourceIBMSSLCertificateCreate(d *schema.ResourceData, m interface{}) erro
 				return fmt.Errorf("Error creating SSL certificate: %s", err)
 			}
 		}
-
 		log.Printf("[INFO] Creating SSL Certificate")
-
 		verifiedOrderContainer, err := services.GetProductOrderService(sess).VerifyOrder(productOrderContainer)
-
 		if err != nil {
 			return fmt.Errorf("Order verification failed: %s", err)
 		}
 
-		server_cnt := verifiedOrderContainer.ServerCoreCount
+		servercorecount := verifiedOrderContainer.ServerCoreCount
 		log.Println(verifiedOrderContainer)
-		log.Printf("Server_count: %d", server_cnt)
+		log.Printf("ServerCoreCount: %d", servercorecount)
 		receipt, err := services.GetProductOrderService(sess).PlaceOrder(productOrderContainer, sl.Bool(false))
 
 		if err != nil {
@@ -192,16 +456,10 @@ func resourceIBMSSLCertificateCreate(d *schema.ResourceData, m interface{}) erro
 		}
 
 		ssl, err := findSSLByOrderId(sess, *receipt.OrderId)
-
 		d.SetId(fmt.Sprintf("%d", *ssl.Id))
-
-		log.Println("//////////////////////////////SSL_ID///////////////////////////////////////")
-		log.Printf("%d", *ssl.Id)
-		log.Printf("ssl created successfully with OrderID: %d", receipt.OrderId)
-		log.Println("\\\\\\\\\\\\\\\\\\\\\\\\\\\\SSL_ID//////////////////////////////////////////")
 		return resourceIBMSSLCertificateRead(d, m)
 	} else {
-		log.Println("Please enter valid CSR")
+		log.Println("Provided CSR is not valid.")
 		return nil
 	}
 }
@@ -209,7 +467,6 @@ func resourceIBMSSLCertificateCreate(d *schema.ResourceData, m interface{}) erro
 func resourceIBMSSLCertificateRead(d *schema.ResourceData, m interface{}) error {
 	sess := m.(ClientSession).SoftLayerSession()
 	service := services.GetSecurityCertificateRequestService(sess)
-	sslservice := services.GetSecurityCertificateRequestServerTypeService(sess)
 	sslId, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return fmt.Errorf("Not a valid SSL ID, must be an integer: %s", err)
@@ -219,17 +476,8 @@ func resourceIBMSSLCertificateRead(d *schema.ResourceData, m interface{}) error 
 	if err != nil {
 		return fmt.Errorf("Error retrieving SSL: %s", err)
 	}
-
-	log.Println(ssl)
-	sslserver, err := sslservice.GetAllObjects()
-	if err != nil {
-		return fmt.Errorf("Error retrieving SSL servers: %s", err)
-	}
-	log.Println(sslserver)
-
 	d.Set("id", *ssl.Id)
-	d.Set("csr", ssl.CertificateSigningRequest)
-
+	d.Set("CertificateSigningRequest", ssl.CertificateSigningRequest)
 	return nil
 }
 
@@ -257,8 +505,6 @@ func resourceIBMSSLCertificateDelete(d *schema.ResourceData, m interface{}) erro
 		if deleteObject == false {
 			return fmt.Errorf("Error deleting SSL: %s", err)
 		} else {
-			id := sslId
-			log.Printf("ID: %d", id)
 			d.SetId("")
 			return nil
 		}
@@ -267,28 +513,13 @@ func resourceIBMSSLCertificateDelete(d *schema.ResourceData, m interface{}) erro
 		if cancelObject == false {
 			return fmt.Errorf("Error deleting SSL: %s", err)
 		} else {
-			id := sslId
-			log.Printf("ID: %d", id)
 			d.SetId("")
 			return nil
 		}
 	} else {
-		id := sslId
-		log.Printf("ID: %d", id)
 		d.SetId("")
 		return nil
 	}
-	/*if value == false {
-		return fmt.Errorf("Error deleting SSL: %s", err)
-	} else {
-		id := sslId
-		log.Printf("ID: %d", id)
-		d.SetId("")
-		return nil
-	}*/
-
-	//_, err = services.GetProductOrderService(sess).Id(*billingItem.Id).CheckItemAvailability()
-
 }
 
 func normalizedCert(cert interface{}) string {
@@ -305,37 +536,193 @@ func normalizedCert(cert interface{}) string {
 }
 
 func buildSSLProductOrderContainer(d *schema.ResourceData, sess *session1.Session, packageType string) (*datatypes.Container_Product_Order_Security_Certificate, error) {
-	address_attr := datatypes.Container_Product_Order_Attribute_Address{
-		AddressLine1: sl.String(d.Get("address1").(string)),
-		AddressLine2: sl.String(d.Get("address2").(string)),
-		City:         sl.String(d.Get("city").(string)),
-		CountryCode:  sl.String(d.Get("country_code").(string)),
-		PostalCode:   sl.String(d.Get("postal_code").(string)),
-		State:        sl.String(d.Get("state").(string)),
+	certificateSigningRequest := sl.String(d.Get("certificateSigningRequest").(string))
+	orderApproverEmailAddress := sl.String(d.Get("orderApproverEmailAddress").(string))
+	renewalFlag := sl.Bool(d.Get("renewalFlag").(bool))
+	serverCount := sl.Int(d.Get("serverCount").(int))
+	validityMonths := sl.Int(d.Get("validityMonths").(int))
+	serverType := sl.String(d.Get("serverType").(string))
+	sslType := sl.String(d.Get("sslType").(string))
+	orgnizationInfoList := d.Get("organizationInformation").(*schema.Set).List()
+	var addressline1, addressline2, city, countryCode, state, postalCode, organizationName, phoneNumber, faxNumber string
+	for _, orgnizationInfo := range orgnizationInfoList {
+		org_info := orgnizationInfo.(map[string]interface{})
+		org_addressList := org_info["org_address"].(*schema.Set).List()
+		for _, org_address := range org_addressList {
+			org_addr := org_address.(map[string]interface{})
+			addressline1 = org_addr["org_addressLine1"].(string)
+			addressline2 = org_addr["org_addressLine2"].(string)
+			city = org_addr["org_city"].(string)
+			countryCode = org_addr["org_countryCode"].(string)
+			state = org_addr["org_state"].(string)
+			postalCode = org_addr["org_postalCode"].(string)
+		}
+		organizationName = org_info["org_organizationName"].(string)
+		phoneNumber = org_info["org_phoneNumber"].(string)
+		faxNumber = org_info["org_faxNumber"].(string)
+	}
+	org_address_information := datatypes.Container_Product_Order_Attribute_Address{
+		AddressLine1: &addressline1,
+		AddressLine2: &addressline2,
+		City:         &city,
+		CountryCode:  &countryCode,
+		PostalCode:   &postalCode,
+		State:        &state,
+	}
+	org_information := datatypes.Container_Product_Order_Attribute_Organization{
+		Address:          &org_address_information,
+		OrganizationName: &organizationName,
+		PhoneNumber:      &phoneNumber,
+		FaxNumber:        &faxNumber,
+	}
+	TechInfoList := d.Get("technicalContact").(*schema.Set).List()
+	var tech_addressline1, tech_addressline2, tech_city, tech_countryCode, tech_state, tech_postalCode, tech_organizationName, tech_phoneNumber, tech_faxNumber, tech_emailAddress, tech_firstName, tech_lastName, tech_title string
+	for _, technicalcont := range TechInfoList {
+		tech_contact := technicalcont.(map[string]interface{})
+		tect_addressList := tech_contact["tech_address"].(*schema.Set).List()
+		for _, tech_address := range tect_addressList {
+			tech_addr := tech_address.(map[string]interface{})
+			tech_addressline1 = tech_addr["tech_addressLine1"].(string)
+			tech_addressline2 = tech_addr["tech_addressLine2"].(string)
+			tech_city = tech_addr["tech_city"].(string)
+			tech_countryCode = tech_addr["tech_countryCode"].(string)
+			tech_state = tech_addr["tech_state"].(string)
+			tech_postalCode = tech_addr["tech_postalCode"].(string)
+		}
+		tech_organizationName = tech_contact["tech_organizationName"].(string)
+		tech_phoneNumber = tech_contact["tech_phoneNumber"].(string)
+		tech_faxNumber = tech_contact["tech_faxNumber"].(string)
+		tech_emailAddress = tech_contact["tech_emailAddress"].(string)
+		tech_firstName = tech_contact["tech_firstName"].(string)
+		tech_lastName = tech_contact["tech_lastName"].(string)
+		tech_title = tech_contact["tech_title"].(string)
+	}
+	tech_address_information := datatypes.Container_Product_Order_Attribute_Address{
+		AddressLine1: &tech_addressline1,
+		AddressLine2: &tech_addressline2,
+		City:         &tech_city,
+		CountryCode:  &tech_countryCode,
+		PostalCode:   &tech_postalCode,
+		State:        &tech_state,
+	}
+	techAddressFlag := d.Get("technicalContactSameAsOrgAddressFlag").(bool)
+	var technical_contact_attr datatypes.Container_Product_Order_Attribute_Contact
+	if techAddressFlag {
+		technical_contact_attr = datatypes.Container_Product_Order_Attribute_Contact{
+			Address:          &org_address_information,
+			EmailAddress:     &tech_emailAddress,
+			FirstName:        &tech_firstName,
+			LastName:         &tech_lastName,
+			OrganizationName: &tech_organizationName,
+			PhoneNumber:      &tech_phoneNumber,
+			FaxNumber:        &tech_faxNumber,
+			Title:            &tech_title,
+		}
+	} else {
+		technical_contact_attr = datatypes.Container_Product_Order_Attribute_Contact{
+			Address:          &tech_address_information,
+			EmailAddress:     &tech_emailAddress,
+			FirstName:        &tech_firstName,
+			LastName:         &tech_lastName,
+			OrganizationName: &tech_organizationName,
+			PhoneNumber:      &tech_phoneNumber,
+			FaxNumber:        &tech_faxNumber,
+			Title:            &tech_title,
+		}
 	}
 
-	contact_attr := datatypes.Container_Product_Order_Attribute_Contact{
-		Address:          &address_attr,
-		EmailAddress:     sl.String(d.Get("email").(string)),
-		FirstName:        sl.String(d.Get("first_name").(string)),
-		LastName:         sl.String(d.Get("last_name").(string)),
-		OrganizationName: sl.String(d.Get("org_name").(string)),
-		PhoneNumber:      sl.String(d.Get("phone_no").(string)),
-		Title:            sl.String(d.Get("title").(string)),
+	administrativeContactList := d.Get("administrativeContact").(*schema.Set).List()
+	var admin_addressline1, admin_addressline2, admin_city, admin_countryCode, admin_state, admin_postalCode, admin_organizationName, admin_phoneNumber, admin_faxNumber, admin_emailAddress, admin_firstName, admin_lastName, admin_title string
+	for _, administrativecont := range administrativeContactList {
+		administrative_contact := administrativecont.(map[string]interface{})
+		administrative_addressList := administrative_contact["admin_address"].(*schema.Set).List()
+		for _, admin_address := range administrative_addressList {
+			admin_addr := admin_address.(map[string]interface{})
+			admin_addressline1 = admin_addr["admin_addressLine1"].(string)
+			admin_addressline2 = admin_addr["admin_addressLine2"].(string)
+			admin_city = admin_addr["admin_city"].(string)
+			admin_countryCode = admin_addr["admin_countryCode"].(string)
+			admin_state = admin_addr["admin_state"].(string)
+			admin_postalCode = admin_addr["admin_postalCode"].(string)
+		}
+		admin_organizationName = administrative_contact["admin_organizationName"].(string)
+		admin_phoneNumber = administrative_contact["admin_phoneNumber"].(string)
+		admin_faxNumber = administrative_contact["admin_faxNumber"].(string)
+		admin_emailAddress = administrative_contact["admin_emailAddress"].(string)
+		admin_firstName = administrative_contact["admin_firstName"].(string)
+		admin_lastName = administrative_contact["admin_lastName"].(string)
+		admin_title = administrative_contact["admin_title"].(string)
 	}
-	csr := sl.String(d.Get("csr").(string))
-	email := sl.String(d.Get("email").(string))
-
-	org_attr := datatypes.Container_Product_Order_Attribute_Organization{
-		Address:          &address_attr,
-		OrganizationName: sl.String(d.Get("org_name").(string)),
-		PhoneNumber:      sl.String(d.Get("phone_no").(string)),
+	administrative_address_information := datatypes.Container_Product_Order_Attribute_Address{
+		AddressLine1: &admin_addressline1,
+		AddressLine2: &admin_addressline2,
+		City:         &admin_city,
+		CountryCode:  &admin_countryCode,
+		PostalCode:   &admin_postalCode,
+		State:        &admin_state,
 	}
 
-	renewalflag := sl.Bool(d.Get("renewal").(bool))
-	server_count := sl.Int(d.Get("server_count").(int))
-	validity_month := sl.Int(d.Get("validity_month").(int))
+	administrative_contact_attr := datatypes.Container_Product_Order_Attribute_Contact{
+		Address:          &administrative_address_information,
+		EmailAddress:     &admin_emailAddress,
+		FirstName:        &admin_firstName,
+		LastName:         &admin_lastName,
+		OrganizationName: &admin_organizationName,
+		PhoneNumber:      &admin_phoneNumber,
+		FaxNumber:        &admin_faxNumber,
+		Title:            &admin_title,
+	}
 
+	billingContactList := d.Get("billingContact").(*schema.Set).List()
+	var bill_addressline1, bill_addressline2, bill_city, bill_countryCode, bill_state, bill_postalCode, bill_organizationName, bill_phoneNumber, bill_faxNumber, bill_emailAddress, bill_firstName, bill_lastName, bill_title string
+	for _, billingcont := range billingContactList {
+		billing_contact := billingcont.(map[string]interface{})
+		billing_addressList := billing_contact["billing_address"].(*schema.Set).List()
+		for _, billing_address := range billing_addressList {
+			billing_addr := billing_address.(map[string]interface{})
+			bill_addressline1 = billing_addr["billing_addressLine1"].(string)
+			bill_addressline2 = billing_addr["billing_addressLine2"].(string)
+			bill_city = billing_addr["billing_city"].(string)
+			bill_countryCode = billing_addr["billing_countryCode"].(string)
+			bill_state = billing_addr["billing_state"].(string)
+			bill_postalCode = billing_addr["billing_postalCode"].(string)
+		}
+		bill_organizationName = billing_contact["billing_organizationName"].(string)
+		bill_phoneNumber = billing_contact["billing_phoneNumber"].(string)
+		bill_faxNumber = billing_contact["billing_faxNumber"].(string)
+		bill_emailAddress = billing_contact["billing_emailAddress"].(string)
+		bill_firstName = billing_contact["billing_firstName"].(string)
+		bill_lastName = billing_contact["billing_lastName"].(string)
+		bill_title = billing_contact["billing_title"].(string)
+	}
+	billing_address_information := datatypes.Container_Product_Order_Attribute_Address{
+		AddressLine1: &bill_addressline1,
+		AddressLine2: &bill_addressline2,
+		City:         &bill_city,
+		CountryCode:  &bill_countryCode,
+		PostalCode:   &bill_postalCode,
+		State:        &bill_state,
+	}
+
+	billing_contact_attr := datatypes.Container_Product_Order_Attribute_Contact{
+		Address:          &billing_address_information,
+		EmailAddress:     &bill_emailAddress,
+		FirstName:        &bill_firstName,
+		LastName:         &bill_lastName,
+		OrganizationName: &bill_organizationName,
+		PhoneNumber:      &bill_phoneNumber,
+		FaxNumber:        &bill_faxNumber,
+		Title:            &bill_title,
+	}
+
+	administrativeContactSameAsTechnical := d.Get("administrativeContactSameAsTechnicalFlag").(bool)
+	billingContactSameAsTechnical := d.Get("billingContactSameAsTechnicalFlag").(bool)
+	if administrativeContactSameAsTechnical {
+		administrative_contact_attr = technical_contact_attr
+	}
+	if billingContactSameAsTechnical {
+		billing_contact_attr = technical_contact_attr
+	}
 	pkg, err := product.GetPackageByType(sess, packageType)
 	if err != nil {
 		return &datatypes.Container_Product_Order_Security_Certificate{}, err
@@ -345,7 +732,7 @@ func buildSSLProductOrderContainer(d *schema.ResourceData, sess *session1.Sessio
 	if err != nil {
 		return &datatypes.Container_Product_Order_Security_Certificate{}, err
 	}
-	sslKeyName := sl.String(d.Get("ssl_type").(string))
+	sslKeyName := sslType
 
 	sslItems := []datatypes.Product_Item{}
 	for _, item := range productItems {
@@ -368,16 +755,16 @@ func buildSSLProductOrderContainer(d *schema.ResourceData, sess *session1.Sessio
 			},
 			Quantity: sl.Int(1),
 		},
-		AdministrativeContact:     &contact_attr,
-		BillingContact:            &contact_attr,
-		CertificateSigningRequest: csr,
-		OrderApproverEmailAddress: email,
-		OrganizationInformation:   &org_attr,
-		RenewalFlag:               renewalflag,
-		ServerCount:               server_count,
-		ServerType:                sl.String(d.Get("server_type").(string)),
-		TechnicalContact:          &contact_attr,
-		ValidityMonths:            validity_month,
+		AdministrativeContact:     &administrative_contact_attr,
+		BillingContact:            &billing_contact_attr,
+		CertificateSigningRequest: certificateSigningRequest,
+		OrderApproverEmailAddress: orderApproverEmailAddress,
+		OrganizationInformation:   &org_information,
+		RenewalFlag:               renewalFlag,
+		ServerCount:               serverCount,
+		ServerType:                serverType,
+		TechnicalContact:          &technical_contact_attr,
+		ValidityMonths:            validityMonths,
 	}
 
 	return &sslContainer, nil
