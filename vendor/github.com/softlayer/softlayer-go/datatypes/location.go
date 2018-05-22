@@ -36,6 +36,9 @@ type Location struct {
 	// no documentation yet
 	BackboneDependents []Network_Backbone_Location_Dependent `json:"backboneDependents,omitempty" xmlrpc:"backboneDependents,omitempty"`
 
+	// A flag indicating whether or not the datacenter/location is EU compliant.
+	EuCompliantFlag *bool `json:"euCompliantFlag,omitempty" xmlrpc:"euCompliantFlag,omitempty"`
+
 	// A count of a location can be a member of 1 or more groups. This will show which groups to which a location belongs.
 	GroupCount *uint `json:"groupCount,omitempty" xmlrpc:"groupCount,omitempty"`
 
@@ -191,6 +194,9 @@ type Location_Group struct {
 // no documentation yet
 type Location_Group_Location_CrossReference struct {
 	Entity
+
+	// no documentation yet
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
 
 	// no documentation yet
 	Location *Location `json:"location,omitempty" xmlrpc:"location,omitempty"`

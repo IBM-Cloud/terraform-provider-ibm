@@ -78,18 +78,6 @@ func TestAccIBMStorageFile_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ibm_storage_file.fs_endurance", "mountpoint"),
 					// Endurance Storage
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.#", "3"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.0.schedule_type", "WEEKLY"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.0.retention_count", "5"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.0.minute", "2"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.0.hour", "13"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.0.day_of_week", "SUNDAY"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.1.schedule_type", "HOURLY"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.1.retention_count", "5"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.1.minute", "30"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.2.schedule_type", "DAILY"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.2.retention_count", "6"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.2.minute", "2"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.2.hour", "15"),
 				),
 			},
 			resource.TestStep{
@@ -98,16 +86,6 @@ func TestAccIBMStorageFile_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ibm_storage_file.fs_endurance", "mountpoint"),
 					// Endurance Storage
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.#", "3"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.0.retention_count", "2"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.0.minute", "2"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.0.hour", "13"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.0.day_of_week", "MONDAY"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.1.retention_count", "3"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.1.minute", "40"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.2.retention_count", "5"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.2.minute", "2"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.2.hour", "15"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "snapshot_schedule.2.enable", "false"),
 				),
 			},
 		},
@@ -225,8 +203,8 @@ const testAccCheckIBMStorageFileConfig_basic = `
 resource "ibm_compute_vm_instance" "storagevm1" {
     hostname = "storagevm1"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_7_64"
-    datacenter = "dal06"
+    os_reference_code = "DEBIAN_8_64"
+    datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
     private_network_only = false
@@ -261,8 +239,8 @@ const testAccCheckIBMStorageFileConfig_update = `
 resource "ibm_compute_vm_instance" "storagevm1" {
     hostname = "storagevm1"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_7_64"
-    datacenter = "dal06"
+    os_reference_code = "DEBIAN_8_64"
+    datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
     private_network_only = false
@@ -303,8 +281,8 @@ const testAccCheckIBMStorageFileConfig_enablesnapshot = `
 resource "ibm_compute_vm_instance" "storagevm1" {
     hostname = "storagevm1"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_7_64"
-    datacenter = "dal06"
+    os_reference_code = "DEBIAN_8_64"
+    datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
     private_network_only = false
@@ -349,8 +327,8 @@ const testAccCheckIBMStorageFileConfig_updatesnapshot = `
 resource "ibm_compute_vm_instance" "storagevm1" {
     hostname = "storagevm1"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_7_64"
-    datacenter = "dal06"
+    os_reference_code = "DEBIAN_8_64"
+    datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
     private_network_only = false
@@ -396,8 +374,8 @@ const testAccCheckIBMStorageFileWithTag = `
 resource "ibm_compute_vm_instance" "storagevm1" {
     hostname = "storagevm1"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_7_64"
-    datacenter = "dal06"
+    os_reference_code = "DEBIAN_8_64"
+    datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
     private_network_only = false
@@ -421,8 +399,8 @@ const testAccCheckIBMStorageFileWithUpdatedTag = `
 resource "ibm_compute_vm_instance" "storagevm1" {
     hostname = "storagevm1"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_7_64"
-    datacenter = "dal06"
+    os_reference_code = "DEBIAN_8_64"
+    datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
     private_network_only = false
@@ -446,7 +424,7 @@ const testAccCheckIBMStorageFileConfigWithHourlyBilling = `
 resource "ibm_compute_vm_instance" "storagevm1" {
     hostname = "storagevm1"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_7_64"
+    os_reference_code = "DEBIAN_8_64"
     datacenter = "dal09"
     network_speed = 100
     hourly_billing = true

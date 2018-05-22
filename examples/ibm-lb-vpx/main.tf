@@ -11,7 +11,7 @@ resource "ibm_compute_vm_instance" "virtualguest" {
   count                   = "${var.vm_count}"
   hostname                = "ng-vm${count.index+1}"
   domain                  = "terraform.ibm.com"
-  os_reference_code       = "DEBIAN_7_64"
+  os_reference_code       = "DEBIAN_8_64"
   datacenter              = "${var.datacenter}"
   network_speed           = 10
   hourly_billing          = true

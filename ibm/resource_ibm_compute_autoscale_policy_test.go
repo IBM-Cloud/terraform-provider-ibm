@@ -253,7 +253,7 @@ resource "ibm_compute_autoscale_group" "sample-http-cluster-with-policy" {
         memory = 4096
         network_speed = 1000
         hourly_billing = true
-        os_reference_code = "DEBIAN_7_64"
+        os_reference_code = "DEBIAN_8_64"
         local_disk = false
         datacenter = "dal09"
     }
@@ -310,7 +310,7 @@ resource "ibm_compute_autoscale_group" "sample-http-cluster-with-policy" {
         memory = 4096
         network_speed = 1000
         hourly_billing = true
-        os_reference_code = "DEBIAN_7_64"
+        os_reference_code = "DEBIAN_8_64"
         local_disk = false
         datacenter = "dal09"
     }
@@ -359,7 +359,7 @@ resource "ibm_compute_autoscale_group" "sample-http-cluster-with-policy" {
         memory = 4096
         network_speed = 1000
         hourly_billing = true
-        os_reference_code = "DEBIAN_7_64"
+        os_reference_code = "DEBIAN_8_64"
         local_disk = false
         datacenter = "dal09"
     }
@@ -410,7 +410,7 @@ resource "ibm_compute_autoscale_group" "sample-http-cluster-with-policy" {
         memory = 4096
         network_speed = 1000
         hourly_billing = true
-        os_reference_code = "DEBIAN_7_64"
+        os_reference_code = "DEBIAN_8_64"
         local_disk = false
         datacenter = "dal09"
     }

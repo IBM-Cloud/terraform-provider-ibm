@@ -117,6 +117,18 @@ func (r Brand) GetAllowAccountCreationFlag() (resp bool, err error) {
 	return
 }
 
+// Retrieve Business Partner details for the brand. Country Enterprise Code, Channel, Segment, Reseller Level.
+func (r Brand) GetBusinessPartner() (resp datatypes.Brand_Business_Partner, err error) {
+	err = r.Session.DoRequest("SoftLayer_Brand", "getBusinessPartner", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Flag indicating if the brand is a business partner.
+func (r Brand) GetBusinessPartnerFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Brand", "getBusinessPartnerFlag", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve The Product Catalog for the Brand
 func (r Brand) GetCatalog() (resp datatypes.Product_Catalog, err error) {
 	err = r.Session.DoRequest("SoftLayer_Brand", "getCatalog", nil, &r.Options, &resp)
@@ -196,6 +208,12 @@ func (r Brand) GetOwnedAccounts() (resp []datatypes.Account, err error) {
 }
 
 // Retrieve
+func (r Brand) GetSecurityLevel() (resp datatypes.Security_Level, err error) {
+	err = r.Session.DoRequest("SoftLayer_Brand", "getSecurityLevel", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
 func (r Brand) GetTicketGroups() (resp []datatypes.Ticket_Group, err error) {
 	err = r.Session.DoRequest("SoftLayer_Brand", "getTicketGroups", nil, &r.Options, &resp)
 	return
@@ -225,6 +243,70 @@ func (r Brand) GetUsers() (resp []datatypes.User_Customer, err error) {
 // Retrieve An account's associated virtual guest objects.
 func (r Brand) GetVirtualGuests() (resp []datatypes.Virtual_Guest, err error) {
 	err = r.Session.DoRequest("SoftLayer_Brand", "getVirtualGuests", nil, &r.Options, &resp)
+	return
+}
+
+// Contains business partner details associated with a brand. Country Enterprise Identifier (CEID), Channel ID, Segment ID and Reseller Level.
+type Brand_Business_Partner struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetBrandBusinessPartnerService returns an instance of the Brand_Business_Partner SoftLayer service
+func GetBrandBusinessPartnerService(sess *session.Session) Brand_Business_Partner {
+	return Brand_Business_Partner{Session: sess}
+}
+
+func (r Brand_Business_Partner) Id(id int) Brand_Business_Partner {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Brand_Business_Partner) Mask(mask string) Brand_Business_Partner {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Brand_Business_Partner) Filter(filter string) Brand_Business_Partner {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Brand_Business_Partner) Limit(limit int) Brand_Business_Partner {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Brand_Business_Partner) Offset(offset int) Brand_Business_Partner {
+	r.Options.Offset = &offset
+	return r
+}
+
+// Retrieve Brand associated with the business partner data
+func (r Brand_Business_Partner) GetBrand() (resp datatypes.Brand, err error) {
+	err = r.Session.DoRequest("SoftLayer_Brand_Business_Partner", "getBrand", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Channel indicator used to categorize business partner revenue.
+func (r Brand_Business_Partner) GetChannel() (resp datatypes.Business_Partner_Channel, err error) {
+	err = r.Session.DoRequest("SoftLayer_Brand_Business_Partner", "getChannel", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Brand_Business_Partner) GetObject() (resp datatypes.Brand_Business_Partner, err error) {
+	err = r.Session.DoRequest("SoftLayer_Brand_Business_Partner", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Segment indicator used to categorize business partner revenue.
+func (r Brand_Business_Partner) GetSegment() (resp datatypes.Business_Partner_Segment, err error) {
+	err = r.Session.DoRequest("SoftLayer_Brand_Business_Partner", "getSegment", nil, &r.Options, &resp)
 	return
 }
 

@@ -209,7 +209,12 @@ func makeHTTPRequest(
 	session *Session, path string, requestType string,
 	requestBody *bytes.Buffer, options *sl.Options) ([]byte, int, error) {
 	log := Logger
-	client := http.DefaultClient
+
+	client := session.HTTPClient
+	if client == nil {
+		client = &http.Client{}
+	}
+
 	client.Timeout = DefaultTimeout
 	if session.Timeout != 0 {
 		client.Timeout = session.Timeout
@@ -269,6 +274,7 @@ func makeHTTPRequest(
 	}
 
 	if session.Debug {
+		log.Println("[DEBUG] Status Code: ", resp.StatusCode)
 		log.Println("[DEBUG] Response: ", string(responseBody))
 	}
 	err = findResponseError(resp.StatusCode, responseBody)

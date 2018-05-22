@@ -718,6 +718,20 @@ type User_Customer_Link_ThePlanet struct {
 	User_Customer_Link
 }
 
+// no documentation yet
+type User_Customer_Link_VerifiedIBMidLinkCollection struct {
+	Entity
+
+	// no documentation yet
+	BadLinksDifferentIUI []User_Customer_Link `json:"badLinksDifferentIUI,omitempty" xmlrpc:"badLinksDifferentIUI,omitempty"`
+
+	// no documentation yet
+	BadLinksDifferentUsername []User_Customer_Link `json:"badLinksDifferentUsername,omitempty" xmlrpc:"badLinksDifferentUsername,omitempty"`
+
+	// no documentation yet
+	GoodLink []User_Customer_Link `json:"goodLink,omitempty" xmlrpc:"goodLink,omitempty"`
+}
+
 // This class represents a mobile device belonging to a user.  The device can be a phone, tablet, or possibly even some Android based net books.  The purpose is to tie just enough info with the device and the user to enable push notifications through non-softlayer entities (Google, Apple, RIM).
 type User_Customer_MobileDevice struct {
 	Entity
@@ -900,6 +914,9 @@ type User_Customer_Prospect struct {
 // Contains user information for Service Provider Enrollment.
 type User_Customer_Prospect_ServiceProvider_EnrollRequest struct {
 	Entity
+
+	// Flag indicating whether or not applicant has accepted all current SSP agreements.
+	AcceptAllAgreementsFlag *bool `json:"acceptAllAgreementsFlag,omitempty" xmlrpc:"acceptAllAgreementsFlag,omitempty"`
 
 	// accountId of existing SoftLayer Customer
 	AccountId *int `json:"accountId,omitempty" xmlrpc:"accountId,omitempty"`
@@ -1112,6 +1129,12 @@ type User_Employee struct {
 
 	// no documentation yet
 	Roles []User_Permission_Role `json:"roles,omitempty" xmlrpc:"roles,omitempty"`
+
+	// A count of
+	SecurityLevelCount *uint `json:"securityLevelCount,omitempty" xmlrpc:"securityLevelCount,omitempty"`
+
+	// no documentation yet
+	SecurityLevels []Security_Level `json:"securityLevels,omitempty" xmlrpc:"securityLevels,omitempty"`
 
 	// no documentation yet
 	TicketActivities []Ticket_Activity `json:"ticketActivities,omitempty" xmlrpc:"ticketActivities,omitempty"`

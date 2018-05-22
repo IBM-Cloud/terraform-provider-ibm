@@ -2213,6 +2213,15 @@ func (r Network_CdnMarketplace_Configuration_Mapping) ListDomainMappings() (resp
 }
 
 // no documentation yet
+func (r Network_CdnMarketplace_Configuration_Mapping) RetryHttpsActionRequest(uniqueId *string) (resp []datatypes.Container_Network_CdnMarketplace_Configuration_Mapping, err error) {
+	params := []interface{}{
+		uniqueId,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_CdnMarketplace_Configuration_Mapping", "retryHttpsActionRequest", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
 func (r Network_CdnMarketplace_Configuration_Mapping) StartDomainMapping(uniqueId *string) (resp []datatypes.Container_Network_CdnMarketplace_Configuration_Mapping, err error) {
 	params := []interface{}{
 		uniqueId,
@@ -3734,6 +3743,12 @@ func (r Network_DirectLink_Location) Offset(offset int) Network_DirectLink_Locat
 	return r
 }
 
+// Return all existing Direct Link location.
+func (r Network_DirectLink_Location) GetAllObjects() (resp []datatypes.Network_DirectLink_Location, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_DirectLink_Location", "getAllObjects", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve The Id of Direct Link cloud exchange provider.
 func (r Network_DirectLink_Location) GetCloudExchangeProvider() (resp datatypes.Network_DirectLink_CloudExchangeProvider, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_DirectLink_Location", "getCloudExchangeProvider", nil, &r.Options, &resp)
@@ -3758,6 +3773,110 @@ func (r Network_DirectLink_Location) GetLocation() (resp datatypes.Location, err
 // no documentation yet
 func (r Network_DirectLink_Location) GetObject() (resp datatypes.Network_DirectLink_Location, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_DirectLink_Location", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The Id of Direct Link provider.
+func (r Network_DirectLink_Location) GetProvider() (resp datatypes.Network_DirectLink_Provider, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_DirectLink_Location", "getProvider", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The Id of Direct Link service type.
+func (r Network_DirectLink_Location) GetServiceType() (resp datatypes.Network_DirectLink_ServiceType, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_DirectLink_Location", "getServiceType", nil, &r.Options, &resp)
+	return
+}
+
+// The SoftLayer_Network_DirectLink_Provider presents a structure containing attributes of a Direct Link provider.
+type Network_DirectLink_Provider struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetNetworkDirectLinkProviderService returns an instance of the Network_DirectLink_Provider SoftLayer service
+func GetNetworkDirectLinkProviderService(sess *session.Session) Network_DirectLink_Provider {
+	return Network_DirectLink_Provider{Session: sess}
+}
+
+func (r Network_DirectLink_Provider) Id(id int) Network_DirectLink_Provider {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Network_DirectLink_Provider) Mask(mask string) Network_DirectLink_Provider {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Network_DirectLink_Provider) Filter(filter string) Network_DirectLink_Provider {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Network_DirectLink_Provider) Limit(limit int) Network_DirectLink_Provider {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Network_DirectLink_Provider) Offset(offset int) Network_DirectLink_Provider {
+	r.Options.Offset = &offset
+	return r
+}
+
+// no documentation yet
+func (r Network_DirectLink_Provider) GetObject() (resp datatypes.Network_DirectLink_Provider, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_DirectLink_Provider", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// The SoftLayer_Network_DirectLink_ServiceType presents a structure containing attributes of a Direct Link Service Type.
+type Network_DirectLink_ServiceType struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetNetworkDirectLinkServiceTypeService returns an instance of the Network_DirectLink_ServiceType SoftLayer service
+func GetNetworkDirectLinkServiceTypeService(sess *session.Session) Network_DirectLink_ServiceType {
+	return Network_DirectLink_ServiceType{Session: sess}
+}
+
+func (r Network_DirectLink_ServiceType) Id(id int) Network_DirectLink_ServiceType {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Network_DirectLink_ServiceType) Mask(mask string) Network_DirectLink_ServiceType {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Network_DirectLink_ServiceType) Filter(filter string) Network_DirectLink_ServiceType {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Network_DirectLink_ServiceType) Limit(limit int) Network_DirectLink_ServiceType {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Network_DirectLink_ServiceType) Offset(offset int) Network_DirectLink_ServiceType {
+	r.Options.Offset = &offset
+	return r
+}
+
+// no documentation yet
+func (r Network_DirectLink_ServiceType) GetObject() (resp datatypes.Network_DirectLink_ServiceType, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_DirectLink_ServiceType", "getObject", nil, &r.Options, &resp)
 	return
 }
 
@@ -4631,6 +4750,15 @@ func (r Network_Interconnect_Tenant) GetAllObjects() (resp []datatypes.Network_I
 	return
 }
 
+// no documentation yet
+func (r Network_Interconnect_Tenant) GetAllPortLabelsWithCurrentUsage(directLinkLocationId *int) (resp []string, err error) {
+	params := []interface{}{
+		directLinkLocationId,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_Interconnect_Tenant", "getAllPortLabelsWithCurrentUsage", params, &r.Options, &resp)
+	return
+}
+
 // Retrieve The billing item for a network interconnect.
 func (r Network_Interconnect_Tenant) GetBillingItem() (resp datatypes.Billing_Item_Network_Interconnect, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Interconnect_Tenant", "getBillingItem", nil, &r.Options, &resp)
@@ -4661,6 +4789,12 @@ func (r Network_Interconnect_Tenant) GetNetworkZones() (resp []string, err error
 // no documentation yet
 func (r Network_Interconnect_Tenant) GetObject() (resp datatypes.Network_Interconnect_Tenant, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Interconnect_Tenant", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Network_Interconnect_Tenant) GetServiceType() (resp datatypes.Network_DirectLink_ServiceType, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Interconnect_Tenant", "getServiceType", nil, &r.Options, &resp)
 	return
 }
 
@@ -4877,6 +5011,20 @@ func (r Network_LBaaS_LoadBalancer) GetHealthMonitors() (resp []datatypes.Networ
 	return
 }
 
+// Return listener time series datapoints. The time series data is available for Throughput, ConnectionRate and ActiveConnections. Throughput is in bits per second. The values are an average over the time range. The time series data is available for 1hour, 6hours, 12hours, 1day, 1week or 2weeks.
+//
+//
+func (r Network_LBaaS_LoadBalancer) GetListenerTimeSeriesData(loadBalancerUuid *string, metricName *string, timeRange *string, listenerUuid *string) (resp []datatypes.Network_LBaaS_LoadBalancerMonitoringMetricDataPoint, err error) {
+	params := []interface{}{
+		loadBalancerUuid,
+		metricName,
+		timeRange,
+		listenerUuid,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_LoadBalancer", "getListenerTimeSeriesData", params, &r.Options, &resp)
+	return
+}
+
 // Retrieve Listeners assigned to load balancer.
 func (r Network_LBaaS_LoadBalancer) GetListeners() (resp []datatypes.Network_LBaaS_Listener, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_LoadBalancer", "getListeners", nil, &r.Options, &resp)
@@ -4922,6 +5070,12 @@ func (r Network_LBaaS_LoadBalancer) GetObject() (resp datatypes.Network_LBaaS_Lo
 	return
 }
 
+// Retrieve list of preferred custom ciphers configured for the load balancer.
+func (r Network_LBaaS_LoadBalancer) GetSslCiphers() (resp []datatypes.Network_LBaaS_SSLCipher, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_LoadBalancer", "getSslCiphers", nil, &r.Options, &resp)
+	return
+}
+
 // no documentation yet
 func (r Network_LBaaS_LoadBalancer) ServiceLoadBalancer(data *string) (resp datatypes.Network_LBaaS_LoadBalancer, err error) {
 	params := []interface{}{
@@ -4938,6 +5092,16 @@ func (r Network_LBaaS_LoadBalancer) UpdateLoadBalancer(uuid *string, newDescript
 		newDescription,
 	}
 	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_LoadBalancer", "updateLoadBalancer", params, &r.Options, &resp)
+	return
+}
+
+// Updates the load balancer with the new cipher list. All new connections going forward will use the new set of ciphers selected by the user.
+func (r Network_LBaaS_LoadBalancer) UpdateSslCiphers(loadBalancerUuid *string, cipherList []int) (resp datatypes.Network_LBaaS_LoadBalancer, err error) {
+	params := []interface{}{
+		loadBalancerUuid,
+		cipherList,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_LoadBalancer", "updateSslCiphers", params, &r.Options, &resp)
 	return
 }
 
@@ -5014,6 +5178,60 @@ func (r Network_LBaaS_Member) UpdateLoadBalancerMembers(loadBalancerUuid *string
 		members,
 	}
 	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_Member", "updateLoadBalancerMembers", params, &r.Options, &resp)
+	return
+}
+
+// The SoftLayer_Network_LBaaS_SSLCipher type presents a structure that contains attributes of load balancer cipher suites.
+//
+//
+type Network_LBaaS_SSLCipher struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetNetworkLBaaSSSLCipherService returns an instance of the Network_LBaaS_SSLCipher SoftLayer service
+func GetNetworkLBaaSSSLCipherService(sess *session.Session) Network_LBaaS_SSLCipher {
+	return Network_LBaaS_SSLCipher{Session: sess}
+}
+
+func (r Network_LBaaS_SSLCipher) Id(id int) Network_LBaaS_SSLCipher {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Network_LBaaS_SSLCipher) Mask(mask string) Network_LBaaS_SSLCipher {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Network_LBaaS_SSLCipher) Filter(filter string) Network_LBaaS_SSLCipher {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Network_LBaaS_SSLCipher) Limit(limit int) Network_LBaaS_SSLCipher {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Network_LBaaS_SSLCipher) Offset(offset int) Network_LBaaS_SSLCipher {
+	r.Options.Offset = &offset
+	return r
+}
+
+// Returns all supported cipher list
+func (r Network_LBaaS_SSLCipher) GetAllObjects() (resp []datatypes.Network_LBaaS_SSLCipher, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_SSLCipher", "getAllObjects", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_LBaaS_SSLCipher) GetObject() (resp datatypes.Network_LBaaS_SSLCipher, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_SSLCipher", "getObject", nil, &r.Options, &resp)
 	return
 }
 
@@ -5977,153 +6195,6 @@ func (r Network_Message_Delivery_Email_Sendgrid) UpdateEmailAddress(emailAddress
 	return
 }
 
-// The SoftLayer_Network_Message_Queue_Node data type contains general information relating to Message Queue node
-type Network_Message_Queue_Node struct {
-	Session *session.Session
-	Options sl.Options
-}
-
-// GetNetworkMessageQueueNodeService returns an instance of the Network_Message_Queue_Node SoftLayer service
-func GetNetworkMessageQueueNodeService(sess *session.Session) Network_Message_Queue_Node {
-	return Network_Message_Queue_Node{Session: sess}
-}
-
-func (r Network_Message_Queue_Node) Id(id int) Network_Message_Queue_Node {
-	r.Options.Id = &id
-	return r
-}
-
-func (r Network_Message_Queue_Node) Mask(mask string) Network_Message_Queue_Node {
-	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
-		mask = fmt.Sprintf("mask[%s]", mask)
-	}
-
-	r.Options.Mask = mask
-	return r
-}
-
-func (r Network_Message_Queue_Node) Filter(filter string) Network_Message_Queue_Node {
-	r.Options.Filter = filter
-	return r
-}
-
-func (r Network_Message_Queue_Node) Limit(limit int) Network_Message_Queue_Node {
-	r.Options.Limit = &limit
-	return r
-}
-
-func (r Network_Message_Queue_Node) Offset(offset int) Network_Message_Queue_Node {
-	r.Options.Offset = &offset
-	return r
-}
-
-// no documentation yet
-func (r Network_Message_Queue_Node) AddUser(username *string) (resp bool, err error) {
-	params := []interface{}{
-		username,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_Message_Queue_Node", "addUser", params, &r.Options, &resp)
-	return
-}
-
-// no documentation yet
-func (r Network_Message_Queue_Node) DeleteUser(username *string) (resp bool, err error) {
-	params := []interface{}{
-		username,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_Message_Queue_Node", "deleteUser", params, &r.Options, &resp)
-	return
-}
-
-// no documentation yet
-func (r Network_Message_Queue_Node) GetAllUsers() (resp []string, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_Message_Queue_Node", "getAllUsers", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve A message queue node's metric tracking object. This object records all request and notification count data for this message queue node.
-func (r Network_Message_Queue_Node) GetMetricTrackingObject() (resp datatypes.Metric_Tracking_Object, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_Message_Queue_Node", "getMetricTrackingObject", nil, &r.Options, &resp)
-	return
-}
-
-// no documentation yet
-func (r Network_Message_Queue_Node) GetObject() (resp datatypes.Network_Message_Queue_Node, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_Message_Queue_Node", "getObject", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve
-func (r Network_Message_Queue_Node) GetServiceResource() (resp datatypes.Network_Service_Resource, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_Message_Queue_Node", "getServiceResource", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve usage graph by date.
-func (r Network_Message_Queue_Node) GetUsage(startDate *datatypes.Time, endDate *datatypes.Time) (resp []datatypes.Metric_Tracking_Object_Data, err error) {
-	params := []interface{}{
-		startDate,
-		endDate,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_Message_Queue_Node", "getUsage", params, &r.Options, &resp)
-	return
-}
-
-// Retrieve usage graph by date.
-func (r Network_Message_Queue_Node) GetUsageGraph(graphData *datatypes.Container_Graph) (resp datatypes.Container_Graph, err error) {
-	params := []interface{}{
-		graphData,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_Message_Queue_Node", "getUsageGraph", params, &r.Options, &resp)
-	return
-}
-
-// The SoftLayer_Network_Message_Queue_Status data type contains general information relating to Message Queue account status.
-type Network_Message_Queue_Status struct {
-	Session *session.Session
-	Options sl.Options
-}
-
-// GetNetworkMessageQueueStatusService returns an instance of the Network_Message_Queue_Status SoftLayer service
-func GetNetworkMessageQueueStatusService(sess *session.Session) Network_Message_Queue_Status {
-	return Network_Message_Queue_Status{Session: sess}
-}
-
-func (r Network_Message_Queue_Status) Id(id int) Network_Message_Queue_Status {
-	r.Options.Id = &id
-	return r
-}
-
-func (r Network_Message_Queue_Status) Mask(mask string) Network_Message_Queue_Status {
-	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
-		mask = fmt.Sprintf("mask[%s]", mask)
-	}
-
-	r.Options.Mask = mask
-	return r
-}
-
-func (r Network_Message_Queue_Status) Filter(filter string) Network_Message_Queue_Status {
-	r.Options.Filter = filter
-	return r
-}
-
-func (r Network_Message_Queue_Status) Limit(limit int) Network_Message_Queue_Status {
-	r.Options.Limit = &limit
-	return r
-}
-
-func (r Network_Message_Queue_Status) Offset(offset int) Network_Message_Queue_Status {
-	r.Options.Offset = &offset
-	return r
-}
-
-// no documentation yet
-func (r Network_Message_Queue_Status) GetObject() (resp datatypes.Network_Message_Queue_Status, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_Message_Queue_Status", "getObject", nil, &r.Options, &resp)
-	return
-}
-
 // no documentation yet
 type Network_Monitor struct {
 	Session *session.Session
@@ -6497,7 +6568,7 @@ func (r Network_SecurityGroup) Offset(offset int) Network_SecurityGroup {
 }
 
 // Add new rules to a security group by sending in an array of template [[SoftLayer_Network_SecurityGroup_Rule (type)]] objects to be created.
-func (r Network_SecurityGroup) AddRules(ruleTemplates []datatypes.Network_SecurityGroup_Rule) (resp datatypes.Network_SecurityGroup_Request, err error) {
+func (r Network_SecurityGroup) AddRules(ruleTemplates []datatypes.Network_SecurityGroup_Rule) (resp datatypes.Network_SecurityGroup_RequestRules, err error) {
 	params := []interface{}{
 		ruleTemplates,
 	}
@@ -6575,9 +6646,9 @@ func (r Network_SecurityGroup) EditObjects(templateObjects []datatypes.Network_S
 }
 
 // Edit rules that belong to the security group. An array of skeleton [[SoftLayer_Network_SecurityGroup_Rule]] objects must be sent in with only the properties defined that you want to change. To edit a property to null, send in -1 for integer properties and "" for string properties. Unchanged properties are left alone.
-func (r Network_SecurityGroup) EditRules(rules []datatypes.Network_SecurityGroup_Rule) (resp datatypes.Network_SecurityGroup_Request, err error) {
+func (r Network_SecurityGroup) EditRules(ruleTemplates []datatypes.Network_SecurityGroup_Rule) (resp datatypes.Network_SecurityGroup_RequestRules, err error) {
 	params := []interface{}{
-		rules,
+		ruleTemplates,
 	}
 	err = r.Session.DoRequest("SoftLayer_Network_SecurityGroup", "editRules", params, &r.Options, &resp)
 	return
@@ -6632,7 +6703,7 @@ func (r Network_SecurityGroup) GetSupportedDataCenters() (resp []datatypes.Locat
 }
 
 // Remove rules from a security group.
-func (r Network_SecurityGroup) RemoveRules(ruleIds []int) (resp datatypes.Network_SecurityGroup_Request, err error) {
+func (r Network_SecurityGroup) RemoveRules(ruleIds []int) (resp datatypes.Network_SecurityGroup_RequestRules, err error) {
 	params := []interface{}{
 		ruleIds,
 	}
@@ -7153,7 +7224,7 @@ func (r Network_Storage) DeleteObject() (resp bool, err error) {
 
 // This method is not valid for Legacy iSCSI Storage Volumes.
 //
-// Disable scheduled snapshots of this storage volume. Scheduling options include HOURLY, DAILY and WEEKLY schedules.
+// Disable scheduled snapshots of this storage volume. Scheduling options include 'INTERVAL', HOURLY, DAILY and WEEKLY schedules.
 func (r Network_Storage) DisableSnapshots(scheduleType *string) (resp bool, err error) {
 	params := []interface{}{
 		scheduleType,
@@ -7496,6 +7567,12 @@ func (r Network_Storage) GetHourlySchedule() (resp datatypes.Network_Storage_Sch
 	return
 }
 
+// Retrieve The Interval Schedule which is associated with this network storage volume.
+func (r Network_Storage) GetIntervalSchedule() (resp datatypes.Network_Storage_Schedule, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage", "getIntervalSchedule", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve The maximum number of IOPs selected for this volume.
 func (r Network_Storage) GetIops() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage", "getIops", nil, &r.Options, &resp)
@@ -7520,6 +7597,12 @@ func (r Network_Storage) GetIscsiLuns() (resp []datatypes.Network_Storage, err e
 	return
 }
 
+// Retrieve Returns the target IP addresses of an iSCSI volume.
+func (r Network_Storage) GetIscsiTargetIpAddresses() (resp []string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage", "getIscsiTargetIpAddresses", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve The ID of the LUN volume.
 func (r Network_Storage) GetLunId() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage", "getLunId", nil, &r.Options, &resp)
@@ -7529,6 +7612,12 @@ func (r Network_Storage) GetLunId() (resp string, err error) {
 // Retrieve The manually-created snapshots associated with this SoftLayer_Network_Storage volume. Does not support pagination by result limit and offset.
 func (r Network_Storage) GetManualSnapshots() (resp []datatypes.Network_Storage, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage", "getManualSnapshots", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Storage) GetMaximumExpansionSize() (resp int, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage", "getMaximumExpansionSize", nil, &r.Options, &resp)
 	return
 }
 
@@ -7603,7 +7692,7 @@ func (r Network_Storage) GetOriginalVolumeName() (resp string, err error) {
 	return
 }
 
-// Retrieve The size (in GB) of the volume that this volume was duplicated from, or in the case of iSCSI LUNs, the size of the base originally-provisioned LUN.
+// Retrieve The size (in GB) of the volume or LUN before any size expansion, or of the volume (before any possible size expansion) from which the duplicate volume or LUN was created.
 func (r Network_Storage) GetOriginalVolumeSize() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage", "getOriginalVolumeSize", nil, &r.Options, &resp)
 	return
@@ -7807,6 +7896,12 @@ func (r Network_Storage) GetStorageTierLevel() (resp string, err error) {
 // Retrieve A description of the Storage object.
 func (r Network_Storage) GetStorageType() (resp datatypes.Network_Storage_Type, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage", "getStorageType", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Storage) GetTargetIpAddresses() (resp []string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage", "getTargetIpAddresses", nil, &r.Options, &resp)
 	return
 }
 
@@ -8206,26 +8301,17 @@ func (r Network_Storage_Allowed_Host) CreateFromVirtualGuest(virtualGuestId *int
 }
 
 // no documentation yet
-func (r Network_Storage_Allowed_Host) CreateObject(templateObject *datatypes.Network_Storage_Allowed_Host) (resp bool, err error) {
-	params := []interface{}{
-		templateObject,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host", "createObject", params, &r.Options, &resp)
-	return
-}
-
-// no documentation yet
-func (r Network_Storage_Allowed_Host) DeleteObject() (resp bool, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host", "deleteObject", nil, &r.Options, &resp)
-	return
-}
-
-// no documentation yet
 func (r Network_Storage_Allowed_Host) EditObject(templateObject *datatypes.Network_Storage_Allowed_Host) (resp bool, err error) {
 	params := []interface{}{
 		templateObject,
 	}
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host", "editObject", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Storage_Allowed_Host) GetAllObjects() (resp []datatypes.Network_Storage_Allowed_Host, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host", "getAllObjects", nil, &r.Options, &resp)
 	return
 }
 
@@ -8354,21 +8440,6 @@ func (r Network_Storage_Allowed_Host_Hardware) CreateFromVirtualGuest(virtualGue
 }
 
 // no documentation yet
-func (r Network_Storage_Allowed_Host_Hardware) CreateObject(templateObject *datatypes.Network_Storage_Allowed_Host) (resp bool, err error) {
-	params := []interface{}{
-		templateObject,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_Hardware", "createObject", params, &r.Options, &resp)
-	return
-}
-
-// no documentation yet
-func (r Network_Storage_Allowed_Host_Hardware) DeleteObject() (resp bool, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_Hardware", "deleteObject", nil, &r.Options, &resp)
-	return
-}
-
-// no documentation yet
 func (r Network_Storage_Allowed_Host_Hardware) EditObject(templateObject *datatypes.Network_Storage_Allowed_Host) (resp bool, err error) {
 	params := []interface{}{
 		templateObject,
@@ -8380,6 +8451,12 @@ func (r Network_Storage_Allowed_Host_Hardware) EditObject(templateObject *dataty
 // Retrieve The SoftLayer_Account object which this SoftLayer_Network_Storage_Allowed_Host belongs to.
 func (r Network_Storage_Allowed_Host_Hardware) GetAccount() (resp datatypes.Account, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_Hardware", "getAccount", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Storage_Allowed_Host_Hardware) GetAllObjects() (resp []datatypes.Network_Storage_Allowed_Host, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_Hardware", "getAllObjects", nil, &r.Options, &resp)
 	return
 }
 
@@ -8514,21 +8591,6 @@ func (r Network_Storage_Allowed_Host_IpAddress) CreateFromVirtualGuest(virtualGu
 }
 
 // no documentation yet
-func (r Network_Storage_Allowed_Host_IpAddress) CreateObject(templateObject *datatypes.Network_Storage_Allowed_Host) (resp bool, err error) {
-	params := []interface{}{
-		templateObject,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_IpAddress", "createObject", params, &r.Options, &resp)
-	return
-}
-
-// no documentation yet
-func (r Network_Storage_Allowed_Host_IpAddress) DeleteObject() (resp bool, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_IpAddress", "deleteObject", nil, &r.Options, &resp)
-	return
-}
-
-// no documentation yet
 func (r Network_Storage_Allowed_Host_IpAddress) EditObject(templateObject *datatypes.Network_Storage_Allowed_Host) (resp bool, err error) {
 	params := []interface{}{
 		templateObject,
@@ -8540,6 +8602,12 @@ func (r Network_Storage_Allowed_Host_IpAddress) EditObject(templateObject *datat
 // Retrieve The SoftLayer_Account object which this SoftLayer_Network_Storage_Allowed_Host belongs to.
 func (r Network_Storage_Allowed_Host_IpAddress) GetAccount() (resp datatypes.Account, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_IpAddress", "getAccount", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Storage_Allowed_Host_IpAddress) GetAllObjects() (resp []datatypes.Network_Storage_Allowed_Host, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_IpAddress", "getAllObjects", nil, &r.Options, &resp)
 	return
 }
 
@@ -8674,21 +8742,6 @@ func (r Network_Storage_Allowed_Host_Subnet) CreateFromVirtualGuest(virtualGuest
 }
 
 // no documentation yet
-func (r Network_Storage_Allowed_Host_Subnet) CreateObject(templateObject *datatypes.Network_Storage_Allowed_Host) (resp bool, err error) {
-	params := []interface{}{
-		templateObject,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_Subnet", "createObject", params, &r.Options, &resp)
-	return
-}
-
-// no documentation yet
-func (r Network_Storage_Allowed_Host_Subnet) DeleteObject() (resp bool, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_Subnet", "deleteObject", nil, &r.Options, &resp)
-	return
-}
-
-// no documentation yet
 func (r Network_Storage_Allowed_Host_Subnet) EditObject(templateObject *datatypes.Network_Storage_Allowed_Host) (resp bool, err error) {
 	params := []interface{}{
 		templateObject,
@@ -8700,6 +8753,12 @@ func (r Network_Storage_Allowed_Host_Subnet) EditObject(templateObject *datatype
 // Retrieve The SoftLayer_Account object which this SoftLayer_Network_Storage_Allowed_Host belongs to.
 func (r Network_Storage_Allowed_Host_Subnet) GetAccount() (resp datatypes.Account, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_Subnet", "getAccount", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Storage_Allowed_Host_Subnet) GetAllObjects() (resp []datatypes.Network_Storage_Allowed_Host, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_Subnet", "getAllObjects", nil, &r.Options, &resp)
 	return
 }
 
@@ -8834,21 +8893,6 @@ func (r Network_Storage_Allowed_Host_VirtualGuest) CreateFromVirtualGuest(virtua
 }
 
 // no documentation yet
-func (r Network_Storage_Allowed_Host_VirtualGuest) CreateObject(templateObject *datatypes.Network_Storage_Allowed_Host) (resp bool, err error) {
-	params := []interface{}{
-		templateObject,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_VirtualGuest", "createObject", params, &r.Options, &resp)
-	return
-}
-
-// no documentation yet
-func (r Network_Storage_Allowed_Host_VirtualGuest) DeleteObject() (resp bool, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_VirtualGuest", "deleteObject", nil, &r.Options, &resp)
-	return
-}
-
-// no documentation yet
 func (r Network_Storage_Allowed_Host_VirtualGuest) EditObject(templateObject *datatypes.Network_Storage_Allowed_Host) (resp bool, err error) {
 	params := []interface{}{
 		templateObject,
@@ -8860,6 +8904,12 @@ func (r Network_Storage_Allowed_Host_VirtualGuest) EditObject(templateObject *da
 // Retrieve The SoftLayer_Account object which this SoftLayer_Network_Storage_Allowed_Host belongs to.
 func (r Network_Storage_Allowed_Host_VirtualGuest) GetAccount() (resp datatypes.Account, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_VirtualGuest", "getAccount", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Storage_Allowed_Host_VirtualGuest) GetAllObjects() (resp []datatypes.Network_Storage_Allowed_Host, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_VirtualGuest", "getAllObjects", nil, &r.Options, &resp)
 	return
 }
 
@@ -9262,7 +9312,7 @@ func (r Network_Storage_Backup_Evault) DeleteTasks(tasks []int) (resp bool, err 
 
 // This method is not valid for Legacy iSCSI Storage Volumes.
 //
-// Disable scheduled snapshots of this storage volume. Scheduling options include HOURLY, DAILY and WEEKLY schedules.
+// Disable scheduled snapshots of this storage volume. Scheduling options include 'INTERVAL', HOURLY, DAILY and WEEKLY schedules.
 func (r Network_Storage_Backup_Evault) DisableSnapshots(scheduleType *string) (resp bool, err error) {
 	params := []interface{}{
 		scheduleType,
@@ -9625,6 +9675,12 @@ func (r Network_Storage_Backup_Evault) GetHourlySchedule() (resp datatypes.Netwo
 	return
 }
 
+// Retrieve The Interval Schedule which is associated with this network storage volume.
+func (r Network_Storage_Backup_Evault) GetIntervalSchedule() (resp datatypes.Network_Storage_Schedule, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Backup_Evault", "getIntervalSchedule", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve The maximum number of IOPs selected for this volume.
 func (r Network_Storage_Backup_Evault) GetIops() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Backup_Evault", "getIops", nil, &r.Options, &resp)
@@ -9649,6 +9705,12 @@ func (r Network_Storage_Backup_Evault) GetIscsiLuns() (resp []datatypes.Network_
 	return
 }
 
+// Retrieve Returns the target IP addresses of an iSCSI volume.
+func (r Network_Storage_Backup_Evault) GetIscsiTargetIpAddresses() (resp []string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Backup_Evault", "getIscsiTargetIpAddresses", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve The ID of the LUN volume.
 func (r Network_Storage_Backup_Evault) GetLunId() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Backup_Evault", "getLunId", nil, &r.Options, &resp)
@@ -9658,6 +9720,12 @@ func (r Network_Storage_Backup_Evault) GetLunId() (resp string, err error) {
 // Retrieve The manually-created snapshots associated with this SoftLayer_Network_Storage volume. Does not support pagination by result limit and offset.
 func (r Network_Storage_Backup_Evault) GetManualSnapshots() (resp []datatypes.Network_Storage, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Backup_Evault", "getManualSnapshots", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Storage_Backup_Evault) GetMaximumExpansionSize() (resp int, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Backup_Evault", "getMaximumExpansionSize", nil, &r.Options, &resp)
 	return
 }
 
@@ -9730,7 +9798,7 @@ func (r Network_Storage_Backup_Evault) GetOriginalVolumeName() (resp string, err
 	return
 }
 
-// Retrieve The size (in GB) of the volume that this volume was duplicated from, or in the case of iSCSI LUNs, the size of the base originally-provisioned LUN.
+// Retrieve The size (in GB) of the volume or LUN before any size expansion, or of the volume (before any possible size expansion) from which the duplicate volume or LUN was created.
 func (r Network_Storage_Backup_Evault) GetOriginalVolumeSize() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Backup_Evault", "getOriginalVolumeSize", nil, &r.Options, &resp)
 	return
@@ -9934,6 +10002,12 @@ func (r Network_Storage_Backup_Evault) GetStorageTierLevel() (resp string, err e
 // Retrieve A description of the Storage object.
 func (r Network_Storage_Backup_Evault) GetStorageType() (resp datatypes.Network_Storage_Type, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Backup_Evault", "getStorageType", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Storage_Backup_Evault) GetTargetIpAddresses() (resp []string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Backup_Evault", "getTargetIpAddresses", nil, &r.Options, &resp)
 	return
 }
 
@@ -10879,12 +10953,6 @@ func (r Network_Storage_Hub_Cleversafe_Account) GetCapacityUsage() (resp int, er
 	return
 }
 
-// Returns a collection of valid storage policies to be used during bucket creation.
-func (r Network_Storage_Hub_Cleversafe_Account) GetCloudObjectStoragePolicy() (resp []datatypes.Container_Network_Storage_Hub_ObjectStorage_Policy, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_Storage_Hub_Cleversafe_Account", "getCloudObjectStoragePolicy", nil, &r.Options, &resp)
-	return
-}
-
 // Returns credential limits for this IBM Cloud Object Storage account.
 func (r Network_Storage_Hub_Cleversafe_Account) GetCredentialLimit() (resp int, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Hub_Cleversafe_Account", "getCredentialLimit", nil, &r.Options, &resp)
@@ -10898,8 +10966,11 @@ func (r Network_Storage_Hub_Cleversafe_Account) GetCredentials() (resp []datatyp
 }
 
 // Returns a collection of endpoint URLs available to this IBM Cloud Object Storage account.
-func (r Network_Storage_Hub_Cleversafe_Account) GetEndpoints() (resp []datatypes.Container_Network_Storage_Hub_ObjectStorage_Endpoint, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_Storage_Hub_Cleversafe_Account", "getEndpoints", nil, &r.Options, &resp)
+func (r Network_Storage_Hub_Cleversafe_Account) GetEndpoints(accountId *int) (resp []datatypes.Container_Network_Storage_Hub_ObjectStorage_Endpoint, err error) {
+	params := []interface{}{
+		accountId,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Hub_Cleversafe_Account", "getEndpoints", params, &r.Options, &resp)
 	return
 }
 
@@ -11322,7 +11393,7 @@ func (r Network_Storage_Iscsi) DeleteObject() (resp bool, err error) {
 
 // This method is not valid for Legacy iSCSI Storage Volumes.
 //
-// Disable scheduled snapshots of this storage volume. Scheduling options include HOURLY, DAILY and WEEKLY schedules.
+// Disable scheduled snapshots of this storage volume. Scheduling options include 'INTERVAL', HOURLY, DAILY and WEEKLY schedules.
 func (r Network_Storage_Iscsi) DisableSnapshots(scheduleType *string) (resp bool, err error) {
 	params := []interface{}{
 		scheduleType,
@@ -11665,6 +11736,12 @@ func (r Network_Storage_Iscsi) GetHourlySchedule() (resp datatypes.Network_Stora
 	return
 }
 
+// Retrieve The Interval Schedule which is associated with this network storage volume.
+func (r Network_Storage_Iscsi) GetIntervalSchedule() (resp datatypes.Network_Storage_Schedule, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Iscsi", "getIntervalSchedule", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve The maximum number of IOPs selected for this volume.
 func (r Network_Storage_Iscsi) GetIops() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Iscsi", "getIops", nil, &r.Options, &resp)
@@ -11689,6 +11766,12 @@ func (r Network_Storage_Iscsi) GetIscsiLuns() (resp []datatypes.Network_Storage,
 	return
 }
 
+// Retrieve Returns the target IP addresses of an iSCSI volume.
+func (r Network_Storage_Iscsi) GetIscsiTargetIpAddresses() (resp []string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Iscsi", "getIscsiTargetIpAddresses", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve The ID of the LUN volume.
 func (r Network_Storage_Iscsi) GetLunId() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Iscsi", "getLunId", nil, &r.Options, &resp)
@@ -11698,6 +11781,12 @@ func (r Network_Storage_Iscsi) GetLunId() (resp string, err error) {
 // Retrieve The manually-created snapshots associated with this SoftLayer_Network_Storage volume. Does not support pagination by result limit and offset.
 func (r Network_Storage_Iscsi) GetManualSnapshots() (resp []datatypes.Network_Storage, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Iscsi", "getManualSnapshots", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Storage_Iscsi) GetMaximumExpansionSize() (resp int, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Iscsi", "getMaximumExpansionSize", nil, &r.Options, &resp)
 	return
 }
 
@@ -11770,7 +11859,7 @@ func (r Network_Storage_Iscsi) GetOriginalVolumeName() (resp string, err error) 
 	return
 }
 
-// Retrieve The size (in GB) of the volume that this volume was duplicated from, or in the case of iSCSI LUNs, the size of the base originally-provisioned LUN.
+// Retrieve The size (in GB) of the volume or LUN before any size expansion, or of the volume (before any possible size expansion) from which the duplicate volume or LUN was created.
 func (r Network_Storage_Iscsi) GetOriginalVolumeSize() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Iscsi", "getOriginalVolumeSize", nil, &r.Options, &resp)
 	return
@@ -11974,6 +12063,12 @@ func (r Network_Storage_Iscsi) GetStorageTierLevel() (resp string, err error) {
 // Retrieve A description of the Storage object.
 func (r Network_Storage_Iscsi) GetStorageType() (resp datatypes.Network_Storage_Type, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Iscsi", "getStorageType", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Storage_Iscsi) GetTargetIpAddresses() (resp []string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Iscsi", "getTargetIpAddresses", nil, &r.Options, &resp)
 	return
 }
 
@@ -12554,6 +12649,12 @@ func (r Network_Storage_MassDataMigration_Request) GetStatus() (resp datatypes.N
 	return
 }
 
+// Retrieve Ticket that is attached to this mass data migration request.
+func (r Network_Storage_MassDataMigration_Request) GetTicket() (resp datatypes.Ticket, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_MassDataMigration_Request", "getTicket", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve All tickets that are attached to the mass data migration request.
 func (r Network_Storage_MassDataMigration_Request) GetTickets() (resp []datatypes.Ticket, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_MassDataMigration_Request", "getTickets", nil, &r.Options, &resp)
@@ -12728,6 +12829,12 @@ func (r Network_Storage_Schedule) EditObject(templateObject *datatypes.Network_S
 	return
 }
 
+// Retrieve The hour parameter of this schedule.
+func (r Network_Storage_Schedule) GetDay() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Schedule", "getDay", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve The day of the month parameter of this schedule.
 func (r Network_Storage_Schedule) GetDayOfMonth() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Schedule", "getDayOfMonth", nil, &r.Options, &resp)
@@ -12791,6 +12898,12 @@ func (r Network_Storage_Schedule) GetReplicaSnapshots() (resp []datatypes.Networ
 // Retrieve The number of snapshots this schedule is configured to retain.
 func (r Network_Storage_Schedule) GetRetentionCount() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Schedule", "getRetentionCount", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The minute parameter of this schedule.
+func (r Network_Storage_Schedule) GetSecond() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Schedule", "getSecond", nil, &r.Options, &resp)
 	return
 }
 
@@ -15013,12 +15126,6 @@ func (r Network_Vlan_Firewall) GetBypassRequestStatus() (resp string, err error)
 	return
 }
 
-// Retrieve An object that provides commonly used bandwidth summary components for the current billing cycle.
-func (r Network_Vlan_Firewall) GetCurrentBandwidthSummary() (resp datatypes.Metric_Tracking_Object_Bandwidth_Summary, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_Vlan_Firewall", "getCurrentBandwidthSummary", nil, &r.Options, &resp)
-	return
-}
-
 // Retrieve The datacenter that the firewall resides in.
 func (r Network_Vlan_Firewall) GetDatacenter() (resp datatypes.Location, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Vlan_Firewall", "getDatacenter", nil, &r.Options, &resp)
@@ -15082,24 +15189,6 @@ func (r Network_Vlan_Firewall) GetNetworkVlans() (resp []datatypes.Network_Vlan,
 // getObject returns a SoftLayer_Network_Vlan_Firewall object. You can only get objects for vlans attached to your account that have a network firewall enabled.
 func (r Network_Vlan_Firewall) GetObject() (resp datatypes.Network_Vlan_Firewall, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Vlan_Firewall", "getObject", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve Whether the bandwidth usage for this firewall for the current billing cycle exceeds the allocation.
-func (r Network_Vlan_Firewall) GetOverBandwidthAllocationFlag() (resp int, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_Vlan_Firewall", "getOverBandwidthAllocationFlag", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve Whether the bandwidth usage for this firewall for the current billing cycle is projected to exceed the allocation.
-func (r Network_Vlan_Firewall) GetProjectedOverBandwidthAllocationFlag() (resp int, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_Vlan_Firewall", "getProjectedOverBandwidthAllocationFlag", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve The projected public outbound bandwidth for this firewall for the current billing cycle.
-func (r Network_Vlan_Firewall) GetProjectedPublicBandwidthUsage() (resp datatypes.Float64, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_Vlan_Firewall", "getProjectedPublicBandwidthUsage", nil, &r.Options, &resp)
 	return
 }
 

@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/IBM-Bluemix/bluemix-go/api/mccp/mccpv2"
-	"github.com/IBM-Bluemix/bluemix-go/bmxerror"
-	"github.com/IBM-Bluemix/bluemix-go/helpers"
+	"github.com/hashicorp/terraform/flatmap"
+
+	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/IBM-Cloud/bluemix-go/helpers"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -177,7 +179,7 @@ func resourceIBMServiceInstanceRead(d *schema.ResourceData, meta interface{}) er
 	d.Set("space_guid", service.Entity.SpaceGUID)
 	serviceKeys := service.Entity.ServiceKeys
 	d.Set("service_keys", flattenServiceInstanceCredentials(serviceKeys))
-	d.Set("credentials", flattenCredentials(service.Entity.Credentials))
+	d.Set("credentials", flatmap.Flatten(service.Entity.Credentials))
 	d.Set("tags", service.Entity.Tags)
 	d.Set("name", service.Entity.Name)
 

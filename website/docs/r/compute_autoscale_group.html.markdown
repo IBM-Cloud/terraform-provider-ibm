@@ -36,7 +36,7 @@ resource "ibm_compute_autoscale_group" "test_scale_group" {
       memory = 1024
       network_speed = 100
       hourly_billing = true
-      os_reference_code = "DEBIAN_7_64"
+      os_reference_code = "DEBIAN_8_64"
 # Optional fields for virtual guest template (SoftLayer defaults apply):
       local_disk = false
       disks = [25]

@@ -3,9 +3,9 @@ package ibm
 import (
 	"fmt"
 
-	v2 "github.com/IBM-Bluemix/bluemix-go/api/mccp/mccpv2"
+	v2 "github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 
-	"github.com/IBM-Bluemix/bluemix-go/bmxerror"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 

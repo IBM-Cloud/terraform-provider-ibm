@@ -5,9 +5,11 @@ import (
 	"log"
 	"time"
 
-	v2 "github.com/IBM-Bluemix/bluemix-go/api/mccp/mccpv2"
-	"github.com/IBM-Bluemix/bluemix-go/bmxerror"
-	"github.com/IBM-Bluemix/bluemix-go/helpers"
+	"github.com/hashicorp/terraform/flatmap"
+
+	v2 "github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/IBM-Cloud/bluemix-go/helpers"
 	"github.com/hashicorp/terraform/helper/schema"
 	homedir "github.com/mitchellh/go-homedir"
 )
@@ -222,7 +224,7 @@ func resourceIBMAppRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("space_guid", appData.Entity.SpaceGUID)
 	d.Set("disk_quota", appData.Entity.DiskQuota)
 	d.Set("buildpack", appData.Entity.BuildPack)
-	d.Set("environment_json", flattenMapInterfaceVal(appData.Entity.EnvironmentJSON))
+	d.Set("environment_json", flatmap.Flatten(appData.Entity.EnvironmentJSON))
 	d.Set("command", appData.Entity.Command)
 
 	route, err := appAPI.ListRoutes(appGUID)

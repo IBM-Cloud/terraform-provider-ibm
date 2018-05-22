@@ -61,10 +61,12 @@ func TestAccIBMStorageBlock_Basic(t *testing.T) {
 					// Endurance Storage
 					resource.TestCheckResourceAttr("ibm_storage_block.bs_endurance", "allowed_virtual_guest_ids.#", "1"),
 					resource.TestCheckResourceAttr("ibm_storage_block.bs_endurance", "allowed_ip_addresses.#", "1"),
+					resource.TestCheckResourceAttr("ibm_storage_block.bs_endurance", "allowed_host_info.#", "2"),
 					resource.TestCheckResourceAttr("ibm_storage_block.bs_endurance", "notes", "updated endurance notes"),
 					// Performance Storage
 					resource.TestCheckResourceAttr("ibm_storage_block.bs_performance", "allowed_virtual_guest_ids.#", "1"),
 					resource.TestCheckResourceAttr("ibm_storage_block.bs_performance", "allowed_ip_addresses.#", "1"),
+					resource.TestCheckResourceAttr("ibm_storage_block.bs_performance", "allowed_host_info.#", "2"),
 				),
 			},
 		},
@@ -188,6 +190,7 @@ func TestAccIBMStorageBlock_hourly(t *testing.T) {
 					// Endurance Storage
 					resource.TestCheckResourceAttr("ibm_storage_block.bs_endurance", "allowed_virtual_guest_ids.#", "1"),
 					resource.TestCheckResourceAttr("ibm_storage_block.bs_endurance", "allowed_ip_addresses.#", "1"),
+					resource.TestCheckResourceAttr("ibm_storage_block.bs_endurance", "allowed_host_info.#", "2"),
 					resource.TestCheckResourceAttr("ibm_storage_block.bs_endurance", "notes", "updated endurance notes"),
 				),
 			},
@@ -228,8 +231,8 @@ const testAccCheckIBMStorageBlockConfig_basic = `
 resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"
     domain = "example.com"
-    os_reference_code = "DEBIAN_7_64"
-    datacenter = "dal06"
+    os_reference_code = "DEBIAN_8_64"
+    datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
     private_network_only = false
@@ -267,8 +270,8 @@ const testAccCheckIBMStorageBlockConfig_update = `
 resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"
     domain = "example.com"
-    os_reference_code = "DEBIAN_7_64"
-    datacenter = "dal06"
+    os_reference_code = "DEBIAN_8_64"
+    datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
     private_network_only = false
@@ -303,8 +306,8 @@ const testAccCheckIBMStorageBlockWithTag = `
 resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"
     domain = "example.com"
-    os_reference_code = "DEBIAN_7_64"
-    datacenter = "dal06"
+    os_reference_code = "DEBIAN_8_64"
+    datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
     private_network_only = false
@@ -329,8 +332,8 @@ const testAccCheckIBMStorageBlockWithUpdatedTag = `
 resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"
     domain = "example.com"
-    os_reference_code = "DEBIAN_7_64"
-    datacenter = "dal06"
+    os_reference_code = "DEBIAN_8_64"
+    datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
     private_network_only = false
@@ -355,7 +358,7 @@ const testAccCheckIBMStorageBlockConfig_hourly = `
 resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"
     domain = "example.com"
-    os_reference_code = "DEBIAN_7_64"
+    os_reference_code = "DEBIAN_8_64"
     datacenter = "dal10"
     network_speed = 100
     hourly_billing = true
@@ -392,7 +395,7 @@ const testAccCheckIBMStorageBlockConfig_hourly_update = `
 resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"
     domain = "example.com"
-    os_reference_code = "DEBIAN_7_64"
+    os_reference_code = "DEBIAN_8_64"
     datacenter = "dal10"
     network_speed = 100
     hourly_billing = true

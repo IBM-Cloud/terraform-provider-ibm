@@ -20,6 +20,32 @@
 
 package datatypes
 
+// no documentation yet
+type Container_Account_Authentication_OpenIdConnect_UsernameLookupContainer struct {
+	Entity
+
+	// no documentation yet
+	Active *bool `json:"active,omitempty" xmlrpc:"active,omitempty"`
+
+	// no documentation yet
+	EmailAddress *string `json:"emailAddress,omitempty" xmlrpc:"emailAddress,omitempty"`
+
+	// no documentation yet
+	Federated *bool `json:"federated,omitempty" xmlrpc:"federated,omitempty"`
+
+	// no documentation yet
+	FoundAs *string `json:"foundAs,omitempty" xmlrpc:"foundAs,omitempty"`
+
+	// no documentation yet
+	NumberOfIbmIdsWithEmailAddress *int `json:"numberOfIbmIdsWithEmailAddress,omitempty" xmlrpc:"numberOfIbmIdsWithEmailAddress,omitempty"`
+
+	// no documentation yet
+	UniqueId *string `json:"uniqueId,omitempty" xmlrpc:"uniqueId,omitempty"`
+
+	// no documentation yet
+	Username *string `json:"username,omitempty" xmlrpc:"username,omitempty"`
+}
+
 // SoftLayer_Container_Account_Discount_Program models a single outbound object for a graph of given data sets.
 type Container_Account_Discount_Program struct {
 	Entity
@@ -193,19 +219,19 @@ type Container_Account_Internal_Ibm_Request struct {
 	// Purpose of the internal IBM account chosen from the list of available
 	AccountType *string `json:"accountType,omitempty" xmlrpc:"accountType,omitempty"`
 
-	// If no address information is available in BluePages, will use this
+	// If not provided, will attempt to retrieve from BluePages
 	Address1 *string `json:"address1,omitempty" xmlrpc:"address1,omitempty"`
 
-	// If no address information is available in BluePages, will use this
+	// If no address provided, will attempt to retrieve from BluePages
 	Address2 *string `json:"address2,omitempty" xmlrpc:"address2,omitempty"`
 
-	// If no address information is available in BluePages, will use this
+	// If not provided, will attempt to retrieve from BluePages
 	City *string `json:"city,omitempty" xmlrpc:"city,omitempty"`
 
 	// Name of the company displayed on the IaaS account
 	CompanyName *string `json:"companyName,omitempty" xmlrpc:"companyName,omitempty"`
 
-	// If no address information is available in BluePages, will use this
+	// If not provided, will attempt to retrieve from BluePages
 	Country *string `json:"country,omitempty" xmlrpc:"country,omitempty"`
 
 	// True if the request has been denied by either the IaaS team or the
@@ -214,11 +240,11 @@ type Container_Account_Internal_Ibm_Request struct {
 	// Department within the division which will be changed during cost recovery.
 	DepartmentCode *string `json:"departmentCode,omitempty" xmlrpc:"departmentCode,omitempty"`
 
-	// Division code used for cost recovery. This field is populated
-	DivisionCode *string `json:"divisionCode,omitempty" xmlrpc:"divisionCode,omitempty"`
+	// Country assigned to the department for cost recovery.
+	DepartmentCountry *string `json:"departmentCountry,omitempty" xmlrpc:"departmentCountry,omitempty"`
 
-	// Country assigned to the division for cost recovery. This field is populated
-	DivisionCountry *string `json:"divisionCountry,omitempty" xmlrpc:"divisionCountry,omitempty"`
+	// Division code used for cost recovery.
+	DivisionCode *string `json:"divisionCode,omitempty" xmlrpc:"divisionCode,omitempty"`
 
 	// Account owner's IBM email address. Must be a discoverable email
 	EmailAddress *string `json:"emailAddress,omitempty" xmlrpc:"emailAddress,omitempty"`
@@ -241,7 +267,7 @@ type Container_Account_Internal_Ibm_Request struct {
 	// Bluemix PaaS 32 digit hexadecimal account id being automatically linked
 	PaasAccountId *string `json:"paasAccountId,omitempty" xmlrpc:"paasAccountId,omitempty"`
 
-	// If no address information is available in BluePages, will use this
+	// If not provided, will attempt to retrieve from BluePages
 	PostalCode *string `json:"postalCode,omitempty" xmlrpc:"postalCode,omitempty"`
 
 	// Stated purpose of the new account this request would create
@@ -256,7 +282,7 @@ type Container_Account_Internal_Ibm_Request struct {
 	// Division's security SME's phone, if available
 	SecuritySubjectMatterExpertPhone *string `json:"securitySubjectMatterExpertPhone,omitempty" xmlrpc:"securitySubjectMatterExpertPhone,omitempty"`
 
-	// If no address information is available in BluePages, will use this
+	// If required for chosen country and not provided, will attempt
 	State *string `json:"state,omitempty" xmlrpc:"state,omitempty"`
 }
 
@@ -1780,6 +1806,15 @@ type Container_Network_CdnMarketplace_Configuration_Mapping struct {
 	HttpPort *int `json:"httpPort,omitempty" xmlrpc:"httpPort,omitempty"`
 
 	// no documentation yet
+	HttpsChallengeRedirectUrl *string `json:"httpsChallengeRedirectUrl,omitempty" xmlrpc:"httpsChallengeRedirectUrl,omitempty"`
+
+	// no documentation yet
+	HttpsChallengeResponse *string `json:"httpsChallengeResponse,omitempty" xmlrpc:"httpsChallengeResponse,omitempty"`
+
+	// no documentation yet
+	HttpsChallengeUrl *string `json:"httpsChallengeUrl,omitempty" xmlrpc:"httpsChallengeUrl,omitempty"`
+
+	// no documentation yet
 	HttpsPort *int `json:"httpsPort,omitempty" xmlrpc:"httpsPort,omitempty"`
 
 	// no documentation yet
@@ -1846,6 +1881,9 @@ type Container_Network_CdnMarketplace_Configuration_Mapping_Path struct {
 
 	// no documentation yet
 	Path *string `json:"path,omitempty" xmlrpc:"path,omitempty"`
+
+	// no documentation yet
+	PerformanceConfiguration *string `json:"performanceConfiguration,omitempty" xmlrpc:"performanceConfiguration,omitempty"`
 
 	// no documentation yet
 	Status *string `json:"status,omitempty" xmlrpc:"status,omitempty"`
@@ -2944,6 +2982,38 @@ type Container_Network_Storage_Hub_ObjectStorage_Provision struct {
 }
 
 // no documentation yet
+type Container_Network_Storage_MassDataMigration_Request_Address struct {
+	Entity
+
+	// Line 1 of the address - typically the number and street address the MDMS device will be delivered to
+	Address1 *string `json:"address1,omitempty" xmlrpc:"address1,omitempty"`
+
+	// Line 2 of the address
+	Address2 *string `json:"address2,omitempty" xmlrpc:"address2,omitempty"`
+
+	// First and last name of the customer on the shipping address
+	AddressAttention *string `json:"addressAttention,omitempty" xmlrpc:"addressAttention,omitempty"`
+
+	// The datacenter name where the MDMS device will be shipped to
+	AddressNickname *string `json:"addressNickname,omitempty" xmlrpc:"addressNickname,omitempty"`
+
+	// The shipping address city
+	City *string `json:"city,omitempty" xmlrpc:"city,omitempty"`
+
+	// Name of the company device is being shipped to
+	CompanyName *string `json:"companyName,omitempty" xmlrpc:"companyName,omitempty"`
+
+	// The shipping address country
+	Country *string `json:"country,omitempty" xmlrpc:"country,omitempty"`
+
+	// The shipping address postal code
+	PostalCode *string `json:"postalCode,omitempty" xmlrpc:"postalCode,omitempty"`
+
+	// The shipping address state
+	State *string `json:"state,omitempty" xmlrpc:"state,omitempty"`
+}
+
+// no documentation yet
 type Container_Network_Storage_NetworkConnectionInformation struct {
 	Entity
 
@@ -3147,6 +3217,9 @@ type Container_Product_Item_Discount_Program struct {
 // This is the datatype that needs to be populated and sent to SoftLayer_Product_Order::placeOrder. This datatype has everything required to place an order with SoftLayer.
 type Container_Product_Order struct {
 	Entity
+
+	// Used to identify which items on an order belong in the same cluster.
+	ClusterIdentifier *string `json:"clusterIdentifier,omitempty" xmlrpc:"clusterIdentifier,omitempty"`
 
 	// Flag for identifying an order for Big Data Deployment.
 	BigDataOrderFlag *bool `json:"bigDataOrderFlag,omitempty" xmlrpc:"bigDataOrderFlag,omitempty"`
@@ -3491,6 +3564,9 @@ type Container_Product_Order_Billing_Information struct {
 	// The Card Verification Value Code (CVV) number
 	CreditCardVerificationNumber *string `json:"creditCardVerificationNumber,omitempty" xmlrpc:"creditCardVerificationNumber,omitempty"`
 
+	// 1 = opted in,  0 = not opted in. Select the EU Supported option if you use IBM Bluemix Infrastructure services to process EU citizens' personal data. This option limits Level 1 and Level 2 support to the EU. However, IBM Bluemix and SoftLayer teams outside the EU perform processing activities when they are not resolved at Level 1 or 2. These activities are always at your instruction and do not impact the security or privacy of your data. As with our standard services, you must review the impact these cross-border processing activities have on your services and take any necessary measures, including review of IBM's US-EU Privacy Shield registration and Data Processing Addendum.  If you select products, services, or locations outside the EU, all processing activities will be performed outside of the EU. If you select other IBM services in addition to Bluemix IaaS (IBM or a third party), determine the service location in order to meet any additional data protection or processing requirements that permit cross-border transfers.
+	EuSupported *bool `json:"euSupported,omitempty" xmlrpc:"euSupported,omitempty"`
+
 	// Tax exempt status. 1 = exempt (not taxable),  0 = not exempt (taxable)
 	TaxExempt *int `json:"taxExempt,omitempty" xmlrpc:"taxExempt,omitempty"`
 
@@ -3657,6 +3733,9 @@ type Container_Product_Order_Network_Interconnect struct {
 	// The BGP ASN.
 	BgpAsn *string `json:"bgpAsn,omitempty" xmlrpc:"bgpAsn,omitempty"`
 
+	// The [[SoftLayer_Network_Interconnect]] for this order, ID must be provided.
+	InterconnectId *int `json:"interconnectId,omitempty" xmlrpc:"interconnectId,omitempty"`
+
 	// The [[SoftLayer_Network_DirectLink_Location]] for this order, ID must be provided.
 	InterconnectLocation *Network_DirectLink_Location `json:"interconnectLocation,omitempty" xmlrpc:"interconnectLocation,omitempty"`
 
@@ -3681,6 +3760,9 @@ type Container_Product_Order_Network_LoadBalancer_AsAService struct {
 
 	// The [[SoftLayer_Network_LBaaS_LoadBalancerHealthMonitorConfiguration]]s for this Load Balancer.
 	HealthMonitorConfigurations []Network_LBaaS_LoadBalancerHealthMonitorConfiguration `json:"healthMonitorConfigurations,omitempty" xmlrpc:"healthMonitorConfigurations,omitempty"`
+
+	// Specify whether this load balancer is a public or internal facing load balancer. If this value is omitted, the value will default to true.
+	IsPublic *bool `json:"isPublic,omitempty" xmlrpc:"isPublic,omitempty"`
 
 	// A name to identify this Load Balancer.
 	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
@@ -3721,11 +3803,6 @@ type Container_Product_Order_Network_Message_Delivery struct {
 
 	// The email address for SendGrid enrollment.
 	EmailAddress *string `json:"emailAddress,omitempty" xmlrpc:"emailAddress,omitempty"`
-}
-
-// This is the datatype that needs to be populated and sent to SoftLayer_Product_Order::placeOrder. This datatype has everything required to place a Message Queue order with SoftLayer.
-type Container_Product_Order_Network_Message_Queue struct {
-	Container_Product_Order
 }
 
 // This is the base data type for Performance storage order containers. If you wish to place an order you must not use this class and instead use the appropriate child container for the type of storage you would like to order: [[SoftLayer_Container_Product_Order_Network_PerformanceStorage_Nfs]] for File and [[SoftLayer_Container_Product_Order_Network_PerformanceStorage_Iscsi]] for Block storage.
@@ -3800,6 +3877,14 @@ type Container_Product_Order_Network_Storage_AsAService struct {
 
 	// Volume size in GB's.
 	VolumeSize *int `json:"volumeSize,omitempty" xmlrpc:"volumeSize,omitempty"`
+}
+
+// This is the datatype that needs to be populated and sent to SoftLayer_Product_Order::placeOrder. This datatype has everything required to place an upgrade order for Storage as a Service.
+type Container_Product_Order_Network_Storage_AsAService_Upgrade struct {
+	Container_Product_Order_Network_Storage_AsAService
+
+	// The [[SoftLayer_Network_Storage]] being upgraded. Only it's ID is required.
+	Volume *Network_Storage `json:"volume,omitempty" xmlrpc:"volume,omitempty"`
 }
 
 // This is the datatype that needs to be populated and sent to SoftLayer_Product_Order::placeOrder. This datatype has everything required to place an order for additional Evault plugins.
@@ -3880,8 +3965,11 @@ type Container_Product_Order_Network_Storage_Iscsi_SnapshotSpace struct {
 type Container_Product_Order_Network_Storage_MassDataMigration_Request struct {
 	Container_Product_Order
 
-	// The number and street address the MDMS device will be delivered to
+	// Line 1 of the address - typically the number and street address the MDMS device will be delivered to
 	Address1 *string `json:"address1,omitempty" xmlrpc:"address1,omitempty"`
+
+	// Line 2 of the address
+	Address2 *string `json:"address2,omitempty" xmlrpc:"address2,omitempty"`
 
 	// First and last name of the customer on the shipping address
 	AddressAttention *string `json:"addressAttention,omitempty" xmlrpc:"addressAttention,omitempty"`
@@ -3900,6 +3988,9 @@ type Container_Product_Order_Network_Storage_MassDataMigration_Request struct {
 
 	// Cloud Object Storage Bucket for the data offload destination
 	CosBucketName *string `json:"cosBucketName,omitempty" xmlrpc:"cosBucketName,omitempty"`
+
+	// The shipping address country
+	Country *string `json:"country,omitempty" xmlrpc:"country,omitempty"`
 
 	// Default Gateway used for preconfiguring the Eth1 port on the MDMS device to access the user interface
 	Eth1DefaultGateway *string `json:"eth1DefaultGateway,omitempty" xmlrpc:"eth1DefaultGateway,omitempty"`
@@ -3933,6 +4024,9 @@ type Container_Product_Order_Network_Storage_MassDataMigration_Request struct {
 
 	// Name of the Mass Data Migration Service job request
 	RequestName *string `json:"requestName,omitempty" xmlrpc:"requestName,omitempty"`
+
+	// Shipping address and information where device will be shipped to
+	ShippingAddress *Container_Network_Storage_MassDataMigration_Request_Address `json:"shippingAddress,omitempty" xmlrpc:"shippingAddress,omitempty"`
 
 	// The shipping address state
 	State *string `json:"state,omitempty" xmlrpc:"state,omitempty"`
@@ -4160,6 +4254,14 @@ type Container_Product_Order_Service struct {
 	Container_Product_Order
 }
 
+// This is the datatype that needs to be populated and sent to SoftLayer_Product_Order::placeOrder.
+type Container_Product_Order_Service_External struct {
+	Container_Product_Order
+
+	// For orders that contain servers (bare metal, virtual server, big data, etc.), the hardware property is required. This property is an array of [[SoftLayer_Hardware]] objects. The <code>hostname</code> and <code>domain</code> properties are required for each hardware object. Note that virtual server ([[SoftLayer_Container_Product_Order_Virtual_Guest]]) orders may populate this field instead of the <code>virtualGuests</code> property.
+	ExternalResources []Service_External_Resource `json:"externalResources,omitempty" xmlrpc:"externalResources,omitempty"`
+}
+
 // This is the datatype that needs to be populated and sent to SoftLayer_Product_Order::placeOrder. This datatype has everything required to place a virtual license order with SoftLayer.
 type Container_Product_Order_Software_Component_Virtual struct {
 	Container_Product_Order
@@ -4272,6 +4374,9 @@ type Container_Product_Order_Virtual_Disk_Image struct {
 type Container_Product_Order_Virtual_Guest struct {
 	Container_Product_Order_Hardware_Server
 
+	// The mode used to boot the [[SoftLayer_Virtual_Guest]].  Supported values are 'PV' and 'HVM'.
+	BootMode *string `json:"bootMode,omitempty" xmlrpc:"bootMode,omitempty"`
+
 	// Identifier of the [[SoftLayer_Virtual_Disk_Image]] to boot from.
 	BootableDiskId *int `json:"bootableDiskId,omitempty" xmlrpc:"bootableDiskId,omitempty"`
 
@@ -4282,6 +4387,51 @@ type Container_Product_Order_Virtual_Guest struct {
 // This is the datatype that needs to be populated and sent to SoftLayer_Product_Order::placeOrder. This datatype has everything required to place an order with SoftLayer.
 type Container_Product_Order_Virtual_Guest_Upgrade struct {
 	Container_Product_Order_Virtual_Guest
+}
+
+// no documentation yet
+type Container_Product_Order_Virtual_Guest_Vpc struct {
+	Container_Product_Order_Virtual_Guest
+
+	// no documentation yet
+	IpAllocations []Container_Product_Order_Virtual_Guest_Vpc_IpAllocation `json:"ipAllocations,omitempty" xmlrpc:"ipAllocations,omitempty"`
+
+	// no documentation yet
+	ServerId *string `json:"serverId,omitempty" xmlrpc:"serverId,omitempty"`
+
+	// no documentation yet
+	Subnets []Container_Product_Order_Virtual_Guest_Vpc_Subnet `json:"subnets,omitempty" xmlrpc:"subnets,omitempty"`
+}
+
+// no documentation yet
+type Container_Product_Order_Virtual_Guest_Vpc_IpAllocation struct {
+	Entity
+
+	// no documentation yet
+	Id *string `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// no documentation yet
+	Ip *string `json:"ip,omitempty" xmlrpc:"ip,omitempty"`
+}
+
+// no documentation yet
+type Container_Product_Order_Virtual_Guest_Vpc_Subnet struct {
+	Entity
+
+	// no documentation yet
+	Cidr *string `json:"cidr,omitempty" xmlrpc:"cidr,omitempty"`
+
+	// no documentation yet
+	Dns *string `json:"dns,omitempty" xmlrpc:"dns,omitempty"`
+
+	// no documentation yet
+	Gateway *string `json:"gateway,omitempty" xmlrpc:"gateway,omitempty"`
+
+	// no documentation yet
+	Id *string `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// no documentation yet
+	Vlan *int `json:"vlan,omitempty" xmlrpc:"vlan,omitempty"`
 }
 
 // This is the datatype that needs to be populated and sent to SoftLayer_Provisioning_Maintenance_Window::addCustomerUpgradeWindow. This datatype has everything required to place an order with SoftLayer.

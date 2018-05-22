@@ -263,8 +263,8 @@ type Account struct {
 	// The brand keyName.
 	BrandKeyName *string `json:"brandKeyName,omitempty" xmlrpc:"brandKeyName,omitempty"`
 
-	// The Business Partner details for the account. Country Enterprise Code, Channel ID, and Segment ID.
-	BusinessPartner *Account_Partner_Business `json:"businessPartner,omitempty" xmlrpc:"businessPartner,omitempty"`
+	// The Business Partner details for the account. Country Enterprise Code, Channel, Segment, Reseller Level.
+	BusinessPartner *Account_Business_Partner `json:"businessPartner,omitempty" xmlrpc:"businessPartner,omitempty"`
 
 	// Indicating whether this account can order additional Vlans.
 	CanOrderAdditionalVlansFlag *bool `json:"canOrderAdditionalVlansFlag,omitempty" xmlrpc:"canOrderAdditionalVlansFlag,omitempty"`
@@ -353,6 +353,9 @@ type Account struct {
 	// A general email address assigned to an account.
 	Email *string `json:"email,omitempty" xmlrpc:"email,omitempty"`
 
+	// Boolean flag dictating whether or not this account has the EU Supported flag. This flag indicates that this account uses IBM Cloud services to process EU citizen's personal data.
+	EuSupportedFlag *bool `json:"euSupportedFlag,omitempty" xmlrpc:"euSupportedFlag,omitempty"`
+
 	// The total capacity of Legacy EVault Volumes on an account, in GB.
 	EvaultCapacityGB *uint `json:"evaultCapacityGB,omitempty" xmlrpc:"evaultCapacityGB,omitempty"`
 
@@ -391,6 +394,9 @@ type Account struct {
 
 	// All of the account's current and former Flexible Credit enrollments.
 	FlexibleCreditEnrollments []FlexibleCredit_Enrollment `json:"flexibleCreditEnrollments,omitempty" xmlrpc:"flexibleCreditEnrollments,omitempty"`
+
+	// Timestamp representing the point in time when an account is required to link with PaaS.
+	ForcePaasAccountLinkDate *string `json:"forcePaasAccountLinkDate,omitempty" xmlrpc:"forcePaasAccountLinkDate,omitempty"`
 
 	// A count of
 	GlobalIpRecordCount *uint `json:"globalIpRecordCount,omitempty" xmlrpc:"globalIpRecordCount,omitempty"`
@@ -1028,6 +1034,9 @@ type Account struct {
 	// All private subnets associated with an account.
 	PrivateSubnets []Network_Subnet `json:"privateSubnets,omitempty" xmlrpc:"privateSubnets,omitempty"`
 
+	// Boolean flag indicating whether or not this account is a Proof of Concept account.
+	ProofOfConceptAccountFlag *bool `json:"proofOfConceptAccountFlag,omitempty" xmlrpc:"proofOfConceptAccountFlag,omitempty"`
+
 	// A count of dEPRECATED - This information can be pulled directly through tapping keys now - DEPRECATED. The allotments for this account and their servers. The public inbound and outbound bandwidth is calculated for each server in addition to the daily average network traffic since the last billing date.
 	PublicAllotmentHardwareBandwidthDetailCount *uint `json:"publicAllotmentHardwareBandwidthDetailCount,omitempty" xmlrpc:"publicAllotmentHardwareBandwidthDetailCount,omitempty"`
 
@@ -1141,6 +1150,9 @@ type Account struct {
 
 	// The security groups belonging to this account.
 	SecurityGroups []Network_SecurityGroup `json:"securityGroups,omitempty" xmlrpc:"securityGroups,omitempty"`
+
+	// no documentation yet
+	SecurityLevel *Security_Level `json:"securityLevel,omitempty" xmlrpc:"securityLevel,omitempty"`
 
 	// A count of an account's vulnerability scan requests.
 	SecurityScanRequestCount *uint `json:"securityScanRequestCount,omitempty" xmlrpc:"securityScanRequestCount,omitempty"`
@@ -1752,6 +1764,32 @@ type Account_Authentication_Saml struct {
 
 	// The identity provider signle sign on address.
 	SingleSignOnUrl *string `json:"singleSignOnUrl,omitempty" xmlrpc:"singleSignOnUrl,omitempty"`
+}
+
+// Contains business partner details associated with an account. Country Enterprise Identifier (CEID), Channel ID, Segment ID and Reseller Level.
+type Account_Business_Partner struct {
+	Entity
+
+	// Account associated with the business partner data
+	Account *Account `json:"account,omitempty" xmlrpc:"account,omitempty"`
+
+	// Channel indicator used to categorize business partner revenue.
+	Channel *Business_Partner_Channel `json:"channel,omitempty" xmlrpc:"channel,omitempty"`
+
+	// Account business partner channel identifier
+	ChannelId *int `json:"channelId,omitempty" xmlrpc:"channelId,omitempty"`
+
+	// Account business partner country enterprise code
+	CountryEnterpriseCode *string `json:"countryEnterpriseCode,omitempty" xmlrpc:"countryEnterpriseCode,omitempty"`
+
+	// Reseller level of an account business partner
+	ResellerLevel *int `json:"resellerLevel,omitempty" xmlrpc:"resellerLevel,omitempty"`
+
+	// Segment indicator used to categorize business partner revenue.
+	Segment *Business_Partner_Segment `json:"segment,omitempty" xmlrpc:"segment,omitempty"`
+
+	// Account business partner segment identifier
+	SegmentId *int `json:"segmentId,omitempty" xmlrpc:"segmentId,omitempty"`
 }
 
 // no documentation yet
@@ -2395,6 +2433,101 @@ type Account_Password_Type struct {
 
 	// A description of the use for the account username/password combination.
 	Description *string `json:"description,omitempty" xmlrpc:"description,omitempty"`
+}
+
+// This class represents a Proof of Concept account approver.
+type Account_ProofOfConcept_Approver struct {
+	Entity
+
+	// Approval slot of the approver.
+	ApprovalOrder *int `json:"approvalOrder,omitempty" xmlrpc:"approvalOrder,omitempty"`
+
+	// Email of the approver.
+	Email *string `json:"email,omitempty" xmlrpc:"email,omitempty"`
+
+	// First name of the approver.
+	FirstName *string `json:"firstName,omitempty" xmlrpc:"firstName,omitempty"`
+
+	// Internal identifier of a Proof of Concept account approver.
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// Last name of the approver.
+	LastName *string `json:"lastName,omitempty" xmlrpc:"lastName,omitempty"`
+
+	// SoftLayer_Account_ProofOfConcept_Approver_Region identifier of the approver.
+	RegionKeyName *string `json:"regionKeyName,omitempty" xmlrpc:"regionKeyName,omitempty"`
+
+	// no documentation yet
+	Role *Account_ProofOfConcept_Approver_Role `json:"role,omitempty" xmlrpc:"role,omitempty"`
+
+	// SoftLayer_Account_ProofOfConcept_Approver_Role identifier of the approver.
+	RoleId *int `json:"roleId,omitempty" xmlrpc:"roleId,omitempty"`
+
+	// no documentation yet
+	Type *Account_ProofOfConcept_Approver_Type `json:"type,omitempty" xmlrpc:"type,omitempty"`
+
+	// SoftLayer_Account_ProofOfConcept_Approver_Type identifier of the approver.
+	TypeId *int `json:"typeId,omitempty" xmlrpc:"typeId,omitempty"`
+}
+
+// This class represents a Proof of Concept account approver type. The current roles are Primary and Backup approvers.
+type Account_ProofOfConcept_Approver_Role struct {
+	Entity
+
+	// Description of a Proof of Concept account approver role.
+	Description *string `json:"description,omitempty" xmlrpc:"description,omitempty"`
+
+	// Internal identifier of a Proof of Concept account approver role.
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// Key name of a Proof of Concept account approver role.
+	KeyName *string `json:"keyName,omitempty" xmlrpc:"keyName,omitempty"`
+
+	// Name of a Proof of Concept account approver role.
+	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
+}
+
+// This class represents a Proof of Concept account approver type.
+type Account_ProofOfConcept_Approver_Type struct {
+	Entity
+
+	// A count of
+	ApproverCount *uint `json:"approverCount,omitempty" xmlrpc:"approverCount,omitempty"`
+
+	// no documentation yet
+	Approvers []Account_ProofOfConcept_Approver `json:"approvers,omitempty" xmlrpc:"approvers,omitempty"`
+
+	// Description for a Proof of Concept account approver type.
+	Description *string `json:"description,omitempty" xmlrpc:"description,omitempty"`
+
+	// Internal identifier of a Proof of Concept account approver type.
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// Key name for a Proof of Concept account approver type.
+	KeyName *string `json:"keyName,omitempty" xmlrpc:"keyName,omitempty"`
+
+	// Name of a Proof of Concept account approver type.
+	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
+}
+
+// no documentation yet
+type Account_ProofOfConcept_Funding_Type struct {
+	Entity
+
+	// A count of
+	ApproverCount *uint `json:"approverCount,omitempty" xmlrpc:"approverCount,omitempty"`
+
+	// A count of
+	ApproverTypeCount *uint `json:"approverTypeCount,omitempty" xmlrpc:"approverTypeCount,omitempty"`
+
+	// no documentation yet
+	ApproverTypes []Account_ProofOfConcept_Approver_Type `json:"approverTypes,omitempty" xmlrpc:"approverTypes,omitempty"`
+
+	// no documentation yet
+	Approvers []Account_ProofOfConcept_Approver `json:"approvers,omitempty" xmlrpc:"approvers,omitempty"`
+
+	// no documentation yet
+	KeyName *string `json:"keyName,omitempty" xmlrpc:"keyName,omitempty"`
 }
 
 //

@@ -35,7 +35,7 @@ The following arguments are supported:
 * `domian` - (Required, string) The domain of dedicatated host..
 * `router_hostname` - (Required, string) The hostname of the primary router associated with the dedicated host.
 * `hourly_billing` - (Optional, boolean) The billing type for the host. When set to `true`, the dedicated host is billed on hourly usage. Otherwise, the dedicated host is billed on a monthly basis. The default value is `true`.
-*  `wait_time_minutes` - (Optional, integer) The duration, expressed in minutes, to wait for the dedicated host to become available before declaring it as created. The default value is `90`.
+* `wait_time_minutes` - (Optional, integer) The duration, expressed in minutes, to wait for the dedicated host to become available before declaring it as created. The default value is `90`.
 * `tags` - (Optional, array of strings) Tags associated with the dedicated host.
 
 ## Attribute Reference
