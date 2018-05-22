@@ -366,6 +366,7 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 			"user_metadata": {
 				Type:     schema.TypeString,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"notes": {
@@ -1073,6 +1074,7 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	userData := result.UserData
+
 	if userData != nil && len(userData) > 0 {
 		d.Set("user_metadata", userData[0].Value)
 	}
@@ -1172,14 +1174,6 @@ func resourceIBMComputeVmInstanceUpdate(d *schema.ResourceData, meta interface{}
 		_, err = service.Id(id).EditObject(&result)
 		if err != nil {
 			return fmt.Errorf("Couldn't update virtual guest: %s", err)
-		}
-	}
-
-	// Set user data if provided and not empty
-	if d.HasChange("user_metadata") {
-		_, err := service.Id(id).SetUserMetadata([]string{d.Get("user_metadata").(string)})
-		if err != nil {
-			return fmt.Errorf("Couldn't update user data for virtual guest: %s", err)
 		}
 	}
 

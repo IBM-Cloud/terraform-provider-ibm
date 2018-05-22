@@ -39,7 +39,6 @@ func TestAccIBMComputeVmInstance_basic(t *testing.T) {
 	tags2 := "mesos-master"
 	userMetadata1 := "{\\\"value\\\":\\\"newvalue\\\"}"
 	userMetadata1Unquoted, _ := strconv.Unquote(`"` + userMetadata1 + `"`)
-	userMetadata2 := "updated"
 
 	configInstance := "ibm_compute_vm_instance.terraform-acceptance-test-1"
 	resource.Test(t, resource.TestCase{
@@ -102,12 +101,12 @@ func TestAccIBMComputeVmInstance_basic(t *testing.T) {
 			},
 
 			{
-				Config:  testAccIBMComputeVmInstanceConfigBasic(hostname, domain, networkSpeed1, cores1, memory1, userMetadata2, tags2),
+				Config:  testAccIBMComputeVmInstanceConfigBasic(hostname, domain, networkSpeed1, cores1, memory1, userMetadata1, tags2),
 				Destroy: false,
 				Check: resource.ComposeTestCheckFunc(
 					testAccIBMComputeVmInstanceExists(configInstance, &guest),
 					resource.TestCheckResourceAttr(
-						configInstance, "user_metadata", userMetadata2),
+						configInstance, "user_metadata", userMetadata1Unquoted),
 					CheckStringSet(
 						configInstance,
 						"tags", []string{tags2},
@@ -116,7 +115,7 @@ func TestAccIBMComputeVmInstance_basic(t *testing.T) {
 			},
 
 			{
-				Config: testAccIBMComputeVmInstanceConfigBasic(hostname, domain, networkSpeed2, cores2, memory2, userMetadata2, tags2),
+				Config: testAccIBMComputeVmInstanceConfigBasic(hostname, domain, networkSpeed2, cores2, memory2, userMetadata1, tags2),
 				Check: resource.ComposeTestCheckFunc(
 					testAccIBMComputeVmInstanceExists(configInstance, &guest),
 					resource.TestCheckResourceAttr(
@@ -129,7 +128,7 @@ func TestAccIBMComputeVmInstance_basic(t *testing.T) {
 			},
 
 			{
-				Config:  testAccIBMComputeVmInstanceConfigUpdate(hostname, domain, networkSpeed2, cores2, memory2, userMetadata2, tags2),
+				Config:  testAccIBMComputeVmInstanceConfigUpdate(hostname, domain, networkSpeed2, cores2, memory2, userMetadata1, tags2),
 				Destroy: false,
 				Check: resource.ComposeTestCheckFunc(
 					testAccIBMComputeVmInstanceExists(configInstance, &guest),
