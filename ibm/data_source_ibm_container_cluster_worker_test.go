@@ -52,9 +52,9 @@ data "ibm_account" "acc" {
 resource "ibm_container_cluster" "testacc_cluster" {
     name = "%s"
     datacenter = "%s"
+    account_guid = "${data.ibm_account.acc.id}"
     workers = [{
     name = "worker1"
-    account_guid = "${data.ibm_account.acc.id}"
     action = "add"
   },]
 	machine_type = "%s"
