@@ -24,6 +24,7 @@ import (
 const (
 	storagePerformancePackageType = "STORAGE_AS_A_SERVICE"
 	storageEndurancePackageType   = "STORAGE_AS_A_SERVICE"
+	storagePortablePackageType    = "ADDITIONAL_SERVICES_PORTABLE_STORAGE"
 	storageNasPackageType         = "ADDITIONAL_SERVICES_NETWORK_ATTACHED_STORAGE"
 	storageMask                   = "id,billingItem.orderItem.order.id"
 	storageDetailMask             = "id,capacityGb,iops,storageType,username,serviceResourceBackendIpAddress,properties[type]" +
@@ -31,6 +32,7 @@ const (
 	itemMask        = "id,capacity,description,units,keyName,prices[id,categories[id,name,categoryCode],capacityRestrictionMinimum,capacityRestrictionMaximum,locationGroupId]"
 	enduranceType   = "Endurance"
 	performanceType = "Performance"
+	portableType    = "Portable"
 	nasType         = "NAS/FTP"
 	fileStorage     = "FILE_STORAGE"
 	blockStorage    = "BLOCK_STORAGE"
@@ -81,6 +83,30 @@ var (
 		10000: "10000_12000_GBS",
 		11000: "10000_12000_GBS",
 		12000: "10000_12000_GBS",
+	}
+
+	portablestorageMap = map[int]string{
+		10:   "GUEST_DISK_10_GB_SAN",
+		20:   "GUEST_DISK_20_GB_SAN",
+		25:   "GUEST_DISK_25_GB_SAN_4",
+		30:   "GUEST_DISK_30_GB_SAN",
+		40:   "GUEST_DISK_40_GB_SAN",
+		50:   "GUEST_DISK_50_GB_SAN",
+		75:   "GUEST_DISK_75_GB_SAN",
+		100:  "GUEST_DISK_100_GB_SAN_3",
+		125:  "GUEST_DISK_125_GB_SAN",
+		150:  "GUEST_DISK_150_GB_SAN",
+		175:  "GUEST_DISK_175_GB_SAN",
+		200:  "GUEST_DISK_200_GB_SAN",
+		250:  "GUEST_DISK_250_GB_SAN",
+		300:  "GUEST_DISK_300_GB_SAN",
+		350:  "GUEST_DISK_350_GB_SAN",
+		400:  "GUEST_DISK_400_GB_SAN",
+		500:  "GUEST_DISK_500_GB_SAN",
+		750:  "GUEST_DISK_750_GB_SAN_2",
+		1000: "GUEST_DISK_1000_GB_SAN_2",
+		1500: "GUEST_DISK_1500_GB_SAN",
+		2000: "GUEST_DISK_2000_GB_SAN",
 	}
 
 	// Map monthly storage value to performance IOPS keyName in SoftLayer_Product_Item
@@ -153,6 +179,9 @@ var (
 				"storagePackageType":          storageEndurancePackageType,
 				"iopsCategoryCode":            "storage_tier_level",
 				"storageProtocolCategoryCode": "storage_block",
+			},
+			portableType: {
+				"storagePackageType": storagePortablePackageType,
 			},
 		},
 	}
@@ -384,7 +413,7 @@ func resourceIBMStorageFileCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	// Find the storage device
-	fileStorage, err := findStorageByOrderId(sess, *receipt.OrderId)
+	fileStorage, _, err := findStorageByOrderId(sess, *receipt.OrderId, "")
 
 	if err != nil {
 		return fmt.Errorf("Error during creation of storage: %s", err)
@@ -392,7 +421,7 @@ func resourceIBMStorageFileCreate(d *schema.ResourceData, meta interface{}) erro
 	d.SetId(fmt.Sprintf("%d", *fileStorage.Id))
 
 	// Wait for storage availability
-	_, err = WaitForStorageAvailable(d, meta)
+	_, err = WaitForStorageAvailable(d, meta, "")
 
 	if err != nil {
 		return fmt.Errorf(
@@ -400,7 +429,7 @@ func resourceIBMStorageFileCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	// SoftLayer changes the device ID after completion of provisioning. It is necessary to refresh device ID.
-	fileStorage, err = findStorageByOrderId(sess, *receipt.OrderId)
+	fileStorage, _, err = findStorageByOrderId(sess, *receipt.OrderId, "")
 
 	if err != nil {
 		return fmt.Errorf("Error during creation of storage: %s", err)
@@ -608,10 +637,20 @@ func resourceIBMStorageFileUpdate(d *schema.ResourceData, meta interface{}) erro
 func resourceIBMStorageFileDelete(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	storageService := services.GetNetworkStorageService(sess)
+	var billingItem datatypes.Billing_Item
+	var err error
 	storageID, _ := strconv.Atoi(d.Id())
+	if d.Get("type") == portableType {
+		billingItems, err := services.GetVirtualDiskImageService(sess).Id(storageID).GetBillingItem()
+		billingItem = billingItems.Billing_Item
+		if err != nil {
+			return fmt.Errorf("Error while looking up billing item associated with the storage: No billing item for ID:%d", storageID)
+		}
 
-	// Get billing item associated with the storage
-	billingItem, err := storageService.Id(storageID).GetBillingItem()
+	} else {
+		// Get billing item associated with the storage
+		billingItem, err = storageService.Id(storageID).GetBillingItem()
+	}
 
 	if err != nil {
 		return fmt.Errorf("Error while looking up billing item associated with the storage: %s", err)
@@ -639,10 +678,13 @@ func resourceIBMStorageFileExists(d *schema.ResourceData, meta interface{}) (boo
 	if err != nil {
 		return false, fmt.Errorf("Not a valid ID, must be an integer: %s", err)
 	}
-
-	_, err = services.GetNetworkStorageService(sess).
-		Id(storageID).
-		GetObject()
+	if d.Get("type") == portableType {
+		_, err = services.GetVirtualDiskImageService(sess).Id(storageID).GetObject()
+	} else {
+		_, err = services.GetNetworkStorageService(sess).
+			Id(storageID).
+			GetObject()
+	}
 
 	if err != nil {
 		if apiErr, ok := err.(sl.Error); ok && apiErr.StatusCode == 404 {
@@ -705,95 +747,95 @@ func buildStorageProductOrderContainer(
 	hourlyBilling bool) (datatypes.Container_Product_Order, error) {
 
 	// Build product item filters for performance storage
-	iopsKeyName, err := getIopsKeyName(iops, capacity, storageType, hourlyBilling)
-	if err != nil {
-		return datatypes.Container_Product_Order{}, err
-	}
-
 	capacityKeyName, err := getCapacityKeyName(iops, capacity, storageType)
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
 	}
-
-	snapshotCapacityKeyName := fmt.Sprintf("%d_GB_", snapshotCapacity)
-
-	iopsCategoryCode := storagePackageMap[storageProtocol][storageType]["iopsCategoryCode"]
-	storageProtocolCategoryCode := storagePackageMap[storageProtocol][storageType]["storageProtocolCategoryCode"]
 	// Get a package type)
 	storagePackageType := storagePackageMap[storageProtocol][storageType]["storagePackageType"]
 	pkg, err := product.GetPackageByType(sess, storagePackageType)
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
 	}
-
 	// Get all prices
 	productItems, err := product.GetPackageProducts(sess, *pkg.Id, itemMask)
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
 	}
 
-	// Add IOPS price
-	targetItemPrices := []datatypes.Product_Item_Price{}
-	var iopsPrice datatypes.Product_Item_Price
-
-	if storageType == enduranceType {
-		iopsPrice, err = getPrice(productItems, iopsKeyName, iopsCategoryCode, "", 0)
-		if err != nil {
-			return datatypes.Container_Product_Order{}, err
-		}
-	} else {
-		iopsPrice, err = getPrice(productItems, iopsKeyName, iopsCategoryCode, "STORAGE_SPACE", capacity)
-		if err != nil {
-			return datatypes.Container_Product_Order{}, err
-		}
-	}
-
-	targetItemPrices = append(targetItemPrices, iopsPrice)
-
 	var capacityPrice datatypes.Product_Item_Price
+	targetItemPrices := []datatypes.Product_Item_Price{}
 	// Add capacity price
 	if storageType == enduranceType {
 		capacityPrice, err = getPrice(productItems, capacityKeyName, "performance_storage_space", "STORAGE_TIER_LEVEL", enduranceCapacityRestrictionMap[iops])
 		if err != nil {
 			return datatypes.Container_Product_Order{}, err
 		}
-	} else {
+	} else if storageType == performanceType {
 		capacityPrice, err = getPrice(productItems, capacityKeyName, "performance_storage_space", "", 0)
 		if err != nil {
 			return datatypes.Container_Product_Order{}, err
 		}
+	} else {
+		capacityPrice, err = getPrice(productItems, capacityKeyName, "", "portablestorage", 0)
 	}
 	targetItemPrices = append(targetItemPrices, capacityPrice)
 
-	// Add storageProtocol price
-	storageProtocolPrice, err := getPrice(productItems, storageProtocol, storageProtocolCategoryCode, "", 0)
-	if err != nil {
-		return datatypes.Container_Product_Order{}, err
-	}
-	targetItemPrices = append(targetItemPrices, storageProtocolPrice)
-
-	endurancePrice, err := getPrice(productItems, "STORAGE_AS_A_SERVICE", "storage_as_a_service", "", 0)
-	if err != nil {
-		return datatypes.Container_Product_Order{}, err
-	}
-	targetItemPrices = append(targetItemPrices, endurancePrice)
-
-	// Add snapshot capacity price
-	if storageType == enduranceType && snapshotCapacity > 0 {
-		snapshotCapacityPrice, err := getPrice(productItems, snapshotCapacityKeyName, "storage_snapshot_space", "STORAGE_TIER_LEVEL", enduranceCapacityRestrictionMap[iops])
+	if storageType != portableType {
+		iopsKeyName, err := getIopsKeyName(iops, capacity, storageType, hourlyBilling)
 		if err != nil {
 			return datatypes.Container_Product_Order{}, err
 		}
-		targetItemPrices = append(targetItemPrices, snapshotCapacityPrice)
-	}
+		snapshotCapacityKeyName := fmt.Sprintf("%d_GB_", snapshotCapacity)
 
+		iopsCategoryCode := storagePackageMap[storageProtocol][storageType]["iopsCategoryCode"]
+		storageProtocolCategoryCode := storagePackageMap[storageProtocol][storageType]["storageProtocolCategoryCode"]
+
+		// Add IOPS price
+		var iopsPrice datatypes.Product_Item_Price
+
+		if storageType == enduranceType {
+			iopsPrice, err = getPrice(productItems, iopsKeyName, iopsCategoryCode, "", 0)
+			if err != nil {
+				return datatypes.Container_Product_Order{}, err
+			}
+		} else {
+			iopsPrice, err = getPrice(productItems, iopsKeyName, iopsCategoryCode, "STORAGE_SPACE", capacity)
+			if err != nil {
+				return datatypes.Container_Product_Order{}, err
+			}
+		}
+
+		targetItemPrices = append(targetItemPrices, iopsPrice)
+
+		// Add storageProtocol price
+		storageProtocolPrice, err := getPrice(productItems, storageProtocol, storageProtocolCategoryCode, "", 0)
+		if err != nil {
+			return datatypes.Container_Product_Order{}, err
+		}
+		targetItemPrices = append(targetItemPrices, storageProtocolPrice)
+
+		endurancePrice, err := getPrice(productItems, "STORAGE_AS_A_SERVICE", "storage_as_a_service", "", 0)
+		if err != nil {
+			return datatypes.Container_Product_Order{}, err
+		}
+		targetItemPrices = append(targetItemPrices, endurancePrice)
+
+		// Add snapshot capacity price
+		if storageType == enduranceType && snapshotCapacity > 0 {
+			snapshotCapacityPrice, err := getPrice(productItems, snapshotCapacityKeyName, "storage_snapshot_space", "STORAGE_TIER_LEVEL", enduranceCapacityRestrictionMap[iops])
+			if err != nil {
+				return datatypes.Container_Product_Order{}, err
+			}
+			targetItemPrices = append(targetItemPrices, snapshotCapacityPrice)
+		}
+	}
 	// Lookup the data center ID
 	dc, err := location.GetDatacenterByName(sess, datacenter)
 	if err != nil {
 		return datatypes.Container_Product_Order{},
 			fmt.Errorf("No data centers matching %s could be found", datacenter)
 	}
-
 	productOrderContainer := datatypes.Container_Product_Order{
 		PackageId:        pkg.Id,
 		Location:         sl.String(strconv.Itoa(*dc.Id)),
@@ -805,30 +847,46 @@ func buildStorageProductOrderContainer(
 	return productOrderContainer, nil
 }
 
-func findStorageByOrderId(sess *session.Session, orderId int) (datatypes.Network_Storage, error) {
+func findStorageByOrderId(sess *session.Session, orderId int, storagetype string) (datatypes.Network_Storage, datatypes.Virtual_Disk_Image, error) {
 	filterPath := "networkStorage.billingItem.orderItem.order.id"
-
+	portablestoragefilter := "portableStorageVolumes.billingItem.orderItem.order.id"
+	var storage []datatypes.Network_Storage
+	var portablestorage []datatypes.Virtual_Disk_Image
+	var err error
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"complete"},
 		Refresh: func() (interface{}, string, error) {
-			storage, err := services.GetAccountService(sess).
-				Filter(filter.Build(
-					filter.Path(filterPath).
-						Eq(strconv.Itoa(orderId)))).
-				Mask(storageMask).
-				GetNetworkStorage()
-			if err != nil {
-				return datatypes.Network_Storage{}, "", err
+			if storagetype != portableType {
+				storage, err = services.GetAccountService(sess).
+					Filter(filter.Build(
+						filter.Path(filterPath).
+							Eq(strconv.Itoa(orderId)))).
+					Mask(storageMask).
+					GetNetworkStorage()
+				if err != nil {
+					return datatypes.Network_Storage{}, "", err
+				}
+			} else {
+				portablestorage, err = services.GetAccountService(sess).
+					Filter(filter.Build(
+						filter.Path(portablestoragefilter).
+							Eq(strconv.Itoa(orderId)))).
+					Mask(storageMask).
+					GetPortableStorageVolumes()
+				if err != nil {
+					return datatypes.Network_Storage{}, "", err
+				}
 			}
-
 			if len(storage) == 1 {
 				return storage[0], "complete", nil
-			} else if len(storage) == 0 {
+			} else if len(portablestorage) == 1 {
+				fmt.Println("----------------------------Finally Found it-------------------------")
+				return portablestorage[0], "complete", nil
+			} else if len(storage) == 0 || len(portablestorage) == 0 {
 				return nil, "pending", nil
-			} else {
-				return nil, "", fmt.Errorf("Expected one Storage: %s", err)
 			}
+			return nil, "", fmt.Errorf("Expected one Storage: %s", err)
 		},
 		Timeout:        45 * time.Minute,
 		Delay:          10 * time.Second,
@@ -839,21 +897,28 @@ func findStorageByOrderId(sess *session.Session, orderId int) (datatypes.Network
 	pendingResult, err := stateConf.WaitForState()
 
 	if err != nil {
-		return datatypes.Network_Storage{}, err
+		return datatypes.Network_Storage{}, datatypes.Virtual_Disk_Image{}, err
 	}
 
 	var result, ok = pendingResult.(datatypes.Network_Storage)
-
-	if ok {
-		return result, nil
+	if storagetype == portableType {
+		if result, ok := pendingResult.(datatypes.Virtual_Disk_Image); ok {
+			return datatypes.Network_Storage{}, result, nil
+		}
+		return datatypes.Network_Storage{}, datatypes.Virtual_Disk_Image{},
+			fmt.Errorf("Cannot find Storage with order id from line 856 '%d'", orderId)
 	}
 
-	return datatypes.Network_Storage{},
+	if ok {
+		return result, datatypes.Virtual_Disk_Image{}, nil
+	}
+
+	return datatypes.Network_Storage{}, datatypes.Virtual_Disk_Image{},
 		fmt.Errorf("Cannot find Storage with order id '%d'", orderId)
 }
 
 // Waits for storage provisioning
-func WaitForStorageAvailable(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+func WaitForStorageAvailable(d *schema.ResourceData, meta interface{}, storagetype string) (interface{}, error) {
 	log.Printf("Waiting for storage (%s) to be available.", d.Id())
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -881,7 +946,7 @@ func WaitForStorageAvailable(d *schema.ResourceData, meta interface{}) (interfac
 			}
 
 			// Check volume status.
-			if storageType != nasType {
+			if storageType != nasType || storagetype != portableType {
 				log.Println("Checking volume status.")
 				resultStr := ""
 				err = sess.DoRequest(
@@ -930,6 +995,8 @@ func getCapacityKeyName(iops float64, capacity int, storageType string) (string,
 		return enduranceStorageMap[iops], nil
 	case performanceType:
 		return performanceStorageMap[capacity], nil
+	case portableType:
+		return portablestorageMap[capacity], nil
 	}
 	return "", fmt.Errorf("Invalid storageType %s.", storageType)
 }
@@ -938,6 +1005,9 @@ func getPrice(productItems []datatypes.Product_Item, keyName string, categoryCod
 	for _, item := range productItems {
 		if strings.HasPrefix(*item.KeyName, keyName) {
 			for _, price := range item.Prices {
+				if price.LocationGroupId == nil && capacityRestrictionType == "portablestorage" {
+					return price, nil
+				}
 				if *price.Categories[0].CategoryCode == categoryCode && price.LocationGroupId == nil {
 					if capacityRestrictionType == "STORAGE_SPACE" {
 						if price.CapacityRestrictionMinimum == nil ||

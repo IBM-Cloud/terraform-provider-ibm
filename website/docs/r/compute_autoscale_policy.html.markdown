@@ -23,6 +23,7 @@ resource "ibm_compute_autoscale_policy" "test_scale_policy" {
     scale_amount = 1
     cooldown = 30
     scale_group_id = "${ibm_compute_autoscale_group.sample-http-cluster.id}"
+    append_triggers_to_existing= true
     triggers = {
         type = "RESOURCE_USE"
         watches = {
@@ -52,6 +53,7 @@ The following arguments are supported:
 * `scale_amount` - (Required, integer) A count of the scaling actions to perform upon any trigger hit.
 * `cooldown` - (Optional, integer) The duration, expressed in seconds, that the policy waits after the last action date before performing another scaling action. If you do not provide a value, the `scale_group` cooldown applies.
 * `scale_group_id` - (Required, integer) The ID of the auto scale group associated with the policy.
+* `append_triggers_to_existing` - (Optional, boolean) The value to notify whether the policy is to be updated or new policy is to be created.
 * `triggers` - (Optional, array of integers and strings) The triggers to check for this group.
 * `tags` - (Optional, array of strings) Tags associated with the auto scaling policy instance.
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.

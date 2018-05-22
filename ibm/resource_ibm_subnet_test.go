@@ -25,7 +25,7 @@ func TestAccibmSubnet_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_subnet.portable_subnet", "type", "Portable"),
 					resource.TestCheckResourceAttr(
-						"ibm_subnet.portable_subnet", "private", "true"),
+						"ibm_subnet.portable_subnet", "network_type", "private"),
 					resource.TestCheckResourceAttr(
 						"ibm_subnet.portable_subnet", "ip_version", "4"),
 					resource.TestCheckResourceAttr(
@@ -41,7 +41,7 @@ func TestAccibmSubnet_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_subnet.static_subnet", "type", "Static"),
 					resource.TestCheckResourceAttr(
-						"ibm_subnet.static_subnet", "private", "false"),
+						"ibm_subnet.static_subnet", "network_type", "public"),
 					resource.TestCheckResourceAttr(
 						"ibm_subnet.static_subnet", "ip_version", "4"),
 					resource.TestCheckResourceAttr(
@@ -57,7 +57,7 @@ func TestAccibmSubnet_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_subnet.portable_subnet_v6", "type", "Portable"),
 					resource.TestCheckResourceAttr(
-						"ibm_subnet.portable_subnet_v6", "private", "false"),
+						"ibm_subnet.portable_subnet_v6", "network_type", "public"),
 					resource.TestCheckResourceAttr(
 						"ibm_subnet.portable_subnet_v6", "ip_version", "6"),
 					resource.TestCheckResourceAttr(
@@ -70,7 +70,7 @@ func TestAccibmSubnet_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_subnet.static_subnet_v6", "type", "Static"),
 					resource.TestCheckResourceAttr(
-						"ibm_subnet.static_subnet_v6", "private", "false"),
+						"ibm_subnet.static_subnet_v6", "network_type", "public"),
 					resource.TestCheckResourceAttr(
 						"ibm_subnet.static_subnet_v6", "ip_version", "6"),
 					resource.TestCheckResourceAttr(
@@ -108,7 +108,7 @@ func TestAccibmSubnet_With_Tag(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_subnet.portable_subnet", "type", "Portable"),
 					resource.TestCheckResourceAttr(
-						"ibm_subnet.portable_subnet", "private", "true"),
+						"ibm_subnet.portable_subnet", "network_type", "public"),
 					resource.TestCheckResourceAttr(
 						"ibm_subnet.portable_subnet", "ip_version", "4"),
 					resource.TestCheckResourceAttr(
@@ -184,7 +184,7 @@ resource "ibm_compute_vm_instance" "subnetvm1" {
 
 resource "ibm_subnet" "portable_subnet" {
   type = "Portable"
-  private = true
+  network_type = "private"
   ip_version = 4
   capacity = 4
   vlan_id = "${ibm_compute_vm_instance.subnetvm1.private_vlan_id}"
@@ -193,7 +193,7 @@ resource "ibm_subnet" "portable_subnet" {
 
 resource "ibm_subnet" "static_subnet" {
   type = "Static"
-  private = false
+  network_type = "public"
   ip_version = 4
   capacity = 4
   endpoint_ip="${ibm_compute_vm_instance.subnetvm1.ipv4_address}"
@@ -202,7 +202,7 @@ resource "ibm_subnet" "static_subnet" {
 
 resource "ibm_subnet" "portable_subnet_v6" {
   type = "Portable"
-  private = false
+  network_type = "public"
   ip_version = 6
   capacity = 64
   vlan_id = "${ibm_compute_vm_instance.subnetvm1.public_vlan_id}"
@@ -211,7 +211,7 @@ resource "ibm_subnet" "portable_subnet_v6" {
 
 resource "ibm_subnet" "static_subnet_v6" {
   type = "Static"
-  private = false
+  network_type = "public"
   ip_version = 6
   capacity = 64
   endpoint_ip="${ibm_compute_vm_instance.subnetvm1.ipv6_address}"
@@ -241,7 +241,7 @@ resource "ibm_compute_vm_instance" "subnetvm1" {
 
 resource "ibm_subnet" "portable_subnet" {
   type = "Portable"
-  private = true
+  network_type = "private"
   ip_version = 4
   capacity = 4
   vlan_id = "${ibm_compute_vm_instance.subnetvm1.private_vlan_id}"
@@ -250,7 +250,7 @@ resource "ibm_subnet" "portable_subnet" {
 
 resource "ibm_subnet" "static_subnet" {
   type = "Static"
-  private = false
+  network_type = "public"
   ip_version = 4
   capacity = 4
   endpoint_ip="${ibm_compute_vm_instance.subnetvm1.ipv4_address}"
@@ -259,7 +259,7 @@ resource "ibm_subnet" "static_subnet" {
 
 resource "ibm_subnet" "portable_subnet_v6" {
   type = "Portable"
-  private = false
+  network_type = "public"
   ip_version = 6
   capacity = 64
   vlan_id = "${ibm_compute_vm_instance.subnetvm1.public_vlan_id}"
@@ -268,7 +268,7 @@ resource "ibm_subnet" "portable_subnet_v6" {
 
 resource "ibm_subnet" "static_subnet_v6" {
   type = "Static"
-  private = false
+  network_type = "public"
   ip_version = 6
   capacity = 64
   endpoint_ip="${ibm_compute_vm_instance.subnetvm1.ipv6_address}"
@@ -294,7 +294,7 @@ resource "ibm_compute_vm_instance" "subnetvm1" {
 
 resource "ibm_subnet" "portable_subnet" {
   type = "Portable"
-  private = true
+  network_type = "private"
   ip_version = 4
   capacity = 4
   vlan_id = "${ibm_compute_vm_instance.subnetvm1.private_vlan_id}"
@@ -321,7 +321,7 @@ resource "ibm_compute_vm_instance" "subnetvm1" {
 
 resource "ibm_subnet" "portable_subnet" {
   type = "Portable"
-  private = true
+  network_type = "private"
   ip_version = 4
   capacity = 4
   vlan_id = "${ibm_compute_vm_instance.subnetvm1.private_vlan_id}"

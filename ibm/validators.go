@@ -151,6 +151,51 @@ func validateNotes(v interface{}, k string) (ws []string, errors []error) {
 	return
 }
 
+func validateAuthProtocol(v interface{}, k string) (ws []string, errors []error) {
+	authProtocol := v.(string)
+	if authProtocol != "MD5" && authProtocol != "SHA1" && authProtocol != "SHA256" {
+		errors = append(errors, fmt.Errorf(
+			"%q auth protocol can be MD5 or SHA1 or SHA256", k))
+	}
+	return
+}
+
+func validateList(v interface{}, k string) (ws []string, errors []error) {
+	authProtocol := v.([]interface{})
+	if len(authProtocol) > 1 {
+		errors = append(errors, fmt.Errorf(
+			"%q Members of list can be only one", k))
+	}
+	return
+}
+
+func validateEncyptionProtocol(v interface{}, k string) (ws []string, errors []error) {
+	encyptionProtocol := v.(string)
+	if encyptionProtocol != "DES" && encyptionProtocol != "3DES" && encyptionProtocol != "AES128" && encyptionProtocol != "AES192" && encyptionProtocol != "AES256" {
+		errors = append(errors, fmt.Errorf(
+			"%q encryption protocol can be DES or 3DES or AES128 or AES192 or AES256", k))
+	}
+	return
+}
+
+func validateDiffieHellmanGroup(v interface{}, k string) (ws []string, errors []error) {
+	diffieHellmanGroup := v.(int)
+	if diffieHellmanGroup != 0 && diffieHellmanGroup != 1 && diffieHellmanGroup != 2 && diffieHellmanGroup != 5 {
+		errors = append(errors, fmt.Errorf(
+			"%q Diffie Hellman Group can be 0 or 1 or 2 or 5", k))
+	}
+	return
+}
+
+func validatekeylife(v interface{}, k string) (ws []string, errors []error) {
+	keylife := v.(int)
+	if keylife < 120 || keylife > 172800 {
+		errors = append(errors, fmt.Errorf(
+			"%q keylife value can be between 120 and 172800", k))
+	}
+	return
+}
+
 func validatePublicBandwidth(v interface{}, k string) (ws []string, errors []error) {
 	bandwidth := v.(int)
 	if bandwidth < 0 {
@@ -407,6 +452,7 @@ func validateStorageType(v interface{}, k string) (ws []string, errors []error) 
 		"Endurance":   true,
 		"Performance": true,
 		"NAS/FTP":     true,
+		"Portable":    true,
 	}
 
 	value := v.(string)

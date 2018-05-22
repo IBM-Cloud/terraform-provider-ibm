@@ -73,6 +73,29 @@ func TestAccIBMStorageBlock_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMStorageBlock_Portable(t *testing.T) {
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMStorageBlockConfigPortable,
+				Check: resource.ComposeTestCheckFunc(
+					// Portable Storage
+					testAccCheckIBMStorageBlockExists("ibm_storage_block.bs_portable"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_block.bs_portable", "type", "Portable"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_block.bs_portable", "type", "Portable"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_block.bs_portable", "disk_description", "Checking Portable Storage"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMStorageBlockwithTag(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
@@ -236,6 +259,13 @@ resource "ibm_storage_block" "bs_performance" {
         notes = "performance notes"
 }
 `
+const testAccCheckIBMStorageBlockConfigPortable = `resource "ibm_storage_block" "bs_portable" {
+	datacenter = "dal13"
+	type = "Portable"
+	capacity = 10
+	disk_description = "Checking Portable Storage"
+   }
+   `
 const testAccCheckIBMStorageBlockConfig_update = `
 resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"

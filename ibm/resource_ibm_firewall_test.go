@@ -19,7 +19,7 @@ func TestAccIBMFirewall_Basic(t *testing.T) {
 				Config: testAccCheckIBMFirewall_basic(hostname),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"ibm_firewall.accfw", "ha_enabled", "false"),
+						"ibm_firewall.accfw", "firewall_type", "HARDWARE_FIREWALL_DEDICATED"),
 					testAccCheckIBMResources("ibm_firewall.accfw", "public_vlan_id",
 						"ibm_compute_vm_instance.fwvm1", "public_vlan_id"),
 				),
@@ -45,7 +45,7 @@ resource "ibm_compute_vm_instance" "fwvm1" {
 }
 
 resource "ibm_firewall" "accfw" {
-  ha_enabled = false
+  firewall_type = "HARDWARE_FIREWALL_DEDICATED"
   public_vlan_id = "${ibm_compute_vm_instance.fwvm1.public_vlan_id}"
 }`, hostname)
 }
@@ -63,7 +63,7 @@ func TestAccIBMFirewall_Tag(t *testing.T) {
 				Config: testAccCheckIBMFirewallTag(hostname, tags1),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"ibm_firewall.accfw", "ha_enabled", "false"),
+						"ibm_firewall.accfw", "firewall_type", "HARDWARE_FIREWALL_DEDICATED"),
 					testAccCheckIBMResources("ibm_firewall.accfw", "public_vlan_id",
 						"ibm_compute_vm_instance.fwvm1", "public_vlan_id"),
 					resource.TestCheckResourceAttr(
@@ -78,7 +78,7 @@ func TestAccIBMFirewall_Tag(t *testing.T) {
 				Config: testAccCheckIBMFirewallUpdateTag(hostname, tags1, tags2),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"ibm_firewall.accfw", "ha_enabled", "false"),
+						"ibm_firewall.accfw", "firewall_type", "HARDWARE_FIREWALL_DEDICATED"),
 					testAccCheckIBMResources("ibm_firewall.accfw", "public_vlan_id",
 						"ibm_compute_vm_instance.fwvm1", "public_vlan_id"),
 					resource.TestCheckResourceAttr(
@@ -110,7 +110,7 @@ resource "ibm_compute_vm_instance" "fwvm1" {
 }
 
 resource "ibm_firewall" "accfw" {
-  ha_enabled = false
+  firewall_type = "HARDWARE_FIREWALL_DEDICATED"
   public_vlan_id = "${ibm_compute_vm_instance.fwvm1.public_vlan_id}"
   tags = ["%s"]
 }`, hostname, tag1)
@@ -133,7 +133,7 @@ resource "ibm_compute_vm_instance" "fwvm1" {
 }
 
 resource "ibm_firewall" "accfw" {
-  ha_enabled = false
+  firewall_type = "HARDWARE_FIREWALL_DEDICATED"
   public_vlan_id = "${ibm_compute_vm_instance.fwvm1.public_vlan_id}"
   tags = ["%s", "%s"]
 }`, hostname, tag1, tag2)
