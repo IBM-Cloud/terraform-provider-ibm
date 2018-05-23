@@ -394,6 +394,12 @@ func (r Ticket) GetEmployeeAttachments() (resp []datatypes.User_Employee, err er
 	return
 }
 
+// Retrieve A ticket's associated EU compliant record
+func (r Ticket) GetEuSupportedFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Ticket", "getEuSupportedFlag", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve The first physical or virtual server attached to a ticket.
 func (r Ticket) GetFirstAttachedResource() (resp datatypes.Ticket_Attachment, err error) {
 	err = r.Session.DoRequest("SoftLayer_Ticket", "getFirstAttachedResource", nil, &r.Options, &resp)

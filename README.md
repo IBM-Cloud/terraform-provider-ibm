@@ -18,7 +18,7 @@ Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provi
 
 ```sh
 $ mkdir -p $GOPATH/src/github.com/terraform-providers; cd $GOPATH/src/github.com/terraform-providers
-$ git clone git@github.com:sumit-tembe-ibm/terraform-provider-ibm.git
+$ git clone git@github.com:IBM-Bluemix/terraform-provider-ibm.git
 ```
 
 Enter the provider directory and build the provider
@@ -28,10 +28,19 @@ $ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-ibm
 $ make build
 ```
 
+Docker Image For The Provider
+-----------------------------
+
+You can also pull the docker image for the ibmcloud terraform provider :
+
+```sh
+ $ docker pull ibmterraform/terraform-provider-ibm-docker
+```
+
 Using the provider
 ----------------------
 
-See the [IBM Provider documentation](https://ibm-cloud.github.io/tf-ibm-docs/v0.6.0/) to get started using the IBM provider.
+See the [IBM Provider documentation](https://ibm-cloud.github.io/tf-ibm-docs/) to get started using the IBM provider.
 
 Developing the Provider
 ---------------------------

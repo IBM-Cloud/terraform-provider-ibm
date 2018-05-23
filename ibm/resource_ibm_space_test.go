@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 
-	"github.com/IBM-Bluemix/bluemix-go/api/mccp/mccpv2"
-	"github.com/IBM-Bluemix/bluemix-go/bmxerror"
+	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
 
 func TestAccIBMSpace_Basic(t *testing.T) {

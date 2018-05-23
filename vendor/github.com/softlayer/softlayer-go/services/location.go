@@ -99,6 +99,12 @@ func (r Location) GetDatacentersWithVirtualImageStoreServiceResourceRecord() (re
 	return
 }
 
+// Retrieve A flag indicating whether or not the datacenter/location is EU compliant.
+func (r Location) GetEuCompliantFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Location", "getEuCompliantFlag", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve A location can be a member of 1 or more groups. This will show which groups to which a location belongs.
 func (r Location) GetGroups() (resp []datatypes.Location_Group, err error) {
 	err = r.Session.DoRequest("SoftLayer_Location", "getGroups", nil, &r.Options, &resp)
@@ -298,6 +304,12 @@ func (r Location_Datacenter) GetDatacenters() (resp []datatypes.Location, err er
 // no documentation yet
 func (r Location_Datacenter) GetDatacentersWithVirtualImageStoreServiceResourceRecord() (resp []datatypes.Location, err error) {
 	err = r.Session.DoRequest("SoftLayer_Location_Datacenter", "getDatacentersWithVirtualImageStoreServiceResourceRecord", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A flag indicating whether or not the datacenter/location is EU compliant.
+func (r Location_Datacenter) GetEuCompliantFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Location_Datacenter", "getEuCompliantFlag", nil, &r.Options, &resp)
 	return
 }
 

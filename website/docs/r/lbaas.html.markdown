@@ -40,15 +40,6 @@ resource "ibm_lbaas" "lbaas" {
       load_balancing_method = "round_robin"
     },
   ]
-
-  server_instances = [
-    {
-      "private_ip_address" = "${ibm_compute_vm_instance.vm_instances.0.ipv4_address_private}"
-    },
-    {
-      "private_ip_address" = "${ibm_compute_vm_instance.vm_instances.1.ipv4_address_private}"
-    },
-  ]
 }
 
 
@@ -70,10 +61,6 @@ The following arguments are supported:
   * `session_stickiness` - (Optional, string) The SOURCE_IP for session stickiness.
   * `max_conn` - (Optional, integer) The maximum number of connections the listener can accept. The number must be 1 - 64000.
   * `tls_certificate_id` - (Optional, integer) The ID of the SSL/TLS certificate being used for a protocol. This ID should be specified when `frontend protocol` has a value of `HTTPS`.
-* `server_instances` - (Optional, array) A nested block describing the server instances for the load balancer. Nested `server_instances` blocks have the following structure:
-  * `private_ip_address` - (Required, string) The private IP address of a load balancer member.
-  * `weight` - (Optional, integer) The weight of a load balancer member.
-
 * `wait_time_minutes` - (Optional, integer) The duration, expressed in minutes, to wait for the lbaas instance to become available before declaring it as created. It is also the same amount of time waited for deletion to finish. The default value is `90`.
 
 ## Attributes Reference
@@ -86,4 +73,3 @@ The following attributes are exported:
 * `status` - Specifies the operation status of the load balancer as `ONLINE` or `OFFLINE`.
 * `vip` - The virtual IP address of the load balancer.
 * `protocol_id` - The UUID of a load balancer protocol.
-* `member_id` - The UUID of a load balancer member.

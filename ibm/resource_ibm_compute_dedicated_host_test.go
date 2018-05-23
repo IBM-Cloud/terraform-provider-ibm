@@ -32,9 +32,9 @@ func TestAccIBMComputeDedicatedHost_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_compute_dedicated_host.dedicatedHourly", "domain", "uat.com"),
 					resource.TestCheckResourceAttr(
-						"ibm_compute_dedicated_host.dedicatedHourly", "datacenter", "dal09"),
+						"ibm_compute_dedicated_host.dedicatedHourly", "datacenter", "dal10"),
 					resource.TestCheckResourceAttr(
-						"ibm_compute_dedicated_host.dedicatedHourly", "router_hostname", "bcr01a.dal09"),
+						"ibm_compute_dedicated_host.dedicatedHourly", "router_hostname", "bcr01a.dal10"),
 					resource.TestCheckResourceAttr(
 						"ibm_compute_dedicated_host.dedicatedHourly", "hourly_billing", "true"),
 					resource.TestCheckResourceAttr(
@@ -55,9 +55,9 @@ func TestAccIBMComputeDedicatedHost_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_compute_dedicated_host.dedicatedHourly", "domain", "uat.com"),
 					resource.TestCheckResourceAttr(
-						"ibm_compute_dedicated_host.dedicatedHourly", "datacenter", "dal09"),
+						"ibm_compute_dedicated_host.dedicatedHourly", "datacenter", "dal10"),
 					resource.TestCheckResourceAttr(
-						"ibm_compute_dedicated_host.dedicatedHourly", "router_hostname", "bcr01a.dal09"),
+						"ibm_compute_dedicated_host.dedicatedHourly", "router_hostname", "bcr01a.dal10"),
 					resource.TestCheckResourceAttr(
 						"ibm_compute_dedicated_host.dedicatedHourly", "hourly_billing", "true"),
 					resource.TestCheckResourceAttr(
@@ -90,9 +90,9 @@ func TestAccIBMComputerDedicatedHostWithTag(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_compute_dedicated_host.dedicatedMonthly", "domain", "uat.com"),
 					resource.TestCheckResourceAttr(
-						"ibm_compute_dedicated_host.dedicatedMonthly", "datacenter", "dal09"),
+						"ibm_compute_dedicated_host.dedicatedMonthly", "datacenter", "dal10"),
 					resource.TestCheckResourceAttr(
-						"ibm_compute_dedicated_host.dedicatedMonthly", "router_hostname", "bcr01a.dal09"),
+						"ibm_compute_dedicated_host.dedicatedMonthly", "router_hostname", "bcr01a.dal10"),
 					resource.TestCheckResourceAttr(
 						"ibm_compute_dedicated_host.dedicatedMonthly", "hourly_billing", "false"),
 					resource.TestCheckResourceAttr(
@@ -115,9 +115,9 @@ func TestAccIBMComputerDedicatedHostWithTag(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_compute_dedicated_host.dedicatedMonthly", "domain", "uat.com"),
 					resource.TestCheckResourceAttr(
-						"ibm_compute_dedicated_host.dedicatedMonthly", "datacenter", "dal09"),
+						"ibm_compute_dedicated_host.dedicatedMonthly", "datacenter", "dal10"),
 					resource.TestCheckResourceAttr(
-						"ibm_compute_dedicated_host.dedicatedMonthly", "router_hostname", "bcr01a.dal09"),
+						"ibm_compute_dedicated_host.dedicatedMonthly", "router_hostname", "bcr01a.dal10"),
 					resource.TestCheckResourceAttr(
 						"ibm_compute_dedicated_host.dedicatedMonthly", "hourly_billing", "false"),
 					resource.TestCheckResourceAttr(
@@ -151,9 +151,9 @@ func TestAccIBMComputeDedicatedHostImport(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_compute_dedicated_host.import", "domain", "uat.com"),
 					resource.TestCheckResourceAttr(
-						"ibm_compute_dedicated_host.import", "datacenter", "dal09"),
+						"ibm_compute_dedicated_host.import", "datacenter", "dal10"),
 					resource.TestCheckResourceAttr(
-						"ibm_compute_dedicated_host.import", "router_hostname", "bcr01a.dal09"),
+						"ibm_compute_dedicated_host.import", "router_hostname", "bcr01a.dal10"),
 					resource.TestCheckResourceAttr(
 						"ibm_compute_dedicated_host.import", "hourly_billing", "true"),
 					resource.TestCheckResourceAttr(
@@ -234,8 +234,8 @@ func testAccCheckIBMComputeDedicatedHostConfigBasic(hostname string) string {
 resource "ibm_compute_dedicated_host" "dedicatedHourly" {
 	hostname = "%s"
 	domain = "uat.com"
-	router_hostname = "bcr01a.dal09"
-	datacenter = "dal09"
+	router_hostname = "bcr01a.dal10"
+	datacenter = "dal10"
 }`, hostname)
 }
 
@@ -244,8 +244,8 @@ func testAccCheckIBMComputeDedicatedHostConfigUpdated(updatedHostname string) st
 resource "ibm_compute_dedicated_host" "dedicatedHourly" {
 	hostname = "%s"
 	domain = "uat.com"
-	datacenter = "dal09"
-	router_hostname = "bcr01a.dal09"
+	datacenter = "dal10"
+	router_hostname = "bcr01a.dal10"
 }`, updatedHostname)
 }
 
@@ -254,8 +254,8 @@ func testAccCheckIBMComputeDedicatedHostWithTag(hostname string) string {
 resource "ibm_compute_dedicated_host" "dedicatedMonthly" {
 	hostname = "%s"
 	domain = "uat.com"
-	datacenter = "dal09"
-	router_hostname = "bcr01a.dal09"
+	datacenter = "dal10"
+	router_hostname = "bcr01a.dal10"
 	hourly_billing = false
 	tags = ["one", "two"]
 }`, hostname)
@@ -266,8 +266,8 @@ func testAccCheckIBMComputeDedicatedHostWithUpdateTag(hostname string) string {
 resource "ibm_compute_dedicated_host" "dedicatedMonthly" {
 	hostname = "%s"
 	domain = "uat.com"
-	datacenter = "dal09"
-	router_hostname = "bcr01a.dal09"
+	datacenter = "dal10"
+	router_hostname = "bcr01a.dal10"
 	hourly_billing = false
 	tags = ["one", "two", "three"]
 }`, hostname)
@@ -278,7 +278,7 @@ func testAccCheckIBMComputeDedicatedHostImport(hostname string) string {
 resource "ibm_compute_dedicated_host" "import" {
 	hostname = "%s"
 	domain = "uat.com"
-	router_hostname = "bcr01a.dal09"
-	datacenter = "dal09"
+	router_hostname = "bcr01a.dal10"
+	datacenter = "dal10"
 }`, hostname)
 }

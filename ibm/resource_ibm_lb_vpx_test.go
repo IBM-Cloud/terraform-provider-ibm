@@ -42,6 +42,37 @@ func TestAccIBMLbVpx_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMLbVpxWithIPCount1(t *testing.T) {
+	var nadc datatypes.Network_Application_Delivery_Controller
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMLbVpxWithIPCount1,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMLbVpxExists("ibm_lb_vpx.testacc_foobar_vpx", &nadc),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx.testacc_foobar_vpx", "type", "NetScaler VPX"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx.testacc_foobar_vpx", "datacenter", "dal09"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx.testacc_foobar_vpx", "speed", "10"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx.testacc_foobar_vpx", "plan", "Standard"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx.testacc_foobar_vpx", "ip_count", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx.testacc_foobar_vpx", "version", "11.0"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb_vpx.testacc_foobar_vpx", "vip_pool.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMLbVpxWithTag(t *testing.T) {
 	var nadc datatypes.Network_Application_Delivery_Controller
 
@@ -134,6 +165,15 @@ resource "ibm_lb_vpx" "testacc_foobar_vpx" {
     version = "10.1"
     plan = "Standard"
     ip_count = 2
+}`
+
+const testAccCheckIBMLbVpxWithIPCount1 = `
+resource "ibm_lb_vpx" "testacc_foobar_vpx" {
+    datacenter = "dal09"
+    speed = 10
+    version = "11.0"
+    plan = "Standard"
+    ip_count = 1
 }`
 
 const testAccCheckIBMLbVpxWithTag = `

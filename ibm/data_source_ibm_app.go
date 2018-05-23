@@ -1,6 +1,7 @@
 package ibm
 
 import (
+	"github.com/hashicorp/terraform/flatmap"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -91,7 +92,7 @@ func dataSourceIBMAppRead(d *schema.ResourceData, meta interface{}) error {
 	if app.BuildPack != nil {
 		d.Set("buildpack", app.BuildPack)
 	}
-	d.Set("environment_json", flattenMapInterfaceVal(app.EnvironmentJSON))
+	d.Set("environment_json", flatmap.Flatten(app.EnvironmentJSON))
 	d.Set("package_state", app.PackageState)
 	d.Set("state", app.State)
 	d.Set("instances", app.Instances)

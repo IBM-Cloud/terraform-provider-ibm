@@ -32,7 +32,7 @@ func testAccCheckIBMComputeVmInstanceDataSourceConfigBasic(hostname, domain stri
 	resource "ibm_compute_vm_instance" "tf-vg-acc-test" {
     hostname = "%s"
     domain = "%s"
-    os_reference_code = "DEBIAN_7_64"
+    os_reference_code = "DEBIAN_8_64"
     datacenter = "dal06"
     network_speed = 10
     hourly_billing = true

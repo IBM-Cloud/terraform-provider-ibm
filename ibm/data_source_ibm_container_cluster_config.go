@@ -5,8 +5,8 @@ import (
 	"log"
 	"path/filepath"
 
-	v1 "github.com/IBM-Bluemix/bluemix-go/api/container/containerv1"
-	"github.com/IBM-Bluemix/bluemix-go/helpers"
+	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Cloud/bluemix-go/helpers"
 	"github.com/hashicorp/terraform/helper/schema"
 	homedir "github.com/mitchellh/go-homedir"
 )
@@ -20,12 +20,12 @@ func dataSourceIBMContainerClusterConfig() *schema.Resource {
 			"org_guid": {
 				Description: "The bluemix organization guid this cluster belongs to",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 			},
 			"space_guid": {
 				Description: "The bluemix space guid this cluster belongs to",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 			},
 			"account_guid": {
 				Description: "The bluemix account guid this cluster belongs to",

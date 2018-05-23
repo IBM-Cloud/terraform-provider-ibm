@@ -91,7 +91,7 @@ func resourceIBMStorageBlock() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-
+			//TODO in v0.9.0
 			"allowed_virtual_guest_info": {
 				Type:     schema.TypeSet,
 				Computed: true,
@@ -119,6 +119,7 @@ func resourceIBMStorageBlock() *schema.Resource {
 					virtualGuest := v.(map[string]interface{})
 					return virtualGuest["id"].(int)
 				},
+				Deprecated: "Please use 'allowed_host_info' instead",
 			},
 
 			"allowed_hardware_ids": {
@@ -131,6 +132,7 @@ func resourceIBMStorageBlock() *schema.Resource {
 				},
 			},
 
+			//TODO in v0.9.0
 			"allowed_hardware_info": {
 				Type:     schema.TypeSet,
 				Computed: true,
@@ -158,6 +160,7 @@ func resourceIBMStorageBlock() *schema.Resource {
 					baremetal := v.(map[string]interface{})
 					return baremetal["id"].(int)
 				},
+				Deprecated: "Please use 'allowed_host_info' instead",
 			},
 
 			"allowed_ip_addresses": {
@@ -176,6 +179,30 @@ func resourceIBMStorageBlock() *schema.Resource {
 				Optional: true,
 				Default:  false,
 				ForceNew: true,
+			},
+			"allowed_host_info": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"username": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"password": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"host_iqn": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
 			},
 		},
 	}
@@ -260,22 +287,22 @@ func resourceIBMStorageBlockCreate(d *schema.ResourceData, meta interface{}) err
 	// Find the storage device
 	var blockStorage datatypes.Network_Storage
 	var portablestorage datatypes.Virtual_Disk_Image
-	if storageType != portablestorageType {
+	if storageType != portableType {
 		blockStorage, _, err = findStorageByOrderId(sess, *receipt.OrderId, "")
 	} else {
-		_, portablestorage, err = findStorageByOrderId(sess, *receipt.OrderId, portablestorageType)
+		_, portablestorage, err = findStorageByOrderId(sess, *receipt.OrderId, portableType)
 	}
 	if err != nil {
 		return fmt.Errorf("Error during creation of storage: %s", err)
 	}
-	if storageType != portablestorageType {
+	if storageType != portableType {
 		d.SetId(fmt.Sprintf("%d", *blockStorage.Id))
 	} else {
 		d.SetId(fmt.Sprintf("%d", *portablestorage.Id))
 	}
 
 	// Wait for storage availability
-	if storageType != portablestorageType {
+	if storageType != portableType {
 		_, err = WaitForStorageAvailable(d, meta, "")
 	}
 
@@ -285,16 +312,16 @@ func resourceIBMStorageBlockCreate(d *schema.ResourceData, meta interface{}) err
 	}
 
 	// SoftLayer changes the device ID after completion of provisioning. It is necessary to refresh device ID.
-	if storageType != portablestorageType {
+	if storageType != portableType {
 		blockStorage, _, err = findStorageByOrderId(sess, *receipt.OrderId, "")
 	} else {
-		_, portablestorage, err = findStorageByOrderId(sess, *receipt.OrderId, portablestorageType)
+		_, portablestorage, err = findStorageByOrderId(sess, *receipt.OrderId, portableType)
 	}
 
 	if err != nil {
 		return fmt.Errorf("Error during creation of storage: %s", err)
 	}
-	if storageType != portablestorageType {
+	if storageType != portableType {
 		d.SetId(fmt.Sprintf("%d", *blockStorage.Id))
 	} else {
 		d.SetId(fmt.Sprintf("%d", *portablestorage.Id))
@@ -302,7 +329,7 @@ func resourceIBMStorageBlockCreate(d *schema.ResourceData, meta interface{}) err
 
 	log.Printf("[INFO] Storage ID: %s", d.Id())
 
-	if storageType != portablestorageType {
+	if storageType != portableType {
 		return resourceIBMStorageBlockUpdate(d, meta)
 	}
 	return resourceIBMStorageBlockRead(d, meta)
@@ -314,7 +341,7 @@ func resourceIBMStorageBlockRead(d *schema.ResourceData, meta interface{}) error
 	var err error
 	portablestoragefilter := "portableStorageVolumes.id"
 	var portablestorage []datatypes.Virtual_Disk_Image
-	if d.Get("type") == portablestorageType {
+	if d.Get("type") == portableType {
 		portablestorage, err = services.GetAccountService(sess).
 			Filter(filter.Build(
 				filter.Path(portablestoragefilter).
@@ -356,14 +383,22 @@ func resourceIBMStorageBlockRead(d *schema.ResourceData, meta interface{}) error
 		r, _ := regexp.Compile("[a-zA-Z]{3}[0-9]{2}")
 		d.Set("datacenter", r.FindString(*storage.ServiceResourceName))
 
+		allowedHostInfoList := make([]map[string]interface{}, 0)
+
 		// Read allowed_ip_addresses
 		allowedIpaddressesList := make([]string, 0, len(storage.AllowedIpAddresses))
 		for _, allowedIpaddress := range storage.AllowedIpAddresses {
+			singleHost := make(map[string]interface{})
+			singleHost["id"] = *allowedIpaddress.SubnetId
+			singleHost["username"] = *allowedIpaddress.AllowedHost.Credential.Username
+			singleHost["password"] = *allowedIpaddress.AllowedHost.Credential.Password
+			singleHost["host_iqn"] = *allowedIpaddress.AllowedHost.Name
+			allowedHostInfoList = append(allowedHostInfoList, singleHost)
 			allowedIpaddressesList = append(allowedIpaddressesList, *allowedIpaddress.IpAddress)
 		}
 		d.Set("allowed_ip_addresses", allowedIpaddressesList)
 
-		// Read allowed_virtual_guest_ids and allowed_virtual_guest_info
+		// Read allowed_virtual_guest_ids and allowed_host_info
 		allowedVirtualGuestInfoList := make([]map[string]interface{}, 0)
 		allowedVirtualGuestIdsList := make([]int, 0, len(storage.AllowedVirtualGuests))
 
@@ -373,13 +408,14 @@ func resourceIBMStorageBlockRead(d *schema.ResourceData, meta interface{}) error
 			singleVirtualGuest["username"] = *allowedVirtualGuest.AllowedHost.Credential.Username
 			singleVirtualGuest["password"] = *allowedVirtualGuest.AllowedHost.Credential.Password
 			singleVirtualGuest["host_iqn"] = *allowedVirtualGuest.AllowedHost.Name
+			allowedHostInfoList = append(allowedHostInfoList, singleVirtualGuest)
 			allowedVirtualGuestInfoList = append(allowedVirtualGuestInfoList, singleVirtualGuest)
 			allowedVirtualGuestIdsList = append(allowedVirtualGuestIdsList, *allowedVirtualGuest.Id)
 		}
 		d.Set("allowed_virtual_guest_ids", allowedVirtualGuestIdsList)
 		d.Set("allowed_virtual_guest_info", allowedVirtualGuestInfoList)
 
-		// Read allowed_hardware_ids and allowed_hardware_info
+		// Read allowed_hardware_ids and allowed_host_info
 		allowedHardwareInfoList := make([]map[string]interface{}, 0)
 		allowedHardwareIdsList := make([]int, 0, len(storage.AllowedHardware))
 		for _, allowedHW := range storage.AllowedHardware {
@@ -388,15 +424,13 @@ func resourceIBMStorageBlockRead(d *schema.ResourceData, meta interface{}) error
 			singleHardware["username"] = *allowedHW.AllowedHost.Credential.Username
 			singleHardware["password"] = *allowedHW.AllowedHost.Credential.Password
 			singleHardware["host_iqn"] = *allowedHW.AllowedHost.Name
+			allowedHostInfoList = append(allowedHostInfoList, singleHardware)
 			allowedHardwareInfoList = append(allowedHardwareInfoList, singleHardware)
 			allowedHardwareIdsList = append(allowedHardwareIdsList, *allowedHW.Id)
 		}
 		d.Set("allowed_hardware_ids", allowedHardwareIdsList)
 		d.Set("allowed_hardware_info", allowedHardwareInfoList)
-
-		if storage.OsType != nil {
-			d.Set("os_format_type", *storage.OsType.Name)
-		}
+		d.Set("allowed_host_info", allowedHostInfoList)
 
 		if storage.Notes != nil {
 			d.Set("notes", *storage.Notes)

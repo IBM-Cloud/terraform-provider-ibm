@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"strings"
 
-	v1 "github.com/IBM-Bluemix/bluemix-go/api/iampap/iampapv1"
-	"github.com/IBM-Bluemix/bluemix-go/bmxerror"
+	v1 "github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -111,7 +111,7 @@ func resourceIBMIAMUserPolicy() *schema.Resource {
 }
 
 func resourceIBMIAMUserPolicyCreate(d *schema.ResourceData, meta interface{}) error {
-	iamClient, err := meta.(ClientSession).IAMAPI()
+	iamClient, err := meta.(ClientSession).IAMPAPAPI()
 	if err != nil {
 		return err
 	}
@@ -151,7 +151,7 @@ func resourceIBMIAMUserPolicyCreate(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) error {
-	iamClient, err := meta.(ClientSession).IAMAPI()
+	iamClient, err := meta.(ClientSession).IAMPAPAPI()
 	if err != nil {
 		return err
 	}
@@ -177,7 +177,7 @@ func resourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceIBMIAMUserPolicyUpdate(d *schema.ResourceData, meta interface{}) error {
-	iamClient, err := meta.(ClientSession).IAMAPI()
+	iamClient, err := meta.(ClientSession).IAMPAPAPI()
 	if err != nil {
 		return err
 	}
@@ -214,7 +214,7 @@ func resourceIBMIAMUserPolicyUpdate(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceIBMIAMUserPolicyDelete(d *schema.ResourceData, meta interface{}) error {
-	iamClient, err := meta.(ClientSession).IAMAPI()
+	iamClient, err := meta.(ClientSession).IAMPAPAPI()
 	if err != nil {
 		return err
 	}
@@ -234,7 +234,7 @@ func resourceIBMIAMUserPolicyDelete(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceIBMIAMUserPolicyExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	iamClient, err := meta.(ClientSession).IAMAPI()
+	iamClient, err := meta.(ClientSession).IAMPAPAPI()
 	if err != nil {
 		return false, err
 	}

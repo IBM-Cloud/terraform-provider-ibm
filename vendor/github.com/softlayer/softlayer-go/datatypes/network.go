@@ -1613,6 +1613,34 @@ type Network_DirectLink_Location struct {
 
 	// The Direct Link Market location used in Direct Link Order. Like Europe, North America, Asia pacific etc.
 	MarketGeography *string `json:"marketGeography,omitempty" xmlrpc:"marketGeography,omitempty"`
+
+	// The Id of Direct Link provider.
+	Provider *Network_DirectLink_Provider `json:"provider,omitempty" xmlrpc:"provider,omitempty"`
+
+	// The Id of Direct Link service type.
+	ServiceType *Network_DirectLink_ServiceType `json:"serviceType,omitempty" xmlrpc:"serviceType,omitempty"`
+}
+
+// The SoftLayer_Network_DirectLink_Provider presents a structure containing attributes of a Direct Link provider.
+type Network_DirectLink_Provider struct {
+	Entity
+
+	// no documentation yet
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// no documentation yet
+	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
+}
+
+// The SoftLayer_Network_DirectLink_ServiceType presents a structure containing attributes of a Direct Link Service Type.
+type Network_DirectLink_ServiceType struct {
+	Entity
+
+	// no documentation yet
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// no documentation yet
+	Type *string `json:"type,omitempty" xmlrpc:"type,omitempty"`
 }
 
 // The SoftLayer_Network_Firewall_AccessControlList data type contains general information relating to a single SoftLayer firewall access to controll list. This is the object which ties the running rules to a specific context. Use the [[SoftLayer Network Firewall Template]] service to pull SoftLayer recommended rule set templates. Use the [[SoftLayer Network Firewall Update Request]] service to submit a firewall update request.
@@ -2042,6 +2070,12 @@ type Network_Interconnect_Tenant struct {
 	// Service key for Interconnect connection.
 	ServiceKey *string `json:"serviceKey,omitempty" xmlrpc:"serviceKey,omitempty"`
 
+	// no documentation yet
+	ServiceType *Network_DirectLink_ServiceType `json:"serviceType,omitempty" xmlrpc:"serviceType,omitempty"`
+
+	// no documentation yet
+	ServiceTypeId *int `json:"serviceTypeId,omitempty" xmlrpc:"serviceTypeId,omitempty"`
+
 	// The direct link connection status. IN_PROGRESS, PROVISIONING, CONNECTION_UP, CONNECTION_DOWN
 	Status *string `json:"status,omitempty" xmlrpc:"status,omitempty"`
 
@@ -2150,10 +2184,10 @@ type Network_LBaaS_LoadBalancer struct {
 	// Health monitors for the backend members.
 	HealthMonitors []Network_LBaaS_HealthMonitor `json:"healthMonitors,omitempty" xmlrpc:"healthMonitors,omitempty"`
 
-	// no documentation yet
+	// The unique identifier of a load balancer.
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
 
-	// Specifies if a load balancer is public=1 or private=0.
+	// Specifies whether the load balancer is a public or internal load balancer.
 	IsPublic *int `json:"isPublic,omitempty" xmlrpc:"isPublic,omitempty"`
 
 	// A count of listeners assigned to load balancer.
@@ -2186,7 +2220,13 @@ type Network_LBaaS_LoadBalancer struct {
 	// The provisioning status of a load balancer.
 	ProvisioningStatus *string `json:"provisioningStatus,omitempty" xmlrpc:"provisioningStatus,omitempty"`
 
-	// Specifies if a load balancer is using
+	// A count of list of preferred custom ciphers configured for the load balancer.
+	SslCipherCount *uint `json:"sslCipherCount,omitempty" xmlrpc:"sslCipherCount,omitempty"`
+
+	// list of preferred custom ciphers configured for the load balancer.
+	SslCiphers []Network_LBaaS_SSLCipher `json:"sslCiphers,omitempty" xmlrpc:"sslCiphers,omitempty"`
+
+	// Applicable for public load balancer only. It specifies whether the public IP addresses are allocated from system public IP pool (1, default) or public subnet (null | 0) from the account ordering the load balancer. For internal load balancer, useSystemPublicIpPool will be ignored, and it always defaults to 1.
 	UseSystemPublicIpPool *int `json:"useSystemPublicIpPool,omitempty" xmlrpc:"useSystemPublicIpPool,omitempty"`
 
 	// The UUID of a load balancer.
@@ -2217,6 +2257,17 @@ type Network_LBaaS_LoadBalancerHealthMonitorConfiguration struct {
 
 	// If monitor is "HTTP", this specifies URL path
 	UrlPath *string `json:"urlPath,omitempty" xmlrpc:"urlPath,omitempty"`
+}
+
+// SoftLayer_Network_LBaaS_LoadBalancerMonitoringMetricDataPoint is a collection of datapoints retrieved from a load balancer instance. The available metrics are: <ul> <li>The metric value </li> <li>The timestamp when the metric value was obtained </li> </ul>
+type Network_LBaaS_LoadBalancerMonitoringMetricDataPoint struct {
+	Entity
+
+	// Epoch Time
+	EpochTimestamp *int `json:"epochTimestamp,omitempty" xmlrpc:"epochTimestamp,omitempty"`
+
+	// a value
+	Value *Float64 `json:"value,omitempty" xmlrpc:"value,omitempty"`
 }
 
 // SoftLayer_Network_LBaaS_LoadBalancerProtocolConfiguration specifies the protocol, port, maximum number of allowed connections and session stickiness for load balancer's front- and backend.
@@ -2372,6 +2423,19 @@ type Network_LBaaS_PoolMembersHealth struct {
 
 	// Instance uuid of the pool
 	PoolUuid *string `json:"poolUuid,omitempty" xmlrpc:"poolUuid,omitempty"`
+}
+
+// The SoftLayer_Network_LBaaS_SSLCipher type presents a structure that contains attributes of load balancer cipher suites.
+//
+//
+type Network_LBaaS_SSLCipher struct {
+	Entity
+
+	// Cipher identifier
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// Name of the cipher
+	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
 }
 
 // SoftLayer_Network_LBaaS_SessionAffinity represents the session affinity, aka session persistence, configuration for a load balancer backend pool.
@@ -2878,46 +2942,6 @@ type Network_Message_Delivery_Vendor struct {
 	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
 }
 
-// The SoftLayer_Network_Message_Queue_Node data type contains general information relating to Message Queue node
-type Network_Message_Queue_Node struct {
-	Entity
-
-	// A unique account name in this message queue node
-	AccountName *string `json:"accountName,omitempty" xmlrpc:"accountName,omitempty"`
-
-	// A message queue node's internal identification number
-	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
-
-	// A message queue node's associated message queue id.
-	MessageQueueId *int `json:"messageQueueId,omitempty" xmlrpc:"messageQueueId,omitempty"`
-
-	// A message queue node's metric tracking object. This object records all request and notification count data for this message queue node.
-	MetricTrackingObject *Metric_Tracking_Object `json:"metricTrackingObject,omitempty" xmlrpc:"metricTrackingObject,omitempty"`
-
-	// A user-friendly name of this message queue node
-	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
-
-	// Brief notes on this message queue node
-	Notes *string `json:"notes,omitempty" xmlrpc:"notes,omitempty"`
-
-	// no documentation yet
-	ServiceResource *Network_Service_Resource `json:"serviceResource,omitempty" xmlrpc:"serviceResource,omitempty"`
-}
-
-// The SoftLayer_Network_Message_Queue_Status data type contains general information relating to Message Queue account status.
-type Network_Message_Queue_Status struct {
-	Entity
-
-	// A brief description on a message queue account status
-	Description *string `json:"description,omitempty" xmlrpc:"description,omitempty"`
-
-	// A message queue status's internal identification number
-	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
-
-	// A user-friendly name of a message queue account status
-	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
-}
-
 // no documentation yet
 type Network_Monitor struct {
 	Entity
@@ -3167,7 +3191,7 @@ type Network_SecurityGroup struct {
 	// The date a security group was created.
 	CreateDate *Time `json:"createDate,omitempty" xmlrpc:"createDate,omitempty"`
 
-	// The description for a security group.
+	// The (optional) description for a security group.
 	Description *string `json:"description,omitempty" xmlrpc:"description,omitempty"`
 
 	// The unique ID for a security group.
@@ -3176,7 +3200,7 @@ type Network_SecurityGroup struct {
 	// The date a security group was last modified.
 	ModifyDate *Time `json:"modifyDate,omitempty" xmlrpc:"modifyDate,omitempty"`
 
-	// The name for a security group.
+	// The (optional) name for a security group.
 	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
 
 	// A count of the network component bindings for this security group.
@@ -3202,6 +3226,12 @@ type Network_SecurityGroup struct {
 type Network_SecurityGroup_OrderBinding struct {
 	Entity
 
+	// The virtual guest associated with the binding
+	Guest *Virtual_Guest `json:"guest,omitempty" xmlrpc:"guest,omitempty"`
+
+	// The ID of the Virtual Guest associated with the security group.
+	GuestId *int `json:"guestId,omitempty" xmlrpc:"guestId,omitempty"`
+
 	// The unique ID for a security group, order, binding
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
 
@@ -3223,7 +3253,15 @@ type Network_SecurityGroup_Request struct {
 	Entity
 
 	// The unique ID for a request.
-	Id *string `json:"id,omitempty" xmlrpc:"id,omitempty"`
+	RequestId *string `json:"requestId,omitempty" xmlrpc:"requestId,omitempty"`
+}
+
+// The SoftLayer_Network_SecurityGroup_RequestRules data type contains the ID of a specific request sent to the API, as well as an associative array of the rules that were created, edited, or removed by the request.
+type Network_SecurityGroup_RequestRules struct {
+	Network_SecurityGroup_Request
+
+	// Whether the API call was valid or not.
+	Rules []Network_SecurityGroup_Rule `json:"rules,omitempty" xmlrpc:"rules,omitempty"`
 }
 
 // The SoftLayer_Network_SecurityGroup_Rule data type contains general information for a single rule that belongs to a [[SoftLayer_Network_SecurityGroup|security group]]. By default, all traffic (both inbound and  outbound) to a virtual server instance is blocked. Security group rules are permissive, and define the allowed incoming (ingress) and outgoing (egress) traffic to both the public and private interfaces of a  virtual server instance. The order of rules within a security group does not matter and priority always falls to the least restrictive rule.
@@ -3233,16 +3271,16 @@ type Network_SecurityGroup_Rule struct {
 	// The direction of traffic (ingress or egress).
 	Direction *string `json:"direction,omitempty" xmlrpc:"direction,omitempty"`
 
-	// IPv4 or IPv6. If the remoteIp or ethertype properties are not specified, the default is IPv4.
+	// IPv4 or IPv6. If the remoteIp or ethertype properties are not specified, the default is IPv4. Otherwise ethertype will default based on the format of the specified remoteIp.
 	Ethertype *string `json:"ethertype,omitempty" xmlrpc:"ethertype,omitempty"`
 
 	// The unique ID for a rule.
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
 
-	// The end of the port range for allowed traffic.
+	// The end of the port range for allowed traffic.  When the protocol is icmp, this value specifies the icmp code to permit.  When icmp code is specified, icmp type is required.
 	PortRangeMax *int `json:"portRangeMax,omitempty" xmlrpc:"portRangeMax,omitempty"`
 
-	// The start of the port range for allowed traffic.
+	// The start of the port range for allowed traffic.  When the protocol is icmp, this value specifies the icmp type to permit.
 	PortRangeMin *int `json:"portRangeMin,omitempty" xmlrpc:"portRangeMin,omitempty"`
 
 	// The protocol of packets (icmp, tcp, or udp).
@@ -3637,6 +3675,9 @@ type Network_Storage struct {
 	// A Storage account's unique identifier.
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
 
+	// The Interval Schedule which is associated with this network storage volume.
+	IntervalSchedule *Network_Storage_Schedule `json:"intervalSchedule,omitempty" xmlrpc:"intervalSchedule,omitempty"`
+
 	// The maximum number of IOPs selected for this volume.
 	Iops *string `json:"iops,omitempty" xmlrpc:"iops,omitempty"`
 
@@ -3651,6 +3692,12 @@ type Network_Storage struct {
 
 	// Relationship between a container volume and iSCSI LUNs.
 	IscsiLuns []Network_Storage `json:"iscsiLuns,omitempty" xmlrpc:"iscsiLuns,omitempty"`
+
+	// A count of returns the target IP addresses of an iSCSI volume.
+	IscsiTargetIpAddressCount *uint `json:"iscsiTargetIpAddressCount,omitempty" xmlrpc:"iscsiTargetIpAddressCount,omitempty"`
+
+	// Returns the target IP addresses of an iSCSI volume.
+	IscsiTargetIpAddresses []string `json:"iscsiTargetIpAddresses,omitempty" xmlrpc:"iscsiTargetIpAddresses,omitempty"`
 
 	// The ID of the LUN volume.
 	LunId *string `json:"lunId,omitempty" xmlrpc:"lunId,omitempty"`
@@ -3688,7 +3735,7 @@ type Network_Storage struct {
 	// The name of the volume that this volume was duplicated from.
 	OriginalVolumeName *string `json:"originalVolumeName,omitempty" xmlrpc:"originalVolumeName,omitempty"`
 
-	// The size (in GB) of the volume that this volume was duplicated from, or in the case of iSCSI LUNs, the size of the base originally-provisioned LUN.
+	// The size (in GB) of the volume or LUN before any size expansion, or of the volume (before any possible size expansion) from which the duplicate volume or LUN was created.
 	OriginalVolumeSize *string `json:"originalVolumeSize,omitempty" xmlrpc:"originalVolumeSize,omitempty"`
 
 	// A volume's configured SoftLayer_Network_Storage_Iscsi_OS_Type.
@@ -3854,6 +3901,9 @@ type Network_Storage struct {
 // no documentation yet
 type Network_Storage_Allowed_Host struct {
 	Entity
+
+	// The account to which this allowed host belongs to.
+	AccountId *int `json:"accountId,omitempty" xmlrpc:"accountId,omitempty"`
 
 	// A count of the SoftLayer_Network_Storage_Group objects this SoftLayer_Network_Storage_Allowed_Host is present in.
 	AssignedGroupCount *uint `json:"assignedGroupCount,omitempty" xmlrpc:"assignedGroupCount,omitempty"`
@@ -4093,6 +4143,9 @@ type Network_Storage_Event struct {
 	// An identifier for the schedule which is associated with an event.
 	ScheduleId *int `json:"scheduleId,omitempty" xmlrpc:"scheduleId,omitempty"`
 
+	// A Storage volume's event type. The type provides a standardized definition for an event.
+	Type *Network_Storage_Event_Type `json:"type,omitempty" xmlrpc:"type,omitempty"`
+
 	// An identifier for the type of an event.
 	TypeId *int `json:"typeId,omitempty" xmlrpc:"typeId,omitempty"`
 
@@ -4101,6 +4154,17 @@ type Network_Storage_Event struct {
 
 	// The volume id which an event is associated with.
 	VolumeId *int `json:"volumeId,omitempty" xmlrpc:"volumeId,omitempty"`
+}
+
+// no documentation yet
+type Network_Storage_Event_Type struct {
+	Entity
+
+	// no documentation yet
+	Keyname *string `json:"keyname,omitempty" xmlrpc:"keyname,omitempty"`
+
+	// no documentation yet
+	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
 }
 
 // no documentation yet
@@ -4428,6 +4492,9 @@ type Network_Storage_MassDataMigration_Request struct {
 	// The status id of the request.
 	StatusId *int `json:"statusId,omitempty" xmlrpc:"statusId,omitempty"`
 
+	// Ticket that is attached to this mass data migration request.
+	Ticket *Ticket `json:"ticket,omitempty" xmlrpc:"ticket,omitempty"`
+
 	// A count of all tickets that are attached to the mass data migration request.
 	TicketCount *uint `json:"ticketCount,omitempty" xmlrpc:"ticketCount,omitempty"`
 
@@ -4657,6 +4724,9 @@ type Network_Storage_Schedule struct {
 	// The date a schedule was created.
 	CreateDate *Time `json:"createDate,omitempty" xmlrpc:"createDate,omitempty"`
 
+	// The hour parameter of this schedule.
+	Day *string `json:"day,omitempty" xmlrpc:"day,omitempty"`
+
 	// The day of the month parameter of this schedule.
 	DayOfMonth *string `json:"dayOfMonth,omitempty" xmlrpc:"dayOfMonth,omitempty"`
 
@@ -4707,6 +4777,9 @@ type Network_Storage_Schedule struct {
 
 	// The number of snapshots this schedule is configured to retain.
 	RetentionCount *string `json:"retentionCount,omitempty" xmlrpc:"retentionCount,omitempty"`
+
+	// The minute parameter of this schedule.
+	Second *string `json:"second,omitempty" xmlrpc:"second,omitempty"`
 
 	// A count of snapshots which have been created as the result of this schedule's execution.
 	SnapshotCount *uint `json:"snapshotCount,omitempty" xmlrpc:"snapshotCount,omitempty"`
@@ -5879,9 +5952,6 @@ type Network_Vlan_Firewall struct {
 	// Administrative bypass request status.
 	BypassRequestStatus *string `json:"bypassRequestStatus,omitempty" xmlrpc:"bypassRequestStatus,omitempty"`
 
-	// An object that provides commonly used bandwidth summary components for the current billing cycle.
-	CurrentBandwidthSummary *Metric_Tracking_Object_Bandwidth_Summary `json:"currentBandwidthSummary,omitempty" xmlrpc:"currentBandwidthSummary,omitempty"`
-
 	// Whether or not this firewall can be directly logged in to.
 	CustomerManagedFlag *bool `json:"customerManagedFlag,omitempty" xmlrpc:"customerManagedFlag,omitempty"`
 
@@ -5924,17 +5994,8 @@ type Network_Vlan_Firewall struct {
 	// The VLAN objects that a firewall is associated with and protecting.
 	NetworkVlans []Network_Vlan `json:"networkVlans,omitempty" xmlrpc:"networkVlans,omitempty"`
 
-	// Whether the bandwidth usage for this firewall for the current billing cycle exceeds the allocation.
-	OverBandwidthAllocationFlag *int `json:"overBandwidthAllocationFlag,omitempty" xmlrpc:"overBandwidthAllocationFlag,omitempty"`
-
 	// A firewall's primary IP address. This field will be the IP shown when doing network traces and reverse DNS and is a read-only property.
 	PrimaryIpAddress *string `json:"primaryIpAddress,omitempty" xmlrpc:"primaryIpAddress,omitempty"`
-
-	// Whether the bandwidth usage for this firewall for the current billing cycle is projected to exceed the allocation.
-	ProjectedOverBandwidthAllocationFlag *int `json:"projectedOverBandwidthAllocationFlag,omitempty" xmlrpc:"projectedOverBandwidthAllocationFlag,omitempty"`
-
-	// The projected public outbound bandwidth for this firewall for the current billing cycle.
-	ProjectedPublicBandwidthUsage *Float64 `json:"projectedPublicBandwidthUsage,omitempty" xmlrpc:"projectedPublicBandwidthUsage,omitempty"`
 
 	// A count of the currently running rule set of this network component firewall.
 	RuleCount *uint `json:"ruleCount,omitempty" xmlrpc:"ruleCount,omitempty"`

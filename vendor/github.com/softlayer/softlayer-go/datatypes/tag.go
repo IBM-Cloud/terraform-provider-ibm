@@ -122,6 +122,14 @@ type Tag_Reference_Resource_Group struct {
 }
 
 // no documentation yet
+type Tag_Reference_Virtual_DedicatedHost struct {
+	Tag_Reference
+
+	// no documentation yet
+	Resource *Virtual_DedicatedHost `json:"resource,omitempty" xmlrpc:"resource,omitempty"`
+}
+
+// no documentation yet
 type Tag_Reference_Virtual_Guest struct {
 	Tag_Reference
 

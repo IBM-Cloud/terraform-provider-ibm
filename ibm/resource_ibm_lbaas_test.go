@@ -45,8 +45,6 @@ func TestAccIBMLbaas_Basic(t *testing.T) {
 						"ibm_lbaas.lbaas", "subnets.#", "1"),
 					resource.TestCheckResourceAttr(
 						"ibm_lbaas.lbaas", "protocols.#", "1"),
-					resource.TestCheckResourceAttr(
-						"ibm_lbaas.lbaas", "server_instances.#", "2"),
 				),
 			},
 			{
@@ -62,8 +60,32 @@ func TestAccIBMLbaas_Basic(t *testing.T) {
 						"ibm_lbaas.lbaas", "subnets.#", "1"),
 					resource.TestCheckResourceAttr(
 						"ibm_lbaas.lbaas", "protocols.#", "2"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMLbaas_with_more_protocols(t *testing.T) {
+	name := fmt.Sprintf("terraform-%d", acctest.RandInt())
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMLbaasDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMLbaasConfig_MoreThanTwoProtocols(name),
+				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"ibm_lbaas.lbaas", "server_instances.#", "1"),
+						"ibm_lbaas.lbaas", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "description", "desc-used for terraform uat"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "datacenter", lbaasDatacenter),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "subnets.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "protocols.#", "3"),
 				),
 			},
 		},
@@ -134,20 +156,6 @@ func TestAccIBMLbaas_InvalidMethod(t *testing.T) {
 	})
 }
 
-func TestAccIBMLbaas_InvalidWeight(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckIBMLbaasDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config:      testAccCheckIBMLbaas_InvalidWeight,
-				ExpectError: regexp.MustCompile("must be between 1 and 100"),
-			},
-		},
-	})
-}
-
 func TestAccIBMLbaas_InvalidMaxConn(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -177,20 +185,6 @@ func TestAccIBMLbaas_certificate_with_http_invalid_config(t *testing.T) {
 	})
 }
 
-func TestAccIBMLbaas_InvalidIPAddress(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckIBMLbaasDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config:      testAccCheckIBMLbaas_IPAddress,
-				ExpectError: regexp.MustCompile("must be a valid ip address"),
-			},
-		},
-	})
-}
-
 func testAccCheckIBMLbaasDestroy(s *terraform.State) error {
 	sess := testAccProvider.Meta().(ClientSession).SoftLayerSession()
 	service := services.GetNetworkLBaaSLoadBalancerService(sess)
@@ -214,28 +208,6 @@ func testAccCheckIBMLbaasDestroy(s *terraform.State) error {
 	return nil
 }
 
-const testAccCheckIBMLbaas_IPAddress = `
-resource "ibm_lbaas" "lbaas" {
-  name        = "terraformLB"
-  description = "desc-used for terraform uat"
-  subnets     = [1511875]
-
-  protocols = [{
-    "frontend_protocol" = "HTTP"
-    "frontend_port" = 80
-    "backend_protocol" = "HTTP"
-    "backend_port" = 80
-    "load_balancing_method" = "round_robin"
-    "max_conn" = 65000
-  }]
-
-  server_instances = [{
-    "private_ip_address" = "10.9.1726.3452"
-  },
-  ]
-}
-`
-
 func testAccCheckIBMLbaas_certificate_with_http_invalid_config(name string) string {
 	return fmt.Sprintf(`
 resource "ibm_lbaas" "lbaas" {
@@ -253,10 +225,6 @@ resource "ibm_lbaas" "lbaas" {
     "tls_certificate_id" = 1234567
   }]
 
-  server_instances = [{
-    "private_ip_address" = "10.9.17.26"
-  },
-  ]
 }
 `, name, lbaasSubnetId)
 }
@@ -276,11 +244,6 @@ resource "ibm_lbaas" "lbaas" {
     "max_conn" = 65000
   }]
 
-  server_instances = [{
-    "private_ip_address" = "10.9.17.26"
-    "weight" = 12
-  },
-  ]
 }
 `
 
@@ -298,11 +261,6 @@ resource "ibm_lbaas" "lbaas" {
     "load_balancing_method" = "round_robin"
   }]
 
-  server_instances = [{
-    "private_ip_address" = "10.9.17.26"
-    "weight" = 12
-  },
-  ]
 }
 `
 
@@ -320,11 +278,6 @@ resource "ibm_lbaas" "lbaas" {
     "load_balancing_method" = "round_robin"
   }]
 
-  server_instances = [{
-    "private_ip_address" = "10.9.17.26"
-    "weight" = 10
-  },
-  ]
 }
 `
 
@@ -342,33 +295,6 @@ resource "ibm_lbaas" "lbaas" {
     "load_balancing_method" = "ROUND_ROUND_ROBIN"
   }]
 
-  server_instances = [{
-    "private_ip_address" = "10.9.17.26"
-    "weight" = 10
-  },
-  ]
-}
-`
-const testAccCheckIBMLbaas_InvalidWeight = `
-resource "ibm_lbaas" "lbaas" {
-  name        = "terraformLB"
-  description = "desc-used for terraform uat"
-  subnets     = [1511875]
-
-
-  protocols = [{
-    "frontend_protocol" = "HTTP"
-    "frontend_port" = 80
-    "backend_protocol" = "HTTP"
-    "backend_port" = 80
-    "load_balancing_method" = "round_robin"
-  }]
-
-  server_instances = [{
-    "private_ip_address" = "10.9.17.26"
-    "weight" = 120
-  },
-  ]
 }
 `
 
@@ -382,24 +308,44 @@ resource "ibm_lbaas" "lbaas" {
 `, name, lbaasSubnetId)
 }
 
+func testAccCheckIBMLbaasConfig_MoreThanTwoProtocols(name string) string {
+	return fmt.Sprintf(`
+resource "ibm_lbaas" "lbaas" {
+  name        = "%s"
+  description = "desc-used for terraform uat"
+  subnets     = ["%s"]
+  protocols = [{
+    "frontend_protocol" = "HTTP"
+    "frontend_port" = 9090
+    "backend_protocol" = "HTTP"
+    "backend_port" = 80
+    "load_balancing_method" = "round_robin"
+    "session_stickiness" = "SOURCE_IP"
+  },
+  {
+
+    "frontend_protocol" = "HTTP"
+    "frontend_port" = 80
+    "backend_protocol" = "HTTP"
+    "backend_port" = 80
+
+    "load_balancing_method" = "round_robin"
+  },
+  {
+
+    "frontend_protocol" = "HTTP"
+    "frontend_port" = 8081
+    "backend_protocol" = "HTTP"
+    "backend_port" = 80
+
+    "load_balancing_method" = "round_robin"
+  }]
+}
+`, name, lbaasSubnetId)
+}
+
 func testAccCheckIBMLbaasConfig_update(name string) string {
 	return fmt.Sprintf(`
-resource "ibm_compute_vm_instance" "vm1" {
-    count = "2"
-    hostname = "lbass-test"
-    os_reference_code = "CENTOS_7_64"
-    domain = "terraform.com"
-    datacenter = "%s"
-    network_speed = "10"
-    hourly_billing = true
-    private_network_only = false
-    cores = "1"
-    memory = "1024"
-    disks = ["25"]
-    user_metadata = "{\"value\":\"newvalue\"}"
-    dedicated_acct_host_only = true
-    local_disk = false
-}
 resource "ibm_lbaas" "lbaas" {
   name        = "%s"
   description = "updated desc-used for terraform uat"
@@ -413,37 +359,12 @@ resource "ibm_lbaas" "lbaas" {
     "load_balancing_method" = "weighted_round_robin"
   }]
 
-  server_instances = [{
-    "private_ip_address" = "${ibm_compute_vm_instance.vm1.0.ipv4_address_private}",
-    "weight" = 75
-  },
-  {
-    "private_ip_address" = "${ibm_compute_vm_instance.vm1.1.ipv4_address_private}",
-    "weight" = 25
-  },
-  ]
 }
-`, lbaasDatacenter, name, lbaasSubnetId)
+`, name, lbaasSubnetId)
 }
 
 func testAccCheckIBMLbaasConfig_updateHTTPS(name string) string {
 	return fmt.Sprintf(`
-resource "ibm_compute_vm_instance" "vm1" {
-	count = "2"
-    hostname = "lbass-test"
-    os_reference_code = "CENTOS_7_64"
-    domain = "terraform.com"
-    datacenter = "%s"
-    network_speed = "10"
-    hourly_billing = true
-    private_network_only = false
-    cores = "1"
-    memory = "1024"
-    disks = ["25"]
-    user_metadata = "{\"value\":\"newvalue\"}"
-    dedicated_acct_host_only = true
-    local_disk = false
-}
 resource "ibm_compute_ssl_certificate" "test-cert" {
     certificate = <<EOF
 -----BEGIN CERTIFICATE-----
@@ -531,11 +452,6 @@ resource "ibm_lbaas" "lbaas" {
     "load_balancing_method" = "round_robin"
   }]
 
-  server_instances = [{
-    "private_ip_address" = "${ibm_compute_vm_instance.vm1.0.ipv4_address_private}"
-    "weight" = 60
-  },
-  ]
 }
-`, lbaasDatacenter, name, lbaasSubnetId)
+`, name, lbaasSubnetId)
 }

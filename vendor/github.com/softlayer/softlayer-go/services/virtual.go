@@ -129,9 +129,30 @@ func (r Virtual_DedicatedHost) GetGuests() (resp []datatypes.Virtual_Guest, err 
 	return
 }
 
+// Retrieve
+func (r Virtual_DedicatedHost) GetInternalTagReferences() (resp []datatypes.Tag_Reference, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_DedicatedHost", "getInternalTagReferences", nil, &r.Options, &resp)
+	return
+}
+
 // no documentation yet
 func (r Virtual_DedicatedHost) GetObject() (resp datatypes.Virtual_DedicatedHost, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_DedicatedHost", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Virtual_DedicatedHost) GetTagReferences() (resp []datatypes.Tag_Reference, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_DedicatedHost", "getTagReferences", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Virtual_DedicatedHost) SetTags(tags *string) (resp bool, err error) {
+	params := []interface{}{
+		tags,
+	}
+	err = r.Session.DoRequest("SoftLayer_Virtual_DedicatedHost", "setTags", params, &r.Options, &resp)
 	return
 }
 
@@ -183,6 +204,12 @@ func (r Virtual_Disk_Image) EditObject(templateObject *datatypes.Virtual_Disk_Im
 		templateObject,
 	}
 	err = r.Session.DoRequest("SoftLayer_Virtual_Disk_Image", "editObject", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Virtual_Disk_Image) GetAvailableBootModes() (resp []string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Disk_Image", "getAvailableBootModes", nil, &r.Options, &resp)
 	return
 }
 
@@ -580,6 +607,54 @@ func (r Virtual_Guest) CreateArchiveTransaction(groupName *string, blockDevices 
 //             "id": 2
 //         }
 //     }
+// }</http>
+//         <br />
+//     </li>
+//     <li id="guest-create-object-primary-network-component-security-group-bindings"><code>primaryNetworkComponent.securityGroupBindings</code>
+//         <div>Specifies the security groups to be attached to this VSI's Frontend Network Adapter</div><ul>
+//             <li><b>Optional</b></li>
+//             <li><b>Type</b> - array of [[SoftLayer_Virtual_Network_SecurityGroup_NetworkComponentBinding (type)| SoftLayer_Virtual_Network_SecurityGroup_NetworkComponentBinding]] with the securityGroup property set.</li>
+//             <li><b>Description</b> - The <code>primaryNetworkComponent</code> property is a [[SoftLayer_Virtual_Guest_Network_Component (type)|network component]] structure with the <code>securityGroupBindings</code> property populated with an array of [[SoftLayer_Virtual_Network_SecurityGroup_NetworkComponentBinding (type)|Security Group Order Binding]] structures. The <code>securityGroup</code> property in each must be set to specify the security group to be attached to the primary frontend network component.</li>
+//         </ul>
+//         <http title="Example">{
+//     "primaryNetworkComponent": {
+//         "securityGroupBindings": [
+//             {
+//                 "securityGroup": {
+//                     "id": 1
+//                 }
+//             },
+//             {
+//                 "securityGroup": {
+//                     "id": 2
+//                 }
+//             }
+//         ]
+//     }
+// }</http>
+//         <br />
+//     </li>
+//     <li id="guest-create-object-primary-backend-network-component-security-group-bindings"><code>primaryBackendNetworkComponent.securityGroupBindings</code>
+//         <div>Specifies the security groups to be attached to this VSI's Backend Network Adapter</div><ul>
+//             <li><b>Optional</b></li>
+//             <li><b>Type</b> - array of [[SoftLayer_Virtual_Network_SecurityGroup_NetworkComponentBinding (type)| SoftLayer_Virtual_Network_SecurityGroup_NetworkComponentBinding]] with the securityGroup property set.</li>
+//             <li><b>Description</b> - The <code>primaryBackendNetworkComponent</code> property is a [[SoftLayer_Virtual_Guest_Network_Component (type)|network component]] structure with the <code>securityGroupBindings</code> property populated with an array of [[SoftLayer_Virtual_Network_SecurityGroup_NetworkComponentBinding (type)|Security Group Order Binding]] structures. The <code>securityGroup</code> property in each must be set to specify the security group to be attached to the primary backend network component.</li>
+//         </ul>
+//         <http title="Example">{
+//     "primaryBackendNetworkComponent": {
+//         "securityGroupBindings": [
+//             {
+//                 "securityGroup": {
+//                     "id": 1
+//                 }
+//             },
+//             {
+//                 "securityGroup": {
+//                     "id": 2
+//                 }
+//             }
+//         ]
+//    }
 // }</http>
 //         <br />
 //     </li>
@@ -1132,6 +1207,12 @@ func (r Virtual_Guest) GetBlockDeviceTemplateGroup() (resp datatypes.Virtual_Gue
 // Retrieve A computing instance's block devices. Block devices link [[SoftLayer_Virtual_Disk_Image|disk images]] to computing instances.
 func (r Virtual_Guest) GetBlockDevices() (resp []datatypes.Virtual_Guest_Block_Device, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest", "getBlockDevices", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieves the boot mode of the VSI.
+func (r Virtual_Guest) GetBootMode() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest", "getBootMode", nil, &r.Options, &resp)
 	return
 }
 
@@ -1779,6 +1860,12 @@ func (r Virtual_Guest) GetTagReferences() (resp []datatypes.Tag_Reference, err e
 	return
 }
 
+// Retrieve Whether or not a computing instance is a Transient Instance.
+func (r Virtual_Guest) GetTransientGuestFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest", "getTransientGuestFlag", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve The type of this virtual guest.
 func (r Virtual_Guest) GetType() (resp datatypes.Virtual_Guest_Type, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest", "getType", nil, &r.Options, &resp)
@@ -2118,6 +2205,15 @@ func (r Virtual_Guest_Block_Device_Template_Group) AddLocations(locations []data
 	return
 }
 
+// This method allows you to mark this image's supported boot modes as 'HVM' or 'PV'.
+func (r Virtual_Guest_Block_Device_Template_Group) AddSupportedBootMode(bootMode *string) (resp bool, err error) {
+	params := []interface{}{
+		bootMode,
+	}
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "addSupportedBootMode", params, &r.Options, &resp)
+	return
+}
+
 // Create a transaction to export/copy a template to an external source.
 func (r Virtual_Guest_Block_Device_Template_Group) CopyToExternalSource(configuration *datatypes.Container_Virtual_Guest_Block_Device_Template_Configuration) (resp bool, err error) {
 	params := []interface{}{
@@ -2316,6 +2412,12 @@ func (r Virtual_Guest_Block_Device_Template_Group) GetStorageRepository() (resp 
 	return
 }
 
+// This method indicates which boot modes are supported by the image.
+func (r Virtual_Guest_Block_Device_Template_Group) GetSupportedBootModes() (resp []string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "getSupportedBootModes", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve The tags associated with this image template group.
 func (r Virtual_Guest_Block_Device_Template_Group) GetTagReferences() (resp []datatypes.Tag_Reference, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "getTagReferences", nil, &r.Options, &resp)
@@ -2340,9 +2442,27 @@ func (r Virtual_Guest_Block_Device_Template_Group) IsByol() (resp bool, err erro
 	return
 }
 
+// This method indicates whether or not this image uses an operating system capable of using a customer supplied license image.
+func (r Virtual_Guest_Block_Device_Template_Group) IsByolCapableOperatingSystem() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "isByolCapableOperatingSystem", nil, &r.Options, &resp)
+	return
+}
+
+// This method indicates whether or not this image uses an operating system that requires using a customer supplied license image
+func (r Virtual_Guest_Block_Device_Template_Group) IsByolOnlyOperatingSystem() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "isByolOnlyOperatingSystem", nil, &r.Options, &resp)
+	return
+}
+
 // This method indicates whether or not this image is a cloud-init image.
 func (r Virtual_Guest_Block_Device_Template_Group) IsCloudInit() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "isCloudInit", nil, &r.Options, &resp)
+	return
+}
+
+// This method indicates whether or not this image uses an operating system that requires cloud init
+func (r Virtual_Guest_Block_Device_Template_Group) IsCloudInitOnlyOperatingSystem() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "isCloudInitOnlyOperatingSystem", nil, &r.Options, &resp)
 	return
 }
 
@@ -2361,6 +2481,15 @@ func (r Virtual_Guest_Block_Device_Template_Group) RemoveLocations(locations []d
 		locations,
 	}
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "removeLocations", params, &r.Options, &resp)
+	return
+}
+
+// This method allows you to remove a supported boot mode attribute for a given image template.
+func (r Virtual_Guest_Block_Device_Template_Group) RemoveSupportedBootMode(bootMode *string) (resp bool, err error) {
+	params := []interface{}{
+		bootMode,
+	}
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "removeSupportedBootMode", params, &r.Options, &resp)
 	return
 }
 
