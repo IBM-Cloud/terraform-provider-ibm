@@ -22,7 +22,10 @@ var privateSubnetID string
 var publicSubnetID string
 var subnetID string
 var lbaasDatacenter string
+var ipsecDatacenter string
+var customersubnetid string
 var lbaasSubnetId string
+var customerpeerip string
 var dedicatedHostName string
 var dedicatedHostID string
 var kubeVersion string
@@ -111,6 +114,24 @@ func init() {
 	if lbaasDatacenter == "" {
 		lbaasDatacenter = "wdc04"
 		fmt.Println("[INFO] Set the environment variable IBM_LBAAS_DATACENTER for testing ibm_lbaas resource else it is set to default value 'wdc04'")
+	}
+
+	ipsecDatacenter = os.Getenv("IBM_IPSEC_DATACENTER")
+	if ipsecDatacenter == "" {
+		ipsecDatacenter = "tok02"
+		fmt.Println("[INFO] Set the environment variable IBM_IPSEC_DATACENTER for testing ibm_ipsec_vpn resource else it is set to default value 'tok02'")
+	}
+
+	customersubnetid = os.Getenv("IBM_IPSEC_CUSTOMER_SUBNET_ID")
+	if customersubnetid == "" {
+		customersubnetid = "123456"
+		fmt.Println("[INFO] Set the environment variable IBM_IPSEC_CUSTOMER_SUBNET_ID for testing ibm_ipsec_vpn resource else it is set to default value '123456'")
+	}
+
+	customerpeerip = os.Getenv("IBM_IPSEC_CUSTOMER_PEER_IP")
+	if customerpeerip == "" {
+		customerpeerip = "192.168.0.1"
+		fmt.Println("[INFO] Set the environment variable IBM_IPSEC_CUSTOMER_PEER_IP for testing ibm_ipsec_vpn resource else it is set to default value '192.168.0.1'")
 	}
 
 	lbaasSubnetId = os.Getenv("IBM_LBAAS_SUBNETID")
