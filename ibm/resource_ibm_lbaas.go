@@ -69,9 +69,12 @@ func resourceIBMLbaas() *schema.Resource {
 				Description: "Description of a load balancer.",
 			},
 			"type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Specifies if a load balancer is public or private",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "PUBLIC",
+				ForceNew:     true,
+				Description:  "Specifies if a load balancer is public or private",
+				ValidateFunc: validateAllowedStringValue([]string{"PUBLIC", "PRIVATE"}),
 			},
 			"datacenter": {
 				Type:     schema.TypeString,
@@ -380,6 +383,8 @@ func buildLbaasLBProductOrderContainer(d *schema.ResourceData, sess *session.Ses
 	// 1. Get a package
 	name := d.Get("name").(string)
 	subnets := d.Get("subnets").([]interface{})
+	lbType := d.Get("type").(string)
+
 	subnetsParam := []datatypes.Network_Subnet{}
 	for _, subnet := range subnets {
 		subnetItem := datatypes.Network_Subnet{
@@ -424,6 +429,10 @@ func buildLbaasLBProductOrderContainer(d *schema.ResourceData, sess *session.Ses
 	}
 	if d, ok := d.GetOk("description"); ok {
 		productOrderContainer.Description = sl.String(d.(string))
+	}
+
+	if lbType == "PRIVATE" {
+		productOrderContainer.IsPublic = sl.Bool(false)
 	}
 
 	return &productOrderContainer, nil
