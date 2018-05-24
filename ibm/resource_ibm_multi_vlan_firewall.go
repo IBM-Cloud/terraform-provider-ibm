@@ -176,7 +176,7 @@ func resourceIBMNetworkMultiVlanCreate(d *schema.ResourceData, meta interface{})
 	//5. Getting the priceids of items which have to be ordered
 	priceItems := []datatypes.Product_Item_Price{}
 	for _, addon := range actualaddons {
-		actualpriceid, err := product.GetPriceIdByPackageId(addon, listofpriceids, sess, 863)
+		actualpriceid, err := product.GetPriceIDByPackageIdandLocationGroup(addon, listofpriceids, sess, 863)
 		if err != nil || actualpriceid == 0 {
 			return fmt.Errorf("The addon or the firewall is not available for the datacenter you have selected. Please enter a different datacenter")
 		}
