@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/IBM-Cloud/bluemix-go/models"
+
 	"github.com/hashicorp/terraform/flatmap"
 
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
@@ -674,4 +676,28 @@ func flattenDisks(result datatypes.Virtual_Guest, d *schema.ResourceData) []int 
 func filterResourceKeyParameters(params map[string]interface{}) map[string]interface{} {
 	delete(params, "role_crn")
 	return params
+}
+
+func idParts(id string) (string, string, error) {
+	if strings.Contains(id, "/") {
+		parts := strings.Split(id, "/")
+		return parts[0], parts[1], nil
+	}
+	return "", "", fmt.Errorf("The given id %s does not contain / please check documentation on how to provider id during import command", id)
+}
+
+func flattenPolicyResource(list []models.PolicyResource) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, len(list))
+	for _, i := range list {
+		l := map[string]interface{}{
+			"service":              i.ServiceName,
+			"resource_instance_id": i.ServiceInstance,
+			"region":               i.Region,
+			"resource_type":        i.ResourceType,
+			"resource":             i.Resource,
+			"resource_group_id":    i.ResourceGroupID,
+		}
+		result = append(result, l)
+	}
+	return result
 }
