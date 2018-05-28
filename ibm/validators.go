@@ -406,7 +406,6 @@ func validateStorageType(v interface{}, k string) (ws []string, errors []error) 
 	validEtherTypes := map[string]bool{
 		"Endurance":   true,
 		"Performance": true,
-		"NAS/FTP":     true,
 	}
 
 	value := v.(string)

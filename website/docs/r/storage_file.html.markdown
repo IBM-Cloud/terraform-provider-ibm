@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_storage_file
 
-Provides a file storage resource. This allows NFS-based [Endurance](https://knowledgelayer.softlayer.com/topic/endurance-storage) and [Performance](https://knowledgelayer.softlayer.com/topic/performance-storage) file storage and [NAS\/FTP](https://console.bluemix.net/docs/infrastructure/network-attached-storage/index.html#getting-started-with-nas) file storage to be created, updated, and deleted.
+Provides a file storage resource. This allows NFS-based [Endurance](https://knowledgelayer.softlayer.com/topic/endurance-storage) and [Performance](https://knowledgelayer.softlayer.com/topic/performance-storage) file storage to be created, updated, and deleted.
 
 File storage is mounted using the NFS protocol. For example, a file storage resource with the `hostname` argument set to `nfsdal0501a.service.softlayer.com` and the `volumename` argument set to ` IBM01SV278685_7` has the mount point `nfsdal0501a.service.softlayer.com:\IBM01SV278685_7`.
 
@@ -69,31 +69,20 @@ resource "ibm_storage_file" "fs_performance" {
 }
 ```
 
-In the following example, you can create 20G of NAS/FTP file storage.
-
-```hcl
-resource "ibm_storage_file" "nas/ftp" {
-        type = "NAS/FTP"
-        datacenter = "dal06"
-        capacity = 20
-}
-```
-
-
 ## Argument Reference
 
 The following arguments are supported:
 
-* `type` - (Required, string) The type of the storage. Accepted values are `Endurance`, `Performance` and `NAS/FTP`
+* `type` - (Required, string) The type of the storage. Accepted values are `Endurance` and `Performance`
 * `datacenter` - (Required, string) The data center where you want to provision the file storage instance.
 * `capacity` - (Required, integer) The amount of storage capacity you want to allocate, expressed in gigabytes.
-* `iops` - (Required, float) The IOPS value for the storage instance. You can find available values for Endurance storage in the [KnowledgeLayer docs](https://knowledgelayer.softlayer.com/learning/introduction-endurance-storage). This attribute shouldn't be set when `type` is `NAS/FTP`.
-* `snapshot_capacity` - (Optional, integer) Applies to Endurance storage only. The amount of snapshot capacity you want to allocate, expressed in gigabytes. This attribute shouldn't be set when `type` is `NAS/FTP`.
-* `allowed_virtual_guest_ids` - (Optional, array of integers) The virtual guests that you want to give access to this instance. Virtual guests must be in the same data center as the block storage. You can also use this field to import the list of virtual guests that have access to this storage from the `block_storage_ids` argument in the `ibm_compute_vm_instance` resource. This attribute shouldn't be set when `type` is `NAS/FTP`.
-* `allowed_hardware_ids` - (Optional, array of integers) The bare metal servers that you want to give access to this instance. Bare metal servers must be in the same data center as the block storage. You can also use this field to import the list of bare metal servers that have access to this storage from the `block_storage_ids` argument in the `ibm_compute_bare_metal` resource. This attribute shouldn't be set when `type` is `NAS/FTP`.
-* `allowed_subnets` - (Optional, array of integers) The subnets that you want to give access to this instance. Subnets must be in the same data center as the block storage. This attribute shouldn't be set when `type` is `NAS/FTP`.
-* `allowed_ip_addresses` - (Optional, array of string) The IP addresses that you want to allow. IP addresses must be in the same data center as the block storage. This attribute shouldn't be set when `type` is `NAS/FTP`.
-* `snapshot_schedule` - (Optional, array) Applies only to Endurance storage. Specifies the parameters required for a snapshot schedule. This attribute shouldn't be set when `type` is `NAS/FTP`.
+* `iops` - (Required, float) The IOPS value for the storage instance. You can find available values for Endurance storage in the [KnowledgeLayer docs](https://knowledgelayer.softlayer.com/learning/introduction-endurance-storage).
+* `snapshot_capacity` - (Optional, integer) Applies to Endurance storage only. The amount of snapshot capacity you want to allocate, expressed in gigabytes.
+* `allowed_virtual_guest_ids` - (Optional, array of integers) The virtual guests that you want to give access to this instance. Virtual guests must be in the same data center as the block storage. You can also use this field to import the list of virtual guests that have access to this storage from the `block_storage_ids` argument in the `ibm_compute_vm_instance` resource.
+* `allowed_hardware_ids` - (Optional, array of integers) The bare metal servers that you want to give access to this instance. Bare metal servers must be in the same data center as the block storage. You can also use this field to import the list of bare metal servers that have access to this storage from the `block_storage_ids` argument in the `ibm_compute_bare_metal` resource.
+* `allowed_subnets` - (Optional, array of integers) The subnets that you want to give access to this instance. Subnets must be in the same data center as the block storage.
+* `allowed_ip_addresses` - (Optional, array of string) The IP addresses that you want to allow. IP addresses must be in the same data center as the block storage. 
+* `snapshot_schedule` - (Optional, array) Applies only to Endurance storage. Specifies the parameters required for a snapshot schedule.
     * `schedule_type` - (String) The snapshot schedule type. Accepted values are `HOURLY`, `WEEKLY`, and `DAILY`.
     * `retention_count` - (Integer) The retention count for a snapshot schedule. Required for all types of `schedule_type`.
     * `minute` - (Integer) The minute for a snapshot schedule. Required for all types of `schedule_type`.
@@ -105,7 +94,7 @@ The following arguments are supported:
 
 * `tags` - (Optional, array of strings) Tags associated with the file storage instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.  
-* `hourly_billing` - (Optional,Boolean) Set true to enable hourly billing. Default is false. When `type` is `NAS/FTP` its value must be false.
+* `hourly_billing` - (Optional,Boolean) Set true to enable hourly billing. Default is false.
 **NOTE**: `Hourly billing` is only available in updated datacenters with improved capabilities.Plesae refer the link to get the updated list of datacenter. http://knowledgelayer.softlayer.com/articles/new-ibm-block-and-file-storage-location-and-features
 
 
