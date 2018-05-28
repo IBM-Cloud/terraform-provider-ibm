@@ -310,6 +310,36 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	})
 }
 
+func TestAccIBMComputeVmInstance_basic_import_WithFlavor(t *testing.T) {
+	hostname := acctest.RandString(16)
+	domain := "terraformuat.ibm.com"
+	tags1 := "collectd"
+	flavor := "B1_1X2X25"
+	userMetadata1 := "{\\\"value\\\":\\\"newvalue\\\"}"
+	networkSpeed1 := "10"
+
+	resourceName := "ibm_compute_vm_instance.terraform-acceptance-test-1"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccIBMComputeVmInstanceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccIBMComputeVmInstanceConfigFlavor(hostname, domain, networkSpeed1, flavor, userMetadata1, tags1),
+			},
+			resource.TestStep{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"wait_time_minutes",
+					"public_bandwidth_unlimited",
+				},
+			},
+		},
+	})
+}
+
 func TestAccIBMComputeVmInstance_InvalidNotes(t *testing.T) {
 	hostname := acctest.RandString(16)
 	domain := "terraformvmuat.ibm.com"
@@ -398,6 +428,28 @@ func TestAccIBMComputeVmInstance_PostInstallScriptUri(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccIBMComputeVmInstanceConfigPostInstallScriptURI(hostname, domain),
+				Check: resource.ComposeTestCheckFunc(
+					// image_id value is hardcoded. If it's valid then virtual guest will be created well
+					testAccIBMComputeVmInstanceExists("ibm_compute_vm_instance.terraform-acceptance-test-pISU", &guest),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMComputeVmInstance_WINDOWS_PostInstallScriptUri(t *testing.T) {
+	var guest datatypes.Virtual_Guest
+
+	hostname := acctest.RandString(14)
+	domain := "terraformuat.ibm.com"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccIBMComputeVmInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccIBMComputeVmInstanceConfigWindowsPostInstallScriptURI(hostname, domain),
 				Check: resource.ComposeTestCheckFunc(
 					// image_id value is hardcoded. If it's valid then virtual guest will be created well
 					testAccIBMComputeVmInstanceExists("ibm_compute_vm_instance.terraform-acceptance-test-pISU", &guest),
@@ -787,6 +839,26 @@ resource "ibm_compute_vm_instance" "terraform-acceptance-test-pISU" {
     cores = 1
     memory = 1024
     disks = [25, 10, 20]
+    user_metadata = "{\"value\":\"newvalue\"}"
+    dedicated_acct_host_only = true
+    local_disk = false
+    post_install_script_uri = "https://www.google.com"
+}`, hostname, domain)
+}
+
+func testAccIBMComputeVmInstanceConfigWindowsPostInstallScriptURI(hostname, domain string) string {
+	return fmt.Sprintf(`
+resource "ibm_compute_vm_instance" "terraform-acceptance-test-pISU" {
+    hostname = "%s"
+    domain = "%s"
+    os_reference_code = "WIN_2016-STD_64"
+    datacenter = "wdc04"
+    network_speed = 10
+    hourly_billing = true
+	private_network_only = false
+    cores = 1
+    memory = 1024
+    disks = [100]
     user_metadata = "{\"value\":\"newvalue\"}"
     dedicated_acct_host_only = true
     local_disk = false
