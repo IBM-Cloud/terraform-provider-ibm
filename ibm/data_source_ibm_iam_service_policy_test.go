@@ -57,7 +57,7 @@ resource "ibm_resource_instance" "instance" {
 }
   
 resource "ibm_iam_service_policy" "policy" {
-	serviceID_id = "${ibm_iam_service_id.serviceID.id}"
+	iam_service_id = "${ibm_iam_service_id.serviceID.id}"
 	roles        = ["Manager", "Viewer", "Administrator"]
   
 	resources = [{
@@ -68,7 +68,7 @@ resource "ibm_iam_service_policy" "policy" {
   }
 
 data "ibm_iam_service_policy" "testacc_ds_service_policy" {
-	serviceID_id = "${ibm_iam_service_policy.policy.serviceID_id}"
+	iam_service_id = "${ibm_iam_service_policy.policy.iam_service_id}"
 }`, name, name)
 
 }
@@ -89,7 +89,7 @@ resource "ibm_resource_instance" "instance" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-	serviceID_id = "${ibm_iam_service_id.serviceID.id}"
+	iam_service_id = "${ibm_iam_service_id.serviceID.id}"
 	roles        = ["Manager", "Viewer", "Administrator"]
   
 	resources = [{
@@ -104,7 +104,7 @@ resource "ibm_iam_service_policy" "policy" {
   }
   
 resource "ibm_iam_service_policy" "policy1" {
-	serviceID_id = "${ibm_iam_service_id.serviceID.id}"
+	iam_service_id = "${ibm_iam_service_id.serviceID.id}"
 	roles        = ["Viewer"]
   
 	resources = [{
@@ -115,7 +115,7 @@ resource "ibm_iam_service_policy" "policy1" {
 
 
 data "ibm_iam_service_policy" "testacc_ds_service_policy" {
-	serviceID_id = "${ibm_iam_service_policy.policy.serviceID_id}"
+	iam_service_id = "${ibm_iam_service_policy.policy.iam_service_id}"
 }`, name, name)
 
 }

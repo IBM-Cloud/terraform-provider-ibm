@@ -280,7 +280,7 @@ func testAccCheckIBMIAMServicePolicy_basic(name string) string {
 		  }
 		  
 		  resource "ibm_iam_service_policy" "policy" {
-			serviceID_id = "${ibm_iam_service_id.serviceID.id}"
+			iam_service_id = "${ibm_iam_service_id.serviceID.id}"
 			roles        = ["Viewer"]
 			tags         = ["tag1"]
 		  }
@@ -296,7 +296,7 @@ func testAccCheckIBMIAMServicePolicy_updateRole(name string) string {
 		  }
 		  
 		  resource "ibm_iam_service_policy" "policy" {
-			serviceID_id = "${ibm_iam_service_id.serviceID.id}"
+			iam_service_id = "${ibm_iam_service_id.serviceID.id}"
 			roles        = ["Viewer","Manager"]
 			tags         = ["tag1", "tag2"]
 		  }
@@ -311,7 +311,7 @@ func testAccCheckIBMIAMServicePolicy_service(name string) string {
 		  }
 		  
 		resource "ibm_iam_service_policy" "policy" {
-			serviceID_id = "${ibm_iam_service_id.serviceID.id}"
+			iam_service_id = "${ibm_iam_service_id.serviceID.id}"
 			roles        = ["Viewer"]
 		  
 			resources = [{
@@ -330,7 +330,7 @@ func testAccCheckIBMIAMServicePolicy_updateServiceAndRegion(name string) string 
 		  }
 		  
 		resource "ibm_iam_service_policy" "policy" {
-			serviceID_id = "${ibm_iam_service_id.serviceID.id}"
+			iam_service_id = "${ibm_iam_service_id.serviceID.id}"
 			roles        = ["Viewer", "Manager"]
 		  
 			resources = [{
@@ -356,7 +356,7 @@ func testAccCheckIBMIAMServicePolicy_resource_instance(name string) string {
 		  }
 		  
 		resource "ibm_iam_service_policy" "policy" {
-			serviceID_id = "${ibm_iam_service_id.serviceID.id}"
+			iam_service_id = "${ibm_iam_service_id.serviceID.id}"
 			roles        = ["Manager", "Viewer", "Administrator"]
 		  
 			resources = [{
@@ -382,7 +382,7 @@ func testAccCheckIBMIAMServicePolicy_resource_group(name string) string {
 		  }
 		  
 		resource "ibm_iam_service_policy" "policy" {
-			serviceID_id = "${ibm_iam_service_id.serviceID.id}"
+			iam_service_id = "${ibm_iam_service_id.serviceID.id}"
 			roles        = ["Viewer"]
 		  
 			resources = [{
@@ -407,7 +407,7 @@ func testAccCheckIBMIAMServicePolicy_resource_type(name string) string {
 		  }
 		  
 		resource "ibm_iam_service_policy" "policy" {
-			serviceID_id = "${ibm_iam_service_id.serviceID.id}"
+			iam_service_id = "${ibm_iam_service_id.serviceID.id}"
 			roles        = ["Administrator"]
 		  
 			resources = [{
@@ -426,7 +426,7 @@ func testAccCheckIBMIAMServicePolicy_import(name string) string {
 		  }
 		  
 		  resource "ibm_iam_service_policy" "policy" {
-			serviceID_id = "${ibm_iam_service_id.serviceID.id}"
+			iam_service_id = "${ibm_iam_service_id.serviceID.id}"
 			roles        = ["Viewer"]
 		  }
 

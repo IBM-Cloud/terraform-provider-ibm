@@ -12,7 +12,7 @@ func dataSourceIBMIAMServicePolicy() *schema.Resource {
 		Read: dataSourceIBMIAMServicePolicyRead,
 
 		Schema: map[string]*schema.Schema{
-			"serviceID_id": {
+			"iam_service_id": {
 				Description: "UUID of ServiceID",
 				Type:        schema.TypeString,
 				Required:    true,
@@ -84,7 +84,7 @@ func dataSourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	serviceIDUUID := d.Get("serviceID_id").(string)
+	serviceIDUUID := d.Get("iam_service_id").(string)
 
 	bmxSess, err := meta.(ClientSession).BluemixSession()
 	if err != nil {
