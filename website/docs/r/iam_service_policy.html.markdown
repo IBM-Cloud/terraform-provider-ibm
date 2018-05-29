@@ -20,7 +20,7 @@ resource "ibm_iam_service_id" "serviceID" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  serviceID_id = "${ibm_iam_service_id.serviceID.id}"
+  iam_service_id = "${ibm_iam_service_id.serviceID.id}"
   roles        = ["Viewer"]
 }
 
@@ -34,7 +34,7 @@ resource "ibm_iam_service_id" "serviceID" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  serviceID_id = "${ibm_iam_service_id.serviceID.id}"
+  iam_service_id = "${ibm_iam_service_id.serviceID.id}"
   roles        = ["Viewer"]
 
   resources = [{
@@ -58,7 +58,7 @@ resource "ibm_resource_instance" "instance" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  serviceID_id = "${ibm_iam_service_id.serviceID.id}"
+  iam_service_id = "${ibm_iam_service_id.serviceID.id}"
   roles        = ["Manager", "Viewer", "Administrator"]
 
   resources = [{
@@ -82,7 +82,7 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  serviceID_id = "${ibm_iam_service_id.serviceID.id}"
+  iam_service_id = "${ibm_iam_service_id.serviceID.id}"
   roles        = ["Viewer"]
 
   resources = [{
@@ -105,7 +105,7 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  serviceID_id = "${ibm_iam_service_id.serviceID.id}"
+  iam_service_id = "${ibm_iam_service_id.serviceID.id}"
   roles        = ["Administrator"]
 
   resources = [{
@@ -120,7 +120,7 @@ resource "ibm_iam_service_policy" "policy" {
 
 The following arguments are supported:
 
-* `serviceID_id` - (Required, string) UUID of the serviceID.
+* `iam_service_id` - (Required, string) UUID of the serviceID.
 * `roles` - (Required, list) comma separated list of roles. Valid roles are Writer, Reader, Manager, Administrator, Operator, Viewer, Editor.
 * `resources` - (Optional, list) A nested block describing the resource of this policy.
 Nested `resources` blocks have the following structure:
@@ -137,7 +137,7 @@ Nested `resources` blocks have the following structure:
 
 The following attributes are exported:
 
-* `id` - The unique identifier of the service policy. The id is composed of \<serviceID_id\>/\<service_policy_id\>
+* `id` - The unique identifier of the service policy. The id is composed of \<iam_service_id\>/\<service_policy_id\>
 
 * `version` - Version of the service policy.
 

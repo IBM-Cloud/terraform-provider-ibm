@@ -14,7 +14,7 @@ Import the details of an IAM (Identity and Access Management) service policy on 
 
 ```hcl
 resource "ibm_iam_service_policy" "policy" {
-  serviceID_id = "ServiceId-d7bec597-4726-451f-8a63-e62e6f19c32c"
+  iam_service_id = "ServiceId-d7bec597-4726-451f-8a63-e62e6f19c32c"
   roles        = ["Manager", "Viewer", "Administrator"]
 
   resources = [{
@@ -25,7 +25,7 @@ resource "ibm_iam_service_policy" "policy" {
 }
 
 data "ibm_iam_service_policy" "testacc_ds_service_policy" {
-  serviceID_id = "${ibm_iam_service_policy.policy.serviceID_id}"
+  iam_service_id = "${ibm_iam_service_policy.policy.iam_service_id}"
 }
 
 ```
@@ -34,14 +34,14 @@ data "ibm_iam_service_policy" "testacc_ds_service_policy" {
 
 The following arguments are supported:
 
-* `serviceID_id` - (Required, string) The UUID of the serviceID.
+* `iam_service_id` - (Required, string) The UUID of the serviceID.
 
 ## Attribute Reference
 
 The following attributes are exported:
 
 * `policies` - A nested block describing IAM Policies assigned to serviceID. Nested `policies` blocks have the following structure:
-  * `id` - The unique identifier of the IAM service policy.The id is composed of \<serviceID_id\>/\<service_policy_id\>
+  * `id` - The unique identifier of the IAM service policy.The id is composed of \<iam_service_id\>/\<service_policy_id\>
   * `roles` -  Roles assigned to the policy.
   * `resources` -  A nested block describing the resources in the policy.
     * `service` - Service name of the policy definition.  

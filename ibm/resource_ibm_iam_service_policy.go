@@ -20,7 +20,7 @@ func resourceIBMIAMServicePolicy() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"serviceID_id": {
+			"iam_service_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "UUID of ServiceID",
@@ -100,7 +100,7 @@ func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return err
 	}
-	serviceIDUUID := d.Get("serviceID_id").(string)
+	serviceIDUUID := d.Get("iam_service_id").(string)
 
 	bmxSess, err := meta.(ClientSession).BluemixSession()
 	if err != nil {
@@ -188,7 +188,7 @@ func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("Error retrieving servicePolicy: %s", err)
 	}
 
-	d.Set("serviceID_id", serviceIDUUID)
+	d.Set("iam_service_id", serviceIDUUID)
 	roles := make([]string, len(servicePolicy.Roles))
 	for i, role := range servicePolicy.Roles {
 		roles[i] = role.DisplayName
