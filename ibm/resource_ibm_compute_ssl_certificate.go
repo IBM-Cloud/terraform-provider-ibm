@@ -23,11 +23,6 @@ func resourceIBMComputeSSLCertificate() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
-				Type:     schema.TypeInt,
-				Computed: true,
-				ForceNew: true,
-			},
 
 			"certificate": &schema.Schema{
 				Type:      schema.TypeString,

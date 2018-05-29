@@ -43,10 +43,7 @@ func resourceIBMNetworkVlan() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
+
 			"datacenter": {
 				Type:     schema.TypeString,
 				Required: true,
