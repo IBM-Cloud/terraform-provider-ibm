@@ -46,7 +46,9 @@ The following attributes are exported:
 * `network_speed` - The connection speed, expressed in Mbps,  for the server network components.
 * `public_bandwidth` - The amount of public network traffic, allowed per month.
 * `public_ipv4_address` - The public IPv4 address of the bare metal server.
+* `public_ipv4_address_id` - The unique identifier for the public IPv4 address of the bare metal server.
 * `private_ipv4_address` - The private IPv4 address of the bare metal server.
+* `private_ipv4_address_id` - The unique identifier for the private IPv4 address of the bare metal server.
 * `public_vlan_id` - The public VLAN used for the public network interface of the server. 
 * `private_vlan_id` - The private VLAN used for the private network interface of the server. 
 * `public_subnet` - The public subnet used for the public network interface of the server. 
@@ -65,5 +67,6 @@ The following attributes are exported:
 * `file_storage_ids` - File storage to which this computing server have access.
 * `ipv6_enabled` - Indicates whether the public IPv6 address enabled or not.
 * `ipv6_address` - The public IPv6 address of the bare metal server.
+* `ipv6_address_id` - The unique identifier for the public IPv6 address of the bare metal server.
 * `secondary_ip_count` - The number of secondary IPv4 addresses of the bare metal server.
 * `secondary_ip_addresses` - The public secondary IPv4 addresses of the bare metal server.
