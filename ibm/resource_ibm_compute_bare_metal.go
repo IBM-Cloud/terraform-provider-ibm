@@ -346,10 +346,21 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 				Computed: true,
 			},
 
+			"public_ipv4_address_id": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+
 			"private_ipv4_address": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+
+			"private_ipv4_address_id": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+
 			"secondary_ip_count": {
 				Type:         schema.TypeInt,
 				Optional:     true,
@@ -376,6 +387,10 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 			},
 			"ipv6_address": {
 				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"ipv6_address_id": {
+				Type:     schema.TypeInt,
 				Computed: true,
 			},
 			"ipv6_static_enabled": {
@@ -624,8 +639,11 @@ func resourceIBMComputeBareMetalRead(d *schema.ResourceData, meta interface{}) e
 			"hourlyBillingFlag," +
 			"datacenter[id,name,longName]," +
 			"primaryNetworkComponent[networkVlan[id,primaryRouter,vlanNumber],maxSpeed," +
-			"primaryVersion6IpAddressRecord[subnet,guestNetworkComponentBinding[ipAddressId]]]," +
-			"primaryBackendNetworkComponent[networkVlan[id,primaryRouter,vlanNumber],maxSpeed,redundancyEnabledFlag]," +
+			"primaryIpAddressRecord[id]," +
+			"primaryVersion6IpAddressRecord[subnet,id]]," +
+			"primaryBackendNetworkComponent[networkVlan[id,primaryRouter,vlanNumber]," +
+			"primaryIpAddressRecord[id]," +
+			"maxSpeed,redundancyEnabledFlag]," +
 			"memoryCapacity,powerSupplyCount," +
 			"operatingSystem[softwareLicense[softwareDescription[referenceCode]]]",
 	).GetObject()
@@ -646,7 +664,12 @@ func resourceIBMComputeBareMetalRead(d *schema.ResourceData, meta interface{}) e
 	if result.PrimaryIpAddress != nil {
 		d.Set("public_ipv4_address", *result.PrimaryIpAddress)
 	}
+	if result.PrimaryNetworkComponent.PrimaryIpAddressRecord != nil {
+		d.Set("public_ipv4_address_id", *result.PrimaryNetworkComponent.PrimaryIpAddressRecord.Id)
+	}
 	d.Set("private_ipv4_address", *result.PrimaryBackendIpAddress)
+	d.Set("private_ipv4_address_id",
+		*result.PrimaryBackendNetworkComponent.PrimaryIpAddressRecord.Id)
 
 	d.Set("private_network_only", *result.PrivateNetworkOnlyFlag)
 	d.Set("hourly_billing", *result.HourlyBillingFlag)
@@ -729,6 +752,7 @@ func resourceIBMComputeBareMetalRead(d *schema.ResourceData, meta interface{}) e
 	if result.PrimaryNetworkComponent.PrimaryVersion6IpAddressRecord != nil {
 		d.Set("ipv6_enabled", true)
 		d.Set("ipv6_address", *result.PrimaryNetworkComponent.PrimaryVersion6IpAddressRecord.IpAddress)
+		d.Set("ipv6_address_id", *result.PrimaryNetworkComponent.PrimaryVersion6IpAddressRecord.Id)
 	}
 	err = readSecondaryIPAddresses(d, meta, result.PrimaryIpAddress)
 	return err
