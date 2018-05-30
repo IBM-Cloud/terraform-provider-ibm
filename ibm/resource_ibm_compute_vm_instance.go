@@ -962,7 +962,7 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("hostname", *result.Hostname)
 	d.Set("domain", *result.Domain)
 
-	if _, ok := d.GetOk("flavor_key_name"); ok {
+	if result.BillingItem.OrderItem.Preset != nil {
 
 		d.Set("flavor_key_name", *result.BillingItem.OrderItem.Preset.KeyName)
 	}
@@ -995,7 +995,11 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 			d.Get("network_speed").(int),
 		),
 	)
-	d.Set("disks", flattenDisks(result, d))
+	if result.OperatingSystemReferenceCode != nil && strings.HasPrefix(*result.OperatingSystemReferenceCode, "WIN") {
+		d.Set("disks", flattenDisksForWindows(result))
+	} else {
+		d.Set("disks", flattenDisks(result))
+	}
 	d.Set("cores", *result.StartCpus)
 	d.Set("memory", *result.MaxMemory)
 	d.Set("dedicated_acct_host_only", *result.DedicatedAccountHostOnlyFlag)

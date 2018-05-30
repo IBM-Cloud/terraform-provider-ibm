@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"testing"
 
@@ -44,15 +45,6 @@ func TestAccIBMStorageFile_Basic(t *testing.T) {
 					testAccCheckIBMResources("ibm_storage_file.fs_performance", "datacenter",
 						"ibm_compute_vm_instance.storagevm1", "datacenter"),
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_performance", "notes", "performance notes"),
-					// NAS
-					testAccCheckIBMStorageFileExists("ibm_storage_file.nas"),
-					resource.TestCheckResourceAttr(
-						"ibm_storage_file.nas", "type", "NAS/FTP"),
-					resource.TestCheckResourceAttr(
-						"ibm_storage_file.nas", "capacity", "20"),
-					testAccCheckIBMResources("ibm_storage_file.nas", "datacenter",
-						"ibm_compute_vm_instance.storagevm1", "datacenter"),
-					resource.TestCheckResourceAttr("ibm_storage_file.nas", "notes", "nas notes"),
 				),
 			},
 
@@ -170,6 +162,19 @@ func TestAccIBMStorageFileWithTag(t *testing.T) {
 	})
 }
 
+func TestAccIBMStorageTypeNASFTP(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config:      testAccCheckIBMStorageNas_Ftp,
+				ExpectError: regexp.MustCompile("contains an invalid storage type"),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMStorageFileExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -199,6 +204,15 @@ func testAccCheckIBMStorageFileExists(n string) resource.TestCheckFunc {
 	}
 }
 
+const testAccCheckIBMStorageNas_Ftp = `
+resource "ibm_storage_file" "nas" {
+	type = "NAS/FTP"
+	datacenter = "dal05"
+	capacity = 20
+	notes = "nas notes"
+}
+`
+
 const testAccCheckIBMStorageFileConfig_basic = `
 resource "ibm_compute_vm_instance" "storagevm1" {
     hostname = "storagevm1"
@@ -227,12 +241,6 @@ resource "ibm_storage_file" "fs_performance" {
         capacity = 20
         iops = 200
         notes = "performance notes"
-}
-resource "ibm_storage_file" "nas" {
-	type = "NAS/FTP"
-	datacenter = "${ibm_compute_vm_instance.storagevm1.datacenter}"
-	capacity = 20
-	notes = "nas notes"
 }
 `
 const testAccCheckIBMStorageFileConfig_update = `
@@ -268,12 +276,6 @@ resource "ibm_storage_file" "fs_performance" {
         allowed_virtual_guest_ids = [ "${ibm_compute_vm_instance.storagevm1.id}" ]
         allowed_subnets = [ "${ibm_compute_vm_instance.storagevm1.private_subnet}" ]
         allowed_ip_addresses = [ "${ibm_compute_vm_instance.storagevm1.ipv4_address_private}" ]
-}
-resource "ibm_storage_file" "nas" {
-		type = "NAS/FTP"
-		datacenter = "${ibm_compute_vm_instance.storagevm1.datacenter}"
-		capacity = 20
-		notes = "nas notes"
 }
 `
 

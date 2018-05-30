@@ -25,6 +25,8 @@ var lbaasDatacenter string
 var lbaasSubnetId string
 var dedicatedHostName string
 var dedicatedHostID string
+var kubeVersion string
+var kubeUpdateVersion string
 var err error
 
 func init() {
@@ -73,6 +75,18 @@ func init() {
 	if privateVlanID == "" {
 		privateVlanID = "1764491"
 		fmt.Println("[INFO] Set the environment variable IBM_PRIVATE_VLAN_ID for testing ibm_container_cluster resource else it is set to default value '1764491'")
+	}
+
+	kubeVersion = os.Getenv("IBM_KUBE_VERSION")
+	if kubeVersion == "" {
+		kubeVersion = "1.8.11"
+		fmt.Println("[INFO] Set the environment variable IBM_KUBE_VERSION for testing ibm_container_cluster resource else it is set to default value '1.8.11'")
+	}
+
+	kubeUpdateVersion = os.Getenv("IBM_KUBE_UPDATE_VERSION")
+	if kubeUpdateVersion == "" {
+		kubeUpdateVersion = "1.9.7"
+		fmt.Println("[INFO] Set the environment variable IBM_KUBE_UPDATE_VERSION for testing ibm_container_cluster resource else it is set to default value '1.9.7'")
 	}
 
 	privateSubnetID = os.Getenv("IBM_PRIVATE_SUBNET_ID")

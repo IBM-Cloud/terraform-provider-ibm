@@ -33,11 +33,11 @@ func TestAccIBMContainerCluster_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "worker_num", "2"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "kube_version", "1.7.4"),
+						"ibm_container_cluster.testacc_cluster", "kube_version", kubeVersion),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "workers.0.version", "1.7.4"),
+						"ibm_container_cluster.testacc_cluster", "workers.0.version", kubeVersion),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "workers.1.version", "1.7.4"),
+						"ibm_container_cluster.testacc_cluster", "workers.1.version", kubeVersion),
 				),
 			},
 			{
@@ -48,11 +48,11 @@ func TestAccIBMContainerCluster_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "worker_num", "2"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "kube_version", "1.8.8"),
+						"ibm_container_cluster.testacc_cluster", "kube_version", kubeUpdateVersion),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "workers.0.version", "1.8.8"),
+						"ibm_container_cluster.testacc_cluster", "workers.0.version", kubeUpdateVersion),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "workers.1.version", "1.7.4"),
+						"ibm_container_cluster.testacc_cluster", "workers.1.version", kubeVersion),
 				),
 			},
 		},
@@ -181,12 +181,6 @@ func TestAccIBMContainerClusterOptionalOrgSpace_basic(t *testing.T) {
 						"ibm_container_cluster.testacc_cluster", "name", clusterName),
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "worker_num", "2"),
-					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "kube_version", "1.7.4"),
-					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "workers.0.version", "1.7.4"),
-					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "workers.1.version", "1.7.4"),
 				),
 			},
 		},
@@ -375,13 +369,13 @@ resource "ibm_container_cluster" "testacc_cluster" {
     name = "worker2"
     }]
 
-  kube_version    = "1.7.4"
+  kube_version    = "%s"
   machine_type    = "%s"
   isolation       = "public"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   no_subnet		  = true
-}	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
+}	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, kubeVersion, machineType, publicVlanID, privateVlanID)
 }
 
 func testAccCheckIBMContainerCluster_nosubnet_false(clusterName string) string {
@@ -505,7 +499,6 @@ resource "ibm_container_cluster" "testacc_cluster" {
     name = "worker2"
     }]
 
-  kube_version    = "1.7.4"
   machine_type    = "%s"
   isolation       = "public"
   public_vlan_id  = "%s"
@@ -580,18 +573,18 @@ resource "ibm_container_cluster" "testacc_cluster" {
 
   workers = [{
     name = "worker1"
-    version = "1.8.8"
+    version = "%s"
     },{
     name = "worker2"
     }]
 
-  kube_version    = "1.8.8"
+  kube_version    = "%s"
   machine_type    = "%s"
   isolation       = "public"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   no_subnet		  = true
-}	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
+}	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, kubeUpdateVersion, kubeUpdateVersion, machineType, publicVlanID, privateVlanID)
 }
 
 func testAccCheckIBMContainerCluster_private_and_public_subnet(clusterName string) string {

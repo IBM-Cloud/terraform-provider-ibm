@@ -20,6 +20,9 @@ func resourceIBMNetworkInterfaceSGAttachment() *schema.Resource {
 		Read:   resourceIBMNetworkInterfaceSGAttachmentRead,
 		Delete: resourceIBMNetworkInterfaceSGAttachmentDelete,
 		Exists: resourceIBMNetworkInterfaceSGAttachmentExists,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(15 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"security_group_id": {
 				Type:     schema.TypeInt,
@@ -52,8 +55,12 @@ func resourceIBMNetworkInterfaceSGAttachmentCreate(d *schema.ResourceData, meta 
 
 	sgID := d.Get("security_group_id").(int)
 	interfaceID := d.Get("network_interface_id").(int)
+	_, err := WaitForVSAvailable(d, meta, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return err
+	}
 
-	_, err := service.Id(sgID).AttachNetworkComponents([]int{interfaceID})
+	_, err = service.Id(sgID).AttachNetworkComponents([]int{interfaceID})
 	if err != nil {
 		return err
 	}
@@ -85,7 +92,7 @@ func resourceIBMNetworkInterfaceSGAttachmentCreate(d *schema.ResourceData, meta 
 		stateConf := &resource.StateChangeConf{
 			Target:  []string{"true"},
 			Pending: []string{"false"},
-			Timeout: 5 * time.Minute,
+			Timeout: d.Timeout(schema.TimeoutCreate),
 			Refresh: securityGroupReadyRefreshStateFunc(sess, interfaceID),
 		}
 		_, err = stateConf.WaitForState()
@@ -186,5 +193,48 @@ func securityGroupReadyRefreshStateFunc(sess *slsession.Session, ifcID int) reso
 		}
 		log.Printf("SecurityGroupReady status is %t", ready)
 		return ready, strconv.FormatBool(ready), nil
+	}
+}
+
+// WaitForVirtualGuestAvailable Waits for virtual guest creation
+func WaitForVSAvailable(d *schema.ResourceData, meta interface{}, timeout time.Duration) (interface{}, error) {
+	interfaceID := d.Get("network_interface_id").(int)
+	log.Printf("Waiting for server (%d) to be available.", interfaceID)
+	sess := meta.(ClientSession).SoftLayerSession()
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", virtualGuestProvisioning},
+		Target:     []string{virtualGuestAvailable},
+		Refresh:    vsReadyRefreshStateFunc(sess, interfaceID),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func vsReadyRefreshStateFunc(sess *slsession.Session, ifcID int) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		ncs := services.GetVirtualGuestNetworkComponentService(sess)
+		guest, err := ncs.Id(ifcID).GetGuest()
+		if err != nil {
+			if apiErr, ok := err.(sl.Error); ok && apiErr.StatusCode == 404 {
+				return nil, "", fmt.Errorf("Error retrieving virtual guest: %s", err)
+			}
+			return false, "retry", nil
+		}
+		guestService := services.GetVirtualGuestService(sess)
+		ready, err := guestService.Id(*guest.Id).GetStatus()
+		if err != nil {
+			if apiErr, ok := err.(sl.Error); ok && apiErr.StatusCode == 404 {
+				return nil, "", fmt.Errorf("Error retrieving virtual guest: %s", err)
+			}
+			return false, "retry", nil
+		}
+		if *ready.KeyName == "ACTIVE" {
+			log.Printf("virtual guest status is %q", ready.Name)
+			return ready, virtualGuestAvailable, nil
+		}
+		return ready, virtualGuestProvisioning, nil
 	}
 }
