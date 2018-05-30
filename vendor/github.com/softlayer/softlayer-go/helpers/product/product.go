@@ -288,8 +288,9 @@ func GetPackageByKeyName(
 	return packages[0], nil
 }
 
-// GetPriceIDByPackageIdandLocationGroup return the priceids of the items according to the location group ids of the datacenter u specify
-func GetPriceIDByPackageIdandLocationGroup(addon string, listofpriceids []int, sess *session.Session, packageid int) (int, error) {
+// GetPriceIDByPackageIdandLocationGroups return the priceId of the item according to the location group ids of the datacenter you specify
+// addon is the description of the item for which you want to get its priceId
+func GetPriceIDByPackageIdandLocationGroups(sess *session.Session, locationGroupIds []int, packageid int, addon string) (int, error) {
 	productpackageservice := services.GetProductPackageService(sess)
 	productpackageservicefilter := strings.Replace(`{"items":{"description":{"operation":"appliance"}}}`, "appliance", addon, -1)
 	productpackageservicemask := "description,prices.locationGroupId,prices.id"
@@ -298,10 +299,10 @@ func GetPriceIDByPackageIdandLocationGroup(addon string, listofpriceids []int, s
 		return 0, err
 	}
 	m := make(map[int]int)
-	if len(listofpriceids) == 0 {
-		listofpriceids = append(listofpriceids, 1)
+	if len(locationGroupIds) == 0 {
+		locationGroupIds = append(locationGroupIds, 1)
 	}
-	for _, item := range listofpriceids {
+	for _, item := range locationGroupIds {
 		for _, items := range resp {
 			for _, temp := range items.Prices {
 				if temp.LocationGroupId == nil {

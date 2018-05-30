@@ -955,10 +955,10 @@
 			"revisionTime": "2018-04-18T04:24:49Z"
 		},
 		{
-			"checksumSHA1": "wxkjh2t8UiBMJOwZDfUV2WS1DfE=",
+			"checksumSHA1": "oBE+UG7QYhzWwpS9Jb428/RgiAg=",
 			"path": "github.com/softlayer/softlayer-go/helpers/product",
-			"revision": "b48f721534f4df1c9e6e718f85ebd4c4d6f3e356",
-			"revisionTime": "2018-04-18T04:24:49Z"
+			"revision": "3965b0d2a64bc98580f52e32867fdbad47cbe3e9",
+			"revisionTime": "2018-05-29T17:34:10Z"
 		},
 		{
 			"checksumSHA1": "/CTlQvpy03YsT5Qf2N2T0xtVVuA=",
