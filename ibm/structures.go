@@ -697,12 +697,12 @@ func filterResourceKeyParameters(params map[string]interface{}) map[string]inter
 	return params
 }
 
-func idParts(id string) (string, string, error) {
+func idParts(id string) ([]string, error) {
 	if strings.Contains(id, "/") {
 		parts := strings.Split(id, "/")
-		return parts[0], parts[1], nil
+		return parts, nil
 	}
-	return "", "", fmt.Errorf("The given id %s does not contain / please check documentation on how to provider id during import command", id)
+	return []string{}, fmt.Errorf("The given id %s does not contain / please check documentation on how to provider id during import command", id)
 }
 
 func flattenPolicyResource(list []models.PolicyResource) []map[string]interface{} {

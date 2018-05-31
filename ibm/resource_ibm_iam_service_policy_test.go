@@ -176,13 +176,13 @@ func testAccCheckIBMIAMServicePolicyDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_iam_service_policy" {
 			continue
 		}
-
 		policyID := rs.Primary.ID
-
-		serviceIDUUID, ServicePolicyID, err := idParts(policyID)
+		parts, err := idParts(policyID)
 		if err != nil {
 			return err
 		}
+		serviceIDUUID := parts[0]
+		servicePolicyID := parts[1]
 
 		bmxSess, err := testAccProvider.Meta().(ClientSession).BluemixSession()
 		if err != nil {
@@ -211,7 +211,7 @@ func testAccCheckIBMIAMServicePolicyDestroy(s *terraform.State) error {
 		err = rsContClient.ServicePolicies().Delete(iamv1.ServicePolicyIdentifier{
 			Scope:    boundTo.ScopeSegment(),
 			IAMID:    serviceID.IAMID,
-			PolicyID: ServicePolicyID,
+			PolicyID: servicePolicyID,
 		})
 
 		if err != nil && !strings.Contains(err.Error(), "404") {
@@ -237,11 +237,12 @@ func testAccCheckIBMIAMServicePolicyExists(n string, obj models.Policy) resource
 
 		policyID := rs.Primary.ID
 
-		serviceIDUUID, ServicePolicyID, err := idParts(policyID)
+		parts, err := idParts(policyID)
 		if err != nil {
 			return err
 		}
-
+		serviceIDUUID := parts[0]
+		servicePolicyID := parts[1]
 		bmxSess, err := testAccProvider.Meta().(ClientSession).BluemixSession()
 		if err != nil {
 			return err
@@ -266,7 +267,7 @@ func testAccCheckIBMIAMServicePolicyExists(n string, obj models.Policy) resource
 		}
 
 		// Try to find the key
-		policy, err := rsContClient.ServicePolicies().Get(boundTo.ScopeSegment(), serviceID.IAMID, ServicePolicyID)
+		policy, err := rsContClient.ServicePolicies().Get(boundTo.ScopeSegment(), serviceID.IAMID, servicePolicyID)
 		obj = policy
 		return nil
 	}
