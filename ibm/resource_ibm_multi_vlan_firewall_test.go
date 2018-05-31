@@ -76,7 +76,6 @@ resource "ibm_multi_vlan_firewall" "firewall_first" {
 	datacenter = "dal13"
 	pod = "pod01"
 	name = "Checkdelete1"
-	public_vlan_id = 2213543
 	firewall_type = "FortiGate Firewall Appliance"
 	addon_configuration = ["FortiGate Security Appliance - Web Filtering Add-on","FortiGate Security Appliance - NGFW Add-on","FortiGate Security Appliance - AV Add-on"]
 	}`
@@ -86,7 +85,6 @@ resource "ibm_multi_vlan_firewall" "firewall_first" {
 	datacenter = "dal13"
 	pod = "pod01"
 	name = "Checkdelete1"
-	public_vlan_id = 2213543
 	firewall_type = "FortiGate Firewall Appliance HA Option"
 	addon_configuration = ["FortiGate Security Appliance - Web Filtering Add-on (High Availability)","FortiGate Security Appliance - NGFW Add-on (High Availability)","FortiGate Security Appliance - AV Add-on (High Availability)"]
 	}`
@@ -95,7 +93,6 @@ const testAccCheckIBMMultiVlanFirewallFirewallTypeConfig_InvalidFirewallType = `
 		datacenter = "dal13"
 		pod = "pod01"
 		name = "Checkdelete1"
-		public_vlan_id = 2213543
 		firewall_type = "FortiGate Firewall Appliance ABC"
 		addon_configuration = ["FortiGate Security Appliance - Web Filtering Add-on (High Availability)","FortiGate Security Appliance - NGFW Add-on (High Availability)","FortiGate Security Appliance - AV Add-on (High Availability)"]
 		}`

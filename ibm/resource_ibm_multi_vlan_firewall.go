@@ -77,19 +77,15 @@ func resourceIBMMultiVlanFirewall() *schema.Resource {
 				Computed: true,
 			},
 
-			"type": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
 			"username": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 
 			"password": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
 			},
 
 			"addon_configuration": {
@@ -104,44 +100,39 @@ func resourceIBMMultiVlanFirewall() *schema.Resource {
 }
 
 const (
-	productpackagefilter      = `{"keyName":{"operation":"FIREWALL_APPLIANCE"}}`
-	complextype               = "SoftLayer_Container_Product_Order_Network_Protection_Firewall_Dedicated"
-	productpackageservicemask = "description,prices.locationGroupId,prices.id"
-	mandatoryfirewalltype     = "FortiGate Security Appliance"
-	multivlansmask            = "id,customerManagedFlag,datacenter.name,bandwidthAllocation"
+	productPackageFilter      = `{"keyName":{"operation":"FIREWALL_APPLIANCE"}}`
+	complexType               = "SoftLayer_Container_Product_Order_Network_Protection_Firewall_Dedicated"
+	productPackageServiceMask = "description,prices.locationGroupId,prices.id"
+	mandatoryFirewallType     = "FortiGate Security Appliance"
+	multiVlansMask            = "id,customerManagedFlag,datacenter.name,bandwidthAllocation"
 )
 
 func resourceIBMNetworkMultiVlanCreate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	name := d.Get("name").(string)
-	firewalltype := d.Get("firewall_type").(string)
+	FirewallType := d.Get("firewall_type").(string)
 	datacenter := d.Get("datacenter").(string)
 	pod := d.Get("pod").(string)
-	nameofthepod := datacenter + "." + pod
-	podservice := services.GetNetworkPodService(sess)
-	podfilter := strings.Replace(`{"datacenterName":{"operation":"datacentername"}}`, "datacentername", datacenter, -1)
-	podmask := `frontendRouterId,name`
+	podName := datacenter + "." + pod
+	PodService := services.GetNetworkPodService(sess)
+	podMask := `frontendRouterId,name`
 
 	// 1.Getting the router ID
-	routerids, err := podservice.Filter(podfilter).Mask(podmask).GetAllObjects()
+	routerids, err := PodService.Filter(filter.Path("datacenterName").Eq(datacenter).Build()).Mask(podMask).GetAllObjects()
 	if err != nil {
-		return fmt.Errorf("Datacenter doesnt support multi-vlan-firewall,Please enter a different datacenter")
+		return fmt.Errorf("Encountered problem trying to get the router ID: %s", err)
 	}
 	var routerid int
 	for _, iterate := range routerids {
-		if *iterate.Name == nameofthepod {
+		if *iterate.Name == podName {
 			routerid = *iterate.FrontendRouterId
 		}
 	}
-	datacentername, ok := d.GetOk("datacenter")
-	if !ok {
-		return fmt.Errorf("The attribute datacenter is not defined")
-	}
 
 	//2.Get the datacenter id
-	dc, err := location.GetDatacenterByName(sess, datacentername.(string), "id")
+	dc, err := location.GetDatacenterByName(sess, datacenter, "id")
 	if err != nil {
-		return fmt.Errorf("Datacenter not found")
+		return fmt.Errorf("Encountered problem trying to get the Datacenter ID: %s", err)
 	}
 	locationservice := services.GetLocationService(sess)
 
@@ -157,9 +148,6 @@ func resourceIBMNetworkMultiVlanCreate(d *schema.ResourceData, meta interface{})
 	var addonconfigurations []interface{}
 	if _, ok := d.GetOk("addon_configuration"); ok {
 		addonconfigurations, ok = d.Get("addon_configuration").([]interface{})
-		if !ok {
-			return fmt.Errorf("Addons is an array of strings")
-		}
 	}
 
 	var actualaddons []string
@@ -167,10 +155,10 @@ func resourceIBMNetworkMultiVlanCreate(d *schema.ResourceData, meta interface{})
 		actualaddons = append(actualaddons, addons.(string))
 	}
 	//appending the 20000GB Bandwidth item as it is mandatory
-	actualaddons = append(actualaddons, firewalltype, "20000 GB Bandwidth")
+	actualaddons = append(actualaddons, FirewallType, "20000 GB Bandwidth")
 	//appending the Fortigate Security Appliance as it is mandatory parameter for placing an order
-	if firewalltype != mandatoryfirewalltype {
-		actualaddons = append(actualaddons, mandatoryfirewalltype)
+	if FirewallType != mandatoryFirewallType {
+		actualaddons = append(actualaddons, mandatoryFirewallType)
 	}
 
 	//5. Getting the priceids of items which have to be ordered
@@ -178,7 +166,7 @@ func resourceIBMNetworkMultiVlanCreate(d *schema.ResourceData, meta interface{})
 	for _, addon := range actualaddons {
 		actualpriceid, err := product.GetPriceIDByPackageIdandLocationGroups(sess, listofpriceids, 863, addon)
 		if err != nil || actualpriceid == 0 {
-			return fmt.Errorf("The addon or the firewall is not available for the datacenter you have selected. Please enter a different datacenter")
+			return fmt.Errorf("Encountered problem trying to get priceIds of items which have to be ordered: %s", err)
 		}
 		priceItem := datatypes.Product_Item_Price{
 			Id: &actualpriceid,
@@ -187,7 +175,7 @@ func resourceIBMNetworkMultiVlanCreate(d *schema.ResourceData, meta interface{})
 	}
 
 	//6.Get the package ID
-	productpackageservice, _ := services.GetProductPackageService(sess).Filter(productpackagefilter).Mask(`id`).GetAllObjects()
+	productpackageservice, _ := services.GetProductPackageService(sess).Filter(productPackageFilter).Mask(`id`).GetAllObjects()
 	var productid int
 	for _, packageid := range productpackageservice {
 		productid = *packageid.Id
@@ -200,7 +188,7 @@ func resourceIBMNetworkMultiVlanCreate(d *schema.ResourceData, meta interface{})
 			Prices:      priceItems,
 			Quantity:    sl.Int(1),
 			Location:    &datacenter,
-			ComplexType: sl.String(complextype),
+			ComplexType: sl.String(complexType),
 		},
 		Name:     sl.String(name),
 		RouterId: &routerid,
@@ -225,8 +213,6 @@ func resourceIBMNetworkMultiVlanCreate(d *schema.ResourceData, meta interface{})
 	}
 	id := *vlan.NetworkFirewall.Id
 	d.SetId(fmt.Sprintf("%d", id))
-	d.Set("datacenter", datacentername)
-	d.Set("type", firewalltype)
 	log.Printf("[INFO] Firewall ID: %s", d.Id())
 	return resourceIBMMultiVlanFirewallRead(d, meta)
 }
