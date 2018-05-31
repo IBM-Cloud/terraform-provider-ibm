@@ -1272,6 +1272,12 @@ func setCommonBareMetalOrderOptions(d *schema.ResourceData, meta interface{}, or
 		order.ImageTemplateId = sl.Int(imageTemplateId)
 	}
 
+	if postInstallURI, ok := d.GetOk("post_install_script_uri"); ok {
+		postInstallURIA := make([]string, 1)
+		postInstallURIA[0] = postInstallURI.(string)
+		order.ProvisionScripts = postInstallURIA
+	}
+
 	return order, nil
 }
 
