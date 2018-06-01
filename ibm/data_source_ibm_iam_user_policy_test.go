@@ -2,70 +2,112 @@ package ibm
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccIBMIAMUserPolicyDataSource_basic(t *testing.T) {
+func TestAccIBMIAMUserPolicyDataSource_Basic(t *testing.T) {
+	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMUserPolicyDataSourceConfig(),
+				Config: testAccCheckIBMIAMUserPolicyDataSourceConfig(name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccIBMIAMUserPolicyCheck("data.ibm_iam_user_policy.testacc_iam_policies"),
+					resource.TestCheckResourceAttr("data.ibm_iam_user_policy.testacc_ds_user_policy", "policies.#", "1"),
 				),
 			},
 		},
 	})
 }
 
-func testAccIBMIAMUserPolicyCheck(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
+func TestAccIBMIAMUserPolicyDataSource_Multiple_Policies(t *testing.T) {
+	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
 
-		r := s.RootModule().Resources[n]
-		a := r.Primary.Attributes
-
-		var (
-			policySize int
-			err        error
-		)
-
-		if policySize, err = strconv.Atoi(a["policies.#"]); err != nil {
-			return err
-		}
-		if policySize < 1 {
-			return fmt.Errorf("No policies found")
-		}
-		return nil
-	}
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIAMUserPolicyDataSourceMultiplePolicies(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_iam_user_policy.testacc_ds_user_policy", "policies.#", "2"),
+				),
+			},
+		},
+	})
 }
 
-func testAccCheckIBMIAMUserPolicyDataSourceConfig() string {
+func testAccCheckIBMIAMUserPolicyDataSourceConfig(name string) string {
 	return fmt.Sprintf(`
-    
-data "ibm_org" "testacc_ds_org" {
-    org = "%s"
+
+resource "ibm_resource_instance" "instance" {
+	name     = "%s"
+	service  = "kms"
+	plan     = "tiered-pricing"
+	location = "us-south"
+}
+  
+resource "ibm_iam_user_policy" "policy" {
+	ibm_id = "%s"
+	roles        = ["Manager", "Viewer", "Administrator"]
+  
+	resources = [{
+	  service              = "kms"
+	  region               = "us-south"
+	  resource_instance_id = "${element(split(":",ibm_resource_instance.instance.id),7)}"
+	}]
+	}
+	
+	data "ibm_iam_user_policy" "testacc_ds_user_policy" {
+		ibm_id = "${ibm_iam_user_policy.policy.ibm_id}"
+	}
+`, name, IAMUser)
+
 }
 
-data "ibm_account" "testacc_acc" {
-    org_guid = "${data.ibm_org.testacc_ds_org.id}"
+func testAccCheckIBMIAMUserPolicyDataSourceMultiplePolicies(name string) string {
+	return fmt.Sprintf(`
+
+resource "ibm_resource_instance" "instance" {
+	name     = "%s"
+	service  = "kms"
+	plan     = "tiered-pricing"
+	location = "us-south"
 }
-resource "ibm_iam_user_policy" "testacc_iam_policy" {
-        account_guid = "${data.ibm_account.testacc_acc.id}"
-        ibm_id  = "%s"
-        roles   = ["viewer"]
-        resources = [{"service_name" = "All Identity and Access enabled services"}]
-}
-data "ibm_iam_user_policy" "testacc_iam_policies" {
-        account_guid = "${data.ibm_account.testacc_acc.id}"
-        ibm_id = "${ibm_iam_user_policy.testacc_iam_policy.ibm_id}"
-}
-`, cfOrganization, IAMUser)
+
+resource "ibm_iam_user_policy" "policy" {
+	ibm_id = "%s"
+	roles        = ["Manager", "Viewer", "Administrator"]
+  
+	resources = [{
+	  service              = "kms"
+	  region               = "us-south"
+	  resource_instance_id = "${element(split(":",ibm_resource_instance.instance.id),7)}"
+	}]
+  }
+
+  data "ibm_resource_group" "group" {
+	name = "default"
+  }
+  
+resource "ibm_iam_user_policy" "policy1" {
+	ibm_id = "%s"
+	roles        = ["Viewer"]
+  
+	resources = [{
+	  service           = "containers-kubernetes"
+	  resource_group_id = "${data.ibm_resource_group.group.id}"
+	}]
+  }
+
+
+data "ibm_iam_user_policy" "testacc_ds_user_policy" {
+	ibm_id = "${ibm_iam_user_policy.policy.ibm_id}"
+}`, name, IAMUser, IAMUser)
 
 }

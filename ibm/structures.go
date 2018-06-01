@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform/flatmap"
 
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -169,44 +168,6 @@ func flattenServiceInstanceCredentials(keys []mccpv2.ServiceKeyFields) []interfa
 		out[i] = m
 	}
 	return out
-}
-
-func flattenIAMPolicyResource(list []iampapv1.Resources, iamClient iampapv1.IAMPAPAPI) ([]map[string]interface{}, error) {
-	result := make([]map[string]interface{}, 0, len(list))
-	for _, i := range list {
-		name := i.ServiceName
-		if name == "" {
-			name = allIAMEnabledServices
-		}
-		serviceName, err := iamClient.IAMService().GetServiceDispalyName(name)
-		if err != nil {
-			return result, fmt.Errorf("Error retrieving service : %s", err)
-		}
-		l := map[string]interface{}{
-			"service_name":      serviceName,
-			"region":            i.Region,
-			"resource_type":     i.ResourceType,
-			"resource":          i.Resource,
-			"space_guid":        i.SpaceId,
-			"organization_guid": i.OrganizationId,
-		}
-		if i.ServiceInstance != "" {
-			l["service_instance"] = []string{i.ServiceInstance}
-		}
-		result = append(result, l)
-	}
-	return result, nil
-}
-
-func flattenIAMPolicyRoles(list []iampapv1.Roles) []map[string]interface{} {
-	result := make([]map[string]interface{}, 0, len(list))
-	for _, v := range list {
-		l := map[string]interface{}{
-			"name": roleIDToName[v.ID],
-		}
-		result = append(result, l)
-	}
-	return result
 }
 
 func expandProtocols(configured []interface{}) ([]datatypes.Network_LBaaS_LoadBalancerProtocolConfiguration, error) {
