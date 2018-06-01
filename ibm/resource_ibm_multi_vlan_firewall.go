@@ -231,6 +231,8 @@ func resourceIBMMultiVlanFirewallRead(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return fmt.Errorf("Error retrieving firewall information: %s", err)
 	}
+	d.Set("datacenter", *firewalls[0].NetworkFirewall.Datacenter.Name)
+	d.Set("firewall_type", *firewalls[0].NetworkFirewall.FirewallType)
 	d.Set("name", *firewalls[0].Name)
 	d.Set("public_ip", *firewalls[0].PublicIpAddress.IpAddress)
 	d.Set("public_ipv6", firewalls[0].PublicIpv6Address.IpAddress)
