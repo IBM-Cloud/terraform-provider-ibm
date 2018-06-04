@@ -133,6 +133,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_iam_user_policy":                  resourceIBMIAMUserPolicy(),
 			"ibm_iam_service_id":                   resourceIBMIAMServiceID(),
 			"ibm_iam_service_policy":               resourceIBMIAMServicePolicy(),
+			"ibm_ipsec_vpn":                        resourceIBMIPSecVPN(),
 			"ibm_lb":                               resourceIBMLb(),
 			"ibm_lbaas":                            resourceIBMLbaas(),
 			"ibm_lbaas_server_instance_attachment": resourceIBMLbaasServerInstanceAttachment(),
