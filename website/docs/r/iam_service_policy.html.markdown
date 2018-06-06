@@ -1,12 +1,12 @@
 ---
 layout: "ibm"
-page_title: "IBM : service_policy"
-sidebar_current: "docs-ibm-resource-service-policy"
+page_title: "IBM : iam_service_policy"
+sidebar_current: "docs-ibm-resource-iam-service-policy"
 description: |-
   Manages IBM IAM Service Policy.
 ---
 
-# ibm\_service_id
+# ibm\_iam_service_id
 
 Provides a resource for IAM Service Policy. This allows service policy  to be created, updated and deleted.
 
@@ -130,7 +130,7 @@ Nested `resources` blocks have the following structure:
   * `resource_type` - (Optional, string) Resource type of the policy definition.
   * `resource` - (Optional, string) Resource of the policy definition.
   * `resource_group_id` - (Optional, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`.
-* `tags` - (Optional, array of strings) Tags associated with the resource key instance.
+* `tags` - (Optional, array of strings) Tags associated with the service policy instance.
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attribute Reference

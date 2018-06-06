@@ -42,10 +42,12 @@ ibm_resource_key provides the following [Timeouts](https://www.terraform.io/docs
 The following arguments are supported:
 
 * `name` - (Required, string) A descriptive name used to identify a resource key.
-* `role` - (Required, string) Name of the user role.Valid roles are Writer, Reader, Manager, Administrator, Operator, Viewer, Editor.
+* `role` - (Required, string) Name of the user role. Valid roles are Writer, Reader, Manager, Administrator, Operator, Viewer, Editor.
 * `parameters` - (Optional, map) Arbitrary parameters to pass. Must be a JSON object.
-* `resource_instance_id` - (Optional, string) The id of the resource instance associated with the resource key.
-* `resource_alias_id` - (Optional, string) The id of the resource alias associated with the resource key.
+* `resource_instance_id` - (Optional, string) The id of the resource instance associated with the resource key.  
+ **NOTE**: Conflicts with `resource_alias_id`.
+* `resource_alias_id` - (Optional, string) The id of the resource alias associated with the resource key.  
+ **NOTE**: Conflicts with `resource_instance_id`.
 * `tags` - (Optional, array of strings) Tags associated with the resource key instance.
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 

@@ -29,13 +29,13 @@ data "ibm_resource_instance" "testacc_ds_resource_instance" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The name of the resource instance. You can retrieve the value by running the `bx resource service-instance` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `name` - (Required, string) The name of the resource instance.
 
 * `resource_group_id` - (Optional, string) The id of the resource group where the resource instance exists. If not provided it takes the default resource group.
 
 * `location` - (Optional, string) The location or the environment in which instance exists.
 
-* `service` - (Optional, string) The service type of the instance.You can retrieve the value by running the `bx catalog service-marketplace` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `service` - (Optional, string) The service type of the instance. You can retrieve the value by running the `bx catalog service-marketplace` or `bx catalog search` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
 
 
 ## Attribute Reference
