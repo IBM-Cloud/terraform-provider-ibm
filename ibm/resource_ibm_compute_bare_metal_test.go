@@ -267,7 +267,7 @@ func TestAccSoftLayerBareMetalCustom_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMComputeBareMetalExists("ibm_compute_bare_metal.bm-custom", &bareMetal),
 					resource.TestCheckResourceAttr(
-						"ibm_compute_bare_metal.bm-custom", "memory", "32"),
+						"ibm_compute_bare_metal.bm-custom", "memory", "64"),
 					resource.TestCheckResourceAttr(
 						"ibm_compute_bare_metal.bm-custom", "network_speed", "1000"),
 					resource.TestCheckResourceAttr(
@@ -294,7 +294,7 @@ func TestAccSoftLayerBareMetalCustom_with_gpus(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMComputeBareMetalExists("ibm_compute_bare_metal.bm-custom", &bareMetal),
 					resource.TestCheckResourceAttr(
-						"ibm_compute_bare_metal.bm-custom", "memory", "32"),
+						"ibm_compute_bare_metal.bm-custom", "memory", "64"),
 					resource.TestCheckResourceAttr(
 						"ibm_compute_bare_metal.bm-custom", "network_speed", "1000"),
 					resource.TestCheckResourceAttr(
@@ -468,9 +468,9 @@ resource "ibm_compute_bare_metal" "bm-quote" {
 func testBareMetalCustomConfig(hostname, domain string) string {
 	return fmt.Sprintf(`
 resource "ibm_compute_bare_metal" "bm-custom" {
-    package_key_name = "2U_DUAL_E52600_12_DRIVES"
-    process_key_name = "INTEL_DUAL_INTEL_XEON_E52620_2_00"
-    memory = 32
+    package_key_name = "DUAL_E52600_V4_12_DRIVES"
+    process_key_name = "INTEL_INTEL_XEON_E52620_V4_2_10"
+    memory = 64
     os_key_name = "OS_WINDOWS_2012_R2_FULL_DC_64_BIT_2"
     hostname = "%s"
     domain = "%s"
@@ -489,9 +489,9 @@ func testBareMetalCustomConfigWithGpus(hostname, domain string) string {
 	resource "ibm_compute_bare_metal" "bm-custom" {
 		package_key_name       = "DUAL_E52600_V4_12_DRIVES"
 		process_key_name       = "INTEL_INTEL_XEON_E52620_V4_2_10"
-		gpu_key_name           = "GPU_NVIDIA_GRID_K2"
-		gpu_secondary_key_name = "GPU_NVIDIA_GRID_K2"
-		memory                 = 32
+		gpu_key_name           = "GPU_NVIDIA_TESLA_K80"
+		gpu_secondary_key_name = "GPU_NVIDIA_TESLA_K80"
+		memory                 = 64
 		os_key_name            = "OS_WINDOWS_2012_R2_FULL_DC_64_BIT_2"
 		hostname               = "%s"
 		domain                 = "%s"
