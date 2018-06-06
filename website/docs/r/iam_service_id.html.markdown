@@ -1,12 +1,12 @@
 ---
 layout: "ibm"
-page_title: "IBM : service_id"
-sidebar_current: "docs-ibm-resource-service-id"
+page_title: "IBM : iam_service_id"
+sidebar_current: "docs-ibm-resource-iam-service-id"
 description: |-
   Manages IBM IAM ServiceID.
 ---
 
-# ibm\_service_id
+# ibm\_iam_service_id
 
 Provides a resource for IAM ServiceID. This allows serviceID  to be created, updated and deleted.
 
