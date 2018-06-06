@@ -41,10 +41,6 @@ func resourceIBMSubnet() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
 
 			"private": {
 				Type:     schema.TypeBool,
