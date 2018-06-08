@@ -43,10 +43,10 @@ The following attributes are exported:
 * `policies` - A nested block describing IAM Policies assigned to serviceID. Nested `policies` blocks have the following structure:
   * `id` - The unique identifier of the IAM service policy.The id is composed of \<iam_service_id\>/\<service_policy_id\>
   * `roles` -  Roles assigned to the policy.
-  * `resources` -  A nested block describing the resources in the policy.
-    * `service` - Service name of the policy definition.  
-    * `resource_instance_id` - ID of resource instance of the policy definition.
-    * `region` - Region of the policy definition.
-    * `resource_type` - Resource type of the policy definition.
-    * `resource` - Resource of the policy definition.
-    * `resource_group_id` - The ID of the resource group.  
+	* `resources` -  A nested block describing the resources in the policy.
+		* `service` - Service name of the policy definition. 
+		* `resource_instance_id` - ID of resource instance of the policy definition.
+		* `region` - Region of the policy definition.
+		* `resource_type` - Resource type of the policy definition.
+		* `resource` - Resource of the policy definition.
+		* `resource_group_id` - The ID of the resource group.
