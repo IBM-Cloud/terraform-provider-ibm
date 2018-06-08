@@ -135,6 +135,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_iam_service_policy":               resourceIBMIAMServicePolicy(),
 			"ibm_lb":                               resourceIBMLb(),
 			"ibm_lbaas":                            resourceIBMLbaas(),
+			"ibm_lbaas_health_monitor":             resourceIBMLbaasHealthMonitor(),
 			"ibm_lbaas_server_instance_attachment": resourceIBMLbaasServerInstanceAttachment(),
 			"ibm_lb_service":                       resourceIBMLbService(),
 			"ibm_lb_service_group":                 resourceIBMLbServiceGroup(),
