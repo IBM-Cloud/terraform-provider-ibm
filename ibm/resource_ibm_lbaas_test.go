@@ -47,6 +47,8 @@ func TestAccIBMLbaas_Basic(t *testing.T) {
 						"ibm_lbaas.lbaas", "subnets.#", "1"),
 					resource.TestCheckResourceAttr(
 						"ibm_lbaas.lbaas", "protocols.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "health_monitors.#", "1"),
 				),
 			},
 			{
@@ -62,6 +64,8 @@ func TestAccIBMLbaas_Basic(t *testing.T) {
 						"ibm_lbaas.lbaas", "subnets.#", "1"),
 					resource.TestCheckResourceAttr(
 						"ibm_lbaas.lbaas", "protocols.#", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "health_monitors.#", "1"),
 				),
 			},
 		},
@@ -104,6 +108,8 @@ func TestAccIBMLbaas_Private(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_lbaas.lbaas", "protocols.#", "1"),
 					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "health_monitors.#", "1"),
+					resource.TestCheckResourceAttr(
 						"ibm_lbaas.lbaas", "type", "PRIVATE"),
 				),
 			},
@@ -120,6 +126,8 @@ func TestAccIBMLbaas_Private(t *testing.T) {
 						"ibm_lbaas.lbaas", "subnets.#", "1"),
 					resource.TestCheckResourceAttr(
 						"ibm_lbaas.lbaas", "protocols.#", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "health_monitors.#", "1"),
 					resource.TestCheckResourceAttr(
 						"ibm_lbaas.lbaas", "type", "PRIVATE"),
 				),
@@ -148,6 +156,8 @@ func TestAccIBMLbaas_with_more_protocols(t *testing.T) {
 						"ibm_lbaas.lbaas", "subnets.#", "1"),
 					resource.TestCheckResourceAttr(
 						"ibm_lbaas.lbaas", "protocols.#", "3"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "health_monitors.#", "1"),
 				),
 			},
 		},

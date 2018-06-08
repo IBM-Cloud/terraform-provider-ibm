@@ -681,3 +681,34 @@ func flattenPolicyResource(list []models.PolicyResource) []map[string]interface{
 	}
 	return result
 }
+
+func flattenHealthMonitors(list []datatypes.Network_LBaaS_Listener) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, len(list))
+	ports := make([]int, 0, 0)
+	for _, i := range list {
+		l := map[string]interface{}{
+			"protocol":    *i.DefaultPool.Protocol,
+			"port":        *i.DefaultPool.ProtocolPort,
+			"interval":    *i.DefaultPool.HealthMonitor.Interval,
+			"max_retries": *i.DefaultPool.HealthMonitor.MaxRetries,
+			"timeout":     *i.DefaultPool.HealthMonitor.Timeout,
+			"url_path":    *i.DefaultPool.HealthMonitor.UrlPath,
+			"monitor_id":  *i.DefaultPool.HealthMonitor.Uuid,
+		}
+		if !contains(ports, *i.DefaultPool.ProtocolPort) {
+			result = append(result, l)
+		}
+
+		ports = append(ports, *i.DefaultPool.ProtocolPort)
+	}
+	return result
+}
+
+func contains(s []int, e int) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
