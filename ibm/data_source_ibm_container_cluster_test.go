@@ -109,8 +109,7 @@ resource "ibm_service_key" "serviceKey" {
 }
 resource "ibm_container_bind_service" "bind_service" {
   cluster_name_id          = "${ibm_container_cluster.testacc_cluster.name}"
-  service_instance_space_guid              = "${data.ibm_space.testacc_ds_space.id}"
-  service_instance_name_id = "${ibm_service_instance.service.id}"
+  service_instance_id = "${ibm_service_instance.service.id}"
   namespace_id             = "default"
   org_guid = "${data.ibm_org.testacc_ds_org.id}"
     space_guid = "${data.ibm_space.testacc_ds_space.id}"
