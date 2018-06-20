@@ -226,7 +226,7 @@ func resourceIBMDNSRecordCreate(d *schema.ResourceData, meta interface{}) error 
 		}
 	}
 
-	log.Printf("[INFO] Creating DNS Resource %s Record for '%d' dns domain", *opts.Type, d.Get("id"))
+	log.Printf("[INFO] Creating DNS Resource %s Record for '%d' dns domain", *opts.Type, d.Get("domain_id").(int))
 
 	var err error
 	var id int
