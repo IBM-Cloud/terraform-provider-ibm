@@ -149,7 +149,7 @@ func resourceIBMComputeAutoScalePolicyCreate(d *schema.ResourceData, meta interf
 		Cooldown:     sl.Int(d.Get("cooldown").(int)),
 	}
 
-	if *opts.Cooldown <= 0 || *opts.Cooldown > 864000 {
+	if *opts.Cooldown < 0 || *opts.Cooldown > 864000 {
 		return fmt.Errorf("Error retrieving scalePolicy: %s", "cooldown must be between 0 seconds and 10 days.")
 	}
 
