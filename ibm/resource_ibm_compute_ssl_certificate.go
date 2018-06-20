@@ -162,11 +162,10 @@ func resourceIBMComputeSSLCertificateUpdate(d *schema.ResourceData, meta interfa
 func resourceIBMComputeSSLCertificateDelete(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetSecurityCertificateService(sess)
-
-	_, err := service.Id(d.Get("id").(int)).DeleteObject()
-
+	id, err := strconv.Atoi(d.Id())
+	_, err = service.Id(id).DeleteObject()
 	if err != nil {
-		return fmt.Errorf("Error deleting Security Certificate %s: %s", d.Get("id"), err)
+		return fmt.Errorf("Error deleting Security Certificate %d: %s", id, err)
 	}
 
 	return nil
