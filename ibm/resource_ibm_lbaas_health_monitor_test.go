@@ -44,6 +44,37 @@ func TestAccIBMLbaasHealthMonitor_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMLbaasHealthMonitor_tcp(t *testing.T) {
+	name := fmt.Sprintf("terraform-%d", acctest.RandInt())
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMLbaasHealthMonitorConfig_tcp(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas_health_monitor.lbaas_tcp", "timeout", "4"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas_health_monitor.lbaas_tcp", "interval", "5"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas_health_monitor.lbaas_tcp", "max_retries", "2"),
+				),
+			},
+			{
+				Config: testAccCheckIBMLbaasHealthMonitorConfig_tcp_update(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas_health_monitor.lbaas_tcp", "timeout", "5"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas_health_monitor.lbaas_tcp", "interval", "8"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas_health_monitor.lbaas_tcp", "max_retries", "6")),
+			},
+		},
+	})
+}
+
 func TestAccIBMLbaasHealthMonitor_InvalidInterval(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -189,7 +220,8 @@ resource "ibm_lbaas" "lbaas" {
     "backend_protocol" = "HTTP"
     "backend_port" = 80
     "load_balancing_method" = "weighted_round_robin"
-  }]
+  },
+  ]
 }
 data "ibm_lbaas" "ds_lbaas" {
     name = "${ibm_lbaas.lbaas.name}"
@@ -201,6 +233,65 @@ resource "ibm_lbaas_health_monitor" "lbaas_hm" {
         interval = 8
         max_retries = 6
         url_path = "/abc"
+        lbaas_id = "${data.ibm_lbaas.ds_lbaas.id}"
+        monitor_id = "${data.ibm_lbaas.ds_lbaas.health_monitors.0.monitor_id}"
+}
+`, name, lbaasSubnetId)
+}
+
+func testAccCheckIBMLbaasHealthMonitorConfig_tcp(name string) string {
+	return fmt.Sprintf(`
+
+resource "ibm_lbaas" "lbaas" {
+  name        = "%s"
+  description = "desc-used for terraform uat"
+  subnets     = ["%s"]
+  protocols = [{
+    "frontend_protocol" = "TCP"
+    "frontend_port" = 9443
+    "backend_protocol" = "TCP"
+    "backend_port" = 9443
+    "load_balancing_method" = "weighted_round_robin"
+  }]
+}
+data "ibm_lbaas" "ds_lbaas" {
+    name = "${ibm_lbaas.lbaas.name}"
+}
+resource "ibm_lbaas_health_monitor" "lbaas_tcp" {
+	    protocol = "${data.ibm_lbaas.ds_lbaas.protocols.0.backend_protocol}"
+        port = "${data.ibm_lbaas.ds_lbaas.protocols.0.backend_port}"
+        timeout = 4
+        lbaas_id = "${data.ibm_lbaas.ds_lbaas.id}"
+        monitor_id = "${data.ibm_lbaas.ds_lbaas.health_monitors.0.monitor_id}"
+}
+`, name, lbaasSubnetId)
+}
+
+func testAccCheckIBMLbaasHealthMonitorConfig_tcp_update(name string) string {
+	return fmt.Sprintf(`
+
+resource "ibm_lbaas" "lbaas" {
+  name        = "%s"
+  description = "desc-used for terraform uat"
+  subnets     = ["%s"]
+  protocols = [
+  {
+    "frontend_protocol" = "TCP"
+    "frontend_port" = 9443
+    "backend_protocol" = "TCP"
+    "backend_port" = 9443
+    "load_balancing_method" = "weighted_round_robin"
+  }]
+}
+data "ibm_lbaas" "ds_lbaas" {
+    name = "${ibm_lbaas.lbaas.name}"
+}
+resource "ibm_lbaas_health_monitor" "lbaas_tcp" {
+	    protocol = "${data.ibm_lbaas.ds_lbaas.protocols.0.backend_protocol}"
+        port = "${data.ibm_lbaas.ds_lbaas.protocols.0.backend_port}"
+        timeout = 5
+        interval = 8
+        max_retries = 6
         lbaas_id = "${data.ibm_lbaas.ds_lbaas.id}"
         monitor_id = "${data.ibm_lbaas.ds_lbaas.health_monitors.0.monitor_id}"
 }
