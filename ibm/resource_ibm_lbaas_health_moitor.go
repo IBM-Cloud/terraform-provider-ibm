@@ -85,7 +85,13 @@ func resourceIBMLbaasHealthMonitorCreate(d *schema.ResourceData, meta interface{
 
 	healthMonitors = append(healthMonitors, healthMonitor)
 
-	_, err := healthMonitorService.UpdateLoadBalancerHealthMonitors(sl.String(lbaasID), healthMonitors)
+	_, err := waitForLbaasLBActive(d, meta)
+	if err != nil {
+		return fmt.Errorf(
+			"Error waiting for load balancer (%s) to become ready: %s", d.Id(), err)
+	}
+
+	_, err = healthMonitorService.UpdateLoadBalancerHealthMonitors(sl.String(lbaasID), healthMonitors)
 	if err != nil {
 		return fmt.Errorf("Error adding health monitors: %#v", err)
 	}
@@ -119,7 +125,10 @@ func resourceIBMLbaasHealthMonitorRead(d *schema.ResourceData, meta interface{})
 			d.Set("interval", *i.DefaultPool.HealthMonitor.Interval)
 			d.Set("max_retries", *i.DefaultPool.HealthMonitor.MaxRetries)
 			d.Set("timeout", *i.DefaultPool.HealthMonitor.Timeout)
-			d.Set("url_path", *i.DefaultPool.HealthMonitor.UrlPath)
+			if i.DefaultPool.HealthMonitor.UrlPath != nil && *i.Protocol == "HTTP" {
+				d.Set("url_path", *i.DefaultPool.HealthMonitor.UrlPath)
+			}
+
 			break
 		}
 	}
@@ -150,6 +159,12 @@ func resourceIBMLbaasHealthMonitorUpdate(d *schema.ResourceData, meta interface{
 		}
 
 		healthMonitors = append(healthMonitors, healthMonitor)
+
+		_, err = waitForLbaasLBActive(d, meta)
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for load balancer (%s) to become ready: %s", d.Id(), err)
+		}
 
 		_, err := healthMonitorService.UpdateLoadBalancerHealthMonitors(sl.String(lbaasID), healthMonitors)
 		if err != nil {

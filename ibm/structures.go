@@ -692,9 +692,13 @@ func flattenHealthMonitors(list []datatypes.Network_LBaaS_Listener) []map[string
 			"interval":    *i.DefaultPool.HealthMonitor.Interval,
 			"max_retries": *i.DefaultPool.HealthMonitor.MaxRetries,
 			"timeout":     *i.DefaultPool.HealthMonitor.Timeout,
-			"url_path":    *i.DefaultPool.HealthMonitor.UrlPath,
 			"monitor_id":  *i.DefaultPool.HealthMonitor.Uuid,
 		}
+
+		if i.DefaultPool.HealthMonitor.UrlPath != nil {
+			l["url_path"] = *i.DefaultPool.HealthMonitor.UrlPath
+		}
+
 		if !contains(ports, *i.DefaultPool.ProtocolPort) {
 			result = append(result, l)
 		}
