@@ -53,6 +53,34 @@ func TestAccIBMContainerCluster_basic(t *testing.T) {
 						"ibm_container_cluster.testacc_cluster", "workers.0.version", kubeUpdateVersion),
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "workers.1.version", kubeVersion),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "is_trusted", "false"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMContainerCluster_trusted(t *testing.T) {
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMContainerClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerCluster_trusted(clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "name", clusterName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "worker_num", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "kube_version", kubeVersion),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "worker_pools.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "is_trusted", "true"),
 				),
 			},
 		},
@@ -376,6 +404,42 @@ resource "ibm_container_cluster" "testacc_cluster" {
   private_vlan_id = "%s"
   no_subnet		  = true
 }	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, kubeVersion, machineType, publicVlanID, privateVlanID)
+}
+
+func testAccCheckIBMContainerCluster_trusted(clusterName string) string {
+	return fmt.Sprintf(`
+
+data "ibm_org" "org" {
+    org = "%s"
+}
+
+data "ibm_space" "space" {
+  org    = "%s"
+  space  = "%s"
+}
+
+data "ibm_account" "acc" {
+   org_guid = "${data.ibm_org.org.id}"
+}
+
+resource "ibm_container_cluster" "testacc_cluster" {
+  name       = "%s"
+  datacenter = "%s"
+
+  org_guid = "${data.ibm_org.org.id}"
+	space_guid = "${data.ibm_space.space.id}"
+	account_guid = "${data.ibm_account.acc.id}"
+
+  worker_num      = 2
+
+  kube_version    = "%s"
+  machine_type    = "%s"
+  isolation       = "private"
+  public_vlan_id  = "%s"
+  private_vlan_id = "%s"
+  no_subnet		  = true
+  is_trusted  = true
+}	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, kubeVersion, trustedMachineType, publicVlanID, privateVlanID)
 }
 
 func testAccCheckIBMContainerCluster_nosubnet_false(clusterName string) string {

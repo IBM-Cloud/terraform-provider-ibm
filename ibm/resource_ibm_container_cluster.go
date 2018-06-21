@@ -153,6 +153,12 @@ func resourceIBMContainerCluster() *schema.Resource {
 				ForceNew: true,
 				Default:  false,
 			},
+			"is_trusted": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				ForceNew: true,
+				Default:  false,
+			},
 			"server_url": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -232,6 +238,7 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	privateVlanID := d.Get("private_vlan_id").(string)
 	webhooks := d.Get("webhook").([]interface{})
 	noSubnet := d.Get("no_subnet").(bool)
+	enableTrusted := d.Get("is_trusted").(bool)
 	isolation := d.Get("isolation").(string)
 	diskEncryption := d.Get("disk_encryption").(bool)
 	var workers []interface{}
@@ -261,6 +268,7 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 		NoSubnet:       noSubnet,
 		Isolation:      isolation,
 		DiskEncryption: diskEncryption,
+		EnableTrusted:  enableTrusted,
 	}
 
 	if v, ok := d.GetOk("kube_version"); ok {
@@ -391,6 +399,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("subnet_id", d.Get("subnet_id").(*schema.Set))
 	d.Set("workers_info", workers)
 	d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0])
+	d.Set("is_trusted", cls.IsTrusted)
 	return nil
 }
 
