@@ -41,6 +41,7 @@ The following attributes are exported:
 * `worker_count` - The number of workers that are attached to the cluster.
 * `workers` - The IDs of the workers that are attached to the cluster.
 * `bounded_services` - The services that are bounded to the cluster.
+* `is_trusted` - Is trusted cluster feature enabled.
 * `vlans` - The VLAN'S that are attached to the cluster. Nested `vlans` blocks have the following structure:
 	* `id` - The VLAN id.
 	* `subnets` - The list of subnets attached to VLAN belonging to the cluster. Nested `subnets` blocks have the following structure:

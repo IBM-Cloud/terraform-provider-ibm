@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -24,6 +25,10 @@ func dataSourceIBMContainerCluster() *schema.Resource {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"is_trusted": {
+				Type:     schema.TypeBool,
+				Computed: true,
 			},
 			"bounded_services": {
 				Type:     schema.TypeSet,
@@ -151,6 +156,7 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	d.Set("workers", workers)
 	d.Set("bounded_services", boundedServices)
 	d.Set("vlans", flattenVlans(clusterFields.Vlans))
+	d.Set("is_trusted", clusterFields.IsTrusted)
 
 	return nil
 }
