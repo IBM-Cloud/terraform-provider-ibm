@@ -18,6 +18,7 @@ const ErrCodeAPICreation = "APICreationError"
 type ContainerServiceAPI interface {
 	Clusters() Clusters
 	Workers() Workers
+	WorkerPools() WorkerPool
 	WebHooks() Webhooks
 	Subnets() Subnets
 	KubeVersions() KubeVersions
@@ -74,6 +75,11 @@ func (c *csService) Clusters() Clusters {
 //Workers implements Cluster Workers API
 func (c *csService) Workers() Workers {
 	return newWorkerAPI(c.Client)
+}
+
+//WorkerPools implements Cluster WorkerPools API
+func (c *csService) WorkerPools() WorkerPool {
+	return newWorkerPoolAPI(c.Client)
 }
 
 //Subnets implements Cluster Subnets API

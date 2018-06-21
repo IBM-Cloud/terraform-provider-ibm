@@ -33,6 +33,7 @@ type ClusterInfo struct {
 	SpaceID           string  `json:"logSpace"`
 	SpaceName         string  `json:"logSpaceName"`
 	IsPaid            bool    `json:"isPaid"`
+	IsTrusted         bool    `json:"isTrusted"`
 	WorkerCount       int     `json:"workerCount"`
 	Vlans             []Vlan  `json:"vlans"`
 	Addons            []Addon `json:"addons"`
@@ -120,6 +121,7 @@ type ClusterCreateRequest struct {
 	MasterVersion  string `json:"masterVersion,omitempty" description:"Desired version of the requested master"`
 	Prefix         string `json:"prefix,omitempty" description:"hostname prefix for new workers"`
 	DiskEncryption bool   `json:"diskEncryption" description:"disable encryption on a worker"`
+	EnableTrusted  bool   `json:"enableTrusted" description:"Set to true if trusted hardware should be requested"`
 }
 
 // ServiceBindRequest ...
