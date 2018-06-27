@@ -174,6 +174,14 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 				Computed: true,
 				ForceNew: true,
 			},
+
+			"software_guard_extensions": {
+				Type:             schema.TypeBool,
+				Optional:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: applyOnce,
+			},
+
 			// Monthly only
 			"package_key_name": {
 				Type:             schema.TypeString,
@@ -1157,6 +1165,13 @@ func setMonthlyHourlyCommonOrder(d *schema.ResourceData, items []datatypes.Produ
 			return err
 		}
 		order.Prices = append(order.Prices, powerSupply)
+	}
+	if d.Get("software_guard_extensions").(bool) {
+		sgx, err := getItemPriceId(items, "software_guard_extensions", "SOFTWARE_GUARD_EXTENSIONS")
+		if err != nil {
+			return err
+		}
+		order.Prices = append(order.Prices, sgx)
 	}
 	if gpu0, ok := d.GetOk("gpu_key_name"); ok {
 		gpu0Price, err := getItemPriceId(items, "gpu0", gpu0.(string))

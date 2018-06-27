@@ -167,6 +167,7 @@ Locate your package ID. See `package_key_name` attribute. Once you have the ID f
     * `hard_drives` - (Required, array of integers) The index of hard drives for RAID configuration. The index starts at 0. For example, the array [0,1] is an index of two hard drives.
     * `array_size` - (Optional, integer) The target RAID disk size, specific in gigabytes.
     * `partition_template_id` - (Optional, string) The partition template ID for the OS disk. Templates are different based on the target OS. To get the partition template ID, first find the OS ID in the [Softlayer API](https://api.softlayer.com/rest/v3/SoftLayer_Hardware_Component_Partition_OperatingSystem/getAllObjects). Then replace <OS_ID> with your OS ID in the following URL: `https://api.softlayer.com/rest/v3/SoftLayer_Hardware_Component_Partition_OperatingSystem/<OS_ID>/getPartitionTemplates`. Select you template ID in resulting available parition template IDs.  
+* `software_guard_extensions` - (Optional, boolean) The Software Guard Extensions product will be added to a compatible server package, selecting Intel SGX-enabled BIOS and hardware. The default value is `false`.
 * `restricted_network` - (Optional, boolean) The non-datacenter restricted port speed. The default value is `false`.
 * `tcp_monitoring` - (Optional) When the value is `false`, a ping monitoring service is provided. When the value is `true`, a ping monitoring service and a TCP monitoring service are provided.
 
