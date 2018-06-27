@@ -5,6 +5,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -19,6 +20,7 @@ func resourceIBMMultiVlanFirewall() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMNetworkMultiVlanCreate,
 		Read:     resourceIBMMultiVlanFirewallRead,
+		Update:   resourceIBMMultiVlanFirewallUpdate,
 		Delete:   resourceIBMFirewallDelete,
 		Exists:   resourceIBMFirewallExists,
 		Importer: &schema.ResourceImporter{},
@@ -92,7 +94,6 @@ func resourceIBMMultiVlanFirewall() *schema.Resource {
 				Type:        schema.TypeList,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
-				ForceNew:    true,
 				Description: `"Allowed Values:- ["FortiGate Security Appliance - Web Filtering Add-on (High Availability)","FortiGate Security Appliance - NGFW Add-on (High Availability)","FortiGate Security Appliance - AV Add-on (High Availability)"] or ["FortiGate Security Appliance - Web Filtering Add-on","FortiGate Security Appliance - NGFW Add-on","FortiGate Security Appliance - AV Add-on"]"`,
 			},
 		},
@@ -108,6 +109,14 @@ const (
 )
 
 func resourceIBMNetworkMultiVlanCreate(d *schema.ResourceData, meta interface{}) error {
+	err := multiVlanCreateOrUpdate(d, meta, true)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func multiVlanCreateOrUpdate(d *schema.ResourceData, meta interface{}, Create bool) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	name := d.Get("name").(string)
 	FirewallType := d.Get("firewall_type").(string)
@@ -146,32 +155,81 @@ func resourceIBMNetworkMultiVlanCreate(d *schema.ResourceData, meta interface{})
 
 	//4.get the addons that are specified
 	var addonconfigurations []interface{}
-	if _, ok := d.GetOk("addon_configuration"); ok {
+	if val, ok := d.GetOk("addon_configuration"); ok && val != nil {
 		addonconfigurations, ok = d.Get("addon_configuration").([]interface{})
 	}
-
 	var actualaddons []string
 	for _, addons := range addonconfigurations {
 		actualaddons = append(actualaddons, addons.(string))
 	}
-	//appending the 20000GB Bandwidth item as it is mandatory
-	actualaddons = append(actualaddons, FirewallType, "20000 GB Bandwidth")
-	//appending the Fortigate Security Appliance as it is mandatory parameter for placing an order
-	if FirewallType != mandatoryFirewallType {
-		actualaddons = append(actualaddons, mandatoryFirewallType)
+	var oldaddon, newaddon, add []string
+	if d.HasChange("addon_configuration") {
+		old, new := d.GetChange("addon_configuration")
+		oldaddons := old.([]interface{})
+		newaddons := new.([]interface{})
+		for _, v := range oldaddons {
+			oldaddon = append(oldaddon, v.(string))
+		}
+		for _, v := range newaddons {
+			newaddon = append(newaddon, v.(string))
+		}
+		// 1. Remove old addons no longer appearing in the new set
+		// 2. Add new addons not already provisioned
+		remove := listdifference(oldaddon, newaddon)
+		add = listdifference(newaddon, oldaddon)
+		if len(remove) > 0 {
+			fwID, _ := strconv.Atoi(d.Id())
+			firewalls, err := services.GetAccountService(sess).
+				Filter(filter.Build(
+					filter.Path("networkGateways.networkFirewall.id").
+						Eq(strconv.Itoa(fwID)))).
+				Mask(multiVlanMask).
+				GetNetworkGateways()
+			if err != nil {
+				return fmt.Errorf("Some error occured while fetching the information of the Multi-Vlan Firewall")
+			}
+			for _, i := range remove {
+				for _, j := range firewalls[0].NetworkFirewall.BillingItem.ActiveChildren {
+					if i == *j.Description {
+						cancelimmediately := true
+						cancelAssociatedBillingItems := false
+						reason := "No longer needed"
+						customerNote := "No longer needed"
+						billingitemservice, err := services.GetBillingItemService(sess).Id(*j.Id).CancelItem(&cancelimmediately, &cancelAssociatedBillingItems, &reason, &customerNote)
+						if err != nil || !billingitemservice {
+							return fmt.Errorf("Error while cancelling the addon")
+						}
+					}
+				}
+			}
+		}
+		b := make([]string, len(add), len(add))
+		for i, v := range add {
+			b[i] = v
+		}
+		actualaddons = b
+	}
+	if Create {
+		actualaddons = append(actualaddons, FirewallType, "20000 GB Bandwidth")
+		//appending the Fortigate Security Appliance as it is mandatory parameter for placing an order. If it is upgrade order this is not required
+		if FirewallType != mandatoryFirewallType {
+			actualaddons = append(actualaddons, mandatoryFirewallType)
+		}
 	}
 
 	//5. Getting the priceids of items which have to be ordered
 	priceItems := []datatypes.Product_Item_Price{}
-	for _, addon := range actualaddons {
-		actualpriceid, err := product.GetPriceIDByPackageIdandLocationGroups(sess, listofpriceids, 863, addon)
-		if err != nil || actualpriceid == 0 {
-			return fmt.Errorf("Encountered problem trying to get priceIds of items which have to be ordered: %s", err)
+	if (!Create && len(add) > 0) || Create {
+		for _, addon := range actualaddons {
+			actualpriceid, err := product.GetPriceIDByPackageIdandLocationGroups(sess, listofpriceids, 863, addon)
+			if err != nil || actualpriceid == 0 {
+				return fmt.Errorf("Encountered problem trying to get priceIds of items which have to be ordered: %s", err)
+			}
+			priceItem := datatypes.Product_Item_Price{
+				Id: &actualpriceid,
+			}
+			priceItems = append(priceItems, priceItem)
 		}
-		priceItem := datatypes.Product_Item_Price{
-			Id: &actualpriceid,
-		}
-		priceItems = append(priceItems, priceItem)
 	}
 
 	//6.Get the package ID
@@ -193,23 +251,56 @@ func resourceIBMNetworkMultiVlanCreate(d *schema.ResourceData, meta interface{})
 		Name:     sl.String(name),
 		RouterId: &routerid,
 	}
+	upgradeproductOrderContainer := datatypes.Container_Product_Order_Network_Protection_Firewall_Dedicated_Upgrade{}
+
+	if !Create {
+		fwid, _ := strconv.Atoi(d.Id())
+		t := time.Now()
+		productOrderContainers := append(productOrderContainer.Properties, datatypes.Container_Product_Order_Property{
+			Name:  sl.String("MAINTENANCE_WINDOW"),
+			Value: sl.String(time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), 0, t.Location()).UTC().String()),
+		})
+		productOrderContainer.Properties = productOrderContainers
+		upgradeproductOrderContainer = datatypes.Container_Product_Order_Network_Protection_Firewall_Dedicated_Upgrade{
+			Container_Product_Order_Network_Protection_Firewall_Dedicated: productOrderContainer,
+			FirewallId: &fwid,
+		}
+	}
 
 	//8.Calling verify order
-	_, err = services.GetProductOrderService(sess.SetRetries(0)).
-		VerifyOrder(&productOrderContainer)
+	if !Create && len(add) > 0 {
+		_, err = services.GetProductOrderService(sess.SetRetries(0)).
+			VerifyOrder(&upgradeproductOrderContainer)
+	} else if Create {
+		_, err = services.GetProductOrderService(sess.SetRetries(0)).
+			VerifyOrder(&productOrderContainer)
+	}
 	if err != nil {
 		return fmt.Errorf("Error during Verify order for Creating: %s", err)
 	}
 
 	//9.Calling place order
-	receipt, err := services.GetProductOrderService(sess.SetRetries(0)).
-		PlaceOrder(&productOrderContainer, sl.Bool(false))
+	var receipt datatypes.Container_Product_Order_Receipt
+	if !Create && len(add) > 0 {
+		receipt, err = services.GetProductOrderService(sess.SetRetries(0)).
+			PlaceOrder(&upgradeproductOrderContainer, sl.Bool(false))
+	} else if Create {
+		receipt, err = services.GetProductOrderService(sess.SetRetries(0)).
+			PlaceOrder(&productOrderContainer, sl.Bool(false))
+	}
 	if err != nil {
 		return fmt.Errorf("Error during Place order for Creating: %s", err)
 	}
-	_, vlan, err := findDedicatedFirewallByOrderId(sess, *receipt.OrderId, d)
+	//if nothing has been added no need to look for a dedicated firewall
+	if len(add) == 0 {
+		return resourceIBMMultiVlanFirewallRead(d, meta)
+	}
+	_, vlan, _, err := findDedicatedFirewallByOrderId(sess, *receipt.OrderId, d)
 	if err != nil {
 		return fmt.Errorf("Error during creation of dedicated hardware firewall: %s", err)
+	}
+	if d.HasChange("addon_configuration") {
+		return resourceIBMMultiVlanFirewallRead(d, meta)
 	}
 	id := *vlan.NetworkFirewall.Id
 	d.SetId(fmt.Sprintf("%d", id))
@@ -232,7 +323,21 @@ func resourceIBMMultiVlanFirewallRead(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Error retrieving firewall information: %s", err)
 	}
 	d.Set("datacenter", *firewalls[0].NetworkFirewall.Datacenter.Name)
-	d.Set("firewall_type", *firewalls[0].NetworkFirewall.FirewallType)
+	if *firewalls[0].NetworkFirewall.CustomerManagedFlag && *firewalls[0].MemberCount == 1 {
+		d.Set("firewall_type", "FortiGate Security Appliance")
+	} else if *firewalls[0].NetworkFirewall.CustomerManagedFlag && *firewalls[0].MemberCount > 1 {
+		d.Set("firewall_type", "FortiGate Firewall Appliance HA Option")
+	}
+	addonConfiguration := make([]interface{}, 0, len(firewalls[0].NetworkFirewall.BillingItem.ActiveChildren))
+	for _, elem := range firewalls[0].NetworkFirewall.BillingItem.ActiveChildren {
+		if *elem.Description != "20000 GB Bandwidth" {
+			addonConfiguration = append(addonConfiguration, *elem.Description)
+		}
+	}
+	pod := *firewalls[0].NetworkFirewall.BillingItem.Notes
+	pod = "pod" + strings.SplitAfter(pod, "pod")[1]
+	d.Set("pod", &pod)
+	d.Set("addon_configuration", addonConfiguration)
 	d.Set("name", *firewalls[0].Name)
 	d.Set("public_ip", *firewalls[0].PublicIpAddress.IpAddress)
 	d.Set("public_ipv6", firewalls[0].PublicIpv6Address.IpAddress)
@@ -242,4 +347,28 @@ func resourceIBMMultiVlanFirewallRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("username", *firewalls[0].NetworkFirewall.ManagementCredentials.Username)
 	d.Set("password", *firewalls[0].NetworkFirewall.ManagementCredentials.Password)
 	return nil
+}
+
+func resourceIBMMultiVlanFirewallUpdate(d *schema.ResourceData, meta interface{}) error {
+	err := multiVlanCreateOrUpdate(d, meta, false)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+//This function takes two lists and returns the difference between the two lists
+//listdifference([1,2] [2,3]) = [1]
+func listdifference(a, b []string) []string {
+	mb := map[string]bool{}
+	for _, x := range b {
+		mb[x] = true
+	}
+	ab := []string{}
+	for _, x := range a {
+		if _, ok := mb[x]; !ok {
+			ab = append(ab, x)
+		}
+	}
+	return ab
 }
