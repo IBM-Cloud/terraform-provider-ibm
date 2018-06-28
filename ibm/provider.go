@@ -125,6 +125,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_compute_vm_instance":              resourceIBMComputeVmInstance(),
 			"ibm_container_cluster":                resourceIBMContainerCluster(),
 			"ibm_container_bind_service":           resourceIBMContainerBindService(),
+			"ibm_container_worker_pool":            resourceIBMContainerWorkerPool(),
 			"ibm_dns_domain":                       resourceIBMDNSDomain(),
 			"ibm_dns_secondary":                    resourceIBMDNSSecondary(),
 			"ibm_dns_record":                       resourceIBMDNSRecord(),
