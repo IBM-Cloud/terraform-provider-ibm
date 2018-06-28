@@ -191,6 +191,16 @@ func validateWeight(v interface{}, k string) (ws []string, errors []error) {
 	return
 }
 
+func validateSizePerZone(v interface{}, k string) (ws []string, errors []error) {
+	sizePerZone := v.(int)
+	if sizePerZone <= 0 {
+		errors = append(errors, fmt.Errorf(
+			"%q must be greater than 0",
+			k))
+	}
+	return
+}
+
 func validateInterval(v interface{}, k string) (ws []string, errors []error) {
 	interval := v.(int)
 	if interval < 2 || interval > 60 {
