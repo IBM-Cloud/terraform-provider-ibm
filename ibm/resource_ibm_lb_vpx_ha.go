@@ -22,11 +22,7 @@ func resourceIBMLbVpxHa() *schema.Resource {
 		Exists:   resourceIBMLbVpxHaExists,
 		Importer: &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:     schema.TypeString,
-				Computed: true,
-				ForceNew: true,
-			},
+
 			"primary_id": {
 				Type:     schema.TypeInt,
 				Required: true,

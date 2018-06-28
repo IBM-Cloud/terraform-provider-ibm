@@ -1,12 +1,12 @@
 ---
 layout: "ibm"
-page_title: "IBM : service_id"
-sidebar_current: "docs-ibm-datasource-service-id"
+page_title: "IBM : iam_service_id"
+sidebar_current: "docs-ibm-datasource-iam-service-id"
 description: |-
   Manages IBM IAM Service ID.
 ---
 
-# ibm\_service_id
+# ibm\_iam_service_id
 
 Import the details of an IAM (Identity and Access Management) servicID  on IBM Cloud as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 

@@ -14,11 +14,6 @@ Provides a resource for a load balancer as a service. This allows a load balance
 
 ```hcl
 
-resource "ibm_compute_vm_instance" "vm_instances" {
-  count = "2"
-  ....
-}
-
 resource "ibm_lbaas" "lbaas" {
   name        = "terraformLB"
   description = "delete this"
@@ -74,3 +69,11 @@ The following attributes are exported:
 * `status` - Specifies the operation status of the load balancer as `ONLINE` or `OFFLINE`.
 * `vip` - The virtual IP address of the load balancer.
 * `protocol_id` - The UUID of a load balancer protocol.
+* `health_monitors` - A nested block describing the health_monitors assigned to the load balancer. Nested `health_monitors` blocks have the following structure:
+  * `protocol` - Backends protocol
+  * `port` - Backends port
+  * `interval` - Interval in seconds to perform 
+  * `max_retries` - Maximum retries
+  * `timeout` - Health check methods timeout in 
+  * `url_path` - If monitor is "HTTP", this specifies URL path
+  * `monitor_id` - Health Monitor UUID

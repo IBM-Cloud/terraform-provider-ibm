@@ -47,6 +47,8 @@ func TestAccIBMLbaas_Basic(t *testing.T) {
 						"ibm_lbaas.lbaas", "subnets.#", "1"),
 					resource.TestCheckResourceAttr(
 						"ibm_lbaas.lbaas", "protocols.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "health_monitors.#", "1"),
 				),
 			},
 			{
@@ -62,6 +64,8 @@ func TestAccIBMLbaas_Basic(t *testing.T) {
 						"ibm_lbaas.lbaas", "subnets.#", "1"),
 					resource.TestCheckResourceAttr(
 						"ibm_lbaas.lbaas", "protocols.#", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "health_monitors.#", "1"),
 				),
 			},
 		},
@@ -102,7 +106,9 @@ func TestAccIBMLbaas_Private(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_lbaas.lbaas", "subnets.#", "1"),
 					resource.TestCheckResourceAttr(
-						"ibm_lbaas.lbaas", "protocols.#", "1"),
+						"ibm_lbaas.lbaas", "protocols.#", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "health_monitors.#", "2"),
 					resource.TestCheckResourceAttr(
 						"ibm_lbaas.lbaas", "type", "PRIVATE"),
 				),
@@ -120,6 +126,8 @@ func TestAccIBMLbaas_Private(t *testing.T) {
 						"ibm_lbaas.lbaas", "subnets.#", "1"),
 					resource.TestCheckResourceAttr(
 						"ibm_lbaas.lbaas", "protocols.#", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "health_monitors.#", "1"),
 					resource.TestCheckResourceAttr(
 						"ibm_lbaas.lbaas", "type", "PRIVATE"),
 				),
@@ -148,6 +156,8 @@ func TestAccIBMLbaas_with_more_protocols(t *testing.T) {
 						"ibm_lbaas.lbaas", "subnets.#", "1"),
 					resource.TestCheckResourceAttr(
 						"ibm_lbaas.lbaas", "protocols.#", "3"),
+					resource.TestCheckResourceAttr(
+						"ibm_lbaas.lbaas", "health_monitors.#", "1"),
 				),
 			},
 		},
@@ -395,6 +405,13 @@ resource "ibm_lbaas" "lbaas" {
     "backend_protocol" = "HTTP"
     "backend_port" = 80
     "load_balancing_method" = "weighted_round_robin"
+  },
+  {
+    "frontend_protocol" = "TCP"
+    "frontend_port" = 9443
+    "backend_protocol" = "TCP"
+    "backend_port" = 9443
+    "load_balancing_method" = "weighted_round_robin"
   }]
 
 }
@@ -519,9 +536,9 @@ resource "ibm_lbaas" "lbaas" {
   },
   {
 
-    "frontend_protocol" = "HTTP"
+    "frontend_protocol" = "TCP"
     "frontend_port" = 8081
-    "backend_protocol" = "HTTP"
+    "backend_protocol" = "TCP"
     "backend_port" = 80
 
     "load_balancing_method" = "round_robin"

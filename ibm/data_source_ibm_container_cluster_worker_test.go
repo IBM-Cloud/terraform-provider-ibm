@@ -53,12 +53,9 @@ resource "ibm_container_cluster" "testacc_cluster" {
     name = "%s"
     datacenter = "%s"
     account_guid = "${data.ibm_account.acc.id}"
-    workers = [{
-    name = "worker1"
-    action = "add"
-  },]
+    worker_num      = 1
 	machine_type = "%s"
-	isolation = "public"
+	hardware       = "shared"
 	public_vlan_id = "%s"
 	private_vlan_id = "%s"
 }
@@ -91,12 +88,9 @@ data "ibm_account" "acc" {
 resource "ibm_container_cluster" "testacc_cluster" {
     name = "%s"
     datacenter = "%s"
-    workers = [{
-    name = "worker1"
-    action = "add"
-  },]
+    worker_num      = 1
 	machine_type = "%s"
-	isolation = "public"
+	hardware       = "shared"
 	public_vlan_id = "%s"
 	private_vlan_id = "%s"
 

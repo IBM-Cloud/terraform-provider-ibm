@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform/flatmap"
 
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -171,44 +170,6 @@ func flattenServiceInstanceCredentials(keys []mccpv2.ServiceKeyFields) []interfa
 	return out
 }
 
-func flattenIAMPolicyResource(list []iampapv1.Resources, iamClient iampapv1.IAMPAPAPI) ([]map[string]interface{}, error) {
-	result := make([]map[string]interface{}, 0, len(list))
-	for _, i := range list {
-		name := i.ServiceName
-		if name == "" {
-			name = allIAMEnabledServices
-		}
-		serviceName, err := iamClient.IAMService().GetServiceDispalyName(name)
-		if err != nil {
-			return result, fmt.Errorf("Error retrieving service : %s", err)
-		}
-		l := map[string]interface{}{
-			"service_name":      serviceName,
-			"region":            i.Region,
-			"resource_type":     i.ResourceType,
-			"resource":          i.Resource,
-			"space_guid":        i.SpaceId,
-			"organization_guid": i.OrganizationId,
-		}
-		if i.ServiceInstance != "" {
-			l["service_instance"] = []string{i.ServiceInstance}
-		}
-		result = append(result, l)
-	}
-	return result, nil
-}
-
-func flattenIAMPolicyRoles(list []iampapv1.Roles) []map[string]interface{} {
-	result := make([]map[string]interface{}, 0, len(list))
-	for _, v := range list {
-		l := map[string]interface{}{
-			"name": roleIDToName[v.ID],
-		}
-		result = append(result, l)
-	}
-	return result
-}
-
 func expandProtocols(configured []interface{}) ([]datatypes.Network_LBaaS_LoadBalancerProtocolConfiguration, error) {
 	protocols := make([]datatypes.Network_LBaaS_LoadBalancerProtocolConfiguration, 0, len(configured))
 	for _, lRaw := range configured {
@@ -310,6 +271,51 @@ func flattenProtocols(list []datatypes.Network_LBaaS_Listener) []map[string]inte
 		result = append(result, l)
 	}
 	return result
+}
+
+func flattenZones(list []containerv1.WorkerPoolZoneResponse) []map[string]interface{} {
+	zones := make([]map[string]interface{}, len(list))
+	for i, zone := range list {
+		l := map[string]interface{}{
+			"zone":         zone.WorkerPoolZone.ID,
+			"private_vlan": zone.WorkerPoolZone.WorkerPoolZoneNetwork.PrivateVLAN,
+			"public_vlan":  zone.WorkerPoolZone.WorkerPoolZoneNetwork.PublicVLAN,
+			"worker_count": zone.WorkerCount,
+		}
+		zones[i] = l
+	}
+	return zones
+}
+
+func flattenWorkerPools(list []containerv1.WorkerPoolResponse) []map[string]interface{} {
+	workerPools := make([]map[string]interface{}, len(list))
+	for i, workerPool := range list {
+		l := map[string]interface{}{
+			"id":            workerPool.ID,
+			"hardware":      workerPool.Isolation,
+			"name":          workerPool.Name,
+			"machine_type":  workerPool.MachineType,
+			"size_per_zone": workerPool.Size,
+			"state":         workerPool.State,
+			"kube_version":  workerPool.WorkerVersion,
+			"labels":        workerPool.Labels,
+		}
+		zones := workerPool.Zones
+		zonesConfig := make([]map[string]interface{}, len(zones))
+		for j, zone := range zones {
+			z := map[string]interface{}{
+				"zone":         zone.ID,
+				"private_vlan": zone.PrivateVLAN,
+				"public_vlan":  zone.PublicVLAN,
+				"worker_count": zone.WorkerCount,
+			}
+			zonesConfig[j] = z
+		}
+		l["zones"] = zonesConfig
+		workerPools[i] = l
+	}
+
+	return workerPools
 }
 
 func flattenVlans(list []containerv1.Vlan) []map[string]interface{} {
@@ -719,4 +725,39 @@ func flattenPolicyResource(list []models.PolicyResource) []map[string]interface{
 		result = append(result, l)
 	}
 	return result
+}
+
+func flattenHealthMonitors(list []datatypes.Network_LBaaS_Listener) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, len(list))
+	ports := make([]int, 0, 0)
+	for _, i := range list {
+		l := map[string]interface{}{
+			"protocol":    *i.DefaultPool.Protocol,
+			"port":        *i.DefaultPool.ProtocolPort,
+			"interval":    *i.DefaultPool.HealthMonitor.Interval,
+			"max_retries": *i.DefaultPool.HealthMonitor.MaxRetries,
+			"timeout":     *i.DefaultPool.HealthMonitor.Timeout,
+			"monitor_id":  *i.DefaultPool.HealthMonitor.Uuid,
+		}
+
+		if i.DefaultPool.HealthMonitor.UrlPath != nil {
+			l["url_path"] = *i.DefaultPool.HealthMonitor.UrlPath
+		}
+
+		if !contains(ports, *i.DefaultPool.ProtocolPort) {
+			result = append(result, l)
+		}
+
+		ports = append(ports, *i.DefaultPool.ProtocolPort)
+	}
+	return result
+}
+
+func contains(s []int, e int) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }

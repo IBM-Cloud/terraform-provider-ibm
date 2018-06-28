@@ -13,24 +13,18 @@ Import the details of an IAM (Identity and Access Management) user policy on IBM
 ## Example Usage
 
 ```hcl
-data "ibm_org" "ds_org" {
-  org = "sample"
+resource "ibm_iam_user_policy" "policy" {
+  ibm_id = "test@in.ibm.com"
+  roles  = ["Viewer"]
+
+  resources = [{
+    service = "kms"
+    region  = "us-south"
+  }]
 }
 
-data "ibm_account" "ds_acc" {
-  org_guid = "${data.ibm_org.ds_org.id}"
-}
-
-resource "ibm_iam_user_policy" "iam_policy" {
-  account_guid = "${data.ibm_account.ds_acc.id}"
-  ibm_id       = "user@example.com"
-  roles        = ["viewer"]
-  resources    = [{"service_name" = "sample-service", "service_instance" = ["1refjnjb-vr4-vverr"]}]
-}
-
-data "ibm_iam_user_policy" "testacc_iam_policies" {
-  account_guid = "${data.ibm_account.ds_acc.id}"
-  ibm_id = "${ibm_iam_user_policy.iam_policy.ibm_id}"
+data "ibm_iam_user_policy" "testacc_ds_user_policy" {
+  ibm_id = "${ibm_iam_user_policy.policy.ibm_id}"
 }
 
 ```
@@ -39,22 +33,22 @@ data "ibm_iam_user_policy" "testacc_iam_policies" {
 
 The following arguments are supported:
 
-* `account_guid` - (Required, string) The GUID of the IBM Cloud account. You can retrieve the value from the `ibm_account` data source or by running the `bx iam accounts` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
-* `ibm_id` - (Required, string) The IBM ID of the user to whom you want to assign the policy.
+* `ibm_id` - (Required, string) The ibm id or email of user.
 
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `policies` - A nested block describing IAM Policies assigned to user in the account. Nested `policies` blocks have the following structure:
-  * `id` - The unique identifier of the IAM policy.
-  * `roles` -  A nested block describing the roles assigned to the policy.
-    * `name` - The IAM role assigned to the policy.
-  * `resources` -  A nested block describing the IAM resources in the policy.
-    * `service_name` - The name of the service.
-    * `service_instance` - The service instance.
-    * `region` - The region to which the service belongs.
-    * `resource_type` - The resource type.
-    * `resource` - The resource.
-    * `space_guid` - The GUID of the IBM Cloud space.
-    * `organization_guid` - The GUID of the IBM Cloud organization.
+* `policies` - A nested block describing IAM Policies assigned to user. Nested `policies` blocks have the following structure:
+  * `id` - The unique identifier of the IAM user policy.The id is composed of \<ibm_id\>/\<user_policy_id\>
+  * `roles` -  Roles assigned to the policy.
+	* `resources` -  A nested block describing the resources in the policy.
+		* `service` - Service name of the policy definition. 
+		* `resource_instance_id` - ID of resource instance of the policy definition.
+		* `region` - Region of the policy definition.
+		* `resource_type` - Resource type of the policy definition.
+		* `resource` - Resource of the policy definition.
+		* `resource_group_id` - The ID of the resource group. 
+
+
+  

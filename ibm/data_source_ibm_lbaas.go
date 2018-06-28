@@ -93,7 +93,42 @@ func dataSourceIBMLbaas() *schema.Resource {
 					},
 				},
 			},
-
+			"health_monitors": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"protocol": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"port": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"interval": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"max_retries": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"timeout": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"url_path": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"monitor_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
 			"server_instances": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -126,7 +161,7 @@ func dataSourceIBMLbaasRead(d *schema.ResourceData, meta interface{}) error {
 	name := d.Get("name").(string)
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetNetworkLBaaSLoadBalancerService(sess)
-	lbs, err := service.Mask("datacenter,members,listeners.defaultPool,listeners.defaultPool.sessionAffinity").Filter(filter.Build(
+	lbs, err := service.Mask("datacenter,members,listeners.defaultPool,listeners.defaultPool.sessionAffinity,listeners.defaultPool.healthMonitor,healthMonitors").Filter(filter.Build(
 		filter.Path("name").Eq(name))).GetAllObjects()
 	if err != nil {
 		return err
@@ -179,6 +214,7 @@ func dataSourceIBMLbaasRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("status", result.OperatingStatus)
 	d.Set("vip", result.Address)
 	d.Set("protocols", flattenProtocols(result.Listeners))
+	d.Set("health_monitors", flattenHealthMonitors(result.Listeners))
 	d.Set("server_instances", members)
 	return nil
 }

@@ -176,10 +176,6 @@ func resourceIBMStorageFile() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
 
 			"type": {
 				Type:         schema.TypeString,
