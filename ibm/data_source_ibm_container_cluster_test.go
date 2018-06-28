@@ -87,12 +87,9 @@ resource "ibm_container_cluster" "testacc_cluster" {
     org_guid = "${data.ibm_org.testacc_ds_org.id}"
     space_guid = "${data.ibm_space.testacc_ds_space.id}"
     account_guid = "${data.ibm_account.testacc_acc.id}"
-   workers = [{
-    name = "worker1"
-    action = "add"
-  }]
+   worker_num = 1
     machine_type = "%s"
-    isolation = "public"
+    hardware       = "shared"
     public_vlan_id  = "%s"
     private_vlan_id = "%s"
     subnet_id       = ["%s"]
@@ -137,12 +134,9 @@ resource "ibm_container_cluster" "testacc_cluster" {
     name = "%s"
     datacenter = "%s"
     account_guid = "${data.ibm_account.testacc_acc.id}"
-   workers = [{
-    name = "worker1"
-    action = "add"
-  }]
+   worker_num = 1
     machine_type = "%s"
-    isolation = "public"
+    hardware       = "shared"
     public_vlan_id  = "%s"
     private_vlan_id = "%s"
     subnet_id       = ["%s"]
