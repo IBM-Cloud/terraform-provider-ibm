@@ -238,6 +238,71 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
 			},
+
+			"worker_pools": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"machine_type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"size_per_zone": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"hardware": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"state": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"kube_version": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"labels": {
+							Type:     schema.TypeMap,
+							Computed: true,
+						},
+						"zones": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"zone": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"private_vlan": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"public_vlan": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"worker_count": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -361,6 +426,7 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 		}
 	}
 	whkAPI := csClient.WebHooks()
+
 	for _, e := range webhooks {
 		pack := e.(map[string]interface{})
 		webhook := v1.WebHook{
@@ -406,6 +472,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 	wrkAPI := csClient.Workers()
+	workerPoolsAPI := csClient.WorkerPools()
 
 	targetEnv := getClusterTargetHeader(d)
 
@@ -439,15 +506,33 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 		hardware = hardwareShared
 	}
 
+	workerPools, err := workerPoolsAPI.ListWorkerPools(clusterID)
+	if err != nil {
+		return err
+	}
+
+	defaultWorkerPool, err := workerPoolsAPI.GetWorkerPool(clusterID, "default")
+	if err != nil {
+		return err
+	}
+	zones := defaultWorkerPool.Zones
+	for _, zone := range zones {
+		if zone.ID == cls.DataCenter {
+			d.Set("worker_num", zone.WorkerCount)
+			break
+		}
+	}
+
 	d.Set("name", cls.Name)
 	d.Set("server_url", cls.ServerURL)
 	d.Set("ingress_hostname", cls.IngressHostname)
 	d.Set("ingress_secret", cls.IngressSecretName)
-	d.Set("worker_num", cls.WorkerCount)
+
 	d.Set("subnet_id", d.Get("subnet_id").(*schema.Set))
 	d.Set("workers_info", workers)
 	d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0])
 	d.Set("is_trusted", cls.IsTrusted)
+	d.Set("worker_pools", flattenWorkerPools(workerPools))
 	d.Set("hardware", hardware)
 
 	return nil
@@ -491,36 +576,13 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 
 	workersInfo := []map[string]string{}
 	if d.HasChange("worker_num") {
-		old, new := d.GetChange("worker_num")
-		oldCount := old.(int)
-		newCount := new.(int)
-		if newCount > oldCount {
-			count := newCount - oldCount
-			machineType := d.Get("machine_type").(string)
-			publicVlanID := d.Get("public_vlan_id").(string)
-			privateVlanID := d.Get("private_vlan_id").(string)
-			isolation := d.Get("isolation").(string)
-			params := v1.WorkerParam{
-				WorkerNum:   count,
-				MachineType: machineType,
-				PublicVlan:  publicVlanID,
-				PrivateVlan: privateVlanID,
-				Isolation:   isolation,
-			}
-			wrkAPI.Add(clusterID, params, targetEnv)
-		} else if oldCount > newCount {
-			count := oldCount - newCount
-			workerFields, err := wrkAPI.List(clusterID, targetEnv)
-			if err != nil {
-				return fmt.Errorf("Error retrieving workers for cluster: %s", err)
-			}
-			for i := 0; i < count; i++ {
-				err := wrkAPI.Delete(clusterID, workerFields[i].ID, targetEnv)
-				if err != nil {
-					return fmt.Errorf(
-						"Error deleting workers of cluster (%s): %s", d.Id(), err)
-				}
-			}
+		workerPoolsAPI := csClient.WorkerPools()
+
+		worker_num := d.Get("worker_num").(int)
+		err = workerPoolsAPI.ResizeWorkerPool(clusterID, "default", worker_num)
+		if err != nil {
+			return fmt.Errorf(
+				"Error updating the worker_num %d: %s", worker_num, err)
 		}
 
 		_, err = WaitForWorkerAvailable(d, meta, targetEnv)
@@ -528,8 +590,8 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 			return fmt.Errorf(
 				"Error waiting for workers of cluster (%s) to become ready: %s", d.Id(), err)
 		}
-
 	}
+
 	if d.HasChange("workers") {
 		oldWorkers, newWorkers := d.GetChange("workers")
 		oldWorker := oldWorkers.([]interface{})

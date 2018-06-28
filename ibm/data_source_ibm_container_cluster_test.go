@@ -24,6 +24,7 @@ func TestAccIBMContainerClusterDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.ibm_container_cluster.testacc_ds_cluster", "worker_count", "1"),
 					resource.TestCheckResourceAttr("data.ibm_container_cluster.testacc_ds_cluster", "is_trusted", "false"),
 					resource.TestCheckResourceAttr("data.ibm_container_cluster.testacc_ds_cluster", "bounded_services.#", "1"),
+					resource.TestCheckResourceAttr("data.ibm_container_cluster.testacc_ds_cluster", "worker_pools.#", "1"),
 					testAccIBMClusterVlansCheck("data.ibm_container_cluster.testacc_ds_cluster"),
 				),
 			},
@@ -41,6 +42,7 @@ func TestAccIBMContainerClusterDataSourceWithOutOrgSpace(t *testing.T) {
 				Config: testAccCheckIBMContainerClusterDataSourceWithOutOrgSpace(clusterName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_container_cluster.testacc_ds_cluster", "worker_count", "1"),
+					resource.TestCheckResourceAttr("data.ibm_container_cluster.testacc_ds_cluster", "worker_pools.#", "1"),
 					testAccIBMClusterVlansCheck("data.ibm_container_cluster.testacc_ds_cluster"),
 				),
 			},

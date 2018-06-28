@@ -30,6 +30,70 @@ func dataSourceIBMContainerCluster() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
+			"worker_pools": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"machine_type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"size_per_zone": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"hardware": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"state": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"kube_version": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"labels": {
+							Type:     schema.TypeMap,
+							Computed: true,
+						},
+						"zones": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"zone": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"private_vlan": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"public_vlan": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"worker_count": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			"bounded_services": {
 				Type:     schema.TypeSet,
 				Computed: true,
@@ -121,6 +185,7 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	}
 	csAPI := csClient.Clusters()
 	wrkAPI := csClient.Workers()
+	workerPoolsAPI := csClient.WorkerPools()
 
 	targetEnv := getClusterTargetHeader(d)
 	name := d.Get("cluster_name_id").(string)
@@ -150,6 +215,10 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 		boundedService["namespace"] = service.Namespace
 		boundedServices = append(boundedServices, boundedService)
 	}
+	workerPools, err := workerPoolsAPI.ListWorkerPools(name)
+	if err != nil {
+		return fmt.Errorf("Error retrieving worker pools of the cluster %s: %s", name, err)
+	}
 
 	d.SetId(clusterFields.ID)
 	d.Set("worker_count", clusterFields.WorkerCount)
@@ -157,6 +226,7 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	d.Set("bounded_services", boundedServices)
 	d.Set("vlans", flattenVlans(clusterFields.Vlans))
 	d.Set("is_trusted", clusterFields.IsTrusted)
+	d.Set("worker_pools", flattenWorkerPools(workerPools))
 
 	return nil
 }

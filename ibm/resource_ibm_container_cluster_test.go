@@ -36,6 +36,8 @@ func TestAccIBMContainerCluster_basic(t *testing.T) {
 						"ibm_container_cluster.testacc_cluster", "kube_version", kubeVersion),
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "hardware", "shared"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "worker_pools.#", "1"),
 				),
 			},
 			{
@@ -51,6 +53,8 @@ func TestAccIBMContainerCluster_basic(t *testing.T) {
 						"ibm_container_cluster.testacc_cluster", "is_trusted", "false"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "hardware", "shared"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "worker_pools.#", "1"),
 				),
 			},
 		},
