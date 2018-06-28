@@ -190,6 +190,47 @@ func validateWeight(v interface{}, k string) (ws []string, errors []error) {
 	}
 	return
 }
+
+func validateInterval(v interface{}, k string) (ws []string, errors []error) {
+	interval := v.(int)
+	if interval < 2 || interval > 60 {
+		errors = append(errors, fmt.Errorf(
+			"%q must be between 2 and 60",
+			k))
+	}
+	return
+}
+
+func validateMaxRetries(v interface{}, k string) (ws []string, errors []error) {
+	maxRetries := v.(int)
+	if maxRetries < 1 || maxRetries > 10 {
+		errors = append(errors, fmt.Errorf(
+			"%q must be between 1 and 10",
+			k))
+	}
+	return
+}
+
+func validateTimeout(v interface{}, k string) (ws []string, errors []error) {
+	timeout := v.(int)
+	if timeout < 1 || timeout > 59 {
+		errors = append(errors, fmt.Errorf(
+			"%q must be between 1 and 59",
+			k))
+	}
+	return
+}
+
+func validateURLPath(v interface{}, k string) (ws []string, errors []error) {
+	urlPath := v.(string)
+	if len(urlPath) > 250 || !strings.HasPrefix(urlPath, "/") {
+		errors = append(errors, fmt.Errorf(
+			"%q should start with ‘/‘ and has a max length of 250 characters.",
+			k))
+	}
+	return
+}
+
 func validateSecurityRuleDirection(v interface{}, k string) (ws []string, errors []error) {
 	validDirections := map[string]bool{
 		"ingress": true,
@@ -294,7 +335,6 @@ func validateNamespace(ns string) error {
 			"Namespace is (%s), it must be of the form <org>_<space>, provider can't find the auth key if you use _ as well", ns)
 	}
 	return nil
-
 }
 
 func validateJSONString(v interface{}, k string) (ws []string, errors []error) {

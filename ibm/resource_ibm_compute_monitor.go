@@ -22,10 +22,6 @@ func resourceIBMComputeMonitor() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
 
 			"guest_id": {
 				Type:     schema.TypeInt,

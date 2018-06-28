@@ -25,12 +25,28 @@ func resourceIBMContainerBindService() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The space guid the service instance belongs to",
 				ForceNew:    true,
-				Required:    true,
+				Optional:    true,
+				Removed:     "This field has been removed",
 			},
 			"service_instance_name_id": {
 				Type:     schema.TypeString,
 				ForceNew: true,
-				Required: true,
+				Optional: true,
+				Removed:  "This field has been removed. User service_instance_name or service_instance_id instead",
+			},
+			"service_instance_name": {
+				Type:          schema.TypeString,
+				ForceNew:      true,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"service_instance_id"},
+			},
+			"service_instance_id": {
+				Type:          schema.TypeString,
+				ForceNew:      true,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"service_instance_name"},
 			},
 			"namespace_id": {
 				Type:     schema.TypeString,
@@ -41,6 +57,7 @@ func resourceIBMContainerBindService() *schema.Resource {
 				Type:      schema.TypeString,
 				Computed:  true,
 				Sensitive: true,
+				Removed:   "This field has been removed",
 			},
 			"org_guid": {
 				Description: "The bluemix organization guid this cluster belongs to",
@@ -89,39 +106,60 @@ func resourceIBMContainerBindServiceCreate(d *schema.ResourceData, meta interfac
 		return err
 	}
 	clusterNameID := d.Get("cluster_name_id").(string)
-	serviceInstanceSpaceGUID := d.Get("service_instance_space_guid").(string)
-	serviceInstanceNameID := d.Get("service_instance_name_id").(string)
 	namespaceID := d.Get("namespace_id").(string)
-
+	var serviceInstanceNameID string
+	if serviceInstanceName, ok := d.GetOk("service_instance_name"); ok {
+		serviceInstanceNameID = serviceInstanceName.(string)
+	} else if serviceInstanceID, ok := d.GetOk("service_instance_id"); ok {
+		serviceInstanceNameID = serviceInstanceID.(string)
+	} else {
+		return fmt.Errorf("Please set either service_instance_name or service_instance_id")
+	}
 	bindService := v1.ServiceBindRequest{
 		ClusterNameOrID:         clusterNameID,
-		SpaceGUID:               serviceInstanceSpaceGUID,
 		ServiceInstanceNameOrID: serviceInstanceNameID,
 		NamespaceID:             namespaceID,
 	}
 
 	targetEnv := getClusterTargetHeader(d)
-	bindResp, err := csClient.Clusters().BindService(bindService, targetEnv)
+	_, err = csClient.Clusters().BindService(bindService, targetEnv)
 	if err != nil {
 		return err
 	}
-	//Fix me Id would be typically the returned ID from the API, proabably SecretName should be used
-	d.SetId(clusterNameID)
-	d.Set("service_instance_name_id", serviceInstanceNameID)
-	d.Set("namespace_id", namespaceID)
-	d.Set("service_instance_space_guid", serviceInstanceSpaceGUID)
-	d.Set("secret_name", bindResp.SecretName)
+	d.SetId(fmt.Sprintf("%s/%s/%s", clusterNameID, serviceInstanceNameID, namespaceID))
 
 	return resourceIBMContainerBindServiceRead(d, meta)
 }
 
 func resourceIBMContainerBindServiceUpdate(d *schema.ResourceData, meta interface{}) error {
-	//Only tags are updated and that too locally hence nothing to validate and update in terms of real API at this point
 	return nil
 }
 
 func resourceIBMContainerBindServiceRead(d *schema.ResourceData, meta interface{}) error {
-	//No API to read back the credentials so leave schema as it is
+	csClient, err := meta.(ClientSession).ContainerAPI()
+	if err != nil {
+		return err
+	}
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return err
+	}
+	clusterNameID := parts[0]
+	serviceInstanceNameID := parts[1]
+	namespaceID := parts[2]
+
+	targetEnv := getClusterTargetHeader(d)
+
+	boundService, err := csClient.Clusters().FindServiceBoundToCluster(clusterNameID, serviceInstanceNameID, namespaceID, targetEnv)
+	if err != nil {
+		return err
+	}
+	d.Set("namespace_id", boundService.Namespace)
+
+	d.Set("service_instance_name", boundService.ServiceName)
+	d.Set("service_instance_id", boundService.ServiceID)
+	//d.Set(key, boundService.ServiceKeyName)
+	//d.Set(key, boundService.ServiceName)
 	return nil
 }
 
@@ -130,12 +168,16 @@ func resourceIBMContainerBindServiceDelete(d *schema.ResourceData, meta interfac
 	if err != nil {
 		return err
 	}
-	clusterID := d.Id()
-	namespace := d.Get("namespace_id").(string)
-	serviceInstanceNameID := d.Get("service_instance_name_id").(string)
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return err
+	}
+	clusterNameID := parts[0]
+	serviceInstanceNameID := parts[1]
+	namespace := parts[2]
 	targetEnv := getClusterTargetHeader(d)
 
-	err = csClient.Clusters().UnBindService(clusterID, namespace, serviceInstanceNameID, targetEnv)
+	err = csClient.Clusters().UnBindService(clusterNameID, namespace, serviceInstanceNameID, targetEnv)
 	if err != nil {
 		return fmt.Errorf("Error unbinding service: %s", err)
 	}

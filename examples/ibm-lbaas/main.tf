@@ -110,12 +110,19 @@ resource "ibm_lbaas" "lbaas" {
       load_balancing_method = "${var.lb_method}"
     },
   ]
+}
 
-  server_instances = [{
-    private_ip_address = "${ibm_compute_vm_instance.vm_instances.0.ipv4_address_private}"
-  },
-    {
-      private_ip_address = "${ibm_compute_vm_instance.vm_instances.1.ipv4_address_private}"
-    },
-  ]
+resource "ibm_lbaas_server_instance_attachment" "lbaas_member" {
+  count = 2
+  private_ip_address = "${element(ibm_compute_vm_instance.vm_instances.*.ipv4_address_private,count.index)}"
+  weight             = 40
+  lbaas_id           = "${ibm_lbaas.lbaas.id}"
+}
+
+resource "ibm_lbaas_health_monitor" "lbaas_hm" {
+    protocol = "${ibm_lbaas.lbaas.health_monitors.0.protocol}"
+    port = "${ibm_lbaas.lbaas.health_monitors.0.port}"
+    timeout = 3
+    lbaas_id = "${ibm_lbaas.lbaas.id}"
+    monitor_id = "${ibm_lbaas.lbaas.health_monitors.0.monitor_id}"
 }

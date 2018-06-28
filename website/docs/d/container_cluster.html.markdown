@@ -41,6 +41,7 @@ The following attributes are exported:
 * `worker_count` - The number of workers that are attached to the cluster.
 * `workers` - The IDs of the workers that are attached to the cluster.
 * `bounded_services` - The services that are bounded to the cluster.
+* `is_trusted` - Is trusted cluster feature enabled.
 * `vlans` - The VLAN'S that are attached to the cluster. Nested `vlans` blocks have the following structure:
 	* `id` - The VLAN id.
 	* `subnets` - The list of subnets attached to VLAN belonging to the cluster. Nested `subnets` blocks have the following structure:
@@ -49,3 +50,17 @@ The following attributes are exported:
 		* `ips` - The list of ip's in the subnet.
 		* `is_byoip` - `true` if user provides a ip range else `false`.
 		* `is_public` - `true` if VLAN is public else `false`.
+* `worker_pools` - Worker pools attached to the cluster
+  * `name` - The name of the worker pool.
+  * `machine_type` - The machine type of the worker node.
+  * `size_per_zone` - Number of workers per zone in this pool.
+  * `hardware` - The level of hardware isolation for your worker node.
+  * `id` - Worker pool id.
+  * `state` - Worker pool state.
+  * `kube_version` - The kubernetes version of the nodes.
+  * `labels` - Labels on all the workers in the worker pool.
+  * `zones` - List of zones attached to the worker_pool.
+    * `zone` - Zone name.
+    * `private_vlan` - The ID of the private VLAN.
+    * `public_vlan` - The ID of the public VLAN.
+    * `worker_count` - Number of workers attached to this zone.

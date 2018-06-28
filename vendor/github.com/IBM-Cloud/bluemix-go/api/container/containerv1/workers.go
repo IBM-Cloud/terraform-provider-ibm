@@ -8,19 +8,26 @@ import (
 
 //Worker ...
 type Worker struct {
-	Billing       string `json:"billing,omitempty"`
-	ErrorMessage  string `json:"errorMessage"`
-	ID            string `json:"id"`
-	Isolation     string `json:"isolation"`
-	KubeVersion   string `json:"kubeVersion"`
-	MachineType   string `json:"machineType"`
-	PrivateIP     string `json:"privateIP"`
-	PrivateVlan   string `json:"privateVlan"`
-	PublicIP      string `json:"publicIP"`
-	PublicVlan    string `json:"publicVlan"`
-	State         string `json:"state"`
-	Status        string `json:"status"`
-	TargetVersion string `json:"targetVersion"`
+	Billing          string `json:"billing,omitempty"`
+	ErrorMessage     string `json:"errorMessage"`
+	ID               string `json:"id"`
+	Isolation        string `json:"isolation"`
+	KubeVersion      string `json:"kubeVersion"`
+	MachineType      string `json:"machineType"`
+	PrivateIP        string `json:"privateIP"`
+	PrivateVlan      string `json:"privateVlan"`
+	PublicIP         string `json:"publicIP"`
+	PublicVlan       string `json:"publicVlan"`
+	Location         string `json:"location"`
+	PoolID           string `json:"poolid"`
+	PoolName         string `json:"poolName"`
+	TrustedStatus    string `json:"trustedStatus"`
+	ReasonForDelete  string `json:"reasonForDelete"`
+	VersionEOS       string `json:"versionEOS"`
+	MasterVersionEOS string `json:"masterVersionEOS"`
+	State            string `json:"state"`
+	Status           string `json:"status"`
+	TargetVersion    string `json:"targetVersion"`
 }
 
 //WorkerParam ...
@@ -43,6 +50,7 @@ type WorkerUpdateParam struct {
 //Workers ...
 type Workers interface {
 	List(clusterName string, target ClusterTargetHeader) ([]Worker, error)
+	ListByWorkerPool(clusterIDOrName, workerPoolIDOrName string, showDeleted bool) ([]Worker, error)
 	Get(clusterName string, target ClusterTargetHeader) (Worker, error)
 	Add(clusterName string, params WorkerParam, target ClusterTargetHeader) error
 	Delete(clusterName string, workerD string, target ClusterTargetHeader) error
@@ -96,6 +104,20 @@ func (r *worker) List(name string, target ClusterTargetHeader) ([]Worker, error)
 	rawURL := fmt.Sprintf("/v1/clusters/%s/workers", name)
 	workers := []Worker{}
 	_, err := r.client.Get(rawURL, &workers, target.ToMap())
+	if err != nil {
+		return nil, err
+	}
+	return workers, err
+}
+
+//ListByWorkerPool ...
+func (r *worker) ListByWorkerPool(clusterIDOrName, workerPoolIDOrName string, showDeleted bool) ([]Worker, error) {
+	rawURL := fmt.Sprintf("/v1/clusters/%s/workers?showDeleted=%t", clusterIDOrName, showDeleted)
+	if len(workerPoolIDOrName) > 0 {
+		rawURL += "&pool=" + workerPoolIDOrName
+	}
+	workers := []Worker{}
+	_, err := r.client.Get(rawURL, &workers)
 	if err != nil {
 		return nil, err
 	}

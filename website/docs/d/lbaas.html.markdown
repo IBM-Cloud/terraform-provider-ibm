@@ -58,13 +58,21 @@ The following attributes are exported:
   * `load_balancing_method` - The load balancing algorithm.
   * `session_stickiness` - Session stickiness.
   * `max_conn` - The number of connections the listener can accept.
-  * `tls_certificate_id` - The ID of the SSL/TLS certificate beung used for a protocol.
+  * `tls_certificate_id` - The ID of the SSL/TLS certificate being used for a protocol.
   * `protocol_id` - The UUID of a load balancer protocol.
 * `server_instances` - A nested block describing the server instances for this load balancer. Nested `server_instances` blocks have the following structure:
   * `private_ip_address` - The private IP address of a load balancer member.
   * `weight` - The weight of a load balancer member.
   * `status` - Specifies the status of a load balancer member as `UP` or `DOWN`.
   * `member_id` - The UUID of a load balancer member.
+* `health_monitors` - A nested block describing the health_monitors assigned to the load balancer. Nested `health_monitors` blocks have the following structure:
+  * `protocol` - Backends protocol
+  * `port` - Backends port
+  * `interval` - Interval in seconds to perform 
+  * `max_retries` - Maximum retries
+  * `timeout` - Health check methods timeout in 
+  * `url_path` - If monitor is "HTTP", this specifies URL path
+  * `monitor_id` - Health Monitor UUID
 * `type` - Specifies whether a load balancer is public or private.
 * `status` - Specifies the operation status of the load balancer as 'ONLINE' or 'OFFLINE'.
 * `vip` - The virtual IP address of the load balancer.

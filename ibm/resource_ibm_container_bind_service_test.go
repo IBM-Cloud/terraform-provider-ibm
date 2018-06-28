@@ -88,19 +88,18 @@ resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
   datacenter = "%s"
 
-  account_guid = "${data.ibm_account.acc.id}"
+  org_guid = "${data.ibm_org.org.id}"
+	space_guid = "${data.ibm_space.space.id}"
+	account_guid = "${data.ibm_account.acc.id}"
 
-  workers = [{
-    name = "worker1"
-
-    action = "add"
-  }]
+ worker_num      = 1
 
   machine_type    = "%s"
-  isolation       = "public"
+  hardware       = "shared"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
 }
+
 resource "ibm_service_instance" "service" {
   name       = "%s"
   space_guid = "${data.ibm_space.space.id}"
@@ -114,9 +113,8 @@ resource "ibm_service_key" "serviceKey" {
 	service_instance_guid = "${ibm_service_instance.service.id}"
 }
 resource "ibm_container_bind_service" "bind_service" {
-  cluster_name_id          = "${ibm_container_cluster.testacc_cluster.id}"
-  service_instance_space_guid              = "${data.ibm_space.space.id}"
-  service_instance_name_id = "${ibm_service_instance.service.id}"
+  cluster_name_id          = "${ibm_container_cluster.testacc_cluster.name}"
+  service_instance_id = "${ibm_service_instance.service.id}"
   namespace_id 			   = "default"
   account_guid = "${data.ibm_account.acc.id}"
 }
@@ -147,14 +145,10 @@ resource "ibm_container_cluster" "testacc_cluster" {
 	space_guid = "${data.ibm_space.space.id}"
 	account_guid = "${data.ibm_account.acc.id}"
 
-  workers = [{
-    name = "worker1"
-
-    action = "add"
-  }]
+  worker_num      = 1
 
   machine_type    = "%s"
-  isolation       = "public"
+  hardware       = "shared"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
 }
@@ -175,8 +169,7 @@ resource "ibm_service_key" "serviceKey" {
 
 resource "ibm_container_bind_service" "bind_service" {
   cluster_name_id          = "${ibm_container_cluster.testacc_cluster.name}"
-  service_instance_space_guid              = "${data.ibm_space.space.id}"
-  service_instance_name_id = "${ibm_service_instance.service.id}"
+  service_instance_id = "${ibm_service_instance.service.id}"
   namespace_id 			   = "default"
   org_guid = "${data.ibm_org.org.id}"
 	space_guid = "${data.ibm_space.space.id}"
@@ -209,14 +202,10 @@ resource "ibm_container_cluster" "testacc_cluster" {
 	space_guid = "${data.ibm_space.space.id}"
 	account_guid = "${data.ibm_account.acc.id}"
 
-  workers = [{
-    name = "worker1"
-
-    action = "add"
-  }]
+  worker_num      = 1
 
   machine_type    = "%s"
-  isolation       = "public"
+  hardware       = "shared"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
 }
@@ -237,8 +226,7 @@ resource "ibm_service_key" "serviceKey" {
 
 resource "ibm_container_bind_service" "bind_service" {
   cluster_name_id          = "${ibm_container_cluster.testacc_cluster.name}"
-  service_instance_space_guid              = "${data.ibm_space.space.id}"
-  service_instance_name_id = "${ibm_service_instance.service.id}"
+  service_instance_id = "${ibm_service_instance.service.id}"
   namespace_id 			   = "default"
   org_guid = "${data.ibm_org.org.id}"
   space_guid = "${data.ibm_space.space.id}"

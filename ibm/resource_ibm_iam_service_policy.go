@@ -152,10 +152,12 @@ func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 
-	serviceIDUUID, servicePolicyID, err := idParts(d.Id())
+	parts, err := idParts(d.Id())
 	if err != nil {
 		return err
 	}
+	serviceIDUUID := parts[0]
+	servicePolicyID := parts[1]
 
 	bmxSess, err := meta.(ClientSession).BluemixSession()
 	if err != nil {
@@ -207,10 +209,12 @@ func resourceIBMIAMServicePolicyUpdate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 	if d.HasChange("roles") || d.HasChange("resources") {
-		serviceIDUUID, servicePolicyID, err := idParts(d.Id())
+		parts, err := idParts(d.Id())
 		if err != nil {
 			return err
 		}
+		serviceIDUUID := parts[0]
+		servicePolicyID := parts[1]
 
 		bmxSess, err := meta.(ClientSession).BluemixSession()
 		if err != nil {
@@ -265,10 +269,12 @@ func resourceIBMIAMServicePolicyDelete(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	serviceIDUUID, servicePolicyID, err := idParts(d.Id())
+	parts, err := idParts(d.Id())
 	if err != nil {
 		return err
 	}
+	serviceIDUUID := parts[0]
+	servicePolicyID := parts[1]
 
 	bmxSess, err := meta.(ClientSession).BluemixSession()
 	if err != nil {
@@ -315,10 +321,12 @@ func resourceIBMIAMServicePolicyExists(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return false, err
 	}
-	serviceIDUUID, servicePolicyID, err := idParts(d.Id())
+	parts, err := idParts(d.Id())
 	if err != nil {
 		return false, err
 	}
+	serviceIDUUID := parts[0]
+	servicePolicyID := parts[1]
 
 	bmxSess, err := meta.(ClientSession).BluemixSession()
 	if err != nil {

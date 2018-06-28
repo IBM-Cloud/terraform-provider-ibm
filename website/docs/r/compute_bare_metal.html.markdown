@@ -118,7 +118,7 @@ The following arguments are supported:
 * `user_metadata` - (Optional, string) Arbitrary data to be made available to the computing instance.
 * `notes` - (Optional, string) Notes to associate with the instance.
 * `ssh_key_ids` - (Optional, array of numbers) The SSH key IDs to install on the computing instance when the instance is provisioned.
-    **NOTE:** If you don't know the ID(s) for your SSH keys, you can [reference your SSH keys by their labels](../d/compute_ssh_key.html).
+    **NOTE:** If you don't know the ID(s) for your SSH keys, you can [reference your SSH keys by their labels](../d/compute_ssh_key.html.markdown).
 * `post_install_script_uri` - (Optional, string) The URI of the script to be downloaded and executed after installation is complete.
 * `tags` - (Optional, array of strings) Tags associated with this bare metal server. Permitted characters include: A-Z, 0-9, whitespace, _ (underscore), - (hyphen), . (period), and : (colon). All other characters will be removed.
 * `file_storage_ids` - (Optional, array of numbers) File storage to which this computing instance should have access. File storage must be in the same data center as the bare metal server. If you use this argument to authorize access to file storage, do not use the `allowed_hardware_ids` argument in the `ibm_storage_file` resource in order to prevent the same storage being added twice.
@@ -140,7 +140,7 @@ Locate your package ID. See `package_key_name` attribute. Once you have the ID f
 * `ipv6_static_enabled` - (Optional, boolean) The public static IPv6 address block of `/64`. The default value is `false`.
 * `secondary_ip_count` - (Optional, integer) Specifies secondary public IPv4 addresses. Accepted values are `4` and `8`.
 * `image_template_id` - (Optional, integer) The image template ID you want to use to provision the computing instance. This is not the global identifier (UUID), but the image template group ID that should point to a valid global identifier. To retrieve the image template ID from the IBM Cloud infrastructure customer portal, navigate to **Devices > Manage > Images**, click the desired image, and note the ID number in the resulting URL.
-    **NOTE**: Conflicts with `os_reference_code`. If you don't know the ID(s) of your image templates, you can [reference them by name](../d/compute_image_template.html).
+    **NOTE**: Conflicts with `os_reference_code`. If you don't know the ID(s) of your image templates, you can [reference them by name](../d/compute_image_template.html.markdown).
 
 ### Arguments for hourly bare metal servers
 
@@ -182,8 +182,11 @@ The following attributes are exported:
 
 * `id` - The unique identifier of the bare metal server.
 * `public_ipv4_address` - The public IPv4 address of the bare metal server.
+* `public_ipv4_address_id` - The unique identifier for the public IPv4 address of the bare metal server.
 * `private_ipv4_address` - The private IPv4 address of the bare metal server.
+* `private_ipv4_address_id` - The unique identifier for the private IPv4 address of the bare metal server.
 * `ipv6_address` - The public IPv6 address of the bare metal server instance provided when `ipv6_enabled` is set to `true`.
+* `ipv6_address_id` - The unique identifier for the public IPv6 address of the bare metal server.
 * `secondary_ip_addresses` - The public secondary IPv4 addresses of the bare metal server instance when `secondary_ip_count` is set to non-zero value.
 * `global_identifier` - The unique global identifier of the bare metal server.
 

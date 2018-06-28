@@ -23,15 +23,12 @@ resource "ibm_container_cluster" "testacc_cluster" {
   name            = "test"
   datacenter      = "dal10"
   machine_type    = "free"
-  isolation       = "public"
+  hardware        = "shared"
   public_vlan_id  = "vlan"
   private_vlan_id = "vlan"
   subnet_id       = ["1154643"]
 
-  workers = [{
-    name = "worker1"
-    action = "add"
-  }]
+  worker_num      = 1
 
   webhook = [{
     level = "Normal"
@@ -52,7 +49,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
   name            = "test"
   datacenter      = "dal10"
   machine_type    = "free"
-  isolation       = "public"
+  hardware        = "shared"
   public_vlan_id  = "vlan"
   private_vlan_id = "vlan"
   subnet_id       = ["1154643"]
@@ -78,7 +75,7 @@ The following arguments are supported:
 * `org_guid` - (Optional, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from data source `ibm_org` or by running the `bx iam orgs --guid` command in the IBM Cloud CLI.
 * `space_guid` - (Optional, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from data source `ibm_space` or by running the `bx iam space <space-name> --guid` command in the IBM Cloud CLI.
 * `account_guid` - (Required, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from data source `ibm_account` or by running the `bx iam accounts` command in the IBM Cloud CLI.
-* `workers` - (Optional, array) The worker nodes that you want to add to the cluster. Nested `workers` blocks have the following structure:
+* `workers` - (Deprecated) The worker nodes that you want to add to the cluster. Nested `workers` blocks have the following structure:
 	* `action` - valid actions are add, reboot and reload.
 	* `name` - Name of the worker.
 	* `version` - worker version.
@@ -87,11 +84,13 @@ The following arguments are supported:
 	**NOTE**: Conflicts with `workers`. 
 * `machinetype` - (Optional, string) The machine type of the worker nodes. You can retrieve the value by running the `bx cs machine-types <data-center>` command in the IBM Cloud CLI.
 * `billing` - (Optional, string) The billing type for the instance. Accepted values are `hourly` or `monthly`.
-* `isolation` - (Optional, string) Accepted values are `public` or `private`. Use `private` if you want to have available physical resources dedicated to you only or `public` to allow physical resources to be shared with other IBM customers.
+* `isolation` - (Deprecated) Accepted values are `public` or `private`. Use `private` if you want to have available physical resources dedicated to you only or `public` to allow physical resources to be shared with other IBM customers. Use hardware instead.
+* `hardware` - (Optional, string) The level of hardware isolation for your worker node. Use `dedicated` to have available physical resources dedicated to you only, or `shared` to allow physical resources to be shared with other IBM customers. For IBM Cloud Public accounts, the default value is shared. For IBM Cloud Dedicated accounts, dedicated is the only available option.
 * `public_vlan_id`- (Optional, string) The public VLAN of the worker node. You can retrieve the value by running the `bx cs vlans <data-center>` command in the IBM Cloud CLI.
 * `private_vlan_id` - (Optional, string) The private VLAN of the worker node. You can retrieve the value by running the `bx cs vlans <data-center>` command in the IBM Cloud CLI.
 * `subnet_id` - (Optional, string) The existing subnet ID that you want to add to the cluster. You can retrieve the value by running the `bx cs subnets` command in the IBM Cloud CLI.
 * `no_subnet` - (Optional, boolean) Set to `true` if you do not want to automatically create a portable subnet.
+* `is_trusted` - (Optional, boolean) Set to `true` to  enable trusted cluster feature. Default is false.
 * `disk_encryption` - (Optional, boolean) Set to `false` to disable encryption on a worker.
 * `webhook` - (Optional, string) The webhook that you want to add to the cluster.
 * `wait_time_minutes` - (Optional, integer) The duration, expressed in minutes, to wait for the cluster to become available before declaring it as created. It is also the same amount of time waited for no active transactions before proceeding with an update or deletion. The default value is `90`.
@@ -111,3 +110,17 @@ The following attributes are exported:
 * `subnet_id` - The subnets attached to this cluster.
 * `workers` -  Exported attributes are:
 	* `id` - The id of the worker
+* `worker_pools` - Worker pools attached to the cluster
+  * `name` - The name of the worker pool.
+  * `machine_type` - The machine type of the worker node.
+  * `size_per_zone` - Number of workers per zone in this pool.
+  * `hardware` - The level of hardware isolation for your worker node.
+  * `id` - Worker pool id.
+  * `state` - Worker pool state.
+  * `kube_version` - The kubernetes version of the nodes.
+  * `labels` - Labels on all the workers in the worker pool.
+  * `zones` - List of zones attached to the worker_pool.
+    * `zone` - Zone name.
+    * `private_vlan` - The ID of the private VLAN.
+    * `public_vlan` - The ID of the public VLAN.
+    * `worker_count` - Number of workers attached to this zone.

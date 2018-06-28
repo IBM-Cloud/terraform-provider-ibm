@@ -27,6 +27,7 @@ var dedicatedHostName string
 var dedicatedHostID string
 var kubeVersion string
 var kubeUpdateVersion string
+var trustedMachineType string
 var err error
 
 func init() {
@@ -65,6 +66,12 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IBM_MACHINE_TYPE for testing ibm_container_cluster resource else it is set to default value 'u1c.2x4'")
 	}
 
+	trustedMachineType = os.Getenv("IBM_TRUSTED_MACHINE_TYPE")
+	if trustedMachineType == "" {
+		trustedMachineType = "mb1c.16x64"
+		fmt.Println("[INFO] Set the environment variable IBM_TRUSTED_MACHINE_TYPE for testing ibm_container_cluster resource else it is set to default value 'mb1c.16x64'")
+	}
+
 	publicVlanID = os.Getenv("IBM_PUBLIC_VLAN_ID")
 	if publicVlanID == "" {
 		publicVlanID = "1764435"
@@ -79,14 +86,14 @@ func init() {
 
 	kubeVersion = os.Getenv("IBM_KUBE_VERSION")
 	if kubeVersion == "" {
-		kubeVersion = "1.8.11"
-		fmt.Println("[INFO] Set the environment variable IBM_KUBE_VERSION for testing ibm_container_cluster resource else it is set to default value '1.8.11'")
+		kubeVersion = "1.9.8"
+		fmt.Println("[INFO] Set the environment variable IBM_KUBE_VERSION for testing ibm_container_cluster resource else it is set to default value '1.9.8'")
 	}
 
 	kubeUpdateVersion = os.Getenv("IBM_KUBE_UPDATE_VERSION")
 	if kubeUpdateVersion == "" {
-		kubeUpdateVersion = "1.9.7"
-		fmt.Println("[INFO] Set the environment variable IBM_KUBE_UPDATE_VERSION for testing ibm_container_cluster resource else it is set to default value '1.9.7'")
+		kubeUpdateVersion = "1.10.3"
+		fmt.Println("[INFO] Set the environment variable IBM_KUBE_UPDATE_VERSION for testing ibm_container_cluster resource else it is set to default value '1.10.3'")
 	}
 
 	privateSubnetID = os.Getenv("IBM_PRIVATE_SUBNET_ID")
