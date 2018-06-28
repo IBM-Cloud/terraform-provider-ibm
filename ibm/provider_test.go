@@ -16,6 +16,7 @@ var ibmid2 string
 var IAMUser string
 var datacenter string
 var machineType string
+var trustedMachineType string
 var publicVlanID string
 var privateVlanID string
 var privateSubnetID string
@@ -27,7 +28,11 @@ var dedicatedHostName string
 var dedicatedHostID string
 var kubeVersion string
 var kubeUpdateVersion string
-var trustedMachineType string
+var zone string
+var zonePrivateVlan string
+var zonePublicVlan string
+var zoneUpdatePrivateVlan string
+var zoneUpdatePublicVlan string
 var err error
 
 func init() {
@@ -56,8 +61,8 @@ func init() {
 
 	datacenter = os.Getenv("IBM_DATACENTER")
 	if datacenter == "" {
-		datacenter = "ams03"
-		fmt.Println("[INFO] Set the environment variable IBM_DATACENTER for testing ibm_container_cluster resource else it is set to default value 'ams03'")
+		datacenter = "par01"
+		fmt.Println("[INFO] Set the environment variable IBM_DATACENTER for testing ibm_container_cluster resource else it is set to default value 'par01'")
 	}
 
 	machineType = os.Getenv("IBM_MACHINE_TYPE")
@@ -74,14 +79,14 @@ func init() {
 
 	publicVlanID = os.Getenv("IBM_PUBLIC_VLAN_ID")
 	if publicVlanID == "" {
-		publicVlanID = "1764435"
-		fmt.Println("[INFO] Set the environment variable IBM_PUBLIC_VLAN_ID for testing ibm_container_cluster resource else it is set to default value '1764435'")
+		publicVlanID = "2350987"
+		fmt.Println("[INFO] Set the environment variable IBM_PUBLIC_VLAN_ID for testing ibm_container_cluster resource else it is set to default value '2350987'")
 	}
 
 	privateVlanID = os.Getenv("IBM_PRIVATE_VLAN_ID")
 	if privateVlanID == "" {
-		privateVlanID = "1764491"
-		fmt.Println("[INFO] Set the environment variable IBM_PRIVATE_VLAN_ID for testing ibm_container_cluster resource else it is set to default value '1764491'")
+		privateVlanID = "2350989"
+		fmt.Println("[INFO] Set the environment variable IBM_PRIVATE_VLAN_ID for testing ibm_container_cluster resource else it is set to default value '2350989'")
 	}
 
 	kubeVersion = os.Getenv("IBM_KUBE_VERSION")
@@ -136,6 +141,36 @@ func init() {
 	if dedicatedHostID == "" {
 		dedicatedHostID = "30301"
 		fmt.Println("[INFO] Set the environment variable IBM_DEDICATED_HOST_ID for testing ibm_compute_vm_instance resource else it is set to default value '30301'")
+	}
+
+	zone = os.Getenv("IBM_WORKER_POOL_ZONE")
+	if zone == "" {
+		zone = "ams03"
+		fmt.Println("[INFO] Set the environment variable IBM_WORKER_POOL_ZONE for testing ibm_container_worker_pool_zone_attachment resource else it is set to default value 'ams03'")
+	}
+
+	zonePrivateVlan = os.Getenv("IBM_WORKER_POOL_ZONE_PRIVATE_VLAN")
+	if zonePrivateVlan == "" {
+		zonePrivateVlan = "1764491"
+		fmt.Println("[INFO] Set the environment variable IBM_WORKER_POOL_ZONE_PRIVATE_VLAN for testing ibm_container_worker_pool_zone_attachment resource else it is set to default value '1764491'")
+	}
+
+	zonePublicVlan = os.Getenv("IBM_WORKER_POOL_ZONE_PUBLIC_VLAN")
+	if zonePublicVlan == "" {
+		zonePublicVlan = "1764435"
+		fmt.Println("[INFO] Set the environment variable IBM_WORKER_POOL_ZONE_PUBLIC_VLAN for testing ibm_container_worker_pool_zone_attachment resource else it is set to default value '1764435'")
+	}
+
+	zoneUpdatePrivateVlan = os.Getenv("IBM_WORKER_POOL_ZONE_UPDATE_PRIVATE_VLAN")
+	if zoneUpdatePrivateVlan == "" {
+		zoneUpdatePrivateVlan = "2218971"
+		fmt.Println("[INFO] Set the environment variable IBM_WORKER_POOL_ZONE_UPDATE_PRIVATE_VLAN for testing ibm_container_worker_pool_zone_attachment resource else it is set to default value '2218971'")
+	}
+
+	zoneUpdatePublicVlan = os.Getenv("IBM_WORKER_POOL_ZONE_UPDATE_PUBLIC_VLAN")
+	if zoneUpdatePublicVlan == "" {
+		zoneUpdatePublicVlan = "2218969"
+		fmt.Println("[INFO] Set the environment variable IBM_WORKER_POOL_ZONE_UPDATE_PUBLIC_VLAN for testing ibm_container_worker_pool_zone_attachment resource else it is set to default value '2218969'")
 	}
 
 }
