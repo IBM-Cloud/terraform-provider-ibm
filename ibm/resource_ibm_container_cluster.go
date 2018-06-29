@@ -13,11 +13,13 @@ import (
 )
 
 const (
-	clusterNormal     = "normal"
-	workerNormal      = "normal"
-	subnetNormal      = "normal"
-	workerReadyState  = "Ready"
-	workerDeleteState = "deleted"
+	clusterNormal        = "normal"
+	clusterDeletePending = "deleting"
+	clusterDeleted       = "deleted"
+	workerNormal         = "normal"
+	subnetNormal         = "normal"
+	workerReadyState     = "Ready"
+	workerDeleteState    = "deleted"
 
 	versionUpdating     = "updating"
 	clusterProvisioning = "provisioning"
@@ -842,7 +844,40 @@ func resourceIBMContainerClusterDelete(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return fmt.Errorf("Error deleting cluster: %s", err)
 	}
+	_, err = waitForClusterDelete(d, meta)
+	if err != nil {
+		return err
+	}
 	return nil
+}
+
+func waitForClusterDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	targetEnv := getClusterTargetHeader(d)
+	csClient, err := meta.(ClientSession).ContainerAPI()
+	if err != nil {
+		return nil, err
+	}
+	clusterID := d.Id()
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{clusterDeletePending},
+		Target:  []string{clusterDeleted},
+		Refresh: func() (interface{}, string, error) {
+			cluster, err := csClient.Clusters().Find(clusterID, targetEnv)
+			if err != nil {
+				if apiErr, ok := err.(bmxerror.RequestFailure); ok && (apiErr.StatusCode() == 404) {
+					return cluster, clusterDeleted, nil
+				}
+				return nil, "", err
+			}
+			return cluster, clusterDeletePending, nil
+		},
+		Timeout:      time.Duration(d.Get("wait_time_minutes").(int)) * time.Minute,
+		Delay:        60 * time.Second,
+		MinTimeout:   10 * time.Second,
+		PollInterval: 60 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }
 
 // WaitForClusterAvailable Waits for cluster creation
