@@ -119,8 +119,8 @@ The following attributes are exported:
   * `state` - Worker pool state.
   * `kube_version` - The kubernetes version of the nodes.
   * `labels` - Labels on all the workers in the worker pool.
-  * `zones` - List of zones attached to the worker_pool.
-    * `zone` - Zone name.
-    * `private_vlan` - The ID of the private VLAN.
-    * `public_vlan` - The ID of the public VLAN.
-    * `worker_count` - Number of workers attached to this zone.
+	* `zones` - List of zones attached to the worker_pool.
+		* `zone` - Zone name.
+		* `private_vlan` - The ID of the private VLAN. 
+		* `public_vlan` - The ID of the public VLAN.
+		* `worker_count` - Number of workers attached to this zone.
