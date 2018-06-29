@@ -13,11 +13,13 @@ import (
 )
 
 const (
-	clusterNormal     = "normal"
-	workerNormal      = "normal"
-	subnetNormal      = "normal"
-	workerReadyState  = "Ready"
-	workerDeleteState = "deleted"
+	clusterNormal        = "normal"
+	clusterDeletePending = "deleting"
+	clusterDeleted       = "deleted"
+	workerNormal         = "normal"
+	subnetNormal         = "normal"
+	workerReadyState     = "Ready"
+	workerDeleteState    = "deleted"
 
 	versionUpdating     = "updating"
 	clusterProvisioning = "provisioning"
@@ -124,6 +126,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Type:          schema.TypeString,
 				ForceNew:      true,
 				Optional:      true,
+				Computed:      true,
 				ConflictsWith: []string{"hardware"},
 				Deprecated:    "Use hardware instead",
 			},
@@ -131,8 +134,8 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Type:          schema.TypeString,
 				ForceNew:      true,
 				Optional:      true,
+				Computed:      true,
 				ConflictsWith: []string{"isolation"},
-				Default:       hardwareShared,
 				ValidateFunc:  validateAllowedStringValue([]string{hardwareShared, hardwareDedicated}),
 			},
 
@@ -342,17 +345,24 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	//Read the hardware and convert it to appropriate
 	var isolation string
 
-	hardware := d.Get("hardware").(string)
-	switch strings.ToLower(hardware) {
-	case "": // do nothing
-	case hardwareDedicated:
-		isolation = isolationPrivate
-	case hardwareShared:
-		isolation = isolationPublic
+	if v, ok := d.GetOk("hardware"); ok {
+		hardware := v.(string)
+		switch strings.ToLower(hardware) {
+		case "": // do nothing
+		case hardwareDedicated:
+			isolation = isolationPrivate
+		case hardwareShared:
+			isolation = isolationPublic
+		}
 	}
 
 	if v, ok := d.GetOk("isolation"); ok {
 		isolation = v.(string)
+	}
+
+	if isolation == "" {
+		return fmt.Errorf("Please set either the hardware or isolation.")
+
 	}
 
 	params := v1.ClusterCreateRequest{
@@ -534,6 +544,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("is_trusted", cls.IsTrusted)
 	d.Set("worker_pools", flattenWorkerPools(workerPools))
 	d.Set("hardware", hardware)
+	d.Set("isolation", workersByPool[0].Isolation)
 
 	return nil
 }
@@ -833,7 +844,40 @@ func resourceIBMContainerClusterDelete(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return fmt.Errorf("Error deleting cluster: %s", err)
 	}
+	_, err = waitForClusterDelete(d, meta)
+	if err != nil {
+		return err
+	}
 	return nil
+}
+
+func waitForClusterDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	targetEnv := getClusterTargetHeader(d)
+	csClient, err := meta.(ClientSession).ContainerAPI()
+	if err != nil {
+		return nil, err
+	}
+	clusterID := d.Id()
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{clusterDeletePending},
+		Target:  []string{clusterDeleted},
+		Refresh: func() (interface{}, string, error) {
+			cluster, err := csClient.Clusters().Find(clusterID, targetEnv)
+			if err != nil {
+				if apiErr, ok := err.(bmxerror.RequestFailure); ok && (apiErr.StatusCode() == 404) {
+					return cluster, clusterDeleted, nil
+				}
+				return nil, "", err
+			}
+			return cluster, clusterDeletePending, nil
+		},
+		Timeout:      time.Duration(d.Get("wait_time_minutes").(int)) * time.Minute,
+		Delay:        60 * time.Second,
+		MinTimeout:   10 * time.Second,
+		PollInterval: 60 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }
 
 // WaitForClusterAvailable Waits for cluster creation

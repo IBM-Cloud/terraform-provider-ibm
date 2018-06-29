@@ -38,7 +38,7 @@ ibm_container_worker_pool_zone_attachment provides the following [Timeouts](http
 
 * `create` - (Default 90 minutes) Used for creating Instance.
 * `update` - (Default 90 minutes) Used for updating Instance.
-* `update` - (Default 90 minutes) Used for deleting Instance.
+* `delete` - (Default 90 minutes) Used for deleting Instance.
 
 ## Argument Reference
 
