@@ -25,7 +25,7 @@ func dataSourceIBMServiceKey() *schema.Resource {
 				Required:    true,
 			},
 			"service_instance_name": {
-				Description: "Service instance name for example, cleardbinstance",
+				Description: "Service instance name for example, cloudantNoSQLDBinstance",
 				Type:        schema.TypeString,
 				Required:    true,
 			},

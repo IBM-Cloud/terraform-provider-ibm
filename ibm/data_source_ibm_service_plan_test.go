@@ -16,8 +16,8 @@ func TestAccIBMServicePlanDataSource_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMServicePlanDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.ibm_service_plan.testacc_ds_service_plan", "service", "cleardb"),
-					resource.TestCheckResourceAttr("data.ibm_service_plan.testacc_ds_service_plan", "plan", "cb5"),
+					resource.TestCheckResourceAttr("data.ibm_service_plan.testacc_ds_service_plan", "service", "cloudantNoSQLDB"),
+					resource.TestCheckResourceAttr("data.ibm_service_plan.testacc_ds_service_plan", "plan", "Lite"),
 				),
 			},
 		},
@@ -28,8 +28,8 @@ func testAccCheckIBMServicePlanDataSourceConfig() string {
 	return fmt.Sprintf(`
 	
 data "ibm_service_plan" "testacc_ds_service_plan" {
-    service = "cleardb"
-	plan = "cb5"
+    service = "cloudantNoSQLDB"
+	plan = "Lite"
 }`,
 	)
 

@@ -12,7 +12,7 @@ func dataSourceIBMServicePlan() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"service": {
-				Description: "Service name for example, cleardb",
+				Description: "Service name for example, cloudantNoSQLDB",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
