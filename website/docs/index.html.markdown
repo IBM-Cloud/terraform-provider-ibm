@@ -51,8 +51,8 @@ data "ibm_space" "space" {
 resource "ibm_service_instance" "service" {
   name       = "${var.instance_name}"
   space_guid = "${data.ibm_space.space.id}"
-  service    = "cleardb"
-  plan       = "cb5"
+  service    = "cloudantNoSQLDB"
+  plan       = "Lite"
   tags       = ["cluster-service", "cluster-bind"]
 }
 

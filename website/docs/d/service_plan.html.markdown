@@ -14,8 +14,8 @@ Import the details of an existing service plan from IBM Cloud as a read-only dat
 
 ```hcl
 data "ibm_service_plan" "service_plan" {
-  service = "cleardb"
-  plan    = "spark"
+  service = "cloudantNoSQLDB"
+  plan    = "Lite"
 }
 ```
 
