@@ -18,6 +18,7 @@ import (
 const (
 	rsInstanceSuccessStatus  = "active"
 	rsInstanceProgressStatus = "in progress"
+	rsInstanceInactiveStatus = "inactive"
 	rsInstanceFailStatus     = "failed"
 	rsInstanceRemovedStatus  = "removed"
 )
@@ -338,7 +339,7 @@ func waitForResourceInstanceCreate(d *schema.ResourceData, meta interface{}) (in
 	instanceID := d.Id()
 
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{rsInstanceProgressStatus},
+		Pending: []string{rsInstanceProgressStatus, rsInstanceInactiveStatus},
 		Target:  []string{rsInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
 			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
@@ -369,7 +370,7 @@ func waitForResourceInstanceUpdate(d *schema.ResourceData, meta interface{}) (in
 	instanceID := d.Id()
 
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{rsInstanceProgressStatus},
+		Pending: []string{rsInstanceProgressStatus, rsInstanceInactiveStatus},
 		Target:  []string{rsInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
 			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
@@ -399,7 +400,7 @@ func waitForResourceInstanceDelete(d *schema.ResourceData, meta interface{}) (in
 	}
 	instanceID := d.Id()
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{rsInstanceProgressStatus},
+		Pending: []string{rsInstanceProgressStatus, rsInstanceInactiveStatus, rsInstanceSuccessStatus},
 		Target:  []string{rsInstanceRemovedStatus},
 		Refresh: func() (interface{}, string, error) {
 			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
