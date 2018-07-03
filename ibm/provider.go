@@ -93,6 +93,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_network_vlan":               dataSourceIBMNetworkVlan(),
 			"ibm_org":                        dataSourceIBMOrg(),
 			"ibm_org_quota":                  dataSourceIBMOrgQuota(),
+			"ibm_resource_quota":             dataSourceIBMResourceQuota(),
 			"ibm_resource_group":             dataSourceIBMResourceGroup(),
 			"ibm_resource_instance":          dataSourceIBMResourceInstance(),
 			"ibm_resource_key":               dataSourceIBMResourceKey(),
