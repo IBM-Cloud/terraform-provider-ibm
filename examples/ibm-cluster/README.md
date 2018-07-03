@@ -1,6 +1,6 @@
 # IBM Cluster example
 
-This example shows how to create a Kubernetes Cluster with 3 worker nodes and binds a service instance to a cluster.
+This example shows how to create a Kubernetes Cluster with a default worker pool with 2 workers, add a worker pool with different zone with 2 workers and binds a service instance to a cluster.
 
 To run, configure your IBM Cloud provider
 

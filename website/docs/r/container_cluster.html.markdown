@@ -85,7 +85,7 @@ The following arguments are supported:
 * `machinetype` - (Optional, string) The machine type of the worker nodes. You can retrieve the value by running the `bx cs machine-types <data-center>` command in the IBM Cloud CLI.
 * `billing` - (Optional, string) The billing type for the instance. Accepted values are `hourly` or `monthly`.
 * `isolation` - (Deprecated) Accepted values are `public` or `private`. Use `private` if you want to have available physical resources dedicated to you only or `public` to allow physical resources to be shared with other IBM customers. Use hardware instead.
-* `hardware` - (Optional, string) The level of hardware isolation for your worker node. Use `dedicated` to have available physical resources dedicated to you only, or `shared` to allow physical resources to be shared with other IBM customers. For IBM Cloud Public accounts, the default value is shared. For IBM Cloud Dedicated accounts, dedicated is the only available option.
+* `hardware` - (Optional, string) The level of hardware isolation for your worker node. Use `dedicated` to have available physical resources dedicated to you only, or `shared` to allow physical resources to be shared with other IBM customers. For IBM Cloud Public accounts, it can be shared or dedicated. For IBM Cloud Dedicated accounts, dedicated is the only available option.
 * `public_vlan_id`- (Optional, string) The public VLAN of the worker node. You can retrieve the value by running the `bx cs vlans <data-center>` command in the IBM Cloud CLI.
 * `private_vlan_id` - (Optional, string) The private VLAN of the worker node. You can retrieve the value by running the `bx cs vlans <data-center>` command in the IBM Cloud CLI.
 * `subnet_id` - (Optional, string) The existing subnet ID that you want to add to the cluster. You can retrieve the value by running the `bx cs subnets` command in the IBM Cloud CLI.
@@ -119,8 +119,8 @@ The following attributes are exported:
   * `state` - Worker pool state.
   * `kube_version` - The kubernetes version of the nodes.
   * `labels` - Labels on all the workers in the worker pool.
-  * `zones` - List of zones attached to the worker_pool.
-    * `zone` - Zone name.
-    * `private_vlan` - The ID of the private VLAN.
-    * `public_vlan` - The ID of the public VLAN.
-    * `worker_count` - Number of workers attached to this zone.
+	* `zones` - List of zones attached to the worker_pool.
+		* `zone` - Zone name.
+		* `private_vlan` - The ID of the private VLAN. 
+		* `public_vlan` - The ID of the public VLAN.
+		* `worker_count` - Number of workers attached to this zone.
