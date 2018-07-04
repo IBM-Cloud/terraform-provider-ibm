@@ -396,7 +396,8 @@ resource "ibm_container_cluster" "testacc_cluster" {
 	account_guid = "${data.ibm_account.acc.id}"
 
   worker_num = 2
-
+  
+  hardware = "shared"
   kube_version    = "%s"
   machine_type    = "%s"
   public_vlan_id  = "%s"
@@ -624,6 +625,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
 
   worker_num = 2
 
+  hardware = "shared"
   kube_version    = "%s"
   machine_type    = "%s"
   public_vlan_id  = "%s"
