@@ -28,6 +28,7 @@ func TestAccIBMLbaasDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_lbaas_server_instance_attachment.lbaas_member", "weight", "20"),
 				),
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -72,6 +73,7 @@ resource "ibm_lbaas_server_instance_attachment" "lbaas_member" {
 }
 data "ibm_lbaas" "tfacc_lbaas" {
     name = "${ibm_lbaas.lbaas.name}"
+    depends_on = ["ibm_lbaas_server_instance_attachment.lbaas_member"]
 }
 `, lbaasDatacenter, name, lbaasSubnetId)
 }
