@@ -540,19 +540,9 @@ resource "ibm_container_cluster" "testacc_cluster" {
 func testAccCheckIBMContainerClusterOptionalOrgSpace_basic(clusterName string) string {
 	return fmt.Sprintf(`
 
-data "ibm_org" "org" {
-    org = "%s"
-}
-
-data "ibm_account" "acc" {
-   org_guid = "${data.ibm_org.org.id}"
-}
-
 resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
   datacenter = "%s"
-
-  account_guid = "${data.ibm_account.acc.id}"
 
   worker_num = 2
 
@@ -562,7 +552,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
   private_vlan_id = "%s"
   no_subnet		  = true
   disk_encryption = true
-}	`, cfOrganization, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
+}	`, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
 }
 
 func testAccCheckIBMContainerCluster_diskEnc(clusterName string) string {
