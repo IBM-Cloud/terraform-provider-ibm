@@ -22,6 +22,7 @@ type ContainerServiceAPI interface {
 	WebHooks() Webhooks
 	Subnets() Subnets
 	KubeVersions() KubeVersions
+	Vlans() Vlans
 }
 
 //ContainerService holds the client
@@ -95,4 +96,9 @@ func (c *csService) WebHooks() Webhooks {
 //KubeVersions implements Cluster WebHooks API
 func (c *csService) KubeVersions() KubeVersions {
 	return newKubeVersionAPI(c.Client)
+}
+
+//Vlans implements DC Cluster Vlan API
+func (c *csService) Vlans() Vlans {
+	return newVlanAPI(c.Client)
 }
