@@ -42,17 +42,10 @@ func TestAccIBMContainerClusterWorkerDataSource_WithoutOptionalFields(t *testing
 
 func testAccCheckIBMContainerClusterWorkerDataSourceConfigWithoutOptionalFields(clusterName string) string {
 	return fmt.Sprintf(`
-data "ibm_org" "org" {
-    org = "%s"
-}
 
-data "ibm_account" "acc" {
-   org_guid = "${data.ibm_org.org.id}"
-}
 resource "ibm_container_cluster" "testacc_cluster" {
     name = "%s"
     datacenter = "%s"
-    account_guid = "${data.ibm_account.acc.id}"
     worker_num      = 1
 	machine_type = "%s"
 	hardware       = "shared"
@@ -60,14 +53,12 @@ resource "ibm_container_cluster" "testacc_cluster" {
 	private_vlan_id = "%s"
 }
 data "ibm_container_cluster" "testacc_ds_cluster" {
-	account_guid = "${data.ibm_account.acc.id}"
     cluster_name_id = "${ibm_container_cluster.testacc_cluster.id}"
 }
 data "ibm_container_cluster_worker" "testacc_ds_worker" {
-	account_guid = "${data.ibm_account.acc.id}"
     worker_id = "${data.ibm_container_cluster.testacc_ds_cluster.workers[0]}"
 }
-`, cfOrganization, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
+`, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
 }
 
 func testAccCheckIBMContainerClusterWorkerDataSourceConfig(clusterName string) string {

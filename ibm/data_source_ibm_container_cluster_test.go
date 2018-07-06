@@ -32,14 +32,14 @@ func TestAccIBMContainerClusterDataSource_basic(t *testing.T) {
 	})
 }
 
-func TestAccIBMContainerClusterDataSourceWithOutOrgSpace(t *testing.T) {
+func TestAccIBMContainerClusterDataSourceWithOutOrgSpaceAccount(t *testing.T) {
 	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMContainerClusterDataSourceWithOutOrgSpace(clusterName),
+				Config: testAccCheckIBMContainerClusterDataSourceWithOutOrgSpaceAccount(clusterName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_container_cluster.testacc_ds_cluster", "worker_count", "1"),
 					resource.TestCheckResourceAttr("data.ibm_container_cluster.testacc_ds_cluster", "worker_pools.#", "1"),
@@ -124,19 +124,12 @@ data "ibm_container_cluster" "testacc_ds_cluster" {
 `, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID, subnetID, serviceName, serviceKeyName)
 }
 
-func testAccCheckIBMContainerClusterDataSourceWithOutOrgSpace(clusterName string) string {
+func testAccCheckIBMContainerClusterDataSourceWithOutOrgSpaceAccount(clusterName string) string {
 	return fmt.Sprintf(`
-data "ibm_org" "testacc_ds_org" {
-    org = "%s"
-}
-data "ibm_account" "testacc_acc" {
-    org_guid = "${data.ibm_org.testacc_ds_org.id}"
-}
 resource "ibm_container_cluster" "testacc_cluster" {
     name = "%s"
     datacenter = "%s"
-    account_guid = "${data.ibm_account.testacc_acc.id}"
-   worker_num = 1
+    worker_num = 1
     machine_type = "%s"
     hardware       = "shared"
     public_vlan_id  = "%s"
@@ -144,8 +137,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
     subnet_id       = ["%s"]
 }
 data "ibm_container_cluster" "testacc_ds_cluster" {
-    account_guid = "${data.ibm_account.testacc_acc.id}"
     cluster_name_id = "${ibm_container_cluster.testacc_cluster.id}"
 }
-`, cfOrganization, clusterName, datacenter, machineType, publicVlanID, privateVlanID, subnetID)
+`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, subnetID)
 }

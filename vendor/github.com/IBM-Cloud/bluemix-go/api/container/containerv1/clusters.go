@@ -76,10 +76,9 @@ type ClusterTargetHeader struct {
 }
 
 const (
-	orgIDHeader     = "X-Auth-Resource-Org"
-	spaceIDHeader   = "X-Auth-Resource-Space"
-	accountIDHeader = "X-Auth-Resource-Account"
-
+	orgIDHeader      = "X-Auth-Resource-Org"
+	spaceIDHeader    = "X-Auth-Resource-Space"
+	accountIDHeader  = "X-Auth-Resource-Account"
 	slUserNameHeader = "X-Auth-Softlayer-Username"
 	slAPIKeyHeader   = "X-Auth-Softlayer-APIKey"
 )

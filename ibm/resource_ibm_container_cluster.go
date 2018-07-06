@@ -227,7 +227,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 			"account_guid": {
 				Description: "The bluemix account guid this cluster belongs to",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
 			},
 			"wait_time_minutes": {

@@ -9,9 +9,7 @@ import (
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/session"
 
-	"github.com/IBM-Cloud/bluemix-go/api/account/accountv2"
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
-	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Cloud/bluemix-go/trace"
 )
 
@@ -43,9 +41,6 @@ func main() {
 	var location string
 	flag.StringVar(&location, "location", "", "location")
 
-	var region string
-	flag.StringVar(&c.Region, "region", "us-south", "The Bluemix region. You can source it from env BM_REGION or BLUEMIX_REGION")
-
 	var skipDeletion bool
 	flag.BoolVar(&skipDeletion, "no-delete", false, "If provided will delete the resources created")
 
@@ -72,42 +67,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	client, err := mccpv2.New(sess)
-
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	region = sess.Config.Region
-	orgAPI := client.Organizations()
-	myorg, err := orgAPI.FindByName(org, region)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	spaceAPI := client.Spaces()
-	myspace, err := spaceAPI.FindByNameInOrg(myorg.GUID, space, region)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	accClient, err := accountv2.New(sess)
-	if err != nil {
-		log.Fatal(err)
-	}
-	accountAPI := accClient.Accounts()
-	myAccount, err := accountAPI.FindByOrg(myorg.GUID, region)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	target := v1.ClusterTargetHeader{
-		OrgID:     myorg.GUID,
-		SpaceID:   myspace.GUID,
-		AccountID: myAccount.GUID,
-	}
+	target := v1.ClusterTargetHeader{}
 
 	clusterClient, err := v1.New(sess)
 	if err != nil {
