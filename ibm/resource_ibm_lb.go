@@ -24,7 +24,7 @@ const (
 	LbLocalPackageType = "ADDITIONAL_SERVICES_LOAD_BALANCER"
 
 	lbMask = "id,dedicatedFlag,connectionLimit,ipAddressId,securityCertificateId,highAvailabilityFlag," +
-		"sslEnabledFlag,loadBalancerHardware[datacenter[name]],ipAddress[ipAddress,subnetId]"
+		"sslEnabledFlag,loadBalancerHardware[datacenter[name]],ipAddress[ipAddress,subnetId],billingItem[upgradeItems[capacity]]"
 )
 
 func resourceIBMLb() *schema.Resource {
@@ -40,7 +40,6 @@ func resourceIBMLb() *schema.Resource {
 			"connections": {
 				Type:     schema.TypeInt,
 				Required: true,
-				ForceNew: true,
 			},
 			"datacenter": {
 				Type:     schema.TypeString,
@@ -211,14 +210,55 @@ func resourceIBMLbUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	vipID, _ := strconv.Atoi(d.Id())
 
+	d.Partial(true)
+
 	certID := d.Get("security_certificate_id").(int)
 
 	err := setLocalLBSecurityCert(sess, vipID, certID)
-
 	if err != nil {
 		return fmt.Errorf("Update load balancer failed: %s", err)
 	}
+	d.SetPartial("security_certificate_id")
 
+	if d.HasChange("connections") {
+		vip, err := services.GetNetworkApplicationDeliveryControllerLoadBalancerVirtualIpAddressService(sess).
+			Id(vipID).
+			Mask(lbMask).
+			GetObject()
+		if err != nil {
+			return err
+		}
+		ors, nrs := d.GetChange("connections")
+		oldValue := ors.(int)
+		newValue := nrs.(int)
+
+		if oldValue > 0 {
+			if *vip.DedicatedFlag {
+				return fmt.Errorf("Error Updating load balancer connection limit: Upgrade for dedicated loadbalancer is not supported")
+			}
+			if vip.BillingItem.UpgradeItems[0].Capacity != nil {
+				validUpgradeValue := vip.BillingItem.UpgradeItems[0].Capacity
+				if newValue == int(*validUpgradeValue) {
+					_, err := services.GetNetworkApplicationDeliveryControllerLoadBalancerVirtualIpAddressService(sess).
+						Id(vipID).UpgradeConnectionLimit()
+					if err != nil {
+						return fmt.Errorf("Error Updating load balancer connection limit: %s", err)
+					}
+					d.SetPartial("connections")
+				} else {
+
+					return fmt.Errorf("Error Updating load balancer connection limit : Valid value to which connection limit can be upgraded is : %d ", int(*validUpgradeValue))
+
+				}
+
+			} else {
+				return fmt.Errorf("Error Updating load balancer connection limit: No upgrade available, already it has maximum connection limit")
+			}
+		}
+
+	}
+
+	d.Partial(false)
 	return resourceIBMLbRead(d, meta)
 }
 
@@ -242,10 +282,8 @@ func resourceIBMLbRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("ha_enabled", vip.HighAvailabilityFlag)
 	d.Set("dedicated", vip.DedicatedFlag)
 	d.Set("ssl_enabled", vip.SslEnabledFlag)
-
 	// Optional fields.  Guard against nil pointer dereferences
 	d.Set("security_certificate_id", sl.Get(vip.SecurityCertificateId, nil))
-
 	return nil
 }
 

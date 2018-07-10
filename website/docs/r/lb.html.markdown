@@ -27,7 +27,7 @@ resource "ibm_lb" "test_lb_local" {
 
 The following arguments are supported:
 
-* `connections` - (Required, integer) The number of connections for the local load balancer.
+* `connections` - (Required, integer) The number of connections for the local load balancer. Only incremental upgrade is supported . For downgrade, please open the softlayer support ticket.
 * `datacenter` - (Required, string) The data center for the local load balancer.
 * `ha_enabled` - (Required, boolean) Specifies whether the local load balancer must be HA-enabled.
 * `security_certificate_id` - (Optional, integer) The ID of the security certificate associated with the local load balancer.
