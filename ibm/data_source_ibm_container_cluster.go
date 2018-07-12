@@ -159,6 +159,50 @@ func dataSourceIBMContainerCluster() *schema.Resource {
 					},
 				},
 			},
+			"albs": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"alb_type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"enable": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+						"state": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"num_of_instances": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"alb_ip": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"resize": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+						"disable_deployment": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+					},
+				},
+			},
 			"org_guid": {
 				Description: "The bluemix organization guid this cluster belongs to",
 				Type:        schema.TypeString,
@@ -186,6 +230,7 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	csAPI := csClient.Clusters()
 	wrkAPI := csClient.Workers()
 	workerPoolsAPI := csClient.WorkerPools()
+	albsAPI := csClient.Albs()
 
 	targetEnv := getClusterTargetHeader(d)
 	name := d.Get("cluster_name_id").(string)
@@ -220,6 +265,11 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("Error retrieving worker pools of the cluster %s: %s", name, err)
 	}
 
+	albs, err := albsAPI.ListClusterALBs(name)
+	if err != nil {
+		return fmt.Errorf("Error retrieving alb's of the cluster %s: %s", name, err)
+	}
+
 	d.SetId(clusterFields.ID)
 	d.Set("worker_count", clusterFields.WorkerCount)
 	d.Set("workers", workers)
@@ -227,6 +277,7 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	d.Set("vlans", flattenVlans(clusterFields.Vlans))
 	d.Set("is_trusted", clusterFields.IsTrusted)
 	d.Set("worker_pools", flattenWorkerPools(workerPools))
+	d.Set("albs", flattenAlbs(albs))
 
 	return nil
 }

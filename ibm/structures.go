@@ -318,6 +318,25 @@ func flattenWorkerPools(list []containerv1.WorkerPoolResponse) []map[string]inte
 	return workerPools
 }
 
+func flattenAlbs(list []containerv1.ALBConfig) []map[string]interface{} {
+	albs := make([]map[string]interface{}, len(list))
+	for i, alb := range list {
+		l := map[string]interface{}{
+			"id":                 alb.ALBID,
+			"name":               alb.Name,
+			"alb_type":           alb.ALBType,
+			"enable":             alb.Enable,
+			"state":              alb.State,
+			"num_of_instances":   alb.NumOfInstances,
+			"alb_ip":             alb.ALBIP,
+			"resize":             alb.Resize,
+			"disable_deployment": alb.DisableDeployment,
+		}
+		albs[i] = l
+	}
+	return albs
+}
+
 func flattenVlans(list []containerv1.Vlan) []map[string]interface{} {
 	vlans := make([]map[string]interface{}, len(list))
 	for i, vlanR := range list {
