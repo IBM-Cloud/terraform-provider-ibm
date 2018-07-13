@@ -44,7 +44,6 @@ func resourceIBMLbServiceGroup() *schema.Resource {
 			"allocation": {
 				Type:     schema.TypeInt,
 				Required: true,
-				ForceNew: true,
 			},
 			"port": {
 				Type:     schema.TypeInt,
@@ -73,12 +72,12 @@ func resourceIBMLbServiceGroupCreate(d *schema.ResourceData, meta interface{}) e
 
 	vipID := d.Get("load_balancer_id").(int)
 
-	routingMethodId, err := getRoutingMethodId(sess, d.Get("routing_method").(string))
+	routingMethodID, err := getRoutingMethodId(sess, d.Get("routing_method").(string))
 	if err != nil {
 		return err
 	}
 
-	routingTypeId, err := getRoutingTypeId(sess, d.Get("routing_type").(string))
+	routingTypeID, err := getRoutingTypeId(sess, d.Get("routing_type").(string))
 	if err != nil {
 		return err
 	}
@@ -88,10 +87,9 @@ func resourceIBMLbServiceGroupCreate(d *schema.ResourceData, meta interface{}) e
 		VirtualServers: []datatypes.Network_Application_Delivery_Controller_LoadBalancer_VirtualServer{{
 			Allocation: sl.Int(d.Get("allocation").(int)),
 			Port:       sl.Int(d.Get("port").(int)),
-
 			ServiceGroups: []datatypes.Network_Application_Delivery_Controller_LoadBalancer_Service_Group{{
-				RoutingMethodId: &routingMethodId,
-				RoutingTypeId:   &routingTypeId,
+				RoutingMethodId: &routingMethodID,
+				RoutingTypeId:   &routingTypeID,
 			}},
 		}},
 	}
@@ -122,7 +120,6 @@ func resourceIBMLbServiceGroupCreate(d *schema.ResourceData, meta interface{}) e
 
 	return resourceIBMLbServiceGroupRead(d, meta)
 }
-
 func resourceIBMLbServiceGroupUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 
@@ -182,7 +179,6 @@ func resourceIBMLbServiceGroupRead(d *schema.ResourceData, meta interface{}) err
 
 	d.Set("allocation", vs.Allocation)
 	d.Set("port", vs.Port)
-
 	d.Set("routing_method", vs.ServiceGroups[0].RoutingMethod.Keyname)
 	d.Set("routing_type", vs.ServiceGroups[0].RoutingType.Keyname)
 
