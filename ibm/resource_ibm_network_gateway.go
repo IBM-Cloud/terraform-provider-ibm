@@ -845,6 +845,11 @@ func getMonthlyGatewayOrder(d dataRetriever, meta interface{}) (datatypes.Contai
 		return datatypes.Container_Product_Order{}, err
 	}
 
+	sriovEnabled, err := getItemPriceId(items, "sriov_enabled", "SRIOV_ENABLED")
+	if err != nil {
+		return datatypes.Container_Product_Order{}, err
+	}
+
 	// Define an order object using basic paramters.
 
 	order := datatypes.Container_Product_Order{
@@ -870,6 +875,7 @@ func getMonthlyGatewayOrder(d dataRetriever, meta interface{}) (datatypes.Contai
 			notification,
 			response,
 			vulnerabilityScanner,
+			sriovEnabled,
 		},
 	}
 
