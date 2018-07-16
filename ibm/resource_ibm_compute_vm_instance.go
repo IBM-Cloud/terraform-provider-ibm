@@ -1012,8 +1012,10 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 		d.Set("ip_address_id", *result.PrimaryNetworkComponent.PrimaryIpAddressRecord.GuestNetworkComponentBinding.IpAddressId)
 	}
 	d.Set("public_interface_id", result.PrimaryNetworkComponent.Id)
-	d.Set("ip_address_id_private",
-		*result.PrimaryBackendNetworkComponent.PrimaryIpAddressRecord.GuestNetworkComponentBinding.IpAddressId)
+	if result.PrimaryBackendNetworkComponent.PrimaryIpAddressRecord != nil {
+		d.Set("ip_address_id_private",
+			*result.PrimaryBackendNetworkComponent.PrimaryIpAddressRecord.GuestNetworkComponentBinding.IpAddressId)
+	}
 	d.Set("private_interface_id", result.PrimaryBackendNetworkComponent.Id)
 	d.Set("private_network_only", *result.PrivateNetworkOnlyFlag)
 	d.Set("hourly_billing", *result.HourlyBillingFlag)
@@ -1023,7 +1025,9 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 		d.Set("public_vlan_id", *result.PrimaryNetworkComponent.NetworkVlan.Id)
 	}
 
-	d.Set("private_vlan_id", *result.PrimaryBackendNetworkComponent.NetworkVlan.Id)
+	if result.PrimaryBackendNetworkComponent.NetworkVlan != nil {
+		d.Set("private_vlan_id", *result.PrimaryBackendNetworkComponent.NetworkVlan.Id)
+	}
 
 	if result.PrimaryNetworkComponent.PrimaryIpAddressRecord != nil {
 		publicSubnet := result.PrimaryNetworkComponent.PrimaryIpAddressRecord.Subnet
@@ -1042,12 +1046,15 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 		d.Set("public_security_group_ids", sgs)
 	}
 
-	privateSubnet := result.PrimaryBackendNetworkComponent.PrimaryIpAddressRecord.Subnet
-	d.Set(
-		"private_subnet",
-		fmt.Sprintf("%s/%d", *privateSubnet.NetworkIdentifier, *privateSubnet.Cidr),
-	)
-	d.Set("private_subnet_id", result.PrimaryBackendNetworkComponent.PrimaryIpAddressRecord.SubnetId)
+	if result.PrimaryBackendNetworkComponent.PrimaryIpAddressRecord != nil {
+		privateSubnet := result.PrimaryBackendNetworkComponent.PrimaryIpAddressRecord.Subnet
+		d.Set(
+			"private_subnet",
+			fmt.Sprintf("%s/%d", *privateSubnet.NetworkIdentifier, *privateSubnet.Cidr),
+		)
+		d.Set("private_subnet_id", result.PrimaryBackendNetworkComponent.PrimaryIpAddressRecord.SubnetId)
+
+	}
 
 	if result.PrimaryBackendNetworkComponent.SecurityGroupBindings != nil {
 		var sgs []int
@@ -1108,7 +1115,7 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 	connInfo := map[string]string{"type": "ssh"}
 	if !*result.PrivateNetworkOnlyFlag && result.PrimaryIpAddress != nil {
 		connInfo["host"] = *result.PrimaryIpAddress
-	} else {
+	} else if result.PrimaryBackendIpAddress != nil {
 		connInfo["host"] = *result.PrimaryBackendIpAddress
 	}
 	d.SetConnInfo(connInfo)
