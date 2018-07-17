@@ -35,8 +35,6 @@ func TestAccIBMContainerWorkerPool_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_worker_pool.test_pool", "disk_encryption", "true"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_worker_pool.test_pool", "kube_version", kubeVersion),
-					resource.TestCheckResourceAttr(
 						"ibm_container_worker_pool.test_pool", "hardware", "shared"),
 				),
 			},
@@ -53,8 +51,6 @@ func TestAccIBMContainerWorkerPool_basic(t *testing.T) {
 						"ibm_container_worker_pool.test_pool", "state", "active"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_worker_pool.test_pool", "disk_encryption", "true"),
-					resource.TestCheckResourceAttr(
-						"ibm_container_worker_pool.test_pool", "kube_version", kubeVersion),
 					resource.TestCheckResourceAttr(
 						"ibm_container_worker_pool.test_pool", "hardware", "shared"),
 				),

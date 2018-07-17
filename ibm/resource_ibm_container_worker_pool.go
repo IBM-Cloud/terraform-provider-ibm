@@ -70,11 +70,6 @@ func resourceIBMContainerWorkerPool() *schema.Resource {
 				Computed: true,
 			},
 
-			"kube_version": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
 			"zones": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -198,7 +193,6 @@ func resourceIBMContainerWorkerPoolRead(d *schema.ResourceData, meta interface{}
 	}
 	d.Set("hardware", hardware)
 	d.Set("state", workerPool.State)
-	d.Set("kube_version", strings.Split(workerPool.WorkerVersion, "_")[0])
 	d.Set("labels", workerPool.Labels)
 	d.Set("zones", flattenZones(workerPool.Zones))
 	d.Set("cluster", cluster)

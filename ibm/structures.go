@@ -297,7 +297,6 @@ func flattenWorkerPools(list []containerv1.WorkerPoolResponse) []map[string]inte
 			"machine_type":  workerPool.MachineType,
 			"size_per_zone": workerPool.Size,
 			"state":         workerPool.State,
-			"kube_version":  workerPool.WorkerVersion,
 			"labels":        workerPool.Labels,
 		}
 		zones := workerPool.Zones
