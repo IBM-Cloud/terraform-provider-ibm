@@ -117,7 +117,6 @@ The following attributes are exported:
   * `hardware` - The level of hardware isolation for your worker node.
   * `id` - Worker pool id.
   * `state` - Worker pool state.
-  * `kube_version` - The kubernetes version of the nodes.
   * `labels` - Labels on all the workers in the worker pool.
 	* `zones` - List of zones attached to the worker_pool.
 		* `zone` - Zone name.
