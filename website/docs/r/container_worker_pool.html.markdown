@@ -59,7 +59,6 @@ The following attributes are exported:
 
 * `id` - The unique identifier of the worker pool resource. The id is composed of \<cluster_name_id\>/\<worker_pool_id\>
 * `state` - Worker pool state.
-* `kube_version` - The kubernetes version of the nodes.
 * `zones` - List of zones attached to the worker_pool.
    * `zone` - Zone name.
    * `private_vlan` - The ID of the private VLAN.

@@ -38,10 +38,6 @@ type WorkerPoolResponse struct {
 	ID              string                  `json:"id" binding:"required"`
 	Region          string                  `json:"region" binding:"required"`
 	State           string                  `json:"state"`
-	WorkerVersion   string                  `json:"kubeVersion"`
-	TargetVersion   string                  `json:"targetVersion"`
-	EOS             string                  `json:"versionEOS"`
-	MasterEOS       string                  `json:"masterVersionEOS"`
 	ReasonForDelete string                  `json:"reasonForDelete"`
 	IsBalanced      bool                    `json:"isBalanced"`
 	Zones           WorkerPoolZoneResponses `json:"zones"`

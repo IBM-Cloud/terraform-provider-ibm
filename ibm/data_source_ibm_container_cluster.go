@@ -59,10 +59,6 @@ func dataSourceIBMContainerCluster() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"kube_version": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
 						"labels": {
 							Type:     schema.TypeMap,
 							Computed: true,
