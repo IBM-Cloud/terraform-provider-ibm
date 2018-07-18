@@ -8,11 +8,13 @@ description: |-
 
 # ibm\_container_cluster
 
-Create, update, or delete a Kubernetes cluster. An existing subnet can be attached to the cluster by passing the subnet ID. A webhook can be registered to a cluster, and you can add multiple worker nodes with the `workers` option.
-During the creation of cluster the workers are created with the kube version by default. During update user need to specify the version of worker to update the worker.
+Create, update, or delete a Kubernetes cluster. An existing subnet can be attached to the cluster by passing the subnet ID. A webhook can be registered to a cluster. By default, your single zone cluster is set up with a worker pool that is named default.
+During the creation of cluster the workers are created with the kube version by default. 
 
 **Before updating the version of cluster and workers via terraform get the list of available updates and their pre and post update instructions at https://console.bluemix.net/docs/containers/cs_versions.html#version_types. Also please go through the instructions at https://console.bluemix.net/docs/containers/cs_cluster_update.html#update.
 _Users must read these docs carefully before updating the version via terraform_.**
+
+Note: The previous cluster setup of stand-alone worker nodes is supported, but deprecated. Clusters now have a feature called a worker pool, which is a collection of worker nodes with the same flavor, such as machine type, CPU, and memory. Use ibm_container_worker_pool and ibm_container_worker_pool_zone attachment resources to make changes to your cluster, such as adding zones, adding worker nodes, or updating worker nodes.
 
 ## Example Usage
 
@@ -28,7 +30,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
   private_vlan_id = "vlan"
   subnet_id       = ["1154643"]
 
-  worker_num      = 1
+  default_pool_size      = 1
 
   webhook = [{
     level = "Normal"
@@ -54,7 +56,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
   private_vlan_id = "vlan"
   subnet_id       = ["1154643"]
 
-  worker_num = 2
+  default_pool_size = 2
   webhook = [{
     level = "Normal"
     type = "slack"
@@ -80,8 +82,9 @@ The following arguments are supported:
 	* `name` - Name of the worker.
 	* `version` - worker version.
 	**NOTE**: Conflicts with `worker_num`. 
-* `worker_num` - (Optional, int)  The number of cluster worker nodes.
+* `worker_num` - (Optional, int)  The number of cluster worker nodes. This creates the stand-alone workers which are not associated to any pool. 
 	**NOTE**: Conflicts with `workers`. 
+* `default_pool_size` - (Optional,int) The number of workers created under the default worker pool which support Multi-AZ. 
 * `machinetype` - (Optional, string) The machine type of the worker nodes. You can retrieve the value by running the `bx cs machine-types <data-center>` command in the IBM Cloud CLI.
 * `billing` - (Optional, string) The billing type for the instance. Accepted values are `hourly` or `monthly`.
 * `isolation` - (Deprecated) Accepted values are `public` or `private`. Use `private` if you want to have available physical resources dedicated to you only or `public` to allow physical resources to be shared with other IBM customers. Use hardware instead.
