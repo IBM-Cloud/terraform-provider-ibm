@@ -29,27 +29,6 @@ resource "ibm_container_cluster" "cluster" {
   private_vlan_id = "${var.private_vlan_id}"
 }
 
-resource ibm_container_worker_pool test_pool {
-  worker_pool_name = "${var.worker_pool_name}${random_id.name.hex}"
-  machine_type     = "${var.machine_type}"
-  cluster          = "${ibm_container_cluster.cluster.id}"
-  size_per_zone    = 1
-  hardware         = "shared"
-  disk_encryption  = "true"
-
-  labels = {
-    "test" = "test-pool"
-  }
-}
-
-resource ibm_container_worker_pool_zone_attachment test_zone {
-  cluster         = "${ibm_container_cluster.cluster.id}"
-  worker_pool     = "${element(split("/",ibm_container_worker_pool.test_pool.id),1)}"
-  zone            = "${var.zone}"
-  public_vlan_id  = "${var.zone_public_vlan_id}"
-  private_vlan_id = "${var.zone_private_vlan_id}"
-}
-
 resource "ibm_service_instance" "service" {
   name       = "${var.service_instance_name}${random_id.name.hex}"
   space_guid = "${data.ibm_space.space.id}"
