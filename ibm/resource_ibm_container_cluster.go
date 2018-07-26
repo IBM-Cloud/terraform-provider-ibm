@@ -58,6 +58,13 @@ func resourceIBMContainerCluster() *schema.Resource {
 				ForceNew:    true,
 				Description: "The datacenter where this cluster will be deployed",
 			},
+			"region": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The cluster region",
+			},
 			"workers": {
 				Type:          schema.TypeList,
 				Optional:      true,
@@ -372,7 +379,10 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 		params.MasterVersion = v.(string)
 	}
 
-	targetEnv := getClusterTargetHeader(d)
+	targetEnv, err := getClusterTargetHeader(d, meta)
+	if err != nil {
+		return err
+	}
 
 	cls, err := csClient.Clusters().Create(params, targetEnv)
 	if err != nil {
@@ -397,7 +407,10 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	wrkAPI := csClient.Workers()
 	workerPoolsAPI := csClient.WorkerPools()
 
-	targetEnv := getClusterTargetHeader(d)
+	targetEnv, err := getClusterTargetHeader(d, meta)
+	if err != nil {
+		return err
+	}
 
 	clusterID := d.Id()
 	cls, err := csClient.Clusters().Find(clusterID, targetEnv)
@@ -420,12 +433,12 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 
 	d.Set("worker_num", workerCount)
 
-	workerPools, err := workerPoolsAPI.ListWorkerPools(clusterID)
+	workerPools, err := workerPoolsAPI.ListWorkerPools(clusterID, targetEnv)
 	if err != nil {
 		return err
 	}
 	if len(workerPools) > 0 && workerPoolContains(workerPools, defaultWorkerPool) {
-		workersByPool, err := wrkAPI.ListByWorkerPool(clusterID, defaultWorkerPool, false)
+		workersByPool, err := wrkAPI.ListByWorkerPool(clusterID, defaultWorkerPool, false, targetEnv)
 		if err != nil {
 			return fmt.Errorf("Error retrieving workers of default worker pool for cluster: %s", err)
 		}
@@ -440,7 +453,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 			hardware = hardwareShared
 		}
 
-		defaultWorkerPool, err := workerPoolsAPI.GetWorkerPool(clusterID, defaultWorkerPool)
+		defaultWorkerPool, err := workerPoolsAPI.GetWorkerPool(clusterID, defaultWorkerPool, targetEnv)
 		if err != nil {
 			return err
 		}
@@ -460,7 +473,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("server_url", cls.ServerURL)
 	d.Set("ingress_hostname", cls.IngressHostname)
 	d.Set("ingress_secret", cls.IngressSecretName)
-
+	d.Set("region", cls.Region)
 	d.Set("subnet_id", d.Get("subnet_id").(*schema.Set))
 	d.Set("workers_info", workers)
 	d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0])
@@ -475,7 +488,10 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	targetEnv := getClusterTargetHeader(d)
+	targetEnv, err := getClusterTargetHeader(d, meta)
+	if err != nil {
+		return err
+	}
 
 	subnetAPI := csClient.Subnets()
 	whkAPI := csClient.WebHooks()
@@ -508,13 +524,13 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 	workersInfo := []map[string]string{}
 	if d.HasChange("default_pool_size") && !d.IsNewResource() {
 		workerPoolsAPI := csClient.WorkerPools()
-		workerPools, err := workerPoolsAPI.ListWorkerPools(clusterID)
+		workerPools, err := workerPoolsAPI.ListWorkerPools(clusterID, targetEnv)
 		if err != nil {
 			return err
 		}
 		if len(workerPools) > 0 && workerPoolContains(workerPools, defaultWorkerPool) {
 			poolSize := d.Get("default_pool_size").(int)
-			err = workerPoolsAPI.ResizeWorkerPool(clusterID, defaultWorkerPool, poolSize)
+			err = workerPoolsAPI.ResizeWorkerPool(clusterID, defaultWorkerPool, poolSize, targetEnv)
 			if err != nil {
 				return fmt.Errorf(
 					"Error updating the default_pool_size %d: %s", poolSize, err)
@@ -727,6 +743,11 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		}
 	}
 	//TODO put subnet can't deleted in the error message if such case is observed in the chnages
+	var publicSubnetAdded bool
+	noSubnet := d.Get("no_subnet").(bool)
+	if noSubnet == false {
+		publicSubnetAdded = true
+	}
 	if d.HasChange("subnet_id") {
 		oldSubnets, newSubnets := d.GetChange("subnet_id")
 		oldSubnet := oldSubnets.(*schema.Set)
@@ -735,7 +756,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		if len(rem) > 0 {
 			return fmt.Errorf("Subnet(s) %v cannot be deleted", rem)
 		}
-		var publicSubnetAdded bool
+
 		subnets, err := subnetAPI.List(targetEnv)
 		if err != nil {
 			return err
@@ -758,19 +779,22 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 				}
 			}
 		}
-		if publicSubnetAdded {
-			_, err = WaitForSubnetAvailable(d, meta, targetEnv)
-			if err != nil {
-				return fmt.Errorf(
-					"Error waiting for initializing ingress hostname and secret: %s", err)
-			}
+	}
+	if publicSubnetAdded {
+		_, err = WaitForSubnetAvailable(d, meta, targetEnv)
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for initializing ingress hostname and secret: %s", err)
 		}
 	}
 	return resourceIBMContainerClusterRead(d, meta)
 }
 
 func getID(d *schema.ResourceData, meta interface{}, clusterID string, oldWorkers []interface{}, workerInfo []map[string]string) (string, error) {
-	targetEnv := getClusterTargetHeader(d)
+	targetEnv, err := getClusterTargetHeader(d, meta)
+	if err != nil {
+		return "", err
+	}
 	csClient, err := meta.(ClientSession).ContainerAPI()
 	if err != nil {
 		return "", err
@@ -802,7 +826,10 @@ func getID(d *schema.ResourceData, meta interface{}, clusterID string, oldWorker
 }
 
 func resourceIBMContainerClusterDelete(d *schema.ResourceData, meta interface{}) error {
-	targetEnv := getClusterTargetHeader(d)
+	targetEnv, err := getClusterTargetHeader(d, meta)
+	if err != nil {
+		return err
+	}
 	csClient, err := meta.(ClientSession).ContainerAPI()
 	if err != nil {
 		return err
@@ -820,7 +847,10 @@ func resourceIBMContainerClusterDelete(d *schema.ResourceData, meta interface{})
 }
 
 func waitForClusterDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	targetEnv := getClusterTargetHeader(d)
+	targetEnv, err := getClusterTargetHeader(d, meta)
+	if err != nil {
+		return nil, err
+	}
 	csClient, err := meta.(ClientSession).ContainerAPI()
 	if err != nil {
 		return nil, err
@@ -1000,7 +1030,7 @@ func resourceIBMContainerClusterExists(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return false, err
 	}
-	targetEnv := getClusterTargetHeader(d)
+	targetEnv, err := getClusterTargetHeader(d, meta)
 	if err != nil {
 		return false, err
 	}

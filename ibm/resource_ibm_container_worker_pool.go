@@ -106,6 +106,14 @@ func resourceIBMContainerWorkerPool() *schema.Resource {
 				DiffSuppressFunc: applyOnce,
 				Elem:             schema.TypeString,
 			},
+
+			"region": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The worker pool region",
+			},
 		},
 	}
 }
@@ -148,8 +156,12 @@ func resourceIBMContainerWorkerPoolCreate(d *schema.ResourceData, meta interface
 	}
 
 	workerPoolsAPI := csClient.WorkerPools()
+	targetEnv, err := getWorkerPoolTargetHeader(d, meta)
+	if err != nil {
+		return err
+	}
 
-	res, err := workerPoolsAPI.CreateWorkerPool(clusterNameorID, params)
+	res, err := workerPoolsAPI.CreateWorkerPool(clusterNameorID, params, targetEnv)
 	if err != nil {
 		return err
 	}
@@ -172,8 +184,12 @@ func resourceIBMContainerWorkerPoolRead(d *schema.ResourceData, meta interface{}
 	workerPoolID := parts[1]
 
 	workerPoolsAPI := csClient.WorkerPools()
+	targetEnv, err := getWorkerPoolTargetHeader(d, meta)
+	if err != nil {
+		return err
+	}
 
-	workerPool, err := workerPoolsAPI.GetWorkerPool(cluster, workerPoolID)
+	workerPool, err := workerPoolsAPI.GetWorkerPool(cluster, workerPoolID, targetEnv)
 	if err != nil {
 		return err
 	}
@@ -196,6 +212,7 @@ func resourceIBMContainerWorkerPoolRead(d *schema.ResourceData, meta interface{}
 	d.Set("labels", workerPool.Labels)
 	d.Set("zones", flattenZones(workerPool.Zones))
 	d.Set("cluster", cluster)
+	d.Set("region", workerPool.Region)
 	if strings.Contains(machineType, "encrypted") {
 		d.Set("disk_encryption", true)
 	} else {
@@ -216,14 +233,18 @@ func resourceIBMContainerWorkerPoolUpdate(d *schema.ResourceData, meta interface
 	clusterNameorID := parts[0]
 	workerPoolNameorID := parts[1]
 	workerPoolsAPI := csClient.WorkerPools()
+	targetEnv, err := getWorkerPoolTargetHeader(d, meta)
+	if err != nil {
+		return err
+	}
 
 	if d.HasChange("size_per_zone") {
-		err = workerPoolsAPI.ResizeWorkerPool(clusterNameorID, workerPoolNameorID, d.Get("size_per_zone").(int))
+		err = workerPoolsAPI.ResizeWorkerPool(clusterNameorID, workerPoolNameorID, d.Get("size_per_zone").(int), targetEnv)
 		if err != nil {
 			return err
 		}
 
-		_, err = WaitForWorkerNormal(clusterNameorID, workerPoolNameorID, meta, d.Timeout(schema.TimeoutUpdate))
+		_, err = WaitForWorkerNormal(clusterNameorID, workerPoolNameorID, meta, d.Timeout(schema.TimeoutUpdate), targetEnv)
 		if err != nil {
 			return fmt.Errorf(
 				"Error waiting for workers of worker pool (%s) of cluster (%s) to become ready: %s", workerPoolNameorID, clusterNameorID, err)
@@ -246,12 +267,16 @@ func resourceIBMContainerWorkerPoolDelete(d *schema.ResourceData, meta interface
 	workerPoolNameorID := parts[1]
 
 	workerPoolsAPI := csClient.WorkerPools()
-
-	err = workerPoolsAPI.DeleteWorkerPool(clusterNameorID, workerPoolNameorID)
+	targetEnv, err := getWorkerPoolTargetHeader(d, meta)
 	if err != nil {
 		return err
 	}
-	_, err = WaitForWorkerDelete(clusterNameorID, workerPoolNameorID, meta, d.Timeout(schema.TimeoutUpdate))
+
+	err = workerPoolsAPI.DeleteWorkerPool(clusterNameorID, workerPoolNameorID, targetEnv)
+	if err != nil {
+		return err
+	}
+	_, err = WaitForWorkerDelete(clusterNameorID, workerPoolNameorID, meta, d.Timeout(schema.TimeoutUpdate), targetEnv)
 	if err != nil {
 		return fmt.Errorf(
 			"Error waiting for removing workers of worker pool (%s) of cluster (%s): %s", workerPoolNameorID, clusterNameorID, err)
@@ -272,8 +297,12 @@ func resourceIBMContainerWorkerPoolExists(d *schema.ResourceData, meta interface
 	workerPoolID := parts[1]
 
 	workerPoolsAPI := csClient.WorkerPools()
+	targetEnv, err := getWorkerPoolTargetHeader(d, meta)
+	if err != nil {
+		return false, err
+	}
 
-	workerPool, err := workerPoolsAPI.GetWorkerPool(cluster, workerPoolID)
+	workerPool, err := workerPoolsAPI.GetWorkerPool(cluster, workerPoolID, targetEnv)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
 			if apiErr.StatusCode() == 404 {
@@ -286,7 +315,7 @@ func resourceIBMContainerWorkerPoolExists(d *schema.ResourceData, meta interface
 	return workerPool.ID == workerPoolID, nil
 }
 
-func WaitForWorkerNormal(clusterNameOrID, workerPoolNameOrID string, meta interface{}, timeout time.Duration) (interface{}, error) {
+func WaitForWorkerNormal(clusterNameOrID, workerPoolNameOrID string, meta interface{}, timeout time.Duration, target v1.ClusterTargetHeader) (interface{}, error) {
 	csClient, err := meta.(ClientSession).ContainerAPI()
 	if err != nil {
 		return nil, err
@@ -295,7 +324,7 @@ func WaitForWorkerNormal(clusterNameOrID, workerPoolNameOrID string, meta interf
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", workerProvisioning},
 		Target:     []string{workerNormal},
-		Refresh:    workerPoolStateRefreshFunc(csClient.Workers(), clusterNameOrID, workerPoolNameOrID),
+		Refresh:    workerPoolStateRefreshFunc(csClient.Workers(), clusterNameOrID, workerPoolNameOrID, target),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -304,9 +333,9 @@ func WaitForWorkerNormal(clusterNameOrID, workerPoolNameOrID string, meta interf
 	return stateConf.WaitForState()
 }
 
-func workerPoolStateRefreshFunc(client v1.Workers, instanceID, workerPoolNameOrID string) resource.StateRefreshFunc {
+func workerPoolStateRefreshFunc(client v1.Workers, instanceID, workerPoolNameOrID string, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		workerFields, err := client.ListByWorkerPool(instanceID, workerPoolNameOrID, false)
+		workerFields, err := client.ListByWorkerPool(instanceID, workerPoolNameOrID, false, target)
 		if err != nil {
 			return nil, "", fmt.Errorf("Error retrieving workers for cluster: %s", err)
 		}
@@ -322,7 +351,7 @@ func workerPoolStateRefreshFunc(client v1.Workers, instanceID, workerPoolNameOrI
 	}
 }
 
-func WaitForWorkerDelete(clusterNameOrID, workerPoolNameOrID string, meta interface{}, timeout time.Duration) (interface{}, error) {
+func WaitForWorkerDelete(clusterNameOrID, workerPoolNameOrID string, meta interface{}, timeout time.Duration, target v1.ClusterTargetHeader) (interface{}, error) {
 	csClient, err := meta.(ClientSession).ContainerAPI()
 	if err != nil {
 		return nil, err
@@ -331,7 +360,7 @@ func WaitForWorkerDelete(clusterNameOrID, workerPoolNameOrID string, meta interf
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"deleting"},
 		Target:     []string{workerDeleteState},
-		Refresh:    workerPoolDeleteStateRefreshFunc(csClient.Workers(), clusterNameOrID, workerPoolNameOrID),
+		Refresh:    workerPoolDeleteStateRefreshFunc(csClient.Workers(), clusterNameOrID, workerPoolNameOrID, target),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -340,9 +369,9 @@ func WaitForWorkerDelete(clusterNameOrID, workerPoolNameOrID string, meta interf
 	return stateConf.WaitForState()
 }
 
-func workerPoolDeleteStateRefreshFunc(client v1.Workers, instanceID, workerPoolNameOrID string) resource.StateRefreshFunc {
+func workerPoolDeleteStateRefreshFunc(client v1.Workers, instanceID, workerPoolNameOrID string, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		workerFields, err := client.ListByWorkerPool(instanceID, "", true)
+		workerFields, err := client.ListByWorkerPool(instanceID, "", true, target)
 		if err != nil {
 			return nil, "", fmt.Errorf("Error retrieving workers for cluster: %s", err)
 		}
@@ -356,4 +385,22 @@ func workerPoolDeleteStateRefreshFunc(client v1.Workers, instanceID, workerPoolN
 		}
 		return workerFields, workerDeleteState, nil
 	}
+}
+
+func getWorkerPoolTargetHeader(d *schema.ResourceData, meta interface{}) (v1.ClusterTargetHeader, error) {
+	region := d.Get("region").(string)
+
+	sess, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return v1.ClusterTargetHeader{}, err
+	}
+
+	if region == "" {
+		region = sess.Config.Region
+	}
+
+	targetEnv := v1.ClusterTargetHeader{
+		Region: region,
+	}
+	return targetEnv, nil
 }

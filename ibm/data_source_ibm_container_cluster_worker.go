@@ -57,6 +57,11 @@ func dataSourceIBMContainerClusterWorker() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"region": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The cluster region",
+			},
 		},
 	}
 }
@@ -69,7 +74,10 @@ func dataSourceIBMContainerClusterWorkerRead(d *schema.ResourceData, meta interf
 
 	wrkAPI := csClient.Workers()
 	workerID := d.Get("worker_id").(string)
-	targetEnv := getClusterTargetHeader(d)
+	targetEnv, err := getClusterTargetHeader(d, meta)
+	if err != nil {
+		return err
+	}
 
 	workerFields, err := wrkAPI.Get(workerID, targetEnv)
 	if err != nil {

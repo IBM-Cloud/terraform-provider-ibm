@@ -82,12 +82,11 @@ resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
   datacenter = "%s"
 
- worker_num      = 1
-
   machine_type    = "%s"
   hardware       = "shared"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
+  region = "%s"
 }
 
 resource "ibm_service_instance" "service" {
@@ -106,8 +105,9 @@ resource "ibm_container_bind_service" "bind_service" {
   cluster_name_id          = "${ibm_container_cluster.testacc_cluster.name}"
   service_instance_id = "${ibm_service_instance.service.id}"
   namespace_id 			   = "default"
+  region = "%s"
 }
-	`, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID, serviceName, serviceKey)
+	`, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID, csRegion, serviceName, serviceKey, csRegion)
 }
 
 func testAccCheckIBMContainerBindService_basic(clusterName, serviceName, serviceKey string) string {
@@ -133,8 +133,6 @@ resource "ibm_container_cluster" "testacc_cluster" {
   org_guid = "${data.ibm_org.org.id}"
 	space_guid = "${data.ibm_space.space.id}"
 	account_guid = "${data.ibm_account.acc.id}"
-
-  worker_num      = 1
 
   machine_type    = "%s"
   hardware       = "shared"
@@ -190,8 +188,6 @@ resource "ibm_container_cluster" "testacc_cluster" {
   org_guid = "${data.ibm_org.org.id}"
 	space_guid = "${data.ibm_space.space.id}"
 	account_guid = "${data.ibm_account.acc.id}"
-
-  worker_num      = 1
 
   machine_type    = "%s"
   hardware       = "shared"
