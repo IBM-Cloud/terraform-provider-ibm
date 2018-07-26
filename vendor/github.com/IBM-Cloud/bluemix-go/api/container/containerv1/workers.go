@@ -50,7 +50,7 @@ type WorkerUpdateParam struct {
 //Workers ...
 type Workers interface {
 	List(clusterName string, target ClusterTargetHeader) ([]Worker, error)
-	ListByWorkerPool(clusterIDOrName, workerPoolIDOrName string, showDeleted bool) ([]Worker, error)
+	ListByWorkerPool(clusterIDOrName, workerPoolIDOrName string, showDeleted bool, target ClusterTargetHeader) ([]Worker, error)
 	Get(clusterName string, target ClusterTargetHeader) (Worker, error)
 	Add(clusterName string, params WorkerParam, target ClusterTargetHeader) error
 	Delete(clusterName string, workerD string, target ClusterTargetHeader) error
@@ -111,13 +111,13 @@ func (r *worker) List(name string, target ClusterTargetHeader) ([]Worker, error)
 }
 
 //ListByWorkerPool ...
-func (r *worker) ListByWorkerPool(clusterIDOrName, workerPoolIDOrName string, showDeleted bool) ([]Worker, error) {
+func (r *worker) ListByWorkerPool(clusterIDOrName, workerPoolIDOrName string, showDeleted bool, target ClusterTargetHeader) ([]Worker, error) {
 	rawURL := fmt.Sprintf("/v1/clusters/%s/workers?showDeleted=%t", clusterIDOrName, showDeleted)
 	if len(workerPoolIDOrName) > 0 {
 		rawURL += "&pool=" + workerPoolIDOrName
 	}
 	workers := []Worker{}
-	_, err := r.client.Get(rawURL, &workers)
+	_, err := r.client.Get(rawURL, &workers, target.ToMap())
 	if err != nil {
 		return nil, err
 	}

@@ -73,6 +73,7 @@ type ClusterTargetHeader struct {
 	OrgID     string
 	SpaceID   string
 	AccountID string
+	Region    string
 }
 
 const (
@@ -81,6 +82,7 @@ const (
 	accountIDHeader  = "X-Auth-Resource-Account"
 	slUserNameHeader = "X-Auth-Softlayer-Username"
 	slAPIKeyHeader   = "X-Auth-Softlayer-APIKey"
+	regionHeader     = "X-Region"
 )
 
 //ToMap ...
@@ -89,6 +91,7 @@ func (c ClusterTargetHeader) ToMap() map[string]string {
 	m[orgIDHeader] = c.OrgID
 	m[spaceIDHeader] = c.SpaceID
 	m[accountIDHeader] = c.AccountID
+	m[regionHeader] = c.Region
 	return m
 }
 

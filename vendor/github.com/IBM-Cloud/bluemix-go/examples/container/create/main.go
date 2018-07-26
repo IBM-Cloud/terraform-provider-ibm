@@ -17,12 +17,6 @@ func main() {
 
 	c := new(bluemix.Config)
 
-	var org string
-	flag.StringVar(&org, "org", "", "Bluemix Organization")
-
-	var space string
-	flag.StringVar(&space, "space", "", "Bluemix Space")
-
 	var zone string
 	flag.StringVar(&zone, "zone", "", "Zone")
 
@@ -41,13 +35,16 @@ func main() {
 	var location string
 	flag.StringVar(&location, "location", "", "location")
 
+	var region string
+	flag.StringVar(&location, "region", "us-south", "region")
+
 	var skipDeletion bool
 	flag.BoolVar(&skipDeletion, "no-delete", false, "If provided will delete the resources created")
 
 	flag.Parse()
 
 	trace.Logger = trace.NewLogger("true")
-	if org == "" || space == "" || privateVlan == "" || publicVlan == "" || updatePrivateVlan == "" || updatePublicVlan == "" || zone == "" || location == "" {
+	if privateVlan == "" || publicVlan == "" || updatePrivateVlan == "" || updatePublicVlan == "" || zone == "" || location == "" {
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -73,6 +70,8 @@ func main() {
 
 	target := v1.ClusterTargetHeader{}
 
+	target.Region = region
+
 	clusterClient, err := v1.New(sess)
 	if err != nil {
 		log.Fatal(err)
@@ -94,7 +93,7 @@ func main() {
 		},
 		DiskEncryption: true,
 	}
-	resp, err := workerPoolAPI.CreateWorkerPool(out.ID, workerPoolRequest)
+	resp, err := workerPoolAPI.CreateWorkerPool(out.ID, workerPoolRequest, target)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -105,16 +104,16 @@ func main() {
 			PublicVLAN:  publicVlan,
 		},
 	}
-	err = workerPoolAPI.AddZone(out.ID, resp.ID, workerPoolZone)
+	err = workerPoolAPI.AddZone(out.ID, resp.ID, workerPoolZone, target)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = workerPoolAPI.UpdateZoneNetwork(out.ID, zone, resp.ID, updatePrivateVlan, updatePublicVlan)
+	err = workerPoolAPI.UpdateZoneNetwork(out.ID, zone, resp.ID, updatePrivateVlan, updatePublicVlan, target)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	pool, err := workerPoolAPI.GetWorkerPool(out.ID, resp.ID)
+	pool, err := workerPoolAPI.GetWorkerPool(out.ID, resp.ID, target)
 	if err != nil {
 		log.Fatal(err)
 	}
