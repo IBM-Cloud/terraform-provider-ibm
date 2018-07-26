@@ -53,8 +53,9 @@ data "ibm_container_cluster_versions" "versions" {
 	org_guid = "${data.ibm_org.testacc_ds_org.id}"
     space_guid = "${data.ibm_space.testacc_ds_space.id}"
     account_guid = "${data.ibm_account.testacc_acc.id}"
+    region = "%s"
 }
-`, cfOrganization, cfOrganization, cfSpace)
+`, cfOrganization, cfOrganization, cfSpace, csRegion)
 }
 
 const testAccCheckIBMContainerClusterVersionsDataSourceWithoutOptionalFields = `

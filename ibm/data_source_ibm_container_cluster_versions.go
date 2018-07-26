@@ -26,6 +26,11 @@ func dataSourceIBMContainerClusterVersions() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"region": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The cluster region",
+			},
 			"valid_kube_versions": {
 				Description: "List supported kube-versions",
 				Type:        schema.TypeList,
@@ -42,7 +47,10 @@ func dataSourceIBMContainerClusterVersionsRead(d *schema.ResourceData, meta inte
 		return err
 	}
 	verAPI := csClient.KubeVersions()
-	targetEnv := getClusterTargetHeader(d)
+	targetEnv, err := getClusterTargetHeader(d, meta)
+	if err != nil {
+		return err
+	}
 
 	availableVersions, _ := verAPI.List(targetEnv)
 	versions := make([]string, len(availableVersions))

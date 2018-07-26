@@ -78,12 +78,12 @@ resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
   datacenter = "%s"
   account_guid = "${data.ibm_account.acc.id}"
-  worker_num = 1
   machine_type    = "%s"
   hardware       = "shared"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   kube_version    = "%s"
+  region = "%s"
 }
 
 resource "ibm_container_worker_pool" "test_pool" {
@@ -93,7 +93,7 @@ resource "ibm_container_worker_pool" "test_pool" {
   size_per_zone    = 2
   hardware         = "shared"
   disk_encryption  = "true"
-
+  region = "%s"
   labels = {
     "test" = "test-pool"
 
@@ -106,9 +106,10 @@ resource "ibm_container_worker_pool_zone_attachment" "test_zone" {
   worker_pool  = "${element(split("/",ibm_container_worker_pool.test_pool.id),1)}"
   private_vlan_id = "%s"
   public_vlan_id  = "%s"
+  region = "%s"
 }
 		
-		`, cfOrganization, clusterName, datacenter, machineType, publicVlanID, privateVlanID, kubeUpdateVersion, workerPoolName, machineType, zone, zoneUpdatePrivateVlan, zonePublicVlan)
+		`, cfOrganization, clusterName, datacenter, machineType, publicVlanID, privateVlanID, kubeUpdateVersion, csRegion, workerPoolName, machineType, csRegion, zone, zoneUpdatePrivateVlan, zonePublicVlan, csRegion)
 }
 
 func testAccCheckIBMContainerWorkerPoolZoneAttachment_update_public_vlan(clusterName, workerPoolName string) string {
@@ -125,12 +126,12 @@ resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
   datacenter = "%s"
   account_guid = "${data.ibm_account.acc.id}"
-  worker_num = 1
   machine_type    = "%s"
   hardware       = "shared"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   kube_version     = "%s"
+  region = "%s"
 }
 
 resource "ibm_container_worker_pool" "test_pool" {
@@ -140,7 +141,7 @@ resource "ibm_container_worker_pool" "test_pool" {
   size_per_zone    = 1
   hardware         = "shared"
   disk_encryption  = "true"
-
+  region = "%s"
   labels = {
     "test" = "test-pool"
 
@@ -153,7 +154,8 @@ resource "ibm_container_worker_pool_zone_attachment" "test_zone" {
   worker_pool  = "${element(split("/",ibm_container_worker_pool.test_pool.id),1)}"
   private_vlan_id = "%s"
   public_vlan_id  = "%s"
+  region = "%s"
 }
 		
-		`, cfOrganization, clusterName, datacenter, machineType, publicVlanID, privateVlanID, kubeUpdateVersion, workerPoolName, machineType, zone, zoneUpdatePrivateVlan, zoneUpdatePublicVlan)
+		`, cfOrganization, clusterName, datacenter, machineType, publicVlanID, privateVlanID, kubeUpdateVersion, csRegion, workerPoolName, machineType, csRegion, zone, zoneUpdatePrivateVlan, zoneUpdatePublicVlan, csRegion)
 }
