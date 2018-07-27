@@ -18,7 +18,7 @@ Note: The previous cluster setup of stand-alone worker nodes is supported, but d
 
 ## Example Usage
 
-In the following example, you can create a Kubernetes cluster:
+In the following example, you can create a Kubernetes cluster with a default worker pool with one worker:
 
 ```hcl
 resource "ibm_container_cluster" "testacc_cluster" {
@@ -29,6 +29,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
   public_vlan_id  = "vlan"
   private_vlan_id = "vlan"
   subnet_id       = ["1154643"]
+  region          = "eu-de"
 
   default_pool_size      = 1
 
@@ -44,7 +45,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
 }
 ```
 
-Create the Kubernetes cluster using worker_num:
+Create the Kubernetes cluster with a default worker pool with 2 workers and one standalone worker as mentioned by worker_num:
 
 ```hcl
 resource "ibm_container_cluster" "testacc_cluster" {
@@ -57,6 +58,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
   subnet_id       = ["1154643"]
 
   default_pool_size = 2
+  worker_num = 1
   webhook = [{
     level = "Normal"
     type = "slack"
@@ -64,6 +66,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
   }]
 
   account_guid = "test_acc"
+  region = "eu-de"
 }
 ```
 
@@ -77,6 +80,7 @@ The following arguments are supported:
 * `org_guid` - (Optional, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from data source `ibm_org` or by running the `bx iam orgs --guid` command in the IBM Cloud CLI.
 * `space_guid` - (Optional, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from data source `ibm_space` or by running the `bx iam space <space-name> --guid` command in the IBM Cloud CLI.
 * `account_guid` - (Optional, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from data source `ibm_account` or by running the `bx iam accounts` command in the IBM Cloud CLI.
+* `region` - (Optional, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(BM_REGION/BLUEMIX_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
 * `workers` - (Deprecated) The worker nodes that you want to add to the cluster. Nested `workers` blocks have the following structure:
 	* `action` - valid actions are add, reboot and reload.
 	* `name` - Name of the worker.
