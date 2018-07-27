@@ -21,6 +21,7 @@ resource "ibm_container_worker_pool_zone_attachment" "test_zone" {
   zone            = "dal12"
   private_vlan_id = "2320267"
   public_vlan_id  = "2320265"
+  region          = "eu-de"
 
   //User can increase timeouts
   timeouts {
@@ -49,6 +50,7 @@ The following arguments are supported:
 * `worker_pool` - (Required, string) The name or id of the worker pool.
 * `private_vlan_id` - (Required, string) The private VLAN of the worker node. You can retrieve the value by running the `bx cs vlans <data-center>` command in the IBM Cloud CLI.
 * `public_vlan_id` - (Optional, string) The public VLAN of the worker node. You can retrieve the value by running the `bx cs vlans <data-center>` command in the IBM Cloud CLI..
+* `region` - (Optional, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(BM_REGION/BLUEMIX_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
 
 
 ## Attribute Reference
