@@ -7,11 +7,11 @@ variable "org" {
 }
 
 variable "service" {
-  default = "cloudantNoSQLDB"
+  default = "speech_to_text"
 }
 
 variable "plan" {
-  default = "Lite"
+  default = "lite"
 }
 
 variable "service_instance_name" {

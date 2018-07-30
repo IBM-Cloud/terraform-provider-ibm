@@ -20,7 +20,7 @@ func TestAccIBMServiceKeyDataSource_basic(t *testing.T) {
 				Config: testAccCheckIBMServiceKeyDataSourceConfig(serviceName, serviceKey),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_service_key.testacc_ds_service_key", "name", serviceKey),
-					resource.TestCheckResourceAttr("data.ibm_service_key.testacc_ds_service_key", "credentials.%", "5"),
+					resource.TestCheckResourceAttr("data.ibm_service_key.testacc_ds_service_key", "credentials.%", "3"),
 				),
 			},
 		},
@@ -37,8 +37,8 @@ data "ibm_space" "spacedata" {
 resource "ibm_service_instance" "service" {
   name       = "%s"
   space_guid = "${data.ibm_space.spacedata.id}"
-  service    = "cloudantNoSQLDB"
-  plan       = "Lite"
+  service    = "speech_to_text"
+  plan       = "lite"
   tags       = ["cluster-service", "cluster-bind"]
 }
 
