@@ -25,8 +25,8 @@ The following example shows how you can use the data source to reference the spa
 resource "ibm_service_instance" "service_instance" {
   name              = "test"
   space_guid        = "${data.ibm_space.spaceData.id}"
-  service           = "cloudantNOSQLDB"
-  plan              = "Lite"
+  service           = "speech_to_text"
+  plan              = "lite"
   tags              = ["cluster-service", "cluster-bind"]
 }
 

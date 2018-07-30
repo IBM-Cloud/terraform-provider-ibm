@@ -92,8 +92,8 @@ resource "ibm_container_cluster" "testacc_cluster" {
 resource "ibm_service_instance" "service" {
   name       = "%s"
   space_guid = "${data.ibm_space.space.id}"
-  service    = "cloudantNoSQLDB"
-  plan       = "Lite"
+  service    = "speech_to_text"
+  plan       = "lite"
   tags       = ["cluster-service", "cluster-bind"]
 }
 
@@ -144,8 +144,8 @@ resource "ibm_container_cluster" "testacc_cluster" {
 resource "ibm_service_instance" "service" {
   name       = "%s"
   space_guid = "${data.ibm_space.space.id}"
-  service    = "cloudantNoSQLDB"
-  plan       = "Lite"
+  service    = "speech_to_text"
+  plan       = "lite"
   tags       = ["cluster-service", "cluster-bind"]
 }
 
@@ -199,8 +199,8 @@ resource "ibm_container_cluster" "testacc_cluster" {
 resource "ibm_service_instance" "service" {
   name       = "%s"
   space_guid = "${data.ibm_space.space.id}"
-  service    = "cloudantNoSQLDB"
-  plan       = "Lite"
+  service    = "speech_to_text"
+  plan       = "lite"
   tags       = ["cluster-service", "cluster-bind"]
 }
 
