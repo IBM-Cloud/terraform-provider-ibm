@@ -206,6 +206,8 @@ func TestAccIBMContainerClusterOptionalOrgSpace_basic(t *testing.T) {
 						"ibm_container_cluster.testacc_cluster", "name", clusterName),
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "default_pool_size", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "albs.#", "2"),
 				),
 			},
 		},
@@ -512,7 +514,6 @@ resource "ibm_container_cluster" "testacc_cluster" {
   hardware       = "shared"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
-  no_subnet		  = true
   disk_encryption = true
 }	`, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
 }

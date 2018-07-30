@@ -317,6 +317,50 @@ func resourceIBMContainerCluster() *schema.Resource {
 					},
 				},
 			},
+			"albs": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"alb_type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"enable": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+						"state": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"num_of_instances": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"alb_ip": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"resize": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+						"disable_deployment": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -406,6 +450,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	}
 	wrkAPI := csClient.Workers()
 	workerPoolsAPI := csClient.WorkerPools()
+	albsAPI := csClient.Albs()
 
 	targetEnv, err := getClusterTargetHeader(d, meta)
 	if err != nil {
@@ -469,6 +514,11 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 		d.Set("isolation", workersByPool[0].Isolation)
 	}
 
+	albs, err := albsAPI.ListClusterALBs(clusterID, targetEnv)
+	if err != nil {
+		return fmt.Errorf("Error retrieving alb's of the cluster %s: %s", clusterID, err)
+	}
+
 	d.Set("name", cls.Name)
 	d.Set("server_url", cls.ServerURL)
 	d.Set("ingress_hostname", cls.IngressHostname)
@@ -478,6 +528,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("workers_info", workers)
 	d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0])
 	d.Set("is_trusted", cls.IsTrusted)
+	d.Set("albs", flattenAlbs(albs))
 
 	return nil
 }
