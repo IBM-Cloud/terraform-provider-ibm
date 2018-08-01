@@ -29,6 +29,14 @@ resource "ibm_container_cluster" "cluster" {
   private_vlan_id = "${var.private_vlan_id}"
 }
 
+resource ibm_container_worker_pool_zone_attachment default_zone {
+  cluster         = "${ibm_container_cluster.cluster.id}"
+  worker_pool     = "default"
+  zone            = "${var.zone}"
+  public_vlan_id  = "${var.zone_public_vlan_id}"
+  private_vlan_id = "${var.zone_private_vlan_id}"
+}
+
 resource ibm_container_worker_pool test_pool {
   worker_pool_name = "${var.worker_pool_name}${random_id.name.hex}"
   machine_type     = "${var.machine_type}"
