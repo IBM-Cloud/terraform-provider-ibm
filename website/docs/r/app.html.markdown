@@ -47,6 +47,9 @@ The following arguments are supported:
 * `wait_time_minutes` - (Optional, integer) The duration, expressed in minutes, to wait for the application to restage or start. The default value is `20`. A value of `0` means that there is no wait period.
 * `app_path` - (Required, string) The path to the compressed file of the application. The compressed file must contain all the application files directly within it instead of within a top-level folder. To create the compressed file, go to the directory where your application files are and run `zip -r myapplication.zip *`.
 * `app_version`	 - (Optional, string) The version of the application. If you make changes to the content in the application compressed file specified by _app_path_, Terraform can't detect the changes. You can let Terraform know that your file content has changed by either changing the application compressed file name or by using this argument to indicate the version of the file.
+* `health_check_http_endpoint` - (Optional, string) Endpoint called to determine if the app is healthy.
+* `health_check_type` - (Optional, string) Type of health check to perform. Default `port`. Valid types are `port` and `process`.
+* `health_check_timeout` - (Optional, integer) Timeout in seconds for health checking of an staged app when starting up.
 * `tags` - (Optional, array of strings) Tags associated with the application instance.
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 

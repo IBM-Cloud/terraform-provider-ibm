@@ -43,3 +43,6 @@ The following attributes are exported:
 * `service_instance_guid` - The service instance GUIDs that are bound to the application.
 * `package_state` - The state of the application package, such as staged or pending.
 * `state` - The state of the application.
+* `health_check_http_endpoint` - Endpoint called to determine if the app is healthy.
+* `health_check_type` - Type of health check.
+* `health_check_timeout` - Health check timeout in seconds.
