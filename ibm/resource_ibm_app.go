@@ -104,6 +104,23 @@ func resourceIBMApp() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
 			},
+			"health_check_http_endpoint": {
+				Description: "Endpoint called to determine if the app is healthy.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"health_check_type": {
+				Description:  "Type of health check to perform.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "port",
+				ValidateFunc: validateAllowedStringValue([]string{"port", "process"}),
+			},
+			"health_check_timeout": {
+				Description: "Timeout in seconds for health checking of an staged app when starting up.",
+				Type:        schema.TypeInt,
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -116,10 +133,12 @@ func resourceIBMAppCreate(d *schema.ResourceData, meta interface{}) error {
 	appAPI := cfClient.Apps()
 	name := d.Get("name").(string)
 	spaceGUID := d.Get("space_guid").(string)
+	healthChekcType := d.Get("health_check_type").(string)
 
 	appCreatePayload := v2.AppRequest{
-		Name:      helpers.String(name),
-		SpaceGUID: helpers.String(spaceGUID),
+		Name:            helpers.String(name),
+		SpaceGUID:       helpers.String(spaceGUID),
+		HealthCheckType: helpers.String(healthChekcType),
 	}
 
 	if memory, ok := d.GetOk("memory"); ok {
@@ -145,6 +164,14 @@ func resourceIBMAppCreate(d *schema.ResourceData, meta interface{}) error {
 
 	if command, ok := d.GetOk("command"); ok {
 		appCreatePayload.Command = helpers.String(command.(string))
+	}
+
+	if healtChkEndpoint, ok := d.GetOk("health_check_http_endpoint"); ok {
+		appCreatePayload.HealthCheckHTTPEndpoint = helpers.String(healtChkEndpoint.(string))
+	}
+
+	if healtChkTimeout, ok := d.GetOk("health_check_timeout"); ok {
+		appCreatePayload.HealthCheckTimeout = healtChkTimeout.(int)
 	}
 
 	_, err = appAPI.FindByName(spaceGUID, name)
@@ -226,6 +253,9 @@ func resourceIBMAppRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("buildpack", appData.Entity.BuildPack)
 	d.Set("environment_json", flatmap.Flatten(appData.Entity.EnvironmentJSON))
 	d.Set("command", appData.Entity.Command)
+	d.Set("health_check_type", appData.Entity.HealthCheckType)
+	d.Set("health_check_http_endpoint", appData.Entity.HealthCheckHTTPEndpoint)
+	d.Set("health_check_timeout", appData.Entity.HealthCheckTimeout)
 
 	route, err := appAPI.ListRoutes(appGUID)
 	if err != nil {
@@ -290,6 +320,26 @@ func resourceIBMAppUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("environment_json") {
 		appUpdatePayload.EnvironmentJSON = helpers.Map(d.Get("environment_json").(map[string]interface{}))
 		restageRequired = true
+	}
+
+	if d.HasChange("health_check_type") {
+		appUpdatePayload.HealthCheckType = helpers.String(d.Get("health_check_type").(string))
+		restartRequired = true
+	}
+
+	if d.HasChange("health_check_http_endpoint") {
+		appUpdatePayload.HealthCheckHTTPEndpoint = helpers.String(d.Get("health_check_http_endpoint").(string))
+		restartRequired = true
+	}
+
+	if d.HasChange("health_check_timeout") {
+		appUpdatePayload.HealthCheckTimeout = d.Get("health_check_timeout").(int)
+		restartRequired = true
+	}
+
+	if d.HasChange("command") {
+		appUpdatePayload.Command = helpers.String(d.Get("command").(string))
+		restartRequired = true
 	}
 	log.Println("[INFO] Update cloud foundary application")
 

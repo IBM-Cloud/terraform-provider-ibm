@@ -69,6 +69,21 @@ func dataSourceIBMApp() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"health_check_http_endpoint": {
+				Description: "Endpoint called to determine if the app is healthy.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"health_check_type": {
+				Description: "Type of health check to perform.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"health_check_timeout": {
+				Description: "Timeout in seconds for health checking of an staged app when starting up.",
+				Type:        schema.TypeInt,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -96,6 +111,9 @@ func dataSourceIBMAppRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("package_state", app.PackageState)
 	d.Set("state", app.State)
 	d.Set("instances", app.Instances)
+	d.Set("health_check_type", app.HealthCheckType)
+	d.Set("health_check_http_endpoint", app.HealthCheckHTTPEndpoint)
+	d.Set("health_check_timeout", app.HealthCheckTimeout)
 
 	route, err := appAPI.ListRoutes(app.GUID)
 	if err != nil {
