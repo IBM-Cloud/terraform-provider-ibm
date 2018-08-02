@@ -62,6 +62,7 @@ type AppRequest struct {
 	BuildPack                *string                 `json:"buildpack,omitempty"`
 	HealthCheckType          *string                 `json:"health_check_type,omitempty"`
 	HealthCheckTimeout       int                     `json:"health_check_timeout,omitempty"`
+	HealthCheckHTTPEndpoint  *string                 `json:"health_check_http_endpoint,omitempty"`
 	Diego                    bool                    `json:"diego,omitempty"`
 	EnableSSH                bool                    `json:"enable_ssh,omitempty"`
 	DockerImage              *string                 `json:"docker_image,omitempty"`
@@ -90,6 +91,7 @@ type AppEntity struct {
 	StagingTaskID            string                 `json:"staging_task_id"`
 	HealthCheckType          string                 `json:"health_check_type"`
 	HealthCheckTimeout       *int                   `json:"health_check_timeout"`
+	HealthCheckHTTPEndpoint  string                 `json:"health_check_http_endpoint"`
 	StagingFailedReason      string                 `json:"staging_failed_reason"`
 	StagingFailedDescription string                 `json:"staging_failed_description"`
 	Diego                    bool                   `json:"diego"`
@@ -143,27 +145,28 @@ func (resource AppResource) ToFields() App {
 	entity := resource.Entity
 
 	return App{
-		GUID:               resource.Metadata.GUID,
-		Name:               entity.Name,
-		SpaceGUID:          entity.SpaceGUID,
-		StackGUID:          entity.StackGUID,
-		State:              entity.State,
-		PackageState:       entity.PackageState,
-		Memory:             entity.Memory,
-		Instances:          entity.Instances,
-		DiskQuota:          entity.DiskQuota,
-		Version:            entity.Version,
-		BuildPack:          entity.BuildPack,
-		Command:            entity.Command,
-		Console:            entity.Console,
-		Debug:              entity.Debug,
-		StagingTaskID:      entity.StagingTaskID,
-		HealthCheckType:    entity.HealthCheckType,
-		HealthCheckTimeout: entity.HealthCheckTimeout,
-		Diego:              entity.Diego,
-		DockerImage:        entity.DockerImage,
-		EnableSSH:          entity.EnableSSH,
-		Ports:              entity.Ports,
+		GUID:                    resource.Metadata.GUID,
+		Name:                    entity.Name,
+		SpaceGUID:               entity.SpaceGUID,
+		StackGUID:               entity.StackGUID,
+		State:                   entity.State,
+		PackageState:            entity.PackageState,
+		Memory:                  entity.Memory,
+		Instances:               entity.Instances,
+		DiskQuota:               entity.DiskQuota,
+		Version:                 entity.Version,
+		BuildPack:               entity.BuildPack,
+		Command:                 entity.Command,
+		Console:                 entity.Console,
+		Debug:                   entity.Debug,
+		StagingTaskID:           entity.StagingTaskID,
+		HealthCheckType:         entity.HealthCheckType,
+		HealthCheckTimeout:      entity.HealthCheckTimeout,
+		HealthCheckHTTPEndpoint: entity.HealthCheckHTTPEndpoint,
+		Diego:       entity.Diego,
+		DockerImage: entity.DockerImage,
+		EnableSSH:   entity.EnableSSH,
+		Ports:       entity.Ports,
 		DockerCredentialsJSON: entity.DockerCredentialsJSON,
 		EnvironmentJSON:       entity.EnvironmentJSON,
 	}
@@ -171,29 +174,30 @@ func (resource AppResource) ToFields() App {
 
 //App model
 type App struct {
-	Name                  string
-	SpaceGUID             string
-	GUID                  string
-	StackGUID             string
-	State                 string
-	PackageState          string
-	Memory                int
-	Instances             int
-	DiskQuota             int
-	Version               string
-	BuildPack             *string
-	Command               *string
-	Console               bool
-	Debug                 *string
-	StagingTaskID         string
-	HealthCheckType       string
-	HealthCheckTimeout    *int
-	Diego                 bool
-	DockerImage           *string
-	EnableSSH             bool
-	Ports                 []int
-	DockerCredentialsJSON map[string]interface{}
-	EnvironmentJSON       map[string]interface{}
+	Name                    string
+	SpaceGUID               string
+	GUID                    string
+	StackGUID               string
+	State                   string
+	PackageState            string
+	Memory                  int
+	Instances               int
+	DiskQuota               int
+	Version                 string
+	BuildPack               *string
+	Command                 *string
+	Console                 bool
+	Debug                   *string
+	StagingTaskID           string
+	HealthCheckType         string
+	HealthCheckTimeout      *int
+	HealthCheckHTTPEndpoint string
+	Diego                   bool
+	DockerImage             *string
+	EnableSSH               bool
+	Ports                   []int
+	DockerCredentialsJSON   map[string]interface{}
+	EnvironmentJSON         map[string]interface{}
 }
 
 //Apps ...
