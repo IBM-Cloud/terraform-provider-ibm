@@ -392,36 +392,38 @@ func testAccCheckIBMComputeBareMetalExists(n string, bareMetal *datatypes.Hardwa
 func testAccCheckIBMComputeBareMetalConfig_basic(hostname string) string {
 	return fmt.Sprintf(`
 resource "ibm_compute_bare_metal" "terraform-acceptance-test-1" {
-	hostname               = "%s"
-	domain                 = "terraformuat.ibm.com"
-	os_reference_code      = "UBUNTU_16_64"
-	datacenter             = "dal01"
-	network_speed          = 100
-	hourly_billing         = true
-	private_network_only   = false
-	user_metadata          = "{\"value\":\"newvalue\"}"
-	fixed_config_preset    = "S1270_32GB_1X1TBSATA_NORAID"
-	tags                   = ["collectd"]
-	notes                  = "baremetal notes"
-	}
-`, hostname)
+  hostname                  = "%s"
+  domain                    = "terraformuat.ibm.com"
+  os_reference_code         = "UBUNTU_16_64"
+  datacenter                = "dal01"
+  network_speed             = 100
+  hourly_billing            = true
+  private_network_only      = false
+  extended_hardware_testing = "%t"
+  user_metadata             = "{\"value\":\"newvalue\"}"
+  fixed_config_preset       = "S1270_32GB_1X1TBSATA_NORAID"
+  tags                      = ["collectd"]
+  notes                     = "baremetal notes"
+}
+`, hostname, extendedHardwareTesting)
 }
 
 func testAccCheckIBMComputeBareMetalConfig_update(hostname string) string {
 	return fmt.Sprintf(`
 resource "ibm_compute_bare_metal" "terraform-acceptance-test-1" {
-	hostname               = "%s"
-	domain                 = "terraformuat.ibm.com"
-	os_reference_code      = "UBUNTU_16_64"
-	datacenter             = "dal01"
-	network_speed          = 100
-	hourly_billing         = true
-	private_network_only   = false
-	user_metadata          = "{\"value\":\"newvalue\"}"
-	fixed_config_preset    = "S1270_32GB_1X1TBSATA_NORAID"
-	tags                   = ["mesos-master"]
-	}
-`, hostname)
+	hostname                  = "%s"
+	domain                    = "terraformuat.ibm.com"
+	os_reference_code         = "UBUNTU_16_64"
+	datacenter                = "dal01"
+	network_speed             = 100
+	hourly_billing            = true
+	private_network_only      = false
+	extended_hardware_testing = "%t"
+	user_metadata             = "{\"value\":\"newvalue\"}"
+	fixed_config_preset       = "S1270_32GB_1X1TBSATA_NORAID"
+	tags                      = ["mesos-master"]
+}
+`, hostname, extendedHardwareTesting)
 }
 
 func testBareMetalAccessToStoragesBasic(hostname, domain string) string {

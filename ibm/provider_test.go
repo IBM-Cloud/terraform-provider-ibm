@@ -3,6 +3,7 @@ package ibm
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -34,6 +35,7 @@ var zonePublicVlan string
 var zoneUpdatePrivateVlan string
 var zoneUpdatePublicVlan string
 var csRegion string
+var extendedHardwareTesting bool
 var err error
 
 func init() {
@@ -82,6 +84,12 @@ func init() {
 	if trustedMachineType == "" {
 		trustedMachineType = "mb1c.16x64"
 		fmt.Println("[WARN] Set the environment variable IBM_TRUSTED_MACHINE_TYPE for testing ibm_container_cluster resource else it is set to default value 'mb1c.16x64'")
+	}
+
+	extendedHardwareTesting, err = strconv.ParseBool(os.Getenv("IBM_BM_EXTENDED_HW_TESTING"))
+	if err != nil {
+		extendedHardwareTesting = false
+		fmt.Println("[WARN] Set the environment variable IBM_BM_EXTENDED_HW_TESTING to true/false for testing ibm_compute_bare_metal resource else it is set to default value 'false'")
 	}
 
 	publicVlanID = os.Getenv("IBM_PUBLIC_VLAN_ID")

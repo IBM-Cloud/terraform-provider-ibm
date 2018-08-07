@@ -249,6 +249,13 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 				ForceNew: true,
 			},
 
+			"extended_hardware_testing": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				ForceNew: true,
+			},
+
 			// Monthly only
 			"public_bandwidth": {
 				Type:             schema.TypeInt,
@@ -1168,8 +1175,11 @@ func setMonthlyHourlyCommonOrder(d *schema.ResourceData, items []datatypes.Produ
 
 // Set common parameters for server ordering.
 func setCommonBareMetalOrderOptions(d *schema.ResourceData, meta interface{}, order datatypes.Container_Product_Order) (datatypes.Container_Product_Order, error) {
-	public_vlan_id := d.Get("public_vlan_id").(int)
 
+	extendedHardwareTesting := d.Get("extended_hardware_testing").(bool)
+	order.ExtendedHardwareTesting = sl.Bool(extendedHardwareTesting)
+
+	public_vlan_id := d.Get("public_vlan_id").(int)
 	if public_vlan_id > 0 {
 		order.Hardware[0].PrimaryNetworkComponent = &datatypes.Network_Component{
 			NetworkVlan: &datatypes.Network_Vlan{Id: sl.Int(public_vlan_id)},
