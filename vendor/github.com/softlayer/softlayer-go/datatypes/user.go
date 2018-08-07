@@ -729,7 +729,7 @@ type User_Customer_Link_VerifiedIBMidLinkCollection struct {
 	BadLinksDifferentUsername []User_Customer_Link `json:"badLinksDifferentUsername,omitempty" xmlrpc:"badLinksDifferentUsername,omitempty"`
 
 	// no documentation yet
-	GoodLink []User_Customer_Link `json:"goodLink,omitempty" xmlrpc:"goodLink,omitempty"`
+	GoodLinks []User_Customer_Link `json:"goodLinks,omitempty" xmlrpc:"goodLinks,omitempty"`
 }
 
 // This class represents a mobile device belonging to a user.  The device can be a phone, tablet, or possibly even some Android based net books.  The purpose is to tie just enough info with the device and the user to enable push notifications through non-softlayer entities (Google, Apple, RIM).

@@ -1011,6 +1011,40 @@ type Network_CdnMarketplace_Account struct {
 	BillingItem *Billing_Item `json:"billingItem,omitempty" xmlrpc:"billingItem,omitempty"`
 }
 
+// no documentation yet
+type Network_CdnMarketplace_Configuration_Behavior_Geoblocking struct {
+	Entity
+
+	// no documentation yet
+	AccessType *string `json:"accessType,omitempty" xmlrpc:"accessType,omitempty"`
+
+	// no documentation yet
+	RegionType *string `json:"regionType,omitempty" xmlrpc:"regionType,omitempty"`
+
+	// no documentation yet
+	Regions []string `json:"regions,omitempty" xmlrpc:"regions,omitempty"`
+
+	// no documentation yet
+	Status *string `json:"status,omitempty" xmlrpc:"status,omitempty"`
+}
+
+// no documentation yet
+type Network_CdnMarketplace_Configuration_Behavior_Geoblocking_Type struct {
+	Entity
+
+	// no documentation yet
+	AccessType []string `json:"accessType,omitempty" xmlrpc:"accessType,omitempty"`
+
+	// no documentation yet
+	Continent []string `json:"continent,omitempty" xmlrpc:"continent,omitempty"`
+
+	// no documentation yet
+	Country []string `json:"country,omitempty" xmlrpc:"country,omitempty"`
+
+	// no documentation yet
+	RegionType []string `json:"regionType,omitempty" xmlrpc:"regionType,omitempty"`
+}
+
 // This data type models a purge event that occurs in caching server. It contains a reference to a mapping configuration, the path to execute the purge on, the status of the purge, and flag that enables saving the purge information for future use.
 type Network_CdnMarketplace_Configuration_Cache_Purge struct {
 	Entity
@@ -1043,6 +1077,17 @@ type Network_CdnMarketplace_Configuration_Mapping_Path struct {
 // This Metrics class provides methods to get CDN metrics based on account or mapping unique id.
 type Network_CdnMarketplace_Metrics struct {
 	Entity
+}
+
+// no documentation yet
+type Network_CdnMarketplace_Utils_Response struct {
+	Entity
+
+	// no documentation yet
+	Code *int `json:"code,omitempty" xmlrpc:"code,omitempty"`
+
+	// no documentation yet
+	Message *string `json:"message,omitempty" xmlrpc:"message,omitempty"`
 }
 
 // The SoftLayer_Network_CdnMarketplace_Vendor contains information regarding  a CDN Vendor. This class is associated with  SoftLayer_Network_CdnMarketplace_Vendor_Attribute class.
@@ -1578,26 +1623,12 @@ type Network_Customer_Subnet_IpAddress struct {
 	Translations []Network_Tunnel_Module_Context_Address_Translation `json:"translations,omitempty" xmlrpc:"translations,omitempty"`
 }
 
-// The SoftLayer_Network_DirectLink_CloudExchangeProvider presents a structure containing attributes of a Direct Link Cloud exchange provider.
-type Network_DirectLink_CloudExchangeProvider struct {
-	Entity
-
-	// no documentation yet
-	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
-
-	// no documentation yet
-	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
-}
-
 // The SoftLayer_Network_DirectLink_Location presents a structure containing attributes of a Direct Link location, and its related object SoftLayer location.
 type Network_DirectLink_Location struct {
 	Entity
 
 	// The Direct Link specific location owner for POP/DC facilities. Like Equinix, Pacnet, Verizon etc.
 	BuildingColocationOwner *string `json:"buildingColocationOwner,omitempty" xmlrpc:"buildingColocationOwner,omitempty"`
-
-	// The Id of Direct Link cloud exchange provider.
-	CloudExchangeProvider *Network_DirectLink_CloudExchangeProvider `json:"cloudExchangeProvider,omitempty" xmlrpc:"cloudExchangeProvider,omitempty"`
 
 	// The unique identifier of a Direct Link location.
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
@@ -2060,6 +2091,9 @@ type Network_Interconnect_Tenant struct {
 
 	// Link speed of a Direct Link connection on Equinix Side.
 	PeerLinkSpeed *int `json:"peerLinkSpeed,omitempty" xmlrpc:"peerLinkSpeed,omitempty"`
+
+	// no documentation yet
+	PortLabel *string `json:"portLabel,omitempty" xmlrpc:"portLabel,omitempty"`
 
 	// Specifies redundant connection is available if 1.
 	RedundancyFlag *bool `json:"redundancyFlag,omitempty" xmlrpc:"redundancyFlag,omitempty"`
@@ -3197,6 +3231,9 @@ type Network_SecurityGroup struct {
 	// The unique ID for a security group.
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
 
+	// no documentation yet
+	Metadata *string `json:"metadata,omitempty" xmlrpc:"metadata,omitempty"`
+
 	// The date a security group was last modified.
 	ModifyDate *Time `json:"modifyDate,omitempty" xmlrpc:"modifyDate,omitempty"`
 
@@ -3911,6 +3948,18 @@ type Network_Storage_Allowed_Host struct {
 	// The SoftLayer_Network_Storage_Group objects this SoftLayer_Network_Storage_Allowed_Host is present in.
 	AssignedGroups []Network_Storage_Group `json:"assignedGroups,omitempty" xmlrpc:"assignedGroups,omitempty"`
 
+	// A count of the SoftLayer_Network_Storage volumes to which this SoftLayer_Network_Storage_Allowed_Host is allowed access.
+	AssignedIscsiVolumeCount *uint `json:"assignedIscsiVolumeCount,omitempty" xmlrpc:"assignedIscsiVolumeCount,omitempty"`
+
+	// The SoftLayer_Network_Storage volumes to which this SoftLayer_Network_Storage_Allowed_Host is allowed access.
+	AssignedIscsiVolumes []Network_Storage `json:"assignedIscsiVolumes,omitempty" xmlrpc:"assignedIscsiVolumes,omitempty"`
+
+	// A count of the SoftLayer_Network_Storage volumes to which this SoftLayer_Network_Storage_Allowed_Host is allowed access.
+	AssignedNfsVolumeCount *uint `json:"assignedNfsVolumeCount,omitempty" xmlrpc:"assignedNfsVolumeCount,omitempty"`
+
+	// The SoftLayer_Network_Storage volumes to which this SoftLayer_Network_Storage_Allowed_Host is allowed access.
+	AssignedNfsVolumes []Network_Storage `json:"assignedNfsVolumes,omitempty" xmlrpc:"assignedNfsVolumes,omitempty"`
+
 	// A count of the SoftLayer_Network_Storage primary volumes whose replicas are allowed access.
 	AssignedReplicationVolumeCount *uint `json:"assignedReplicationVolumeCount,omitempty" xmlrpc:"assignedReplicationVolumeCount,omitempty"`
 
@@ -4544,6 +4593,9 @@ type Network_Storage_MassDataMigration_Request_DeviceConfiguration struct {
 
 	// The request id.
 	RequestId *int `json:"requestId,omitempty" xmlrpc:"requestId,omitempty"`
+
+	// The Cloud Object Storage bucket URL.
+	S3Url *string `json:"s3Url,omitempty" xmlrpc:"s3Url,omitempty"`
 
 	// The name of network share.
 	ShareName *string `json:"shareName,omitempty" xmlrpc:"shareName,omitempty"`

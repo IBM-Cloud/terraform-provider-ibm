@@ -1173,74 +1173,74 @@
 		{
 			"checksumSHA1": "KeNIYJQUdE6o196SaYuLMmjEPZM=",
 			"path": "github.com/softlayer/softlayer-go/config",
-			"revision": "b48f721534f4df1c9e6e718f85ebd4c4d6f3e356",
-			"revisionTime": "2018-04-18T04:24:49Z"
+			"revision": "260589d94c7d68760bf013731508a4f2a174584f",
+			"revisionTime": "2018-08-06T15:10:55Z"
 		},
 		{
-			"checksumSHA1": "nncXaRtfbXCeH81HGTfdcOumi0U=",
+			"checksumSHA1": "dTZQHQ7QXlUz7VtDgnm5t0drB+A=",
 			"path": "github.com/softlayer/softlayer-go/datatypes",
-			"revision": "b48f721534f4df1c9e6e718f85ebd4c4d6f3e356",
-			"revisionTime": "2018-04-18T04:24:49Z"
+			"revision": "260589d94c7d68760bf013731508a4f2a174584f",
+			"revisionTime": "2018-08-06T15:10:55Z"
 		},
 		{
 			"checksumSHA1": "2UnaaOo4TreSegFy3tNtQ3NRv18=",
 			"path": "github.com/softlayer/softlayer-go/filter",
-			"revision": "b48f721534f4df1c9e6e718f85ebd4c4d6f3e356",
-			"revisionTime": "2018-04-18T04:24:49Z"
+			"revision": "260589d94c7d68760bf013731508a4f2a174584f",
+			"revisionTime": "2018-08-06T15:10:55Z"
 		},
 		{
 			"checksumSHA1": "8w7mbrWkcP0yCAdX3BpPr1vndrY=",
 			"path": "github.com/softlayer/softlayer-go/helpers/hardware",
-			"revision": "b48f721534f4df1c9e6e718f85ebd4c4d6f3e356",
-			"revisionTime": "2018-04-18T04:24:49Z"
+			"revision": "260589d94c7d68760bf013731508a4f2a174584f",
+			"revisionTime": "2018-08-06T15:10:55Z"
 		},
 		{
 			"checksumSHA1": "5McX4q+mXpfYWBSde87Wjb4UoPs=",
 			"path": "github.com/softlayer/softlayer-go/helpers/location",
-			"revision": "b48f721534f4df1c9e6e718f85ebd4c4d6f3e356",
-			"revisionTime": "2018-04-18T04:24:49Z"
+			"revision": "260589d94c7d68760bf013731508a4f2a174584f",
+			"revisionTime": "2018-08-06T15:10:55Z"
 		},
 		{
 			"checksumSHA1": "r0ijpEVlR3yuirWa/4b6yCDIjEE=",
 			"path": "github.com/softlayer/softlayer-go/helpers/network",
-			"revision": "b48f721534f4df1c9e6e718f85ebd4c4d6f3e356",
-			"revisionTime": "2018-04-18T04:24:49Z"
+			"revision": "260589d94c7d68760bf013731508a4f2a174584f",
+			"revisionTime": "2018-08-06T15:10:55Z"
 		},
 		{
-			"checksumSHA1": "bGG9wihg55FY7q/kHVE5KQV8XmE=",
+			"checksumSHA1": "lKoK/9XI5sPMGXnTwmXjKmdUGko=",
 			"path": "github.com/softlayer/softlayer-go/helpers/order",
-			"revision": "b48f721534f4df1c9e6e718f85ebd4c4d6f3e356",
-			"revisionTime": "2018-04-18T04:24:49Z"
+			"revision": "260589d94c7d68760bf013731508a4f2a174584f",
+			"revisionTime": "2018-08-06T15:10:55Z"
 		},
 		{
-			"checksumSHA1": "wxkjh2t8UiBMJOwZDfUV2WS1DfE=",
+			"checksumSHA1": "oBE+UG7QYhzWwpS9Jb428/RgiAg=",
 			"path": "github.com/softlayer/softlayer-go/helpers/product",
-			"revision": "b48f721534f4df1c9e6e718f85ebd4c4d6f3e356",
-			"revisionTime": "2018-04-18T04:24:49Z"
+			"revision": "260589d94c7d68760bf013731508a4f2a174584f",
+			"revisionTime": "2018-08-06T15:10:55Z"
 		},
 		{
 			"checksumSHA1": "/CTlQvpy03YsT5Qf2N2T0xtVVuA=",
 			"path": "github.com/softlayer/softlayer-go/helpers/virtual",
-			"revision": "b48f721534f4df1c9e6e718f85ebd4c4d6f3e356",
-			"revisionTime": "2018-04-18T04:24:49Z"
+			"revision": "260589d94c7d68760bf013731508a4f2a174584f",
+			"revisionTime": "2018-08-06T15:10:55Z"
 		},
 		{
-			"checksumSHA1": "xgcZP1dvuvtk5Yk1dh8a+aeFMYQ=",
+			"checksumSHA1": "WVnHepDG78Nmozvyw1MeMaW8TC4=",
 			"path": "github.com/softlayer/softlayer-go/services",
-			"revision": "b48f721534f4df1c9e6e718f85ebd4c4d6f3e356",
-			"revisionTime": "2018-04-18T04:24:49Z"
+			"revision": "260589d94c7d68760bf013731508a4f2a174584f",
+			"revisionTime": "2018-08-06T15:10:55Z"
 		},
 		{
-			"checksumSHA1": "DkGPFmZOxjm+lNqTBdOR03cGR1E=",
+			"checksumSHA1": "p+QEJXM90QSIslpM2swcK4Pwc28=",
 			"path": "github.com/softlayer/softlayer-go/session",
-			"revision": "b48f721534f4df1c9e6e718f85ebd4c4d6f3e356",
-			"revisionTime": "2018-04-18T04:24:49Z"
+			"revision": "260589d94c7d68760bf013731508a4f2a174584f",
+			"revisionTime": "2018-08-06T15:10:55Z"
 		},
 		{
 			"checksumSHA1": "rRLFLMdzIFBSVSNDy34s01ZYGjs=",
 			"path": "github.com/softlayer/softlayer-go/sl",
-			"revision": "b48f721534f4df1c9e6e718f85ebd4c4d6f3e356",
-			"revisionTime": "2018-04-18T04:24:49Z"
+			"revision": "260589d94c7d68760bf013731508a4f2a174584f",
+			"revisionTime": "2018-08-06T15:10:55Z"
 		},
 		{
 			"checksumSHA1": "z2kAtVle4NFV2OExI85fZoTcsI4=",

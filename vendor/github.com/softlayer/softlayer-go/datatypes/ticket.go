@@ -207,7 +207,7 @@ type Ticket struct {
 	ServiceProviderId *int `json:"serviceProviderId,omitempty" xmlrpc:"serviceProviderId,omitempty"`
 
 	// A ticket's internal identifier at its service provider. Each ticket is defined by a unique identifier.
-	ServiceProviderResourceId *int `json:"serviceProviderResourceId,omitempty" xmlrpc:"serviceProviderResourceId,omitempty"`
+	ServiceProviderResourceId *string `json:"serviceProviderResourceId,omitempty" xmlrpc:"serviceProviderResourceId,omitempty"`
 
 	// no documentation yet
 	State []Ticket_State `json:"state,omitempty" xmlrpc:"state,omitempty"`

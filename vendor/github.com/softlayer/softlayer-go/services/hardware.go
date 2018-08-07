@@ -1383,7 +1383,7 @@ func (r Hardware) GetUplinkNetworkComponents() (resp []datatypes.Network_Compone
 	return
 }
 
-// Retrieve A string containing custom user data for a hardware order.
+// Retrieve An array containing a single string of custom user data for a hardware order. Max size is 16 kb.
 func (r Hardware) GetUserData() (resp []datatypes.Hardware_Attribute, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware", "getUserData", nil, &r.Options, &resp)
 	return
@@ -3322,7 +3322,7 @@ func (r Hardware_Router) GetUplinkNetworkComponents() (resp []datatypes.Network_
 	return
 }
 
-// Retrieve A string containing custom user data for a hardware order.
+// Retrieve An array containing a single string of custom user data for a hardware order. Max size is 16 kb.
 func (r Hardware_Router) GetUserData() (resp []datatypes.Hardware_Attribute, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Router", "getUserData", nil, &r.Options, &resp)
 	return
@@ -4208,6 +4208,12 @@ func (r Hardware_SecurityModule) GetBillingItemFlag() (resp bool, err error) {
 	return
 }
 
+// Retrieve Determine if BIOS password should be left as null.
+func (r Hardware_SecurityModule) GetBiosPasswordNullFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "getBiosPasswordNullFlag", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve Determines whether the hardware is ineligible for cancellation because it is disconnected.
 func (r Hardware_SecurityModule) GetBlockCancelBecauseDisconnectedFlag() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "getBlockCancelBecauseDisconnectedFlag", nil, &r.Options, &resp)
@@ -4534,6 +4540,12 @@ func (r Hardware_SecurityModule) GetHardwareStatus() (resp datatypes.Hardware_St
 	return
 }
 
+// Retrieve Determine if hardware has Single Root IO VIrtualization (SR-IOV) billing item.
+func (r Hardware_SecurityModule) GetHasSingleRootVirtualizationBillingItemFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "getHasSingleRootVirtualizationBillingItemFlag", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve Determine in hardware object has TPM enabled.
 func (r Hardware_SecurityModule) GetHasTrustedPlatformModuleBillingItemFlag() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "getHasTrustedPlatformModuleBillingItemFlag", nil, &r.Options, &resp)
@@ -4583,6 +4595,12 @@ func (r Hardware_SecurityModule) GetInboundPrivateBandwidthUsage() (resp datatyp
 // Retrieve The total public inbound bandwidth for this hardware for the current billing cycle.
 func (r Hardware_SecurityModule) GetInboundPublicBandwidthUsage() (resp datatypes.Float64, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "getInboundPublicBandwidthUsage", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Determine if hardware object has the IBM_CLOUD_READY_NODE_CERTIFIED attribute.
+func (r Hardware_SecurityModule) GetIsCloudReadyNodeCertified() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "getIsCloudReadyNodeCertified", nil, &r.Options, &resp)
 	return
 }
 
@@ -5105,6 +5123,12 @@ func (r Hardware_SecurityModule) GetRaidControllers() (resp []datatypes.Hardware
 	return
 }
 
+// Retrieve Determine if hardware object is vSan Ready Node.
+func (r Hardware_SecurityModule) GetReadyNodeFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "getReadyNodeFlag", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve Recent events that impact this hardware.
 func (r Hardware_SecurityModule) GetRecentEvents() (resp []datatypes.Notification_Occurrence_Event, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "getRecentEvents", nil, &r.Options, &resp)
@@ -5322,7 +5346,7 @@ func (r Hardware_SecurityModule) GetUplinkNetworkComponents() (resp []datatypes.
 	return
 }
 
-// Retrieve A string containing custom user data for a hardware order.
+// Retrieve An array containing a single string of custom user data for a hardware order. Max size is 16 kb.
 func (r Hardware_SecurityModule) GetUserData() (resp []datatypes.Hardware_Attribute, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "getUserData", nil, &r.Options, &resp)
 	return
@@ -5501,10 +5525,9 @@ func (r Hardware_SecurityModule) Ping() (resp string, err error) {
 }
 
 // no documentation yet
-func (r Hardware_SecurityModule) PopulateServerRam(hardwareId *int, ramSerialString *string) (err error) {
+func (r Hardware_SecurityModule) PopulateServerRam(ramSerialString *string) (err error) {
 	var resp datatypes.Void
 	params := []interface{}{
-		hardwareId,
 		ramSerialString,
 	}
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "populateServerRam", params, &r.Options, &resp)
@@ -6418,6 +6441,12 @@ func (r Hardware_SecurityModule750) GetBillingItemFlag() (resp bool, err error) 
 	return
 }
 
+// Retrieve Determine if BIOS password should be left as null.
+func (r Hardware_SecurityModule750) GetBiosPasswordNullFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getBiosPasswordNullFlag", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve Determines whether the hardware is ineligible for cancellation because it is disconnected.
 func (r Hardware_SecurityModule750) GetBlockCancelBecauseDisconnectedFlag() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getBlockCancelBecauseDisconnectedFlag", nil, &r.Options, &resp)
@@ -6744,6 +6773,12 @@ func (r Hardware_SecurityModule750) GetHardwareStatus() (resp datatypes.Hardware
 	return
 }
 
+// Retrieve Determine if hardware has Single Root IO VIrtualization (SR-IOV) billing item.
+func (r Hardware_SecurityModule750) GetHasSingleRootVirtualizationBillingItemFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getHasSingleRootVirtualizationBillingItemFlag", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve Determine in hardware object has TPM enabled.
 func (r Hardware_SecurityModule750) GetHasTrustedPlatformModuleBillingItemFlag() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getHasTrustedPlatformModuleBillingItemFlag", nil, &r.Options, &resp)
@@ -6793,6 +6828,12 @@ func (r Hardware_SecurityModule750) GetInboundPrivateBandwidthUsage() (resp data
 // Retrieve The total public inbound bandwidth for this hardware for the current billing cycle.
 func (r Hardware_SecurityModule750) GetInboundPublicBandwidthUsage() (resp datatypes.Float64, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getInboundPublicBandwidthUsage", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Determine if hardware object has the IBM_CLOUD_READY_NODE_CERTIFIED attribute.
+func (r Hardware_SecurityModule750) GetIsCloudReadyNodeCertified() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getIsCloudReadyNodeCertified", nil, &r.Options, &resp)
 	return
 }
 
@@ -7315,6 +7356,12 @@ func (r Hardware_SecurityModule750) GetRaidControllers() (resp []datatypes.Hardw
 	return
 }
 
+// Retrieve Determine if hardware object is vSan Ready Node.
+func (r Hardware_SecurityModule750) GetReadyNodeFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getReadyNodeFlag", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve Recent events that impact this hardware.
 func (r Hardware_SecurityModule750) GetRecentEvents() (resp []datatypes.Notification_Occurrence_Event, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getRecentEvents", nil, &r.Options, &resp)
@@ -7532,7 +7579,7 @@ func (r Hardware_SecurityModule750) GetUplinkNetworkComponents() (resp []datatyp
 	return
 }
 
-// Retrieve A string containing custom user data for a hardware order.
+// Retrieve An array containing a single string of custom user data for a hardware order. Max size is 16 kb.
 func (r Hardware_SecurityModule750) GetUserData() (resp []datatypes.Hardware_Attribute, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getUserData", nil, &r.Options, &resp)
 	return
@@ -7711,10 +7758,9 @@ func (r Hardware_SecurityModule750) Ping() (resp string, err error) {
 }
 
 // no documentation yet
-func (r Hardware_SecurityModule750) PopulateServerRam(hardwareId *int, ramSerialString *string) (err error) {
+func (r Hardware_SecurityModule750) PopulateServerRam(ramSerialString *string) (err error) {
 	var resp datatypes.Void
 	params := []interface{}{
-		hardwareId,
 		ramSerialString,
 	}
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "populateServerRam", params, &r.Options, &resp)
@@ -8628,6 +8674,12 @@ func (r Hardware_Server) GetBillingItemFlag() (resp bool, err error) {
 	return
 }
 
+// Retrieve Determine if BIOS password should be left as null.
+func (r Hardware_Server) GetBiosPasswordNullFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "getBiosPasswordNullFlag", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve Determines whether the hardware is ineligible for cancellation because it is disconnected.
 func (r Hardware_Server) GetBlockCancelBecauseDisconnectedFlag() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "getBlockCancelBecauseDisconnectedFlag", nil, &r.Options, &resp)
@@ -8954,6 +9006,12 @@ func (r Hardware_Server) GetHardwareStatus() (resp datatypes.Hardware_Status, er
 	return
 }
 
+// Retrieve Determine if hardware has Single Root IO VIrtualization (SR-IOV) billing item.
+func (r Hardware_Server) GetHasSingleRootVirtualizationBillingItemFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "getHasSingleRootVirtualizationBillingItemFlag", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve Determine in hardware object has TPM enabled.
 func (r Hardware_Server) GetHasTrustedPlatformModuleBillingItemFlag() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "getHasTrustedPlatformModuleBillingItemFlag", nil, &r.Options, &resp)
@@ -9003,6 +9061,12 @@ func (r Hardware_Server) GetInboundPrivateBandwidthUsage() (resp datatypes.Float
 // Retrieve The total public inbound bandwidth for this hardware for the current billing cycle.
 func (r Hardware_Server) GetInboundPublicBandwidthUsage() (resp datatypes.Float64, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "getInboundPublicBandwidthUsage", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Determine if hardware object has the IBM_CLOUD_READY_NODE_CERTIFIED attribute.
+func (r Hardware_Server) GetIsCloudReadyNodeCertified() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "getIsCloudReadyNodeCertified", nil, &r.Options, &resp)
 	return
 }
 
@@ -9525,6 +9589,12 @@ func (r Hardware_Server) GetRaidControllers() (resp []datatypes.Hardware_Compone
 	return
 }
 
+// Retrieve Determine if hardware object is vSan Ready Node.
+func (r Hardware_Server) GetReadyNodeFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "getReadyNodeFlag", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve Recent events that impact this hardware.
 func (r Hardware_Server) GetRecentEvents() (resp []datatypes.Notification_Occurrence_Event, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "getRecentEvents", nil, &r.Options, &resp)
@@ -9742,7 +9812,7 @@ func (r Hardware_Server) GetUplinkNetworkComponents() (resp []datatypes.Network_
 	return
 }
 
-// Retrieve A string containing custom user data for a hardware order.
+// Retrieve An array containing a single string of custom user data for a hardware order. Max size is 16 kb.
 func (r Hardware_Server) GetUserData() (resp []datatypes.Hardware_Attribute, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "getUserData", nil, &r.Options, &resp)
 	return
@@ -9921,10 +9991,9 @@ func (r Hardware_Server) Ping() (resp string, err error) {
 }
 
 // no documentation yet
-func (r Hardware_Server) PopulateServerRam(hardwareId *int, ramSerialString *string) (err error) {
+func (r Hardware_Server) PopulateServerRam(ramSerialString *string) (err error) {
 	var resp datatypes.Void
 	params := []interface{}{
-		hardwareId,
 		ramSerialString,
 	}
 	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "populateServerRam", params, &r.Options, &resp)
