@@ -1758,6 +1758,9 @@ type Product_Package_Server struct {
 
 	// The size of the server.
 	UnitSize *int `json:"unitSize,omitempty" xmlrpc:"unitSize,omitempty"`
+
+	// Flag to indicate if the server is a VMware vSAN Node configuration.
+	VmwareVsanNodeFlag *bool `json:"vmwareVsanNodeFlag,omitempty" xmlrpc:"vmwareVsanNodeFlag,omitempty"`
 }
 
 // The [[SoftLayer_Product_Package_Server_Option]] data type contains various data points associated with package servers that can be used in selection criteria.

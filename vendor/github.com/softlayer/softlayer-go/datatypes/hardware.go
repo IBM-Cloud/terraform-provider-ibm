@@ -594,10 +594,10 @@ type Hardware struct {
 	// Information regarding the network component that is one level higher than a piece of hardware on the network infrastructure.
 	UplinkNetworkComponents []Network_Component `json:"uplinkNetworkComponents,omitempty" xmlrpc:"uplinkNetworkComponents,omitempty"`
 
-	// A string containing custom user data for a hardware order.
+	// An array containing a single string of custom user data for a hardware order. Max size is 16 kb.
 	UserData []Hardware_Attribute `json:"userData,omitempty" xmlrpc:"userData,omitempty"`
 
-	// A count of a string containing custom user data for a hardware order.
+	// A count of an array containing a single string of custom user data for a hardware order. Max size is 16 kb.
 	UserDataCount *uint `json:"userDataCount,omitempty" xmlrpc:"userDataCount,omitempty"`
 
 	// Information regarding the virtual chassis for a piece of hardware.
@@ -802,6 +802,9 @@ type Hardware_Component struct {
 
 	// A hardware component's internal identifier.
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// A component's M.2 SATA capacity.
+	M2SataSlotCapacity *string `json:"m2SataSlotCapacity,omitempty" xmlrpc:"m2SataSlotCapacity,omitempty"`
 
 	// The date that a hardware component was last modified.
 	ModifyDate *Time `json:"modifyDate,omitempty" xmlrpc:"modifyDate,omitempty"`
@@ -1808,6 +1811,9 @@ type Hardware_Server struct {
 	// The raw public bandwidth usage data for the current billing cycle.
 	BillingCyclePublicBandwidthUsage *Network_Bandwidth_Usage `json:"billingCyclePublicBandwidthUsage,omitempty" xmlrpc:"billingCyclePublicBandwidthUsage,omitempty"`
 
+	// Determine if BIOS password should be left as null.
+	BiosPasswordNullFlag *bool `json:"biosPasswordNullFlag,omitempty" xmlrpc:"biosPasswordNullFlag,omitempty"`
+
 	// no documentation yet
 	ContainsSolidStateDrivesFlag *bool `json:"containsSolidStateDrivesFlag,omitempty" xmlrpc:"containsSolidStateDrivesFlag,omitempty"`
 
@@ -1826,8 +1832,14 @@ type Hardware_Server struct {
 	// Indicates if a server is a customer owned device.
 	CustomerOwnedFlag *bool `json:"customerOwnedFlag,omitempty" xmlrpc:"customerOwnedFlag,omitempty"`
 
+	// Determine if hardware has Single Root IO VIrtualization (SR-IOV) billing item.
+	HasSingleRootVirtualizationBillingItemFlag *bool `json:"hasSingleRootVirtualizationBillingItemFlag,omitempty" xmlrpc:"hasSingleRootVirtualizationBillingItemFlag,omitempty"`
+
 	// The total private inbound bandwidth for this hardware for the current billing cycle.
 	InboundPrivateBandwidthUsage *Float64 `json:"inboundPrivateBandwidthUsage,omitempty" xmlrpc:"inboundPrivateBandwidthUsage,omitempty"`
+
+	// Determine if hardware object has the IBM_CLOUD_READY_NODE_CERTIFIED attribute.
+	IsCloudReadyNodeCertified *bool `json:"isCloudReadyNodeCertified,omitempty" xmlrpc:"isCloudReadyNodeCertified,omitempty"`
 
 	// The last transaction that a server's operating system was loaded.
 	LastOperatingSystemReload *Provisioning_Version1_Transaction `json:"lastOperatingSystemReload,omitempty" xmlrpc:"lastOperatingSystemReload,omitempty"`
@@ -1858,6 +1870,9 @@ type Hardware_Server struct {
 
 	// The projected public outbound bandwidth for this hardware for the current billing cycle.
 	ProjectedPublicBandwidthUsage *Float64 `json:"projectedPublicBandwidthUsage,omitempty" xmlrpc:"projectedPublicBandwidthUsage,omitempty"`
+
+	// Determine if hardware object is vSan Ready Node.
+	ReadyNodeFlag *bool `json:"readyNodeFlag,omitempty" xmlrpc:"readyNodeFlag,omitempty"`
 
 	// A count of the last five commands issued to the server's remote management card.
 	RecentRemoteManagementCommandCount *uint `json:"recentRemoteManagementCommandCount,omitempty" xmlrpc:"recentRemoteManagementCommandCount,omitempty"`

@@ -1957,6 +1957,97 @@ func (r Network_CdnMarketplace_Account) VerifyCdnAccountExists(vendorName *strin
 	return
 }
 
+// no documentation yet
+type Network_CdnMarketplace_Configuration_Behavior_Geoblocking struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetNetworkCdnMarketplaceConfigurationBehaviorGeoblockingService returns an instance of the Network_CdnMarketplace_Configuration_Behavior_Geoblocking SoftLayer service
+func GetNetworkCdnMarketplaceConfigurationBehaviorGeoblockingService(sess *session.Session) Network_CdnMarketplace_Configuration_Behavior_Geoblocking {
+	return Network_CdnMarketplace_Configuration_Behavior_Geoblocking{Session: sess}
+}
+
+func (r Network_CdnMarketplace_Configuration_Behavior_Geoblocking) Id(id int) Network_CdnMarketplace_Configuration_Behavior_Geoblocking {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Network_CdnMarketplace_Configuration_Behavior_Geoblocking) Mask(mask string) Network_CdnMarketplace_Configuration_Behavior_Geoblocking {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Network_CdnMarketplace_Configuration_Behavior_Geoblocking) Filter(filter string) Network_CdnMarketplace_Configuration_Behavior_Geoblocking {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Network_CdnMarketplace_Configuration_Behavior_Geoblocking) Limit(limit int) Network_CdnMarketplace_Configuration_Behavior_Geoblocking {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Network_CdnMarketplace_Configuration_Behavior_Geoblocking) Offset(offset int) Network_CdnMarketplace_Configuration_Behavior_Geoblocking {
+	r.Options.Offset = &offset
+	return r
+}
+
+// no documentation yet
+func (r Network_CdnMarketplace_Configuration_Behavior_Geoblocking) CreateGeoblocking(input *datatypes.Container_Network_CdnMarketplace_Configuration_Input) (resp datatypes.Network_CdnMarketplace_Configuration_Behavior_Geoblocking, err error) {
+	params := []interface{}{
+		input,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_CdnMarketplace_Configuration_Behavior_Geoblocking", "createGeoblocking", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_CdnMarketplace_Configuration_Behavior_Geoblocking) DeleteGeoblocking(input *datatypes.Container_Network_CdnMarketplace_Configuration_Input) (resp datatypes.Network_CdnMarketplace_Utils_Response, err error) {
+	params := []interface{}{
+		input,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_CdnMarketplace_Configuration_Behavior_Geoblocking", "deleteGeoblocking", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_CdnMarketplace_Configuration_Behavior_Geoblocking) GetGeoblocking(input *datatypes.Container_Network_CdnMarketplace_Configuration_Input) (resp datatypes.Network_CdnMarketplace_Configuration_Behavior_Geoblocking, err error) {
+	params := []interface{}{
+		input,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_CdnMarketplace_Configuration_Behavior_Geoblocking", "getGeoblocking", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_CdnMarketplace_Configuration_Behavior_Geoblocking) GetGeoblockingAllowedTypesAndRegions(uniqueId *string) (resp datatypes.Network_CdnMarketplace_Configuration_Behavior_Geoblocking_Type, err error) {
+	params := []interface{}{
+		uniqueId,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_CdnMarketplace_Configuration_Behavior_Geoblocking", "getGeoblockingAllowedTypesAndRegions", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_CdnMarketplace_Configuration_Behavior_Geoblocking) GetObject() (resp datatypes.Network_CdnMarketplace_Configuration_Behavior_Geoblocking, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_CdnMarketplace_Configuration_Behavior_Geoblocking", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_CdnMarketplace_Configuration_Behavior_Geoblocking) UpdateGeoblocking(input *datatypes.Container_Network_CdnMarketplace_Configuration_Input) (resp datatypes.Network_CdnMarketplace_Configuration_Behavior_Geoblocking, err error) {
+	params := []interface{}{
+		input,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_CdnMarketplace_Configuration_Behavior_Geoblocking", "updateGeoblocking", params, &r.Options, &resp)
+	return
+}
+
 // This data type models a purge event that occurs in caching server. It contains a reference to a mapping configuration, the path to execute the purge on, the status of the purge, and flag that enables saving the purge information for future use.
 type Network_CdnMarketplace_Configuration_Cache_Purge struct {
 	Session *session.Session
@@ -3657,52 +3748,6 @@ func (r Network_Customer_Subnet) GetObject() (resp datatypes.Network_Customer_Su
 	return
 }
 
-// The SoftLayer_Network_DirectLink_CloudExchangeProvider presents a structure containing attributes of a Direct Link Cloud exchange provider.
-type Network_DirectLink_CloudExchangeProvider struct {
-	Session *session.Session
-	Options sl.Options
-}
-
-// GetNetworkDirectLinkCloudExchangeProviderService returns an instance of the Network_DirectLink_CloudExchangeProvider SoftLayer service
-func GetNetworkDirectLinkCloudExchangeProviderService(sess *session.Session) Network_DirectLink_CloudExchangeProvider {
-	return Network_DirectLink_CloudExchangeProvider{Session: sess}
-}
-
-func (r Network_DirectLink_CloudExchangeProvider) Id(id int) Network_DirectLink_CloudExchangeProvider {
-	r.Options.Id = &id
-	return r
-}
-
-func (r Network_DirectLink_CloudExchangeProvider) Mask(mask string) Network_DirectLink_CloudExchangeProvider {
-	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
-		mask = fmt.Sprintf("mask[%s]", mask)
-	}
-
-	r.Options.Mask = mask
-	return r
-}
-
-func (r Network_DirectLink_CloudExchangeProvider) Filter(filter string) Network_DirectLink_CloudExchangeProvider {
-	r.Options.Filter = filter
-	return r
-}
-
-func (r Network_DirectLink_CloudExchangeProvider) Limit(limit int) Network_DirectLink_CloudExchangeProvider {
-	r.Options.Limit = &limit
-	return r
-}
-
-func (r Network_DirectLink_CloudExchangeProvider) Offset(offset int) Network_DirectLink_CloudExchangeProvider {
-	r.Options.Offset = &offset
-	return r
-}
-
-// no documentation yet
-func (r Network_DirectLink_CloudExchangeProvider) GetObject() (resp datatypes.Network_DirectLink_CloudExchangeProvider, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_DirectLink_CloudExchangeProvider", "getObject", nil, &r.Options, &resp)
-	return
-}
-
 // The SoftLayer_Network_DirectLink_Location presents a structure containing attributes of a Direct Link location, and its related object SoftLayer location.
 type Network_DirectLink_Location struct {
 	Session *session.Session
@@ -3746,21 +3791,6 @@ func (r Network_DirectLink_Location) Offset(offset int) Network_DirectLink_Locat
 // Return all existing Direct Link location.
 func (r Network_DirectLink_Location) GetAllObjects() (resp []datatypes.Network_DirectLink_Location, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_DirectLink_Location", "getAllObjects", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve The Id of Direct Link cloud exchange provider.
-func (r Network_DirectLink_Location) GetCloudExchangeProvider() (resp datatypes.Network_DirectLink_CloudExchangeProvider, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_DirectLink_Location", "getCloudExchangeProvider", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve all locations for a Cloud Exchange Provider. IBM SoftLayer's datacenters exist in various cities and each contain one or more infrastructure.
-func (r Network_DirectLink_Location) GetCloudExchangeProviderLocations(provider *string) (resp []datatypes.Network_DirectLink_Location, err error) {
-	params := []interface{}{
-		provider,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_DirectLink_Location", "getCloudExchangeProviderLocations", params, &r.Options, &resp)
 	return
 }
 
@@ -4765,6 +4795,15 @@ func (r Network_Interconnect_Tenant) GetBillingItem() (resp datatypes.Billing_It
 	return
 }
 
+// no documentation yet
+func (r Network_Interconnect_Tenant) GetConnection(serviceKey *string) (resp string, err error) {
+	params := []interface{}{
+		serviceKey,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_Interconnect_Tenant", "getConnection", params, &r.Options, &resp)
+	return
+}
+
 // Retrieve
 func (r Network_Interconnect_Tenant) GetDatacenterName() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Interconnect_Tenant", "getDatacenterName", nil, &r.Options, &resp)
@@ -4789,6 +4828,21 @@ func (r Network_Interconnect_Tenant) GetNetworkZones() (resp []string, err error
 // no documentation yet
 func (r Network_Interconnect_Tenant) GetObject() (resp datatypes.Network_Interconnect_Tenant, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Interconnect_Tenant", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Network_Interconnect_Tenant) GetPortLabel() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Interconnect_Tenant", "getPortLabel", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Interconnect_Tenant) GetPorts(provider *string) (resp string, err error) {
+	params := []interface{}{
+		provider,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_Interconnect_Tenant", "getPorts", params, &r.Options, &resp)
 	return
 }
 
@@ -8321,6 +8375,18 @@ func (r Network_Storage_Allowed_Host) GetAssignedGroups() (resp []datatypes.Netw
 	return
 }
 
+// Retrieve The SoftLayer_Network_Storage volumes to which this SoftLayer_Network_Storage_Allowed_Host is allowed access.
+func (r Network_Storage_Allowed_Host) GetAssignedIscsiVolumes() (resp []datatypes.Network_Storage, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host", "getAssignedIscsiVolumes", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The SoftLayer_Network_Storage volumes to which this SoftLayer_Network_Storage_Allowed_Host is allowed access.
+func (r Network_Storage_Allowed_Host) GetAssignedNfsVolumes() (resp []datatypes.Network_Storage, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host", "getAssignedNfsVolumes", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve The SoftLayer_Network_Storage primary volumes whose replicas are allowed access.
 func (r Network_Storage_Allowed_Host) GetAssignedReplicationVolumes() (resp []datatypes.Network_Storage, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host", "getAssignedReplicationVolumes", nil, &r.Options, &resp)
@@ -8463,6 +8529,18 @@ func (r Network_Storage_Allowed_Host_Hardware) GetAllObjects() (resp []datatypes
 // Retrieve The SoftLayer_Network_Storage_Group objects this SoftLayer_Network_Storage_Allowed_Host is present in.
 func (r Network_Storage_Allowed_Host_Hardware) GetAssignedGroups() (resp []datatypes.Network_Storage_Group, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_Hardware", "getAssignedGroups", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The SoftLayer_Network_Storage volumes to which this SoftLayer_Network_Storage_Allowed_Host is allowed access.
+func (r Network_Storage_Allowed_Host_Hardware) GetAssignedIscsiVolumes() (resp []datatypes.Network_Storage, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_Hardware", "getAssignedIscsiVolumes", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The SoftLayer_Network_Storage volumes to which this SoftLayer_Network_Storage_Allowed_Host is allowed access.
+func (r Network_Storage_Allowed_Host_Hardware) GetAssignedNfsVolumes() (resp []datatypes.Network_Storage, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_Hardware", "getAssignedNfsVolumes", nil, &r.Options, &resp)
 	return
 }
 
@@ -8617,6 +8695,18 @@ func (r Network_Storage_Allowed_Host_IpAddress) GetAssignedGroups() (resp []data
 	return
 }
 
+// Retrieve The SoftLayer_Network_Storage volumes to which this SoftLayer_Network_Storage_Allowed_Host is allowed access.
+func (r Network_Storage_Allowed_Host_IpAddress) GetAssignedIscsiVolumes() (resp []datatypes.Network_Storage, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_IpAddress", "getAssignedIscsiVolumes", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The SoftLayer_Network_Storage volumes to which this SoftLayer_Network_Storage_Allowed_Host is allowed access.
+func (r Network_Storage_Allowed_Host_IpAddress) GetAssignedNfsVolumes() (resp []datatypes.Network_Storage, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_IpAddress", "getAssignedNfsVolumes", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve The SoftLayer_Network_Storage primary volumes whose replicas are allowed access.
 func (r Network_Storage_Allowed_Host_IpAddress) GetAssignedReplicationVolumes() (resp []datatypes.Network_Storage, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_IpAddress", "getAssignedReplicationVolumes", nil, &r.Options, &resp)
@@ -8768,6 +8858,18 @@ func (r Network_Storage_Allowed_Host_Subnet) GetAssignedGroups() (resp []datatyp
 	return
 }
 
+// Retrieve The SoftLayer_Network_Storage volumes to which this SoftLayer_Network_Storage_Allowed_Host is allowed access.
+func (r Network_Storage_Allowed_Host_Subnet) GetAssignedIscsiVolumes() (resp []datatypes.Network_Storage, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_Subnet", "getAssignedIscsiVolumes", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The SoftLayer_Network_Storage volumes to which this SoftLayer_Network_Storage_Allowed_Host is allowed access.
+func (r Network_Storage_Allowed_Host_Subnet) GetAssignedNfsVolumes() (resp []datatypes.Network_Storage, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_Subnet", "getAssignedNfsVolumes", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve The SoftLayer_Network_Storage primary volumes whose replicas are allowed access.
 func (r Network_Storage_Allowed_Host_Subnet) GetAssignedReplicationVolumes() (resp []datatypes.Network_Storage, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_Subnet", "getAssignedReplicationVolumes", nil, &r.Options, &resp)
@@ -8916,6 +9018,18 @@ func (r Network_Storage_Allowed_Host_VirtualGuest) GetAllObjects() (resp []datat
 // Retrieve The SoftLayer_Network_Storage_Group objects this SoftLayer_Network_Storage_Allowed_Host is present in.
 func (r Network_Storage_Allowed_Host_VirtualGuest) GetAssignedGroups() (resp []datatypes.Network_Storage_Group, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_VirtualGuest", "getAssignedGroups", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The SoftLayer_Network_Storage volumes to which this SoftLayer_Network_Storage_Allowed_Host is allowed access.
+func (r Network_Storage_Allowed_Host_VirtualGuest) GetAssignedIscsiVolumes() (resp []datatypes.Network_Storage, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_VirtualGuest", "getAssignedIscsiVolumes", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The SoftLayer_Network_Storage volumes to which this SoftLayer_Network_Storage_Allowed_Host is allowed access.
+func (r Network_Storage_Allowed_Host_VirtualGuest) GetAssignedNfsVolumes() (resp []datatypes.Network_Storage, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Allowed_Host_VirtualGuest", "getAssignedNfsVolumes", nil, &r.Options, &resp)
 	return
 }
 

@@ -2344,6 +2344,12 @@ func (r Billing_Order_Cart) GetCartByCartKey(cartKey *string) (resp datatypes.Bi
 	return
 }
 
+// Retrieve Indicates whether the owner of the quote chosen to no longer be contacted.
+func (r Billing_Order_Cart) GetDoNotContactFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Billing_Order_Cart", "getDoNotContactFlag", nil, &r.Options, &resp)
+	return
+}
+
 // no documentation yet
 func (r Billing_Order_Cart) GetObject() (resp datatypes.Billing_Order_Cart, err error) {
 	err = r.Session.DoRequest("SoftLayer_Billing_Order_Cart", "getObject", nil, &r.Options, &resp)
@@ -2436,6 +2442,13 @@ func (r Billing_Order_Cart) VerifyOrder(orderData interface{}) (resp datatypes.C
 		orderData,
 	}
 	err = r.Session.DoRequest("SoftLayer_Billing_Order_Cart", "verifyOrder", params, &r.Options, &resp)
+	return
+}
+
+// Withdraws the users acceptance of the GDPR terms.
+func (r Billing_Order_Cart) WithdrawGdprAcceptance() (err error) {
+	var resp datatypes.Void
+	err = r.Session.DoRequest("SoftLayer_Billing_Order_Cart", "withdrawGdprAcceptance", nil, &r.Options, &resp)
 	return
 }
 
@@ -2683,6 +2696,12 @@ func (r Billing_Order_Quote) GetAccount() (resp datatypes.Account, err error) {
 	return
 }
 
+// Retrieve Indicates whether the owner of the quote chosen to no longer be contacted.
+func (r Billing_Order_Quote) GetDoNotContactFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Billing_Order_Quote", "getDoNotContactFlag", nil, &r.Options, &resp)
+	return
+}
+
 // getObject retrieves the SoftLayer_Billing_Order_Quote object whose ID number corresponds to the ID number of the init parameter passed to the SoftLayer_Billing_Order_Quote service. You can only retrieve quotes that are assigned to your portal user's account.
 func (r Billing_Order_Quote) GetObject() (resp datatypes.Billing_Order_Quote, err error) {
 	err = r.Session.DoRequest("SoftLayer_Billing_Order_Quote", "getObject", nil, &r.Options, &resp)
@@ -2764,5 +2783,12 @@ func (r Billing_Order_Quote) VerifyOrder(orderData interface{}) (resp datatypes.
 		orderData,
 	}
 	err = r.Session.DoRequest("SoftLayer_Billing_Order_Quote", "verifyOrder", params, &r.Options, &resp)
+	return
+}
+
+// Withdraws the users acceptance of the GDPR terms.
+func (r Billing_Order_Quote) WithdrawGdprAcceptance() (err error) {
+	var resp datatypes.Void
+	err = r.Session.DoRequest("SoftLayer_Billing_Order_Quote", "withdrawGdprAcceptance", nil, &r.Options, &resp)
 	return
 }

@@ -20,18 +20,10 @@
 
 package datatypes
 
-// no documentation yet
-type IntegratedOfferingTeam_Container_Region struct {
+// The SoftLayer_Billing_Oder_Quote data type records acceptance of policy documents for a quote.
+type Policy_Document_Acceptance_Quote struct {
 	Entity
 
 	// no documentation yet
-	KeyName *string `json:"keyName,omitempty" xmlrpc:"keyName,omitempty"`
-
-	// no documentation yet
-	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
-}
-
-// This class represents an Integrated Offering Team region.
-type IntegratedOfferingTeam_Region struct {
-	Entity
+	Resource *Billing_Order_Quote `json:"resource,omitempty" xmlrpc:"resource,omitempty"`
 }

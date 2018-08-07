@@ -49,6 +49,9 @@ type Billing_Currency_Country struct {
 
 	// A unique identifier for a map between a country and currency.
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// The country currency locale.
+	Locale *string `json:"locale,omitempty" xmlrpc:"locale,omitempty"`
 }
 
 // no documentation yet
@@ -2090,6 +2093,9 @@ type Billing_Order_Quote struct {
 
 	// Holds the date the quote record was created
 	CreateDate *Time `json:"createDate,omitempty" xmlrpc:"createDate,omitempty"`
+
+	// Indicates whether the owner of the quote chosen to no longer be contacted.
+	DoNotContactFlag *bool `json:"doNotContactFlag,omitempty" xmlrpc:"doNotContactFlag,omitempty"`
 
 	// This property holds the date of expiration of a quote, after that date the quote would be deem expired
 	ExpirationDate *Time `json:"expirationDate,omitempty" xmlrpc:"expirationDate,omitempty"`

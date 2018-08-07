@@ -20,6 +20,7 @@ import (
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/services"
 	"github.com/softlayer/softlayer-go/session"
+	"github.com/softlayer/softlayer-go/sl"
 )
 
 // CheckBillingOrderStatus returns true if the status of the billing order for
@@ -38,10 +39,13 @@ func CheckBillingOrderStatus(sess *session.Session, receipt *datatypes.Container
 		return false, nil, err
 	}
 
-	currentStatus := *item.BillingItem.ProvisionTransaction.TransactionStatus.Name
-	for _, status := range statuses {
-		if currentStatus == status {
-			return true, &item, nil
+	currentStatus, ok := sl.GrabOk(item, "BillingItem.ProvisionTransaction.TransactionStatus.Name")
+
+	if ok {
+		for _, status := range statuses {
+			if currentStatus == status {
+				return true, &item, nil
+			}
 		}
 	}
 
