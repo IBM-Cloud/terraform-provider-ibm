@@ -488,14 +488,18 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 			return fmt.Errorf("Error retrieving workers of default worker pool for cluster: %s", err)
 		}
 
-		hardware := workersByPool[0].Isolation
-		switch strings.ToLower(hardware) {
-		case "":
-			hardware = hardwareShared
-		case isolationPrivate:
-			hardware = hardwareDedicated
-		case isolationPublic:
-			hardware = hardwareShared
+		if len(workersByPool) > 0 {
+			hardware := workersByPool[0].Isolation
+			switch strings.ToLower(hardware) {
+			case "":
+				hardware = hardwareShared
+			case isolationPrivate:
+				hardware = hardwareDedicated
+			case isolationPublic:
+				hardware = hardwareShared
+			}
+			d.Set("isolation", workersByPool[0].Isolation)
+			d.Set("hardware", hardware)
 		}
 
 		defaultWorkerPool, err := workerPoolsAPI.GetWorkerPool(clusterID, defaultWorkerPool, targetEnv)
@@ -510,8 +514,6 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 			}
 		}
 		d.Set("worker_pools", flattenWorkerPools(workerPools))
-		d.Set("hardware", hardware)
-		d.Set("isolation", workersByPool[0].Isolation)
 	}
 
 	albs, err := albsAPI.ListClusterALBs(clusterID, targetEnv)
