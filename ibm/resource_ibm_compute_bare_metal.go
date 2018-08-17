@@ -1307,14 +1307,13 @@ func findNetworkItemPriceId(items []datatypes.Product_Item, d dataRetriever) (da
 // Find memory price item using memory size.
 func findMemoryItemPriceId(items []datatypes.Product_Item, d dataRetriever) (datatypes.Product_Item_Price, error) {
 	memory := d.Get("memory").(int)
-	memoryStr := "RAM_" + strconv.Itoa(memory) + "_GB"
 	availableMemories := ""
 
 	for _, item := range items {
 		for _, itemCategory := range item.Categories {
 			if *itemCategory.CategoryCode == "ram" {
 				availableMemories = availableMemories + *item.KeyName + "(" + *item.Description + ")" + ", "
-				if strings.HasPrefix(*item.KeyName, memoryStr) {
+				if int(*item.Capacity) == memory {
 					for _, price := range item.Prices {
 						if price.LocationGroupId == nil {
 							return datatypes.Product_Item_Price{Id: price.Id}, nil
