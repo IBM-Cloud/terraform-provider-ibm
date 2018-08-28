@@ -55,6 +55,14 @@ func resourceIBMContainerWorkerPoolZoneAttachment() *schema.Resource {
 				Optional: true,
 			},
 
+			"region": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The zone region",
+			},
+
 			"worker_count": {
 				Type:     schema.TypeInt,
 				Computed: true,
@@ -87,12 +95,16 @@ func resourceIBMContainerWorkerPoolZoneAttachmentCreate(d *schema.ResourceData, 
 	workerPool := d.Get("worker_pool").(string)
 
 	workerPoolsAPI := csClient.WorkerPools()
-
-	err = workerPoolsAPI.AddZone(cluster, workerPool, workerPoolZone)
+	targetEnv, err := getWorkerPoolTargetHeader(d, meta)
 	if err != nil {
 		return err
 	}
-	_, err = WaitForWorkerZoneNormal(cluster, workerPool, zone, meta, d.Timeout(schema.TimeoutUpdate))
+
+	err = workerPoolsAPI.AddZone(cluster, workerPool, workerPoolZone, targetEnv)
+	if err != nil {
+		return err
+	}
+	_, err = WaitForWorkerZoneNormal(cluster, workerPool, zone, meta, d.Timeout(schema.TimeoutUpdate), targetEnv)
 	if err != nil {
 		return fmt.Errorf(
 			"Error waiting for workers of worker pool (%s) of cluster (%s) to become ready: %s", workerPool, cluster, err)
@@ -117,8 +129,12 @@ func resourceIBMContainerWorkerPoolZoneAttachmentRead(d *schema.ResourceData, me
 	zoneName := parts[2]
 
 	workerPoolsAPI := csClient.WorkerPools()
+	targetEnv, err := getWorkerPoolTargetHeader(d, meta)
+	if err != nil {
+		return err
+	}
 
-	workerPoolRes, err := workerPoolsAPI.GetWorkerPool(cluster, workerPool)
+	workerPoolRes, err := workerPoolsAPI.GetWorkerPool(cluster, workerPool, targetEnv)
 	if err != nil {
 		return err
 	}
@@ -132,6 +148,7 @@ func resourceIBMContainerWorkerPoolZoneAttachmentRead(d *schema.ResourceData, me
 			d.Set("zone", zone.ID)
 			d.Set("cluster", cluster)
 			d.Set("worker_pool", workerPool)
+			d.Set("region", workerPoolRes.Region)
 			break
 		}
 	}
@@ -148,6 +165,10 @@ func resourceIBMContainerWorkerPoolZoneAttachmentUpdate(d *schema.ResourceData, 
 	workerPoolsAPI := csClient.WorkerPools()
 
 	if d.HasChange("private_vlan_id") || d.HasChange("public_vlan_id") {
+		targetEnv, err := getWorkerPoolTargetHeader(d, meta)
+		if err != nil {
+			return err
+		}
 		parts, err := idParts(d.Id())
 		if err != nil {
 			return err
@@ -155,7 +176,7 @@ func resourceIBMContainerWorkerPoolZoneAttachmentUpdate(d *schema.ResourceData, 
 		cluster := parts[0]
 		workerPool := parts[1]
 		zone := parts[2]
-		err = workerPoolsAPI.UpdateZoneNetwork(cluster, zone, workerPool, d.Get("private_vlan_id").(string), d.Get("public_vlan_id").(string))
+		err = workerPoolsAPI.UpdateZoneNetwork(cluster, zone, workerPool, d.Get("private_vlan_id").(string), d.Get("public_vlan_id").(string), targetEnv)
 		if err != nil {
 			return err
 		}
@@ -179,11 +200,15 @@ func resourceIBMContainerWorkerPoolZoneAttachmentDelete(d *schema.ResourceData, 
 	zone := parts[2]
 
 	workerPoolsAPI := csClient.WorkerPools()
-	err = workerPoolsAPI.RemoveZone(cluster, zone, workerPool)
+	targetEnv, err := getWorkerPoolTargetHeader(d, meta)
 	if err != nil {
 		return err
 	}
-	_, err = WaitForWorkerZoneDeleted(cluster, workerPool, zone, meta, d.Timeout(schema.TimeoutDelete))
+	err = workerPoolsAPI.RemoveZone(cluster, zone, workerPool, targetEnv)
+	if err != nil {
+		return err
+	}
+	_, err = WaitForWorkerZoneDeleted(cluster, workerPool, zone, meta, d.Timeout(schema.TimeoutDelete), targetEnv)
 	if err != nil {
 		return fmt.Errorf(
 			"Error waiting for deleting workers of worker pool (%s) of cluster (%s):  %s", workerPool, cluster, err)
@@ -206,8 +231,12 @@ func resourceIBMContainerWorkerPoolZoneAttachmentExists(d *schema.ResourceData, 
 	zoneID := parts[2]
 
 	workerPoolsAPI := csClient.WorkerPools()
+	targetEnv, err := getWorkerPoolTargetHeader(d, meta)
+	if err != nil {
+		return false, err
+	}
 
-	workerPool, err := workerPoolsAPI.GetWorkerPool(cluster, workerPoolID)
+	workerPool, err := workerPoolsAPI.GetWorkerPool(cluster, workerPoolID, targetEnv)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
 			if apiErr.StatusCode() == 404 {
@@ -226,7 +255,7 @@ func resourceIBMContainerWorkerPoolZoneAttachmentExists(d *schema.ResourceData, 
 	return zone.ID == zoneID, nil
 }
 
-func WaitForWorkerZoneNormal(clusterNameOrID, workerPoolNameOrID, zone string, meta interface{}, timeout time.Duration) (interface{}, error) {
+func WaitForWorkerZoneNormal(clusterNameOrID, workerPoolNameOrID, zone string, meta interface{}, timeout time.Duration, target v1.ClusterTargetHeader) (interface{}, error) {
 	csClient, err := meta.(ClientSession).ContainerAPI()
 	if err != nil {
 		return nil, err
@@ -235,7 +264,7 @@ func WaitForWorkerZoneNormal(clusterNameOrID, workerPoolNameOrID, zone string, m
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", workerProvisioning},
 		Target:     []string{workerNormal},
-		Refresh:    workerPoolZoneStateRefreshFunc(csClient.Workers(), clusterNameOrID, workerPoolNameOrID, zone),
+		Refresh:    workerPoolZoneStateRefreshFunc(csClient.Workers(), clusterNameOrID, workerPoolNameOrID, zone, target),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -244,9 +273,9 @@ func WaitForWorkerZoneNormal(clusterNameOrID, workerPoolNameOrID, zone string, m
 	return stateConf.WaitForState()
 }
 
-func workerPoolZoneStateRefreshFunc(client v1.Workers, instanceID, workerPoolNameOrID, zone string) resource.StateRefreshFunc {
+func workerPoolZoneStateRefreshFunc(client v1.Workers, instanceID, workerPoolNameOrID, zone string, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		workerFields, err := client.ListByWorkerPool(instanceID, workerPoolNameOrID, false)
+		workerFields, err := client.ListByWorkerPool(instanceID, workerPoolNameOrID, false, target)
 		if err != nil {
 			return nil, "", fmt.Errorf("Error retrieving workers for cluster: %s", err)
 		}
@@ -264,7 +293,7 @@ func workerPoolZoneStateRefreshFunc(client v1.Workers, instanceID, workerPoolNam
 	}
 }
 
-func WaitForWorkerZoneDeleted(clusterNameOrID, workerPoolNameOrID, zone string, meta interface{}, timeout time.Duration) (interface{}, error) {
+func WaitForWorkerZoneDeleted(clusterNameOrID, workerPoolNameOrID, zone string, meta interface{}, timeout time.Duration, target v1.ClusterTargetHeader) (interface{}, error) {
 	csClient, err := meta.(ClientSession).ContainerAPI()
 	if err != nil {
 		return nil, err
@@ -273,7 +302,7 @@ func WaitForWorkerZoneDeleted(clusterNameOrID, workerPoolNameOrID, zone string, 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"deleting"},
 		Target:     []string{workerDeleteState},
-		Refresh:    workerPoolZoneDeleteStateRefreshFunc(csClient.Workers(), clusterNameOrID, workerPoolNameOrID, zone),
+		Refresh:    workerPoolZoneDeleteStateRefreshFunc(csClient.Workers(), clusterNameOrID, workerPoolNameOrID, zone, target),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -282,9 +311,9 @@ func WaitForWorkerZoneDeleted(clusterNameOrID, workerPoolNameOrID, zone string, 
 	return stateConf.WaitForState()
 }
 
-func workerPoolZoneDeleteStateRefreshFunc(client v1.Workers, instanceID, workerPoolNameOrID, zone string) resource.StateRefreshFunc {
+func workerPoolZoneDeleteStateRefreshFunc(client v1.Workers, instanceID, workerPoolNameOrID, zone string, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		workerFields, err := client.ListByWorkerPool(instanceID, workerPoolNameOrID, true)
+		workerFields, err := client.ListByWorkerPool(instanceID, workerPoolNameOrID, true, target)
 		if err != nil {
 			return nil, "", fmt.Errorf("Error retrieving workers for cluster: %s", err)
 		}

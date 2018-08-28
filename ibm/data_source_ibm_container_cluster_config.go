@@ -30,7 +30,12 @@ func dataSourceIBMContainerClusterConfig() *schema.Resource {
 			"account_guid": {
 				Description: "The bluemix account guid this cluster belongs to",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
+			},
+			"region": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The cluster region",
 			},
 			"cluster_name_id": {
 				Description: "The name/id of the cluster",
@@ -91,8 +96,10 @@ func dataSourceIBMContainerClusterConfigRead(d *schema.ResourceData, meta interf
 		}
 
 	} else {
-		targetEnv := getClusterTargetHeader(d)
-		var err error
+		targetEnv, err := getClusterTargetHeader(d, meta)
+		if err != nil {
+			return err
+		}
 		configPath, err = csAPI.GetClusterConfig(name, configDir, admin, targetEnv)
 		if err != nil {
 			return fmt.Errorf("Error downloading the cluster config [%s]: %s", name, err)

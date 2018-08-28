@@ -59,10 +59,6 @@ func dataSourceIBMContainerCluster() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"kube_version": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
 						"labels": {
 							Type:     schema.TypeMap,
 							Computed: true,
@@ -159,6 +155,50 @@ func dataSourceIBMContainerCluster() *schema.Resource {
 					},
 				},
 			},
+			"albs": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"alb_type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"enable": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+						"state": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"num_of_instances": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"alb_ip": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"resize": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+						"disable_deployment": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+					},
+				},
+			},
 			"org_guid": {
 				Description: "The bluemix organization guid this cluster belongs to",
 				Type:        schema.TypeString,
@@ -172,7 +212,13 @@ func dataSourceIBMContainerCluster() *schema.Resource {
 			"account_guid": {
 				Description: "The bluemix account guid this cluster belongs to",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
+			},
+			"region": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The cluster region",
 			},
 		},
 	}
@@ -186,8 +232,12 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	csAPI := csClient.Clusters()
 	wrkAPI := csClient.Workers()
 	workerPoolsAPI := csClient.WorkerPools()
+	albsAPI := csClient.Albs()
 
-	targetEnv := getClusterTargetHeader(d)
+	targetEnv, err := getClusterTargetHeader(d, meta)
+	if err != nil {
+		return err
+	}
 	name := d.Get("cluster_name_id").(string)
 
 	clusterFields, err := csAPI.Find(name, targetEnv)
@@ -215,18 +265,25 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 		boundedService["namespace"] = service.Namespace
 		boundedServices = append(boundedServices, boundedService)
 	}
-	workerPools, err := workerPoolsAPI.ListWorkerPools(name)
+	workerPools, err := workerPoolsAPI.ListWorkerPools(name, targetEnv)
 	if err != nil {
 		return fmt.Errorf("Error retrieving worker pools of the cluster %s: %s", name, err)
+	}
+
+	albs, err := albsAPI.ListClusterALBs(name, targetEnv)
+	if err != nil {
+		return fmt.Errorf("Error retrieving alb's of the cluster %s: %s", name, err)
 	}
 
 	d.SetId(clusterFields.ID)
 	d.Set("worker_count", clusterFields.WorkerCount)
 	d.Set("workers", workers)
+	d.Set("region", clusterFields.Region)
 	d.Set("bounded_services", boundedServices)
 	d.Set("vlans", flattenVlans(clusterFields.Vlans))
 	d.Set("is_trusted", clusterFields.IsTrusted)
 	d.Set("worker_pools", flattenWorkerPools(workerPools))
+	d.Set("albs", flattenAlbs(albs))
 
 	return nil
 }

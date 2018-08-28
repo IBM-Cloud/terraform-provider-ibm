@@ -200,6 +200,44 @@ func TestAccIBMApp_With_Tags(t *testing.T) {
 	})
 }
 
+func TestAccIBMApp_With_Health_Check(t *testing.T) {
+	var conf mccpv2.AppFields
+	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMAppDestroy,
+		Steps: []resource.TestStep{
+
+			resource.TestStep{
+				Config: testAccCheckIBMAppWithHealthCheck(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMAppExists("ibm_app.app", &conf),
+					resource.TestCheckResourceAttr("ibm_app.app", "name", name),
+					resource.TestCheckResourceAttr("ibm_app.app", "instances", "1"),
+					resource.TestCheckResourceAttr("ibm_app.app", "memory", "128"),
+					resource.TestCheckResourceAttr("ibm_app.app", "disk_quota", "512"),
+					resource.TestCheckResourceAttr("ibm_app.app", "health_check_type", "port"),
+					resource.TestCheckResourceAttr("ibm_app.app", "health_check_timeout", "120"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMAppWithHealthCheckUpdate(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMAppExists("ibm_app.app", &conf),
+					resource.TestCheckResourceAttr("ibm_app.app", "name", name),
+					resource.TestCheckResourceAttr("ibm_app.app", "instances", "1"),
+					resource.TestCheckResourceAttr("ibm_app.app", "memory", "128"),
+					resource.TestCheckResourceAttr("ibm_app.app", "disk_quota", "512"),
+					resource.TestCheckResourceAttr("ibm_app.app", "health_check_type", "port"),
+					resource.TestCheckResourceAttr("ibm_app.app", "health_check_timeout", "180"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMAppDestroy(s *terraform.State) error {
 	cfClient, err := testAccProvider.Meta().(ClientSession).MccpAPI()
 	if err != nil {
@@ -449,8 +487,8 @@ resource "ibm_app_route" "route" {
 resource "ibm_service_instance" "service" {
   name       = "%s"
   space_guid = "${data.ibm_space.space.id}"
-  service    = "cleardb"
-  plan       = "cb5"
+  service    = "speech_to_text"
+  plan       = "lite"
   tags       = ["cluster-service", "cluster-bind"]
 }
 
@@ -495,16 +533,16 @@ resource "ibm_app_route" "route" {
 resource "ibm_service_instance" "service" {
   name       = "%s"
   space_guid = "${data.ibm_space.space.id}"
-  service    = "cleardb"
-  plan       = "cb5"
+  service    = "speech_to_text"
+  plan       = "lite"
   tags       = ["cluster-service", "cluster-bind"]
 }
 
 resource "ibm_service_instance" "service1" {
   name       = "%s"
   space_guid = "${data.ibm_space.space.id}"
-  service    = "cloudantNoSQLDB"
-  plan       = "Lite"
+  service    = "speech_to_text"
+  plan       = "lite"
   tags       = ["cluster-service"]
 }
 
@@ -550,16 +588,16 @@ resource "ibm_app_route" "route" {
 resource "ibm_service_instance" "service" {
   name       = "%s"
   space_guid = "${data.ibm_space.space.id}"
-  service    = "cleardb"
-  plan       = "cb5"
+  service    = "speech_to_text"
+  plan       = "lite"
   tags       = ["cluster-service", "cluster-bind"]
 }
 
 resource "ibm_service_instance" "service1" {
   name       = "%s"
   space_guid = "${data.ibm_space.space.id}"
-  service    = "cloudantNoSQLDB"
-  plan       = "Lite"
+  service    = "speech_to_text"
+  plan       = "lite"
   tags       = ["cluster-service"]
 }
 
@@ -620,6 +658,48 @@ resource "ibm_app" "app" {
   wait_time_minutes = 90
 	buildpack         = "sdk-for-nodejs"
 	tags							= ["one", "two", "three"]
+}`, cfOrganization, cfSpace, name)
+
+}
+
+func testAccCheckIBMAppWithHealthCheck(name string) string {
+	return fmt.Sprintf(`
+data "ibm_space" "space" {
+  org   = "%s"
+  space = "%s"
+}
+
+resource "ibm_app" "app" {
+  name              = "%s"
+  space_guid        = "${data.ibm_space.space.id}"
+  app_path          = "test-fixtures/app1.zip"
+	wait_time_minutes = 90
+	health_check_timeout = 120
+	instances         = 1
+	disk_quota        = 512
+  memory            = 128
+  
+}`, cfOrganization, cfSpace, name)
+
+}
+
+func testAccCheckIBMAppWithHealthCheckUpdate(name string) string {
+	return fmt.Sprintf(`
+data "ibm_space" "space" {
+  org   = "%s"
+  space = "%s"
+}
+
+resource "ibm_app" "app" {
+  name              = "%s"
+  space_guid        = "${data.ibm_space.space.id}"
+  app_path          = "test-fixtures/app1.zip"
+	wait_time_minutes = 90
+	health_check_timeout = 180
+	instances         = 1
+	disk_quota        = 512
+  memory            = 128
+  
 }`, cfOrganization, cfSpace, name)
 
 }

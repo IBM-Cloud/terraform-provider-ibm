@@ -74,8 +74,14 @@ func resourceIBMContainerBindService() *schema.Resource {
 			"account_guid": {
 				Description: "The bluemix account guid this cluster belongs to",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
+			},
+			"region": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The cluster region",
 			},
 			"tags": {
 				Type:     schema.TypeSet,
@@ -87,17 +93,28 @@ func resourceIBMContainerBindService() *schema.Resource {
 	}
 }
 
-func getClusterTargetHeader(d *schema.ResourceData) v1.ClusterTargetHeader {
+func getClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v1.ClusterTargetHeader, error) {
 	orgGUID := d.Get("org_guid").(string)
 	spaceGUID := d.Get("space_guid").(string)
 	accountGUID := d.Get("account_guid").(string)
+	region := d.Get("region").(string)
+
+	sess, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return v1.ClusterTargetHeader{}, err
+	}
+
+	if region == "" {
+		region = sess.Config.Region
+	}
 
 	targetEnv := v1.ClusterTargetHeader{
 		OrgID:     orgGUID,
 		SpaceID:   spaceGUID,
 		AccountID: accountGUID,
+		Region:    region,
 	}
-	return targetEnv
+	return targetEnv, nil
 }
 
 func resourceIBMContainerBindServiceCreate(d *schema.ResourceData, meta interface{}) error {
@@ -121,7 +138,10 @@ func resourceIBMContainerBindServiceCreate(d *schema.ResourceData, meta interfac
 		NamespaceID:             namespaceID,
 	}
 
-	targetEnv := getClusterTargetHeader(d)
+	targetEnv, err := getClusterTargetHeader(d, meta)
+	if err != nil {
+		return err
+	}
 	_, err = csClient.Clusters().BindService(bindService, targetEnv)
 	if err != nil {
 		return err
@@ -148,7 +168,10 @@ func resourceIBMContainerBindServiceRead(d *schema.ResourceData, meta interface{
 	serviceInstanceNameID := parts[1]
 	namespaceID := parts[2]
 
-	targetEnv := getClusterTargetHeader(d)
+	targetEnv, err := getClusterTargetHeader(d, meta)
+	if err != nil {
+		return err
+	}
 
 	boundService, err := csClient.Clusters().FindServiceBoundToCluster(clusterNameID, serviceInstanceNameID, namespaceID, targetEnv)
 	if err != nil {
@@ -175,7 +198,10 @@ func resourceIBMContainerBindServiceDelete(d *schema.ResourceData, meta interfac
 	clusterNameID := parts[0]
 	serviceInstanceNameID := parts[1]
 	namespace := parts[2]
-	targetEnv := getClusterTargetHeader(d)
+	targetEnv, err := getClusterTargetHeader(d, meta)
+	if err != nil {
+		return err
+	}
 
 	err = csClient.Clusters().UnBindService(clusterNameID, namespace, serviceInstanceNameID, targetEnv)
 	if err != nil {

@@ -47,6 +47,7 @@ var regionToEndpoint = map[string]map[string]string{
 		"eu-gb":    "https://iam.bluemix.net",
 		"au-syd":   "https://iam.bluemix.net",
 		"eu-de":    "https://iam.bluemix.net",
+		"jp-tok":   "https://iam.bluemix.net",
 	},
 	"iampap": {
 		"us-south": "https://iam.bluemix.net",
@@ -54,6 +55,7 @@ var regionToEndpoint = map[string]map[string]string{
 		"eu-gb":    "https://iam.bluemix.net",
 		"au-syd":   "https://iam.bluemix.net",
 		"eu-de":    "https://iam.bluemix.net",
+		"jp-tok":   "https://iam.bluemix.net",
 	},
 	"uaa": {
 		"us-south": "https://login.ng.bluemix.net/UAALoginServerWAR",
@@ -70,12 +72,14 @@ var regionToEndpoint = map[string]map[string]string{
 		"eu-de":    "https://accountmanagement.eu-de.bluemix.net",
 	},
 	"cs": {
-		"us-south": "https://us-south.containers.bluemix.net",
-		"us-east":  "https://us-east.containers.bluemix.net",
-		"eu-de":    "https://eu-central.containers.bluemix.net",
-		"au-syd":   "https://ap-south.containers.bluemix.net",
-		"eu-gb":    "https://uk-south.containers.bluemix.net",
+		"us-south": "https://containers.bluemix.net",
+		"us-east":  "https://containers.bluemix.net",
+		"eu-de":    "https://containers.bluemix.net",
+		"au-syd":   "https://containers.bluemix.net",
+		"eu-gb":    "https://containers.bluemix.net",
+		"jp-tok":   "https://containers.bluemix.net",
 	},
+
 	"resource-manager": {
 		"us-south": "https://resource-manager.bluemix.net",
 		"us-east":  "https://resource-manager.bluemix.net",

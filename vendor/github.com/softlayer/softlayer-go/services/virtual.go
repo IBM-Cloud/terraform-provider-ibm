@@ -141,6 +141,12 @@ func (r Virtual_DedicatedHost) GetObject() (resp datatypes.Virtual_DedicatedHost
 	return
 }
 
+// Retrieve The container that represents PCI device allocations on the dedicated host.
+func (r Virtual_DedicatedHost) GetPciDeviceAllocationStatus() (resp datatypes.Container_Virtual_DedicatedHost_Pci_Device_AllocationStatus, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_DedicatedHost", "getPciDeviceAllocationStatus", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve
 func (r Virtual_DedicatedHost) GetTagReferences() (resp []datatypes.Tag_Reference, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_DedicatedHost", "getTagReferences", nil, &r.Options, &resp)
@@ -878,6 +884,13 @@ func (r Virtual_Guest) CreatePostSoftwareInstallTransaction(data *string, return
 // This method will cancel a computing instance effective immediately. For instances billed hourly, the charges will stop immediately after the method returns.
 func (r Virtual_Guest) DeleteObject() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest", "deleteObject", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Virtual_Guest) DeleteTransientWebhook() (err error) {
+	var resp datatypes.Void
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest", "deleteTransientWebhook", nil, &r.Options, &resp)
 	return
 }
 
@@ -1866,6 +1879,12 @@ func (r Virtual_Guest) GetTransientGuestFlag() (resp bool, err error) {
 	return
 }
 
+// Retrieve The endpoint used to notify customers their transient guest is terminating.
+func (r Virtual_Guest) GetTransientWebhookURI() (resp datatypes.Virtual_Guest_Attribute, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest", "getTransientWebhookURI", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve The type of this virtual guest.
 func (r Virtual_Guest) GetType() (resp datatypes.Virtual_Guest_Type, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest", "getType", nil, &r.Options, &resp)
@@ -2097,6 +2116,17 @@ func (r Virtual_Guest) SetTags(tags *string) (resp bool, err error) {
 	return
 }
 
+// no documentation yet
+func (r Virtual_Guest) SetTransientWebhook(uri *string, secret *string) (err error) {
+	var resp datatypes.Void
+	params := []interface{}{
+		uri,
+		secret,
+	}
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest", "setTransientWebhook", params, &r.Options, &resp)
+	return
+}
+
 // Sets the data that will be written to the configuration drive.
 func (r Virtual_Guest) SetUserMetadata(metadata []string) (resp bool, err error) {
 	params := []interface{}{
@@ -2280,6 +2310,15 @@ func (r Virtual_Guest_Block_Device_Template_Group) EditObject(templateObject *da
 	return
 }
 
+// Find block device template groups contain GC enabled image for the current active user. Caller can optionally specify data center names to retrieve GC image from those data centers only.
+func (r Virtual_Guest_Block_Device_Template_Group) FindGcImagesByCurrentUser(dataCenters []string) (resp []datatypes.Virtual_Guest_Block_Device_Template_Group, err error) {
+	params := []interface{}{
+		dataCenters,
+	}
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "findGcImagesByCurrentUser", params, &r.Options, &resp)
+	return
+}
+
 // Retrieve A block device template group's [[SoftLayer_Account|account]].
 func (r Virtual_Guest_Block_Device_Template_Group) GetAccount() (resp datatypes.Account, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "getAccount", nil, &r.Options, &resp)
@@ -2337,6 +2376,18 @@ func (r Virtual_Guest_Block_Device_Template_Group) GetDatacenter() (resp datatyp
 // Retrieve A collection of locations containing a copy of this image template group. Will only be populated for parent template group objects.
 func (r Virtual_Guest_Block_Device_Template_Group) GetDatacenters() (resp []datatypes.Location, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "getDatacenters", nil, &r.Options, &resp)
+	return
+}
+
+// This method returns the default boot mode set by the software description
+func (r Virtual_Guest_Block_Device_Template_Group) GetDefaultBootMode() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "getDefaultBootMode", nil, &r.Options, &resp)
+	return
+}
+
+// This method returns an array of encryption values
+func (r Virtual_Guest_Block_Device_Template_Group) GetEncryptionAttributes() (resp []string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "getEncryptionAttributes", nil, &r.Options, &resp)
 	return
 }
 
@@ -2463,6 +2514,12 @@ func (r Virtual_Guest_Block_Device_Template_Group) IsCloudInit() (resp bool, err
 // This method indicates whether or not this image uses an operating system that requires cloud init
 func (r Virtual_Guest_Block_Device_Template_Group) IsCloudInitOnlyOperatingSystem() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "isCloudInitOnlyOperatingSystem", nil, &r.Options, &resp)
+	return
+}
+
+// This method indicates whether or not encrypted attributes are set on the primary disk.
+func (r Virtual_Guest_Block_Device_Template_Group) IsEncrypted() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "isEncrypted", nil, &r.Options, &resp)
 	return
 }
 
@@ -2717,6 +2774,12 @@ func (r Virtual_Guest_Network_Component) GetGuest() (resp datatypes.Virtual_Gues
 // Retrieve
 func (r Virtual_Guest_Network_Component) GetHighAvailabilityFirewallFlag() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Network_Component", "getHighAvailabilityFirewallFlag", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Virtual_Guest_Network_Component) GetIcpBinding() (resp datatypes.Virtual_Guest_Network_Component_IcpBinding, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Network_Component", "getIcpBinding", nil, &r.Options, &resp)
 	return
 }
 

@@ -31,11 +31,11 @@ variable "service_instance_name" {
 }
 
 variable "service_offering" {
- default = "cloudantNoSQLDB"
+  default = "speech_to_text"
 }
 
 variable "plan" {
-  default = "Lite"
+  default = "lite"
 }
 
 variable "app_name" {

@@ -21,12 +21,20 @@ resource "ibm_container_cluster" "cluster" {
   account_guid = "${data.ibm_account.account.id}"
   no_subnet    = true
   subnet_id    = ["${var.subnet_id}"]
-  worker_num   = 2
+  default_pool_size   = 2
 
   machine_type    = "${var.machine_type}"
   isolation       = "${var.isolation}"
   public_vlan_id  = "${var.public_vlan_id}"
   private_vlan_id = "${var.private_vlan_id}"
+}
+
+resource ibm_container_worker_pool_zone_attachment default_zone {
+  cluster         = "${ibm_container_cluster.cluster.id}"
+  worker_pool     = "default"
+  zone            = "${var.zone}"
+  public_vlan_id  = "${var.zone_public_vlan_id}"
+  private_vlan_id = "${var.zone_private_vlan_id}"
 }
 
 resource ibm_container_worker_pool test_pool {

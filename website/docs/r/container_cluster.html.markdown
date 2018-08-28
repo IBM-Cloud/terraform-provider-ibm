@@ -8,15 +8,17 @@ description: |-
 
 # ibm\_container_cluster
 
-Create, update, or delete a Kubernetes cluster. An existing subnet can be attached to the cluster by passing the subnet ID. A webhook can be registered to a cluster, and you can add multiple worker nodes with the `workers` option.
-During the creation of cluster the workers are created with the kube version by default. During update user need to specify the version of worker to update the worker.
+Create, update, or delete a Kubernetes cluster. An existing subnet can be attached to the cluster by passing the subnet ID. A webhook can be registered to a cluster. By default, your single zone cluster is set up with a worker pool that is named default.
+During the creation of cluster the workers are created with the kube version by default. 
 
 **Before updating the version of cluster and workers via terraform get the list of available updates and their pre and post update instructions at https://console.bluemix.net/docs/containers/cs_versions.html#version_types. Also please go through the instructions at https://console.bluemix.net/docs/containers/cs_cluster_update.html#update.
 _Users must read these docs carefully before updating the version via terraform_.**
 
+Note: The previous cluster setup of stand-alone worker nodes is supported, but deprecated. Clusters now have a feature called a worker pool, which is a collection of worker nodes with the same flavor, such as machine type, CPU, and memory. Use ibm_container_worker_pool and ibm_container_worker_pool_zone attachment resources to make changes to your cluster, such as adding zones, adding worker nodes, or updating worker nodes.
+
 ## Example Usage
 
-In the following example, you can create a Kubernetes cluster:
+In the following example, you can create a Kubernetes cluster with a default worker pool with one worker:
 
 ```hcl
 resource "ibm_container_cluster" "testacc_cluster" {
@@ -27,8 +29,9 @@ resource "ibm_container_cluster" "testacc_cluster" {
   public_vlan_id  = "vlan"
   private_vlan_id = "vlan"
   subnet_id       = ["1154643"]
+  region          = "eu-de"
 
-  worker_num      = 1
+  default_pool_size      = 1
 
   webhook = [{
     level = "Normal"
@@ -42,7 +45,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
 }
 ```
 
-Create the Kubernetes cluster using worker_num:
+Create the Kubernetes cluster with a default worker pool with 2 workers and one standalone worker as mentioned by worker_num:
 
 ```hcl
 resource "ibm_container_cluster" "testacc_cluster" {
@@ -54,7 +57,8 @@ resource "ibm_container_cluster" "testacc_cluster" {
   private_vlan_id = "vlan"
   subnet_id       = ["1154643"]
 
-  worker_num = 2
+  default_pool_size = 2
+  worker_num = 1
   webhook = [{
     level = "Normal"
     type = "slack"
@@ -62,6 +66,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
   }]
 
   account_guid = "test_acc"
+  region = "eu-de"
 }
 ```
 
@@ -74,14 +79,16 @@ The following arguments are supported:
 * `kube_version` - (Optional, string) The desired Kubernetes version of the created cluster. If present, at least major.minor must be specified.
 * `org_guid` - (Optional, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from data source `ibm_org` or by running the `bx iam orgs --guid` command in the IBM Cloud CLI.
 * `space_guid` - (Optional, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from data source `ibm_space` or by running the `bx iam space <space-name> --guid` command in the IBM Cloud CLI.
-* `account_guid` - (Required, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from data source `ibm_account` or by running the `bx iam accounts` command in the IBM Cloud CLI.
+* `account_guid` - (Optional, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from data source `ibm_account` or by running the `bx iam accounts` command in the IBM Cloud CLI.
+* `region` - (Optional, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(BM_REGION/BLUEMIX_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
 * `workers` - (Deprecated) The worker nodes that you want to add to the cluster. Nested `workers` blocks have the following structure:
 	* `action` - valid actions are add, reboot and reload.
 	* `name` - Name of the worker.
 	* `version` - worker version.
 	**NOTE**: Conflicts with `worker_num`. 
-* `worker_num` - (Optional, int)  The number of cluster worker nodes.
+* `worker_num` - (Optional, int)  The number of cluster worker nodes. This creates the stand-alone workers which are not associated to any pool. 
 	**NOTE**: Conflicts with `workers`. 
+* `default_pool_size` - (Optional,int) The number of workers created under the default worker pool which support Multi-AZ. 
 * `machinetype` - (Optional, string) The machine type of the worker nodes. You can retrieve the value by running the `bx cs machine-types <data-center>` command in the IBM Cloud CLI.
 * `billing` - (Optional, string) The billing type for the instance. Accepted values are `hourly` or `monthly`.
 * `isolation` - (Deprecated) Accepted values are `public` or `private`. Use `private` if you want to have available physical resources dedicated to you only or `public` to allow physical resources to be shared with other IBM customers. Use hardware instead.
@@ -117,10 +124,19 @@ The following attributes are exported:
   * `hardware` - The level of hardware isolation for your worker node.
   * `id` - Worker pool id.
   * `state` - Worker pool state.
-  * `kube_version` - The kubernetes version of the nodes.
   * `labels` - Labels on all the workers in the worker pool.
 	* `zones` - List of zones attached to the worker_pool.
 		* `zone` - Zone name.
 		* `private_vlan` - The ID of the private VLAN. 
 		* `public_vlan` - The ID of the public VLAN.
 		* `worker_count` - Number of workers attached to this zone.
+* `albs` - Alb's attached to the cluster
+  * `id` - The Alb id.
+  * `name` - The name of the Alb.
+  * `alb_type` - The Alb type public or private.
+  * `enable` -  Enable (true) or disable(false) ALB.
+  * `state` - The status of the ALB(enabled or disabled).
+  * `num_of_instances` - Desired number of ALB replicas.
+  * `alb_ip` - BYOIP VIP to use for ALB. Currently supported only for private ALB.
+  * `resize` - Indicate whether resizing should be done.
+  * `disable_deployment` - Indicate whether to disable deployment only on disable alb.

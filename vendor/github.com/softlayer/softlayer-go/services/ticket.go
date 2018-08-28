@@ -120,9 +120,10 @@ func (r Ticket) AddAttachedHardware(hardwareId *int) (resp datatypes.Ticket_Atta
 }
 
 // Attach the given CloudLayer Computing Instance to a SoftLayer ticket. An attachment provides an easy way for SoftLayer's employees to quickly look up your records in the case of specific issues.
-func (r Ticket) AddAttachedVirtualGuest(guestId *int) (resp datatypes.Ticket_Attachment_Virtual_Guest, err error) {
+func (r Ticket) AddAttachedVirtualGuest(guestId *int, callCommit *bool) (resp datatypes.Ticket_Attachment_Virtual_Guest, err error) {
 	params := []interface{}{
 		guestId,
+		callCommit,
 	}
 	err = r.Session.DoRequest("SoftLayer_Ticket", "addAttachedVirtualGuest", params, &r.Options, &resp)
 	return

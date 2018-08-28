@@ -24,7 +24,12 @@ func dataSourceIBMContainerClusterVersions() *schema.Resource {
 			"account_guid": {
 				Description: "The bluemix account guid this cluster belongs to",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
+			},
+			"region": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The cluster region",
 			},
 			"valid_kube_versions": {
 				Description: "List supported kube-versions",
@@ -42,7 +47,10 @@ func dataSourceIBMContainerClusterVersionsRead(d *schema.ResourceData, meta inte
 		return err
 	}
 	verAPI := csClient.KubeVersions()
-	targetEnv := getClusterTargetHeader(d)
+	targetEnv, err := getClusterTargetHeader(d, meta)
+	if err != nil {
+		return err
+	}
 
 	availableVersions, _ := verAPI.List(targetEnv)
 	versions := make([]string, len(availableVersions))

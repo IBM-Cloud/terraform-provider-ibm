@@ -28,8 +28,8 @@ func TestAccIBMServiceInstance_Basic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMServiceInstanceExists("ibm_service_instance.service", &conf),
 					resource.TestCheckResourceAttr("ibm_service_instance.service", "name", serviceName),
-					resource.TestCheckResourceAttr("ibm_service_instance.service", "service", "cleardb"),
-					resource.TestCheckResourceAttr("ibm_service_instance.service", "plan", "cb5"),
+					resource.TestCheckResourceAttr("ibm_service_instance.service", "service", "speech_to_text"),
+					resource.TestCheckResourceAttr("ibm_service_instance.service", "plan", "lite"),
 					resource.TestCheckResourceAttr("ibm_service_instance.service", "tags.#", "2"),
 				),
 			},
@@ -38,8 +38,8 @@ func TestAccIBMServiceInstance_Basic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMServiceInstanceExists("ibm_service_instance.service", &conf),
 					resource.TestCheckResourceAttr("ibm_service_instance.service", "name", serviceName),
-					resource.TestCheckResourceAttr("ibm_service_instance.service", "service", "cleardb"),
-					resource.TestCheckResourceAttr("ibm_service_instance.service", "plan", "cb5"),
+					resource.TestCheckResourceAttr("ibm_service_instance.service", "service", "speech_to_text"),
+					resource.TestCheckResourceAttr("ibm_service_instance.service", "plan", "lite"),
 					resource.TestCheckResourceAttr("ibm_service_instance.service", "tags.#", "3"),
 				),
 			},
@@ -47,8 +47,8 @@ func TestAccIBMServiceInstance_Basic(t *testing.T) {
 				Config: testAccCheckIBMServiceInstance_update(updateName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_service_instance.service", "name", updateName),
-					resource.TestCheckResourceAttr("ibm_service_instance.service", "service", "cleardb"),
-					resource.TestCheckResourceAttr("ibm_service_instance.service", "plan", "cb5"),
+					resource.TestCheckResourceAttr("ibm_service_instance.service", "service", "speech_to_text"),
+					resource.TestCheckResourceAttr("ibm_service_instance.service", "plan", "lite"),
 					resource.TestCheckResourceAttr("ibm_service_instance.service", "tags.#", "1"),
 				),
 			},
@@ -56,8 +56,8 @@ func TestAccIBMServiceInstance_Basic(t *testing.T) {
 				Config: testAccCheckIBMServiceInstance_newServiceType(updateName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_service_instance.service", "name", updateName),
-					resource.TestCheckResourceAttr("ibm_service_instance.service", "service", "cloudantNoSQLDB"),
-					resource.TestCheckResourceAttr("ibm_service_instance.service", "plan", "Lite"),
+					resource.TestCheckResourceAttr("ibm_service_instance.service", "service", "speech_to_text"),
+					resource.TestCheckResourceAttr("ibm_service_instance.service", "plan", "lite"),
 					resource.TestCheckResourceAttr("ibm_service_instance.service", "tags.#", "1"),
 				),
 			},
@@ -80,8 +80,8 @@ func TestAccIBMServiceInstance_import(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMServiceInstanceExists(resourceName, &conf),
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
-					resource.TestCheckResourceAttr(resourceName, "service", "cleardb"),
-					resource.TestCheckResourceAttr(resourceName, "plan", "cb5"),
+					resource.TestCheckResourceAttr(resourceName, "service", "speech_to_text"),
+					resource.TestCheckResourceAttr(resourceName, "plan", "lite"),
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
 				),
 			},
@@ -154,8 +154,8 @@ func testAccCheckIBMServiceInstance_basic(serviceName string) string {
 		resource "ibm_service_instance" "service" {
 			name              = "%s"
 			space_guid        = "${data.ibm_space.spacedata.id}"
-			service           = "cleardb"
-			plan              = "cb5"
+			service           = "speech_to_text"
+			plan              = "lite"
 			tags               = ["cluster-service","cluster-bind"]
 		}
 	`, cfSpace, cfOrganization, serviceName)
@@ -171,8 +171,8 @@ func testAccCheckIBMServiceInstance_updateWithSameName(serviceName string) strin
 		resource "ibm_service_instance" "service" {
 			name              = "%s"
 			space_guid        = "${data.ibm_space.spacedata.id}"
-			service           = "cleardb"
-			plan              = "cb5"
+			service           = "speech_to_text"
+			plan              = "lite"
 			tags               = ["cluster-service","cluster-bind","db"]
 		}
 	`, cfSpace, cfOrganization, serviceName)
@@ -188,8 +188,8 @@ func testAccCheckIBMServiceInstance_update(updateName string) string {
 		resource "ibm_service_instance" "service" {
 			name              = "%s"
 			space_guid        = "${data.ibm_space.spacedata.id}"
-			service           = "cleardb"
-			plan              = "cb5"
+			service           = "speech_to_text"
+			plan              = "lite"
 			tags               = ["cluster-service"]
 		}
 	`, cfSpace, cfOrganization, updateName)
@@ -205,8 +205,8 @@ func testAccCheckIBMServiceInstance_newServiceType(updateName string) string {
 		resource "ibm_service_instance" "service" {
 			name              = "%s"
 			space_guid        = "${data.ibm_space.spacedata.id}"
-			service           = "cloudantNoSQLDB"
-			plan              = "Lite"
+			service           = "speech_to_text"
+			plan              = "lite"
 			tags               = ["cluster-service"]
 		}
 	`, cfSpace, cfOrganization, updateName)

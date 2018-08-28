@@ -63,19 +63,27 @@ func (x *XmlRpcTransport) DoRequest(
 	pResult interface{},
 ) error {
 
+	var err error
 	serviceUrl := fmt.Sprintf("%s/%s", strings.TrimRight(sess.Endpoint, "/"), service)
-
-	var roundTripper http.RoundTripper
-	if sess.Debug {
-		roundTripper = debugRoundTripper{}
-	}
 
 	timeout := DefaultTimeout
 	if sess.Timeout != 0 {
 		timeout = sess.Timeout
 	}
 
-	client, err := xmlrpc.NewClient(serviceUrl, roundTripper, timeout)
+	// Declaring client outside of the if /else. So we can set the correct http transport based if it is TLS or not
+	var client *xmlrpc.Client
+	if sess.HTTPClient != nil && sess.HTTPClient.Transport != nil {
+		client, err = xmlrpc.NewClient(serviceUrl, sess.HTTPClient.Transport, timeout)
+	} else {
+		var roundTripper http.RoundTripper
+		if sess.Debug {
+			roundTripper = debugRoundTripper{}
+		}
+
+		client, err = xmlrpc.NewClient(serviceUrl, roundTripper, timeout)
+	}
+	//Verify no errors happened in creating the xmlrpc client
 	if err != nil {
 		return fmt.Errorf("Could not create an xmlrpc client for %s: %s", service, err)
 	}

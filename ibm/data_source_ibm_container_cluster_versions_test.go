@@ -28,7 +28,7 @@ func TestAccIBMContainerClusterVersionsDataSource_WithoutOptionalFields(t *testi
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMContainerClusterVersionsDataSourceWithoutOptionalFields(),
+				Config: testAccCheckIBMContainerClusterVersionsDataSourceWithoutOptionalFields,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_container_cluster_versions.versions", "valid_kube_versions.0"),
 				),
@@ -53,20 +53,12 @@ data "ibm_container_cluster_versions" "versions" {
 	org_guid = "${data.ibm_org.testacc_ds_org.id}"
     space_guid = "${data.ibm_space.testacc_ds_space.id}"
     account_guid = "${data.ibm_account.testacc_acc.id}"
+    region = "%s"
 }
-`, cfOrganization, cfOrganization, cfSpace)
+`, cfOrganization, cfOrganization, cfSpace, csRegion)
 }
 
-func testAccCheckIBMContainerClusterVersionsDataSourceWithoutOptionalFields() string {
-	return fmt.Sprintf(`
-data "ibm_org" "testacc_ds_org" {
-    org = "%s"
-}
-data "ibm_account" "testacc_acc" {
-    org_guid = "${data.ibm_org.testacc_ds_org.id}"
-}
+const testAccCheckIBMContainerClusterVersionsDataSourceWithoutOptionalFields = `
 data "ibm_container_cluster_versions" "versions" {
-	account_guid = "${data.ibm_account.testacc_acc.id}"
 }
-`, cfOrganization)
-}
+`

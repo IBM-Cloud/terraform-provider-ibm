@@ -9,21 +9,13 @@ import (
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/session"
 
-	"github.com/IBM-Cloud/bluemix-go/api/account/accountv2"
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
-	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Cloud/bluemix-go/trace"
 )
 
 func main() {
 
 	c := new(bluemix.Config)
-
-	var org string
-	flag.StringVar(&org, "org", "", "Bluemix Organization")
-
-	var space string
-	flag.StringVar(&space, "space", "", "Bluemix Space")
 
 	var zone string
 	flag.StringVar(&zone, "zone", "", "Zone")
@@ -44,7 +36,7 @@ func main() {
 	flag.StringVar(&location, "location", "", "location")
 
 	var region string
-	flag.StringVar(&c.Region, "region", "us-south", "The Bluemix region. You can source it from env BM_REGION or BLUEMIX_REGION")
+	flag.StringVar(&location, "region", "us-south", "region")
 
 	var skipDeletion bool
 	flag.BoolVar(&skipDeletion, "no-delete", false, "If provided will delete the resources created")
@@ -52,7 +44,7 @@ func main() {
 	flag.Parse()
 
 	trace.Logger = trace.NewLogger("true")
-	if org == "" || space == "" || privateVlan == "" || publicVlan == "" || updatePrivateVlan == "" || updatePublicVlan == "" || zone == "" || location == "" {
+	if privateVlan == "" || publicVlan == "" || updatePrivateVlan == "" || updatePublicVlan == "" || zone == "" || location == "" {
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -72,42 +64,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	client, err := mccpv2.New(sess)
-
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	region = sess.Config.Region
-	orgAPI := client.Organizations()
-	myorg, err := orgAPI.FindByName(org, region)
+	target := v1.ClusterTargetHeader{}
 
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	spaceAPI := client.Spaces()
-	myspace, err := spaceAPI.FindByNameInOrg(myorg.GUID, space, region)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	accClient, err := accountv2.New(sess)
-	if err != nil {
-		log.Fatal(err)
-	}
-	accountAPI := accClient.Accounts()
-	myAccount, err := accountAPI.FindByOrg(myorg.GUID, region)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	target := v1.ClusterTargetHeader{
-		OrgID:     myorg.GUID,
-		SpaceID:   myspace.GUID,
-		AccountID: myAccount.GUID,
-	}
+	target.Region = region
 
 	clusterClient, err := v1.New(sess)
 	if err != nil {
@@ -130,7 +93,7 @@ func main() {
 		},
 		DiskEncryption: true,
 	}
-	resp, err := workerPoolAPI.CreateWorkerPool(out.ID, workerPoolRequest)
+	resp, err := workerPoolAPI.CreateWorkerPool(out.ID, workerPoolRequest, target)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -141,16 +104,16 @@ func main() {
 			PublicVLAN:  publicVlan,
 		},
 	}
-	err = workerPoolAPI.AddZone(out.ID, resp.ID, workerPoolZone)
+	err = workerPoolAPI.AddZone(out.ID, resp.ID, workerPoolZone, target)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = workerPoolAPI.UpdateZoneNetwork(out.ID, zone, resp.ID, updatePrivateVlan, updatePublicVlan)
+	err = workerPoolAPI.UpdateZoneNetwork(out.ID, zone, resp.ID, updatePrivateVlan, updatePublicVlan, target)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	pool, err := workerPoolAPI.GetWorkerPool(out.ID, resp.ID)
+	pool, err := workerPoolAPI.GetWorkerPool(out.ID, resp.ID, target)
 	if err != nil {
 		log.Fatal(err)
 	}

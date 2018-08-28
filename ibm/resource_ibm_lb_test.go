@@ -26,6 +26,21 @@ func TestAccIBMLbShared_Basic(t *testing.T) {
 						"ibm_lb.testacc_foobar_lb", "ssl_enabled", "false"),
 				),
 			},
+			resource.TestStep{
+				Config: testAccCheckIBMLbSharedConfig_UpgradeConnectionLimit,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_lb.testacc_foobar_lb", "connections", "500"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb.testacc_foobar_lb", "datacenter", "dal09"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb.testacc_foobar_lb", "ha_enabled", "false"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb.testacc_foobar_lb", "dedicated", "false"),
+					resource.TestCheckResourceAttr(
+						"ibm_lb.testacc_foobar_lb", "ssl_enabled", "false"),
+				),
+			},
 		},
 	})
 }
@@ -104,6 +119,13 @@ resource "ibm_lb" "testacc_foobar_lb" {
     connections = 250
     datacenter    = "dal09"
     ha_enabled  = false
+}`
+
+const testAccCheckIBMLbSharedConfig_UpgradeConnectionLimit = `
+resource "ibm_lb" "testacc_foobar_lb" {
+    connections = 500
+    datacenter    = "dal09"
+	ha_enabled  = false	
 }`
 
 const testAccCheckIBMLbDedicatedConfig_basic = `

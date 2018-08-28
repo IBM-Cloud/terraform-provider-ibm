@@ -20,6 +20,7 @@ data "ibm_container_cluster" "cluster_foo" {
   org_guid        = "test"
   space_guid      = "test_space"
   account_guid    = "test_acc"
+  region          = "eu-de"
 }
 ```
 
@@ -30,7 +31,8 @@ The following arguments are supported:
 * `cluster_name_id` - (Required, string) The name or ID of the cluster.
 * `org_guid` - (Optional, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from the `ibm_org` data source or by running the `bx iam orgs --guid` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
 * `space_guid` - (Optional, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from the `ibm_space` data source or by running the `bx iam space <space-name> --guid` command in the IBM Cloud CLI.
-* `account_guid` - (Required, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from the `ibm_account` data source or by running the `bx iam accounts` command in the IBM Cloud CLI.
+* `account_guid` - (Optional, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from the `ibm_account` data source or by running the `bx iam accounts` command in the IBM Cloud CLI.
+* `region` - (Optional, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(BM_REGION/BLUEMIX_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
 
 
 ## Attribute Reference
@@ -57,10 +59,19 @@ The following attributes are exported:
   * `hardware` - The level of hardware isolation for your worker node.
   * `id` - Worker pool id.
   * `state` - Worker pool state.
-  * `kube_version` - The kubernetes version of the nodes.
   * `labels` - Labels on all the workers in the worker pool.
 	* `zones` - List of zones attached to the worker_pool.
 		* `zone` - Zone name.
 		* `private_vlan` - The ID of the private VLAN. 
 		* `public_vlan` - The ID of the public VLAN.
 		* `worker_count` - Number of workers attached to this zone.
+* `albs` - Alb's attached to the cluster
+  * `id` - The Alb id.
+  * `name` - The name of the Alb.
+  * `alb_type` - The Alb type public or private.
+  * `enable` -  Enable (true) or disable(false) ALB.
+  * `state` - The status of the ALB(enabled or disabled).
+  * `num_of_instances` - Desired number of ALB replicas.
+  * `alb_ip` - BYOIP VIP to use for ALB. Currently supported only for private ALB.
+  * `resize` - Indicate whether resizing should be done.
+  * `disable_deployment` - Indicate whether to disable deployment only on disable alb.

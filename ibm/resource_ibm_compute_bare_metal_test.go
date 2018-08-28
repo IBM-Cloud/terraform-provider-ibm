@@ -305,6 +305,29 @@ func TestAccSoftLayerBareMetalCustom_with_gpus(t *testing.T) {
 	})
 }
 
+func TestAccSoftLayerBareMetalCustom_with_monitoring_none(t *testing.T) {
+	var bareMetal datatypes.Hardware
+	hostname := acctest.RandString(14)
+	domain := "bm.custom.tfuat.com"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMComputeBareMetalDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:  testBareMetalCustomConfigWithMonitoringNone(hostname, domain),
+				Destroy: false,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMComputeBareMetalExists("ibm_compute_bare_metal.bm-custom", &bareMetal),
+					resource.TestCheckResourceAttr(
+						"ibm_compute_bare_metal.bm-custom", "memory", "128"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMComputeBareMetalDestroy(s *terraform.State) error {
 	service := services.GetHardwareService(testAccProvider.Meta().(ClientSession).SoftLayerSession())
 
@@ -369,36 +392,38 @@ func testAccCheckIBMComputeBareMetalExists(n string, bareMetal *datatypes.Hardwa
 func testAccCheckIBMComputeBareMetalConfig_basic(hostname string) string {
 	return fmt.Sprintf(`
 resource "ibm_compute_bare_metal" "terraform-acceptance-test-1" {
-	hostname               = "%s"
-	domain                 = "terraformuat.ibm.com"
-	os_reference_code      = "UBUNTU_16_64"
-	datacenter             = "dal01"
-	network_speed          = 100
-	hourly_billing         = true
-	private_network_only   = false
-	user_metadata          = "{\"value\":\"newvalue\"}"
-	fixed_config_preset    = "S1270_32GB_1X1TBSATA_NORAID"
-	tags                   = ["collectd"]
-	notes                  = "baremetal notes"
-	}
-`, hostname)
+  hostname                  = "%s"
+  domain                    = "terraformuat.ibm.com"
+  os_reference_code         = "UBUNTU_16_64"
+  datacenter                = "dal01"
+  network_speed             = 100
+  hourly_billing            = true
+  private_network_only      = false
+  extended_hardware_testing = "%t"
+  user_metadata             = "{\"value\":\"newvalue\"}"
+  fixed_config_preset       = "S1270_32GB_1X1TBSATA_NORAID"
+  tags                      = ["collectd"]
+  notes                     = "baremetal notes"
+}
+`, hostname, extendedHardwareTesting)
 }
 
 func testAccCheckIBMComputeBareMetalConfig_update(hostname string) string {
 	return fmt.Sprintf(`
 resource "ibm_compute_bare_metal" "terraform-acceptance-test-1" {
-	hostname               = "%s"
-	domain                 = "terraformuat.ibm.com"
-	os_reference_code      = "UBUNTU_16_64"
-	datacenter             = "dal01"
-	network_speed          = 100
-	hourly_billing         = true
-	private_network_only   = false
-	user_metadata          = "{\"value\":\"newvalue\"}"
-	fixed_config_preset    = "S1270_32GB_1X1TBSATA_NORAID"
-	tags                   = ["mesos-master"]
-	}
-`, hostname)
+	hostname                  = "%s"
+	domain                    = "terraformuat.ibm.com"
+	os_reference_code         = "UBUNTU_16_64"
+	datacenter                = "dal01"
+	network_speed             = 100
+	hourly_billing            = true
+	private_network_only      = false
+	extended_hardware_testing = "%t"
+	user_metadata             = "{\"value\":\"newvalue\"}"
+	fixed_config_preset       = "S1270_32GB_1X1TBSATA_NORAID"
+	tags                      = ["mesos-master"]
+}
+`, hostname, extendedHardwareTesting)
 }
 
 func testBareMetalAccessToStoragesBasic(hostname, domain string) string {
@@ -542,4 +567,23 @@ resource "ibm_compute_bare_metal" "terraform-acceptance-test-1" {
 	notes                  = "baremetal notes"
 	}
 `, hostname)
+}
+
+func testBareMetalCustomConfigWithMonitoringNone(hostname, domain string) string {
+	return fmt.Sprintf(`
+	resource "ibm_compute_bare_metal" "bm-custom" {
+		package_key_name       = "BI_S1_NW128_VMWARE_VIRTUALIZATION"
+		process_key_name       = "INTEL_XEON_2690_2_60"
+		memory                 = 128
+		os_key_name            = "OS_VMWARE_SERVER_VIRTUALIZATION_6_5"
+		hostname               = "%s"
+		domain                 = "%s"
+		datacenter             = "sao01"
+		disk_key_names         = ["HARD_DRIVE_1_2_TB_SSD_10_DWPD"]
+		hourly_billing         = false
+		public_bandwidth       = 500
+		network_speed          = 1000
+		unbonded_network       = true
+		}
+`, hostname, domain)
 }

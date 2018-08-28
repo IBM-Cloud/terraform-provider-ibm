@@ -249,6 +249,13 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 				ForceNew: true,
 			},
 
+			"extended_hardware_testing": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				ForceNew: true,
+			},
+
 			// Monthly only
 			"public_bandwidth": {
 				Type:             schema.TypeInt,
@@ -1028,47 +1035,9 @@ func getMonthlyBareMetalOrder(d *schema.ResourceData, meta interface{}) (datatyp
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
 	}
+	var order datatypes.Container_Product_Order
 
-	monitoring, err := getItemPriceId(items, "monitoring", "MONITORING_HOST_PING")
-	if err != nil {
-		return datatypes.Container_Product_Order{}, err
-	}
-	if d.Get("tcp_monitoring").(bool) {
-		monitoring, err = getItemPriceId(items, "monitoring", "MONITORING_HOST_PING_AND_TCP_SERVICE")
-		if err != nil {
-			return datatypes.Container_Product_Order{}, err
-		}
-	}
-
-	// Other common default options
-	priIpAddress, err := getItemPriceId(items, "pri_ip_addresses", "1_IP_ADDRESS")
-	if err != nil {
-		return datatypes.Container_Product_Order{}, err
-	}
-	remoteManagement, err := getItemPriceId(items, "remote_management", "REBOOT_KVM_OVER_IP")
-	if err != nil {
-		return datatypes.Container_Product_Order{}, err
-	}
-	vpnManagement, err := getItemPriceId(items, "vpn_management", "UNLIMITED_SSL_VPN_USERS_1_PPTP_VPN_USER_PER_ACCOUNT")
-	if err != nil {
-		return datatypes.Container_Product_Order{}, err
-	}
-
-	notification, err := getItemPriceId(items, "notification", "NOTIFICATION_EMAIL_AND_TICKET")
-	if err != nil {
-		return datatypes.Container_Product_Order{}, err
-	}
-	response, err := getItemPriceId(items, "response", "AUTOMATED_NOTIFICATION")
-	if err != nil {
-		return datatypes.Container_Product_Order{}, err
-	}
-	vulnerabilityScanner, err := getItemPriceId(items, "vulnerability_scanner", "NESSUS_VULNERABILITY_ASSESSMENT_REPORTING")
-	if err != nil {
-		return datatypes.Container_Product_Order{}, err
-	}
-
-	// Define an order object using basic paramters.
-	order := datatypes.Container_Product_Order{
+	order = datatypes.Container_Product_Order{
 		Quantity: sl.Int(1),
 		Hardware: []datatypes.Hardware{{
 			Hostname: sl.String(d.Get("hostname").(string)),
@@ -1082,15 +1051,19 @@ func getMonthlyBareMetalOrder(d *schema.ResourceData, meta interface{}) (datatyp
 			os,
 			ram,
 			portSpeed,
-			priIpAddress,
-			remoteManagement,
-			vpnManagement,
-			monitoring,
-			notification,
-			response,
-			vulnerabilityScanner,
 		},
 	}
+
+	if d.Get("tcp_monitoring").(bool) {
+		monitoring, err := getItemPriceId(items, "monitoring", "MONITORING_HOST_PING_AND_TCP_SERVICE")
+		if err != nil {
+			return datatypes.Container_Product_Order{}, err
+		}
+		order.Prices = append(order.Prices, monitoring)
+
+	}
+
+	order = addCommomDefaultPrices(d, meta, order, items)
 
 	// Add optional price ids.
 	// Add public bandwidth
@@ -1117,20 +1090,14 @@ func getMonthlyBareMetalOrder(d *schema.ResourceData, meta interface{}) (datatyp
 		}
 	}
 
-	// Add storage_groups for RAID configuration
-	diskController, err := getItemPriceId(items, "disk_controller", "DISK_CONTROLLER_NONRAID")
-	if err != nil {
-		return datatypes.Container_Product_Order{}, err
-	}
-
 	if _, ok := d.GetOk("storage_groups"); ok {
 		order.StorageGroups = getStorageGroupsFromResourceData(d)
-		diskController, err = getItemPriceId(items, "disk_controller", "DISK_CONTROLLER_RAID")
+		diskController, err := getItemPriceId(items, "disk_controller", "DISK_CONTROLLER_RAID")
 		if err != nil {
 			return datatypes.Container_Product_Order{}, err
 		}
+		order.Prices = append(order.Prices, diskController)
 	}
-	order.Prices = append(order.Prices, diskController)
 
 	err = setMonthlyHourlyCommonOrder(d, items, &order)
 	if err != nil {
@@ -1208,8 +1175,11 @@ func setMonthlyHourlyCommonOrder(d *schema.ResourceData, items []datatypes.Produ
 
 // Set common parameters for server ordering.
 func setCommonBareMetalOrderOptions(d *schema.ResourceData, meta interface{}, order datatypes.Container_Product_Order) (datatypes.Container_Product_Order, error) {
-	public_vlan_id := d.Get("public_vlan_id").(int)
 
+	extendedHardwareTesting := d.Get("extended_hardware_testing").(bool)
+	order.ExtendedHardwareTesting = sl.Bool(extendedHardwareTesting)
+
+	public_vlan_id := d.Get("public_vlan_id").(int)
 	if public_vlan_id > 0 {
 		order.Hardware[0].PrimaryNetworkComponent = &datatypes.Network_Component{
 			NetworkVlan: &datatypes.Network_Vlan{Id: sl.Int(public_vlan_id)},
@@ -1337,14 +1307,13 @@ func findNetworkItemPriceId(items []datatypes.Product_Item, d dataRetriever) (da
 // Find memory price item using memory size.
 func findMemoryItemPriceId(items []datatypes.Product_Item, d dataRetriever) (datatypes.Product_Item_Price, error) {
 	memory := d.Get("memory").(int)
-	memoryStr := "RAM_" + strconv.Itoa(memory) + "_GB"
 	availableMemories := ""
 
 	for _, item := range items {
 		for _, itemCategory := range item.Categories {
 			if *itemCategory.CategoryCode == "ram" {
 				availableMemories = availableMemories + *item.KeyName + "(" + *item.Description + ")" + ", "
-				if strings.HasPrefix(*item.KeyName, memoryStr) {
+				if int(*item.Capacity) == memory {
 					for _, price := range item.Prices {
 						if price.LocationGroupId == nil {
 							return datatypes.Product_Item_Price{Id: price.Id}, nil
@@ -1423,4 +1392,79 @@ func applyOnce(k, o, n string, d *schema.ResourceData) bool {
 		return false
 	}
 	return true
+}
+
+func addCommomDefaultPrices(d *schema.ResourceData, meta interface{}, order datatypes.Container_Product_Order, items []datatypes.Product_Item) datatypes.Container_Product_Order {
+
+	if !d.Get("tcp_monitoring").(bool) {
+		monExists, moniotring := getCommonItemPriceID(items, "monitoring", "MONITORING_HOST_PING")
+
+		if monExists {
+			order.Prices = append(order.Prices, moniotring)
+		}
+
+	}
+
+	priExists, priIPAddress := getCommonItemPriceID(items, "pri_ip_addresses", "1_IP_ADDRESS")
+	if priExists {
+		order.Prices = append(order.Prices, priIPAddress)
+	}
+
+	remotExists, remoteManagement := getCommonItemPriceID(items, "remote_management", "REBOOT_KVM_OVER_IP")
+	if remotExists {
+		order.Prices = append(order.Prices, remoteManagement)
+	}
+
+	vpnExists, vpnManagement := getCommonItemPriceID(items, "vpn_management", "UNLIMITED_SSL_VPN_USERS_1_PPTP_VPN_USER_PER_ACCOUNT")
+	if vpnExists {
+		order.Prices = append(order.Prices, vpnManagement)
+	}
+
+	notificationExists, notification := getCommonItemPriceID(items, "notification", "NOTIFICATION_EMAIL_AND_TICKET")
+	if notificationExists {
+		order.Prices = append(order.Prices, notification)
+	}
+
+	resExists, response := getCommonItemPriceID(items, "response", "AUTOMATED_NOTIFICATION")
+	if resExists {
+		order.Prices = append(order.Prices, response)
+	}
+
+	vulExists, vulnerabilityScanner := getCommonItemPriceID(items, "vulnerability_scanner", "NESSUS_VULNERABILITY_ASSESSMENT_REPORTING")
+	if vulExists {
+		order.Prices = append(order.Prices, vulnerabilityScanner)
+	}
+
+	if _, ok := d.GetOk("storage_groups"); !ok {
+		diskExists, diskController := getCommonItemPriceID(items, "disk_controller", "DISK_CONTROLLER_NONRAID")
+		if diskExists {
+			order.Prices = append(order.Prices, diskController)
+		}
+
+	}
+
+	return order
+}
+
+// Returns a common default sprice from an item list.
+// Example usage : getItemPriceId(items, 'server', 'INTEL_XEON_2690_2_60')
+func getCommonItemPriceID(items []datatypes.Product_Item, categoryCode string, keyName string) (bool, datatypes.Product_Item_Price) {
+	availableItems := ""
+	for _, item := range items {
+		for _, itemCategory := range item.Categories {
+			if *itemCategory.CategoryCode == categoryCode {
+				availableItems = availableItems + *item.KeyName + " ( " + *item.Description + " ) , "
+				if *item.KeyName == keyName {
+					for _, price := range item.Prices {
+						for _, category := range price.Categories {
+							if *category.CategoryCode == categoryCode && price.LocationGroupId == nil {
+								return true, datatypes.Product_Item_Price{Id: price.Id}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return false, datatypes.Product_Item_Price{}
 }

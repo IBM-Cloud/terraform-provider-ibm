@@ -42,32 +42,25 @@ func TestAccIBMContainerClusterWorkerDataSource_WithoutOptionalFields(t *testing
 
 func testAccCheckIBMContainerClusterWorkerDataSourceConfigWithoutOptionalFields(clusterName string) string {
 	return fmt.Sprintf(`
-data "ibm_org" "org" {
-    org = "%s"
-}
 
-data "ibm_account" "acc" {
-   org_guid = "${data.ibm_org.org.id}"
-}
 resource "ibm_container_cluster" "testacc_cluster" {
     name = "%s"
     datacenter = "%s"
-    account_guid = "${data.ibm_account.acc.id}"
-    worker_num      = 1
 	machine_type = "%s"
 	hardware       = "shared"
 	public_vlan_id = "%s"
 	private_vlan_id = "%s"
+	region = "%s"
 }
 data "ibm_container_cluster" "testacc_ds_cluster" {
-	account_guid = "${data.ibm_account.acc.id}"
     cluster_name_id = "${ibm_container_cluster.testacc_cluster.id}"
+    region = "%s"
 }
 data "ibm_container_cluster_worker" "testacc_ds_worker" {
-	account_guid = "${data.ibm_account.acc.id}"
     worker_id = "${data.ibm_container_cluster.testacc_ds_cluster.workers[0]}"
+    region = "%s"
 }
-`, cfOrganization, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
+`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, csRegion, csRegion, csRegion)
 }
 
 func testAccCheckIBMContainerClusterWorkerDataSourceConfig(clusterName string) string {
@@ -88,7 +81,6 @@ data "ibm_account" "acc" {
 resource "ibm_container_cluster" "testacc_cluster" {
     name = "%s"
     datacenter = "%s"
-    worker_num      = 1
 	machine_type = "%s"
 	hardware       = "shared"
 	public_vlan_id = "%s"
@@ -103,12 +95,14 @@ data "ibm_container_cluster" "testacc_ds_cluster" {
 	space_guid = "${data.ibm_space.space.id}"
 	account_guid = "${data.ibm_account.acc.id}"
     cluster_name_id = "${ibm_container_cluster.testacc_cluster.id}"
+    region = "%s"
 }
 data "ibm_container_cluster_worker" "testacc_ds_worker" {
 	org_guid = "${data.ibm_org.org.id}"
 	space_guid = "${data.ibm_space.space.id}"
 	account_guid = "${data.ibm_account.acc.id}"
     worker_id = "${data.ibm_container_cluster.testacc_ds_cluster.workers[0]}"
+    region = "%s"
 }
-`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
+`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID, csRegion, csRegion)
 }

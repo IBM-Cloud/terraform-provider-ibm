@@ -16,12 +16,14 @@ const ErrCodeAPICreation = "APICreationError"
 
 //ContainerServiceAPI is the Aramda K8s client ...
 type ContainerServiceAPI interface {
+	Albs() Albs
 	Clusters() Clusters
 	Workers() Workers
 	WorkerPools() WorkerPool
 	WebHooks() Webhooks
 	Subnets() Subnets
 	KubeVersions() KubeVersions
+	Vlans() Vlans
 }
 
 //ContainerService holds the client
@@ -67,6 +69,11 @@ func New(sess *session.Session) (ContainerServiceAPI, error) {
 	}, nil
 }
 
+//Albs implement albs API
+func (c *csService) Albs() Albs {
+	return newAlbAPI(c.Client)
+}
+
 //Clusters implements Clusters API
 func (c *csService) Clusters() Clusters {
 	return newClusterAPI(c.Client)
@@ -95,4 +102,9 @@ func (c *csService) WebHooks() Webhooks {
 //KubeVersions implements Cluster WebHooks API
 func (c *csService) KubeVersions() KubeVersions {
 	return newKubeVersionAPI(c.Client)
+}
+
+//Vlans implements DC Cluster Vlan API
+func (c *csService) Vlans() Vlans {
+	return newVlanAPI(c.Client)
 }

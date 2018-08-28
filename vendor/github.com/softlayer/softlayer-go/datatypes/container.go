@@ -342,6 +342,341 @@ type Container_Account_Payment_Method_CreditCard struct {
 	State *string `json:"state,omitempty" xmlrpc:"state,omitempty"`
 }
 
+// no documentation yet
+type Container_Account_PersonalInformation struct {
+	Entity
+
+	// no documentation yet
+	AccountId *int `json:"accountId,omitempty" xmlrpc:"accountId,omitempty"`
+
+	// no documentation yet
+	Address1 *string `json:"address1,omitempty" xmlrpc:"address1,omitempty"`
+
+	// no documentation yet
+	Address2 *string `json:"address2,omitempty" xmlrpc:"address2,omitempty"`
+
+	// no documentation yet
+	AlternatePhone *string `json:"alternatePhone,omitempty" xmlrpc:"alternatePhone,omitempty"`
+
+	// no documentation yet
+	City *string `json:"city,omitempty" xmlrpc:"city,omitempty"`
+
+	// no documentation yet
+	Country *string `json:"country,omitempty" xmlrpc:"country,omitempty"`
+
+	// no documentation yet
+	Email *string `json:"email,omitempty" xmlrpc:"email,omitempty"`
+
+	// no documentation yet
+	FirstName *string `json:"firstName,omitempty" xmlrpc:"firstName,omitempty"`
+
+	// no documentation yet
+	LastName *string `json:"lastName,omitempty" xmlrpc:"lastName,omitempty"`
+
+	// no documentation yet
+	OfficePhone *string `json:"officePhone,omitempty" xmlrpc:"officePhone,omitempty"`
+
+	// no documentation yet
+	PostalCode *string `json:"postalCode,omitempty" xmlrpc:"postalCode,omitempty"`
+
+	// no documentation yet
+	RequestDate *Time `json:"requestDate,omitempty" xmlrpc:"requestDate,omitempty"`
+
+	// no documentation yet
+	RequestId *int `json:"requestId,omitempty" xmlrpc:"requestId,omitempty"`
+
+	// no documentation yet
+	State *string `json:"state,omitempty" xmlrpc:"state,omitempty"`
+}
+
+// The customer and prospective owner of a proof of concept account established by an IBMer.
+type Container_Account_ProofOfConcept_Contact_Customer struct {
+	Entity
+
+	// Customer's address
+	Address1 *string `json:"address1,omitempty" xmlrpc:"address1,omitempty"`
+
+	// Customer's address
+	Address2 *string `json:"address2,omitempty" xmlrpc:"address2,omitempty"`
+
+	// Customer's city
+	City *string `json:"city,omitempty" xmlrpc:"city,omitempty"`
+
+	// Customer's ISO country code
+	Country *string `json:"country,omitempty" xmlrpc:"country,omitempty"`
+
+	// Customer's email address
+	Email *string `json:"email,omitempty" xmlrpc:"email,omitempty"`
+
+	// Customer's first name
+	FirstName *string `json:"firstName,omitempty" xmlrpc:"firstName,omitempty"`
+
+	// Customer's last name
+	LastName *string `json:"lastName,omitempty" xmlrpc:"lastName,omitempty"`
+
+	// Customer's primary phone number
+	Phone *string `json:"phone,omitempty" xmlrpc:"phone,omitempty"`
+
+	// Customer's postal code
+	PostalCode *string `json:"postalCode,omitempty" xmlrpc:"postalCode,omitempty"`
+
+	// Customer's state
+	State *string `json:"state,omitempty" xmlrpc:"state,omitempty"`
+}
+
+// IBMer who is submitting a proof of concept request on behalf of a prospective customer.
+type Container_Account_ProofOfConcept_Contact_Ibmer_Requester struct {
+	Entity
+
+	// Customer's address
+	Address1 *string `json:"address1,omitempty" xmlrpc:"address1,omitempty"`
+
+	// Customer's address
+	Address2 *string `json:"address2,omitempty" xmlrpc:"address2,omitempty"`
+
+	// no documentation yet
+	BusinessUnit *string `json:"businessUnit,omitempty" xmlrpc:"businessUnit,omitempty"`
+
+	// Customer's city
+	City *string `json:"city,omitempty" xmlrpc:"city,omitempty"`
+
+	// Customer's ISO country code
+	Country *string `json:"country,omitempty" xmlrpc:"country,omitempty"`
+
+	// Customer's email address
+	Email *string `json:"email,omitempty" xmlrpc:"email,omitempty"`
+
+	// Customer's first name
+	FirstName *string `json:"firstName,omitempty" xmlrpc:"firstName,omitempty"`
+
+	// Customer's last name
+	LastName *string `json:"lastName,omitempty" xmlrpc:"lastName,omitempty"`
+
+	// no documentation yet
+	OrganizationCountry *string `json:"organizationCountry,omitempty" xmlrpc:"organizationCountry,omitempty"`
+
+	// no documentation yet
+	PaasAccountId *string `json:"paasAccountId,omitempty" xmlrpc:"paasAccountId,omitempty"`
+
+	// Customer's primary phone number
+	Phone *string `json:"phone,omitempty" xmlrpc:"phone,omitempty"`
+
+	// Customer's postal code
+	PostalCode *string `json:"postalCode,omitempty" xmlrpc:"postalCode,omitempty"`
+
+	// Customer's state
+	State *string `json:"state,omitempty" xmlrpc:"state,omitempty"`
+
+	// no documentation yet
+	SubOrganization *string `json:"subOrganization,omitempty" xmlrpc:"subOrganization,omitempty"`
+
+	// no documentation yet
+	Uid *string `json:"uid,omitempty" xmlrpc:"uid,omitempty"`
+}
+
+// IBMer who will assist the requester with technical aspects of configuring the proof of concept account.
+type Container_Account_ProofOfConcept_Contact_Ibmer_Technical struct {
+	Entity
+
+	// Customer's address
+	Address1 *string `json:"address1,omitempty" xmlrpc:"address1,omitempty"`
+
+	// Customer's address
+	Address2 *string `json:"address2,omitempty" xmlrpc:"address2,omitempty"`
+
+	// Customer's city
+	City *string `json:"city,omitempty" xmlrpc:"city,omitempty"`
+
+	// Customer's ISO country code
+	Country *string `json:"country,omitempty" xmlrpc:"country,omitempty"`
+
+	// Customer's email address
+	Email *string `json:"email,omitempty" xmlrpc:"email,omitempty"`
+
+	// Customer's first name
+	FirstName *string `json:"firstName,omitempty" xmlrpc:"firstName,omitempty"`
+
+	// Customer's last name
+	LastName *string `json:"lastName,omitempty" xmlrpc:"lastName,omitempty"`
+
+	// Customer's primary phone number
+	Phone *string `json:"phone,omitempty" xmlrpc:"phone,omitempty"`
+
+	// Customer's postal code
+	PostalCode *string `json:"postalCode,omitempty" xmlrpc:"postalCode,omitempty"`
+
+	// Customer's state
+	State *string `json:"state,omitempty" xmlrpc:"state,omitempty"`
+
+	// no documentation yet
+	Uid *string `json:"uid,omitempty" xmlrpc:"uid,omitempty"`
+}
+
+// Proof of concept request using the account team funding model. Note that proof of concept account request are available only to internal IBM employees.
+type Container_Account_ProofOfConcept_Request_AccountFunded struct {
+	Container_Account_ProofOfConcept_Request_GlobalFunded
+
+	// Billing codes for the department paying for the proof of concept account
+	CostRecoveryRequest *Container_Account_ProofOfConcept_Request_CostRecovery `json:"costRecoveryRequest,omitempty" xmlrpc:"costRecoveryRequest,omitempty"`
+}
+
+// Funding codes for the department paying for the proof of concept account.
+type Container_Account_ProofOfConcept_Request_CostRecovery struct {
+	Entity
+
+	// Internal billing system country code
+	CountryCode *string `json:"countryCode,omitempty" xmlrpc:"countryCode,omitempty"`
+
+	// Customer's Internal billing system department code
+	DepartmentCode *string `json:"departmentCode,omitempty" xmlrpc:"departmentCode,omitempty"`
+
+	// Internal billing system division code
+	DivisionCode *string `json:"divisionCode,omitempty" xmlrpc:"divisionCode,omitempty"`
+}
+
+// Proof of concept request using the global funding model. Note that proof of concept account request are available only to internal IBM employees.
+type Container_Account_ProofOfConcept_Request_GlobalFunded struct {
+	Entity
+
+	// Dollar amount of funding requested for the proof of concept period
+	Amount *Float64 `json:"amount,omitempty" xmlrpc:"amount,omitempty"`
+
+	// Customer intended to take over ownership and and billing of the account
+	Customer *Container_Account_ProofOfConcept_Contact_Customer `json:"customer,omitempty" xmlrpc:"customer,omitempty"`
+
+	// Explanation of the purpose of the proof of concept request
+	Description *string `json:"description,omitempty" xmlrpc:"description,omitempty"`
+
+	// End date for the proof of concept period
+	EndDate *Time `json:"endDate,omitempty" xmlrpc:"endDate,omitempty"`
+
+	// Internal opportunity system details
+	Opportunity *Container_Account_ProofOfConcept_Request_Opportunity `json:"opportunity,omitempty" xmlrpc:"opportunity,omitempty"`
+
+	// Name of the project or company and will become the account companyName
+	ProjectName *string `json:"projectName,omitempty" xmlrpc:"projectName,omitempty"`
+
+	// IBM region responsible for overseeing the proof of concept account
+	RegionKeyName *string `json:"regionKeyName,omitempty" xmlrpc:"regionKeyName,omitempty"`
+
+	// IBMer requesting the proof of concept account
+	Requester *Container_Account_ProofOfConcept_Contact_Ibmer_Requester `json:"requester,omitempty" xmlrpc:"requester,omitempty"`
+
+	// Start date for the proof of concept period
+	StartDate *Time `json:"startDate,omitempty" xmlrpc:"startDate,omitempty"`
+
+	// IBMer assisting with technical aspects of account configuration
+	TechnicalContact *Container_Account_ProofOfConcept_Contact_Ibmer_Technical `json:"technicalContact,omitempty" xmlrpc:"technicalContact,omitempty"`
+}
+
+// Internal IBM opportunity codes required when applying for a proof of concept account.
+type Container_Account_ProofOfConcept_Request_Opportunity struct {
+	Entity
+
+	// Expected monthly revenue
+	MonthlyRecurringRevenue *Float64 `json:"monthlyRecurringRevenue,omitempty" xmlrpc:"monthlyRecurringRevenue,omitempty"`
+
+	// Internal system identifier
+	OpportunityNumber *string `json:"opportunityNumber,omitempty" xmlrpc:"opportunityNumber,omitempty"`
+
+	// Expected overall contract value
+	TotalContractValue *Float64 `json:"totalContractValue,omitempty" xmlrpc:"totalContractValue,omitempty"`
+}
+
+// Full details presented to reviewers when determining whether or not to accept a proof of concept request. Note that reviewers are internal IBM employees and reviews are not exposed to external users.
+type Container_Account_ProofOfConcept_Review struct {
+	Entity
+
+	// Type of brand the account will use
+	AccountType *string `json:"accountType,omitempty" xmlrpc:"accountType,omitempty"`
+
+	// Internal billing codes
+	CostRecoveryCodes *Container_Account_ProofOfConcept_Request_CostRecovery `json:"costRecoveryCodes,omitempty" xmlrpc:"costRecoveryCodes,omitempty"`
+
+	// Customer intended to take over billing after the proof of concept period
+	Customer *Container_Account_ProofOfConcept_Contact_Customer `json:"customer,omitempty" xmlrpc:"customer,omitempty"`
+
+	// Describes the purpose and rationale of the request
+	Description *string `json:"description,omitempty" xmlrpc:"description,omitempty"`
+
+	// Expected end date of the proof of concept period
+	EndDate *Time `json:"endDate,omitempty" xmlrpc:"endDate,omitempty"`
+
+	// Dollar amount of funding requested
+	FundingAmount *Float64 `json:"fundingAmount,omitempty" xmlrpc:"fundingAmount,omitempty"`
+
+	// Funding option chosen for the request
+	FundingType *string `json:"fundingType,omitempty" xmlrpc:"fundingType,omitempty"`
+
+	// System id of the request
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// Name of the integrated offering team lead reviewing the request
+	IotLeadName *string `json:"iotLeadName,omitempty" xmlrpc:"iotLeadName,omitempty"`
+
+	// Name of the integrated offering team region
+	IotRegionName *string `json:"iotRegionName,omitempty" xmlrpc:"iotRegionName,omitempty"`
+
+	// Name of requesting IBMer's manager
+	ManagerName *string `json:"managerName,omitempty" xmlrpc:"managerName,omitempty"`
+
+	// Internal opportunity tracking information
+	Opportunity *Container_Account_ProofOfConcept_Request_Opportunity `json:"opportunity,omitempty" xmlrpc:"opportunity,omitempty"`
+
+	// Project name chosen by the requesting IBMer
+	ProjectName *string `json:"projectName,omitempty" xmlrpc:"projectName,omitempty"`
+
+	// IBMer requesting the account on behalf of a customer
+	Requester *Container_Account_ProofOfConcept_Contact_Ibmer_Requester `json:"requester,omitempty" xmlrpc:"requester,omitempty"`
+
+	// Expected start date of the proof of concept period
+	StartDate *Time `json:"startDate,omitempty" xmlrpc:"startDate,omitempty"`
+
+	// Additional IBMer responsible for configuring the cloud capabilities
+	TechnicalContact *Container_Account_ProofOfConcept_Contact_Ibmer_Technical `json:"technicalContact,omitempty" xmlrpc:"technicalContact,omitempty"`
+}
+
+// Summary presented to reviewers when determining whether or not to accept a proof of concept request. Note that reviewers are internal IBM employees and reviews are not exposed to external users.
+type Container_Account_ProofOfConcept_Review_Summary struct {
+	Entity
+
+	// Account's companyName
+	AccountName *string `json:"accountName,omitempty" xmlrpc:"accountName,omitempty"`
+
+	// Current account owner
+	AccountOwnerName *string `json:"accountOwnerName,omitempty" xmlrpc:"accountOwnerName,omitempty"`
+
+	// Dollar amount requested
+	Amount *Float64 `json:"amount,omitempty" xmlrpc:"amount,omitempty"`
+
+	// Date the request was submitted
+	CreateDate *Time `json:"createDate,omitempty" xmlrpc:"createDate,omitempty"`
+
+	// Email of the customer receiving the proof of concept account
+	CustomerEmail *string `json:"customerEmail,omitempty" xmlrpc:"customerEmail,omitempty"`
+
+	// Name of the customer receiving the proof of concept account
+	CustomerName *string `json:"customerName,omitempty" xmlrpc:"customerName,omitempty"`
+
+	// Request record's id
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// Date of the last state change on the request
+	LastUpdate *Time `json:"lastUpdate,omitempty" xmlrpc:"lastUpdate,omitempty"`
+
+	// Email address of the reviewer, if any, currently reviewing the request
+	NextApproverEmail *string `json:"nextApproverEmail,omitempty" xmlrpc:"nextApproverEmail,omitempty"`
+
+	// Email address of the requester
+	RequesterEmail *string `json:"requesterEmail,omitempty" xmlrpc:"requesterEmail,omitempty"`
+
+	// Requesting IBMer's full name
+	RequesterName *string `json:"requesterName,omitempty" xmlrpc:"requesterName,omitempty"`
+
+	// Request's current status (Pending, Denied, or Approved)
+	Status *string `json:"status,omitempty" xmlrpc:"status,omitempty"`
+}
+
 // The SoftLayer_Container_Authentication_Request_Common data type contains common information for requests to the getPortalLogin API. This is an abstract class that serves as a base that more specialized classes will derive from. For example, a request class specific to SoftLayer Native IMS Login (username and password).
 type Container_Authentication_Request_Common struct {
 	Container_Authentication_Request_Contract
@@ -690,6 +1025,9 @@ type Container_Billing_Currency_Country struct {
 
 	// no documentation yet
 	Country *Locale_Country `json:"country,omitempty" xmlrpc:"country,omitempty"`
+
+	// no documentation yet
+	CurrencyCountryLocales []Billing_Currency_Country `json:"currencyCountryLocales,omitempty" xmlrpc:"currencyCountryLocales,omitempty"`
 }
 
 // no documentation yet
@@ -1733,6 +2071,9 @@ type Container_Network_CdnMarketplace_Configuration_Input struct {
 
 	// no documentation yet
 	FileExtension *string `json:"fileExtension,omitempty" xmlrpc:"fileExtension,omitempty"`
+
+	// no documentation yet
+	GeoblockingRule *Network_CdnMarketplace_Configuration_Behavior_Geoblocking `json:"geoblockingRule,omitempty" xmlrpc:"geoblockingRule,omitempty"`
 
 	// no documentation yet
 	Header *string `json:"header,omitempty" xmlrpc:"header,omitempty"`
@@ -3257,6 +3598,9 @@ type Container_Product_Order struct {
 	// The [[SoftLayer_Product_Item_Price]] for the Flexible Credit Program discount.  The <code>oneTimeFee</code> field contains the calculated discount being applied to the order.
 	FlexibleCreditProgramPrice *Product_Item_Price `json:"flexibleCreditProgramPrice,omitempty" xmlrpc:"flexibleCreditProgramPrice,omitempty"`
 
+	// This flag indicates that the customer consented to the GDPR terms for the quote.
+	GdprConsentFlag *bool `json:"gdprConsentFlag,omitempty" xmlrpc:"gdprConsentFlag,omitempty"`
+
 	// For orders that contain servers (bare metal, virtual server, big data, etc.), the hardware property is required. This property is an array of [[SoftLayer_Hardware]] objects. The <code>hostname</code> and <code>domain</code> properties are required for each hardware object. Note that virtual server ([[SoftLayer_Container_Product_Order_Virtual_Guest]]) orders may populate this field instead of the <code>virtualGuests</code> property.
 	Hardware []Hardware `json:"hardware,omitempty" xmlrpc:"hardware,omitempty"`
 
@@ -4394,10 +4738,22 @@ type Container_Product_Order_Virtual_Guest_Vpc struct {
 	Container_Product_Order_Virtual_Guest
 
 	// no documentation yet
+	AdditionalNetworkInterfaces []Container_Product_Order_Virtual_Guest_Vpc_NetworkInterface `json:"additionalNetworkInterfaces,omitempty" xmlrpc:"additionalNetworkInterfaces,omitempty"`
+
+	// no documentation yet
 	IpAllocations []Container_Product_Order_Virtual_Guest_Vpc_IpAllocation `json:"ipAllocations,omitempty" xmlrpc:"ipAllocations,omitempty"`
 
 	// no documentation yet
 	ServerId *string `json:"serverId,omitempty" xmlrpc:"serverId,omitempty"`
+
+	// no documentation yet
+	ServicePortInterfaceId *string `json:"servicePortInterfaceId,omitempty" xmlrpc:"servicePortInterfaceId,omitempty"`
+
+	// no documentation yet
+	ServicePortIpAllocationId *string `json:"servicePortIpAllocationId,omitempty" xmlrpc:"servicePortIpAllocationId,omitempty"`
+
+	// no documentation yet
+	ServicePortVpcId *string `json:"servicePortVpcId,omitempty" xmlrpc:"servicePortVpcId,omitempty"`
 
 	// no documentation yet
 	Subnets []Container_Product_Order_Virtual_Guest_Vpc_Subnet `json:"subnets,omitempty" xmlrpc:"subnets,omitempty"`
@@ -4412,6 +4768,26 @@ type Container_Product_Order_Virtual_Guest_Vpc_IpAllocation struct {
 
 	// no documentation yet
 	Ip *string `json:"ip,omitempty" xmlrpc:"ip,omitempty"`
+}
+
+// no documentation yet
+type Container_Product_Order_Virtual_Guest_Vpc_NetworkInterface struct {
+	Entity
+
+	// no documentation yet
+	InterfaceId *string `json:"interfaceId,omitempty" xmlrpc:"interfaceId,omitempty"`
+
+	// no documentation yet
+	IpAllocationId *string `json:"ipAllocationId,omitempty" xmlrpc:"ipAllocationId,omitempty"`
+
+	// no documentation yet
+	SecurityGroupIds []int `json:"securityGroupIds,omitempty" xmlrpc:"securityGroupIds,omitempty"`
+
+	// no documentation yet
+	SubnetId *string `json:"subnetId,omitempty" xmlrpc:"subnetId,omitempty"`
+
+	// no documentation yet
+	VpcId *string `json:"vpcId,omitempty" xmlrpc:"vpcId,omitempty"`
 }
 
 // no documentation yet
@@ -5272,6 +5648,26 @@ type Container_Virtual_DedicatedHost_AllocationStatus struct {
 	MemoryCapacity *int `json:"memoryCapacity,omitempty" xmlrpc:"memoryCapacity,omitempty"`
 }
 
+// This data type represents PCI device allocation properties of a [[SoftLayer_Virtual_DedicatedHost]].
+type Container_Virtual_DedicatedHost_Pci_Device_AllocationStatus struct {
+	Entity
+
+	// The number of PCI devices on the host.
+	DeviceCount *int `json:"deviceCount,omitempty" xmlrpc:"deviceCount,omitempty"`
+
+	// The number of PCI devices currently allocated to guests.
+	DevicesAllocated *int `json:"devicesAllocated,omitempty" xmlrpc:"devicesAllocated,omitempty"`
+
+	// The number of PCI devices available for allocation.
+	DevicesAvailable *int `json:"devicesAvailable,omitempty" xmlrpc:"devicesAvailable,omitempty"`
+
+	// The generic component model ID of the PCI device.
+	HardwareComponentModelGenericId *int `json:"hardwareComponentModelGenericId,omitempty" xmlrpc:"hardwareComponentModelGenericId,omitempty"`
+
+	// The ID of the host that the dedicated host is on.
+	HostId *int `json:"hostId,omitempty" xmlrpc:"hostId,omitempty"`
+}
+
 // The SoftLayer_Container_Virtual_Guest_Block_Device_Template_Configuration data type contains information relating to a template's external location for importing and exporting
 type Container_Virtual_Guest_Block_Device_Template_Configuration struct {
 	Entity
@@ -5297,6 +5693,10 @@ type Container_Virtual_Guest_Block_Device_Template_Configuration struct {
 	//
 	// The referenceCode of the operating system software description for the imported VHD
 	OperatingSystemReferenceCode *string `json:"operatingSystemReferenceCode,omitempty" xmlrpc:"operatingSystemReferenceCode,omitempty"`
+
+	//
+	// Optional Collection of modes that this template supports booting into.
+	SupportedBootModes []string `json:"supportedBootModes,omitempty" xmlrpc:"supportedBootModes,omitempty"`
 
 	//
 	// The URI for an object storage object (.vhd/.iso file)

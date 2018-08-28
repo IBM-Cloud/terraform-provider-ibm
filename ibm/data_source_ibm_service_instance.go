@@ -14,7 +14,7 @@ func dataSourceIBMServiceInstance() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Description: "Service instance name for example, cleardb",
+				Description: "Service instance name for example, speech_to_text",
 				Type:        schema.TypeString,
 				Required:    true,
 			},

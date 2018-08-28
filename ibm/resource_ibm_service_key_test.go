@@ -28,7 +28,7 @@ func TestAccIBMServiceKey_Basic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMServiceKeyExists("ibm_service_key.serviceKey", &conf),
 					resource.TestCheckResourceAttr("ibm_service_key.serviceKey", "name", serviceKey),
-					resource.TestCheckResourceAttr("ibm_service_key.serviceKey", "credentials.%", "7"),
+					resource.TestCheckResourceAttr("ibm_service_key.serviceKey", "credentials.%", "3"),
 				),
 			},
 		},
@@ -146,8 +146,8 @@ func testAccCheckIBMServiceKey_basic(serviceName, serviceKey string) string {
 		resource "ibm_service_instance" "service" {
 			name              = "%s"
 			space_guid        = "${data.ibm_space.spacedata.id}"
-			service           = "cleardb"
-			plan              = "cb5"
+			service           = "speech_to_text"
+			plan              = "lite"
 			tags               = ["cluster-service","cluster-bind"]
 		}
 
@@ -169,8 +169,8 @@ func testAccCheckIBMServiceKey_with_tags(serviceName, serviceKey string) string 
 		resource "ibm_service_instance" "service" {
 			name              = "%s"
 			space_guid        = "${data.ibm_space.spacedata.id}"
-			service           = "cleardb"
-			plan              = "cb5"
+			service           = "speech_to_text"
+			plan              = "lite"
 			tags               = ["cluster-service","cluster-bind"]
 		}
 
@@ -193,8 +193,8 @@ func testAccCheckIBMServiceKey_with_updated_tags(serviceName, serviceKey string)
 		resource "ibm_service_instance" "service" {
 			name              = "%s"
 			space_guid        = "${data.ibm_space.spacedata.id}"
-			service           = "cleardb"
-			plan              = "cb5"
+			service           = "speech_to_text"
+			plan              = "lite"
 			tags               = ["cluster-service","cluster-bind"]
 		}
 

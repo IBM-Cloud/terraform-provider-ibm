@@ -31,7 +31,9 @@ func TestAccIBMContainerCluster_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "name", clusterName),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "worker_num", "2"),
+						"ibm_container_cluster.testacc_cluster", "worker_num", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "default_pool_size", "1"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "kube_version", kubeVersion),
 					resource.TestCheckResourceAttr(
@@ -47,6 +49,8 @@ func TestAccIBMContainerCluster_basic(t *testing.T) {
 						"ibm_container_cluster.testacc_cluster", "name", clusterName),
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "worker_num", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "default_pool_size", "2"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "kube_version", kubeUpdateVersion),
 					resource.TestCheckResourceAttr(
@@ -74,7 +78,7 @@ func TestAccIBMContainerCluster_trusted(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "name", clusterName),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "worker_num", "2"),
+						"ibm_container_cluster.testacc_cluster", "default_pool_size", "1"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "kube_version", kubeVersion),
 					resource.TestCheckResourceAttr(
@@ -102,7 +106,7 @@ func TestAccIBMContainerCluster_nosubnet_false(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "name", clusterName),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "worker_num", "2"),
+						"ibm_container_cluster.testacc_cluster", "default_pool_size", "1"),
 					resource.TestCheckResourceAttrSet(
 						"ibm_container_cluster.testacc_cluster", "ingress_hostname"),
 					resource.TestCheckResourceAttrSet(
@@ -128,9 +132,11 @@ func TestAccIBMContainerCluster_worker_count(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "name", clusterName),
 					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "default_pool_size", "1"),
+					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "worker_num", "1"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "workers_info.#", "1"),
+						"ibm_container_cluster.testacc_cluster", "workers_info.#", "2"),
 				),
 			},
 			{
@@ -139,25 +145,12 @@ func TestAccIBMContainerCluster_worker_count(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "name", clusterName),
 					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "default_pool_size", "2"),
+					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "worker_num", "2"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "workers_info.#", "2"),
+						"ibm_container_cluster.testacc_cluster", "workers_info.#", "4"),
 				),
-			},
-		},
-	})
-}
-
-func TestAccIBMContainerCluster_without_workers_worker_num(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckIBMContainerClusterDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config:      testAccCheckIBMContainerCluster_without_workers_worker_num(clusterName),
-				ExpectError: regexp.MustCompile(" Please set either the wokers with valid array"),
 			},
 		},
 	})
@@ -191,7 +184,7 @@ func TestAccIBMContainerCluster_diskEnc(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "name", clusterName),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "worker_num", "2"),
+						"ibm_container_cluster.testacc_cluster", "default_pool_size", "1"),
 				),
 			},
 		},
@@ -212,7 +205,9 @@ func TestAccIBMContainerClusterOptionalOrgSpace_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "name", clusterName),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "worker_num", "2"),
+						"ibm_container_cluster.testacc_cluster", "default_pool_size", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "albs.#", "2"),
 				),
 			},
 		},
@@ -232,7 +227,7 @@ func TestAccIBMContainerCluster_private_subnet(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "name", clusterName),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "worker_num", "1"),
+						"ibm_container_cluster.testacc_cluster", "default_pool_size", "1"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "ingress_hostname", ""),
 					resource.TestCheckResourceAttr(
@@ -256,7 +251,7 @@ func TestAccIBMContainerCluster_private_and_public_subnet(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "name", clusterName),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "worker_num", "1"),
+						"ibm_container_cluster.testacc_cluster", "default_pool_size", "1"),
 					resource.TestCheckResourceAttrSet(
 						"ibm_container_cluster.testacc_cluster", "ingress_hostname"),
 					resource.TestCheckResourceAttrSet(
@@ -280,7 +275,7 @@ func TestAccIBMContainerCluster_Tag(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "name", clusterName),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "worker_num", "1"),
+						"ibm_container_cluster.testacc_cluster", "default_pool_size", "1"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "tags.#", "1"),
 				),
@@ -291,7 +286,7 @@ func TestAccIBMContainerCluster_Tag(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "name", clusterName),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "worker_num", "1"),
+						"ibm_container_cluster.testacc_cluster", "default_pool_size", "1"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "tags.#", "2"),
 				),
@@ -395,14 +390,18 @@ resource "ibm_container_cluster" "testacc_cluster" {
 	space_guid = "${data.ibm_space.space.id}"
 	account_guid = "${data.ibm_account.acc.id}"
 
-  worker_num = 2
-
+  worker_num = 1
+  
+  default_pool_size = 1
+  
+  hardware = "shared"
   kube_version    = "%s"
   machine_type    = "%s"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   no_subnet		  = true
-}	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, kubeVersion, machineType, publicVlanID, privateVlanID)
+  region = "%s"
+}	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, kubeVersion, machineType, publicVlanID, privateVlanID, csRegion)
 }
 
 func testAccCheckIBMContainerCluster_trusted(clusterName string) string {
@@ -429,7 +428,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
 	space_guid = "${data.ibm_space.space.id}"
 	account_guid = "${data.ibm_account.acc.id}"
 
-  worker_num      = 2
+  default_pool_size = 1
 
   kube_version    = "%s"
   machine_type    = "%s"
@@ -466,43 +465,11 @@ resource "ibm_container_cluster" "testacc_cluster" {
 	space_guid = "${data.ibm_space.space.id}"
 	account_guid = "${data.ibm_account.acc.id}"
 
-  worker_num = 2
-
   machine_type    = "%s"
   hardware       = "dedicated"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   no_subnet		  = false
-}	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
-}
-
-func testAccCheckIBMContainerCluster_without_workers_worker_num(clusterName string) string {
-	return fmt.Sprintf(`
-
-data "ibm_org" "org" {
-    org = "%s"
-}
-
-data "ibm_space" "space" {
-  org    = "%s"
-  space  = "%s"
-}
-
-data "ibm_account" "acc" {
-   org_guid = "${data.ibm_org.org.id}"
-}
-
-resource "ibm_container_cluster" "testacc_cluster" {
-  name       = "%s"
-  datacenter = "%s"
-
-  account_guid = "${data.ibm_account.acc.id}"
-
-  machine_type    = "%s"
-  hardware       = "shared"
-  public_vlan_id  = "%s"
-  private_vlan_id = "%s"
-  no_subnet		  = true
 }	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
 }
 
@@ -527,7 +494,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
   datacenter = "%s"
 
   account_guid = "${data.ibm_account.acc.id}"
-  worker_num = 0
+  default_pool_size = 0
   machine_type    = "%s"
   hardware       = "shared"
   public_vlan_id  = "%s"
@@ -539,29 +506,16 @@ resource "ibm_container_cluster" "testacc_cluster" {
 func testAccCheckIBMContainerClusterOptionalOrgSpace_basic(clusterName string) string {
 	return fmt.Sprintf(`
 
-data "ibm_org" "org" {
-    org = "%s"
-}
-
-data "ibm_account" "acc" {
-   org_guid = "${data.ibm_org.org.id}"
-}
-
 resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
   datacenter = "%s"
-
-  account_guid = "${data.ibm_account.acc.id}"
-
-  worker_num = 2
 
   machine_type    = "%s"
   hardware       = "shared"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
-  no_subnet		  = true
   disk_encryption = true
-}	`, cfOrganization, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
+}	`, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
 }
 
 func testAccCheckIBMContainerCluster_diskEnc(clusterName string) string {
@@ -588,7 +542,6 @@ resource "ibm_container_cluster" "testacc_cluster" {
 	space_guid = "${data.ibm_space.space.id}"
 	account_guid = "${data.ibm_account.acc.id}"
 
-  worker_num = 2
   machine_type    = "%s"
   hardware       = "shared"
   public_vlan_id  = "%s"
@@ -623,13 +576,17 @@ resource "ibm_container_cluster" "testacc_cluster" {
 	account_guid = "${data.ibm_account.acc.id}"
 
   worker_num = 2
+  
+  default_pool_size = 2
 
+  hardware = "shared"
   kube_version    = "%s"
   machine_type    = "%s"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   no_subnet		  = true
-}	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, kubeUpdateVersion, machineType, publicVlanID, privateVlanID)
+  region = "%s"
+}	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, kubeUpdateVersion, machineType, publicVlanID, privateVlanID, csRegion)
 }
 
 func testAccCheckIBMContainerCluster_private_and_public_subnet(clusterName string) string {
@@ -655,8 +612,6 @@ resource "ibm_container_cluster" "testacc_cluster" {
   org_guid = "${data.ibm_org.org.id}"
 	space_guid = "${data.ibm_space.space.id}"
 	account_guid = "${data.ibm_account.acc.id}"
-
-  worker_num = 1
 
   machine_type    = "%s"
   hardware       = "shared"
@@ -689,8 +644,6 @@ resource "ibm_container_cluster" "testacc_cluster" {
   org_guid = "${data.ibm_org.org.id}"
 	space_guid = "${data.ibm_space.space.id}"
 	account_guid = "${data.ibm_account.acc.id}"
-
-  worker_num = 1
 
   machine_type    = "%s"
   hardware       = "shared"
@@ -725,8 +678,6 @@ resource "ibm_container_cluster" "testacc_cluster" {
 	space_guid = "${data.ibm_space.space.id}"
 	account_guid = "${data.ibm_account.acc.id}"
 
-  worker_num = 1
-
   machine_type    = "%s"
   hardware       = "shared"
   public_vlan_id  = "%s"
@@ -758,8 +709,6 @@ resource "ibm_container_cluster" "testacc_cluster" {
   org_guid = "${data.ibm_org.org.id}"
 	space_guid = "${data.ibm_space.space.id}"
 	account_guid = "${data.ibm_account.acc.id}"
-
-  worker_num = 1
 
   machine_type    = "%s"
   hardware       = "shared"
@@ -823,6 +772,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
 
 	account_guid = "${data.ibm_account.acc.id}"
   worker_num = 2
+  default_pool_size = 2
   machine_type    = "%s"
   hardware       = "shared"
   public_vlan_id  = "%s"

@@ -23,6 +23,7 @@ resource "ibm_container_worker_pool" "testacc_workerpool" {
   size_per_zone    = 1
   hardware         = "shared"
   disk_encryption  = "true"
+  region           = "eu-de"
 
   labels = {
     "test" = "test-pool"
@@ -52,6 +53,7 @@ The following arguments are supported:
 * `hardware` - (Optional, string) The level of hardware isolation for your worker node. Use `dedicated` to have available physical resources dedicated to you only, or `shared` to allow physical resources to be shared with other IBM customers. For IBM Cloud Public accounts, the default value is shared. For IBM Cloud Dedicated accounts, dedicated is the only available option.
 * `disk_encryption` - (Optional, boolean) Set to `false` to disable encryption on a worker. Default is true.
 * `labels` - (Optional, map) Labels on all the workers in the worker pool.
+* `region` - (Optional, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(BM_REGION/BLUEMIX_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
  
 ## Attribute Reference
 
@@ -59,7 +61,6 @@ The following attributes are exported:
 
 * `id` - The unique identifier of the worker pool resource. The id is composed of \<cluster_name_id\>/\<worker_pool_id\>
 * `state` - Worker pool state.
-* `kube_version` - The kubernetes version of the nodes.
 * `zones` - List of zones attached to the worker_pool.
    * `zone` - Zone name.
    * `private_vlan` - The ID of the private VLAN.

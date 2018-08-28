@@ -136,6 +136,8 @@ Locate your package ID. See `package_key_name` attribute. Once you have the ID f
 * `unbonded_network` - (Optional, boolean) When the value is `true`, two physical network interfaces are provided without a bonding configuration. The default value is `false`.
 * `network_speed` - (Optional, integer) The connection speed, expressed in Mbps,  for the instance's network components. The default value is `100`.
 * `private_network_only` - (Optional, boolean) Specifies whether the instance only has access to the private network. When the value is `true`, a compute instance only has access to the private network. The default value is `false`.
+* `extended_hardware_testing` - (Optional, boolean) Enable the extended hardware testing while ordering the bare metal server. The default value is `false`. 
+    **NOTE**: Enabling the `extended_hardware_testing` will cause considerable delays in the deployment.
 * `ipv6_enabled` - (Optional, boolean) The primary public IPv6 address. The default value is `false`.
 * `ipv6_static_enabled` - (Optional, boolean) The public static IPv6 address block of `/64`. The default value is `false`.
 * `secondary_ip_count` - (Optional, integer) Specifies secondary public IPv4 addresses. Accepted values are `4` and `8`.

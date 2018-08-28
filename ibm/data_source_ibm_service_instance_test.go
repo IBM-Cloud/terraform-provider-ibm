@@ -19,7 +19,7 @@ func TestAccIBMServiceInstanceDataSource_basic(t *testing.T) {
 			resource.TestStep{
 				Config: setupServiceInstanceConfig(serviceName, serviceKey),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_service_key.servicekey", "credentials.%", "7"),
+					resource.TestCheckResourceAttr("ibm_service_key.servicekey", "credentials.%", "3"),
 					resource.TestCheckResourceAttr("ibm_service_instance.service", "service_keys.#", "0"),
 				),
 			},
@@ -28,7 +28,7 @@ func TestAccIBMServiceInstanceDataSource_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_service_instance.testacc_ds_service_instance", "name", serviceName),
 					resource.TestCheckResourceAttr("data.ibm_service_instance.testacc_ds_service_instance", "service_keys.#", "1"),
-					resource.TestCheckResourceAttr("data.ibm_service_instance.testacc_ds_service_instance", "service_keys.0.credentials.%", "7"),
+					resource.TestCheckResourceAttr("data.ibm_service_instance.testacc_ds_service_instance", "service_keys.0.credentials.%", "3"),
 					resource.TestCheckResourceAttr("data.ibm_service_instance.testacc_ds_service_instance", "service_keys.0.name", serviceKey),
 				),
 			},
@@ -46,8 +46,8 @@ data "ibm_space" "spacedata" {
 resource "ibm_service_instance" "service" {
   name       = "%s"
   space_guid = "${data.ibm_space.spacedata.id}"
-  service    = "cleardb"
-  plan       = "cb5"
+  service    = "speech_to_text"
+  plan       = "lite"
   tags       = ["cluster-service", "cluster-bind"]
 }
 
@@ -70,8 +70,8 @@ data "ibm_space" "spacedata" {
 resource "ibm_service_instance" "service" {
   name       = "%s"
   space_guid = "${data.ibm_space.spacedata.id}"
-  service    = "cleardb"
-  plan       = "cb5"
+  service    = "speech_to_text"
+  plan       = "lite"
   tags       = ["cluster-service", "cluster-bind"]
 }
 

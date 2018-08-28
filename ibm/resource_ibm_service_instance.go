@@ -46,7 +46,7 @@ func resourceIBMServiceInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The name of the service offering like cleardb, cloudantNOSQLDb etc",
+				Description: "The name of the service offering like speech_to_text, text_to_speech etc",
 			},
 
 			"credentials": {

@@ -115,6 +115,9 @@ type Session struct {
 	// HTTPClient This allows a custom user configured HTTP Client.
 	HTTPClient *http.Client
 
+	// Custom Headers to be used on each request (Currently only for rest)
+	Headers map[string]string
+
 	// Timeout specifies a time limit for http requests made by this
 	// session. Requests that take longer that the specified timeout
 	// will result in an error.

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
@@ -35,8 +36,6 @@ func TestAccIBMContainerWorkerPool_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_worker_pool.test_pool", "disk_encryption", "true"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_worker_pool.test_pool", "kube_version", kubeVersion),
-					resource.TestCheckResourceAttr(
 						"ibm_container_worker_pool.test_pool", "hardware", "shared"),
 				),
 			},
@@ -53,8 +52,6 @@ func TestAccIBMContainerWorkerPool_basic(t *testing.T) {
 						"ibm_container_worker_pool.test_pool", "state", "active"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_worker_pool.test_pool", "disk_encryption", "true"),
-					resource.TestCheckResourceAttr(
-						"ibm_container_worker_pool.test_pool", "kube_version", kubeVersion),
 					resource.TestCheckResourceAttr(
 						"ibm_container_worker_pool.test_pool", "hardware", "shared"),
 				),
@@ -120,8 +117,12 @@ func testAccCheckIBMContainerWorkerPoolDestroy(s *terraform.State) error {
 		cluster := parts[0]
 		workerPoolID := parts[1]
 
+		target := v1.ClusterTargetHeader{
+			Region: csRegion,
+		}
+
 		// Try to find the key
-		_, err = csClient.WorkerPools().GetWorkerPool(cluster, workerPoolID)
+		_, err = csClient.WorkerPools().GetWorkerPool(cluster, workerPoolID, target)
 
 		if err != nil && !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf("Error waiting for worker pool (%s) to be destroyed: %s", rs.Primary.ID, err)
@@ -145,12 +146,12 @@ resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
   datacenter = "%s"
   account_guid = "${data.ibm_account.acc.id}"
-  worker_num = 1
   machine_type    = "%s"
   hardware       = "shared"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   kube_version    = "%s"
+  region = "%s"
 }
 
 resource "ibm_container_worker_pool" "test_pool" {
@@ -160,7 +161,7 @@ resource "ibm_container_worker_pool" "test_pool" {
   size_per_zone    = 1
   hardware         = "shared"
   disk_encryption  = true
-
+  region = "%s"
   labels = {
     "test" = "test-pool"
 
@@ -169,7 +170,7 @@ resource "ibm_container_worker_pool" "test_pool" {
 }
 
 		
-		`, cfOrganization, clusterName, datacenter, machineType, publicVlanID, privateVlanID, kubeVersion, workerPoolName, machineType)
+		`, cfOrganization, clusterName, datacenter, machineType, publicVlanID, privateVlanID, kubeVersion, csRegion, workerPoolName, machineType, csRegion)
 }
 
 func testAccCheckIBMContainerWorkerPool_update(clusterName, workerPoolName string) string {
@@ -186,12 +187,12 @@ resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
   datacenter = "%s"
   account_guid = "${data.ibm_account.acc.id}"
-  worker_num = 1
   machine_type    = "%s"
   hardware        = "shared"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   kube_version    = "%s"
+  region = "%s"
 }
 
 resource "ibm_container_worker_pool" "test_pool" {
@@ -201,7 +202,7 @@ resource "ibm_container_worker_pool" "test_pool" {
   size_per_zone    = 2
   hardware         = "shared"
   disk_encryption  = true
-
+  region = "%s"
   labels = {
     "test" = "test-pool"
 
@@ -210,7 +211,7 @@ resource "ibm_container_worker_pool" "test_pool" {
 }
 
 		
-		`, cfOrganization, clusterName, datacenter, machineType, publicVlanID, privateVlanID, kubeVersion, workerPoolName, machineType)
+		`, cfOrganization, clusterName, datacenter, machineType, publicVlanID, privateVlanID, kubeVersion, csRegion, workerPoolName, machineType, csRegion)
 }
 
 func testAccCheckIBMContainerWorkerPool_InvalidSizePerZone(clusterName, workerPoolName string) string {
