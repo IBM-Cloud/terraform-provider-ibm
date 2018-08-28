@@ -29,6 +29,10 @@ resource "ibm_subnet" "portable_subnet" {
   capacity = 4
   vlan_id = 1234567
   notes = "portable_subnet"
+  //User can increase timeouts 
+  timeouts {
+    create = "45m"
+  }
 }
 ```
 
@@ -63,6 +67,12 @@ output "first_ip_address" {
 }
 
 ```
+
+## Timeouts
+
+ibm_subnet provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+
+* `create` - (Default 30 minutes) Used for Creating Instance.
 
 ##### Argument Reference
 
