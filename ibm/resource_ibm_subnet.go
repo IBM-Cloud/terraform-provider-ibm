@@ -39,6 +39,9 @@ func resourceIBMSubnet() *schema.Resource {
 		Delete:   resourceIBMSubnetDelete,
 		Exists:   resourceIBMSubnetExists,
 		Importer: &schema.ResourceImporter{},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Minute),
+		},
 
 		Schema: map[string]*schema.Schema{
 
@@ -140,7 +143,7 @@ func resourceIBMSubnetCreate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error during creation of subnet: %s", err)
 	}
 
-	Subnet, err := findSubnetByOrderID(sess, *receipt.OrderId)
+	Subnet, err := findSubnetByOrderID(sess, *receipt.OrderId, d)
 	if err != nil {
 		return fmt.Errorf("Error during creation of subnet: %s", err)
 	}
@@ -262,7 +265,7 @@ func resourceIBMSubnetExists(d *schema.ResourceData, meta interface{}) (bool, er
 	return result.Id != nil && *result.Id == subnetID, nil
 }
 
-func findSubnetByOrderID(sess *session.Session, orderID int) (datatypes.Network_Subnet, error) {
+func findSubnetByOrderID(sess *session.Session, orderID int, d *schema.ResourceData) (datatypes.Network_Subnet, error) {
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"complete"},
@@ -281,7 +284,7 @@ func findSubnetByOrderID(sess *session.Session, orderID int) (datatypes.Network_
 			}
 			return nil, "pending", nil
 		},
-		Timeout:        30 * time.Minute,
+		Timeout:        d.Timeout(schema.TimeoutCreate),
 		Delay:          5 * time.Second,
 		MinTimeout:     3 * time.Second,
 		NotFoundChecks: 1440,
