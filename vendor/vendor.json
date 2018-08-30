@@ -1165,10 +1165,10 @@
 			"revisionTime": "2016-09-27T10:08:44Z"
 		},
 		{
-			"checksumSHA1": "7KaGyi3shB4vCFoB2L4ALmKeCzE=",
+			"checksumSHA1": "mtqT230FVjF5Hthk0iNg27o6UYo=",
 			"path": "github.com/softlayer/softlayer-go",
-			"revision": "ba0eaed1782df1b25af8af69df2950472b71135d",
-			"revisionTime": "2017-08-18T19:50:54Z"
+			"revision": "3965b0d2a64bc98580f52e32867fdbad47cbe3e9",
+			"revisionTime": "2018-05-29T17:34:10Z"
 		},
 		{
 			"checksumSHA1": "KeNIYJQUdE6o196SaYuLMmjEPZM=",

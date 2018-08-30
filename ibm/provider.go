@@ -146,6 +146,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_lb_vpx_ha":                             resourceIBMLbVpxHa(),
 			"ibm_lb_vpx_service":                        resourceIBMLbVpxService(),
 			"ibm_lb_vpx_vip":                            resourceIBMLbVpxVip(),
+			"ibm_multi_vlan_firewall":                   resourceIBMMultiVlanFirewall(),
 			"ibm_network_gateway":                       resourceIBMNetworkGateway(),
 			"ibm_network_gateway_vlan_association":      resourceIBMNetworkGatewayVlanAttachment(),
 			"ibm_network_interface_sg_attachment":       resourceIBMNetworkInterfaceSGAttachment(),
