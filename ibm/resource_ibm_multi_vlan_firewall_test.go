@@ -1,9 +1,10 @@
 package ibm
 
 import (
-	"github.com/hashicorp/terraform/helper/resource"
 	"regexp"
 	"testing"
+
+	"github.com/hashicorp/terraform/helper/resource"
 )
 
 func TestAccIBMMultiVlanFirewall_Basic(t *testing.T) {
@@ -23,7 +24,7 @@ func TestAccIBMMultiVlanFirewall_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_multi_vlan_firewall.firewall_first", "public_vlan_id", "2213543"),
 					resource.TestCheckResourceAttr(
-						"ibm_multi_vlan_firewall.firewall_first", "firewall_type", "FortiGate Firewall Appliance"),
+						"ibm_multi_vlan_firewall.firewall_first", "firewall_type", "FortiGate Security Appliance"),
 					resource.TestCheckResourceAttr(
 						"ibm_multi_vlan_firewall.firewall_first", "addon_configuration.#", "3"),
 				),
@@ -76,7 +77,7 @@ resource "ibm_multi_vlan_firewall" "firewall_first" {
 	datacenter = "dal13"
 	pod = "pod01"
 	name = "Checkdelete1"
-	firewall_type = "FortiGate Firewall Appliance"
+	firewall_type = "FortiGate Security Appliance"
 	addon_configuration = ["FortiGate Security Appliance - Web Filtering Add-on","FortiGate Security Appliance - NGFW Add-on","FortiGate Security Appliance - AV Add-on"]
 	}`
 
@@ -93,6 +94,6 @@ const testAccCheckIBMMultiVlanFirewallFirewallTypeConfig_InvalidFirewallType = `
 		datacenter = "dal13"
 		pod = "pod01"
 		name = "Checkdelete1"
-		firewall_type = "FortiGate Firewall Appliance ABC"
+		firewall_type = "FortiGate Security Appliance ABC"
 		addon_configuration = ["FortiGate Security Appliance - Web Filtering Add-on (High Availability)","FortiGate Security Appliance - NGFW Add-on (High Availability)","FortiGate Security Appliance - AV Add-on (High Availability)"]
 		}`
