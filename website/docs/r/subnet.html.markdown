@@ -36,6 +36,24 @@ resource "ibm_subnet" "portable_subnet" {
 }
 ```
 
+Users can use Terraform built-in functions to get IP addresses from `portable subnet`. The following example returns the first usable IP address of the portable subnet `test`.:
+
+```hcl
+resource "ibm_subnet" "test" {
+  type = "Portable"
+  private = true
+  ip_version = 4
+  capacity = 4
+  vlan_id = 1234567
+}
+
+# Use a built-in function cidrhost with index 1.
+output "first_ip_address" {
+  value = "${cidrhost(ibm_subnet.test.subnet_cidr,1)}"
+}
+
+```
+
 ##### Example Usage of static subnet
 The following example creates a public static subnet which has four available IPv4 address:
 
@@ -50,7 +68,7 @@ resource "ibm_subnet" "static_subnet" {
 }
 ```
 
-Users can use Terraform built-in functions to get IP addresses from `subnet`. The following example returns the first IP address in the subnet `test`:
+Users can use Terraform built-in functions to get IP addresses from `subnet`. The following example returns the first usable IP address in the static subnet `test`:
 
 ```hcl
 resource "ibm_subnet" "test" {
@@ -63,7 +81,7 @@ resource "ibm_subnet" "test" {
 
 # Use a built-in function cidrhost with index 0.
 output "first_ip_address" {
-  value = "${cidrhost(ibm_subnet.test.subnet,0)}"
+  value = "${cidrhost(ibm_subnet.test.subnet_cidr,0)}"
 }
 
 ```
