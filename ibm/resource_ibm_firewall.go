@@ -246,8 +246,9 @@ func findDedicatedFirewallByOrderId(sess *session.Session, orderId int, d *schem
 		Pending: []string{"pending"},
 		Target:  []string{"complete"},
 		Refresh: func() (interface{}, string, error) {
-			fwID, _ := strconv.Atoi(d.Id())
-			if ok := d.HasChange("addon_configuration"); ok {
+
+			if ok := d.HasChange("addon_configuration") && !d.IsNewResource(); ok {
+				fwID, _ := strconv.Atoi(d.Id())
 				upgraderequest, err = services.GetNetworkVlanFirewallService(sess).
 					Id(fwID).
 					Mask("status").
@@ -276,7 +277,8 @@ func findDedicatedFirewallByOrderId(sess *session.Session, orderId int, d *schem
 					return datatypes.Network_Vlan{}, "", err
 				}
 			}
-			if *upgraderequest.Status.Name == "Complete" {
+			status, ok := sl.GrabOk(upgraderequest, "Status.Name")
+			if ok && status == "Complete" {
 				return upgraderequest, "complete", nil
 			} else if len(vlans) == 1 {
 				return vlans[0], "complete", nil
@@ -298,7 +300,7 @@ func findDedicatedFirewallByOrderId(sess *session.Session, orderId int, d *schem
 	if err != nil {
 		return datatypes.Network_Vlan{}, datatypes.Network_Gateway{}, datatypes.Product_Upgrade_Request{}, err
 	}
-	if ok := d.HasChange("addon_configuration"); ok {
+	if ok := d.HasChange("addon_configuration") && !d.IsNewResource(); ok {
 		if result, ok := pendingResult.(datatypes.Product_Upgrade_Request); ok {
 			return datatypes.Network_Vlan{}, datatypes.Network_Gateway{}, result, nil
 		}
