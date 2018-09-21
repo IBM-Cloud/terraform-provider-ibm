@@ -641,10 +641,10 @@ func resourceIBMComputeBareMetalRead(d *schema.ResourceData, meta interface{}) e
 			"allowedNetworkStorage[id,nasType]," +
 			"hourlyBillingFlag," +
 			"datacenter[id,name,longName]," +
-			"primaryNetworkComponent[networkVlan[id,primaryRouter,vlanNumber],maxSpeed," +
+			"primaryNetworkComponent[primarySubnet[networkVlan[id,primaryRouter,vlanNumber],id]," +
 			"primaryIpAddressRecord[id]," +
 			"primaryVersion6IpAddressRecord[subnet,id]]," +
-			"primaryBackendNetworkComponent[networkVlan[id,primaryRouter,vlanNumber]," +
+			"primaryBackendNetworkComponent[primarySubnet[networkVlan[id,primaryRouter,vlanNumber],id]," +
 			"primaryIpAddressRecord[id]," +
 			"maxSpeed,redundancyEnabledFlag]," +
 			"memoryCapacity,powerSupplyCount," +
@@ -677,12 +677,14 @@ func resourceIBMComputeBareMetalRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("private_network_only", *result.PrivateNetworkOnlyFlag)
 	d.Set("hourly_billing", *result.HourlyBillingFlag)
 
-	if result.PrimaryNetworkComponent.NetworkVlan != nil {
-		d.Set("public_vlan_id", *result.PrimaryNetworkComponent.NetworkVlan.Id)
+	if result.PrimaryNetworkComponent.PrimarySubnet != nil {
+		d.Set("public_vlan_id", *result.PrimaryNetworkComponent.PrimarySubnet.NetworkVlan.Id)
+		d.Set("public_subnet", *result.PrimaryNetworkComponent.PrimarySubnet.Id)
 	}
 
-	if result.PrimaryBackendNetworkComponent.NetworkVlan != nil {
-		d.Set("private_vlan_id", *result.PrimaryBackendNetworkComponent.NetworkVlan.Id)
+	if result.PrimaryBackendNetworkComponent.PrimarySubnet != nil {
+		d.Set("private_vlan_id", *result.PrimaryBackendNetworkComponent.PrimarySubnet.NetworkVlan.Id)
+		d.Set("private_subnet", *result.PrimaryBackendNetworkComponent.PrimarySubnet.Id)
 	}
 
 	userData := result.UserData
