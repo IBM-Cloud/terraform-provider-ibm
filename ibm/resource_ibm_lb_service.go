@@ -91,6 +91,11 @@ func resourceIBMLbServiceCreate(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 
+	enabled := 0
+	if d.Get("enabled").(bool) {
+		enabled = 1
+	}
+
 	// The API only exposes edit capability at the root of the tree (virtualIpAddress),
 	// so need to send the full structure from the root down to the node to be added or
 	// modified
@@ -107,7 +112,7 @@ func resourceIBMLbServiceCreate(d *schema.ResourceData, meta interface{}) error 
 				RoutingTypeId:   serviceGroup.RoutingTypeId,
 
 				Services: []datatypes.Network_Application_Delivery_Controller_LoadBalancer_Service{{
-					Enabled:     sl.Int(1),
+					Enabled:     sl.Int(enabled),
 					Port:        sl.Int(d.Get("port").(int)),
 					IpAddressId: sl.Int(d.Get("ip_address_id").(int)),
 
@@ -177,6 +182,11 @@ func resourceIBMLbServiceUpdate(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 
+	enabled := 0
+	if d.Get("enabled").(bool) {
+		enabled = 1
+	}
+
 	// The API only exposes edit capability at the root of the tree (virtualIpAddress),
 	// so need to send the full structure from the root down to the node to be added or
 	// modified
@@ -194,7 +204,7 @@ func resourceIBMLbServiceUpdate(d *schema.ResourceData, meta interface{}) error 
 
 				Services: []datatypes.Network_Application_Delivery_Controller_LoadBalancer_Service{{
 					Id:          &svcID,
-					Enabled:     sl.Int(1),
+					Enabled:     sl.Int(enabled),
 					Port:        sl.Int(d.Get("port").(int)),
 					IpAddressId: sl.Int(d.Get("ip_address_id").(int)),
 
