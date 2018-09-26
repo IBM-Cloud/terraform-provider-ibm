@@ -13,13 +13,38 @@ type AuthorizationPolicy struct {
 	Roles     []models.PolicyRole     `json:"roles"`
 	Resources []models.PolicyResource `json:"resources"`
 	Subjects  []models.PolicyResource `json:"subjects"`
+	Type      string                  `json:"type,omitempty"`
+	Version   string                  `json:"-"`
 }
 
+type AuthorizationPolicySearchQuery struct {
+	SubjectID     string
+	Type          string
+	AccessGroupID string
+}
+
+func (q *AuthorizationPolicySearchQuery) setQuery(r *rest.Request) {
+	if q.SubjectID != "" {
+		r.Query("subjectId", q.SubjectID)
+	}
+	if q.Type != "" {
+		r.Query("type", q.Type)
+	}
+	if q.AccessGroupID != "" {
+		r.Query("accessGroupId", q.AccessGroupID)
+	}
+}
+
+const (
+	AuthorizationPolicyType = "authorization"
+	AccessPolicyType        = "access"
+)
+
 type AuthorizationPolicyRepository interface {
-	List(accountID string) ([]AuthorizationPolicy, error)
-	Get(accountID string, policyID string) (*AuthorizationPolicy, error)
-	Create(accountID string, policy AuthorizationPolicy) (*AuthorizationPolicy, error)
-	Update(accountID string, policyID string, policy AuthorizationPolicy) (*AuthorizationPolicy, error)
+	List(accountID string, query *AuthorizationPolicySearchQuery) ([]AuthorizationPolicy, error)
+	Get(accountID string, policyID string) (AuthorizationPolicy, error)
+	Create(accountID string, policy AuthorizationPolicy) (AuthorizationPolicy, error)
+	Update(accountID string, policyID string, policy AuthorizationPolicy, version string) (AuthorizationPolicy, error)
 	Delete(accountID string, policyID string) error
 	// Purge(accountID string, request DeleteAuthorizationPolicyRequest) (error)
 }
@@ -38,8 +63,12 @@ type listAuthorizationPolicyResponse struct {
 	Policies []AuthorizationPolicy `json:"policies"`
 }
 
-func (r *authorizationPolicyRepository) List(accountID string) ([]AuthorizationPolicy, error) {
-	request := rest.GetRequest(*r.client.Config.Endpoint+fmt.Sprintf("/acms/v2/accounts/%s/policies", accountID)).Query("type", "authorization")
+func (r *authorizationPolicyRepository) List(accountID string, query *AuthorizationPolicySearchQuery) ([]AuthorizationPolicy, error) {
+	request := rest.GetRequest(*r.client.Config.Endpoint + fmt.Sprintf("/acms/v2/accounts/%s/policies", accountID))
+
+	if query != nil {
+		query.setQuery(request)
+	}
 
 	var response listAuthorizationPolicyResponse
 	_, err := r.client.SendRequest(request, &response)
@@ -49,34 +78,40 @@ func (r *authorizationPolicyRepository) List(accountID string) ([]AuthorizationP
 	return response.Policies, nil
 }
 
-func (r *authorizationPolicyRepository) Get(accountID string, policyID string) (*AuthorizationPolicy, error) {
+func (r *authorizationPolicyRepository) Get(accountID string, policyID string) (AuthorizationPolicy, error) {
 	var policy AuthorizationPolicy
 
 	_, err := r.client.Get(fmt.Sprintf("/acms/v2/accounts/%s/policies/%s", accountID, policyID), &policy)
 	if err != nil {
-		return nil, err
+		return AuthorizationPolicy{}, err
 	}
-	return &policy, nil
+	return policy, nil
 }
 
-func (r *authorizationPolicyRepository) Create(accountID string, policy AuthorizationPolicy) (*AuthorizationPolicy, error) {
+func (r *authorizationPolicyRepository) Create(accountID string, policy AuthorizationPolicy) (AuthorizationPolicy, error) {
 	var policyCreated AuthorizationPolicy
 
 	_, err := r.client.Post(fmt.Sprintf("/acms/v2/accounts/%s/policies", accountID), &policy, &policyCreated)
 	if err != nil {
-		return nil, err
+		return AuthorizationPolicy{}, err
 	}
-	return &policyCreated, nil
+	return policyCreated, nil
 }
 
-func (r *authorizationPolicyRepository) Update(accountID string, policyID string, policy AuthorizationPolicy) (*AuthorizationPolicy, error) {
+func (r *authorizationPolicyRepository) Update(accountID string, policyID string, policy AuthorizationPolicy, version string) (AuthorizationPolicy, error) {
 	var policyUpdated AuthorizationPolicy
-
-	_, err := r.client.Put(fmt.Sprintf("/acms/v2/accounts/%s/policies/%s", accountID, policyID), &policy, &policyUpdated)
-	if err != nil {
-		return nil, err
+	request := rest.PutRequest(*r.client.Config.Endpoint + fmt.Sprintf("/acms/v2/accounts/%s/policies/%s", accountID, policyID)).Body(policy)
+	if version != "" {
+		request = request.Set("If-Match", version)
 	}
-	return &policyUpdated, nil
+
+	resp, err := r.client.SendRequest(request, &policyUpdated)
+	if err != nil {
+		return AuthorizationPolicy{}, err
+	}
+	policyUpdated.Version = resp.Header.Get("Etag")
+
+	return policyUpdated, nil
 }
 
 func (r *authorizationPolicyRepository) Delete(accountID string, policyID string) error {
