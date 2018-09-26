@@ -26,6 +26,8 @@ const (
 	IAMService ServiceName = ServiceName("iam")
 	//IAMPAPService
 	IAMPAPService ServiceName = ServiceName("iampap")
+	//IAMUUMService ...
+	IAMUUMService ServiceName = ServiceName("iamuum")
 	//resourceManagementService
 	ResourceManagementService ServiceName = ServiceName("resource-management")
 	//resourceControllerService

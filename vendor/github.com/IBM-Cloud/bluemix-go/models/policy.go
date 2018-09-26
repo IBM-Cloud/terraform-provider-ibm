@@ -25,4 +25,5 @@ type PolicyResource struct {
 	AccountID       string `json:"accountId,omitempty"`
 	OrganizationID  string `json:"organizationId,omitempty"`
 	ResourceGroupID string `json:"resourceGroupId,omitempty"`
+	AccessGroupID   string `json:"accessGroupId,omitempty"`
 }
