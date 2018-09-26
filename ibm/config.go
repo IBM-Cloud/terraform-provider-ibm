@@ -35,9 +35,6 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 )
 
-//SoftlayerRestEndpoint rest endpoint of SoftLayer
-const SoftlayerRestEndpoint = "https://api.softlayer.com/rest/v3"
-
 //RetryDelay
 const RetryAPIDelay = 5 * time.Second
 
