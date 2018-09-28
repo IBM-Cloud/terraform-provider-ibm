@@ -8,8 +8,8 @@ import (
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/rest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
-	"github.com/terraform-providers/terraform-provider-ibm/version"
 )
 
 //AuthResponse ...

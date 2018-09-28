@@ -16,8 +16,8 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 	slsession "github.com/softlayer/softlayer-go/session"
-	"github.com/terraform-providers/terraform-provider-ibm/version"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"

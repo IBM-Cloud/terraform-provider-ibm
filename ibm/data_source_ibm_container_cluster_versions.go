@@ -2,8 +2,9 @@ package ibm
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
 	"time"
+
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 func dataSourceIBMContainerClusterVersions() *schema.Resource {
