@@ -14,17 +14,17 @@ Requirements
 Building The Provider
 ---------------------
 
-Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-ibm`
+Clone repository to: `$GOPATH/src/github.com/IBM-Cloud/terraform-provider-ibm`
 
 ```sh
-$ mkdir -p $GOPATH/src/github.com/terraform-providers; cd $GOPATH/src/github.com/terraform-providers
-$ git clone git@github.com:IBM-Bluemix/terraform-provider-ibm.git
+$ mkdir -p $GOPATH/src/github.com/IBM-Cloud; cd $GOPATH/src/github.com/IBM-Cloud
+$ git clone git@github.com:IBM-Cloud/terraform-provider-ibm.git
 ```
 
 Enter the provider directory and build the provider
 
 ```sh
-$ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-ibm
+$ cd $GOPATH/src/github.com/IBM-Cloud/terraform-provider-ibm
 $ make build
 ```
 

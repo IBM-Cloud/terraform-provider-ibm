@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm"
+	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 	"github.com/hashicorp/terraform/plugin"
-	"github.com/terraform-providers/terraform-provider-ibm/ibm"
-	"github.com/terraform-providers/terraform-provider-ibm/version"
 )
 
 func main() {
