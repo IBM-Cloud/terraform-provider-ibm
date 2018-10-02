@@ -80,31 +80,30 @@ You can provide your static credentials by adding the `bluemix_api_key`, `softla
 
 Usage:
 
-```
+```hcl
 provider "ibm" {
     bluemix_api_key = ""
     softlayer_username = ""
     softlayer_api_key = ""
-
 }
 ```
 
 
 ### Environment variables
 
-You can provide your credentials by exporting the `BM_API_KEY`, `SL_USERNAME`, and `SL_API_KEY` environment variables, representing your IBM Cloud platform API key, IBM Cloud infrastructure (SoftLayer) user name, and IBM Cloud infrastructure API key, respectively.  
+You can provide your credentials by exporting the `BM_API_KEY`, `SL_USERNAME`, and `SL_API_KEY` environment variables, representing your IBM Cloud platform API key, IBM Cloud infrastructure (SoftLayer) user name, and IBM Cloud infrastructure API key, respectively.
 
-```
+```hcl
 provider "ibm" {}
 ```
 
 Usage:
 
-```
-$ export BM_API_KEY="bmx_api_key"
-$ export SL_USERNAME="sl_username"
-$ export SL_API_KEY="sl_api_key"
-$ terraform plan
+```shell
+export BM_API_KEY="bmx_api_key"
+export SL_USERNAME="sl_username"
+export SL_API_KEY="sl_api_key"
+terraform plan
 ```
 
 ## Argument Reference

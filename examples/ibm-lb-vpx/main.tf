@@ -1,6 +1,6 @@
 provider "ibm" {}
 
-# Create a new ssh key 
+# Create a new ssh key
 resource "ibm_compute_ssh_key" "ssh_key_performance" {
   label      = "${var.ssh_key_label}"
   notes      = "for scale group"
