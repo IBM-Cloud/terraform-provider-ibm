@@ -1,4 +1,4 @@
-# load balancer as a service example
+# Load Balancer as a service example
 
 This example shows how to launch a load balancer as a service
 
@@ -9,20 +9,20 @@ To run, configure your IBM Cloud provider
 
 Running the example
 
-For planning phase 
+For planning phase
 
-```
+```shell
 terraform plan
 ```
 
 For apply phase
 
-```
+```shell
 terraform apply
 ```
 
 For destroy
 
-```
- terraform destroy
+```shell
+terraform destroy
 ```

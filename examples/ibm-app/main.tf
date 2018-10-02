@@ -40,8 +40,8 @@ resource "ibm_service_instance" "service" {
 }
 
 resource "ibm_service_key" "key" {
-    name = "%s"
-    service_instance_guid = "${ibm_service_instance.service.id}"
+  name = "%s"
+  service_instance_guid = "${ibm_service_instance.service.id}"
 }
 
 resource "ibm_app" "app" {

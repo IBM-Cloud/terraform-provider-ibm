@@ -120,9 +120,9 @@ resource "ibm_lbaas_server_instance_attachment" "lbaas_member" {
 }
 
 resource "ibm_lbaas_health_monitor" "lbaas_hm" {
-    protocol = "${ibm_lbaas.lbaas.health_monitors.0.protocol}"
-    port = "${ibm_lbaas.lbaas.health_monitors.0.port}"
-    timeout = 3
-    lbaas_id = "${ibm_lbaas.lbaas.id}"
-    monitor_id = "${ibm_lbaas.lbaas.health_monitors.0.monitor_id}"
+  protocol = "${ibm_lbaas.lbaas.health_monitors.0.protocol}"
+  port = "${ibm_lbaas.lbaas.health_monitors.0.port}"
+  timeout = 3
+  lbaas_id = "${ibm_lbaas.lbaas.id}"
+  monitor_id = "${ibm_lbaas.lbaas.health_monitors.0.monitor_id}"
 }

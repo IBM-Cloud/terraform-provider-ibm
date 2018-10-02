@@ -24,14 +24,14 @@ resource "ibm_container_cluster" "cluster" {
     name   = "worker1"
     action = "add"
   },
-  {
-    name   = "worker2"
-    action = "add"
-  },
-  {
-    name   = "worker3"
-    action = "add"
-  }]
+    {
+      name   = "worker2"
+      action = "add"
+    },
+    {
+      name   = "worker3"
+      action = "add"
+    }]
 
   machine_type    = "${var.machine_type}"
   isolation       = "${var.isolation}"

@@ -8,20 +8,20 @@ To run, configure your IBM Cloud provider
 
 Running the example
 
-For planning phase 
+For planning phase
 
-```
+```shell
 terraform plan
 ```
 
 For apply phase
 
-```
+```shell
 terraform apply
 ```
 
 To remove the stack
 
-```
- terraform destroy
+```shell
+terraform destroy
 ```
