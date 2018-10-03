@@ -10,7 +10,9 @@ import (
 
 	"github.com/hashicorp/terraform/flatmap"
 
+	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -778,4 +780,36 @@ func contains(s []int, e int) bool {
 		}
 	}
 	return false
+}
+
+func flattenAccessGroupMembers(list []models.AccessGroupMember, users []accountv1.AccountUser, serviceids []models.ServiceID) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, len(list))
+	for _, m := range list {
+		var value, vtype string
+		if m.Type == iamuumv1.AccessGroupMemberUser {
+			vtype = iamuumv1.AccessGroupMemberUser
+			for _, user := range users {
+				if user.IbmUniqueId == m.ID {
+					value = user.UserId
+					break
+				}
+			}
+		} else {
+
+			vtype = iamuumv1.AccessGroupMemberService
+			for _, srid := range serviceids {
+				if srid.IAMID == m.ID {
+					value = srid.UUID
+					break
+				}
+			}
+
+		}
+		l := map[string]interface{}{
+			"iam_id": value,
+			"type":   vtype,
+		}
+		result = append(result, l)
+	}
+	return result
 }
