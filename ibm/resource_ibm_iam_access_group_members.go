@@ -82,26 +82,14 @@ func resourceIBMIAMAccessGroupMembersCreate(d *schema.ResourceData, meta interfa
 
 	}
 
-	if len(users) > 0 {
-		userids = make([]string, len(users))
-		for i, name := range users {
-			user, err := getAccountUser(accountID, name, meta)
-			if err != nil {
-				return err
-			}
-			userids[i] = user.IbmUniqueId
-		}
+	userids, err = flattenUserIds(accountID, users, meta)
+	if err != nil {
+		return err
 	}
 
-	if len(services) > 0 {
-		serviceids = make([]string, len(services))
-		for i, id := range services {
-			serviceID, err := getServiceID(id, meta)
-			if err != nil {
-				return err
-			}
-			serviceids[i] = serviceID.IAMID
-		}
+	serviceids, err = flattenServiceIds(services, meta)
+	if err != nil {
+		return err
 	}
 
 	request := prepareMemberAddRequest(userids, serviceids)
@@ -220,23 +208,15 @@ func resourceIBMIAMAccessGroupMembersUpdate(d *schema.ResourceData, meta interfa
 
 	if len(addUsers) > 0 || len(addServiceids) > 0 && !d.IsNewResource() {
 		var userids, serviceids []string
-		userids = make([]string, len(addUsers))
-		for i, u := range addUsers {
-			user, err := getAccountUser(accountID, u, meta)
-			if err != nil {
-				return err
-			}
-			userids[i] = user.IbmUniqueId
-		}
-		serviceids = make([]string, len(addServiceids))
-		for i, s := range addServiceids {
-			serviceID, err := getServiceID(s, meta)
-			if err != nil {
-				return err
-			}
-			serviceids[i] = serviceID.IAMID
+		userids, err = flattenUserIds(accountID, addUsers, meta)
+		if err != nil {
+			return err
 		}
 
+		serviceids, err = flattenServiceIds(addServiceids, meta)
+		if err != nil {
+			return err
+		}
 		request := prepareMemberAddRequest(userids, serviceids)
 
 		_, err = iamuumClient.AccessGroupMember().Add(grpID, request)

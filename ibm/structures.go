@@ -813,3 +813,27 @@ func flattenAccessGroupMembers(list []models.AccessGroupMember, users []accountv
 	}
 	return result
 }
+
+func flattenUserIds(accountID string, users []string, meta interface{}) ([]string, error) {
+	userids := make([]string, len(users))
+	for i, name := range users {
+		user, err := getAccountUser(accountID, name, meta)
+		if err != nil {
+			return nil, err
+		}
+		userids[i] = user.IbmUniqueId
+	}
+	return userids, nil
+}
+
+func flattenServiceIds(services []string, meta interface{}) ([]string, error) {
+	serviceids := make([]string, len(services))
+	for i, id := range services {
+		serviceID, err := getServiceID(id, meta)
+		if err != nil {
+			return nil, err
+		}
+		serviceids[i] = serviceID.IAMID
+	}
+	return serviceids, nil
+}
