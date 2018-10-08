@@ -81,20 +81,22 @@ func (r *authorizationPolicyRepository) List(accountID string, query *Authorizat
 func (r *authorizationPolicyRepository) Get(accountID string, policyID string) (AuthorizationPolicy, error) {
 	var policy AuthorizationPolicy
 
-	_, err := r.client.Get(fmt.Sprintf("/acms/v2/accounts/%s/policies/%s", accountID, policyID), &policy)
+	resp, err := r.client.Get(fmt.Sprintf("/acms/v2/accounts/%s/policies/%s", accountID, policyID), &policy)
 	if err != nil {
 		return AuthorizationPolicy{}, err
 	}
+	policy.Version = resp.Header.Get("Etag")
 	return policy, nil
 }
 
 func (r *authorizationPolicyRepository) Create(accountID string, policy AuthorizationPolicy) (AuthorizationPolicy, error) {
 	var policyCreated AuthorizationPolicy
 
-	_, err := r.client.Post(fmt.Sprintf("/acms/v2/accounts/%s/policies", accountID), &policy, &policyCreated)
+	resp, err := r.client.Post(fmt.Sprintf("/acms/v2/accounts/%s/policies", accountID), &policy, &policyCreated)
 	if err != nil {
 		return AuthorizationPolicy{}, err
 	}
+	policyCreated.Version = resp.Header.Get("Etag")
 	return policyCreated, nil
 }
 
