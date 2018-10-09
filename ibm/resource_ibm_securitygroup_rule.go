@@ -237,7 +237,7 @@ func resourceIBMSecurityGroupRuleUpdate(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("Error retrieving Security Group Rule: %s", err)
 	}
 	if d.HasChange("direction") {
-		matchingrules[0].Direction = sl.String(d.Get("description").(string))
+		matchingrules[0].Direction = sl.String(d.Get("direction").(string))
 	}
 	if d.HasChange("ether_type") {
 		matchingrules[0].Ethertype = sl.String(d.Get("ether_type").(string))
