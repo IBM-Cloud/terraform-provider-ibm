@@ -81,6 +81,11 @@ func resourceIBMLb() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
 			},
+
+			"hostname": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -284,6 +289,7 @@ func resourceIBMLbRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("ssl_enabled", vip.SslEnabledFlag)
 	// Optional fields.  Guard against nil pointer dereferences
 	d.Set("security_certificate_id", sl.Get(vip.SecurityCertificateId, nil))
+	d.Set("hostname", vip.LoadBalancerHardware[0].Hostname)
 	return nil
 }
 

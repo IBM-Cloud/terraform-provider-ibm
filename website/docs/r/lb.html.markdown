@@ -40,6 +40,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - The unique identifier of the local load balancer.
+* `hostname` - The host name of the local load balancer.
 * `ip_address` - The IP address of the local load balancer.
 * `subnet_id` - The unique identifier of the subnet associated with the local load balancer.
 * `ssl_enabled` - The status of whether the local load balancer provides SSL capability.
