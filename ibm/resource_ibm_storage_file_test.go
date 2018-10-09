@@ -54,11 +54,9 @@ func TestAccIBMStorageFile_Basic(t *testing.T) {
 					// Endurance Storage
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "allowed_virtual_guest_ids.#", "1"),
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "allowed_subnets.#", "1"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "allowed_ip_addresses.#", "1"),
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_endurance", "notes", "updated endurance notes"),
 					// Performance Storage
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_performance", "allowed_virtual_guest_ids.#", "1"),
-					resource.TestCheckResourceAttr("ibm_storage_file.fs_performance", "allowed_subnets.#", "1"),
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_performance", "allowed_ip_addresses.#", "1"),
 					resource.TestCheckResourceAttrSet("ibm_storage_file.fs_endurance", "mountpoint"),
 				),
@@ -114,6 +112,8 @@ func TestAccIBMStorageFile_With_Hourly(t *testing.T) {
 						"ibm_storage_file.fs_performance", "capacity", "20"),
 					resource.TestCheckResourceAttr(
 						"ibm_storage_file.fs_performance", "iops", "200"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_file.fs_performance", "snapshot_capacity", "10"),
 					testAccCheckIBMResources("ibm_storage_file.fs_performance", "datacenter",
 						"ibm_compute_vm_instance.storagevm1", "datacenter"),
 					resource.TestCheckResourceAttr("ibm_storage_file.fs_performance", "notes", "performance for hourly billing"),
@@ -264,7 +264,6 @@ resource "ibm_storage_file" "fs_endurance" {
         iops = 0.25
         allowed_virtual_guest_ids = [ "${ibm_compute_vm_instance.storagevm1.id}" ]
         allowed_subnets = [ "${ibm_compute_vm_instance.storagevm1.private_subnet}" ]
-        allowed_ip_addresses = [ "${ibm_compute_vm_instance.storagevm1.ipv4_address_private}" ]
         snapshot_capacity = 10
         notes = "updated endurance notes"
 }
@@ -274,7 +273,6 @@ resource "ibm_storage_file" "fs_performance" {
         capacity = 20
         iops = 100
         allowed_virtual_guest_ids = [ "${ibm_compute_vm_instance.storagevm1.id}" ]
-        allowed_subnets = [ "${ibm_compute_vm_instance.storagevm1.private_subnet}" ]
         allowed_ip_addresses = [ "${ibm_compute_vm_instance.storagevm1.ipv4_address_private}" ]
 }
 `
@@ -450,7 +448,8 @@ resource "ibm_storage_file" "fs_performance" {
         datacenter = "${ibm_compute_vm_instance.storagevm1.datacenter}"
         capacity = 20
         iops = 200
-        notes = "performance for hourly billing"
+		notes = "performance for hourly billing"
+		snapshot_capacity = 10
 		hourly_billing = true
 }
 `

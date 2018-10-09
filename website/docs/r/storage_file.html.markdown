@@ -77,7 +77,7 @@ The following arguments are supported:
 * `datacenter` - (Required, string) The data center where you want to provision the file storage instance.
 * `capacity` - (Required, integer) The amount of storage capacity you want to allocate, expressed in gigabytes.
 * `iops` - (Required, float) The IOPS value for the storage instance. You can find available values for Endurance storage in the [KnowledgeLayer docs](https://knowledgelayer.softlayer.com/learning/introduction-endurance-storage).
-* `snapshot_capacity` - (Optional, integer) Applies to Endurance storage only. The amount of snapshot capacity you want to allocate, expressed in gigabytes.
+* `snapshot_capacity` - (Optional, integer) The amount of snapshot capacity you want to allocate, expressed in gigabytes.
 * `allowed_virtual_guest_ids` - (Optional, array of integers) The virtual guests that you want to give access to this instance. Virtual guests must be in the same data center as the block storage. You can also use this field to import the list of virtual guests that have access to this storage from the `block_storage_ids` argument in the `ibm_compute_vm_instance` resource.
 * `allowed_hardware_ids` - (Optional, array of integers) The bare metal servers that you want to give access to this instance. Bare metal servers must be in the same data center as the block storage. You can also use this field to import the list of bare metal servers that have access to this storage from the `block_storage_ids` argument in the `ibm_compute_bare_metal` resource.
 * `allowed_subnets` - (Optional, array of integers) The subnets that you want to give access to this instance. Subnets must be in the same data center as the block storage.

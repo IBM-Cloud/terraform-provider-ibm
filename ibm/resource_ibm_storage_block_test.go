@@ -155,6 +155,8 @@ func TestAccIBMStorageBlock_hourly(t *testing.T) {
 						"ibm_storage_block.bs_performance", "os_format_type", "Linux"),
 					resource.TestCheckResourceAttr(
 						"ibm_storage_block.bs_performance", "hourly_billing", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_storage_block.bs_performance", "snapshot_capacity", "20"),
 					testAccCheckIBMResources("ibm_storage_block.bs_performance", "datacenter",
 						"ibm_compute_vm_instance.storagevm2", "datacenter"),
 					resource.TestCheckResourceAttr("ibm_storage_block.bs_performance", "notes", "performance notes"),
@@ -356,6 +358,7 @@ resource "ibm_storage_block" "bs_performance" {
         os_format_type = "Linux"
 		notes = "performance notes"
 		hourly_billing = true
+		snapshot_capacity = 20
 		allowed_virtual_guest_ids = [ "${ibm_compute_vm_instance.storagevm2.id}" ]
         allowed_ip_addresses = [ "${ibm_compute_vm_instance.storagevm2.ipv4_address_private}" ]
 }
