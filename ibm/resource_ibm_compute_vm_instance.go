@@ -429,6 +429,13 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				DiffSuppressFunc: applyOnce,
 				ConflictsWith:    []string{"private_network_only", "public_bandwidth_limited"},
 			},
+
+			"evault": {
+				Type:             schema.TypeInt,
+				Optional:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: applyOnce,
+			},
 		},
 	}
 }
@@ -865,6 +872,19 @@ func resourceIBMComputeVmInstanceCreate(d *schema.ResourceData, meta interface{}
 		}
 		template.Prices = append(template.Prices, price)
 	}
+
+	if evault, ok := d.GetOk("evault"); ok {
+		if *opts.HourlyBillingFlag {
+			return fmt.Errorf("Unable to configure a evault with hourly_billing true")
+		}
+
+		keyName := "EVAULT_" + strconv.Itoa(evault.(int)) + "_GB"
+		price, err := getItemPriceId(items, "evault", keyName)
+		if err != nil {
+			return fmt.Errorf("Error generating order template: %s", err)
+		}
+		template.Prices = append(template.Prices, price)
+	}
 	// GenerateOrderTemplate omits UserData, subnet, and maxSpeed, so configure virtual_guest.
 	template.VirtualGuests[0] = opts
 
@@ -952,7 +972,7 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 			"securityGroupBindings[securityGroup]]," +
 			"primaryBackendNetworkComponent[networkVlan[id]," +
 			"primaryIpAddressRecord[subnet,guestNetworkComponentBinding[ipAddressId]]," +
-			"securityGroupBindings[securityGroup]]",
+			"securityGroupBindings[securityGroup]],evaultNetworkStorage[capacityGb]",
 	).GetObject()
 
 	if err != nil {
@@ -1120,6 +1140,13 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 	}
 	d.SetConnInfo(connInfo)
 
+	if _, ok := sl.GrabOk(result, "EvaultNetworkStorage"); ok {
+		if len(result.EvaultNetworkStorage) > 0 {
+			d.Set("evault", result.EvaultNetworkStorage[0].CapacityGb)
+		}
+
+	}
+
 	err = readSecondaryIPAddresses(d, meta, result.PrimaryIpAddress)
 	return err
 }
@@ -1256,6 +1283,7 @@ func resourceIBMComputeVmInstanceUpdate(d *schema.ResourceData, meta interface{}
 		}
 
 	}
+
 	if len(upgradeOptions) > 0 || d.HasChange("flavor_key_name") {
 
 		if _, ok := d.GetOk("flavor_key_name"); ok {
