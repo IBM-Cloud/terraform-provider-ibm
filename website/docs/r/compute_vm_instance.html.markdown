@@ -140,6 +140,7 @@ This attribute can't be updated. This is provided so that you can apply security
     **NOTE**: Conflicts with `private_network_only` and `public_bandwidth_unlimited`.
 * `public_bandwidth_unlimited` - (Optional, boolean). Allowed unlimited public network traffic(GB) per month for a monthly based server. The `network_speed` should be 100 Mbps. Default value: `false`.
     **NOTE**: Conflicts with `private_network_only` and `public_bandwidth_limited`.
+* `evault` - (Optional, int). Allowed evault(GB) per month for monthly based servers.
 
 
 ## Attribute Reference

@@ -658,6 +658,35 @@ func TestAccIBMComputeVmInstance_With_Security_Groups(t *testing.T) {
 	})
 }
 
+func TestAccIBMComputeVmInstance_With_Evault(t *testing.T) {
+	var guest datatypes.Virtual_Guest
+
+	hostname := acctest.RandString(16)
+	domain := "tfvmevaultuat.ibm.com"
+
+	configInstance := "ibm_compute_vm_instance.terraform-evault"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccIBMComputeVmInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:  testComputeInstanceWithEvault(hostname, domain),
+				Destroy: false,
+				Check: resource.ComposeTestCheckFunc(
+					testAccIBMComputeVmInstanceExists(configInstance, &guest),
+					resource.TestCheckResourceAttr(
+						configInstance, "hostname", hostname),
+					resource.TestCheckResourceAttr(
+						configInstance, "domain", domain),
+					resource.TestCheckResourceAttr(
+						configInstance, "evault", "20"),
+				),
+			},
+		},
+	})
+}
+
 func testAccIBMComputeVmInstanceDestroy(s *terraform.State) error {
 	service := services.GetVirtualGuestService(testAccProvider.Meta().(ClientSession).SoftLayerSession())
 
@@ -1166,4 +1195,22 @@ func testAccIBMComputeVMInstanceConfigFlavorUpdate(hostname, domain, networkSpee
 	    secondary_ip_count = 4
 	    notes = "VM notes"
 	}`, hostname, domain, networkSpeed, flavor, userMetadata, tags)
+}
+
+func testComputeInstanceWithEvault(hostname, domain string) (config string) {
+	return fmt.Sprintf(`
+resource "ibm_compute_vm_instance" "terraform-evault" {
+	hostname = "%s"
+	domain = "%s"
+	datacenter = "mel01"
+	network_speed = 10
+	hourly_billing = false
+	cores = 1
+	memory = 1024
+	local_disk = false
+	os_reference_code = "DEBIAN_8_64"
+	disks = [25]
+	evault = 20
+}
+`, hostname, domain)
 }
