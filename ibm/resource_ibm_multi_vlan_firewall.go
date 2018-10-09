@@ -239,7 +239,7 @@ func resourceIBMMultiVlanFirewallRead(d *schema.ResourceData, meta interface{}) 
 	}
 	addonConfiguration := make([]interface{}, 0, len(firewalls[0].NetworkFirewall.BillingItem.ActiveChildren))
 	for _, elem := range firewalls[0].NetworkFirewall.BillingItem.ActiveChildren {
-		if *elem.Description != "20000 GB Bandwidth Allotment" {
+		if *elem.Description != "20000 GB Bandwidth Allotment" && *elem.Description != "FortiGate Firewall Appliance HA Option" {
 			addonConfiguration = append(addonConfiguration, *elem.Description)
 		}
 	}
