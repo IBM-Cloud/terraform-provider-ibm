@@ -687,11 +687,20 @@ func flattenDisks(result datatypes.Virtual_Guest) []int {
 		// skip 1,7 which is reserved for the swap disk and metadata
 		if result.BillingItem.OrderItem.Preset != nil {
 			if *v.Device != "1" && *v.Device != "7" && *v.Device != "0" {
-				out = append(out, *v.DiskImage.Capacity)
+				capacity, ok := sl.GrabOk(v, "DiskImage.Capacity")
+
+				if ok {
+					out = append(out, capacity.(int))
+				}
+
 			}
 		} else {
 			if *v.Device != "1" && *v.Device != "7" {
-				out = append(out, *v.DiskImage.Capacity)
+				capacity, ok := sl.GrabOk(v, "DiskImage.Capacity")
+
+				if ok {
+					out = append(out, capacity.(int))
+				}
 			}
 		}
 	}
@@ -706,11 +715,19 @@ func flattenDisksForWindows(result datatypes.Virtual_Guest) []int {
 		// skip 1,7 which is reserved for the swap disk and metadata
 		if result.BillingItem.OrderItem.Preset != nil {
 			if *v.Device != "1" && *v.Device != "7" && *v.Device != "0" && *v.Device != "3" {
-				out = append(out, *v.DiskImage.Capacity)
+				capacity, ok := sl.GrabOk(v, "DiskImage.Capacity")
+
+				if ok {
+					out = append(out, capacity.(int))
+				}
 			}
 		} else {
 			if *v.Device != "1" && *v.Device != "7" && *v.Device != "3" {
-				out = append(out, *v.DiskImage.Capacity)
+				capacity, ok := sl.GrabOk(v, "DiskImage.Capacity")
+
+				if ok {
+					out = append(out, capacity.(int))
+				}
 			}
 		}
 	}
