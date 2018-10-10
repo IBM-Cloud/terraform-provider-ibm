@@ -16,27 +16,37 @@ import (
 
 //ClusterInfo ...
 type ClusterInfo struct {
-	CreatedDate       string  `json:"createdDate"`
-	DataCenter        string  `json:"dataCenter"`
-	ID                string  `json:"id"`
-	IngressHostname   string  `json:"ingressHostname"`
-	IngressSecretName string  `json:"ingressSecretName"`
-	Location          string  `json:"location"`
-	MasterKubeVersion string  `json:"masterKubeVersion"`
-	ModifiedDate      string  `json:"modifiedDate"`
-	Name              string  `json:"name"`
-	Region            string  `json:"region"`
-	ServerURL         string  `json:"serverURL"`
-	State             string  `json:"state"`
-	OrgID             string  `json:"logOrg"`
-	OrgName           string  `json:"logOrgName"`
-	SpaceID           string  `json:"logSpace"`
-	SpaceName         string  `json:"logSpaceName"`
-	IsPaid            bool    `json:"isPaid"`
-	IsTrusted         bool    `json:"isTrusted"`
-	WorkerCount       int     `json:"workerCount"`
-	Vlans             []Vlan  `json:"vlans"`
-	Addons            []Addon `json:"addons"`
+	CreatedDate              string   `json:"createdDate"`
+	DataCenter               string   `json:"dataCenter"`
+	ID                       string   `json:"id"`
+	IngressHostname          string   `json:"ingressHostname"`
+	IngressSecretName        string   `json:"ingressSecretName"`
+	Location                 string   `json:"location"`
+	MasterKubeVersion        string   `json:"masterKubeVersion"`
+	ModifiedDate             string   `json:"modifiedDate"`
+	Name                     string   `json:"name"`
+	Region                   string   `json:"region"`
+	ResourceGroupID          string   `json:"resourceGroup"`
+	ServerURL                string   `json:"serverURL"`
+	State                    string   `json:"state"`
+	OrgID                    string   `json:"logOrg"`
+	OrgName                  string   `json:"logOrgName"`
+	SpaceID                  string   `json:"logSpace"`
+	SpaceName                string   `json:"logSpaceName"`
+	IsPaid                   bool     `json:"isPaid"`
+	IsTrusted                bool     `json:"isTrusted"`
+	WorkerCount              int      `json:"workerCount"`
+	Vlans                    []Vlan   `json:"vlans"`
+	Addons                   []Addon  `json:"addons"`
+	OwnerEmail               string   `json:"ownerEmail"`
+	APIUser                  string   `json:"apiUser"`
+	MonitoringURL            string   `json:"monitoringURL"`
+	DisableAutoUpdate        bool     `json:"disableAutoUpdate"`
+	EtcdPort                 string   `json:"etcdPort"`
+	MasterStatus             string   `json:"masterStatus"`
+	MasterStatusModifiedDate string   `json:"masterStatusModifiedDate"`
+	KeyProtectEnabled        bool     `json:"keyProtectEnabled"`
+	WorkerZones              []string `json:"workerZones"`
 }
 
 type ClusterUpdateParam struct {
@@ -70,19 +80,21 @@ type ClusterCreateResponse struct {
 
 //ClusterTargetHeader ...
 type ClusterTargetHeader struct {
-	OrgID     string
-	SpaceID   string
-	AccountID string
-	Region    string
+	OrgID         string
+	SpaceID       string
+	AccountID     string
+	Region        string
+	ResourceGroup string
 }
 
 const (
-	orgIDHeader      = "X-Auth-Resource-Org"
-	spaceIDHeader    = "X-Auth-Resource-Space"
-	accountIDHeader  = "X-Auth-Resource-Account"
-	slUserNameHeader = "X-Auth-Softlayer-Username"
-	slAPIKeyHeader   = "X-Auth-Softlayer-APIKey"
-	regionHeader     = "X-Region"
+	orgIDHeader         = "X-Auth-Resource-Org"
+	spaceIDHeader       = "X-Auth-Resource-Space"
+	accountIDHeader     = "X-Auth-Resource-Account"
+	slUserNameHeader    = "X-Auth-Softlayer-Username"
+	slAPIKeyHeader      = "X-Auth-Softlayer-APIKey"
+	regionHeader        = "X-Region"
+	resourceGroupHeader = "X-Auth-Resource-Group"
 )
 
 //ToMap ...
@@ -92,6 +104,7 @@ func (c ClusterTargetHeader) ToMap() map[string]string {
 	m[spaceIDHeader] = c.SpaceID
 	m[accountIDHeader] = c.AccountID
 	m[regionHeader] = c.Region
+	m[resourceGroupHeader] = c.ResourceGroup
 	return m
 }
 
