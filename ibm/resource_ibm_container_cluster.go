@@ -227,6 +227,15 @@ func resourceIBMContainerCluster() *schema.Resource {
 					},
 				},
 			},
+
+			"resource_group_id": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "ID of the resource group.",
+				Computed:         true,
+				DiffSuppressFunc: applyOnce,
+			},
+
 			"org_guid": {
 				Description: "The bluemix organization guid this cluster belongs to",
 				Type:        schema.TypeString,
@@ -531,6 +540,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0])
 	d.Set("is_trusted", cls.IsTrusted)
 	d.Set("albs", flattenAlbs(albs))
+	d.Set("resource_group_id", cls.ResourceGroupID)
 
 	return nil
 }

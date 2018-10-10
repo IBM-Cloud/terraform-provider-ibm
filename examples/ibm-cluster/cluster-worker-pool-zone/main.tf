@@ -9,24 +9,22 @@ data "ibm_space" "space" {
   space = "${var.space}"
 }
 
-data "ibm_account" "account" {
-  org_guid = "${data.ibm_org.org.id}"
+data "ibm_resource_group" "testacc_ds_resource_group" {
+  name = "default"
 }
 
 resource "ibm_container_cluster" "cluster" {
-  name         = "${var.cluster_name}${random_id.name.hex}"
-  datacenter   = "${var.datacenter}"
-  org_guid     = "${data.ibm_org.org.id}"
-  space_guid   = "${data.ibm_space.space.id}"
-  account_guid = "${data.ibm_account.account.id}"
-  no_subnet    = true
-  subnet_id    = ["${var.subnet_id}"]
-  default_pool_size   = 2
+  name              = "${var.cluster_name}${random_id.name.hex}"
+  datacenter        = "${var.datacenter}"
+  no_subnet         = true
+  subnet_id         = ["${var.subnet_id}"]
+  default_pool_size = 2
 
-  machine_type    = "${var.machine_type}"
-  isolation       = "${var.isolation}"
-  public_vlan_id  = "${var.public_vlan_id}"
-  private_vlan_id = "${var.private_vlan_id}"
+  resource_group_id = "${data.ibm_resource_group.testacc_ds_resource_group.id}"
+  machine_type      = "${var.machine_type}"
+  isolation         = "${var.isolation}"
+  public_vlan_id    = "${var.public_vlan_id}"
+  private_vlan_id   = "${var.private_vlan_id}"
 }
 
 resource ibm_container_worker_pool_zone_attachment default_zone {
@@ -75,16 +73,10 @@ resource "ibm_container_bind_service" "bind_service" {
   cluster_name_id     = "${ibm_container_cluster.cluster.name}"
   service_instance_id = "${ibm_service_instance.service.id}"
   namespace_id        = "default"
-  org_guid            = "${data.ibm_org.org.id}"
-  space_guid          = "${data.ibm_space.space.id}"
-  account_guid        = "${data.ibm_account.account.id}"
 }
 
 data "ibm_container_cluster_config" "cluster_config" {
   cluster_name_id = "${ibm_container_cluster.cluster.name}"
-  org_guid        = "${data.ibm_org.org.id}"
-  space_guid      = "${data.ibm_space.space.id}"
-  account_guid    = "${data.ibm_account.account.id}"
 }
 
 resource "random_id" "name" {

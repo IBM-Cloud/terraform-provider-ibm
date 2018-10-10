@@ -55,6 +55,14 @@ func resourceIBMContainerWorkerPoolZoneAttachment() *schema.Resource {
 				Optional: true,
 			},
 
+			"resource_group_id": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "ID of the resource group.",
+				ForceNew:         true,
+				DiffSuppressFunc: applyOnce,
+			},
+
 			"region": {
 				Type:        schema.TypeString,
 				Optional:    true,

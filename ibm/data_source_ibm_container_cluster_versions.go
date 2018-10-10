@@ -32,6 +32,11 @@ func dataSourceIBMContainerClusterVersions() *schema.Resource {
 				Optional:    true,
 				Description: "The cluster region",
 			},
+			"resource_group_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "ID of the resource group.",
+			},
 			"valid_kube_versions": {
 				Description: "List supported kube-versions",
 				Type:        schema.TypeList,

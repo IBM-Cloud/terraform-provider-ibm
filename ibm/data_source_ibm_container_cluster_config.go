@@ -37,6 +37,11 @@ func dataSourceIBMContainerClusterConfig() *schema.Resource {
 				Optional:    true,
 				Description: "The cluster region",
 			},
+			"resource_group_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "ID of the resource group.",
+			},
 			"cluster_name_id": {
 				Description: "The name/id of the cluster",
 				Type:        schema.TypeString,

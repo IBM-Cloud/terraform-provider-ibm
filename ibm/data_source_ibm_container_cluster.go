@@ -220,6 +220,12 @@ func dataSourceIBMContainerCluster() *schema.Resource {
 				Computed:    true,
 				Description: "The cluster region",
 			},
+			"resource_group_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "ID of the resource group.",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -284,6 +290,7 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	d.Set("is_trusted", clusterFields.IsTrusted)
 	d.Set("worker_pools", flattenWorkerPools(workerPools))
 	d.Set("albs", flattenAlbs(albs))
+	d.Set("resource_group_id", clusterFields.ResourceGroupID)
 
 	return nil
 }

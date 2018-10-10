@@ -54,6 +54,7 @@ The following arguments are supported:
 * `disk_encryption` - (Optional, boolean) Set to `false` to disable encryption on a worker. Default is true.
 * `labels` - (Optional, map) Labels on all the workers in the worker pool.
 * `region` - (Optional, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(BM_REGION/BLUEMIX_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
+* `resource_group_id` - (Optional, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
  
 ## Attribute Reference
 
