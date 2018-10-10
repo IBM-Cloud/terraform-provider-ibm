@@ -6,6 +6,7 @@ import (
 	"time"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -113,6 +114,14 @@ func resourceIBMContainerWorkerPool() *schema.Resource {
 				Computed:    true,
 				ForceNew:    true,
 				Description: "The worker pool region",
+			},
+
+			"resource_group_id": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "ID of the resource group.",
+				ForceNew:         true,
+				DiffSuppressFunc: applyOnce,
 			},
 		},
 	}
@@ -389,6 +398,7 @@ func workerPoolDeleteStateRefreshFunc(client v1.Workers, instanceID, workerPoolN
 
 func getWorkerPoolTargetHeader(d *schema.ResourceData, meta interface{}) (v1.ClusterTargetHeader, error) {
 	region := d.Get("region").(string)
+	var resourceGroup string
 
 	sess, err := meta.(ClientSession).BluemixSession()
 	if err != nil {
@@ -398,9 +408,26 @@ func getWorkerPoolTargetHeader(d *schema.ResourceData, meta interface{}) (v1.Clu
 	if region == "" {
 		region = sess.Config.Region
 	}
+	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
+		resourceGroup = rsGrpID.(string)
+	} else {
+		rsMangClient, err := meta.(ClientSession).ResourceManagementAPI()
+		if err != nil {
+			return v1.ClusterTargetHeader{}, err
+		}
+		resourceGroupQuery := management.ResourceGroupQuery{
+			Default: true,
+		}
+		grpList, err := rsMangClient.ResourceGroup().List(&resourceGroupQuery)
+		if err != nil {
+			return v1.ClusterTargetHeader{}, err
+		}
+		resourceGroup = grpList[0].ID
+	}
 
 	targetEnv := v1.ClusterTargetHeader{
-		Region: region,
+		Region:        region,
+		ResourceGroup: resourceGroup,
 	}
 	return targetEnv, nil
 }

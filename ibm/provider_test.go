@@ -106,14 +106,14 @@ func init() {
 
 	kubeVersion = os.Getenv("IBM_KUBE_VERSION")
 	if kubeVersion == "" {
-		kubeVersion = "1.9.9"
-		fmt.Println("[WARN] Set the environment variable IBM_KUBE_VERSION for testing ibm_container_cluster resource else it is set to default value '1.9.8'")
+		kubeVersion = "1.9.10"
+		fmt.Println("[WARN] Set the environment variable IBM_KUBE_VERSION for testing ibm_container_cluster resource else it is set to default value '1.9.10'")
 	}
 
 	kubeUpdateVersion = os.Getenv("IBM_KUBE_UPDATE_VERSION")
 	if kubeUpdateVersion == "" {
-		kubeUpdateVersion = "1.10.5"
-		fmt.Println("[WARN] Set the environment variable IBM_KUBE_UPDATE_VERSION for testing ibm_container_cluster resource else it is set to default value '1.10.3'")
+		kubeUpdateVersion = "1.10.8"
+		fmt.Println("[WARN] Set the environment variable IBM_KUBE_UPDATE_VERSION for testing ibm_container_cluster resource else it is set to default value '1.10.8'")
 	}
 
 	privateSubnetID = os.Getenv("IBM_PRIVATE_SUBNET_ID")
