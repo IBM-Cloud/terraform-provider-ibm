@@ -29,7 +29,7 @@ resource "ibm_resource_group" "resourceGroup" {
 The following arguments are supported:
 
 * `name` - (Required, string)The name of the resource group.
-* `quota_id` - (Required, string) The id of the quota.You can [refer to a quota by name using a data source](../d/resource_quota.html.markdown).
+* `quota_id` - (Required, string) The id of the quota.You can [refer to a quota by name using a data source](../d/resource_quota.html).
 * `tags` - (Optional, array of strings) Tags associated with the resource group instance.
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 

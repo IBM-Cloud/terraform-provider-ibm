@@ -18,7 +18,7 @@ The static IPv4 subnet provides secondary IP addresses for primary IP addresses.
 
 Both the public portable IPv6 subnet and the public static IP only accept `64` as a value for the `capacity` attribute. They provide 2^64 IP addresses. For additional detail, refer to [IPv6 address](http://blog.softlayer.com/tag/ipv6)
 
-##### Example Usage of portable subnet
+## Example Usage of portable subnet
 The following example creates a private portable subnet which has one available IPv4 address:
 
 ```hcl
@@ -54,7 +54,7 @@ output "first_ip_address" {
 
 ```
 
-##### Example Usage of static subnet
+## Example Usage of static subnet
 The following example creates a public static subnet which has four available IPv4 address:
 
 ```hcl
@@ -92,7 +92,7 @@ ibm_subnet provides the following [Timeouts](https://www.terraform.io/docs/confi
 
 * `create` - (Default 30 minutes) Used for Creating Instance.
 
-##### Argument Reference
+## Argument Reference
 
 The following arguments are supported:
 
@@ -105,13 +105,13 @@ The following arguments are supported:
     * Accepted values for a public static IPv4 subnet are 1, 2, 4, 8, 16, and 32.
     * Accepted value for a public portable IPv6 subnet is 64. A /64 block is created and 2^64 IP addresses are provided.
     * Accepted value for a public static IPv6 subnet is 64. A /64 block is created and 2^64 IP addresses are provided.
-* `vlan_id` - (Optional, integer) The VLAN ID for portable subnet. You can configure both public and private VLAN ID. You can find accepted values in the [Softlayer VLAN documentation](https://control.softlayer.com/network/vlans) by clicking on the desired VLAN and noting the ID in the resulting URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html.markdown).
+* `vlan_id` - (Optional, integer) The VLAN ID for portable subnet. You can configure both public and private VLAN ID. You can find accepted values in the [Softlayer VLAN documentation](https://control.softlayer.com/network/vlans) by clicking on the desired VLAN and noting the ID in the resulting URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
 * `endpoint_ip` - (Optional, string) The target primary IP address for a static subnet. Only public IP addresses of virtual servers, bare metal servers, and netscaler VPXs can be configured as an `endpoint_ip`. The `static subnet` will be created on the VLAN where the `endpoint_ip` is located.
 * `notes` - (Optional, string) Descriptive text or comments about the subnet.
 * `tags` - (Optional, array of strings) Tags associated with the subnet instance.
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
-##### Attributes Reference
+## Attributes Reference
 
 The following attributes are exported:
 
