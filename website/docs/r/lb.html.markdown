@@ -16,12 +16,24 @@ In the following example, you can create a local load balancer:
 
 ```hcl
 resource "ibm_lb" "test_lb_local" {
-    connections = 1500
-    datacenter  = "tok02"
-    ha_enabled  = false
-    dedicated   = false       
+  connections = 1500
+  datacenter  = "tok02"
+  ha_enabled  = false
+  dedicated   = false
+
+  //User can increase timeouts
+  timeouts {
+    create = "45m"
+  }
 }
 ```
+
+## Timeouts
+
+ibm_subnet provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+
+* `create` - (Default 30 minutes) Used for Creating Instance.
+
 
 ## Argument Reference
 
