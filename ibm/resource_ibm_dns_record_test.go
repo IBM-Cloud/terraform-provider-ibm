@@ -73,7 +73,9 @@ func TestAccIBMDNSRecord_Types(t *testing.T) {
 					testAccCheckIBMDNSRecordExists("ibm_dns_record.recordA", &dns_domain_record),
 					testAccCheckIBMDNSRecordExists("ibm_dns_record.recordAAAA", &dns_domain_record),
 					testAccCheckIBMDNSRecordExists("ibm_dns_record.recordCNAME", &dns_domain_record),
+					testAccCheckIBMDNSRecordExists("ibm_dns_record.recordNS", &dns_domain_record),
 					testAccCheckIBMDNSRecordExists("ibm_dns_record.recordMX", &dns_domain_record),
+					testAccCheckIBMDNSRecordExists("ibm_dns_record.recordSOA", &dns_domain_record),
 					testAccCheckIBMDNSRecordExists("ibm_dns_record.recordSPF", &dns_domain_record),
 					testAccCheckIBMDNSRecordExists("ibm_dns_record.recordTXT", &dns_domain_record),
 					testAccCheckIBMDNSRecordExists("ibm_dns_record.recordSRV", &dns_domain_record),
@@ -284,6 +286,15 @@ resource "ibm_dns_record" "recordCNAME" {
     type = "cname"
 }
 
+resource "ibm_dns_record" "recordNS" {
+    data = "ns1.example.com."
+    domain_id = "${ibm_dns_domain.test_dns_domain_record_types.id}"
+    host = "hosta-ns.com"
+    responsible_person = "user@softlayer.com"
+    ttl = 900
+    type = "ns"
+}
+
 resource "ibm_dns_record" "recordMX" {
     data = "email.example.com."
     domain_id = "${ibm_dns_domain.test_dns_domain_record_types.id}"
@@ -291,6 +302,15 @@ resource "ibm_dns_record" "recordMX" {
     responsible_person = "user@softlayer.com"
     ttl = 900
     type = "mx"
+}
+
+resource "ibm_dns_record" "recordSOA" {
+    data = "ns1.example.com. abuse.example.com. 2018101002 7200 600 1728000 43200"
+    domain_id = "${ibm_dns_domain.test_dns_domain_record_types.id}"
+    host = "hosta-soa.com"
+    responsible_person = "user@softlayer.com"
+    ttl = 900
+    type = "soa"
 }
 
 resource "ibm_dns_record" "recordSPF" {

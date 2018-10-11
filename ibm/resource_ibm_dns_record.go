@@ -14,7 +14,7 @@ import (
 )
 
 var allowedDomainRecordTypes = []string{
-	"a", "aaaa", "cname", "mx", "ptr", "spf", "srv", "txt",
+	"a", "aaaa", "cname", "mx", "ns", "ptr", "soa", "spf", "srv", "txt",
 }
 var ipv6Regexp *regexp.Regexp
 var upcaseRegexp *regexp.Regexp
