@@ -15,7 +15,7 @@ Provides a resource for IAM Access Group Policy. This allows access group policy
 ### Access Group Policy for All Identity and Access enabled services 
 
 ```hcl
-resource "iam_access_group" "accgrp" {
+resource "ibm_iam_access_group" "accgrp" {
   name = "test"
 }
 
@@ -29,7 +29,7 @@ resource "ibm_iam_access_group_policy" "policy" {
 ### Access Group Policy using service with region
 
 ```hcl
-resource "iam_access_group" "accgrp" {
+resource "ibm_iam_access_group" "accgrp" {
   name = "test"
 }
 
@@ -46,7 +46,7 @@ resource "ibm_iam_access_group_policy" "policy" {
 ### Access Group Policy using resource instance 
 
 ```hcl
-resource "iam_access_group" "accgrp" {
+resource "ibm_iam_access_group" "accgrp" {
   name = "test"
 }
 
@@ -73,7 +73,7 @@ resource "ibm_iam_access_group_policy" "policy" {
 ### Access Group Policy using resource group 
 
 ```hcl
-resource "iam_access_group" "accgrp" {
+resource "ibm_iam_access_group" "accgrp" {
   name = "test"
 }
 
@@ -96,7 +96,7 @@ resource "ibm_iam_access_group_policy" "policy" {
 ### Access Group Policy using resource and resource type 
 
 ```hcl
-resource "iam_access_group" "accgrp" {
+resource "ibm_iam_access_group" "accgrp" {
   name = "test"
 }
 
@@ -148,4 +148,3 @@ ibm_iam_access_group_policy can be imported using access group ID and access gro
 ```
 $ terraform import ibm_iam_access_group_policy.example AccessGroupId-1148204e-6ef2-4ce1-9fd2-05e82a390fcf/bf5d6807-371e-4755-a282-64ebf575b80a
 ```
-
