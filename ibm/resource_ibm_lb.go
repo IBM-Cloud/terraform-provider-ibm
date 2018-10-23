@@ -24,7 +24,7 @@ const (
 	LbLocalPackageType = "ADDITIONAL_SERVICES_LOAD_BALANCER"
 
 	lbMask = "id,dedicatedFlag,connectionLimit,ipAddressId,securityCertificateId,highAvailabilityFlag," +
-		"sslEnabledFlag,loadBalancerHardware[datacenter[name]],ipAddress[ipAddress,subnetId],billingItem[upgradeItems[capacity]]"
+		"sslEnabledFlag,sslActiveFlag,loadBalancerHardware[datacenter[name]],ipAddress[ipAddress,subnetId],billingItem[upgradeItems[capacity]]"
 )
 
 func resourceIBMLb() *schema.Resource {
@@ -77,7 +77,11 @@ func resourceIBMLb() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-
+			"ssl_offload": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 			"tags": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -266,6 +270,29 @@ func resourceIBMLbUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	}
 
+	if d.HasChange("ssl_offload") && !d.IsNewResource() {
+
+		if d.Get("ssl_offload").(bool) {
+
+			_, err := services.GetNetworkApplicationDeliveryControllerLoadBalancerVirtualIpAddressService(sess).
+				Id(vipID).StartSsl()
+			if err != nil {
+				return fmt.Errorf("Error starting ssl acceleration for load balancer : %s", err)
+			}
+			d.SetPartial("ssl_offload")
+
+		} else {
+
+			_, err := services.GetNetworkApplicationDeliveryControllerLoadBalancerVirtualIpAddressService(sess).
+				Id(vipID).StopSsl()
+			if err != nil {
+				return fmt.Errorf("Error stopping ssl acceleration for load balancer : %s", err)
+			}
+			d.SetPartial("ssl_offload")
+
+		}
+	}
+
 	d.Partial(false)
 	return resourceIBMLbRead(d, meta)
 }
@@ -290,6 +317,7 @@ func resourceIBMLbRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("ha_enabled", vip.HighAvailabilityFlag)
 	d.Set("dedicated", vip.DedicatedFlag)
 	d.Set("ssl_enabled", vip.SslEnabledFlag)
+	d.Set("ssl_offload", vip.SslActiveFlag)
 	// Optional fields.  Guard against nil pointer dereferences
 	d.Set("security_certificate_id", sl.Get(vip.SecurityCertificateId, nil))
 	d.Set("hostname", vip.LoadBalancerHardware[0].Hostname)
@@ -300,6 +328,16 @@ func resourceIBMLbDelete(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	vipService := services.GetNetworkApplicationDeliveryControllerLoadBalancerVirtualIpAddressService(sess)
 	vipID, _ := strconv.Atoi(d.Id())
+
+	certID := d.Get("security_certificate_id").(int)
+
+	if certID > 0 {
+		err := setLocalLBSecurityCert(sess, vipID, 0)
+		if err != nil {
+			return fmt.Errorf("Remove certificate before deleting load balancer failed: %s", err)
+		}
+
+	}
 
 	var billingItem datatypes.Billing_Item_Network_LoadBalancer
 	var err error
