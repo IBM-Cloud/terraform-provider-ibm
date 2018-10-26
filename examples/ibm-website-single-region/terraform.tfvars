@@ -4,6 +4,6 @@ softlayer_username = ""
 softlayer_api_key = ""
 
 # Enter your IBM Cloud API Key, you can get your IBM Cloud API key using: https://console.bluemix.net/iam#/apikeys
-ibmcloud_api_key = ""
+bluemix_api_key = ""
 
 
