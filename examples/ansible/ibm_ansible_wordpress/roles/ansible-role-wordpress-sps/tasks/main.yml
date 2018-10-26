@@ -1,0 +1,11 @@
+# roles/wordpress/tasks/main.yml
+---
+
+- include_vars: "{{ ansible_distribution }}.yml"
+  tags:
+    - wordpress
+- include_tasks: install.yml
+- include_tasks: config.yml
+- include_tasks: plugins.yml
+- include_tasks: themes.yml
+

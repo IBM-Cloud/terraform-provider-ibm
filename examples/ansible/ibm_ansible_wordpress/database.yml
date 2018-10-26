@@ -1,0 +1,20 @@
+---
+# Configure Wordpress database. 
+# customise values to local requirements
+
+
+- hosts: database
+  become: true
+  vars:
+    mariadb_databases:
+      - name: wordpress
+    mariadb_users:
+      - name: wordpress
+        password: wordpress
+        host: '%'
+        priv: wordpress.*:ALL
+    mariadb_root_password: 'password'
+    mariadb_bind_address: '0.0.0.0'
+
+  roles:
+   - role: ansible-role-mariadb-sps

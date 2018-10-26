@@ -1,0 +1,64 @@
+# roles/mariadb/defaults/main.yml
+---
+
+mariadb_databases: []
+mariadb_users: []
+mariadb_root_password: ''
+
+mariadb_version: '10.3'
+
+mariadb_configure_swappiness: true
+mariadb_swappiness: 0
+
+mariadb_character_set_server: utf8
+mariadb_collation_server: utf8_general_ci
+
+# Network configuration (network.cnf)
+mariadb_bind_address: '127.0.0.1'
+
+# Server configuration (server.cnf)
+mariadb_port: 3306
+mariadb_skip_name_resolve: 1
+
+mariadb_log_warnings: '1'
+mariadb_slow_query_log: '0'
+mariadb_long_query_time: '10'
+
+mariadb_max_connections: 505
+mariadb_max_user_connections: 500
+mariadb_max_allowed_packet: '16M'
+mariadb_max_heap_table_size: '16M'
+ansible_wait_timeout: 60
+
+mariadb_query_cache_size: 0
+mariadb_sort_buffer_size: '2M'
+mariadb_tmp_table_size: '16M'
+mariadb_read_buffer_size: '128k'
+mariadb_read_rnd_buffer_size: '256k'
+mariadb_join_buffer_size: '128k'
+mariadb_table_definition_cache: '1400'
+mariadb_table_open_cache: '2000'
+mariadb_table_open_cache_instances: '8'
+
+mariadb_innodb_strict_mode: 'ON'
+mariadb_innodb_buffer_pool_size: '384M'
+mariadb_innodb_buffer_pool_instances: 8
+mariadb_innodb_file_per_table: 'ON'
+mariadb_innodb_flush_log_at_trx_commit: 1
+mariadb_innodb_log_buffer_size: '16M'
+mariadb_innodb_log_file_size: '48M'
+
+
+mariadb_max_connect_errors: 10
+mariadb_sysdate_is_now: 1
+mariadb_logs_days: 10
+mariadb_expire_logs_days: 10
+mariadb_sync_binlog: 1
+mariadb_query_cache_type: 0
+mariadb_thread_cache_size: 50
+mariadb_open_files_limit: '65353'
+mariadb_innodb_flush_method: 'O_DIRECT'
+mariadb_innodb_log_files_in_group: 2
+mariadb_innodb_buffer_pool_load_at_startup: 'ON'
+
+mariadb_custom_cnf: {}

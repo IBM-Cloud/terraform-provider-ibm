@@ -1,0 +1,8 @@
+---
+# Configure control workstation
+
+
+  - hosts: control
+    become: true
+    roles:
+      - control

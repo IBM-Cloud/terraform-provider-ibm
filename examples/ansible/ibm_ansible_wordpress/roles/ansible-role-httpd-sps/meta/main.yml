@@ -1,0 +1,16 @@
+---
+galaxy_info:
+  author: Bert Van Vreckem
+  description: Install and manage the Apache web server on a RedHat based Linux distribution
+  license: BSD
+  min_ansible_version: 2.0
+  platforms:
+    - name: EL
+      versions:
+        - 7
+    - name: Fedora
+      versions:
+        - 25
+  categories:
+    - web
+dependencies: []

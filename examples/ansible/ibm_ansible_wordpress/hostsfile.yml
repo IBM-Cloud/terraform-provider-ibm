@@ -1,0 +1,72 @@
+---
+# Add named server entries to hostsfile on all servers to make operations human readable
+# Author: Steve Strutt  steve_strutt@uk.ibm.com
+
+  # Update host file for real servers, i.e. those with ansible_host information
+  #
+  # Create dynamic group to exclude dummy hosts entries in inventory used to 
+  # pass Terraform information to Ansible via dynamic inventory. 
+  # This excludes load balancers and services passed to Ansible.
+
+
+- hosts: control
+  gather_facts: no
+  become: true  
+  tasks:
+ 
+    - name: Create dynamic group of real hosts
+      add_host: hostname={{ item }} groups=real_hosts
+      when: hostvars[item].ansible_host is defined  
+      with_items: "{{ groups.all }}"
+
+
+- hosts: real_hosts
+  gather_facts: no
+  become: true
+  tasks:
+ 
+    - name: Add IP addresses to /etc/hosts/
+      lineinfile:
+        dest: /etc/hosts
+        regexp: "{{ item }}"
+        line: '{{ hostvars[item].ansible_host }} {{ item }}'
+        state: present
+      # omit adding control to all hosts file. Keyed off ansible_host def in inventory 
+      when: hostvars[item].ansible_host is defined  
+      with_items: "{{ groups.all }}"
+
+
+      # Centos cloud-init default is manage_etc_hosts = true. This causes /etc/hosts to 
+      # be refreshed at each boot from /etc/cloud/templates/hosts.redhat.tmpl
+      # To avoid startup and shutdown with issues httpd, this is retained. The template file
+      # is updated instead to refresh with all entries.
+    - name: Add IP address to hosts template file for manage_etc_hosts 
+      lineinfile:
+        dest: /etc/cloud/templates/hosts.redhat.tmpl
+        regexp: "{{ item }}"
+        line: '{{ hostvars[item].ansible_host }} {{ item }}'
+        state: present
+      # omit adding control to all hosts file. Keyed off ansible_host def in inventory
+      
+      when: hostvars[item].ansible_host is defined  
+      with_items: "{{ groups.all }}"
+
+
+# Hosts file updated on control to make non-Ansible operations with hosts easier
+# control treated separately as uses ansible vault for su password
+# control su password required to execute commands on MAC OSX.
+- hosts: control
+  gather_facts: no
+  become: true
+  vars: 
+    ansible_become_pass: '{{ su_password }}'
+  tasks:
+    - name: Add IP address of all hosts control workstation
+      lineinfile:
+        dest: /etc/hosts
+        regexp: "{{ item }}"
+        line: '{{ hostvars[item].ansible_host }} {{ item }}'
+        state: present
+      # omit adding control to all hosts file. Keyed off no ansible_host def  
+      when: hostvars[item].ansible_host is defined  
+      with_items: "{{ groups.all }}"

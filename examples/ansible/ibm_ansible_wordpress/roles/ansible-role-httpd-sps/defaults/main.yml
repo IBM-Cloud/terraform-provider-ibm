@@ -1,0 +1,37 @@
+# roles/httpd/defaults/main.yml
+---
+
+# Scripting support
+httpd_scripting: 'none'
+
+# Main configuration
+httpd_ServerRoot: '/etc/httpd'
+httpd_Listen: 80
+httpd_ServerAdmin: root@localhost
+httpd_ServerTokens: Prod
+httpd_DocumentRoot: '/usr/share/wordpress'
+
+httpd_ErrorLog: logs/error_log
+httpd_AccessLog: logs/access_log
+httpd_LogLevel: warn
+
+# mod_ssl
+httpd_Listen_ssl: 443
+
+httpd_ErrorLog_ssl: logs/ssl_error_log
+httpd_AccessLog_ssl: logs/ssl_access_log
+httpd_LogLevel_ssl: warn
+
+httpd_SSLCertificateFile:  /etc/pki/tls/certs/localhost.crt
+httpd_SSLCertificateKeyFile: /etc/pki/tls/private/localhost.key
+
+# According to:
+# https://mozilla.github.io/server-side-tls/ssl-config-generator/
+httpd_SSLProtocol: 'all -SSLv3 -TLSv1'
+httpd_SSLCipherSuite: 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK'
+httpd_SSLHonorCipherOrder: 'on'
+
+httpd_StatusEnable: false
+httpd_StatusLocation: '/server-status'
+httpd_StatusRequire: 'host localhost'
+httpd_ExtendedStatus: on

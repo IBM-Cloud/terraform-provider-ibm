@@ -1,0 +1,62 @@
+# roles/wordpress/tasks/config.yml
+# Configures Wordpress
+---
+
+- name: Apache config file for Wordpress
+  template:
+    src: wordpress.conf.j2
+    dest: "{{ wordpress_httpd_configuration }}"
+    owner: root
+    group: root
+    mode: '0644'
+    setype: httpd_config_t
+  notify: restart httpd
+  tags: wordpress
+
+- name: Download Salts
+  get_url:
+    url: https://api.wordpress.org/secret-key/1.1/salt/
+    dest: "{{ wordpress_directory }}/wp-salts.php"
+    seuser: system_u
+    setype: httpd_sys_script_exec_t
+    # changed force to yes to force rewrite of file when run more than once 
+    force: yes
+  notify: restart httpd
+  tags: wordpress
+
+- name: Insert PHP start tag in Salts file
+  lineinfile:
+    dest: "{{ wordpress_directory }}/wp-salts.php"
+    line: '<?php'
+    state: present
+    insertbefore: BOF
+  notify: restart httpd
+  tags: wordpress
+
+- name: Insert PHP end tag in Salts file
+  lineinfile:
+    dest: "{{ wordpress_directory }}/wp-salts.php"
+    line: '?>'
+    state: present
+    insertafter: EOF
+  notify: restart httpd
+  tags: wordpress
+
+- name: Wordpress config file
+  template:
+    src: wp-config.php.j2
+    dest: "{{ wordpress_configuration }}"
+    owner: root
+    group: apache
+    mode: '0640'
+    setype: etc_t
+  notify: restart httpd
+  tags: wordpress
+
+- name: Allow Apache to access database over the network if necessary
+  seboolean:
+    name: httpd_can_network_connect_db
+    state: on
+    persistent: yes
+  when: ansible_selinux.status == 'enabled' and wordpress_database_host != 'localhost'
+  tags: wordpress

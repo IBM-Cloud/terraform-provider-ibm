@@ -1,0 +1,17 @@
+---
+galaxy_info:
+  author: Bert Van Vreckem
+  description: Manage MariaDB on a RedHat based Linux distribution.
+  license: BSD
+  min_ansible_version: 2.2
+  platforms:
+    - name: EL
+      versions:
+        - 7
+    - name: Fedora
+      versions:
+        - 25
+  galaxy_tags:
+    - database
+    - sql
+dependencies: []

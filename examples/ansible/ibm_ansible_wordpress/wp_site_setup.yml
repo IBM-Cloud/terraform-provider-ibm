@@ -1,0 +1,47 @@
+---
+
+########################################################################################
+# Configure Wordpress site and admin login from the command line. 
+# 
+# Install WP CLI and complete WP initial setup from command line
+# First user access via web will be at WP splash screen. Avoiding wp-install and HTTP 302
+# redirect that stops Cloud Load Balancer initialising for the first time. Only runs against
+# the first webserver in the group. 
+# Requires version 0.5 or higher of terraform_inv.py to retrieve vip of load balancer
+#
+# Customise site_title, site_admin, site_email and site_password to desired values
+########################################################################################  
+
+- hosts: webserver[0]
+  gather_facts: no
+  vars:
+    site_title: "wcpclouduk"
+    site_admin: "admin"
+    site_email: "admin@google.com"
+    # site_url: "web-lb3-1530547-lon02.lb.bluemix.net"
+    site_password: "strong@password"
+
+  tasks:
+    # Download and install Wordpress CLI on first webserver
+  - name: Download wp-cli
+    get_url:
+      url="https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar"
+      dest="/usr/bin/wp"
+      force_basic_auth=yes
+      mode=0755
+
+
+  - set_fact: clb={{ groups['cloudloadbalancer'][0] }}
+  - set_fact: site_url={{ hostvars[clb].vip }}
+      
+  - name: Configure Wordpress site
+    command:  "wp --allow-root core install --title='{{ site_title }}' --admin_user='{{ site_admin }}' --admin_email='{{ site_email }}' --url='{{ site_url }}' --admin_password='{{ site_password }}'"
+    args:
+      chdir: /usr/share/wordpress/
+ 
+  - debug:
+      msg: 
+        - 'Wordpress URL is  {{ site_url }}'
+        - 'Wordpress admin user is: {{ site_admin }} and password is: {{ site_password }}'
+
+

@@ -1,0 +1,60 @@
+# roles/mariadb/tasks/databases.yml
+---
+
+- name: Remove the test database
+  mysql_db:
+    name: test
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+    state: absent
+  register: db_delete
+  tags: mariadb
+
+- debug:
+    var: db_delete
+    verbosity: 2  
+
+- name: Create user defined databases
+  mysql_db:
+    name: "{{ item.name }}"
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+    state: present
+  with_items: "{{ mariadb_databases }}"
+  register: db_creation
+  tags: mariadb
+
+- debug:
+    var: db_creation
+    verbosity: 2
+
+# Below, the databases are initialised, but only when the database was created
+# in the previous step. This ensures idempotence.
+
+- name: Copy database init scripts
+  copy:
+    src: "{{ item.item.init_script }}"
+    dest: "/tmp/{{ item.item.init_script|basename }}"
+    mode: '0600'
+  with_items: "{{ db_creation.results }}"
+  when: item.changed and item.item.init_script is defined
+  tags: mariadb
+
+- name: Initialise databases
+  mysql_db:
+    name: "{{ item.item.name }}"
+    state: import
+    target: "/tmp/{{ item.item.init_script|basename }}"
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+  with_items: "{{ db_creation.results }}"
+  when: item.changed and item.item.init_script is defined
+  tags: mariadb
+
+- name: Delete init scripts from the server
+  file:
+    name: "/tmp/{{ item.item.init_script|basename }}"
+    state: absent
+  with_items: "{{ db_creation.results }}"
+  when: item.changed and item.item.init_script is defined
+  tags: mariadb

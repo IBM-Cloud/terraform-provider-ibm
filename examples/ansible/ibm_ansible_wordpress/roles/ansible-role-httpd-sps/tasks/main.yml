@@ -1,0 +1,63 @@
+# roles/httpd/tasks/main.yml
+---
+
+- include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution }}.yml"
+    - "{{ ansible_os_family }}.yml"
+  tags: httpd
+
+- name: Ensure Apache is installed
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ httpd_packages }}"
+  tags: httpd
+
+- name: Install scripting support if needed
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ httpd_scripting_packages[httpd_scripting] }}"
+  tags: httpd
+
+- name: Ensure Apache is always running
+  service:
+    name: httpd
+    state: started
+    enabled: yes
+  tags: httpd
+
+- name: Install main configuration file
+  template:
+    src: httpd.conf.j2
+    dest: "{{ httpd_config }}"
+    owner: root
+    group: root
+    setype: httpd_config_t
+    mode: '0644'
+  notify: restart httpd
+  tags: httpd
+
+- name: Install status configuration file
+  template:
+    src: etc_httpd_conf.d_status.conf.j2
+    dest: "{{ httpd_status_config }}"
+    owner: root
+    group: root
+    setype: httpd_config_t
+    mode: '0644'
+  notify: restart httpd
+  tags: httpd
+  when: httpd_StatusEnable
+
+- name: Install mod_ssl configuration file
+  template:
+    src: ssl.conf.j2
+    dest: "{{ httpd_ssl_config }}"
+    owner: root
+    group: root
+    setype: httpd_config_t
+    mode: '0644'
+  notify: restart httpd
+  tags: httpd

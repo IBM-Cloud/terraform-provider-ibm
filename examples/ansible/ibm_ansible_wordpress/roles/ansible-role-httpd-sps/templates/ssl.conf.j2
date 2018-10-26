@@ -1,0 +1,52 @@
+# Apache TLS configuration
+#
+# {{ ansible_managed }}
+
+# Listen on port
+Listen {{ httpd_Listen_ssl }} https
+
+## SSL Global Context
+SSLPassPhraseDialog exec:/usr/libexec/httpd-ssl-pass-dialog
+SSLSessionCache         shmcb:/run/httpd/sslcache(512000)
+SSLSessionCacheTimeout  300
+SSLRandomSeed startup file:/dev/urandom  256
+SSLRandomSeed connect builtin
+SSLCryptoDevice builtin
+
+## SSL Virtual Host Context
+<VirtualHost _default_:{{ httpd_Listen_ssl }}>
+
+ErrorLog {{ httpd_ErrorLog_ssl }}
+TransferLog {{ httpd_AccessLog }}
+LogLevel {{ httpd_LogLevel_ssl }}
+
+SSLEngine on
+SSLProtocol {{ httpd_SSLProtocol }}
+SSLCipherSuite {{ httpd_SSLCipherSuite }}
+SSLHonorCipherOrder {{ httpd_SSLHonorCipherOrder }}
+
+# Certificate files
+SSLCertificateFile {{ httpd_SSLCertificateFile }}
+SSLCertificateKeyFile {{ httpd_SSLCertificateKeyFile }}
+{% if httpd_SSLCertificateChainFile is defined %}
+SSLCertificateChainFile {{ httpd_SSLCertificateChainFile }}
+{% endif %}
+{% if httpd_SSLCACertificateFile is defined %}
+SSLCACertificateFile {{ httpd_SSLCACertificateFile }}
+{% endif %}
+
+<Files ~ "\.(cgi|shtml|phtml|php3?)$">
+    SSLOptions +StdEnvVars
+</Files>
+<Directory "/var/www/cgi-bin">
+    SSLOptions +StdEnvVars
+</Directory>
+
+BrowserMatch "MSIE [2-5]" \
+         nokeepalive ssl-unclean-shutdown \
+         downgrade-1.0 force-response-1.0
+
+CustomLog logs/ssl_request_log \
+          "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
+
+</VirtualHost>

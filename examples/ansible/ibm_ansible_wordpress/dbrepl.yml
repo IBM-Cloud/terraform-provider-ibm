@@ -1,0 +1,72 @@
+---
+###############################################################################
+##  Author: Steve Strutt  steve_strutt@uk.ibm.com
+##  Configure mysql replication for the specified database 
+##  Based on work by Radchenko Vitalii (vitaliymichailovich@gmail.com)   
+###############################################################################
+
+
+  - hosts: database
+    vars:
+      # Create unique server id from host index in group, odd then even
+      # +2 to make it obvious that its not the default of 0 or 1
+      server_id: "{{ groups.database.index(inventory_hostname) + 2}} "
+      db: "{{ mariadb_datases[name] | default ('wordpress') }}"
+      repl_user: replicator
+      # note limit on replication password user length, 50 chars max? 
+      repl_password: wordpress
+      l_user: root
+      l_password: "{{mariadb_root_password | default('password') }}"
+      
+
+      #HOST_COUNT: "{{ groups['database'] | length }}"
+      # Only execute the following if the db host count is creater than 1
+      # Conditional execution from database.yml 
+
+    tasks:
+    - name: MySQL Create replication user
+      mysql_user:
+        name: "{{ repl_user }}"
+        password: "{{ repl_password }}"
+        host: "%"
+        priv: "*.*:GRANT,REPLICATION SLAVE"   #Changed to Replication SLAVE
+        state: present
+        login_user: "{{l_user}}"
+        login_password: "{{l_password}}"
+      # set replication partner to be the other host in the group of 2 db hosts
+      # assumes that no more than db 2 hosts   
+    - set_fact:
+        repl_partner:  '{{ item }}'
+      with_items: "{{ groups['database'] }}"
+      when: item != inventory_hostname  
+    - debug: 
+        msg: " {{ inventory_hostname}} and {{ repl_partner }} with id {{ server_id }} "
+
+
+
+    - name: "MySQL get master file and position"
+      # execute on partner db rather than use login_host and login to remote db over network 
+      # Avoid user permissions issue for root with network login
+      # Requires server_id, binlog_do_db, log_bin in my.cnf to enable replication
+      # Updated template etc_my.cnf.d_server.cnf in ansible-role-mariadb-sps
+      delegate_to: '{{ repl_partner }}'
+      mysql_replication:
+        #login_host: "{{ partner }}"
+        login_user: "{{l_user}}"
+        login_password: "{{l_password}}"
+        mode: getmaster
+      register: mysql_repl
+    - debug:
+        var: mysql_repl
+
+
+    - name: "MySQL Change Master Status"
+      command: "
+        /usr/bin/mysql -u '{{ l_user }}' -p'{{ l_password }}' -e
+        \"
+        STOP SLAVE;
+        CHANGE MASTER TO MASTER_HOST='{{ repl_partner }}', MASTER_USER='{{ repl_user }}', MASTER_PASSWORD='{{ repl_password }}', MASTER_LOG_FILE='{{ mysql_repl.File }}', MASTER_LOG_POS = {{ mysql_repl.Position }};
+        START SLAVE;
+        \"
+      "
+    

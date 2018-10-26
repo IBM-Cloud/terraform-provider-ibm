@@ -1,0 +1,39 @@
+# roles/mariadb/tasks/config.yml
+---
+
+- name: Install server config file
+  template:
+    src: etc_my.cnf.d_server.cnf.j2
+    dest: "{{ mariadb_config_server }}"
+  notify: restart mariadb
+  tags: mariadb
+
+- name: Install network config file
+  template:
+    src: etc_my.cnf.d_network.cnf.j2
+    dest: "{{ mariadb_config_network }}"
+  notify: restart mariadb
+  tags: mariadb
+
+- name: Install custom config file
+  template:
+    src: etc_my.cnf.d_custom.cnf.j2
+    dest: "{{ mariadb_config_custom }}"
+  when: mariadb_custom_cnf|length != 0
+  notify: restart mariadb
+  tags: mariadb
+
+- name: Configure swappiness
+  sysctl:
+    name: vm.swappiness
+    value: "{{ mariadb_swappiness }}"
+    state: present
+  when: mariadb_configure_swappiness
+  tags: mariadb
+
+- name: Ensure service is started
+  service:
+    name: "{{ mariadb_service }}"
+    state: started
+    enabled: true
+  tags: mariadb
