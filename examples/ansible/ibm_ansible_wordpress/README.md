@@ -58,9 +58,11 @@ The required infrastructure for this play can be deployed manually or as intende
 
 
 
-## Installion
+## Installation
 
-From your Ansible project directory, download this package using `svn export` (subversion)
+This Ansible package and subdirectories can be downloaded separately to the other examples using the subversion command line client. Install Subversion for your workstation from the [Apache.org](https://subversion.apache.org/packages.html) website. 
+
+From your Ansible project directory, download this example using `svn export` (subversion). Browse to the project and subdirectory you want to clone, for example: https://github.com/stevestrutt/terraform-provider-ibm/tree/master/examples/ansible/ibm_ansible_wordpress. Replace `tree/master` with `trunk` in the URL, and run svn export on it, for example:
 
 `svn export https://github.com/stevestrutt/terraform-provider-ibm/trunk/examples/ansible/ibm_ansible_wordpress`
 
