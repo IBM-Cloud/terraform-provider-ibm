@@ -51,8 +51,8 @@ ibm_resource_instance provides the following [Timeouts](https://www.terraform.io
 The following arguments are supported:
 
 * `name` - (Required, string) A descriptive name used to identify the resource instance.
-* `service` - (Required, string) The name of the service offering. You can retrieve the value by running the `bx catalog service-marketplace` or `bx catalog search` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
-* `plan` - (Required, string) The name of the plan type supported by service. You can retrieve the value by running the `bx catalog service <servicename>` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `service` - (Required, string) The name of the service offering. You can retrieve the value by running the `ibmcloud catalog service-marketplace` or `ibmcloud catalog search` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `plan` - (Required, string) The name of the plan type supported by service. You can retrieve the value by running the `ibmcloud catalog service <servicename>` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
 * `location` - (Required, string) Target location or environment to create the resource instance.
 * `resource_group_id` - (Optional, string) The ID of the resource group where you want to create the service. You can retrieve the value from data source `ibm_resource_group`. If not provided creates the service in default resource group.
 * `tags` - (Optional, array of strings) Tags associated with the instance.

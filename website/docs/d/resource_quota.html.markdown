@@ -22,7 +22,7 @@ data "ibm_resource_quota" "rsquotadata" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The name of the quota for the IBM Cloud resource. You can retrieve the value by running the `bx resource quotas` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `name` - (Required, string) The name of the quota for the IBM Cloud resource. You can retrieve the value by running the `ibmcloud resource quotas` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
 
 ## Attribute Reference
 

@@ -28,9 +28,9 @@ data "ibm_container_cluster_worker" "cluster_foo" {
 The following arguments are supported:
 
 * `worker_id` - (Required, string) The ID of the worker node attached to the cluster.
-* `org_guid` - (Optional, string) The GUID for the IBM Cloud organization that the cluster is associated with. You can retrieve the value from the `ibm_org` data source or by running the `bx iam orgs --guid` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
-* `space_guid` - (Optional, string) The GUID for the IBM Cloud space that the cluster is associated with. You can retrieve the value from the `ibm_space` data source or by running the `bx iam space <space-name> --guid` command in the IBM Cloud CLI.
-* `account_guid` - (Optional, string) The GUID for the IBM Cloud account that the cluster is associated with. You can retrieve the value from the `ibm_account` data source or by running the `bx iam accounts` command in the IBM Cloud CLI.
+* `org_guid` - (Optional, string) The GUID for the IBM Cloud organization that the cluster is associated with. You can retrieve the value from the `ibm_org` data source or by running the `ibmcloud iam orgs --guid` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `space_guid` - (Optional, string) The GUID for the IBM Cloud space that the cluster is associated with. You can retrieve the value from the `ibm_space` data source or by running the `ibmcloud iam space <space-name> --guid` command in the IBM Cloud CLI.
+* `account_guid` - (Optional, string) The GUID for the IBM Cloud account that the cluster is associated with. You can retrieve the value from the `ibm_account` data source or by running the `ibmcloud iam accounts` command in the IBM Cloud CLI.
 * `region` - (Optional, string) The region where the worker is provisioned. If the region is not specified it will be defaulted to provider region(BM_REGION/BLUEMIX_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
 * `resource_group_id` - (Optional, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
 
