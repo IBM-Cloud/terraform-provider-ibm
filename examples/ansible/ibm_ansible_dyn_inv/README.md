@@ -33,12 +33,15 @@ From your Ansible project directory, download this example using `svn export`. B
 `svn export https://github.com/IBM-Cloud/terraform-provider-ibm/trunk/examples/ansible/ibm_ansible_wordpress`
 
 Move terraform_inv.py and terraform_inv.ini to the **inventory** folder of the Ansible project. 
+
 `mv ./ibm_ansible_dyn_inv/terraform* ../inventory`
 
 nagivate to the **inventory** directory
+
 `cd inventory`
 
 Update permissions of terraform_inv.py to include **execute**
+
 `chmod +x terraform_inv.py`
 
 ## Configuration
