@@ -5,7 +5,7 @@ Demo ansible package to install Wordpress in a highly available 3-tier configura
  - httpd app server
  - mariadb 
 
-This is written as a capability demonstration of building high availability web sites using IBM Cloud IaaS and secure networking. 
+This is written as a capability demonstration of building high availability web sites using IBM Cloud IaaS and Terraform.
 
 
 This pacakge supports two deployment options: 
@@ -40,7 +40,7 @@ This package was developed on OSX and as such requires sudo rights to execute so
 
 
 ## Inventory
-Ansible inventory is defined in /inventory/IBMCloud_inv.
+Ansible inventory is defined in /inventory/hosts.
 
 When used with a manually deployed environment, host details take the form:
 `app101  ansible_host=10.72.58.78 ansible_user=root`
@@ -53,8 +53,30 @@ The required infrastructure for this play can be deployed manually or as intende
 - Software Defined Network tutorial - The target environment is deployed using the IBM Cloud Terraform github example https://github.com/IBM-Cloud/terraform-provider-ibm/examples/ibm-website-single-region/. Full details of how to deploy Wordpress with this play can be found in the IBM Cloud [Terraform and Ansible](https://console.bluemix.net/docs/terraform/manage_resources.html) documentation. The Ansible Dynamic inventory solution https://github.com/IBM-Cloud/terraform-provider-ibm/examples/ansible/ibm_ansible_dyn_inv/ is a prerequisite. 
 
 
+
 - Classic network infrastructure tutorial - The target deployment environment is deployed mnaually and is documented in the IBM Cloud Solution Tutorial [Web application serving from a secure private network](https://console.bluemix.net/docs/tutorials/web-app-private-network.html#web-application-serving-from-a-secure-private-network). The infrastructure deployment from this tutorial is manually completed, with host names and IP addresses manually populated into the Ansible inventory file. 
 
+
+
+## Installion
+
+Fron your Ansible project directory, download this package using `svn export` (subversion)
+`svn export https://github.com/stevestrutt/terraform-provider-ibm/trunk/examples/ansible/ibm_ansible_wordpress
+nagivate to **ibm_ansible_wordpress/inventory** directory
+`cd ibm_ansible_wordpress/inventory`
+Update permissions of terraform_inv.py to include **execute**
+`chmod +x terraform_inv.py`
+
+## Configuration
+
+Update the terraform_inv.ini file to point to the terraform.tfstate file of the Terraform configuration that Wordpress will be deployed to. The tfstate file should be referenced by is full path and file name. 
+
+```
+[TFSTATE]
+#TFSTATE_FILE = /nnn/nnn/nnn/tr_test_files/terraform.tfstate
+#TFSTATE_FILE = /Users/JohnDoe/terraform/ibm/app2x/terraform.tfstate
+#TFSTATE_FILE = /usr/share/terraform/ibm/app2x/terraform.tfstate
+``` 
 
 
 ## Execution
