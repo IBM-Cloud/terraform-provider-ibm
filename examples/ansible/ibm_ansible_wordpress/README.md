@@ -61,10 +61,15 @@ The required infrastructure for this play can be deployed manually or as intende
 ## Installion
 
 From your Ansible project directory, download this package using `svn export` (subversion)
-`svn export https://github.com/stevestrutt/terraform-provider-ibm/trunk/examples/ansible/ibm_ansible_wordpress
+
+`svn export https://github.com/stevestrutt/terraform-provider-ibm/trunk/examples/ansible/ibm_ansible_wordpress`
+
 nagivate to **ibm_ansible_wordpress/inventory** directory
+
 `cd ibm_ansible_wordpress/inventory`
+
 Update permissions of terraform_inv.py to include **execute**
+
 `chmod +x terraform_inv.py`
 
 ## Configuration
