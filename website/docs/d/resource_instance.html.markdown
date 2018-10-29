@@ -35,7 +35,7 @@ The following arguments are supported:
 
 * `location` - (Optional, string) The location or the environment in which instance exists.
 
-* `service` - (Optional, string) The service type of the instance. You can retrieve the value by running the `bx catalog service-marketplace` or `bx catalog search` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `service` - (Optional, string) The service type of the instance. You can retrieve the value by running the `ibmcloud catalog service-marketplace` or `ibmcloud catalog search` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
 
 
 ## Attribute Reference

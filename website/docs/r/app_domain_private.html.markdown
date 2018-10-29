@@ -29,7 +29,7 @@ resource "ibm_app_domain_private" "domain" {
 The following arguments are supported:
 
 * `name` - (Required, string) The name of the domain.
-* `org_guid` - (Required, string) The GUID of the organization that owns the domain. You can retrieve the value from data source `ibm_org` or by running the `bx iam orgs --guid` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `org_guid` - (Required, string) The GUID of the organization that owns the domain. You can retrieve the value from data source `ibm_org` or by running the `ibmcloud iam orgs --guid` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
 * `tags` - (Optional, array of strings) Tags associated with the application private domain instance.
   **NOTE**: `Tags` are managed locally and are currently not stored on the IBM Cloud service endpoint.
 

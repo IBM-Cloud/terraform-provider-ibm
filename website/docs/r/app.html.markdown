@@ -31,11 +31,11 @@ resource "ibm_app" "app" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The name of the application. You can retrieve the value by running the `bx app list` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
-* `memory` - (Optional, integer) The amount of memory, specified in megabytes, that each instance has. If you don't specify a value, the system assigns pre-defined values based on the quota allocated to the application. You can check the default values by running `bx cf org <org-name>`. The command lists the quotas that are defined in your organization and space. If space quotas are defined, you can get them by running `bx cf space-quota <space-quota-name>`, where <quota-name> is the name of the quota. Otherwise you can check the organization quotas by running `bx cf quota <quota-name>`.
+* `name` - (Required, string) The name of the application. You can retrieve the value by running the `ibmcloud app list` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `memory` - (Optional, integer) The amount of memory, specified in megabytes, that each instance has. If you don't specify a value, the system assigns pre-defined values based on the quota allocated to the application. You can check the default values by running `ibmcloud cf org <org-name>`. The command lists the quotas that are defined in your organization and space. If space quotas are defined, you can get them by running `ibmcloud cf space-quota <space-quota-name>`, where <quota-name> is the name of the quota. Otherwise you can check the organization quotas by running `ibmcloud cf quota <quota-name>`.
 * `instances` - (Optional, integer) The number of instances of the application.
 * `disk_quota` - (Optional, integer) The maximum amount of disk, specified in megabytes, available to an instance of an application. The default value is [1024 MB](http://bosh.io/jobs/cloud_controller_ng?source=github.com/cloudfoundry/cf-release&version=234#p=cc.default_app_disk_in_mb). Check with your cloud provider if the value has been set differently.
-* `space_guid` - (Required, string) The GUID of the space where the application is deployed. You can retrieve the value from data source `ibm_space` or by running the `bx iam space <space-name> --guid` command in the IBM Cloud CLI.
+* `space_guid` - (Required, string) The GUID of the space where the application is deployed. You can retrieve the value from data source `ibm_space` or by running the `ibmcloud iam space <space-name> --guid` command in the IBM Cloud CLI.
 * `buildpack` - (Optional, string) The buildpack to compile or prepare the application. You can provide its values in the following ways:
   * Leave the value blank for auto-detection.
   * Point to the Git URL for a buildpack. For example, https://github.com/cloudfoundry/nodejs-buildpack.git.

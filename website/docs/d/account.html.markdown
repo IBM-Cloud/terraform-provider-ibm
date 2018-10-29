@@ -26,7 +26,7 @@ data "ibm_account" "accountData" {
 
 The following arguments are supported:
 
-* `org_guid` - (Required, string) The GUID of the IBM Cloud organization. You can retrieve the value from the `ibm_org` data source or by running the `bx iam orgs --guid` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `org_guid` - (Required, string) The GUID of the IBM Cloud organization. You can retrieve the value from the `ibm_org` data source or by running the `ibmcloud iam orgs --guid` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
 
 ## Attribute Reference
 

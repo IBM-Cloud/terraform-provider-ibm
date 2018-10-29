@@ -32,7 +32,7 @@ data "ibm_resource_group" "group" {
 
 The following arguments are supported:
 
-* `name` - (Optional, string) The name of the IBM Cloud resource group. You can retrieve the value by running the `bx resource groups` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).  
+* `name` - (Optional, string) The name of the IBM Cloud resource group. You can retrieve the value by running the `ibmcloud resource groups` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).  
   **NOTE**: Conflicts with `is_default`.
 
 * `is_default` - (Optional, boolean) Specifies whether you want to import default resource group. The default value is `false`.  

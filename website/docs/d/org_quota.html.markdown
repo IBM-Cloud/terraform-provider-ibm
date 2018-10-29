@@ -22,7 +22,7 @@ data "ibm_org_quota" "orgquotadata" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The name of the quota plan for the IBM Cloud org. You can retrieve the value by running the `bx cf quotas` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `name` - (Required, string) The name of the quota plan for the IBM Cloud org. You can retrieve the value by running the `ibmcloud cf quotas` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
 
 ## Attribute Reference
 
