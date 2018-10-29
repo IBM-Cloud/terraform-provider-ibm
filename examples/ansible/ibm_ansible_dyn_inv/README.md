@@ -25,11 +25,12 @@ host group membership for Ansible. Multiple group tags are allowed per host
 This Ansible package and subdirectories can be downloaded separately to the other examples using the subversion command line client (svn). Install Subversion for your workstation from the [Apache.org website](https://subversion.apache.org/packages.html).
 
 Create a temporary directory to download this package in your Ansible project directory.
+
 `mkdir temp`
 
-From your Ansible project directory, download this example using `svn export`. Browse to the github project and subdirectory you want to clone, for example: https://github.com/stevestrutt/terraform-provider-ibm/tree/master/examples/ansible/ibm_ansible_wordpress. Replace tree/master with trunk in the URL, and run svn export on it. 
+From your Ansible project directory, download this example using `svn export`. Browse to the github project and subdirectory you want to clone, for example: https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ansible/ibm_ansible_wordpress. Replace tree/master with trunk in the URL, and run svn export on it. 
 
-`svn export https://github.com/stevestrutt/terraform-provider-ibm/trunk/examples/ansible/ibm_ansible_wordpress`
+`svn export https://github.com/IBM-Cloud/terraform-provider-ibm/trunk/examples/ansible/ibm_ansible_wordpress`
 
 Move terraform_inv.py and terraform_inv.ini to the **inventory** folder of the Ansible project. 
 `mv ./ibm_ansible_dyn_inv/terraform* ../inventory`
