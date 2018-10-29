@@ -85,6 +85,9 @@ Update the terraform_inv.ini file to point to the terraform.tfstate file of the 
 #TFSTATE_FILE = /usr/share/terraform/ibm/app2x/terraform.tfstate
 ``` 
 
+Configure Ansible Vault for secure storage of your local user credentials. This package was developed on OSX and as such requires sudo rights to execute some of the updates performed to the host file on the OSX control workstation and to install modules for monitoring the state of the application. The OSX user password is saved as the encrypted variable su_password in an Ansible Vault file in the group_vars/control directory. The vault password is expected to be stored in the users home directory, ~/vault_pass.txt. The Ansible configuration file ansible.cfg in the root of the package defines the location of the vault password.
+
+See the Ansible [Vault documentation](https://docs.ansible.com/ansible/2.6/user_guide/vault.html) for how to encrypt the control workstation password and store as a vault file. If this package is executed on Linux from a user with sudo rights, this step can be ignored.
 
 ## Execution
  
