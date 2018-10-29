@@ -89,6 +89,6 @@ Update the terraform_inv.ini file to point to the terraform.tfstate file of the 
 ## Execution
  
 ```
-ansible=playbook -i inventory site.yml
+ansible-playbook -i inventory site.yml
 ```
 
