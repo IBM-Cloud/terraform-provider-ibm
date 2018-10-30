@@ -1,0 +1,26 @@
+---
+#Bring stack down and up again
+
+
+- hosts: webserver
+  become: true
+  tasks:
+  - name: stop apache
+    service: name=httpd state=stopped
+  - wait_for: port=80 state=stopped
+
+
+- hosts: database
+  become: true
+  tasks:
+    - name: restart db
+      service: name=mariadb state=restarted
+    - wait_for: host={{ ansible_eth0.ipv4.address }} port=3306 state=started
+
+- hosts: webserver
+  become: true
+  tasks:
+    - name: start apache
+      service: name=httpd state=started
+    - wait_for: port=80     
+

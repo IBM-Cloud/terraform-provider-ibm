@@ -1,0 +1,99 @@
+# Apache HTTP server -- main configuration  sps1
+#
+# {{ ansible_managed }}
+
+## General configuration
+ServerRoot {{ httpd_ServerRoot }}
+Listen {{ httpd_Listen }}
+
+Include conf.modules.d/*.conf
+
+User apache
+Group apache
+
+## 'Main' server configuration
+ServerAdmin {{ httpd_ServerAdmin }}
+{% if httpd_ServerName is defined %}
+ServerName {{ httpd_ServerName }}
+{% endif %}
+
+ServerTokens {{ httpd_ServerTokens }}
+
+# Deny general access to filesystem.
+<Directory />
+    AllowOverride none
+    Require all denied
+</Directory>
+
+DocumentRoot {{ httpd_DocumentRoot }}
+
+# Relax access in /var/www
+<Directory "/var/www">
+    AllowOverride None
+    Require all granted
+</Directory>
+
+# Further relax access to the default document root:
+<Directory "{{ httpd_DocumentRoot }}">
+    Options Indexes FollowSymLinks
+    AllowOverride None
+    Require all granted
+</Directory>
+
+# Load index.html if directory is requested
+<IfModule dir_module>
+    DirectoryIndex index.html
+</IfModule>
+
+# Prevent .htaccess and .htpasswd files from being viewed by Web clients. 
+<Files ".ht*">
+    Require all denied
+</Files>
+
+# Logging
+ErrorLog "{{ httpd_ErrorLog }}"
+LogLevel {{ httpd_LogLevel }}
+
+<IfModule log_config_module>
+    LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+    LogFormat "%h %l %u %t \"%r\" %>s %b" common
+
+    <IfModule logio_module>
+      # You need to enable mod_logio.c to use %I and %O
+      LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" %I %O" combinedio
+    </IfModule>
+
+    CustomLog "{{ httpd_AccessLog }}" combined
+</IfModule>
+
+# CGI
+<IfModule alias_module>
+    ScriptAlias /cgi-bin/ "/var/www/cgi-bin/"
+</IfModule>
+
+<Directory "/var/www/cgi-bin">
+    AllowOverride None
+    Options None
+    Require all granted
+</Directory>
+
+# Mime types
+<IfModule mime_module>
+    TypesConfig /etc/mime.types
+
+    AddType application/x-compress .Z
+    AddType application/x-gzip .gz .tgz
+    AddType text/html .shtml
+    AddOutputFilter INCLUDES .shtml
+</IfModule>
+
+AddDefaultCharset UTF-8
+
+<IfModule mime_magic_module>
+    MIMEMagicFile conf/magic
+</IfModule>
+
+EnableSendfile on
+
+# Load other configuration files
+IncludeOptional conf.d/*.conf

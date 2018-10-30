@@ -1,0 +1,107 @@
+---
+##########################################################################
+#
+# Check to see if the Wordpress website is operational and whether it is 
+# prompting for the initial setup dialog to be run. 
+#
+##########################################################################
+
+  # - hosts: loadbalancer
+  #   gather_facts: no
+  #   become: true
+  #   tasks:
+  #     - name: install tools
+  #       yum: name={{item}} state=present update_cache=yes
+  #       with_items: 
+  #         - python-httplib2
+
+  #     - name: verify nginx service
+  #       command: service nginx status
+  #       changed_when: false
+
+  #     - name: verify nginx is listening on 80
+  #       wait_for: port=80 timeout=1  
+
+  - hosts: webserver
+    gather_facts: no
+    become: true
+    tasks:
+      - name: verify httpd service
+        command: service httpd status
+        changed_when: false
+
+      - name: verify httpd is listening on 80
+        wait_for: port=80 timeout=1    
+
+  - hosts: database
+    gather_facts: no
+    become: true
+    tasks:
+      - name: verify mariadb service
+        command: service mariadb status
+        changed_when: false
+
+      - name: verify mariadb is listening on 3306
+        wait_for: host={{ ansible_host }} port=3306 timeout=1    
+
+  - hosts: control
+    become: true
+    gather_facts: no
+    vars: 
+      ansible_become_pass: '{{ su_password }}'
+      #site_url: "web-lb3-1530547-lon02.lb.bluemix.net"
+ 
+    
+    tasks:
+      # - name: verify end to end response
+      #   uri: url=http://{{item}} return_content=yes follow_redirects=all
+      #   with_items: 
+      #     - lb01
+      #   register: lb_index
+
+      # - fail: msg="index failed on return content"
+      #   when: "'Hello, from sunny' not in item.content"
+      #   with_items: "{{lb_index.results}}"
+
+      - name: verify wp app operational and not 302 redirect for setup 
+        uri: 
+          url: http://{{ item }}
+          return_content: yes
+          follow_redirects: all
+          status_code: 200
+        with_items: 
+          - "{{ groups['webserver'][0] }}"
+        register: app_result
+      
+      #- set_fact: app_rc={{ app_result.results.0.status }}  
+      - set_fact: app_url={{ app_result.results.0.url }}  
+      - fail: msg="Wordpress installed but not configured. Run wp_site_setup.yml."
+        when: ("install.php" in app_url)
+        with_items: "{{ app_result }}"
+
+      - set_fact: app_response={{ app_result.results.0.content }}  
+      - fail: msg="Webservers operational, but Wordpress is not installed"
+        no_log: true
+        when: "'WordPress' not in item"
+        with_items: "{{ app_response }}"
+
+      
+      - name: verify wp app operational from external CLBs
+        uri: 
+          url: http://{{ hostvars[item].vip }}
+          return_content: yes
+          follow_redirects: all
+          status_code: 200,503
+        with_items: "{{ groups['cloudloadbalancer'] }}"
+        register: clb_result 
+
+  
+      - fail: msg="Cloud Load Balancer not operational."
+        when: clb_result.results.0.status == 503
+        with_items: "{{ clb_result.results.0.status }}"
+
+      # - debug:
+      #     msg:  clb_result.results.0.status 
+      #   with_items: "{{ clb_result.results }}"
+
+

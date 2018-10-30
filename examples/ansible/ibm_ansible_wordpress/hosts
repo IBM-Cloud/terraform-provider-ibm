@@ -1,0 +1,26 @@
+# Inventory file for IBM Cloud
+# Uncomment and enter hostnames and IP address of servers provisioned om IBM Cloud
+# Ansible_user set to root to be compatible with IBM Cloud default user 
+# host name used to provide human readable names during execution
+
+# no ansible_host definitions required using dynamic inventory with Terraform discovery script 
+
+
+
+[webserver]
+#app101  ansible_host=10.72.58.78 ansible_user=root
+#app101  ansible_host=10.72.58.89 ansible_user=root 
+
+### If second data center
+#app201 ansible_host=10.137.xx.xx ansible_user=root 
+#app202 ansible_host=10.137.xx.xx ansible_user=root 
+
+[database]
+#db101 ansible_host=10.72.58.86 ansible_user=root 
+
+### If second data center
+#db201 ansible_host=10.137.xx.xx ansible_user=root 
+
+[control]
+control ansible_connection=local ansible_become=yes
+

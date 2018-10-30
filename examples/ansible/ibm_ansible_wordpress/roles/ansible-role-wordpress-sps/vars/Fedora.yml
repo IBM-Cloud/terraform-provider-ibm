@@ -1,0 +1,19 @@
+# roles/wordpress/vars/Fedora.yml
+---
+
+wordpress_repository: []
+
+wordpress_packages:
+  - php-mysqlnd
+  - wordpress
+  - unzip       # for installing plugins
+
+wordpress_directory: '/usr/share/wordpress'
+
+wordpress_httpd_configuration: '/etc/httpd/conf.d/wordpress.conf'
+wordpress_configuration: '/etc/wordpress/wp-config.php'
+
+wordpress_plugin_directory: "{{ wordpress_directory }}/wp-content/plugins"
+wordpress_theme_directory: "{{ wordpress_directory }}/wp-content/themes"
+
+wordpress_httpd_service: '/usr/lib/systemd/system/httpd.service'

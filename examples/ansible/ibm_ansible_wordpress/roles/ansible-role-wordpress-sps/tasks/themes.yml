@@ -1,0 +1,56 @@
+# roles/wordpress/tasks/themes.yml
+# Installs themes from the Wordpress Theme Directory
+---
+
+## themes with a version number, e.g.
+#
+# wordpress_themes:
+#   - name: foo
+#     version: 1.0.0
+#   - name: bar
+#     version: 4.2.0
+
+- name: Download themes with version numbers
+  get_url:
+    url: "https://downloads.wordpress.org/theme/{{ item.name }}.{{ item.version }}.zip"
+    dest: "/tmp/{{ item.name }}.{{ item.version }}.zip"
+    force: no
+  with_items: "{{ wordpress_themes }}"
+  when: item.version is defined
+  tags: wordpress
+
+- name: Unpack themes with version numbers
+  unarchive:
+    src: "/tmp/{{ item.name }}.{{ item.version }}.zip"
+    dest: "{{ wordpress_theme_directory }}"
+    creates: "{{ wordpress_theme_directory }}/{{ item.name }}"
+    copy: false
+  with_items: "{{ wordpress_themes }}"
+  when: item.version is defined
+  tags: wordpress
+
+## themes without a version number, e.g.
+#
+# wordpress_themes:
+#   - name: foo
+#   - name: bar
+
+- name: Download themes without version numbers
+  get_url:
+    url: "https://downloads.wordpress.org/theme/{{ item.name }}.zip"
+    dest: "/tmp/{{ item.name }}.zip"
+    force: no
+  with_items: "{{ wordpress_themes }}"
+  when: item.version is not defined
+  tags: wordpress
+
+- name: Unpack themes without version numbers
+  unarchive:
+    src: "/tmp/{{ item.name }}.zip"
+    dest: "{{ wordpress_theme_directory }}"
+    creates: "{{ wordpress_theme_directory }}/{{ item.name }}"
+    copy: false
+  with_items: "{{ wordpress_themes }}"
+  when: item.version is not defined
+  tags: wordpress
+

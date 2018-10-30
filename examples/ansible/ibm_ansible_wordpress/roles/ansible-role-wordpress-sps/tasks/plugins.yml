@@ -1,0 +1,56 @@
+# roles/wordpress/tasks/plugins.yml
+# Installs plugins from the Wordpress Plugin Directory
+---
+
+## Plugins with a version number, e.g.
+#
+# wordpress_plugins:
+#   - name: foo
+#     version: 1.0.0
+#   - name: bar
+#     version: 4.2.0
+
+- name: Download plugins with version numbers
+  get_url:
+    url: "https://downloads.wordpress.org/plugin/{{ item.name }}.{{ item.version }}.zip"
+    dest: "/tmp/{{ item.name }}.{{ item.version }}.zip"
+    force: no
+  with_items: "{{ wordpress_plugins }}"
+  when: item.version is defined
+  tags: wordpress
+
+- name: Unpack plugins with version numbers
+  unarchive:
+    src: "/tmp/{{ item.name }}.{{ item.version }}.zip"
+    dest: "{{ wordpress_plugin_directory }}"
+    creates: "{{ wordpress_plugin_directory }}/{{ item.name }}/"
+    copy: false
+  with_items: "{{ wordpress_plugins }}"
+  when: item.version is defined
+  tags: wordpress
+
+## Plugins without a version number, e.g.
+#
+# wordpress_plugins:
+#   - name: foo
+#   - name: bar
+
+- name: Download plugins without version numbers
+  get_url:
+    url: "https://downloads.wordpress.org/plugin/{{ item.name }}.zip"
+    dest: "/tmp/{{ item.name }}.zip"
+    force: no
+  with_items: "{{ wordpress_plugins }}"
+  when: item.version is not defined
+  tags: wordpress
+
+- name: Unpack plugins without version numbers
+  unarchive:
+    src: "/tmp/{{ item.name }}.zip"
+    dest: "{{ wordpress_plugin_directory }}"
+    creates: "{{ wordpress_plugin_directory }}/{{ item.name }}/"
+    copy: false
+  with_items: "{{ wordpress_plugins }}"
+  when: item.version is not defined
+  tags: wordpress
+
