@@ -47,12 +47,14 @@ func resourceIBMContainerWorkerPoolZoneAttachment() *schema.Resource {
 
 			"private_vlan_id": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
+				Computed: true,
 			},
 
 			"public_vlan_id": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 			},
 
 			"resource_group_id": {
@@ -86,12 +88,23 @@ func resourceIBMContainerWorkerPoolZoneAttachmentCreate(d *schema.ResourceData, 
 	}
 
 	zone := d.Get("zone").(string)
-	workerPoolZoneNetwork := v1.WorkerPoolZoneNetwork{
-		PrivateVLAN: d.Get("private_vlan_id").(string),
+	var privateVLAN, publicVLAN string
+	if v, ok := d.GetOk("private_vlan_id"); ok {
+		privateVLAN = v.(string)
 	}
 
 	if v, ok := d.GetOk("public_vlan_id"); ok {
-		workerPoolZoneNetwork.PublicVLAN = v.(string)
+		publicVLAN = v.(string)
+	}
+
+	if publicVLAN != "" && privateVLAN == "" {
+		return fmt.Errorf(
+			"A private_vlan_id must be specified if a public_vlan_id is specified.")
+	}
+
+	workerPoolZoneNetwork := v1.WorkerPoolZoneNetwork{
+		PrivateVLAN: privateVLAN,
+		PublicVLAN:  publicVLAN,
 	}
 
 	workerPoolZone := v1.WorkerPoolZone{
@@ -173,6 +186,12 @@ func resourceIBMContainerWorkerPoolZoneAttachmentUpdate(d *schema.ResourceData, 
 	workerPoolsAPI := csClient.WorkerPools()
 
 	if d.HasChange("private_vlan_id") || d.HasChange("public_vlan_id") {
+		privateVLAN := d.Get("private_vlan_id").(string)
+		publicVLAN := d.Get("public_vlan_id").(string)
+		if publicVLAN != "" && privateVLAN == "" {
+			return fmt.Errorf(
+				"A private VLAN must be specified if a public VLAN is specified.")
+		}
 		targetEnv, err := getWorkerPoolTargetHeader(d, meta)
 		if err != nil {
 			return err
@@ -184,7 +203,7 @@ func resourceIBMContainerWorkerPoolZoneAttachmentUpdate(d *schema.ResourceData, 
 		cluster := parts[0]
 		workerPool := parts[1]
 		zone := parts[2]
-		err = workerPoolsAPI.UpdateZoneNetwork(cluster, zone, workerPool, d.Get("private_vlan_id").(string), d.Get("public_vlan_id").(string), targetEnv)
+		err = workerPoolsAPI.UpdateZoneNetwork(cluster, zone, workerPool, privateVLAN, publicVLAN, targetEnv)
 		if err != nil {
 			return err
 		}
