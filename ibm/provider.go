@@ -192,6 +192,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_service_instance":                      resourceIBMServiceInstance(),
 			"ibm_service_key":                           resourceIBMServiceKey(),
 			"ibm_space":                                 resourceIBMSpace(),
+			"ibm_storage_evault":                        resourceIBMStorageEvault(),
 			"ibm_storage_block":                         resourceIBMStorageBlock(),
 			"ibm_storage_file":                          resourceIBMStorageFile(),
 			"ibm_subnet":                                resourceIBMSubnet(),
