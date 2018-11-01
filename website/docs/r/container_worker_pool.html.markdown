@@ -60,7 +60,9 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - The unique identifier of the worker pool resource. The id is composed of \<cluster_name_id\>/\<worker_pool_id\>
+* `id` - The unique identifier of the worker pool resource. The id is composed of \<cluster_name_id\>/\<worker_pool_id\>.<br/>
+**Note**:To reference the worker pool id in other resources use below interpolation syntax.<br/>
+`Ex: ${element(split("/",ibm_container_worker_pool.testacc_workerpool.id),1)}`
 * `state` - Worker pool state.
 * `zones` - List of zones attached to the worker_pool.
    * `zone` - Zone name.
