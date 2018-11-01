@@ -48,8 +48,9 @@ The following arguments are supported:
 * `zone` - (Required, string) The name of the zone. To list available zones, run `ibmcloud cs zones`
 * `cluster` - (Required, string) The name or id of the cluster.
 * `worker_pool` - (Required, string) The name or id of the worker pool.
-* `private_vlan_id` - (Required, string) The private VLAN of the worker node. You can retrieve the value by running the `ibmcloud cs vlans <data-center>` command in the IBM Cloud CLI.
-* `public_vlan_id` - (Optional, string) The public VLAN of the worker node. You can retrieve the value by running the `ibmcloud cs vlans <data-center>` command in the IBM Cloud CLI..
+* `private_vlan_id` - (Optional, string) The private VLAN of the worker node. You can retrieve the value by running the `ibmcloud cs vlans <zone>` command in the IBM Cloud CLI. 
+* `public_vlan_id` - (Optional, string) The public VLAN of the worker node. The public vlan id cannot be specified alone, it should be specified along with the private vlan id. You can retrieve the value by running the `ibmcloud cs vlans <zone>` command in the IBM Cloud CLI. 
+**Note**: If you do not have a private or public VLAN in that zone, do not specify `private_vlan_id` and `public_vlan_id`. A private and a public VLAN are automatically created for you when you initially add a new zone to your worker pool.
 * `region` - (Optional, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(BM_REGION/BLUEMIX_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
 * `resource_group_id` - (Optional, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
 
