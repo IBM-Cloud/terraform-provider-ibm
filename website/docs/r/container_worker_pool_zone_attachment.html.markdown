@@ -15,9 +15,23 @@ Create, update, or delete a zone. This resource creates the zone and attaches it
 In the following example, you can create a zone:
 
 ```hcl
+resource "ibm_container_worker_pool" "test_pool" {
+  worker_pool_name = "my_pool"
+  machine_type     = "u2c.2x4"
+  cluster          = "my_cluster"
+  size_per_zone    = 2
+  hardware         = "shared"
+  disk_encryption  = "true"
+  region = "eu-de"
+  labels = {
+    "test" = "test-pool"
+
+    "test1" = "test-pool1"
+  }
+}
 resource "ibm_container_worker_pool_zone_attachment" "test_zone" {
   cluster         = "my_cluster"
-  worker_pool     = "my_cluster_pool"
+  worker_pool     = "${element(split("/",ibm_container_worker_pool.test_pool.id),1)}"
   zone            = "dal12"
   private_vlan_id = "2320267"
   public_vlan_id  = "2320265"
