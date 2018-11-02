@@ -22,7 +22,7 @@ const (
 
 	vlanMask = "firewallNetworkComponents,networkVlanFirewall.billingItem.orderItem.order.id,dedicatedFirewallFlag" +
 		",firewallGuestNetworkComponents,firewallInterfaces,firewallRules,highAvailabilityFirewallFlag"
-	fwMask        = "id,networkVlan.highAvailabilityFirewallFlag,tagReferences[id,tag[name]]"
+	fwMask        = "id,datacenter,primaryIpAddress,networkVlan.highAvailabilityFirewallFlag,managementCredentials,tagReferences[id,tag[name]]"
 	multiVlanMask = "id,name,networkFirewall[id,customerManagedFlag,datacenter.name,billingItem[orderItem.order.id,activeChildren[categoryCode, description,id]],managementCredentials,firewallType],publicIpAddress.ipAddress,publicIpv6Address.ipAddress,publicVlan[id,primaryRouter.hostname],privateVlan[id,primaryRouter.hostname],privateIpAddress.ipAddress,insideVlans[id],memberCount,status.keyName"
 )
 
@@ -36,6 +36,13 @@ func resourceIBMFirewall() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
+			"firewall_type": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Default:  "HARDWARE_FIREWALL_DEDICATED",
+			},
+
 			"ha_enabled": {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -53,6 +60,22 @@ func resourceIBMFirewall() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
 			},
+			"location": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"primary_ip": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"username": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"password": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -60,13 +83,26 @@ func resourceIBMFirewall() *schema.Resource {
 func resourceIBMFirewallCreate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 
-	haEnabled := d.Get("ha_enabled").(bool)
-	publicVlanId := d.Get("public_vlan_id").(int)
-
 	keyName := "HARDWARE_FIREWALL_DEDICATED"
-	if haEnabled {
-		keyName = "HARDWARE_FIREWALL_HIGH_AVAILABILITY"
+
+	firewallType := d.Get("firewall_type").(string)
+	// validate firewall type is one of HARDWARE_FIREWALL_DEDICATED or FORTIGATE_SECURITY_APPLIANCE
+	if firewallType != "HARDWARE_FIREWALL_DEDICATED" && firewallType != "FORTIGATE_SECURITY_APPLIANCE" {
+		return fmt.Errorf("firewall_type should be one of HARDWARE_FIREWALL_DEDICATED or FORTIGATE_SECURITY_APPLIANCE")
 	}
+
+	haEnabled := d.Get("ha_enabled").(bool)
+	if haEnabled {
+		if firewallType == "HARDWARE_FIREWALL_DEDICATED" {
+			keyName = "HARDWARE_FIREWALL_HIGH_AVAILABILITY"
+		} else {
+			keyName = "FORTIGATE_SECURITY_APPLIANCE_HIGH_AVAILABILITY"
+		}
+	} else {
+		keyName = firewallType
+	}
+
+	publicVlanId := d.Get("public_vlan_id").(int)
 
 	pkg, err := product.GetPackageByType(sess, FwHardwareDedicatedPackageType)
 	if err != nil {
@@ -152,6 +188,12 @@ func resourceIBMFirewallRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("public_vlan_id", *fw.NetworkVlan.Id)
 	d.Set("ha_enabled", *fw.NetworkVlan.HighAvailabilityFirewallFlag)
+	d.Set("location", *fw.Datacenter.Name)
+	d.Set("primary_ip", *fw.PrimaryIpAddress)
+	if fw.ManagementCredentials != nil {
+		d.Set("username", *fw.ManagementCredentials.Username)
+		d.Set("password", *fw.ManagementCredentials.Password)
+	}
 
 	tagRefs := fw.TagReferences
 	tagRefsLen := len(tagRefs)
