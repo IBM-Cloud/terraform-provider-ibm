@@ -26,8 +26,6 @@ func TestAccIBMNetworkVlan_Basic(t *testing.T) {
 						"ibm_network_vlan.test_vlan", "softlayer_managed", "false"),
 					resource.TestCheckResourceAttr(
 						"ibm_network_vlan.test_vlan", "router_hostname", "fcr01a.lon02"),
-					resource.TestCheckResourceAttr(
-						"ibm_network_vlan.test_vlan", "subnet_size", "8"),
 				),
 			},
 
@@ -62,8 +60,6 @@ func TestAccIBMNetworkVlan_With_Tag(t *testing.T) {
 						"ibm_network_vlan.test_vlan", "softlayer_managed", "false"),
 					resource.TestCheckResourceAttr(
 						"ibm_network_vlan.test_vlan", "router_hostname", "fcr01a.lon02"),
-					resource.TestCheckResourceAttr(
-						"ibm_network_vlan.test_vlan", "subnet_size", "8"),
 					resource.TestCheckResourceAttr(
 						"ibm_network_vlan.test_vlan", "tags.#", "1"),
 					CheckStringSet(
@@ -100,8 +96,6 @@ func TestAccIBMNetworkVlan_With_Multipe_Subnets(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"ibm_network_vlan.test_vlan", "name", "tfuat_mult_subnet"),
-					resource.TestCheckResourceAttr(
-						"ibm_network_vlan.test_vlan", "subnet_size", "8"),
 				),
 			},
 		},
@@ -129,8 +123,6 @@ func TestAccIBMNetworkVlan_with_vm(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_network_vlan.pvt", "router_hostname", "bcr01a.lon02"),
 					resource.TestCheckResourceAttr(
-						"ibm_network_vlan.pvt", "subnet_size", "8"),
-					resource.TestCheckResourceAttr(
 						"ibm_network_vlan.pub", "name", "tfuat_pub_subnet"),
 					resource.TestCheckResourceAttr(
 						"ibm_network_vlan.pub", "datacenter", "lon02"),
@@ -138,8 +130,6 @@ func TestAccIBMNetworkVlan_with_vm(t *testing.T) {
 						"ibm_network_vlan.pub", "type", "PUBLIC"),
 					resource.TestCheckResourceAttr(
 						"ibm_network_vlan.pub", "router_hostname", "fcr01a.lon02"),
-					resource.TestCheckResourceAttr(
-						"ibm_network_vlan.pub", "subnet_size", "8"),
 					resource.TestCheckResourceAttr(
 						"ibm_compute_vm_instance.vm", "hostname", hostname),
 				),
@@ -153,7 +143,6 @@ resource "ibm_network_vlan" "test_vlan" {
    name = "test_vlan"
    datacenter = "lon02"
    type = "PUBLIC"
-   subnet_size = 8
    router_hostname = "fcr01a.lon02"
 }`
 
@@ -162,7 +151,6 @@ resource "ibm_network_vlan" "test_vlan" {
    name = "test_vlan_update"
    datacenter = "lon02"
    type = "PUBLIC"
-   subnet_size = 8
    router_hostname = "fcr01a.lon02"
 }`
 
@@ -172,7 +160,6 @@ func testAccCheckIBMNetworkVlanConfigWithTag(tag1 string) string {
 			name = "test_vlan"
 			datacenter = "lon02"
 			type = "PUBLIC"
-			subnet_size = 8
 			router_hostname = "fcr01a.lon02"
 			tags = ["%s"]
 		 }`, tag1)
@@ -184,7 +171,6 @@ func testAccCheckIBMNetworkVlanConfigTagUpdate(tag1, tag2 string) string {
 		name = "test_vlan"
 		datacenter = "lon02"
 		type = "PUBLIC"
-		subnet_size = 8
 		router_hostname = "fcr01a.lon02"
 		tags = ["%s", "%s"]
 	 }`, tag1, tag2)
@@ -197,7 +183,6 @@ func testAccCheckIBMNetworkVlanConfigMultipleSubnets() (config string) {
 		name            = "tfuat_mult_subnet"
 		datacenter      = "lon02"
 		type            = "PRIVATE"
-		subnet_size     = 8
 		router_hostname = "bcr01a.lon02"
 	  }
 	  
@@ -218,7 +203,6 @@ func testAccCheckIBMNetworkVlanConfigWithVM(hostname, domain string) (config str
 		name            = "tfuat_pvt_subnet"
 		datacenter      = "lon02"
 		type            = "PRIVATE"
-		subnet_size     = 8
 		router_hostname = "bcr01a.lon02"
 	  }
 
@@ -226,7 +210,6 @@ func testAccCheckIBMNetworkVlanConfigWithVM(hostname, domain string) (config str
 		name            = "tfuat_pub_subnet"
 		datacenter      = "lon02"
 		type            = "PUBLIC"
-		subnet_size     = 8
 		router_hostname = "fcr01a.lon02"
 	  }
 	 ` +

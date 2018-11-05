@@ -62,14 +62,12 @@ func testAccCheckIBMNetworkGatewayVlanAttachment_basic(gatewayName, hostName1 st
 			  name            = "test_vlan"
 			  datacenter      = "lon02"
 			  type            = "PUBLIC"
-			  subnet_size     = 8
 			  router_hostname = "fcr01a.lon02"
 			}
 			resource "ibm_network_vlan" "test_vlan_assoc" {
 			   name = "test_vlan_assoc"
 			   datacenter = "lon02"
 			   type = "PUBLIC"
-			   subnet_size = 8
 			   router_hostname = "fcr01a.lon02"
 			}
 			
@@ -77,7 +75,6 @@ func testAccCheckIBMNetworkGatewayVlanAttachment_basic(gatewayName, hostName1 st
 			  name            = "tfuat_mult_subnet"
 			  datacenter      = "lon02"
 			  type            = "PRIVATE"
-			  subnet_size     = 8
 			  router_hostname = "bcr01a.lon02"
 			}
 			
@@ -119,7 +116,6 @@ func testAccCheckIBMNetworkGatewayVlanAttachment_update(gatewayName, hostName1 s
 			  name            = "test_vlan"
 			  datacenter      = "lon02"
 			  type            = "PUBLIC"
-			  subnet_size     = 8
 			  router_hostname = "fcr01a.lon02"
 			}
 			
@@ -127,7 +123,6 @@ func testAccCheckIBMNetworkGatewayVlanAttachment_update(gatewayName, hostName1 s
 			   name = "test_vlan_assoc"
 			   datacenter = "lon02"
 			   type = "PUBLIC"
-			   subnet_size = 8
 			   router_hostname = "fcr01a.lon02"
 			}
 			
@@ -135,7 +130,6 @@ func testAccCheckIBMNetworkGatewayVlanAttachment_update(gatewayName, hostName1 s
 			  name            = "tfuat_mult_subnet"
 			  datacenter      = "lon02"
 			  type            = "PRIVATE"
-			  subnet_size     = 8
 			  router_hostname = "bcr01a.lon02"
 			}
 			
@@ -177,7 +171,6 @@ func testAccCheckIBMNetworkGatewayVlanAttachment_import_update(gatewayName, host
 			  name            = "test_vlan"
 			  datacenter      = "lon02"
 			  type            = "PUBLIC"
-			  subnet_size     = 8
 			  router_hostname = "fcr01a.lon02"
 			}
 			
@@ -185,7 +178,6 @@ func testAccCheckIBMNetworkGatewayVlanAttachment_import_update(gatewayName, host
 			   name = "test_vlan_assoc"
 			   datacenter = "lon02"
 			   type = "PUBLIC"
-			   subnet_size = 8
 			   router_hostname = "fcr01a.lon02"
 			}
 			
@@ -193,7 +185,6 @@ func testAccCheckIBMNetworkGatewayVlanAttachment_import_update(gatewayName, host
 			  name            = "tfuat_mult_subnet"
 			  datacenter      = "lon02"
 			  type            = "PRIVATE"
-			  subnet_size     = 8
 			  router_hostname = "bcr01a.lon02"
 			}
 			

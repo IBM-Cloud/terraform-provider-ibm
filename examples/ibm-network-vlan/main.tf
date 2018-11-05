@@ -6,7 +6,6 @@ resource "ibm_network_vlan" "test_vlan_public" {
   name            = "${var.vlan_name_public}"
   datacenter      = "${var.datacenter}"
   type            = "PUBLIC"
-  subnet_size     = 8
 }
 
 # Create a private vlan
@@ -14,7 +13,6 @@ resource "ibm_network_vlan" "test_vlan_private" {
   name        = "${var.vlan_name_private}"
   datacenter  = "${var.datacenter}"
   type        = "PRIVATE"
-  subnet_size = 8
 }
 
 # Create a new ssh key

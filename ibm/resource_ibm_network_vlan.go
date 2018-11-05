@@ -64,8 +64,9 @@ func resourceIBMNetworkVlan() *schema.Resource {
 			},
 			"subnet_size": {
 				Type:     schema.TypeInt,
-				Required: true,
+				Optional: true,
 				ForceNew: true,
+				Removed:  "This field has been removed",
 			},
 
 			"name": {
@@ -248,14 +249,6 @@ func resourceIBMNetworkVlanRead(d *schema.ResourceData, meta interface{}) error 
 		subnets = append(subnets, subnet)
 	}
 	d.Set("subnets", subnets)
-
-	if primarySubnets != nil && len(primarySubnets) > 0 {
-		d.Set("subnet_size", primarySubnets[0]["subnet_size"])
-	} else if vlan.Subnets != nil && len(vlan.Subnets) > 0 {
-		d.Set("subnet_size", 1<<(uint)(32-*vlan.Subnets[0].Cidr))
-	} else {
-		d.Set("subnet_size", 0)
-	}
 
 	tagRefs := vlan.TagReferences
 	tagRefsLen := len(tagRefs)
@@ -463,28 +456,18 @@ func buildVlanProductOrderContainer(d *schema.ResourceData, sess *session.Sessio
 
 	// 3. Find vlan and subnet prices
 	vlanKeyname := vlanType + "_NETWORK_VLAN"
-	subnetKeyname := strconv.Itoa(d.Get("subnet_size").(int)) + "_STATIC_PUBLIC_IP_ADDRESSES"
 
 	// 4. Select items with a matching keyname
 	vlanItems := []datatypes.Product_Item{}
-	subnetItems := []datatypes.Product_Item{}
 	for _, item := range productItems {
 		if *item.KeyName == vlanKeyname {
 			vlanItems = append(vlanItems, item)
-		}
-		if strings.Contains(*item.KeyName, subnetKeyname) {
-			subnetItems = append(subnetItems, item)
 		}
 	}
 
 	if len(vlanItems) == 0 {
 		return &datatypes.Container_Product_Order_Network_Vlan{},
 			fmt.Errorf("No product items matching %s could be found", vlanKeyname)
-	}
-
-	if len(subnetItems) == 0 {
-		return &datatypes.Container_Product_Order_Network_Vlan{},
-			fmt.Errorf("No product items matching %s could be found", subnetKeyname)
 	}
 
 	productOrderContainer := datatypes.Container_Product_Order_Network_Vlan{
@@ -494,9 +477,6 @@ func buildVlanProductOrderContainer(d *schema.ResourceData, sess *session.Sessio
 			Prices: []datatypes.Product_Item_Price{
 				{
 					Id: vlanItems[0].Prices[0].Id,
-				},
-				{
-					Id: subnetItems[0].Prices[0].Id,
 				},
 			},
 			Quantity: sl.Int(1),
