@@ -3,10 +3,11 @@
 # Terraform-Ansible dynamic inventory for IBM Cloud
 # Copyright (c) 2018, IBM UK
 # steve_strutt@uk.ibm.com
-ti_version = '0.6'
+ti_version = '0.7'
 #
 # 01-10-2018 - 0.5 - Added support for Cloud Load Balancer 
 # 05-10-2018 - 0.6 - Added support for IBM Cloud Resource Instances and internet-svcs
+# 03-11-2018 - 0.7 - Fixed failure where user_metadata did not exist
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -156,6 +157,7 @@ class TerraformInventory:
 
                 if resource['type'] == 'ibm_compute_vm_instance':
                     tf_attrib = resource['primary']['attributes']
+                    # print(tf_attrib)
                     name = tf_attrib['hostname']
                     group = []
 
@@ -164,7 +166,7 @@ class TerraformInventory:
                         'image': tf_attrib['os_reference_code'],
                         'ipv4_address': tf_attrib['ipv4_address'],
                         #'metadata': json.loads(tf_attrib.get('user_metadata', '{}')),
-                        'metadata': tf_attrib['user_metadata'],
+                        # 'metadata': tf_attrib['user_metadata'],
                         'region': tf_attrib['datacenter'],
                         'ram': tf_attrib['memory'],
                         'cpu': tf_attrib['cores'],
@@ -176,7 +178,9 @@ class TerraformInventory:
                         'provider': 'ibm',
                         'tags': parse_list(tf_attrib, 'tags'),
                     }
-                    
+                    # user_metadata is an optional IBM provider value
+                    if 'user_metadata' in tf_attrib:
+                            attributes['metadata'] = tf_attrib['user_metadata']
                         
                     #print (attributes["tags"])
                     #tag of form group: xxxxxxx is used to define ansible host group
