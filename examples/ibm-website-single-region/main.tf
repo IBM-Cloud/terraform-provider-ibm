@@ -1,4 +1,9 @@
-# 
+# Configure the IBM Cloud Provider
+
+# 09-11-2018 - Added session_stickiness = "SOURCE_IP" to lbaas to avoid Wordpress logon 
+# redirect loop.
+
+
 
 # To use HTTPS for the website
 # Uncomment tls_certificate_id on resource "ibm_lbaas" "lbaas1" 
@@ -16,8 +21,8 @@ resource "ibm_compute_ssh_key" "ssh_key" {
 
 # commands are written within ''s. []s causes runcmd to fail on host
 # manage_etc_hosts set to true to explicitly call attention to the fact that this
-# is the default on IBM Cloud for cloudInit enabled images. /etc/hosts is refreshed at 
-# each reboot from /etc/cloud/templates/hosts.redhat.tmpl. 
+# is the default on IBM Cloud. /etc/hosts is refreshed at each reboot from
+# /etc/cloud/templates/hosts.redhat.tmpl. 
 
 # Install Apache web server, copy index.html to avoid 403 http code
 # Record final msg in /var/log/cloud-init.log
@@ -60,15 +65,14 @@ resource "ibm_compute_vm_instance" "app1" {
   network_speed = 100
   cores         = 1
   memory        = 1024
-  disks         = [25, 10]
+  disks         = [25, 25]
   ssh_key_ids   = ["${ibm_compute_ssh_key.ssh_key.id}"]
-  local_disk    = false
+  local_disk    = true
 
   private_security_group_ids = ["${ibm_security_group.sg_private_lamp.id}"]
   public_security_group_ids  = ["${ibm_security_group.sg_public_lamp.id}"]
   private_network_only       = false
-  user_metadata              = "${data.template_cloudinit_config.app_userdata.rendered}"
-  # tag required to set Ansible hostgroup
+  #user_metadata              = "${data.template_cloudinit_config.app_userdata.rendered}"
   tags                       = ["group:webserver"]
 }
 
@@ -99,18 +103,18 @@ resource "ibm_compute_vm_instance" "db1" {
   network_speed = 100
   cores         = 1
   memory        = 1024
-  disks         = [25, 10]
+  disks         = [25, 25]
   ssh_key_ids   = ["${ibm_compute_ssh_key.ssh_key.id}"]
-  local_disk    = false
+  local_disk    = true
 
   private_security_group_ids = ["${ibm_security_group.sg_private_lamp.id}"]
   public_security_group_ids  = ["${ibm_security_group.sg_public_lamp.id}"]
   private_network_only       = false
   user_metadata              = "${data.template_cloudinit_config.db_userdata.rendered}"
-  # tag required to set Ansible hostgroup
   tags                       = ["group:database"]
 }
 
+# tag cloudloadbalancer required for Ansible dynamic inventory
 resource "ibm_lbaas" "lbaas1" {
   name        = "${var.lb_name}"
   description = "lbaas example"
@@ -124,7 +128,8 @@ resource "ibm_lbaas" "lbaas1" {
     #frontend_protocol     = "HTTPS"
     #frontend_port         = 443
     backend_protocol = "HTTP"
-
+    # Session stickiness set to avoid Wordpress admin logon loop with HTTP
+    session_stickiness = "SOURCE_IP"
     backend_port          = 80
     load_balancing_method = "${var.lb_method}"
 
@@ -137,10 +142,8 @@ resource "ibm_lbaas" "lbaas1" {
 #   private_key = "${var.ssl_private_key}"
 # }
 
-
-# Attach VSIs to load balancer. private_ip_address specifies the private ip address of all web-server VSIs
 resource "ibm_lbaas_server_instance_attachment" "lbaas_member" {
-  count              = 2
+  count              = "${var.vm_count_app}"
   private_ip_address = "${element(ibm_compute_vm_instance.app1.*.ipv4_address_private,count.index)}"
   weight             = 40
   lbaas_id           = "${ibm_lbaas.lbaas1.id}"
