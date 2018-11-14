@@ -395,6 +395,15 @@ func (r Hardware) DeleteSoftwareComponentPasswords(softwareComponentPasswords []
 	return
 }
 
+// Delete an existing tag.  If there are any references on the tag, an exception will be thrown.
+func (r Hardware) DeleteTag(tagName *string) (resp bool, err error) {
+	params := []interface{}{
+		tagName,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware", "deleteTag", params, &r.Options, &resp)
+	return
+}
+
 // Edit the properties of a software component password such as the username, password, and notes.
 func (r Hardware) EditSoftwareComponentPasswords(softwareComponentPasswords []datatypes.Software_Component_Password) (resp bool, err error) {
 	params := []interface{}{
@@ -642,13 +651,13 @@ func (r Hardware) GetCurrentBillableBandwidthUsage() (resp datatypes.Float64, er
 	return
 }
 
-// Get the billing detail for this instance for the current billing period. This does not include bandwidth usage.
+// Get the billing detail for this hardware for the current billing period. This does not include bandwidth usage.
 func (r Hardware) GetCurrentBillingDetail() (resp []datatypes.Billing_Item, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware", "getCurrentBillingDetail", nil, &r.Options, &resp)
 	return
 }
 
-// The '''getCurrentBillingTotal''' method retrieves the total bill amount in US Dollars ($) for the current billing period. In addition to the total bill amount, the billing detail also includes all bandwidth used up to the point the method is called on the piece of hardware.
+// Get the total bill amount in US Dollars ($) for this hardware in the current billing period. This includes all bandwidth used up to the point the method is called on the hardware.
 func (r Hardware) GetCurrentBillingTotal() (resp datatypes.Float64, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware", "getCurrentBillingTotal", nil, &r.Options, &resp)
 	return
@@ -1532,6 +1541,15 @@ func (r Hardware) RemoveAccessToNetworkStorageList(networkStorageTemplateObjects
 }
 
 // no documentation yet
+func (r Hardware) RemoveTags(tags *string) (resp bool, err error) {
+	params := []interface{}{
+		tags,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware", "removeTags", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
 func (r Hardware) SetTags(tags *string) (resp bool, err error) {
 	params := []interface{}{
 		tags,
@@ -2316,6 +2334,15 @@ func (r Hardware_Router) DeleteSoftwareComponentPasswords(softwareComponentPassw
 	return
 }
 
+// Delete an existing tag.  If there are any references on the tag, an exception will be thrown.
+func (r Hardware_Router) DeleteTag(tagName *string) (resp bool, err error) {
+	params := []interface{}{
+		tagName,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_Router", "deleteTag", params, &r.Options, &resp)
+	return
+}
+
 // Edit the properties of a software component password such as the username, password, and notes.
 func (r Hardware_Router) EditSoftwareComponentPasswords(softwareComponentPasswords []datatypes.Software_Component_Password) (resp bool, err error) {
 	params := []interface{}{
@@ -2569,13 +2596,13 @@ func (r Hardware_Router) GetCurrentBillableBandwidthUsage() (resp datatypes.Floa
 	return
 }
 
-// Get the billing detail for this instance for the current billing period. This does not include bandwidth usage.
+// Get the billing detail for this hardware for the current billing period. This does not include bandwidth usage.
 func (r Hardware_Router) GetCurrentBillingDetail() (resp []datatypes.Billing_Item, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Router", "getCurrentBillingDetail", nil, &r.Options, &resp)
 	return
 }
 
-// The '''getCurrentBillingTotal''' method retrieves the total bill amount in US Dollars ($) for the current billing period. In addition to the total bill amount, the billing detail also includes all bandwidth used up to the point the method is called on the piece of hardware.
+// Get the total bill amount in US Dollars ($) for this hardware in the current billing period. This includes all bandwidth used up to the point the method is called on the hardware.
 func (r Hardware_Router) GetCurrentBillingTotal() (resp datatypes.Float64, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Router", "getCurrentBillingTotal", nil, &r.Options, &resp)
 	return
@@ -3471,6 +3498,15 @@ func (r Hardware_Router) RemoveAccessToNetworkStorageList(networkStorageTemplate
 }
 
 // no documentation yet
+func (r Hardware_Router) RemoveTags(tags *string) (resp bool, err error) {
+	params := []interface{}{
+		tags,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_Router", "removeTags", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
 func (r Hardware_Router) SetTags(tags *string) (resp bool, err error) {
 	params := []interface{}{
 		tags,
@@ -3528,13 +3564,37 @@ func (r Hardware_SecurityModule) Offset(offset int) Hardware_SecurityModule {
 	return r
 }
 
+// <b>Note:</b> All error handling and parameter documentation is referencing behavior available on January 4th, 2019.
+//
+// <h3>Behavior deprecated on January 4th, 2019</h3>
+//
 // Activates the private network port
+//
+// <h3>NEW! Behavior on January 4th, 2019</h3>
+//
+// Activate a server's private network interface to the maximum available speed. This operation is an alias for [[SoftLayer_Hardware_Server/setPrivateNetworkInterfaceSpeed]] with a $newSpeed of -1 and a $redundancy of "redundant".
+//
+// Receipt of a response does not indicate completion of the configuration change. Any subsequent attempts to request the interface change speed or state, while changes are pending, will result in a busy error.
+//
+// A response of true indicates a change was required to activate the interface; thus changes are pending. A response of false indicates the interface was already active, and thus no changes are pending.
 func (r Hardware_SecurityModule) ActivatePrivatePort() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "activatePrivatePort", nil, &r.Options, &resp)
 	return
 }
 
+// <b>Note:</b> All error handling and parameter documentation is referencing behavior available on January 4th, 2019.
+//
+// <h3>Behavior deprecated on January 4th, 2019</h3>
+//
 // Activates the public network port
+//
+// <h3>NEW! Behavior on January 4th, 2019</h3>
+//
+// Activate a server's public network interface to the maximum available speed. This operation is an alias for [[SoftLayer_Hardware_Server/setPublicNetworkInterfaceSpeed]] with a $newSpeed of -1 and a $redundancy of "redundant".
+//
+// Receipt of a response does not indicate completion of the configuration change. Any subsequent attempts to request the interface change speed or state, while changes are pending, will result in a busy error.
+//
+// A response of true indicates a change was required to activate the interface; thus changes are pending. A response of false indicates the interface was already active, and thus no changes are pending.
 func (r Hardware_SecurityModule) ActivatePublicPort() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "activatePublicPort", nil, &r.Options, &resp)
 	return
@@ -3896,6 +3956,15 @@ func (r Hardware_SecurityModule) DeleteSoftwareComponentPasswords(softwareCompon
 		softwareComponentPasswords,
 	}
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "deleteSoftwareComponentPasswords", params, &r.Options, &resp)
+	return
+}
+
+// Delete an existing tag.  If there are any references on the tag, an exception will be thrown.
+func (r Hardware_SecurityModule) DeleteTag(tagName *string) (resp bool, err error) {
+	params := []interface{}{
+		tagName,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "deleteTag", params, &r.Options, &resp)
 	return
 }
 
@@ -4296,13 +4365,13 @@ func (r Hardware_SecurityModule) GetCurrentBillableBandwidthUsage() (resp dataty
 	return
 }
 
-// Get the billing detail for this instance for the current billing period. This does not include bandwidth usage.
+// Get the billing detail for this hardware for the current billing period. This does not include bandwidth usage.
 func (r Hardware_SecurityModule) GetCurrentBillingDetail() (resp []datatypes.Billing_Item, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "getCurrentBillingDetail", nil, &r.Options, &resp)
 	return
 }
 
-// The '''getCurrentBillingTotal''' method retrieves the total bill amount in US Dollars ($) for the current billing period. In addition to the total bill amount, the billing detail also includes all bandwidth used up to the point the method is called on the piece of hardware.
+// Get the total bill amount in US Dollars ($) for this hardware in the current billing period. This includes all bandwidth used up to the point the method is called on the hardware.
 func (r Hardware_SecurityModule) GetCurrentBillingTotal() (resp datatypes.Float64, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "getCurrentBillingTotal", nil, &r.Options, &resp)
 	return
@@ -4601,6 +4670,12 @@ func (r Hardware_SecurityModule) GetInboundPublicBandwidthUsage() (resp datatype
 // Retrieve Determine if hardware object has the IBM_CLOUD_READY_NODE_CERTIFIED attribute.
 func (r Hardware_SecurityModule) GetIsCloudReadyNodeCertified() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "getIsCloudReadyNodeCertified", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Determine if remote management has been disabled due to port speed.
+func (r Hardware_SecurityModule) GetIsIpmiDisabled() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "getIsIpmiDisabled", nil, &r.Options, &resp)
 	return
 }
 
@@ -5322,6 +5397,12 @@ func (r Hardware_SecurityModule) GetTransactionHistory() (resp []datatypes.Provi
 	return
 }
 
+// Retrieve Whether to use UEFI boot instead of BIOS.
+func (r Hardware_SecurityModule) GetUefiBootFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "getUefiBootFlag", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve a list of upgradeable items available to this piece of hardware. Currently, getUpgradeItemPrices retrieves upgrades available for a server's memory, hard drives, network port speed, bandwidth allocation and GPUs.
 func (r Hardware_SecurityModule) GetUpgradeItemPrices() (resp []datatypes.Product_Item_Price, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "getUpgradeItemPrices", nil, &r.Options, &resp)
@@ -5619,6 +5700,15 @@ func (r Hardware_SecurityModule) RemoveAccessToNetworkStorageList(networkStorage
 	return
 }
 
+// no documentation yet
+func (r Hardware_SecurityModule) RemoveTags(tags *string) (resp bool, err error) {
+	params := []interface{}{
+		tags,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "removeTags", params, &r.Options, &resp)
+	return
+}
+
 // You can launch a new Passmark hardware test by selecting from your server list. It will bring your server offline for approximately 20 minutes while the testing is in progress, and will publish a certificate with the results to your hardware details page.
 //
 // While the hard drives are tested for the initial deployment, the Passmark Certificate utility will not test the hard drives on your live server. This is to ensure that no data is overwritten. If you would like to test the server's hard drives, you can have the full Passmark suite installed to your server free of charge through a new Support ticket.
@@ -5640,9 +5730,29 @@ func (r Hardware_SecurityModule) SetOperatingSystemPassword(newPassword *string)
 	return
 }
 
+// <b>Note:</b> All error handling and parameter documentation is referencing behavior available on January 4th, 2019.
+//
+// <h3>Behavior deprecated on January 4th, 2019</h3>
+//
 // Sets the private network interface speed to the new speed. Speed values can only be 0 (Disconnect), 10, 100, 1000, and 10000. The new speed must be equal to or less than the max speed of the interface.
 //
 // It will take less than a minute to update the switch port speed. The server uplink will not be operational again until the server interface speed is updated.
+//
+// <h3>NEW! Behavior on January 4th, 2019</h3>
+//
+// Set the private network interface speed and redundancy configuration.
+//
+// Possible $newSpeed values are -1 (maximum available), 0 (disconnect), 10, 100, 1000, and 10000; not all values are available to every server. The maximum speed is limited by the speed requested during provisioning. All intermediate speeds are limited by the capability of the pod the server is deployed in. No guarantee is made that a speed other than what was requested during provisioning will be available.
+//
+// If specified, possible $redundancy values are either "redundant" or "degraded". Not specifying a redundancy mode will use the best possible redundancy available to the server. However, specifying a redundacy mode that is not available to the server will result in an error. "redundant" indicates all available interfaces should be active. "degraded" indicates only the primary interface should be active. Irrespective of the number of interfaces available to a server, it is only possible to have either a single interface or all interfaces active.
+//
+// Receipt of a response does not indicate completion of the configuration change. Any subsequent attempts to request the interface change speed or state, while changes are pending, will result in a busy error.
+//
+// A response of true indicates a change was required to achieve the desired interface configuration; thus changes are pending. A response of false indicates the current interface configuration matches the desired configuration, and thus no changes are pending.
+//
+// <h4>Backwards Compatibility Until February 27th, 2019</h4>
+//
+// In order to provide a period of transition to the new API, some backwards compatible behaviors will be active during this period. <ul> <li> A "doubled" (eg. 200) speed value will be translated to a redundancy value of "redundant". If a redundancy value is specified, it is assumed no translation is needed and will result in an error due to doubled speeds no longer being valid.</li> <li> A non-doubled (eg. 100) speed value <i>without</i> a redundancy value will be translated to a redundancy value of "degraded".</li> </ul> After the compatibility period, a doubled speed value will result in an error, and a non-doubled speed value without a redundancy value specified will result in the best available redundancy state. An exception is made for the new relative speed value -1. When using -1 without a redundancy value, the best possible redundancy will be used. Please transition away from using doubled speed values in favor of specifying redundancy (when applicable) or using relative speed values 0 and -1.
 func (r Hardware_SecurityModule) SetPrivateNetworkInterfaceSpeed(newSpeed *int) (resp bool, err error) {
 	params := []interface{}{
 		newSpeed,
@@ -5651,9 +5761,29 @@ func (r Hardware_SecurityModule) SetPrivateNetworkInterfaceSpeed(newSpeed *int) 
 	return
 }
 
+// <b>Note:</b> All error handling and parameter documentation is referencing behavior available on January 4th, 2019.
+//
+// <h3>Behavior deprecated on January 4th, 2019</h3>
+//
 // Sets the public network interface speed to the new speed. Speed values can only be 0 (Disconnect), 10, 100, 1000, and 10000. The new speed must be equal to or less than the max speed of the interface.
 //
 // It will take less than a minute to update the switch port speed. The server uplink will not be operational again until the server interface speed is updated.
+//
+// <h3>NEW! Behavior on January 4th, 2019</h3>
+//
+// Set the public network interface speed and redundancy configuration.
+//
+// Possible $newSpeed values are -1 (maximum available), 0 (disconnect), 10, 100, 1000, and 10000; not all values are available to every server. The maximum speed is limited by the speed requested during provisioning. All intermediate speeds are limited by the capability of the pod the server is deployed in. No guarantee is made that a speed other than what was requested during provisioning will be available.
+//
+// If specified, possible $redundancy values are either "redundant" or "degraded". Not specifying a redundancy mode will use the best possible redundancy available to the server. However, specifying a redundacy mode that is not available to the server will result in an error. "redundant" indicates all available interfaces should be active. "degraded" indicates only the primary interface should be active. Irrespective of the number of interfaces available to a server, it is only possible to have either a single interface or all interfaces active.
+//
+// Receipt of a response does not indicate completion of the configuration change. Any subsequent attempts to request the interface change speed or state, while changes are pending, will result in a busy error.
+//
+// A response of true indicates a change was required to achieve the desired interface configuration; thus changes are pending. A response of false indicates the current interface configuration matches the desired configuration, and thus no changes are pending.
+//
+// <h4>Backwards Compatibility Until February 27th, 2019</h4>
+//
+// In order to provide a period of transition to the new API, some backwards compatible behaviors will be active during this period. <ul> <li> A "doubled" (eg. 200) speed value will be translated to a redundancy value of "redundant". If a redundancy value is specified, it is assumed no translation is needed and will result in an error due to doubled speeds no longer being valid.</li> <li> A non-doubled (eg. 100) speed value <i>without</i> a redundancy value will be translated to a redundancy value of "degraded".</li> </ul> After the compatibility period, a doubled speed value will result in an error, and a non-doubled speed value without a redundancy value specified will result in the best available redundancy state. An exception is made for the new relative speed value -1. When using -1 without a redundancy value, the best possible redundancy will be used. Please transition away from using doubled speed values in favor of specifying redundancy (when applicable) or using relative speed values 0 and -1.
 func (r Hardware_SecurityModule) SetPublicNetworkInterfaceSpeed(newSpeed *int) (resp bool, err error) {
 	params := []interface{}{
 		newSpeed,
@@ -5680,13 +5810,37 @@ func (r Hardware_SecurityModule) SetUserMetadata(metadata []string) (resp []data
 	return
 }
 
-// Shuts down the public network port
+// <b>Note:</b> All error handling and parameter documentation is referencing behavior available on January 4th, 2019.
+//
+// <h3>Behavior deprecated on January 4th, 2019</h3>
+//
+// Shuts down the private network port
+//
+// <h3>NEW! Behavior on January 4th, 2019</h3>
+//
+// Disconnect a server's private network interface. This operation is an alias for calling [[SoftLayer_Hardware_Server/setPrivateNetworkInterfaceSpeed]] with a $newSpeed of 0 and default $redundancy.
+//
+// Receipt of a response does not indicate completion of the configuration change. Any subsequent attempts to request the interface change speed or state, while changes are pending, will result in a busy error.
+//
+// A response of true indicates a change was required to disconnect the interface; thus changes are pending. A response of false indicates the interface was already disconnected, and thus no changes are pending.
 func (r Hardware_SecurityModule) ShutdownPrivatePort() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "shutdownPrivatePort", nil, &r.Options, &resp)
 	return
 }
 
+// <b>Note:</b> All error handling and parameter documentation is referencing behavior available on January 4th, 2019.
+//
+// <h3>Behavior deprecated on January 4th, 2019</h3>
+//
 // Shuts down the public network port
+//
+// <h3>NEW! Behavior on January 4th, 2019</h3>
+//
+// Disconnect a server's public network interface. This operation is an alias for [[SoftLayer_Hardware_Server/setPublicNetworkInterfaceSpeed]] with a $newSpeed of 0 and default $redundancy.
+//
+// Receipt of a response does not indicate completion of the configuration change. Any subsequent attempts to request the interface change speed or state, while changes are pending, will result in a busy error.
+//
+// A response of true indicates a change was required to disconnect the interface; thus changes are pending. A response of false indicates the interface was already disconnected, and thus no changes are pending.
 func (r Hardware_SecurityModule) ShutdownPublicPort() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "shutdownPublicPort", nil, &r.Options, &resp)
 	return
@@ -5699,6 +5853,15 @@ func (r Hardware_SecurityModule) SparePool(action *string, newOrder *bool) (resp
 		newOrder,
 	}
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "sparePool", params, &r.Options, &resp)
+	return
+}
+
+// Attempt to toggle the IPMI interface.  If there is an active transaction on the server, it will throw an exception. This method creates a transaction to toggle the interface.  It is not instant.
+func (r Hardware_SecurityModule) ToggleManagementInterface(enabled *bool) (resp bool, err error) {
+	params := []interface{}{
+		enabled,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule", "toggleManagementInterface", params, &r.Options, &resp)
 	return
 }
 
@@ -5761,13 +5924,37 @@ func (r Hardware_SecurityModule750) Offset(offset int) Hardware_SecurityModule75
 	return r
 }
 
+// <b>Note:</b> All error handling and parameter documentation is referencing behavior available on January 4th, 2019.
+//
+// <h3>Behavior deprecated on January 4th, 2019</h3>
+//
 // Activates the private network port
+//
+// <h3>NEW! Behavior on January 4th, 2019</h3>
+//
+// Activate a server's private network interface to the maximum available speed. This operation is an alias for [[SoftLayer_Hardware_Server/setPrivateNetworkInterfaceSpeed]] with a $newSpeed of -1 and a $redundancy of "redundant".
+//
+// Receipt of a response does not indicate completion of the configuration change. Any subsequent attempts to request the interface change speed or state, while changes are pending, will result in a busy error.
+//
+// A response of true indicates a change was required to activate the interface; thus changes are pending. A response of false indicates the interface was already active, and thus no changes are pending.
 func (r Hardware_SecurityModule750) ActivatePrivatePort() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "activatePrivatePort", nil, &r.Options, &resp)
 	return
 }
 
+// <b>Note:</b> All error handling and parameter documentation is referencing behavior available on January 4th, 2019.
+//
+// <h3>Behavior deprecated on January 4th, 2019</h3>
+//
 // Activates the public network port
+//
+// <h3>NEW! Behavior on January 4th, 2019</h3>
+//
+// Activate a server's public network interface to the maximum available speed. This operation is an alias for [[SoftLayer_Hardware_Server/setPublicNetworkInterfaceSpeed]] with a $newSpeed of -1 and a $redundancy of "redundant".
+//
+// Receipt of a response does not indicate completion of the configuration change. Any subsequent attempts to request the interface change speed or state, while changes are pending, will result in a busy error.
+//
+// A response of true indicates a change was required to activate the interface; thus changes are pending. A response of false indicates the interface was already active, and thus no changes are pending.
 func (r Hardware_SecurityModule750) ActivatePublicPort() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "activatePublicPort", nil, &r.Options, &resp)
 	return
@@ -6129,6 +6316,15 @@ func (r Hardware_SecurityModule750) DeleteSoftwareComponentPasswords(softwareCom
 		softwareComponentPasswords,
 	}
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "deleteSoftwareComponentPasswords", params, &r.Options, &resp)
+	return
+}
+
+// Delete an existing tag.  If there are any references on the tag, an exception will be thrown.
+func (r Hardware_SecurityModule750) DeleteTag(tagName *string) (resp bool, err error) {
+	params := []interface{}{
+		tagName,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "deleteTag", params, &r.Options, &resp)
 	return
 }
 
@@ -6529,13 +6725,13 @@ func (r Hardware_SecurityModule750) GetCurrentBillableBandwidthUsage() (resp dat
 	return
 }
 
-// Get the billing detail for this instance for the current billing period. This does not include bandwidth usage.
+// Get the billing detail for this hardware for the current billing period. This does not include bandwidth usage.
 func (r Hardware_SecurityModule750) GetCurrentBillingDetail() (resp []datatypes.Billing_Item, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getCurrentBillingDetail", nil, &r.Options, &resp)
 	return
 }
 
-// The '''getCurrentBillingTotal''' method retrieves the total bill amount in US Dollars ($) for the current billing period. In addition to the total bill amount, the billing detail also includes all bandwidth used up to the point the method is called on the piece of hardware.
+// Get the total bill amount in US Dollars ($) for this hardware in the current billing period. This includes all bandwidth used up to the point the method is called on the hardware.
 func (r Hardware_SecurityModule750) GetCurrentBillingTotal() (resp datatypes.Float64, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getCurrentBillingTotal", nil, &r.Options, &resp)
 	return
@@ -6834,6 +7030,12 @@ func (r Hardware_SecurityModule750) GetInboundPublicBandwidthUsage() (resp datat
 // Retrieve Determine if hardware object has the IBM_CLOUD_READY_NODE_CERTIFIED attribute.
 func (r Hardware_SecurityModule750) GetIsCloudReadyNodeCertified() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getIsCloudReadyNodeCertified", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Determine if remote management has been disabled due to port speed.
+func (r Hardware_SecurityModule750) GetIsIpmiDisabled() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getIsIpmiDisabled", nil, &r.Options, &resp)
 	return
 }
 
@@ -7555,6 +7757,12 @@ func (r Hardware_SecurityModule750) GetTransactionHistory() (resp []datatypes.Pr
 	return
 }
 
+// Retrieve Whether to use UEFI boot instead of BIOS.
+func (r Hardware_SecurityModule750) GetUefiBootFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getUefiBootFlag", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve a list of upgradeable items available to this piece of hardware. Currently, getUpgradeItemPrices retrieves upgrades available for a server's memory, hard drives, network port speed, bandwidth allocation and GPUs.
 func (r Hardware_SecurityModule750) GetUpgradeItemPrices() (resp []datatypes.Product_Item_Price, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "getUpgradeItemPrices", nil, &r.Options, &resp)
@@ -7852,6 +8060,15 @@ func (r Hardware_SecurityModule750) RemoveAccessToNetworkStorageList(networkStor
 	return
 }
 
+// no documentation yet
+func (r Hardware_SecurityModule750) RemoveTags(tags *string) (resp bool, err error) {
+	params := []interface{}{
+		tags,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "removeTags", params, &r.Options, &resp)
+	return
+}
+
 // You can launch a new Passmark hardware test by selecting from your server list. It will bring your server offline for approximately 20 minutes while the testing is in progress, and will publish a certificate with the results to your hardware details page.
 //
 // While the hard drives are tested for the initial deployment, the Passmark Certificate utility will not test the hard drives on your live server. This is to ensure that no data is overwritten. If you would like to test the server's hard drives, you can have the full Passmark suite installed to your server free of charge through a new Support ticket.
@@ -7873,9 +8090,29 @@ func (r Hardware_SecurityModule750) SetOperatingSystemPassword(newPassword *stri
 	return
 }
 
+// <b>Note:</b> All error handling and parameter documentation is referencing behavior available on January 4th, 2019.
+//
+// <h3>Behavior deprecated on January 4th, 2019</h3>
+//
 // Sets the private network interface speed to the new speed. Speed values can only be 0 (Disconnect), 10, 100, 1000, and 10000. The new speed must be equal to or less than the max speed of the interface.
 //
 // It will take less than a minute to update the switch port speed. The server uplink will not be operational again until the server interface speed is updated.
+//
+// <h3>NEW! Behavior on January 4th, 2019</h3>
+//
+// Set the private network interface speed and redundancy configuration.
+//
+// Possible $newSpeed values are -1 (maximum available), 0 (disconnect), 10, 100, 1000, and 10000; not all values are available to every server. The maximum speed is limited by the speed requested during provisioning. All intermediate speeds are limited by the capability of the pod the server is deployed in. No guarantee is made that a speed other than what was requested during provisioning will be available.
+//
+// If specified, possible $redundancy values are either "redundant" or "degraded". Not specifying a redundancy mode will use the best possible redundancy available to the server. However, specifying a redundacy mode that is not available to the server will result in an error. "redundant" indicates all available interfaces should be active. "degraded" indicates only the primary interface should be active. Irrespective of the number of interfaces available to a server, it is only possible to have either a single interface or all interfaces active.
+//
+// Receipt of a response does not indicate completion of the configuration change. Any subsequent attempts to request the interface change speed or state, while changes are pending, will result in a busy error.
+//
+// A response of true indicates a change was required to achieve the desired interface configuration; thus changes are pending. A response of false indicates the current interface configuration matches the desired configuration, and thus no changes are pending.
+//
+// <h4>Backwards Compatibility Until February 27th, 2019</h4>
+//
+// In order to provide a period of transition to the new API, some backwards compatible behaviors will be active during this period. <ul> <li> A "doubled" (eg. 200) speed value will be translated to a redundancy value of "redundant". If a redundancy value is specified, it is assumed no translation is needed and will result in an error due to doubled speeds no longer being valid.</li> <li> A non-doubled (eg. 100) speed value <i>without</i> a redundancy value will be translated to a redundancy value of "degraded".</li> </ul> After the compatibility period, a doubled speed value will result in an error, and a non-doubled speed value without a redundancy value specified will result in the best available redundancy state. An exception is made for the new relative speed value -1. When using -1 without a redundancy value, the best possible redundancy will be used. Please transition away from using doubled speed values in favor of specifying redundancy (when applicable) or using relative speed values 0 and -1.
 func (r Hardware_SecurityModule750) SetPrivateNetworkInterfaceSpeed(newSpeed *int) (resp bool, err error) {
 	params := []interface{}{
 		newSpeed,
@@ -7884,9 +8121,29 @@ func (r Hardware_SecurityModule750) SetPrivateNetworkInterfaceSpeed(newSpeed *in
 	return
 }
 
+// <b>Note:</b> All error handling and parameter documentation is referencing behavior available on January 4th, 2019.
+//
+// <h3>Behavior deprecated on January 4th, 2019</h3>
+//
 // Sets the public network interface speed to the new speed. Speed values can only be 0 (Disconnect), 10, 100, 1000, and 10000. The new speed must be equal to or less than the max speed of the interface.
 //
 // It will take less than a minute to update the switch port speed. The server uplink will not be operational again until the server interface speed is updated.
+//
+// <h3>NEW! Behavior on January 4th, 2019</h3>
+//
+// Set the public network interface speed and redundancy configuration.
+//
+// Possible $newSpeed values are -1 (maximum available), 0 (disconnect), 10, 100, 1000, and 10000; not all values are available to every server. The maximum speed is limited by the speed requested during provisioning. All intermediate speeds are limited by the capability of the pod the server is deployed in. No guarantee is made that a speed other than what was requested during provisioning will be available.
+//
+// If specified, possible $redundancy values are either "redundant" or "degraded". Not specifying a redundancy mode will use the best possible redundancy available to the server. However, specifying a redundacy mode that is not available to the server will result in an error. "redundant" indicates all available interfaces should be active. "degraded" indicates only the primary interface should be active. Irrespective of the number of interfaces available to a server, it is only possible to have either a single interface or all interfaces active.
+//
+// Receipt of a response does not indicate completion of the configuration change. Any subsequent attempts to request the interface change speed or state, while changes are pending, will result in a busy error.
+//
+// A response of true indicates a change was required to achieve the desired interface configuration; thus changes are pending. A response of false indicates the current interface configuration matches the desired configuration, and thus no changes are pending.
+//
+// <h4>Backwards Compatibility Until February 27th, 2019</h4>
+//
+// In order to provide a period of transition to the new API, some backwards compatible behaviors will be active during this period. <ul> <li> A "doubled" (eg. 200) speed value will be translated to a redundancy value of "redundant". If a redundancy value is specified, it is assumed no translation is needed and will result in an error due to doubled speeds no longer being valid.</li> <li> A non-doubled (eg. 100) speed value <i>without</i> a redundancy value will be translated to a redundancy value of "degraded".</li> </ul> After the compatibility period, a doubled speed value will result in an error, and a non-doubled speed value without a redundancy value specified will result in the best available redundancy state. An exception is made for the new relative speed value -1. When using -1 without a redundancy value, the best possible redundancy will be used. Please transition away from using doubled speed values in favor of specifying redundancy (when applicable) or using relative speed values 0 and -1.
 func (r Hardware_SecurityModule750) SetPublicNetworkInterfaceSpeed(newSpeed *int) (resp bool, err error) {
 	params := []interface{}{
 		newSpeed,
@@ -7913,13 +8170,37 @@ func (r Hardware_SecurityModule750) SetUserMetadata(metadata []string) (resp []d
 	return
 }
 
-// Shuts down the public network port
+// <b>Note:</b> All error handling and parameter documentation is referencing behavior available on January 4th, 2019.
+//
+// <h3>Behavior deprecated on January 4th, 2019</h3>
+//
+// Shuts down the private network port
+//
+// <h3>NEW! Behavior on January 4th, 2019</h3>
+//
+// Disconnect a server's private network interface. This operation is an alias for calling [[SoftLayer_Hardware_Server/setPrivateNetworkInterfaceSpeed]] with a $newSpeed of 0 and default $redundancy.
+//
+// Receipt of a response does not indicate completion of the configuration change. Any subsequent attempts to request the interface change speed or state, while changes are pending, will result in a busy error.
+//
+// A response of true indicates a change was required to disconnect the interface; thus changes are pending. A response of false indicates the interface was already disconnected, and thus no changes are pending.
 func (r Hardware_SecurityModule750) ShutdownPrivatePort() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "shutdownPrivatePort", nil, &r.Options, &resp)
 	return
 }
 
+// <b>Note:</b> All error handling and parameter documentation is referencing behavior available on January 4th, 2019.
+//
+// <h3>Behavior deprecated on January 4th, 2019</h3>
+//
 // Shuts down the public network port
+//
+// <h3>NEW! Behavior on January 4th, 2019</h3>
+//
+// Disconnect a server's public network interface. This operation is an alias for [[SoftLayer_Hardware_Server/setPublicNetworkInterfaceSpeed]] with a $newSpeed of 0 and default $redundancy.
+//
+// Receipt of a response does not indicate completion of the configuration change. Any subsequent attempts to request the interface change speed or state, while changes are pending, will result in a busy error.
+//
+// A response of true indicates a change was required to disconnect the interface; thus changes are pending. A response of false indicates the interface was already disconnected, and thus no changes are pending.
 func (r Hardware_SecurityModule750) ShutdownPublicPort() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "shutdownPublicPort", nil, &r.Options, &resp)
 	return
@@ -7932,6 +8213,15 @@ func (r Hardware_SecurityModule750) SparePool(action *string, newOrder *bool) (r
 		newOrder,
 	}
 	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "sparePool", params, &r.Options, &resp)
+	return
+}
+
+// Attempt to toggle the IPMI interface.  If there is an active transaction on the server, it will throw an exception. This method creates a transaction to toggle the interface.  It is not instant.
+func (r Hardware_SecurityModule750) ToggleManagementInterface(enabled *bool) (resp bool, err error) {
+	params := []interface{}{
+		enabled,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_SecurityModule750", "toggleManagementInterface", params, &r.Options, &resp)
 	return
 }
 
@@ -7994,13 +8284,37 @@ func (r Hardware_Server) Offset(offset int) Hardware_Server {
 	return r
 }
 
+// <b>Note:</b> All error handling and parameter documentation is referencing behavior available on January 4th, 2019.
+//
+// <h3>Behavior deprecated on January 4th, 2019</h3>
+//
 // Activates the private network port
+//
+// <h3>NEW! Behavior on January 4th, 2019</h3>
+//
+// Activate a server's private network interface to the maximum available speed. This operation is an alias for [[SoftLayer_Hardware_Server/setPrivateNetworkInterfaceSpeed]] with a $newSpeed of -1 and a $redundancy of "redundant".
+//
+// Receipt of a response does not indicate completion of the configuration change. Any subsequent attempts to request the interface change speed or state, while changes are pending, will result in a busy error.
+//
+// A response of true indicates a change was required to activate the interface; thus changes are pending. A response of false indicates the interface was already active, and thus no changes are pending.
 func (r Hardware_Server) ActivatePrivatePort() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "activatePrivatePort", nil, &r.Options, &resp)
 	return
 }
 
+// <b>Note:</b> All error handling and parameter documentation is referencing behavior available on January 4th, 2019.
+//
+// <h3>Behavior deprecated on January 4th, 2019</h3>
+//
 // Activates the public network port
+//
+// <h3>NEW! Behavior on January 4th, 2019</h3>
+//
+// Activate a server's public network interface to the maximum available speed. This operation is an alias for [[SoftLayer_Hardware_Server/setPublicNetworkInterfaceSpeed]] with a $newSpeed of -1 and a $redundancy of "redundant".
+//
+// Receipt of a response does not indicate completion of the configuration change. Any subsequent attempts to request the interface change speed or state, while changes are pending, will result in a busy error.
+//
+// A response of true indicates a change was required to activate the interface; thus changes are pending. A response of false indicates the interface was already active, and thus no changes are pending.
 func (r Hardware_Server) ActivatePublicPort() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "activatePublicPort", nil, &r.Options, &resp)
 	return
@@ -8362,6 +8676,15 @@ func (r Hardware_Server) DeleteSoftwareComponentPasswords(softwareComponentPassw
 		softwareComponentPasswords,
 	}
 	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "deleteSoftwareComponentPasswords", params, &r.Options, &resp)
+	return
+}
+
+// Delete an existing tag.  If there are any references on the tag, an exception will be thrown.
+func (r Hardware_Server) DeleteTag(tagName *string) (resp bool, err error) {
+	params := []interface{}{
+		tagName,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "deleteTag", params, &r.Options, &resp)
 	return
 }
 
@@ -8762,13 +9085,13 @@ func (r Hardware_Server) GetCurrentBillableBandwidthUsage() (resp datatypes.Floa
 	return
 }
 
-// Get the billing detail for this instance for the current billing period. This does not include bandwidth usage.
+// Get the billing detail for this hardware for the current billing period. This does not include bandwidth usage.
 func (r Hardware_Server) GetCurrentBillingDetail() (resp []datatypes.Billing_Item, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "getCurrentBillingDetail", nil, &r.Options, &resp)
 	return
 }
 
-// The '''getCurrentBillingTotal''' method retrieves the total bill amount in US Dollars ($) for the current billing period. In addition to the total bill amount, the billing detail also includes all bandwidth used up to the point the method is called on the piece of hardware.
+// Get the total bill amount in US Dollars ($) for this hardware in the current billing period. This includes all bandwidth used up to the point the method is called on the hardware.
 func (r Hardware_Server) GetCurrentBillingTotal() (resp datatypes.Float64, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "getCurrentBillingTotal", nil, &r.Options, &resp)
 	return
@@ -9067,6 +9390,12 @@ func (r Hardware_Server) GetInboundPublicBandwidthUsage() (resp datatypes.Float6
 // Retrieve Determine if hardware object has the IBM_CLOUD_READY_NODE_CERTIFIED attribute.
 func (r Hardware_Server) GetIsCloudReadyNodeCertified() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "getIsCloudReadyNodeCertified", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Determine if remote management has been disabled due to port speed.
+func (r Hardware_Server) GetIsIpmiDisabled() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "getIsIpmiDisabled", nil, &r.Options, &resp)
 	return
 }
 
@@ -9788,6 +10117,12 @@ func (r Hardware_Server) GetTransactionHistory() (resp []datatypes.Provisioning_
 	return
 }
 
+// Retrieve Whether to use UEFI boot instead of BIOS.
+func (r Hardware_Server) GetUefiBootFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "getUefiBootFlag", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve a list of upgradeable items available to this piece of hardware. Currently, getUpgradeItemPrices retrieves upgrades available for a server's memory, hard drives, network port speed, bandwidth allocation and GPUs.
 func (r Hardware_Server) GetUpgradeItemPrices() (resp []datatypes.Product_Item_Price, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "getUpgradeItemPrices", nil, &r.Options, &resp)
@@ -10085,6 +10420,15 @@ func (r Hardware_Server) RemoveAccessToNetworkStorageList(networkStorageTemplate
 	return
 }
 
+// no documentation yet
+func (r Hardware_Server) RemoveTags(tags *string) (resp bool, err error) {
+	params := []interface{}{
+		tags,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "removeTags", params, &r.Options, &resp)
+	return
+}
+
 // You can launch a new Passmark hardware test by selecting from your server list. It will bring your server offline for approximately 20 minutes while the testing is in progress, and will publish a certificate with the results to your hardware details page.
 //
 // While the hard drives are tested for the initial deployment, the Passmark Certificate utility will not test the hard drives on your live server. This is to ensure that no data is overwritten. If you would like to test the server's hard drives, you can have the full Passmark suite installed to your server free of charge through a new Support ticket.
@@ -10106,9 +10450,29 @@ func (r Hardware_Server) SetOperatingSystemPassword(newPassword *string) (resp b
 	return
 }
 
+// <b>Note:</b> All error handling and parameter documentation is referencing behavior available on January 4th, 2019.
+//
+// <h3>Behavior deprecated on January 4th, 2019</h3>
+//
 // Sets the private network interface speed to the new speed. Speed values can only be 0 (Disconnect), 10, 100, 1000, and 10000. The new speed must be equal to or less than the max speed of the interface.
 //
 // It will take less than a minute to update the switch port speed. The server uplink will not be operational again until the server interface speed is updated.
+//
+// <h3>NEW! Behavior on January 4th, 2019</h3>
+//
+// Set the private network interface speed and redundancy configuration.
+//
+// Possible $newSpeed values are -1 (maximum available), 0 (disconnect), 10, 100, 1000, and 10000; not all values are available to every server. The maximum speed is limited by the speed requested during provisioning. All intermediate speeds are limited by the capability of the pod the server is deployed in. No guarantee is made that a speed other than what was requested during provisioning will be available.
+//
+// If specified, possible $redundancy values are either "redundant" or "degraded". Not specifying a redundancy mode will use the best possible redundancy available to the server. However, specifying a redundacy mode that is not available to the server will result in an error. "redundant" indicates all available interfaces should be active. "degraded" indicates only the primary interface should be active. Irrespective of the number of interfaces available to a server, it is only possible to have either a single interface or all interfaces active.
+//
+// Receipt of a response does not indicate completion of the configuration change. Any subsequent attempts to request the interface change speed or state, while changes are pending, will result in a busy error.
+//
+// A response of true indicates a change was required to achieve the desired interface configuration; thus changes are pending. A response of false indicates the current interface configuration matches the desired configuration, and thus no changes are pending.
+//
+// <h4>Backwards Compatibility Until February 27th, 2019</h4>
+//
+// In order to provide a period of transition to the new API, some backwards compatible behaviors will be active during this period. <ul> <li> A "doubled" (eg. 200) speed value will be translated to a redundancy value of "redundant". If a redundancy value is specified, it is assumed no translation is needed and will result in an error due to doubled speeds no longer being valid.</li> <li> A non-doubled (eg. 100) speed value <i>without</i> a redundancy value will be translated to a redundancy value of "degraded".</li> </ul> After the compatibility period, a doubled speed value will result in an error, and a non-doubled speed value without a redundancy value specified will result in the best available redundancy state. An exception is made for the new relative speed value -1. When using -1 without a redundancy value, the best possible redundancy will be used. Please transition away from using doubled speed values in favor of specifying redundancy (when applicable) or using relative speed values 0 and -1.
 func (r Hardware_Server) SetPrivateNetworkInterfaceSpeed(newSpeed *int) (resp bool, err error) {
 	params := []interface{}{
 		newSpeed,
@@ -10117,9 +10481,29 @@ func (r Hardware_Server) SetPrivateNetworkInterfaceSpeed(newSpeed *int) (resp bo
 	return
 }
 
+// <b>Note:</b> All error handling and parameter documentation is referencing behavior available on January 4th, 2019.
+//
+// <h3>Behavior deprecated on January 4th, 2019</h3>
+//
 // Sets the public network interface speed to the new speed. Speed values can only be 0 (Disconnect), 10, 100, 1000, and 10000. The new speed must be equal to or less than the max speed of the interface.
 //
 // It will take less than a minute to update the switch port speed. The server uplink will not be operational again until the server interface speed is updated.
+//
+// <h3>NEW! Behavior on January 4th, 2019</h3>
+//
+// Set the public network interface speed and redundancy configuration.
+//
+// Possible $newSpeed values are -1 (maximum available), 0 (disconnect), 10, 100, 1000, and 10000; not all values are available to every server. The maximum speed is limited by the speed requested during provisioning. All intermediate speeds are limited by the capability of the pod the server is deployed in. No guarantee is made that a speed other than what was requested during provisioning will be available.
+//
+// If specified, possible $redundancy values are either "redundant" or "degraded". Not specifying a redundancy mode will use the best possible redundancy available to the server. However, specifying a redundacy mode that is not available to the server will result in an error. "redundant" indicates all available interfaces should be active. "degraded" indicates only the primary interface should be active. Irrespective of the number of interfaces available to a server, it is only possible to have either a single interface or all interfaces active.
+//
+// Receipt of a response does not indicate completion of the configuration change. Any subsequent attempts to request the interface change speed or state, while changes are pending, will result in a busy error.
+//
+// A response of true indicates a change was required to achieve the desired interface configuration; thus changes are pending. A response of false indicates the current interface configuration matches the desired configuration, and thus no changes are pending.
+//
+// <h4>Backwards Compatibility Until February 27th, 2019</h4>
+//
+// In order to provide a period of transition to the new API, some backwards compatible behaviors will be active during this period. <ul> <li> A "doubled" (eg. 200) speed value will be translated to a redundancy value of "redundant". If a redundancy value is specified, it is assumed no translation is needed and will result in an error due to doubled speeds no longer being valid.</li> <li> A non-doubled (eg. 100) speed value <i>without</i> a redundancy value will be translated to a redundancy value of "degraded".</li> </ul> After the compatibility period, a doubled speed value will result in an error, and a non-doubled speed value without a redundancy value specified will result in the best available redundancy state. An exception is made for the new relative speed value -1. When using -1 without a redundancy value, the best possible redundancy will be used. Please transition away from using doubled speed values in favor of specifying redundancy (when applicable) or using relative speed values 0 and -1.
 func (r Hardware_Server) SetPublicNetworkInterfaceSpeed(newSpeed *int) (resp bool, err error) {
 	params := []interface{}{
 		newSpeed,
@@ -10146,13 +10530,37 @@ func (r Hardware_Server) SetUserMetadata(metadata []string) (resp []datatypes.Ha
 	return
 }
 
-// Shuts down the public network port
+// <b>Note:</b> All error handling and parameter documentation is referencing behavior available on January 4th, 2019.
+//
+// <h3>Behavior deprecated on January 4th, 2019</h3>
+//
+// Shuts down the private network port
+//
+// <h3>NEW! Behavior on January 4th, 2019</h3>
+//
+// Disconnect a server's private network interface. This operation is an alias for calling [[SoftLayer_Hardware_Server/setPrivateNetworkInterfaceSpeed]] with a $newSpeed of 0 and default $redundancy.
+//
+// Receipt of a response does not indicate completion of the configuration change. Any subsequent attempts to request the interface change speed or state, while changes are pending, will result in a busy error.
+//
+// A response of true indicates a change was required to disconnect the interface; thus changes are pending. A response of false indicates the interface was already disconnected, and thus no changes are pending.
 func (r Hardware_Server) ShutdownPrivatePort() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "shutdownPrivatePort", nil, &r.Options, &resp)
 	return
 }
 
+// <b>Note:</b> All error handling and parameter documentation is referencing behavior available on January 4th, 2019.
+//
+// <h3>Behavior deprecated on January 4th, 2019</h3>
+//
 // Shuts down the public network port
+//
+// <h3>NEW! Behavior on January 4th, 2019</h3>
+//
+// Disconnect a server's public network interface. This operation is an alias for [[SoftLayer_Hardware_Server/setPublicNetworkInterfaceSpeed]] with a $newSpeed of 0 and default $redundancy.
+//
+// Receipt of a response does not indicate completion of the configuration change. Any subsequent attempts to request the interface change speed or state, while changes are pending, will result in a busy error.
+//
+// A response of true indicates a change was required to disconnect the interface; thus changes are pending. A response of false indicates the interface was already disconnected, and thus no changes are pending.
 func (r Hardware_Server) ShutdownPublicPort() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "shutdownPublicPort", nil, &r.Options, &resp)
 	return
@@ -10165,6 +10573,15 @@ func (r Hardware_Server) SparePool(action *string, newOrder *bool) (resp bool, e
 		newOrder,
 	}
 	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "sparePool", params, &r.Options, &resp)
+	return
+}
+
+// Attempt to toggle the IPMI interface.  If there is an active transaction on the server, it will throw an exception. This method creates a transaction to toggle the interface.  It is not instant.
+func (r Hardware_Server) ToggleManagementInterface(enabled *bool) (resp bool, err error) {
+	params := []interface{}{
+		enabled,
+	}
+	err = r.Session.DoRequest("SoftLayer_Hardware_Server", "toggleManagementInterface", params, &r.Options, &resp)
 	return
 }
 

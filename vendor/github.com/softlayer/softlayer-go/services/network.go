@@ -69,6 +69,12 @@ func (r Network) Offset(offset int) Network {
 	return r
 }
 
+// Connect user account network to Private Endpoint Service account. Network update occurs asynchronously after a successful connect request.
+func (r Network) ConnectPrivateEndpointService() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network", "connectPrivateEndpointService", nil, &r.Options, &resp)
+	return
+}
+
 // Provide a template containing the following properties to create a Network:
 // * networkIdentifier
 // * cidr
@@ -149,6 +155,12 @@ func (r Network) DeleteSubnet(subnet *datatypes.Network_Subnet) (resp bool, err 
 	return
 }
 
+// Disconnect user account network from Private Endpoint Service account. Network update occurs asynchronously after a successful disconnect request.
+func (r Network) DisconnectPrivateEndpointService() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network", "disconnectPrivateEndpointService", nil, &r.Options, &resp)
+	return
+}
+
 // Modify either the ``name`` or ``notes`` properties of a Network.
 func (r Network) EditObject(templateObject *datatypes.Network) (resp bool, err error) {
 	params := []interface{}{
@@ -197,6 +209,12 @@ func (r Network) GetObject() (resp datatypes.Network, err error) {
 // Retrieve The Subnets within the Network. These represent the realized segments of the Network and reside within a [[SoftLayer_Network_Pod|Pod]]. A Subnet must be specified when provisioning a compute resource within a Network.
 func (r Network) GetSubnets() (resp []datatypes.Network_Subnet, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network", "getSubnets", nil, &r.Options, &resp)
+	return
+}
+
+// Checks connectivity between user account and Private Endpoint Service. Returns True if user account and Private Endpoint Service are connected. Returns False if user account and Private Endpoint Service are ready for connections but not connected.
+func (r Network) IsConnectedToPrivateEndpointService() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network", "isConnectedToPrivateEndpointService", nil, &r.Options, &resp)
 	return
 }
 
@@ -2007,7 +2025,7 @@ func (r Network_CdnMarketplace_Configuration_Behavior_Geoblocking) CreateGeobloc
 }
 
 // no documentation yet
-func (r Network_CdnMarketplace_Configuration_Behavior_Geoblocking) DeleteGeoblocking(input *datatypes.Container_Network_CdnMarketplace_Configuration_Input) (resp datatypes.Network_CdnMarketplace_Utils_Response, err error) {
+func (r Network_CdnMarketplace_Configuration_Behavior_Geoblocking) DeleteGeoblocking(input *datatypes.Container_Network_CdnMarketplace_Configuration_Input) (resp datatypes.Network_CdnMarketplace_Configuration_Behavior_Geoblocking, err error) {
 	params := []interface{}{
 		input,
 	}
@@ -4417,9 +4435,25 @@ func (r Network_Gateway) GetAccount() (resp datatypes.Account, err error) {
 	return
 }
 
+// Returns the Gbps capacity of the gateway object
+//
+//
+func (r Network_Gateway) GetCapacity() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Gateway", "getCapacity", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve All VLANs trunked to this gateway.
 func (r Network_Gateway) GetInsideVlans() (resp []datatypes.Network_Gateway_Vlan, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Gateway", "getInsideVlans", nil, &r.Options, &resp)
+	return
+}
+
+// Returns manufacturer name for a given gateway object
+//
+//
+func (r Network_Gateway) GetManufacturer() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Gateway", "getManufacturer", nil, &r.Options, &resp)
 	return
 }
 
@@ -4486,6 +4520,14 @@ func (r Network_Gateway) GetPublicVlan() (resp datatypes.Network_Vlan, err error
 // Retrieve The current status of the gateway.
 func (r Network_Gateway) GetStatus() (resp datatypes.Network_Gateway_Status, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Gateway", "getStatus", nil, &r.Options, &resp)
+	return
+}
+
+// Rebuild a vSRX gateway with HA cluster by destroying existing vSRX and installing new vSRX on both gateway servers, then creating HA cluster between 2 vSRX. This is a destructive process which will remove existing vSRX configuration and stop all gateway capabilities. vSRX will need to be re-configured after this operation.
+//
+//
+func (r Network_Gateway) RebuildvSRXHACluster() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Gateway", "rebuildvSRXHACluster", nil, &r.Options, &resp)
 	return
 }
 
@@ -4564,6 +4606,12 @@ func (r Network_Gateway_Member) CreateObjects(templateObjects []datatypes.Networ
 	return
 }
 
+// Retrieve The attributes for this member.
+func (r Network_Gateway_Member) GetAttributes() (resp datatypes.Network_Gateway_Member_Attribute, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Gateway_Member", "getAttributes", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve The device for this member.
 func (r Network_Gateway_Member) GetHardware() (resp datatypes.Hardware, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Gateway_Member", "getHardware", nil, &r.Options, &resp)
@@ -4579,6 +4627,64 @@ func (r Network_Gateway_Member) GetNetworkGateway() (resp datatypes.Network_Gate
 // no documentation yet
 func (r Network_Gateway_Member) GetObject() (resp datatypes.Network_Gateway_Member, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Gateway_Member", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+type Network_Gateway_Member_Attribute struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetNetworkGatewayMemberAttributeService returns an instance of the Network_Gateway_Member_Attribute SoftLayer service
+func GetNetworkGatewayMemberAttributeService(sess *session.Session) Network_Gateway_Member_Attribute {
+	return Network_Gateway_Member_Attribute{Session: sess}
+}
+
+func (r Network_Gateway_Member_Attribute) Id(id int) Network_Gateway_Member_Attribute {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Network_Gateway_Member_Attribute) Mask(mask string) Network_Gateway_Member_Attribute {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Network_Gateway_Member_Attribute) Filter(filter string) Network_Gateway_Member_Attribute {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Network_Gateway_Member_Attribute) Limit(limit int) Network_Gateway_Member_Attribute {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Network_Gateway_Member_Attribute) Offset(offset int) Network_Gateway_Member_Attribute {
+	r.Options.Offset = &offset
+	return r
+}
+
+// Retrieve The gateway member has these attributes.
+func (r Network_Gateway_Member_Attribute) GetGatewayMember() (resp datatypes.Network_Gateway_Member, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Gateway_Member_Attribute", "getGatewayMember", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Gateway_Member_Attribute) GetObject() (resp datatypes.Network_Gateway_Member_Attribute, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Gateway_Member_Attribute", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Network_Gateway_Member_Attribute) GetSshKey() (resp datatypes.Security_Ssh_Key, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Gateway_Member_Attribute", "getSshKey", nil, &r.Options, &resp)
 	return
 }
 
@@ -4775,6 +4881,48 @@ func (r Network_Interconnect_Tenant) Offset(offset int) Network_Interconnect_Ten
 }
 
 // no documentation yet
+func (r Network_Interconnect_Tenant) AllowDeleteConnection(serviceKey *string) (resp bool, err error) {
+	params := []interface{}{
+		serviceKey,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_Interconnect_Tenant", "allowDeleteConnection", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Interconnect_Tenant) CreateConnection(templateObject *datatypes.Network_Interconnect_Tenant) (resp string, err error) {
+	params := []interface{}{
+		templateObject,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_Interconnect_Tenant", "createConnection", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Interconnect_Tenant) DeleteConnection(receivedObject *datatypes.Network_Interconnect_Tenant) (resp bool, err error) {
+	params := []interface{}{
+		receivedObject,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_Interconnect_Tenant", "deleteConnection", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Interconnect_Tenant) EditConnection(receivedObject *datatypes.Network_Interconnect_Tenant) (resp string, err error) {
+	params := []interface{}{
+		receivedObject,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_Interconnect_Tenant", "editConnection", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Interconnect_Tenant) GetAllConnections() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Interconnect_Tenant", "getAllConnections", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
 func (r Network_Interconnect_Tenant) GetAllObjects() (resp []datatypes.Network_Interconnect_Tenant, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Interconnect_Tenant", "getAllObjects", nil, &r.Options, &resp)
 	return
@@ -4789,16 +4937,17 @@ func (r Network_Interconnect_Tenant) GetAllPortLabelsWithCurrentUsage(directLink
 	return
 }
 
-// Retrieve The billing item for a network interconnect.
+// Retrieve The active billing item for a network interconnect.
 func (r Network_Interconnect_Tenant) GetBillingItem() (resp datatypes.Billing_Item_Network_Interconnect, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Interconnect_Tenant", "getBillingItem", nil, &r.Options, &resp)
 	return
 }
 
 // no documentation yet
-func (r Network_Interconnect_Tenant) GetConnection(serviceKey *string) (resp string, err error) {
+func (r Network_Interconnect_Tenant) GetConnection(serviceKey *string, provider *string) (resp string, err error) {
 	params := []interface{}{
 		serviceKey,
+		provider,
 	}
 	err = r.Session.DoRequest("SoftLayer_Network_Interconnect_Tenant", "getConnection", params, &r.Options, &resp)
 	return
@@ -4870,6 +5019,24 @@ func (r Network_Interconnect_Tenant) IsAdnAccount() (resp bool, err error) {
 	return
 }
 
+// no documentation yet
+func (r Network_Interconnect_Tenant) RejectApprovalRequests(serviceKey *string) (resp bool, err error) {
+	params := []interface{}{
+		serviceKey,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_Interconnect_Tenant", "rejectApprovalRequests", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Interconnect_Tenant) UpdateConnectionStatus(tenantId *int) (resp bool, err error) {
+	params := []interface{}{
+		tenantId,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_Interconnect_Tenant", "updateConnectionStatus", params, &r.Options, &resp)
+	return
+}
+
 // The SoftLayer_Network_LBaaS_HealthMonitor type presents a structure containing attributes of a health monitor object associated with load balancer instance. Note that the relationship between backend (pool) and health monitor is N-to-1, especially that the pools object associated with a health monitor must have the same pair of protocol and port. Example: frontend FA: http, 80   - backend BA: tcp, 3456 - healthmonitor HM_tcp3456 frontend FB: https, 443 - backend BB: tcp, 3456 - healthmonitor HM_tcp3456 In above example both backends BA and BB share the same healthmonitor HM_tcp3456
 type Network_LBaaS_HealthMonitor struct {
 	Session *session.Session
@@ -4926,6 +5093,345 @@ func (r Network_LBaaS_HealthMonitor) UpdateLoadBalancerHealthMonitors(loadBalanc
 	return
 }
 
+// The SoftLayer_Network_LBaaS_L7Member represents the backend member for a L7 pool. It can be either a virtual server or a bare metal machine.
+type Network_LBaaS_L7Member struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetNetworkLBaaSL7MemberService returns an instance of the Network_LBaaS_L7Member SoftLayer service
+func GetNetworkLBaaSL7MemberService(sess *session.Session) Network_LBaaS_L7Member {
+	return Network_LBaaS_L7Member{Session: sess}
+}
+
+func (r Network_LBaaS_L7Member) Id(id int) Network_LBaaS_L7Member {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Network_LBaaS_L7Member) Mask(mask string) Network_LBaaS_L7Member {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Network_LBaaS_L7Member) Filter(filter string) Network_LBaaS_L7Member {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Network_LBaaS_L7Member) Limit(limit int) Network_LBaaS_L7Member {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Network_LBaaS_L7Member) Offset(offset int) Network_LBaaS_L7Member {
+	r.Options.Offset = &offset
+	return r
+}
+
+// Add server instances as members to a L7pool and return the LoadBalancer Object with listeners, pools and members populated
+func (r Network_LBaaS_L7Member) AddL7PoolMembers(l7PoolUuid *string, memberInstances []datatypes.Network_LBaaS_L7Member) (resp datatypes.Network_LBaaS_LoadBalancer, err error) {
+	params := []interface{}{
+		l7PoolUuid,
+		memberInstances,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_L7Member", "addL7PoolMembers", params, &r.Options, &resp)
+	return
+}
+
+// Delete given members from load balancer and return load balancer object with listeners, pools and members populated
+func (r Network_LBaaS_L7Member) DeleteL7PoolMembers(l7PoolUuid *string, memberUuids []string) (resp datatypes.Network_LBaaS_LoadBalancer, err error) {
+	params := []interface{}{
+		l7PoolUuid,
+		memberUuids,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_L7Member", "deleteL7PoolMembers", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_LBaaS_L7Member) GetObject() (resp datatypes.Network_LBaaS_L7Member, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_L7Member", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// Update L7 members weight and port.
+func (r Network_LBaaS_L7Member) UpdateL7PoolMembers(l7PoolUuid *string, members []datatypes.Network_LBaaS_L7Member) (resp datatypes.Network_LBaaS_LoadBalancer, err error) {
+	params := []interface{}{
+		l7PoolUuid,
+		members,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_L7Member", "updateL7PoolMembers", params, &r.Options, &resp)
+	return
+}
+
+// The SoftLayer_Network_LBaaS_L7Policy represents the policy for a listener.
+type Network_LBaaS_L7Policy struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetNetworkLBaaSL7PolicyService returns an instance of the Network_LBaaS_L7Policy SoftLayer service
+func GetNetworkLBaaSL7PolicyService(sess *session.Session) Network_LBaaS_L7Policy {
+	return Network_LBaaS_L7Policy{Session: sess}
+}
+
+func (r Network_LBaaS_L7Policy) Id(id int) Network_LBaaS_L7Policy {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Network_LBaaS_L7Policy) Mask(mask string) Network_LBaaS_L7Policy {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Network_LBaaS_L7Policy) Filter(filter string) Network_LBaaS_L7Policy {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Network_LBaaS_L7Policy) Limit(limit int) Network_LBaaS_L7Policy {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Network_LBaaS_L7Policy) Offset(offset int) Network_LBaaS_L7Policy {
+	r.Options.Offset = &offset
+	return r
+}
+
+// This function creates multiple policies with rules for the given listener.
+func (r Network_LBaaS_L7Policy) AddL7Policies(listenerUuid *string, policiesRules []datatypes.Network_LBaaS_PolicyRule) (resp datatypes.Network_LBaaS_LoadBalancer, err error) {
+	params := []interface{}{
+		listenerUuid,
+		policiesRules,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_L7Policy", "addL7Policies", params, &r.Options, &resp)
+	return
+}
+
+// Deletes a l7 policy instance and the rules associated with the policy
+func (r Network_LBaaS_L7Policy) DeleteObject() (resp datatypes.Network_LBaaS_LoadBalancer, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_L7Policy", "deleteObject", nil, &r.Options, &resp)
+	return
+}
+
+// Edit a l7 policy instance's properties
+func (r Network_LBaaS_L7Policy) EditObject(templateObject *datatypes.Network_LBaaS_L7Policy) (resp datatypes.Network_LBaaS_LoadBalancer, err error) {
+	params := []interface{}{
+		templateObject,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_L7Policy", "editObject", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Network_LBaaS_L7Policy) GetL7Rules() (resp []datatypes.Network_LBaaS_L7Rule, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_L7Policy", "getL7Rules", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_LBaaS_L7Policy) GetObject() (resp datatypes.Network_LBaaS_L7Policy, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_L7Policy", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// The SoftLayer_Network_LBaaS_L7Pool type presents a structure containing attributes of a load balancer's L7 pool such as the protocol, and the load balancing algorithm used. L7 pool is used for redirect_pool action of the L7 policy and is different from the default pool
+type Network_LBaaS_L7Pool struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetNetworkLBaaSL7PoolService returns an instance of the Network_LBaaS_L7Pool SoftLayer service
+func GetNetworkLBaaSL7PoolService(sess *session.Session) Network_LBaaS_L7Pool {
+	return Network_LBaaS_L7Pool{Session: sess}
+}
+
+func (r Network_LBaaS_L7Pool) Id(id int) Network_LBaaS_L7Pool {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Network_LBaaS_L7Pool) Mask(mask string) Network_LBaaS_L7Pool {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Network_LBaaS_L7Pool) Filter(filter string) Network_LBaaS_L7Pool {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Network_LBaaS_L7Pool) Limit(limit int) Network_LBaaS_L7Pool {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Network_LBaaS_L7Pool) Offset(offset int) Network_LBaaS_L7Pool {
+	r.Options.Offset = &offset
+	return r
+}
+
+// Create a backend to be used for L7 load balancing. This L7 pool has backend protocol, L7 members, L7 health monitor and session affinity. L7 pool is associated with L7 policies.
+func (r Network_LBaaS_L7Pool) CreateL7Pool(loadBalancerUuid *string, l7Pool *datatypes.Network_LBaaS_L7Pool, l7Members []datatypes.Network_LBaaS_L7Member, l7HealthMonitor *datatypes.Network_LBaaS_L7HealthMonitor, l7SessionAffinity *datatypes.Network_LBaaS_L7SessionAffinity) (resp datatypes.Network_LBaaS_LoadBalancer, err error) {
+	params := []interface{}{
+		loadBalancerUuid,
+		l7Pool,
+		l7Members,
+		l7HealthMonitor,
+		l7SessionAffinity,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_L7Pool", "createL7Pool", params, &r.Options, &resp)
+	return
+}
+
+// Deletes an existing L7 pool along with L7 members, L7 health monitor, and L7 session affinity.
+func (r Network_LBaaS_L7Pool) DeleteObject() (resp datatypes.Network_LBaaS_LoadBalancer, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_L7Pool", "deleteObject", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Network_LBaaS_L7Pool) GetL7HealthMonitor() (resp datatypes.Network_LBaaS_L7HealthMonitor, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_L7Pool", "getL7HealthMonitor", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Network_LBaaS_L7Pool) GetL7Members() (resp []datatypes.Network_LBaaS_L7Member, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_L7Pool", "getL7Members", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Network_LBaaS_L7Pool) GetL7Policies() (resp []datatypes.Network_LBaaS_L7Policy, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_L7Pool", "getL7Policies", nil, &r.Options, &resp)
+	return
+}
+
+// Returns the health of all L7 pool's members which are created under load balancer. L7 members health status is available only after a L7 pool is associated with the L7 policy and that L7 policy has at least one L7 rule.
+func (r Network_LBaaS_L7Pool) GetL7PoolMemberHealth(loadBalancerUuid *string) (resp []datatypes.Network_LBaaS_L7PoolMembersHealth, err error) {
+	params := []interface{}{
+		loadBalancerUuid,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_L7Pool", "getL7PoolMemberHealth", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Network_LBaaS_L7Pool) GetL7SessionAffinity() (resp datatypes.Network_LBaaS_L7SessionAffinity, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_L7Pool", "getL7SessionAffinity", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_LBaaS_L7Pool) GetObject() (resp datatypes.Network_LBaaS_L7Pool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_L7Pool", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// Updates an existing L7 pool, L7 health monitor and L7 session affinity.
+func (r Network_LBaaS_L7Pool) UpdateL7Pool(l7PoolUuid *string, l7Pool *datatypes.Network_LBaaS_L7Pool, l7HealthMonitor *datatypes.Network_LBaaS_L7HealthMonitor, l7SessionAffinity *datatypes.Network_LBaaS_L7SessionAffinity) (resp datatypes.Network_LBaaS_LoadBalancer, err error) {
+	params := []interface{}{
+		l7PoolUuid,
+		l7Pool,
+		l7HealthMonitor,
+		l7SessionAffinity,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_L7Pool", "updateL7Pool", params, &r.Options, &resp)
+	return
+}
+
+// The SoftLayer_Network_LBaaS_L7Rule represents the Rules that can be attached to a a L7 policy.
+type Network_LBaaS_L7Rule struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetNetworkLBaaSL7RuleService returns an instance of the Network_LBaaS_L7Rule SoftLayer service
+func GetNetworkLBaaSL7RuleService(sess *session.Session) Network_LBaaS_L7Rule {
+	return Network_LBaaS_L7Rule{Session: sess}
+}
+
+func (r Network_LBaaS_L7Rule) Id(id int) Network_LBaaS_L7Rule {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Network_LBaaS_L7Rule) Mask(mask string) Network_LBaaS_L7Rule {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Network_LBaaS_L7Rule) Filter(filter string) Network_LBaaS_L7Rule {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Network_LBaaS_L7Rule) Limit(limit int) Network_LBaaS_L7Rule {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Network_LBaaS_L7Rule) Offset(offset int) Network_LBaaS_L7Rule {
+	r.Options.Offset = &offset
+	return r
+}
+
+// This function creates and adds multiple Rules to a given L7 policy with all the details provided for rules
+func (r Network_LBaaS_L7Rule) AddL7Rules(policyUuid *string, rules []datatypes.Network_LBaaS_L7Rule) (resp datatypes.Network_LBaaS_LoadBalancer, err error) {
+	params := []interface{}{
+		policyUuid,
+		rules,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_L7Rule", "addL7Rules", params, &r.Options, &resp)
+	return
+}
+
+// This function deletes multiple rules aassociated with the same policy.
+func (r Network_LBaaS_L7Rule) DeleteL7Rules(policyUuid *string, ruleUuids []string) (resp datatypes.Network_LBaaS_LoadBalancer, err error) {
+	params := []interface{}{
+		policyUuid,
+		ruleUuids,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_L7Rule", "deleteL7Rules", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_LBaaS_L7Rule) GetObject() (resp datatypes.Network_LBaaS_L7Rule, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_L7Rule", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// This function updates multiple Rules to a given policy with all the details for rules.
+func (r Network_LBaaS_L7Rule) UpdateL7Rules(policyUuid *string, rules []datatypes.Network_LBaaS_L7Rule) (resp datatypes.Network_LBaaS_LoadBalancer, err error) {
+	params := []interface{}{
+		policyUuid,
+		rules,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_L7Rule", "updateL7Rules", params, &r.Options, &resp)
+	return
+}
+
 // The SoftLayer_Network_LBaaS_Listener type presents a data structure for a load balancers listener, also called frontend.
 type Network_LBaaS_Listener struct {
 	Session *session.Session
@@ -4979,6 +5485,12 @@ func (r Network_LBaaS_Listener) DeleteLoadBalancerProtocols(loadBalancerUuid *st
 // Retrieve
 func (r Network_LBaaS_Listener) GetDefaultPool() (resp datatypes.Network_LBaaS_Pool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_Listener", "getDefaultPool", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Network_LBaaS_Listener) GetL7Policies() (resp []datatypes.Network_LBaaS_L7Policy, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_Listener", "getL7Policies", nil, &r.Options, &resp)
 	return
 }
 
@@ -5062,6 +5574,12 @@ func (r Network_LBaaS_LoadBalancer) GetDatacenter() (resp datatypes.Location, er
 // Retrieve Health monitors for the backend members.
 func (r Network_LBaaS_LoadBalancer) GetHealthMonitors() (resp []datatypes.Network_LBaaS_HealthMonitor, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_LoadBalancer", "getHealthMonitors", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve L7Pools for load balancer.
+func (r Network_LBaaS_LoadBalancer) GetL7Pools() (resp []datatypes.Network_LBaaS_L7Pool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_LoadBalancer", "getL7Pools", nil, &r.Options, &resp)
 	return
 }
 
@@ -6512,12 +7030,7 @@ func (r Network_Monitor_Version1_Query_Host_Stratum) GetObject() (resp datatypes
 	return
 }
 
-// SoftLayer_Network_Pod refers to a portion of a data center that share a Backend Customer Router (BCR) and usually a front-end counterpart known as a Frontend Customer Router (FCR). A Pod primarily denotes a logical location within the network and the physical aspects that support networks. This is in contrast to representing a specific physical location.
-//
-// A ``Pod`` is identified by a ``name``, which is unique. A Pod name follows the format 'dddnn.podii', where 'ddd' is a data center code, 'nn' is the data center number, 'pod' is a literal string and 'ii' is a two digit, left-zero- padded number which corresponds to a Backend Customer Router (BCR) of the desired data center. Examples:
-// * dal09.pod01 = Dallas 9, Pod 1 (ie. bcr01)
-// * sjc01.pod04 = San Jose 1, Pod 4 (ie. bcr04)
-// * ams01.pod01 = Amsterdam 1, Pod 1 (ie. bcr01)
+// no documentation yet
 type Network_Pod struct {
 	Session *session.Session
 	Options sl.Options
@@ -6557,7 +7070,15 @@ func (r Network_Pod) Offset(offset int) Network_Pod {
 	return r
 }
 
-// no documentation yet
+// Filtering is supported for ``datacenterName`` and ``capabilities``. When filtering on capabilities, use the ``in`` operation. Pods fulfilling all capabilities provided will be returned. ``datacenterName`` represents an operation against ``SoftLayer_Location_Datacenter.name`, such as dal05 when referring to Dallas 5.
+//
+// ```Examples:```
+//
+// List Pods in a specific datacenter. <pre> datacenterName.operation = 'dal06' </pre>
+//
+// List Pods in a geographical area. <pre> datacenterName.operation = '^= dal' </pre>
+//
+// List Pods in a region fulfilling capabilities. <pre> datacenterName.operation = '^= dal' capabilities.operation = 'in' capabilities.options = [ { name = data, value = [SOME_CAPABILITY, ANOTHER_CAPABILITY] } ] </pre>
 func (r Network_Pod) GetAllObjects() (resp []datatypes.Network_Pod, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Pod", "getAllObjects", nil, &r.Options, &resp)
 	return
@@ -11067,6 +11588,35 @@ func (r Network_Storage_Hub_Cleversafe_Account) GetCapacityUsage() (resp int, er
 	return
 }
 
+// Makes a request to Cloud Object Storage metricsAPI service and when successful, returns an associative array with two elements:
+//
+// if 200:
+//
+// [ <response Status Code String>, <JSON from metricsAPI as outlined below as String> ]
+//
+// if  not 200:
+//
+// [ <response Status Code String>, <response body as String> ]
+//
+//
+//
+// { "start": "<timeInMilliseconds>", "errors": [], "end": "<timeInMilliseconds>", "resource_type": "account", "warnings": [], "resources": [{"metrics" : [{"name": "retrieval", "value": "<number>"}]}] }
+//
+// Notes: 1) When no data is found for a particular triplet (resource_id, storage_location, storage_class) a JSON element is inserted to the warnings Array. 2) If all queried triplets find data, only the resources Array will be populated, errors and warnings will remain empty.
+//
+//
+func (r Network_Storage_Hub_Cleversafe_Account) GetCloudObjectStorageMetrics(start *string, end *string, storageLocation *string, storageClass *string, metrics *string) (resp []string, err error) {
+	params := []interface{}{
+		start,
+		end,
+		storageLocation,
+		storageClass,
+		metrics,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Hub_Cleversafe_Account", "getCloudObjectStorageMetrics", params, &r.Options, &resp)
+	return
+}
+
 // Returns credential limits for this IBM Cloud Object Storage account.
 func (r Network_Storage_Hub_Cleversafe_Account) GetCredentialLimit() (resp int, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Hub_Cleversafe_Account", "getCredentialLimit", nil, &r.Options, &resp)
@@ -12618,6 +13168,15 @@ func (r Network_Storage_MassDataMigration_CrossRegion_Country_Xref) GetObject() 
 	return
 }
 
+// Returns countries assigned to the region having pricing info set.
+func (r Network_Storage_MassDataMigration_CrossRegion_Country_Xref) GetValidCountriesForRegion(locationGroupName *string) (resp []datatypes.Network_Storage_MassDataMigration_CrossRegion_Country_Xref, err error) {
+	params := []interface{}{
+		locationGroupName,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_MassDataMigration_CrossRegion_Country_Xref", "getValidCountriesForRegion", params, &r.Options, &resp)
+	return
+}
+
 // The SoftLayer_Network_Storage_MassDataMigration_Request data type contains information on a single Mass Data Migration request. Creation of these requests is limited to SoftLayer customers through the SoftLayer Customer Portal.
 type Network_Storage_MassDataMigration_Request struct {
 	Session *session.Session
@@ -12656,15 +13215,6 @@ func (r Network_Storage_MassDataMigration_Request) Limit(limit int) Network_Stor
 func (r Network_Storage_MassDataMigration_Request) Offset(offset int) Network_Storage_MassDataMigration_Request {
 	r.Options.Offset = &offset
 	return r
-}
-
-// Edit the properties of a Mass Data Migration request record by passing in a modified instance of a SoftLayer_Network_Storage_MassDataMigration_Request object.
-func (r Network_Storage_MassDataMigration_Request) EditObject(templateObject *datatypes.Network_Storage_MassDataMigration_Request) (resp bool, err error) {
-	params := []interface{}{
-		templateObject,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_Storage_MassDataMigration_Request", "editObject", params, &r.Options, &resp)
-	return
 }
 
 // Retrieve The account to which the request belongs.
@@ -12718,6 +13268,12 @@ func (r Network_Storage_MassDataMigration_Request) GetCreateUser() (resp datatyp
 // Retrieve The device configurations.
 func (r Network_Storage_MassDataMigration_Request) GetDeviceConfiguration() (resp datatypes.Network_Storage_MassDataMigration_Request_DeviceConfiguration, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_MassDataMigration_Request", "getDeviceConfiguration", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The model of device assigned to this request.
+func (r Network_Storage_MassDataMigration_Request) GetDeviceModel() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_MassDataMigration_Request", "getDeviceModel", nil, &r.Options, &resp)
 	return
 }
 
@@ -13897,14 +14453,35 @@ func (r Network_Subnet_Registration) ClearRegistration() (resp bool, err error) 
 	return
 }
 
-// <style type="text/css">.create_object > li > div { padding-top: .5em; padding-bottom: .5em}</style> This method will create a new SoftLayer_Network_Subnet_Registration object.
+// Create registration with a global registrar to associate an assigned subnet with the provided contact details.
 //
-// <b>Input</b> - [[SoftLayer_Network_Subnet_Registration (type)|SoftLayer_Network_Subnet_Registration]] <ul class="create_object"> <li><code>networkIdentifier</code> <div> The base address of the [[SoftLayer_Network_Subnet|subnet]] being registered. This can be derived directly from the SoftLayer_Network_Subnet object's networkIdentifier property. </div> <ul> <li><b>Required</b></li> <li><b>Type</b> - string</li> </ul> </li> <li><code>cidr</code> <div> The CIDR prefix of the [[SoftLayer_Network_Subnet|subnet]] being registered. This can be derived directly from the SoftLayer_Network_Subnet object's cidr property. </div> <ul> <li><b>Required</b></li> <li><b>Type</b> - integer</li> </ul> </li> </ul>
+// Contact information is provided in the form of a [[SoftLayer_Account_Regional_Registry_Detail|person detail record]], which reference can be provided when the registration is created or afterwards. Registrations without an associated person detail will remain in the ``OPEN`` status. To specify a person detail when creating a registration, the ``detailReferences`` property should be populated with a list item providing a ``detailId`` value referencing the [[SoftLayer_Account_Regional_Registry_Detail|person detail record]].
+//
+// The same applies to [[SoftLayer_Account_Regional_Registry_Detail|network detail records]], though these references need not be provided. The system will create a reference to the network described by the registration's subnet in the absence of a provided network detail reference. However, if a specific detail is referenced, it must describe the same subnet as the registration.
+//
+// A template containing the following properties will create a subnet registration:
+//
+//
+// * networkIdentifier
+// * cidr
+// * detailReferences
+//
+//
+// ``networkIdentifier`` is the base address of the public, SoftLayer owned subnet which is being registered. ``cidr`` must be an integer representing the CIDR of the subnet to be registered. The ``networkIdentifier``/``cidr`` must represent an assigned subnet. ``detailReferences`` tie the registration to SoftLayer_Account_Regional_Registry_Detail objects.
 func (r Network_Subnet_Registration) CreateObject(templateObject *datatypes.Network_Subnet_Registration) (resp datatypes.Network_Subnet_Registration, err error) {
 	params := []interface{}{
 		templateObject,
 	}
 	err = r.Session.DoRequest("SoftLayer_Network_Subnet_Registration", "createObject", params, &r.Options, &resp)
+	return
+}
+
+// Create registrations with respective registrars to associate multiple assigned subnets with the provided contact details.
+func (r Network_Subnet_Registration) CreateObjects(templateObjects []datatypes.Network_Subnet_Registration) (resp []datatypes.Network_Subnet_Registration, err error) {
+	params := []interface{}{
+		templateObjects,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_Subnet_Registration", "createObjects", params, &r.Options, &resp)
 	return
 }
 

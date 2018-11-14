@@ -474,6 +474,12 @@ func (r Product_Item_Price) GetRequiredCoreCount() (resp int, err error) {
 	return
 }
 
+// Retrieve Signifies pricing that is only available on a reserved capacity virtual server order.
+func (r Product_Item_Price) GetReservedCapacityInstanceFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Product_Item_Price", "getReservedCapacityInstanceFlag", nil, &r.Options, &resp)
+	return
+}
+
 // Returns a collection of rate-based [[SoftLayer_Product_Item_Price]] objects associated with the [[SoftLayer_Product_Item]] objects and the [[SoftLayer_Location]] specified. The location is required to get the appropriate rate-based prices because the usage rates may vary from datacenter to datacenter.
 func (r Product_Item_Price) GetUsageRatePrices(location *datatypes.Location, items []datatypes.Product_Item) (resp []datatypes.Product_Item_Price, err error) {
 	params := []interface{}{

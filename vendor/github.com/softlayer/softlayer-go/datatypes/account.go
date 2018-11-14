@@ -77,6 +77,12 @@ type Account struct {
 	// The active address(es) that belong to an account.
 	ActiveAddresses []Account_Address `json:"activeAddresses,omitempty" xmlrpc:"activeAddresses,omitempty"`
 
+	// A count of all active agreements for an account
+	ActiveAgreementCount *uint `json:"activeAgreementCount,omitempty" xmlrpc:"activeAgreementCount,omitempty"`
+
+	// All active agreements for an account
+	ActiveAgreements []Account_Agreement `json:"activeAgreements,omitempty" xmlrpc:"activeAgreements,omitempty"`
+
 	// A count of all billing agreements for an account
 	ActiveBillingAgreementCount *uint `json:"activeBillingAgreementCount,omitempty" xmlrpc:"activeBillingAgreementCount,omitempty"`
 
@@ -106,6 +112,12 @@ type Account struct {
 
 	// An account's non-expired quotes.
 	ActiveQuotes []Billing_Order_Quote `json:"activeQuotes,omitempty" xmlrpc:"activeQuotes,omitempty"`
+
+	// A count of active reserved capacity agreements for an account
+	ActiveReservedCapacityAgreementCount *uint `json:"activeReservedCapacityAgreementCount,omitempty" xmlrpc:"activeReservedCapacityAgreementCount,omitempty"`
+
+	// Active reserved capacity agreements for an account
+	ActiveReservedCapacityAgreements []Account_Agreement `json:"activeReservedCapacityAgreements,omitempty" xmlrpc:"activeReservedCapacityAgreements,omitempty"`
 
 	// A count of the virtual software licenses controlled by an account
 	ActiveVirtualLicenseCount *uint `json:"activeVirtualLicenseCount,omitempty" xmlrpc:"activeVirtualLicenseCount,omitempty"`
@@ -788,6 +800,9 @@ type Account struct {
 	// The pre-tax total amount exempt from incubator credit for the account's next invoice. This field is now deprecated and will soon be removed. Please update all references to instead use nextInvoiceTotalAmount
 	NextInvoiceIncubatorExemptTotal *Float64 `json:"nextInvoiceIncubatorExemptTotal,omitempty" xmlrpc:"nextInvoiceIncubatorExemptTotal,omitempty"`
 
+	// The total recurring charge amount of an account's next invoice eligible for account discount measured in US Dollars ($USD), assuming no changes or charges occur between now and time of billing.
+	NextInvoiceRecurringAmountEligibleForAccountDiscount *Float64 `json:"nextInvoiceRecurringAmountEligibleForAccountDiscount,omitempty" xmlrpc:"nextInvoiceRecurringAmountEligibleForAccountDiscount,omitempty"`
+
 	// A count of the billing items that will be on an account's next invoice.
 	NextInvoiceTopLevelBillingItemCount *uint `json:"nextInvoiceTopLevelBillingItemCount,omitempty" xmlrpc:"nextInvoiceTopLevelBillingItemCount,omitempty"`
 
@@ -968,6 +983,12 @@ type Account struct {
 	// An account's user roles.
 	PermissionRoles []User_Permission_Role `json:"permissionRoles,omitempty" xmlrpc:"permissionRoles,omitempty"`
 
+	// A count of an account's associated virtual placement groups.
+	PlacementGroupCount *uint `json:"placementGroupCount,omitempty" xmlrpc:"placementGroupCount,omitempty"`
+
+	// An account's associated virtual placement groups.
+	PlacementGroups []Virtual_PlacementGroup `json:"placementGroups,omitempty" xmlrpc:"placementGroups,omitempty"`
+
 	// A count of
 	PortableStorageVolumeCount *uint `json:"portableStorageVolumeCount,omitempty" xmlrpc:"portableStorageVolumeCount,omitempty"`
 
@@ -1108,6 +1129,18 @@ type Account struct {
 
 	// The Reseller level of the account.
 	ResellerLevel *int `json:"resellerLevel,omitempty" xmlrpc:"resellerLevel,omitempty"`
+
+	// A count of all reserved capacity agreements for an account
+	ReservedCapacityAgreementCount *uint `json:"reservedCapacityAgreementCount,omitempty" xmlrpc:"reservedCapacityAgreementCount,omitempty"`
+
+	// All reserved capacity agreements for an account
+	ReservedCapacityAgreements []Account_Agreement `json:"reservedCapacityAgreements,omitempty" xmlrpc:"reservedCapacityAgreements,omitempty"`
+
+	// A count of the reserved capacity groups owned by this account.
+	ReservedCapacityGroupCount *uint `json:"reservedCapacityGroupCount,omitempty" xmlrpc:"reservedCapacityGroupCount,omitempty"`
+
+	// The reserved capacity groups owned by this account.
+	ReservedCapacityGroups []Virtual_ReservedCapacityGroup `json:"reservedCapacityGroups,omitempty" xmlrpc:"reservedCapacityGroups,omitempty"`
 
 	// A count of an account's associated top-level resource groups.
 	ResourceGroupCount *uint `json:"resourceGroupCount,omitempty" xmlrpc:"resourceGroupCount,omitempty"`

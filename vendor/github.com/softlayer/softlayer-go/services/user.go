@@ -76,7 +76,7 @@ func (r User_Customer) AcknowledgeSupportPolicy() (err error) {
 	return
 }
 
-// Create a user's API authentication key, allowing that user access to query the SoftLayer API. addApiAuthenticationKey() returns the users new API key. Each portal user is allowed a maximum of two API keys.
+// Create a user's API authentication key, allowing that user access to query the SoftLayer API. addApiAuthenticationKey() returns the user's new API key. Each portal user is allowed only one API key.
 func (r User_Customer) AddApiAuthenticationKey() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_User_Customer", "addApiAuthenticationKey", nil, &r.Options, &resp)
 	return
@@ -209,6 +209,20 @@ func (r User_Customer) AddVirtualGuestAccess(virtualGuestId *int) (resp bool, er
 		virtualGuestId,
 	}
 	err = r.Session.DoRequest("SoftLayer_User_Customer", "addVirtualGuestAccess", params, &r.Options, &resp)
+	return
+}
+
+// This method can be used in place of [[SoftLayer_User_Customer::editObject]] to change the parent user of this user.
+//
+// The new parent must be a user on the same account, and must not be a child of this user.  A user is not allowed to change their own parent.
+//
+// If the cascadeFlag is set to false, then an exception will be thrown if the new parent does not have all of the permissions that this user possesses.  If the cascadeFlag is set to true, then permissions will be removed from this user and the descendants of this user as necessary so that no children of the parent will have permissions that the parent does not possess.
+func (r User_Customer) AssignNewParentId(parentId *int, cascadePermissionsFlag *bool) (resp datatypes.User_Customer, err error) {
+	params := []interface{}{
+		parentId,
+		cascadePermissionsFlag,
+	}
+	err = r.Session.DoRequest("SoftLayer_User_Customer", "assignNewParentId", params, &r.Options, &resp)
 	return
 }
 
@@ -462,6 +476,12 @@ func (r User_Customer) GetHasFullHardwareAccessFlag() (resp bool, err error) {
 // Retrieve Whether or not a portal user has access to all hardware on their account.
 func (r User_Customer) GetHasFullVirtualGuestAccessFlag() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_User_Customer", "getHasFullVirtualGuestAccessFlag", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r User_Customer) GetIbmIdLink() (resp datatypes.User_Customer_Link, err error) {
+	err = r.Session.DoRequest("SoftLayer_User_Customer", "getIbmIdLink", nil, &r.Options, &resp)
 	return
 }
 
@@ -875,7 +895,7 @@ func (r User_Customer) RemoveBulkDedicatedHostAccess(dedicatedHostIds []int) (re
 	return
 }
 
-// Remove multiple hardware from a portal user's hardware access list. A user's hardware access list controls which of an account's hardware objects a user has access to in the SoftLayer customer portal and API. Hardware does not exist in the SoftLayer portal and returns "not found" exceptions in the API if the user doesn't have access to it. If a user does not has access to the hardware you're attempting remove add then removeBulkHardwareAccess() returns true.
+// Remove multiple hardware from a portal user's hardware access list. A user's hardware access list controls which of an account's hardware objects a user has access to in the SoftLayer customer portal and API. Hardware does not exist in the SoftLayer portal and returns "not found" exceptions in the API if the user doesn't have access to it. If a user does not has access to the hardware you're attempting to remove then removeBulkHardwareAccess() returns true.
 //
 // Users can assign hardware access to their child users, but not to themselves. An account's master has access to all hardware on their customer account and can set hardware access for any of the other users on their account.
 //
@@ -888,14 +908,19 @@ func (r User_Customer) RemoveBulkHardwareAccess(hardwareIds []int) (resp bool, e
 	return
 }
 
-// Remove multiple permissions from a portal user's permission set. [[Permissions]] control which features in the SoftLayer customer portal and API a user may use. Removing a user's permission will affect that user's portal and API access. removePortalPermission() does not attempt to remove permissions that are not assigned to the user.
+// Remove (revoke) multiple permissions from a portal user's permission set. [[Permissions]] control which features in the SoftLayer customer portal and API a user may use. Removing a user's permission will affect that user's portal and API access. removePortalPermission() does not attempt to remove permissions that are not assigned to the user.
 //
-// Users can assign permissions to their child users, but not to themselves. An account's master has all portal permissions and can set permissions for any of the other users on their account.
+// Users can grant or revoke permissions to their child users, but not to themselves. An account's master has all portal permissions and can grant permissions for any of the other users on their account.
+//
+// If the cascadePermissionsFlag is set to true, then removing the permissions from a user will cascade down the child hierarchy and remove the permissions from this user along with all child users who also have the permission.
+//
+// If the cascadePermissionsFlag is not provided or is set to false and the user has children users who have the permission, then an exception will be thrown, and the permission will not be removed from this user.
 //
 // Use the [[SoftLayer_User_Customer_CustomerPermission_Permission::getAllObjects]] method to retrieve a list of all permissions available in the SoftLayer customer portal and API. Permissions are removed based on the keyName property of the permission objects within the permissions parameter.
-func (r User_Customer) RemoveBulkPortalPermission(permissions []datatypes.User_Customer_CustomerPermission_Permission) (resp bool, err error) {
+func (r User_Customer) RemoveBulkPortalPermission(permissions []datatypes.User_Customer_CustomerPermission_Permission, cascadePermissionsFlag *bool) (resp bool, err error) {
 	params := []interface{}{
 		permissions,
+		cascadePermissionsFlag,
 	}
 	err = r.Session.DoRequest("SoftLayer_User_Customer", "removeBulkPortalPermission", params, &r.Options, &resp)
 	return
@@ -953,14 +978,19 @@ func (r User_Customer) RemoveHardwareAccess(hardwareId *int) (resp bool, err err
 	return
 }
 
-// Remove a permission from a portal user's permission set. [[Permissions]] control which features in the SoftLayer customer portal and API a user may use. Removing a user's permission will affect that user's portal and API access. If the user does not have the permission you're attempting to remove then removePortalPermission() returns true.
+// Remove (revoke) a permission from a portal user's permission set. [[Permissions]] control which features in the SoftLayer customer portal and API a user may use. Removing a user's permission will affect that user's portal and API access. If the user does not have the permission you're attempting to remove then removePortalPermission() returns true.
 //
 // Users can assign permissions to their child users, but not to themselves. An account's master has all portal permissions and can set permissions for any of the other users on their account.
 //
+// If the cascadePermissionsFlag is set to true, then removing the permission from a user will cascade down the child hierarchy and remove the permission from this user and all child users who also have the permission.
+//
+// If the cascadePermissionsFlag is not set or is set to false and the user has children users who have the permission, then an exception will be thrown, and the permission will not be removed from this user.
+//
 // Use the [[SoftLayer_User_Customer_CustomerPermission_Permission::getAllObjects]] method to retrieve a list of all permissions available in the SoftLayer customer portal and API. Permissions are removed based on the keyName property of the permission parameter.
-func (r User_Customer) RemovePortalPermission(permission *datatypes.User_Customer_CustomerPermission_Permission) (resp bool, err error) {
+func (r User_Customer) RemovePortalPermission(permission *datatypes.User_Customer_CustomerPermission_Permission, cascadePermissionsFlag *bool) (resp bool, err error) {
 	params := []interface{}{
 		permission,
+		cascadePermissionsFlag,
 	}
 	err = r.Session.DoRequest("SoftLayer_User_Customer", "removePortalPermission", params, &r.Options, &resp)
 	return
@@ -973,6 +1003,12 @@ func (r User_Customer) RemoveRole(role *datatypes.User_Permission_Role) (err err
 		role,
 	}
 	err = r.Session.DoRequest("SoftLayer_User_Customer", "removeRole", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r User_Customer) RemoveSecurityAnswers() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_User_Customer", "removeSecurityAnswers", nil, &r.Options, &resp)
 	return
 }
 
@@ -2461,7 +2497,7 @@ func (r User_Customer_OpenIdConnect) ActivateOpenIdConnectUser(verificationCode 
 	return
 }
 
-// Create a user's API authentication key, allowing that user access to query the SoftLayer API. addApiAuthenticationKey() returns the users new API key. Each portal user is allowed a maximum of two API keys.
+// Create a user's API authentication key, allowing that user access to query the SoftLayer API. addApiAuthenticationKey() returns the user's new API key. Each portal user is allowed only one API key.
 func (r User_Customer_OpenIdConnect) AddApiAuthenticationKey() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "addApiAuthenticationKey", nil, &r.Options, &resp)
 	return
@@ -2594,6 +2630,20 @@ func (r User_Customer_OpenIdConnect) AddVirtualGuestAccess(virtualGuestId *int) 
 		virtualGuestId,
 	}
 	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "addVirtualGuestAccess", params, &r.Options, &resp)
+	return
+}
+
+// This method can be used in place of [[SoftLayer_User_Customer::editObject]] to change the parent user of this user.
+//
+// The new parent must be a user on the same account, and must not be a child of this user.  A user is not allowed to change their own parent.
+//
+// If the cascadeFlag is set to false, then an exception will be thrown if the new parent does not have all of the permissions that this user possesses.  If the cascadeFlag is set to true, then permissions will be removed from this user and the descendants of this user as necessary so that no children of the parent will have permissions that the parent does not possess.
+func (r User_Customer_OpenIdConnect) AssignNewParentId(parentId *int, cascadePermissionsFlag *bool) (resp datatypes.User_Customer, err error) {
+	params := []interface{}{
+		parentId,
+		cascadePermissionsFlag,
+	}
+	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "assignNewParentId", params, &r.Options, &resp)
 	return
 }
 
@@ -2828,7 +2878,7 @@ func (r User_Customer_OpenIdConnect) GetDedicatedHosts() (resp []datatypes.Virtu
 	return
 }
 
-// This API gets the default account for the OpenIdConnect identity that is linked to the current SoftLayer user identity. If there is no default present, the API returns null, except in the special case where we find one active user linked to the IBMid. In that case, we will set the link from the IBMid to that user as default, and return the account of which that user is a member. Invoke this only on IBMid-authenticated users.
+// This API gets the default account for the OpenIdConnect identity that is linked to the current SoftLayer user identity. If there is no default present, the API returns null, except in the special case where we find one active user linked to the IAMid. In that case, we will set the link from the IAMid to that user as default, and return the account of which that user is a member. Invoke this only on IAMid-authenticated users.
 func (r User_Customer_OpenIdConnect) GetDefaultAccount(providerType *string) (resp datatypes.Account, err error) {
 	params := []interface{}{
 		providerType,
@@ -2885,6 +2935,12 @@ func (r User_Customer_OpenIdConnect) GetHasFullVirtualGuestAccessFlag() (resp bo
 	return
 }
 
+// Retrieve
+func (r User_Customer_OpenIdConnect) GetIbmIdLink() (resp datatypes.User_Customer_Link, err error) {
+	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "getIbmIdLink", nil, &r.Options, &resp)
+	return
+}
+
 // no documentation yet
 func (r User_Customer_OpenIdConnect) GetImpersonationToken() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "getImpersonationToken", nil, &r.Options, &resp)
@@ -2928,7 +2984,7 @@ func (r User_Customer_OpenIdConnect) GetLoginToken(request *datatypes.Container_
 	return
 }
 
-// An OpenIdConnect identity, for example an IBMid, can be linked or mapped to one or more individual SoftLayer users, but no more than one SoftLayer user per account. This effectively links the OpenIdConnect identity to those accounts. This API returns a list of all the accounts for which there is a link between the OpenIdConnect identity and a SoftLayer user. Invoke this only on IBMid-authenticated users.
+// An OpenIdConnect identity, for example an IAMid, can be linked or mapped to one or more individual SoftLayer users, but no more than one SoftLayer user per account. This effectively links the OpenIdConnect identity to those accounts. This API returns a list of all active accounts for which there is a link between the OpenIdConnect identity and a SoftLayer user. Invoke this only on IAMid-authenticated users.
 func (r User_Customer_OpenIdConnect) GetMappedAccounts(providerType *string) (resp []datatypes.Account, err error) {
 	params := []interface{}{
 		providerType,
@@ -3135,10 +3191,10 @@ func (r User_Customer_OpenIdConnect) GetUnsuccessfulLogins() (resp []datatypes.U
 }
 
 // Returns an IMS User Object from the provided OpenIdConnect User ID or IBMid Unique Identifier for the Account of the active user. Enforces the User Management permissions for the Active User. An exception will be thrown if no matching IMS User is found. NOTE that providing IBMid Unique Identifier is optional, but it will be preferred over OpenIdConnect User ID if provided.
-func (r User_Customer_OpenIdConnect) GetUserForUnifiedInvitation(openIdConnectUserId *string, ibmIdUniqueIdentifier *string) (resp datatypes.User_Customer_OpenIdConnect, err error) {
+func (r User_Customer_OpenIdConnect) GetUserForUnifiedInvitation(openIdConnectUserId *string, uniqueIdentifier *string) (resp datatypes.User_Customer_OpenIdConnect, err error) {
 	params := []interface{}{
 		openIdConnectUserId,
-		ibmIdUniqueIdentifier,
+		uniqueIdentifier,
 	}
 	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "getUserForUnifiedInvitation", params, &r.Options, &resp)
 	return
@@ -3338,7 +3394,7 @@ func (r User_Customer_OpenIdConnect) RemoveBulkDedicatedHostAccess(dedicatedHost
 	return
 }
 
-// Remove multiple hardware from a portal user's hardware access list. A user's hardware access list controls which of an account's hardware objects a user has access to in the SoftLayer customer portal and API. Hardware does not exist in the SoftLayer portal and returns "not found" exceptions in the API if the user doesn't have access to it. If a user does not has access to the hardware you're attempting remove add then removeBulkHardwareAccess() returns true.
+// Remove multiple hardware from a portal user's hardware access list. A user's hardware access list controls which of an account's hardware objects a user has access to in the SoftLayer customer portal and API. Hardware does not exist in the SoftLayer portal and returns "not found" exceptions in the API if the user doesn't have access to it. If a user does not has access to the hardware you're attempting to remove then removeBulkHardwareAccess() returns true.
 //
 // Users can assign hardware access to their child users, but not to themselves. An account's master has access to all hardware on their customer account and can set hardware access for any of the other users on their account.
 //
@@ -3351,14 +3407,19 @@ func (r User_Customer_OpenIdConnect) RemoveBulkHardwareAccess(hardwareIds []int)
 	return
 }
 
-// Remove multiple permissions from a portal user's permission set. [[Permissions]] control which features in the SoftLayer customer portal and API a user may use. Removing a user's permission will affect that user's portal and API access. removePortalPermission() does not attempt to remove permissions that are not assigned to the user.
+// Remove (revoke) multiple permissions from a portal user's permission set. [[Permissions]] control which features in the SoftLayer customer portal and API a user may use. Removing a user's permission will affect that user's portal and API access. removePortalPermission() does not attempt to remove permissions that are not assigned to the user.
 //
-// Users can assign permissions to their child users, but not to themselves. An account's master has all portal permissions and can set permissions for any of the other users on their account.
+// Users can grant or revoke permissions to their child users, but not to themselves. An account's master has all portal permissions and can grant permissions for any of the other users on their account.
+//
+// If the cascadePermissionsFlag is set to true, then removing the permissions from a user will cascade down the child hierarchy and remove the permissions from this user along with all child users who also have the permission.
+//
+// If the cascadePermissionsFlag is not provided or is set to false and the user has children users who have the permission, then an exception will be thrown, and the permission will not be removed from this user.
 //
 // Use the [[SoftLayer_User_Customer_CustomerPermission_Permission::getAllObjects]] method to retrieve a list of all permissions available in the SoftLayer customer portal and API. Permissions are removed based on the keyName property of the permission objects within the permissions parameter.
-func (r User_Customer_OpenIdConnect) RemoveBulkPortalPermission(permissions []datatypes.User_Customer_CustomerPermission_Permission) (resp bool, err error) {
+func (r User_Customer_OpenIdConnect) RemoveBulkPortalPermission(permissions []datatypes.User_Customer_CustomerPermission_Permission, cascadePermissionsFlag *bool) (resp bool, err error) {
 	params := []interface{}{
 		permissions,
+		cascadePermissionsFlag,
 	}
 	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "removeBulkPortalPermission", params, &r.Options, &resp)
 	return
@@ -3416,14 +3477,19 @@ func (r User_Customer_OpenIdConnect) RemoveHardwareAccess(hardwareId *int) (resp
 	return
 }
 
-// Remove a permission from a portal user's permission set. [[Permissions]] control which features in the SoftLayer customer portal and API a user may use. Removing a user's permission will affect that user's portal and API access. If the user does not have the permission you're attempting to remove then removePortalPermission() returns true.
+// Remove (revoke) a permission from a portal user's permission set. [[Permissions]] control which features in the SoftLayer customer portal and API a user may use. Removing a user's permission will affect that user's portal and API access. If the user does not have the permission you're attempting to remove then removePortalPermission() returns true.
 //
 // Users can assign permissions to their child users, but not to themselves. An account's master has all portal permissions and can set permissions for any of the other users on their account.
 //
+// If the cascadePermissionsFlag is set to true, then removing the permission from a user will cascade down the child hierarchy and remove the permission from this user and all child users who also have the permission.
+//
+// If the cascadePermissionsFlag is not set or is set to false and the user has children users who have the permission, then an exception will be thrown, and the permission will not be removed from this user.
+//
 // Use the [[SoftLayer_User_Customer_CustomerPermission_Permission::getAllObjects]] method to retrieve a list of all permissions available in the SoftLayer customer portal and API. Permissions are removed based on the keyName property of the permission parameter.
-func (r User_Customer_OpenIdConnect) RemovePortalPermission(permission *datatypes.User_Customer_CustomerPermission_Permission) (resp bool, err error) {
+func (r User_Customer_OpenIdConnect) RemovePortalPermission(permission *datatypes.User_Customer_CustomerPermission_Permission, cascadePermissionsFlag *bool) (resp bool, err error) {
 	params := []interface{}{
 		permission,
+		cascadePermissionsFlag,
 	}
 	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "removePortalPermission", params, &r.Options, &resp)
 	return
@@ -3436,6 +3502,12 @@ func (r User_Customer_OpenIdConnect) RemoveRole(role *datatypes.User_Permission_
 		role,
 	}
 	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "removeRole", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r User_Customer_OpenIdConnect) RemoveSecurityAnswers() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "removeSecurityAnswers", nil, &r.Options, &resp)
 	return
 }
 
@@ -3485,7 +3557,7 @@ func (r User_Customer_OpenIdConnect) SamlLogout(samlResponse *string) (err error
 	return
 }
 
-// An OpenIdConnect identity, for example an IBMid, can be linked or mapped to one or more individual SoftLayer users, but no more than one per account. If an OpenIdConnect identity is mapped to multiple accounts in this manner, one such account should be identified as the default account for that identity. Invoke this only on IBMid-authenticated users.
+// An OpenIdConnect identity, for example an IAMid, can be linked or mapped to one or more individual SoftLayer users, but no more than one per account. If an OpenIdConnect identity is mapped to multiple accounts in this manner, one such account should be identified as the default account for that identity. Invoke this only on IBMid-authenticated users.
 func (r User_Customer_OpenIdConnect) SetDefaultAccount(providerType *string, accountId *int) (resp datatypes.Account, err error) {
 	params := []interface{}{
 		providerType,

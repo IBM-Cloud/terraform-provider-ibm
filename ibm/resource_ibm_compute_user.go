@@ -204,7 +204,7 @@ func resourceIBMComputeUserCreate(d *schema.ResourceData, meta interface{}) erro
 	// Set the instance ID for the service to act on
 	service = service.Id(*res.Id)
 
-	_, err = service.RemoveBulkPortalPermission(defaultPortalPermissions)
+	_, err = service.RemoveBulkPortalPermission(defaultPortalPermissions, sl.Bool(true))
 	if err != nil {
 		return fmt.Errorf("Error removing default portal permissions for IBM Cloud User: %s", err)
 	}
@@ -400,7 +400,7 @@ func resourceIBMComputeUserUpdate(d *schema.ResourceData, meta interface{}) erro
 		}
 
 		// 'remove' all old permissions
-		_, err = service.RemoveBulkPortalPermission(oldPermissions)
+		_, err = service.RemoveBulkPortalPermission(oldPermissions, sl.Bool(true))
 		if err != nil {
 			return fmt.Errorf("Error received while removing old permissions from ibm_compute_user: %s", err)
 		}

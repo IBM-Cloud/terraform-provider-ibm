@@ -1039,7 +1039,7 @@ type Network_CdnMarketplace_Configuration_Behavior_Geoblocking_Type struct {
 	Continent []string `json:"continent,omitempty" xmlrpc:"continent,omitempty"`
 
 	// no documentation yet
-	Country []string `json:"country,omitempty" xmlrpc:"country,omitempty"`
+	CountryOrRegion []string `json:"countryOrRegion,omitempty" xmlrpc:"countryOrRegion,omitempty"`
 
 	// no documentation yet
 	RegionType []string `json:"regionType,omitempty" xmlrpc:"regionType,omitempty"`
@@ -1990,6 +1990,9 @@ type Network_Gateway struct {
 type Network_Gateway_Member struct {
 	Entity
 
+	// The attributes for this member.
+	Attributes *Network_Gateway_Member_Attribute `json:"attributes,omitempty" xmlrpc:"attributes,omitempty"`
+
 	// The device for this member.
 	Hardware *Hardware `json:"hardware,omitempty" xmlrpc:"hardware,omitempty"`
 
@@ -2007,6 +2010,38 @@ type Network_Gateway_Member struct {
 
 	// The priority for this gateway member. This is set internally and cannot be provided on create.
 	Priority *int `json:"priority,omitempty" xmlrpc:"priority,omitempty"`
+}
+
+// no documentation yet
+type Network_Gateway_Member_Attribute struct {
+	Entity
+
+	// The gateway member has these attributes.
+	GatewayMember *Network_Gateway_Member `json:"gatewayMember,omitempty" xmlrpc:"gatewayMember,omitempty"`
+
+	// A gateway member's internal identifier.
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// The gateway member for this attribute.
+	MemberId *int `json:"memberId,omitempty" xmlrpc:"memberId,omitempty"`
+
+	// Network model of the gateway.
+	NetworkModel *string `json:"networkModel,omitempty" xmlrpc:"networkModel,omitempty"`
+
+	// Password of the user name.
+	Password *string `json:"password,omitempty" xmlrpc:"password,omitempty"`
+
+	// no documentation yet
+	SshKey *Security_Ssh_Key `json:"sshKey,omitempty" xmlrpc:"sshKey,omitempty"`
+
+	// The SSH key id of key assigned to Gateway.
+	SshKeyId *int `json:"sshKeyId,omitempty" xmlrpc:"sshKeyId,omitempty"`
+
+	// Username associated with the gateway.
+	Username *string `json:"username,omitempty" xmlrpc:"username,omitempty"`
+
+	// The vSRX version of the gateway software
+	VSRXVersion *string `json:"vSRXVersion,omitempty" xmlrpc:"vSRXVersion,omitempty"`
 }
 
 // no documentation yet
@@ -2053,10 +2088,13 @@ type Network_Gateway_Vlan struct {
 type Network_Interconnect_Tenant struct {
 	Entity
 
+	// no documentation yet
+	AccountId *int `json:"accountId,omitempty" xmlrpc:"accountId,omitempty"`
+
 	// Specifies ASN used for BGP.
 	BgpAsn *int `json:"bgpAsn,omitempty" xmlrpc:"bgpAsn,omitempty"`
 
-	// The billing item for a network interconnect.
+	// The active billing item for a network interconnect.
 	BillingItem *Billing_Item_Network_Interconnect `json:"billingItem,omitempty" xmlrpc:"billingItem,omitempty"`
 
 	// no documentation yet
@@ -2074,6 +2112,9 @@ type Network_Interconnect_Tenant struct {
 	// no documentation yet
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
 
+	// no documentation yet
+	InterconnectType *string `json:"interconnectType,omitempty" xmlrpc:"interconnectType,omitempty"`
+
 	// Link speed of a Direct Link connection.
 	LinkSpeed *int `json:"linkSpeed,omitempty" xmlrpc:"linkSpeed,omitempty"`
 
@@ -2081,10 +2122,16 @@ type Network_Interconnect_Tenant struct {
 	LocalIpAddress *string `json:"localIpAddress,omitempty" xmlrpc:"localIpAddress,omitempty"`
 
 	// no documentation yet
+	Location *string `json:"location,omitempty" xmlrpc:"location,omitempty"`
+
+	// no documentation yet
 	ModifyDate *Time `json:"modifyDate,omitempty" xmlrpc:"modifyDate,omitempty"`
 
 	// Specifies the Interconnect connection name.
 	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
+
+	// Updated Link speed of a Direct Link connection.
+	NewLinkSpeed *int `json:"newLinkSpeed,omitempty" xmlrpc:"newLinkSpeed,omitempty"`
 
 	// This field will have the ticket id if the tenant workflow fails
 	Note *string `json:"note,omitempty" xmlrpc:"note,omitempty"`
@@ -2093,7 +2140,16 @@ type Network_Interconnect_Tenant struct {
 	PeerLinkSpeed *int `json:"peerLinkSpeed,omitempty" xmlrpc:"peerLinkSpeed,omitempty"`
 
 	// no documentation yet
+	Port *string `json:"port,omitempty" xmlrpc:"port,omitempty"`
+
+	// no documentation yet
 	PortLabel *string `json:"portLabel,omitempty" xmlrpc:"portLabel,omitempty"`
+
+	// no documentation yet
+	Provider *string `json:"provider,omitempty" xmlrpc:"provider,omitempty"`
+
+	// no documentation yet
+	ProviderAccountId *int `json:"providerAccountId,omitempty" xmlrpc:"providerAccountId,omitempty"`
 
 	// Specifies redundant connection is available if 1.
 	RedundancyFlag *bool `json:"redundancyFlag,omitempty" xmlrpc:"redundancyFlag,omitempty"`
@@ -2158,6 +2214,210 @@ type Network_LBaaS_HealthMonitor struct {
 	Uuid *string `json:"uuid,omitempty" xmlrpc:"uuid,omitempty"`
 }
 
+// The SoftLayer_Network_LBaaS_L7HealthMonitor type presents a structure containing attributes of a health monitor object associated with a L7 pool instance. Note that the relationship between backend (L7 pool) and health monitor is 1-to-1, pools object associated with a health monitor must have the same pair of protocol and port. Example: frontend FA: http, 80   - backend BA: http, 3456 - healthmonitor HM_http3456 frontend FB: https, 443 - backend BB: http, 3456 - healthmonitor HM_http3456
+//
+//
+//
+//
+type Network_LBaaS_L7HealthMonitor struct {
+	Entity
+
+	// no documentation yet
+	CreateDate *Time `json:"createDate,omitempty" xmlrpc:"createDate,omitempty"`
+
+	// no documentation yet
+	Interval *int `json:"interval,omitempty" xmlrpc:"interval,omitempty"`
+
+	// no documentation yet
+	MaxRetries *int `json:"maxRetries,omitempty" xmlrpc:"maxRetries,omitempty"`
+
+	// no documentation yet
+	ModifyDate *Time `json:"modifyDate,omitempty" xmlrpc:"modifyDate,omitempty"`
+
+	// no documentation yet
+	MonitorType *string `json:"monitorType,omitempty" xmlrpc:"monitorType,omitempty"`
+
+	// no documentation yet
+	ProvisioningStatus *string `json:"provisioningStatus,omitempty" xmlrpc:"provisioningStatus,omitempty"`
+
+	// no documentation yet
+	Timeout *int `json:"timeout,omitempty" xmlrpc:"timeout,omitempty"`
+
+	// no documentation yet
+	UrlPath *string `json:"urlPath,omitempty" xmlrpc:"urlPath,omitempty"`
+}
+
+// The SoftLayer_Network_LBaaS_L7Member represents the backend member for a L7 pool. It can be either a virtual server or a bare metal machine.
+type Network_LBaaS_L7Member struct {
+	Entity
+
+	// The IP address of a L7 pool member.
+	Address *string `json:"address,omitempty" xmlrpc:"address,omitempty"`
+
+	// <<< EOT Specifies when a L7 pool member
+	CreateDate *Time `json:"createDate,omitempty" xmlrpc:"createDate,omitempty"`
+
+	// The ID of a L7 pool member.
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// <<<EOT Specifies when a L7 Pool
+	ModifyDate *Time `json:"modifyDate,omitempty" xmlrpc:"modifyDate,omitempty"`
+
+	// Backends protocol port
+	Port *int `json:"port,omitempty" xmlrpc:"port,omitempty"`
+
+	// <<< EOT The provisioning status of a L7 pool member.
+	ProvisioningStatus *string `json:"provisioningStatus,omitempty" xmlrpc:"provisioningStatus,omitempty"`
+
+	// The UUID of a L7 pool member.
+	Uuid *string `json:"uuid,omitempty" xmlrpc:"uuid,omitempty"`
+
+	// The weight of a L7 pool member.
+	Weight *int `json:"weight,omitempty" xmlrpc:"weight,omitempty"`
+}
+
+// The SoftLayer_Network_LBaaS_L7Policy represents the policy for a listener.
+type Network_LBaaS_L7Policy struct {
+	Entity
+
+	// The Action to take if the rules belonging to this policy match. It can be set to any of the following values: REDIRECT_URL, REDIRECT_POOL, REJECT.
+	Action *string `json:"action,omitempty" xmlrpc:"action,omitempty"`
+
+	// Specifies when a L7 Policy was created.
+	CreateDate *Time `json:"createDate,omitempty" xmlrpc:"createDate,omitempty"`
+
+	// The unique identifier of a policy.
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// A count of
+	L7RuleCount *uint `json:"l7RuleCount,omitempty" xmlrpc:"l7RuleCount,omitempty"`
+
+	// no documentation yet
+	L7Rules []Network_LBaaS_L7Rule `json:"l7Rules,omitempty" xmlrpc:"l7Rules,omitempty"`
+
+	// Specifies when a L7 Policy was updated previously.
+	ModifyDate *Time `json:"modifyDate,omitempty" xmlrpc:"modifyDate,omitempty"`
+
+	// Name of a Policy.
+	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
+
+	// The order in which the policy is evaluated. Each policy should have a unique priority
+	Priority *int `json:"priority,omitempty" xmlrpc:"priority,omitempty"`
+
+	// The L7 pool id to which traffic is redirected
+	RedirectL7PoolId *int `json:"redirectL7PoolId,omitempty" xmlrpc:"redirectL7PoolId,omitempty"`
+
+	// The UUID of the L7 pool object referenced by the policy when the policy action is set to REDIRECT_POOL
+	RedirectL7PoolUuid *string `json:"redirectL7PoolUuid,omitempty" xmlrpc:"redirectL7PoolUuid,omitempty"`
+
+	// The URL to which traffic is redirected when the action is set to REDIRECT_URL.
+	RedirectUrl *string `json:"redirectUrl,omitempty" xmlrpc:"redirectUrl,omitempty"`
+
+	// The UUID of a Policy.
+	Uuid *string `json:"uuid,omitempty" xmlrpc:"uuid,omitempty"`
+}
+
+// The SoftLayer_Network_LBaaS_L7Pool type presents a structure containing attributes of a load balancer's L7 pool such as the protocol, and the load balancing algorithm used. L7 pool is used for redirect_pool action of the L7 policy and is different from the default pool
+type Network_LBaaS_L7Pool struct {
+	Entity
+
+	// Create date of the L7 pool instance
+	CreateDate *Time `json:"createDate,omitempty" xmlrpc:"createDate,omitempty"`
+
+	// no documentation yet
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// no documentation yet
+	L7HealthMonitor *Network_LBaaS_L7HealthMonitor `json:"l7HealthMonitor,omitempty" xmlrpc:"l7HealthMonitor,omitempty"`
+
+	// A count of
+	L7MemberCount *uint `json:"l7MemberCount,omitempty" xmlrpc:"l7MemberCount,omitempty"`
+
+	// no documentation yet
+	L7Members []Network_LBaaS_L7Member `json:"l7Members,omitempty" xmlrpc:"l7Members,omitempty"`
+
+	// no documentation yet
+	L7Policies []Network_LBaaS_L7Policy `json:"l7Policies,omitempty" xmlrpc:"l7Policies,omitempty"`
+
+	// A count of
+	L7PolicyCount *uint `json:"l7PolicyCount,omitempty" xmlrpc:"l7PolicyCount,omitempty"`
+
+	// no documentation yet
+	L7SessionAffinity *Network_LBaaS_L7SessionAffinity `json:"l7SessionAffinity,omitempty" xmlrpc:"l7SessionAffinity,omitempty"`
+
+	// Load balancing algorithm: "ROUNDROBIN", "WEIGHTED_RR", "LEASTCONNECTION"
+	LoadBalancingAlgorithm *string `json:"loadBalancingAlgorithm,omitempty" xmlrpc:"loadBalancingAlgorithm,omitempty"`
+
+	// Last updated date of the L7 pool
+	ModifyDate *Time `json:"modifyDate,omitempty" xmlrpc:"modifyDate,omitempty"`
+
+	// Name of the L7 pool.
+	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
+
+	// Backends protocol, supported protocol is, "HTTP"
+	Protocol *string `json:"protocol,omitempty" xmlrpc:"protocol,omitempty"`
+
+	// Provisioning status of a load balancer's L7 pool.
+	ProvisioningStatus *string `json:"provisioningStatus,omitempty" xmlrpc:"provisioningStatus,omitempty"`
+
+	// Instance uuid of the L7 pool
+	Uuid *string `json:"uuid,omitempty" xmlrpc:"uuid,omitempty"`
+}
+
+// SoftLayer_Network_LBaaS_L7PoolMembersHealth provides statistics of members belonging to a particular L7 pool.
+type Network_LBaaS_L7PoolMembersHealth struct {
+	Entity
+
+	// Instance uuid of the L7 pool
+	L7PoolUuid *string `json:"l7PoolUuid,omitempty" xmlrpc:"l7PoolUuid,omitempty"`
+
+	// Members statistics of the L7 pool
+	MembersHealth []Network_LBaaS_MemberHealth `json:"membersHealth,omitempty" xmlrpc:"membersHealth,omitempty"`
+}
+
+// The SoftLayer_Network_LBaaS_L7Rule represents the Rules that can be attached to a a L7 policy.
+type Network_LBaaS_L7Rule struct {
+	Entity
+
+	// Comparision type for the Rule, It should any of the following values : REGEX, STARTS_WITH, ENDS_WITH, CONTAINS, EQUAL_TO.
+	ComparisonType *string `json:"comparisonType,omitempty" xmlrpc:"comparisonType,omitempty"`
+
+	// Specifies when a Rule was created
+	CreateDate *Time `json:"createDate,omitempty" xmlrpc:"createDate,omitempty"`
+
+	// The ID of a Rule.
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// Inverts the result of the value if set, i.e. True will be inverted to False and vice-versa
+	Invert *int `json:"invert,omitempty" xmlrpc:"invert,omitempty"`
+
+	// Key for Rule type HEADER and COOKIE.
+	Key *string `json:"key,omitempty" xmlrpc:"key,omitempty"`
+
+	// Specifies when a Rule was updated previously.
+	ModifyDate *Time `json:"modifyDate,omitempty" xmlrpc:"modifyDate,omitempty"`
+
+	// Type of the Rule. It  should have any of the following values: HOST_NAME, FILE_TYPE, HEADER, COOKIE, PATH.
+	Type *string `json:"type,omitempty" xmlrpc:"type,omitempty"`
+
+	// The UUID of a Rule.
+	Uuid *string `json:"uuid,omitempty" xmlrpc:"uuid,omitempty"`
+
+	// Value for Rule . For type HEADER and COOKIE, this value is compared against the value of the key from HEADER or COOKIE.
+	Value *string `json:"value,omitempty" xmlrpc:"value,omitempty"`
+}
+
+// SoftLayer_Network_LBaaS_L7SessionAffinity represents the session affinity, aka session persistence, configuration for a load balancer backend L7 pool.
+type Network_LBaaS_L7SessionAffinity struct {
+	Entity
+
+	// no documentation yet
+	L7Pool *Network_LBaaS_L7Pool `json:"l7Pool,omitempty" xmlrpc:"l7Pool,omitempty"`
+
+	// Type of the session persistence
+	Type *string `json:"type,omitempty" xmlrpc:"type,omitempty"`
+}
+
 // The SoftLayer_Network_LBaaS_Listener type presents a data structure for a load balancers listener, also called frontend.
 type Network_LBaaS_Listener struct {
 	Entity
@@ -2173,6 +2433,12 @@ type Network_LBaaS_Listener struct {
 
 	// no documentation yet
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// no documentation yet
+	L7Policies []Network_LBaaS_L7Policy `json:"l7Policies,omitempty" xmlrpc:"l7Policies,omitempty"`
+
+	// A count of
+	L7PolicyCount *uint `json:"l7PolicyCount,omitempty" xmlrpc:"l7PolicyCount,omitempty"`
 
 	// Specifies when the listener was updated previously.
 	ModifyDate *Time `json:"modifyDate,omitempty" xmlrpc:"modifyDate,omitempty"`
@@ -2223,6 +2489,12 @@ type Network_LBaaS_LoadBalancer struct {
 
 	// Specifies whether the load balancer is a public or internal load balancer.
 	IsPublic *int `json:"isPublic,omitempty" xmlrpc:"isPublic,omitempty"`
+
+	// A count of l7Pools for load balancer.
+	L7PoolCount *uint `json:"l7PoolCount,omitempty" xmlrpc:"l7PoolCount,omitempty"`
+
+	// L7Pools for load balancer.
+	L7Pools []Network_LBaaS_L7Pool `json:"l7Pools,omitempty" xmlrpc:"l7Pools,omitempty"`
 
 	// A count of listeners assigned to load balancer.
 	ListenerCount *uint `json:"listenerCount,omitempty" xmlrpc:"listenerCount,omitempty"`
@@ -2408,6 +2680,19 @@ type Network_LBaaS_MemberHealth struct {
 
 	// Members UUID.
 	Uuid *string `json:"uuid,omitempty" xmlrpc:"uuid,omitempty"`
+}
+
+// SoftLayer_Network_LBaaS_PolicyRule
+//
+// This class contains layer 7 policy specifications and an array of associated rules An array of objects of this class must be passed to the API in order to create a policy and its associated rules. <ul> <li>The layer 7 policy object </li> <li>An array of layer 7 rules </li> </ul>
+type Network_LBaaS_PolicyRule struct {
+	Entity
+
+	// L7 Policy
+	L7Policy *Network_LBaaS_L7Policy `json:"l7Policy,omitempty" xmlrpc:"l7Policy,omitempty"`
+
+	// L7 Rules
+	L7Rules []Network_LBaaS_L7Rule `json:"l7Rules,omitempty" xmlrpc:"l7Rules,omitempty"`
 }
 
 // The SoftLayer_Network_LBaaS_Pool type presents a structure containing attributes of a load balancer pool such as the protocol, protocol port and the load balancing algorithm used.
@@ -3114,12 +3399,7 @@ type Network_Monitor_Version1_Query_Type struct {
 	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
 }
 
-// SoftLayer_Network_Pod refers to a portion of a data center that share a Backend Customer Router (BCR) and usually a front-end counterpart known as a Frontend Customer Router (FCR). A Pod primarily denotes a logical location within the network and the physical aspects that support networks. This is in contrast to representing a specific physical location.
-//
-// A ``Pod`` is identified by a ``name``, which is unique. A Pod name follows the format 'dddnn.podii', where 'ddd' is a data center code, 'nn' is the data center number, 'pod' is a literal string and 'ii' is a two digit, left-zero- padded number which corresponds to a Backend Customer Router (BCR) of the desired data center. Examples:
-// * dal09.pod01 = Dallas 9, Pod 1 (ie. bcr01)
-// * sjc01.pod04 = San Jose 1, Pod 4 (ie. bcr04)
-// * ams01.pod01 = Amsterdam 1, Pod 1 (ie. bcr01)
+// no documentation yet
 type Network_Pod struct {
 	Entity
 
@@ -3129,8 +3409,11 @@ type Network_Pod struct {
 	// Host name of Pod's Backend Customer Router (BCR), e.g. bcr01a.dal09
 	BackendRouterName *string `json:"backendRouterName,omitempty" xmlrpc:"backendRouterName,omitempty"`
 
-	// The list of capabilities this Pod has.
+	// Property providing a means to filter Pods based on available capabitilies. See [[SoftLayer_Network_Pod/getAllObjects]] to filter for Pods with specific capabilities. See [[SoftLayer_Network_Pod/getCapabilities]] to retrieve capabilities of a specific Pod.
 	Capabilities []string `json:"capabilities,omitempty" xmlrpc:"capabilities,omitempty"`
+
+	// Identifier for the Data Center the Pod resides within
+	DatacenterId *int `json:"datacenterId,omitempty" xmlrpc:"datacenterId,omitempty"`
 
 	// Long form name of the data center in which this Pod resides, e.g. Dallas 9
 	DatacenterLongName *string `json:"datacenterLongName,omitempty" xmlrpc:"datacenterLongName,omitempty"`
@@ -3141,7 +3424,7 @@ type Network_Pod struct {
 	// (optional) Identifier for this Pod's Frontend Customer Router (FCR)
 	FrontendRouterId *int `json:"frontendRouterId,omitempty" xmlrpc:"frontendRouterId,omitempty"`
 
-	// Host name of Pod's Frontend Customer Router (FCR), e.g. fcr01a.dal09
+	// (optional) Host name of Pod's Frontend Customer Router (FCR), e.g. fcr01a.dal09
 	FrontendRouterName *string `json:"frontendRouterName,omitempty" xmlrpc:"frontendRouterName,omitempty"`
 
 	// The unique name of the Pod. See [[SoftLayer_Network_Pod (type)]] for details of the name's construction.
@@ -4501,6 +4784,9 @@ type Network_Storage_MassDataMigration_Request struct {
 
 	// The device configurations.
 	DeviceConfiguration *Network_Storage_MassDataMigration_Request_DeviceConfiguration `json:"deviceConfiguration,omitempty" xmlrpc:"deviceConfiguration,omitempty"`
+
+	// The model of device assigned to this request.
+	DeviceModel *string `json:"deviceModel,omitempty" xmlrpc:"deviceModel,omitempty"`
 
 	// The end date of the request.
 	EndDate *Time `json:"endDate,omitempty" xmlrpc:"endDate,omitempty"`

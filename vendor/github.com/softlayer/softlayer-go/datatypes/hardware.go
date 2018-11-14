@@ -943,6 +943,12 @@ type Hardware_Component_Firmware struct {
 	// no documentation yet
 	ReleaseNotes *string `json:"releaseNotes,omitempty" xmlrpc:"releaseNotes,omitempty"`
 
+	// A count of all revisions of this firmware.
+	RevisionCount *uint `json:"revisionCount,omitempty" xmlrpc:"revisionCount,omitempty"`
+
+	// All revisions of this firmware.
+	Revisions []Hardware_Component_Revision `json:"revisions,omitempty" xmlrpc:"revisions,omitempty"`
+
 	// no documentation yet
 	Version *string `json:"version,omitempty" xmlrpc:"version,omitempty"`
 }
@@ -1841,6 +1847,9 @@ type Hardware_Server struct {
 	// Determine if hardware object has the IBM_CLOUD_READY_NODE_CERTIFIED attribute.
 	IsCloudReadyNodeCertified *bool `json:"isCloudReadyNodeCertified,omitempty" xmlrpc:"isCloudReadyNodeCertified,omitempty"`
 
+	// Determine if remote management has been disabled due to port speed.
+	IsIpmiDisabled *bool `json:"isIpmiDisabled,omitempty" xmlrpc:"isIpmiDisabled,omitempty"`
+
 	// The last transaction that a server's operating system was loaded.
 	LastOperatingSystemReload *Provisioning_Version1_Transaction `json:"lastOperatingSystemReload,omitempty" xmlrpc:"lastOperatingSystemReload,omitempty"`
 
@@ -1897,6 +1906,9 @@ type Hardware_Server struct {
 
 	// A server's remote management card used for statistics.
 	StatisticsRemoteManagement *Hardware_Component_RemoteManagement `json:"statisticsRemoteManagement,omitempty" xmlrpc:"statisticsRemoteManagement,omitempty"`
+
+	// Whether to use UEFI boot instead of BIOS.
+	UefiBootFlag *bool `json:"uefiBootFlag,omitempty" xmlrpc:"uefiBootFlag,omitempty"`
 
 	// A count of a list of users that have access to this computing instance.
 	UserCount *uint `json:"userCount,omitempty" xmlrpc:"userCount,omitempty"`

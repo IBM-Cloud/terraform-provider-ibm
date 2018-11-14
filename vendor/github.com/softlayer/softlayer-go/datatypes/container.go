@@ -40,6 +40,9 @@ type Container_Account_Authentication_OpenIdConnect_UsernameLookupContainer stru
 	NumberOfIbmIdsWithEmailAddress *int `json:"numberOfIbmIdsWithEmailAddress,omitempty" xmlrpc:"numberOfIbmIdsWithEmailAddress,omitempty"`
 
 	// no documentation yet
+	Realm *string `json:"realm,omitempty" xmlrpc:"realm,omitempty"`
+
+	// no documentation yet
 	UniqueId *string `json:"uniqueId,omitempty" xmlrpc:"uniqueId,omitempty"`
 
 	// no documentation yet
@@ -629,11 +632,45 @@ type Container_Account_ProofOfConcept_Review struct {
 	// IBMer requesting the account on behalf of a customer
 	Requester *Container_Account_ProofOfConcept_Contact_Ibmer_Requester `json:"requester,omitempty" xmlrpc:"requester,omitempty"`
 
+	// Summary of request's review activity
+	ReviewHistory *Container_Account_ProofOfConcept_Review_History `json:"reviewHistory,omitempty" xmlrpc:"reviewHistory,omitempty"`
+
 	// Expected start date of the proof of concept period
 	StartDate *Time `json:"startDate,omitempty" xmlrpc:"startDate,omitempty"`
 
 	// Additional IBMer responsible for configuring the cloud capabilities
 	TechnicalContact *Container_Account_ProofOfConcept_Contact_Ibmer_Technical `json:"technicalContact,omitempty" xmlrpc:"technicalContact,omitempty"`
+}
+
+// Review event within proof of concept request review period.
+type Container_Account_ProofOfConcept_Review_Event struct {
+	Entity
+
+	// Explanation of the event.
+	Description *string `json:"description,omitempty" xmlrpc:"description,omitempty"`
+
+	// Reviewer's email address.
+	ReviewerEmail *string `json:"reviewerEmail,omitempty" xmlrpc:"reviewerEmail,omitempty"`
+
+	// Reviewer's BluePages UID.
+	ReviewerUid *string `json:"reviewerUid,omitempty" xmlrpc:"reviewerUid,omitempty"`
+}
+
+// Summary of review activity for a proof of concept request.
+type Container_Account_ProofOfConcept_Review_History struct {
+	Entity
+
+	// True for approved requests associated with a new account and false otherwise.
+	AccountCreatedFlag *bool `json:"accountCreatedFlag,omitempty" xmlrpc:"accountCreatedFlag,omitempty"`
+
+	// True for denied requests and false otherwise.
+	DeniedFlag *bool `json:"deniedFlag,omitempty" xmlrpc:"deniedFlag,omitempty"`
+
+	// List of events occurring during the review.
+	Events []Container_Account_ProofOfConcept_Review_Event `json:"events,omitempty" xmlrpc:"events,omitempty"`
+
+	// True for fully reviewed requests and false otherwise.
+	ReviewCompleteFlag *bool `json:"reviewCompleteFlag,omitempty" xmlrpc:"reviewCompleteFlag,omitempty"`
 }
 
 // Summary presented to reviewers when determining whether or not to accept a proof of concept request. Note that reviewers are internal IBM employees and reviews are not exposed to external users.
@@ -3112,7 +3149,16 @@ type Container_Network_Storage_Backup_Evault_WebCc_Authentication_Details struct
 	ViewState *string `json:"viewState,omitempty" xmlrpc:"viewState,omitempty"`
 
 	// no documentation yet
+	WebCcFormName *string `json:"webCcFormName,omitempty" xmlrpc:"webCcFormName,omitempty"`
+
+	// no documentation yet
 	WebCcUrl *string `json:"webCcUrl,omitempty" xmlrpc:"webCcUrl,omitempty"`
+
+	// no documentation yet
+	WebCcUserId *string `json:"webCcUserId,omitempty" xmlrpc:"webCcUserId,omitempty"`
+
+	// no documentation yet
+	WebCcUserPassword *string `json:"webCcUserPassword,omitempty" xmlrpc:"webCcUserPassword,omitempty"`
 }
 
 // SoftLayer's StorageLayer Evault services provides details regarding the the purchased vault.
@@ -3560,7 +3606,7 @@ type Container_Product_Order struct {
 	Entity
 
 	// Used to identify which items on an order belong in the same cluster.
-	ClusterIdentifier *string `json:"clusterIdentifier,omitempty" xmlrpc:"clusterIdentifier,omitempty"`
+ClusterIdentifier *string `json:"clusterIdentifier,omitempty" xmlrpc:"clusterIdentifier,omitempty"`
 
 	// Flag for identifying an order for Big Data Deployment.
 	BigDataOrderFlag *bool `json:"bigDataOrderFlag,omitempty" xmlrpc:"bigDataOrderFlag,omitempty"`
@@ -3800,13 +3846,13 @@ type Container_Product_Order_Attribute_Address struct {
 	// The 2-character Country code. (i.e. US)
 	CountryCode *string `json:"countryCode,omitempty" xmlrpc:"countryCode,omitempty"`
 
-	// The non US/Canadian state or region.
+	// State, Region or Province not part of the U.S. or Canada.
 	NonUsState *string `json:"nonUsState,omitempty" xmlrpc:"nonUsState,omitempty"`
 
 	// The Zip or Postal Code.
 	PostalCode *string `json:"postalCode,omitempty" xmlrpc:"postalCode,omitempty"`
 
-	// The state or region.
+	// U.S. State, Region or Canadian Province.
 	State *string `json:"state,omitempty" xmlrpc:"state,omitempty"`
 }
 
@@ -4088,6 +4134,14 @@ type Container_Product_Order_Network_Interconnect struct {
 
 	// Optional network identifier for this link.
 	NetworkIdentifier *string `json:"networkIdentifier,omitempty" xmlrpc:"networkIdentifier,omitempty"`
+}
+
+// This is the datatype that needs to be populated and sent to SoftLayer_Product_Order::placeOrder. This datatype has everything required to place an upgrade order for Direct Link.
+type Container_Product_Order_Network_Interconnect_Upgrade struct {
+	Container_Product_Order_Network_Interconnect
+
+	// The [[SoftLayer_Network_Interconnect_Tenant]] being modified. Only the ID is required.
+	InterconnectTenant *Network_Interconnect_Tenant `json:"interconnectTenant,omitempty" xmlrpc:"interconnectTenant,omitempty"`
 }
 
 // This is the default container type for network load balancer orders.
@@ -4726,6 +4780,9 @@ type Container_Product_Order_Virtual_Guest struct {
 
 	// Identifier of [[SoftLayer_Virtual_DedicatedHost]] to order
 	HostId *int `json:"hostId,omitempty" xmlrpc:"hostId,omitempty"`
+
+	// Identifier of [[SoftLayer_Virtual_ReservedCapacityGroup]] to order
+	ReservedCapacityId *int `json:"reservedCapacityId,omitempty" xmlrpc:"reservedCapacityId,omitempty"`
 }
 
 // This is the datatype that needs to be populated and sent to SoftLayer_Product_Order::placeOrder. This datatype has everything required to place an order with SoftLayer.
@@ -4741,7 +4798,13 @@ type Container_Product_Order_Virtual_Guest_Vpc struct {
 	AdditionalNetworkInterfaces []Container_Product_Order_Virtual_Guest_Vpc_NetworkInterface `json:"additionalNetworkInterfaces,omitempty" xmlrpc:"additionalNetworkInterfaces,omitempty"`
 
 	// no documentation yet
+	InstanceProfile *string `json:"instanceProfile,omitempty" xmlrpc:"instanceProfile,omitempty"`
+
+	// no documentation yet
 	IpAllocations []Container_Product_Order_Virtual_Guest_Vpc_IpAllocation `json:"ipAllocations,omitempty" xmlrpc:"ipAllocations,omitempty"`
+
+	// no documentation yet
+	ResourceGroup *string `json:"resourceGroup,omitempty" xmlrpc:"resourceGroup,omitempty"`
 
 	// no documentation yet
 	ServerId *string `json:"serverId,omitempty" xmlrpc:"serverId,omitempty"`
@@ -4756,7 +4819,13 @@ type Container_Product_Order_Virtual_Guest_Vpc struct {
 	ServicePortVpcId *string `json:"servicePortVpcId,omitempty" xmlrpc:"servicePortVpcId,omitempty"`
 
 	// no documentation yet
+	StorageVolumes []Container_Product_Order_Virtual_Guest_Vpc_StorageVolume `json:"storageVolumes,omitempty" xmlrpc:"storageVolumes,omitempty"`
+
+	// no documentation yet
 	Subnets []Container_Product_Order_Virtual_Guest_Vpc_Subnet `json:"subnets,omitempty" xmlrpc:"subnets,omitempty"`
+
+	// no documentation yet
+	Zone *string `json:"zone,omitempty" xmlrpc:"zone,omitempty"`
 }
 
 // no documentation yet
@@ -4791,6 +4860,38 @@ type Container_Product_Order_Virtual_Guest_Vpc_NetworkInterface struct {
 }
 
 // no documentation yet
+type Container_Product_Order_Virtual_Guest_Vpc_StorageVolume struct {
+	Entity
+
+	// no documentation yet
+	AttachmentName *string `json:"attachmentName,omitempty" xmlrpc:"attachmentName,omitempty"`
+
+	// no documentation yet
+	Capacity *int `json:"capacity,omitempty" xmlrpc:"capacity,omitempty"`
+
+	// no documentation yet
+	DeleteOnReclaim *bool `json:"deleteOnReclaim,omitempty" xmlrpc:"deleteOnReclaim,omitempty"`
+
+	// no documentation yet
+	Id *string `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// no documentation yet
+	Index *int `json:"index,omitempty" xmlrpc:"index,omitempty"`
+
+	// no documentation yet
+	Iops *int `json:"iops,omitempty" xmlrpc:"iops,omitempty"`
+
+	// no documentation yet
+	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
+
+	// no documentation yet
+	Profile *string `json:"profile,omitempty" xmlrpc:"profile,omitempty"`
+
+	// no documentation yet
+	ResourceGroup *string `json:"resourceGroup,omitempty" xmlrpc:"resourceGroup,omitempty"`
+}
+
+// no documentation yet
 type Container_Product_Order_Virtual_Guest_Vpc_Subnet struct {
 	Entity
 
@@ -4808,6 +4909,22 @@ type Container_Product_Order_Virtual_Guest_Vpc_Subnet struct {
 
 	// no documentation yet
 	Vlan *int `json:"vlan,omitempty" xmlrpc:"vlan,omitempty"`
+}
+
+// no documentation yet
+type Container_Product_Order_Virtual_Guest_Vpc_Upgrade struct {
+	Container_Product_Order_Virtual_Guest_Vpc
+}
+
+// This is the default container type for Reserved Capacity orders.
+type Container_Product_Order_Virtual_ReservedCapacity struct {
+	Container_Product_Order
+
+	// Identifier of [[SoftLayer_Hardware_Router]] on which the capacity will be
+	BackendRouterId *int `json:"backendRouterId,omitempty" xmlrpc:"backendRouterId,omitempty"`
+
+	// Name for the [[SoftLayer_Virtual_ReservedCapacityGroup]] being ordered.
+	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
 }
 
 // This is the datatype that needs to be populated and sent to SoftLayer_Provisioning_Maintenance_Window::addCustomerUpgradeWindow. This datatype has everything required to place an order with SoftLayer.
@@ -5464,20 +5581,6 @@ type Container_Utility_File_Attachment struct {
 	Filename *string `json:"filename,omitempty" xmlrpc:"filename,omitempty"`
 }
 
-// Used to describe a document in the file system on the file server
-type Container_Utility_File_Descriptor struct {
-	Entity
-
-	// The name of a file as it exists on the file server.
-	FileName *string `json:"fileName,omitempty" xmlrpc:"fileName,omitempty"`
-
-	// The friendly name of a file as it exists on the file server.
-	FriendlyName *string `json:"friendlyName,omitempty" xmlrpc:"friendlyName,omitempty"`
-
-	// The date the file was last modified on the file server.
-	ModifyDate *Time `json:"modifyDate,omitempty" xmlrpc:"modifyDate,omitempty"`
-}
-
 // SoftLayer_Container_Utility_File_Entity data type models a single entity on a storage resource. Entities can include anything within a storage volume including files, folders, directories, and CloudLayer storage projects.
 type Container_Utility_File_Entity struct {
 	Entity
@@ -5684,6 +5787,18 @@ type Container_Virtual_Guest_Block_Device_Template_Configuration struct {
 	// Specifies if image requires cloud-init.
 	CloudInit *bool `json:"cloudInit,omitempty" xmlrpc:"cloudInit,omitempty"`
 
+	//
+	// IBM Cloud (Bluemix) API Key
+	IbmApiKey *string `json:"ibmApiKey,omitempty" xmlrpc:"ibmApiKey,omitempty"`
+
+	//
+	// Specifies if image is encrypted or not.
+	IsEncrypted *bool `json:"isEncrypted,omitempty" xmlrpc:"isEncrypted,omitempty"`
+
+	//
+	// ID of the IBM Key Protect Instance
+	KeyProtectId *string `json:"keyProtectId,omitempty" xmlrpc:"keyProtectId,omitempty"`
+
 	// The group name to be applied to the imported template
 	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
 
@@ -5695,6 +5810,10 @@ type Container_Virtual_Guest_Block_Device_Template_Configuration struct {
 	OperatingSystemReferenceCode *string `json:"operatingSystemReferenceCode,omitempty" xmlrpc:"operatingSystemReferenceCode,omitempty"`
 
 	//
+	// Name of the IBM Key Protect Key Name. Required if using an encrypted image.
+	RootKeyId *string `json:"rootKeyId,omitempty" xmlrpc:"rootKeyId,omitempty"`
+
+	//
 	// Optional Collection of modes that this template supports booting into.
 	SupportedBootModes []string `json:"supportedBootModes,omitempty" xmlrpc:"supportedBootModes,omitempty"`
 
@@ -5702,6 +5821,10 @@ type Container_Virtual_Guest_Block_Device_Template_Configuration struct {
 	// The URI for an object storage object (.vhd/.iso file)
 	// <code>swift://<ObjectStorageAccountName>@<clusterName>/<containerName>/<fileName.(vhd|iso)></code>
 	Uri *string `json:"uri,omitempty" xmlrpc:"uri,omitempty"`
+
+	//
+	// Wrapped Decryption Key provided by IBM Key Protect
+	WrappedDek *string `json:"wrappedDek,omitempty" xmlrpc:"wrappedDek,omitempty"`
 }
 
 // The guest configuration container is used to provide configuration options for creating computing instances.

@@ -147,6 +147,12 @@ func (r Virtual_DedicatedHost) GetPciDeviceAllocationStatus() (resp datatypes.Co
 	return
 }
 
+// Retrieve A collection of SoftLayer_Virtual_Host_PciDevice objects on the host.
+func (r Virtual_DedicatedHost) GetPciDevices() (resp []datatypes.Virtual_Host_PciDevice, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_DedicatedHost", "getPciDevices", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve
 func (r Virtual_DedicatedHost) GetTagReferences() (resp []datatypes.Tag_Reference, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_DedicatedHost", "getTagReferences", nil, &r.Options, &resp)
@@ -213,7 +219,7 @@ func (r Virtual_Disk_Image) EditObject(templateObject *datatypes.Virtual_Disk_Im
 	return
 }
 
-// no documentation yet
+// Returns a collection of boot modes that are supported for primary disks.
 func (r Virtual_Disk_Image) GetAvailableBootModes() (resp []string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Disk_Image", "getAvailableBootModes", nil, &r.Options, &resp)
 	return
@@ -246,6 +252,12 @@ func (r Virtual_Disk_Image) GetCoalescedDiskImages() (resp []datatypes.Virtual_D
 // Retrieve
 func (r Virtual_Disk_Image) GetCopyOnWriteFlag() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Disk_Image", "getCopyOnWriteFlag", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Return if image is encrypted
+func (r Virtual_Disk_Image) GetIsEncrypted() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Disk_Image", "getIsEncrypted", nil, &r.Options, &resp)
 	return
 }
 
@@ -888,6 +900,15 @@ func (r Virtual_Guest) DeleteObject() (resp bool, err error) {
 }
 
 // no documentation yet
+func (r Virtual_Guest) DeleteTag(tagName *string) (resp bool, err error) {
+	params := []interface{}{
+		tagName,
+	}
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest", "deleteTag", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
 func (r Virtual_Guest) DeleteTransientWebhook() (err error) {
 	var resp datatypes.Void
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest", "deleteTransientWebhook", nil, &r.Options, &resp)
@@ -1319,13 +1340,13 @@ func (r Virtual_Guest) GetCurrentBandwidthSummary() (resp datatypes.Metric_Track
 	return
 }
 
-// getUpgradeItemPrices() retrieves a list of all upgrades available to a CloudLayer Computing Instance. Upgradeable items include, but are not limited to, number of cores, amount of RAM, storage configuration, and network port speed.
+// Get the billing detail for this instance for the current billing period. This does not include bandwidth usage.
 func (r Virtual_Guest) GetCurrentBillingDetail() (resp []datatypes.Billing_Item, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest", "getCurrentBillingDetail", nil, &r.Options, &resp)
 	return
 }
 
-// Get the total billing price in US Dollars ($) for this instance. This includes all bandwidth used up to this point for this instance.
+// Get the total bill amount in US Dollars ($) for this instance in the current billing period. This includes all bandwidth used up to the point this method is called on the instance.
 func (r Virtual_Guest) GetCurrentBillingTotal() (resp datatypes.Float64, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest", "getCurrentBillingTotal", nil, &r.Options, &resp)
 	return
@@ -1427,7 +1448,7 @@ func (r Virtual_Guest) GetHostIpsSoftwareComponent() (resp datatypes.Software_Co
 	return
 }
 
-// Retrieve Whether or not a computing instance is billed hourly instead of monthly.
+// Retrieve A guest's hourly billing status.
 func (r Virtual_Guest) GetHourlyBillingFlag() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest", "getHourlyBillingFlag", nil, &r.Options, &resp)
 	return
@@ -1708,6 +1729,12 @@ func (r Virtual_Guest) GetPendingMigrationFlag() (resp bool, err error) {
 	return
 }
 
+// Retrieve The placement group that a virtual guest belongs to.
+func (r Virtual_Guest) GetPlacementGroup() (resp datatypes.Virtual_PlacementGroup, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest", "getPlacementGroup", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve The current power state of a virtual guest.
 func (r Virtual_Guest) GetPowerState() (resp datatypes.Virtual_Guest_Power_State, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest", "getPowerState", nil, &r.Options, &resp)
@@ -1810,6 +1837,24 @@ func (r Virtual_Guest) GetRemoteMonitoringClosedAlarms(startDate *datatypes.Time
 		endDate,
 	}
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest", "getRemoteMonitoringClosedAlarms", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve The reserved capacity group the guest is associated with.
+func (r Virtual_Guest) GetReservedCapacityGroup() (resp datatypes.Virtual_ReservedCapacityGroup, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest", "getReservedCapacityGroup", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Flag to indicate whether or not a guest is part of a reserved capacity group.
+func (r Virtual_Guest) GetReservedCapacityGroupFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest", "getReservedCapacityGroupFlag", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The reserved capacity group instance the guest is associated with.
+func (r Virtual_Guest) GetReservedCapacityGroupInstance() (resp datatypes.Virtual_ReservedCapacityGroup_Instance, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest", "getReservedCapacityGroupInstance", nil, &r.Options, &resp)
 	return
 }
 
@@ -2079,9 +2124,25 @@ func (r Virtual_Guest) RemoveAccessToNetworkStorageList(networkStorageTemplateOb
 	return
 }
 
+// no documentation yet
+func (r Virtual_Guest) RemoveTags(tags *string) (resp bool, err error) {
+	params := []interface{}{
+		tags,
+	}
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest", "removeTags", params, &r.Options, &resp)
+	return
+}
+
 // Resume a virtual guest
 func (r Virtual_Guest) Resume() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest", "resume", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Virtual_Guest) SendTestReclaimScheduledAlert() (err error) {
+	var resp datatypes.Void
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest", "sendTestReclaimScheduledAlert", nil, &r.Options, &resp)
 	return
 }
 
@@ -2253,12 +2314,30 @@ func (r Virtual_Guest_Block_Device_Template_Group) CopyToExternalSource(configur
 	return
 }
 
+// Create a transaction to export/copy a template to an ICOS.
+func (r Virtual_Guest_Block_Device_Template_Group) CopyToIcos(configuration *datatypes.Container_Virtual_Guest_Block_Device_Template_Configuration) (resp bool, err error) {
+	params := []interface{}{
+		configuration,
+	}
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "copyToIcos", params, &r.Options, &resp)
+	return
+}
+
 // Create a transaction to import a disk image from an external source and create a standard image template.
 func (r Virtual_Guest_Block_Device_Template_Group) CreateFromExternalSource(configuration *datatypes.Container_Virtual_Guest_Block_Device_Template_Configuration) (resp datatypes.Virtual_Guest_Block_Device_Template_Group, err error) {
 	params := []interface{}{
 		configuration,
 	}
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "createFromExternalSource", params, &r.Options, &resp)
+	return
+}
+
+// Create a process to import a disk image from ICOS and create a standard
+func (r Virtual_Guest_Block_Device_Template_Group) CreateFromIcos(configuration *datatypes.Container_Virtual_Guest_Block_Device_Template_Configuration) (resp datatypes.Virtual_Guest_Block_Device_Template_Group, err error) {
+	params := []interface{}{
+		configuration,
+	}
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "createFromIcos", params, &r.Options, &resp)
 	return
 }
 
@@ -2385,7 +2464,7 @@ func (r Virtual_Guest_Block_Device_Template_Group) GetDefaultBootMode() (resp st
 	return
 }
 
-// This method returns an array of encryption values
+// This method returns an array of encryption values, or empty array if none are found
 func (r Virtual_Guest_Block_Device_Template_Group) GetEncryptionAttributes() (resp []string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "getEncryptionAttributes", nil, &r.Options, &resp)
 	return
@@ -2517,7 +2596,7 @@ func (r Virtual_Guest_Block_Device_Template_Group) IsCloudInitOnlyOperatingSyste
 	return
 }
 
-// This method indicates whether or not encrypted attributes are set on the primary disk.
+// This method indicates whether this image template contains an encrypted disk image.
 func (r Virtual_Guest_Block_Device_Template_Group) IsEncrypted() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "isEncrypted", nil, &r.Options, &resp)
 	return
@@ -2970,6 +3049,12 @@ func (r Virtual_Host) GetObject() (resp datatypes.Virtual_Host, err error) {
 	return
 }
 
+// Retrieve
+func (r Virtual_Host) GetPciDevices() (resp []datatypes.Virtual_Host_PciDevice, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Host", "getPciDevices", nil, &r.Options, &resp)
+	return
+}
+
 // Pause a virtual guest
 func (r Virtual_Host) PauseLiveGuest(uuid *string) (resp bool, err error) {
 	params := []interface{}{
@@ -3021,6 +3106,310 @@ func (r Virtual_Host) ResumeLiveGuest(uuid *string) (resp bool, err error) {
 		uuid,
 	}
 	err = r.Session.DoRequest("SoftLayer_Virtual_Host", "resumeLiveGuest", params, &r.Options, &resp)
+	return
+}
+
+// This data type presents the structure for a virtual guest placement group. The data type contains relational properties to the virtual guest placement group rule class.
+type Virtual_PlacementGroup struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetVirtualPlacementGroupService returns an instance of the Virtual_PlacementGroup SoftLayer service
+func GetVirtualPlacementGroupService(sess *session.Session) Virtual_PlacementGroup {
+	return Virtual_PlacementGroup{Session: sess}
+}
+
+func (r Virtual_PlacementGroup) Id(id int) Virtual_PlacementGroup {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Virtual_PlacementGroup) Mask(mask string) Virtual_PlacementGroup {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Virtual_PlacementGroup) Filter(filter string) Virtual_PlacementGroup {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Virtual_PlacementGroup) Limit(limit int) Virtual_PlacementGroup {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Virtual_PlacementGroup) Offset(offset int) Virtual_PlacementGroup {
+	r.Options.Offset = &offset
+	return r
+}
+
+// Add a placement group to your account for use during VSI provisioning.
+func (r Virtual_PlacementGroup) CreateObject(templateObject *datatypes.Virtual_PlacementGroup) (resp datatypes.Virtual_PlacementGroup, err error) {
+	params := []interface{}{
+		templateObject,
+	}
+	err = r.Session.DoRequest("SoftLayer_Virtual_PlacementGroup", "createObject", params, &r.Options, &resp)
+	return
+}
+
+// Delete a placement group from your account.
+func (r Virtual_PlacementGroup) DeleteObject() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_PlacementGroup", "deleteObject", nil, &r.Options, &resp)
+	return
+}
+
+// Update a placement group.
+func (r Virtual_PlacementGroup) EditObject(templateObject *datatypes.Virtual_PlacementGroup) (resp bool, err error) {
+	params := []interface{}{
+		templateObject,
+	}
+	err = r.Session.DoRequest("SoftLayer_Virtual_PlacementGroup", "editObject", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve The account that the placement group is implemented on.
+func (r Virtual_PlacementGroup) GetAccount() (resp datatypes.Account, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_PlacementGroup", "getAccount", nil, &r.Options, &resp)
+	return
+}
+
+// Returns all routers available for use with placement groups. If a datacenter location ID is provided, this method will further restrict the list of routers to ones contained within that datacenter.
+func (r Virtual_PlacementGroup) GetAvailableRouters(datacenterId *int) (resp []datatypes.Hardware, err error) {
+	params := []interface{}{
+		datacenterId,
+	}
+	err = r.Session.DoRequest("SoftLayer_Virtual_PlacementGroup", "getAvailableRouters", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve The router the placement group is implemented on.
+func (r Virtual_PlacementGroup) GetBackendRouter() (resp datatypes.Hardware_Router_Backend, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_PlacementGroup", "getBackendRouter", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The virtual guests that are members of the placement group.
+func (r Virtual_PlacementGroup) GetGuests() (resp []datatypes.Virtual_Guest, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_PlacementGroup", "getGuests", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Virtual_PlacementGroup) GetObject() (resp datatypes.Virtual_PlacementGroup, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_PlacementGroup", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The placement rule that the placement group is implementing.
+func (r Virtual_PlacementGroup) GetRule() (resp datatypes.Virtual_PlacementGroup_Rule, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_PlacementGroup", "getRule", nil, &r.Options, &resp)
+	return
+}
+
+// This data type presents the structure of a virtual guest placement group rule.
+type Virtual_PlacementGroup_Rule struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetVirtualPlacementGroupRuleService returns an instance of the Virtual_PlacementGroup_Rule SoftLayer service
+func GetVirtualPlacementGroupRuleService(sess *session.Session) Virtual_PlacementGroup_Rule {
+	return Virtual_PlacementGroup_Rule{Session: sess}
+}
+
+func (r Virtual_PlacementGroup_Rule) Id(id int) Virtual_PlacementGroup_Rule {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Virtual_PlacementGroup_Rule) Mask(mask string) Virtual_PlacementGroup_Rule {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Virtual_PlacementGroup_Rule) Filter(filter string) Virtual_PlacementGroup_Rule {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Virtual_PlacementGroup_Rule) Limit(limit int) Virtual_PlacementGroup_Rule {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Virtual_PlacementGroup_Rule) Offset(offset int) Virtual_PlacementGroup_Rule {
+	r.Options.Offset = &offset
+	return r
+}
+
+// no documentation yet
+func (r Virtual_PlacementGroup_Rule) GetObject() (resp datatypes.Virtual_PlacementGroup_Rule, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_PlacementGroup_Rule", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// This data type presents the structure for a virtual reserved capacity group.
+type Virtual_ReservedCapacityGroup struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetVirtualReservedCapacityGroupService returns an instance of the Virtual_ReservedCapacityGroup SoftLayer service
+func GetVirtualReservedCapacityGroupService(sess *session.Session) Virtual_ReservedCapacityGroup {
+	return Virtual_ReservedCapacityGroup{Session: sess}
+}
+
+func (r Virtual_ReservedCapacityGroup) Id(id int) Virtual_ReservedCapacityGroup {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Virtual_ReservedCapacityGroup) Mask(mask string) Virtual_ReservedCapacityGroup {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Virtual_ReservedCapacityGroup) Filter(filter string) Virtual_ReservedCapacityGroup {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Virtual_ReservedCapacityGroup) Limit(limit int) Virtual_ReservedCapacityGroup {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Virtual_ReservedCapacityGroup) Offset(offset int) Virtual_ReservedCapacityGroup {
+	r.Options.Offset = &offset
+	return r
+}
+
+// Update a reserved capacity group.
+func (r Virtual_ReservedCapacityGroup) EditObject(templateObject *datatypes.Virtual_ReservedCapacityGroup) (resp bool, err error) {
+	params := []interface{}{
+		templateObject,
+	}
+	err = r.Session.DoRequest("SoftLayer_Virtual_ReservedCapacityGroup", "editObject", params, &r.Options, &resp)
+	return
+}
+
+// Retrieve The account that the reserved capacity group is implemented on.
+func (r Virtual_ReservedCapacityGroup) GetAccount() (resp datatypes.Account, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_ReservedCapacityGroup", "getAccount", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The instances available for guest provisions on this reserved capacity group.
+func (r Virtual_ReservedCapacityGroup) GetAvailableInstances() (resp []datatypes.Virtual_ReservedCapacityGroup_Instance, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_ReservedCapacityGroup", "getAvailableInstances", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The router the reserved capacity group is implemented on.
+func (r Virtual_ReservedCapacityGroup) GetBackendRouter() (resp datatypes.Hardware_Router_Backend, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_ReservedCapacityGroup", "getBackendRouter", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The guest instances that are members of this reserved capacity group.
+func (r Virtual_ReservedCapacityGroup) GetInstances() (resp []datatypes.Virtual_ReservedCapacityGroup_Instance, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_ReservedCapacityGroup", "getInstances", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Virtual_ReservedCapacityGroup) GetObject() (resp datatypes.Virtual_ReservedCapacityGroup, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_ReservedCapacityGroup", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The instances already occupied by a guest on this reserved capacity group.
+func (r Virtual_ReservedCapacityGroup) GetOccupiedInstances() (resp []datatypes.Virtual_ReservedCapacityGroup_Instance, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_ReservedCapacityGroup", "getOccupiedInstances", nil, &r.Options, &resp)
+	return
+}
+
+// This data type presents the structure for a virtual reserved capacity group instance.
+type Virtual_ReservedCapacityGroup_Instance struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetVirtualReservedCapacityGroupInstanceService returns an instance of the Virtual_ReservedCapacityGroup_Instance SoftLayer service
+func GetVirtualReservedCapacityGroupInstanceService(sess *session.Session) Virtual_ReservedCapacityGroup_Instance {
+	return Virtual_ReservedCapacityGroup_Instance{Session: sess}
+}
+
+func (r Virtual_ReservedCapacityGroup_Instance) Id(id int) Virtual_ReservedCapacityGroup_Instance {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Virtual_ReservedCapacityGroup_Instance) Mask(mask string) Virtual_ReservedCapacityGroup_Instance {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Virtual_ReservedCapacityGroup_Instance) Filter(filter string) Virtual_ReservedCapacityGroup_Instance {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Virtual_ReservedCapacityGroup_Instance) Limit(limit int) Virtual_ReservedCapacityGroup_Instance {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Virtual_ReservedCapacityGroup_Instance) Offset(offset int) Virtual_ReservedCapacityGroup_Instance {
+	r.Options.Offset = &offset
+	return r
+}
+
+// Retrieve Flag to indecate whether or not the reserved instance is available or not.
+func (r Virtual_ReservedCapacityGroup_Instance) GetAvailableFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_ReservedCapacityGroup_Instance", "getAvailableFlag", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The billing item for the reserved capacity group instance.
+func (r Virtual_ReservedCapacityGroup_Instance) GetBillingItem() (resp datatypes.Billing_Item, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_ReservedCapacityGroup_Instance", "getBillingItem", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The virtual guest associated with this reserved capacity group instance.
+func (r Virtual_ReservedCapacityGroup_Instance) GetGuest() (resp datatypes.Virtual_Guest, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_ReservedCapacityGroup_Instance", "getGuest", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Virtual_ReservedCapacityGroup_Instance) GetObject() (resp datatypes.Virtual_ReservedCapacityGroup_Instance, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_ReservedCapacityGroup_Instance", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The reserved instances that are members of this reserved capacity group.
+func (r Virtual_ReservedCapacityGroup_Instance) GetReservedCapacityGroup() (resp datatypes.Virtual_ReservedCapacityGroup, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_ReservedCapacityGroup_Instance", "getReservedCapacityGroup", nil, &r.Options, &resp)
 	return
 }
 

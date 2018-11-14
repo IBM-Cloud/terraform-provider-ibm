@@ -177,6 +177,9 @@ type Product_Item struct {
 	// A product's internal identification number
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
 
+	// no documentation yet
+	IneligibleForAccountDiscountFlag *bool `json:"ineligibleForAccountDiscountFlag,omitempty" xmlrpc:"ineligibleForAccountDiscountFlag,omitempty"`
+
 	// DEPRECATED. An item's inventory status per datacenter.
 	Inventory []Product_Package_Inventory `json:"inventory,omitempty" xmlrpc:"inventory,omitempty"`
 
@@ -692,6 +695,9 @@ type Product_Item_Price struct {
 
 	// The number of server cores required to order this item. This is deprecated. Use [[SoftLayer_Product_Item_Price/getCapacityRestrictionMinimum|getCapacityRestrictionMinimum]] and [[SoftLayer_Product_Item_Price/getCapacityRestrictionMaximum|getCapacityRestrictionMaximum]]
 	RequiredCoreCount *int `json:"requiredCoreCount,omitempty" xmlrpc:"requiredCoreCount,omitempty"`
+
+	// Signifies pricing that is only available on a reserved capacity virtual server order.
+	ReservedCapacityInstanceFlag *bool `json:"reservedCapacityInstanceFlag,omitempty" xmlrpc:"reservedCapacityInstanceFlag,omitempty"`
 
 	// The setup fee associated with a product item price.
 	SetupFee *Float64 `json:"setupFee,omitempty" xmlrpc:"setupFee,omitempty"`
