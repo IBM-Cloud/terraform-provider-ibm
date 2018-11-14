@@ -49,6 +49,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
@@ -119,15 +120,38 @@ func (c *Client) Do(r *Request, respV interface{}, errV interface{}) (*http.Resp
 	}
 
 	if respV != nil {
-		switch respV.(type) {
-		case io.Writer:
-			_, err = io.Copy(respV.(io.Writer), resp.Body)
-		default:
+		// Callback function with execpted JSON type
+		if funcType := reflect.TypeOf(respV); funcType.Kind() == reflect.Func {
+			if funcType.NumIn() != 1 || funcType.NumOut() != 1 {
+				err = fmt.Errorf("Callback funcion not expected signature: func(interface{}) bool")
+			}
+			paramType := funcType.In(0)
 			dc := json.NewDecoder(resp.Body)
 			dc.UseNumber()
-			err = dc.Decode(respV)
-			if err == io.EOF {
-				err = ErrEmptyResponseBody
+			for {
+				typedInterface := reflect.New(paramType).Interface()
+				if err = dc.Decode(typedInterface); err == io.EOF {
+					err = nil
+					break
+				} else if err != nil {
+					break
+				}
+				resv := reflect.ValueOf(respV).Call([]reflect.Value{reflect.ValueOf(typedInterface).Elem()})[0]
+				if !resv.Bool() {
+					break
+				}
+			}
+		} else {
+			switch respV.(type) {
+			case io.Writer:
+				_, err = io.Copy(respV.(io.Writer), resp.Body)
+			default:
+				dc := json.NewDecoder(resp.Body)
+				dc.UseNumber()
+				err = dc.Decode(respV)
+				if err == io.EOF {
+					err = ErrEmptyResponseBody
+				}
 			}
 		}
 	}
