@@ -235,6 +235,12 @@ func (r Account) GetActiveAddresses() (resp []datatypes.Account_Address, err err
 	return
 }
 
+// Retrieve All active agreements for an account
+func (r Account) GetActiveAgreements() (resp []datatypes.Account_Agreement, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account", "getActiveAgreements", nil, &r.Options, &resp)
+	return
+}
+
 // Return all currently active alarms on this account.  Only alarms on hardware and virtual servers accessible to the current user will be returned.
 func (r Account) GetActiveAlarms() (resp []datatypes.Container_Monitoring_Alarm_History, err error) {
 	err = r.Session.DoRequest("SoftLayer_Account", "getActiveAlarms", nil, &r.Options, &resp)
@@ -305,6 +311,12 @@ func (r Account) GetActivePrivateHostedCloudPackages() (resp []datatypes.Product
 // Retrieve An account's non-expired quotes.
 func (r Account) GetActiveQuotes() (resp []datatypes.Billing_Order_Quote, err error) {
 	err = r.Session.DoRequest("SoftLayer_Account", "getActiveQuotes", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Active reserved capacity agreements for an account
+func (r Account) GetActiveReservedCapacityAgreements() (resp []datatypes.Account_Agreement, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account", "getActiveReservedCapacityAgreements", nil, &r.Options, &resp)
 	return
 }
 
@@ -602,6 +614,15 @@ func (r Account) GetDatacentersWithSubnetAllocations() (resp []datatypes.Locatio
 // Retrieve An account's associated virtual dedicated host objects.
 func (r Account) GetDedicatedHosts() (resp []datatypes.Virtual_DedicatedHost, err error) {
 	err = r.Session.DoRequest("SoftLayer_Account", "getDedicatedHosts", nil, &r.Options, &resp)
+	return
+}
+
+// This returns a collection of dedicated hosts that are valid for a given image template.
+func (r Account) GetDedicatedHostsForImageTemplate(imageTemplateId *int) (resp []datatypes.Virtual_DedicatedHost, err error) {
+	params := []interface{}{
+		imageTemplateId,
+	}
+	err = r.Session.DoRequest("SoftLayer_Account", "getDedicatedHostsForImageTemplate", params, &r.Options, &resp)
 	return
 }
 
@@ -1265,6 +1286,12 @@ func (r Account) GetNextInvoicePdfDetailed(documentCreateDate *datatypes.Time) (
 	return
 }
 
+// Retrieve The total recurring charge amount of an account's next invoice eligible for account discount measured in US Dollars ($USD), assuming no changes or charges occur between now and time of billing.
+func (r Account) GetNextInvoiceRecurringAmountEligibleForAccountDiscount() (resp datatypes.Float64, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account", "getNextInvoiceRecurringAmountEligibleForAccountDiscount", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve The billing items that will be on an account's next invoice.
 func (r Account) GetNextInvoiceTopLevelBillingItems() (resp []datatypes.Billing_Item, err error) {
 	err = r.Session.DoRequest("SoftLayer_Account", "getNextInvoiceTopLevelBillingItems", nil, &r.Options, &resp)
@@ -1499,6 +1526,12 @@ func (r Account) GetPermissionRoles() (resp []datatypes.User_Permission_Role, er
 	return
 }
 
+// Retrieve An account's associated virtual placement groups.
+func (r Account) GetPlacementGroups() (resp []datatypes.Virtual_PlacementGroup, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account", "getPlacementGroups", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve
 func (r Account) GetPortableStorageVolumes() (resp []datatypes.Virtual_Disk_Image, err error) {
 	err = r.Session.DoRequest("SoftLayer_Account", "getPortableStorageVolumes", nil, &r.Options, &resp)
@@ -1664,6 +1697,18 @@ func (r Account) GetReplicationEvents() (resp []datatypes.Network_Storage_Event,
 // Retrieve Indicates whether newly created users under this account will be associated with IBMid via an email requiring a response, or not.
 func (r Account) GetRequireSilentIBMidUserCreation() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Account", "getRequireSilentIBMidUserCreation", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve All reserved capacity agreements for an account
+func (r Account) GetReservedCapacityAgreements() (resp []datatypes.Account_Agreement, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account", "getReservedCapacityAgreements", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The reserved capacity groups owned by this account.
+func (r Account) GetReservedCapacityGroups() (resp []datatypes.Virtual_ReservedCapacityGroup, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account", "getReservedCapacityGroups", nil, &r.Options, &resp)
 	return
 }
 
@@ -4093,6 +4138,12 @@ func (r Account_PersonalData_RemoveRequestReview) GetReviewerEmailFromAccessToke
 }
 
 // no documentation yet
+func (r Account_PersonalData_RemoveRequestReview) GetTotalPendingRequests() (resp int, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_PersonalData_RemoveRequestReview", "getTotalPendingRequests", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
 type Account_ProofOfConcept struct {
 	Session *session.Session
 	Options sl.Options
@@ -4224,6 +4275,31 @@ func (r Account_ProofOfConcept) GetSubmittedRequests(email *string, sortOrder *s
 // Gets email address users can use to ask for help/support
 func (r Account_ProofOfConcept) GetSupportEmailAddress() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Account_ProofOfConcept", "getSupportEmailAddress", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Account_ProofOfConcept) GetTotalRequestsPendingIntegratedOfferingTeamReview(accessToken *string) (resp int, err error) {
+	params := []interface{}{
+		accessToken,
+	}
+	err = r.Session.DoRequest("SoftLayer_Account_ProofOfConcept", "getTotalRequestsPendingIntegratedOfferingTeamReview", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Account_ProofOfConcept) GetTotalRequestsPendingOverThresholdReviewCount() (resp int, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_ProofOfConcept", "getTotalRequestsPendingOverThresholdReviewCount", nil, &r.Options, &resp)
+	return
+}
+
+// Determines if the user is one of the reviewers currently able to act
+func (r Account_ProofOfConcept) IsCurrentReviewer(requestId *int, accessToken *string) (resp bool, err error) {
+	params := []interface{}{
+		requestId,
+		accessToken,
+	}
+	err = r.Session.DoRequest("SoftLayer_Account_ProofOfConcept", "isCurrentReviewer", params, &r.Options, &resp)
 	return
 }
 

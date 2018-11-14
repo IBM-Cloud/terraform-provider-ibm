@@ -225,7 +225,7 @@ func (r Brand) GetTickets() (resp []datatypes.Ticket, err error) {
 	return
 }
 
-// no documentation yet
+// (DEPRECATED) Use [[SoftLayer_User_Customer::getImpersonationToken]] method.
 func (r Brand) GetToken(userId *int) (resp string, err error) {
 	params := []interface{}{
 		userId,
@@ -243,6 +243,18 @@ func (r Brand) GetUsers() (resp []datatypes.User_Customer, err error) {
 // Retrieve An account's associated virtual guest objects.
 func (r Brand) GetVirtualGuests() (resp []datatypes.Virtual_Guest, err error) {
 	err = r.Session.DoRequest("SoftLayer_Brand", "getVirtualGuests", nil, &r.Options, &resp)
+	return
+}
+
+// Check if the brand is IBM SLIC top level brand or sub brand.
+func (r Brand) IsIbmSlicBrand() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Brand", "isIbmSlicBrand", nil, &r.Options, &resp)
+	return
+}
+
+// Check if the alternate billing system of brand is Bluemix.
+func (r Brand) IsPlatformServicesBrand() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Brand", "isPlatformServicesBrand", nil, &r.Options, &resp)
 	return
 }
 

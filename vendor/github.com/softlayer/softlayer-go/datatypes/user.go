@@ -236,6 +236,9 @@ type User_Customer struct {
 	// Whether or not a portal user has access to all hardware on their account.
 	HasFullVirtualGuestAccessFlag *bool `json:"hasFullVirtualGuestAccessFlag,omitempty" xmlrpc:"hasFullVirtualGuestAccessFlag,omitempty"`
 
+	// no documentation yet
+	IbmIdLink *User_Customer_Link `json:"ibmIdLink,omitempty" xmlrpc:"ibmIdLink,omitempty"`
+
 	// A portal user's ICQ UIN.
 	Icq *string `json:"icq,omitempty" xmlrpc:"icq,omitempty"`
 
@@ -328,9 +331,6 @@ type User_Customer struct {
 
 	// A count of a portal user's permissions. These permissions control that user's access to functions within the SoftLayer customer portal and API.
 	PermissionCount *uint `json:"permissionCount,omitempty" xmlrpc:"permissionCount,omitempty"`
-
-	// no documentation yet
-	PermissionSystemVersion *int `json:"permissionSystemVersion,omitempty" xmlrpc:"permissionSystemVersion,omitempty"`
 
 	// A portal user's permissions. These permissions control that user's access to functions within the SoftLayer customer portal and API.
 	Permissions []User_Customer_CustomerPermission_Permission `json:"permissions,omitempty" xmlrpc:"permissions,omitempty"`
@@ -695,16 +695,19 @@ type User_Customer_Link struct {
 	DestinationUserId *int `json:"destinationUserId,omitempty" xmlrpc:"destinationUserId,omitempty"`
 
 	// no documentation yet
-	IbmIdUniqueIdentifier *string `json:"ibmIdUniqueIdentifier,omitempty" xmlrpc:"ibmIdUniqueIdentifier,omitempty"`
-
-	// no documentation yet
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// The realm of the IAMid unique identifier.
+	Realm *string `json:"realm,omitempty" xmlrpc:"realm,omitempty"`
 
 	// no documentation yet
 	ServiceProvider *Service_Provider `json:"serviceProvider,omitempty" xmlrpc:"serviceProvider,omitempty"`
 
 	// no documentation yet
 	ServiceProviderId *int `json:"serviceProviderId,omitempty" xmlrpc:"serviceProviderId,omitempty"`
+
+	// The IAMid Unique Identifier formed in the format of "realm-uniqueIdentifier"
+	UniqueIdentifier *string `json:"uniqueIdentifier,omitempty" xmlrpc:"uniqueIdentifier,omitempty"`
 
 	// no documentation yet
 	User *User_Customer `json:"user,omitempty" xmlrpc:"user,omitempty"`
@@ -719,7 +722,7 @@ type User_Customer_Link_ThePlanet struct {
 }
 
 // no documentation yet
-type User_Customer_Link_VerifiedIBMidLinkCollection struct {
+type User_Customer_Link_VerifiedIamIdLinkCollection struct {
 	Entity
 
 	// no documentation yet
@@ -987,6 +990,9 @@ type User_Customer_Prospect_ServiceProvider_EnrollRequest struct {
 	// Service provider first name
 	FirstName *string `json:"firstName,omitempty" xmlrpc:"firstName,omitempty"`
 
+	// Service provider IBMid username, if different than the email.
+	IbmIdUsername *string `json:"ibmIdUsername,omitempty" xmlrpc:"ibmIdUsername,omitempty"`
+
 	// IBM partner world id
 	IbmPartnerWorldId *string `json:"ibmPartnerWorldId,omitempty" xmlrpc:"ibmPartnerWorldId,omitempty"`
 
@@ -1123,6 +1129,12 @@ type User_Employee struct {
 
 	// no documentation yet
 	OfficePhone *string `json:"officePhone,omitempty" xmlrpc:"officePhone,omitempty"`
+
+	// A count of
+	PermissionCount *uint `json:"permissionCount,omitempty" xmlrpc:"permissionCount,omitempty"`
+
+	// no documentation yet
+	Permissions []User_Permission_Action `json:"permissions,omitempty" xmlrpc:"permissions,omitempty"`
 
 	// A count of
 	RoleCount *uint `json:"roleCount,omitempty" xmlrpc:"roleCount,omitempty"`

@@ -78,6 +78,15 @@ func (r Tag) AutoComplete(tag *string) (resp []datatypes.Tag, err error) {
 	return
 }
 
+// Delete a tag for an object.
+func (r Tag) DeleteTag(tagName *string) (resp bool, err error) {
+	params := []interface{}{
+		tagName,
+	}
+	err = r.Session.DoRequest("SoftLayer_Tag", "deleteTag", params, &r.Options, &resp)
+	return
+}
+
 // Retrieve The account to which the tag is tied.
 func (r Tag) GetAccount() (resp datatypes.Account, err error) {
 	err = r.Session.DoRequest("SoftLayer_Tag", "getAccount", nil, &r.Options, &resp)

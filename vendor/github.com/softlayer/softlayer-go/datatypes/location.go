@@ -297,6 +297,9 @@ type Location_Region_Location struct {
 	// The SoftLayer_Location tied to a region's location. This provides more information about the location, including specific datacenter information.
 	Location *Location `json:"location,omitempty" xmlrpc:"location,omitempty"`
 
+	// no documentation yet
+	LocationId *int `json:"locationId,omitempty" xmlrpc:"locationId,omitempty"`
+
 	// A count of a region's location also has delivery information as well as other information to be determined. For now, availability is provided and could weigh into the decision as to where to decide to have a server provisioned.'
 	LocationPackageDetailCount *uint `json:"locationPackageDetailCount,omitempty" xmlrpc:"locationPackageDetailCount,omitempty"`
 
