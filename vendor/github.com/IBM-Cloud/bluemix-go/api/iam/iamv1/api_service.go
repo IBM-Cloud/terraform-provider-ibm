@@ -18,6 +18,7 @@ type IAMServiceAPI interface {
 	APIKeys() APIKeyRepository
 	ServicePolicies() ServicePolicyRepository
 	UserPolicies() UserPolicyRepository
+	Identity() Identity
 }
 
 //ErrCodeAPICreation ...
@@ -89,4 +90,9 @@ func (a *iamService) ServicePolicies() ServicePolicyRepository {
 //UserPoliciesAPI
 func (a *iamService) UserPolicies() UserPolicyRepository {
 	return NewUserPolicyRepository(a.Client)
+}
+
+//IdentityAPI
+func (a *iamService) Identity() Identity {
+	return NewIdentity(a.Client)
 }
