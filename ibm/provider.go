@@ -125,6 +125,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_compute_bare_metal":                    resourceIBMComputeBareMetal(),
 			"ibm_compute_dedicated_host":                resourceIBMComputeDedicatedHost(),
 			"ibm_compute_monitor":                       resourceIBMComputeMonitor(),
+			"ibm_compute_placement_group":               resourceIBMComputePlacementGroup(),
 			"ibm_compute_provisioning_hook":             resourceIBMComputeProvisioningHook(),
 			"ibm_compute_ssh_key":                       resourceIBMComputeSSHKey(),
 			"ibm_compute_ssl_certificate":               resourceIBMComputeSSLCertificate(),
