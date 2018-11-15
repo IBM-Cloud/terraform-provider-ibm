@@ -41,6 +41,10 @@ func resourceIBMFirewall() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 				Default:  "HARDWARE_FIREWALL_DEDICATED",
+				ValidateFunc: validateAllowedStringValue([]string{
+					"HARDWARE_FIREWALL_DEDICATED",
+					"FORTIGATE_SECURITY_APPLIANCE",
+				}),
 			},
 
 			"ha_enabled": {
@@ -84,13 +88,7 @@ func resourceIBMFirewallCreate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 
 	keyName := "HARDWARE_FIREWALL_DEDICATED"
-
 	firewallType := d.Get("firewall_type").(string)
-	// validate firewall type is one of HARDWARE_FIREWALL_DEDICATED or FORTIGATE_SECURITY_APPLIANCE
-	if firewallType != "HARDWARE_FIREWALL_DEDICATED" && firewallType != "FORTIGATE_SECURITY_APPLIANCE" {
-		return fmt.Errorf("firewall_type should be one of HARDWARE_FIREWALL_DEDICATED or FORTIGATE_SECURITY_APPLIANCE")
-	}
-
 	haEnabled := d.Get("ha_enabled").(bool)
 	if haEnabled {
 		if firewallType == "HARDWARE_FIREWALL_DEDICATED" {
