@@ -3,6 +3,12 @@ language: go
 go:
 - 1.9.2
 
+before_install:
+  - mkdir -p $HOME/gopath/src/github.com/IBM-Cloud/terraform-provider-ibm
+  - rsync -az ${TRAVIS_BUILD_DIR}/ $HOME/gopath/src/github.com/IBM-Cloud/terraform-provider-ibm
+  - export TRAVIS_BUILD_DIR=$HOME/gopath/src/github.com/IBM-Cloud/terraform-provider-ibm
+  - cd $HOME/gopath/src/github.com/IBM-Cloud/terraform-provider-ibm
+
 install:
 # This script is used by the Travis build to install a cookie for
 # go.googlesource.com so rate limits are higher when using `go get` to fetch
