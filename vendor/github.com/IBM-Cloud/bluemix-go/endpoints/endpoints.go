@@ -19,6 +19,7 @@ type EndpointLocator interface {
 	ResourceControllerEndpoint() (string, error)
 	ResourceCatalogEndpoint() (string, error)
 	UAAEndpoint() (string, error)
+	ContainerRegistryEndpoint() (string, error)
 }
 
 const (
@@ -100,6 +101,13 @@ var regionToEndpoint = map[string]map[string]string{
 		"eu-de":    "https://resource-controller.bluemix.net",
 		"au-syd":   "https://resource-controller.bluemix.net",
 		"eu-gb":    "https://resource-controller.bluemix.net",
+	},
+	"cr": {
+		"us-south": "https://registry.ng.bluemix.net",
+		"us-east":  "https://registry.ng.bluemix.net",
+		"eu-de":    "https://registry.eu-de.bluemix.net",
+		"au-syd":   "https://registry.au-syd.bluemix.net",
+		"eu-gb":    "https://registry.eu-gb.bluemix.net",
 	},
 }
 
@@ -204,4 +212,12 @@ func (e *endpointLocator) ResourceCatalogEndpoint() (string, error) {
 
 	}
 	return "", bmxerror.New(ErrCodeServiceEndpoint, fmt.Sprintf("Resource Catalog endpoint doesn't exist"))
+}
+
+func (e *endpointLocator) ContainerRegistryEndpoint() (string, error) {
+	if ep, ok := regionToEndpoint["cr"][e.region]; ok {
+		//As the current list of regionToEndpoint above is not exhaustive we allow to read endpoints from the env
+		return helpers.EnvFallBack([]string{"IBMCLOUD_CR_API_ENDPOINT"}, ep), nil
+	}
+	return "", bmxerror.New(ErrCodeServiceEndpoint, fmt.Sprintf("Container Registry Service endpoint doesn't exist for region: %q", e.region))
 }

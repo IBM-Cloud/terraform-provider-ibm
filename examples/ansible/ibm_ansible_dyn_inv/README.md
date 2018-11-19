@@ -4,10 +4,10 @@ Sample Python script to dynamically parse terraform.tfstate file into Ansible in
 
 Copyright (c) 2018, IBM UK
 steve_strutt@uk.ibm.com
-ti_version = '0.6'
+ti_version = '0.7'
 
 ## Ansible dynamic inventory for Terraform with IBM Cloud ##
-This dynamic inventory script is written for use with Ansible and Terraform on IBM Cloud. Details of how to setup the script can be found in the IBM Cloud [Terraform and Ansible](https://console.bluemix.net/docs/terraform/manage_resources.html) documentation.
+This dynamic inventory script is written for use with Ansible and Terraform on IBM Cloud. Details of how to setup the script can be found in the IBM Cloud [Using Ansible to automate app deployment on Terraform-provided infrastructure](https://console.bluemix.net/docs/terraform/ansible/ansible.html#ansible).
 
 
 ## Static and dynamic inventory
@@ -20,35 +20,13 @@ This inventory script expects to find Terraform tags of the form
 group: host_group associated with each tf instance to define the 
 host group membership for Ansible. Multiple group tags are allowed per host
 
-## Installation
-
-This Ansible package and subdirectories can be downloaded separately to the other examples using the subversion command line client (svn). Install Subversion for your workstation from the [Apache.org website](https://subversion.apache.org/packages.html).
-
-Create a temporary directory to download this package in your Ansible project directory.
-
-`mkdir temp`
-
-From your Ansible project directory, download this example using `svn export`. Browse to the github project and subdirectory you want to clone, for example: https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ansible/ibm_ansible_wordpress. Replace tree/master with trunk in the URL, and run svn export on it. 
-
-`svn export https://github.com/IBM-Cloud/terraform-provider-ibm/trunk/examples/ansible/ibm_ansible_wordpress`
-
-Move terraform_inv.py and terraform_inv.ini to the **inventory** folder of the Ansible project. 
-
-`mv ./ibm_ansible_dyn_inv/terraform* ../inventory`
-
-nagivate to the **inventory** directory
-
-`cd inventory`
-
-Update permissions of terraform_inv.py to include **execute**
-
-`chmod +x terraform_inv.py`
+This script was written for Terraform 0.11.07. It will break if Terraform change the format of the terraform.tf file. This is expected with 0.12.0. 
 
 ## Configuration
 
 The terraform.tfstate defining the current state of the deployed infrastructure, 
 is read from the Terraform direcfory. This is specified using the  
-terraform_inv.ini file in the same directory as the terraform_inv.py script, pointing to the 
+terraform_inv.ini file in the same directory as this script, pointing to the 
 location of the terraform.tfstate file to be inventoried. 
 The tfstate file should be referenced by is full path and file name. 
 
@@ -62,7 +40,7 @@ The tfstate file should be referenced by is full path and file name.
 ## Testing  
  
 Validate correct execution:
--  With supplied test files - `./terraform_inv.py -t ../temp/ibm_ansible_dyn_inv/tr_test_files/terraform.tfstate` 
+-  With supplied test files - `./terraform_inv.py -t ../tr_test_files/terraform.tfstate` 
 -  With ini file `./terraform.py --list` 
 Successful execution returns groups with lists of hosts and _meta/hostvars with a detailed
 host listing. 

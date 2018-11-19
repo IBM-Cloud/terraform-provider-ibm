@@ -230,6 +230,7 @@ const (
 	uaaAccessTokenHeader = "X-Auth-Uaa-Token"
 
 	iamRefreshTokenHeader = "X-Auth-Refresh-Token"
+	crRefreshTokenHeader = "RefreshToken"
 )
 
 func getDefaultAuthHeaders(serviceName bluemix.ServiceName, c *bluemix.Config) gohttp.Header {
@@ -244,6 +245,9 @@ func getDefaultAuthHeaders(serviceName bluemix.ServiceName, c *bluemix.Config) g
 		h.Set(authorizationHeader, c.IAMAccessToken)
 		h.Set(iamRefreshTokenHeader, c.IAMRefreshToken)
 		h.Set(uaaAccessTokenHeader, c.UAAAccessToken)
+	case bluemix.ContainerRegistryService:
+		h.Set(authorizationHeader, c.IAMAccessToken)
+		h.Set(crRefreshTokenHeader, c.IAMRefreshToken)
 	case bluemix.IAMPAPService, bluemix.AccountServicev1, bluemix.ResourceCatalogrService, bluemix.ResourceControllerService, bluemix.ResourceManagementService, bluemix.IAMService, bluemix.IAMUUMService:
 		h.Set(authorizationHeader, c.IAMAccessToken)
 	default:

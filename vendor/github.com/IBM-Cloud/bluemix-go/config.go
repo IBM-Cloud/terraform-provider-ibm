@@ -34,6 +34,8 @@ const (
 	ResourceControllerService ServiceName = ServiceName("resource-controller")
 	//resourceCatalogervice
 	ResourceCatalogrService ServiceName = ServiceName("resource-catalog ")
+	//RegistryService ...
+	ContainerRegistryService ServiceName = ServiceName("container-registry")
 )
 
 //Config ...

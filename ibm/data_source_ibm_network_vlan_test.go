@@ -38,7 +38,6 @@ func testAccCheckIBMNetworkVlanDataSourceConfig(name string) string {
     name            = "%s"
     datacenter      = "dal06"
     type            = "PRIVATE"
-    subnet_size     = 8
     
 }
 data "ibm_network_vlan" "tfacc_vlan" {

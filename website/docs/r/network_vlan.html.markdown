@@ -25,7 +25,6 @@ resource "ibm_network_vlan" "test_vlan" {
    name = "test_vlan"
    datacenter = "dal06"
    type = "PUBLIC"
-   subnet_size = 8
    router_hostname = "fcr01a.dal06"
    tags = [
      "collectd",
@@ -41,7 +40,7 @@ The following arguments are supported:
 
 * `datacenter` - (Required, string) The data center in which the VLAN resides.
 * `type` - (Required, string) The type of VLAN. Accepted values are `PRIVATE` and `PUBLIC`.
-* `subnet_size` - (Required, integer) The size of the primary subnet for the VLAN. Accepted values are `8`, `16`, `32`, and `64`.
+* `subnet_size` - (Removed, integer) The size of the primary subnet for the VLAN. Accepted values are `8`, `16`, `32`, and `64`. This field has been removed.
 * `name` - (Optional, string) The name of the VLAN.
 * `router_hostname` - (Optional, string) The hostname of the primary router associated with the VLAN.
 * `tags` - (Optional, array of strings) Tags associated with the VLAN. Permitted characters include: A-Z, 0-9, whitespace, _ (underscore), - (hyphen), . (period), and : (colon). All other characters are removed.
