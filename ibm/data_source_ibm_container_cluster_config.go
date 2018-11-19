@@ -65,8 +65,19 @@ func dataSourceIBMContainerClusterConfig() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"network": {
+				Description: "If set to true will download the Calico network config with the Admin config",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+			},
 			"config_file_path": {
 				Description: "The absolute path to the kubernetes config yml file ",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"calico_config_file_path": {
+				Description: "The absolute path to the calico network config file ",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
@@ -84,6 +95,7 @@ func dataSourceIBMContainerClusterConfigRead(d *schema.ResourceData, meta interf
 	download := d.Get("download").(bool)
 	admin := d.Get("admin").(bool)
 	configDir := d.Get("config_dir").(string)
+	network := d.Get("network").(bool)
 
 	if len(configDir) == 0 {
 		configDir, err = homedir.Dir()
@@ -91,7 +103,7 @@ func dataSourceIBMContainerClusterConfigRead(d *schema.ResourceData, meta interf
 			return fmt.Errorf("Error fetching homedir: %s", err)
 		}
 	}
-	var configPath string
+	var configPath, calicoConfigPath string
 	if !download {
 		log.Println("Skipping download of the cluster config", "Going to check if it already exists")
 		expectedDir := v1.ComputeClusterConfigDir(configDir, name, admin)
@@ -105,14 +117,23 @@ func dataSourceIBMContainerClusterConfigRead(d *schema.ResourceData, meta interf
 		if err != nil {
 			return err
 		}
-		configPath, err = csAPI.GetClusterConfig(name, configDir, admin, targetEnv)
-		if err != nil {
-			return fmt.Errorf("Error downloading the cluster config [%s]: %s", name, err)
+		if network {
+			// For the Network config we need to gather the certs so we must override the admin value
+			configPath, calicoConfigPath, err = csAPI.StoreConfig(name, configDir, admin || true, network, targetEnv)
+			if err != nil {
+				return fmt.Errorf("Error downloading the cluster config [%s]: %s", name, err)
+			}
+		} else {
+			configPath, err = csAPI.GetClusterConfig(name, configDir, admin, targetEnv)
+			if err != nil {
+				return fmt.Errorf("Error downloading the cluster config [%s]: %s", name, err)
+			}
 		}
 	}
 
 	d.SetId(name)
 	d.Set("config_dir", configDir)
 	d.Set("config_file_path", configPath)
+	d.Set("calico_config_file_path", calicoConfigPath)
 	return nil
 }
