@@ -7,9 +7,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	//"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/services"
-	//"github.com/softlayer/softlayer-go/sl"
 )
 
 func resourceIBMDNSDomainRegistrationNameservers() *schema.Resource {

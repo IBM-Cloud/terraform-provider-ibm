@@ -2,11 +2,9 @@ package ibm
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform/helper/resource"
 	"regexp"
 	"testing"
-
-	//"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
 )
 
 func TestAccIBMDNSDomainRegistrationDataSource_Basic(t *testing.T) {
@@ -28,19 +26,6 @@ func TestAccIBMDNSDomainRegistrationDataSource_Basic(t *testing.T) {
 	})
 }
 
-// The datasource to apply
-// const testAccCheckIBMDNSDomainREgistrationDataSourceConfig_basic = `
-// resource "ibm_dns_domain_registration" "ds_domain_test" {
-// 	name = "%s"
-// }
-// data "ibm_dns_domain_registration" "domain_id" {
-//     name = "${ibm_dns_domain_registration.ds_domain_test.name}"
-// }
-// `
-
-// resource "ibm_dns_domain_registration" "wcpclouduk" {
-// 	name = "%s"
-// }
 const testAccCheckIBMDNSDomainRegistrationDataSourceConfig_basic = `
 data "ibm_dns_domain_registration" "wcpclouduk" {
     name = "%s"

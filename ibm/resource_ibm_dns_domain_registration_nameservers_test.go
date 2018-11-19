@@ -3,15 +3,13 @@ package ibm
 import (
 	"errors"
 	"fmt"
-	"log"
-	"strconv"
-	"testing"
-	//"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/services"
-	//"github.com/softlayer/softlayer-go/sl"
+	"log"
+	"strconv"
+	"testing"
 )
 
 func TestAccIBMDNSDomainRegistration_Nameservers_Basic(t *testing.T) {
@@ -30,10 +28,8 @@ data "ibm_dns_domain_registration" "wcpclouduk" {
 `
 
 	var domainName1 = "wcpclouduk.com"
-	//var nameServers []string
 	var nameServer1 = "ns008.name.cloud.ibm.com"
 	var nameServer2 = "ns017.name.cloud.ibm.com"
-	//log.Printf(config, nameServer1, nameServer2, domainName1)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -44,8 +40,6 @@ data "ibm_dns_domain_registration" "wcpclouduk" {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMDNSDomainRegistrationAttributes("ibm_dns_domain_registration_nameservers.acceptance_test_dns_domain-1",
 						&dns_domain_registration, nameServer1, nameServer2),
-					// resource.TestCheckResourceAttr(
-					// 	"ibm_dns_domain_registration_nameservers.acceptance_test_dns_domain-1", "name", domainName1),
 					resource.TestCheckResourceAttr(
 						"ibm_dns_domain_registration_nameservers.acceptance_test_dns_domain-1", "name_servers.#", "2"),
 				),

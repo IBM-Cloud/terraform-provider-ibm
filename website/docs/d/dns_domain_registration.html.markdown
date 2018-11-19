@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_dns_domain_registration
 
-Import the name of an existing DNS domain registration as a read-only data source. You can then reference this data source in other resources within the same configuration by using interpolation syntax. The domain must inititally be registered via the UI of the IBM Cloud DNS Registration Service. The Domain Registration datasource is used in configuration of IBM Cloud Internet Services.  
+Import the name of an existing DNS domain registration as a read-only data source. You can then reference this data source in other resources within the same configuration by using interpolation syntax. The domain must inititally be registered via the UI of the IBM Cloud DNS Registration Service. The Domain Registration datasource is used in configuration of IBM Cloud Internet Services. See resource ibm_dns_domain_registration_nameservers. 
 
 ## Example Usage
 
@@ -21,7 +21,7 @@ data "ibm_dns_domain_registration" "dns-domain-test" {
 The following example shows how you can use this data source to reference the domain ID in the `ibm_dns_registration_nameservers` resource, since the numeric IDs are often unknown.
 
 ```hcl
-resource "ibm_dns_registration_nameservers" "dns-domain-test" {
+resource "ibm_dns_domain_registration_nameservers" "dns-domain-test" {
     ...
     dns_registration_id = "${data.ibm_dns_domain_registration.dns-domain-test.id}"
     ...
