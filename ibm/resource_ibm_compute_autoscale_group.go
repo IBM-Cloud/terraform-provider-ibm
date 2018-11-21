@@ -246,9 +246,12 @@ func getVirtualGuestTemplate(vGuestTemplateList []interface{}, meta interface{})
 				fmt.Errorf("Error while parsing virtual_guest_member_template values: %s", err)
 		}
 	}
+	dc := vGuestResourceData.Get("datacenter").(string)
+	publicVlan := vGuestResourceData.Get("public_vlan_id").(int)
+	privateVlan := vGuestResourceData.Get("private_vlan_id").(int)
 
 	// Get the virtual guest creation template from the completed resource data object
-	return getVirtualGuestTemplateFromResourceData(vGuestResourceData, meta)
+	return getVirtualGuestTemplateFromResourceData(vGuestResourceData, meta, dc, publicVlan, privateVlan)
 }
 
 func resourceIBMComputeAutoScaleGroupCreate(d *schema.ResourceData, meta interface{}) error {
