@@ -84,6 +84,54 @@ resource "ibm_compute_vm_instance" "terraform-sample-flavor" {
 }
 ```
 
+```
+
+In the following example, you can retry to create a VM instance using a datacenter_choice. If VM fails to place order on first datacenter or vlans it retries to place order on subsequent datacenters and vlans untill place order is successfull:
+
+```hcl
+resource "ibm_compute_vm_instance" "terraform-retry" {
+  hostname          = "vmretry"
+  domain            = "example.com"
+  network_speed     = 100
+  hourly_billing    = true
+  cores             = 1
+  memory            = 1024
+  local_disk        = false
+  os_reference_code = "DEBIAN_7_64"
+  disks             = [25]
+
+  datacenter_choice = [
+    {
+      datacenter      = "dal09"
+      public_vlan_id  = 123245
+      private_vlan_id = 123255
+    },
+    {
+      datacenter = "wdc54"
+    },
+    {
+      datacenter      = "dal09"
+      public_vlan_id  = 153345
+      private_vlan_id = 123255
+    },
+    {
+      datacenter = "dal06"
+    },
+    {
+      datacenter      = "dal09"
+      public_vlan_id  = 123245
+      private_vlan_id = 123255
+    },
+    {
+      datacenter      = "dal09"
+      public_vlan_id  = 1232454
+      private_vlan_id = 1234567
+    },
+  ]
+}
+
+```
+
 
 ## Argument Reference
 
@@ -97,9 +145,9 @@ The following arguments are supported:
     **NOTE**: Conflicts with `flavor_key_name`.
 * `flavor_key_name` - (Optional, string) The flavor key name that you want to use to provision the instance. To see available Flavor key name, log in to the [IBM Cloud Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest/getCreateObjectOptions.json), using your API key as the password.
     **NOTE**: Conflicts with `cores` and `memory`.
-* `datacenter` - (Required, string) The datacenter in which you want to provision the instance.
+* `datacenter` - (Optional, string) The datacenter in which you want to provision the instance.
     **NOTE**: If `dedicated_host_name` or `dedicated_host_id`
-    is provided then the datacenter should be same as the dedicated host datacenter.
+    is provided then the datacenter should be same as the dedicated host datacenter. Conflicts with `datacenter_choice`. 
 * `hourly_billing` - (Optional, boolean) The billing type for the instance. When set to `true`, the computing instance is billed on hourly usage. Otherwise, the instance is billed on a monthly basis. The default value is `true`.
 * `local_disk`- (Optional, boolean) The disk type for the instance. When set to `true`, the disks for the computing instance are provisioned on the host that the instance runs. Otherwise, SAN disks are provisioned. The default value is `true`.
 * `dedicated_acct_host_only` - (Optional, boolean) Specifies whether the instance must only run on hosts with instances from the same account. The default value is `false`. If VM is provisioned using flavorKeyName, value should be set to `false`.
@@ -118,7 +166,9 @@ The following arguments are supported:
 *  `private_security_group_ids` - (Optional, array of integers) The ids of security groups to apply on the private interface.
 This attribute can't be updated. This is provided so that you can apply security groups to  your VSI right from the beginning, the first time it comes up. If you would like to add or remove security groups in the future to this VSI then you should consider using `ibm_network_interface_sg_attachment` resource. If you use this attribute in addition to `ibm_network_interface_sg_attachment` resource you might get some spurious diffs. So use one of these consistently for a particular VSI.
 *  `public_vlan_id` - (Optional, integer) The public VLAN ID for the public network interface of the instance. Accepted values are in the [VLAN doc](https://control.softlayer.com/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
+    **NOTE**: Conflicts with `datacenter_choice`.
 * `private_vlan_id` - (Optional, integer) The private VLAN ID for the private network interface of the instance. You can find accepted values in the [VLAN doc](https://control.softlayer.com/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
+    **NOTE**: Conflicts with `datacenter_choice`.
 * `public_security_group_ids` - (Optional, array of integers) The ids of security groups to apply on the public interface.
 This attribute can't be updated. This is provided so that you can apply security groups to  your VSI right from the beginning, the first time it comes up. If you would like to add or remove security groups in the future to this VSI then you should consider using `ibm_network_interface_sg_attachment` resource. If you use this attribute in addition to `ibm_network_interface_sg_attachment` resource you might get some spurious diffs. So use one of these consistently for a particular VSI.
 * `public_subnet` - (Optional, string) The public subnet for the public network interface of the instance. Accepted values are primary public networks. You can find accepted values in the [subnets doc](https://control.softlayer.com/network/subnets).
@@ -141,6 +191,12 @@ This attribute can't be updated. This is provided so that you can apply security
 * `public_bandwidth_unlimited` - (Optional, boolean). Allowed unlimited public network traffic(GB) per month for a monthly based server. The `network_speed` should be 100 Mbps. Default value: `false`.
     **NOTE**: Conflicts with `private_network_only` and `public_bandwidth_limited`.
 * `evault` - (Optional, int). Allowed evault(GB) per month for monthly based servers.
+* `datacenter_choice` - (Optional, list) A nested block to describe datacenter choice options to retry on different datacenters and vlans. Nested `datacenter_choice` blocks must have the following structure:
+    * `datacenter` - (Required, string) The datacenter in which you want to provision the instance.
+    * `public_vlan_id` - (Optional, string) The public VLAN ID for the public network interface of the instance. Accepted values are in the [VLAN doc](https://control.softlayer.com/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
+    * `private_vlan_id` - (Optional, string) The private VLAN ID for the private network interface of the instance. You can find accepted values in the [VLAN doc](https://control.softlayer.com/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html). 
+    **NOTE**: Conflicts with `datacenter` `private_vlan_id` and `public_vlan_id`. 
+
 
 
 ## Attribute Reference
