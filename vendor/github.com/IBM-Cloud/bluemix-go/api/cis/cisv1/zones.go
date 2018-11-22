@@ -4,7 +4,7 @@ import (
 	//"fmt"
 	"github.com/IBM-Cloud/bluemix-go/client"
     "fmt"
-    "log"
+    //"log"
 )
 
 
@@ -87,7 +87,6 @@ func newZoneAPI(c *client.Client) Zones {
 }
 
 func (r *zones)  ListZones(cisId string) (*[]Zone, error) {   
-  log.Printf(">>>>>> Reached ListZones with %s\n", cisId)
   zoneResults := ZoneResults{}
   rawURL := fmt.Sprintf("/v1/%s/zones/", cisId)
   _, err := r.client.Get(rawURL, &zoneResults)
@@ -100,7 +99,7 @@ func (r *zones)  ListZones(cisId string) (*[]Zone, error) {
 
 func (r *zones)  GetZone(cisId string, zoneId string) (*Zone, error) {
   zoneResult := ZoneResult{}
-  rawURL := fmt.Sprintf("/v1/" + cisId + "/zones/" + zoneId)
+  rawURL := fmt.Sprintf("/v1/%s/zones/%s", cisId, zoneId)
 	_, err := r.client.Get(rawURL, &zoneResult, nil)
 	if err != nil {
 		return nil, err
@@ -116,7 +115,7 @@ func  (r *zones) DeleteZone(cisId string, zoneId string) (error) {
   // 403 if zone does not exist. Should return 404. Issue reported against CIS
   // DeleteZone is only called by resourceCISdomainDelete if zone exists. 
 
-    rawURL := fmt.Sprintf("/v1/" + cisId + "/zones/" + zoneId)
+    rawURL := fmt.Sprintf("/v1/%s/zones/%s", cisId, zoneId)
     _, err := r.client.Delete(rawURL)
     if err != nil {
       return err
@@ -127,7 +126,7 @@ func  (r *zones) DeleteZone(cisId string, zoneId string) (error) {
 
 func (r *zones)  CreateZone(cisId string, zoneBody ZoneBody) (*Zone, error) {
   zoneResult := ZoneResult{}		
-	rawURL := "/v1/" + cisId + "/zones/" 
+	rawURL := fmt.Sprintf("/v1/%s/zones/", cisId)
       _, err := r.client.Post(rawURL, &zoneBody, &zoneResult)
       if err != nil {
 		return nil, err

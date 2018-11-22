@@ -105,13 +105,13 @@ func errorsToString(e []Error)  (string) {
 
 // Handle bug in Create Monitor API that returns a string rather than int
 
-func monErrorsToString(e []MonError)  (string) {
+// func monErrorsToString(e []MonError)  (string) {
 
-    var errMsg string
-    for _, err := range e {
-        //errFrag := "Code: " + strconv.Itoa(err.Code) + " " + err.Msg
-        errFrag := "Code: " + err.Code + " " + err.Msg
-        errMsg = errMsg + errFrag
-    }
-    return errMsg
-}
+//     var errMsg string
+//     for _, err := range e {
+//         //errFrag := "Code: " + strconv.Itoa(err.Code) + " " + err.Msg
+//         errFrag := "Code: " + err.Code + " " + err.Msg
+//         errMsg = errMsg + errFrag
+//     }
+//     return errMsg
+// }

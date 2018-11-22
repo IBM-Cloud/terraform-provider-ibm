@@ -158,7 +158,7 @@ func resourceCIShealthCheckCreate(d *schema.ResourceData, meta interface{}) erro
 	// Otherwise it returns the index in the paths array.
 	if index == -1 {
 
-		monitorNew := MonitorBody{
+		monitorNew := v1.MonitorBody{
 			ExpCodes: expCodes,
 			ExpBody:  expBody,
 			Path:     monitorPath,
