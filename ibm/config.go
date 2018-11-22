@@ -60,6 +60,8 @@ type Config struct {
 	BluemixAPIKey string
 	//Bluemix region
 	Region string
+	//Resource group id
+	ResourceGroup string
 	//Bluemix API timeout
 	BluemixTimeout time.Duration
 
@@ -355,6 +357,7 @@ func newSession(c *Config) (*Session, error) {
 			Debug:         os.Getenv("TF_LOG") != "",
 			HTTPTimeout:   c.BluemixTimeout,
 			Region:        c.Region,
+			ResourceGroup: c.ResourceGroup,
 			RetryDelay:    &c.RetryDelay,
 			MaxRetries:    &c.RetryCount,
 		}

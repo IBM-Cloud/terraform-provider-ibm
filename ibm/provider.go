@@ -34,6 +34,12 @@ func Provider() terraform.ResourceProvider {
 				Description: "The Bluemix Region (for example 'us-south').",
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"BM_REGION", "BLUEMIX_REGION"}, "us-south"),
 			},
+			"resource_group": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Resource group id.",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"BM_RESOURCE_GROUP", "BLUEMIX_RESOURCE_GROUP"}, ""),
+			},
 			"softlayer_api_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -189,6 +195,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	softlayerEndpointUrl := d.Get("softlayer_endpoint_url").(string)
 	softlayerTimeout := d.Get("softlayer_timeout").(int)
 	bluemixTimeout := d.Get("bluemix_timeout").(int)
+	resourceGrp := d.Get("resource_group").(string)
 	region := d.Get("region").(string)
 	retryCount := d.Get("max_retries").(int)
 	wskNameSpace := d.Get("function_namespace").(string)
@@ -205,6 +212,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	config := Config{
 		BluemixAPIKey:        bluemixAPIKey,
 		Region:               region,
+		ResourceGroup:        resourceGrp,
 		BluemixTimeout:       time.Duration(bluemixTimeout) * time.Second,
 		SoftLayerTimeout:     time.Duration(softlayerTimeout) * time.Second,
 		SoftLayerUserName:    softlayerUsername,
