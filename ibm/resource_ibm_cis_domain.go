@@ -41,7 +41,7 @@ func resourceIBMCISDomain() *schema.Resource {
 			},
 			"original_name_servers": {
 				Type:     schema.TypeList,
-				Optional: true,
+				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 		},

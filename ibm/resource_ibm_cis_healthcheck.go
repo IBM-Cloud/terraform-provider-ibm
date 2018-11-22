@@ -10,10 +10,10 @@ import (
 	"github.com/google/go-cmp/cmp"
 	//"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/helper/validation"
+	//"github.com/hashicorp/terraform/helper/validation"
 )
 
-func resourceCIShealthCheck() *schema.Resource {
+func resourceIBMCISHealthCheck() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"cis_id": {
@@ -37,12 +37,17 @@ func resourceCIShealthCheck() *schema.Resource {
 				Description: "expected_codes",
 				Required:    true,
 			},
+			"description": {
+				Type:        schema.TypeString,
+				Description: "description",
+				Optional:    true,
+			},
 			"type": {
-				Type:         schema.TypeString,
-				Description:  "type",
-				Optional:     true,
-				Default:      "http",
-				ValidateFunc: validation.StringInSlice([]string{"http", "https"}, false),
+				Type:        schema.TypeString,
+				Description: "type",
+				Optional:    true,
+				Default:     "http",
+				//ValidateFunc: validation.StringInSlice([]string{"http", "https"}, false),
 			},
 			"method": {
 				Type:        schema.TypeString,
@@ -51,34 +56,34 @@ func resourceCIShealthCheck() *schema.Resource {
 				Default:     "GET",
 			},
 			"timeout": {
-				Type:         schema.TypeInt,
-				Description:  "description",
-				Optional:     true,
-				Default:      5,
-				ValidateFunc: validation.IntBetween(1, 10),
+				Type:        schema.TypeInt,
+				Description: "timeout",
+				Optional:    true,
+				Default:     5,
+				//ValidateFunc: validation.IntBetween(1, 10),
 			},
 			"retries": {
-				Type:         schema.TypeInt,
-				Description:  "description",
-				Optional:     true,
-				Default:      2,
-				ValidateFunc: validation.IntBetween(1, 5),
+				Type:        schema.TypeInt,
+				Description: "retries",
+				Optional:    true,
+				Default:     2,
+				//ValidateFunc: validation.IntBetween(1, 5),
 			},
 			"interval": {
 				Type:        schema.TypeInt,
-				Description: "description",
+				Description: "interval",
 				Optional:    true,
 				Default:     60,
 			},
 			"follow_redirects": {
 				Type:        schema.TypeBool,
-				Description: "description",
+				Description: "follow_redirects",
 				Optional:    true,
 				Default:     true,
 			},
 			"allow_insecure": {
 				Type:        schema.TypeBool,
-				Description: "description",
+				Description: "allow_insecure",
 				Optional:    true,
 				Default:     true,
 			},

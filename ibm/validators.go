@@ -566,3 +566,20 @@ func validateMinute(start, end int) func(v interface{}, k string) (ws []string, 
 	}
 	return f
 }
+
+func validateDatacenterOption(v []interface{}, allowedValues []string) error {
+	for _, option := range v {
+		if option == nil {
+			return fmt.Errorf("Provide a valid `datacenter_choice`")
+		}
+		values := option.(map[string]interface{})
+		for k := range values {
+			if !stringInSlice(k, allowedValues) {
+				return fmt.Errorf(
+					"%q Invalid values are provided in `datacenter_choice`. Supported list of keys are (%q)", k, allowedValues)
+			}
+
+		}
+	}
+	return nil
+}

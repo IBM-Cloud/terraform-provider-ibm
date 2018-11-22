@@ -93,7 +93,7 @@ func newMonitorAPI(c *client.Client) Monitors {
 
 func (r *monitors)  ListMonitors(cisId string) (*[]Monitor, error) {   
   monitorResults := MonitorResults{}
-  rawURL := fmt.Sprintf("/v1/%s/monitors/", cisId)
+  rawURL := fmt.Sprintf("/v1/%s/load_balancers/monitors/", cisId)
   _, err := r.client.Get(rawURL, &monitorResults)
   if err != nil {
 		return nil, err
@@ -104,7 +104,7 @@ func (r *monitors)  ListMonitors(cisId string) (*[]Monitor, error) {
 
 func (r *monitors)  GetMonitor(cisId string, monitorId string) (*Monitor, error) {
   monitorResult := MonitorResult{}
-  rawURL := fmt.Sprintf("/v1/%s/monitors/%s", cisId, monitorId)
+  rawURL := fmt.Sprintf("/v1/%s/load_balancers/monitors/%s", cisId, monitorId)
 	_, err := r.client.Get(rawURL, &monitorResult, nil)
 	if err != nil {
 		return nil, err
@@ -120,7 +120,7 @@ func  (r *monitors) DeleteMonitor(cisId string, monitorId string) (error) {
   // 403 if monitor does not exist. Should return 404. Issue reported against CIS
   // DeleteMonitor is only called by resourceCISdomainDelete if monitor exists. 
 
-    rawURL := fmt.Sprintf("/v1/%s/monitors/%s", cisId, monitorId)
+    rawURL := fmt.Sprintf("/v1/%s/load_balancers/monitors/%s", cisId, monitorId)
     _, err := r.client.Delete(rawURL)
     if err != nil {
       return err
@@ -131,7 +131,7 @@ func  (r *monitors) DeleteMonitor(cisId string, monitorId string) (error) {
 
 func (r *monitors)  CreateMonitor(cisId string, monitorBody MonitorBody) (*Monitor, error) {
   monitorResult := MonitorResult{}		
-	rawURL := fmt.Sprintf("/v1/%s/monitors/", cisId)
+	rawURL := fmt.Sprintf("/v1/%s/load_balancers/monitors/", cisId)
       _, err := r.client.Post(rawURL, &monitorBody, &monitorResult)
       if err != nil {
 		return nil, err
