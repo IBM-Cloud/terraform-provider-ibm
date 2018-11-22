@@ -143,6 +143,7 @@ func (c *Client) Post(path string, data interface{}, respV interface{}, extraHea
 	for _, t := range extraHeader {
 		addToRequestHeader(t, r)
 	}
+	log.Printf("<<<<<<<< Body %v", r)
 	return c.SendRequest(r, respV)
 }
 

@@ -4,7 +4,7 @@ import (
 	//"fmt"
 	"github.com/IBM-Cloud/bluemix-go/client"
     "fmt"
-    //"log"
+    "log"
 )
 
 
@@ -17,7 +17,7 @@ import (
 
 type Pool struct {
       Id string `json:"id"`
-      Desc string `json:"description"`
+      Description string `json:"description"`
       Name string `json:"name"`
       CheckRegions []string `json:"check_regions"`
       Enabled bool `json:"enabled"`
@@ -58,15 +58,13 @@ type PoolResult  struct {
 
 type PoolBody struct {
       Name string `json:"name"`
-      Desc string `json:"description"`
-      Notification string `json:"notification_email"` 
-      Regions []string `json:"check_regions"`
+      Description string `json:"description,omitempty"`
       Origins []Origin `json:"origins"`
       CheckRegions []string `json:"check_regions"`
       Enabled bool `json:"enabled"`
-      MinOrigins int `json:"minimum_origins"`
-      Monitor string `json:"monitor"`
-      NotEmail string `json:"notification_email"`
+      MinOrigins int `json:"minimum_origins,omitempty"`
+      Monitor string `json:"monitor,omitempty"`
+      NotEmail string `json:"notification_email,omitempty"`
       }
 
 
@@ -104,7 +102,7 @@ func newPoolAPI(c *client.Client) Pools {
 
 func (r *pools)  ListPools(cisId string) (*[]Pool, error) {   
   poolResults := PoolResults{}
-  rawURL := fmt.Sprintf("/v1/%s/pools/", cisId)
+  rawURL := fmt.Sprintf("/v1/%s/load_balancers/pools/", cisId)
   _, err := r.client.Get(rawURL, &poolResults)
   if err != nil {
 		return nil, err
@@ -115,7 +113,7 @@ func (r *pools)  ListPools(cisId string) (*[]Pool, error) {
 
 func (r *pools)  GetPool(cisId string, poolId string) (*Pool, error) {
   poolResult := PoolResult{}
-  rawURL := fmt.Sprintf("/v1/%s/pools/%s", cisId, poolId)
+  rawURL := fmt.Sprintf("/v1/%s/load_balancers/pools/%s", cisId, poolId)
 	_, err := r.client.Get(rawURL, &poolResult, nil)
 	if err != nil {
 		return nil, err
@@ -131,7 +129,7 @@ func  (r *pools) DeletePool(cisId string, poolId string) (error) {
   // 403 if pool does not exist. Should return 404. Issue reported against CIS
   // DeletePool is only called by resourceCISdomainDelete if pool exists. 
 
-    rawURL := fmt.Sprintf("/v1/%s/pools/%s", cisId, poolId)
+    rawURL := fmt.Sprintf("/v1/%s/load_balancers/pools/%s", cisId, poolId)
     _, err := r.client.Delete(rawURL)
     if err != nil {
       return err
@@ -141,8 +139,9 @@ func  (r *pools) DeletePool(cisId string, poolId string) (error) {
 
 
 func (r *pools)  CreatePool(cisId string, poolBody PoolBody) (*Pool, error) {
-  poolResult := PoolResult{}		
-	rawURL := fmt.Sprintf("/v1/%s/pools/", cisId)
+  poolResult := PoolResult{}	
+  log.Printf("PoolBody>>>>>> %v", poolBody)	
+	rawURL := fmt.Sprintf("/v1/%s/load_balancers/pools/", cisId)
       _, err := r.client.Post(rawURL, &poolBody, &poolResult)
       if err != nil {
 		return nil, err
