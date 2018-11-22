@@ -71,7 +71,6 @@ func (c *Client) SendRequest(r *rest.Request, respV interface{}) (*gohttp.Respon
 		DefaultHeader: c.DefaultHeader,
 		HTTPClient:    httpClient,
 	}
-
 	resp, err := restClient.Do(r, respV, nil)
 
 	// The response returned by go HTTP client.Do() could be nil if request timeout.
@@ -116,6 +115,7 @@ func (c *Client) Get(path string, respV interface{}, extraHeader ...interface{})
 	for _, t := range extraHeader {
 		addToRequestHeader(t, r)
 	}
+
 	return c.SendRequest(r, respV)
 }
 
@@ -228,7 +228,7 @@ const (
 	userAgentHeader      = "User-Agent"
 	authorizationHeader  = "Authorization"
 	uaaAccessTokenHeader = "X-Auth-Uaa-Token"
-
+	userAccessTokenHeader = "X-Auth-User-Token"
 	iamRefreshTokenHeader = "X-Auth-Refresh-Token"
 	crRefreshTokenHeader = "RefreshToken"
 )
@@ -250,8 +250,10 @@ func getDefaultAuthHeaders(serviceName bluemix.ServiceName, c *bluemix.Config) g
 		h.Set(crRefreshTokenHeader, c.IAMRefreshToken)
 	case bluemix.IAMPAPService, bluemix.AccountServicev1, bluemix.ResourceCatalogrService, bluemix.ResourceControllerService, bluemix.ResourceManagementService, bluemix.IAMService, bluemix.IAMUUMService:
 		h.Set(authorizationHeader, c.IAMAccessToken)
+	case bluemix.CisService:
+		h.Set(userAccessTokenHeader, c.IAMAccessToken)	
 	default:
-		log.Println("Unknown service")
+		log.Println("Unknown service - No auth headers set")
 	}
 	return h
 }

@@ -12,6 +12,7 @@ import (
 
 var cfOrganization string
 var cfSpace string
+var cis_crn string
 var ibmid1 string
 var ibmid2 string
 var IAMUser string
@@ -78,6 +79,12 @@ func init() {
 	if csRegion == "" {
 		csRegion = "eu-de"
 		fmt.Println("[WARN] Set the environment variable IBM_CONTAINER_REGION for testing ibm_container resources else it is set to default value 'eu-de'")
+	}
+
+	cis_crn = os.Getenv("IBM_CIS_CRN")
+	if cis_crn == "" {
+		cis_crn = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CIS_ID with the CRN of the CIS instance for testing ibm_cis resources")
 	}
 
 	trustedMachineType = os.Getenv("IBM_TRUSTED_MACHINE_TYPE")

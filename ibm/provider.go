@@ -122,6 +122,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_function_package":                      resourceIBMFunctionPackage(),
 			"ibm_function_rule":                         resourceIBMFunctionRule(),
 			"ibm_function_trigger":                      resourceIBMFunctionTrigger(),
+			"ibm_cis_domain":                            resourceIBMCISDomain(),
 			"ibm_compute_autoscale_group":               resourceIBMComputeAutoScaleGroup(),
 			"ibm_compute_autoscale_policy":              resourceIBMComputeAutoScalePolicy(),
 			"ibm_compute_bare_metal":                    resourceIBMComputeBareMetal(),
