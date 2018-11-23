@@ -66,13 +66,22 @@ func dataSourceIBMComputePlacementGroupRead(d *schema.ResourceData, meta interfa
 
 	name := d.Get("name").(string)
 
-	grps, err := service.
+	groups, err := service.
 		Filter(filter.Build(filter.Path("placementGroup.name").Eq(name))).
 		Mask("id,name,rule[name],guests[id,domain,hostname],backendRouter[hostname,datacenter[name]]").GetPlacementGroups()
 
 	if err != nil {
 		return fmt.Errorf("Error retrieving placement group: %s", err)
 	}
+
+	grps := []datatypes.Virtual_PlacementGroup{}
+	for _, g := range groups {
+		if name == *g.Name {
+			grps = append(grps, g)
+
+		}
+	}
+
 	if len(grps) == 0 {
 		return fmt.Errorf("No placement group found with name [%s]", name)
 	}

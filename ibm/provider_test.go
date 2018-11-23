@@ -37,6 +37,7 @@ var zoneUpdatePublicVlan string
 var csRegion string
 var extendedHardwareTesting bool
 var err error
+var placementGroupName string
 
 func init() {
 	cfOrganization = os.Getenv("IBM_ORG")
@@ -186,6 +187,12 @@ func init() {
 	if zoneUpdatePublicVlan == "" {
 		zoneUpdatePublicVlan = "2388375"
 		fmt.Println("[WARN] Set the environment variable IBM_WORKER_POOL_ZONE_UPDATE_PUBLIC_VLAN for testing ibm_container_worker_pool_zone_attachment resource else it is set to default value '2388375'")
+	}
+
+	placementGroupName = os.Getenv("IBM_PLACEMENT_GROUP_NAME")
+	if placementGroupName == "" {
+		placementGroupName = "terraform_group"
+		fmt.Println("[WARN] Set the environment variable IBM_PLACEMENT_GROUP_NAME for testing ibm_compute_vm_instance resource else it is set to default value 'terraform-group'")
 	}
 
 }
