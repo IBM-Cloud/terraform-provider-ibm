@@ -25,6 +25,11 @@ resource "ibm_compute_placement_group" "test_placement_group" {
 }
 ```
 
+### Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) for certain actions:
+* `delete` - (Defaults to 10 mins) Used when deleting the placement group. There might be Virtual Guest resources on the placement group. The placement group delete request is issued once there are no Virtual Guests on the placement group.
+
 ## Argument Reference
 
 The following arguments are supported:
