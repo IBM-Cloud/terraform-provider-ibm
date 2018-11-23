@@ -147,15 +147,22 @@ The following arguments are supported:
     **NOTE**: Conflicts with `cores` and `memory`.
 * `datacenter` - (Optional, string) The datacenter in which you want to provision the instance.
     **NOTE**: If `dedicated_host_name` or `dedicated_host_id`
-    is provided then the datacenter should be same as the dedicated host datacenter. Conflicts with `datacenter_choice`. 
+    is provided then the datacenter should be same as the dedicated host datacenter. 
+    If `placement_group_name` or `placement_group_id`
+    is provided then the datacenter should be same as the placement group datacenter.
+    Conflicts with `datacenter_choice`. 
 * `hourly_billing` - (Optional, boolean) The billing type for the instance. When set to `true`, the computing instance is billed on hourly usage. Otherwise, the instance is billed on a monthly basis. The default value is `true`.
 * `local_disk`- (Optional, boolean) The disk type for the instance. When set to `true`, the disks for the computing instance are provisioned on the host that the instance runs. Otherwise, SAN disks are provisioned. The default value is `true`.
 * `dedicated_acct_host_only` - (Optional, boolean) Specifies whether the instance must only run on hosts with instances from the same account. The default value is `false`. If VM is provisioned using flavorKeyName, value should be set to `false`.
-     **NOTE**: Conflicts with `dedicated_host_name`, `dedicated_host_id`.
+     **NOTE**: Conflicts with `dedicated_host_name`, `dedicated_host_id`, `placement_group_name` and `placement_group_id`.
 * `dedicated_host_id` - (Optional, integer) Specifies [dedicated host](https://console.bluemix.net/docs/vsi/vsi_dedicated.html) for the instance by its id.
-     **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_name`.
+     **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_name`, `placement_group_name` and `placement_group_id`.
 * `dedicated_host_name` - (Optional, string) Specifies [dedicated host](https://console.bluemix.net/docs/vsi/vsi_dedicated.html) for the instance by its name.
-     **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_id`.
+     **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_id`, `placement_group_name` and `placement_group_id`.
+* `placement_group_id` - (Optional, integer) Specifies [placement group](https://console.bluemix.net/docs/vsi/vsi_dedicated.html) for the instance by its id.
+     **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_name`, `dedicated_host_id` and `placement_group_name`.
+* `placement_group_name` - (Optional, string) Specifies [placement group](https://console.bluemix.net/docs/vsi/vsi_dedicated.html) for the instance by its name.
+     **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_id`, `dedicated_host_name` and `placement_group_id`
 * `os_reference_code` - (Optional, string) The operating system reference code that is used to provision the computing instance. To see available OS reference codes, log in to the [IBM Cloud Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest_Block_Device_Template_Group/getVhdImportSoftwareDescriptions.json?objectMask=referenceCode), using your API key as the password.
     **NOTE**: Conflicts with `image_id`.
 *   `image_id` - (Optional, integer) The image template ID you want to use to provision the computing instance. This is not the global identifier (UUID), but the image template group ID that should point to a valid global identifier. To retrieve the image template ID from the IBM Cloud infrastructure customer portal, navigate to **Devices > Manage > Images**, click the desired image, and note the ID number in the resulting URL.
@@ -195,7 +202,7 @@ This attribute can't be updated. This is provided so that you can apply security
     * `datacenter` - (Required, string) The datacenter in which you want to provision the instance.
     * `public_vlan_id` - (Optional, string) The public VLAN ID for the public network interface of the instance. Accepted values are in the [VLAN doc](https://control.softlayer.com/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
     * `private_vlan_id` - (Optional, string) The private VLAN ID for the private network interface of the instance. You can find accepted values in the [VLAN doc](https://control.softlayer.com/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html). 
-    **NOTE**: Conflicts with `datacenter` `private_vlan_id` and `public_vlan_id`. 
+    **NOTE**: Conflicts with `datacenter`, `private_vlan_id`, `public_vlan_id`, `placement_group_name` and `placement_group_id`.
 
 
 

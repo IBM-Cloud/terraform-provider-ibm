@@ -120,8 +120,32 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				Type:          schema.TypeList,
 				Description:   "The user provided datacenter options",
 				Optional:      true,
-				ConflictsWith: []string{"datacenter", "public_vlan_id", "private_vlan_id"},
+				ConflictsWith: []string{"datacenter", "public_vlan_id", "private_vlan_id", "placement_group_name", "placement_group_id"},
 				Elem:          &schema.Schema{Type: schema.TypeMap},
+			},
+
+			"placement_group_name": {
+				Type:          schema.TypeString,
+				Description:   "The placement group name",
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"datacenter_choice", "dedicated_acct_host_only", "dedicated_host_name", "dedicated_host_id", "placement_group_id"},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					_, ok := d.GetOk("placement_group_id")
+					return new == "" && ok
+				},
+			},
+
+			"placement_group_id": {
+				Type:          schema.TypeInt,
+				Description:   "The placement group id",
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"datacenter_choice", "dedicated_acct_host_only", "dedicated_host_name", "dedicated_host_id", "placement_group_name"},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					_, ok := d.GetOk("placement_group_name")
+					return new == "0" && ok
+				},
 			},
 
 			"flavor_key_name": {
@@ -163,14 +187,14 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				Type:          schema.TypeBool,
 				Optional:      true,
 				ForceNew:      true,
-				ConflictsWith: []string{"dedicated_host_name", "dedicated_host_id"},
+				ConflictsWith: []string{"dedicated_host_name", "dedicated_host_id", "placement_group_id", "placement_group_name"},
 			},
 
 			"dedicated_host_name": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				ForceNew:      true,
-				ConflictsWith: []string{"dedicated_acct_host_only", "dedicated_host_id"},
+				ConflictsWith: []string{"dedicated_acct_host_only", "dedicated_host_id", "placement_group_name", "placement_group_id"},
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					_, ok := d.GetOk("dedicated_host_id")
 					return new == "" && ok
@@ -181,7 +205,7 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				Type:          schema.TypeInt,
 				Optional:      true,
 				ForceNew:      true,
-				ConflictsWith: []string{"dedicated_acct_host_only", "dedicated_host_name"},
+				ConflictsWith: []string{"dedicated_acct_host_only", "dedicated_host_name", "placement_group_name", "placement_group_id"},
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					_, ok := d.GetOk("dedicated_host_name")
 					return new == "0" && ok
@@ -575,6 +599,42 @@ func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interf
 		PostInstallScriptUri:   sl.String(d.Get("post_install_script_uri").(string)),
 	}
 
+	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
+		grpID := placementGroupID.(int)
+		service := services.GetVirtualPlacementGroupService(meta.(ClientSession).SoftLayerSession())
+		grp, err := service.Id(grpID).Mask("id,name,backendRouter[datacenter[name]]").GetObject()
+		if err != nil {
+			return opts, fmt.Errorf("Error looking up placement group: %s", err)
+		}
+
+		opts.PlacementGroupId = sl.Int(*grp.Id)
+
+	} else if placementGroupName, ok := d.GetOk("placement_group_name"); ok {
+		grpName := placementGroupName.(string)
+		service := services.GetAccountService(meta.(ClientSession).SoftLayerSession())
+		groups, err := service.
+			Mask("id,name,backendRouter[hostname,datacenter[name]]").
+			Filter(filter.Path("placementGroup.name").Eq(grpName).Build()).
+			GetPlacementGroups()
+
+		if err != nil {
+			return opts, fmt.Errorf("Error looking up placement group '%s': %s", grpName, err)
+		}
+		grps := []datatypes.Virtual_PlacementGroup{}
+		for _, g := range groups {
+			if grpName == *g.Name {
+				grps = append(grps, g)
+
+			}
+		}
+		if len(grps) == 0 {
+			return opts, fmt.Errorf("Error looking up placement group '%s'", grpName)
+		}
+		grp := grps[0]
+
+		opts.PlacementGroupId = sl.Int(*grp.Id)
+	}
+
 	if startCPUs, ok := d.GetOk("cores"); ok {
 		opts.StartCpus = sl.Int(startCPUs.(int))
 	}
@@ -921,6 +981,11 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 	if result.DedicatedHost != nil {
 		d.Set("dedicated_host_id", *result.DedicatedHost.Id)
 		d.Set("dedicated_host_name", *result.DedicatedHost.Name)
+	}
+
+	if result.PlacementGroup != nil {
+		d.Set("placement_group_id", *result.PlacementGroup.Id)
+		d.Set("placement_group_name", *result.PlacementGroup.Name)
 	}
 
 	d.Set(
