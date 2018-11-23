@@ -30,6 +30,10 @@ func TestAccIBMLbServiceGroup_Basic(t *testing.T) {
 						"ibm_lb_service_group.test_service_group2", "routing_type", "TCP"),
 					resource.TestCheckResourceAttr(
 						"ibm_lb_service_group.test_service_group2", "allocation", "50"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_lb_service_group.test_service_group2", "service_group_id"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_lb_service_group.test_service_group2", "load_balancer_id"),
 				),
 			},
 			resource.TestStep{
@@ -51,7 +55,20 @@ func TestAccIBMLbServiceGroup_Basic(t *testing.T) {
 						"ibm_lb_service_group.test_service_group2", "routing_type", "HTTP"),
 					resource.TestCheckResourceAttr(
 						"ibm_lb_service_group.test_service_group2", "allocation", "30"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_lb_service_group.test_service_group2", "service_group_id"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_lb_service_group.test_service_group2", "load_balancer_id"),
 				),
+			},
+
+			resource.TestStep{
+				ResourceName:      "ibm_lb_service_group.test_service_group1",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"virtual_server_id",
+				},
 			},
 		},
 	})

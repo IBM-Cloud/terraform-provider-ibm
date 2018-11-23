@@ -228,7 +228,7 @@ func resourceIBMLbServiceRead(d *schema.ResourceData, meta interface{}) error {
 
 	svc, err := services.GetNetworkApplicationDeliveryControllerLoadBalancerServiceService(sess).
 		Id(svcID).
-		Mask("ipAddressId,enabled,port,healthChecks[type[keyname]],groupReferences[weight]").
+		Mask("ipAddressId,enabled,port,healthChecks[type[keyname]],groupReferences[weight],serviceGroup[id]").
 		GetObject()
 
 	if err != nil {
@@ -240,6 +240,7 @@ func resourceIBMLbServiceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("health_check_type", svc.HealthChecks[0].Type.Keyname)
 	d.Set("weight", svc.GroupReferences[0].Weight)
 	d.Set("enabled", (*svc.Enabled == 1))
+	d.Set("service_group_id", svc.ServiceGroup.Id)
 
 	return nil
 }

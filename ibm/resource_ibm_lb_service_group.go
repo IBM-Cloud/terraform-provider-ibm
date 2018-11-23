@@ -170,7 +170,7 @@ func resourceIBMLbServiceGroupRead(d *schema.ResourceData, meta interface{}) err
 
 	vs, err := services.GetNetworkApplicationDeliveryControllerLoadBalancerVirtualServerService(sess).
 		Id(vsID).
-		Mask("allocation,port,serviceGroups[routingMethod[keyname],routingType[keyname]]").
+		Mask("allocation,port,serviceGroups[id,routingMethod[keyname],routingType[keyname]],virtualIpAddressId").
 		GetObject()
 
 	if err != nil {
@@ -181,6 +181,8 @@ func resourceIBMLbServiceGroupRead(d *schema.ResourceData, meta interface{}) err
 	d.Set("port", vs.Port)
 	d.Set("routing_method", vs.ServiceGroups[0].RoutingMethod.Keyname)
 	d.Set("routing_type", vs.ServiceGroups[0].RoutingType.Keyname)
+	d.Set("load_balancer_id", vs.VirtualIpAddressId)
+	d.Set("service_group_id", vs.ServiceGroups[0].Id)
 
 	return nil
 }
