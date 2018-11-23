@@ -1,6 +1,6 @@
 # IBM VSI (virtual machine) example
 
-This example shows how to create a virtual machine on IBM Cloud. This is a minimal configuration to 
+This example shows how to create virtual machines on IBM Cloud using different attributes. This is a minimal configuration to 
 demonstrate the Terraform lifecycle of apply and destroy. 
 
 VSI is configured with private network nic only to protect from threats on the public Internet. 
