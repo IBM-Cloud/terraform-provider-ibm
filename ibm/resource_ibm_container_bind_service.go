@@ -106,7 +106,7 @@ func getClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v1.Cluste
 	spaceGUID := d.Get("space_guid").(string)
 	accountGUID := d.Get("account_guid").(string)
 	region := d.Get("region").(string)
-	var resourceGroup string
+	resourceGroup := d.Get("resource_group_id").(string)
 
 	sess, err := meta.(ClientSession).BluemixSession()
 	if err != nil {
@@ -116,21 +116,23 @@ func getClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v1.Cluste
 	if region == "" {
 		region = sess.Config.Region
 	}
-	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
-		resourceGroup = rsGrpID.(string)
-	} else {
-		rsMangClient, err := meta.(ClientSession).ResourceManagementAPI()
-		if err != nil {
-			return v1.ClusterTargetHeader{}, err
+	if resourceGroup == "" {
+		resourceGroup = sess.Config.ResourceGroup
+
+		if resourceGroup == "" {
+			rsMangClient, err := meta.(ClientSession).ResourceManagementAPI()
+			if err != nil {
+				return v1.ClusterTargetHeader{}, err
+			}
+			resourceGroupQuery := management.ResourceGroupQuery{
+				Default: true,
+			}
+			grpList, err := rsMangClient.ResourceGroup().List(&resourceGroupQuery)
+			if err != nil {
+				return v1.ClusterTargetHeader{}, err
+			}
+			resourceGroup = grpList[0].ID
 		}
-		resourceGroupQuery := management.ResourceGroupQuery{
-			Default: true,
-		}
-		grpList, err := rsMangClient.ResourceGroup().List(&resourceGroupQuery)
-		if err != nil {
-			return v1.ClusterTargetHeader{}, err
-		}
-		resourceGroup = grpList[0].ID
 	}
 
 	targetEnv := v1.ClusterTargetHeader{

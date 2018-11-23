@@ -53,6 +53,8 @@ type Config struct {
 
 	//Region is optional. If region is not provided then endpoint must be provided
 	Region string
+	//ResourceGroupID
+	ResourceGroup string
 	//Endpoint is optional. If endpoint is not provided then endpoint must be obtained from region via EndpointLocator
 	Endpoint *string
 	//TokenProviderEndpoint is optional. If endpoint is not provided then endpoint must be obtained from region via EndpointLocator
