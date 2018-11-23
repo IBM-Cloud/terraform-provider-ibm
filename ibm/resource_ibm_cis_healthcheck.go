@@ -95,7 +95,7 @@ func resourceIBMCISHealthCheck() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			// From CloudFlare
+			// Supporting code omitted
 			// "header": {
 			//     Type:     schema.TypeSet,
 			//     Optional: true,

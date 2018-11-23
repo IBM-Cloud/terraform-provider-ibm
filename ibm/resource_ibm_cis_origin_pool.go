@@ -113,7 +113,6 @@ func resourceCISpoolCreate(d *schema.ResourceData, meta interface{}) error {
 	name := d.Get("name").(string)
 	origins := d.Get("origins").(*schema.Set)
 	checkRegions := d.Get("check_regions").(*schema.Set).List()
-	log.Printf("CheckRegions are >>>>>>>>>>>>>>> %v\n", checkRegions)
 
 	var pools *[]v1.Pool
 	pools, err = cisClient.Pools().ListPools(cisId)
@@ -146,17 +145,17 @@ func resourceCISpoolCreate(d *schema.ResourceData, meta interface{}) error {
 		poolNew.CheckRegions = expandToStringList(checkRegions)
 		poolNew.Origins = expandOrigins(origins)
 
-		if notEmail, ok := d.GetOk("notEmail"); ok {
+		if notEmail, ok := d.GetOk("notification_email"); ok {
 			poolNew.NotEmail = notEmail.(string)
 		}
 		if monitor, ok := d.GetOk("monitor"); ok {
-			log.Printf(">>>>>> monitor added with value >>%s<<", monitor.(string))
 			poolNew.Monitor = monitor.(string)
 		}
 		if enabled, ok := d.GetOk("enabled"); ok {
 			poolNew.Enabled = enabled.(bool)
 		}
-		if minOrigins, ok := d.GetOk("minOrigins"); ok {
+		if minOrigins, ok := d.GetOk("minimum_origins"); ok {
+			log.Printf("Was min origins set?: >>>>>%v<<<<<\n", minOrigins)
 			poolNew.MinOrigins = minOrigins.(int)
 		}
 		if description, ok := d.GetOk("description"); ok {

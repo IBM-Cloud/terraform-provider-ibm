@@ -21,6 +21,7 @@ type Monitor struct {
       Path string `json:"path"`
       ExpBody string `json:"expected_body"`
       ExpCodes string `json:"expected_codes"`
+      // Headers omitted TBC
       MonType string `json:"type"`
       Method string `json:"method"`
       Timeout int `json:"timeout"`          
@@ -49,14 +50,14 @@ type MonitorBody struct {
         ExpCodes string `json:"expected_codes"`
         ExpBody string `json:"expected_body"`
         Path string `json:"path"`
-        // golang objects to the use of type here as it is a reseved keyword. 
-        MonType string `json:"type"`            
-        Method string `json:"method"`           
-        Timeout int `json:"timeout"`          
-        Retries int `json:"retries"`          
-        Interval int `json:"interval"`         
-        FollowRedirects bool `json:"follow_redirects"` 
-        AllowInsecure bool `json:"allow_insecure"`   
+        // Headers ommited TBC
+        MonType string `json:"type,omitempty"`            
+        Method string `json:"method,omitempty"`           
+        Timeout int `json:"timeout,omitempty"`          
+        Retries int `json:"retries,omitempty"`          
+        Interval int `json:"interval,omitempty"`         
+        FollowRedirects bool `json:"follow_redirects,omitempty"` 
+        AllowInsecure bool `json:"allow_insecure,omitempty"`   
     }
 
 

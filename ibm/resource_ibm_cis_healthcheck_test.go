@@ -31,7 +31,7 @@ func TestAccCisHealthcheck_Basic(t *testing.T) {
 					testAccCheckCisHealthcheckExists(name, &monitor, cisId),
 					// dont check that specified values are set, this will be evident by lack of plan diff
 					// some values will get empty values
-					resource.TestCheckResourceAttr(name, "description", ""),
+					resource.TestCheckResourceAttr(name, "expected_body", "alive"),
 					//resource.TestCheckResourceAttr(name, "header.#", "0"),
 					// also expect api to generate some values
 					//testAccCheckCisHealthcheckDates(name, &monitor, testStartTime),
@@ -62,7 +62,6 @@ func TestAccCisHealthcheck_FullySpecified(t *testing.T) {
 					testAccCheckCisHealthcheckExists(name, &monitor, cisId),
 					// checking our overrides of default values worked
 					resource.TestCheckResourceAttr(name, "path", "/custom"),
-					resource.TestCheckResourceAttr(name, "header.#", "1"),
 					resource.TestCheckResourceAttr(name, "retries", "5"),
 					resource.TestCheckResourceAttr(name, "expected_codes", "5xx"),
 				),
@@ -189,7 +188,6 @@ func testAccCheckCisHealthcheckConfigBasic(cis_crn string) string {
 	return fmt.Sprintf(`
 resource "ibm_cis_healthcheck" "test" {
   cis_id = "%s"
-  description = ""
   expected_body = "alive"
   expected_codes = "2xx"
 }`, cis_crn)
@@ -207,9 +205,5 @@ resource "ibm_cis_healthcheck" "test" {
   interval = 60
   retries = 5
   description = "this is a very weird load balancer"
-  header {
-    header = "Host"
-    values = ["example.com"]
-  }
 }`, cis_crn)
 }

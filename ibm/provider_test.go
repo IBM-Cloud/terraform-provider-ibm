@@ -13,6 +13,7 @@ import (
 var cfOrganization string
 var cfSpace string
 var cis_crn string
+var cis_domain string
 var ibmid1 string
 var ibmid2 string
 var IAMUser string
@@ -85,6 +86,12 @@ func init() {
 	if cis_crn == "" {
 		cis_crn = ""
 		fmt.Println("[WARN] Set the environment variable IBM_CIS_ID with the CRN of the CIS instance for testing ibm_cis resources")
+	}
+
+	cis_domain = os.Getenv("IBM_CIS_DOMAIN")
+	if cis_domain == "" {
+		cis_domain = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CIS_DOMAIN with the Domain name for testing ibm_cis resources")
 	}
 
 	trustedMachineType = os.Getenv("IBM_TRUSTED_MACHINE_TYPE")

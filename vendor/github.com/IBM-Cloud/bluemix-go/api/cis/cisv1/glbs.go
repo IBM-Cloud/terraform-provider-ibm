@@ -5,6 +5,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/client"
     "fmt"
     //"log"
+    "time"
 )
 
 
@@ -22,6 +23,11 @@ type Glb struct {
       DefaultPools []string `json:"default_pools"`
       Ttl int `json:"ttl"`
       Proxied bool `json:"proxied"`
+      CreatedOn    *time.Time  `json:"created_on,omitempty"`
+      ModifiedOn   *time.Time  `json:"modified_on,omitempty"`
+      SessionAffinity string `json:"session_affinity"`
+      // RegionPools  map[string][]string `json:"region_pools"`
+      // PopPools     map[string][]string `json:"pop_pools"`
     }
 
 type GlbResults  struct {
@@ -40,11 +46,12 @@ type GlbResult  struct {
       }
 
 type GlbBody struct {
-      Desc string `json:"description"`
-      Proxied bool `json:"proxied"`
+      Desc string `json:"description,omitempty"`
+      Proxied bool `json:"proxied,omitempty"`
       Name string `json:"name"`
       FallbackPool string `json:"fallback_pool"`
-      DefaultPools []string `json:"default_pools"`             
+      DefaultPools []string `json:"default_pools"`
+      SessionAffinity string `json:"session_affinity,omitempty"`             
       }
 
 

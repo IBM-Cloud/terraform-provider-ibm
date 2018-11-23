@@ -14,15 +14,18 @@ func TestAccIBMCisDomain_basic(t *testing.T) {
 	if cis_crn == "" {
 		panic("IBM_CIS_CRN environment variable not set - required to test CIS")
 	}
+	if cis_domain == "" {
+		panic("IBM_CIS_DOMAIN environment variable not set - required to test CIS")
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testZoneConfig("test", cis_crn, "example.org"),
+				Config: testAccIBMCisDomainConfig_basic("test", cis_crn, cis_domain),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(name, "domain", "example.org"),
+					resource.TestCheckResourceAttr(name, "domain", cis_domain),
 					resource.TestCheckResourceAttr(name, "name_servers.#", "2"),
 				),
 			},
@@ -30,10 +33,10 @@ func TestAccIBMCisDomain_basic(t *testing.T) {
 	})
 }
 
-func testZoneConfig(resourceID string, cis_crn string, zoneName string) string {
+func testAccIBMCisDomainConfig_basic(resourceID string, cis_crn string, zoneName string) string {
 	return fmt.Sprintf(`
-				resource "ibm_cis_domain" "%s" {
-					cis_id = "%s"
-                    domain = "%s"
+				resource "ibm_cis_domain" "%[1]s" {
+					cis_id = "%[2]s"
+                    domain = "%[3]s"
 				}`, resourceID, cis_crn, zoneName)
 }

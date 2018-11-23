@@ -14,7 +14,7 @@ func TestAccCisPool_Basic(t *testing.T) {
 	t.Parallel()
 	var pool v1.Pool
 	rnd := acctest.RandString(10)
-	name := "ibm_cis_pool." + rnd
+	name := "ibm_cis_origin_pool." + rnd
 	if cis_crn == "" {
 		panic("IBM_CIS_CRN environment variable not set - required to test CIS")
 	}
@@ -42,7 +42,7 @@ func TestAccCisPool_FullySpecified(t *testing.T) {
 	t.Parallel()
 	var pool v1.Pool
 	rnd := acctest.RandString(10)
-	name := "ibm_cis_pool." + rnd
+	name := "ibm_cis_origin_pool." + rnd
 	if cis_crn == "" {
 		panic("IBM_CIS_CRN environment variable not set - required to test CIS")
 	}
@@ -62,6 +62,7 @@ func TestAccCisPool_FullySpecified(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "description", "tfacc-fully-specified"),
 					resource.TestCheckResourceAttr(name, "check_regions.#", "1"),
 					resource.TestCheckResourceAttr(name, "minimum_origins", "2"),
+					resource.TestCheckResourceAttr(name, "notification_email", "admin@outlook.com"),
 				),
 			},
 		},
@@ -74,7 +75,7 @@ func testAccCheckCisPoolDestroy(s *terraform.State, cisId string) error {
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_cis_pool" {
+		if rs.Type != "ibm_cis_origin_pool" {
 			continue
 		}
 
@@ -116,7 +117,7 @@ func testAccCheckCisPoolExists(n string, pool *v1.Pool, cisId string) resource.T
 // using IPs from 192.0.2.0/24 as per RFC5737
 func testAccCheckCisPoolConfigBasic(id string, cisId string) string {
 	return fmt.Sprintf(`
-resource "ibm_cis_pool" "%[1]s" {
+resource "ibm_cis_origin_pool" "%[1]s" {
   cis_id = "%[2]s"
   name = "my-tf-pool-basic-%[1]s"
   check_regions = ["WEU"]
@@ -130,49 +131,26 @@ resource "ibm_cis_pool" "%[1]s" {
 `, id, cisId)
 }
 
-//     return fmt.Sprintf(`
-// resource "ibm_cis_pool" "%[1]s" {
-//   cis_id = "%[2]s"
-//   name = "my-tf-pool-basic-%[1]s"
-//   check_regions = ["WEU"]
-//   description = "tfacc-fully-specified"
-//   monitor = "${ibm_cis_healthcheck.test.id}"
-//   origins {
-//     name = "example-1"
-//     address = "www.google.com"
-//     enabled = true
-//   }
-// }
-// resource "ibm_cis_healthcheck" "test" {
-//   cis_id = "%[2]s"
-//   description = ""
-//   expected_body = "alive"
-//   expected_codes = "2xx"
-// }
-// `, id, cisId)
-// }
-
 func testAccCheckCisPoolConfigFullySpecified(id string, cisId string) string {
-	return fmt.Sprintf(`
-resource "ibm_cis_pool" "%[1]s" {
+	return testAccCheckCisHealthcheckConfigBasic(cisId) + fmt.Sprintf(`
+resource "ibm_cis_origin_pool" "%[1]s" {
   cis_id = "%[2]s"
   name = "my-tf-pool-basic-%[1]s"
+  notification_email = "admin@outlook.com"
   origins {
     name = "example-1"
     address = "192.0.2.1"
     enabled = false
-    weight = 1.0
   }
   origins {
     name = "example-2"
     address = "192.0.2.2"
-    weight = 0.5
+    enabled = true
   }
   check_regions = ["WEU"]
   description = "tfacc-fully-specified"
   enabled = false
   minimum_origins = 2
-  // monitor = abcd TODO: monitor resource
-  notification_email = "someone@example.com"
+  monitor = "${ibm_cis_healthcheck.test.id}"
 }`, id, cisId)
 }

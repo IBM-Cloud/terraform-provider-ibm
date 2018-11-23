@@ -28,11 +28,11 @@ func resourceIBMCISDomain() *schema.Resource {
 			},
 			"paused": {
 				Type:     schema.TypeBool,
-				Optional: true,
+				Computed: true,
 			},
 			"status": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 			"name_servers": {
 				Type:     schema.TypeList,

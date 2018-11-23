@@ -4,7 +4,7 @@ import (
 	//"fmt"
 	"github.com/IBM-Cloud/bluemix-go/client"
     "fmt"
-    "log"
+    //"log"
 )
 
 
@@ -140,7 +140,6 @@ func  (r *pools) DeletePool(cisId string, poolId string) (error) {
 
 func (r *pools)  CreatePool(cisId string, poolBody PoolBody) (*Pool, error) {
   poolResult := PoolResult{}	
-  log.Printf("PoolBody>>>>>> %v", poolBody)	
 	rawURL := fmt.Sprintf("/v1/%s/load_balancers/pools/", cisId)
       _, err := r.client.Post(rawURL, &poolBody, &poolResult)
       if err != nil {
