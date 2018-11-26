@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_lb_vpx
 
-Provides a resource for VPX load balancers. This allows VPX load balancers to be created, updated, and deleted.
+Provides a resource for VPX load balancers. This allows VPX load balancers to be created, updated, and deleted.  
 
 **NOTE**: IBM VPX load balancers consist of Citrix NetScaler VPX devices (virtual), which are currently priced on a per-month basis. Use caution when creating the resource because the cost for an entire month is incurred immediately upon creation. For more information about pricing, see the [network appliance docs](http://www.softlayer.com/network-appliances). Under the Citrix log, click **See more pricing** for a current price matrix.
 
@@ -49,7 +49,7 @@ The following arguments are supported:
 * `private_vlan_id` - (Optional, integer) The private VLAN ID that is used for the private network interface of the VPX load balancer. You can find accepted values in the [VLAN docs](https://control.softlayer.com/network/vlans) by clicking the desired VLAN and noting the ID in the resulting URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
 * `public_subnet` - (Optional, string) The public subnet that is used for the public network interface of the VPX load balancer. Accepted values are primary public networks. You can find accepted values in the [subnet docs](https://control.softlayer.com/network/subnets).
 * `private_subnet` - (Optional, string) Public subnet that is used for the private network interface of the VPX load balancer. Accepted values are primary private networks. You can find accepted values in the [subnet docs](https://control.softlayer.com/network/subnets).
-* `tags` - (Optional, array of strings) Tags associated with the VPX load balancer instance.
+* `tags` - (Optional, array of strings) Tags associated with the VPX load balancer instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attribute Reference

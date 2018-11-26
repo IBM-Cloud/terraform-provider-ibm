@@ -130,7 +130,7 @@ Nested `resources` blocks have the following structure:
   * `resource_type` - (Optional, string) Resource type of the policy definition.
   * `resource` - (Optional, string) Resource of the policy definition.
   * `resource_group_id` - (Optional, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`.
-* `tags` - (Optional, array of strings) Tags associated with the service policy instance.
+* `tags` - (Optional, array of strings) Tags associated with the service policy instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attribute Reference

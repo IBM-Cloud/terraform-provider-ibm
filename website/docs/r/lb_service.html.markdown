@@ -38,5 +38,5 @@ The following arguments are supported:
 * `enabled` - (Required, boolean) Specifies whether you want to enable the load balancer service. The default value is `false`.
 * `health_check_type` - (Required, string) The health check type for the load balancer service.
 * `weight` - (Required, integer) The weight for the load balancer service.
-* `tags` - (Optional, array of strings) Tags associated with the local load balancer service instance.
+* `tags` - (Optional, array of strings) Tags associated with the local load balancer service instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.

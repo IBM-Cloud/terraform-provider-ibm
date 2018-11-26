@@ -10,7 +10,7 @@ description: |-
 
 Provides rules for firewall resources in IBM. One rule resource is allowed per firewall. However, a rule resource can contain multiple firewall rules within it.
 
-For more details about how to configure a firewall, see the [docs](https://knowledgelayer.softlayer.com/procedure/configure-hardware-firewall-dedicated).
+For more details about how to configure a firewall, see the [docs](https://knowledgelayer.softlayer.com/procedure/configure-hardware-firewall-dedicated).  
 
 **NOTE**: The target VLAN should have at least one subnet for rule configuration. To express any IP addresses externally, configure `src_ip_address` as `0.0.0.0` and `src_ip_cidr` as `0`. To express API IP addresses internally, configure `dst_ip_address` as `any` and `src_ip_cidr` as `32`.
 
@@ -68,5 +68,5 @@ The following arguments are supported:
 * `rules.dst_port_range_end` - (Optional, string) The end of the range of ports for TCP and UDP. Accepted values are `1` - `65535`.
 * `rules.notes` - (Optional, string) Descriptive text about the rule.
 * `rules.protocol` - (Required, string) The protocol for the rule. Accepted values are `tcp`,`udp`,`icmp`,`gre`,`pptp`,`ah`, or `esp`.
-* `tags` - (Optional, array of strings) Tags associated with the firewall policy instance.
+* `tags` - (Optional, array of strings) Tags associated with the firewall policy instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.

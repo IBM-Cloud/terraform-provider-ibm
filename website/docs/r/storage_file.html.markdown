@@ -94,7 +94,7 @@ The following arguments are supported:
 
 * `tags` - (Optional, array of strings) Tags associated with the file storage instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.  
-* `hourly_billing` - (Optional,Boolean) Set true to enable hourly billing. Default is false.
+* `hourly_billing` - (Optional,Boolean) Set true to enable hourly billing. Default is false.  
 **NOTE**: `Hourly billing` is only available in updated datacenters with improved capabilities.Plesae refer the link to get the updated list of datacenter. http://knowledgelayer.softlayer.com/articles/new-ibm-block-and-file-storage-location-and-features
 
 

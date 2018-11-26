@@ -86,8 +86,9 @@ The following arguments are supported:
 	* `action` - valid actions are add, reboot and reload.
 	* `name` - Name of the worker.
 	* `version` - worker version.
+  
 	**NOTE**: Conflicts with `worker_num`. 
-* `worker_num` - (Optional, int)  The number of cluster worker nodes. This creates the stand-alone workers which are not associated to any pool. 
+* `worker_num` - (Optional, int)  The number of cluster worker nodes. This creates the stand-alone workers which are not associated to any pool.  
 	**NOTE**: Conflicts with `workers`. 
 * `default_pool_size` - (Optional,int) The number of workers created under the default worker pool which support Multi-AZ. 
 * `machinetype` - (Optional, string) The machine type of the worker nodes. You can retrieve the value by running the `ibmcloud cs machine-types <data-center>` command in the IBM Cloud CLI.
@@ -102,7 +103,7 @@ The following arguments are supported:
 * `disk_encryption` - (Optional, boolean) Set to `false` to disable encryption on a worker.
 * `webhook` - (Optional, string) The webhook that you want to add to the cluster.
 * `wait_time_minutes` - (Optional, integer) The duration, expressed in minutes, to wait for the cluster to become available before declaring it as created. It is also the same amount of time waited for no active transactions before proceeding with an update or deletion. The default value is `90`.
-* `tags` - (Optional, array of strings) Tags associated with the container cluster instance.
+* `tags` - (Optional, array of strings) Tags associated with the container cluster instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attribute Reference

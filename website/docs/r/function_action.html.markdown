@@ -101,12 +101,17 @@ The following arguments are supported:
     * `memory` - The maximum memory for the action, specified in MBs. Default value: `256`.
     * `log_size` - The maximum log size for the action, specified in MBs. Default value: `10`.
 * `exec` - (Required, list) A nested block to describe executable binaries. Nested `exec` blocks have the following structure:
-    * `image` - (Optional, string) When using the `blackbox` executable, the name of the container image name. **NOTE**: Conflicts with `exec.components`, `exec.code`.
-    * `init` - (Optional, string) When using `nodejs`, the optional zipfile reference. **NOTE**: Conflicts with `exec.components`, `exec.image`.
-    * `code` - (Optional, string) When not using the `blackbox` executable, the code to execute. **NOTE**: Conflicts with `exec.components`, `exec.image`.
+    * `image` - (Optional, string) When using the `blackbox` executable, the name of the container image name.  
+     **NOTE**: Conflicts with `exec.components`, `exec.code`.
+    * `init` - (Optional, string) When using `nodejs`, the optional zipfile reference.  
+     **NOTE**: Conflicts with `exec.components`, `exec.image`.
+    * `code` - (Optional, string) When not using the `blackbox` executable, the code to execute.  
+    **NOTE**: Conflicts with `exec.components`, `exec.image`.
     * `kind` - (Required, string) The type of action. Accepted values: `php:7.1`, `nodejs:8`, `swift:3`, `nodejs`, `blackbox`, `java`, `sequence`, `nodejs:6`, `python:3`, `python`, `python:2`, `swift`, `swift:3.1.1`.
-    * `main` - (Optional, string) The name of the action entry point (function or fully-qualified method name, when applicable). **NOTE**: Conflicts with `exec.components`, `exec.image`.
-    * `components` - (Optional, string) The list of fully qualified actions. **NOTE**: Conflicts with `exec.code`, `exec.image`.
+    * `main` - (Optional, string) The name of the action entry point (function or fully-qualified method name, when applicable).  
+    **NOTE**: Conflicts with `exec.components`, `exec.image`.
+    * `components` - (Optional, string) The list of fully qualified actions.  
+    **NOTE**: Conflicts with `exec.code`, `exec.image`.
 * `publish` - (Optional, boolean) Action visibility.
 * `user_defined_annotations` - (Optional, string) Annotations defined in key value format.
 * `user_defined_parameters` - (Optional, string) Parameters defined in key value format. Parameter bindings included in the context passed to the action. Cloud Function backend/API.

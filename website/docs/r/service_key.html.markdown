@@ -30,7 +30,7 @@ The following arguments are supported:
 * `name` - (Required, string) A descriptive name used to identify a service key.
 * `parameters` - (Optional, map) Arbitrary parameters to pass along to the service broker. Must be a JSON object.
 * `service_instance_guid` - (Required, string) The GUID of the service instance associated with the service key.
-* `tags` - (Optional, array of strings) Tags associated with the service key instance.
+* `tags` - (Optional, array of strings) Tags associated with the service key instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attribute Reference

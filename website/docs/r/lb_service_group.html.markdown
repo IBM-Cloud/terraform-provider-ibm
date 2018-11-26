@@ -35,7 +35,7 @@ The following arguments are supported:
 * `port` - (Required, integer) The port for the local load balancer service group.
 * `routing_method` - (Required, string) The routing method for the load balancer group. For example, `CONSISTENT_HASH_IP`.
 * `routing_type` - (Required, string) The routing type for the group.
-* `tags` - (Optional, array of strings) Tags associated with the local load balancer service group instance.
+* `tags` - (Optional, array of strings) Tags associated with the local load balancer service group instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attribute Reference
