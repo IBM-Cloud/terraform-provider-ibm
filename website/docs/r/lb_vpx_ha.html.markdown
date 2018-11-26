@@ -54,7 +54,7 @@ The following arguments are supported:
 * `primary_id` - (Required, string) The ID of the primary NetScaler VPX.
 * `secondary_id` - (Required, string) The ID of the secondary NetScaler VPX.
 * `stay_secondary` - (Optional, boolean) Specifies whether the secondary NetScaler VPX will  take over the service. Set this argument to `true` to prevent the secondary NetScaler VPX from taking over the service even if the primary NetScaler VPX fails. For additional details, see the [Citrix NetScaler docs](https://docs.citrix.com/en-us/netscaler/10-5/ns-system-wrapper-10-con/ns-nw-ha-intro-wrppr-con/ns-nw-ha-frcng-scndry-nd-sty-scndry-tsk.html) and the [Citrix support docs](https://support.citrix.com/article/CTX116748). The default value is `false`.
-* `tags` - (Optional, array of strings) Tags associated with the high availability NetScale VPX pair instance.
+* `tags` - (Optional, array of strings) Tags associated with the high availability NetScale VPX pair instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attribute Reference

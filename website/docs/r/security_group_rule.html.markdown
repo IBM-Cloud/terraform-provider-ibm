@@ -34,10 +34,10 @@ The following arguments are supported:
 * `port_range_min` - (Optional, int) The start of the port range for allowed traffic.
 * `port_range_max` - (Optional, int) The end of the port range for allowed traffic.
 * `protocol` - (Optional, string) The IP protocol type. Accepted values (case sensitive): `icmp`,`tcp`, or `udp`.
-* `remote_group_id` - (Optional, int) The ID of the remote security group allowed as part of the rule.
+* `remote_group_id` - (Optional, int) The ID of the remote security group allowed as part of the rule.  
 
     **NOTE**: Conflicts with `remote_ip`.
-* `remote_ip` - (Optional, string) The CIDR or IP address for allowed connections.
+* `remote_ip` - (Optional, string) The CIDR or IP address for allowed connections.  
 
     **NOTE**: Conflicts with `remote_group_id`.
 * `security_group_id` - (Required, int) The ID of the security group this rule belongs to.

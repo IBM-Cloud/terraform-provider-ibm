@@ -21,7 +21,7 @@ resource "ibm_object_storage_account" "foo" {
 
 ## Argument Reference
 
-* `tags` - (Optional, array of strings) Tags associated with the object storage account instance.
+* `tags` - (Optional, array of strings) Tags associated with the object storage account instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Computed Fields

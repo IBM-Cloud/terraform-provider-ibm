@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_lb_vpx_vip
 
-Provides a resource for VPX load balancer virtual IP addresses. This allows VPX load balancer virtual IP addresses to be created, updated, and deleted.
+Provides a resource for VPX load balancer virtual IP addresses. This allows VPX load balancer virtual IP addresses to be created, updated, and deleted.  
 
 **NOTE**: If you use NetScaler VPX 10.5, Terraform uses NetScaler's [NITRO REST API](https://docs.citrix.com/en-us/netscaler/11/nitro-api.html) to manage the resource.  Terraform can only access the NITRO API in the IBM Cloud Infrastructure (SoftLayer) private network, so connect to the private network when running Terraform. You can also use the [SSL VPN](http://www.softlayer.com/VPN-Access) to access a private network connection.
 
@@ -89,7 +89,7 @@ The following arguments are supported:
 * `source_port` - (Required, integer) The source port for the VPX load balancer virtual IP address.
 * `type` - (Required, string) The connection type for the VPX load balancer virtual IP address. Accepted values are `HTTP`, `FTP`, `TCP`, `UDP`, `DNS`, and `SSL`. If you set the type to `SSL`, then `security_certificate_id` provides certification for SSL offload services.
 * `security_certificate_id` - (Optional, integer) Applies to NetScaler VPX 10.5 only. The ID of a security certificate you want to use. This argument provides security certification for SSL offload services. For additional information, see the  [ibm_compute_ssl_certificate resource](compute_ssl_certificate.html).
-* `tags` - (Optional, array of strings) Tags associated with the VPX load balancer virtual IP instance.
+* `tags` - (Optional, array of strings) Tags associated with the VPX load balancer virtual IP instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attribute Reference

@@ -38,7 +38,7 @@ The following arguments are supported:
 * `response_action_id` - (Required, integer) The ID of the response action to take if the monitor fails. Accepted values are `1` or `2`.
 * `wait_cycles` - (Optional, integer) The number of five-minute cycles to wait before the response action is taken.
 * `notified_users` - (Optional, array of integers) The list of user IDs that will be notified.
-* `tags` - (Optional, array of strings) Tags associated with the monitoring instance.
+* `tags` - (Optional, array of strings) Tags associated with the monitoring instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attribute Reference

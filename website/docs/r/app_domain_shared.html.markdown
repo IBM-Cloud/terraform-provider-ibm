@@ -26,7 +26,7 @@ The following arguments are supported:
 
 * `name` - (Required, string) The name of the domain.
 * `router_group_guid` - (Optional, string) The GUID of the router group.
-* `tags` - (Optional, array of strings) Tags associated with the application shared domain instance.
+* `tags` - (Optional, array of strings) Tags associated with the application shared domain instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attribute Reference

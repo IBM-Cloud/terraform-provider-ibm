@@ -28,7 +28,7 @@ The following arguments are supported:
 
 * `name` - (Required, string) The descriptive name used to identify a provisioning hook.
 * `uri` - (Required, string) The endpoint from which the script is downloaded or downloaded and executed.
-* `tags` - (Optional, array of strings) Tags associated with the provisioning hook instance.
+* `tags` - (Optional, array of strings) Tags associated with the provisioning hook instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attribute Reference

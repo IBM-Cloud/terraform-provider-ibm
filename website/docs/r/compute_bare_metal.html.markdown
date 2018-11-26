@@ -117,7 +117,7 @@ The following arguments are supported:
 * `domain` - (Required, string) The domain for the computing instance.
 * `user_metadata` - (Optional, string) Arbitrary data to be made available to the computing instance.
 * `notes` - (Optional, string) Notes to associate with the instance.
-* `ssh_key_ids` - (Optional, array of numbers) The SSH key IDs to install on the computing instance when the instance is provisioned.
+* `ssh_key_ids` - (Optional, array of numbers) The SSH key IDs to install on the computing instance when the instance is provisioned.  
     **NOTE:** If you don't know the ID(s) for your SSH keys, you can [reference your SSH keys by their labels](../d/compute_ssh_key.html).
 * `post_install_script_uri` - (Optional, string) The URI of the script to be downloaded and executed after installation is complete.
 * `tags` - (Optional, array of strings) Tags associated with this bare metal server. Permitted characters include: A-Z, 0-9, whitespace, _ (underscore), - (hyphen), . (period), and : (colon). All other characters will be removed.
@@ -136,18 +136,18 @@ Locate your package ID. See `package_key_name` attribute. Once you have the ID f
 * `unbonded_network` - (Optional, boolean) When the value is `true`, two physical network interfaces are provided without a bonding configuration. The default value is `false`.
 * `network_speed` - (Optional, integer) The connection speed, expressed in Mbps,  for the instance's network components. The default value is `100`.
 * `private_network_only` - (Optional, boolean) Specifies whether the instance only has access to the private network. When the value is `true`, a compute instance only has access to the private network. The default value is `false`.
-* `extended_hardware_testing` - (Optional, boolean) Enable the extended hardware testing while ordering the bare metal server. The default value is `false`. 
+* `extended_hardware_testing` - (Optional, boolean) Enable the extended hardware testing while ordering the bare metal server. The default value is `false`.  
     **NOTE**: Enabling the `extended_hardware_testing` will cause considerable delays in the deployment.
 * `ipv6_enabled` - (Optional, boolean) The primary public IPv6 address. The default value is `false`.
 * `ipv6_static_enabled` - (Optional, boolean) The public static IPv6 address block of `/64`. The default value is `false`.
 * `secondary_ip_count` - (Optional, integer) Specifies secondary public IPv4 addresses. Accepted values are `4` and `8`.
-* `image_template_id` - (Optional, integer) The image template ID you want to use to provision the computing instance. This is not the global identifier (UUID), but the image template group ID that should point to a valid global identifier. To retrieve the image template ID from the IBM Cloud infrastructure customer portal, navigate to **Devices > Manage > Images**, click the desired image, and note the ID number in the resulting URL.
+* `image_template_id` - (Optional, integer) The image template ID you want to use to provision the computing instance. This is not the global identifier (UUID), but the image template group ID that should point to a valid global identifier. To retrieve the image template ID from the IBM Cloud infrastructure customer portal, navigate to **Devices > Manage > Images**, click the desired image, and note the ID number in the resulting URL.  
     **NOTE**: Conflicts with `os_reference_code`. If you don't know the ID(s) of your image templates, you can [reference them by name](../d/compute_image_template.html).
 
 ### Arguments for hourly bare metal servers
 
 * `fixed_config_preset` - (Required, string) The configuration preset with which you want to provision the bare metal server. This preset governs the type of CPU, number of cores, amount of RAM, and number of hard drives that the bare metal server has. To see the available presets, log in to the [IBM Cloud Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3/SoftLayer_Hardware/getCreateObjectOptions.json) using your API key as the password. Find the key called `fixedConfigurationPresets`. The presets are identified by the key names.
-* `os_reference_code` - (Optional, string) An operating system reference code that provisions the computing instance. To see available OS reference codes, log in to the [IBM Cloud Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest_Block_Device_Template_Group/getVhdImportSoftwareDescriptions.json?objectMask=referenceCode), using your API key as the password.
+* `os_reference_code` - (Optional, string) An operating system reference code that provisions the computing instance. To see available OS reference codes, log in to the [IBM Cloud Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest_Block_Device_Template_Group/getVhdImportSoftwareDescriptions.json?objectMask=referenceCode), using your API key as the password.    
     **NOTE**: Conflicts with `image_template_id`.  
 
 ### Arguments for monthly bare metal servers

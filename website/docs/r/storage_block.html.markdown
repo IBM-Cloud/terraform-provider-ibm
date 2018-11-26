@@ -64,9 +64,9 @@ The following arguments are supported:
 * `allowed_hardware_ids` - (Optional, array of integers) The bare metal servers that you want to give access to this instance. Bare metal servers must be in the same data center as the block storage. You can also use this field to import the list of bare metal servers that have access to this storage from the `block_storage_ids` argument in the `ibm_compute_bare_metal` resource.
 * `allowed_ip_addresses` - (Optional, array of string) The IP addresses that you want to give access to this instance. IP addresses must be in the same data center as the block storage.
 * `notes` - (Optional, string) A descriptive note that you want to associate with the block storage.
-* `tags` - (Optional, array of strings) Tags associated with the storage block instance.
+* `tags` - (Optional, array of strings) Tags associated with the storage block instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
-* `hourly_billing` - (Optional,Boolean) Set true to enable hourly billing.Default is false
+* `hourly_billing` - (Optional,Boolean) Set true to enable hourly billing.Default is false  
 **NOTE**: `Hourly billing` is only available in updated datacenters with improved capabilities.Plesae refer the link to get the updated list of datacenter. http://knowledgelayer.softlayer.com/articles/new-ibm-block-and-file-storage-location-and-features
 
 

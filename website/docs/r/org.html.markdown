@@ -40,10 +40,10 @@ The following arguments are supported:
   * Can view users and their assigned roles.
   * Can view quota information.
 * `billing_managers` - (Optional, set) The email addresses for the users that you want to assign billing manager access to. The email address needs to be associated with an IBMid. Billing managers have the following permissions within the org:
-  * Can view runtime and service usage information on the usage dashboard.
+  * Can view runtime and service usage information on the usage dashboard.  
 
 **NOTE**: By default the user creating this resource will have the manager role as per the Cloud Foundry API behavior. Terraform will throw error if you add yourself to the manager role or as a user. This information is not persisted in the state file to avoid any spurious diffs.
-* `tags` - (Optional, array of strings) Tags associated with the org.
+* `tags` - (Optional, array of strings) Tags associated with the org.  
   **NOTE**: Tags are managed locally and not stored on the IBM Cloud service endpoint.
 
 ## Attribute Reference

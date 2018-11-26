@@ -116,7 +116,7 @@ The following arguments are supported:
 * `state` - (Required, string) The state of a user's street address.
 * `timezone` - (Required, string) The user's timezone as a short name value (e.g., "EST"). For accepted values, see the [SoftLayer API doc for timezones ](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Locale_Timezone).
 * `user_status` - (Optional, string) The user's login status. You can find accepted values in the [SoftLayer API doc for user status](http://sldn.softlayer.com/reference/datatypes/SoftLayer_User_Customer_Status). The default value is `ACTIVE`.
-* `tags` - (Optional, array of strings) Tags associated with the user account instance.
+* `tags` - (Optional, array of strings) Tags associated with the user account instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attribute Reference
