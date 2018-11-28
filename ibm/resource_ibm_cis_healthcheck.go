@@ -43,11 +43,11 @@ func resourceIBMCISHealthCheck() *schema.Resource {
 				Optional:    true,
 			},
 			"type": {
-				Type:        schema.TypeString,
-				Description: "type",
-				Optional:    true,
-				Default:     "http",
-				//ValidateFunc: validation.StringInSlice([]string{"http", "https"}, false),
+				Type:         schema.TypeString,
+				Description:  "type",
+				Optional:     true,
+				Default:      "http",
+				ValidateFunc: validateAllowedStringValue([]string{"http", "https"}),
 			},
 			"method": {
 				Type:        schema.TypeString,

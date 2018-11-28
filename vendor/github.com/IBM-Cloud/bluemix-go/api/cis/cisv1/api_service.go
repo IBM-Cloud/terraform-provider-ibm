@@ -22,6 +22,8 @@ type CisServiceAPI interface {
 	Monitors() Monitors
 	Pools() Pools
 	Glbs() Glbs
+	Settings() Settings
+	Ips() Ips
 }
 
 //CisService holds the client
@@ -88,9 +90,17 @@ func (c *cisService) Glbs() Glbs {
 	return newGlbAPI(c.Client)
 }
 
+//Settings implements Settings API
+func (c *cisService) Settings() Settings {
+	return newSettingsAPI(c.Client)
+}
 
+//Settings implements Settings API
+func (c *cisService) Ips() Ips {
+	return newIpsAPI(c.Client)
+}
 
-// Funny here somewhere. It looks like some codes come back as strings and others as ints
+// Funny here somewhere. It looks like some codes come back from CIS as strings and others as ints
 // 
 func errorsToString(e []Error)  (string) {
 

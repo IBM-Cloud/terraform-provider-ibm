@@ -9,12 +9,6 @@ import (
 )
 
 
- // unresolved question as to whether codes always come back as ints
-// glb and glb currently return 'code' as a string - issue raised
-
-
-
-
 type Glb struct {
       Id string `json:"id"`
       Name string `json:"name"`
@@ -37,7 +31,6 @@ type GlbResults  struct {
       Errors []Error `json:"errors"`
       }
 
-  // Only one glb returned as json object rather than array in get case 
 type GlbResult  struct {
       Glb Glb `json:"result"`
       Success bool `json:"success"`
@@ -54,7 +47,6 @@ type GlbBody struct {
       SessionAffinity string `json:"session_affinity,omitempty"`             
       }
 
-
 type GlbDelete  struct {
       Result struct {
         glbId string
@@ -63,8 +55,6 @@ type GlbDelete  struct {
       Errors []Error `json:"errors"`
       Messages []string `json:"messages"`
       }
-
-
 
 
 //Glbs interface

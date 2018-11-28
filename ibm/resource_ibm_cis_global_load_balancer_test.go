@@ -16,12 +16,7 @@ import (
 func TestAccCisGlb_Basic(t *testing.T) {
 	// multiple instances of this config would conflict but we only use it once
 	t.Parallel()
-	if cis_crn == "" {
-		panic("IBM_CIS_CRN environment variable not set - required to test CIS")
-	}
-	if cis_domain == "" {
-		panic("IBM_CIS_DOMAIN environment variable not set - required to test CIS")
-	}
+
 	cisId := cis_crn
 	var glb v1.Glb
 
@@ -51,9 +46,6 @@ func TestAccCisGlb_Basic(t *testing.T) {
 
 func TestAccCisGlb_SessionAffinity(t *testing.T) {
 	t.Parallel()
-	if cis_crn == "" {
-		panic("IBM_CIS_CRN environment variable not set - required to test CIS")
-	}
 	cisId := cis_crn
 	var glb v1.Glb
 	rnd := acctest.RandString(10)
@@ -69,7 +61,7 @@ func TestAccCisGlb_SessionAffinity(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisGlbExists(name, &glb, cisId),
 					// explicitly verify that our session_affinity has been set
-					//resource.TestCheckResourceAttr(name, "session_affinity", "cookie"),
+					resource.TestCheckResourceAttr(name, "session_affinity", "cookie"),
 					// dont check that other specified values are set, this will be evident by lack
 					// of plan diff some values will get empty values
 					//resource.TestCheckResourceAttr(name, "pop_pools.#", "0"),

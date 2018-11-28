@@ -11,12 +11,6 @@ func TestAccIBMCisDomain_basic(t *testing.T) {
 	name := "ibm_cis_domain.test"
 
 	//Fail if cis_crn not set
-	if cis_crn == "" {
-		panic("IBM_CIS_CRN environment variable not set - required to test CIS")
-	}
-	if cis_domain == "" {
-		panic("IBM_CIS_DOMAIN environment variable not set - required to test CIS")
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

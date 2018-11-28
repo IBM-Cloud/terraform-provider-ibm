@@ -15,9 +15,6 @@ func TestAccCisPool_Basic(t *testing.T) {
 	var pool v1.Pool
 	rnd := acctest.RandString(10)
 	name := "ibm_cis_origin_pool." + rnd
-	if cis_crn == "" {
-		panic("IBM_CIS_CRN environment variable not set - required to test CIS")
-	}
 	cisId := cis_crn
 
 	resource.Test(t, resource.TestCase{

@@ -86,6 +86,7 @@ func init() {
 	if cis_crn == "" {
 		cis_crn = ""
 		fmt.Println("[WARN] Set the environment variable IBM_CIS_ID with the CRN of the CIS instance for testing ibm_cis resources")
+
 	}
 
 	cis_domain = os.Getenv("IBM_CIS_DOMAIN")

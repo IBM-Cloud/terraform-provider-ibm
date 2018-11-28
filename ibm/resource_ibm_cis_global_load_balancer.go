@@ -68,7 +68,7 @@ func resourceIBMCISGlb() *schema.Resource {
 				Optional: true,
 				Default:  "none",
 				// Set to cookie when proxy=true
-				//ValidateFunc: validation.StringInSlice([]string{"none", "cookie"}, false),
+				ValidateFunc: validateAllowedStringValue([]string{"none", "cookie"}),
 			},
 
 			// "region_pools": &schema.Schema{

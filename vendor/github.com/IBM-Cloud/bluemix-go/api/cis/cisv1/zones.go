@@ -13,14 +13,10 @@ type ResultsCount struct {
       }
 
 
-// unresolved question as to whether codes always come back as ints
-// zone and glb currently return 'code' as a string - issue raised
-
 type Error struct {
       Code int `json:"code"`
       Msg string `json:"message"` 
       }  
-
 
 type NameServer struct {
       NameS int64 `json:"0"`
@@ -42,7 +38,6 @@ type ZoneResults  struct {
       Errors []Error `json:"errors"`
       }
 
-  // Only one zone returned as json object rather than array in get case 
 type ZoneResult  struct {
       Zone Zone `json:"result"`
       Success bool `json:"success"`
@@ -54,7 +49,6 @@ type ZoneBody struct {
       Name string `json:"name"`
     }
 
-
 type ZoneDelete  struct {
       Result struct {
         zoneId string
@@ -63,8 +57,6 @@ type ZoneDelete  struct {
       Errors []Error `json:"errors"`
       Messages []string `json:"messages"`
       }
-
-
 
 
 //Zones interface

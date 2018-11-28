@@ -9,13 +9,6 @@ import (
 
 
 
-
-// unresolved question as to whether codes always come back as ints
-// monitor and glb currently return 'code' as a string - issue raised
-
-
-
-
 type Monitor struct {
       Id string `json:"id"`
       Path string `json:"path"`
@@ -38,7 +31,6 @@ type MonitorResults  struct {
       Errors []Error `json:"errors"`
       }
 
-  // Only one monitor returned as json object rather than array in get case 
 type MonitorResult  struct {
       Monitor Monitor `json:"result"`
       Success bool `json:"success"`
@@ -47,17 +39,17 @@ type MonitorResult  struct {
       }
 
 type MonitorBody struct {
-        ExpCodes string `json:"expected_codes"`
-        ExpBody string `json:"expected_body"`
-        Path string `json:"path"`
-        // Headers ommited TBC
-        MonType string `json:"type,omitempty"`            
-        Method string `json:"method,omitempty"`           
-        Timeout int `json:"timeout,omitempty"`          
-        Retries int `json:"retries,omitempty"`          
-        Interval int `json:"interval,omitempty"`         
-        FollowRedirects bool `json:"follow_redirects,omitempty"` 
-        AllowInsecure bool `json:"allow_insecure,omitempty"`   
+      ExpCodes string `json:"expected_codes"`
+      ExpBody string `json:"expected_body"`
+      Path string `json:"path"`
+      // Headers ommited TBC
+      MonType string `json:"type,omitempty"`            
+      Method string `json:"method,omitempty"`           
+      Timeout int `json:"timeout,omitempty"`          
+      Retries int `json:"retries,omitempty"`          
+      Interval int `json:"interval,omitempty"`         
+      FollowRedirects bool `json:"follow_redirects,omitempty"` 
+      AllowInsecure bool `json:"allow_insecure,omitempty"`   
     }
 
 
