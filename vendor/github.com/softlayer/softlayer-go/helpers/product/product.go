@@ -105,7 +105,7 @@ func GetPackageProducts(
 	mask ...string,
 ) ([]datatypes.Product_Item, error) {
 
-	objectMask := "id,capacity,description,units,keyName,prices[id,categories[id,name,categoryCode]]"
+	objectMask := "id,capacity,description,units,keyName,prices[id,locationGroupId,categories[id,name,categoryCode]]"
 	if len(mask) > 0 {
 		objectMask = mask[0]
 	}
@@ -158,53 +158,60 @@ func SelectProductPricesByCategory(
 		isPrivate := strings.Contains(sl.Get(productItem.KeyName, "").(string), "PRIVATE")
 		isPublic := strings.Contains(sl.Get(productItem.Description, "Public").(string), "Public")
 		isDedicated := strings.Contains(sl.Get(productItem.KeyName, "").(string), "DEDICATED")
-		for _, category := range productItem.Prices[0].Categories {
-			for categoryCode, capacity := range options {
-				if _, ok := priceCheck[categoryCode]; ok {
-					continue
-				}
+		//Logic taken from softlayer-python @ https://bit.ly/2DV2bBi
+		for _, p := range productItem.Prices {
+			if p.LocationGroupId != nil {
+				continue
+			}
 
-				if productItem.Capacity == nil {
-					continue
-				}
-
-				if *category.CategoryCode != categoryCode {
-					continue
-				}
-
-				if *productItem.Capacity != datatypes.Float64(capacity) {
-					continue
-				}
-
-				// Logic taken from softlayer-python @ http://bit.ly/2bN9Gbu
-				switch categoryCode {
-				case CPUCategoryCode:
-					if forPublicCores == isPrivate || forDedicatedHost != isDedicated {
+			for _, category := range p.Categories {
+				for categoryCode, capacity := range options {
+					if _, ok := priceCheck[categoryCode]; ok {
 						continue
 					}
-				case NICSpeedCategoryCode:
-					if forPublicNetwork != isPublic || forDedicatedHost != isDedicated {
-						continue
-					}
-				case MemoryCategoryCode:
-					if forDedicatedHost != isDedicated {
-						continue
-					}
-				}
 
-				if strings.HasPrefix(categoryCode, "guest_disk") {
-					categories := productItem.Prices[0].Categories
-					var deviceCategories []datatypes.Product_Item_Category
-					for _, reqCategory := range categories {
-						if *reqCategory.CategoryCode == categoryCode {
-							deviceCategories = append(deviceCategories, reqCategory)
+					if productItem.Capacity == nil {
+						continue
+					}
+
+					if *category.CategoryCode != categoryCode {
+						continue
+					}
+
+					if *productItem.Capacity != datatypes.Float64(capacity) {
+						continue
+					}
+
+					// Logic taken from softlayer-python @ http://bit.ly/2bN9Gbu
+					switch categoryCode {
+					case CPUCategoryCode:
+						if forPublicCores == isPrivate || forDedicatedHost != isDedicated {
+							continue
+						}
+					case NICSpeedCategoryCode:
+						if forPublicNetwork != isPublic || forDedicatedHost != isDedicated {
+							continue
+						}
+					case MemoryCategoryCode:
+						if forDedicatedHost != isDedicated {
+							continue
 						}
 					}
-					productItem.Prices[0].Categories = deviceCategories
-				}
 
-				prices = append(prices, productItem.Prices[0])
-				priceCheck[categoryCode] = true
+					if strings.HasPrefix(categoryCode, "guest_disk") {
+						categories := p.Categories
+						var deviceCategories []datatypes.Product_Item_Category
+						for _, reqCategory := range categories {
+							if *reqCategory.CategoryCode == categoryCode {
+								deviceCategories = append(deviceCategories, reqCategory)
+							}
+						}
+						p.Categories = deviceCategories
+					}
+
+					prices = append(prices, p)
+					priceCheck[categoryCode] = true
+				}
 			}
 		}
 	}
