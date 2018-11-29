@@ -90,6 +90,9 @@ The following arguments are supported:
 	**NOTE**: Conflicts with `worker_num`. 
 * `worker_num` - (Optional, int)  The number of cluster worker nodes. This creates the stand-alone workers which are not associated to any pool.  
 	**NOTE**: Conflicts with `workers`. 
+* `workers_info` - (Optional, array) The worker nodes attached to this cluster. Use this attribute to update the worker version. Nested `workers_info` blocks have the following structure:
+	* `id` - ID of the worker.
+	* `version` - worker version. 
 * `default_pool_size` - (Optional,int) The number of workers created under the default worker pool which support Multi-AZ. 
 * `machinetype` - (Optional, string) The machine type of the worker nodes. You can retrieve the value by running the `ibmcloud cs machine-types <data-center>` command in the IBM Cloud CLI.
 * `billing` - (Optional, string) The billing type for the instance. Accepted values are `hourly` or `monthly`.
@@ -115,7 +118,6 @@ The following attributes are exported:
 * `server_url` - The server URL.
 * `ingress_hostname` - The Ingress hostname.
 * `ingress_secret` - The Ingress secret.
-* `workers_info` - The worker nodes attached to this cluster.
 * `subnet_id` - The subnets attached to this cluster.
 * `workers` -  Exported attributes are:
 	* `id` - The id of the worker
