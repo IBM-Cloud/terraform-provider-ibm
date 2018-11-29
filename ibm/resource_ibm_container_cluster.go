@@ -113,9 +113,23 @@ func resourceIBMContainerCluster() *schema.Resource {
 			},
 
 			"workers_info": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						"version": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+					},
+				},
 				Description: "The IDs of the worker node",
 			},
 
@@ -477,10 +491,14 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("Error retrieving workers for cluster: %s", err)
 	}
 	workerCount := 0
-	workers := make([]string, len(workerFields))
-	for i, worker := range workerFields {
-		workers[i] = worker.ID
-		if worker.PoolID == "" && worker.PoolName == "" {
+	workers := []map[string]string{}
+	for _, w := range workerFields {
+		var worker = map[string]string{
+			"id":      w.ID,
+			"version": strings.Split(w.KubeVersion, "_")[0],
+		}
+		workers = append(workers, worker)
+		if w.PoolID == "" && w.PoolName == "" {
 			workerCount = workerCount + 1
 		}
 	}
@@ -648,6 +666,40 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 			return fmt.Errorf(
 				"Error waiting for workers of cluster (%s) to become ready: %s", d.Id(), err)
 		}
+	}
+
+	if d.HasChange("workers_info") {
+		oldWorkers, newWorkers := d.GetChange("workers_info")
+		oldWorker := oldWorkers.([]interface{})
+		newWorker := newWorkers.([]interface{})
+		for _, nW := range newWorker {
+			newPack := nW.(map[string]interface{})
+			for _, oW := range oldWorker {
+				oldPack := oW.(map[string]interface{})
+				if strings.Compare(newPack["version"].(string), oldPack["version"].(string)) != 0 {
+					cluster, err := clusterAPI.Find(clusterID, targetEnv)
+					if err != nil {
+						return fmt.Errorf("Error retrieving cluster %s: %s", clusterID, err)
+					}
+					if newPack["version"].(string) != strings.Split(cluster.MasterKubeVersion, "_")[0] {
+						return fmt.Errorf("Worker version %s should match the master kube version %s", newPack["version"].(string), strings.Split(cluster.MasterKubeVersion, "_")[0])
+					}
+					params := v1.WorkerUpdateParam{
+						Action: "update",
+					}
+					err = wrkAPI.Update(clusterID, oldPack["id"].(string), params, targetEnv)
+					if err != nil {
+						return fmt.Errorf("Error updating worker %s: %s", oldPack["id"].(string), err)
+					}
+					_, err = WaitForWorkerAvailable(d, meta, targetEnv)
+					if err != nil {
+						return fmt.Errorf(
+							"Error waiting for workers of cluster (%s) to become ready: %s", d.Id(), err)
+					}
+				}
+			}
+		}
+
 	}
 
 	if d.HasChange("workers") {
