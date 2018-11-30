@@ -99,7 +99,11 @@ The following arguments are supported:
 * `isolation` - (Deprecated) Accepted values are `public` or `private`. Use `private` if you want to have available physical resources dedicated to you only or `public` to allow physical resources to be shared with other IBM customers. Use hardware instead.
 * `hardware` - (Optional, string) The level of hardware isolation for your worker node. Use `dedicated` to have available physical resources dedicated to you only, or `shared` to allow physical resources to be shared with other IBM customers. For IBM Cloud Public accounts, it can be shared or dedicated. For IBM Cloud Dedicated accounts, dedicated is the only available option.
 * `public_vlan_id`- (Optional, string) The public VLAN of the worker node. You can retrieve the value by running the `ibmcloud cs vlans <data-center>` command in the IBM Cloud CLI.
+  - Free clusters: You do not have to define a public VLAN. Your free cluster is automatically connected to a public VLAN that is owned by IBM.
+  - Standard clusters: If you already have a public VLAN set up in your IBM Cloud infrastructure (SoftLayer) account for that zone, enter the ID of the public VLAN. If you want to connect your worker nodes to a private VLAN only, do not specify this option.
 * `private_vlan_id` - (Optional, string) The private VLAN of the worker node. You can retrieve the value by running the `ibmcloud cs vlans <data-center>` command in the IBM Cloud CLI.
+  - Free clusters: You do not have to define a private VLAN. Your free cluster is automatically connected to a private VLAN that is owned by IBM.
+  - Standard clusters: If you already have a private VLAN set up in your IBM Cloud infrastructure (SoftLayer) account for that zone, enter the ID of the private VLAN. If you do not have a private VLAN in your account, do not specify this option. IBM Cloud Kubernetes Service automatically creates a private VLAN for you.
 * `subnet_id` - (Optional, string) The existing subnet ID that you want to add to the cluster. You can retrieve the value by running the `ibmcloud cs subnets` command in the IBM Cloud CLI.
 * `no_subnet` - (Optional, boolean) Set to `true` if you do not want to automatically create a portable subnet.
 * `is_trusted` - (Optional, boolean) Set to `true` to  enable trusted cluster feature. Default is false.
