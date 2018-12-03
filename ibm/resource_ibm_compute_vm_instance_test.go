@@ -762,6 +762,77 @@ func TestAccIBMComputeVmInstance_With_Invalid_Retry(t *testing.T) {
 	})
 }
 
+func TestAccIBMComputeVmInstance_Transient(t *testing.T) {
+	var guest datatypes.Virtual_Guest
+	hostname := acctest.RandString(16)
+	domain := "terraformuat.ibm.com"
+	tags1 := "collectd"
+	flavor := "B1_1X2X25"
+	userMetadata1 := "{\\\"value\\\":\\\"newvalue\\\"}"
+	networkSpeed1 := "10"
+	cores1 := "1"
+	memory1 := "2048"
+	userMetadata1Unquoted, _ := strconv.Unquote(`"` + userMetadata1 + `"`)
+
+	configInstance := "ibm_compute_vm_instance.terraform-transient"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccIBMComputeVmInstanceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccIBMComputeVMInstanceTransient(hostname, domain, networkSpeed1, flavor, userMetadata1, tags1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccIBMComputeVmInstanceExists(configInstance, &guest),
+					resource.TestCheckResourceAttr(
+						configInstance, "hostname", hostname),
+					resource.TestCheckResourceAttr(
+						configInstance, "domain", domain),
+					resource.TestCheckResourceAttr(
+						configInstance, "datacenter", "wdc04"),
+					resource.TestCheckResourceAttr(
+						configInstance, "network_speed", networkSpeed1),
+					resource.TestCheckResourceAttr(
+						configInstance, "hourly_billing", "true"),
+					resource.TestCheckResourceAttr(
+						configInstance, "private_network_only", "false"),
+					resource.TestCheckResourceAttr(
+						configInstance, "flavor_key_name", flavor),
+					resource.TestCheckResourceAttr(
+						configInstance, "cores", cores1),
+					resource.TestCheckResourceAttr(
+						configInstance, "memory", memory1),
+					resource.TestCheckResourceAttr(
+						configInstance, "disks.0", "10"),
+					resource.TestCheckResourceAttr(
+						configInstance, "disks.1", "20"),
+					resource.TestCheckResourceAttr(
+						configInstance, "user_metadata", userMetadata1Unquoted),
+					resource.TestCheckResourceAttr(
+						configInstance, "local_disk", "false"),
+					resource.TestCheckResourceAttr(
+						configInstance, "dedicated_acct_host_only", "false"),
+					resource.TestCheckResourceAttr(
+						configInstance, "transient", "true"),
+					CheckStringSet(
+						configInstance,
+						"tags", []string{tags1},
+					),
+				),
+			},
+			resource.TestStep{
+				ResourceName:      configInstance,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"wait_time_minutes",
+					"public_bandwidth_unlimited",
+				},
+			},
+		},
+	})
+}
+
 func testAccIBMComputeVmInstanceDestroy(s *terraform.State) error {
 	service := services.GetVirtualGuestService(testAccProvider.Meta().(ClientSession).SoftLayerSession())
 
@@ -1397,4 +1468,23 @@ resource "ibm_compute_vm_instance" "terraform-pgroup" {
 	placement_group_name = "%s"
 }
 `, hostname, domain, placementGroupName)
+}
+
+func testAccIBMComputeVMInstanceTransient(hostname, domain, networkSpeed, flavor, userMetadata, tags string) string {
+	return fmt.Sprintf(`
+	resource "ibm_compute_vm_instance" "terraform-transient" {
+	    hostname = "%s"
+	    domain = "%s"
+	    os_reference_code = "DEBIAN_8_64"
+	    datacenter = "wdc04"
+	    network_speed = %s
+	    hourly_billing = true
+	    private_network_only = false
+	    flavor_key_name = "%s"
+	    user_metadata = "%s"
+		tags = ["%s"]
+		disks = [10 ,20]
+		local_disk = false
+		transient = true
+	}`, hostname, domain, networkSpeed, flavor, userMetadata, tags)
 }

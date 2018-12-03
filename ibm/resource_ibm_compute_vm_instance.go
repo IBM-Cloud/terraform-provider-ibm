@@ -212,6 +212,13 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				},
 			},
 
+			"transient": {
+				Type:          schema.TypeBool,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"dedicated_acct_host_only", "dedicated_host_name", "dedicated_host_id", "cores", "memory", "public_bandwidth_limited", "public_bandwidth_unlimited"},
+			},
+
 			"public_vlan_id": {
 				Type:          schema.TypeInt,
 				Optional:      true,
@@ -672,6 +679,13 @@ func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interf
 		opts.DedicatedHost = &hosts[0]
 	}
 
+	if transientFlag, ok := d.GetOk("transient"); ok {
+		if !*opts.HourlyBillingFlag || *opts.LocalDiskFlag {
+			return opts, fmt.Errorf("Unable to provision a transient instance with a hourly_billing false or local_disk true")
+		}
+		opts.TransientGuestFlag = sl.Bool(transientFlag.(bool))
+	}
+
 	if imgID, ok := d.GetOk("image_id"); ok {
 		imageID := imgID.(int)
 		service := services.
@@ -934,7 +948,7 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	result, err := service.Id(id).Mask(
-		"hostname,domain,blockDevices[diskImage],startCpus,maxMemory,dedicatedAccountHostOnlyFlag,operatingSystemReferenceCode,blockDeviceTemplateGroup[id]," +
+		"hostname,domain,blockDevices[diskImage],startCpus,maxMemory,dedicatedAccountHostOnlyFlag,operatingSystemReferenceCode,blockDeviceTemplateGroup[id],transientGuestFlag," +
 			"billingItem[orderItem[preset[keyName]]]," +
 			"primaryIpAddress,primaryBackendIpAddress,privateNetworkOnlyFlag," +
 			"hourlyBillingFlag,localDiskFlag," +
@@ -1004,6 +1018,7 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("cores", *result.StartCpus)
 	d.Set("memory", *result.MaxMemory)
 	d.Set("dedicated_acct_host_only", *result.DedicatedAccountHostOnlyFlag)
+	d.Set("transient", *result.TransientGuestFlag)
 	if result.PrimaryIpAddress != nil {
 		d.Set("has_public_ip", *result.PrimaryIpAddress != "")
 	}
