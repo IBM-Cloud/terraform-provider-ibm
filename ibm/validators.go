@@ -583,3 +583,13 @@ func validateDatacenterOption(v []interface{}, allowedValues []string) error {
 	}
 	return nil
 }
+
+func validateLBTimeout(v interface{}, k string) (ws []string, errors []error) {
+	timeout := v.(int)
+	if timeout <= 0 || timeout > 3600 {
+		errors = append(errors, fmt.Errorf(
+			"%q must be between 1 and 3600",
+			k))
+	}
+	return
+}
