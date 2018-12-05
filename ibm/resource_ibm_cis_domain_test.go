@@ -17,7 +17,7 @@ func TestAccIBMCisDomain_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccIBMCisDomainConfig_basic("test", cis_crn, cis_domain),
+				Config: testAccIBMCisDomainConfig_basic("test", cis_domain),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "domain", cis_domain),
 					resource.TestCheckResourceAttr(name, "name_servers.#", "2"),
@@ -27,10 +27,10 @@ func TestAccIBMCisDomain_basic(t *testing.T) {
 	})
 }
 
-func testAccIBMCisDomainConfig_basic(resourceID string, cis_crn string, zoneName string) string {
-	return fmt.Sprintf(`
+func testAccIBMCisDomainConfig_basic(resourceID string, cis_domain string) string {
+	return testAccCheckIBMCISInstance_basic(cis_domain) + fmt.Sprintf(`
 				resource "ibm_cis_domain" "%[1]s" {
-					cis_id = "%[2]s"
-                    domain = "%[3]s"
-				}`, resourceID, cis_crn, zoneName)
+					cis_id = "${ibm_cis.instance.id}"
+                    domain = "%[2]s"
+				}`, resourceID, cis_domain)
 }

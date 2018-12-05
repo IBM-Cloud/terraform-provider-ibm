@@ -24,6 +24,7 @@ type CisServiceAPI interface {
 	Glbs() Glbs
 	Settings() Settings
 	Ips() Ips
+	Dns() Dns
 }
 
 //CisService holds the client
@@ -98,6 +99,11 @@ func (c *cisService) Settings() Settings {
 //Settings implements Settings API
 func (c *cisService) Ips() Ips {
 	return newIpsAPI(c.Client)
+}
+
+//Settings implements DNS records API
+func (c *cisService) Dns() Dns {
+	return newDnsAPI(c.Client)
 }
 
 // Funny here somewhere. It looks like some codes come back from CIS as strings and others as ints

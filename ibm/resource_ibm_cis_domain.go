@@ -1,16 +1,11 @@
 package ibm
 
 import (
-	//"fmt"
-	"log"
-	//"strings"
-	//"time"
-
+	"fmt"
 	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
-	//"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/google/go-cmp/cmp"
-	//"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+	"log"
 )
 
 func resourceIBMCISDomain() *schema.Resource {
@@ -49,6 +44,7 @@ func resourceIBMCISDomain() *schema.Resource {
 		Read:   resourceCISdomainRead,
 		Update: resourceCISdomainUpdate,
 		Delete: resourceCISdomainDelete,
+		// No Exists due to errors in CIS API returning wrong return codes on 404
 	}
 }
 
@@ -101,7 +97,7 @@ func resourceCISdomainCreate(d *schema.ResourceData, meta interface{}) error {
 		zoneObj = *zone
 	} else {
 		// If zone already exists retrieve existing zone from array of zones.
-		zoneObj = zonesObj[index]
+		return fmt.Errorf("resource with name %s already exists", zoneName)
 	}
 
 	d.SetId(zoneObj.Id)

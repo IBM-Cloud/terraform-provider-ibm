@@ -2,9 +2,10 @@ package ibm
 
 import (
 	//"fmt"
-	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/schema"
 	"log"
+	"math/rand"
+	"strconv"
 )
 
 func dataSourceIBMCISIP() *schema.Resource {
@@ -36,7 +37,7 @@ func dataSourceIBMCISIPRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	rnd := acctest.RandString(10)
+	rnd := rand.Intn(8999999) + 1000000
 	log.Printf("resourceCISSettingsRead - Getting CIS IPs \n")
 
 	ipsResults, err := cisClient.Ips().ListIps()
@@ -49,7 +50,7 @@ func dataSourceIBMCISIPRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("ipv4_cidrs", ipsObj.Ipv4)
 		d.Set("ipv6_cidrs", ipsObj.Ipv6)
 
-		d.SetId(rnd)
+		d.SetId(strconv.Itoa(rnd))
 	}
 	return nil
 }

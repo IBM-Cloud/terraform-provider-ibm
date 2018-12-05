@@ -1,16 +1,11 @@
 package ibm
 
 import (
-	//"fmt"
-	"log"
-	//"strings"
-	//"time"
-
+	"fmt"
 	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/google/go-cmp/cmp"
-	//"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	//"github.com/hashicorp/terraform/helper/validation"
+	"log"
 )
 
 func resourceIBMCISGlb() *schema.Resource {
@@ -97,6 +92,7 @@ func resourceIBMCISGlb() *schema.Resource {
 		Read:   resourceCISGlbRead,
 		Update: resourceCISGlbUpdate,
 		Delete: resourceCISGlbDelete,
+		// No Exists due to errors in CIS API returning wrong return codes on 404
 	}
 }
 
@@ -131,7 +127,6 @@ func resourceCISGlbCreate(d *schema.ResourceData, meta interface{}) error {
 	var Glb *v1.Glb
 	var GlbObj v1.Glb
 
-	// Handle Glb existing case gracefully, by just populating Terraform values
 	// If zome does not exist, create
 	index := indexOf(name, GlbNames)
 	//indexOf returns -1 if the Glb is not found in the list of Glbs, so we create it
@@ -156,8 +151,8 @@ func resourceCISGlbCreate(d *schema.ResourceData, meta interface{}) error {
 		}
 		GlbObj = *Glb
 	} else {
-		// If Glb already exists retrieve existing Glb from array of Glbs.
-		GlbObj = GlbsObj[index]
+		// If Glb with same name already exists, error.
+		return fmt.Errorf("Resource with name %s already exists", name)
 	}
 
 	d.SetId(GlbObj.Id)
@@ -177,7 +172,6 @@ func resourceCISGlbRead(d *schema.ResourceData, meta interface{}) error {
 	GlbId = d.Id()
 	cisId := d.Get("cis_id").(string)
 	zoneId := d.Get("domain_id").(string)
-	//emptyGlb := v1.Glb{}
 
 	log.Printf("resourceCISGlbRead - Getting Glb %v\n", GlbId)
 	var Glb *v1.Glb
@@ -188,13 +182,6 @@ func resourceCISGlbRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	} else {
 		log.Printf("resourceCISGlbRead - Retrieved Glb %v\n", Glb)
-
-		// if cmp.Equal(Glb, emptyGlb) {
-		// 	log.Printf("resourceCIShealthCheckRead - No Glb returned. Delete")
-
-		// 	// Contrary to the doc. SetId("") does not delete the object on a Read
-		// 	//   d.SetId("")
-		// } else {
 
 		GlbObj := *Glb
 		d.Set("name", GlbObj.Name)

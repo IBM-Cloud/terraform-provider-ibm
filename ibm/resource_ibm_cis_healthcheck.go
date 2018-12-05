@@ -1,16 +1,11 @@
 package ibm
 
 import (
-	//"fmt"
-	"log"
-	//"strings"
-	//"time"
-
+	"fmt"
 	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/google/go-cmp/cmp"
-	//"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	//"github.com/hashicorp/terraform/helper/validation"
+	"log"
 )
 
 func resourceIBMCISHealthCheck() *schema.Resource {
@@ -156,7 +151,6 @@ func resourceCIShealthCheckCreate(d *schema.ResourceData, meta interface{}) erro
 	var monitor *v1.Monitor
 	var monitorObj v1.Monitor
 
-	// Handle monitor existing case gracefully, by just populating Terraform values
 	// If zome does not exist, create
 	index := indexOf(monitorPath, monitorPaths)
 	//indexOf returns -1 if the monitor is not found in the list of monitors, so we create it
@@ -198,8 +192,8 @@ func resourceCIShealthCheckCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 		monitorObj = *monitor
 	} else {
-		// If monitor already exists retrieve existing monitor from array of monitors.
-		monitorObj = monitorsObj[index]
+		// If monitor already exists, error
+		return fmt.Errorf("Resource with name %s already exists", monitorPath)
 	}
 
 	d.SetId(monitorObj.Id)
@@ -218,7 +212,6 @@ func resourceCIShealthCheckRead(d *schema.ResourceData, meta interface{}) error 
 
 	monitorId = d.Id()
 	cisId := d.Get("cis_id").(string)
-	//emptyMonitor := v1.Monitor{}
 
 	log.Printf("resourceCIShealthCheckRead - Getting Monitor %v\n", monitorId)
 	var monitor *v1.Monitor
@@ -229,13 +222,6 @@ func resourceCIShealthCheckRead(d *schema.ResourceData, meta interface{}) error 
 		return err
 	} else {
 		log.Printf("resourceCIShealthCheckRead - Retrieved Monitor %v\n", monitor)
-
-		// if cmp.Equal(monitor, emptyMonitor) {
-		// 	log.Printf("resourceCIShealthCheckRead - No monitor returned. Delete")
-
-		// 	// Contrary to the doc. SetId("") does not delete the object on a Read
-		// 	//   d.SetId("")
-		// } else {
 
 		monitorObj := *monitor
 		d.Set("path", monitorObj.Path)

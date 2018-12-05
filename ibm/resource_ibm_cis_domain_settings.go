@@ -32,25 +32,17 @@ func resourceIBMCISSettings() *schema.Resource {
 				Computed:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"off", "on"}),
 			},
-			"waf_modified": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"ssl": {
 				Type:         schema.TypeString,
 				Description:  "SSL/TLS setting",
 				Optional:     true,
 				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"off", "flexible", "full", "strict"}),
+				ValidateFunc: validateAllowedStringValue([]string{"off", "flexible", "full", "strict", "origin_pull"}),
 			},
 			"certificate_status": {
 				Type:        schema.TypeString,
 				Description: "Certificate status",
 				Computed:    true,
-			},
-			"ssl_modified": {
-				Type:     schema.TypeString,
-				Computed: true,
 			},
 			"min_tls_version": {
 				Type:         schema.TypeString,
@@ -59,23 +51,6 @@ func resourceIBMCISSettings() *schema.Resource {
 				ValidateFunc: validateAllowedStringValue([]string{"1.1", "1.2", "1.3", "1.4"}),
 				Default:      "1.1",
 			},
-			"min_tls_version_modified": {
-				Type:        schema.TypeString,
-				Description: "Minimum version of TLS required",
-				Computed:    true,
-			},
-			// "tls_1_3_setting": {
-			// 	Type:         schema.TypeString,
-			// 	Description:  "TLS_1_2 setting",
-			// 	Optional:     true,
-			// 	Computed:     true,
-			// 	ValidateFunc: validateAllowedStringValue([]string{"off", "on"}),
-			// },
-			// "tls_1_3_setting_modified": {
-			// 	Type:        schema.TypeString,
-			// 	Description: "Date TLS_1_2 setting modified",
-			// 	Computed:    true,
-			// },
 		},
 
 		Create: resourceCISSettingsUpdate,
@@ -104,7 +79,6 @@ func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 	settingsArray = append(settingsArray, Setting{Name: "waf", Value: d.Get("waf").(string)})
 	settingsArray = append(settingsArray, Setting{Name: "ssl", Value: d.Get("ssl").(string)})
 	settingsArray = append(settingsArray, Setting{Name: "min_tls_version", Value: d.Get("min_tls_version").(string)})
-	//settingsArray = append(settingsArray, Setting{Name: "tls_1_3_only", Value: d.Get("tls_1_3_setting").(string)})
 
 	for _, item := range settingsArray {
 		settingsNew := v1.SettingsBody{Value: item.Value}
@@ -142,14 +116,9 @@ func resourceCISSettingsRead(d *schema.ResourceData, meta interface{}) error {
 
 		settingsObj := *settingsResults
 		d.Set("waf", settingsObj.Waf.Value)
-		d.Set("waf_modified", settingsObj.Waf.ModifiedDate)
 		d.Set("ssl", settingsObj.Ssl.Value)
 		d.Set("certificate_status", settingsObj.Ssl.CertificateStatus)
-		d.Set("ssl_modified", settingsObj.Ssl.ModifiedDate)
 		d.Set("min_tls_version", settingsObj.Min_tls_version.Value)
-		d.Set("min_tls_version_modified", settingsObj.Min_tls_version.ModifiedDate)
-		// d.Set("tls_1_3_setting", settingsObj.Tls_1_3.Value)
-		// d.Set("tls_1_3_modified", settingsObj.Tls_1_3.ModifiedDate)
 
 	}
 	return nil

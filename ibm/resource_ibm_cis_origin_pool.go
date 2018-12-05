@@ -1,16 +1,11 @@
 package ibm
 
 import (
-	//"fmt"
-	"log"
-	//"strings"
-	//"time"
-
+	"fmt"
 	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/google/go-cmp/cmp"
-	//"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	//"github.com/hashicorp/terraform/helper/validation"
+	"log"
 )
 
 func resourceIBMCISPool() *schema.Resource {
@@ -34,12 +29,6 @@ func resourceIBMCISPool() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			// "check_regions": {
-			//     Type:     schema.TypeList,
-			//     Required: true,
-			//     Elem:     &schema.Schema{
-			//         Type: schema.TypeString},
-			//     },
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -133,7 +122,6 @@ func resourceCISpoolCreate(d *schema.ResourceData, meta interface{}) error {
 	var pool *v1.Pool
 	var poolObj v1.Pool
 
-	// Handle pool existing case gracefully, by just populating Terraform values
 	// If zome does not exist, create
 	index := indexOf(name, poolNames)
 	//indexOf returns -1 if the pool is not found in the list of pools, so we create it
@@ -169,8 +157,8 @@ func resourceCISpoolCreate(d *schema.ResourceData, meta interface{}) error {
 		}
 		poolObj = *pool
 	} else {
-		// If pool already exists retrieve existing pool from array of pools.
-		poolObj = poolsObj[index]
+		// If pool already exists, error.
+		return fmt.Errorf("Resource with name %s already exists", name)
 	}
 
 	d.SetId(poolObj.Id)
