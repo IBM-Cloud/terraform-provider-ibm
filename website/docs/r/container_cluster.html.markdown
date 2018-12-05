@@ -94,7 +94,7 @@ The following arguments are supported:
 	* `id` - ID of the worker.
 	* `version` - worker version. 
 * `default_pool_size` - (Optional,int) The number of workers created under the default worker pool which support Multi-AZ. 
-* `machinetype` - (Optional, string) The machine type of the worker nodes. You can retrieve the value by running the `ibmcloud cs machine-types <data-center>` command in the IBM Cloud CLI.
+* `machine_type` - (Optional, string) The machine type of the worker nodes. You can retrieve the value by running the `ibmcloud cs machine-types <data-center>` command in the IBM Cloud CLI.
 * `billing` - (Optional, string) The billing type for the instance. Accepted values are `hourly` or `monthly`.
 * `isolation` - (Deprecated) Accepted values are `public` or `private`. Use `private` if you want to have available physical resources dedicated to you only or `public` to allow physical resources to be shared with other IBM customers. Use hardware instead.
 * `hardware` - (Optional, string) The level of hardware isolation for your worker node. Use `dedicated` to have available physical resources dedicated to you only, or `shared` to allow physical resources to be shared with other IBM customers. For IBM Cloud Public accounts, it can be shared or dedicated. For IBM Cloud Dedicated accounts, dedicated is the only available option.
