@@ -42,7 +42,7 @@ The following arguments are supported:
 
 * `datacenter` - (Required, string) The data center in which you want to provision the VPX load balancer. You can find accepted values in the [data center docs](http://www.softlayer.com/data-centers).
 * `speed` - (Required, integer) The speed, expressed in Mbps. Accepted values are `10`, `200`, and `1000`.
-* `version` - (Required, string) The VPX load balancer version. Accepted values are `10.1`, `10.5`, `11.0` and `11.1`.
+* `version` - (Required, string) The VPX load balancer version. Accepted values are `10.1`, `10.5`, `11.0`, `11.1` and `12.1`.
 * `plan` - (Required, string) The VPX load balancer plan. Accepted values are `Standard` and `Platinum`.
 * `ip_count` - (Required, integer) The number of static public IP addresses assigned to the VPX load balancer. Accepted values are `1`,`2`, `4`, `8`, and `16`.
 * `public_vlan_id` - (Optional, integer) The public VLAN ID that is used for the public network interface of the VPX load balancer. You can find accepted values in the [VLAN docs](https://control.softlayer.com/network/vlans) by clicking the desired VLAN and noting the ID in the resulting URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
