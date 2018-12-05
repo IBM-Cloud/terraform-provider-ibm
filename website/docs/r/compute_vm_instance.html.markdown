@@ -84,8 +84,6 @@ resource "ibm_compute_vm_instance" "terraform-sample-flavor" {
 }
 ```
 
-```
-
 In the following example, you can retry to create a VM instance using a datacenter_choice. If VM fails to place order on first datacenter or vlans it retries to place order on subsequent datacenters and vlans untill place order is successfull:
 
 ```hcl
