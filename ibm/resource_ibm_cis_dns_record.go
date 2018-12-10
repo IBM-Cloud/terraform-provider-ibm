@@ -532,9 +532,9 @@ func suppressNameDiff(k, old, new string, d *schema.ResourceData) bool {
 	return false
 }
 
+
 func suppressDataDiff(k, old, new string, d *schema.ResourceData) bool {
 	// Tuncate after .
-	log.Printf(">>>>>>>>>>>>>>>> %s and %s ", old, new)
 	if strings.SplitN(old, ".", 2)[0] == strings.SplitN(new, ".", 2)[0] {
 		return true
 	}

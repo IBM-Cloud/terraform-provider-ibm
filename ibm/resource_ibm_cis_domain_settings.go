@@ -60,6 +60,9 @@ func resourceIBMCISSettings() *schema.Resource {
 	}
 }
 
+const settingsList = {"waf", "ssl", "min_tls_version"}
+
+
 func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 	cisClient, err := meta.(ClientSession).CisAPI()
 	log.Printf("   client %v\n", cisClient)
@@ -76,19 +79,18 @@ func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 	var settingsArray []Setting
 
-	settingsArray = append(settingsArray, Setting{Name: "waf", Value: d.Get("waf").(string)})
-	settingsArray = append(settingsArray, Setting{Name: "ssl", Value: d.Get("ssl").(string)})
-	settingsArray = append(settingsArray, Setting{Name: "min_tls_version", Value: d.Get("min_tls_version").(string)})
+	for _, item := range settingsList {
 
-	for _, item := range settingsArray {
-		settingsNew := v1.SettingsBody{Value: item.Value}
-		_, err = cisClient.Settings().UpdateSettings(cisId, zoneId, item.Name, settingsNew)
+		value = d.Get(item).(string)})
+		settingsNew := v1.SettingsBody{Value: value}
+		_, err = cisClient.Settings().UpdateSetting(cisId, zoneId, item, settingsNew)
 		if err != nil {
-			log.Printf("Update settings Failed on %s, %s\n", item.Name, err)
+			log.Printf("Update settings Failed on %s, %s\n", item, err)
 			return err
 		}
 	}
-	// Settings are associated with a zone/domain. Use same Id
+
+
 	d.SetId(zoneId)
 
 	return resourceCISSettingsRead(d, meta)
@@ -108,19 +110,17 @@ func resourceCISSettingsRead(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("resourceCISSettingsRead - Getting Settings \n")
 
-	settingsResults, err := cisClient.Settings().GetSettings(cisId, settingsId)
-	if err != nil {
-		log.Printf("resourceCISettingsRead - ListSettingss Failed\n")
-		return err
-	} else {
+	for _, item := range settingsList {
+		settingsResult, err := cisClient.Settings().GetSetting(cisId, settingsId, item)
+		if err != nil {
+			log.Printf("resourceCISettingsRead - GetSetting for %s Failed\n", item)
+			return err
+		} else {
 
-		settingsObj := *settingsResults
-		d.Set("waf", settingsObj.Waf.Value)
-		d.Set("ssl", settingsObj.Ssl.Value)
-		d.Set("certificate_status", settingsObj.Ssl.CertificateStatus)
-		d.Set("min_tls_version", settingsObj.Min_tls_version.Value)
-
-	}
+			settingsObj := *settingsResult
+			d.Set(item, settingsObj.Value)
+		}
+	}	
 	return nil
 }
 
