@@ -77,6 +77,7 @@ The following arguments are supported:
 * `name` - (Required, string) The name of the cluster.
 * `datacenter` - (Required, string)  The datacenter of the worker nodes. You can retrieve the value by running the `bluemix cs locations` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
 * `kube_version` - (Optional, string) The desired Kubernetes version of the created cluster. If present, at least major.minor must be specified.
+* `update_all_workers` - (Optional, bool)  Set to `true` if you want to update workers kube version along with the cluster kube_version
 * `org_guid` - (Optional, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from data source `ibm_org` or by running the `ibmcloud iam orgs --guid` command in the IBM Cloud CLI.
 * `space_guid` - (Optional, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from data source `ibm_space` or by running the `ibmcloud iam space <space-name> --guid` command in the IBM Cloud CLI.
 * `account_guid` - (Optional, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from data source `ibm_account` or by running the `ibmcloud iam accounts` command in the IBM Cloud CLI.
@@ -134,6 +135,8 @@ The following attributes are exported:
 		* `private_vlan` - The ID of the private VLAN. 
 		* `public_vlan` - The ID of the public VLAN.
 		* `worker_count` - Number of workers attached to this zone.
+* `workers_info` - The worker nodes attached to this cluster. Nested `workers_info` blocks have the following structure:
+	* `pool_name` - Name of the worker pool to which the worker belongs to.
 * `albs` - Alb's attached to the cluster
   * `id` - The Alb id.
   * `name` - The name of the Alb.
