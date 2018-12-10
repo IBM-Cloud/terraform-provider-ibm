@@ -1,15 +1,9 @@
 package ibm
 
 import (
-	//"fmt"
-	"log"
-	//"strings"
-	//"time"
-
 	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
-	//"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	//"github.com/hashicorp/terraform/helper/validation"
+	"log"
 )
 
 func resourceIBMCISSettings() *schema.Resource {
@@ -51,6 +45,27 @@ func resourceIBMCISSettings() *schema.Resource {
 				ValidateFunc: validateAllowedStringValue([]string{"1.1", "1.2", "1.3", "1.4"}),
 				Default:      "1.1",
 			},
+			"cname_flattening": {
+				Type:         schema.TypeString,
+				Description:  "cname_flattening setting",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"flatten_at_root", "flatten_all", "flatten_none"}),
+			},
+			"opportunistic_encryption": {
+				Type:         schema.TypeString,
+				Description:  "opportunistic_encryption setting",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+			},
+			"automatic_https_rewrites": {
+				Type:         schema.TypeString,
+				Description:  "automatic_https_rewrites setting",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+			},
 		},
 
 		Create: resourceCISSettingsUpdate,
@@ -60,8 +75,7 @@ func resourceIBMCISSettings() *schema.Resource {
 	}
 }
 
-const settingsList = {"waf", "ssl", "min_tls_version"}
-
+var settingsList = [...]string{"waf", "ssl", "min_tls_version", "automatic_https_rewrites", "opportunistic_encryption", "cname_flattening"}
 
 func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 	cisClient, err := meta.(ClientSession).CisAPI()
@@ -77,19 +91,19 @@ func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 		Name  string
 		Value string
 	}
-	var settingsArray []Setting
 
 	for _, item := range settingsList {
 
-		value = d.Get(item).(string)})
-		settingsNew := v1.SettingsBody{Value: value}
-		_, err = cisClient.Settings().UpdateSetting(cisId, zoneId, item, settingsNew)
-		if err != nil {
-			log.Printf("Update settings Failed on %s, %s\n", item, err)
-			return err
+		value := d.Get(item).(string)
+		if value != "" {
+			settingsNew := v1.SettingsBody{Value: value}
+			_, err = cisClient.Settings().UpdateSetting(cisId, zoneId, item, settingsNew)
+			if err != nil {
+				log.Printf("Update settings Failed on %s, %s\n", item, err)
+				return err
+			}
 		}
 	}
-
 
 	d.SetId(zoneId)
 
@@ -106,8 +120,6 @@ func resourceCISSettingsRead(d *schema.ResourceData, meta interface{}) error {
 
 	settingsId = d.Id()
 	cisId := d.Get("cis_id").(string)
-	//zoneId := d.Get("domain_id").(string)
-
 	log.Printf("resourceCISSettingsRead - Getting Settings \n")
 
 	for _, item := range settingsList {
@@ -120,7 +132,7 @@ func resourceCISSettingsRead(d *schema.ResourceData, meta interface{}) error {
 			settingsObj := *settingsResult
 			d.Set(item, settingsObj.Value)
 		}
-	}	
+	}
 	return nil
 }
 

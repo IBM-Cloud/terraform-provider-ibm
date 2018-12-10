@@ -30,7 +30,6 @@ func resourceIBMCISGlb() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "name",
 				Required:    true,
-				//ValidateFunc: validation.StringLenBetween(1, 32),
 			},
 			"default_pool_ids": {
 				Type:     schema.TypeSet,
@@ -65,7 +64,6 @@ func resourceIBMCISGlb() *schema.Resource {
 				// Set to cookie when proxy=true
 				ValidateFunc: validateAllowedStringValue([]string{"none", "cookie"}),
 			},
-
 			// "region_pools": &schema.Schema{
 			// 	Type:     schema.TypeMap,
 			// 	Optional: true,
@@ -92,7 +90,7 @@ func resourceIBMCISGlb() *schema.Resource {
 		Read:   resourceCISGlbRead,
 		Update: resourceCISGlbUpdate,
 		Delete: resourceCISGlbDelete,
-		// No Exists due to errors in CIS API returning wrong return codes on 404
+		// No Exists due to errors in CIS API returning incorrect return codes on 404
 	}
 }
 
@@ -127,10 +125,7 @@ func resourceCISGlbCreate(d *schema.ResourceData, meta interface{}) error {
 	var Glb *v1.Glb
 	var GlbObj v1.Glb
 
-	// If zome does not exist, create
 	index := indexOf(name, GlbNames)
-	//indexOf returns -1 if the Glb is not found in the list of Glbs, so we create it
-	// Otherwise it returns the index in the paths array.
 	if index == -1 {
 
 		GlbNew := v1.GlbBody{}
@@ -151,7 +146,6 @@ func resourceCISGlbCreate(d *schema.ResourceData, meta interface{}) error {
 		}
 		GlbObj = *Glb
 	} else {
-		// If Glb with same name already exists, error.
 		return fmt.Errorf("Resource with name %s already exists", name)
 	}
 

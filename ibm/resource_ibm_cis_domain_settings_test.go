@@ -1,16 +1,9 @@
 package ibm
 
 import (
-	//"errors"
 	"fmt"
-	"testing"
-
-	//"regexp"
-
-	//v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
-	//"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
-	//"github.com/hashicorp/terraform/terraform"
+	"testing"
 )
 
 func TestAccCisSettings_Basic(t *testing.T) {
@@ -29,12 +22,9 @@ func TestAccCisSettings_Basic(t *testing.T) {
 			{
 				Config: testAccCheckCisSettingsConfigBasic("test", cis_domain),
 				Check: resource.ComposeTestCheckFunc(
-					// dont check that specified values are set, this will be evident by lack of plan diff
-					// some values will get empty values
 					resource.TestCheckResourceAttr(name, "waf", "on"),
 					resource.TestCheckResourceAttr(name, "ssl", "full"),
 					resource.TestCheckResourceAttr(name, "min_tls_version", "1.2"),
-					//resource.TestCheckResourceAttr(name, "tls_1_3_setting", "off"),
 				),
 			},
 		},

@@ -115,17 +115,10 @@ func resourceCISpoolCreate(d *schema.ResourceData, meta interface{}) error {
 	for _, pool := range poolsObj {
 		poolNames = append(poolNames, pool.Name)
 	}
-
-	log.Println(string("Existing pool names"))
-	log.Println(poolNames)
-
 	var pool *v1.Pool
 	var poolObj v1.Pool
 
-	// If zome does not exist, create
 	index := indexOf(name, poolNames)
-	//indexOf returns -1 if the pool is not found in the list of pools, so we create it
-	// Otherwise it returns the index in the paths array.
 	if index == -1 {
 
 		poolNew := v1.PoolBody{}
@@ -157,7 +150,6 @@ func resourceCISpoolCreate(d *schema.ResourceData, meta interface{}) error {
 		}
 		poolObj = *pool
 	} else {
-		// If pool already exists, error.
 		return fmt.Errorf("Resource with name %s already exists", name)
 	}
 
@@ -177,7 +169,6 @@ func resourceCISpoolRead(d *schema.ResourceData, meta interface{}) error {
 
 	poolId = d.Id()
 	cisId := d.Get("cis_id").(string)
-	//emptyPool := v1.Pool{}
 
 	log.Printf("resourceCISpoolRead - Getting Pool %v\n", poolId)
 	var pool *v1.Pool
@@ -188,13 +179,6 @@ func resourceCISpoolRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	} else {
 		log.Printf("resourceCISpoolRead - Retrieved Pool %v\n", pool)
-
-		// if cmp.Equal(pool, emptyPool) {
-		// 	log.Printf("resourceCIShealthCheckRead - No pool returned. Delete")
-
-		// 	// Contrary to the doc. SetId("") does not delete the object on a Read
-		// 	//   d.SetId("")
-		// } else {
 
 		poolObj := *pool
 		d.Set("name", poolObj.Name)

@@ -1,13 +1,9 @@
 package cisv1
 
 import (
-	//"fmt"
 	"github.com/IBM-Cloud/bluemix-go/client"
     "fmt"
-    //"log"
 )
-
-
 
 type IpsList struct {
       Ipv4 []string `json:"ipv4_cidrs"`
@@ -21,15 +17,12 @@ type IpsResults  struct {
       Errors []Error `json:"errors"`
       }
 
-
-
-//Monitors interface
 type Ips interface {
-	ListIps() (*IpsList, error)
+	   ListIps() (*IpsList, error)
 }
 
 type ips struct {
-	client *client.Client
+	   client *client.Client
 }
 
 func newIpsAPI(c *client.Client) Ips {

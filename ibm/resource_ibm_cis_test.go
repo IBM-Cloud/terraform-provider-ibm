@@ -103,7 +103,6 @@ func testAccCheckIBMCISInstanceDestroy(s *terraform.State) error {
 
 		instanceID := rs.Primary.ID
 
-		// Try to find the key
 		_, err := rsContClient.ResourceServiceInstance().GetInstance(instanceID)
 
 		if err != nil && !strings.Contains(err.Error(), "404") {

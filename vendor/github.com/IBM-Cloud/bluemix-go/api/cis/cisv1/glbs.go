@@ -1,13 +1,10 @@
 package cisv1
 
 import (
-	//"fmt"
 	"github.com/IBM-Cloud/bluemix-go/client"
     "fmt"
-    //"log"
     "time"
 )
-
 
 type Glb struct {
       Id string `json:"id"`
@@ -20,6 +17,7 @@ type Glb struct {
       CreatedOn    *time.Time  `json:"created_on,omitempty"`
       ModifiedOn   *time.Time  `json:"modified_on,omitempty"`
       SessionAffinity string `json:"session_affinity"`
+      // Future support
       // RegionPools  map[string][]string `json:"region_pools"`
       // PopPools     map[string][]string `json:"pop_pools"`
     }
@@ -56,14 +54,11 @@ type GlbDelete  struct {
       Messages []string `json:"messages"`
       }
 
-
-//Glbs interface
 type Glbs interface {
-	ListGlbs(cisId string, zoneId string) (*[]Glb, error)
-	GetGlb(cisId string, zoneId string, glbId string) (*Glb, error)
-	CreateGlb(cisId string, zoneId string, glbBody GlbBody) (*Glb, error)
-	DeleteGlb(cisId string, zoneId string, glbId string) (error)
-	
+    	ListGlbs(cisId string, zoneId string) (*[]Glb, error)
+    	GetGlb(cisId string, zoneId string, glbId string) (*Glb, error)
+    	CreateGlb(cisId string, zoneId string, glbBody GlbBody) (*Glb, error)
+    	DeleteGlb(cisId string, zoneId string, glbId string) (error)
 }
 
 type glbs struct {
@@ -86,7 +81,6 @@ func (r *glbs)  ListGlbs(cisId string, zoneId string) (*[]Glb, error) {
     return &glbResults.GlbList, err
 }
 
-
 func (r *glbs)  GetGlb(cisId string, zoneId string, glbId string) (*Glb, error) {
   glbResult := GlbResult{}
   rawURL := fmt.Sprintf("/v1/%s/zones/%s/load_balancers/%s", cisId, zoneId, glbId)
@@ -97,14 +91,7 @@ func (r *glbs)  GetGlb(cisId string, zoneId string, glbId string) (*Glb, error) 
 	return &glbResult.Glb, nil
 }
 
-
-
 func  (r *glbs) DeleteGlb(cisId string, zoneId string, glbId string) (error) {
-
-	// Only call if the glb exists first. Otherwise API errors with a 
-  // 403 if glb does not exist. Should return 404. Issue reported against CIS
-  // DeleteGlb is only called by resourceCISdomainDelete if glb exists. 
-
     rawURL := fmt.Sprintf("/v1/%s/zones/%s/load_balancers/%s", cisId, zoneId, glbId)
     _, err := r.client.Delete(rawURL)
     if err != nil {
@@ -112,7 +99,6 @@ func  (r *glbs) DeleteGlb(cisId string, zoneId string, glbId string) (error) {
     }  
     return nil
 }
-
 
 func (r *glbs)  CreateGlb(cisId string, zoneId string, glbBody GlbBody) (*Glb, error) {
   glbResult := GlbResult{}		

@@ -1,19 +1,9 @@
 package cisv1
 
 import (
-	//"fmt"
 	"github.com/IBM-Cloud/bluemix-go/client"
     "fmt"
-    //"log"
 )
-
-
-// unresolved question as to whether codes always come back as ints
-// pool and glb currently return 'code' as a string - issue raised
-
-
-
-
 
 type Pool struct {
       Id string `json:"id"`
@@ -79,9 +69,6 @@ type PoolDelete  struct {
       }
 
 
-
-
-//Pools interface
 type Pools interface {
 	ListPools(cisId string) (*[]Pool, error)
 	GetPool(cisId string, poolId string) (*Pool, error)
@@ -110,7 +97,6 @@ func (r *pools)  ListPools(cisId string) (*[]Pool, error) {
     return &poolResults.PoolList, err
 }
 
-
 func (r *pools)  GetPool(cisId string, poolId string) (*Pool, error) {
   poolResult := PoolResult{}
   rawURL := fmt.Sprintf("/v1/%s/load_balancers/pools/%s", cisId, poolId)
@@ -121,14 +107,7 @@ func (r *pools)  GetPool(cisId string, poolId string) (*Pool, error) {
 	return &poolResult.Pool, nil
 }
 
-
-
 func  (r *pools) DeletePool(cisId string, poolId string) (error) {
-
-	// Only call if the pool exists first. Otherwise API errors with a 
-  // 403 if pool does not exist. Should return 404. Issue reported against CIS
-  // DeletePool is only called by resourceCISdomainDelete if pool exists. 
-
     rawURL := fmt.Sprintf("/v1/%s/load_balancers/pools/%s", cisId, poolId)
     _, err := r.client.Delete(rawURL)
     if err != nil {
@@ -136,7 +115,6 @@ func  (r *pools) DeletePool(cisId string, poolId string) (error) {
     }  
     return nil
 }
-
 
 func (r *pools)  CreatePool(cisId string, poolBody PoolBody) (*Pool, error) {
   poolResult := PoolResult{}	

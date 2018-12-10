@@ -151,10 +151,7 @@ func resourceCIShealthCheckCreate(d *schema.ResourceData, meta interface{}) erro
 	var monitor *v1.Monitor
 	var monitorObj v1.Monitor
 
-	// If zome does not exist, create
 	index := indexOf(monitorPath, monitorPaths)
-	//indexOf returns -1 if the monitor is not found in the list of monitors, so we create it
-	// Otherwise it returns the index in the paths array.
 	if index == -1 {
 
 		monitorNew := v1.MonitorBody{
@@ -192,7 +189,6 @@ func resourceCIShealthCheckCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 		monitorObj = *monitor
 	} else {
-		// If monitor already exists, error
 		return fmt.Errorf("Resource with name %s already exists", monitorPath)
 	}
 

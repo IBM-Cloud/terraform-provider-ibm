@@ -95,9 +95,6 @@ func resourceIBMCISInstance() *schema.Resource {
 	}
 }
 
-// There likely is a simpler way of creating an Internet Services instance by creating a
-// wrapper for the resource_instance service and setting the passed in serviceName
-// This code is a cut and paste of the resource_instance code.
 func resourceIBMCISInstanceCreate(d *schema.ResourceData, meta interface{}) error {
 	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
 	if err != nil {
@@ -179,9 +176,8 @@ func resourceIBMCISInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("Error creating resource instance: %s", err)
 	}
 
-	// Moved to after waiting for resource to finish creation. Otherwise Terraform initates depedent tasks too early.
+	// Moved d.SetId(instance.ID) to after waiting for resource to finish creation. Otherwise Terraform initates depedent tasks too early.
 	// Original flow had SetId here as its required as input to waitForCISInstanceCreate
-	// d.SetId(instance.ID)
 
 	_, err = waitForCISInstanceCreate(d, meta, instance.ID)
 	if err != nil {
@@ -219,11 +215,6 @@ func resourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 	rsCatRepo := rsCatClient.ResourceCatalog()
-
-	// serviceOff, err := rsCatRepo.GetServiceName(instance.ServiceID)
-	// if err != nil {
-	// 	return fmt.Errorf("Error retrieving service offering: %s", err)
-	// }
 
 	d.Set("service", "internet-svcs")
 

@@ -31,6 +31,10 @@ The following arguments are supported:
 * `waf`. Allowed values: "off", "on"
 * `min_tls_version`. Allowed values: 1.1", "1.2", "1.3".
 * `ssl`. Allowed values: "off", "flexible", "full", "strict", "origin_pull".
+* `automatic_https_rewrites`. Allowed values: "off", "on"
+* `opportunistic_encryption`. Allowed values: "off", "on"
+* `cname_flattening`. Allowed values: "flatten_at_root", "flatten_all", "flatten_none".
+
 
 Additional settings not implemented in this version of the provider. 
 

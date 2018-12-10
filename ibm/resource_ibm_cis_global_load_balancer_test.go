@@ -16,11 +16,8 @@ import (
 func TestAccCisGlb_Basic(t *testing.T) {
 	// multiple instances of this config would conflict but we only use it once
 	t.Parallel()
-
-	// cis_domain as test environment variable
 	var glb v1.Glb
 
-	//rnd := acctest.RandString(10)
 	name := "ibm_cis_global_load_balancer." + "test"
 
 	resource.Test(t, resource.TestCase{
@@ -37,7 +34,6 @@ func TestAccCisGlb_Basic(t *testing.T) {
 					// some values will get empty values
 					//resource.TestCheckResourceAttr(name, "pop_pools.#", "0"),
 					//resource.TestCheckResourceAttr(name, "region_pools.#", "0"),
-					// also expect api to generate some values
 					resource.TestCheckResourceAttr(name, "proxied", "false"), // default value
 				),
 			},
@@ -48,7 +44,6 @@ func TestAccCisGlb_Basic(t *testing.T) {
 func TestAccCisGlb_SessionAffinity(t *testing.T) {
 	t.Parallel()
 	var glb v1.Glb
-	//rnd := acctest.RandString(10)
 	name := "ibm_cis_global_load_balancer." + "test"
 
 	resource.Test(t, resource.TestCase{
@@ -62,8 +57,6 @@ func TestAccCisGlb_SessionAffinity(t *testing.T) {
 					testAccCheckCisGlbExists(name, &glb),
 					// explicitly verify that our session_affinity has been set
 					resource.TestCheckResourceAttr(name, "session_affinity", "cookie"),
-					// dont check that other specified values are set, this will be evident by lack
-					// of plan diff some values will get empty values
 					//resource.TestCheckResourceAttr(name, "pop_pools.#", "0"),
 					//resource.TestCheckResourceAttr(name, "region_pools.#", "0"),
 				),

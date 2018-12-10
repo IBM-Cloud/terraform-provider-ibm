@@ -1,20 +1,16 @@
 package cisv1
 
 import (
-	//"fmt"
 	"github.com/IBM-Cloud/bluemix-go/client"
     "fmt"
-    //"log"
 )
-
-
 
 type Monitor struct {
       Id string `json:"id"`
       Path string `json:"path"`
       ExpBody string `json:"expected_body"`
       ExpCodes string `json:"expected_codes"`
-      // Headers omitted TBC
+      // Headers omitted future enhancement
       MonType string `json:"type"`
       Method string `json:"method"`
       Timeout int `json:"timeout"`          
@@ -62,16 +58,11 @@ type MonitorDelete  struct {
       Messages []string `json:"messages"`
       }
 
-
-
-
-//Monitors interface
 type Monitors interface {
 	ListMonitors(cisId string) (*[]Monitor, error)
 	GetMonitor(cisId string, monitorId string) (*Monitor, error)
 	CreateMonitor(cisId string, monitorBody MonitorBody) (*Monitor, error)
-	DeleteMonitor(cisId string, monitorId string) (error)
-	
+	DeleteMonitor(cisId string, monitorId string) (error)	
 }
 
 type monitors struct {
@@ -94,7 +85,6 @@ func (r *monitors)  ListMonitors(cisId string) (*[]Monitor, error) {
     return &monitorResults.MonitorList, err
 }
 
-
 func (r *monitors)  GetMonitor(cisId string, monitorId string) (*Monitor, error) {
   monitorResult := MonitorResult{}
   rawURL := fmt.Sprintf("/v1/%s/load_balancers/monitors/%s", cisId, monitorId)
@@ -105,14 +95,7 @@ func (r *monitors)  GetMonitor(cisId string, monitorId string) (*Monitor, error)
 	return &monitorResult.Monitor, nil
 }
 
-
-
 func  (r *monitors) DeleteMonitor(cisId string, monitorId string) (error) {
-
-	// Only call if the monitor exists first. Otherwise API errors with a 
-  // 403 if monitor does not exist. Should return 404. Issue reported against CIS
-  // DeleteMonitor is only called by resourceCISdomainDelete if monitor exists. 
-
     rawURL := fmt.Sprintf("/v1/%s/load_balancers/monitors/%s", cisId, monitorId)
     _, err := r.client.Delete(rawURL)
     if err != nil {
@@ -120,7 +103,6 @@ func  (r *monitors) DeleteMonitor(cisId string, monitorId string) (error) {
     }  
     return nil
 }
-
 
 func (r *monitors)  CreateMonitor(cisId string, monitorBody MonitorBody) (*Monitor, error) {
   monitorResult := MonitorResult{}		

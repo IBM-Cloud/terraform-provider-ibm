@@ -10,8 +10,6 @@ import (
 func TestAccIBMCisDomain_basic(t *testing.T) {
 	name := "ibm_cis_domain.test"
 
-	//Fail if cis_crn not set
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -28,7 +26,7 @@ func TestAccIBMCisDomain_basic(t *testing.T) {
 }
 
 func testAccIBMCisDomainConfig_basic(resourceID string, cis_domain string) string {
-	return testAccCheckIBMCISInstance_basic(cis_domain) + fmt.Sprintf(`
+	return testAccCheckIBMCISInstance_basic("test") + fmt.Sprintf(`
 				resource "ibm_cis_domain" "%[1]s" {
 					cis_id = "${ibm_cis.instance.id}"
                     domain = "%[2]s"

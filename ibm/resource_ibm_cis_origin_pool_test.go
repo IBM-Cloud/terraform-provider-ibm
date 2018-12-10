@@ -10,12 +10,10 @@ import (
 )
 
 func TestAccCisPool_Basic(t *testing.T) {
-	// multiple instances of this config would conflict but we only use it once
 	t.Parallel()
 	var pool v1.Pool
 	rnd := acctest.RandString(10)
 	name := "ibm_cis_origin_pool." + rnd
-	// cis_domain from environment var IBM_CIS_DOMAIN
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -27,8 +25,6 @@ func TestAccCisPool_Basic(t *testing.T) {
 				Config: testAccCheckCisPoolConfigBasic(rnd, cis_domain),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisPoolExists(name, &pool, cis_domain),
-					// dont check that specified values are set, this will be evident by lack of plan diff
-					// some values will get empty values
 					resource.TestCheckResourceAttr(name, "check_regions.#", "1"),
 				),
 			},
@@ -51,7 +47,6 @@ func TestAccCisPool_FullySpecified(t *testing.T) {
 				Config: testAccCheckCisPoolConfigFullySpecified(rnd, cis_domain),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisPoolExists(name, &pool, cis_domain),
-					// checking our overrides of default values worked
 					resource.TestCheckResourceAttr(name, "enabled", "false"),
 					resource.TestCheckResourceAttr(name, "description", "tfacc-fully-specified"),
 					resource.TestCheckResourceAttr(name, "check_regions.#", "1"),
@@ -108,7 +103,6 @@ func testAccCheckCisPoolExists(n string, pool *v1.Pool, cis_domain string) resou
 	}
 }
 
-// using IPs from 192.0.2.0/24 as per RFC5737
 func testAccCheckCisPoolConfigBasic(resourceId string, cis_domain string) string {
 	return testAccCheckIBMCISInstance_basic(cis_domain) + fmt.Sprintf(`
 resource "ibm_cis_origin_pool" "%[1]s" {

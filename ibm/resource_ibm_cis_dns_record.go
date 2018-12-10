@@ -53,7 +53,6 @@ func resourceIBMCISDnsRecord() *schema.Resource {
 				ConflictsWith: []string{"content"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						// Properties present in several record types
 						"algorithm": {
 							Type:     schema.TypeInt,
 							Optional: true,
@@ -531,7 +530,6 @@ func suppressNameDiff(k, old, new string, d *schema.ResourceData) bool {
 
 	return false
 }
-
 
 func suppressDataDiff(k, old, new string, d *schema.ResourceData) bool {
 	// Tuncate after .

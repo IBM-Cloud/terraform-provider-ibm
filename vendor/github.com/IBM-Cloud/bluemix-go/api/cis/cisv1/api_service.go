@@ -2,7 +2,6 @@ package cisv1
 
 import (
 	gohttp "net/http"
-	//"errors"
 	"strconv"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
@@ -85,7 +84,6 @@ func (c *cisService) Pools() Pools {
 	return newPoolAPI(c.Client)
 }
 
-
 //Glbs implements Glbs API
 func (c *cisService) Glbs() Glbs {
 	return newGlbAPI(c.Client)
@@ -106,28 +104,13 @@ func (c *cisService) Dns() Dns {
 	return newDnsAPI(c.Client)
 }
 
-// Funny here somewhere. It looks like some codes come back from CIS as strings and others as ints
-// 
 func errorsToString(e []Error)  (string) {
 
     var errMsg string
     for _, err := range e {
         errFrag := "Code: " + strconv.Itoa(err.Code) + " " + err.Msg
-        //errFrag := "Code: " + err.Code + " " + err.Msg
         errMsg = errMsg + errFrag
     }
     return errMsg
 }
 
-// Handle bug in Create Monitor API that returns a string rather than int
-
-// func monErrorsToString(e []MonError)  (string) {
-
-//     var errMsg string
-//     for _, err := range e {
-//         //errFrag := "Code: " + strconv.Itoa(err.Code) + " " + err.Msg
-//         errFrag := "Code: " + err.Code + " " + err.Msg
-//         errMsg = errMsg + errFrag
-//     }
-//     return errMsg
-// }

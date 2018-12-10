@@ -1,17 +1,13 @@
 package cisv1
 
 import (
-	//"fmt"
 	"github.com/IBM-Cloud/bluemix-go/client"
     "fmt"
-    //"log"
 )
-
 
 type ResultsCount struct {
       Count int `json:"count"`  
       }
-
 
 type Error struct {
       Code int `json:"code"`
@@ -58,8 +54,6 @@ type ZoneDelete  struct {
       Messages []string `json:"messages"`
       }
 
-
-//Zones interface
 type Zones interface {
 	ListZones(cisId string) (*[]Zone, error)
 	GetZone(cisId string, zoneId string) (*Zone, error)
@@ -88,7 +82,6 @@ func (r *zones)  ListZones(cisId string) (*[]Zone, error) {
     return &zoneResults.ZoneList, err
 }
 
-
 func (r *zones)  GetZone(cisId string, zoneId string) (*Zone, error) {
   zoneResult := ZoneResult{}
   rawURL := fmt.Sprintf("/v1/%s/zones/%s", cisId, zoneId)
@@ -99,14 +92,7 @@ func (r *zones)  GetZone(cisId string, zoneId string) (*Zone, error) {
 	return &zoneResult.Zone, nil
 }
 
-
-
 func  (r *zones) DeleteZone(cisId string, zoneId string) (error) {
-
-	// Only call if the zone exists first. Otherwise API errors with a 
-  // 403 if zone does not exist. Should return 404. Issue reported against CIS
-  // DeleteZone is only called by resourceCISdomainDelete if zone exists. 
-
     rawURL := fmt.Sprintf("/v1/%s/zones/%s", cisId, zoneId)
     _, err := r.client.Delete(rawURL)
     if err != nil {
@@ -114,7 +100,6 @@ func  (r *zones) DeleteZone(cisId string, zoneId string) (error) {
     }  
     return nil
 }
-
 
 func (r *zones)  CreateZone(cisId string, zoneBody ZoneBody) (*Zone, error) {
   zoneResult := ZoneResult{}		

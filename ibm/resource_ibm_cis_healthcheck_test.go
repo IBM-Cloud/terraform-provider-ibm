@@ -10,7 +10,6 @@ import (
 )
 
 func TestAccCisHealthcheck_Basic(t *testing.T) {
-	// multiple instances of this config would conflict but we only use it once
 	t.Parallel()
 	var monitor v1.Monitor
 	name := "ibm_cis_healthcheck.test"
@@ -25,8 +24,6 @@ func TestAccCisHealthcheck_Basic(t *testing.T) {
 				Config: testAccCheckCisHealthcheckConfigBasic("test", cis_domain),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisHealthcheckExists(name, &monitor),
-					// dont check that specified values are set, this will be evident by lack of plan diff
-					// some values will get empty values
 					resource.TestCheckResourceAttr(name, "expected_body", "alive"),
 					//resource.TestCheckResourceAttr(name, "header.#", "0"),
 					// also expect api to generate some values
@@ -51,7 +48,6 @@ func TestAccCisHealthcheck_FullySpecified(t *testing.T) {
 				Config: testAccCheckCisHealthcheckConfigFullySpecified("test", cis_domain),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisHealthcheckExists(name, &monitor),
-					// checking our overrides of default values worked
 					resource.TestCheckResourceAttr(name, "path", "/custom"),
 					resource.TestCheckResourceAttr(name, "retries", "5"),
 					resource.TestCheckResourceAttr(name, "expected_codes", "5xx"),

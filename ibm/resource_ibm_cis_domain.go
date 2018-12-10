@@ -44,7 +44,7 @@ func resourceIBMCISDomain() *schema.Resource {
 		Read:   resourceCISdomainRead,
 		Update: resourceCISdomainUpdate,
 		Delete: resourceCISdomainDelete,
-		// No Exists due to errors in CIS API returning wrong return codes on 404
+		// No Exists due to errors in CIS API returning incorrect return codes on 404
 	}
 }
 
@@ -58,9 +58,6 @@ func resourceCISdomainCreate(d *schema.ResourceData, meta interface{}) error {
 	cisId := d.Get("cis_id").(string)
 	zoneName := d.Get("domain").(string)
 
-	//var zoneList []string
-	log.Printf(">>>> cisId %s  domain %s\n", cisId, zoneName)
-
 	var zones *[]v1.Zone
 	zones, err = cisClient.Zones().ListZones(cisId)
 	if err != nil {
@@ -73,21 +70,12 @@ func resourceCISdomainCreate(d *schema.ResourceData, meta interface{}) error {
 	for _, zone := range zonesObj {
 		zoneNames = append(zoneNames, zone.Name)
 	}
-
-	log.Println(string("Existing zone names"))
-	log.Println(zoneNames)
-
-	//var nameServers []string
 	zoneNew := v1.ZoneBody{Name: zoneName}
 
 	var zone *v1.Zone
 	var zoneObj v1.Zone
 
-	// Handle zone existing case gracefully, by just populating Terraform values
-	// If zome does not exist, create
 	index := indexOf(zoneName, zoneNames)
-	//indexOf returns -1 if the zone is not found in the list of zones, so we create it
-	// Otherwise it returns the index in the names array.
 	if index == -1 {
 		zone, err = cisClient.Zones().CreateZone(cisId, zoneNew)
 		if err != nil {
@@ -96,19 +84,11 @@ func resourceCISdomainCreate(d *schema.ResourceData, meta interface{}) error {
 		}
 		zoneObj = *zone
 	} else {
-		// If zone already exists retrieve existing zone from array of zones.
 		return fmt.Errorf("resource with name %s already exists", zoneName)
 	}
 
 	d.SetId(zoneObj.Id)
 	d.Set("name", zoneObj.Name)
-
-	// id1 := d.Get("id").(string)
-	// log.Printf("Getting first Zone ID %v\n", id1)
-
-	id2 := d.Id()
-	log.Printf("Getting first Zone ID %v\n", id2)
-
 	return resourceCISdomainRead(d, meta)
 }
 
@@ -123,7 +103,6 @@ func resourceCISdomainRead(d *schema.ResourceData, meta interface{}) error {
 	zoneId = d.Id()
 	cisId := d.Get("cis_id").(string)
 	zoneId = d.Id()
-	//emptyZone := v1.Zone{}
 
 	log.Printf("resourceCISdomainRead - Getting Zone %v\n", zoneId)
 	var zone *v1.Zone
@@ -135,13 +114,6 @@ func resourceCISdomainRead(d *schema.ResourceData, meta interface{}) error {
 	} else {
 		log.Printf("resourceCISdomainRead - Retrieved Zone %v\n", zone)
 
-		// if cmp.Equal(zone, emptyZone) {
-		// 	log.Printf("resourceCISdomainRead - No zone returned. Delete")
-
-		// 	// Contrary to the doc. SetId("") does not delete the object on a Read
-		// 	//   d.SetId("")
-		// } else {
-
 		zoneObj := *zone
 
 		d.Set("name", zoneObj.Name)
@@ -150,7 +122,6 @@ func resourceCISdomainRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("name_servers", zoneObj.NameServers)
 		d.Set("original_name_servers", zoneObj.OriginalNameServer)
 
-		// }
 	}
 	return nil
 }

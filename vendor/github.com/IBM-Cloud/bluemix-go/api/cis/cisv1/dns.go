@@ -1,7 +1,6 @@
 package cisv1
 
 import (
-	//"fmt"
 	"github.com/IBM-Cloud/bluemix-go/client"
     "fmt"
     "log"
@@ -48,7 +47,7 @@ type DnsBody struct {
       }
 
 
-//Dns interface
+
 type Dns interface {
 	ListDns(cisId string, zoneId string) (*[]DnsRecord, error)
 	GetDns(cisId string, zoneId string, dnsId string) (*DnsRecord, error)
@@ -91,11 +90,6 @@ func (r *dns)  GetDns(cisId string, zoneId string, dnsId string) (*DnsRecord, er
 
 
 func  (r *dns) DeleteDns(cisId string, zoneId string, dnsId string) (error) {
-
-	// Only call if the dns exists first. Otherwise API errors with a 
-  // 403 if dns does not exist. Should return 404. Issue reported against CIS
-  // DeleteDns is only called by resourceCISdomainDelete if dns exists. 
-
     rawURL := fmt.Sprintf("/v1/%s/zones/%s/dns_records/%s", cisId, zoneId, dnsId)
     _, err := r.client.Delete(rawURL)
     if err != nil {
