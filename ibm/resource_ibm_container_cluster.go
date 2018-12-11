@@ -128,6 +128,10 @@ func resourceIBMContainerCluster() *schema.Resource {
 							Optional: true,
 							Computed: true,
 						},
+						"pool_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 					},
 				},
 				Description: "The IDs of the worker node",
@@ -144,6 +148,12 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 				Optional: true,
+			},
+
+			"update_all_workers": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
 			},
 
 			"machine_type": {
@@ -494,8 +504,9 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	workers := []map[string]string{}
 	for _, w := range workerFields {
 		var worker = map[string]string{
-			"id":      w.ID,
-			"version": strings.Split(w.KubeVersion, "_")[0],
+			"id":        w.ID,
+			"version":   strings.Split(w.KubeVersion, "_")[0],
+			"pool_name": w.PoolName,
 		}
 		workers = append(workers, worker)
 		if w.PoolID == "" && w.PoolName == "" {
@@ -599,6 +610,35 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		if err != nil {
 			return fmt.Errorf(
 				"Error waiting for cluster (%s) version to be updated: %s", d.Id(), err)
+		}
+
+		updateAllWorkers := d.Get("update_all_workers").(bool)
+		if updateAllWorkers {
+			workerFields, err := wrkAPI.List(clusterID, targetEnv)
+			if err != nil {
+				return fmt.Errorf("Error retrieving workers for cluster: %s", err)
+			}
+			cluster, err := clusterAPI.Find(clusterID, targetEnv)
+			if err != nil {
+				return fmt.Errorf("Error retrieving cluster %s: %s", clusterID, err)
+			}
+
+			for _, w := range workerFields {
+				if strings.Split(w.KubeVersion, "_")[0] != strings.Split(cluster.MasterKubeVersion, "_")[0] {
+					params := v1.WorkerUpdateParam{
+						Action: "update",
+					}
+					err = wrkAPI.Update(clusterID, w.ID, params, targetEnv)
+					if err != nil {
+						return fmt.Errorf("Error updating worker %s: %s", w.ID, err)
+					}
+					_, err = WaitForWorkerAvailable(d, meta, targetEnv)
+					if err != nil {
+						return fmt.Errorf(
+							"Error waiting for workers of cluster (%s) to become ready: %s", d.Id(), err)
+					}
+				}
+			}
 		}
 	}
 

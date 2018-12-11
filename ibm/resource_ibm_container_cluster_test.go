@@ -56,6 +56,8 @@ func TestAccIBMContainerCluster_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "kube_version", kubeUpdateVersion),
 					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "workers_info.0.version", kubeUpdateVersion),
+					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "is_trusted", "false"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "hardware", "shared"),
@@ -599,6 +601,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   no_subnet		  = true
+  update_all_workers = true
   region = "%s"
 }	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, kubeUpdateVersion, machineType, publicVlanID, privateVlanID, csRegion)
 }
