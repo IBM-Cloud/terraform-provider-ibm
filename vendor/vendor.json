@@ -3,6 +3,14 @@
 	"ignore": "test",
 	"package": [
 		{
+			"path": "-v",
+			"revision": ""
+		},
+		{
+			"path": "-vvv",
+			"revision": ""
+		},
+		{
 			"path": "fetch",
 			"revision": ""
 		},
@@ -960,20 +968,20 @@
 			"revisionTime": "2018-05-24T22:32:19Z"
 		},
 		{
-			"checksumSHA1": "DqaoG++NXRCfvH/OloneLWrM+3k=",
-			"path": "github.com/hashicorp/terraform/plugin",
-			"revision": "dbce85d85ff0beebc660b3d1805b4ef15361af00",
-			"revisionTime": "2018-04-05T19:25:37Z",
-			"version": "=v0.11.6",
-			"versionExact": "v0.11.6"
-		},
-		{
 			"checksumSHA1": "6AA7ZAzswfl7SOzleP6e6he0lq4=",
 			"path": "github.com/hashicorp/terraform/plugin",
 			"revision": "8d560482c34e865458fd884cb0790b4f73f09ad1",
 			"revisionTime": "2017-06-08T00:14:54Z",
 			"version": "v0.9.8",
 			"versionExact": "v0.9.8"
+		},
+		{
+			"checksumSHA1": "DqaoG++NXRCfvH/OloneLWrM+3k=",
+			"path": "github.com/hashicorp/terraform/plugin",
+			"revision": "dbce85d85ff0beebc660b3d1805b4ef15361af00",
+			"revisionTime": "2018-04-05T19:25:37Z",
+			"version": "=v0.11.6",
+			"versionExact": "v0.11.6"
 		},
 		{
 			"checksumSHA1": "tx5xrdiUWdAHqoRV5aEfALgT1aU=",
