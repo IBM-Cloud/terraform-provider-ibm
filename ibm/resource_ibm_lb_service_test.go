@@ -25,7 +25,14 @@ func TestAccBluemixIBMLbService_Basic(t *testing.T) {
 						"ibm_lb_service.test_service", "weight", "1"),
 					resource.TestCheckResourceAttr(
 						"ibm_lb_service.test_service", "health_check_type", "DNS"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_lb_service.test_service", "service_group_id"),
 				),
+			},
+			resource.TestStep{
+				ResourceName:      "ibm_lb_service.test_service",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

@@ -29,7 +29,7 @@ The following arguments are supported:
 * `label` - (Required, string) The descriptive name used to identify an SSH key.
 * `public_key` - (Required, string) The public SSH key.
 * `notes` - (Optional, string) Descriptive text about the SSH key.
-* `tags` - (Optional, array of strings) Tags associated with the SSH Key instance.
+* `tags` - (Optional, array of strings) Tags associated with the SSH Key instance.  
 
 **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 

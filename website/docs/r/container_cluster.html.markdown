@@ -77,6 +77,7 @@ The following arguments are supported:
 * `name` - (Required, string) The name of the cluster.
 * `datacenter` - (Required, string)  The datacenter of the worker nodes. You can retrieve the value by running the `bluemix cs locations` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
 * `kube_version` - (Optional, string) The desired Kubernetes version of the created cluster. If present, at least major.minor must be specified.
+* `update_all_workers` - (Optional, bool)  Set to `true` if you want to update workers kube version along with the cluster kube_version
 * `org_guid` - (Optional, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from data source `ibm_org` or by running the `ibmcloud iam orgs --guid` command in the IBM Cloud CLI.
 * `space_guid` - (Optional, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from data source `ibm_space` or by running the `ibmcloud iam space <space-name> --guid` command in the IBM Cloud CLI.
 * `account_guid` - (Optional, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from data source `ibm_account` or by running the `ibmcloud iam accounts` command in the IBM Cloud CLI.
@@ -86,23 +87,36 @@ The following arguments are supported:
 	* `action` - valid actions are add, reboot and reload.
 	* `name` - Name of the worker.
 	* `version` - worker version.
+  
 	**NOTE**: Conflicts with `worker_num`. 
-* `worker_num` - (Optional, int)  The number of cluster worker nodes. This creates the stand-alone workers which are not associated to any pool. 
+* `worker_num` - (Optional, int)  The number of cluster worker nodes. This creates the stand-alone workers which are not associated to any pool.  
 	**NOTE**: Conflicts with `workers`. 
+* `workers_info` - (Optional, array) The worker nodes attached to this cluster. Use this attribute to update the worker version. Nested `workers_info` blocks have the following structure:
+	* `id` - ID of the worker.
+	* `version` - worker version. 
 * `default_pool_size` - (Optional,int) The number of workers created under the default worker pool which support Multi-AZ. 
-* `machinetype` - (Optional, string) The machine type of the worker nodes. You can retrieve the value by running the `ibmcloud cs machine-types <data-center>` command in the IBM Cloud CLI.
+* `machine_type` - (Optional, string) The machine type of the worker nodes. You can retrieve the value by running the `ibmcloud cs machine-types <data-center>` command in the IBM Cloud CLI.
 * `billing` - (Optional, string) The billing type for the instance. Accepted values are `hourly` or `monthly`.
 * `isolation` - (Deprecated) Accepted values are `public` or `private`. Use `private` if you want to have available physical resources dedicated to you only or `public` to allow physical resources to be shared with other IBM customers. Use hardware instead.
 * `hardware` - (Optional, string) The level of hardware isolation for your worker node. Use `dedicated` to have available physical resources dedicated to you only, or `shared` to allow physical resources to be shared with other IBM customers. For IBM Cloud Public accounts, it can be shared or dedicated. For IBM Cloud Dedicated accounts, dedicated is the only available option.
-* `public_vlan_id`- (Optional, string) The public VLAN of the worker node. You can retrieve the value by running the `ibmcloud cs vlans <data-center>` command in the IBM Cloud CLI.
-* `private_vlan_id` - (Optional, string) The private VLAN of the worker node. You can retrieve the value by running the `ibmcloud cs vlans <data-center>` command in the IBM Cloud CLI.
+* `public_vlan_id`- (Optional, string) The public VLAN ID for the worker node. You can retrieve the value by running the ibmcloud cs vlans <data-center> command in the IBM Cloud CLI.
+  * Free clusters: You must not specify any public VLAN. Your free cluster is automatically connected to a public VLAN that is owned by IBM.
+  * Standard clusters:  
+    (a) If you already have a public VLAN set up in your IBM Cloud infrastructure (SoftLayer) account for that zone, enter the ID of the public VLAN.<br/>
+    (b) If you want to connect your worker nodes to a private VLAN only, do not specify this option.
+
+* `private_vlan_id` - (Optional, string) The private VLAN of the worker node. You can retrieve the value by running the ibmcloud cs vlans <data-center> command in the IBM Cloud CLI.
+  * Free clusters: You must not specify any private VLAN. Your free cluster is automatically connected to a private VLAN that is owned by IBM.
+  * Standard clusters:<br/>
+    (a) If you already have a private VLAN set up in your IBM Cloud infrastructure (SoftLayer) account for that zone, enter the ID of the private VLAN.<br/>
+    (b) If you do not have a private VLAN in your account, do not specify this option. IBM Cloud Kubernetes Service will automatically create a private VLAN for you.
 * `subnet_id` - (Optional, string) The existing subnet ID that you want to add to the cluster. You can retrieve the value by running the `ibmcloud cs subnets` command in the IBM Cloud CLI.
 * `no_subnet` - (Optional, boolean) Set to `true` if you do not want to automatically create a portable subnet.
 * `is_trusted` - (Optional, boolean) Set to `true` to  enable trusted cluster feature. Default is false.
 * `disk_encryption` - (Optional, boolean) Set to `false` to disable encryption on a worker.
 * `webhook` - (Optional, string) The webhook that you want to add to the cluster.
 * `wait_time_minutes` - (Optional, integer) The duration, expressed in minutes, to wait for the cluster to become available before declaring it as created. It is also the same amount of time waited for no active transactions before proceeding with an update or deletion. The default value is `90`.
-* `tags` - (Optional, array of strings) Tags associated with the container cluster instance.
+* `tags` - (Optional, array of strings) Tags associated with the container cluster instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attribute Reference
@@ -114,7 +128,6 @@ The following attributes are exported:
 * `server_url` - The server URL.
 * `ingress_hostname` - The Ingress hostname.
 * `ingress_secret` - The Ingress secret.
-* `workers_info` - The worker nodes attached to this cluster.
 * `subnet_id` - The subnets attached to this cluster.
 * `workers` -  Exported attributes are:
 	* `id` - The id of the worker
@@ -131,6 +144,8 @@ The following attributes are exported:
 		* `private_vlan` - The ID of the private VLAN. 
 		* `public_vlan` - The ID of the public VLAN.
 		* `worker_count` - Number of workers attached to this zone.
+* `workers_info` - The worker nodes attached to this cluster. Nested `workers_info` blocks have the following structure:
+	* `pool_name` - Name of the worker pool to which the worker belongs to.
 * `albs` - Alb's attached to the cluster
   * `id` - The Alb id.
   * `name` - The name of the Alb.

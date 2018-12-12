@@ -1,0 +1,60 @@
+---
+layout: "ibm"
+page_title: "IBM: ibm_dns_domain_registration"
+sidebar_current: "docs-ibm-datasource-dns-domain-registration"
+description: |-
+  Get resource identifier for IBM DNS domain registration.
+---
+
+# ibm\_dns_domain_registration
+
+<<<<<<< HEAD
+Import the name of an existing DNS domain registration as a read-only data source. You can then reference this data source in other resources within the same configuration by using interpolation syntax. The domain must inititally be registered via the UI of the IBM Cloud DNS Registration Service. The Domain Registration datasource is used in configuration of IBM Cloud Internet Services. See resource ibm_dns_domain_registration_nameservers. 
+=======
+Import an existing domain registration from the IBM DNS Domain Registration Service as a read-only data source. This DNS registration resource can then be used as a base from which DNS configurations can be performed via Terraform. The domain must inititally be registered via the UI of the IBM Cloud DNS Registration Service. Typically the Domain Registration datasource is used in configuration with global load balancing services, e.g. CloudFlare, Akamai or IBM Cloud Internet Services (Cloudflare). For additional usage instructions see the resource `ibm_dns_domain_registration_nameservers`. 
+>>>>>>> upstream/master
+
+## Example Usage
+
+```hcl
+<<<<<<< HEAD
+data "ibm_dns_domain_registration" "dns-domain-test" {
+    name = "test-domain.com"
+=======
+data "ibm_dns_domain_registration" "dnstestdomain" {
+    name = "dnstestdomain.com"
+>>>>>>> upstream/master
+}
+```
+
+The following example shows how you can use this data source to reference the domain ID in the `ibm_dns_registration_nameservers` resource, since the numeric IDs are often unknown.
+
+```hcl
+<<<<<<< HEAD
+resource "ibm_dns_domain_registration_nameservers" "dns-domain-test" {
+    ...
+    dns_registration_id = "${data.ibm_dns_domain_registration.dns-domain-test.id}"
+=======
+resource "ibm_dns_domain_registration_nameservers" "dnstestdomain" {
+    ...
+    dns_registration_id = "${data.ibm_dns_domain_registration.dnstestdomain.id}"
+>>>>>>> upstream/master
+    ...
+}
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+<<<<<<< HEAD
+* `name` - (Required, string) The name of the DNS domain registration, as it was defined in IBM Cloud Infrastructure DNS Registration Service (SoftLayer).
+=======
+* `name` - (Required, string) The name of the DNS domain registration as it was defined in IBM Cloud Infrastructure DNS Registration Service (SoftLayer).
+>>>>>>> upstream/master
+
+## Attribute Reference
+
+The following attributes are exported:
+
+* `id` - The unique identifier of the domain.

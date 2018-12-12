@@ -38,23 +38,24 @@ func UpgradeVirtualGuest(
 	when ...time.Time,
 ) (datatypes.Container_Product_Order_Receipt, error) {
 
-	if guest.PrivateNetworkOnlyFlag == nil || guest.DedicatedAccountHostOnlyFlag == nil {
-		service := services.GetVirtualGuestService(sess)
-		guestForFlag, err := service.Id(*guest.Id).Mask("privateNetworkOnlyFlag,dedicatedAccountHostOnlyFlag").GetObject()
-		if err != nil {
-			return datatypes.Container_Product_Order_Receipt{}, err
-		}
-
-		guest.PrivateNetworkOnlyFlag = guestForFlag.PrivateNetworkOnlyFlag
-		guest.DedicatedAccountHostOnlyFlag = guestForFlag.DedicatedAccountHostOnlyFlag
-	}
-
-	pkg, err := product.GetPackageByType(sess, "VIRTUAL_SERVER_INSTANCE")
+	// Get the packageID of the guest and use same during upgrade of guest.
+	service := services.GetVirtualGuestService(sess)
+	guestPackage, err := service.Id(*guest.Id).Mask("privateNetworkOnlyFlag,dedicatedAccountHostOnlyFlag,billingItem[package[id]]").GetObject()
 	if err != nil {
 		return datatypes.Container_Product_Order_Receipt{}, err
 	}
 
-	productItems, err := product.GetPackageProducts(sess, *pkg.Id)
+	if guest.PrivateNetworkOnlyFlag == nil || guest.DedicatedAccountHostOnlyFlag == nil {
+		guest.PrivateNetworkOnlyFlag = guestPackage.PrivateNetworkOnlyFlag
+		guest.DedicatedAccountHostOnlyFlag = guestPackage.DedicatedAccountHostOnlyFlag
+	}
+
+	var packageID int
+	if guestPackage.BillingItem != nil {
+		packageID = *guestPackage.BillingItem.Package.Id
+	}
+
+	productItems, err := product.GetPackageProducts(sess, packageID)
 	if err != nil {
 		return datatypes.Container_Product_Order_Receipt{}, err
 	}
@@ -70,7 +71,7 @@ func UpgradeVirtualGuest(
 		Container_Product_Order_Virtual_Guest: datatypes.Container_Product_Order_Virtual_Guest{
 			Container_Product_Order_Hardware_Server: datatypes.Container_Product_Order_Hardware_Server{
 				Container_Product_Order: datatypes.Container_Product_Order{
-					PackageId: pkg.Id,
+					PackageId: &packageID,
 					VirtualGuests: []datatypes.Virtual_Guest{
 						*guest,
 					},
@@ -103,25 +104,26 @@ func UpgradeVirtualGuestWithPreset(
 	when ...time.Time,
 ) (datatypes.Container_Product_Order_Receipt, error) {
 
-	if guest.PrivateNetworkOnlyFlag == nil || guest.DedicatedAccountHostOnlyFlag == nil {
-		service := services.GetVirtualGuestService(sess)
-		guestForFlag, err := service.Id(*guest.Id).Mask("privateNetworkOnlyFlag,dedicatedAccountHostOnlyFlag").GetObject()
-		if err != nil {
-			return datatypes.Container_Product_Order_Receipt{}, err
-		}
-
-		guest.PrivateNetworkOnlyFlag = guestForFlag.PrivateNetworkOnlyFlag
-		guest.DedicatedAccountHostOnlyFlag = guestForFlag.DedicatedAccountHostOnlyFlag
-	}
-
-	pkg, err := product.GetPackageByKeyName(sess, "PUBLIC_CLOUD_SERVER")
+	// Get the packageID of the guest and use same during upgrade of guest.
+	service := services.GetVirtualGuestService(sess)
+	guestPackage, err := service.Id(*guest.Id).Mask("privateNetworkOnlyFlag,dedicatedAccountHostOnlyFlag,billingItem[package[id]]").GetObject()
 	if err != nil {
 		return datatypes.Container_Product_Order_Receipt{}, err
 	}
 
-	preset, _ := product.GetPresetByKeyName(sess, *pkg.Id, presetKeyName)
+	if guest.PrivateNetworkOnlyFlag == nil || guest.DedicatedAccountHostOnlyFlag == nil {
+		guest.PrivateNetworkOnlyFlag = guestPackage.PrivateNetworkOnlyFlag
+		guest.DedicatedAccountHostOnlyFlag = guestPackage.DedicatedAccountHostOnlyFlag
+	}
 
-	productItems, err := product.GetPackageProducts(sess, *pkg.Id)
+	var packageID int
+	if guestPackage.BillingItem != nil {
+		packageID = *guestPackage.BillingItem.Package.Id
+	}
+
+	preset, _ := product.GetPresetByKeyName(sess, packageID, presetKeyName)
+
+	productItems, err := product.GetPackageProducts(sess, packageID)
 	if err != nil {
 		return datatypes.Container_Product_Order_Receipt{}, err
 	}
@@ -137,7 +139,7 @@ func UpgradeVirtualGuestWithPreset(
 		Container_Product_Order_Virtual_Guest: datatypes.Container_Product_Order_Virtual_Guest{
 			Container_Product_Order_Hardware_Server: datatypes.Container_Product_Order_Hardware_Server{
 				Container_Product_Order: datatypes.Container_Product_Order{
-					PackageId: pkg.Id,
+					PackageId: &packageID,
 					VirtualGuests: []datatypes.Virtual_Guest{
 						*guest,
 					},

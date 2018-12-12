@@ -47,7 +47,7 @@ The following arguments are supported:
 * `certificate` - (Required, string) The certificate provided publicly to clients requesting identity credentials.
 * `intermediate_certificate` - (Optional, string) The certificate from the intermediate certificate authority, or chain certificate, that completes the chain of trust. Required when clients only trust the root certificate.
 * `private_key` - (Required, string) The private key in the key/certificate pair.
-* `tags` - (Optional, array of strings) Tags associated with the security certificates instance.
+* `tags` - (Optional, array of strings) Tags associated with the security certificates instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attribute Reference

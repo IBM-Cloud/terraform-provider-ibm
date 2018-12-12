@@ -1,6 +1,5 @@
 # Create single VSI in dal09. Hourly billed with private network connection only. 
 
-
 resource "ibm_compute_vm_instance" "vm1" {
   hostname             = "vm1"
   domain               = "example.com"

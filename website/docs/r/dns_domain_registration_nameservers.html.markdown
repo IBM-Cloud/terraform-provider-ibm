@@ -16,14 +16,14 @@ This resource is typically used in conjunction with IBM Cloud Internet Services 
 ## Example Usage
 
 ```hcl
-resource "ibm_dns_domain_registration_nameservers" "dns-domain-test" {
-    dns_registration_id = "${data.ibm_dns_domain_registration.dns-domain-test.id}"
-    name_servers = "${ibm_cloud_internet_services.domain1.name_servers}" 
+resource "ibm_dns_domain_registration_nameservers" "dnstestdomain" {
+    dns_registration_id = "${data.ibm_dns_domain_registration.dnstestdomain.id}"
+    name_servers = "${ibm_cis_domain.dnstestdomain.name_servers}" 
 }
-data "ibm_dns_domain_registration" "dns-domain-test" {
-    name = "test-domain.com"
+data "ibm_dns_domain_registration" "dnstestdomain" {
+    name = "dnstestdomain.com"
 }
-resource "ibm_cloud_internet_services" "domain1" {
+resource "ibm_cis_domain" "dnstestdomain" {
    
 }
 ```
@@ -45,8 +45,8 @@ data "ibm_dns_domain_registration" "dns-domain-test" {
 
 The following arguments are supported:
 
-* `dns_registration_id` - (Required, string) The unique id of the domain's registration. This comes from the ibm_dns_domain_registration data source. 
-* `name_servers` - (Required, Array of strings) An array of the name servers returned from configuration of a domain on a instance of IBM Cloud Internet Services. This is of the format: ["ns006.name.ibm.cloud.com", "ns017.name.ibm.cloud.com"]
+* `dns_registration_id` - (Required, string) The unique id of the domain's registration. This is exported by the ibm_dns_domain_registration data source. 
+* `name_servers` - (Required, Array of strings) E.g. an array of name servers returned from configuration of a domain on a instance of IBM Cloud Internet Services. This is of the format: ["ns006.name.cloud.ibm.com", "ns017.name.cloud.ibm.com"]
 
 
 ## Attribute Reference
@@ -54,5 +54,5 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - The unique internal identifier of the domain registration record.
-* `name_servers` - The name servers configured for the domain registration.
-
+* `name_servers` - The new name servers pointing to the new DNS management service provider
+* `original_name_servers` - The original name servers configured at the time of domain registration.

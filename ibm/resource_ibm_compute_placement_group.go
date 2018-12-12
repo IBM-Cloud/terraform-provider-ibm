@@ -7,7 +7,9 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/softlayer/softlayer-go/filter"
 
@@ -24,6 +26,10 @@ func resourceIBMComputePlacementGroup() *schema.Resource {
 		Delete:   resourceIBMComputePlacementGroupDelete,
 		Exists:   resourceIBMComputePlacementGroupExists,
 		Importer: &schema.ResourceImporter{},
+
+		Timeouts: &schema.ResourceTimeout{
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"datacenter": {
@@ -189,6 +195,36 @@ func resourceIBMComputePlacementGroupDelete(d *schema.ResourceData, meta interfa
 
 	pgrpID, err := strconv.Atoi(d.Id())
 	log.Printf("[INFO] Deleting Placement Group: %d", pgrpID)
+
+	const (
+		noVms                    = "There are no vms on the Placement Group"
+		vmsStillOnPlacementGroup = "VMs are still present on the Placement Group"
+	)
+
+	//Wait till all the VMs are disconnected before trying to delete
+	stateConf := &resource.StateChangeConf{
+		Target:     []string{noVms},
+		Pending:    []string{vmsStillOnPlacementGroup},
+		Timeout:    d.Timeout(schema.TimeoutDelete),
+		MinTimeout: 10 * time.Second,
+		Delay:      30 * time.Second, // Wait 30 secs before starting
+		Refresh: func() (interface{}, string, error) {
+			vms, err := service.Id(pgrpID).GetGuests()
+			if err != nil {
+				log.Printf("[ERROR] Received error while fetching virtual guests on placement group to see if placement group can be cancelled now: %#v", err)
+				return vms, "Error", err
+			}
+			if len(vms) != 0 {
+				return vms, vmsStillOnPlacementGroup, nil
+			}
+			return vms, noVms, nil
+		},
+	}
+	_, err = stateConf.WaitForState()
+	if err != nil {
+		return err
+	}
+
 	_, err = service.Id(pgrpID).DeleteObject()
 	if err != nil {
 		return fmt.Errorf("Error deleting Placement Group: %s", err)

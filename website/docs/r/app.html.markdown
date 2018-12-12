@@ -50,7 +50,7 @@ The following arguments are supported:
 * `health_check_http_endpoint` - (Optional, string) Endpoint called to determine if the app is healthy.
 * `health_check_type` - (Optional, string) Type of health check to perform. Default `port`. Valid types are `port` and `process`.
 * `health_check_timeout` - (Optional, integer) Timeout in seconds for health checking of an staged app when starting up.
-* `tags` - (Optional, array of strings) Tags associated with the application instance.
+* `tags` - (Optional, array of strings) Tags associated with the application instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attribute Reference

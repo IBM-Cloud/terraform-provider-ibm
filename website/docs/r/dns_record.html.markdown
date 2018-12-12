@@ -205,7 +205,7 @@ The following arguments are supported:
 * `port` - (`SRV` records only, required, integer) The TCP or UDP port on which the service will be found.
 * `priority` - (`SRV` records only, required, integer) The priority of the target host. The lowest numerical value is given the highest priority. The default value is `0`.
 * `weight` - (`SRV` records only, required, integer) A relative weight for records that have the same priority. The default value is `0`.
-* `tags` - (Optional, array of strings) Tags associated with the DNS domain record instance.
+* `tags` - (Optional, array of strings) Tags associated with the DNS domain record instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attribute Reference

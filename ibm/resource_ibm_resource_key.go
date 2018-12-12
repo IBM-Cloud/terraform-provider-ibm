@@ -178,9 +178,13 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("credentials", flatmap.Flatten(resourceKey.Credentials))
 	d.Set("name", resourceKey.Name)
 	d.Set("status", resourceKey.State)
-	role := resourceKey.Parameters["role_crn"].(string)
-	role = role[strings.LastIndex(role, ":")+1:]
-	d.Set("role", role)
+
+	if roleCrn, ok := resourceKey.Parameters["role_crn"].(string); ok {
+		d.Set("role", roleCrn[strings.LastIndex(roleCrn, ":")+1:])
+	} else if roleCrn, ok := resourceKey.Credentials["iam_role_crn"].(string); ok {
+		d.Set("role", roleCrn[strings.LastIndex(roleCrn, ":")+1:])
+	}
+
 	d.Set("parameters", flatmap.Flatten(filterResourceKeyParameters(resourceKey.Parameters)))
 
 	return nil

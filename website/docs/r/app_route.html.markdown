@@ -39,7 +39,7 @@ The following arguments are supported:
 * `host` - (Optional, string) The host portion of the route. Host is required for shared-domains.
 * `port` - (Optional, integer) The port of the route. Port is supported for domains of TCP router groups only.
 * `path` - (Optional, string) The path for a route as raw text. Paths must be 2 - 128 characters. Paths must start with a forward slash (/) and cannot contain a question mark (?).
-* `tags` - (Optional, array of strings) Tags associated with the route instance.
+* `tags` - (Optional, array of strings) Tags associated with the route instance.  
     **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attribute Reference

@@ -57,6 +57,11 @@ func resourceIBMLbServiceGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"timeout": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validateLBTimeout,
+			},
 			"tags": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -82,6 +87,8 @@ func resourceIBMLbServiceGroupCreate(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 
+	timeout := d.Get("timeout").(int)
+
 	vip := datatypes.Network_Application_Delivery_Controller_LoadBalancer_VirtualIpAddress{
 
 		VirtualServers: []datatypes.Network_Application_Delivery_Controller_LoadBalancer_VirtualServer{{
@@ -92,6 +99,10 @@ func resourceIBMLbServiceGroupCreate(d *schema.ResourceData, meta interface{}) e
 				RoutingTypeId:   &routingTypeID,
 			}},
 		}},
+	}
+
+	if timeout > 0 {
+		vip.VirtualServers[0].ServiceGroups[0].Timeout = sl.Int(timeout)
 	}
 
 	log.Println("[INFO] Creating load balancer service group")
@@ -152,6 +163,14 @@ func resourceIBMLbServiceGroupUpdate(d *schema.ResourceData, meta interface{}) e
 		}},
 	}
 
+	if d.HasChange("timeout") {
+		timeout := d.Get("timeout").(int)
+		if timeout > 0 {
+			vip.VirtualServers[0].ServiceGroups[0].Timeout = sl.Int(timeout)
+		}
+
+	}
+
 	log.Println("[INFO] Updating load balancer service group")
 
 	err = updateLoadBalancerService(sess.SetRetries(0), vipID, &vip)
@@ -170,7 +189,7 @@ func resourceIBMLbServiceGroupRead(d *schema.ResourceData, meta interface{}) err
 
 	vs, err := services.GetNetworkApplicationDeliveryControllerLoadBalancerVirtualServerService(sess).
 		Id(vsID).
-		Mask("allocation,port,serviceGroups[routingMethod[keyname],routingType[keyname]]").
+		Mask("allocation,port,serviceGroups[id,routingMethod[keyname],routingType[keyname], timeout],virtualIpAddressId").
 		GetObject()
 
 	if err != nil {
@@ -181,6 +200,9 @@ func resourceIBMLbServiceGroupRead(d *schema.ResourceData, meta interface{}) err
 	d.Set("port", vs.Port)
 	d.Set("routing_method", vs.ServiceGroups[0].RoutingMethod.Keyname)
 	d.Set("routing_type", vs.ServiceGroups[0].RoutingType.Keyname)
+	d.Set("load_balancer_id", vs.VirtualIpAddressId)
+	d.Set("service_group_id", vs.ServiceGroups[0].Id)
+	d.Set("timeout", vs.ServiceGroups[0].Timeout)
 
 	return nil
 }

@@ -108,7 +108,7 @@ The following arguments are supported:
 * `vlan_id` - (Optional, integer) The VLAN ID for portable subnet. You can configure both public and private VLAN ID. You can find accepted values in the [Softlayer VLAN documentation](https://control.softlayer.com/network/vlans) by clicking on the desired VLAN and noting the ID in the resulting URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
 * `endpoint_ip` - (Optional, string) The target primary IP address for a static subnet. Only public IP addresses of virtual servers, bare metal servers, and netscaler VPXs can be configured as an `endpoint_ip`. The `static subnet` will be created on the VLAN where the `endpoint_ip` is located.
 * `notes` - (Optional, string) Descriptive text or comments about the subnet.
-* `tags` - (Optional, array of strings) Tags associated with the subnet instance.
+* `tags` - (Optional, array of strings) Tags associated with the subnet instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attributes Reference

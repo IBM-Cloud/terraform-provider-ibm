@@ -27,7 +27,7 @@ The following arguments are supported:
 * `zone_name` - (Required, string) The name of the zone that is transferred.
 * `transfer_frequency` - (Required, int) Signifies how often a secondary DNS zone should be transferred in minutes.
 * `master_ip_address` - (Required, string)  The IP address of the master name server where a secondary DNS zone is transferred from.
-* `tags` - (Optional, array of strings) Tags associated with the DNS secondary instance.
+* `tags` - (Optional, array of strings) Tags associated with the DNS secondary instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attribute Reference
