@@ -3,9 +3,9 @@ package ibm
 import (
 	"fmt"
 	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
-	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform/helper/schema"
 	"log"
+	"reflect"
 )
 
 func resourceIBMCISHealthCheck() *schema.Resource {
@@ -257,7 +257,7 @@ func resourceCIShealthCheckDelete(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	monitorObj := *monitor
-	if !cmp.Equal(monitorObj, emptyMonitor) {
+	if !reflect.DeepEqual(emptyMonitor, monitorObj) {
 		log.Println("Deleting Monitor")
 		err = cisClient.Monitors().DeleteMonitor(cisId, monitorId)
 		if err != nil {

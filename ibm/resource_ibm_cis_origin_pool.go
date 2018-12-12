@@ -3,9 +3,9 @@ package ibm
 import (
 	"fmt"
 	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
-	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform/helper/schema"
 	"log"
+	"reflect"
 )
 
 func resourceIBMCISPool() *schema.Resource {
@@ -238,7 +238,7 @@ func resourceCISpoolDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	poolObj := *pool
-	if !cmp.Equal(poolObj, emptyPool) {
+	if !reflect.DeepEqual(emptyPool, poolObj) {
 		log.Println("Deleting Pool")
 		err = cisClient.Pools().DeletePool(cisId, poolId)
 		if err != nil {

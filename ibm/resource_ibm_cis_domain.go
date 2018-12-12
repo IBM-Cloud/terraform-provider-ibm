@@ -3,9 +3,9 @@ package ibm
 import (
 	"fmt"
 	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
-	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform/helper/schema"
 	"log"
+	"reflect"
 )
 
 func resourceIBMCISDomain() *schema.Resource {
@@ -148,7 +148,7 @@ func resourceCISdomainDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	zoneObj := *zone
-	if !cmp.Equal(zoneObj, emptyZone) {
+	if !reflect.DeepEqual(emptyZone, zoneObj) {
 		log.Println("Deleting Zone")
 		err = cisClient.Zones().DeleteZone(cisId, zoneId)
 		if err != nil {

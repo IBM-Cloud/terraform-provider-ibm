@@ -3,9 +3,9 @@ package ibm
 import (
 	"fmt"
 	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
-	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform/helper/schema"
 	"log"
+	"reflect"
 )
 
 func resourceIBMCISGlb() *schema.Resource {
@@ -213,7 +213,7 @@ func resourceCISGlbDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	GlbObj := *Glb
-	if !cmp.Equal(GlbObj, emptyGlb) {
+	if !reflect.DeepEqual(emptyGlb, GlbObj) {
 		log.Println("Deleting Glb")
 		err = cisClient.Glbs().DeleteGlb(cisId, zoneId, GlbId)
 		if err != nil {
