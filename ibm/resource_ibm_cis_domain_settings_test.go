@@ -39,5 +39,5 @@ resource "ibm_cis_domain_settings" "%[1]s" {
   "waf" = "on"
   "ssl" = "full"	
   "min_tls_version" = "1.2"
-}`, id, cis_domain)
+}`, id)
 }

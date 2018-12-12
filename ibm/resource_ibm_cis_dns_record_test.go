@@ -153,7 +153,7 @@ resource "ibm_cis_dns_record" "%[1]s" {
     name = "%[1]s"
     content = "192.168.0.10"
     type = "A"
-}`, resourceId, cis_domain)
+}`, resourceId)
 }
 
 func testAccCheckIBMCISDNSRecordConfigCaseSensitive(resourceId string, cis_domain string) string {
@@ -165,7 +165,7 @@ resource "ibm_cis_dns_record" "test" {
     name = "%[1]s"
     content = "192.168.0.10"
     type = "A"
-}`, resourceId, cis_domain)
+}`, resourceId)
 }
 
 func testAccCheckIBMCISDNSRecordConfigApex(resourceId string, cis_domain string) string {
@@ -176,7 +176,7 @@ resource "ibm_cis_dns_record" "%[1]s" {
     name = "@"
     content = "192.168.0.10"
     type = "A"
-}`, resourceId, cis_domain)
+}`, resourceId)
 }
 
 func testAccCheckIBMCISDNSRecordConfigLOC(resourceId string, cis_domain string) string {
@@ -200,7 +200,7 @@ resource "ibm_cis_dns_record" "%[1]s" {
       "precision_vert" = 0
     }
     type = "LOC"
-}`, resourceId, cis_domain)
+}`, resourceId)
 }
 
 func testAccCheckIBMCISDNSRecordConfigSRV(resourceId string, cis_domain string) string {
@@ -218,7 +218,7 @@ resource "ibm_cis_dns_record" "foobar" {
       "proto" = "_tcp"
     }
     type = "SRV"
-}`, resourceId, cis_domain)
+}`, resourceId)
 }
 
 func testAccCheckIBMCISDNSRecordConfigProxied(resourceId string, cis_domain string) string {
@@ -231,5 +231,5 @@ resource "ibm_cis_dns_record" "foobar" {
     content = "%[1]s"
     type = "CNAME"
     proxied = true
-}`, resourceId, cis_domain)
+}`, resourceId)
 }
