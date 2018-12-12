@@ -10,6 +10,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv2"
 	"github.com/IBM-Cloud/bluemix-go/api/iam/iamv1"
+	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM-Cloud/bluemix-go/session"
@@ -44,6 +45,9 @@ func main() {
 
 	var resourceGroupID string
 	flag.StringVar(&resourceGroupID, "resourceGroupID", "", "Bluemix resource group ")
+
+	var serviceType string
+	flag.StringVar(&serviceType, "serviceType", "", "service type")
 
 	trace.Logger = trace.NewLogger("true")
 	c := new(bluemix.Config)
@@ -101,11 +105,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	userPolicyAPI := iamClient.UserPolicies()
-
 	serviceRolesAPI := iamClient.ServiceRoles()
-
-	var policy models.Policy
 
 	var definedRoles []models.PolicyRole
 
@@ -125,49 +125,82 @@ func main() {
 		log.Fatal(err)
 	}
 
-	policyResource := models.PolicyResource{}
+	var policy iampapv1.Policy
+
+	policyResource := iampapv1.Resource{}
 
 	if service != "" {
-		policyResource.ServiceName = service
+		policyResource.SetServiceName(service)
 	}
 
 	if serviceInstance != "" {
-		policyResource.ServiceInstance = serviceInstance
+		policyResource.SetServiceInstance(serviceInstance)
 	}
 
 	if region != "" {
-		policyResource.Region = region
+		policyResource.SetRegion(region)
 	}
 
 	if resourceType != "" {
-		policyResource.ResourceType = resourceType
+		policyResource.SetResourceType(resourceType)
 	}
 
 	if resource != "" {
-		policyResource.Resource = resource
+		policyResource.SetResource(resource)
 	}
 
 	if resourceGroupID != "" {
-		policyResource.ResourceGroupID = resourceGroupID
+		policyResource.SetResourceGroupID(resourceGroupID)
 	}
 
-	policy = models.Policy{Roles: filterRoles, Resources: []models.PolicyResource{policyResource}}
+	switch serviceType {
+	case "service":
+		fallthrough
+	case "platform_service":
+		policyResource.SetServiceType(serviceType)
+	}
 
-	policy.Resources[0].AccountID = myAccount.GUID
+	if len(policyResource.Attributes) == 0 {
+		policyResource.SetServiceType("service")
+	}
+
+	policy = iampapv1.Policy{Roles: iampapv1.ConvertRoleModels(filterRoles), Resources: []iampapv1.Resource{policyResource}}
+
+	policy.Resources[0].SetAccountID(myAccount.GUID)
 
 	userDetails, err := accountAPIV1.FindAccountUserByUserId(myAccount.GUID, userEmail)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	createdPolicy, err := userPolicyAPI.Create("a/"+myAccount.GUID, userDetails.IbmUniqueId, policy)
+	policy.Subjects = []iampapv1.Subject{
+		{
+			Attributes: []iampapv1.Attribute{
+				{
+					Name:  "iam_id",
+					Value: userDetails.IbmUniqueId,
+				},
+			},
+		},
+	}
+
+	policy.Type = iampapv1.AccessPolicyType
+
+	iampapClient, err := iampapv1.New(sess)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	userPolicyAPI := iampapClient.V1Policy()
+
+	createdPolicy, err := userPolicyAPI.Create(policy)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	log.Println(createdPolicy)
 
-	err = userPolicyAPI.Delete("a/"+myAccount.GUID, userDetails.IbmUniqueId, createdPolicy.ID)
+	err = userPolicyAPI.Delete(createdPolicy.ID)
 	if err != nil {
 		log.Fatal(err)
 	}
