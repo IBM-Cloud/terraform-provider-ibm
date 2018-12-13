@@ -58,7 +58,7 @@ func TestAccIBMResourceKey_With_Tags(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey", conf),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "name", resourceKey),
-					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "role", "Viewer"),
+					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "role", "Manager"),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "tags.#", "1"),
 				),
 			},
@@ -153,7 +153,6 @@ func testAccCheckIBMResourceKey_basic(resourceName, resourceKey string) string {
 			service           = "cloud-object-storage"
 			plan              = "lite"
 			location          = "global"
-			tags              = ["tag1","tag2"]
 		}
 
 		resource "ibm_resource_key" "resourceKey" {
@@ -172,13 +171,12 @@ func testAccCheckIBMResourceKey_with_tags(resourceName, resourceKey string) stri
 			service           = "cloud-object-storage"
 			plan              = "lite"
 			location          = "global"
-			tags              = ["tag1","tag2"]
 		}
 
 		resource "ibm_resource_key" "resourceKey" {
 			name = "%s"
 			resource_instance_id = "${ibm_resource_instance.resource.id}"
-			role = "Viewer"
+			role = "Manager"
 			tags				  = ["one"]	
 		}
 	`, resourceName, resourceKey)
@@ -191,13 +189,12 @@ func testAccCheckIBMResourceKey_with_updated_tags(resourceName, resourceKey stri
 			service           = "cloud-object-storage"
 			plan              = "lite"
 			location          = "global"
-			tags              = ["tag1","tag2"]
 		}
 
 		resource "ibm_resource_key" "resourceKey" {
 			name = "%s"
 			resource_instance_id = "${ibm_resource_instance.resource.id}"
-			role = "Viewer"
+			role = "Manager"
 			tags				  = ["one", "two"]	
 		}
 	`, resourceName, resourceKey)
@@ -211,7 +208,6 @@ func testAccCheckIBMResourceKey_parameters(resourceName, resourceKey string) str
 			service           = "cloud-object-storage"
 			plan              = "lite"
 			location          = "global"
-			tags              = ["tag1","tag2"]
 		}
 
 		resource "ibm_resource_key" "resourceKey" {

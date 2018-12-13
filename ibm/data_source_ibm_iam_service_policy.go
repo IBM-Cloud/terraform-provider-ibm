@@ -3,6 +3,7 @@ package ibm
 import (
 	"fmt"
 
+	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -86,33 +87,26 @@ func dataSourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{})
 
 	serviceIDUUID := d.Get("iam_service_id").(string)
 
-	bmxSess, err := meta.(ClientSession).BluemixSession()
-	if err != nil {
-		return err
-	}
-
-	mccpAPI, err := meta.(ClientSession).MccpAPI()
-	if err != nil {
-		return err
-	}
-	region, err := mccpAPI.Regions().FindRegionByName(bmxSess.Config.Region)
-	if err != nil {
-		return err
-	}
-
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-
-	boundTo := GenerateBoundToCRN(*region, userDetails.userAccount)
 
 	serviceID, err := iamClient.ServiceIds().Get(serviceIDUUID)
 	if err != nil {
 		return err
 	}
 
-	policies, err := iamClient.ServicePolicies().List(boundTo.ScopeSegment(), serviceID.IAMID)
+	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
+	if err != nil {
+		return err
+	}
+
+	policies, err := iampapClient.V1Policy().List(iampapv1.SearchParams{
+		AccountID: userDetails.userAccount,
+		Type:      iampapv1.AccessPolicyType,
+		IAMID:     serviceID.IAMID,
+	})
 	if err != nil {
 		return err
 	}
@@ -121,7 +115,7 @@ func dataSourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{})
 	for _, policy := range policies {
 		roles := make([]string, len(policy.Roles))
 		for i, role := range policy.Roles {
-			roles[i] = role.DisplayName
+			roles[i] = role.Name
 		}
 		resources := flattenPolicyResource(policy.Resources)
 		p := map[string]interface{}{

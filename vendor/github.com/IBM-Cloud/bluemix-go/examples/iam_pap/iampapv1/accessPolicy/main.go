@@ -7,10 +7,10 @@ import (
 	"strings"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
-	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv2"
 	"github.com/IBM-Cloud/bluemix-go/api/iam/iamv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
+	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM-Cloud/bluemix-go/session"
@@ -22,8 +22,8 @@ func main() {
 	var org string
 	flag.StringVar(&org, "org", "", "Bluemix Organization")
 
-	var userEmail string
-	flag.StringVar(&userEmail, "userEmail", "", "Email of the user to be invited")
+	var accessGroup string
+	flag.StringVar(&accessGroup, "accessgroup", "", "Bluemix access group name")
 
 	var service string
 	flag.StringVar(&service, "service", "", "Bluemix service name")
@@ -54,7 +54,7 @@ func main() {
 	flag.BoolVar(&c.Debug, "debug", false, "Show full trace if on")
 	flag.Parse()
 
-	if org == "" || userEmail == "" || roles == "" {
+	if org == "" || roles == "" || accessGroup == "" {
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -88,24 +88,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	accClient1, err := accountv1.New(sess)
-	if err != nil {
-		log.Fatal(err)
-	}
-	accountAPIV1 := accClient1.Accounts()
-	//Get list of users under account
-	user, err := accountAPIV1.InviteAccountUser(myAccount.GUID, userEmail)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println(user)
-
 	iamClient, err := iamv1.New(sess)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	serviceRolesAPI := iamClient.ServiceRoles()
+
+	var policy iampapv1.Policy
 
 	var definedRoles []models.PolicyRole
 
@@ -124,8 +114,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	var policy iampapv1.Policy
 
 	policyResource := iampapv1.Resource{}
 
@@ -168,7 +156,22 @@ func main() {
 
 	policy.Resources[0].SetAccountID(myAccount.GUID)
 
-	userDetails, err := accountAPIV1.FindAccountUserByUserId(myAccount.GUID, userEmail)
+	iamuumClient, err := iamuumv1.New(sess)
+	if err != nil {
+		log.Fatal(err)
+	}
+	accessGroupAPI := iamuumClient.AccessGroup()
+
+	data := models.AccessGroup{
+		Name: accessGroup,
+	}
+	agID, err := accessGroupAPI.Create(data, myAccount.GUID)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(agID)
+
+	iampapClient, err := iampapv1.New(sess)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -177,8 +180,8 @@ func main() {
 		{
 			Attributes: []iampapv1.Attribute{
 				{
-					Name:  "iam_id",
-					Value: userDetails.IbmUniqueId,
+					Name:  "access_group_id",
+					Value: agID.ID,
 				},
 			},
 		},
@@ -186,26 +189,28 @@ func main() {
 
 	policy.Type = iampapv1.AccessPolicyType
 
-	iampapClient, err := iampapv1.New(sess)
-	if err != nil {
-		log.Fatal(err)
-	}
+	accessPolicy := iampapClient.V1Policy()
 
-	userPolicyAPI := iampapClient.V1Policy()
-
-	createdPolicy, err := userPolicyAPI.Create(policy)
+	createdPolicy, err := accessPolicy.Create(policy)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	log.Println(createdPolicy)
 
-	err = userPolicyAPI.Delete(createdPolicy.ID)
+	getPolicy, err := accessPolicy.Get(createdPolicy.ID)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = accountAPIV1.DeleteAccountUser(myAccount.GUID, userDetails.Id)
+	log.Println(getPolicy)
+
+	err = accessPolicy.Delete(createdPolicy.ID)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = accessGroupAPI.Delete(agID.ID, false)
 	if err != nil {
 		log.Fatal(err)
 	}

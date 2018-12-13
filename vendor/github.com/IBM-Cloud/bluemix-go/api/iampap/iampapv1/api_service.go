@@ -16,6 +16,7 @@ type IAMPAPAPI interface {
 	IAMPolicy() IAMPolicy
 	IAMService() IAMService
 	AuthorizationPolicies() AuthorizationPolicyRepository
+	V1Policy() V1PolicyRepository
 }
 
 //ErrCodeAPICreation ...
@@ -76,4 +77,8 @@ func (a *iampapService) IAMService() IAMService {
 //AuthorizationPolicies API
 func (a *iampapService) AuthorizationPolicies() AuthorizationPolicyRepository {
 	return NewAuthorizationPolicyRepository(a.Client)
+}
+
+func (a *iampapService) V1Policy() V1PolicyRepository {
+	return NewV1PolicyRepository(a.Client)
 }
