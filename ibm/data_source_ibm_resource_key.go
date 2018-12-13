@@ -97,6 +97,10 @@ func dataSourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) erro
 
 	}
 
+	if len(filteredKeys) == 0 {
+		return fmt.Errorf("No resource keys found with name [%s]", name)
+	}
+
 	var key models.ServiceKey
 
 	if len(filteredKeys) > 1 {
