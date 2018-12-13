@@ -11,4 +11,5 @@ type ServiceKey struct {
 	State       string                 `json:"state"`
 	AccountID   string                 `json:"account_id"`
 	Credentials map[string]interface{} `json:"credentials"`
+	Role        crn.CRN                `json:"role"`
 }

@@ -223,6 +223,13 @@ func main() {
 
 	log.Println("Resoure service key Details :", keyresp)
 
+	keyresp, err = resServiceKeyAPI.GetKey(keyresp.ID)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Resoure service key Details :", keyresp)
+
 	err = resServiceKeyAPI.DeleteKey(keyresp.ID)
 
 	if err != nil {

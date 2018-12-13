@@ -26,7 +26,7 @@ type TokenProvider interface {
 }
 
 /*type PaginatedResourcesHandler interface {
-	Resources(rawResponse []byte, curPath string) (resources []interface{}, nextPath string, err error)
+    Resources(rawResponse []byte, curPath string) (resources []interface{}, nextPath string, err error)
 }
 
 //HandlePagination ...
@@ -175,7 +175,7 @@ func addToRequestHeader(h interface{}, r *rest.Request) {
 
 /*//GetPaginated ...
 func (c *Client) GetPaginated(path string, paginated PaginatedResourcesHandler, cb func(interface{}) bool) (resp *gohttp.Response, err error) {
-	return c.HandlePagination(c, path, paginated, cb)
+    return c.HandlePagination(c, path, paginated, cb)
 }*/
 
 type PaginatedResourcesHandler interface {
@@ -225,12 +225,12 @@ func cleanPath(p string) string {
 }
 
 const (
-	userAgentHeader      = "User-Agent"
-	authorizationHeader  = "Authorization"
-	uaaAccessTokenHeader = "X-Auth-Uaa-Token"
-
+	userAgentHeader       = "User-Agent"
+	authorizationHeader   = "Authorization"
+	uaaAccessTokenHeader  = "X-Auth-Uaa-Token"
+	userAccessTokenHeader = "X-Auth-User-Token"
 	iamRefreshTokenHeader = "X-Auth-Refresh-Token"
-	crRefreshTokenHeader = "RefreshToken"
+	crRefreshTokenHeader  = "RefreshToken"
 )
 
 func getDefaultAuthHeaders(serviceName bluemix.ServiceName, c *bluemix.Config) gohttp.Header {
@@ -250,8 +250,10 @@ func getDefaultAuthHeaders(serviceName bluemix.ServiceName, c *bluemix.Config) g
 		h.Set(crRefreshTokenHeader, c.IAMRefreshToken)
 	case bluemix.IAMPAPService, bluemix.AccountServicev1, bluemix.ResourceCatalogrService, bluemix.ResourceControllerService, bluemix.ResourceManagementService, bluemix.IAMService, bluemix.IAMUUMService:
 		h.Set(authorizationHeader, c.IAMAccessToken)
+	case bluemix.CisService:
+		h.Set(userAccessTokenHeader, c.IAMAccessToken)
 	default:
-		log.Println("Unknown service")
+		log.Println("Unknown service - No auth headers set")
 	}
 	return h
 }
