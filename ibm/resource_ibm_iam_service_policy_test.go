@@ -4,18 +4,16 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/IBM-Cloud/bluemix-go/api/iam/iamv1"
-	"github.com/IBM-Cloud/bluemix-go/models"
-
 	"strings"
 
+	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
 
 func TestAccIBMIAMServicePolicy_Basic(t *testing.T) {
-	var conf models.Policy
+	var conf iampapv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
@@ -45,7 +43,7 @@ func TestAccIBMIAMServicePolicy_Basic(t *testing.T) {
 }
 
 func TestAccIBMIAMServicePolicy_With_Service(t *testing.T) {
-	var conf models.Policy
+	var conf iampapv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
@@ -76,7 +74,7 @@ func TestAccIBMIAMServicePolicy_With_Service(t *testing.T) {
 }
 
 func TestAccIBMIAMServicePolicy_With_ResourceInstance(t *testing.T) {
-	var conf models.Policy
+	var conf iampapv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
@@ -98,7 +96,7 @@ func TestAccIBMIAMServicePolicy_With_ResourceInstance(t *testing.T) {
 }
 
 func TestAccIBMIAMServicePolicy_With_Resource_Group(t *testing.T) {
-	var conf models.Policy
+	var conf iampapv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
@@ -120,7 +118,7 @@ func TestAccIBMIAMServicePolicy_With_Resource_Group(t *testing.T) {
 }
 
 func TestAccIBMIAMServicePolicy_With_Resource_Type(t *testing.T) {
-	var conf models.Policy
+	var conf iampapv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
@@ -141,7 +139,7 @@ func TestAccIBMIAMServicePolicy_With_Resource_Type(t *testing.T) {
 }
 
 func TestAccIBMIAMServicePolicy_import(t *testing.T) {
-	var conf models.Policy
+	var conf iampapv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
 	resourceName := "ibm_iam_service_policy.policy"
 
@@ -168,7 +166,7 @@ func TestAccIBMIAMServicePolicy_import(t *testing.T) {
 }
 
 func testAccCheckIBMIAMServicePolicyDestroy(s *terraform.State) error {
-	rsContClient, err := testAccProvider.Meta().(ClientSession).IAMAPI()
+	rsContClient, err := testAccProvider.Meta().(ClientSession).IAMPAPAPI()
 	if err != nil {
 		return err
 	}
@@ -181,38 +179,10 @@ func testAccCheckIBMIAMServicePolicyDestroy(s *terraform.State) error {
 		if err != nil {
 			return err
 		}
-		serviceIDUUID := parts[0]
 		servicePolicyID := parts[1]
 
-		bmxSess, err := testAccProvider.Meta().(ClientSession).BluemixSession()
-		if err != nil {
-			return err
-		}
-
-		mccpAPI, err := testAccProvider.Meta().(ClientSession).MccpAPI()
-		if err != nil {
-			return err
-		}
-		region, err := mccpAPI.Regions().FindRegionByName(bmxSess.Config.Region)
-		if err != nil {
-			return err
-		}
-
-		userDetails, err := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
-
-		boundTo := GenerateBoundToCRN(*region, userDetails.userAccount)
-
-		serviceID, err := rsContClient.ServiceIds().Get(serviceIDUUID)
-		if err != nil {
-			return nil
-		}
-
 		// Try to find the key
-		err = rsContClient.ServicePolicies().Delete(iamv1.ServicePolicyIdentifier{
-			Scope:    boundTo.ScopeSegment(),
-			IAMID:    serviceID.IAMID,
-			PolicyID: servicePolicyID,
-		})
+		err = rsContClient.V1Policy().Delete(servicePolicyID)
 
 		if err != nil && !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf("Error waiting for service policy (%s) to be destroyed: %s", rs.Primary.ID, err)
@@ -222,7 +192,7 @@ func testAccCheckIBMIAMServicePolicyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMIAMServicePolicyExists(n string, obj models.Policy) resource.TestCheckFunc {
+func testAccCheckIBMIAMServicePolicyExists(n string, obj iampapv1.Policy) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -230,7 +200,7 @@ func testAccCheckIBMIAMServicePolicyExists(n string, obj models.Policy) resource
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		rsContClient, err := testAccProvider.Meta().(ClientSession).IAMAPI()
+		rsContClient, err := testAccProvider.Meta().(ClientSession).IAMPAPAPI()
 		if err != nil {
 			return err
 		}
@@ -241,33 +211,10 @@ func testAccCheckIBMIAMServicePolicyExists(n string, obj models.Policy) resource
 		if err != nil {
 			return err
 		}
-		serviceIDUUID := parts[0]
 		servicePolicyID := parts[1]
-		bmxSess, err := testAccProvider.Meta().(ClientSession).BluemixSession()
-		if err != nil {
-			return err
-		}
-
-		mccpAPI, err := testAccProvider.Meta().(ClientSession).MccpAPI()
-		if err != nil {
-			return err
-		}
-		region, err := mccpAPI.Regions().FindRegionByName(bmxSess.Config.Region)
-		if err != nil {
-			return err
-		}
-
-		userDetails, err := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
-
-		boundTo := GenerateBoundToCRN(*region, userDetails.userAccount)
-
-		serviceID, err := rsContClient.ServiceIds().Get(serviceIDUUID)
-		if err != nil {
-			return err
-		}
 
 		// Try to find the key
-		policy, err := rsContClient.ServicePolicies().Get(boundTo.ScopeSegment(), serviceID.IAMID, servicePolicyID)
+		policy, err := rsContClient.V1Policy().Get(servicePolicyID)
 		obj = policy
 		return nil
 	}

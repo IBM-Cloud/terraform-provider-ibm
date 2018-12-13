@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
+	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -94,10 +94,11 @@ func resourceIBMIAMUserPolicy() *schema.Resource {
 }
 
 func resourceIBMIAMUserPolicyCreate(d *schema.ResourceData, meta interface{}) error {
-	iamClient, err := meta.(ClientSession).IAMAPI()
+	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
 	if err != nil {
 		return err
 	}
+
 	userEmail := d.Get("ibm_id").(string)
 
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
@@ -106,18 +107,33 @@ func resourceIBMIAMUserPolicyCreate(d *schema.ResourceData, meta interface{}) er
 	}
 
 	accountID := userDetails.userAccount
-	var policy models.Policy
-	policy, err = generatePolicy(d, meta, accountID)
+	var policy iampapv1.Policy
+	policy, err = generateAccountPolicy(d, meta)
 	if err != nil {
 		return err
 	}
+
+	policy.Resources[0].SetAccountID(accountID)
+
+	policy.Type = iampapv1.AccessPolicyType
 
 	user, err := getAccountUser(accountID, userEmail, meta)
 	if err != nil {
 		return err
 	}
 
-	userPolicy, err := iamClient.UserPolicies().Create("a/"+accountID, user.IbmUniqueId, policy)
+	policy.Subjects = []iampapv1.Subject{
+		{
+			Attributes: []iampapv1.Attribute{
+				{
+					Name:  "iam_id",
+					Value: user.IbmUniqueId,
+				},
+			},
+		},
+	}
+
+	userPolicy, err := iampapClient.V1Policy().Create(policy)
 	if err != nil {
 		return err
 	}
@@ -127,7 +143,7 @@ func resourceIBMIAMUserPolicyCreate(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) error {
-	iamClient, err := meta.(ClientSession).IAMAPI()
+	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
 	if err != nil {
 		return err
 	}
@@ -144,26 +160,14 @@ func resourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
-	if err != nil {
-		return err
-	}
-
-	accountID := userDetails.userAccount
-
-	user, err := getAccountUser(accountID, userEmail, meta)
-	if err != nil {
-		return err
-	}
-
-	userPolicy, err := iamClient.UserPolicies().Get("a/"+accountID, user.IbmUniqueId, userPolicyID)
+	userPolicy, err := iampapClient.V1Policy().Get(userPolicyID)
 	if err != nil {
 		return err
 	}
 	d.Set("ibm_id", userEmail)
 	roles := make([]string, len(userPolicy.Roles))
 	for i, role := range userPolicy.Roles {
-		roles[i] = role.DisplayName
+		roles[i] = role.Name
 	}
 	d.Set("roles", roles)
 	d.Set("version", userPolicy.Version)
@@ -172,7 +176,7 @@ func resourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceIBMIAMUserPolicyUpdate(d *schema.ResourceData, meta interface{}) error {
-	iamClient, err := meta.(ClientSession).IAMAPI()
+	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
 	if err != nil {
 		return err
 	}
@@ -189,17 +193,32 @@ func resourceIBMIAMUserPolicyUpdate(d *schema.ResourceData, meta interface{}) er
 			return err
 		}
 
-		var policy models.Policy
+		var policy iampapv1.Policy
 		accountID := userDetails.userAccount
 
-		policy, err = generatePolicy(d, meta, accountID)
+		policy, err = generateAccountPolicy(d, meta)
 		if err != nil {
 			return err
 		}
 
 		user, err := getAccountUser(accountID, userEmail, meta)
 
-		_, err = iamClient.UserPolicies().Update("a/"+accountID, user.IbmUniqueId, userPolicyID, policy, d.Get("version").(string))
+		policy.Resources[0].SetAccountID(accountID)
+
+		policy.Subjects = []iampapv1.Subject{
+			{
+				Attributes: []iampapv1.Attribute{
+					{
+						Name:  "iam_id",
+						Value: user.IbmUniqueId,
+					},
+				},
+			},
+		}
+
+		policy.Type = iampapv1.AccessPolicyType
+
+		_, err = iampapClient.V1Policy().Update(userPolicyID, policy, d.Get("version").(string))
 		if err != nil {
 			return fmt.Errorf("Error updating user policy: %s", err)
 		}
@@ -209,7 +228,7 @@ func resourceIBMIAMUserPolicyUpdate(d *schema.ResourceData, meta interface{}) er
 
 func resourceIBMIAMUserPolicyDelete(d *schema.ResourceData, meta interface{}) error {
 
-	iamClient, err := meta.(ClientSession).IAMAPI()
+	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
 	if err != nil {
 		return err
 	}
@@ -218,22 +237,9 @@ func resourceIBMIAMUserPolicyDelete(d *schema.ResourceData, meta interface{}) er
 	if err != nil {
 		return err
 	}
-	userEmail := parts[0]
 	userPolicyID := parts[1]
 
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
-	if err != nil {
-		return err
-	}
-
-	accountID := userDetails.userAccount
-
-	user, err := getAccountUser(accountID, userEmail, meta)
-	if err != nil {
-		return err
-	}
-
-	err = iamClient.UserPolicies().Delete("a/"+accountID, user.IbmUniqueId, userPolicyID)
+	err = iampapClient.V1Policy().Delete(userPolicyID)
 	if err != nil {
 		return err
 	}
@@ -242,7 +248,7 @@ func resourceIBMIAMUserPolicyDelete(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceIBMIAMUserPolicyExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	iamClient, err := meta.(ClientSession).IAMAPI()
+	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
 	if err != nil {
 		return false, err
 	}
@@ -254,19 +260,7 @@ func resourceIBMIAMUserPolicyExists(d *schema.ResourceData, meta interface{}) (b
 	userEmail := parts[0]
 	userPolicyID := parts[1]
 
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
-	if err != nil {
-		return false, err
-	}
-
-	accountID := userDetails.userAccount
-
-	user, err := getAccountUser(accountID, userEmail, meta)
-	if err != nil {
-		return false, err
-	}
-
-	userPolicy, err := iamClient.UserPolicies().Get("a/"+accountID, user.IbmUniqueId, userPolicyID)
+	userPolicy, err := iampapClient.V1Policy().Get(userPolicyID)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
 			if apiErr.StatusCode() == 404 {

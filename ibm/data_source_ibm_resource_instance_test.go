@@ -54,7 +54,6 @@ resource "ibm_resource_instance" "instance" {
   service    = "cloud-object-storage"
   plan       = "lite"
   location   = "global"
-  tags       = ["tag1", "tag2"]
 }
 
 resource "ibm_resource_instance" "instance2" {
@@ -62,7 +61,6 @@ resource "ibm_resource_instance" "instance2" {
 	service    = "kms"
 	plan       = "tiered-pricing"
 	location   = "us-south"
-	tags       = ["tag3", "tag4"]
   }
 
 `, instanceName, instanceName)
@@ -80,7 +78,6 @@ resource "ibm_resource_instance" "instance" {
 	service    = "cloud-object-storage"
 	plan       = "lite"
 	location   = "global"
-	tags       = ["tag1", "tag2"]
 }
 
 resource "ibm_resource_instance" "instance2" {
@@ -88,7 +85,6 @@ resource "ibm_resource_instance" "instance2" {
 	service    = "kms"
 	plan       = "tiered-pricing"
 	location   = "us-south"
-	tags       = ["tag3", "tag4"]
   }
 
 data "ibm_resource_instance" "testacc_ds_resource_instance" {
@@ -108,7 +104,6 @@ resource "ibm_resource_instance" "instance" {
 	service    = "cloud-object-storage"
 	plan       = "lite"
 	location   = "global"
-	tags       = ["tag1", "tag2"]
 }
 
 resource "ibm_resource_instance" "instance2" {
@@ -116,7 +111,6 @@ resource "ibm_resource_instance" "instance2" {
 	service    = "kms"
 	plan       = "tiered-pricing"
 	location   = "us-south"
-	tags       = ["tag3", "tag4"]
   }
 
 data "ibm_resource_instance" "testacc_ds_resource_instance2" {

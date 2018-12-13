@@ -12,6 +12,7 @@ import (
 
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
@@ -748,16 +749,16 @@ func idParts(id string) ([]string, error) {
 	return []string{}, fmt.Errorf("The given id %s does not contain / please check documentation on how to provider id during import command", id)
 }
 
-func flattenPolicyResource(list []models.PolicyResource) []map[string]interface{} {
+func flattenPolicyResource(list []iampapv1.Resource) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
 		l := map[string]interface{}{
-			"service":              i.ServiceName,
-			"resource_instance_id": i.ServiceInstance,
-			"region":               i.Region,
-			"resource_type":        i.ResourceType,
-			"resource":             i.Resource,
-			"resource_group_id":    i.ResourceGroupID,
+			"service":              i.GetAttribute("serviceName"),
+			"resource_instance_id": i.GetAttribute("serviceInstance"),
+			"region":               i.GetAttribute("region"),
+			"resource_type":        i.GetAttribute("resourceType"),
+			"resource":             i.GetAttribute("resource"),
+			"resource_group_id":    i.GetAttribute("resourceGroupId"),
 		}
 		result = append(result, l)
 	}

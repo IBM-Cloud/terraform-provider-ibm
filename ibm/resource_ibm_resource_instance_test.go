@@ -30,7 +30,6 @@ func TestAccIBMResourceInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "name", serviceName),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "service", "cloud-object-storage"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "plan", "lite"),
-					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "tags.#", "2"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "location", "global"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "parameters.%", "1"),
 				),
@@ -42,7 +41,6 @@ func TestAccIBMResourceInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "name", serviceName),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "service", "cloud-object-storage"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "plan", "lite"),
-					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "tags.#", "3"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "location", "global"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "parameters.%", "1"),
 				),
@@ -53,7 +51,6 @@ func TestAccIBMResourceInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "name", updateName),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "service", "cloud-object-storage"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "plan", "lite"),
-					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "tags.#", "1"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "location", "global"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "parameters.%", "1"),
 				),
@@ -64,7 +61,6 @@ func TestAccIBMResourceInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "name", updateName),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "service", "kms"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "plan", "tiered-pricing"),
-					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "tags.#", "1"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "location", "us-south"),
 				),
 			},
@@ -91,7 +87,6 @@ func TestAccIBMResourceInstance_import(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "plan", "lite"),
 					resource.TestCheckResourceAttr(resourceName, "location", "global"),
 					resource.TestCheckResourceAttr(resourceName, "parameters.%", "1"),
-					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
 				),
 			},
 			resource.TestStep{
@@ -124,7 +119,6 @@ func TestAccIBMResourceInstance_with_resource_group(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "plan", "lite"),
 					resource.TestCheckResourceAttr(resourceName, "location", "global"),
 					resource.TestCheckResourceAttr(resourceName, "parameters.%", "1"),
-					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
 				),
 			},
 		},
@@ -187,7 +181,6 @@ func testAccCheckIBMResourceInstance_basic(serviceName string) string {
 			service           = "cloud-object-storage"
 			plan              = "lite"
 			location          = "global"
-			tags              = ["tag1","tag2"]
 			parameters = {
 				"HMAC" = true
 			  }
@@ -209,7 +202,6 @@ func testAccCheckIBMResourceInstance_updateWithSameName(serviceName string) stri
 			service           = "cloud-object-storage"
 			plan              = "lite"
 			location          = "global"
-			tags               = ["tag1","tag2","db"]
 			parameters = {
 				"HMAC" = true
 			  }
@@ -225,7 +217,6 @@ func testAccCheckIBMResourceInstance_update(updateName string) string {
 			service           = "cloud-object-storage"
 			plan              = "lite"
 			location          = "global"
-			tags               = ["tag1"]
 			parameters = {
 				"HMAC" = true
 			  }
@@ -240,7 +231,6 @@ func testAccCheckIBMResourceInstance_newServiceType(updateName string) string {
 			service           = "kms"
 			plan              = "tiered-pricing"
 			location          = "us-south"
-			tags               = ["tag1"]
 		}
 	`, updateName)
 }
@@ -258,7 +248,6 @@ func testAccCheckIBMResourceInstance_with_resource_group(serviceName string) str
 			plan              = "lite"
 			location          = "global"
 			resource_group_id = "${data.ibm_resource_group.group.id}"
-			tags              = ["tag1","tag2"]
 			parameters = {
 				"HMAC" = true
 			  }
