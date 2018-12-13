@@ -5,17 +5,16 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/IBM-Cloud/bluemix-go/models"
-
 	"strings"
 
+	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
 
 func TestAccIBMIAMUserPolicy_Basic(t *testing.T) {
-	var conf models.Policy
+	var conf iampapv1.Policy
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -42,7 +41,7 @@ func TestAccIBMIAMUserPolicy_Basic(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_Service(t *testing.T) {
-	var conf models.Policy
+	var conf iampapv1.Policy
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -70,7 +69,7 @@ func TestAccIBMIAMUserPolicy_With_Service(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_ResourceInstance(t *testing.T) {
-	var conf models.Policy
+	var conf iampapv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
@@ -91,7 +90,7 @@ func TestAccIBMIAMUserPolicy_With_ResourceInstance(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_Resource_Group(t *testing.T) {
-	var conf models.Policy
+	var conf iampapv1.Policy
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -111,7 +110,7 @@ func TestAccIBMIAMUserPolicy_With_Resource_Group(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_Resource_Type(t *testing.T) {
-	var conf models.Policy
+	var conf iampapv1.Policy
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -130,7 +129,7 @@ func TestAccIBMIAMUserPolicy_With_Resource_Type(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_import(t *testing.T) {
-	var conf models.Policy
+	var conf iampapv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
 	resourceName := "ibm_iam_user_policy.policy"
 
@@ -163,14 +162,14 @@ func TestAccIBMIAMUserPolicy_Invalid_User(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccCheckIBMIAMUserPolicy_invalid_user(),
-				ExpectError: regexp.MustCompile(`User test@in.ibm.com is not found under current account`),
+				ExpectError: regexp.MustCompile(`User test@in.ibm.com does not exist within the given account.`),
 			},
 		},
 	})
 }
 
 func testAccCheckIBMIAMUserPolicyDestroy(s *terraform.State) error {
-	rsContClient, err := testAccProvider.Meta().(ClientSession).IAMAPI()
+	rsContClient, err := testAccProvider.Meta().(ClientSession).IAMPAPAPI()
 	if err != nil {
 		return err
 	}
@@ -183,20 +182,11 @@ func testAccCheckIBMIAMUserPolicyDestroy(s *terraform.State) error {
 		if err != nil {
 			return err
 		}
-		userEmail := parts[0]
+
 		userPolicyID := parts[1]
 
-		userDetails, err := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
-
-		accountID := userDetails.userAccount
-
-		user, err := getAccountUser(accountID, userEmail, testAccProvider.Meta())
-		if err != nil {
-			return err
-		}
-
 		// Try to find the key
-		_, err = rsContClient.UserPolicies().Get("a/"+accountID, user.IbmUniqueId, userPolicyID)
+		_, err = rsContClient.V1Policy().Get(userPolicyID)
 
 		if err != nil && !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf("Error waiting for user policy (%s) to be destroyed: %s", rs.Primary.ID, err)
@@ -206,7 +196,7 @@ func testAccCheckIBMIAMUserPolicyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMIAMUserPolicyExists(n string, obj models.Policy) resource.TestCheckFunc {
+func testAccCheckIBMIAMUserPolicyExists(n string, obj iampapv1.Policy) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -214,7 +204,7 @@ func testAccCheckIBMIAMUserPolicyExists(n string, obj models.Policy) resource.Te
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		rsContClient, err := testAccProvider.Meta().(ClientSession).IAMAPI()
+		rsContClient, err := testAccProvider.Meta().(ClientSession).IAMPAPAPI()
 		if err != nil {
 			return err
 		}
@@ -224,19 +214,9 @@ func testAccCheckIBMIAMUserPolicyExists(n string, obj models.Policy) resource.Te
 		if err != nil {
 			return err
 		}
-		userEmail := parts[0]
 		userPolicyID := parts[1]
 
-		userDetails, err := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
-
-		accountID := userDetails.userAccount
-
-		user, err := getAccountUser(accountID, userEmail, testAccProvider.Meta())
-		if err != nil {
-			return err
-		}
-
-		policy, err := rsContClient.UserPolicies().Get("a/"+accountID, user.IbmUniqueId, userPolicyID)
+		policy, err := rsContClient.V1Policy().Get(userPolicyID)
 		if err != nil {
 			return err
 		}

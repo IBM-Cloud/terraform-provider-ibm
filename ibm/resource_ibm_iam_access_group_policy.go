@@ -108,17 +108,29 @@ func resourceIBMIAMAccessGroupPolicyCreate(d *schema.ResourceData, meta interfac
 		return err
 	}
 
-	var policy iampapv1.AuthorizationPolicy
+	var policy iampapv1.Policy
 
-	policy, err = generateAccountPolicy(d, meta, userDetails.userAccount)
+	policy, err = generateAccountPolicy(d, meta)
 	if err != nil {
 		return err
 	}
 
-	policy.Subjects = []models.PolicyResource{{AccessGroupID: accessgrpID}}
+	policy.Subjects = []iampapv1.Subject{
+		{
+			Attributes: []iampapv1.Attribute{
+				{
+					Name:  "access_group_id",
+					Value: accessgrpID,
+				},
+			},
+		},
+	}
+
 	policy.Type = iampapv1.AccessPolicyType
 
-	accgrpPolicy, err := iampapClient.AuthorizationPolicies().Create(userDetails.userAccount, policy)
+	policy.Resources[0].SetAccountID(userDetails.userAccount)
+
+	accgrpPolicy, err := iampapClient.V1Policy().Create(policy)
 
 	if err != nil {
 		return fmt.Errorf("Error creating access group policy: %s", err)
@@ -143,24 +155,19 @@ func resourceIBMIAMAccessGroupPolicyRead(d *schema.ResourceData, meta interface{
 	accessgrpID := parts[0]
 	accgrpPolicyID := parts[1]
 
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
-	if err != nil {
-		return err
-	}
-
-	accgrpPolicy, err := iampapClient.AuthorizationPolicies().Get(userDetails.userAccount, accgrpPolicyID)
+	accgrpPolicy, err := iampapClient.V1Policy().Get(accgrpPolicyID)
 	if err != nil {
 		return fmt.Errorf("Error retrieving access group policy: %s", err)
 	}
 
-	if accessgrpID != accgrpPolicy.Subjects[0].AccessGroupID {
+	if accessgrpID != accgrpPolicy.Subjects[0].GetAttribute("access_group_id") {
 		return fmt.Errorf("Policy %s does not belong to access group %s", accgrpPolicyID, accessgrpID)
 	}
 
 	d.Set("access_group_id", accessgrpID)
 	roles := make([]string, len(accgrpPolicy.Roles))
 	for i, role := range accgrpPolicy.Roles {
-		roles[i] = role.DisplayName
+		roles[i] = role.Name
 	}
 	d.Set("roles", roles)
 	d.Set("version", accgrpPolicy.Version)
@@ -188,17 +195,29 @@ func resourceIBMIAMAccessGroupPolicyUpdate(d *schema.ResourceData, meta interfac
 			return err
 		}
 
-		var policy iampapv1.AuthorizationPolicy
+		var policy iampapv1.Policy
 
-		policy, err = generateAccountPolicy(d, meta, userDetails.userAccount)
+		policy, err = generateAccountPolicy(d, meta)
 		if err != nil {
 			return err
 		}
 
-		policy.Subjects = []models.PolicyResource{{AccessGroupID: accessgrpID}}
+		policy.Subjects = []iampapv1.Subject{
+			{
+				Attributes: []iampapv1.Attribute{
+					{
+						Name:  "access_group_id",
+						Value: accessgrpID,
+					},
+				},
+			},
+		}
+
 		policy.Type = iampapv1.AccessPolicyType
 
-		_, err = iampapClient.AuthorizationPolicies().Update(userDetails.userAccount, accgrpPolicyID, policy, d.Get("version").(string))
+		policy.Resources[0].SetAccountID(userDetails.userAccount)
+
+		_, err = iampapClient.V1Policy().Update(accgrpPolicyID, policy, d.Get("version").(string))
 		if err != nil {
 			return fmt.Errorf("Error updating access group policy: %s", err)
 		}
@@ -222,12 +241,7 @@ func resourceIBMIAMAccessGroupPolicyDelete(d *schema.ResourceData, meta interfac
 
 	accgrpPolicyID := parts[1]
 
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
-	if err != nil {
-		return err
-	}
-
-	err = iampapClient.AuthorizationPolicies().Delete(userDetails.userAccount, accgrpPolicyID)
+	err = iampapClient.V1Policy().Delete(accgrpPolicyID)
 	if err != nil {
 		return fmt.Errorf("Error deleting access group policy: %s", err)
 	}
@@ -249,12 +263,7 @@ func resourceIBMIAMAccessGroupPolicyExists(d *schema.ResourceData, meta interfac
 
 	accgrpPolicyID := parts[1]
 
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
-	if err != nil {
-		return false, err
-	}
-
-	accgrpPolicy, err := iampapClient.AuthorizationPolicies().Get(userDetails.userAccount, accgrpPolicyID)
+	accgrpPolicy, err := iampapClient.V1Policy().Get(accgrpPolicyID)
 	if err != nil {
 		return false, fmt.Errorf("Error retrieving access group policy: %s", err)
 	}
@@ -267,40 +276,67 @@ func resourceIBMIAMAccessGroupPolicyExists(d *schema.ResourceData, meta interfac
 		return false, fmt.Errorf("Error communicating with the API: %s", err)
 	}
 
-	tempID := fmt.Sprintf("%s/%s", accgrpPolicy.Subjects[0].AccessGroupID, accgrpPolicy.ID)
+	tempID := fmt.Sprintf("%s/%s", accgrpPolicy.Subjects[0].GetAttribute("access_group_id"), accgrpPolicy.ID)
 
 	return tempID == d.Id(), nil
 }
 
-func generateAccountPolicy(d *schema.ResourceData, meta interface{}, accountID string) (iampapv1.AuthorizationPolicy, error) {
+func generateAccountPolicy(d *schema.ResourceData, meta interface{}) (iampapv1.Policy, error) {
 
-	policyResources := []models.PolicyResource{}
-	var resources []interface{}
 	var serviceName string
+	policyResource := iampapv1.Resource{}
 
 	if res, ok := d.GetOk("resources"); ok {
-		resources = res.([]interface{})
+		resources := res.([]interface{})
 		for _, resource := range resources {
 			r, _ := resource.(map[string]interface{})
 			serviceName = r["service"].(string)
-			resourceParam := models.PolicyResource{
-				ServiceName:     r["service"].(string),
-				ServiceInstance: r["resource_instance_id"].(string),
-				Region:          r["region"].(string),
-				ResourceType:    r["resource_type"].(string),
-				Resource:        r["resource"].(string),
-				AccountID:       accountID,
-				ResourceGroupID: r["resource_group_id"].(string),
+			if r, ok := r["service"]; ok {
+				if r.(string) != "" {
+					policyResource.SetServiceName(r.(string))
+				}
 			}
-			policyResources = append(policyResources, resourceParam)
+			if r, ok := r["resource_instance_id"]; ok {
+				if r.(string) != "" {
+					policyResource.SetServiceInstance(r.(string))
+				}
+
+			}
+			if r, ok := r["region"]; ok {
+				if r.(string) != "" {
+					policyResource.SetRegion(r.(string))
+				}
+
+			}
+			if r, ok := r["resource_type"]; ok {
+				if r.(string) != "" {
+					policyResource.SetResourceType(r.(string))
+				}
+
+			}
+			if r, ok := r["resource"]; ok {
+				if r.(string) != "" {
+					policyResource.SetResource(r.(string))
+				}
+
+			}
+			if r, ok := r["resource_group_id"]; ok {
+				if r.(string) != "" {
+					policyResource.SetResourceGroupID(r.(string))
+				}
+
+			}
+
 		}
-	} else {
-		policyResources = append(policyResources, models.PolicyResource{AccountID: accountID})
+	}
+
+	if len(policyResource.Attributes) == 0 {
+		policyResource.SetServiceType("service")
 	}
 
 	iamClient, err := meta.(ClientSession).IAMAPI()
 	if err != nil {
-		return iampapv1.AuthorizationPolicy{}, err
+		return iampapv1.Policy{}, err
 	}
 
 	iamRepo := iamClient.ServiceRoles()
@@ -313,13 +349,13 @@ func generateAccountPolicy(d *schema.ResourceData, meta interface{}, accountID s
 		roles, err = iamRepo.ListServiceRoles(serviceName)
 	}
 	if err != nil {
-		return iampapv1.AuthorizationPolicy{}, err
+		return iampapv1.Policy{}, err
 	}
 
 	policyRoles, err := getRolesFromRoleNames(expandStringList(d.Get("roles").([]interface{})), roles)
 	if err != nil {
-		return iampapv1.AuthorizationPolicy{}, err
+		return iampapv1.Policy{}, err
 	}
 
-	return iampapv1.AuthorizationPolicy{Roles: policyRoles, Resources: policyResources}, nil
+	return iampapv1.Policy{Roles: iampapv1.ConvertRoleModels(policyRoles), Resources: []iampapv1.Resource{policyResource}}, nil
 }

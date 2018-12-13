@@ -14,7 +14,7 @@ import (
 )
 
 func TestAccIBMIAMAccessGroupPolicy_Basic(t *testing.T) {
-	var conf iampapv1.AuthorizationPolicy
+	var conf iampapv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
@@ -44,7 +44,7 @@ func TestAccIBMIAMAccessGroupPolicy_Basic(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Service(t *testing.T) {
-	var conf iampapv1.AuthorizationPolicy
+	var conf iampapv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
@@ -75,7 +75,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Service(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_ResourceInstance(t *testing.T) {
-	var conf iampapv1.AuthorizationPolicy
+	var conf iampapv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
@@ -97,7 +97,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_ResourceInstance(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Resource_Group(t *testing.T) {
-	var conf iampapv1.AuthorizationPolicy
+	var conf iampapv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
@@ -119,7 +119,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Resource_Group(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Resource_Type(t *testing.T) {
-	var conf iampapv1.AuthorizationPolicy
+	var conf iampapv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
@@ -140,7 +140,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Resource_Type(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_import(t *testing.T) {
-	var conf iampapv1.AuthorizationPolicy
+	var conf iampapv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
 	resourceName := "ibm_iam_access_group_policy.policy"
 
@@ -183,9 +183,7 @@ func testAccCheckIBMIAMAccessGroupPolicyDestroy(s *terraform.State) error {
 
 		accgrpPolicyID := parts[1]
 
-		userDetails, err := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
-
-		err = iampapClient.AuthorizationPolicies().Delete(userDetails.userAccount, accgrpPolicyID)
+		err = iampapClient.V1Policy().Delete(accgrpPolicyID)
 
 		if err != nil && !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf("Error waiting for access group policy (%s) to be destroyed: %s", rs.Primary.ID, err)
@@ -195,7 +193,7 @@ func testAccCheckIBMIAMAccessGroupPolicyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMIAMAccessGroupPolicyExists(n string, obj iampapv1.AuthorizationPolicy) resource.TestCheckFunc {
+func testAccCheckIBMIAMAccessGroupPolicyExists(n string, obj iampapv1.Policy) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -217,9 +215,7 @@ func testAccCheckIBMIAMAccessGroupPolicyExists(n string, obj iampapv1.Authorizat
 
 		accgrpPolicyID := parts[1]
 
-		userDetails, err := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
-
-		policy, err := iampapClient.AuthorizationPolicies().Get(userDetails.userAccount, accgrpPolicyID)
+		policy, err := iampapClient.V1Policy().Get(accgrpPolicyID)
 		obj = policy
 		return nil
 	}
