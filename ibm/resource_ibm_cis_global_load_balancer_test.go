@@ -23,8 +23,9 @@ func TestAccCisGlb_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
-		// Remove check destroy as this occurs after the CIS instance is deleted and fails with an auth error
-		//CheckDestroy: testAccCheckCisGlbDestroy,
+		// No requirement for CheckDestory of this resource as by reaching this point it must have already been deleted from CIS.
+		// If the DNS record failed to delete, the destroy of resource_ibm_cis used in this test suite will have been failed by the Resource Manager
+		// and test execution aborted prior to this test.
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckCisGlbConfigBasic("test", cis_domain),
@@ -49,7 +50,6 @@ func TestAccCisGlb_SessionAffinity(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
-		//CheckDestroy: testAccCheckCisGlbDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckCisGlbConfigSessionAffinity("test", cis_domain),

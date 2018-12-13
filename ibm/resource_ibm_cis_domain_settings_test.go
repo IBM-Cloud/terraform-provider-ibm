@@ -10,14 +10,11 @@ func TestAccCisSettings_Basic(t *testing.T) {
 	// multiple instances of this config would conflict but we only use it once
 	t.Parallel()
 
-	//rnd := acctest.RandString(10)
 	name := "ibm_cis_domain_settings." + "test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
-		// Remove check destroy as this occurs after the CIS instance is deleted and fails with an auth error
-		//CheckDestroy: testAccCheckCisSettingsDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckCisSettingsConfigBasic("test", cis_domain),

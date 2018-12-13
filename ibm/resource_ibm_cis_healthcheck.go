@@ -1,7 +1,7 @@
 package ibm
 
 import (
-	"fmt"
+	//"fmt"
 	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/hashicorp/terraform/helper/schema"
 	"log"
@@ -132,65 +132,43 @@ func resourceCIShealthCheckCreate(d *schema.ResourceData, meta interface{}) erro
 	expCodes := d.Get("expected_codes").(string)
 	expBody := d.Get("expected_body").(string)
 
-	var monitors *[]v1.Monitor
-	monitors, err = cisClient.Monitors().ListMonitors(cisId)
-	if err != nil {
-		log.Printf("ListMonitors Failed %s\n", err)
-		return err
+	monitorNew := v1.MonitorBody{
+		ExpCodes: expCodes,
+		ExpBody:  expBody,
+		Path:     monitorPath,
 	}
 
-	var monitorPaths []string
-	monitorsObj := *monitors
-	for _, monitor := range monitorsObj {
-		monitorPaths = append(monitorPaths, monitor.Path)
+	if monType, ok := d.GetOk("type"); ok {
+		monitorNew.MonType = monType.(string)
 	}
-
-	log.Println(string("Existing monitor paths"))
-	log.Println(monitorPaths)
+	if method, ok := d.GetOk("method"); ok {
+		monitorNew.Method = method.(string)
+	}
+	if timeout, ok := d.GetOk("timeout"); ok {
+		monitorNew.Timeout = timeout.(int)
+	}
+	if retries, ok := d.GetOk("retries"); ok {
+		monitorNew.Retries = retries.(int)
+	}
+	if interval, ok := d.GetOk("interval"); ok {
+		monitorNew.Interval = interval.(int)
+	}
+	if follow_redirects, ok := d.GetOk("follow_redirects"); ok {
+		monitorNew.FollowRedirects = follow_redirects.(bool)
+	}
+	if allow_insecure, ok := d.GetOk("allow_insecure"); ok {
+		monitorNew.AllowInsecure = allow_insecure.(bool)
+	}
 
 	var monitor *v1.Monitor
 	var monitorObj v1.Monitor
 
-	index := indexOf(monitorPath, monitorPaths)
-	if index == -1 {
-
-		monitorNew := v1.MonitorBody{
-			ExpCodes: expCodes,
-			ExpBody:  expBody,
-			Path:     monitorPath,
-		}
-
-		if monType, ok := d.GetOk("type"); ok {
-			monitorNew.MonType = monType.(string)
-		}
-		if method, ok := d.GetOk("method"); ok {
-			monitorNew.Method = method.(string)
-		}
-		if timeout, ok := d.GetOk("timeout"); ok {
-			monitorNew.Timeout = timeout.(int)
-		}
-		if retries, ok := d.GetOk("retries"); ok {
-			monitorNew.Retries = retries.(int)
-		}
-		if interval, ok := d.GetOk("interval"); ok {
-			monitorNew.Interval = interval.(int)
-		}
-		if follow_redirects, ok := d.GetOk("follow_redirects"); ok {
-			monitorNew.FollowRedirects = follow_redirects.(bool)
-		}
-		if allow_insecure, ok := d.GetOk("allow_insecure"); ok {
-			monitorNew.AllowInsecure = allow_insecure.(bool)
-		}
-
-		monitor, err = cisClient.Monitors().CreateMonitor(cisId, monitorNew)
-		if err != nil {
-			log.Printf("CreateMonitors Failed %s\n", err)
-			return err
-		}
-		monitorObj = *monitor
-	} else {
-		return fmt.Errorf("Resource with name %s already exists", monitorPath)
+	monitor, err = cisClient.Monitors().CreateMonitor(cisId, monitorNew)
+	if err != nil {
+		log.Printf("CreateMonitors Failed %s\n", err)
+		return err
 	}
+	monitorObj = *monitor
 
 	d.SetId(monitorObj.Id)
 	d.Set("path", monitorObj.Path)

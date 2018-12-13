@@ -1,7 +1,6 @@
 package ibm
 
 import (
-	"fmt"
 	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/hashicorp/terraform/helper/schema"
 	"log"
@@ -103,55 +102,38 @@ func resourceCISpoolCreate(d *schema.ResourceData, meta interface{}) error {
 	origins := d.Get("origins").(*schema.Set)
 	checkRegions := d.Get("check_regions").(*schema.Set).List()
 
-	var pools *[]v1.Pool
-	pools, err = cisClient.Pools().ListPools(cisId)
-	if err != nil {
-		log.Printf("ListPools Failed %s\n", err)
-		return err
+	poolNew := v1.PoolBody{}
+	poolNew.Name = name
+	poolNew.CheckRegions = expandStringList(checkRegions)
+	poolNew.Origins = expandOrigins(origins)
+
+	if notEmail, ok := d.GetOk("notification_email"); ok {
+		poolNew.NotEmail = notEmail.(string)
+	}
+	if monitor, ok := d.GetOk("monitor"); ok {
+		poolNew.Monitor = monitor.(string)
+	}
+	if enabled, ok := d.GetOk("enabled"); ok {
+		poolNew.Enabled = enabled.(bool)
+	}
+	if minOrigins, ok := d.GetOk("minimum_origins"); ok {
+		log.Printf("Was min origins set?: >>>>>%v<<<<<\n", minOrigins)
+		poolNew.MinOrigins = minOrigins.(int)
+	}
+	if description, ok := d.GetOk("description"); ok {
+		poolNew.Description = description.(string)
 	}
 
-	var poolNames []string
-	poolsObj := *pools
-	for _, pool := range poolsObj {
-		poolNames = append(poolNames, pool.Name)
-	}
 	var pool *v1.Pool
 	var poolObj v1.Pool
 
-	index := indexOf(name, poolNames)
-	if index == -1 {
-
-		poolNew := v1.PoolBody{}
-		poolNew.Name = name
-		poolNew.CheckRegions = expandToStringList(checkRegions)
-		poolNew.Origins = expandOrigins(origins)
-
-		if notEmail, ok := d.GetOk("notification_email"); ok {
-			poolNew.NotEmail = notEmail.(string)
-		}
-		if monitor, ok := d.GetOk("monitor"); ok {
-			poolNew.Monitor = monitor.(string)
-		}
-		if enabled, ok := d.GetOk("enabled"); ok {
-			poolNew.Enabled = enabled.(bool)
-		}
-		if minOrigins, ok := d.GetOk("minimum_origins"); ok {
-			log.Printf("Was min origins set?: >>>>>%v<<<<<\n", minOrigins)
-			poolNew.MinOrigins = minOrigins.(int)
-		}
-		if description, ok := d.GetOk("description"); ok {
-			poolNew.Description = description.(string)
-		}
-
-		pool, err = cisClient.Pools().CreatePool(cisId, poolNew)
-		if err != nil {
-			log.Printf("CreatePools Failed %s\n", err)
-			return err
-		}
-		poolObj = *pool
-	} else {
-		return fmt.Errorf("Resource with name %s already exists", name)
+	pool, err = cisClient.Pools().CreatePool(cisId, poolNew)
+	if err != nil {
+		log.Printf("CreatePools Failed %s\n", err)
+		return err
 	}
+
+	poolObj = *pool
 
 	d.SetId(poolObj.Id)
 	d.Set("name", poolObj.Name)
@@ -192,28 +174,6 @@ func resourceCISpoolRead(d *schema.ResourceData, meta interface{}) error {
 
 	}
 	return nil
-}
-
-func expandToStringList(list interface{}) []string {
-	iList := list.([]interface{})
-	checkRegions := make([]string, 0, len(iList))
-	for _, region := range iList {
-		checkRegions = append(checkRegions, region.(string))
-	}
-	return checkRegions
-}
-
-func expandOrigins(originsList *schema.Set) (origins []v1.Origin) {
-	for _, iface := range originsList.List() {
-		orig := iface.(map[string]interface{})
-		origin := v1.Origin{
-			Name:    orig["name"].(string),
-			Address: orig["address"].(string),
-			Enabled: orig["enabled"].(bool),
-		}
-		origins = append(origins, origin)
-	}
-	return
 }
 
 func resourceCISpoolUpdate(d *schema.ResourceData, meta interface{}) error {

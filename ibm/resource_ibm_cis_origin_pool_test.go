@@ -18,8 +18,9 @@ func TestAccCisPool_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
-		// Remove check destroy as this occurs after the CIS instance is deleted and fails with an auth error
-		//CheckDestroy: testAccCheckCisPoolDestroy,
+		// No requirement for CheckDestory of this resource as by reaching this test it must have already been deleted
+		// correctly during the resource destroy phase of test. The destroy of resource_ibm_cis used in testAccCheckCisPoolConfigBasic
+		// will fail if this resource is not correctly deleted.
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckCisPoolConfigBasic(rnd, cis_domain),
@@ -41,7 +42,6 @@ func TestAccCisPool_FullySpecified(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
-		//CheckDestroy: testAccCheckCisPoolDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckCisPoolConfigFullySpecified(rnd, cis_domain),

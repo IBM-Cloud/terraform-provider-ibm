@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform/flatmap"
 
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
+	"github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
@@ -854,4 +855,17 @@ func flattenServiceIds(services []string, meta interface{}) ([]string, error) {
 		serviceids[i] = serviceID.IAMID
 	}
 	return serviceids, nil
+}
+
+func expandOrigins(originsList *schema.Set) (origins []cisv1.Origin) {
+	for _, iface := range originsList.List() {
+		orig := iface.(map[string]interface{})
+		origin := cisv1.Origin{
+			Name:    orig["name"].(string),
+			Address: orig["address"].(string),
+			Enabled: orig["enabled"].(bool),
+		}
+		origins = append(origins, origin)
+	}
+	return
 }

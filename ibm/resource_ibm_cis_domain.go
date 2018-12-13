@@ -1,7 +1,6 @@
 package ibm
 
 import (
-	"fmt"
 	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/hashicorp/terraform/helper/schema"
 	"log"
@@ -44,7 +43,7 @@ func resourceIBMCISDomain() *schema.Resource {
 		Read:   resourceCISdomainRead,
 		Update: resourceCISdomainUpdate,
 		Delete: resourceCISdomainDelete,
-		// No Exists due to errors in CIS API returning incorrect return codes on 404
+		// No Exists due to errors in CIS API returning incorrect return codes not found (403)
 	}
 }
 
@@ -58,35 +57,15 @@ func resourceCISdomainCreate(d *schema.ResourceData, meta interface{}) error {
 	cisId := d.Get("cis_id").(string)
 	zoneName := d.Get("domain").(string)
 
-	var zones *[]v1.Zone
-	zones, err = cisClient.Zones().ListZones(cisId)
-	if err != nil {
-		log.Printf("ListZones Failed %s\n", err)
-		return err
-	}
-
-	var zoneNames []string
-	zonesObj := *zones
-	for _, zone := range zonesObj {
-		zoneNames = append(zoneNames, zone.Name)
-	}
 	zoneNew := v1.ZoneBody{Name: zoneName}
-
 	var zone *v1.Zone
 	var zoneObj v1.Zone
-
-	index := indexOf(zoneName, zoneNames)
-	if index == -1 {
-		zone, err = cisClient.Zones().CreateZone(cisId, zoneNew)
-		if err != nil {
-			log.Printf("CreateZones Failed %s\n", err)
-			return err
-		}
-		zoneObj = *zone
-	} else {
-		return fmt.Errorf("resource with name %s already exists", zoneName)
+	zone, err = cisClient.Zones().CreateZone(cisId, zoneNew)
+	if err != nil {
+		log.Printf("CreateZones Failed %s\n", err)
+		return err
 	}
-
+	zoneObj = *zone
 	d.SetId(zoneObj.Id)
 	d.Set("name", zoneObj.Name)
 	return resourceCISdomainRead(d, meta)
@@ -111,18 +90,14 @@ func resourceCISdomainRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		log.Printf("resourceCISdomainRead - ListZones Failed %s\n", err)
 		return err
-	} else {
-		log.Printf("resourceCISdomainRead - Retrieved Zone %v\n", zone)
-
-		zoneObj := *zone
-
-		d.Set("name", zoneObj.Name)
-		d.Set("status", zoneObj.Status)
-		d.Set("paused", zoneObj.Paused)
-		d.Set("name_servers", zoneObj.NameServers)
-		d.Set("original_name_servers", zoneObj.OriginalNameServer)
-
 	}
+	zoneObj := *zone
+	d.Set("name", zoneObj.Name)
+	d.Set("status", zoneObj.Status)
+	d.Set("paused", zoneObj.Paused)
+	d.Set("name_servers", zoneObj.NameServers)
+	d.Set("original_name_servers", zoneObj.OriginalNameServer)
+
 	return nil
 }
 
@@ -159,13 +134,4 @@ func resourceCISdomainDelete(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId("")
 	return nil
-}
-
-func indexOf(element string, data []string) int {
-	for k, v := range data {
-		if element == v {
-			return k
-		}
-	}
-	return -1 //not found.
 }

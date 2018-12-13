@@ -106,10 +106,9 @@ func testAccCheckIBMCISInstanceDestroy(s *terraform.State) error {
 		_, err := rsContClient.ResourceServiceInstance().GetInstance(instanceID)
 
 		if err != nil && !strings.Contains(err.Error(), "404") {
-			return fmt.Errorf("Error waiting for resource instance (%s) to be destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
-
 	return nil
 }
 

@@ -13,6 +13,9 @@ func TestAccIBMCisDomain_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
+		// No requirement for CheckDestory of this resource as by reaching this test it must have already been deleted
+		// correctly during the resource destroy phase of test. The destroy of resource_ibm_cis used in testAccCheckCisPoolConfigBasic
+		// will fail if this resource is not correctly deleted.
 		Steps: []resource.TestStep{
 			{
 				Config: testAccIBMCisDomainConfig_basic("test", cis_domain),

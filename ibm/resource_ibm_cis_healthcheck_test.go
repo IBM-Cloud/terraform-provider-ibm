@@ -17,8 +17,7 @@ func TestAccCisHealthcheck_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
-		// Remove check destroy as this occurs after the CIS instance is deleted and fails with an auth error
-		//CheckDestroy: testAccCheckCisHealthcheckDestroy,
+		// No requirement for CheckDestory of this resource as by reaching this point it must have already been deleted from CIS.
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckCisHealthcheckConfigBasic("test", cis_domain),

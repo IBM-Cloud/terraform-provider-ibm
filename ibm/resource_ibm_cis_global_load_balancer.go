@@ -1,7 +1,7 @@
 package ibm
 
 import (
-	"fmt"
+	//"fmt"
 	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/hashicorp/terraform/helper/schema"
 	"log"
@@ -106,49 +106,25 @@ func resourceCISGlbCreate(d *schema.ResourceData, meta interface{}) error {
 	zoneId := d.Get("domain_id").(string)
 	defaultPools := d.Get("default_pool_ids").(*schema.Set).List()
 
-	var Glbs *[]v1.Glb
-	Glbs, err = cisClient.Glbs().ListGlbs(cisId, zoneId)
-	if err != nil {
-		log.Printf("ListGlbs Failed %s\n", err)
-		return err
-	}
-
-	var GlbNames []string
-	GlbsObj := *Glbs
-	for _, Glb := range GlbsObj {
-		GlbNames = append(GlbNames, Glb.Name)
-	}
-
-	log.Println(string("Existing Glb names"))
-	log.Println(GlbNames)
-
 	var Glb *v1.Glb
 	var GlbObj v1.Glb
+	GlbNew := v1.GlbBody{}
+	GlbNew.Name = name
 
-	index := indexOf(name, GlbNames)
-	if index == -1 {
+	GlbNew.DefaultPools = expandStringList(defaultPools)
+	GlbNew.FallbackPool = d.Get("fallback_pool_id").(string)
+	GlbNew.Proxied = d.Get("proxied").(bool)
+	GlbNew.SessionAffinity = d.Get("session_affinity").(string)
 
-		GlbNew := v1.GlbBody{}
-		GlbNew.Name = name
-
-		GlbNew.DefaultPools = expandToStringList(defaultPools)
-		GlbNew.FallbackPool = d.Get("fallback_pool_id").(string)
-		GlbNew.Proxied = d.Get("proxied").(bool)
-		GlbNew.SessionAffinity = d.Get("session_affinity").(string)
-
-		if description, ok := d.GetOk("description"); ok {
-			GlbNew.Desc = description.(string)
-		}
-		Glb, err = cisClient.Glbs().CreateGlb(cisId, zoneId, GlbNew)
-		if err != nil {
-			log.Printf("CreateGlbs Failed %s\n", err)
-			return err
-		}
-		GlbObj = *Glb
-	} else {
-		return fmt.Errorf("Resource with name %s already exists", name)
+	if description, ok := d.GetOk("description"); ok {
+		GlbNew.Desc = description.(string)
 	}
-
+	Glb, err = cisClient.Glbs().CreateGlb(cisId, zoneId, GlbNew)
+	if err != nil {
+		log.Printf("CreateGlbs Failed %s\n", err)
+		return err
+	}
+	GlbObj = *Glb
 	d.SetId(GlbObj.Id)
 	d.Set("domain_id", zoneId)
 
