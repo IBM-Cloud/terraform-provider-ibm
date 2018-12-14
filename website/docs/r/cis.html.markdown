@@ -8,7 +8,9 @@ description: |-
 
 # ibm\_cis
 
-Provides a Cloud Internet Services instance resource. This allows CIS instances to be created, updated, and deleted.
+Provides a Cloud Internet Services instance resource. This allows CIS instances to be created, updated, and deleted. The Bluemix_API_KEY used by Terraform must have been granted sufficient rights to create IBM Cloud Resources and have access to the Resource Group the CIS instance will be associated with. 
+
+If no resource_group_id is specified, the CIS instance is created under the default resource group. The API_KEY must have been assigned permissions for this group.  
 
 ## Example Usage
 

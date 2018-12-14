@@ -58,8 +58,8 @@ func resourceCISdomainCreate(d *schema.ResourceData, meta interface{}) error {
 	zoneName := d.Get("domain").(string)
 
 	zoneNew := v1.ZoneBody{Name: zoneName}
-	var zone *v1.Zone
 	var zoneObj v1.Zone
+	var zone *v1.Zone
 	zone, err = cisClient.Zones().CreateZone(cisId, zoneNew)
 	if err != nil {
 		log.Printf("CreateZones Failed %s\n", err)
