@@ -44,6 +44,7 @@ func resourceIBMCISDnsRecord() *schema.Resource {
 			},
 			"content": {
 				Type:          schema.TypeString,
+				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"data"},
 			},
