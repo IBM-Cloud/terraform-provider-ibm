@@ -33,7 +33,7 @@ resource "ibm_storage_file" "fs_endurance" {
   hourly_billing            = true
 
   # Optional fields for snapshot
-  snapshot = [
+  snapshot_schedule = [
     {
       schedule_type   = "WEEKLY"
       retention_count = 20
@@ -47,7 +47,7 @@ resource "ibm_storage_file" "fs_endurance" {
       retention_count = 20
       minute          = 2
       enable          = true
-    },
+    }
   ]
 }
 
