@@ -3,7 +3,6 @@ package ibm
 import (
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 	"time"
 
@@ -13,10 +12,11 @@ import (
 
 func resourceIBMCISDnsRecord() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceIBMCISDnsRecordCreate,
-		Read:   resourceIBMCISDnsRecordRead,
-		Update: resourceIBMCISDnsRecordUpdate,
-		Delete: resourceIBMCISDnsRecordDelete,
+		Create:   resourceIBMCISDnsRecordCreate,
+		Read:     resourceIBMCISDnsRecordRead,
+		Update:   resourceIBMCISDnsRecordUpdate,
+		Delete:   resourceIBMCISDnsRecordDelete,
+		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"cis_id": {
@@ -31,8 +31,7 @@ func resourceIBMCISDnsRecord() *schema.Resource {
 			},
 			"name": {
 				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
+				Required: true,
 				StateFunc: func(i interface{}) string {
 					return strings.ToLower(i.(string))
 				},
@@ -265,7 +264,10 @@ func resourceIBMCISDnsRecord() *schema.Resource {
 func resourceIBMCISDnsRecordCreate(d *schema.ResourceData, meta interface{}) error {
 	cisClient, err := meta.(ClientSession).CisAPI()
 	cisId := d.Get("cis_id").(string)
-	zoneId := d.Get("domain_id").(string)
+	zoneId, _, err := convertTftoCisTwoVar(d.Get("domain_id").(string))
+	if err != nil {
+		return err
+	}
 
 	newRecord := v1.DnsBody{
 		DnsType: d.Get("type").(string),
@@ -278,13 +280,12 @@ func resourceIBMCISDnsRecordCreate(d *schema.ResourceData, meta interface{}) err
 	}
 
 	data, dataOk := d.GetOk("data")
-	log.Printf("[DEBUG] Data found in config: %#v", data)
 
 	newDataMap := make(map[string]interface{})
 
 	if dataOk {
 		for id, content := range data.(map[string]interface{}) {
-			newData, err := transformToIBMCISDNSDNSData(newRecord.DnsType, id, content)
+			newData, err := transformToIBMCISDnsData(newRecord.DnsType, id, content)
 			if err != nil {
 				return err
 			} else if newData == nil {
@@ -306,12 +307,9 @@ func resourceIBMCISDnsRecordCreate(d *schema.ResourceData, meta interface{}) err
 		newRecord.Priority = priority.(int)
 	}
 
-	// Validate content based on type
 	if err := validateRecordName(newRecord.DnsType, newRecord.Content); err != nil {
 		return fmt.Errorf("Error validating record name %q: %s", newRecord.Name, err)
 	}
-
-	log.Printf("[DEBUG] IBMCISDNS Record create configuration: %#v", newRecord)
 
 	var recordPtr *v1.DnsRecord
 	recordPtr, err = cisClient.Dns().CreateDns(cisId, zoneId, newRecord)
@@ -322,26 +320,29 @@ func resourceIBMCISDnsRecordCreate(d *schema.ResourceData, meta interface{}) err
 	// In the Event that the API returns an empty DNS Record, we verify that the
 	// ID returned is not the default ""
 
-	r := *recordPtr
+	record := *recordPtr
 
-	if r.Id == "" {
+	if record.Id == "" {
 		return fmt.Errorf("Failed to find record in Create response; Record was empty")
 	}
 
-	d.SetId(r.Id)
-
-	log.Printf("[INFO] IBMCISDNS Record Id: %s", d.Id())
+	d.SetId(convertCisToTfThreeVar(record.Id, zoneId, cisId))
 
 	return resourceIBMCISDnsRecordRead(d, meta)
 }
 
 func resourceIBMCISDnsRecordRead(d *schema.ResourceData, meta interface{}) error {
 	cisClient, err := meta.(ClientSession).CisAPI()
-	zoneId := d.Get("domain_id").(string)
-	cisId := d.Get("cis_id").(string)
+	if err != nil {
+		return err
+	}
+	recordId, zoneId, cisId, _ := convertTfToCisThreeVar(d.Id())
+	if err != nil {
+		return err
+	}
 
 	var recordPtr *v1.DnsRecord
-	recordPtr, err = cisClient.Dns().GetDns(cisId, zoneId, d.Id())
+	recordPtr, err = cisClient.Dns().GetDns(cisId, zoneId, recordId)
 	if err != nil {
 		if strings.Contains(err.Error(), "Invalid dns record identifier") ||
 			strings.Contains(err.Error(), "HTTP status 404") {
@@ -353,7 +354,8 @@ func resourceIBMCISDnsRecordRead(d *schema.ResourceData, meta interface{}) error
 	}
 
 	record := *recordPtr
-	//d.SetId(record.Id)
+	d.Set("cis_id", cisId)
+	d.Set("domain_id", convertCisToTfTwoVar(zoneId, cisId))
 	d.Set("name", record.Name)
 	d.Set("type", record.DnsType)
 	d.Set("content", record.Content)
@@ -372,92 +374,18 @@ func resourceIBMCISDnsRecordUpdate(d *schema.ResourceData, meta interface{}) err
 	return resourceIBMCISDnsRecordRead(d, meta)
 }
 
-// func resourceIBMCISDnsRecordUpdate(d *schema.ResourceData, meta interface{}) error {
-// 	cisClient, err := meta.(ClientSession).CisAPI()
-// 	zoneId := d.Get("domain_id").(string)
-// 	cisId := d.Get("cis_id").(string)
-
-// 	updateRecord := v1.DnsRecord{
-// 		Id:       d.Id(),
-// 		DnsType:  d.Get("type").(string),
-// 		Name:     d.Get("name").(string),
-// 		Content:  d.Get("content").(string),
-// 		ZoneName: d.Get("domain").(string),
-// 		ZoneId:   zoneId,
-// 		Proxied:  false,
-// 	}
-
-// 	data, dataOk := d.GetOk("data")
-// 	log.Printf("[DEBUG] Data found in config: %#v", data)
-
-// 	newDataMap := make(map[string]interface{})
-
-// 	if dataOk {
-// 		for id, content := range data.(map[string]interface{}) {
-// 			newData, err := transformToIBMCISDNSDNSData(updateRecord.DnsType, id, content)
-// 			if err != nil {
-// 				return err
-// 			} else if newData == nil {
-// 				continue
-// 			}
-// 			newDataMap[id] = newData
-// 		}
-
-// 		updateRecord.Data = newDataMap
-// 	}
-
-// 	if priority, ok := d.GetOk("priority"); ok {
-// 		updateRecord.Priority = priority.(int)
-// 	}
-
-// 	if proxied, ok := d.GetOk("proxied"); ok {
-// 		updateRecord.Proxied = proxied.(bool)
-// 	}
-
-// 	if ttl, ok := d.GetOk("ttl"); ok {
-// 		if ttl.(int) != 1 && updateRecord.Proxied {
-// 			return fmt.Errorf("error validating record %s: ttl must be set to 1 when `proxied` is true", updateRecord.Name)
-// 		}
-
-// 		updateRecord.Ttl = ttl.(int)
-// 	}
-
-// 	log.Printf("[DEBUG] IBMCISDNS Record update configuration: %#v", updateRecord)
-// 	err = cisClient.Dns().UpdateDns(cisId, zoneId, d.Id(), updateRecord)
-// 	if err != nil {
-// 		return fmt.Errorf("Failed to update IBMCISDNS Record: %s", err)
-// 	}
-
-// 	return resourceIBMCISDnsRecordRead(d, meta)
-// }
-
 func resourceIBMCISDnsRecordDelete(d *schema.ResourceData, meta interface{}) error {
 	cisClient, err := meta.(ClientSession).CisAPI()
-	zoneId := d.Get("domain_id").(string)
-	cisId := d.Get("cis_id").(string)
-
-	log.Printf("[INFO] Deleting IBMCISDNS Record: %s, %s", zoneId, d.Id())
-
-	err = cisClient.Dns().DeleteDns(cisId, zoneId, d.Id())
+	if err != nil {
+		return err
+	}
+	recordId, zoneId, cisId, _ := convertTfToCisThreeVar(d.Id())
+	err = cisClient.Dns().DeleteDns(cisId, zoneId, recordId)
 	if err != nil {
 		return fmt.Errorf("Error deleting IBMCISDNS Record: %s", err)
 	}
 
 	return nil
-}
-
-func expandStringMap(inVal interface{}) map[string]string {
-	// although interface could hold anything
-	// we assume that it is either nil or a map of interface values
-	outVal := make(map[string]string)
-	if inVal == nil {
-		return outVal
-	}
-	for k, v := range inVal.(map[string]interface{}) {
-		strValue := fmt.Sprintf("%v", v)
-		outVal[k] = strValue
-	}
-	return outVal
 }
 
 var dnsTypeIntFields = []string{
@@ -487,28 +415,6 @@ var dnsTypeFloatFields = []string{
 	"precision_vert",
 	"long_seconds",
 	"lat_seconds",
-}
-
-func transformToIBMCISDNSDNSData(recordType string, id string, value interface{}) (newValue interface{}, err error) {
-	switch {
-	case id == "flags":
-		switch {
-		case strings.ToUpper(recordType) == "SRV",
-			strings.ToUpper(recordType) == "CAA",
-			strings.ToUpper(recordType) == "DNSKEY":
-			newValue, err = strconv.Atoi(value.(string))
-		case strings.ToUpper(recordType) == "NAPTR":
-			newValue, err = value.(string), nil
-		}
-	case stringInSlice(id, dnsTypeIntFields):
-		newValue, err = strconv.Atoi(value.(string))
-	case stringInSlice(id, dnsTypeFloatFields):
-		newValue, err = strconv.ParseFloat(value.(string), 32)
-	default:
-		newValue, err = value.(string), nil
-	}
-
-	return
 }
 
 func suppressPriority(k, old, new string, d *schema.ResourceData) bool {

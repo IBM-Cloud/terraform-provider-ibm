@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccCisHealthcheck_Basic(t *testing.T) {
-	t.Parallel()
+func TestAccIBMCisHealthcheck_Basic(t *testing.T) {
+	//t.Parallel()
 	var monitor v1.Monitor
 	name := "ibm_cis_healthcheck.test"
 
@@ -33,8 +33,32 @@ func TestAccCisHealthcheck_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCisHealthcheck_FullySpecified(t *testing.T) {
-	t.Parallel()
+func TestAccIBMCisHealthcheck_import(t *testing.T) {
+	name := "ibm_cis_healthcheck.test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckCisHealthcheckConfigBasic("test", cis_domain),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(name, "expected_body", "alive"),
+				),
+			},
+			resource.TestStep{
+				ResourceName:      name,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"wait_time_minutes"},
+			},
+		},
+	})
+}
+
+func TestAccIBMCisHealthcheck_FullySpecified(t *testing.T) {
+	//t.Parallel()
 	var monitor v1.Monitor
 	name := "ibm_cis_healthcheck.test"
 
@@ -68,7 +92,8 @@ func testAccCheckCisHealthcheckExists(n string, load *v1.Monitor) resource.TestC
 		}
 
 		cisClient, err := testAccProvider.Meta().(ClientSession).CisAPI()
-		foundHealthcheck, err := cisClient.Monitors().GetMonitor(rs.Primary.Attributes["cis_id"], rs.Primary.ID)
+		healthcheckId, _, _ := convertTftoCisTwoVar(rs.Primary.ID)
+		foundHealthcheck, err := cisClient.Monitors().GetMonitor(rs.Primary.Attributes["cis_id"], healthcheckId)
 		if err != nil {
 			return err
 		}

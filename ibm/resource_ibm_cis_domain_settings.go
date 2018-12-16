@@ -68,10 +68,11 @@ func resourceIBMCISSettings() *schema.Resource {
 			},
 		},
 
-		Create: resourceCISSettingsUpdate,
-		Read:   resourceCISSettingsRead,
-		Update: resourceCISSettingsUpdate,
-		Delete: resourceCISSettingsDelete,
+		Create:   resourceCISSettingsUpdate,
+		Read:     resourceCISSettingsRead,
+		Update:   resourceCISSettingsUpdate,
+		Delete:   resourceCISSettingsDelete,
+		Importer: &schema.ResourceImporter{},
 	}
 }
 
@@ -84,8 +85,7 @@ func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	cisId := d.Get("cis_id").(string)
-	zoneId := d.Get("domain_id").(string)
+	zoneId, cisId, _ := convertTftoCisTwoVar(d.Get("domain_id").(string))
 
 	type Setting struct {
 		Name  string
@@ -105,7 +105,7 @@ func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	d.SetId(zoneId)
+	d.SetId(convertCisToTfTwoVar(zoneId, cisId))
 
 	return resourceCISSettingsRead(d, meta)
 }
@@ -116,10 +116,7 @@ func resourceCISSettingsRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	var settingsId string
-
-	settingsId = d.Id()
-	cisId := d.Get("cis_id").(string)
+	settingsId, cisId, _ := convertTftoCisTwoVar(d.Id())
 	log.Printf("resourceCISSettingsRead - Getting Settings \n")
 
 	for _, item := range settingsList {

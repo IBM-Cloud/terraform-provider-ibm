@@ -1,10 +1,11 @@
 package ibm
 
 import (
-	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
-	"github.com/hashicorp/terraform/helper/schema"
 	"log"
 	"reflect"
+
+	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 func resourceIBMCISPool() *schema.Resource {
@@ -66,6 +67,10 @@ func resourceIBMCISPool() *schema.Resource {
 							Type:     schema.TypeBool,
 							Required: true,
 						},
+						"weight": {
+							Type:     schema.TypeInt,
+							Optional: true,
+						},
 					},
 				},
 			},
@@ -83,10 +88,11 @@ func resourceIBMCISPool() *schema.Resource {
 			},
 		},
 
-		Create: resourceCISpoolCreate,
-		Read:   resourceCISpoolRead,
-		Update: resourceCISpoolUpdate,
-		Delete: resourceCISpoolDelete,
+		Create:   resourceCISpoolCreate,
+		Read:     resourceCISpoolRead,
+		Update:   resourceCISpoolUpdate,
+		Delete:   resourceCISpoolDelete,
+		Importer: &schema.ResourceImporter{},
 	}
 }
 
@@ -111,13 +117,13 @@ func resourceCISpoolCreate(d *schema.ResourceData, meta interface{}) error {
 		poolNew.NotEmail = notEmail.(string)
 	}
 	if monitor, ok := d.GetOk("monitor"); ok {
-		poolNew.Monitor = monitor.(string)
+		monitorId, _, _ := convertTftoCisTwoVar(monitor.(string))
+		poolNew.Monitor = monitorId
 	}
 	if enabled, ok := d.GetOk("enabled"); ok {
 		poolNew.Enabled = enabled.(bool)
 	}
 	if minOrigins, ok := d.GetOk("minimum_origins"); ok {
-		log.Printf("Was min origins set?: >>>>>%v<<<<<\n", minOrigins)
 		poolNew.MinOrigins = minOrigins.(int)
 	}
 	if description, ok := d.GetOk("description"); ok {
@@ -135,7 +141,8 @@ func resourceCISpoolCreate(d *schema.ResourceData, meta interface{}) error {
 
 	poolObj = *pool
 
-	d.SetId(poolObj.Id)
+	//Set unique TF Id from concatenated CIS Ids
+	d.SetId(convertCisToTfTwoVar(poolObj.Id, cisId))
 	d.Set("name", poolObj.Name)
 
 	return resourceCISpoolRead(d, meta)
@@ -146,12 +153,10 @@ func resourceCISpoolRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-
-	var poolId string
-
-	poolId = d.Id()
-	cisId := d.Get("cis_id").(string)
-
+	poolId, cisId, err := convertTftoCisTwoVar(d.Id())
+	if err != nil {
+		return err
+	}
 	log.Printf("resourceCISpoolRead - Getting Pool %v\n", poolId)
 	var pool *v1.Pool
 
@@ -159,20 +164,19 @@ func resourceCISpoolRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		log.Printf("resourceCIpoolRead - ListPools Failed %s\n", err)
 		return err
-	} else {
-		log.Printf("resourceCISpoolRead - Retrieved Pool %v\n", pool)
-
-		poolObj := *pool
-		d.Set("name", poolObj.Name)
-		d.Set("check_regions", poolObj.CheckRegions)
-		d.Set("origins", poolObj.Origins)
-		d.Set("description", poolObj.Description)
-		d.Set("enabled", poolObj.Enabled)
-		d.Set("minimum_origins", poolObj.MinOrigins)
-		d.Set("monitor", poolObj.Monitor)
-		d.Set("notification_email", poolObj.NotEmail)
-
 	}
+
+	poolObj := *pool
+	d.Set("cis_id", cisId)
+	d.Set("name", poolObj.Name)
+	d.Set("check_regions", poolObj.CheckRegions)
+	d.Set("origins", flattenOrigins(poolObj.Origins))
+	d.Set("description", poolObj.Description)
+	d.Set("enabled", poolObj.Enabled)
+	d.Set("minimum_origins", poolObj.MinOrigins)
+	d.Set("monitor", convertCisToTfTwoVar(poolObj.Monitor, cisId))
+	d.Set("notification_email", poolObj.NotEmail)
+
 	return nil
 }
 
@@ -185,8 +189,7 @@ func resourceCISpoolDelete(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	poolId := d.Id()
-	cisId := d.Get("cis_id").(string)
+	poolId, cisId, err := convertTftoCisTwoVar(d.Id())
 	var pool *v1.Pool
 	emptyPool := new(v1.Pool)
 

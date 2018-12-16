@@ -1,7 +1,6 @@
 package ibm
 
 import (
-	//"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"log"
 	"math/rand"
@@ -13,11 +12,6 @@ func dataSourceIBMCISIP() *schema.Resource {
 		Read: dataSourceIBMCISIPRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
-				Description: "A domain record's internal identifier",
-				Type:        schema.TypeInt,
-				Computed:    true,
-			},
 			"ipv4_cidrs": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,

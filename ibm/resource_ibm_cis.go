@@ -95,6 +95,7 @@ func resourceIBMCISInstance() *schema.Resource {
 	}
 }
 
+// Replace with func wrapper for resourceIBMResourceInstanceCreate specifying serviceName := "internet-svcs"
 func resourceIBMCISInstanceCreate(d *schema.ResourceData, meta interface{}) error {
 	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
 	if err != nil {

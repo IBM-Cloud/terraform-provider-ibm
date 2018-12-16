@@ -6,9 +6,9 @@ import (
 	"testing"
 )
 
-func TestAccCisSettings_Basic(t *testing.T) {
+func TestAccIBMCisSettings_Basic(t *testing.T) {
 	// multiple instances of this config would conflict but we only use it once
-	t.Parallel()
+	//t.Parallel()
 
 	name := "ibm_cis_domain_settings." + "test"
 

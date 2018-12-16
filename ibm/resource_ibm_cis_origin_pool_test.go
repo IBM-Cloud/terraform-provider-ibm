@@ -9,8 +9,8 @@ import (
 	"testing"
 )
 
-func TestAccCisPool_Basic(t *testing.T) {
-	t.Parallel()
+func TestAccIBMCisPool_Basic(t *testing.T) {
+	//t.Parallel()
 	var pool v1.Pool
 	rnd := acctest.RandString(10)
 	name := "ibm_cis_origin_pool." + rnd
@@ -33,8 +33,33 @@ func TestAccCisPool_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCisPool_FullySpecified(t *testing.T) {
-	t.Parallel()
+func TestAccIBMCisPool_import(t *testing.T) {
+	name := "ibm_cis_origin_pool.test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckCisPoolConfigBasic("test", cis_domain),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(name, "check_regions.#", "1"),
+					resource.TestCheckResourceAttr(name, "origins.#", "1"),
+				),
+			},
+			resource.TestStep{
+				ResourceName:      name,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"wait_time_minutes"},
+			},
+		},
+	})
+}
+
+func TestAccIBMCisPool_FullySpecified(t *testing.T) {
+	//t.Parallel()
 	var pool v1.Pool
 	rnd := acctest.RandString(10)
 	name := "ibm_cis_origin_pool." + rnd
@@ -52,6 +77,7 @@ func TestAccCisPool_FullySpecified(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "check_regions.#", "1"),
 					resource.TestCheckResourceAttr(name, "minimum_origins", "2"),
 					resource.TestCheckResourceAttr(name, "notification_email", "admin@outlook.com"),
+					resource.TestCheckResourceAttr(name, "origins.#", "2"),
 				),
 			},
 		},
@@ -92,7 +118,9 @@ func testAccCheckCisPoolExists(n string, pool *v1.Pool, cis_domain string) resou
 		if err != nil {
 			return err
 		}
-		foundPool, err := cisClient.Pools().GetPool(rs.Primary.Attributes["cis_id"], rs.Primary.ID)
+
+		poolId, _, _ := convertTftoCisTwoVar(rs.Primary.ID)
+		foundPool, err := cisClient.Pools().GetPool(rs.Primary.Attributes["cis_id"], poolId)
 		if err != nil {
 			return err
 		}
@@ -104,7 +132,7 @@ func testAccCheckCisPoolExists(n string, pool *v1.Pool, cis_domain string) resou
 }
 
 func testAccCheckCisPoolConfigBasic(resourceId string, cis_domain string) string {
-	return testAccCheckIBMCISInstance_basic(cis_domain) + fmt.Sprintf(`
+	return testAccCheckIBMCisInstance_basic(cis_domain) + fmt.Sprintf(`
 resource "ibm_cis_origin_pool" "%[1]s" {
   cis_id = "${ibm_cis.instance.id}"
   name = "my-tf-pool-basic-%[1]s"
@@ -114,6 +142,7 @@ resource "ibm_cis_origin_pool" "%[1]s" {
     name = "example-1"
     address = "www.google.com"
     enabled = true
+    weight = 1
   }
 }
 `, resourceId)

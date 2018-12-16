@@ -44,6 +44,7 @@ func resourceIBMCISDomain() *schema.Resource {
 		Update: resourceCISdomainUpdate,
 		Delete: resourceCISdomainDelete,
 		// No Exists due to errors in CIS API returning incorrect return codes not found (403)
+		Importer: &schema.ResourceImporter{},
 	}
 }
 
@@ -66,8 +67,7 @@ func resourceCISdomainCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	zoneObj = *zone
-	d.SetId(zoneObj.Id)
-	d.Set("name", zoneObj.Name)
+	d.SetId(convertCisToTfTwoVar(zoneObj.Id, cisId))
 	return resourceCISdomainRead(d, meta)
 }
 
@@ -77,13 +77,12 @@ func resourceCISdomainRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	var zoneId string
+	zoneId, cisId, _ := convertTftoCisTwoVar(d.Id())
+	if err != nil {
+		return err
+	}
 
-	zoneId = d.Id()
-	cisId := d.Get("cis_id").(string)
-	zoneId = d.Id()
-
-	log.Printf("resourceCISdomainRead - Getting Zone %v\n", zoneId)
+	log.Printf("resourceCISdomainRead - Getting Zone %v with cis_id %s\n", zoneId, cisId)
 	var zone *v1.Zone
 
 	zone, err = cisClient.Zones().GetZone(cisId, zoneId)
@@ -92,7 +91,9 @@ func resourceCISdomainRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	zoneObj := *zone
+	d.Set("cis_id", cisId)
 	d.Set("name", zoneObj.Name)
+	d.Set("domain", zoneObj.Name)
 	d.Set("status", zoneObj.Status)
 	d.Set("paused", zoneObj.Paused)
 	d.Set("name_servers", zoneObj.NameServers)
@@ -110,8 +111,7 @@ func resourceCISdomainDelete(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	zoneId := d.Id()
-	cisId := d.Get("cis_id").(string)
+	zoneId, cisId, _ := convertTftoCisTwoVar(d.Id())
 	var zone *v1.Zone
 	emptyZone := new(v1.Zone)
 

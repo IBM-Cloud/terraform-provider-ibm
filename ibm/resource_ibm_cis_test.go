@@ -13,19 +13,19 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccIBMCISInstance_Basic(t *testing.T) {
+func TestAccIBMCisInstance_Basic(t *testing.T) {
 	var conf models.ServiceInstance
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckIBMCISInstanceDestroy,
+		CheckDestroy: testAccCheckIBMCisInstanceDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCISInstance_basic(serviceName),
+				Config: testAccCheckIBMCisInstance_basic(serviceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMCISInstanceExists("ibm_cis.instance", conf),
+					testAccCheckIBMCisInstanceExists("ibm_cis.instance", conf),
 					resource.TestCheckResourceAttr("ibm_cis.instance", "name", serviceName),
 					resource.TestCheckResourceAttr("ibm_cis.instance", "service", "internet-svcs"),
 					resource.TestCheckResourceAttr("ibm_cis.instance", "plan", "standard"),
@@ -36,7 +36,7 @@ func TestAccIBMCISInstance_Basic(t *testing.T) {
 	})
 }
 
-func TestAccIBMCISInstance_import(t *testing.T) {
+func TestAccIBMCisInstance_import(t *testing.T) {
 	var conf models.ServiceInstance
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
 	resourceName := "ibm_cis.instance"
@@ -44,12 +44,12 @@ func TestAccIBMCISInstance_import(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckIBMCISInstanceDestroy,
+		CheckDestroy: testAccCheckIBMCisInstanceDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCISInstance_basic(serviceName),
+				Config: testAccCheckIBMCisInstance_basic(serviceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMCISInstanceExists(resourceName, conf),
+					testAccCheckIBMCisInstanceExists(resourceName, conf),
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
 					resource.TestCheckResourceAttr(resourceName, "service", "internet-svcs"),
 					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
@@ -67,7 +67,7 @@ func TestAccIBMCISInstance_import(t *testing.T) {
 	})
 }
 
-func TestAccIBMCISInstance_with_resource_group(t *testing.T) {
+func TestAccIBMCisInstance_with_resource_group(t *testing.T) {
 	var conf models.ServiceInstance
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
 	resourceName := "ibm_cis.instance"
@@ -75,12 +75,12 @@ func TestAccIBMCISInstance_with_resource_group(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckIBMCISInstanceDestroy,
+		CheckDestroy: testAccCheckIBMCisInstanceDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCISInstance_with_resource_group(serviceName),
+				Config: testAccCheckIBMCisInstance_with_resource_group(serviceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMCISInstanceExists(resourceName, conf),
+					testAccCheckIBMCisInstanceExists(resourceName, conf),
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
 					resource.TestCheckResourceAttr(resourceName, "service", "internet-svcs"),
 					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
@@ -91,7 +91,7 @@ func TestAccIBMCISInstance_with_resource_group(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCISInstanceDestroy(s *terraform.State) error {
+func testAccCheckIBMCisInstanceDestroy(s *terraform.State) error {
 	rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceControllerAPI()
 	if err != nil {
 		return err
@@ -112,7 +112,7 @@ func testAccCheckIBMCISInstanceDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMCISInstanceExists(n string, obj models.ServiceInstance) resource.TestCheckFunc {
+func testAccCheckIBMCisInstanceExists(n string, obj models.ServiceInstance) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -137,7 +137,7 @@ func testAccCheckIBMCISInstanceExists(n string, obj models.ServiceInstance) reso
 	}
 }
 
-func testAccCheckIBMCISInstance_basic(serviceName string) string {
+func testAccCheckIBMCisInstance_basic(serviceName string) string {
 	return fmt.Sprintf(`
 		
 		resource "ibm_cis" "instance" {
@@ -154,7 +154,7 @@ func testAccCheckIBMCISInstance_basic(serviceName string) string {
 	`, serviceName)
 }
 
-func testAccCheckIBMCISInstance_with_resource_group(serviceName string) string {
+func testAccCheckIBMCisInstance_with_resource_group(serviceName string) string {
 	return fmt.Sprintf(`
 
 		data "ibm_resource_group" "group" {

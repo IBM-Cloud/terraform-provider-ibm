@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccCisGlb_Basic(t *testing.T) {
+func TestAccIBMCisGlb_Basic(t *testing.T) {
 	// multiple instances of this config would conflict but we only use it once
-	t.Parallel()
+	//t.Parallel()
 	var glb v1.Glb
 
 	name := "ibm_cis_global_load_balancer." + "test"
@@ -42,7 +42,31 @@ func TestAccCisGlb_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCisGlb_SessionAffinity(t *testing.T) {
+func TestAccIBMCisGlb_import(t *testing.T) {
+	name := "ibm_cis_global_load_balancer.test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckCisGlbConfigBasic("test", cis_domain),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(name, "proxied", "false"), // default value
+				),
+			},
+			resource.TestStep{
+				ResourceName:      name,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"wait_time_minutes"},
+			},
+		},
+	})
+}
+
+func TestAccIBMCisGlb_SessionAffinity(t *testing.T) {
 	t.Parallel()
 	var glb v1.Glb
 	name := "ibm_cis_global_load_balancer." + "test"
@@ -75,8 +99,9 @@ func testAccCheckCisGlbExists(n string, glb *v1.Glb) resource.TestCheckFunc {
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No Load Balancer ID is set")
 		}
+		glbId, zoneId, _, _ := convertTfToCisThreeVar(rs.Primary.ID)
 		cisClient, err := testAccProvider.Meta().(ClientSession).CisAPI()
-		foundGlb, err := cisClient.Glbs().GetGlb(rs.Primary.Attributes["cis_id"], rs.Primary.Attributes["domain_id"], rs.Primary.ID)
+		foundGlb, err := cisClient.Glbs().GetGlb(rs.Primary.Attributes["cis_id"], zoneId, glbId)
 		if err != nil {
 			return err
 		}

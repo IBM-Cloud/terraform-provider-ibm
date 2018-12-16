@@ -9,23 +9,23 @@ import (
 	"testing"
 )
 
-func TestAccIBMCISIPDataSource_Basic(t *testing.T) {
+func TestAccIBMCisIPDataSource_Basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: fmt.Sprintf(testAccCheckIBMCISIPDataSourceConfig_basic),
+				Config: fmt.Sprintf(testAccCheckIBMCisIPDataSourceConfig_basic),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCISIPAddrs("data.ibm_cis_ip_addresses.wcpclouduk"),
+					testAccIBMCisIPAddrs("data.ibm_cis_ip_addresses.wcpclouduk"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCISIPAddrs(n string) resource.TestCheckFunc {
+func testAccIBMCisIPAddrs(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		r := s.RootModule().Resources[n]
 		a := r.Primary.Attributes
@@ -44,7 +44,7 @@ func testAccCISIPAddrs(n string) resource.TestCheckFunc {
 	}
 }
 
-const testAccCheckIBMCISIPDataSourceConfig_basic = `
+const testAccCheckIBMCisIPDataSourceConfig_basic = `
 data "ibm_cis_ip_addresses" "wcpclouduk" {
 }
 `

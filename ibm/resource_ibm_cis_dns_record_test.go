@@ -2,7 +2,6 @@ package ibm
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
@@ -10,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccIBMCISDNSRecord_Basic(t *testing.T) {
-	t.Parallel()
+func TestAccIBMCisDNSRecord_Basic(t *testing.T) {
+	//t.Parallel()
 	var record v1.DnsRecord
 	testName := "tf-acctest-basic"
 	resourceName := fmt.Sprintf("ibm_cis_dns_record.%s", testName)
@@ -24,25 +23,50 @@ func TestAccIBMCISDNSRecord_Basic(t *testing.T) {
 		// and test execution aborted prior to this test.
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMCISDNSRecordConfigBasic(testName, cis_domain),
+				Config: testAccCheckIBMCisDNSRecordConfigBasic(testName, cis_domain),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMCISDNSRecordExists(resourceName, &record),
+					testAccCheckIBMCisDNSRecordExists(resourceName, &record),
 					resource.TestCheckResourceAttr(
 						resourceName, "name", testName+"."+cis_domain),
 					resource.TestCheckResourceAttr(
 						resourceName, "content", "192.168.0.10"),
 					resource.TestCheckResourceAttr(
 						resourceName, "data.%", "0"),
-					resource.TestMatchResourceAttr(
-						resourceName, "domain_id", regexp.MustCompile("^[a-z0-9]{32}$")),
 				),
 			},
 		},
 	})
 }
 
-func TestAccIBMCISDNSRecord_CaseInsensitive(t *testing.T) {
-	t.Parallel()
+func TestAccIBMCisDNSRecord_import(t *testing.T) {
+	name := "ibm_cis_dns_record.test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMCisDNSRecordConfigBasic("test", cis_domain),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(name, "proxied", "false"), // default value
+					resource.TestCheckResourceAttr(name, "name", "test."+cis_domain),
+					resource.TestCheckResourceAttr(name, "content", "192.168.0.10"),
+					resource.TestCheckResourceAttr(name, "data.%", "0"),
+				),
+			},
+			resource.TestStep{
+				ResourceName:      name,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"wait_time_minutes"},
+			},
+		},
+	})
+}
+
+func TestAccIBMCisDNSRecord_CaseInsensitive(t *testing.T) {
+	//t.Parallel()
 	var record v1.DnsRecord
 	testName := "tf-acctest-case-insensitive"
 	resourceName := fmt.Sprintf("ibm_cis_dns_record.%s", "test")
@@ -52,18 +76,18 @@ func TestAccIBMCISDNSRecord_CaseInsensitive(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMCISDNSRecordConfigCaseSensitive(testName, cis_domain),
+				Config: testAccCheckIBMCisDNSRecordConfigCaseSensitive(testName, cis_domain),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMCISDNSRecordExists(resourceName, &record),
+					testAccCheckIBMCisDNSRecordExists(resourceName, &record),
 					resource.TestCheckResourceAttr(
 						resourceName, "name", testName+"."+cis_domain),
 				),
 			},
 			{
-				Config:   testAccCheckIBMCISDNSRecordConfigCaseSensitive("tf-acctest-CASE-INSENSITIVE", cis_domain),
+				Config:   testAccCheckIBMCisDNSRecordConfigCaseSensitive("tf-acctest-CASE-INSENSITIVE", cis_domain),
 				PlanOnly: true,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMCISDNSRecordExists(resourceName, &record),
+					testAccCheckIBMCisDNSRecordExists(resourceName, &record),
 					resource.TestCheckResourceAttr(
 						resourceName, "name", "tf-acctest-case-insensitive"+"."+cis_domain),
 				),
@@ -72,8 +96,8 @@ func TestAccIBMCISDNSRecord_CaseInsensitive(t *testing.T) {
 	})
 }
 
-func TestAccIBMCISDNSRecord_Apex(t *testing.T) {
-	t.Parallel()
+func TestAccIBMCisDNSRecord_Apex(t *testing.T) {
+	//t.Parallel()
 	var record v1.DnsRecord
 	testName := "test"
 	resourceName := fmt.Sprintf("ibm_cis_dns_record.%s", testName)
@@ -82,12 +106,12 @@ func TestAccIBMCISDNSRecord_Apex(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		// Remove check destroy as this occurs after the CIS instance is deleted and fails with an auth error
-		//CheckDestroy: testAccCheckIBMCISDNSRecordDestroy,
+		//CheckDestroy: testAccCheckIBMCisDNSRecordDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMCISDNSRecordConfigApex(testName, cis_domain),
+				Config: testAccCheckIBMCisDNSRecordConfigApex(testName, cis_domain),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMCISDNSRecordExists(resourceName, &record),
+					testAccCheckIBMCisDNSRecordExists(resourceName, &record),
 					resource.TestCheckResourceAttr(
 						// @ is replaced by domain name by CIS
 						resourceName, "name", cis_domain),
@@ -99,7 +123,7 @@ func TestAccIBMCISDNSRecord_Apex(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCISDNSRecordDestroy(s *terraform.State) error {
+func testAccCheckIBMCisDNSRecordDestroy(s *terraform.State) error {
 	cisClient, _ := testAccProvider.Meta().(ClientSession).CisAPI()
 
 	for _, rs := range s.RootModule().Resources {
@@ -116,7 +140,7 @@ func testAccCheckIBMCISDNSRecordDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMCISDNSRecordExists(n string, record *v1.DnsRecord) resource.TestCheckFunc {
+func testAccCheckIBMCisDNSRecordExists(n string, record *v1.DnsRecord) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -128,12 +152,13 @@ func testAccCheckIBMCISDNSRecordExists(n string, record *v1.DnsRecord) resource.
 		}
 
 		cisClient, err := testAccProvider.Meta().(ClientSession).CisAPI()
-		foundRecord, err := cisClient.Dns().GetDns(rs.Primary.Attributes["cis_id"], rs.Primary.Attributes["domain_id"], rs.Primary.ID)
+		recordId, zoneId, _, _ := convertTfToCisThreeVar(rs.Primary.ID)
+		foundRecord, err := cisClient.Dns().GetDns(rs.Primary.Attributes["cis_id"], zoneId, recordId)
 		if err != nil {
 			return err
 		}
 
-		if foundRecord.Id != rs.Primary.ID {
+		if foundRecord.Id != recordId {
 			return fmt.Errorf("Record not found")
 		}
 
@@ -143,7 +168,7 @@ func testAccCheckIBMCISDNSRecordExists(n string, record *v1.DnsRecord) resource.
 	}
 }
 
-func testAccCheckIBMCISDNSRecordConfigBasic(resourceId string, cis_domain string) string {
+func testAccCheckIBMCisDNSRecordConfigBasic(resourceId string, cis_domain string) string {
 	return testAccIBMCisDomainConfig_basic(resourceId, cis_domain) + fmt.Sprintf(`
 resource "ibm_cis_dns_record" "%[1]s" {
     cis_id = "${ibm_cis.instance.id}"
@@ -155,7 +180,7 @@ resource "ibm_cis_dns_record" "%[1]s" {
 }`, resourceId)
 }
 
-func testAccCheckIBMCISDNSRecordConfigCaseSensitive(resourceId string, cis_domain string) string {
+func testAccCheckIBMCisDNSRecordConfigCaseSensitive(resourceId string, cis_domain string) string {
 	return testAccIBMCisDomainConfig_basic("test", cis_domain) + fmt.Sprintf(`
 resource "ibm_cis_dns_record" "test" {
     cis_id = "${ibm_cis.instance.id}"
@@ -167,7 +192,7 @@ resource "ibm_cis_dns_record" "test" {
 }`, resourceId)
 }
 
-func testAccCheckIBMCISDNSRecordConfigApex(resourceId string, cis_domain string) string {
+func testAccCheckIBMCisDNSRecordConfigApex(resourceId string, cis_domain string) string {
 	return testAccIBMCisDomainConfig_basic(resourceId, cis_domain) + fmt.Sprintf(`
 resource "ibm_cis_dns_record" "%[1]s" {
     cis_id = "${ibm_cis.instance.id}"
@@ -178,7 +203,7 @@ resource "ibm_cis_dns_record" "%[1]s" {
 }`, resourceId)
 }
 
-func testAccCheckIBMCISDNSRecordConfigLOC(resourceId string, cis_domain string) string {
+func testAccCheckIBMCisDNSRecordConfigLOC(resourceId string, cis_domain string) string {
 	return testAccIBMCisDomainConfig_basic(resourceId, cis_domain) + fmt.Sprintf(`
 resource "ibm_cis_dns_record" "%[1]s" {
     cis_id = "${ibm_cis.instance.id}"
@@ -202,7 +227,7 @@ resource "ibm_cis_dns_record" "%[1]s" {
 }`, resourceId)
 }
 
-func testAccCheckIBMCISDNSRecordConfigSRV(resourceId string, cis_domain string) string {
+func testAccCheckIBMCisDNSRecordConfigSRV(resourceId string, cis_domain string) string {
 	return testAccIBMCisDomainConfig_basic(resourceId, cis_domain) + fmt.Sprintf(`
 resource "ibm_cis_dns_record" "foobar" {
     cis_id = "${ibm_cis.instance.id}"
@@ -220,7 +245,7 @@ resource "ibm_cis_dns_record" "foobar" {
 }`, resourceId)
 }
 
-func testAccCheckIBMCISDNSRecordConfigProxied(resourceId string, cis_domain string) string {
+func testAccCheckIBMCisDNSRecordConfigProxied(resourceId string, cis_domain string) string {
 	return testAccIBMCisDomainConfig_basic(resourceId, cis_domain) + fmt.Sprintf(`
 resource "ibm_cis_dns_record" "foobar" {
     cis_id = "${ibm_cis.instance.id}"

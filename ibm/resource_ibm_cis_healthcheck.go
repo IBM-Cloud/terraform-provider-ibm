@@ -1,11 +1,11 @@
 package ibm
 
 import (
-	//"fmt"
-	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
-	"github.com/hashicorp/terraform/helper/schema"
 	"log"
 	"reflect"
+
+	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 func resourceIBMCISHealthCheck() *schema.Resource {
@@ -113,10 +113,11 @@ func resourceIBMCISHealthCheck() *schema.Resource {
 
 		},
 
-		Create: resourceCIShealthCheckCreate,
-		Read:   resourceCIShealthCheckRead,
-		Update: resourceCIShealthCheckUpdate,
-		Delete: resourceCIShealthCheckDelete,
+		Create:   resourceCIShealthCheckCreate,
+		Read:     resourceCIShealthCheckRead,
+		Update:   resourceCIShealthCheckUpdate,
+		Delete:   resourceCIShealthCheckDelete,
+		Importer: &schema.ResourceImporter{},
 	}
 }
 
@@ -169,8 +170,8 @@ func resourceCIShealthCheckCreate(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 	monitorObj = *monitor
-
-	d.SetId(monitorObj.Id)
+	//Set unique TF Id from concatenated CIS Ids
+	d.SetId(monitorObj.Id + ":" + cisId)
 	d.Set("path", monitorObj.Path)
 
 	return resourceCIShealthCheckRead(d, meta)
@@ -182,11 +183,10 @@ func resourceCIShealthCheckRead(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 
-	var monitorId string
-
-	monitorId = d.Id()
-	cisId := d.Get("cis_id").(string)
-
+	monitorId, cisId, err := convertTftoCisTwoVar(d.Id())
+	if err != nil {
+		return err
+	}
 	log.Printf("resourceCIShealthCheckRead - Getting Monitor %v\n", monitorId)
 	var monitor *v1.Monitor
 
@@ -198,6 +198,7 @@ func resourceCIShealthCheckRead(d *schema.ResourceData, meta interface{}) error 
 		log.Printf("resourceCIShealthCheckRead - Retrieved Monitor %v\n", monitor)
 
 		monitorObj := *monitor
+		d.Set("cis_id", cisId)
 		d.Set("path", monitorObj.Path)
 		d.Set("expected_body", monitorObj.ExpBody)
 		d.Set("expected_codes", monitorObj.ExpCodes)
@@ -222,8 +223,10 @@ func resourceCIShealthCheckDelete(d *schema.ResourceData, meta interface{}) erro
 	if err != nil {
 		return err
 	}
-	monitorId := d.Id()
-	cisId := d.Get("cis_id").(string)
+	monitorId, cisId, err := convertTftoCisTwoVar(d.Id())
+	if err != nil {
+		return err
+	}
 	var monitor *v1.Monitor
 	emptyMonitor := new(v1.Monitor)
 
