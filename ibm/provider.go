@@ -180,6 +180,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_network_interface_sg_attachment":       resourceIBMNetworkInterfaceSGAttachment(),
 			"ibm_network_public_ip":                     resourceIBMNetworkPublicIp(),
 			"ibm_network_vlan":                          resourceIBMNetworkVlan(),
+			"ibm_network_vlan_spanning":                 resourceIBMNetworkVlanSpan(),
 			"ibm_object_storage_account":                resourceIBMObjectStorageAccount(),
 			"ibm_org":                                   resourceIBMOrg(),
 			"ibm_resource_group":                        resourceIBMResourceGroup(),
