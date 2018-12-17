@@ -593,3 +593,49 @@ func validateLBTimeout(v interface{}, k string) (ws []string, errors []error) {
 	}
 	return
 }
+
+// validateRecordType ensures that the dns record type is valid
+func validateRecordType(t string, proxied bool) error {
+	switch t {
+	case "A", "AAAA", "CNAME":
+		return nil
+	case "TXT", "SRV", "LOC", "MX", "NS", "SPF", "CAA", "CERT", "DNSKEY", "DS", "NAPTR", "SMIMEA", "SSHFP", "TLSA", "URI":
+		if !proxied {
+			return nil
+		}
+	default:
+		return fmt.Errorf(
+			`Invalid type %q. Valid types are "A", "AAAA", "CNAME", "TXT", "SRV", "LOC", "MX", "NS", "SPF", "CAA", "CERT", "DNSKEY", "DS", "NAPTR", "SMIMEA", "SSHFP", "TLSA" or "URI".`, t)
+	}
+
+	return fmt.Errorf("Type %q cannot be proxied", t)
+}
+
+// validateRecordName ensures that based on supplied record type, the name content matches
+// Currently only validates A and AAAA types
+func validateRecordName(t string, value string) error {
+	switch t {
+	case "A":
+		// Must be ipv4 addr
+		addr := net.ParseIP(value)
+		if addr == nil || !strings.Contains(value, ".") {
+			return fmt.Errorf("A record must be a valid IPv4 address, got: %q", value)
+		}
+	case "AAAA":
+		// Must be ipv6 addr
+		addr := net.ParseIP(value)
+		if addr == nil || !strings.Contains(value, ":") {
+			return fmt.Errorf("AAAA record must be a valid IPv6 address, got: %q", value)
+		}
+	case "TXT":
+		// Must be printable ASCII
+		for i := 0; i < len(value); i++ {
+			char := value[i]
+			if (char < 0x20) || (0x7F < char) {
+				return fmt.Errorf("TXT record must contain printable ASCII, found: %q", char)
+			}
+		}
+	}
+
+	return nil
+}

@@ -8,13 +8,9 @@ description: |-
 
 # ibm\_dns_domain_registration_nameservers
 
-This resource configures the (custom) name servers associated with a DNS domain registered with the IBM Cloud DNS Registration Service. This is used to delegate DNS domain management to another DNS provider typically for caching or DDoS protection. It is used with services including Akamai, CloudFlare or IBM Cloud Internet Services. DNS management for the domain is delegated by updating the IBM DNS registration record service with the name servers of the DNS service provider. 
+Configures the (custom) name servers associated with a DNS domain registration managed by the IBM Cloud DNS Registration Service. The default IBM Cloud name servers specified when the domain was initially registered are replaced with the values passed when this resource is created. 
 
-This resource updates the (custom) name servers specified in the record for the domain in the IBM DNS registration service, with the new name servers. The original name servers (ns1.softlayer.com and ns2.softlayer.com) are saved and restored when the resource is deleted. Creation of this resource directs DNS management for the domain to the new DNS provider and over-rides an DNS records created on IBM Cloud by the `dns_record` resource. 
-
-The only the name_server attribute of the domain record in the DNS Registration Service can be updated. No ability is provided to create of delete a domain registration to avoid accidental loss of the registration. The domain registration to be modified is identified using a read only dns_domain_registration data source. 
-
-The creation of an IBM Cloud Internet Services instance with a `ibm_cis_domain` resource will export two name servers of the form ns001.name.cloud.ibm.com. By intepolation these can be passed to this resource to configure the name servers at the IBM DNS registrar. 
+This resource is typically used in conjunction with IBM Cloud Internet Services to enable DNS services for the domain to be managed via IBM Cloud Internet Services. All futher configuration of the domain is then performed using the Cloud Internet Services resource instances. To transfer management control, the IBM Cloud DNS domain registration is updated with the Internet Services specific name servers. This step is required before the domain in Cloud Internet Services becomes active and will start serving web traffic. Using interpolation syntax, the computed name servers of the CIS resource are passed into this resource. 
 
 
 ## Example Usage
@@ -37,7 +33,7 @@ Or
 ```hcl
 resource "ibm_dns_domain_registration_nameservers" "dns-domain-test" {
     dns_registration_id = "${data.ibm_dns_domain_registration.dns-domain-test.id}"
-    name_servers = ["ns006.name.cloud.ibm.com", "ns017.name.ibm.cloud.com"] 
+    name_servers = ["ns006.name.ibm.cloud.com", "ns017.name.ibm.cloud.com"] 
 }
 data "ibm_dns_domain_registration" "dns-domain-test" {
     name = "test-domain.com"

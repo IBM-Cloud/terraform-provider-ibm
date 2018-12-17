@@ -2,8 +2,10 @@ package ibm
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/IBM-Cloud/bluemix-go/models"
@@ -11,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform/flatmap"
 
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
+	"github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
@@ -854,4 +857,129 @@ func flattenServiceIds(services []string, meta interface{}) ([]string, error) {
 		serviceids[i] = serviceID.IAMID
 	}
 	return serviceids, nil
+}
+
+func expandOrigins(originsList *schema.Set) (origins []cisv1.Origin) {
+	for _, iface := range originsList.List() {
+		orig := iface.(map[string]interface{})
+		origin := cisv1.Origin{
+			Name:    orig["name"].(string),
+			Address: orig["address"].(string),
+			Enabled: orig["enabled"].(bool),
+			Weight:  orig["weight"].(int),
+		}
+		origins = append(origins, origin)
+	}
+	return
+}
+
+func flattenOrigins(list []cisv1.Origin) []map[string]interface{} {
+	origins := make([]map[string]interface{}, len(list), len(list))
+	for i, origin := range list {
+		l := map[string]interface{}{
+			"name":    origin.Name,
+			"address": origin.Address,
+			"enabled": origin.Enabled,
+			"weight":  origin.Weight,
+		}
+		origins[i] = l
+	}
+	return origins
+}
+
+func expandStringMap(inVal interface{}) map[string]string {
+	outVal := make(map[string]string)
+	if inVal == nil {
+		return outVal
+	}
+	for k, v := range inVal.(map[string]interface{}) {
+		strValue := fmt.Sprintf("%v", v)
+		outVal[k] = strValue
+	}
+	return outVal
+}
+
+func convertTfToCisThreeVar(glbTfId string) (glbId string, zoneId string, cisId string, err error) {
+	g := strings.SplitN(glbTfId, ":", 3)
+	glbId = g[0]
+	if len(g) > 2 {
+		zoneId = g[1]
+		cisId = g[2]
+	} else {
+		err = errors.New("resourceCISGlbRead - cis_id or zone_id not passed")
+		return
+	}
+	return
+}
+
+func convertCisToTfThreeVar(Id string, Id2 string, cisId string) (buildId string) {
+	if Id != "" {
+		buildId = Id + ":" + Id2 + ":" + cisId
+	} else {
+		buildId = ""
+	}
+	return
+}
+
+func convertTfToCisTwoVarSlice(tfIds []string) (Ids []string, cisId string, err error) {
+	for _, item := range tfIds {
+		Id := strings.SplitN(item, ":", 2)
+		if len(Id) < 2 {
+			err = errors.New("cis_id not passed")
+			return
+		}
+		Ids = append(Ids, Id[0])
+		cisId = Id[1]
+	}
+	return
+}
+
+func convertCisToTfTwoVarSlice(Ids []string, cisId string) (buildIds []string) {
+	for _, Id := range Ids {
+		buildIds = append(buildIds, Id+":"+cisId)
+	}
+	return
+}
+
+func convertCisToTfTwoVar(Id string, cisId string) (buildId string) {
+	if Id != "" {
+		buildId = Id + ":" + cisId
+	} else {
+		buildId = ""
+	}
+	return
+}
+
+func convertTftoCisTwoVar(tfId string) (Id string, cisId string, err error) {
+	g := strings.SplitN(tfId, ":", 2)
+	if len(g) > 1 {
+		Id = g[0]
+		cisId = g[1]
+	} else {
+		err = errors.New(" cis_id or zone_id not passed")
+		return
+	}
+	return
+}
+
+func transformToIBMCISDnsData(recordType string, id string, value interface{}) (newValue interface{}, err error) {
+	switch {
+	case id == "flags":
+		switch {
+		case strings.ToUpper(recordType) == "SRV",
+			strings.ToUpper(recordType) == "CAA",
+			strings.ToUpper(recordType) == "DNSKEY":
+			newValue, err = strconv.Atoi(value.(string))
+		case strings.ToUpper(recordType) == "NAPTR":
+			newValue, err = value.(string), nil
+		}
+	case stringInSlice(id, dnsTypeIntFields):
+		newValue, err = strconv.Atoi(value.(string))
+	case stringInSlice(id, dnsTypeFloatFields):
+		newValue, err = strconv.ParseFloat(value.(string), 32)
+	default:
+		newValue, err = value.(string), nil
+	}
+
+	return
 }

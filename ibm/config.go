@@ -22,6 +22,7 @@ import (
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv2"
+	"github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
@@ -103,6 +104,7 @@ type ClientSession interface {
 	SoftLayerSession() *slsession.Session
 	BluemixSession() (*bxsession.Session, error)
 	ContainerAPI() (containerv1.ContainerServiceAPI, error)
+	CisAPI() (cisv1.CisServiceAPI, error)
 	IAMAPI() (iamv1.IAMServiceAPI, error)
 	IAMPAPAPI() (iampapv1.IAMPAPAPI, error)
 	IAMUUMAPI() (iamuumv1.IAMUUMServiceAPI, error)
@@ -124,6 +126,9 @@ type clientSession struct {
 
 	cfConfigErr  error
 	cfServiceAPI mccpv2.MccpServiceAPI
+
+	cisConfigErr  error
+	cisServiceAPI cisv1.CisServiceAPI
 
 	iamPAPConfigErr  error
 	iamPAPServiceAPI iampapv1.IAMPAPAPI
@@ -196,6 +201,11 @@ func (sess clientSession) ContainerAPI() (containerv1.ContainerServiceAPI, error
 	return sess.csServiceAPI, sess.csConfigErr
 }
 
+// CisAPI provides Cloud Internet Services APIs ...
+func (sess clientSession) CisAPI() (cisv1.CisServiceAPI, error) {
+	return sess.cisServiceAPI, sess.cisConfigErr
+}
+
 // BluemixSession to provide the Bluemix Session
 func (sess clientSession) BluemixSession() (*bxsession.Session, error) {
 	return sess.session.BluemixSession, sess.cfConfigErr
@@ -241,6 +251,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		log.Println("Skipping Bluemix Clients configuration")
 		session.csConfigErr = errEmptyBluemixCredentials
 		session.cfConfigErr = errEmptyBluemixCredentials
+		session.cisConfigErr = errEmptyBluemixCredentials
 		session.accountConfigErr = errEmptyBluemixCredentials
 		session.accountV1ConfigErr = errEmptyBluemixCredentials
 		session.iamConfigErr = errEmptyBluemixCredentials
@@ -287,6 +298,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.csConfigErr = fmt.Errorf("Error occured while configuring Container Service for K8s cluster: %q", err)
 	}
 	session.csServiceAPI = clusterAPI
+
+	cisAPI, err := cisv1.New(sess.BluemixSession)
+	if err != nil {
+		session.cisConfigErr = fmt.Errorf("Error occured while configuring Cloud Internet Services: %q", err)
+	}
+	session.cisServiceAPI = cisAPI
 
 	accv1API, err := accountv1.New(sess.BluemixSession)
 	if err != nil {

@@ -75,3 +75,5 @@ You will also need to export the following environment variables for running the
 * `BM_API_KEY`- The Bluemix API Key
 * `SL_API_KEY` - The SoftLayer API Key
 * `SL_USERNAME` - The SoftLayer username associated with the SoftLayer API Key.
+
+Additional environment variables may be required depending on the tests being run. Check console log for warning messages about required variables. 
