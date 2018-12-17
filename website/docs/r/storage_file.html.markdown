@@ -8,11 +8,11 @@ description: |-
 
 # ibm\_storage_file
 
-Provides a file storage resource. This allows NFS-based [Endurance](https://knowledgelayer.softlayer.com/topic/endurance-storage) and [Performance](https://knowledgelayer.softlayer.com/topic/performance-storage) file storage to be created, updated, and deleted.
+ibm_storage_file resource provides a file storage resource. This allows NFS-based Endurance and Performance [file storage](https://console.bluemix.net/docs/infrastructure/FileStorage/index.html) to be created, updated, and deleted.
 
 File storage is mounted using the NFS protocol. For example, a file storage resource with the `hostname` argument set to `nfsdal0501a.service.softlayer.com` and the `volumename` argument set to ` IBM01SV278685_7` has the mount point `nfsdal0501a.service.softlayer.com:\IBM01SV278685_7`.
 
-See [accessing file store on Linux](https://knowledgelayer.softlayer.com/procedure/accessing-file-storage-linux) for NFS configuration of Linux systems. For additional details, please refer to the [file storage docs](https://knowledgelayer.softlayer.com/topic/file-storage) and the [file storage overview](http://www.softlayer.com/file-storage).
+See [Mounting File Storage](https://console.bluemix.net/docs/infrastructure/FileStorage/accessing-file-storage-linux.html) for NFS configuration.
 
 ## Example Usage
 
@@ -33,7 +33,7 @@ resource "ibm_storage_file" "fs_endurance" {
   hourly_billing            = true
 
   # Optional fields for snapshot
-  snapshot = [
+  snapshot_schedule = [
     {
       schedule_type   = "WEEKLY"
       retention_count = 20
@@ -47,7 +47,7 @@ resource "ibm_storage_file" "fs_endurance" {
       retention_count = 20
       minute          = 2
       enable          = true
-    },
+    }
   ]
 }
 
@@ -76,7 +76,7 @@ The following arguments are supported:
 * `type` - (Required, string) The type of the storage. Accepted values are `Endurance` and `Performance`
 * `datacenter` - (Required, string) The data center where you want to provision the file storage instance.
 * `capacity` - (Required, integer) The amount of storage capacity you want to allocate, expressed in gigabytes.
-* `iops` - (Required, float) The IOPS value for the storage instance. You can find available values for Endurance storage in the [KnowledgeLayer docs](https://knowledgelayer.softlayer.com/learning/introduction-endurance-storage).
+* `iops` - (Required, float) The IOPS value for the storage instance. You can find available values for Endurance storage in the [IBM docs](https://console.bluemix.net/docs/infrastructure/FileStorage/index.html#provisioning-with-endurance-tiers).
 * `snapshot_capacity` - (Optional, integer) The amount of snapshot capacity you want to allocate, expressed in gigabytes.
 * `allowed_virtual_guest_ids` - (Optional, array of integers) The virtual guests that you want to give access to this instance. Virtual guests must be in the same data center as the block storage. You can also use this field to import the list of virtual guests that have access to this storage from the `block_storage_ids` argument in the `ibm_compute_vm_instance` resource.
 * `allowed_hardware_ids` - (Optional, array of integers) The bare metal servers that you want to give access to this instance. Bare metal servers must be in the same data center as the block storage. You can also use this field to import the list of bare metal servers that have access to this storage from the `block_storage_ids` argument in the `ibm_compute_bare_metal` resource.
@@ -95,7 +95,7 @@ The following arguments are supported:
 * `tags` - (Optional, array of strings) Tags associated with the file storage instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.  
 * `hourly_billing` - (Optional,Boolean) Set true to enable hourly billing. Default is false.  
-**NOTE**: `Hourly billing` is only available in updated datacenters with improved capabilities.Plesae refer the link to get the updated list of datacenter. http://knowledgelayer.softlayer.com/articles/new-ibm-block-and-file-storage-location-and-features
+**NOTE**: `Hourly billing` is only available in updated datacenters with improved capabilities.Plesae refer the [link](https://console.bluemix.net/docs/infrastructure/FileStorage/new-ibm-block-and-file-storage-location-and-features.html#new-locations-and-features-of-file-storage) to get the updated list of datacenter.
 
 
 ## Attribute Reference

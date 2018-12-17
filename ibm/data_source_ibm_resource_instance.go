@@ -84,6 +84,9 @@ func dataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 		if err != nil {
 			return err
 		}
+		if len(grpList) <= 0 {
+			return fmt.Errorf("The targeted resource group could not be found. Make sure you have required permissions to access the resource group.")
+		}
 		rsInstQuery.ResourceGroupID = grpList[0].ID
 	}
 
