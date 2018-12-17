@@ -423,6 +423,9 @@ func getWorkerPoolTargetHeader(d *schema.ResourceData, meta interface{}) (v1.Clu
 			if err != nil {
 				return v1.ClusterTargetHeader{}, err
 			}
+			if len(grpList) <= 0 {
+				return v1.ClusterTargetHeader{}, fmt.Errorf("The targeted resource group could not be found. Make sure you have required permissions to access the resource group.")
+			}
 			resourceGroup = grpList[0].ID
 		}
 	}
