@@ -25,8 +25,7 @@ func resourceIBMNetworkVlanSpan() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"vlan_spanning": {
 				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
+				Required:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"off", "on"}),
 			},
 		},

@@ -29,11 +29,11 @@ resource "ibm_network_vlan_spanning" "spanning" {
 
 The following arguments are supported:
 
-* `vlan_spanning` - (Optional, string) The desired state of VLAN spanning for the account. Accepted values are `on`, `off`.
+* `vlan_spanning` - (Required, string) The desired state of VLAN spanning for the account. Accepted values are `on`, `off`.
 
 
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `vlan_spanning` - The current state of the IaaS VLAN Spanning attribute for the account. Accepted values are `on`, `off`.
+* `id` - The unique identifier of the VLAN spanning resource.
