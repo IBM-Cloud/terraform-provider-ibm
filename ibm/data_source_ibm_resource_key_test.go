@@ -21,10 +21,10 @@ func TestAccIBMResourceKeyDataSource_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_resource_key.testacc_ds_resource_key", "name", resourceKey),
 					resource.TestCheckResourceAttr("data.ibm_resource_key.testacc_ds_resource_key", "credentials.%", "7"),
-					resource.TestCheckResourceAttr("data.ibm_resource_key.testacc_ds_resource_key", "role", "Viewer"),
+					resource.TestCheckResourceAttr("data.ibm_resource_key.testacc_ds_resource_key", "role", "Writer"),
 					resource.TestCheckResourceAttr("data.ibm_resource_key.testacc_ds_resource_key1", "name", resourceKey),
 					resource.TestCheckResourceAttr("data.ibm_resource_key.testacc_ds_resource_key1", "credentials.%", "7"),
-					resource.TestCheckResourceAttr("data.ibm_resource_key.testacc_ds_resource_key1", "role", "Viewer"),
+					resource.TestCheckResourceAttr("data.ibm_resource_key.testacc_ds_resource_key1", "role", "Writer"),
 				),
 			},
 		},
@@ -65,7 +65,7 @@ resource "ibm_resource_instance" "resource" {
 
 resource "ibm_resource_key" "resourcekey" {
   name                  = "%s"
-  role                  = "Viewer"
+  role                  = "Writer"
   resource_instance_id  = "${ibm_resource_instance.resource.id}"
 }
 
@@ -99,7 +99,7 @@ resource "ibm_resource_key" "resourcekey" {
 
 resource "ibm_resource_key" "resourcekey1" {
 	name                  = "%s"
-	role                  = "Viewer"
+	role                  = "Writer"
 	resource_instance_id  = "${ibm_resource_instance.resource.id}"
 }
 

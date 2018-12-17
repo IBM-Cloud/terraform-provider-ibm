@@ -20,7 +20,7 @@ resource "ibm_iam_access_group" "accgrp" {
 }
 
 resource "ibm_iam_access_group_policy" "policy" {
-  access_group_id = "${iam_access_group.accgrp.id}"
+  access_group_id = "${ibm_iam_access_group.accgrp.id}"
   roles        = ["Viewer"]
 }
 
@@ -34,7 +34,7 @@ resource "ibm_iam_access_group" "accgrp" {
 }
 
 resource "ibm_iam_access_group_policy" "policy" {
-  access_group_id = "${iam_access_group.accgrp.id}"
+  access_group_id = "${ibm_iam_access_group.accgrp.id}"
   roles        = ["Viewer"]
 
   resources = [{
@@ -58,7 +58,7 @@ resource "ibm_resource_instance" "instance" {
 }
 
 resource "ibm_iam_access_group_policy" "policy" {
-  access_group_id = "${iam_access_group.accgrp.id}"
+  access_group_id = "${ibm_iam_access_group.accgrp.id}"
   roles        = ["Manager", "Viewer", "Administrator"]
 
   resources = [{
@@ -82,7 +82,7 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_access_group_policy" "policy" {
-  access_group_id = "${iam_access_group.accgrp.id}"
+  access_group_id = "${ibm_iam_access_group.accgrp.id}"
   roles        = ["Viewer"]
 
   resources = [{
@@ -105,7 +105,7 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_access_group_policy" "policy" {
-  access_group_id = "${iam_access_group.accgrp.id}"
+  access_group_id = "${ibm_iam_access_group.accgrp.id}"
   roles        = ["Administrator"]
 
   resources = [{

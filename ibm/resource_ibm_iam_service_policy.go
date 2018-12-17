@@ -3,7 +3,7 @@ package ibm
 import (
 	"fmt"
 
-	"github.com/IBM-Cloud/bluemix-go/api/iam/iamv1"
+	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/models"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
@@ -102,29 +102,14 @@ func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{})
 	}
 	serviceIDUUID := d.Get("iam_service_id").(string)
 
-	bmxSess, err := meta.(ClientSession).BluemixSession()
-	if err != nil {
-		return err
-	}
-
-	mccpAPI, err := meta.(ClientSession).MccpAPI()
-	if err != nil {
-		return err
-	}
-	region, err := mccpAPI.Regions().FindRegionByName(bmxSess.Config.Region)
-	if err != nil {
-		return err
-	}
-
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
 
-	boundTo := GenerateBoundToCRN(*region, userDetails.userAccount)
-	var policy models.Policy
+	var policy iampapv1.Policy
 
-	policy, err = generatePolicy(d, meta, userDetails.userAccount)
+	policy, err = generateAccountPolicy(d, meta)
 	if err != nil {
 		return err
 	}
@@ -134,7 +119,27 @@ func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	servicePolicy, err := iamClient.ServicePolicies().Create(boundTo.ScopeSegment(), serviceID.IAMID, policy)
+	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
+	if err != nil {
+		return err
+	}
+
+	policy.Resources[0].SetAccountID(userDetails.userAccount)
+
+	policy.Subjects = []iampapv1.Subject{
+		{
+			Attributes: []iampapv1.Attribute{
+				{
+					Name:  "iam_id",
+					Value: serviceID.IAMID,
+				},
+			},
+		},
+	}
+
+	policy.Type = iampapv1.AccessPolicyType
+
+	servicePolicy, err := iampapClient.V1Policy().Create(policy)
 
 	if err != nil {
 		return fmt.Errorf("Error creating servicePolicy: %s", err)
@@ -147,7 +152,7 @@ func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{})
 
 func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) error {
 
-	iamClient, err := meta.(ClientSession).IAMAPI()
+	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
 	if err != nil {
 		return err
 	}
@@ -159,33 +164,7 @@ func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) e
 	serviceIDUUID := parts[0]
 	servicePolicyID := parts[1]
 
-	bmxSess, err := meta.(ClientSession).BluemixSession()
-	if err != nil {
-		return err
-	}
-
-	mccpAPI, err := meta.(ClientSession).MccpAPI()
-	if err != nil {
-		return err
-	}
-	region, err := mccpAPI.Regions().FindRegionByName(bmxSess.Config.Region)
-	if err != nil {
-		return err
-	}
-
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
-	if err != nil {
-		return err
-	}
-
-	boundTo := GenerateBoundToCRN(*region, userDetails.userAccount)
-
-	serviceID, err := iamClient.ServiceIds().Get(serviceIDUUID)
-	if err != nil {
-		return err
-	}
-
-	servicePolicy, err := iamClient.ServicePolicies().Get(boundTo.ScopeSegment(), serviceID.IAMID, servicePolicyID)
+	servicePolicy, err := iampapClient.V1Policy().Get(servicePolicyID)
 	if err != nil {
 		return fmt.Errorf("Error retrieving servicePolicy: %s", err)
 	}
@@ -193,7 +172,7 @@ func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("iam_service_id", serviceIDUUID)
 	roles := make([]string, len(servicePolicy.Roles))
 	for i, role := range servicePolicy.Roles {
-		roles[i] = role.DisplayName
+		roles[i] = role.Name
 	}
 	d.Set("roles", roles)
 	d.Set("version", servicePolicy.Version)
@@ -204,11 +183,12 @@ func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) e
 
 func resourceIBMIAMServicePolicyUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	iamClient, err := meta.(ClientSession).IAMAPI()
-	if err != nil {
-		return err
-	}
 	if d.HasChange("roles") || d.HasChange("resources") {
+
+		iamClient, err := meta.(ClientSession).IAMAPI()
+		if err != nil {
+			return err
+		}
 		parts, err := idParts(d.Id())
 		if err != nil {
 			return err
@@ -216,29 +196,7 @@ func resourceIBMIAMServicePolicyUpdate(d *schema.ResourceData, meta interface{})
 		serviceIDUUID := parts[0]
 		servicePolicyID := parts[1]
 
-		bmxSess, err := meta.(ClientSession).BluemixSession()
-		if err != nil {
-			return err
-		}
-
-		mccpAPI, err := meta.(ClientSession).MccpAPI()
-		if err != nil {
-			return err
-		}
-		region, err := mccpAPI.Regions().FindRegionByName(bmxSess.Config.Region)
-		if err != nil {
-			return err
-		}
-
 		userDetails, err := meta.(ClientSession).BluemixUserDetails()
-		if err != nil {
-			return err
-		}
-
-		boundTo := GenerateBoundToCRN(*region, userDetails.userAccount)
-		var policy models.Policy
-
-		policy, err = generatePolicy(d, meta, userDetails.userAccount)
 		if err != nil {
 			return err
 		}
@@ -248,11 +206,34 @@ func resourceIBMIAMServicePolicyUpdate(d *schema.ResourceData, meta interface{})
 			return err
 		}
 
-		_, err = iamClient.ServicePolicies().Update(iamv1.ServicePolicyIdentifier{
-			Scope:    boundTo.ScopeSegment(),
-			IAMID:    serviceID.IAMID,
-			PolicyID: servicePolicyID,
-		}, policy, d.Get("version").(string))
+		var policy iampapv1.Policy
+
+		policy, err = generateAccountPolicy(d, meta)
+		if err != nil {
+			return err
+		}
+
+		policy.Resources[0].SetAccountID(userDetails.userAccount)
+
+		policy.Subjects = []iampapv1.Subject{
+			{
+				Attributes: []iampapv1.Attribute{
+					{
+						Name:  "iam_id",
+						Value: serviceID.IAMID,
+					},
+				},
+			},
+		}
+
+		policy.Type = iampapv1.AccessPolicyType
+
+		iampapClient, err := meta.(ClientSession).IAMPAPAPI()
+		if err != nil {
+			return err
+		}
+
+		_, err = iampapClient.V1Policy().Update(servicePolicyID, policy, d.Get("version").(string))
 		if err != nil {
 			return fmt.Errorf("Error updating service policy: %s", err)
 		}
@@ -264,7 +245,7 @@ func resourceIBMIAMServicePolicyUpdate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceIBMIAMServicePolicyDelete(d *schema.ResourceData, meta interface{}) error {
-	iamClient, err := meta.(ClientSession).IAMAPI()
+	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
 	if err != nil {
 		return err
 	}
@@ -273,40 +254,9 @@ func resourceIBMIAMServicePolicyDelete(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return err
 	}
-	serviceIDUUID := parts[0]
 	servicePolicyID := parts[1]
 
-	bmxSess, err := meta.(ClientSession).BluemixSession()
-	if err != nil {
-		return err
-	}
-
-	mccpAPI, err := meta.(ClientSession).MccpAPI()
-	if err != nil {
-		return err
-	}
-	region, err := mccpAPI.Regions().FindRegionByName(bmxSess.Config.Region)
-	if err != nil {
-		return err
-	}
-
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
-	if err != nil {
-		return err
-	}
-
-	boundTo := GenerateBoundToCRN(*region, userDetails.userAccount)
-
-	serviceID, err := iamClient.ServiceIds().Get(serviceIDUUID)
-	if err != nil {
-		return err
-	}
-
-	err = iamClient.ServicePolicies().Delete(iamv1.ServicePolicyIdentifier{
-		Scope:    boundTo.ScopeSegment(),
-		IAMID:    serviceID.IAMID,
-		PolicyID: servicePolicyID,
-	})
+	err = iampapClient.V1Policy().Delete(servicePolicyID)
 	if err != nil {
 		return fmt.Errorf("Error deleting service policy: %s", err)
 	}
@@ -317,7 +267,7 @@ func resourceIBMIAMServicePolicyDelete(d *schema.ResourceData, meta interface{})
 }
 
 func resourceIBMIAMServicePolicyExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	iamClient, err := meta.(ClientSession).IAMAPI()
+	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
 	if err != nil {
 		return false, err
 	}
@@ -328,33 +278,7 @@ func resourceIBMIAMServicePolicyExists(d *schema.ResourceData, meta interface{})
 	serviceIDUUID := parts[0]
 	servicePolicyID := parts[1]
 
-	bmxSess, err := meta.(ClientSession).BluemixSession()
-	if err != nil {
-		return false, err
-	}
-
-	mccpAPI, err := meta.(ClientSession).MccpAPI()
-	if err != nil {
-		return false, err
-	}
-	region, err := mccpAPI.Regions().FindRegionByName(bmxSess.Config.Region)
-	if err != nil {
-		return false, err
-	}
-
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
-	if err != nil {
-		return false, err
-	}
-
-	boundTo := GenerateBoundToCRN(*region, userDetails.userAccount)
-
-	serviceID, err := iamClient.ServiceIds().Get(serviceIDUUID)
-	if err != nil {
-		return false, err
-	}
-
-	servicePolicy, err := iamClient.ServicePolicies().Get(boundTo.ScopeSegment(), serviceID.IAMID, servicePolicyID)
+	servicePolicy, err := iampapClient.V1Policy().Get(servicePolicyID)
 	if err != nil {
 		return false, fmt.Errorf("Error retrieving servicePolicy: %s", err)
 	}

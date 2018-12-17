@@ -3,6 +3,7 @@ package ibm
 import (
 	"fmt"
 
+	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -79,7 +80,7 @@ func dataSourceIBMIAMUserPolicy() *schema.Resource {
 }
 
 func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) error {
-	iamClient, err := meta.(ClientSession).IAMAPI()
+	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
 	if err != nil {
 		return err
 	}
@@ -98,7 +99,11 @@ func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	policies, err := iamClient.UserPolicies().List("a/"+accountID, user.IbmUniqueId)
+	policies, err := iampapClient.V1Policy().List(iampapv1.SearchParams{
+		AccountID: accountID,
+		IAMID:     user.IbmUniqueId,
+		Type:      iampapv1.AccessPolicyType,
+	})
 	if err != nil {
 		return err
 	}
@@ -107,7 +112,7 @@ func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) er
 	for _, policy := range policies {
 		roles := make([]string, len(policy.Roles))
 		for i, role := range policy.Roles {
-			roles[i] = role.DisplayName
+			roles[i] = role.Name
 		}
 		resources := flattenPolicyResource(policy.Resources)
 		p := map[string]interface{}{

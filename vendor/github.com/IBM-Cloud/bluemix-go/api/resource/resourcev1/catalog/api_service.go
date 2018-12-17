@@ -27,7 +27,7 @@ type resourceControllerService struct {
 //New ...
 func New(sess *session.Session) (ResourceCatalogAPI, error) {
 	config := sess.Config.Copy()
-	err := config.ValidateConfigForService(bluemix.IAMPAPService)
+	err := config.ValidateConfigForService(bluemix.ResourceCatalogrService)
 	if err != nil {
 		return nil, err
 	}

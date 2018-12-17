@@ -97,6 +97,10 @@ func dataSourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) erro
 
 	}
 
+	if len(filteredKeys) == 0 {
+		return fmt.Errorf("No resource keys found with name [%s]", name)
+	}
+
 	var key models.ServiceKey
 
 	if len(filteredKeys) > 1 {
@@ -113,9 +117,13 @@ func dataSourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	d.SetId(key.ID)
-	role := key.Parameters["role_crn"].(string)
-	role = role[strings.LastIndex(role, ":")+1:]
-	d.Set("role", role)
+
+	if roleCrn, ok := key.Parameters["role_crn"].(string); ok {
+		d.Set("role", roleCrn[strings.LastIndex(roleCrn, ":")+1:])
+	} else if roleCrn, ok := key.Credentials["iam_role_crn"].(string); ok {
+		d.Set("role", roleCrn[strings.LastIndex(roleCrn, ":")+1:])
+	}
+
 	d.Set("credentials", flatmap.Flatten(key.Credentials))
 	d.Set("status", key.State)
 	return nil
