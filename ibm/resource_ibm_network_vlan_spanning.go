@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
-	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/softlayer/softlayer-go/services"
@@ -17,10 +16,6 @@ func resourceIBMNetworkVlanSpan() *schema.Resource {
 		Update:   resourceIBMNetworkVlanSpanUpdate,
 		Delete:   resourceIBMNetworkVlanSpanDelete,
 		Importer: &schema.ResourceImporter{},
-
-		Timeouts: &schema.ResourceTimeout{
-			Delete: schema.DefaultTimeout(10 * time.Minute),
-		},
 
 		Schema: map[string]*schema.Schema{
 			"vlan_spanning": {
