@@ -8,7 +8,7 @@ description: |-
 
 # cis_domain
 
-Creates a DNS Domain resource that represents a DNS domain assigned to CIS. A domain is the basic resource for working with Cloud Internet Services and is typically the first resouce that is assigned to the CIS service instance. The domain will not become `active` until the DNS Registrar is updated with the CIS name servers in the exported variable `name_servers`. Refer to the resource dns_`domain_registration_nameservers` for updating the DNS Registrars name servers. 
+Creates a DNS Domain resource that represents a DNS domain assigned to CIS. A domain is the basic resource for working with Cloud Internet Services and is typically the first resouce that is assigned to the CIS service instance. The domain will not become `active` until the DNS Registrar is updated with the CIS name servers in the exported variable `name_servers`. Refer to the resource `dns_domain_registration_nameservers`for updating the DNS Registrars name servers. 
 
 ## Example Usage
 
