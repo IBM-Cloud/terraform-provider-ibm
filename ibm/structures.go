@@ -752,6 +752,11 @@ func idParts(id string) ([]string, error) {
 	return []string{}, fmt.Errorf("The given id %s does not contain / please check documentation on how to provider id during import command", id)
 }
 
+func vmIdParts(id string) ([]string, error) {
+	parts := strings.Split(id, "/")
+	return parts, nil
+}
+
 func flattenPolicyResource(list []iampapv1.Resource) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {

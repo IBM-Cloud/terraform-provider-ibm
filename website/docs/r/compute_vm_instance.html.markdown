@@ -12,6 +12,8 @@ Provides a resource for VM instances. This allows VM instances to be created, up
 
 For additional details, see the [IBM Cloud Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/services/SoftLayer_Virtual_Guest).
 
+**NOTE**: Update is not supported when the `bulk_vms` parameter is used.
+
 ## Example Usage
 
 In the following example, you can create a VM instance using a Debian image:
@@ -83,6 +85,33 @@ resource "ibm_compute_vm_instance" "terraform-sample-flavor" {
     notes = "VM notes"
 }
 ```
+In the following example, you can create multiple vm's
+
+```hcl
+resource "ibm_compute_vm_instance" "terraform-bulk-vms" {
+  bulk_vms = [{
+    hostname = "vm1"
+
+    domain = "bar.example.com"
+  },
+    {
+      hostname = "vm2"
+
+      domain = "bar.example.com"
+    },
+  ]
+
+  os_reference_code    = "CENTOS_7_64"
+  datacenter           = "dal09"
+  network_speed        = 100
+  hourly_billing       = true
+  private_network_only = true
+  cores                = 1
+  memory               = 1024
+  disks                = [25]
+  local_disk           = false
+}
+```
 
 In the following example, you can retry to create a VM instance using a datacenter_choice. If VM fails to place order on first datacenter or vlans it retries to place order on subsequent datacenters and vlans untill place order is successfull:
 
@@ -135,8 +164,14 @@ resource "ibm_compute_vm_instance" "terraform-retry" {
 
 The following arguments are supported:
 
-* `hostname` - (Optional, string) The hostname for the computing instance.
-* `domain` - (Required, string)  The domain for the computing instance.
+* `hostname` - (Optional, string) The hostname for the computing instance.</br>
+    **NOTE**: Conflicts with `bulk_vms`.
+* `domain` - (Optional, string)  The domain for the computing instance.</br>
+    **NOTE**: Conflicts with `bulk_vms`.
+* `bulk_vms` - (Optional, list) List of hostname and domain of the computing instance. Nested `bulk_vms` blocks must have the following structure:
+    * `hostname` - (Required, string) The hostname for the computing instance.
+    * `domain` - (Required, string) The domain for the computing instance.</br>
+    **NOTE**: Conflicts with `hostname` and `domain`.
 * `cores` - (Optional, integer) The number of CPU cores that you want to allocate.  
     **NOTE**: Conflicts with `flavor_key_name`.
 * `memory` - (Optional, integer) The amount of memory, expressed in megabytes, that you want to allocate.  
