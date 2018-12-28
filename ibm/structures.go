@@ -906,7 +906,7 @@ func convertTfToCisThreeVar(glbTfId string) (glbId string, zoneId string, cisId 
 		zoneId = g[1]
 		cisId = g[2]
 	} else {
-		err = errors.New("resourceCISGlbRead - cis_id or zone_id not passed")
+		err = errors.New("cis_id or zone_id not passed")
 		return
 	}
 	return
@@ -983,3 +983,66 @@ func transformToIBMCISDnsData(recordType string, id string, value interface{}) (
 
 	return
 }
+
+func indexOf(element string, data []string) int {
+	for k, v := range data {
+		if element == v {
+			return k
+		}
+	}
+	return -1 //not found.
+}
+
+func rcInstanceExists(resourceId string, resourceType string, meta interface{}) (bool, error) {
+	// Check to see if Resource Manager instance exists
+	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	if err != nil {
+		return true, nil
+	}
+	exists := true
+	instance, err := rsConClient.ResourceServiceInstance().GetInstance(resourceId)
+	if err != nil {
+		if strings.Contains(err.Error(), "Object not found") ||
+			strings.Contains(err.Error(), "status code: 404") {
+			exists = false
+		} else {
+			return true, fmt.Errorf("Error checking resource instance exists: %s", err)
+		}
+	} else {
+		if strings.Contains(instance.State, "removed") {
+			exists = false
+		}
+	}
+	if exists {
+		return true, nil
+	}
+	// Implement when pointer to terraform.State available
+	// If rcInstance is now in removed state, set TF state to removed
+	// s := *terraform.State
+	// for _, r := range s.RootModule().Resources {
+	// 	if r.Type != resourceType {
+	// 		continue
+	// 	}
+	// 	if r.Primary.ID == resourceId {
+	// 		r.Primary.Set("status", "removed")
+	// 	}
+	// }
+	return false, nil
+}
+
+// Implement when pointer to terraform.State available
+// func resourceInstanceExistsTf(resourceId string, resourceType string) bool {
+// 	// Check TF state to see if Cloud resource instance has already been removed
+// 	s := *terraform.State
+// 	for _, r := range s.RootModule().Resources {
+// 		if r.Type != resourceType {
+// 			continue
+// 		}
+// 		if r.Primary.ID == resourceId {
+// 			if strings.Contains(r.Primary.Attributes["status"], "removed") {
+// 				return false
+// 			}
+// 		}
+// 	}
+// 	return true
+// }

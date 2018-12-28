@@ -20,7 +20,7 @@ Provides a IBM CIS Global Load Balancer resource. This sits in front of a number
 resource "ibm_cis_global_load_balancer" "example" {
   cis_id = "${ibm_cis.instance.id}"
   domain_id = "${ibm_cis_domain.example.id}"
-  name = "example.com"
+  name = "www.example.com"
   fallback_pool_id = "${ibm_cis_origin_pool.example.id}"
   default_pool_ids = ["${ibm_cis_origin_pool.example.id}"]
   description = "example load balancer using geo-balancing"
@@ -44,7 +44,7 @@ The following arguments are supported:
 
 * `cis_id` - (Required) The ID of the CIS service instance
 * `domain_id` - (Required) The ID of the domain to add the load balancer to.
-* `name` - (Required) The DNS name to associate with the load balancer.
+* `name` - (Required) The DNS name to associate with the load balancer. This can be a hostname, e.g. "www" or the fully qualified name "www.example.com". "example.com" is also accepted. 
 * `fallback_pool_id` - (Required) The pool ID to use when all other pools are detected as unhealthy.
 * `default_pool_ids` - (Required) A list of pool IDs ordered by their failover priority. Used whenever region/pop pools are not defined.
 * `description` - (Optional) Free text description.
@@ -58,6 +58,7 @@ Region and pop pools are not currently implemented in this version of the provid
 The following attributes are exported:
 
 * `id` - Unique identifier for the global load balancer.
+`name` - The fully qualified name of the load balancer, e.g. "www.example.com". 
 * `created_on` - The RFC3339 timestamp of when the load balancer was created.
 * `modified_on` - The RFC3339 timestamp of when the load balancer was last modified.
 

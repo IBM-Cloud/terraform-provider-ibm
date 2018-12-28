@@ -12,8 +12,10 @@ import (
 
 var cfOrganization string
 var cfSpace string
-var cis_crn string
-var cis_domain string
+var cisDomainStatic string
+var cisDomainTest string
+var cisInstance string
+var cisResourceGroup string
 var ibmid1 string
 var ibmid2 string
 var IAMUser string
@@ -83,10 +85,27 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_CONTAINER_REGION for testing ibm_container resources else it is set to default value 'eu-de'")
 	}
 
-	cis_domain = os.Getenv("IBM_CIS_DOMAIN")
-	if cis_domain == "" {
-		cis_domain = "wcpexample.com"
-		fmt.Println("[WARN] Set the environment variable IBM_CIS_DOMAIN with a VALID Domain name for testing ibm_cis resources else it is set to default value 'wcpexample.com' which will cause the test to fail")
+	cisInstance = os.Getenv("IBM_CIS_INSTANCE")
+	if cisInstance == "" {
+		cisInstance = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CIS_INSTANCE with a VALID CIS Instance NAME for testing ibm_cis resources on staging/test")
+	}
+	cisDomainStatic = os.Getenv("IBM_CIS_DOMAIN_STATIC")
+	if cisDomainStatic == "" {
+		cisDomainStatic = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CIS_DOMAIN_STATIC with the Domain name registered with the CIS instance on test/staging. Domain must be predefined in CIS to avoid CIS billing costs due to domain delete/create")
+	}
+
+	cisDomainTest = os.Getenv("IBM_CIS_DOMAIN_TEST")
+	if cisDomainTest == "" {
+		cisDomainTest = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CIS_DOMAIN_TEST with a VALID Domain name for testing the one time create and delete of a domain in CIS. Note each create/delete will trigger a monthly billing instance. Only to be run in staging/test")
+	}
+
+	cisResourceGroup = os.Getenv("IBM_CIS_RESOURCE_GROUP")
+	if cisResourceGroup == "" {
+		cisResourceGroup = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CIS_RESOURCE_GROUP with the resource group for the CIS Instance ")
 	}
 
 	trustedMachineType = os.Getenv("IBM_TRUSTED_MACHINE_TYPE")
@@ -234,5 +253,21 @@ func testAccPreCheck(t *testing.T) {
 	}
 	if v := os.Getenv("SL_USERNAME"); v == "" {
 		t.Fatal("SL_USERNAME must be set for acceptance tests")
+	}
+}
+
+func testAccPreCheckCis(t *testing.T) {
+	testAccPreCheck(t)
+	if cisInstance == "" {
+		t.Fatal("IBM_CIS_INSTANCE must be set for acceptance tests")
+	}
+	if cisResourceGroup == "" {
+		t.Fatal("IBM_CIS_RESOURCE_GROUP must be set for acceptance tests")
+	}
+	if cisDomainStatic == "" {
+		t.Fatal("IBM_CIS_DOMAIN_STATIC must be set for acceptance tests")
+	}
+	if cisDomainTest == "" {
+		t.Fatal("IBM_CIS_DOMAIN_TEST must be set for acceptance tests")
 	}
 }
