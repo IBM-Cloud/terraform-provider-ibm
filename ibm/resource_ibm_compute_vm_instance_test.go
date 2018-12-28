@@ -146,6 +146,80 @@ func TestAccIBMComputeVmInstance_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMComputeVmInstance_bulkvms(t *testing.T) {
+	var guest datatypes.Virtual_Guest
+
+	hostname1 := acctest.RandString(16)
+	hostname2 := acctest.RandString(16)
+	domain := "terraformvmuat.ibm.com"
+	networkSpeed1 := "10"
+	cores1 := "1"
+	memory1 := "1024"
+	tags1 := "collectd"
+	userMetadata1 := "{\\\"value\\\":\\\"newvalue\\\"}"
+	userMetadata1Unquoted, _ := strconv.Unquote(`"` + userMetadata1 + `"`)
+
+	configInstance := "ibm_compute_vm_instance.terraform-acceptance-test-1"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccIBMComputeVmInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:  testAccIBMComputeVmInstanceConfigBulkVMs(hostname1, hostname2, domain, networkSpeed1, cores1, memory1, userMetadata1, tags1),
+				Destroy: false,
+				Check: resource.ComposeTestCheckFunc(
+					testAccIBMComputeVmInstanceExists(configInstance, &guest),
+					resource.TestCheckResourceAttr(
+						configInstance, "datacenter", "wdc04"),
+					resource.TestCheckResourceAttr(
+						configInstance, "network_speed", networkSpeed1),
+					resource.TestCheckResourceAttr(
+						configInstance, "hourly_billing", "true"),
+					resource.TestCheckResourceAttr(
+						configInstance, "private_network_only", "false"),
+					resource.TestCheckResourceAttr(
+						configInstance, "cores", cores1),
+					resource.TestCheckResourceAttr(
+						configInstance, "memory", memory1),
+					resource.TestCheckResourceAttr(
+						configInstance, "disks.0", "25"),
+					resource.TestCheckResourceAttr(
+						configInstance, "disks.1", "10"),
+					resource.TestCheckResourceAttr(
+						configInstance, "disks.2", "20"),
+					resource.TestCheckResourceAttr(
+						configInstance, "user_metadata", userMetadata1Unquoted),
+					resource.TestCheckResourceAttr(
+						configInstance, "local_disk", "false"),
+					resource.TestCheckResourceAttr(
+						configInstance, "dedicated_acct_host_only", "true"),
+					CheckStringSet(
+						configInstance,
+						"tags", []string{tags1},
+					),
+					resource.TestCheckResourceAttrSet(
+						configInstance, "ipv6_enabled"),
+					resource.TestCheckResourceAttrSet(
+						configInstance, "ipv6_address"),
+					resource.TestCheckResourceAttrSet(
+						configInstance, "ipv6_address_id"),
+					resource.TestCheckResourceAttrSet(
+						configInstance, "public_ipv6_subnet"),
+					resource.TestCheckResourceAttr(
+						configInstance, "secondary_ip_count", "4"),
+					resource.TestCheckResourceAttrSet(
+						configInstance, "secondary_ip_addresses.3"),
+					resource.TestCheckResourceAttr(
+						configInstance, "notes", "VM notes"),
+					resource.TestCheckResourceAttr(
+						configInstance, "bulk_vms.#", "2"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMComputeVmInstanceWithFlavor(t *testing.T) {
 	var guest datatypes.Virtual_Guest
 
@@ -840,18 +914,23 @@ func testAccIBMComputeVmInstanceDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_compute_vm_instance" {
 			continue
 		}
+		parts, err := vmIdParts(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+		for _, str := range parts {
+			guestID, _ := strconv.Atoi(str)
 
-		guestID, _ := strconv.Atoi(rs.Primary.ID)
+			// Try to find the guest
+			_, err := service.Id(guestID).GetObject()
 
-		// Try to find the guest
-		_, err := service.Id(guestID).GetObject()
+			// Wait
 
-		// Wait
-
-		if err != nil && !strings.Contains(err.Error(), "404") {
-			return fmt.Errorf(
-				"Error waiting for virtual guest (%s) to be destroyed: %s",
-				rs.Primary.ID, err)
+			if err != nil && !strings.Contains(err.Error(), "404") {
+				return fmt.Errorf(
+					"Error waiting for virtual guest (%s) to be destroyed: %s",
+					rs.Primary.ID, err)
+			}
 		}
 	}
 
@@ -868,27 +947,32 @@ func testAccIBMComputeVmInstanceExists(n string, guest *datatypes.Virtual_Guest)
 		if rs.Primary.ID == "" {
 			return errors.New("No virtual guest ID is set")
 		}
-
-		id, err := strconv.Atoi(rs.Primary.ID)
-
+		parts, err := vmIdParts(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
+		for _, str := range parts {
+			id, err := strconv.Atoi(str)
 
-		service := services.GetVirtualGuestService(testAccProvider.Meta().(ClientSession).SoftLayerSession())
-		retrieveVirtGuest, err := service.Id(id).GetObject()
+			if err != nil {
+				return err
+			}
 
-		if err != nil {
-			return err
+			service := services.GetVirtualGuestService(testAccProvider.Meta().(ClientSession).SoftLayerSession())
+			retrieveVirtGuest, err := service.Id(id).GetObject()
+
+			if err != nil {
+				return err
+			}
+
+			fmt.Printf("The ID is %d\n", id)
+
+			if *retrieveVirtGuest.Id != id {
+				return errors.New("Virtual guest not found")
+			}
+
+			*guest = retrieveVirtGuest
 		}
-
-		fmt.Printf("The ID is %d\n", id)
-
-		if *retrieveVirtGuest.Id != id {
-			return errors.New("Virtual guest not found")
-		}
-
-		*guest = retrieveVirtGuest
 
 		return nil
 	}
@@ -953,6 +1037,37 @@ resource "ibm_compute_vm_instance" "terraform-acceptance-test-1" {
     secondary_ip_count = 4
     notes = "VM notes"
 }`, hostname, domain, networkSpeed, cores, memory, userMetadata, tags)
+}
+
+func testAccIBMComputeVmInstanceConfigBulkVMs(hostname1, hostname2, domain, networkSpeed, cores, memory, userMetadata, tags string) string {
+	return fmt.Sprintf(`
+resource "ibm_compute_vm_instance" "terraform-acceptance-test-1" {
+	 bulk_vms = [{
+	    hostname = "%s"
+	
+	    domain = "%s"
+	  }, {
+	    hostname = "%s"
+	
+	    domain = "%s"
+	  }]
+
+    os_reference_code = "DEBIAN_8_64"
+    datacenter = "wdc04"
+    network_speed = %s
+    hourly_billing = true
+    private_network_only = false
+    cores = %s
+    memory = %s
+    disks = [25, 10, 20]
+    user_metadata = "%s"
+    tags = ["%s"]
+    dedicated_acct_host_only = true
+    local_disk = false
+    ipv6_enabled = true
+    secondary_ip_count = 4
+    notes = "VM notes"
+}`, hostname1, domain, hostname2, domain, networkSpeed, cores, memory, userMetadata, tags)
 }
 
 func testAccIBMComputeVmInstanceConfigUpdate(hostname, domain, networkSpeed, cores, memory, userMetadata, tags string) string {

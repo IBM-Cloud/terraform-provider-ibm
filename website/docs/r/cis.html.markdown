@@ -48,7 +48,7 @@ ibm_cis provides the following [Timeouts](https://www.terraform.io/docs/configur
 The following arguments are supported:
 
 * `name` - (Required, string) A descriptive name used to identify the CIS instance.
-* `plan` - (Required, string) The name of the plan type for Cloud Internet Services. You can retrieve the value by running the `ibmcloud catalog service internet-srvs` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `plan` - (Required, string) The name of the plan type for Cloud Internet Services. You can retrieve the value by running the `ibmcloud catalog service internet-svcs` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
 * `resource_group_id` - (Optional, string) The ID of the resource group where you want to create the service. You can retrieve the value from data source `ibm_resource_group`. If not provided creates the service in default resource group.
 * `tags` - (Optional, array of strings) Tags associated with the instance.
 

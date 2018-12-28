@@ -6,20 +6,19 @@ description: |-
   Provides a resource which customizes IBM Cloud Internet Services domain settings.
 ---
 
-# ibm_zone_settings
+# ibm_cis_domain_settings
 
 Provides a resource which customizes IBM Cloud Internet Services domain settings. 
 
 ## Example Usage
 
 ```hcl
-resource "ibm_zone_settings_override" "test" {
-    cis_id = "${ibm_cis.instance.id}"  
-    domain_id = "${ibm_cis_domain.example.id}"
-    name = "${var.ibm_zone}"
-    waf = true
-    min_tls_version = "1.3"
-    }
+resource "ibm_cis_domain_settings" "test" {
+  cis_id          = "${ibm_cis.instance.id}"
+  domain_id       = "${ibm_cis_domain.example.id}"
+  waf             = "on"
+  ssl             = "full"
+  min_tls_version = "1.2"
 }
 ```
 
@@ -27,7 +26,8 @@ resource "ibm_zone_settings_override" "test" {
 
 The following arguments are supported:
 
-* `name` - (Required) The DNS zone to which apply settings.
+* `cis_id` - (Required) The ID of the CIS service instance.
+* `domain_id` - (Required) The ID of the domain.
 * `waf`. Allowed values: "off", "on"
 * `min_tls_version`. Allowed values: 1.1", "1.2", "1.3".
 * `ssl`. Allowed values: "off", "flexible", "full", "strict", "origin_pull".

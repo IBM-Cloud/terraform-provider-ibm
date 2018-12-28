@@ -1,6 +1,7 @@
 package ibm
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
@@ -11,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -66,9 +68,9 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"hostname": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: genID,
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"bulk_vms"},
 				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
 					// FIXME: Work around another bug in terraform.
 					// When a default function is used with an optional property,
@@ -83,8 +85,43 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 			},
 
 			"domain": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"bulk_vms"},
+			},
+
+			"bulk_vms": {
+				Type:          schema.TypeSet,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"hostname", "domain"},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"hostname": {
+							Type:     schema.TypeString,
+							Required: true,
+							ForceNew: true,
+							DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
+								// FIXME: Work around another bug in terraform.
+								// When a default function is used with an optional property,
+								// terraform will always execute it on apply, even when the property
+								// already has a value in the state for it. This causes a false diff.
+								// Making the property Computed:true does not make a difference.
+								if strings.HasPrefix(o, "terraformed-") && strings.HasPrefix(n, "terraformed-") {
+									return true
+								}
+								return o == n
+							},
+						},
+
+						"domain": {
+							Type:     schema.TypeString,
+							Required: true,
+							ForceNew: true,
+						},
+					},
+				},
+				Set: resourceIBMBulkVMHostHash,
 			},
 
 			"os_reference_code": {
@@ -483,6 +520,8 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 	}
 }
 
+type vmMember map[string]interface{}
+
 func getSubnetID(subnet string, meta interface{}) (int, error) {
 	service := services.GetAccountService(meta.(ClientSession).SoftLayerSession())
 
@@ -515,6 +554,15 @@ func getSubnetID(subnet string, meta interface{}) (int, error) {
 	}
 
 	return *subnets[0].Id, nil
+}
+
+func resourceIBMBulkVMHostHash(v interface{}) int {
+	var buf bytes.Buffer
+	m := v.(map[string]interface{})
+	buf.WriteString(fmt.Sprintf("%s-",
+		m["hostname"].(string)))
+
+	return hashcode.String(buf.String())
 }
 
 func getNameForBlockDevice(i int) string {
@@ -577,7 +625,7 @@ func expandSecurityGroupBindings(securityGroupsList []interface{}) ([]datatypes.
 	return sgBindings, nil
 }
 
-func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interface{}, datacenter string, publicVlanID, privateVlanID int) (datatypes.Virtual_Guest, error) {
+func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interface{}, datacenter string, publicVlanID, privateVlanID int) ([]datatypes.Virtual_Guest, error) {
 
 	dc := datatypes.Location{
 		Name: sl.String(datacenter),
@@ -593,220 +641,238 @@ func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interf
 	networkComponent := datatypes.Virtual_Guest_Network_Component{
 		MaxSpeed: &networkSpeed,
 	}
-
-	opts := datatypes.Virtual_Guest{
-		Hostname:               sl.String(d.Get("hostname").(string)),
-		Domain:                 sl.String(d.Get("domain").(string)),
-		HourlyBillingFlag:      sl.Bool(d.Get("hourly_billing").(bool)),
-		PrivateNetworkOnlyFlag: sl.Bool(d.Get("private_network_only").(bool)),
-		Datacenter:             &dc,
-		NetworkComponents:      []datatypes.Virtual_Guest_Network_Component{networkComponent},
-		BlockDevices:           getBlockDevices(d),
-		LocalDiskFlag:          sl.Bool(d.Get("local_disk").(bool)),
-		PostInstallScriptUri:   sl.String(d.Get("post_install_script_uri").(string)),
+	members := []vmMember{}
+	bulkVMs := d.Get("bulk_vms").(*schema.Set).List()
+	if len(bulkVMs) > 0 {
+		for _, vm := range bulkVMs {
+			members = append(members, vm.(map[string]interface{}))
+		}
+	} else {
+		member := vmMember{
+			"hostname": d.Get("hostname").(string),
+			"domain":   d.Get("domain").(string),
+		}
+		members = append(members, member)
 	}
 
-	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
-		grpID := placementGroupID.(int)
-		service := services.GetVirtualPlacementGroupService(meta.(ClientSession).SoftLayerSession())
-		grp, err := service.Id(grpID).Mask("id,name,backendRouter[datacenter[name]]").GetObject()
-		if err != nil {
-			return opts, fmt.Errorf("Error looking up placement group: %s", err)
+	vms := make([]datatypes.Virtual_Guest, 0)
+	for _, member := range members {
+		opts := datatypes.Virtual_Guest{
+			Hostname:               sl.String(member["hostname"].(string)),
+			Domain:                 sl.String(member["domain"].(string)),
+			HourlyBillingFlag:      sl.Bool(d.Get("hourly_billing").(bool)),
+			PrivateNetworkOnlyFlag: sl.Bool(d.Get("private_network_only").(bool)),
+			Datacenter:             &dc,
+			NetworkComponents:      []datatypes.Virtual_Guest_Network_Component{networkComponent},
+			BlockDevices:           getBlockDevices(d),
+			LocalDiskFlag:          sl.Bool(d.Get("local_disk").(bool)),
+			PostInstallScriptUri:   sl.String(d.Get("post_install_script_uri").(string)),
 		}
 
-		opts.PlacementGroupId = sl.Int(*grp.Id)
+		if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
+			grpID := placementGroupID.(int)
+			service := services.GetVirtualPlacementGroupService(meta.(ClientSession).SoftLayerSession())
+			grp, err := service.Id(grpID).Mask("id,name,backendRouter[datacenter[name]]").GetObject()
+			if err != nil {
+				return vms, fmt.Errorf("Error looking up placement group: %s", err)
+			}
 
-	} else if placementGroupName, ok := d.GetOk("placement_group_name"); ok {
-		grpName := placementGroupName.(string)
-		service := services.GetAccountService(meta.(ClientSession).SoftLayerSession())
-		groups, err := service.
-			Mask("id,name,backendRouter[hostname,datacenter[name]]").
-			Filter(filter.Path("placementGroup.name").Eq(grpName).Build()).
-			GetPlacementGroups()
+			opts.PlacementGroupId = sl.Int(*grp.Id)
 
-		if err != nil {
-			return opts, fmt.Errorf("Error looking up placement group '%s': %s", grpName, err)
+		} else if placementGroupName, ok := d.GetOk("placement_group_name"); ok {
+			grpName := placementGroupName.(string)
+			service := services.GetAccountService(meta.(ClientSession).SoftLayerSession())
+			groups, err := service.
+				Mask("id,name,backendRouter[hostname,datacenter[name]]").
+				Filter(filter.Path("placementGroup.name").Eq(grpName).Build()).
+				GetPlacementGroups()
+
+			if err != nil {
+				return vms, fmt.Errorf("Error looking up placement group '%s': %s", grpName, err)
+			}
+			grps := []datatypes.Virtual_PlacementGroup{}
+			for _, g := range groups {
+				if grpName == *g.Name {
+					grps = append(grps, g)
+
+				}
+			}
+			if len(grps) == 0 {
+				return vms, fmt.Errorf("Error looking up placement group '%s'", grpName)
+			}
+			grp := grps[0]
+
+			opts.PlacementGroupId = sl.Int(*grp.Id)
 		}
-		grps := []datatypes.Virtual_PlacementGroup{}
-		for _, g := range groups {
-			if grpName == *g.Name {
-				grps = append(grps, g)
 
+		if startCPUs, ok := d.GetOk("cores"); ok {
+			opts.StartCpus = sl.Int(startCPUs.(int))
+		}
+		if maxMemory, ok := d.GetOk("memory"); ok {
+			opts.MaxMemory = sl.Int(maxMemory.(int))
+		}
+
+		if flavor, ok := d.GetOk("flavor_key_name"); ok {
+			flavorComponenet := datatypes.Virtual_Guest_SupplementalCreateObjectOptions{
+				FlavorKeyName: sl.String(flavor.(string)),
+			}
+			opts.SupplementalCreateObjectOptions = &flavorComponenet
+		}
+
+		if dedicatedAcctHostOnly, ok := d.GetOk("dedicated_acct_host_only"); ok {
+			opts.DedicatedAccountHostOnlyFlag = sl.Bool(dedicatedAcctHostOnly.(bool))
+		} else if dedicatedHostID, ok := d.GetOk("dedicated_host_id"); ok {
+			opts.DedicatedHost = &datatypes.Virtual_DedicatedHost{
+				Id: sl.Int(dedicatedHostID.(int)),
+			}
+		} else if dedicatedHostName, ok := d.GetOk("dedicated_host_name"); ok {
+			hostName := dedicatedHostName.(string)
+			service := services.GetAccountService(meta.(ClientSession).SoftLayerSession())
+			hosts, err := service.
+				Mask("id").
+				Filter(filter.Path("dedicatedHosts.name").Eq(hostName).Build()).
+				GetDedicatedHosts()
+
+			if err != nil {
+				return vms, fmt.Errorf("Error looking up dedicated host '%s': %s", hostName, err)
+			} else if len(hosts) == 0 {
+				return vms, fmt.Errorf("Error looking up dedicated host '%s'", hostName)
+			}
+
+			opts.DedicatedHost = &hosts[0]
+		}
+
+		if transientFlag, ok := d.GetOk("transient"); ok {
+			if !*opts.HourlyBillingFlag || *opts.LocalDiskFlag {
+				return vms, fmt.Errorf("Unable to provision a transient instance with a hourly_billing false or local_disk true")
+			}
+			opts.TransientGuestFlag = sl.Bool(transientFlag.(bool))
+		}
+
+		if imgID, ok := d.GetOk("image_id"); ok {
+			imageID := imgID.(int)
+			service := services.
+				GetVirtualGuestBlockDeviceTemplateGroupService(meta.(ClientSession).SoftLayerSession())
+
+			image, err := service.
+				Mask("id,globalIdentifier").Id(imageID).
+				GetObject()
+			if err != nil {
+				return vms, fmt.Errorf("Error looking up image %d: %s", imageID, err)
+			} else if image.GlobalIdentifier == nil {
+				return vms, fmt.Errorf(
+					"Image template %d does not have a global identifier", imageID)
+			}
+
+			opts.BlockDeviceTemplateGroup = &datatypes.Virtual_Guest_Block_Device_Template_Group{
+				GlobalIdentifier: image.GlobalIdentifier,
 			}
 		}
-		if len(grps) == 0 {
-			return opts, fmt.Errorf("Error looking up placement group '%s'", grpName)
+
+		if operatingSystemReferenceCode, ok := d.GetOk("os_reference_code"); ok {
+			opts.OperatingSystemReferenceCode = sl.String(operatingSystemReferenceCode.(string))
 		}
-		grp := grps[0]
 
-		opts.PlacementGroupId = sl.Int(*grp.Id)
-	}
+		publicSubnet := d.Get("public_subnet").(string)
+		privateSubnet := d.Get("private_subnet").(string)
 
-	if startCPUs, ok := d.GetOk("cores"); ok {
-		opts.StartCpus = sl.Int(startCPUs.(int))
-	}
-	if maxMemory, ok := d.GetOk("memory"); ok {
-		opts.MaxMemory = sl.Int(maxMemory.(int))
-	}
-
-	if flavor, ok := d.GetOk("flavor_key_name"); ok {
-		flavorComponenet := datatypes.Virtual_Guest_SupplementalCreateObjectOptions{
-			FlavorKeyName: sl.String(flavor.(string)),
+		primaryNetworkComponent := datatypes.Virtual_Guest_Network_Component{
+			NetworkVlan: &datatypes.Network_Vlan{},
 		}
-		opts.SupplementalCreateObjectOptions = &flavorComponenet
-	}
 
-	if dedicatedAcctHostOnly, ok := d.GetOk("dedicated_acct_host_only"); ok {
-		opts.DedicatedAccountHostOnlyFlag = sl.Bool(dedicatedAcctHostOnly.(bool))
-	} else if dedicatedHostID, ok := d.GetOk("dedicated_host_id"); ok {
-		opts.DedicatedHost = &datatypes.Virtual_DedicatedHost{
-			Id: sl.Int(dedicatedHostID.(int)),
+		usePrimaryNetworkComponent := false
+
+		if publicVlanID > 0 {
+			primaryNetworkComponent.NetworkVlan.Id = &publicVlanID
+			usePrimaryNetworkComponent = true
 		}
-	} else if dedicatedHostName, ok := d.GetOk("dedicated_host_name"); ok {
-		hostName := dedicatedHostName.(string)
-		service := services.GetAccountService(meta.(ClientSession).SoftLayerSession())
-		hosts, err := service.
-			Mask("id").
-			Filter(filter.Path("dedicatedHosts.name").Eq(hostName).Build()).
-			GetDedicatedHosts()
 
+		// Apply public subnet if provided
+		if publicSubnet != "" {
+			primarySubnetID, err := getSubnetID(publicSubnet, meta)
+			if err != nil {
+				return vms, fmt.Errorf("Error creating virtual guest: %s", err)
+			}
+			primaryNetworkComponent.NetworkVlan.PrimarySubnetId = &primarySubnetID
+			usePrimaryNetworkComponent = true
+		}
+
+		// Apply security groups if provided
+		publicSecurityGroupIDList := d.Get("public_security_group_ids").(*schema.Set).List()
+		sgb, err := expandSecurityGroupBindings(publicSecurityGroupIDList)
 		if err != nil {
-			return opts, fmt.Errorf("Error looking up dedicated host '%s': %s", hostName, err)
-		} else if len(hosts) == 0 {
-			return opts, fmt.Errorf("Error looking up dedicated host '%s'", hostName)
+			return vms, err
+		}
+		if sgb != nil {
+			primaryNetworkComponent.SecurityGroupBindings = sgb
+			usePrimaryNetworkComponent = true
 		}
 
-		opts.DedicatedHost = &hosts[0]
-	}
-
-	if transientFlag, ok := d.GetOk("transient"); ok {
-		if !*opts.HourlyBillingFlag || *opts.LocalDiskFlag {
-			return opts, fmt.Errorf("Unable to provision a transient instance with a hourly_billing false or local_disk true")
+		if usePrimaryNetworkComponent {
+			opts.PrimaryNetworkComponent = &primaryNetworkComponent
 		}
-		opts.TransientGuestFlag = sl.Bool(transientFlag.(bool))
-	}
 
-	if imgID, ok := d.GetOk("image_id"); ok {
-		imageID := imgID.(int)
-		service := services.
-			GetVirtualGuestBlockDeviceTemplateGroupService(meta.(ClientSession).SoftLayerSession())
+		primaryBackendNetworkComponent := datatypes.Virtual_Guest_Network_Component{
+			NetworkVlan: &datatypes.Network_Vlan{},
+		}
 
-		image, err := service.
-			Mask("id,globalIdentifier").Id(imageID).
-			GetObject()
+		usePrimaryBackendNetworkComponent := false
+
+		if privateVlanID > 0 {
+			primaryBackendNetworkComponent.NetworkVlan.Id = &privateVlanID
+			usePrimaryBackendNetworkComponent = true
+		}
+
+		// Apply private subnet if provided
+		if privateSubnet != "" {
+			primarySubnetID, err := getSubnetID(privateSubnet, meta)
+			if err != nil {
+				return vms, fmt.Errorf("Error creating virtual guest: %s", err)
+			}
+			primaryBackendNetworkComponent.NetworkVlan.PrimarySubnetId = &primarySubnetID
+			usePrimaryBackendNetworkComponent = true
+		}
+
+		// Apply security groups if provided
+		privateSecurityGroupIDList := d.Get("private_security_group_ids").(*schema.Set).List()
+		sgb, err = expandSecurityGroupBindings(privateSecurityGroupIDList)
 		if err != nil {
-			return opts, fmt.Errorf("Error looking up image %d: %s", imageID, err)
-		} else if image.GlobalIdentifier == nil {
-			return opts, fmt.Errorf(
-				"Image template %d does not have a global identifier", imageID)
+			return vms, err
+		}
+		if sgb != nil {
+			primaryBackendNetworkComponent.SecurityGroupBindings = sgb
+			usePrimaryBackendNetworkComponent = true
 		}
 
-		opts.BlockDeviceTemplateGroup = &datatypes.Virtual_Guest_Block_Device_Template_Group{
-			GlobalIdentifier: image.GlobalIdentifier,
+		if usePrimaryBackendNetworkComponent {
+			opts.PrimaryBackendNetworkComponent = &primaryBackendNetworkComponent
 		}
-	}
 
-	if operatingSystemReferenceCode, ok := d.GetOk("os_reference_code"); ok {
-		opts.OperatingSystemReferenceCode = sl.String(operatingSystemReferenceCode.(string))
-	}
-
-	publicSubnet := d.Get("public_subnet").(string)
-	privateSubnet := d.Get("private_subnet").(string)
-
-	primaryNetworkComponent := datatypes.Virtual_Guest_Network_Component{
-		NetworkVlan: &datatypes.Network_Vlan{},
-	}
-
-	usePrimaryNetworkComponent := false
-
-	if publicVlanID > 0 {
-		primaryNetworkComponent.NetworkVlan.Id = &publicVlanID
-		usePrimaryNetworkComponent = true
-	}
-
-	// Apply public subnet if provided
-	if publicSubnet != "" {
-		primarySubnetID, err := getSubnetID(publicSubnet, meta)
-		if err != nil {
-			return opts, fmt.Errorf("Error creating virtual guest: %s", err)
+		if userData, ok := d.GetOk("user_metadata"); ok {
+			opts.UserData = []datatypes.Virtual_Guest_Attribute{
+				{
+					Value: sl.String(userData.(string)),
+				},
+			}
 		}
-		primaryNetworkComponent.NetworkVlan.PrimarySubnetId = &primarySubnetID
-		usePrimaryNetworkComponent = true
-	}
 
-	// Apply security groups if provided
-	publicSecurityGroupIDList := d.Get("public_security_group_ids").(*schema.Set).List()
-	sgb, err := expandSecurityGroupBindings(publicSecurityGroupIDList)
-	if err != nil {
-		return opts, err
-	}
-	if sgb != nil {
-		primaryNetworkComponent.SecurityGroupBindings = sgb
-		usePrimaryNetworkComponent = true
-	}
-
-	if usePrimaryNetworkComponent {
-		opts.PrimaryNetworkComponent = &primaryNetworkComponent
-	}
-
-	primaryBackendNetworkComponent := datatypes.Virtual_Guest_Network_Component{
-		NetworkVlan: &datatypes.Network_Vlan{},
-	}
-
-	usePrimaryBackendNetworkComponent := false
-
-	if privateVlanID > 0 {
-		primaryBackendNetworkComponent.NetworkVlan.Id = &privateVlanID
-		usePrimaryBackendNetworkComponent = true
-	}
-
-	// Apply private subnet if provided
-	if privateSubnet != "" {
-		primarySubnetID, err := getSubnetID(privateSubnet, meta)
-		if err != nil {
-			return opts, fmt.Errorf("Error creating virtual guest: %s", err)
+		// Get configured ssh_keys
+		sshKeySet := d.Get("ssh_key_ids").(*schema.Set)
+		sshKeys := sshKeySet.List()
+		sshKeyLen := len(sshKeys)
+		if sshKeyLen > 0 {
+			opts.SshKeys = make([]datatypes.Security_Ssh_Key, 0, sshKeyLen)
+			for _, sshKey := range sshKeys {
+				opts.SshKeys = append(opts.SshKeys, datatypes.Security_Ssh_Key{
+					Id: sl.Int(sshKey.(int)),
+				})
+			}
 		}
-		primaryBackendNetworkComponent.NetworkVlan.PrimarySubnetId = &primarySubnetID
-		usePrimaryBackendNetworkComponent = true
+
+		vms = append(vms, opts)
 	}
 
-	// Apply security groups if provided
-	privateSecurityGroupIDList := d.Get("private_security_group_ids").(*schema.Set).List()
-	sgb, err = expandSecurityGroupBindings(privateSecurityGroupIDList)
-	if err != nil {
-		return opts, err
-	}
-	if sgb != nil {
-		primaryBackendNetworkComponent.SecurityGroupBindings = sgb
-		usePrimaryBackendNetworkComponent = true
-	}
-
-	if usePrimaryBackendNetworkComponent {
-		opts.PrimaryBackendNetworkComponent = &primaryBackendNetworkComponent
-	}
-
-	if userData, ok := d.GetOk("user_metadata"); ok {
-		opts.UserData = []datatypes.Virtual_Guest_Attribute{
-			{
-				Value: sl.String(userData.(string)),
-			},
-		}
-	}
-
-	// Get configured ssh_keys
-	sshKeySet := d.Get("ssh_key_ids").(*schema.Set)
-	sshKeys := sshKeySet.List()
-	sshKeyLen := len(sshKeys)
-	if sshKeyLen > 0 {
-		opts.SshKeys = make([]datatypes.Security_Ssh_Key, 0, sshKeyLen)
-		for _, sshKey := range sshKeys {
-			opts.SshKeys = append(opts.SshKeys, datatypes.Security_Ssh_Key{
-				Id: sl.Int(sshKey.(int)),
-			})
-		}
-	}
-
-	return opts, nil
+	return vms, nil
 }
 
 func resourceIBMComputeVmInstanceCreate(d *schema.ResourceData, meta interface{}) error {
@@ -832,6 +898,10 @@ func resourceIBMComputeVmInstanceCreate(d *schema.ResourceData, meta interface{}
 
 	if dcName == "" && len(retryOptions) == 0 {
 		return fmt.Errorf("Provide either `datacenter` or `datacenter_choice`")
+	}
+
+	if (d.Get("hostname").(string) == "" || d.Get("domain").(string) == "") && len(d.Get("bulk_vms").(*schema.Set).List()) == 0 {
+		return fmt.Errorf("Provide either `hostname` and `domain` or `bulk_vms`")
 	}
 
 	if dcName != "" {
@@ -890,50 +960,62 @@ func resourceIBMComputeVmInstanceCreate(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("Error ordering virtual guest: %s", err1)
 	}
 
-	id = *receipt.OrderDetails.VirtualGuests[0].Id
-
-	d.SetId(fmt.Sprintf("%d", id))
-
+	var idStrings []string
+	if len(receipt.OrderDetails.OrderContainers) > 1 {
+		for i := 0; i < len(receipt.OrderDetails.OrderContainers); i++ {
+			idStrings = append(idStrings, fmt.Sprintf("%d", *receipt.OrderDetails.OrderContainers[i].VirtualGuests[0].Id))
+		}
+		d.SetId(strings.Join(idStrings, "/"))
+	} else {
+		vmId := fmt.Sprintf("%d", *receipt.OrderDetails.OrderContainers[0].VirtualGuests[0].Id)
+		idStrings = append(idStrings, vmId)
+		d.SetId(vmId)
+	}
 	log.Printf("[INFO] Virtual Machine ID: %s", d.Id())
-
-	// Set tags
-	tags := getTags(d)
-	if tags != "" {
-		//Try setting only when it is non empty as we are creating virtual guest
-		err = setGuestTags(id, tags, meta)
+	for _, str := range idStrings {
+		id, err = strconv.Atoi(str)
 		if err != nil {
 			return err
 		}
-	}
+		// Set tags
+		tags := getTags(d)
+		if tags != "" {
+			//Try setting only when it is non empty as we are creating virtual guest
+			err = setGuestTags(id, tags, meta)
+			if err != nil {
+				return err
+			}
+		}
 
-	var storageIds []int
-	if fileStorageSet := d.Get("file_storage_ids").(*schema.Set); len(fileStorageSet.List()) > 0 {
-		storageIds = expandIntList(fileStorageSet.List())
+		var storageIds []int
+		if fileStorageSet := d.Get("file_storage_ids").(*schema.Set); len(fileStorageSet.List()) > 0 {
+			storageIds = expandIntList(fileStorageSet.List())
 
-	}
-	if blockStorageSet := d.Get("block_storage_ids").(*schema.Set); len(blockStorageSet.List()) > 0 {
-		storageIds = append(storageIds, expandIntList(blockStorageSet.List())...)
-	}
-	if len(storageIds) > 0 {
-		err := addAccessToStorageList(service.Id(id), id, storageIds, meta)
+		}
+		if blockStorageSet := d.Get("block_storage_ids").(*schema.Set); len(blockStorageSet.List()) > 0 {
+			storageIds = append(storageIds, expandIntList(blockStorageSet.List())...)
+		}
+		if len(storageIds) > 0 {
+			err := addAccessToStorageList(service.Id(id), id, storageIds, meta)
+			if err != nil {
+				return err
+			}
+		}
+
+		// Set notes
+		err = setNotes(id, d, meta)
 		if err != nil {
 			return err
 		}
-	}
 
-	// Set notes
-	err = setNotes(id, d, meta)
-	if err != nil {
-		return err
-	}
+		// wait for machine availability
 
-	// wait for machine availability
+		_, err = WaitForVirtualGuestAvailable(id, d, meta)
 
-	_, err = WaitForVirtualGuestAvailable(d, meta)
-
-	if err != nil {
-		return fmt.Errorf(
-			"Error waiting for virtual machine (%s) to become ready: %s", d.Id(), err)
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for virtual machine (%s) to become ready: %s", d.Id(), err)
+		}
 	}
 
 	return resourceIBMComputeVmInstanceRead(d, meta)
@@ -941,8 +1023,11 @@ func resourceIBMComputeVmInstanceCreate(d *schema.ResourceData, meta interface{}
 
 func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	service := services.GetVirtualGuestService(meta.(ClientSession).SoftLayerSession())
-
-	id, err := strconv.Atoi(d.Id())
+	parts, err := vmIdParts(d.Id())
+	if err != nil {
+		return err
+	}
+	id, err := strconv.Atoi(parts[0])
 	if err != nil {
 		return fmt.Errorf("Not a valid ID, must be an integer: %s", err)
 	}
@@ -969,8 +1054,26 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Error retrieving virtual guest: %s", err)
 	}
 
-	d.Set("hostname", *result.Hostname)
-	d.Set("domain", *result.Domain)
+	if len(parts) == 1 {
+		d.Set("hostname", *result.Hostname)
+		d.Set("domain", *result.Domain)
+	} else {
+		members := make([]vmMember, 0)
+		for _, part := range parts {
+			vmId, err := strconv.Atoi(part)
+			if err != nil {
+				return fmt.Errorf("Not a valid ID, must be an integer: %s", err)
+			}
+			vmResult, err := service.Id(vmId).Mask(
+				"hostname,domain",
+			).GetObject()
+			member := vmMember{
+				"hostname": *vmResult.Hostname,
+				"domain":   *vmResult.Domain,
+			}
+			members = append(members, member)
+		}
+	}
 
 	if result.BillingItem.OrderItem.Preset != nil {
 
@@ -1179,7 +1282,11 @@ func resourceIBMComputeVmInstanceUpdate(d *schema.ResourceData, meta interface{}
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetVirtualGuestService(sess)
 
-	id, err := strconv.Atoi(d.Id())
+	parts, err := vmIdParts(d.Id())
+	if err != nil {
+		return err
+	}
+	id, err := strconv.Atoi(parts[0])
 	if err != nil {
 		return fmt.Errorf("Not a valid ID, must be an integer: %s", err)
 	}
@@ -1302,7 +1409,7 @@ func resourceIBMComputeVmInstanceUpdate(d *schema.ResourceData, meta interface{}
 			return err
 		}
 		// Wait for upgrade transactions to finish
-		_, err = WaitForNoActiveTransactions(d, meta)
+		_, err = WaitForNoActiveTransactions(id, d, meta)
 		if err != nil {
 			return err
 		}
@@ -1349,29 +1456,34 @@ func modifyStorageAccess(sam storageAccessModifier, deviceID int, meta interface
 func resourceIBMComputeVmInstanceDelete(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetVirtualGuestService(sess)
-
-	id, err := strconv.Atoi(d.Id())
-	if err != nil {
-		return fmt.Errorf("Not a valid ID, must be an integer: %s", err)
-	}
-
-	_, err = WaitForNoActiveTransactions(d, meta)
-
-	if err != nil {
-		return fmt.Errorf("Error deleting virtual guest, couldn't wait for zero active transactions: %s", err)
-	}
-	err = detachSecurityGroupNetworkComponentBindings(d, meta, id)
+	parts, err := vmIdParts(d.Id())
 	if err != nil {
 		return err
 	}
-	ok, err := service.Id(id).DeleteObject()
-	if err != nil {
-		return fmt.Errorf("Error deleting virtual guest: %s", err)
-	}
+	for _, part := range parts {
+		id, err := strconv.Atoi(part)
+		if err != nil {
+			return fmt.Errorf("Not a valid ID, must be an integer: %s", err)
+		}
 
-	if !ok {
-		return fmt.Errorf(
-			"API reported it was unsuccessful in removing the virtual guest '%d'", id)
+		_, err = WaitForNoActiveTransactions(id, d, meta)
+
+		if err != nil {
+			return fmt.Errorf("Error deleting virtual guest, couldn't wait for zero active transactions: %s", err)
+		}
+		err = detachSecurityGroupNetworkComponentBindings(d, meta, id)
+		if err != nil {
+			return err
+		}
+		ok, err := service.Id(id).DeleteObject()
+		if err != nil {
+			return fmt.Errorf("Error deleting virtual guest: %s", err)
+		}
+
+		if !ok {
+			return fmt.Errorf(
+				"API reported it was unsuccessful in removing the virtual guest '%d'", id)
+		}
 	}
 
 	return nil
@@ -1446,10 +1558,15 @@ func genID() (interface{}, error) {
 func WaitForUpgradeTransactionsToAppear(d *schema.ResourceData, meta interface{}) (interface{}, error) {
 	log.Printf("Waiting for server (%s) to have upgrade transactions", d.Id())
 
-	id, err := strconv.Atoi(d.Id())
+	parts, err := vmIdParts(d.Id())
+	if err != nil {
+		return nil, err
+	}
+	id, err := strconv.Atoi(parts[0])
 	if err != nil {
 		return nil, fmt.Errorf("The instance ID %s must be numeric", d.Id())
 	}
+
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"retry", pendingUpgrade},
 		Target:  []string{inProgressUpgrade},
@@ -1478,12 +1595,8 @@ func WaitForUpgradeTransactionsToAppear(d *schema.ResourceData, meta interface{}
 }
 
 // WaitForNoActiveTransactions Wait for no active transactions
-func WaitForNoActiveTransactions(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+func WaitForNoActiveTransactions(id int, d *schema.ResourceData, meta interface{}) (interface{}, error) {
 	log.Printf("Waiting for server (%s) to have zero active transactions", d.Id())
-	id, err := strconv.Atoi(d.Id())
-	if err != nil {
-		return nil, fmt.Errorf("The instance ID %s must be numeric", d.Id())
-	}
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"retry", activeTransaction},
 		Target:  []string{idleTransaction},
@@ -1510,12 +1623,8 @@ func WaitForNoActiveTransactions(d *schema.ResourceData, meta interface{}) (inte
 }
 
 // WaitForVirtualGuestAvailable Waits for virtual guest creation
-func WaitForVirtualGuestAvailable(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+func WaitForVirtualGuestAvailable(id int, d *schema.ResourceData, meta interface{}) (interface{}, error) {
 	log.Printf("Waiting for server (%s) to be available.", d.Id())
-	id, err := strconv.Atoi(d.Id())
-	if err != nil {
-		return nil, fmt.Errorf("The instance ID %s must be numeric", d.Id())
-	}
 	sess := meta.(ClientSession).SoftLayerSession()
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", virtualGuestProvisioning},
@@ -1563,7 +1672,7 @@ func virtualGuestStateRefreshFunc(sess *session.Session, instanceID int, d *sche
 			log.Println("Refreshing secondary IPs state.")
 			secondarySubnetResult, err := services.GetAccountService(sess).
 				Mask("ipAddresses[id,ipAddress]").
-				Filter(filter.Build(filter.Path("publicSubnets.endPointIpAddress.virtualGuest.id").Eq(d.Id()))).
+				Filter(filter.Build(filter.Path("publicSubnets.endPointIpAddress.virtualGuest.id").Eq(fmt.Sprintf("%d", instanceID)))).
 				GetPublicSubnets()
 			if err != nil {
 				return nil, "", fmt.Errorf("Error retrieving secondary ip address: %s", err)
@@ -1579,7 +1688,11 @@ func virtualGuestStateRefreshFunc(sess *session.Session, instanceID int, d *sche
 
 func resourceIBMComputeVmInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	service := services.GetVirtualGuestService(meta.(ClientSession).SoftLayerSession())
-	guestID, err := strconv.Atoi(d.Id())
+	parts, err := vmIdParts(d.Id())
+	if err != nil {
+		return false, err
+	}
+	guestID, err := strconv.Atoi(parts[0])
 	if err != nil {
 		return false, fmt.Errorf("Not a valid ID, must be an integer: %s", err)
 	}
@@ -1693,170 +1806,175 @@ func placeOrder(d *schema.ResourceData, meta interface{}, name string, publicVla
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetVirtualGuestService(sess)
 
-	opts, err := getVirtualGuestTemplateFromResourceData(d, meta, name, publicVlanID, privateVlanID)
+	options, err := getVirtualGuestTemplateFromResourceData(d, meta, name, publicVlanID, privateVlanID)
 	if err != nil {
 		return datatypes.Container_Product_Order_Receipt{}, err
 	}
 
-	log.Println("[INFO] Creating virtual machine")
-
 	var template datatypes.Container_Product_Order
+	guestOrders := make([]datatypes.Container_Product_Order, 0)
+	for i := 0; i < len(options); i++ {
+		opts := options[i]
 
-	// Build an order template with a custom image.
-	if opts.BlockDevices != nil && opts.BlockDeviceTemplateGroup != nil {
-		bd := *opts.BlockDeviceTemplateGroup
-		opts.BlockDeviceTemplateGroup = nil
-		opts.OperatingSystemReferenceCode = sl.String("UBUNTU_LATEST")
-		template, err = service.GenerateOrderTemplate(&opts)
+		log.Println("[INFO] Creating virtual machine")
+
+		// Build an order template with a custom image.
+		if opts.BlockDevices != nil && opts.BlockDeviceTemplateGroup != nil {
+			bd := *opts.BlockDeviceTemplateGroup
+			opts.BlockDeviceTemplateGroup = nil
+			opts.OperatingSystemReferenceCode = sl.String("UBUNTU_LATEST")
+			template, err = service.GenerateOrderTemplate(&opts)
+			if err != nil {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
+			}
+
+			// Remove temporary OS from actual order
+			prices := make([]datatypes.Product_Item_Price, len(template.Prices))
+			i := 0
+			for _, p := range template.Prices {
+				if !strings.Contains(*p.Item.Description, "Ubuntu") {
+					prices[i] = p
+					i++
+				}
+			}
+			template.Prices = prices[:i]
+
+			template.ImageTemplateId = sl.Int(d.Get("image_id").(int))
+			template.VirtualGuests[0].BlockDeviceTemplateGroup = &bd
+			template.VirtualGuests[0].OperatingSystemReferenceCode = nil
+		} else {
+			// Build an order template with os_reference_code
+			template, err = service.GenerateOrderTemplate(&opts)
+			if err != nil {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
+			}
+		}
+
+		items, err := product.GetPackageProducts(sess, *template.PackageId, productItemMaskWithPriceLocationGroupID)
 		if err != nil {
 			return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
 		}
 
-		// Remove temporary OS from actual order
-		prices := make([]datatypes.Product_Item_Price, len(template.Prices))
-		i := 0
-		for _, p := range template.Prices {
-			if !strings.Contains(*p.Item.Description, "Ubuntu") {
+		privateNetworkOnly := d.Get("private_network_only").(bool)
+
+		secondaryIPCount := d.Get("secondary_ip_count").(int)
+		if secondaryIPCount > 0 {
+			if privateNetworkOnly {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure public secondary addresses with a private_network_only option")
+			}
+			keyName := strconv.Itoa(secondaryIPCount) + "_PUBLIC_IP_ADDRESSES"
+			price, err := getItemPriceId(items, "sec_ip_addresses", keyName)
+			if err != nil {
+				return datatypes.Container_Product_Order_Receipt{}, err
+			}
+			template.Prices = append(template.Prices, price)
+		}
+
+		if d.Get("ipv6_enabled").(bool) {
+			if privateNetworkOnly {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure a public IPv6 address with a private_network_only option")
+			}
+			price, err := getItemPriceId(items, "pri_ipv6_addresses", "1_IPV6_ADDRESS")
+			if err != nil {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
+			}
+			template.Prices = append(template.Prices, price)
+		}
+
+		if d.Get("ipv6_static_enabled").(bool) {
+			if privateNetworkOnly {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure a public static IPv6 address with a private_network_only option")
+			}
+			price, err := getItemPriceId(items, "static_ipv6_addresses", "64_BLOCK_STATIC_PUBLIC_IPV6_ADDRESSES")
+			if err != nil {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
+			}
+			template.Prices = append(template.Prices, price)
+		}
+
+		// Add optional price ids.
+		// Add public bandwidth limited
+		if publicBandwidth, ok := d.GetOk("public_bandwidth_limited"); ok {
+			if *opts.HourlyBillingFlag {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure a public bandwidth with a hourly_billing true")
+			}
+			// Remove Default bandwidth price
+			prices := make([]datatypes.Product_Item_Price, len(template.Prices))
+			i := 0
+			for _, p := range template.Prices {
+				item := p.Item
+				if item != nil {
+					if strings.Contains(*item.Description, "Bandwidth") {
+						continue
+					}
+				}
 				prices[i] = p
 				i++
 			}
-		}
-		template.Prices = prices[:i]
-
-		template.ImageTemplateId = sl.Int(d.Get("image_id").(int))
-		template.VirtualGuests[0].BlockDeviceTemplateGroup = &bd
-		template.VirtualGuests[0].OperatingSystemReferenceCode = nil
-	} else {
-		// Build an order template with os_reference_code
-		template, err = service.GenerateOrderTemplate(&opts)
-		if err != nil {
-			return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
-		}
-	}
-
-	items, err := product.GetPackageProducts(sess, *template.PackageId, productItemMaskWithPriceLocationGroupID)
-	if err != nil {
-		return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
-	}
-
-	privateNetworkOnly := d.Get("private_network_only").(bool)
-
-	secondaryIPCount := d.Get("secondary_ip_count").(int)
-	if secondaryIPCount > 0 {
-		if privateNetworkOnly {
-			return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure public secondary addresses with a private_network_only option")
-		}
-		keyName := strconv.Itoa(secondaryIPCount) + "_PUBLIC_IP_ADDRESSES"
-		price, err := getItemPriceId(items, "sec_ip_addresses", keyName)
-		if err != nil {
-			return datatypes.Container_Product_Order_Receipt{}, err
-		}
-		template.Prices = append(template.Prices, price)
-	}
-
-	if d.Get("ipv6_enabled").(bool) {
-		if privateNetworkOnly {
-			return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure a public IPv6 address with a private_network_only option")
-		}
-		price, err := getItemPriceId(items, "pri_ipv6_addresses", "1_IPV6_ADDRESS")
-		if err != nil {
-			return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
-		}
-		template.Prices = append(template.Prices, price)
-	}
-
-	if d.Get("ipv6_static_enabled").(bool) {
-		if privateNetworkOnly {
-			return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure a public static IPv6 address with a private_network_only option")
-		}
-		price, err := getItemPriceId(items, "static_ipv6_addresses", "64_BLOCK_STATIC_PUBLIC_IPV6_ADDRESSES")
-		if err != nil {
-			return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
-		}
-		template.Prices = append(template.Prices, price)
-	}
-
-	// Add optional price ids.
-	// Add public bandwidth limited
-	if publicBandwidth, ok := d.GetOk("public_bandwidth_limited"); ok {
-		if *opts.HourlyBillingFlag {
-			return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure a public bandwidth with a hourly_billing true")
-		}
-		// Remove Default bandwidth price
-		prices := make([]datatypes.Product_Item_Price, len(template.Prices))
-		i := 0
-		for _, p := range template.Prices {
-			item := p.Item
-			if item != nil {
-				if strings.Contains(*item.Description, "Bandwidth") {
-					continue
-				}
+			template.Prices = prices[:i]
+			keyName := "BANDWIDTH_" + strconv.Itoa(publicBandwidth.(int)) + "_GB"
+			price, err := getItemPriceId(items, "bandwidth", keyName)
+			if err != nil {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
 			}
-			prices[i] = p
-			i++
+			template.Prices = append(template.Prices, price)
 		}
-		template.Prices = prices[:i]
-		keyName := "BANDWIDTH_" + strconv.Itoa(publicBandwidth.(int)) + "_GB"
-		price, err := getItemPriceId(items, "bandwidth", keyName)
-		if err != nil {
-			return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
-		}
-		template.Prices = append(template.Prices, price)
-	}
 
-	// Add public bandwidth unlimited
-	publicUnlimitedBandwidth := d.Get("public_bandwidth_unlimited").(bool)
-	if publicUnlimitedBandwidth {
-		if *opts.HourlyBillingFlag {
-			return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure a public bandwidth with a hourly_billing true")
-		}
-		networkSpeed := d.Get("network_speed").(int)
-		if networkSpeed != 100 {
-			return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Network speed must be 100 Mbps to configure public bandwidth unlimited")
-		}
-		// Remove Default bandwidth price
-		prices := make([]datatypes.Product_Item_Price, len(template.Prices))
-		i := 0
-		for _, p := range template.Prices {
-			item := p.Item
-			if item != nil {
-				if strings.Contains(*item.Description, "Bandwidth") {
-					continue
-				}
+		// Add public bandwidth unlimited
+		publicUnlimitedBandwidth := d.Get("public_bandwidth_unlimited").(bool)
+		if publicUnlimitedBandwidth {
+			if *opts.HourlyBillingFlag {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure a public bandwidth with a hourly_billing true")
 			}
-			prices[i] = p
-			i++
+			networkSpeed := d.Get("network_speed").(int)
+			if networkSpeed != 100 {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Network speed must be 100 Mbps to configure public bandwidth unlimited")
+			}
+			// Remove Default bandwidth price
+			prices := make([]datatypes.Product_Item_Price, len(template.Prices))
+			i := 0
+			for _, p := range template.Prices {
+				item := p.Item
+				if item != nil {
+					if strings.Contains(*item.Description, "Bandwidth") {
+						continue
+					}
+				}
+				prices[i] = p
+				i++
+			}
+			template.Prices = prices[:i]
+			price, err := getItemPriceId(items, "bandwidth", "BANDWIDTH_UNLIMITED_100_MBPS_UPLINK")
+			if err != nil {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
+			}
+			template.Prices = append(template.Prices, price)
 		}
-		template.Prices = prices[:i]
-		price, err := getItemPriceId(items, "bandwidth", "BANDWIDTH_UNLIMITED_100_MBPS_UPLINK")
-		if err != nil {
-			return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
+
+		if evault, ok := d.GetOk("evault"); ok {
+			if *opts.HourlyBillingFlag {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure a evault with hourly_billing true")
+			}
+
+			keyName := "EVAULT_" + strconv.Itoa(evault.(int)) + "_GB"
+			price, err := getItemPriceId(items, "evault", keyName)
+			if err != nil {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
+			}
+			template.Prices = append(template.Prices, price)
 		}
-		template.Prices = append(template.Prices, price)
+		// GenerateOrderTemplate omits UserData, subnet, and maxSpeed, so configure virtual_guest.
+		template.VirtualGuests[0] = opts
+		if opts.DedicatedHost != nil {
+			template.HostId = opts.DedicatedHost.Id
+		}
+		guestOrders = append(guestOrders, template)
+
+	}
+	order := &datatypes.Container_Product_Order{
+		OrderContainers: guestOrders,
 	}
 
-	if evault, ok := d.GetOk("evault"); ok {
-		if *opts.HourlyBillingFlag {
-			return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure a evault with hourly_billing true")
-		}
-
-		keyName := "EVAULT_" + strconv.Itoa(evault.(int)) + "_GB"
-		price, err := getItemPriceId(items, "evault", keyName)
-		if err != nil {
-			return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
-		}
-		template.Prices = append(template.Prices, price)
-	}
-	// GenerateOrderTemplate omits UserData, subnet, and maxSpeed, so configure virtual_guest.
-	template.VirtualGuests[0] = opts
-
-	order := &datatypes.Container_Product_Order_Virtual_Guest{
-		Container_Product_Order_Hardware_Server: datatypes.Container_Product_Order_Hardware_Server{Container_Product_Order: template},
-	}
-
-	if opts.DedicatedHost != nil {
-		order.HostId = opts.DedicatedHost.Id
-	}
 	orderService := services.GetProductOrderService(sess.SetRetries(0))
 	receipt, err1 := orderService.PlaceOrder(order, sl.Bool(false))
 	return receipt, err1
