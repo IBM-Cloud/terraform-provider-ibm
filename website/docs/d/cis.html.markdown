@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_cis
 
-Imports the a read only copy of the details of an existing Internet Services resource. This allows CIS sub-resources to be added to an existing CIS instance. This includes domains, DNS records, pools, healthchecks and global load balancers. 
+Imports a read only copy of an existing Internet Services resource. This allows CIS sub-resources to be added to an existing CIS instance. This includes domains, DNS records, pools, healthchecks and global load balancers. 
 
 ## Example Usage
 

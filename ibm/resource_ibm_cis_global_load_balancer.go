@@ -3,6 +3,7 @@ package ibm
 import (
 	"log"
 	"reflect"
+	"strings"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -154,7 +155,11 @@ func resourceCISGlbRead(d *schema.ResourceData, meta interface{}) error {
 
 	glb, err = cisClient.Glbs().GetGlb(cisId, zoneId, glbId)
 	if err != nil {
-		log.Printf("resourceCIGlbRead - ListGlbs Failed %s\n", err)
+		if checkCisGlbDeleted(d, meta, err, glb) {
+			d.SetId("")
+			return nil
+		}
+		log.Printf("[WARN] Error getting zone during GlbRead %v\n", err)
 		return err
 	}
 	glbObj := *glb
@@ -187,7 +192,11 @@ func resourceCISGlbDelete(d *schema.ResourceData, meta interface{}) error {
 	log.Println("Getting Glb to delete")
 	glb, err = cisClient.Glbs().GetGlb(cisId, zoneId, glbId)
 	if err != nil {
-		log.Printf("GetGlb Failed %s\n", err)
+		if checkCisGlbDeleted(d, meta, err, glb) {
+			d.SetId("")
+			return nil
+		}
+		log.Printf("[WARN] Error getting zone during GlbRead %v\n", err)
 		return err
 	}
 
@@ -203,4 +212,25 @@ func resourceCISGlbDelete(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId("")
 	return nil
+}
+
+func checkCisGlbDeleted(d *schema.ResourceData, meta interface{}, errCheck error, glb *v1.Glb) bool {
+	// Check if error is due to removal of Cis resource and hence all subresources
+	if strings.Contains(errCheck.Error(), "Object not found") ||
+		strings.Contains(errCheck.Error(), "status code: 404") ||
+		strings.Contains(errCheck.Error(), "Invalid zone identifier") { //code 400
+		log.Printf("[WARN] Removing resource from state because it's not found via the CIS API")
+		return true
+	}
+	_, _, cisId, _ := convertTfToCisThreeVar(d.Id())
+	exists, errNew := rcInstanceExists(cisId, "ibm_cis", meta)
+	if errNew != nil {
+		log.Printf("resourceCISglbRead - Failure validating service exists %s\n", errNew)
+		return false
+	}
+	if !exists {
+		log.Printf("[WARN] Removing glb from state because parent cis instance is in removed state")
+		return true
+	}
+	return false
 }

@@ -773,6 +773,7 @@ func flattenPolicyResource(list []iampapv1.Resource) []map[string]interface{} {
 	return result
 }
 
+// Cloud Internet Services
 func flattenHealthMonitors(list []datatypes.Network_LBaaS_Listener) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(list))
 	ports := make([]int, 0, 0)
@@ -864,6 +865,7 @@ func flattenServiceIds(services []string, meta interface{}) ([]string, error) {
 	return serviceids, nil
 }
 
+// Cloud Internet Services
 func expandOrigins(originsList *schema.Set) (origins []cisv1.Origin) {
 	for _, iface := range originsList.List() {
 		orig := iface.(map[string]interface{})
@@ -878,6 +880,7 @@ func expandOrigins(originsList *schema.Set) (origins []cisv1.Origin) {
 	return
 }
 
+// Cloud Internet Services
 func flattenOrigins(list []cisv1.Origin) []map[string]interface{} {
 	origins := make([]map[string]interface{}, len(list), len(list))
 	for i, origin := range list {
@@ -904,6 +907,7 @@ func expandStringMap(inVal interface{}) map[string]string {
 	return outVal
 }
 
+// Cloud Internet Services
 func convertTfToCisThreeVar(glbTfId string) (glbId string, zoneId string, cisId string, err error) {
 	g := strings.SplitN(glbTfId, ":", 3)
 	glbId = g[0]
@@ -911,12 +915,13 @@ func convertTfToCisThreeVar(glbTfId string) (glbId string, zoneId string, cisId 
 		zoneId = g[1]
 		cisId = g[2]
 	} else {
-		err = errors.New("resourceCISGlbRead - cis_id or zone_id not passed")
+		err = errors.New("cis_id or zone_id not passed")
 		return
 	}
 	return
 }
 
+// Cloud Internet Services
 func convertCisToTfThreeVar(Id string, Id2 string, cisId string) (buildId string) {
 	if Id != "" {
 		buildId = Id + ":" + Id2 + ":" + cisId
@@ -926,6 +931,7 @@ func convertCisToTfThreeVar(Id string, Id2 string, cisId string) (buildId string
 	return
 }
 
+// Cloud Internet Services
 func convertTfToCisTwoVarSlice(tfIds []string) (Ids []string, cisId string, err error) {
 	for _, item := range tfIds {
 		Id := strings.SplitN(item, ":", 2)
@@ -939,6 +945,7 @@ func convertTfToCisTwoVarSlice(tfIds []string) (Ids []string, cisId string, err 
 	return
 }
 
+// Cloud Internet Services
 func convertCisToTfTwoVarSlice(Ids []string, cisId string) (buildIds []string) {
 	for _, Id := range Ids {
 		buildIds = append(buildIds, Id+":"+cisId)
@@ -946,6 +953,7 @@ func convertCisToTfTwoVarSlice(Ids []string, cisId string) (buildIds []string) {
 	return
 }
 
+// Cloud Internet Services
 func convertCisToTfTwoVar(Id string, cisId string) (buildId string) {
 	if Id != "" {
 		buildId = Id + ":" + cisId
@@ -955,6 +963,7 @@ func convertCisToTfTwoVar(Id string, cisId string) (buildId string) {
 	return
 }
 
+// Cloud Internet Services
 func convertTftoCisTwoVar(tfId string) (Id string, cisId string, err error) {
 	g := strings.SplitN(tfId, ":", 2)
 	if len(g) > 1 {
@@ -967,6 +976,7 @@ func convertTftoCisTwoVar(tfId string) (Id string, cisId string, err error) {
 	return
 }
 
+// Cloud Internet Services
 func transformToIBMCISDnsData(recordType string, id string, value interface{}) (newValue interface{}, err error) {
 	switch {
 	case id == "flags":
@@ -988,3 +998,66 @@ func transformToIBMCISDnsData(recordType string, id string, value interface{}) (
 
 	return
 }
+
+func indexOf(element string, data []string) int {
+	for k, v := range data {
+		if element == v {
+			return k
+		}
+	}
+	return -1 //not found.
+}
+
+func rcInstanceExists(resourceId string, resourceType string, meta interface{}) (bool, error) {
+	// Check to see if Resource Manager instance exists
+	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	if err != nil {
+		return true, nil
+	}
+	exists := true
+	instance, err := rsConClient.ResourceServiceInstance().GetInstance(resourceId)
+	if err != nil {
+		if strings.Contains(err.Error(), "Object not found") ||
+			strings.Contains(err.Error(), "status code: 404") {
+			exists = false
+		} else {
+			return true, fmt.Errorf("Error checking resource instance exists: %s", err)
+		}
+	} else {
+		if strings.Contains(instance.State, "removed") {
+			exists = false
+		}
+	}
+	if exists {
+		return true, nil
+	}
+	// Implement when pointer to terraform.State available
+	// If rcInstance is now in removed state, set TF state to removed
+	// s := *terraform.State
+	// for _, r := range s.RootModule().Resources {
+	// 	if r.Type != resourceType {
+	// 		continue
+	// 	}
+	// 	if r.Primary.ID == resourceId {
+	// 		r.Primary.Set("status", "removed")
+	// 	}
+	// }
+	return false, nil
+}
+
+// Implement when pointer to terraform.State available
+// func resourceInstanceExistsTf(resourceId string, resourceType string) bool {
+// 	// Check TF state to see if Cloud resource instance has already been removed
+// 	s := *terraform.State
+// 	for _, r := range s.RootModule().Resources {
+// 		if r.Type != resourceType {
+// 			continue
+// 		}
+// 		if r.Primary.ID == resourceId {
+// 			if strings.Contains(r.Primary.Attributes["status"], "removed") {
+// 				return false
+// 			}
+// 		}
+// 	}
+// 	return true
+// }

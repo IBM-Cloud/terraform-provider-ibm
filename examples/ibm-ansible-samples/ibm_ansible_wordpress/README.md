@@ -1,6 +1,7 @@
 # Wordpress_ansible_ibmcloud
 
 Demo ansible package to install Wordpress in a highly available 3-tier configuration on IBM Cloud
+ - IBM Cloud Internet Services
  - IBM Cloud Load Balancer
  - httpd app server
  - mariadb 
@@ -8,7 +9,7 @@ Demo ansible package to install Wordpress in a highly available 3-tier configura
 This is written as a capability demonstration of building high availability web sites using IBM Cloud IaaS and secure networking. 
 
 
-This pacakge supports two deployment options: 
+This package supports two deployment options: 
 - Single site deployment of multiple httpd webservers with a single Mariadb database host with an IBM Cloud Load Balancer (CLB) as a local LB. 
 - Dual site high availability configuration, with webservers and DB's deployed in two data centers, each with CLBs, fronted by IBM Cloud Internet Services (CloudFlare) as a global load balancer. The Wordpress database is replicated master-master over the IBM Cloud private network. 
 
