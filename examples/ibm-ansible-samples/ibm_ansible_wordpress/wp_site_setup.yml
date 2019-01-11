@@ -15,10 +15,10 @@
 - hosts: webserver[0]
   gather_facts: no
   vars:
-    site_title: "wcpclouduk"
+    site_title: "wcpcloudus"
     site_admin: "admin"
-    site_email: "admin@google.com"
-    # site_url: "web-lb3-1530547-lon02.lb.bluemix.net"
+    site_email: "admin@gmail.com"
+    site_url1: "wcpcloudus.com"
     site_password: "strong@password"
 
   tasks:
@@ -34,6 +34,13 @@
   - set_fact: clb={{ groups['cloudloadbalancer'][0] }}
   - set_fact: site_url={{ hostvars[clb].vip }}
       
+
+  - set_fact: glb={{ groups['cisgloballoadbalancer'][0] }}
+    when: groups['cisgloballoadbalancer'] is defined
+
+  - set_fact: site_url={{ hostvars[glb].dns_name }}
+    when: glb is defined
+
   - name: Configure Wordpress site
     command:  "wp --allow-root core install --title='{{ site_title }}' --admin_user='{{ site_admin }}' --admin_email='{{ site_email }}' --url='{{ site_url }}' --admin_password='{{ site_password }}'"
     args:

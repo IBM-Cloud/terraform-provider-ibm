@@ -344,12 +344,11 @@ func resourceIBMCISDnsRecordRead(d *schema.ResourceData, meta interface{}) error
 	var recordPtr *v1.DnsRecord
 	recordPtr, err = cisClient.Dns().GetDns(cisId, zoneId, recordId)
 	if err != nil {
-		if strings.Contains(err.Error(), "Invalid dns record identifier") ||
-			strings.Contains(err.Error(), "HTTP status 404") {
-			log.Printf("[WARN] Removing record from state because it's not found in API")
+		if checkCisRecordDeleted(d, meta, err, recordPtr) {
 			d.SetId("")
 			return nil
 		}
+		log.Printf("[WARN] Error getting zone during DNS Record Read %v\n", err)
 		return err
 	}
 
@@ -380,6 +379,20 @@ func resourceIBMCISDnsRecordDelete(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 	recordId, zoneId, cisId, _ := convertTfToCisThreeVar(d.Id())
+	if err != nil {
+		return err
+	}
+
+	var recordPtr *v1.DnsRecord
+	recordPtr, err = cisClient.Dns().GetDns(cisId, zoneId, recordId)
+	if err != nil {
+		if checkCisRecordDeleted(d, meta, err, recordPtr) {
+			d.SetId("")
+			return nil
+		}
+		log.Printf("[WARN] Error getting zone during DNS Record Read %v\n", err)
+		return err
+	}
 	err = cisClient.Dns().DeleteDns(cisId, zoneId, recordId)
 	if err != nil {
 		return fmt.Errorf("Error deleting IBMCISDNS Record: %s", err)
@@ -441,6 +454,28 @@ func suppressNameDiff(k, old, new string, d *schema.ResourceData) bool {
 func suppressDataDiff(k, old, new string, d *schema.ResourceData) bool {
 	// Tuncate after .
 	if strings.SplitN(old, ".", 2)[0] == strings.SplitN(new, ".", 2)[0] {
+		return true
+	}
+	return false
+}
+
+func checkCisRecordDeleted(d *schema.ResourceData, meta interface{}, errCheck error, record *v1.DnsRecord) bool {
+	// Check if error is due to removal of Cis resource and hence all subresources
+	if strings.Contains(errCheck.Error(), "Object not found") ||
+		strings.Contains(errCheck.Error(), "status code: 404") ||
+		strings.Contains(errCheck.Error(), "status code: 400") ||
+		strings.Contains(errCheck.Error(), "Invalid dns record identifier") {
+		log.Printf("[WARN] Removing resource from state because it's not found via the CIS API")
+		return true
+	}
+	_, _, cisId, _ := convertTfToCisThreeVar(d.Id())
+	exists, errNew := rcInstanceExists(cisId, "ibm_cis", meta)
+	if errNew != nil {
+		log.Printf("resourceCISDnsRecordRead - Failure validating service exists %s\n", errNew)
+		return false
+	}
+	if !exists {
+		log.Printf("[WARN] Removing Dns Record from state because parent cis instance is in removed state")
 		return true
 	}
 	return false

@@ -3,11 +3,12 @@
 # Terraform-Ansible dynamic inventory for IBM Cloud
 # Copyright (c) 2018, IBM UK
 # steve_strutt@uk.ibm.com
-ti_version = '0.7'
+ti_version = '0.8'
 #
 # 01-10-2018 - 0.5 - Added support for Cloud Load Balancer 
 # 05-10-2018 - 0.6 - Added support for IBM Cloud Resource Instances and internet-svcs
 # 03-11-2018 - 0.7 - Fixed failure where user_metadata did not exist
+# 03-11-2018 - 0.8 - Updated to support Cloud Internet Services in IBM TF provider 0.15
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -196,6 +197,30 @@ class TerraformInventory:
                     yield name, attributes, group
 
 
+
+                if resource['type'] == 'ibm_cis_global_load_balancer':
+                    #provider = 'ibm'
+                    tf_attrib = resource['primary']['attributes']
+                    name = tf_attrib['name']
+                    group = []
+
+                    attributes = {
+                        'id': tf_attrib['id'],
+                        'dns_name': tf_attrib['name'],                       
+                    }
+
+                    # CIS loadbalancer's do not support tagging. So force group
+                    group.append('cisgloballoadbalancer')
+                
+                    yield name, attributes, group
+
+
+
+
+
+
+
+
                 if resource['type'] == 'ibm_lbaas':
                     #provider = 'ibm'
                     tf_attrib = resource['primary']['attributes']
@@ -216,73 +241,10 @@ class TerraformInventory:
                     yield name, attributes, group
 
 
-                # IBM Cloud services - Resource Controller instances
-                if resource['type'] == 'ibm_resource_instance':
-                    #provider = 'ibm'
-                    tf_attrib = resource['primary']['attributes']
-                    name = tf_attrib['name']
-                    group = []
-
-                    attributes = {
-                        'id': tf_attrib['id'],
-                        'plan': tf_attrib['plan'],
-                        'service': tf_attrib['service'],
-                        'status': tf_attrib['status'],
-                        'resource_group': tf_attrib['resource_group_id'],                       
-                        'region': tf_attrib['location'],                       
-                        'provider': 'ibm',
-                        'tags': parse_list(tf_attrib, 'tags'),
-                    }
-
-                    if tf_attrib['service'] == 'internet-svcs':
-                        group.append('internet-svcs')
-
-                    # Add resouce to IBM service resource group
-                    group.append('ibmcloudresources')
-                    #tag of form group: xxxxxxx is used to define ansible host group
-                    for value in list(attributes["tags"]):
-                        try:
-                            curprefix, rest = value.split(":", 1)
-                        except ValueError:
-                            continue
-                        if curprefix != "group" :
-                            continue
-                        group.append(rest)
-
-                    yield name, attributes, group
-
-
-                # Repeat this section for each additional resource type to be added
-                #
-                # if resource['type'] == 'ibm_lbaas':
-                #     #provider = 'ibm'
-                #     tf_attrib = resource['primary']['attributes']
-                #     name = tf_attrib['name']
-                #     group = []
-
-                #     attributes = {
-                #         'id': tf_attrib['id'],
-                #         'vip': tf_attrib['vip'],                       
-                #         'region': tf_attrib['datacenter'],                       
-                #         'provider': 'ibm',
-                #         'tags': parse_list(tf_attrib, 'tags'),
-                #     }
-
-                #     for value in list(attributes["tags"]):
-                #         try:
-                #             curprefix, rest = value.split(":", 1)
-                #         except ValueError:
-                #             continue
-                #         if curprefix != "group" :
-                #             continue
-                #         group.append(rest)   
-
-
 
                 else:    
                     continue        
              
-                yield name, attributes, group
 
 
 if __name__ == '__main__':

@@ -4,6 +4,7 @@ import (
 	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/hashicorp/terraform/helper/schema"
 	"log"
+	"strings"
 )
 
 func resourceIBMCISSettings() *schema.Resource {
@@ -122,10 +123,13 @@ func resourceCISSettingsRead(d *schema.ResourceData, meta interface{}) error {
 	for _, item := range settingsList {
 		settingsResult, err := cisClient.Settings().GetSetting(cisId, settingsId, item)
 		if err != nil {
-			log.Printf("resourceCISettingsRead - GetSetting for %s Failed\n", item)
+			if checkCisSettingsDeleted(d, meta, err, cisId) {
+				d.SetId("")
+				return nil
+			}
+			log.Printf("[WARN] Error getting zone during DomainRead %v\n", err)
 			return err
 		} else {
-
 			settingsObj := *settingsResult
 			d.Set(item, settingsObj.Value)
 		}
@@ -137,4 +141,24 @@ func resourceCISSettingsDelete(d *schema.ResourceData, meta interface{}) error {
 	// Nothing to delete on CIS resource
 	d.SetId("")
 	return nil
+}
+
+func checkCisSettingsDeleted(d *schema.ResourceData, meta interface{}, errCheck error, cisId string) bool {
+	// Check if error is due to removal of Cis resource and hence all subresources
+	if strings.Contains(errCheck.Error(), "Object not found") ||
+		strings.Contains(errCheck.Error(), "status code: 404") ||
+		strings.Contains(errCheck.Error(), "Invalid zone identifier") { //code 400
+		log.Printf("[WARN] Removing resource from state because it's not found via the CIS API")
+		return true
+	}
+	exists, errNew := rcInstanceExists(cisId, "ibm_cis", meta)
+	if errNew != nil {
+		log.Printf("resourceCISdomainRead - Failure validating service exists %s\n", errNew)
+		return false
+	}
+	if !exists {
+		log.Printf("[WARN] Removing domain settings from state because parent cis instance is in removed state")
+		return true
+	}
+	return false
 }
