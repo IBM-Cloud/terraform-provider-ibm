@@ -952,7 +952,7 @@ func setHardwareNotes(id int, d dataRetriever, meta interface{}) error {
 
 // Returns a price from an item list.
 // Example usage : getItemPriceId(items, 'server', 'INTEL_XEON_2690_2_60')
-func getItemPriceId(items []datatypes.Product_Item, categoryCode string, keyName string) (datatypes.Product_Item_Price, error) {
+func getItemPriceId(items []datatypes.Product_Item, categoryCode string, keyName string, capacity ...int) (datatypes.Product_Item_Price, error) {
 	availableItems := ""
 	for _, item := range items {
 		for _, itemCategory := range item.Categories {
@@ -960,9 +960,35 @@ func getItemPriceId(items []datatypes.Product_Item, categoryCode string, keyName
 				availableItems = availableItems + *item.KeyName + " ( " + *item.Description + " ) , "
 				if *item.KeyName == keyName {
 					for _, price := range item.Prices {
+						capacityMin := -1
+						capacityMax := -1
+						var err error
+
+						if price.CapacityRestrictionMinimum != nil && price.CapacityRestrictionMaximum != nil && *price.CapacityRestrictionType == "CORE" {
+							capacityMin, err = strconv.Atoi(*price.CapacityRestrictionMinimum)
+							if err != nil {
+								return datatypes.Product_Item_Price{}, err
+							}
+							capacityMax, err = strconv.Atoi(*price.CapacityRestrictionMaximum)
+							if err != nil {
+								return datatypes.Product_Item_Price{}, err
+							}
+
+						}
 						for _, category := range price.Categories {
 							if *category.CategoryCode == categoryCode && price.LocationGroupId == nil {
-								return datatypes.Product_Item_Price{Id: price.Id}, nil
+
+								if len(capacity) > 0 && capacityMin != -1 && capacityMax != -1 {
+
+									if capacity[0] >= capacityMin && capacity[0] <= capacityMax {
+										return datatypes.Product_Item_Price{Id: price.Id}, nil
+									}
+
+								} else {
+									return datatypes.Product_Item_Price{Id: price.Id}, nil
+
+								}
+
 							}
 						}
 					}
@@ -1021,9 +1047,27 @@ func getMonthlyBareMetalOrder(d *schema.ResourceData, meta interface{}) (datatyp
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
 	}
-	os, err := getItemPriceId(items, "os", osKeyName.(string))
+
+	coreCapacity := -1
+
+	coreCapacity = getCoreCapacity(items, "server", d.Get("process_key_name").(string))
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
+	}
+	var os datatypes.Product_Item_Price
+
+	if coreCapacity == -1 {
+		os, err = getItemPriceId(items, "os", osKeyName.(string))
+		if err != nil {
+			return datatypes.Container_Product_Order{}, err
+		}
+
+	} else {
+		os, err = getItemPriceId(items, "os", osKeyName.(string), coreCapacity)
+		if err != nil {
+			return datatypes.Container_Product_Order{}, err
+		}
+
 	}
 
 	ram, err := findMemoryItemPriceId(items, d)
@@ -1467,4 +1511,20 @@ func getCommonItemPriceID(items []datatypes.Product_Item, categoryCode string, k
 		}
 	}
 	return false, datatypes.Product_Item_Price{}
+}
+
+func getCoreCapacity(items []datatypes.Product_Item, categoryCode string, keyName string) int {
+	availableItems := ""
+	for _, item := range items {
+		for _, itemCategory := range item.Categories {
+			if *itemCategory.CategoryCode == categoryCode {
+				availableItems = availableItems + *item.KeyName + " ( " + *item.Description + " ) , "
+				if *item.KeyName == keyName && item.TotalPhysicalCoreCapacity != nil {
+					return *item.TotalPhysicalCoreCapacity
+
+				}
+			}
+		}
+	}
+	return -1
 }

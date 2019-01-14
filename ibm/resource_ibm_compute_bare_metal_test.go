@@ -36,7 +36,7 @@ func TestAccIBMComputeBareMetal_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						configName, "os_reference_code", "UBUNTU_16_64"),
 					resource.TestCheckResourceAttr(
-						configName, "datacenter", "dal01"),
+						configName, "datacenter", "dal10"),
 					resource.TestCheckResourceAttr(
 						configName, "network_speed", "100"),
 					resource.TestCheckResourceAttr(
@@ -93,7 +93,7 @@ func TestAccIBMComputeBareMetal_With_IPV6(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						configName, "os_reference_code", "UBUNTU_16_64"),
 					resource.TestCheckResourceAttr(
-						configName, "datacenter", "dal01"),
+						configName, "datacenter", "dal10"),
 					resource.TestCheckResourceAttr(
 						configName, "network_speed", "100"),
 					resource.TestCheckResourceAttr(
@@ -152,7 +152,7 @@ func TestAccIBMComputeBareMetal_With_Unbonded_Port_Speed(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						configName, "os_reference_code", "UBUNTU_16_64"),
 					resource.TestCheckResourceAttr(
-						configName, "datacenter", "dal01"),
+						configName, "datacenter", "dal10"),
 					resource.TestCheckResourceAttr(
 						configName, "network_speed", "1000"),
 					resource.TestCheckResourceAttr(
@@ -195,7 +195,7 @@ func TestAccIBMComputeBareMetal_With_Network_Storage_Access(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						configInstance, "domain", domain),
 					resource.TestCheckResourceAttr(
-						configInstance, "datacenter", "wdc04"),
+						configInstance, "datacenter", "dal10"),
 					resource.TestCheckResourceAttr(
 						configInstance, "hourly_billing", "true"),
 					resource.TestCheckResourceAttr(
@@ -395,7 +395,7 @@ resource "ibm_compute_bare_metal" "terraform-acceptance-test-1" {
   hostname                  = "%s"
   domain                    = "terraformuat.ibm.com"
   os_reference_code         = "UBUNTU_16_64"
-  datacenter                = "dal01"
+  datacenter                = "dal10"
   network_speed             = 100
   hourly_billing            = true
   private_network_only      = false
@@ -414,7 +414,7 @@ resource "ibm_compute_bare_metal" "terraform-acceptance-test-1" {
 	hostname                  = "%s"
 	domain                    = "terraformuat.ibm.com"
 	os_reference_code         = "UBUNTU_16_64"
-	datacenter                = "dal01"
+	datacenter                = "dal10"
 	network_speed             = 100
 	hourly_billing            = true
 	private_network_only      = false
@@ -432,7 +432,7 @@ resource "ibm_compute_bare_metal" "terraform-bm-storage-access" {
     hostname = "%s"
     domain = "%s"
     os_reference_code = "UBUNTU_16_64"
-    datacenter = "wdc04"
+    datacenter = "dal10"
     network_speed = 100
     hourly_billing = true
     private_network_only = false
@@ -457,7 +457,7 @@ resource "ibm_compute_bare_metal" "terraform-bm-storage-access" {
     hostname = "%s"
     domain = "%s"
     os_reference_code = "UBUNTU_16_64"
-    datacenter = "wdc04"
+    datacenter = "dal10"
     network_speed = 100
     hourly_billing = true
     private_network_only = false
@@ -520,7 +520,7 @@ func testBareMetalCustomConfigWithGpus(hostname, domain string) string {
 		os_key_name            = "OS_WINDOWS_2012_R2_FULL_DC_64_BIT_2"
 		hostname               = "%s"
 		domain                 = "%s"
-		datacenter             = "ams01"
+		datacenter             = "dal05"
 		network_speed          = 1000
 		public_bandwidth       = 500
 		disk_key_names         = ["HARD_DRIVE_1_00_TB_SATA_2", "HARD_DRIVE_1_00_TB_SATA_2"]
@@ -535,7 +535,7 @@ resource "ibm_compute_bare_metal" "terraform-acceptance-test-1" {
 	hostname               = "%s"
 	domain                 = "terraformuat.ibm.com"
 	os_reference_code      = "UBUNTU_16_64"
-	datacenter             = "dal01"
+	datacenter             = "dal10"
 	network_speed          = 1000
 	unbonded_network       = true
 	hourly_billing         = true
@@ -554,7 +554,7 @@ resource "ibm_compute_bare_metal" "terraform-acceptance-test-1" {
 	hostname               = "%s"
 	domain                 = "terraformuat.ibm.com"
 	os_reference_code      = "UBUNTU_16_64"
-	datacenter             = "dal01"
+	datacenter             = "dal10"
 	ipv6_enabled           = true
 	ipv6_static_enabled    = true
 	secondary_ip_count     = 4

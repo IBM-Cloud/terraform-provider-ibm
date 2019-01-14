@@ -33,7 +33,7 @@ const (
 
 const NOT_FOUND = "SoftLayer_Exception_Network_LBaaS_ObjectNotFound"
 
-const productItemMaskWithPriceLocationGroupID = "id,categories,capacity,description,units,keyName,prices[id,categories[id,name,categoryCode],locationGroupId]"
+const productItemMaskWithPriceLocationGroupID = "id,categories,capacity,description,units,keyName,prices[id,categories[id,name,categoryCode],locationGroupId,capacityRestrictionMaximum,capacityRestrictionMinimum,capacityRestrictionType],totalPhysicalCoreCapacity"
 
 func init() {
 
