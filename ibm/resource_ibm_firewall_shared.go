@@ -19,8 +19,8 @@ const (
 
 func resourceIBMFirewallShared() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceIBMFirewallSharedCreate,
-		Read:   resourceIBMFirewallSharedRead,
+		Create:   resourceIBMFirewallSharedCreate,
+		Read:     resourceIBMFirewallSharedRead,
 		Delete:   resourceIBMFirewallSharedDelete,
 		Exists:   resourceIBMFirewallSharedExists,
 		Importer: &schema.ResourceImporter{},
