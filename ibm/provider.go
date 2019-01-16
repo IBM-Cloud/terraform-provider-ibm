@@ -194,6 +194,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_storage_block":                         resourceIBMStorageBlock(),
 			"ibm_storage_file":                          resourceIBMStorageFile(),
 			"ibm_subnet":                                resourceIBMSubnet(),
+			"ibm_ssl_certificate":                       resourceIBMSSLCertificate(),
 		},
 
 		ConfigureFunc: providerConfigure,
