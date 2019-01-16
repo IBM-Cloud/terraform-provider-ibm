@@ -21,7 +21,6 @@ func resourceIBMFirewallShared() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceIBMFirewallSharedCreate,
 		Read:   resourceIBMFirewallSharedRead,
-		// Update:   resourceIBMFirewallSharedUpdate,
 		Delete:   resourceIBMFirewallSharedDelete,
 		Exists:   resourceIBMFirewallSharedExists,
 		Importer: &schema.ResourceImporter{},
