@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ssl_certificate"
 sidebar_current: "docs-ibm-resource-ssl-certificate"
 description: |-
-  Manages IBM Compute SSL Certificate.
+  Requests IBM SSL Certificate.
 ---
 
 # ibm\_ssl_certificate
