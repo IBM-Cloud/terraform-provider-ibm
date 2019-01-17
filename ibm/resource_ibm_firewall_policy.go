@@ -96,6 +96,12 @@ func resourceIBMFirewallPolicy() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
 			},
+			"append_rules_to_existing": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				ForceNew: true,
+			},
 		},
 	}
 }
@@ -133,6 +139,56 @@ func prepareRules(d *schema.ResourceData) []datatypes.Network_Firewall_Update_Re
 	return rules
 }
 
+/**
+Method for appending the existing rules set on a FW policy to the ones provided by the user.
+This method is intriduced because there is currently no API from SL that supports only adding
+of rules, like we can do from the portal.
+*/
+func prepareRulesForAppending(d *schema.ResourceData, meta interface{}) ([]datatypes.Network_Firewall_Update_Request_Rule, error) {
+	rules := prepareRules(d)
+	log.Printf("[INFO] Size of new rules %d\n", len(rules))
+
+	//Fetch existing rules
+	sess := meta.(ClientSession).SoftLayerSession()
+	fwId := d.Get("firewall_id").(int)
+
+	//Fetch the existing firewall based on its ID. We will use this to fetch the existing rules
+	existing_rules, err := services.GetNetworkVlanFirewallService(sess).
+		Id(fwId).
+		GetRules()
+
+	if err != nil {
+		return nil, fmt.Errorf("Error retrieving firewall information: %s", err)
+	}
+
+	log.Printf("[INFO] Number of existing rules: %d", len(existing_rules))
+
+	cntForExistingRules := len(rules)
+
+	//Append the existing rules to the "rules" variable which are the new rules provided by the user
+	for cnt, ruleItem := range existing_rules {
+		var rule datatypes.Network_Firewall_Update_Request_Rule
+		rule.OrderValue = sl.Int(cntForExistingRules + cnt + 1)
+		rule.Action = ruleItem.Action
+		rule.SourceIpAddress = ruleItem.SourceIpAddress
+		rule.SourceIpCidr = ruleItem.SourceIpCidr
+		rule.DestinationIpAddress = ruleItem.DestinationIpAddress
+		rule.DestinationIpCidr = ruleItem.DestinationIpCidr
+		rule.DestinationPortRangeStart = ruleItem.DestinationPortRangeStart
+		rule.DestinationPortRangeEnd = ruleItem.DestinationPortRangeEnd
+		rule.Protocol = ruleItem.Protocol
+		if ruleItem.Notes != nil {
+			rule.Notes = ruleItem.Notes
+		}
+		rule.Version = ruleItem.Version
+		rules = append(rules, rule)
+	}
+
+	//Log the final number of rules that will be part of the policy
+	log.Printf("[INFO] Final number of rules: %d", len(rules))
+	return rules, nil
+}
+
 func getFirewallContextAccessControlListId(fwId int, sess *session.Session) (int, error) {
 	service := services.GetNetworkVlanFirewallService(sess)
 	vlan, err := service.Id(fwId).Mask(aclMask).GetNetworkVlans()
@@ -156,7 +212,23 @@ func resourceIBMFirewallPolicyCreate(d *schema.ResourceData, meta interface{}) e
 	sess := meta.(ClientSession).SoftLayerSession()
 
 	fwId := d.Get("firewall_id").(int)
-	rules := prepareRules(d)
+	appendToExistingRulesFlag := d.Get("append_rules_to_existing").(bool)
+	rules := make([]datatypes.Network_Firewall_Update_Request_Rule, 0)
+	var err error
+
+	/*
+		Check the flag : append_rules_to_existing. If its set as TRUE by the user, it means
+		that the user wants to update the rules in the existing policy and not recreate the whole policy
+	*/
+	if appendToExistingRulesFlag {
+		log.Printf("[INFO]  Adding to existing")
+		rules, err = prepareRulesForAppending(d, meta)
+		if err != nil {
+			return fmt.Errorf("Error during creating list of rules: %s", err)
+		}
+	} else {
+		rules = prepareRules(d)
+	}
 
 	fwContextACLId, err := getFirewallContextAccessControlListId(fwId, sess)
 	if err != nil {
@@ -213,8 +285,8 @@ func resourceIBMFirewallPolicyRead(d *schema.ResourceData, meta interface{}) err
 			r["dst_port_range_end"] = *rule.DestinationPortRangeEnd
 		}
 		r["protocol"] = *rule.Protocol
-		//Check if notes is not nil
-		if rule.Notes != nil {
+
+		if rule.Notes != nil && len(*rule.Notes) > 0 {
 			r["notes"] = *rule.Notes
 		}
 		rules = append(rules, r)
