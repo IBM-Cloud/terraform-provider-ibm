@@ -900,7 +900,8 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 	//TODO put subnet can't deleted in the error message if such case is observed in the chnages
 	var publicSubnetAdded bool
 	noSubnet := d.Get("no_subnet").(bool)
-	if noSubnet == false {
+	publicVlanID := d.Get("public_vlan_id").(string)
+	if noSubnet == false && publicVlanID != "" {
 		publicSubnetAdded = true
 	}
 	if d.HasChange("subnet_id") {
