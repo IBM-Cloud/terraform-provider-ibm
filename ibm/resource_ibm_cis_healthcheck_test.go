@@ -137,7 +137,6 @@ func TestAccIBMCisHealthcheck_CreateAfterCisRIManualDestroy(t *testing.T) {
 							return err
 						}
 						for _, r := range state.RootModule().Resources {
-							log.Printf("[WARN] Checking for resources  %v\n", r)
 							if r.Type == "ibm_cis_domain" {
 								log.Printf("[WARN] Manually removing domain")
 								zoneId, cisId, _ := convertTftoCisTwoVar(r.Primary.ID)
@@ -176,7 +175,6 @@ func testAccCisMonitorManuallyDelete(tfMonitorId *string) resource.TestCheckFunc
 		if err != nil {
 			return err
 		}
-		log.Printf(">>>>>>>>>> Manual Delete <<<<<<<<<<<<<")
 		tfMonitor := *tfMonitorId
 		monitorId, cisId, _ := convertTftoCisTwoVar(tfMonitor)
 		err = cisClient.Monitors().DeleteMonitor(cisId, monitorId)

@@ -199,11 +199,6 @@ func resourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	instanceID := d.Id()
-	// if !resourceInstanceExistsTf(instanceID, "ibm_cis") {
-	// 	log.Printf("[WARN] Removing instance from TF state because it's already in removed state")
-	// 	d.SetId("")
-	// 	return nil
-	// }
 	instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
 	if err != nil {
 		if strings.Contains(err.Error(), "Object not found") ||
