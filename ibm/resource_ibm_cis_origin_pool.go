@@ -99,7 +99,6 @@ func resourceIBMCISPool() *schema.Resource {
 
 func resourceCISpoolCreate(d *schema.ResourceData, meta interface{}) error {
 	cisClient, err := meta.(ClientSession).CisAPI()
-	log.Printf("   client %v\n", cisClient)
 	if err != nil {
 		return err
 	}
@@ -136,7 +135,7 @@ func resourceCISpoolCreate(d *schema.ResourceData, meta interface{}) error {
 
 	pool, err = cisClient.Pools().CreatePool(cisId, poolNew)
 	if err != nil {
-		log.Printf("CreatePools Failed %s\n", err)
+		log.Printf("[WARN] CreatePools Failed %s\n", err)
 		return err
 	}
 
@@ -158,9 +157,7 @@ func resourceCISpoolRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("resourceCISpoolRead - Getting Pool %v\n", poolId)
 	var pool *v1.Pool
-
 	pool, err = cisClient.Pools().GetPool(cisId, poolId)
 	if err != nil {
 		if checkCisPoolDeleted(d, meta, err, pool) {
@@ -197,8 +194,6 @@ func resourceCISpoolDelete(d *schema.ResourceData, meta interface{}) error {
 	poolId, cisId, err := convertTftoCisTwoVar(d.Id())
 	var pool *v1.Pool
 	emptyPool := new(v1.Pool)
-
-	log.Println("Getting Pool to delete")
 	pool, err = cisClient.Pools().GetPool(cisId, poolId)
 	if err != nil {
 		if checkCisPoolDeleted(d, meta, err, pool) {
@@ -211,10 +206,9 @@ func resourceCISpoolDelete(d *schema.ResourceData, meta interface{}) error {
 
 	poolObj := *pool
 	if !reflect.DeepEqual(emptyPool, poolObj) {
-		log.Println("Deleting Pool")
 		err = cisClient.Pools().DeletePool(cisId, poolId)
 		if err != nil {
-			log.Printf("DeletePool Failed %s\n", err)
+			log.Printf("[WARN] DeletePool Failed %s\n", err)
 			return err
 		}
 	}
@@ -234,7 +228,7 @@ func checkCisPoolDeleted(d *schema.ResourceData, meta interface{}, errCheck erro
 	_, cisId, _ := convertTftoCisTwoVar(d.Id())
 	exists, errNew := rcInstanceExists(cisId, "ibm_cis", meta)
 	if errNew != nil {
-		log.Printf("resourceCISpoolRead - Failure validating service exists %s\n", errNew)
+		log.Printf("[WARN] resourceCISpoolRead - Failure validating service exists %s\n", errNew)
 		return false
 	}
 	if !exists {

@@ -81,7 +81,6 @@ var settingsList = [...]string{"waf", "ssl", "min_tls_version", "automatic_https
 
 func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 	cisClient, err := meta.(ClientSession).CisAPI()
-	log.Printf("   client %v\n", cisClient)
 	if err != nil {
 		return err
 	}
@@ -118,8 +117,6 @@ func resourceCISSettingsRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	settingsId, cisId, _ := convertTftoCisTwoVar(d.Id())
-	log.Printf("resourceCISSettingsRead - Getting Settings \n")
-
 	for _, item := range settingsList {
 		settingsResult, err := cisClient.Settings().GetSetting(cisId, settingsId, item)
 		if err != nil {

@@ -40,18 +40,16 @@ func resourceIBMCISDomain() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 		},
-		Create: resourceCISdomainCreate,
-		Read:   resourceCISdomainRead,
-		Update: resourceCISdomainUpdate,
-		Delete: resourceCISdomainDelete,
-		// Exists checking login in domainRead
+		Create:   resourceCISdomainCreate,
+		Read:     resourceCISdomainRead,
+		Update:   resourceCISdomainUpdate,
+		Delete:   resourceCISdomainDelete,
 		Importer: &schema.ResourceImporter{},
 	}
 }
 
 func resourceCISdomainCreate(d *schema.ResourceData, meta interface{}) error {
 	cisClient, err := meta.(ClientSession).CisAPI()
-	log.Printf("   client %v\n", cisClient)
 	if err != nil {
 		return err
 	}
@@ -150,7 +148,6 @@ func resourceCISdomainDelete(d *schema.ResourceData, meta interface{}) error {
 
 	zoneObj := *zone
 	if !reflect.DeepEqual(emptyZone, zoneObj) {
-		log.Println("Deleting Zone")
 		err = cisClient.Zones().DeleteZone(cisId, zoneId)
 		if err != nil {
 			log.Printf("DeleteZone Failed %s\n", err)

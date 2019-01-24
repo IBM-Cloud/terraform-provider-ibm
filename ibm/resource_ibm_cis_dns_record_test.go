@@ -2,7 +2,6 @@ package ibm
 
 import (
 	"fmt"
-	"log"
 	"testing"
 
 	//v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
@@ -258,8 +257,6 @@ func testAccCheckIBMCisDnsRecordExists(n string, tfRecordId *string) resource.Te
 		}
 
 		tfRecord := *tfRecordId
-		log.Printf("tfrecord delete >>>>>>>>>> %v\n", tfRecord)
-
 		cisClient, err := testAccProvider.Meta().(ClientSession).CisAPI()
 		recordId, zoneId, cisId, _ := convertTfToCisThreeVar(rs.Primary.ID)
 		foundRecordPtr, err := cisClient.Dns().GetDns(rs.Primary.Attributes["cis_id"], zoneId, recordId)

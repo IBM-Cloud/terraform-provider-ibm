@@ -124,11 +124,9 @@ func resourceIBMCISHealthCheck() *schema.Resource {
 
 func resourceCIShealthCheckCreate(d *schema.ResourceData, meta interface{}) error {
 	cisClient, err := meta.(ClientSession).CisAPI()
-	log.Printf("   client %v\n", cisClient)
 	if err != nil {
 		return err
 	}
-	log.Printf(">>>>>>>>>> HealthCheck Create <<<<<<<<<<<<<")
 	cisId := d.Get("cis_id").(string)
 	monitorPath := d.Get("path").(string)
 	expCodes := d.Get("expected_codes").(string)
@@ -183,14 +181,11 @@ func resourceCIShealthCheckRead(d *schema.ResourceData, meta interface{}) error 
 	if err != nil {
 		return err
 	}
-	log.Printf(">>>>>>>>>> HealthCheck Read <<<<<<<<<<<<<")
 	monitorId, cisId, err := convertTftoCisTwoVar(d.Id())
 	if err != nil {
 		return err
 	}
-	log.Printf("resourceCIShealthCheckRead - Getting Monitor %v\n", monitorId)
 	var monitor *v1.Monitor
-
 	monitor, err = cisClient.Monitors().GetMonitor(cisId, monitorId)
 	if err != nil {
 		if checkCisMonitorDeleted(d, meta, err, monitor) {
@@ -224,15 +219,12 @@ func resourceCIShealthCheckDelete(d *schema.ResourceData, meta interface{}) erro
 	if err != nil {
 		return err
 	}
-	log.Printf(">>>>>>>>>> HealthCheck Delete <<<<<<<<<<<<<")
 	monitorId, cisId, err := convertTftoCisTwoVar(d.Id())
 	if err != nil {
 		return err
 	}
 	var monitor *v1.Monitor
 	emptyMonitor := new(v1.Monitor)
-
-	log.Println("Getting Monitor to delete")
 	monitor, err = cisClient.Monitors().GetMonitor(cisId, monitorId)
 	if err != nil {
 		if checkCisMonitorDeleted(d, meta, err, monitor) {
@@ -245,10 +237,9 @@ func resourceCIShealthCheckDelete(d *schema.ResourceData, meta interface{}) erro
 
 	monitorObj := *monitor
 	if !reflect.DeepEqual(emptyMonitor, monitorObj) {
-		log.Println("Deleting Monitor")
 		err = cisClient.Monitors().DeleteMonitor(cisId, monitorId)
 		if err != nil {
-			log.Printf("DeleteMonitor Failed %s\n", err)
+			log.Printf("[WARN] DeleteMonitor Failed %s\n", err)
 			return err
 		}
 	}

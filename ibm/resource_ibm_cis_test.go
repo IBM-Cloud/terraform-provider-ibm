@@ -2,7 +2,6 @@ package ibm
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"testing"
 	"time"
@@ -132,12 +131,10 @@ func testAccCisInstanceManuallyDelete(tfCisId *string) resource.TestCheckFunc {
 }
 
 func testAccCisInstanceManuallyDeleteUnwrapped(s *terraform.State, tfCisId *string) error {
-	log.Printf("[WARN] Entering instance delete 1 >>>>>>>>>>>>>>>>>")
 	rsConClient, err := testAccProvider.Meta().(ClientSession).ResourceControllerAPI()
 	if err != nil {
 		return err
 	}
-	log.Printf("[WARN] Entering instance delete 2 >>>>>>>>>>>>>>>>>")
 	instance := *tfCisId
 	var instanceId string
 	// if Id does not start with CRN, then zoneId/Pool/HealthCheckId passed. Extract InstanceId
@@ -146,7 +143,6 @@ func testAccCisInstanceManuallyDeleteUnwrapped(s *terraform.State, tfCisId *stri
 	} else {
 		_, instanceId, _ = convertTftoCisTwoVar(instance)
 	}
-	log.Printf("[WARN] Calling instance delete >>>>>>>>>>>>>>>>>")
 	err = rsConClient.ResourceServiceInstance().DeleteInstance(instanceId, true)
 	if err != nil {
 		return fmt.Errorf("Error deleting resource instance: %s", err)

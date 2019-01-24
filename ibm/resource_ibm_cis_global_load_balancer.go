@@ -98,7 +98,6 @@ func resourceIBMCISGlb() *schema.Resource {
 
 func resourceCISGlbCreate(d *schema.ResourceData, meta interface{}) error {
 	cisClient, err := meta.(ClientSession).CisAPI()
-	log.Printf("   client %v\n", cisClient)
 	if err != nil {
 		return err
 	}
@@ -148,7 +147,6 @@ func resourceCISGlbRead(d *schema.ResourceData, meta interface{}) error {
 	// Extract CIS Ids from TF Id
 	glbId, zoneId, cisId, err := convertTfToCisThreeVar(d.Id())
 	if err != nil {
-		log.Printf("resourceCISGlbRead %s\n", err)
 		return err
 	}
 	var glb *v1.Glb
@@ -189,7 +187,6 @@ func resourceCISGlbDelete(d *schema.ResourceData, meta interface{}) error {
 	var glb *v1.Glb
 	emptyGlb := new(v1.Glb)
 
-	log.Println("Getting Glb to delete")
 	glb, err = cisClient.Glbs().GetGlb(cisId, zoneId, glbId)
 	if err != nil {
 		if checkCisGlbDeleted(d, meta, err, glb) {
@@ -202,10 +199,9 @@ func resourceCISGlbDelete(d *schema.ResourceData, meta interface{}) error {
 
 	glbObj := *glb
 	if !reflect.DeepEqual(emptyGlb, glbObj) {
-		log.Println("Deleting Glb")
 		err = cisClient.Glbs().DeleteGlb(cisId, zoneId, glbId)
 		if err != nil {
-			log.Printf("DeleteGlb Failed %s\n", err)
+			log.Printf("[WARN] DeleteGlb Failed %s\n", err)
 			return err
 		}
 	}
