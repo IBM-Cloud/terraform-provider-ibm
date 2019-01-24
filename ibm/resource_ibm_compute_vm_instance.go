@@ -1075,9 +1075,9 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 		}
 	}
 
-	if result.BillingItem.OrderItem.Preset != nil {
-
-		d.Set("flavor_key_name", *result.BillingItem.OrderItem.Preset.KeyName)
+	keyName, ok := sl.GrabOk(result, "BillingItem.OrderItem.Preset.KeyName")
+	if ok {
+		d.Set("flavor_key_name", keyName)
 	}
 
 	if result.BlockDeviceTemplateGroup != nil {
