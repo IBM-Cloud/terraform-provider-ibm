@@ -66,7 +66,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
   }]
 
   account_guid = "test_acc"
-  region = "eu-de"
+  region = "us-south"
 }
 ```
 
