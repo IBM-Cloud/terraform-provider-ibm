@@ -555,7 +555,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	albs, err := albsAPI.ListClusterALBs(clusterID, targetEnv)
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "The specified cluster is a lite cluster.") {
 		return fmt.Errorf("Error retrieving alb's of the cluster %s: %s", clusterID, err)
 	}
 
