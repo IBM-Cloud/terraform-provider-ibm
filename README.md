@@ -47,13 +47,15 @@ If you want to run Terraform with the IBM Cloud provider plugin on your system, 
     - Linux/Unix/OS X: `~/.terraform.d/plugins`
     - Windows: `%APPDATA%\terraform.d\plugins`
 
-5. Export the [IBM Cloud API key](https://cloud.ibm.com/iam#/users) as an environment variable.
+5. Export API credential tokens as environment variables. This can either be [IBM Cloud API keys](https://cloud.ibm.com/iam#/users) or Softlayer API keys and usernames, depending on the resources you are provisioning.
 
 ```sh
-export BM_API_KEY=API_KEY_VALUE
+export BM_API_KEY="IBM Cloud API Key"
+export SL_API_KEY="SoftLayer API Key"
+export SL_USERNAME="SoftLayer username associated with SL_API_KEY".
 ```
 
-5. Add the plug-in provider to the Terraform configuration file.
+6. Add the plug-in provider to the Terraform configuration file.
 
 ```
 provider "ibm" {}
