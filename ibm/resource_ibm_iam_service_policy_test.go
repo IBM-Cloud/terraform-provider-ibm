@@ -165,6 +165,29 @@ func TestAccIBMIAMServicePolicy_import(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMServicePolicy_account_management(t *testing.T) {
+	var conf iampapv1.Policy
+	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	resourceName := "ibm_iam_service_policy.policy"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIAMServicePolicy_account_management(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMServicePolicyExists(resourceName, conf),
+					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "account_management", "true"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIAMServicePolicyDestroy(s *terraform.State) error {
 	rsContClient, err := testAccProvider.Meta().(ClientSession).IAMPAPAPI()
 	if err != nil {
@@ -376,6 +399,22 @@ func testAccCheckIBMIAMServicePolicy_import(name string) string {
 		  resource "ibm_iam_service_policy" "policy" {
 			iam_service_id = "${ibm_iam_service_id.serviceID.id}"
 			roles        = ["Viewer"]
+		  }
+
+	`, name)
+}
+
+func testAccCheckIBMIAMServicePolicy_account_management(name string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_service_id" "serviceID" {
+			name = "%s"
+		  }
+		  
+		  resource "ibm_iam_service_policy" "policy" {
+			iam_service_id = "${ibm_iam_service_id.serviceID.id}"
+			roles        = ["Viewer"]
+			account_management = true
 		  }
 
 	`, name)

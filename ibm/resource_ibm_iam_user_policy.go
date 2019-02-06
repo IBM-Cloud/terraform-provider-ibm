@@ -33,10 +33,11 @@ func resourceIBMIAMUserPolicy() *schema.Resource {
 			},
 
 			"resources": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Computed: true,
-				MaxItems: 1,
+				Type:          schema.TypeList,
+				Optional:      true,
+				Computed:      true,
+				MaxItems:      1,
+				ConflictsWith: []string{"account_management"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"service": {
@@ -76,6 +77,14 @@ func resourceIBMIAMUserPolicy() *schema.Resource {
 						},
 					},
 				},
+			},
+
+			"account_management": {
+				Type:          schema.TypeBool,
+				Default:       false,
+				Optional:      true,
+				Description:   "Give access to all account management services",
+				ConflictsWith: []string{"resources"},
 			},
 
 			"tags": {
@@ -172,6 +181,14 @@ func resourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set("roles", roles)
 	d.Set("version", userPolicy.Version)
 	d.Set("resources", flattenPolicyResource(userPolicy.Resources))
+	if len(userPolicy.Resources) > 0 {
+		if userPolicy.Resources[0].GetAttribute("serviceType") == "service" {
+			d.Set("account_management", false)
+		}
+		if userPolicy.Resources[0].GetAttribute("serviceType") == "platform_service" {
+			d.Set("account_management", true)
+		}
+	}
 	return nil
 }
 
