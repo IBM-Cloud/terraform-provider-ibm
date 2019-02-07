@@ -70,8 +70,9 @@ func resourceIBMNetworkVlan() *schema.Resource {
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateVLANName,
 			},
 
 			"router_hostname": {
