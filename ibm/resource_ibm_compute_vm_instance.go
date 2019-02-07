@@ -94,6 +94,7 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				Type:          schema.TypeSet,
 				Optional:      true,
 				ForceNew:      true,
+				MinItems:      2,
 				ConflictsWith: []string{"hostname", "domain"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
