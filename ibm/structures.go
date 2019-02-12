@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
@@ -17,6 +18,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
+	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -366,6 +368,51 @@ func flattenVlans(list []containerv1.Vlan) []map[string]interface{} {
 		vlans[i] = l
 	}
 	return vlans
+}
+
+func flattenIcdGroups(grouplist icdv4.GroupList) []map[string]interface{} {
+	groups := make([]map[string]interface{}, len(grouplist.Groups))
+	for i, group := range grouplist.Groups {
+		memorys := make([]map[string]interface{}, 1)
+		memory := make(map[string]interface{})
+		memory["units"] = group.Memory.Units
+		memory["allocation_mb"] = group.Memory.AllocationMb
+		memory["minimum_mb"] = group.Memory.MinimumMb
+		memory["step_size_mb"] = group.Memory.StepSizeMb
+		memory["is_adjustable"] = group.Memory.IsAdjustable
+		memory["can_scale_down"] = group.Memory.CanScaleDown
+		memorys[0] = memory
+
+		cpus := make([]map[string]interface{}, 1)
+		cpu := make(map[string]interface{})
+		cpu["units"] = group.Cpu.Units
+		cpu["allocation_count"] = group.Cpu.AllocationCount
+		cpu["minimum_count"] = group.Cpu.MinimumCount
+		cpu["step_size_count"] = group.Cpu.StepSizeCount
+		cpu["is_adjustable"] = group.Cpu.IsAdjustable
+		cpu["can_scale_down"] = group.Cpu.CanScaleDown
+		cpus[0] = cpu
+
+		disks := make([]map[string]interface{}, 1)
+		disk := make(map[string]interface{})
+		disk["units"] = group.Disk.Units
+		disk["allocation_mb"] = group.Disk.AllocationMb
+		disk["minimum_mb"] = group.Disk.MinimumMb
+		disk["step_size_mb"] = group.Disk.StepSizeMb
+		disk["is_adjustable"] = group.Disk.IsAdjustable
+		disk["can_scale_down"] = group.Disk.CanScaleDown
+		disks[0] = disk
+
+		l := map[string]interface{}{
+			"group_id": group.Id,
+			"count":    group.Count,
+			"memory":   memorys,
+			"cpu":      cpus,
+			"disk":     disks,
+		}
+		groups[i] = l
+	}
+	return groups
 }
 
 func normalizeJSONString(jsonString interface{}) (string, error) {
@@ -880,6 +927,70 @@ func expandOrigins(originsList *schema.Set) (origins []cisv1.Origin) {
 	return
 }
 
+func expandUsers(userList *schema.Set) (users []icdv4.User) {
+	for _, iface := range userList.List() {
+		userEl := iface.(map[string]interface{})
+		user := icdv4.User{
+			UserName: userEl["name"].(string),
+			Password: userEl["password"].(string),
+		}
+		users = append(users, user)
+	}
+	return
+}
+
+// IBM Cloud Databases
+// func expandConnectionStrings(csList *schema.Set) (cs map[string]string) {
+// 	for _, iface := range csList.List() {
+// 		csEntry := iface.(map[string]interface{})
+// 		name := csEntry["name"].(string)
+// 		connectionString := csEntry["connectionstring"].(string)
+// 		cs[name] = connectionString
+// 	}
+// 	return
+// }
+
+// IBM Cloud Databases
+func flattenConnectionStrings(cs []CsEntry) []map[string]interface{} {
+	entries := make([]map[string]interface{}, len(cs), len(cs))
+	for i, csEntry := range cs {
+		l := map[string]interface{}{
+			"name":       csEntry.Name,
+			"string":     csEntry.String,
+			"certname":   csEntry.CertName,
+			"certbase64": csEntry.CertBase64,
+		}
+		entries[i] = l
+	}
+	return entries
+}
+
+// IBM Cloud Databases
+func expandWhitelist(whiteList *schema.Set) (whitelist []icdv4.WhitelistEntry) {
+	for _, iface := range whiteList.List() {
+		wlItem := iface.(map[string]interface{})
+		wlEntry := icdv4.WhitelistEntry{
+			Address:     wlItem["address"].(string),
+			Description: wlItem["description"].(string),
+		}
+		whitelist = append(whitelist, wlEntry)
+	}
+	return
+}
+
+// Cloud Internet Services
+func flattenWhitelist(whitelist icdv4.Whitelist) []map[string]interface{} {
+	entries := make([]map[string]interface{}, len(whitelist.WhitelistEntrys), len(whitelist.WhitelistEntrys))
+	for i, whitelistEntry := range whitelist.WhitelistEntrys {
+		l := map[string]interface{}{
+			"address":     whitelistEntry.Address,
+			"description": whitelistEntry.Description,
+		}
+		entries[i] = l
+	}
+	return entries
+}
+
 // Cloud Internet Services
 func flattenOrigins(list []cisv1.Origin) []map[string]interface{} {
 	origins := make([]map[string]interface{}, len(list), len(list))
@@ -1061,3 +1172,12 @@ func rcInstanceExists(resourceId string, resourceType string, meta interface{}) 
 // 	}
 // 	return true
 // }
+
+// convert CRN to be url safe
+func EscapeUrlParm(urlParm string) string {
+	if strings.Contains(urlParm, "/") {
+		newUrlParm := url.PathEscape(urlParm)
+		return newUrlParm
+	}
+	return urlParm
+}

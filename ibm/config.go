@@ -26,6 +26,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
+	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/catalog"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
@@ -105,6 +106,7 @@ type ClientSession interface {
 	BluemixSession() (*bxsession.Session, error)
 	ContainerAPI() (containerv1.ContainerServiceAPI, error)
 	CisAPI() (cisv1.CisServiceAPI, error)
+	ICDAPI() (icdv4.ICDServiceAPI, error)
 	IAMAPI() (iamv1.IAMServiceAPI, error)
 	IAMPAPAPI() (iampapv1.IAMPAPAPI, error)
 	IAMUUMAPI() (iamuumv1.IAMUUMServiceAPI, error)
@@ -129,6 +131,9 @@ type clientSession struct {
 
 	cisConfigErr  error
 	cisServiceAPI cisv1.CisServiceAPI
+
+	icdConfigErr  error
+	icdServiceAPI icdv4.ICDServiceAPI
 
 	iamPAPConfigErr  error
 	iamPAPServiceAPI iampapv1.IAMPAPAPI
@@ -206,6 +211,11 @@ func (sess clientSession) CisAPI() (cisv1.CisServiceAPI, error) {
 	return sess.cisServiceAPI, sess.cisConfigErr
 }
 
+// IcdAPI provides IBM Cloud Databases APIs ...
+func (sess clientSession) ICDAPI() (icdv4.ICDServiceAPI, error) {
+	return sess.icdServiceAPI, sess.icdConfigErr
+}
+
 // BluemixSession to provide the Bluemix Session
 func (sess clientSession) BluemixSession() (*bxsession.Session, error) {
 	return sess.session.BluemixSession, sess.cfConfigErr
@@ -252,6 +262,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.csConfigErr = errEmptyBluemixCredentials
 		session.cfConfigErr = errEmptyBluemixCredentials
 		session.cisConfigErr = errEmptyBluemixCredentials
+		session.icdConfigErr = errEmptyBluemixCredentials
 		session.accountConfigErr = errEmptyBluemixCredentials
 		session.accountV1ConfigErr = errEmptyBluemixCredentials
 		session.iamConfigErr = errEmptyBluemixCredentials
@@ -304,6 +315,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisConfigErr = fmt.Errorf("Error occured while configuring Cloud Internet Services: %q", err)
 	}
 	session.cisServiceAPI = cisAPI
+
+	icdAPI, err := icdv4.New(sess.BluemixSession)
+	if err != nil {
+		session.icdConfigErr = fmt.Errorf("Error occured while configuring IBM Cloud Database Services: %q", err)
+	}
+	session.icdServiceAPI = icdAPI
 
 	accv1API, err := accountv1.New(sess.BluemixSession)
 	if err != nil {
