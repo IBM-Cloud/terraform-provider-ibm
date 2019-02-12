@@ -146,13 +146,13 @@ The following attributes are exported:
 		* `worker_count` - Number of workers attached to this zone.
 * `workers_info` - The worker nodes attached to this cluster. Nested `workers_info` blocks have the following structure:
 	* `pool_name` - Name of the worker pool to which the worker belongs to.
-* `albs` - Alb's attached to the cluster
-  * `id` - The Alb id.
-  * `name` - The name of the Alb.
-  * `alb_type` - The Alb type public or private.
-  * `enable` -  Enable (true) or disable(false) ALB.
-  * `state` - The status of the ALB(enabled or disabled).
-  * `num_of_instances` - Desired number of ALB replicas.
-  * `alb_ip` - BYOIP VIP to use for ALB. Currently supported only for private ALB.
+* `albs` - Application load balancer (ALB)'s attached to the cluster
+  * `id` - The application load balancer (ALB) id.
+  * `name` - The name of the application load balancer (ALB).
+  * `alb_type` - The application load balancer (ALB) type public or private.
+  * `enable` -  Enable (true) or disable(false) application load balancer (ALB).
+  * `state` - The status of the application load balancer (ALB)(enabled or disabled).
+  * `num_of_instances` - Desired number of application load balancer (ALB) replicas.
+  * `alb_ip` - BYOIP VIP to use for application load balancer (ALB). Currently supported only for private application load balancer (ALB).
   * `resize` - Indicate whether resizing should be done.
-  * `disable_deployment` - Indicate whether to disable deployment only on disable alb.
+  * `disable_deployment` - Indicate whether to disable deployment only on disable application load balancer (ALB).
