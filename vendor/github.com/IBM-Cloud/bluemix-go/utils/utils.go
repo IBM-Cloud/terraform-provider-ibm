@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
@@ -112,4 +113,12 @@ func getSupportedRolesString(supported []models.PolicyRole) string {
 		rolesStr += role.DisplayName
 	}
 	return rolesStr
+}
+
+func EscapeUrlParm(urlParm string) string {
+	if strings.Contains(urlParm, "/") {
+		newUrlParm := url.PathEscape(urlParm)
+		return newUrlParm
+	}
+	return urlParm
 }

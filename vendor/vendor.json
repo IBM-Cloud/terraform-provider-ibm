@@ -15,10 +15,10 @@
 			"revision": ""
 		},
 		{
-			"checksumSHA1": "Q7NwGSmCV5QZtzZDVcSRF1jtG6E=",
+			"checksumSHA1": "lW1NB05dr8TqIDQN1eg7zMjG45g=",
 			"path": "github.com/IBM-Cloud/bluemix-go",
-			"revision": "3a2bc4565a2696e0979752db93480fc53bbb23fe",
-			"revisionTime": "2018-12-11T04:43:02Z"
+			"revision": "333abcad48b7d8e7149cae47231e35e3dd3c67bd",
+			"revisionTime": "2019-02-06T17:40:35Z"
 		},
 		{
 			"checksumSHA1": "8SzzODbuwbITkGgPJeY+uWhBMdU=",
@@ -57,6 +57,12 @@
 			"revisionTime": "2018-12-11T04:43:02Z"
 		},
 		{
+			"checksumSHA1": "uW+xVaitcyrznnPkqw8ynAKFR4k=",
+			"path": "github.com/IBM-Cloud/bluemix-go/api/icd/icdv4",
+			"revision": "333abcad48b7d8e7149cae47231e35e3dd3c67bd",
+			"revisionTime": "2019-02-06T17:40:35Z"
+		},
+		{
 			"checksumSHA1": "Zy7jv1ZVnI27UlY/juyC3sgPGzQ=",
 			"path": "github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2",
 			"revision": "3a2bc4565a2696e0979752db93480fc53bbb23fe",
@@ -93,10 +99,10 @@
 			"revisionTime": "2018-12-11T04:43:02Z"
 		},
 		{
-			"checksumSHA1": "B4ByePsrsU2zjrN6VtM/w3ZZj0Y=",
+			"checksumSHA1": "W0gMBEePjk6UDgjviFpJ/9Q70KY=",
 			"path": "github.com/IBM-Cloud/bluemix-go/client",
-			"revision": "3a2bc4565a2696e0979752db93480fc53bbb23fe",
-			"revisionTime": "2018-12-11T04:43:02Z"
+			"revision": "333abcad48b7d8e7149cae47231e35e3dd3c67bd",
+			"revisionTime": "2019-02-06T17:40:35Z"
 		},
 		{
 			"checksumSHA1": "Y4yWijeccUf4+feLTOw5u36lfeY=",
@@ -105,10 +111,10 @@
 			"revisionTime": "2018-12-11T04:43:02Z"
 		},
 		{
-			"checksumSHA1": "62RUxCoKd50r3asfzhaH52iaygc=",
+			"checksumSHA1": "f57PLDPk/DvYVX/loxDb37EnVqM=",
 			"path": "github.com/IBM-Cloud/bluemix-go/endpoints",
-			"revision": "3a2bc4565a2696e0979752db93480fc53bbb23fe",
-			"revisionTime": "2018-12-11T04:43:02Z"
+			"revision": "333abcad48b7d8e7149cae47231e35e3dd3c67bd",
+			"revisionTime": "2019-02-06T17:40:35Z"
 		},
 		{
 			"checksumSHA1": "KUcbVeOgsWsF10BAmfm5X0EfywI=",
@@ -323,16 +329,16 @@
 			"revisionTime": "2018-12-11T04:43:02Z"
 		},
 		{
-			"checksumSHA1": "Kb2lHrHnA8QcB2LeindsqW7qja0=",
+			"checksumSHA1": "vA74KI0HKRetgunewqqa+RN1h4g=",
 			"path": "github.com/IBM-Cloud/bluemix-go/trace",
-			"revision": "3a2bc4565a2696e0979752db93480fc53bbb23fe",
-			"revisionTime": "2018-12-11T04:43:02Z"
+			"revision": "333abcad48b7d8e7149cae47231e35e3dd3c67bd",
+			"revisionTime": "2019-02-06T17:40:35Z"
 		},
 		{
-			"checksumSHA1": "5Ohwav4WKkc1AjqQWX0+0hOlVmE=",
+			"checksumSHA1": "E3ma77plhbwjOouOo+k45izeUIU=",
 			"path": "github.com/IBM-Cloud/bluemix-go/utils",
-			"revision": "3a2bc4565a2696e0979752db93480fc53bbb23fe",
-			"revisionTime": "2018-12-11T04:43:02Z"
+			"revision": "333abcad48b7d8e7149cae47231e35e3dd3c67bd",
+			"revisionTime": "2019-02-06T17:40:35Z"
 		},
 		{
 			"checksumSHA1": "jQh1fnoKPKMURvKkpdRjN695nAQ=",
@@ -914,6 +920,18 @@
 			"revisionTime": "2018-04-05T19:25:37Z",
 			"version": "=v0.11.6",
 			"versionExact": "v0.11.6"
+		},
+		{
+			"checksumSHA1": "Fzbv+N7hFXOtrR6E7ZcHT3jEE9s=",
+			"path": "github.com/hashicorp/terraform/helper/structure",
+			"revision": "5f8916b4fd851e85cdf16cfcd5c635d1520b419e",
+			"revisionTime": "2019-02-08T23:51:53Z"
+		},
+		{
+			"checksumSHA1": "+JXuXusZkWFE3QgCiOHV/X/omZs=",
+			"path": "github.com/hashicorp/terraform/helper/validation",
+			"revision": "5f8916b4fd851e85cdf16cfcd5c635d1520b419e",
+			"revisionTime": "2019-02-08T23:51:53Z"
 		},
 		{
 			"checksumSHA1": "kD1ayilNruf2cES1LDfNZjYRscQ=",

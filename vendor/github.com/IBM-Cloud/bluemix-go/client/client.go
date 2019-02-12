@@ -106,7 +106,6 @@ func (c *Client) SendRequest(r *rest.Request, respV interface{}) (*gohttp.Respon
 			return resp, fmt.Errorf("Authentication failed, Unable to refresh auth token: %v. Try again later", err)
 		}
 	}
-
 	return resp, err
 }
 
@@ -153,6 +152,15 @@ func (c *Client) Delete(path string, extraHeader ...interface{}) (*gohttp.Respon
 		addToRequestHeader(t, r)
 	}
 	return c.SendRequest(r, nil)
+}
+
+//DeleteWithResp ...
+func (c *Client) DeleteWithResp(path string, respV interface{}, extraHeader ...interface{}) (*gohttp.Response, error) {
+	r := rest.DeleteRequest(c.URL(path))
+	for _, t := range extraHeader {
+		addToRequestHeader(t, r)
+	}
+	return c.SendRequest(r, respV)
 }
 
 //DeleteWithBody ...
@@ -251,7 +259,11 @@ func getDefaultAuthHeaders(serviceName bluemix.ServiceName, c *bluemix.Config) g
 	case bluemix.IAMPAPService, bluemix.AccountServicev1, bluemix.ResourceCatalogrService, bluemix.ResourceControllerService, bluemix.ResourceManagementService, bluemix.IAMService, bluemix.IAMUUMService:
 		h.Set(authorizationHeader, c.IAMAccessToken)
 	case bluemix.CisService:
+		h.Set(userAgentHeader, http.UserAgent())
 		h.Set(userAccessTokenHeader, c.IAMAccessToken)
+	case bluemix.ICDService:
+		h.Set(userAgentHeader, http.UserAgent())
+		h.Set(authorizationHeader, c.IAMAccessToken)
 	default:
 		log.Println("Unknown service - No auth headers set")
 	}

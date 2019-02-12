@@ -3,8 +3,8 @@ package endpoints
 import (
 	"fmt"
 
+	"github.com/IBM-Cloud/bluemix-go/helpers" 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/IBM-Cloud/bluemix-go/helpers"
 )
 
 //EndpointLocator ...
@@ -16,6 +16,7 @@ type EndpointLocator interface {
 	CisEndpoint() (string, error)
 	IAMEndpoint() (string, error)
 	IAMPAPEndpoint() (string, error)
+	ICDEndpoint() (string, error)
 	ResourceManagementEndpoint() (string, error)
 	ResourceControllerEndpoint() (string, error)
 	ResourceCatalogEndpoint() (string, error)
@@ -89,8 +90,17 @@ var regionToEndpoint = map[string]map[string]string{
 		"eu-gb":    "https://api.cis.cloud.ibm.com",
 		"jp-tok":   "https://api.cis.cloud.ibm.com",
 	},
+	"icd": {
+		"us-south": "https://api.us-south.databases.cloud.ibm.com",
+		"us-east": "https://api.us-east.databases.cloud.ibm.com",
+		"eu-de":    "https://api.eu-de.databases.cloud.ibm.com",
+		"eu-gb":    "https://api.eu-gb.databases.cloud.ibm.com",
+		"au-syd":   "https://api.au-syd.databases.cloud.ibm.com",
+		"jp-tok":   "https://api.jp-tok.databases.cloud.ibm.com",
+		"oslo01": 	"https://api.osl01.databases.cloud.ibm.com",
+	},
 	"resource-manager": {
-		"us-south": "https://resource-manager.bluemix.net",
+		"us-south": "https://resource-manager.bluemix.net", 
 		"us-east":  "https://resource-manager.bluemix.net",
 		"eu-de":    "https://resource-manager.bluemix.net",
 		"au-syd":   "https://resource-manager.bluemix.net",
@@ -201,6 +211,14 @@ func (e *endpointLocator) CisEndpoint() (string, error) {
 		return helpers.EnvFallBack([]string{"IBMCLOUD_CIS_API_ENDPOINT"}, ep), nil
 	}
 	return "", bmxerror.New(ErrCodeServiceEndpoint, fmt.Sprintf("Cis Service endpoint doesn't exist for region: %q", e.region))
+}
+
+func (e *endpointLocator) ICDEndpoint() (string, error) {
+	if ep, ok := regionToEndpoint["icd"][e.region]; ok {
+		//As the current list of regionToEndpoint above is not exhaustive we allow to read endpoints from the env
+		return helpers.EnvFallBack([]string{"IBMCLOUD_ICD_API_ENDPOINT"}, ep), nil
+	}
+	return "", bmxerror.New(ErrCodeServiceEndpoint, fmt.Sprintf("ICD Service endpoint doesn't exist for region: %q", e.region))
 }
 
 func (e *endpointLocator) ResourceManagementEndpoint() (string, error) {
