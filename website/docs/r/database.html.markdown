@@ -56,7 +56,7 @@ provider "ibm" {
 
 ibm_database provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
-* `create` - (Default 30 minutes) Used for Creating Instance.
+* `create` - (Default 40 minutes) Used for Creating Instance.
 * `update` - (Default 10 minutes) Used for Updating Instance.
 * `delete` - (Default 10 minutes) Used for Deleting Instance.
 
@@ -76,7 +76,7 @@ The following arguments are supported:
 * `tags` - (Optional, array of strings) Tags associated with the instance.
 * `service` - (Required, string) The ICD database type to be created. Only the following services are currently accepted: 
 `databases-for-etcd`, `databases-for-postgresql`, `databases-for-redis`, `databases-for-elasticsearch`, `messages-for-rabbitmq`
-* `adminpassword`     = "password12"
+* `adminpassword` - (Optional, string) If not specified the password is unitialised and the id unusable. In this case addditional users must be specified in a user block.   
 * `members_memory_allocation_mb` - (Optional) The memory size for the database, split across all members. If not specified defaults to the database default. These vary by database type. See the documentation related to each database for the defaults. https://cloud.ibm.com/docs/services/databases-for-postgresql/howto-provisioning.html#list-of-additional-parameters
 * `members_disk_allocation_mb`  - (Optional) The disk size of the database, split across all members. As above.
 

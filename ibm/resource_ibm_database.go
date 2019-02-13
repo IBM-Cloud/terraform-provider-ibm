@@ -52,7 +52,7 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(40 * time.Minute),
-			Update: schema.DefaultTimeout(10 * time.Minute),
+			Update: schema.DefaultTimeout(20 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
@@ -65,7 +65,7 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 
 			"resource_group_id": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "The id of the resource group in which the Database instance is present",
 			},
 
@@ -99,7 +99,7 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Computed:    true,
 			},
 			"adminpassword": {
-				Description:  "The admin user id for the instance",
+				Description:  "The admin user password for the instance",
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringLenBetween(10, 32),
@@ -447,14 +447,13 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 	}
 
 	icdId := EscapeUrlParm(instance.ID)
-	adminPassword := d.Get("adminpassword").(string)
 	icdClient, err := meta.(ClientSession).ICDAPI()
 	if err != nil {
 		return fmt.Errorf("Error getting database client settings: %s", err)
 	}
 
 	if pw, ok := d.GetOk("adminpassword"); ok {
-		adminPassword = pw.(string)
+		adminPassword := pw.(string)
 		cdb, err := icdClient.Cdbs().GetCdb(icdId)
 		if err != nil {
 			if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
@@ -634,6 +633,9 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 
 	instanceID := d.Id()
 	updateReq := controller.UpdateServiceInstanceRequest{}
+	if d.HasChange("name") {
+		updateReq.Name = d.Get("name").(string)
+	}
 	if d.HasChange("tags") {
 		tags := getServiceTags(d)
 		updateReq.Tags = tags

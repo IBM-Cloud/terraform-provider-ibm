@@ -47,7 +47,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", "us-south"),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "6144"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "16320"),
+					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "18432"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
@@ -63,7 +63,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", "us-south"),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "3072"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "16320"),
+					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "18432"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
@@ -158,7 +158,7 @@ func testAccCheckIBMDatabaseInstance_Elasticsearch_fullyspecified(databaseResour
 				  location          = "us-south"
 				  adminpassword     = "password12"
 				  members_memory_allocation_mb = 6144
-  				  members_disk_allocation_mb   = 16320
+  				  members_disk_allocation_mb   = 18432
 				  users = {
   				   		name     = "user123"
   					   	password = "password12"
@@ -193,7 +193,7 @@ func testAccCheckIBMDatabaseInstance_Elasticsearch_reduced(databaseResourceGroup
 				  location          = "us-south"
 				  adminpassword     = "password12"
 				  members_memory_allocation_mb = 3072
-  				  members_disk_allocation_mb   = 16320
+  				  members_disk_allocation_mb   = 18432
 
 				}`, databaseResourceGroup, name)
 }
