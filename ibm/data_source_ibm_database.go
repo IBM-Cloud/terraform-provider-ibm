@@ -26,7 +26,7 @@ func dataSourceIBMDatabaseInstance() *schema.Resource {
 
 			"resource_group_id": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "The id of the resource group in which the Database instance is present",
 			},
 
@@ -60,41 +60,38 @@ func dataSourceIBMDatabaseInstance() *schema.Resource {
 			"adminpassword": {
 				Description: "The admin user id for the instance",
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Sensitive:   true,
 			},
 			"version": {
 				Description: "The database version to provision if specified",
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
 			},
 			"members_memory_allocation_mb": {
 				Description: "Memory allocation required for cluster",
 				Type:        schema.TypeInt,
-				Optional:    true,
 				Computed:    true,
 			},
 			"members_disk_allocation_mb": {
 				Description: "Disk allocation required for cluster",
 				Type:        schema.TypeInt,
-				Optional:    true,
 				Computed:    true,
 			},
 			"users": {
 				Type:     schema.TypeSet,
-				Optional: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
 							Description: "User name",
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 						},
 						"password": {
 							Description: "User password",
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Sensitive:   true,
 						},
 					},
@@ -130,18 +127,18 @@ func dataSourceIBMDatabaseInstance() *schema.Resource {
 			},
 			"whitelist": {
 				Type:     schema.TypeSet,
-				Optional: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"address": {
 							Description: "Whitelist IP address in CIDR notation",
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 						},
 						"description": {
 							Description: "Unique white list description",
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 						},
 					},
 				},
@@ -427,120 +424,6 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 		connectionStrings = append(connectionStrings, csEntry)
 	}
 	d.Set("connectionstrings", flattenConnectionStrings(connectionStrings))
-
-	return nil
-}
-
-func dataSourceIBMDatabaseInstanceRead1(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
-	if err != nil {
-		return err
-	}
-	rsAPI := rsConClient.ResourceServiceInstance()
-	name := d.Get("name").(string)
-
-	rsInstQuery := controller.ServiceInstanceQuery{
-		Name: name,
-	}
-
-	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
-		rsInstQuery.ResourceGroupID = rsGrpID.(string)
-	} else {
-		rsMangClient, err := meta.(ClientSession).ResourceManagementAPI()
-		if err != nil {
-			return err
-		}
-		resourceGroupQuery := management.ResourceGroupQuery{
-			Default: true,
-		}
-		grpList, err := rsMangClient.ResourceGroup().List(&resourceGroupQuery)
-		if err != nil {
-			return err
-		}
-		rsInstQuery.ResourceGroupID = grpList[0].ID
-	}
-
-	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
-	if err != nil {
-		return err
-	}
-	rsCatRepo := rsCatClient.ResourceCatalog()
-
-	if service, ok := d.GetOk("database"); ok {
-
-		serviceOff, err := rsCatRepo.FindByName(service.(string), true)
-		if err != nil {
-			return fmt.Errorf("Error retrieving database offering: %s", err)
-		}
-
-		rsInstQuery.ServiceID = serviceOff[0].ID
-	}
-
-	var instances []models.ServiceInstance
-
-	instances, err = rsAPI.ListInstances(rsInstQuery)
-	if err != nil {
-		return err
-	}
-	var filteredInstances []models.ServiceInstance
-	var location string
-
-	if loc, ok := d.GetOk("location"); ok {
-		location = loc.(string)
-		for _, instance := range instances {
-			if getLocation(instance) == location {
-				filteredInstances = append(filteredInstances, instance)
-			}
-		}
-	} else {
-		filteredInstances = instances
-	}
-
-	if len(filteredInstances) == 0 {
-		return fmt.Errorf("No resource instance found with name [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or database", name)
-	}
-
-	var instance models.ServiceInstance
-
-	if len(filteredInstances) > 1 {
-		return fmt.Errorf(
-			"More than one resource instance found with name matching [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or database", name)
-	}
-	instance = filteredInstances[0]
-
-	d.SetId(instance.ID)
-	d.Set("status", instance.State)
-	d.Set("resource_group_id", instance.ResourceGroupID)
-	d.Set("location", instance.RegionID)
-	serviceOff, err := rsCatRepo.GetServiceName(instance.ServiceID)
-	if err != nil {
-		return fmt.Errorf("Error retrieving database offering: %s", err)
-	}
-
-	d.Set("database", serviceOff)
-
-	servicePlan, err := rsCatRepo.GetServicePlanName(instance.ServicePlanID)
-	if err != nil {
-		return fmt.Errorf("Error retrieving plan: %s", err)
-	}
-	d.Set("plan", servicePlan)
-
-	icdClient, err := meta.(ClientSession).ICDAPI()
-	if err != nil {
-		return fmt.Errorf("Error getting database client settings: %s", err)
-	}
-	cdb, err := icdClient.Cdbs().GetCdb(instance.ID)
-	if err != nil {
-		return fmt.Errorf("Error getting database config for: %s with error %s\n", instance.ID, err)
-	}
-	d.Set("adminuser", cdb.AdminUser)
-	d.Set("version", cdb.Version)
-
-	groupList, err := icdClient.Groups().GetGroups(instance.ID)
-	if err != nil {
-		return fmt.Errorf("Error getting database groups: %s", err)
-	}
-	d.Set("groups", flattenIcdGroups(groupList))
 
 	return nil
 }
