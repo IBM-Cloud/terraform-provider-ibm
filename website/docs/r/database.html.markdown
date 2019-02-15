@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_database
 
-Provides an IBM Cloud Database (ICD) instance resource. This resource allows database instances to be created, updated, and deleted. The Bluemix_API_KEY used by Terraform must have been granted sufficient IAM rights to create and modify IBM Cloud Databases and have access to the Resource Group the ICD instance will be associated with. See https://cloud.ibm.com/docs/services/databases-for-postgresql/reference-access-management.html#identity-and-access-management for more details on setting IAM and Access Group rights to manage ICD instances.  
+Creates an IBM Cloud Database (ICD) instance resource. This resource allows database instances to be created, updated, and deleted. The Bluemix_API_KEY used by Terraform must have been granted sufficient IAM rights to create and modify IBM Cloud Databases and have access to the Resource Group the ICD instance will be associated with. See https://cloud.ibm.com/docs/services/databases-for-postgresql/reference-access-management.html#identity-and-access-management for more details on setting IAM and Access Group rights to manage ICD instances.  
 
 If no resource_group_id is specified, the ICD instance is created under the default resource group. The API_KEY must have been assigned permissions for this group.  
 
@@ -22,7 +22,7 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_database" "<your_database>" {
-  name              = "<your_database>"
+  name              = "<your_database_name>"
   plan              = "standard"
   location          = "eu-gb"
   resource_group_id = "${data.ibm_resource_group.group.id}"
@@ -69,7 +69,7 @@ ICD instance create typically takes between 10 to 20 minutes. Delete and update 
 
 The following arguments are supported:
 
-* `name` - (Required, string) A descriptive name used to identify the database instance.
+* `name` - (Required, string) A descriptive name used to identify the database instance. The name must not include spaces. 
 * `plan` - (Required, string) The name of the plan type for an IBM Cloud Database. The only currently supported value is "standard"
 * `location` - (Required, string) Any of the currently supported ICD regions. The IBM provider `location` in the provider definition also needs to be set to the same region as the target ICD region. The default provider region is `us-south`. The following regions are currently supported: `us-south`, `us-east`, `eu-gb`, `eu-de`, `au-syd`, `jp-tok`, `oslo01`.  
 * `resource_group_id` - (Optional, string) The ID of the resource group where you want to create the service. You can retrieve the value from data source `ibm_resource_group`. If not provided it creates the service in default resource group.
@@ -110,6 +110,8 @@ The following attributes are exported:
 The `ibm_database` resource can be imported using the `ID`. The ID is formed from the `CRN` (Cloud Resource Name) from the **Overview** page of the Cloud Database instance. It can be found under the heading **Deployment Details**
 * CRN is a 120 digit character string of the form: `crn:v1:bluemix:public:databases-for-postgresql:us-south:a/4ea1882a2d3401ed1e459979941966ea:79226bd4-4076-4873-b5ce-b1dba48ff8c4::`
 
+The `region` parameter must be set for the IBM provider in `provider.tf` to be the same as the ICD service `location(region)`. If not specified it will default to `us-south`. A `terraform refresh/apply` of the data_source will fail if the ICD instance is not in the same region as specified for the provider or its alias.  
+
 ```
 $ terraform import ibm_database.my_db <crn>
 
@@ -120,11 +122,8 @@ Import requires a minimal Terrform config file to allow importing.
 
 ```hcl
 resource "ibm_database" "<your_database>" {
-  name              = "test"
-  plan              = "standard"
-  resource_group_id = "${data.ibm_resource_group.group.id}"
-  location          = "us-south"
+  name              = "<your_database_name"
 ```
 
-Run `terraform state show ibm_database.<your_database>` after import to retrieve the additional values to be included in the resource config file. Note that ICD does not export the userids and passwords already configured for the instance. Typically it is unnecessary to add a `users` block after import as userids are only required during initial configuration and to create `connectionstrings`. If new passwords need to be configured a new `users` block can be created using the known userids from the `connectionstrings` block with the passwords sourced separately.  
+Run `terraform state show ibm_database.<your_database>` after import to retrieve the additional values to be included in the resource config file. Note that ICD only exports the admin userid. It does not export any additional userids and passwords configured on the instance. Typically it is unnecessary to add a `users` block after import as userids are only required during initial configuration and to create `connectionstrings`. If new passwords need to be configured or connectionstrings exported a new `users` block must be defined. This limitation is due to a lack of ICD functionality.  
 

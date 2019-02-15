@@ -8,15 +8,16 @@ description: |-
 
 # ibm\_database
 
-Imports a read only copy of an existing IBM Cloud Databases resource.  
+Creates a read only copy of an existing IBM Cloud Databases resource.  
 
-Configuration of an ICD data_source requires that the `region` parameter is set for the IBM provider in the `provider.tf` to be the same as the ICD service `location/region`. If not specified it will default to `us-south`. A `terraform apply` of the data_source will fail if the ICD `location` is  different to that specified on the provider.  
+Configuration of an ICD data_source requires that the `region` parameter is set for the IBM provider in the `provider.tf` to be the same as the ICD service `location/region`. If not specified it will default to `us-south`. A `terraform refresh` of the data_source will fail if the ICD `location` is  different to that specified on the provider.  
 
 ## Example Usage
 
 ```hcl
 data "ibm_database" "<your_database>" {
   name = "<your_database>"
+  location = "<your-db-location>"
 }
 ```
 
@@ -24,17 +25,17 @@ data "ibm_database" "<your_database>" {
 
 The following arguments are required:
 
-* `name` - (Required, string) The name used to identify the IBM Cloud Database instance in the IBM Cloud UI. IBM Cloud does not enforce that service names are unique and it is possible that duplicate service names exist. The first located service instance is used by Terraform.
+* `name` - (Required, string) The name used to identify the IBM Cloud Database instance in the IBM Cloud UI. IBM Cloud does not enforce that service names are unique and it is possible that duplicate service names exist. The first located service instance is used by Terraform. The name must not include spaces. 
 
 
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - The unique identifier of this CIS instance.
-* `plan` - The service plan for this Internet Services' instance
-* `location` - The location for this Internet Services' instance
-* `status` - Status of the CIS instance.
+* `id` - The unique identifier of this ICD instance.
+* `plan` - The service plan for this ICD instance
+* `location` - The location or region for this ICD instance. This will be the same as defined for the provider or its alias.
+* `status` - Status of the ICD instance.
 * `id` - The unique identifier of the new database instance (CRN).
 * `status` - Status of resource instance.
 * `adminuser` - userid of the default admistration user for the database, usually `admin` or `root`.
@@ -44,5 +45,5 @@ The following attributes are exported:
   `connectionstrings.1.string = postgres://admin:$PASSWORD@79226bd4-4076-4873-b5ce-b1dba48ff8c4.b8a5e798d2d04f2e860e54e5d042c915.databases.appdomain.cloud:32554/ibmclouddb?sslmode=verify-full`
 * `whitelist` - List of whitelisted IP addresses or ranges.
 
-Note that ICD does not export the userids and passwords already configured for the instance. Configured userids are reported in the `connectionstrings` block. 
+Note that the provider only exports the admin userid and associated connectionstring. It does not export any userids additionally configured for the instance. This is due to a lack of ICD function. 
 
