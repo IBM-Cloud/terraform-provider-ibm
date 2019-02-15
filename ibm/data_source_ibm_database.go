@@ -31,7 +31,7 @@ func dataSourceIBMDatabaseInstance() *schema.Resource {
 			},
 
 			"location": {
-				Description: "The location or the environment in which Database instance exists",
+				Description: "The location or the region in which the Database instance exists",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
@@ -386,7 +386,7 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	cdb, err := icdClient.Cdbs().GetCdb(icdId)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
-			return fmt.Errorf("The database instance was not found in the region set for the Provider. Specify the correct region in the provider definition. %v", err)
+			return fmt.Errorf("The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err)
 		}
 		return fmt.Errorf("Error getting database config for: %s with error %s\n", icdId, err)
 	}
