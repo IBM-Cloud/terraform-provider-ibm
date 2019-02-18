@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -277,7 +278,7 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	}
 
 	albs, err := albsAPI.ListClusterALBs(name, targetEnv)
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "The specified cluster is a lite cluster.") {
 		return fmt.Errorf("Error retrieving alb's of the cluster %s: %s", name, err)
 	}
 
