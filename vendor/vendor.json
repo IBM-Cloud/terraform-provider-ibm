@@ -57,10 +57,10 @@
 			"revisionTime": "2018-12-11T04:43:02Z"
 		},
 		{
-			"checksumSHA1": "uW+xVaitcyrznnPkqw8ynAKFR4k=",
+			"checksumSHA1": "1x978fWamicIebyrOb5ll4pHyU8=",
 			"path": "github.com/IBM-Cloud/bluemix-go/api/icd/icdv4",
-			"revision": "333abcad48b7d8e7149cae47231e35e3dd3c67bd",
-			"revisionTime": "2019-02-06T17:40:35Z"
+			"revision": "a2a98848835198d8ee8f306b93a4c1d005fd34f7",
+			"revisionTime": "2019-03-04T10:21:18Z"
 		},
 		{
 			"checksumSHA1": "Zy7jv1ZVnI27UlY/juyC3sgPGzQ=",
