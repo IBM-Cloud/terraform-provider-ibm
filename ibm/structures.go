@@ -940,28 +940,48 @@ func expandUsers(userList *schema.Set) (users []icdv4.User) {
 }
 
 // IBM Cloud Databases
-// func expandConnectionStrings(csList *schema.Set) (cs map[string]string) {
-// 	for _, iface := range csList.List() {
-// 		csEntry := iface.(map[string]interface{})
-// 		name := csEntry["name"].(string)
-// 		connectionString := csEntry["connectionstring"].(string)
-// 		cs[name] = connectionString
-// 	}
-// 	return
-// }
-
-// IBM Cloud Databases
 func flattenConnectionStrings(cs []CsEntry) []map[string]interface{} {
 	entries := make([]map[string]interface{}, len(cs), len(cs))
 	for i, csEntry := range cs {
 		l := map[string]interface{}{
-			"name":       csEntry.Name,
-			"string":     csEntry.String,
-			"certname":   csEntry.CertName,
-			"certbase64": csEntry.CertBase64,
+			"name":         csEntry.Name,
+			"password":     csEntry.Password,
+			"composed":     csEntry.Composed,
+			"certname":     csEntry.CertName,
+			"certbase64":   csEntry.CertBase64,
+			"queryoptions": csEntry.QueryOptions,
+			"scheme":       csEntry.Scheme,
+			"path":         csEntry.Path,
+			"database":     csEntry.Database,
 		}
+		hosts := csEntry.Hosts
+		hostsList := make([]map[string]interface{}, len(hosts), len(hosts))
+		for j, host := range hosts {
+			z := map[string]interface{}{
+				"hostname": host.HostName,
+				"port":     strconv.Itoa(host.Port),
+			}
+			hostsList[j] = z
+		}
+		l["hosts"] = hostsList
+		var queryOpts string
+		if len(csEntry.QueryOptions) != 0 {
+			queryOpts = "?"
+			count := 0
+			for k, v := range csEntry.QueryOptions {
+				if count >= 1 {
+					queryOpts = queryOpts + "&"
+				}
+				queryOpts = queryOpts + fmt.Sprintf("%v", k) + "=" + fmt.Sprintf("%v", v)
+				count++
+			}
+		} else {
+			queryOpts = ""
+		}
+		l["queryoptions"] = queryOpts
 		entries[i] = l
 	}
+
 	return entries
 }
 
@@ -1146,31 +1166,31 @@ func rcInstanceExists(resourceId string, resourceType string, meta interface{}) 
 	// If rcInstance is now in removed state, set TF state to removed
 	// s := *terraform.State
 	// for _, r := range s.RootModule().Resources {
-	// 	if r.Type != resourceType {
-	// 		continue
-	// 	}
-	// 	if r.Primary.ID == resourceId {
-	// 		r.Primary.Set("status", "removed")
-	// 	}
+	//  if r.Type != resourceType {
+	//      continue
+	//  }
+	//  if r.Primary.ID == resourceId {
+	//      r.Primary.Set("status", "removed")
+	//  }
 	// }
 	return false, nil
 }
 
 // Implement when pointer to terraform.State available
 // func resourceInstanceExistsTf(resourceId string, resourceType string) bool {
-// 	// Check TF state to see if Cloud resource instance has already been removed
-// 	s := *terraform.State
-// 	for _, r := range s.RootModule().Resources {
-// 		if r.Type != resourceType {
-// 			continue
-// 		}
-// 		if r.Primary.ID == resourceId {
-// 			if strings.Contains(r.Primary.Attributes["status"], "removed") {
-// 				return false
-// 			}
-// 		}
-// 	}
-// 	return true
+//  // Check TF state to see if Cloud resource instance has already been removed
+//  s := *terraform.State
+//  for _, r := range s.RootModule().Resources {
+//      if r.Type != resourceType {
+//          continue
+//      }
+//      if r.Primary.ID == resourceId {
+//          if strings.Contains(r.Primary.Attributes["status"], "removed") {
+//              return false
+//          }
+//      }
+//  }
+//  return true
 // }
 
 // convert CRN to be url safe

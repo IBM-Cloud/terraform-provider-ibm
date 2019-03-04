@@ -36,9 +36,19 @@ const (
 
 type CsEntry struct {
 	Name       string
+	Password   string
 	String     string
+	Composed   string
 	CertName   string
 	CertBase64 string
+	Hosts      []struct {
+		HostName string `json:"hostname"`
+		Port     int    `json:"port"`
+	}
+	Scheme       string
+	QueryOptions map[string]interface{}
+	Path         string
+	Database     string
 }
 
 func resourceIBMDatabaseInstance() *schema.Resource {
@@ -105,7 +115,7 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				ValidateFunc: validation.StringLenBetween(10, 32),
 				Sensitive:    true,
 				// DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-				// 	return true
+				//  return true
 				// },
 			},
 			"version": {
@@ -127,6 +137,12 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.IntBetween(2048, 1048576),
+			},
+			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
 			},
 			"users": {
 				Type:     schema.TypeSet,
@@ -159,8 +175,13 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
-						"string": {
+						"composed": {
 							Description: "Connection string",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"scheme": {
+							Description: "DB scheme",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
@@ -173,6 +194,44 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 							Description: "Certificate in base64 encoding",
 							Type:        schema.TypeString,
 							Computed:    true,
+						},
+						"password": {
+							Description: "Password",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"queryoptions": {
+							Description: "DB query options",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"database": {
+							Description: "DB name",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"path": {
+							Description: "DB path",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"hosts": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"hostname": {
+										Description: "DB host name",
+										Type:        schema.TypeString,
+										Computed:    true,
+									},
+									"port": {
+										Description: "DB port",
+										Type:        schema.TypeString,
+										Computed:    true,
+									},
+								},
+							},
 						},
 					},
 				},
@@ -340,7 +399,7 @@ type Params struct {
 	Disk          int    `json:"members_disk_allocation_mb,omitempty"`
 }
 
-// Replace with func wrapper for resourceIBMResourceInstanceCreate specifying serviceName := "internet-svcs"
+// Replace with func wrapper for resourceIBMResourceInstanceCreate specifying serviceName := "database......."
 func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}) error {
 	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
 	if err != nil {
@@ -837,61 +896,64 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 }
 
 func getConnectionString(d *schema.ResourceData, userName string, meta interface{}) (CsEntry, error) {
-	icdClient, err := meta.(ClientSession).ICDAPI()
-	var cString string
-	var certName string
-	var certBase64 string
 	csEntry := CsEntry{}
-
+	icdClient, err := meta.(ClientSession).ICDAPI()
 	if err != nil {
 		return csEntry, fmt.Errorf("Error getting database client settings: %s", err)
 	}
+
 	icdId := d.Id()
 	connection, err := icdClient.Connections().GetConnection(icdId, userName)
 	if err != nil {
 		return csEntry, fmt.Errorf("Error getting database user connection string via ICD API: %s", err)
 	}
+
 	service := d.Get("service")
+	dbConnection := icdv4.Uri{}
 	switch service {
 	case "databases-for-postgresql":
-		cString = connection.Postgres.Composed[0]
-		certName = connection.Postgres.Certificate.Name
-		certBase64 = connection.Postgres.Certificate.CertificateBase64
+		dbConnection = connection.Postgres
 	case "databases-for-redis":
-		cString = connection.Rediss.Composed[0]
-		certName = connection.Rediss.Certificate.Name
-		certBase64 = connection.Rediss.Certificate.CertificateBase64
-	// case "databases-for-mongodb":
-	// 	cString = connection.Mongodb.Composed[0]
-	//	certName = connection.Mongodb.Certificate.Name
-	//	certBase64 = connection.Mongodb.Certificate.CertificateBase64
+		dbConnection = connection.Rediss
+	case "databases-for-mongodb":
+		dbConnection = connection.Mongo
 	// case "databases-for-mysql":
-	// 	cString = connection.Mysql.Composed[0]
-	//	certName = connection.Mysql.Certificate.Name
-	//	certBase64 = connection.Mysql.Certificate.CertificateBase64
+	// 	dbConnection = connection.Mysql
 	case "databases-for-elasticsearch":
-		cString = connection.Https.Composed[0]
-		certName = connection.Https.Certificate.Name
-		certBase64 = connection.Https.Certificate.CertificateBase64
+		dbConnection = connection.Https
 	case "databases-for-etcd":
-		cString = connection.Grpc.Composed[0]
-		certName = connection.Grpc.Certificate.Name
-		certBase64 = connection.Grpc.Certificate.CertificateBase64
+		dbConnection = connection.Grpc
 	case "messages-for-rabbitmq":
-		cString = connection.Amqps.Composed[0]
-		certName = connection.Amqps.Certificate.Name
-		certBase64 = connection.Amqps.Certificate.CertificateBase64
+		dbConnection = connection.Amqps
 	default:
 		return csEntry, fmt.Errorf("Unrecognised database type during connection string lookup: %s", service)
 	}
 
 	csEntry = CsEntry{
-		Name:       userName,
-		String:     cString,
-		CertName:   certName,
-		CertBase64: certBase64,
+		Name:     userName,
+		Password: "",
+		// Populate only first 'composed' connection string as an example
+		Composed:     dbConnection.Composed[0],
+		CertName:     dbConnection.Certificate.Name,
+		CertBase64:   dbConnection.Certificate.CertificateBase64,
+		Hosts:        dbConnection.Hosts,
+		Scheme:       dbConnection.Scheme,
+		Path:         dbConnection.Path,
+		QueryOptions: dbConnection.QueryOptions.(map[string]interface{}),
 	}
-
+	// Postgres DB name is of type string, Redis is json.Number, others are nil
+	if dbConnection.Database != nil {
+		switch v := dbConnection.Database.(type) {
+		default:
+			return csEntry, fmt.Errorf("Unexpected data type: %T", v)
+		case json.Number:
+			csEntry.Database = dbConnection.Database.(json.Number).String()
+		case string:
+			csEntry.Database = dbConnection.Database.(string)
+		}
+	} else {
+		csEntry.Database = ""
+	}
 	return csEntry, nil
 }
 
@@ -1017,7 +1079,7 @@ func waitForDatabaseTaskComplete(taskId string, d *schema.ResourceData, meta int
 	}
 	delayDuration := 5 * time.Second
 
-	timeout := time.After(5 * time.Minute)
+	timeout := time.After(15 * time.Minute)
 	delay := time.Tick(delayDuration)
 	innerTask := icdv4.Task{}
 
@@ -1033,8 +1095,9 @@ func waitForDatabaseTaskComplete(taskId string, d *schema.ResourceData, meta int
 			if innerTask.Status == "failed" {
 				return false, fmt.Errorf("[Error] Database task failed")
 			}
-			// Completed status could be returned as "completed" or "" due to interaction between bluemix-go and icd task response
-			if innerTask.Status != "running" {
+			// Completed status could be returned as "" due to interaction between bluemix-go and icd task response
+			// Otherwise Running an queued
+			if innerTask.Status == "completed" || innerTask.Status == "" {
 				return true, nil
 			}
 

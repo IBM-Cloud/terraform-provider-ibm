@@ -36,6 +36,8 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.1.name", "admin"),
+					resource.TestCheckResourceAttr(name, "connectionstrings.0.hosts.#", "1"),
+					resource.TestCheckResourceAttr(name, "connectionstrings.0.database", ""),
 				),
 			},
 			resource.TestStep{

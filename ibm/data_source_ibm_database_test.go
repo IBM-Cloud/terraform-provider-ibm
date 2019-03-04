@@ -36,6 +36,8 @@ func TestAccIBMDatabaseDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(dataName, "whitelist.#", "0"),
 					resource.TestCheckResourceAttr(dataName, "connectionstrings.#", "1"),
 					resource.TestCheckResourceAttr(dataName, "connectionstrings.0.name", "admin"),
+					resource.TestCheckResourceAttr(dataName, "connectionstrings.0.hosts.#", "1"),
+					resource.TestCheckResourceAttr(dataName, "connectionstrings.0.scheme", "postgres"),
 				),
 			},
 		},

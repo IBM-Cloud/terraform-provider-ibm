@@ -10,7 +10,7 @@ description: |-
 
 Creates a read only copy of an existing IBM Cloud Databases resource.  
 
-Configuration of an ICD data_source requires that the `region` parameter is set for the IBM provider in the `provider.tf` to be the same as the ICD service `location/region`. If not specified it will default to `us-south`. A `terraform refresh` of the data_source will fail if the ICD `location` is  different to that specified on the provider.  
+Configuration of an ICD data_source requires that the `region` parameter is set for the IBM provider in the `provider.tf` to be the same as the ICD service `location/region` that the service will be deployed in. If not specified it will default to `us-south`. A `terraform refresh` of the data_source will fail if the ICD `location` is  different to that specified on the provider.  
 
 ## Example Usage
 
