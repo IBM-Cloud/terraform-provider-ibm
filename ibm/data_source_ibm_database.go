@@ -78,6 +78,12 @@ func dataSourceIBMDatabaseInstance() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 			},
+			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
 			"users": {
 				Type:     schema.TypeSet,
 				Computed: true,
@@ -107,8 +113,13 @@ func dataSourceIBMDatabaseInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
-						"string": {
+						"composed": {
 							Description: "Connection string",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"scheme": {
+							Description: "DB scheme",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
@@ -121,6 +132,44 @@ func dataSourceIBMDatabaseInstance() *schema.Resource {
 							Description: "Certificate in base64 encoding",
 							Type:        schema.TypeString,
 							Computed:    true,
+						},
+						"password": {
+							Description: "Password",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"queryoptions": {
+							Description: "DB query options",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"database": {
+							Description: "DB name",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"path": {
+							Description: "DB path",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"hosts": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"hostname": {
+										Description: "DB host name",
+										Type:        schema.TypeString,
+										Computed:    true,
+									},
+									"port": {
+										Description: "DB port",
+										Type:        schema.TypeString,
+										Computed:    true,
+									},
+								},
+							},
 						},
 					},
 				},

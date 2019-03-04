@@ -39,6 +39,8 @@ func TestAccIBMDatabaseInstance_Etcd_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "connectionstrings.1.name", "root"),
 					resource.TestMatchResourceAttr(name, "connectionstrings.1.certname", regexp.MustCompile("[-a-z0-9]*")),
 					resource.TestMatchResourceAttr(name, "connectionstrings.1.certbase64", regexp.MustCompile("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$")),
+					resource.TestCheckResourceAttr(name, "connectionstrings.0.hosts.#", "1"),
+					resource.TestCheckResourceAttr(name, "connectionstrings.0.database", ""),
 				),
 			},
 			resource.TestStep{
