@@ -22,6 +22,7 @@ type Connection struct {
   Https Uri `json:"https"`
   Amqps Uri `json:"amqps"`
   Cli CliConn `json:"cli"`
+  Mongo Uri `json:"mongodb"`
 }
 
 type Uri struct {
@@ -57,132 +58,6 @@ type CliConn struct {
     CertificateBase64 string `json:"certificate_base64"`
   } `json:"certificate"`
 } 
-
-
-// type ConnectionResPG struct {
-//   Connection ConnectionPG `json:"connection"`
-// }
-
-// type ConnectionResRD struct {
-//   Connection ConnectionRD `json:"connection"`
-// }
-
-// type ConnectionResES struct {
-//   Connection ConnectionES `json:"connection"`
-// }
-
-// type ConnectionResRMQ struct {
-//   Connection ConnectionRMQ `json:"connection"`
-// }
-
-// type ConnectionResEtcd struct {
-//   Connection ConnectionEtcd `json:"connection"`
-// }
-
-// type ConnectionPG struct {
-//   Postgres Uri `json:"postgres"`
-//   Cli CliConn `json:"cli"`
-// }
-
-
-
-// type ConnectionRD struct {
-//   Rediss Uri `json:"rediss"`
-//   Cli CliConn `json:"cli"`
-// }
-
-// type ConnectionRD struct {
-//   Rediss Uri `json:"rediss"`
-//   Cli CliConn `json:"cli"`
-// }
-
-// type ConnectionES struct {
-//   Https Uri `json:"https"`
-//   Cli CliConn `json:"cli"`
-// }
-
-// type ConnectionRMQ struct {
-//   Https Uri `json:"https"`
-//   Cli CliConn `json:"cli"`
-//   Amqps Uri `json:"amqps"`
-// }
-
-// type ConnectionEtcd struct {
-//   Grpc Uri `json:"grpc"`
-//   Cli CliConn `json:"cli"`
-// }
-
-// type ConnectionRD struct {
-//   Rediss Uri `json:"rediss"`
-//   Cli CliConn `json:"cli"`
-// }
-
-// type ConnectionES struct {
-//   Https Uri `json:"https"`
-//   Cli CliConn `json:"cli"`
-// }
-
-// type ConnectionRMQ struct {
-//   Https Uri `json:"https"`
-//   Cli CliConn `json:"cli"`
-//   Amqps Uri `json:"amqps"`
-// }
-
-// type ConnectionEtcd struct {
-//   Grpc Uri `json:"grpc"`
-//   Cli CliConn `json:"cli"`
-// }
-
-
-
-// type PGUri struct {
-//   Type string `json:"type"`
-//   Composed []string `json:"composed"`
-//   Scheme string `json:"scheme"`
-//   Hosts []struct {
-//     HostName string `json:"hostname"`
-//     Port int `json:"port"`
-//   }`json:"hosts"`
-//   Path string `json:"path"`
-//   QueryOptions struct {
-//     Options string
-//     } `json:"query_options"`
-//   Authentication struct {
-//     Method string `json:"method"`
-//     UserName string `json:"username"`
-//     Password string `json:"password"`
-//   }
-//   Certificate struct {
-//     Name string `json:"name"`
-//     CertificateBase64 string `json:"certificate_base64"`
-//   } `json:"certificate"`
-//   Database string `json:"database"`
-// }
-
-// type RDUri struct {
-//   Type string `json:"type"`
-//   Composed []string `json:"composed"`
-//   Scheme string `json:"scheme"`
-//   Hosts []struct {
-//     HostName string `json:"hostname"`
-//     Port int `json:"port"`
-//   }`json:"hosts"`
-//   Path string `json:"path"`
-//   QueryOptions struct {
-//     Options string
-//     } `json:"query_options"`
-//   Authentication struct {
-//     Method string `json:"method"`
-//     UserName string `json:"username"`
-//     Password string `json:"password"`
-//   }
-//   Certificate struct {
-//     Name string `json:"name"`
-//     CertificateBase64 string `json:"certificate_base64"`
-//   } `json:"certificate"`
-//   Database int `json:"database"`
-// }
-
 
 
 
