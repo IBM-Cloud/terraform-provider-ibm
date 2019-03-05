@@ -81,13 +81,13 @@ The following arguments are supported:
 * `members_disk_allocation_mb`  - (Optional) The disk size of the database, split across all members. As above.
 
 
-The **users** block (multiple blocks allowed) supports:            
-* `name` - Name of the userid to add to the database instance, Minimum of 5 characters up to 32.  
-* `password` - Password for the userid, minimum of 10 characters up to 32. 
+* `users` - (Optional) - Multiple blocks allowed       
+  * `name` - Name of the userid to add to the database instance, Minimum of 5 characters up to 32.  
+  * `password` - Password for the userid, minimum of 10 characters up to 32. 
             
-The **whitelist** block (multiple blocks allowed) supports:              
-* `address` - IP address or range of db client addresses to be whitelisted in CIDR format, `172.168.1.2/32`
-* `description` -  Unique description for white list range
+* `whitelist` - (Optional) - Multiple blocks allowed             
+  * `address` - IP address or range of db client addresses to be whitelisted in CIDR format, `172.168.1.2/32`
+  * `description` -  Unique description for white list range
 
 
 
@@ -122,7 +122,7 @@ Import requires a minimal Terrform config file to allow importing.
 
 ```hcl
 resource "ibm_database" "<your_database>" {
-  name              = "<your_database_name"
+  name              = "<your_database_name>"
 ```
 
 Run `terraform state show ibm_database.<your_database>` after import to retrieve the additional values to be included in the resource config file. Note that ICD only exports the admin userid. It does not export any additional userids and passwords configured on the instance. These values must be retrieved from an alternative source. If new passwords need to be configured or the connection string retrieved to use the service, a new `users` block must be defined to create new users. This limitation is due to a lack of ICD functionality.  

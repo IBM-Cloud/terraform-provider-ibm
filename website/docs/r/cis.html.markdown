@@ -63,6 +63,7 @@ The following attributes are exported:
 ## Import
 
 The `ibm_cis` resource can be imported using the `id`. The ID is formed from the `CRN` (Cloud Resource Name) from the **Overview** page of the Internet Services instance. These will be located under the **Domain** heading. 
+
 * CRN is a 120 digit character string of the form: `crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::`
 
 ```
