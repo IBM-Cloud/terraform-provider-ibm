@@ -63,8 +63,12 @@ The following attributes are exported:
 
 ## Import
 
-The `ibm_cis_origin_pool` resource can be imported using the `id`. The ID is formed from the `Origin Pool Id` and the `CRN` (Cloud Resource Name) concatentated uing a `:` character.  The CRN will be located on the **Overview** page of the Internet Services instance under the **Domain** heading. 
+The `ibm_cis_origin_pool` resource can be imported using the `id`. The ID is formed from the `Origin Pool Id` and the `CRN` (Cloud Resource Name) concatentated usinga `:` character.  
+
+The CRN will be located on the **Overview** page of the Internet Services instance under the **Domain** heading. 
+
 * **CRN** is a 120 digit character string of the form: `crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::`
+
 * **Origin Pool ID** is a 32 digit character string of the form: `000f57b5c42bcff3c02d155c2d58aa97`. The id of an existing pool is not available via the UI. It can be retrieved programmatically via the CIS API or via the CLI using the CIS command to list the defined GLBs:  `bx cis glb-pools` 
 
 
