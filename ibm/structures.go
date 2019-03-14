@@ -1201,3 +1201,50 @@ func EscapeUrlParm(urlParm string) string {
 	}
 	return urlParm
 }
+
+func UpdateTags(d *schema.ResourceData, meta interface{}) error {
+	resourceID := d.Id()
+	gtClient, err := meta.(ClientSession).GlobalTaggingAPI()
+	if err != nil {
+		return fmt.Errorf("Error getting global tagging client settings: %s", err)
+	}
+	oldList, newList := d.GetChange("tags")
+	if oldList == nil {
+		oldList = new(schema.Set)
+	}
+	if newList == nil {
+		newList = new(schema.Set)
+	}
+	os := oldList.(*schema.Set)
+	ns := newList.(*schema.Set)
+	removeInt := os.Difference(ns).List()
+	addInt := ns.Difference(os).List()
+	add := make([]string, len(addInt))
+	for i, v := range addInt {
+		add[i] = fmt.Sprint(v)
+	}
+	remove := make([]string, len(removeInt))
+	for i, v := range removeInt {
+		remove[i] = fmt.Sprint(v)
+	}
+
+	if len(add) > 0 {
+		_, err := gtClient.Tags().AttachTags(resourceID, add)
+		if err != nil {
+			return fmt.Errorf("Error updating database tags %v : %s", add, err)
+		}
+	}
+	if len(remove) > 0 {
+		_, err := gtClient.Tags().DetachTags(resourceID, remove)
+		if err != nil {
+			return fmt.Errorf("Error detaching database tags %v: %s", remove, err)
+		}
+		for _, v := range remove {
+			_, err := gtClient.Tags().DeleteTag(v)
+			if err != nil {
+				return fmt.Errorf("Error deleting database tag %v: %s", v, err)
+			}
+		}
+	}
+	return nil
+}

@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform/flatmap"
 
+	//	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
@@ -607,7 +608,20 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 		return nil
 	}
 
-	d.Set("tags", instance.Tags)
+	gtClient, err := meta.(ClientSession).GlobalTaggingAPI()
+	if err != nil {
+		return err
+	}
+	taggingResult, err := gtClient.Tags().GetTags(instanceID)
+	if err != nil {
+		return err
+	}
+	var taglist []string
+	for _, item := range taggingResult.Items {
+		taglist = append(taglist, item.Name)
+	}
+
+	d.Set("tags", flattenStringList(taglist))
 	d.Set("name", instance.Name)
 	d.Set("status", instance.State)
 	d.Set("resource_group_id", instance.ResourceGroupID)
@@ -695,20 +709,24 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 	if d.HasChange("name") {
 		updateReq.Name = d.Get("name").(string)
 	}
-	if d.HasChange("tags") {
-		tags := getServiceTags(d)
-		updateReq.Tags = tags
-	}
 
 	_, err = rsConClient.ResourceServiceInstance().UpdateInstance(instanceID, updateReq)
 	if err != nil {
-		return fmt.Errorf("Error updating resource instance: %s with tags", err)
+		return fmt.Errorf("Error updating resource instance: %s", err)
 	}
 
 	_, err = waitForDatabaseInstanceUpdate(d, meta)
 	if err != nil {
 		return fmt.Errorf(
-			"Error waiting for update of resource instance (%s) tags to complete: %s", d.Id(), err)
+			"Error waiting for update of resource instance (%s) to complete: %s", d.Id(), err)
+	}
+
+	if d.HasChange("tags") {
+		err = UpdateTags(d, meta)
+		if err != nil {
+			return fmt.Errorf(
+				"Error on update of resource instance (%s) tags: %s", d.Id(), err)
+		}
 	}
 
 	icdClient, err := meta.(ClientSession).ICDAPI()
