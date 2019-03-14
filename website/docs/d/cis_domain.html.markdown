@@ -6,14 +6,14 @@ description: |-
   Get information on an IBM Cloud Internet Services Domain.
 ---
 
-# ibm\_cis
+# ibm\_cis_domain
 
 Imports a read only copy of an existing Internet Services domain resource. This allows new/additional CIS sub-resources to be added to an existing CIS domain registration, specifically DNS records and global load balancers. It is used in conjunction with the CIS data-source. 
 
 ## Example Usage
 
 ```hcl
-data "ibm_cis" "cis_instance" {
+data "ibm_cis_domain" "cis_instance_domain" {
   domain = "example.com"
   cis_id = "${ibm_cis.instance.id}"
 }

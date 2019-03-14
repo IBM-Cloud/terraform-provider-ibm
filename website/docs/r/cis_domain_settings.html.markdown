@@ -41,5 +41,6 @@ Additional settings not implemented in this version of the provider.
 
 ## Attributes Reference
 
-The following attributes are exported:
+The following attributes are exported: 
+
 * `certificate_status`. Value of: "none", "initializing", "authorizing", "active"
