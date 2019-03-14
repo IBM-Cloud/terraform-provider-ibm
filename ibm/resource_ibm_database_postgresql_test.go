@@ -43,7 +43,7 @@ func TestAccIBMDatabaseInstance_Postgres_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "connectionstrings.1.name", "admin"),
 					resource.TestMatchResourceAttr(name, "connectionstrings.1.certname", regexp.MustCompile("[-a-z0-9]*")),
 					resource.TestMatchResourceAttr(name, "connectionstrings.1.certbase64", regexp.MustCompile("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$")),
-					//resource.TestCheckResourceAttr(name, "tags.#", "2"),
+					resource.TestCheckResourceAttr(name, "tags.#", "1"),
 				),
 			},
 			resource.TestStep{
@@ -65,6 +65,7 @@ func TestAccIBMDatabaseInstance_Postgres_Basic(t *testing.T) {
 					resource.TestMatchResourceAttr(name, "connectionstrings.0.certname", regexp.MustCompile("[-a-z0-9]*")),
 					resource.TestMatchResourceAttr(name, "connectionstrings.0.certbase64", regexp.MustCompile("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$")),
 					resource.TestMatchResourceAttr(name, "connectionstrings.0.database", regexp.MustCompile("[-a-z0-9]+")),
+					resource.TestCheckResourceAttr(name, "tags.#", "1"),
 				),
 			},
 			resource.TestStep{
@@ -80,6 +81,7 @@ func TestAccIBMDatabaseInstance_Postgres_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
+					resource.TestCheckResourceAttr(name, "tags.#", "1"),
 				),
 			},
 			// {
@@ -247,6 +249,7 @@ func testAccCheckIBMDatabaseInstance_Postgres_basic(databaseResourceGroup string
 				  adminpassword     = "password12"
 				  members_memory_allocation_mb = 2048
   				  members_disk_allocation_mb   = 10240
+  				  tags = ["one:two"]
 				  users = {
   				   		name     = "user123"
   					   	password = "password12"
@@ -273,6 +276,7 @@ func testAccCheckIBMDatabaseInstance_Postgres_fullyspecified(databaseResourceGro
 				  adminpassword     = "password12"
 				  members_memory_allocation_mb = 4096
   				  members_disk_allocation_mb   = 14336
+  				  tags = ["one:two"]
 				  users = {
   				   		name     = "user123"
   					   	password = "password12"
@@ -307,6 +311,7 @@ func testAccCheckIBMDatabaseInstance_Postgres_reduced(databaseResourceGroup stri
 				  adminpassword     = "password12"
 				  members_memory_allocation_mb = 2048
   				  members_disk_allocation_mb   = 14336
+  				  tags = ["one:two"]
 				}`, databaseResourceGroup, name)
 }
 

@@ -247,7 +247,6 @@ func getDefaultAuthHeaders(serviceName bluemix.ServiceName, c *bluemix.Config) g
 	case bluemix.MccpService, bluemix.AccountService:
 		h.Set(userAgentHeader, http.UserAgent())
 		h.Set(authorizationHeader, c.UAAAccessToken)
-
 	case bluemix.ContainerService:
 		h.Set(userAgentHeader, http.UserAgent())
 		h.Set(authorizationHeader, c.IAMAccessToken)
@@ -261,6 +260,10 @@ func getDefaultAuthHeaders(serviceName bluemix.ServiceName, c *bluemix.Config) g
 	case bluemix.CisService:
 		h.Set(userAgentHeader, http.UserAgent())
 		h.Set(userAccessTokenHeader, c.IAMAccessToken)
+	case bluemix.GlobalSearchService, bluemix.GlobalTaggingService:
+		h.Set(userAgentHeader, http.UserAgent())
+		h.Set(authorizationHeader, c.IAMAccessToken)
+		h.Set(iamRefreshTokenHeader, c.IAMRefreshToken)	
 	case bluemix.ICDService:
 		h.Set(userAgentHeader, http.UserAgent())
 		h.Set(authorizationHeader, c.IAMAccessToken)

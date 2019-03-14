@@ -2,12 +2,11 @@ package ibm
 
 import (
 	"fmt"
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/IBM-Cloud/bluemix-go/models"
-
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/IBM-Cloud/bluemix-go/models"
 
 	"github.com/hashicorp/terraform/flatmap"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -406,7 +405,21 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	instance = filteredInstances[0]
 
 	d.SetId(instance.ID)
-	d.Set("tags", instance.Tags)
+
+	gtClient, err := meta.(ClientSession).GlobalTaggingAPI()
+	if err != nil {
+		return err
+	}
+	taggingResult, err := gtClient.Tags().GetTags(instance.ID)
+	if err != nil {
+		return err
+	}
+	var taglist []string
+	for _, item := range taggingResult.Items {
+		taglist = append(taglist, item.Name)
+	}
+
+	d.Set("tags", flattenStringList(taglist))
 	d.Set("name", instance.Name)
 	d.Set("status", instance.State)
 	d.Set("resource_group_id", instance.ResourceGroupID)
