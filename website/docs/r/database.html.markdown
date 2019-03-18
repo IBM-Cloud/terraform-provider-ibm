@@ -25,6 +25,7 @@ resource "ibm_database" "<your_database>" {
   name              = "<your_database_name>"
   plan              = "standard"
   location          = "eu-gb"
+  service           = "databases-for-etcd"
   resource_group_id = "${data.ibm_resource_group.group.id}"
   tags              = ["tag1", "tag2"]
 
@@ -52,17 +53,18 @@ provider "ibm" {
 }
 ```
 
+See https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-database for an example of VM configured to connect to a PostgreSQL DB.  
+
+
 ## Timeouts
 
 ibm_database provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
-* `create` - (Default 40 minutes) Used for Creating Instance.
-* `update` - (Default 10 minutes) Used for Updating Instance.
+* `create` - (Default 60 minutes) Used for Creating Instance.
+* `update` - (Default 20 minutes) Used for Updating Instance.
 * `delete` - (Default 10 minutes) Used for Deleting Instance.
 
-ICD instance create typically takes between 10 to 20 minutes. Delete and update in minutes. 
-
-
+ICD instance create typically takes between 10 to 20 minutes. Delete and update in minutes. Provisioning time can be unpredictable. If the apply fails due to a timeout, import the database resource after it has finished creation.  
 
 
 ## Argument Reference
