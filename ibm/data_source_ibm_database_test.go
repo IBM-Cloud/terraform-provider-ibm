@@ -38,6 +38,7 @@ func TestAccIBMDatabaseDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(dataName, "connectionstrings.0.name", "admin"),
 					resource.TestCheckResourceAttr(dataName, "connectionstrings.0.hosts.#", "1"),
 					resource.TestCheckResourceAttr(dataName, "connectionstrings.0.scheme", "postgres"),
+					resource.TestCheckResourceAttr(dataName, "tags.#", "1"),
 				),
 			},
 		},
@@ -62,6 +63,7 @@ func testAccCheckIBMDatabaseDataSourceConfig(databaseResourceGroup string, name 
 				  service 			= "databases-for-postgresql"
 				  plan              = "standard"
 				  location          = "us-south"
+				  tags = ["one:two"]
 				}
 
 				`, databaseResourceGroup, name)
