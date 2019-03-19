@@ -41,6 +41,9 @@ resource "ibm_database" "<your_database>" {
           description = "desc"
           }
 }
+
+output "ICD Etcd database connection string" {
+  value = "http://${"${ibm_database.test_acc.connectionstrings.0.composed}"}"
 ```
 
 provider.tf
@@ -53,7 +56,7 @@ provider "ibm" {
 }
 ```
 
-See https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-database for an example of VM configured to connect to a PostgreSQL DB.  
+See https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-database for an example of a VSI configured to connect to a PostgreSQL DB.  
 
 
 ## Timeouts
@@ -104,7 +107,7 @@ The following attributes are exported:
 * `connectionstrings` - List of connection strings by userid for the database. See the IBM Cloud documentation for more details of how to use connection strings in ICD for database access: https://console.bluemix.net/docs/services/databases-for-postgresql/howto-getting-connection-strings.html#getting-your-connection-strings. The results are returned in pairs of the userid and string:
   `connectionstrings.1.name = admin`
   `connectionstrings.1.string = postgres://admin:$PASSWORD@79226bd4-4076-4873-b5ce-b1dba48ff8c4.b8a5e798d2d04f2e860e54e5d042c915.databases.appdomain.cloud:32554/ibmclouddb?sslmode=verify-full`
-
+Individual string parameters can be retrieved using TF vars and outputs  `connectionstrings.x.hosts.x.port` and `connectionstrings.x.hosts.x.host` 
 
 
 ## Import
