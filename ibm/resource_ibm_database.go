@@ -608,20 +608,11 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 		return nil
 	}
 
-	gtClient, err := meta.(ClientSession).GlobalTaggingAPI()
+	err = GetTags(d, meta)
 	if err != nil {
-		return err
+		return fmt.Errorf(
+			"Error on get of resource instance (%s) tags: %s", d.Id(), err)
 	}
-	taggingResult, err := gtClient.Tags().GetTags(instanceID)
-	if err != nil {
-		return err
-	}
-	var taglist []string
-	for _, item := range taggingResult.Items {
-		taglist = append(taglist, item.Name)
-	}
-
-	d.Set("tags", flattenStringList(taglist))
 	d.Set("name", instance.Name)
 	d.Set("status", instance.State)
 	d.Set("resource_group_id", instance.ResourceGroupID)

@@ -1202,6 +1202,24 @@ func EscapeUrlParm(urlParm string) string {
 	return urlParm
 }
 
+func GetTags(d *schema.ResourceData, meta interface{}) error {
+	resourceID := d.Id()
+	gtClient, err := meta.(ClientSession).GlobalTaggingAPI()
+	if err != nil {
+		return fmt.Errorf("Error getting global tagging client settings: %s", err)
+	}
+	taggingResult, err := gtClient.Tags().GetTags(resourceID)
+	if err != nil {
+		return err
+	}
+	var taglist []string
+	for _, item := range taggingResult.Items {
+		taglist = append(taglist, item.Name)
+	}
+	d.Set("tags", flattenStringList(taglist))
+	return nil
+}
+
 func UpdateTags(d *schema.ResourceData, meta interface{}) error {
 	resourceID := d.Id()
 	gtClient, err := meta.(ClientSession).GlobalTaggingAPI()
