@@ -163,6 +163,9 @@ func resourceIBMNetworkVlanCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	vlan, err := findVlanByOrderId(sess, *receipt.OrderId)
+	if err != nil {
+		return err
+	}
 
 	if len(name) > 0 {
 		_, err = services.GetNetworkVlanService(sess).
