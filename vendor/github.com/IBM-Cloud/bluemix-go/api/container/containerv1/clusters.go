@@ -173,6 +173,7 @@ type Clusters interface {
 	Update(name string, params ClusterUpdateParam, target ClusterTargetHeader) error
 	Delete(name string, target ClusterTargetHeader) error
 	Find(name string, target ClusterTargetHeader) (ClusterInfo, error)
+	FindWithOutShowResources(name string, target ClusterTargetHeader) (ClusterInfo, error)
 	GetClusterConfig(name, homeDir string, admin bool, target ClusterTargetHeader) (string, error)
 	StoreConfig(name, baseDir string, admin bool, createCalicoConfig bool, target ClusterTargetHeader) (string, string, error)
 	UnsetCredentials(target ClusterTargetHeader) error
@@ -228,6 +229,18 @@ func (r *clusters) List(target ClusterTargetHeader) ([]ClusterInfo, error) {
 //Find ...
 func (r *clusters) Find(name string, target ClusterTargetHeader) (ClusterInfo, error) {
 	rawURL := fmt.Sprintf("/v1/clusters/%s?showResources=true", name)
+	cluster := ClusterInfo{}
+	_, err := r.client.Get(rawURL, &cluster, target.ToMap())
+	if err != nil {
+		return cluster, err
+	}
+
+	return cluster, err
+}
+
+//FindWithOutShowResources ...
+func (r *clusters) FindWithOutShowResources(name string, target ClusterTargetHeader) (ClusterInfo, error) {
+	rawURL := fmt.Sprintf("/v1/clusters/%s", name)
 	cluster := ClusterInfo{}
 	_, err := r.client.Get(rawURL, &cluster, target.ToMap())
 	if err != nil {
