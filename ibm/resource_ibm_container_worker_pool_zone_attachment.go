@@ -125,12 +125,13 @@ func resourceIBMContainerWorkerPoolZoneAttachmentCreate(d *schema.ResourceData, 
 	if err != nil {
 		return err
 	}
+	d.SetId(fmt.Sprintf("%s/%s/%s", cluster, workerPool, zone))
+
 	_, err = WaitForWorkerZoneNormal(cluster, workerPool, zone, meta, d.Timeout(schema.TimeoutUpdate), targetEnv)
 	if err != nil {
 		return fmt.Errorf(
 			"Error waiting for workers of worker pool (%s) of cluster (%s) to become ready: %s", workerPool, cluster, err)
 	}
-	d.SetId(fmt.Sprintf("%s/%s/%s", cluster, workerPool, zone))
 
 	return resourceIBMContainerWorkerPoolZoneAttachmentRead(d, meta)
 
