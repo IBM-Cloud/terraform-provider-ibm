@@ -42,6 +42,8 @@ var csRegion string
 var extendedHardwareTesting bool
 var err error
 var placementGroupName string
+var certCRN string
+var updatedCertCRN string
 
 func init() {
 	cfOrganization = os.Getenv("IBM_ORG")
@@ -77,6 +79,18 @@ func init() {
 	if machineType == "" {
 		machineType = "u1c.2x4"
 		fmt.Println("[WARN] Set the environment variable IBM_MACHINE_TYPE for testing ibm_container_cluster resource else it is set to default value 'u1c.2x4'")
+	}
+
+	certCRN = os.Getenv("IBM_CERT_CRN")
+	if certCRN == "" {
+		certCRN = "crn:v1:bluemix:public:cloudcerts:eu-de:a/e9021a4d06e9b108b4a221a3cec47e3d:77e527aa-65b2-4cb3-969b-7e8714174346:certificate:c79da56505597523567d56f76a0cd8a4"
+		fmt.Println("[WARN] Set the environment variable IBM_CERT_CRN for testing ibm_container_alb_cert resource else it is set to default value")
+	}
+
+	updatedCertCRN = os.Getenv("IBM_UPDATE_CERT_CRN")
+	if updatedCertCRN == "" {
+		updatedCertCRN = "crn:v1:bluemix:public:cloudcerts:eu-de:a/e9021a4d06e9b108b4a221a3cec47e3d:77e527aa-65b2-4cb3-969b-7e8714174346:certificate:1bf3d0c2b7764402dde25744218e6cba"
+		fmt.Println("[WARN] Set the environment variable IBM_UPDATE_CERT_CRN for testing ibm_container_alb_cert resource else it is set to default value")
 	}
 
 	csRegion = os.Getenv("IBM_CONTAINER_REGION")
