@@ -3,8 +3,8 @@ package endpoints
 import (
 	"fmt"
 
-	"github.com/IBM-Cloud/bluemix-go/helpers" 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/IBM-Cloud/bluemix-go/helpers"
 )
 
 //EndpointLocator ...
@@ -38,7 +38,7 @@ var regionToEndpoint = map[string]map[string]string{
 		"eu-gb":    "https://accountmanagement.eu-gb.bluemix.net",
 		"au-syd":   "https://accountmanagement.au-syd.bluemix.net",
 		"eu-de":    "https://accountmanagement.eu-de.bluemix.net",
-		"jp-tok":    "https://accountmanagement.jp-tok.bluemix.net",
+		"jp-tok":   "https://accountmanagement.jp-tok.bluemix.net",
 	},
 	"cf": {
 		"us-south": "https://api.ng.bluemix.net",
@@ -57,12 +57,12 @@ var regionToEndpoint = map[string]map[string]string{
 		"jp-tok":   "https://registry.jp-tok.bluemix.net",
 	},
 	"cs": {
-		"us-south": "https://containers.bluemix.net",
-		"us-east":  "https://containers.bluemix.net",
-		"eu-de":    "https://containers.bluemix.net",
-		"au-syd":   "https://containers.bluemix.net",
-		"eu-gb":    "https://containers.bluemix.net",
-		"jp-tok":   "https://containers.bluemix.net",
+		"us-south": "https://containers.cloud.ibm.com",
+		"us-east":  "https://containers.cloud.ibm.com",
+		"eu-de":    "https://containers.cloud.ibm.com",
+		"au-syd":   "https://containers.cloud.ibm.com",
+		"eu-gb":    "https://containers.cloud.ibm.com",
+		"jp-tok":   "https://containers.cloud.ibm.com",
 	},
 	"cis": {
 		"us-south": "https://api.cis.cloud.ibm.com",
@@ -106,12 +106,12 @@ var regionToEndpoint = map[string]map[string]string{
 	},
 	"icd": {
 		"us-south": "https://api.us-south.databases.cloud.ibm.com",
-		"us-east": "https://api.us-east.databases.cloud.ibm.com",
+		"us-east":  "https://api.us-east.databases.cloud.ibm.com",
 		"eu-de":    "https://api.eu-de.databases.cloud.ibm.com",
 		"eu-gb":    "https://api.eu-gb.databases.cloud.ibm.com",
 		"au-syd":   "https://api.au-syd.databases.cloud.ibm.com",
 		"jp-tok":   "https://api.jp-tok.databases.cloud.ibm.com",
-		"oslo01": 	"https://api.osl01.databases.cloud.ibm.com",
+		"oslo01":   "https://api.osl01.databases.cloud.ibm.com",
 	},
 	"mccp": {
 		"us-south": "https://mccp.ng.bluemix.net",
@@ -122,12 +122,12 @@ var regionToEndpoint = map[string]map[string]string{
 		"jp-tok":   "https://mccp.jp-tok.bluemix.net",
 	},
 	"resource-manager": {
-		"us-south": "https://resource-manager.bluemix.net", 
+		"us-south": "https://resource-manager.bluemix.net",
 		"us-east":  "https://resource-manager.bluemix.net",
 		"eu-de":    "https://resource-manager.bluemix.net",
 		"au-syd":   "https://resource-manager.bluemix.net",
 		"eu-gb":    "https://resource-manager.bluemix.net",
-		"jp-tok":    "https://resource-manager.bluemix.net",
+		"jp-tok":   "https://resource-manager.bluemix.net",
 	},
 	"resource-catalog": {
 		"us-south": "https://resource-catalog.bluemix.net",
@@ -151,7 +151,7 @@ var regionToEndpoint = map[string]map[string]string{
 		"eu-gb":    "https://login.eu-gb.bluemix.net/UAALoginServerWAR",
 		"au-syd":   "https://login.au-syd.bluemix.net/UAALoginServerWAR",
 		"eu-de":    "https://login.eu-de.bluemix.net/UAALoginServerWAR",
-		"jp-tok":    "https://login.jp-tok.bluemix.net/UAALoginServerWAR",
+		"jp-tok":   "https://login.jp-tok.bluemix.net/UAALoginServerWAR",
 	},
 }
 
@@ -297,4 +297,3 @@ func (e *endpointLocator) UAAEndpoint() (string, error) {
 	}
 	return "", bmxerror.New(ErrCodeServiceEndpoint, fmt.Sprintf("UAA endpoint doesn't exist for region: %q", e.region))
 }
-
