@@ -736,7 +736,8 @@ func flattenDisks(result datatypes.Virtual_Guest) []int {
 
 	for _, v := range result.BlockDevices {
 		// skip 1,7 which is reserved for the swap disk and metadata
-		if result.BillingItem.OrderItem.Preset != nil {
+		_, ok := sl.GrabOk(result, "BillingItem.OrderItem.Preset")
+		if ok {
 			if *v.Device != "1" && *v.Device != "7" && *v.Device != "0" {
 				capacity, ok := sl.GrabOk(v, "DiskImage.Capacity")
 
@@ -764,7 +765,8 @@ func flattenDisksForWindows(result datatypes.Virtual_Guest) []int {
 
 	for _, v := range result.BlockDevices {
 		// skip 1,7 which is reserved for the swap disk and metadata
-		if result.BillingItem.OrderItem.Preset != nil {
+		_, ok := sl.GrabOk(result, "BillingItem.OrderItem.Preset")
+		if ok {
 			if *v.Device != "1" && *v.Device != "7" && *v.Device != "0" && *v.Device != "3" {
 				capacity, ok := sl.GrabOk(v, "DiskImage.Capacity")
 
