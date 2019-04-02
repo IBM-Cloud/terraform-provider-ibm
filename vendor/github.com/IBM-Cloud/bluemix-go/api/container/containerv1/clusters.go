@@ -17,37 +17,43 @@ import (
 
 //ClusterInfo ...
 type ClusterInfo struct {
-	CreatedDate              string   `json:"createdDate"`
-	DataCenter               string   `json:"dataCenter"`
-	ID                       string   `json:"id"`
-	IngressHostname          string   `json:"ingressHostname"`
-	IngressSecretName        string   `json:"ingressSecretName"`
-	Location                 string   `json:"location"`
-	MasterKubeVersion        string   `json:"masterKubeVersion"`
-	ModifiedDate             string   `json:"modifiedDate"`
-	Name                     string   `json:"name"`
-	Region                   string   `json:"region"`
-	ResourceGroupID          string   `json:"resourceGroup"`
-	ServerURL                string   `json:"serverURL"`
-	State                    string   `json:"state"`
-	OrgID                    string   `json:"logOrg"`
-	OrgName                  string   `json:"logOrgName"`
-	SpaceID                  string   `json:"logSpace"`
-	SpaceName                string   `json:"logSpaceName"`
-	IsPaid                   bool     `json:"isPaid"`
-	IsTrusted                bool     `json:"isTrusted"`
-	WorkerCount              int      `json:"workerCount"`
-	Vlans                    []Vlan   `json:"vlans"`
-	Addons                   []Addon  `json:"addons"`
-	OwnerEmail               string   `json:"ownerEmail"`
-	APIUser                  string   `json:"apiUser"`
-	MonitoringURL            string   `json:"monitoringURL"`
-	DisableAutoUpdate        bool     `json:"disableAutoUpdate"`
-	EtcdPort                 string   `json:"etcdPort"`
-	MasterStatus             string   `json:"masterStatus"`
-	MasterStatusModifiedDate string   `json:"masterStatusModifiedDate"`
-	KeyProtectEnabled        bool     `json:"keyProtectEnabled"`
-	WorkerZones              []string `json:"workerZones"`
+	CreatedDate                   string   `json:"createdDate"`
+	DataCenter                    string   `json:"dataCenter"`
+	ID                            string   `json:"id"`
+	IngressHostname               string   `json:"ingressHostname"`
+	IngressSecretName             string   `json:"ingressSecretName"`
+	Location                      string   `json:"location"`
+	MasterKubeVersion             string   `json:"masterKubeVersion"`
+	ModifiedDate                  string   `json:"modifiedDate"`
+	Name                          string   `json:"name"`
+	Region                        string   `json:"region"`
+	ResourceGroupID               string   `json:"resourceGroup"`
+	ServerURL                     string   `json:"serverURL"`
+	State                         string   `json:"state"`
+	OrgID                         string   `json:"logOrg"`
+	OrgName                       string   `json:"logOrgName"`
+	SpaceID                       string   `json:"logSpace"`
+	SpaceName                     string   `json:"logSpaceName"`
+	IsPaid                        bool     `json:"isPaid"`
+	IsTrusted                     bool     `json:"isTrusted"`
+	WorkerCount                   int      `json:"workerCount"`
+	Vlans                         []Vlan   `json:"vlans"`
+	Addons                        []Addon  `json:"addons"`
+	OwnerEmail                    string   `json:"ownerEmail"`
+	APIUser                       string   `json:"apiUser"`
+	MonitoringURL                 string   `json:"monitoringURL"`
+	DisableAutoUpdate             bool     `json:"disableAutoUpdate"`
+	EtcdPort                      string   `json:"etcdPort"`
+	MasterStatus                  string   `json:"masterStatus"`
+	MasterStatusModifiedDate      string   `json:"masterStatusModifiedDate"`
+	KeyProtectEnabled             bool     `json:"keyProtectEnabled"`
+	WorkerZones                   []string `json:"workerZones"`
+	PullSecretApplied             bool     `json:"pullSecretApplied"`
+	CRN                           string   `json:"crn"`
+	PrivateServiceEndpointEnabled bool     `json:"privateServiceEndpointEnabled"`
+	PrivateServiceEndpointURL     string   `json:"privateServiceEndpointURL"`
+	PublicServiceEndpointEnabled  bool     `json:"publicServiceEndpointEnabled"`
+	PublicServiceEndpointURL      string   `json:"publicServiceEndpointURL"`
 }
 
 type ClusterUpdateParam struct {
@@ -125,19 +131,21 @@ func (c ClusterSoftlayerHeader) ToMap() map[string]string {
 
 //ClusterCreateRequest ...
 type ClusterCreateRequest struct {
-	Billing        string `json:"billing,omitempty"`
-	Datacenter     string `json:"dataCenter" description:"The worker's data center"`
-	Isolation      string `json:"isolation" description:"Can be 'public' or 'private'"`
-	MachineType    string `json:"machineType" description:"The worker's machine type"`
-	Name           string `json:"name" binding:"required" description:"The cluster's name"`
-	PrivateVlan    string `json:"privateVlan" description:"The worker's private vlan"`
-	PublicVlan     string `json:"publicVlan" description:"The worker's public vlan"`
-	WorkerNum      int    `json:"workerNum,omitempty" binding:"required" description:"The number of workers"`
-	NoSubnet       bool   `json:"noSubnet" description:"Indicate whether portable subnet should be ordered for user"`
-	MasterVersion  string `json:"masterVersion,omitempty" description:"Desired version of the requested master"`
-	Prefix         string `json:"prefix,omitempty" description:"hostname prefix for new workers"`
-	DiskEncryption bool   `json:"diskEncryption" description:"disable encryption on a worker"`
-	EnableTrusted  bool   `json:"enableTrusted" description:"Set to true if trusted hardware should be requested"`
+	Billing                string `json:"billing,omitempty"`
+	Datacenter             string `json:"dataCenter" description:"The worker's data center"`
+	Isolation              string `json:"isolation" description:"Can be 'public' or 'private'"`
+	MachineType            string `json:"machineType" description:"The worker's machine type"`
+	Name                   string `json:"name" binding:"required" description:"The cluster's name"`
+	PrivateVlan            string `json:"privateVlan" description:"The worker's private vlan"`
+	PublicVlan             string `json:"publicVlan" description:"The worker's public vlan"`
+	WorkerNum              int    `json:"workerNum,omitempty" binding:"required" description:"The number of workers"`
+	NoSubnet               bool   `json:"noSubnet" description:"Indicate whether portable subnet should be ordered for user"`
+	MasterVersion          string `json:"masterVersion,omitempty" description:"Desired version of the requested master"`
+	Prefix                 string `json:"prefix,omitempty" description:"hostname prefix for new workers"`
+	DiskEncryption         bool   `json:"diskEncryption" description:"disable encryption on a worker"`
+	EnableTrusted          bool   `json:"enableTrusted" description:"Set to true if trusted hardware should be requested"`
+	PrivateEndpointEnabled bool   `json:"privateSeviceEndpoint"`
+	PublicEndpointEnabled  bool   `json:"publicServiceEndpoint"`
 }
 
 // ServiceBindRequest ...
