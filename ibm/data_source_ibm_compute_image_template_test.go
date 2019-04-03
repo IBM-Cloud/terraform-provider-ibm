@@ -44,9 +44,9 @@ func TestAccIBMComputeImageTemplateDataSource_Basic(t *testing.T) {
 					),
 				),
 			},
-			// Tests looking up the latest of a public image
+			// Tests looking up the most_recent of a public image
 			{
-				Config: testAccCheckIBMComputeImageTemplateDataSourceConfig_latest,
+				Config: testAccCheckIBMComputeImageTemplateDataSourceConfig_mostrecent,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.ibm_compute_image_template.tfacc_img_tmpl",
@@ -62,7 +62,7 @@ func TestAccIBMComputeImageTemplateDataSource_Basic(t *testing.T) {
 			},
 			// Tests looking up the first returned of a public image
 			{
-				Config: testAccCheckIBMComputeImageTemplateDataSourceConfig_notlatest,
+				Config: testAccCheckIBMComputeImageTemplateDataSourceConfig_mostrecent2,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.ibm_compute_image_template.tfacc_img_tmpl",
@@ -92,16 +92,16 @@ data "ibm_compute_image_template" "tfacc_img_tmpl" {
 }
 `
 
-const testAccCheckIBMComputeImageTemplateDataSourceConfig_latest = `
+const testAccCheckIBMComputeImageTemplateDataSourceConfig_mostrecent = `
 data "ibm_compute_image_template" "tfacc_img_tmpl" {
     name = "25GB - Ubuntu / Ubuntu / 18.04-64 Minimal for VSI"
-    latest = true
+    most_recent = true
 }
 `
 
-const testAccCheckIBMComputeImageTemplateDataSourceConfig_notlatest = `
+const testAccCheckIBMComputeImageTemplateDataSourceConfig_mostrecent2 = `
 data "ibm_compute_image_template" "tfacc_img_tmpl" {
     name = "25GB - Ubuntu / Ubuntu / 18.04-64 Minimal for VSI"
-    latest = false
+    most_recent = false
 }
 `
