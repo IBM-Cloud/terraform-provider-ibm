@@ -33,6 +33,7 @@ resource "ibm_compute_vm_instance" "vm1" {
 The following arguments are supported:
 
 * `name` - (Required, string) The name of the image template as it was defined in IBM Cloud Infrastructure (SoftLayer). You can find the name in the [IBM Cloud infrastructure customer portal](https://control.softlayer.com) by navigating to **Devices > Manage > Images**.
+* `most_recent` - (Optional, boolean) Ask the provider for the latest version of the image template by selecting the one with the highest identifier with the requested name.
 
 ## Attribute Reference
 
