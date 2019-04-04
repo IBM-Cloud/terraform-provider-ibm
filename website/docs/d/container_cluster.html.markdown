@@ -76,3 +76,7 @@ The following attributes are exported:
   * `alb_ip` - BYOIP VIP to use for application load balancer (ALB). Currently supported only for private application load balancer (ALB).
   * `resize` - Indicate whether resizing should be done.
   * `disable_deployment` - Indicate whether to disable deployment only on disable application load balancer (ALB).
+* `private_service_endpoint_url` - Private service endpoint url.
+* `public_service_endpoint_url` - Public service endpoint url.
+* `public_service_endpoint` - Is public service endpoint enabled to make the master publicly accessible.
+* `private_service_endpoint` - Is private service endpoint enabled to make the master privately accessible.
