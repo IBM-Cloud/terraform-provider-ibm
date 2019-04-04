@@ -156,6 +156,12 @@ func dataSourceIBMContainerCluster() *schema.Resource {
 					},
 				},
 			},
+			"alb_type": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "all",
+				ValidateFunc: validateAllowedStringValue([]string{"private", "public", "all"}),
+			},
 			"albs": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -227,6 +233,24 @@ func dataSourceIBMContainerCluster() *schema.Resource {
 				Description: "ID of the resource group.",
 				Computed:    true,
 			},
+			"public_service_endpoint": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+
+			"private_service_endpoint": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"public_service_endpoint_url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"private_service_endpoint_url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -282,6 +306,9 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("Error retrieving alb's of the cluster %s: %s", name, err)
 	}
 
+	filterType := d.Get("alb_type").(string)
+	filteredAlbs := flattenAlbs(albs, filterType)
+
 	d.SetId(clusterFields.ID)
 	d.Set("worker_count", clusterFields.WorkerCount)
 	d.Set("workers", workers)
@@ -290,8 +317,12 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	d.Set("vlans", flattenVlans(clusterFields.Vlans))
 	d.Set("is_trusted", clusterFields.IsTrusted)
 	d.Set("worker_pools", flattenWorkerPools(workerPools))
-	d.Set("albs", flattenAlbs(albs))
+	d.Set("albs", filteredAlbs)
 	d.Set("resource_group_id", clusterFields.ResourceGroupID)
+	d.Set("public_service_endpoint", clusterFields.PublicServiceEndpointEnabled)
+	d.Set("private_service_endpoint", clusterFields.PrivateServiceEndpointEnabled)
+	d.Set("public_service_endpoint_url", clusterFields.PublicServiceEndpointURL)
+	d.Set("private_service_endpoint_url", clusterFields.PrivateServiceEndpointURL)
 
 	return nil
 }

@@ -568,7 +568,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("workers_info", workers)
 	d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0])
 	d.Set("is_trusted", cls.IsTrusted)
-	d.Set("albs", flattenAlbs(albs))
+	d.Set("albs", flattenAlbs(albs, "all"))
 	d.Set("resource_group_id", cls.ResourceGroupID)
 
 	return nil
