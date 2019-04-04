@@ -85,6 +85,12 @@ type ClusterCreateResponse struct {
 	ID string
 }
 
+// MasterAPIServer describes the state to put the Master API server into
+// swagger:model
+type MasterAPIServer struct {
+	Action string `json:"action" binding:"required" description:"The action to perform on the API Server"`
+}
+
 //ClusterTargetHeader ...
 type ClusterTargetHeader struct {
 	OrgID         string
@@ -172,6 +178,14 @@ type BoundService struct {
 	Namespace      string `json:"namespace"`
 }
 
+// UpdateWorkerCommand ....
+// swagger:model
+type UpdateWorkerCommand struct {
+	Action string `json:"action" binding:"required" description:"Action to perform of the worker"`
+	// Setting force flag to true will ignore if the master is unavailable during 'os_reboot" and 'reload' action
+	Force bool `json:"force,omitempty"`
+}
+
 type BoundServices []BoundService
 
 //Clusters interface
@@ -179,6 +193,8 @@ type Clusters interface {
 	Create(params ClusterCreateRequest, target ClusterTargetHeader) (ClusterCreateResponse, error)
 	List(target ClusterTargetHeader) ([]ClusterInfo, error)
 	Update(name string, params ClusterUpdateParam, target ClusterTargetHeader) error
+	UpdateClusterWorker(clusterNameOrID string, workerID string, params UpdateWorkerCommand, target ClusterTargetHeader) error
+	UpdateClusterWorkers(clusterNameOrID string, workerIDs []string, params UpdateWorkerCommand, target ClusterTargetHeader) error
 	Delete(name string, target ClusterTargetHeader) error
 	Find(name string, target ClusterTargetHeader) (ClusterInfo, error)
 	FindWithOutShowResources(name string, target ClusterTargetHeader) (ClusterInfo, error)
@@ -190,6 +206,7 @@ type Clusters interface {
 	UnBindService(clusterNameOrID, namespaceID, serviceInstanceGUID string, target ClusterTargetHeader) error
 	ListServicesBoundToCluster(clusterNameOrID, namespace string, target ClusterTargetHeader) (BoundServices, error)
 	FindServiceBoundToCluster(clusterNameOrID, serviceName, namespace string, target ClusterTargetHeader) (BoundService, error)
+	RefreshAPIServers(clusterNameOrID string, target ClusterTargetHeader) error
 }
 
 type clusters struct {
@@ -214,6 +231,29 @@ func (r *clusters) Update(name string, params ClusterUpdateParam, target Cluster
 	rawURL := fmt.Sprintf("/v1/clusters/%s", name)
 	_, err := r.client.Put(rawURL, params, nil, target.ToMap())
 	return err
+}
+
+// UpdateClusterWorker ...
+func (r *clusters) UpdateClusterWorker(clusterNameOrID string, workerID string, params UpdateWorkerCommand, target ClusterTargetHeader) error {
+	rawURL := fmt.Sprintf("/v1/clusters/%s/workers/%s", clusterNameOrID, workerID)
+	// Make the request
+	_, err := r.client.Put(rawURL, params, nil, target.ToMap())
+	return err
+}
+
+// UpdateClusterWorkers updates a batch of workers in parallel
+func (r *clusters) UpdateClusterWorkers(clusterNameOrID string, workerIDs []string, params UpdateWorkerCommand, target ClusterTargetHeader) error {
+	for _, workerID := range workerIDs {
+		if workerID == "" {
+			return errors.New("workere id's can not be empty")
+		}
+		err := r.UpdateClusterWorker(clusterNameOrID, workerID, params, target)
+		if err != nil {
+			return err
+		}
+
+	}
+	return nil
 }
 
 //Delete ...
@@ -529,4 +569,12 @@ func (r *clusters) FindServiceBoundToCluster(clusterNameOrID, serviceNameOrId, n
 	}
 
 	return boundService, err
+}
+
+//RefreshAPIServers requests a refresh of a cluster's API server(s)
+func (r *clusters) RefreshAPIServers(clusterNameOrID string, target ClusterTargetHeader) error {
+	params := MasterAPIServer{Action: "refresh"}
+	rawURL := fmt.Sprintf("/v1/clusters/%s/masters", clusterNameOrID)
+	_, err := r.client.Put(rawURL, params, nil, target.ToMap())
+	return err
 }
