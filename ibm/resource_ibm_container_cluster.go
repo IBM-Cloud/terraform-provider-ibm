@@ -394,6 +394,28 @@ func resourceIBMContainerCluster() *schema.Resource {
 					},
 				},
 			},
+			"public_service_endpoint": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+			},
+
+			"private_service_endpoint": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+			},
+			"public_service_endpoint_url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"private_service_endpoint_url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -454,6 +476,12 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 
 	if v, ok := d.GetOk("kube_version"); ok {
 		params.MasterVersion = v.(string)
+	}
+	if v, ok := d.GetOkExists("private_service_endpoint"); ok {
+		params.PrivateEndpointEnabled = v.(bool)
+	}
+	if v, ok := d.GetOkExists("public_service_endpoint"); ok {
+		params.PublicEndpointEnabled = v.(bool)
 	}
 
 	targetEnv, err := getClusterTargetHeader(d, meta)
@@ -570,6 +598,10 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("is_trusted", cls.IsTrusted)
 	d.Set("albs", flattenAlbs(albs, "all"))
 	d.Set("resource_group_id", cls.ResourceGroupID)
+	d.Set("public_service_endpoint", cls.PublicServiceEndpointEnabled)
+	d.Set("private_service_endpoint", cls.PrivateServiceEndpointEnabled)
+	d.Set("public_service_endpoint_url", cls.PublicServiceEndpointURL)
+	d.Set("private_service_endpoint_url", cls.PrivateServiceEndpointURL)
 
 	return nil
 }
@@ -1046,7 +1078,7 @@ func WaitForClusterAvailable(d *schema.ResourceData, meta interface{}, target v1
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", clusterProvisioning},
 		Target:     []string{clusterNormal},
-		Refresh:    clusterStateRefreshFunc(csClient.Clusters(), id, d, target),
+		Refresh:    clusterStateRefreshFunc(csClient.Clusters(), id, target),
 		Timeout:    time.Duration(d.Get("wait_time_minutes").(int)) * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -1055,7 +1087,7 @@ func WaitForClusterAvailable(d *schema.ResourceData, meta interface{}, target v1
 	return stateConf.WaitForState()
 }
 
-func clusterStateRefreshFunc(client v1.Clusters, instanceID string, d *schema.ResourceData, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
+func clusterStateRefreshFunc(client v1.Clusters, instanceID string, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		clusterFields, err := client.FindWithOutShowResources(instanceID, target)
 		if err != nil {
@@ -1084,7 +1116,7 @@ func WaitForWorkerAvailable(d *schema.ResourceData, meta interface{}, target v1.
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", workerProvisioning},
 		Target:     []string{workerNormal},
-		Refresh:    workerStateRefreshFunc(csClient.Workers(), id, d, target),
+		Refresh:    workerStateRefreshFunc(csClient.Workers(), id, target),
 		Timeout:    time.Duration(d.Get("wait_time_minutes").(int)) * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -1093,7 +1125,7 @@ func WaitForWorkerAvailable(d *schema.ResourceData, meta interface{}, target v1.
 	return stateConf.WaitForState()
 }
 
-func workerStateRefreshFunc(client v1.Workers, instanceID string, d *schema.ResourceData, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
+func workerStateRefreshFunc(client v1.Workers, instanceID string, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		workerFields, err := client.List(instanceID, target)
 		if err != nil {
