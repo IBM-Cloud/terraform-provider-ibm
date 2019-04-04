@@ -325,21 +325,23 @@ func flattenWorkerPools(list []containerv1.WorkerPoolResponse) []map[string]inte
 	return workerPools
 }
 
-func flattenAlbs(list []containerv1.ALBConfig) []map[string]interface{} {
-	albs := make([]map[string]interface{}, len(list))
-	for i, alb := range list {
-		l := map[string]interface{}{
-			"id":                 alb.ALBID,
-			"name":               alb.Name,
-			"alb_type":           alb.ALBType,
-			"enable":             alb.Enable,
-			"state":              alb.State,
-			"num_of_instances":   alb.NumOfInstances,
-			"alb_ip":             alb.ALBIP,
-			"resize":             alb.Resize,
-			"disable_deployment": alb.DisableDeployment,
+func flattenAlbs(list []containerv1.ALBConfig, filterType string) []map[string]interface{} {
+	albs := make([]map[string]interface{}, 0)
+	for _, alb := range list {
+		if alb.ALBType == filterType || filterType == "all" {
+			l := map[string]interface{}{
+				"id":                 alb.ALBID,
+				"name":               alb.Name,
+				"alb_type":           alb.ALBType,
+				"enable":             alb.Enable,
+				"state":              alb.State,
+				"num_of_instances":   alb.NumOfInstances,
+				"alb_ip":             alb.ALBIP,
+				"resize":             alb.Resize,
+				"disable_deployment": alb.DisableDeployment,
+			}
+			albs = append(albs, l)
 		}
-		albs[i] = l
 	}
 	return albs
 }
