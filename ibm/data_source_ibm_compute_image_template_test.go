@@ -21,6 +21,10 @@ func TestAccIBMComputeImageTemplateDataSource_Basic(t *testing.T) {
 						"name",
 						"jumpbox",
 					),
+					resource.TestCheckNoResourceAttr(
+						"data.ibm_compute_image_template.tfacc_img_tmpl",
+						"most_recent",
+					),
 					resource.TestMatchResourceAttr(
 						"data.ibm_compute_image_template.tfacc_img_tmpl",
 						"id",
@@ -36,6 +40,10 @@ func TestAccIBMComputeImageTemplateDataSource_Basic(t *testing.T) {
 						"data.ibm_compute_image_template.tfacc_img_tmpl",
 						"name",
 						"RightImage_Ubuntu_12.04_amd64_v13.5",
+					),
+					resource.TestCheckNoResourceAttr(
+						"data.ibm_compute_image_template.tfacc_img_tmpl",
+						"most_recent",
 					),
 					resource.TestMatchResourceAttr(
 						"data.ibm_compute_image_template.tfacc_img_tmpl",
@@ -53,6 +61,11 @@ func TestAccIBMComputeImageTemplateDataSource_Basic(t *testing.T) {
 						"name",
 						"25GB - Ubuntu / Ubuntu / 18.04-64 Minimal for VSI",
 					),
+					resource.TestCheckResourceAttr(
+						"data.ibm_compute_image_template.tfacc_img_tmpl",
+						"most_recent",
+						"true",
+					),
 					resource.TestMatchResourceAttr(
 						"data.ibm_compute_image_template.tfacc_img_tmpl",
 						"id",
@@ -68,6 +81,11 @@ func TestAccIBMComputeImageTemplateDataSource_Basic(t *testing.T) {
 						"data.ibm_compute_image_template.tfacc_img_tmpl",
 						"name",
 						"25GB - Ubuntu / Ubuntu / 18.04-64 Minimal for VSI",
+					),
+					resource.TestCheckResourceAttr(
+						"data.ibm_compute_image_template.tfacc_img_tmpl",
+						"most_recent",
+						"false",
 					),
 					resource.TestMatchResourceAttr(
 						"data.ibm_compute_image_template.tfacc_img_tmpl",
