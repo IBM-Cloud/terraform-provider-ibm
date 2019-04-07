@@ -70,17 +70,13 @@ resource "ibm_container_cluster" "testacc_cluster" {
 
   default_pool_size = 1
 
-  kube_version    = "%s"
   machine_type    = "%s"
-  hardware       = "dedicated"
+  hardware       = "shared"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
-  no_subnet		  = true
-  is_trusted  = true
-  wait_time_minutes = 1440
 }
 resource ibm_container_alb alb {
   alb_id = "${ibm_container_cluster.testacc_cluster.albs.0.id}"
   enable = "%t"
-}`, clusterName, datacenter, kubeVersion, trustedMachineType, publicVlanID, privateVlanID, enable)
+}`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, enable)
 }
