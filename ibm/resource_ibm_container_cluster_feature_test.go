@@ -51,6 +51,9 @@ resource "ibm_container_cluster" "testacc_cluster" {
 resource ibm_container_cluster_feature feature {
   cluster                  = "${ibm_container_cluster.testacc_cluster.id}"
   private_service_endpoint  = "true"
+  timeouts {
+    create = "180m"
+  }
 }`, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
 }
 
@@ -68,5 +71,8 @@ resource "ibm_container_cluster" "testacc_cluster" {
 resource ibm_container_cluster_feature feature {
   cluster                  = "${ibm_container_cluster.testacc_cluster.id}"
   public_service_endpoint  = "false"
+  timeouts {
+    update = "180m"
+  }
 }`, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
 }
