@@ -1,6 +1,6 @@
 .PHONY : test
 test: test_deps vet
-	go test ./...
+	go test ./... -timeout 120m
 
 .PHONY : test_deps
 test_deps: 

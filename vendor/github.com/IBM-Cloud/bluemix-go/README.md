@@ -53,6 +53,8 @@ The default region is _us_south_. You can override it in the [Config struct][blu
 * au-syd
 * jp-tok
 
+The maximum retries is 3. You can override it in the [Config struct][bluemix_go_config]. You can also provide the value via environment variable; via MAX_RETRIES
+
 [bluemix_signup]: https://console.ng.bluemix.net/registration/?target=%2Fdashboard%2Fapps
 [bluemix_login]: https://console.ng.bluemix.net
 [bluemix_go_config]: https://godoc.org/github.com/IBM-Cloud/bluemix-go#Config

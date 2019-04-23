@@ -2,6 +2,7 @@ package session
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
@@ -45,6 +46,17 @@ func New(configs ...*bluemix.Config) (*Session, error) {
 	}
 	if c.MaxRetries == nil {
 		c.MaxRetries = helpers.Int(3)
+		retries := helpers.EnvFallBack([]string{"MAX_RETRIES"}, "3")
+		i, err := strconv.Atoi(retries)
+		if err != nil {
+			fmt.Printf("MAX_RETRIES has invalid retries format. Default retries will be set to %q", *c.MaxRetries)
+		}
+		if i < 0 {
+			fmt.Printf("MAX_RETRIES has invalid retries format. Default retries will be set to %q", *c.MaxRetries)
+		}
+		if err == nil && i >= 0 {
+			c.MaxRetries = &i
+		}
 	}
 	if c.HTTPTimeout == 0 {
 		c.HTTPTimeout = 180 * time.Second
