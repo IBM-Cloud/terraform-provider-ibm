@@ -157,9 +157,11 @@ type ClusterCreateRequest struct {
 // ServiceBindRequest ...
 type ServiceBindRequest struct {
 	ClusterNameOrID         string
-	SpaceGUID               string `json:"spaceGUID" binding:"required"`
 	ServiceInstanceNameOrID string `json:"serviceInstanceGUID" binding:"required"`
 	NamespaceID             string `json:"namespaceID" binding:"required"`
+	Role                    string `json:"role"`
+	ServiceKeyJSON          string `json:"serviceKeyJSON"`
+	ServiceKeyGUID          string `json:"serviceKeyGUID"`
 }
 
 // ServiceBindResponse ...
@@ -499,13 +501,16 @@ func (r *clusters) SetCredentials(slUsername, slAPIKey string, target ClusterTar
 func (r *clusters) BindService(params ServiceBindRequest, target ClusterTargetHeader) (ServiceBindResponse, error) {
 	rawURL := fmt.Sprintf("/v1/clusters/%s/services", params.ClusterNameOrID)
 	payLoad := struct {
-		SpaceGUID               string `json:"spaceGUID" binding:"required"`
 		ServiceInstanceNameOrID string `json:"serviceInstanceGUID" binding:"required"`
 		NamespaceID             string `json:"namespaceID" binding:"required"`
+		Role                    string `json:"role"`
+		ServiceKeyJSON          string `json:"serviceKeyJSON"`
+		ServiceKeyGUID          string `json:"serviceKeyGUID"`
 	}{
-		SpaceGUID:               params.SpaceGUID,
 		ServiceInstanceNameOrID: params.ServiceInstanceNameOrID,
 		NamespaceID:             params.NamespaceID,
+		Role:                    params.Role,
+		ServiceKeyGUID:          params.ServiceKeyGUID,
 	}
 	var cluster ServiceBindResponse
 	_, err := r.client.Post(rawURL, payLoad, &cluster, target.ToMap())
