@@ -5,6 +5,8 @@ This is a minimal configuration to demonstrate the Terraform lifecycle of apply 
 
 VSI is configured with private network nic only to protect from threats on the public Internet. 
 
+The bulk_vms can not be updated and also when the bulk_vms is used one cannot update the other parameters like cores, memory, disks, flavor_key_name etc.
+
 
 To run, configure your IBM Cloud provider
 
