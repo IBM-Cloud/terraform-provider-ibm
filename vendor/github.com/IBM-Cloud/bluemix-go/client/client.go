@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"path"
 	"strings"
 	"sync"
+	"time"
 
 	gohttp "net/http"
 
@@ -63,6 +65,18 @@ func New(c *bluemix.Config, serviceName bluemix.ServiceName, refresher TokenProv
 
 //SendRequest ...
 func (c *Client) SendRequest(r *rest.Request, respV interface{}) (*gohttp.Response, error) {
+
+	retries := *c.Config.MaxRetries
+	if retries < 1 {
+		return c.MakeRequest(r, respV)
+	}
+	wait := *c.Config.RetryDelay
+
+	return c.tryHTTPRequest(retries, wait, r, respV)
+}
+
+// MakeRequest ...
+func (c *Client) MakeRequest(r *rest.Request, respV interface{}) (*gohttp.Response, error) {
 	httpClient := c.Config.HTTPClient
 	if httpClient == nil {
 		httpClient = gohttp.DefaultClient
@@ -71,40 +85,59 @@ func (c *Client) SendRequest(r *rest.Request, respV interface{}) (*gohttp.Respon
 		DefaultHeader: c.DefaultHeader,
 		HTTPClient:    httpClient,
 	}
-
 	resp, err := restClient.Do(r, respV, nil)
-
 	// The response returned by go HTTP client.Do() could be nil if request timeout.
 	// For convenience, we ensure that response returned by this method is always not nil.
 	if resp == nil {
 		return new(gohttp.Response), err
 	}
 	if err != nil {
-		err = bmxerror.WrapNetworkErrors(resp.Request.URL.Host, err)
-	}
-	// if token is invalid, refresh and try again
-	if resp.StatusCode == 401 && c.TokenRefresher != nil {
-		log.Println("Authentication failed. Trying token refresh")
-		c.headerLock.Lock()
-		defer c.headerLock.Unlock()
-		_, err := c.TokenRefresher.RefreshToken()
-		switch err.(type) {
-		case nil:
-			restClient.DefaultHeader = getDefaultAuthHeaders(c.ServiceName, c.Config)
-			for k := range c.DefaultHeader {
-				r.Del(k)
+		if resp.StatusCode == 401 && c.TokenRefresher != nil {
+			log.Println("Authentication failed. Trying token refresh")
+			c.headerLock.Lock()
+			defer c.headerLock.Unlock()
+			_, err := c.TokenRefresher.RefreshToken()
+			switch err.(type) {
+			case nil:
+				restClient.DefaultHeader = getDefaultAuthHeaders(c.ServiceName, c.Config)
+				for k := range c.DefaultHeader {
+					r.Del(k)
+				}
+				c.DefaultHeader = restClient.DefaultHeader
+				resp, err := restClient.Do(r, respV, nil)
+				if err != nil {
+					err = bmxerror.WrapNetworkErrors(resp.Request.URL.Host, err)
+				}
+				return resp, err
+			case *bmxerror.InvalidTokenError:
+				return resp, bmxerror.NewRequestFailure("InvalidToken", fmt.Sprintf("%v", err), 401)
+			default:
+				return resp, fmt.Errorf("Authentication failed, Unable to refresh auth token: %v. Try again later", err)
 			}
-			c.DefaultHeader = restClient.DefaultHeader
-			resp, err := restClient.Do(r, respV, nil)
-			if err != nil {
-				err = bmxerror.WrapNetworkErrors(resp.Request.URL.Host, err)
+		}
+
+	}
+	return resp, err
+}
+
+func (c *Client) tryHTTPRequest(retries int, wait time.Duration, r *rest.Request, respV interface{}) (*gohttp.Response, error) {
+
+	resp, err := c.MakeRequest(r, respV)
+	if err != nil {
+		if !isRetryable(err) {
+			if resp == nil {
+				return new(gohttp.Response), err
 			}
 			return resp, err
-		case *bmxerror.InvalidTokenError:
-			return resp, bmxerror.NewRequestFailure("InvalidToken", fmt.Sprintf("%v", err), 401)
-		default:
-			return resp, fmt.Errorf("Authentication failed, Unable to refresh auth token: %v. Try again later", err)
 		}
+		if retries--; retries >= 0 {
+			time.Sleep(wait)
+			return c.tryHTTPRequest(
+				retries, wait, r, respV)
+		}
+	}
+	if resp == nil {
+		return new(gohttp.Response), err
 	}
 	return resp, err
 }
@@ -263,7 +296,7 @@ func getDefaultAuthHeaders(serviceName bluemix.ServiceName, c *bluemix.Config) g
 	case bluemix.GlobalSearchService, bluemix.GlobalTaggingService:
 		h.Set(userAgentHeader, http.UserAgent())
 		h.Set(authorizationHeader, c.IAMAccessToken)
-		h.Set(iamRefreshTokenHeader, c.IAMRefreshToken)	
+		h.Set(iamRefreshTokenHeader, c.IAMRefreshToken)
 	case bluemix.ICDService:
 		h.Set(userAgentHeader, http.UserAgent())
 		h.Set(authorizationHeader, c.IAMAccessToken)
@@ -271,4 +304,31 @@ func getDefaultAuthHeaders(serviceName bluemix.ServiceName, c *bluemix.Config) g
 		log.Println("Unknown service - No auth headers set")
 	}
 	return h
+}
+
+func isTimeout(err error) bool {
+	if bmErr, ok := err.(bmxerror.RequestFailure); ok {
+		switch bmErr.StatusCode() {
+		case 408, 504, 599, 429, 500:
+			return true
+		}
+	}
+
+	if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+		return true
+	}
+
+	if netErr, ok := err.(*net.OpError); ok && netErr.Timeout() {
+		return true
+	}
+
+	if netErr, ok := err.(net.UnknownNetworkError); ok && netErr.Timeout() {
+		return true
+	}
+
+	return false
+}
+
+func isRetryable(err error) bool {
+	return isTimeout(err)
 }
