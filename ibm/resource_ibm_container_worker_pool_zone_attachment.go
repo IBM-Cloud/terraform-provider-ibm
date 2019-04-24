@@ -108,7 +108,7 @@ func resourceIBMContainerWorkerPoolZoneAttachmentCreate(d *schema.ResourceData, 
 	}
 
 	workerPoolZone := v1.WorkerPoolZone{
-		ID: zone,
+		ID:                    zone,
 		WorkerPoolZoneNetwork: workerPoolZoneNetwork,
 	}
 
