@@ -165,7 +165,7 @@ func resourceIBMFirewallPolicyCreate(d *schema.ResourceData, meta interface{}) e
 
 	ruleTemplate := datatypes.Network_Firewall_Update_Request{
 		FirewallContextAccessControlListId: sl.Int(fwContextACLId),
-		Rules:                              rules,
+		Rules: rules,
 	}
 
 	log.Println("[INFO] Creating dedicated hardware firewall rules")
