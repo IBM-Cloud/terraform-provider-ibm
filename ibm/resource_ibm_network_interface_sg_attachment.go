@@ -232,7 +232,8 @@ func vsReadyRefreshStateFunc(sess *slsession.Session, ifcID int) resource.StateR
 			return false, "retry", nil
 		}
 		if *ready.KeyName == "ACTIVE" {
-			log.Printf("virtual guest status is %q", ready.Name)
+			readyStatus := *ready.Name
+			log.Printf("virtual guest status is %q", readyStatus)
 			return ready, virtualGuestAvailable, nil
 		}
 		return ready, virtualGuestProvisioning, nil
