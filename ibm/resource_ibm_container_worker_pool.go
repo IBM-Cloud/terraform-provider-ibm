@@ -33,10 +33,9 @@ func resourceIBMContainerWorkerPool() *schema.Resource {
 			},
 
 			"machine_type": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				DiffSuppressFunc: applyOnce,
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
 			},
 
 			"worker_pool_name": {
@@ -205,7 +204,6 @@ func resourceIBMContainerWorkerPoolRead(d *schema.ResourceData, meta interface{}
 
 	machineType := workerPool.MachineType
 	d.Set("worker_pool_name", workerPool.Name)
-	d.Set("machine_type", machineType)
 	d.Set("size_per_zone", workerPool.Size)
 	hardware := workerPool.Isolation
 	switch strings.ToLower(hardware) {
