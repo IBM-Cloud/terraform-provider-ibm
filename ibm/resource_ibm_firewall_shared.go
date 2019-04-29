@@ -31,32 +31,52 @@ func resourceIBMFirewallShared() *schema.Resource {
 				Computed: true,
 			},
 			"firewall_type": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"10MBPS_HARDWARE_FIREWALL", "20MBPS_HARDWARE_FIREWALL", "100MBPS_HARDWARE_FIREWALL", "1000MBPS_HARDWARE_FIREWALL"}),
 			},
 			"guest_type": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"guest_id": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+			"virtual_instance_id": {
+				Type:          schema.TypeInt,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"hardware_instance_id"},
+			},
+			"hardware_instance_id": {
+				Type:          schema.TypeInt,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"virtual_instance_id"},
 			},
 		},
 	}
 }
 
 // keyName is in between:[10MBPS_HARDWARE_FIREWALL, 20MBPS_HARDWARE_FIREWALL,
-//                         100MBPS_HARDWARE_FIREWALL, 1024MBPS_HARDWARE_FIREWALL]
+//                         100MBPS_HARDWARE_FIREWALL, 1000MBPS_HARDWARE_FIREWALL]
 func resourceIBMFirewallSharedCreate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 
 	keyName := d.Get("firewall_type").(string)
 	guestType := d.Get("guest_type").(string)
-	machineId := d.Get("guest_id").(int)
+
+	var virtualId, hardwareId int
+	if vID, ok := d.GetOk("virtual_instance_id"); ok {
+		virtualId = vID.(int)
+	}
+
+	if hID, ok := d.GetOk("hardware_instance_id"); ok {
+		hardwareId = hID.(int)
+	}
+
+	if virtualId == 0 && hardwareId == 0 {
+		return fmt.Errorf("Provide either `virtual_instance_id` or `hardware_instance_id`")
+	}
 
 	//var productOrderContainer *string
 	pkg, err := product.GetPackageByType(sess, FwHardwarePackageType)
@@ -93,7 +113,7 @@ func resourceIBMFirewallSharedCreate(d *schema.ResourceData, meta interface{}) e
 				},
 				Quantity: sl.Int(1),
 				VirtualGuests: []datatypes.Virtual_Guest{{
-					Id: sl.Int(machineId),
+					Id: sl.Int(virtualId),
 				},
 				},
 			},
@@ -101,6 +121,7 @@ func resourceIBMFirewallSharedCreate(d *schema.ResourceData, meta interface{}) e
 		receipt, err := services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(&productOrderContainer, sl.Bool(false))
 		log.Print("receipt for order placed")
 		log.Print(receipt)
+
 		if err != nil {
 			return fmt.Errorf("Error during creation of hardware firewall: %s", err)
 		}
@@ -117,7 +138,7 @@ func resourceIBMFirewallSharedCreate(d *schema.ResourceData, meta interface{}) e
 				},
 				Quantity: sl.Int(1),
 				Hardware: []datatypes.Hardware{{
-					Id: sl.Int(machineId),
+					Id: sl.Int(hardwareId),
 				},
 				},
 			},
@@ -125,16 +146,13 @@ func resourceIBMFirewallSharedCreate(d *schema.ResourceData, meta interface{}) e
 		receipt, err := services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(&productOrderContainer, sl.Bool(false))
 		log.Print("receipt for order placed")
 		log.Print(receipt)
+
 		if err != nil {
 			return fmt.Errorf("Error during creation of hardware firewall: %s", err)
 		}
 
 	}
 	log.Println("[INFO] Creating hardware firewall shared")
-
-	d.Set("firewall_type", keyName)
-	d.Set("guest_id", machineId)
-	d.Set("guest_type", guestType)
 
 	log.Printf("[INFO] Wait one minute before fetching the firewall/device.")
 	time.Sleep(time.Second * 30)
@@ -144,9 +162,21 @@ func resourceIBMFirewallSharedCreate(d *schema.ResourceData, meta interface{}) e
 
 func resourceIBMFirewallSharedRead(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
-	macId := (d.Get("guest_id").(int))
+
+	firewall_type := (d.Get("firewall_type").(string))
+	d.Set("firewall_type", firewall_type)
+
+	var virtualId, hardwareId int
+	if vID, ok := d.GetOk("virtual_instance_id"); ok {
+		virtualId = vID.(int)
+	}
+
+	if hID, ok := d.GetOk("hardware_instance_id"); ok {
+		hardwareId = hID.(int)
+	}
 
 	guestType := (d.Get("guest_type").(string))
+	d.Set("guest_type", guestType)
 
 	masked := "firewallServiceComponent.id"
 
@@ -154,7 +184,7 @@ func resourceIBMFirewallSharedRead(d *schema.ResourceData, meta interface{}) err
 
 	if guestType == "virtual machine" {
 		service := services.GetVirtualGuestService(meta.(ClientSession).SoftLayerSession())
-		result, err := service.Id(macId).Mask(masked).GetObject()
+		result, err := service.Id(virtualId).Mask(masked).GetObject()
 
 		if err != nil {
 			return fmt.Errorf("Error retrieving firewall information: %s", err)
@@ -166,13 +196,14 @@ func resourceIBMFirewallSharedRead(d *schema.ResourceData, meta interface{}) err
 		idd := *result.FirewallServiceComponent.Id
 
 		d.SetId(fmt.Sprintf("%d", idd))
+		// d.SetId(fmt.Sprintf("%d/%d", idd, macId))
 		data, err := fservice.Id(idd).Mask("billingItem.id").GetObject()
 
 		d.Set("billing_item_id", *data.BillingItem.Id)
 
 	} else if guestType == "baremetal" {
 		service := services.GetHardwareService(meta.(ClientSession).SoftLayerSession())
-		resultNew, err := service.Id(macId).Mask(masked).GetObject()
+		resultNew, err := service.Id(hardwareId).Mask(masked).GetObject()
 
 		if err != nil {
 			return fmt.Errorf("Error retrieving firewall information: %s", err)
@@ -181,7 +212,7 @@ func resourceIBMFirewallSharedRead(d *schema.ResourceData, meta interface{}) err
 			return fmt.Errorf("Error retrieving firewall information.This resource has already been canceled.")
 		}
 		idd2 := *resultNew.FirewallServiceComponent.Id
-
+		// d.SetId(fmt.Sprintf("%d/%d", idd2, macId))
 		d.SetId(fmt.Sprintf("%d", idd2))
 		data2, err := fservice.Id(idd2).Mask("billingItem.id").GetObject()
 

@@ -20,7 +20,7 @@ For more information about how to configure a firewall, see the [docs](https://k
 resource "ibm_firewall_shared" "test_firewall" {
     firewall_type="100MBPS_HARDWARE_FIREWALL"
     guest_type="baremetal"
-    guest_id="12345678"
+    hardware_instance_id="12345678"
 }
 ```
 
@@ -28,6 +28,7 @@ resource "ibm_firewall_shared" "test_firewall" {
 
 The following arguments are supported:
 
-* `firewall_type` - (Required, string) Specifies whether it needs to be of particular speed. Firewall type is in between [10MBPS_HARDWARE_FIREWALL, 20MBPS_HARDWARE_FIREWALL,100MBPS_HARDWARE_FIREWALL, 1024MBPS_HARDWARE_FIREWALL]
+* `firewall_type` - (Required, string) Specifies whether it needs to be of particular speed. Firewall type is in between [10MBPS_HARDWARE_FIREWALL, 20MBPS_HARDWARE_FIREWALL,100MBPS_HARDWARE_FIREWALL, 1000MBPS_HARDWARE_FIREWALL]
 * `guest_type` - (Required, string) Specifies whether the guest is baremetal server or virtual guest server.
-* `guest_id` - (Required, string) Specifies the id of particular guest on which firewall shared is to be deployed.
+* `virtual_instance_id` - (Optional, string) Specifies the id of particular guest on which firewall shared is to be deployed.**NOTE**: This is conflicting parameter with hardware_instance_id.
+* `hardware_instance_id` - (Optional, string) Specifies the id of particular guest on which firewall shared is to be deployed.**NOTE**: This is conflicting parameter with virtual_instance_id.
