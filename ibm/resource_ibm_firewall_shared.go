@@ -36,11 +36,6 @@ func resourceIBMFirewallShared() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"10MBPS_HARDWARE_FIREWALL", "20MBPS_HARDWARE_FIREWALL", "100MBPS_HARDWARE_FIREWALL", "1000MBPS_HARDWARE_FIREWALL"}),
 			},
-			"guest_type": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
 			"virtual_instance_id": {
 				Type:          schema.TypeInt,
 				Optional:      true,
@@ -63,7 +58,6 @@ func resourceIBMFirewallSharedCreate(d *schema.ResourceData, meta interface{}) e
 	sess := meta.(ClientSession).SoftLayerSession()
 
 	keyName := d.Get("firewall_type").(string)
-	guestType := d.Get("guest_type").(string)
 
 	var virtualId, hardwareId int
 	if vID, ok := d.GetOk("virtual_instance_id"); ok {
@@ -103,7 +97,7 @@ func resourceIBMFirewallSharedCreate(d *schema.ResourceData, meta interface{}) e
 	}
 
 	masked := "firewallServiceComponent.id"
-	if guestType == "virtual machine" {
+	if virtualId > 0 {
 		productOrderContainer := datatypes.Container_Product_Order_Network_Protection_Firewall{
 			Container_Product_Order: datatypes.Container_Product_Order{
 				PackageId: pkg.Id,
@@ -137,7 +131,7 @@ func resourceIBMFirewallSharedCreate(d *schema.ResourceData, meta interface{}) e
 		}
 
 	}
-	if guestType == "baremetal" {
+	if hardwareId > 0 {
 		productOrderContainer := datatypes.Container_Product_Order_Network_Protection_Firewall{
 			Container_Product_Order: datatypes.Container_Product_Order{
 				PackageId: pkg.Id,
@@ -182,28 +176,16 @@ func resourceIBMFirewallSharedRead(d *schema.ResourceData, meta interface{}) err
 	firewall_type := (d.Get("firewall_type").(string))
 	d.Set("firewall_type", firewall_type)
 
-	guestType := (d.Get("guest_type").(string))
-	d.Set("guest_type", guestType)
-
 	fservice := services.GetNetworkComponentFirewallService(sess)
 
 	fwID, _ := strconv.Atoi(d.Id())
 
-	if guestType == "virtual machine" {
-		data, err := fservice.Id(fwID).Mask("billingItem.id").GetObject()
-		d.Set("billing_item_id", *data.BillingItem.Id)
-		if err != nil {
-			return fmt.Errorf("Error during creation of hardware firewall: %s", err)
-		}
-
-	} else if guestType == "baremetal" {
-		data2, err := fservice.Id(fwID).Mask("billingItem.id").GetObject()
-		d.Set("billing_item_id", *data2.BillingItem.Id)
-		if err != nil {
-			return fmt.Errorf("Error during creation of hardware firewall: %s", err)
-		}
-
+	data, err := fservice.Id(fwID).Mask("billingItem.id").GetObject()
+	d.Set("billing_item_id", *data.BillingItem.Id)
+	if err != nil {
+		return fmt.Errorf("Error during creation of hardware firewall: %s", err)
 	}
+
 	return nil
 }
 

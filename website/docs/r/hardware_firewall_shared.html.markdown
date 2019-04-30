@@ -1,12 +1,12 @@
 ---
 layout: "ibm"
-page_title: "IBM : firewall shared"
-sidebar_current: "docs-ibm-resource-firewall-shared"
+page_title: "IBM : hardware firewall shared"
+sidebar_current: "docs-ibm-resource-hardware-firewall-shared"
 description: |-
   Manages rules for IBM Firewall shared.
 ---
 
-# ibm\_firewall\_shared
+# ibm\_hardware\_firewall\_shared
 
 Provides a firewall in IBM. One firewall protects one public VLAN and provides in-bound network packet filtering. 
 
@@ -17,9 +17,8 @@ For more information about how to configure a firewall, see the [docs](https://k
 ## Example Usage
 
 ```hcl
-resource "ibm_firewall_shared" "test_firewall" {
+resource "ibm_hardware-firewall_shared" "test_firewall" {
     firewall_type="100MBPS_HARDWARE_FIREWALL"
-    guest_type="baremetal"
     hardware_instance_id="12345678"
 }
 ```
@@ -29,6 +28,10 @@ resource "ibm_firewall_shared" "test_firewall" {
 The following arguments are supported:
 
 * `firewall_type` - (Required, string) Specifies whether it needs to be of particular speed. Firewall type is in between [10MBPS_HARDWARE_FIREWALL, 20MBPS_HARDWARE_FIREWALL,100MBPS_HARDWARE_FIREWALL, 1000MBPS_HARDWARE_FIREWALL]
-* `guest_type` - (Required, string) Specifies whether the guest is baremetal server or virtual guest server.
 * `virtual_instance_id` - (Optional, string) Specifies the id of particular guest on which firewall shared is to be deployed.**NOTE**: This is conflicting parameter with hardware_instance_id.
 * `hardware_instance_id` - (Optional, string) Specifies the id of particular guest on which firewall shared is to be deployed.**NOTE**: This is conflicting parameter with virtual_instance_id.
+
+## Attribute Reference
+
+The following attributes are exported:
+ * `id` - The unique identifier of the hardware firewall.
