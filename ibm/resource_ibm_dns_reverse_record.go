@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/services"
 	"github.com/softlayer/softlayer-go/sl"
 )
@@ -48,12 +47,9 @@ func resourceIBMDNSREVERSERecordCreate(d *schema.ResourceData, meta interface{})
 	Data := sl.String(d.Get("hostname").(string))
 	Ttl := sl.Int(d.Get("ttl").(int))
 	Ipaddress := sl.String(d.Get("ipaddress").(string))
-	var err error
 	var id int
-	var record datatypes.Dns_Domain_ResourceRecord
-	record, err = service.CreatePtrRecord(Ipaddress, Data, Ttl)
+	record, err := service.CreatePtrRecord(Ipaddress, Data, Ttl)
 	if record.Id != nil {
-		log.Printf("record Id is not null")
 		id = *record.Id
 	}
 
