@@ -15,9 +15,9 @@ The IBM Cloud Infrastructure (SoftLayer) object  [SoftLayer_Dns_Domain_ResourceR
 ## Example Usage
 ```hcl
 resource "ibm_dns_reverse_record" "testreverserecord" {
-    dns_ipaddress="123.123.123.123"
-    dns_hostname="www.example.com"
-    dns_ttl=900
+    ipaddress="123.123.123.123"
+    hostname="www.example.com"
+    ttl=900
 }
 ```
 
@@ -25,9 +25,9 @@ resource "ibm_dns_reverse_record" "testreverserecord" {
 
 The following arguments are supported:
 
-* `dns_ipaddress` - (Required, string) The IP address or a hostname of a domain's resource record.
+* `ipaddress` - (Required, string) The IP address or a hostname of a domain's resource record.
 
-* `dns_hostname` - (Required, string) The host defined by a reverse record.
+* `hostname` - (Required, string) The host defined by a reverse record.
 
-* `dns_ttl` - (Optional, integer) The time to live (TTL) duration, expressed in seconds, of a resource record. Default value is 604800 seconds.
+* `ttl` - (Optional, integer) The time to live (TTL) duration, expressed in seconds, of a resource record. Default value is 604800 seconds.
 
