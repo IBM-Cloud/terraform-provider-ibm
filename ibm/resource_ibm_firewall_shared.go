@@ -102,6 +102,7 @@ func resourceIBMFirewallSharedCreate(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("No product items matching %s could be found", keyName)
 	}
 
+	masked := "firewallServiceComponent.id"
 	if guestType == "virtual machine" {
 		productOrderContainer := datatypes.Container_Product_Order_Network_Protection_Firewall{
 			Container_Product_Order: datatypes.Container_Product_Order{
@@ -121,6 +122,15 @@ func resourceIBMFirewallSharedCreate(d *schema.ResourceData, meta interface{}) e
 		receipt, err := services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(&productOrderContainer, sl.Bool(false))
 		log.Print("receipt for order placed")
 		log.Print(receipt)
+
+		log.Printf("[INFO] Wait one minute before fetching the firewall/device.")
+		time.Sleep(time.Second * 30)
+
+		service := services.GetVirtualGuestService(sess)
+		result, err := service.Id(virtualId).Mask(masked).GetObject()
+		idd := *result.FirewallServiceComponent.Id
+		log.Print(idd)
+		d.SetId(fmt.Sprintf("%d", idd))
 
 		if err != nil {
 			return fmt.Errorf("Error during creation of hardware firewall: %s", err)
@@ -147,15 +157,21 @@ func resourceIBMFirewallSharedCreate(d *schema.ResourceData, meta interface{}) e
 		log.Print("receipt for order placed")
 		log.Print(receipt)
 
+		log.Printf("[INFO] Wait one minute before fetching the firewall/device.")
+		time.Sleep(time.Second * 30)
+
+		service := services.GetHardwareService(sess)
+		resultNew, err := service.Id(hardwareId).Mask(masked).GetObject()
+		idd2 := *resultNew.FirewallServiceComponent.Id
+
+		d.SetId(fmt.Sprintf("%d", idd2))
+		log.Print(idd2)
 		if err != nil {
 			return fmt.Errorf("Error during creation of hardware firewall: %s", err)
 		}
 
 	}
 	log.Println("[INFO] Creating hardware firewall shared")
-
-	log.Printf("[INFO] Wait one minute before fetching the firewall/device.")
-	time.Sleep(time.Second * 30)
 
 	return resourceIBMFirewallSharedRead(d, meta)
 }
@@ -166,57 +182,26 @@ func resourceIBMFirewallSharedRead(d *schema.ResourceData, meta interface{}) err
 	firewall_type := (d.Get("firewall_type").(string))
 	d.Set("firewall_type", firewall_type)
 
-	var virtualId, hardwareId int
-	if vID, ok := d.GetOk("virtual_instance_id"); ok {
-		virtualId = vID.(int)
-	}
-
-	if hID, ok := d.GetOk("hardware_instance_id"); ok {
-		hardwareId = hID.(int)
-	}
-
 	guestType := (d.Get("guest_type").(string))
 	d.Set("guest_type", guestType)
 
-	masked := "firewallServiceComponent.id"
-
 	fservice := services.GetNetworkComponentFirewallService(sess)
 
+	fwID, _ := strconv.Atoi(d.Id())
+
 	if guestType == "virtual machine" {
-		service := services.GetVirtualGuestService(meta.(ClientSession).SoftLayerSession())
-		result, err := service.Id(virtualId).Mask(masked).GetObject()
-
-		if err != nil {
-			return fmt.Errorf("Error retrieving firewall information: %s", err)
-		}
-
-		if result.FirewallServiceComponent == nil {
-			return fmt.Errorf("Error retrieving firewall information.This resource has already been canceled.")
-		}
-		idd := *result.FirewallServiceComponent.Id
-
-		d.SetId(fmt.Sprintf("%d", idd))
-		// d.SetId(fmt.Sprintf("%d/%d", idd, macId))
-		data, err := fservice.Id(idd).Mask("billingItem.id").GetObject()
-
+		data, err := fservice.Id(fwID).Mask("billingItem.id").GetObject()
 		d.Set("billing_item_id", *data.BillingItem.Id)
+		if err != nil {
+			return fmt.Errorf("Error during creation of hardware firewall: %s", err)
+		}
 
 	} else if guestType == "baremetal" {
-		service := services.GetHardwareService(meta.(ClientSession).SoftLayerSession())
-		resultNew, err := service.Id(hardwareId).Mask(masked).GetObject()
-
-		if err != nil {
-			return fmt.Errorf("Error retrieving firewall information: %s", err)
-		}
-		if resultNew.FirewallServiceComponent == nil {
-			return fmt.Errorf("Error retrieving firewall information.This resource has already been canceled.")
-		}
-		idd2 := *resultNew.FirewallServiceComponent.Id
-		// d.SetId(fmt.Sprintf("%d/%d", idd2, macId))
-		d.SetId(fmt.Sprintf("%d", idd2))
-		data2, err := fservice.Id(idd2).Mask("billingItem.id").GetObject()
-
+		data2, err := fservice.Id(fwID).Mask("billingItem.id").GetObject()
 		d.Set("billing_item_id", *data2.BillingItem.Id)
+		if err != nil {
+			return fmt.Errorf("Error during creation of hardware firewall: %s", err)
+		}
 
 	}
 	return nil
