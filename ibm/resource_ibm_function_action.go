@@ -80,10 +80,9 @@ func resourceIBMFunctionAction() *schema.Resource {
 							ConflictsWith: []string{"exec.image", "exec.components"},
 						},
 						"kind": {
-							Type:         schema.TypeString,
-							Required:     true,
-							Description:  "The type of action. Possible values:php:7.1, nodejs:8, swift:3, nodejs, blackbox, java, sequence, nodejs:6, python:3, python, python:2, swift, swift:3.1.1.",
-							ValidateFunc: validateActionKind,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The type of action. Possible values can be found here (https://cloud.ibm.com/docs/openwhisk?topic=cloud-functions-runtimes)",
 						},
 						"main": {
 							Type:          schema.TypeString,
