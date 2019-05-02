@@ -107,7 +107,7 @@ The following arguments are supported:
      **NOTE**: Conflicts with `exec.components`, `exec.image`.
     * `code` - (Optional, string) When not using the `blackbox` executable, the code to execute.  
     **NOTE**: Conflicts with `exec.components`, `exec.image`.
-    * `kind` - (Required, string) The type of action. Accepted values: `php:7.1`, `nodejs:8`, `swift:3`, `nodejs`, `blackbox`, `java`, `sequence`, `nodejs:6`, `python:3`, `python`, `python:2`, `swift`, `swift:3.1.1`.
+    * `kind` - (Required, string) The type of action. You can find supported kinds in the [IBM Cloud Functions docs](https://cloud.ibm.com/docs/openwhisk?topic=cloud-functions-runtimes).
     * `main` - (Optional, string) The name of the action entry point (function or fully-qualified method name, when applicable).  
     **NOTE**: Conflicts with `exec.components`, `exec.image`.
     * `components` - (Optional, string) The list of fully qualified actions.  
