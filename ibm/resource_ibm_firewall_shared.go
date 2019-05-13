@@ -114,7 +114,7 @@ func resourceIBMFirewallSharedCreate(d *schema.ResourceData, meta interface{}) e
 			},
 		}
 		_, err := services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(&productOrderContainer, sl.Bool(false))
-		
+
 		log.Printf("[INFO] Wait one minute before fetching the firewall/device.")
 		time.Sleep(time.Second * 30)
 
@@ -146,7 +146,7 @@ func resourceIBMFirewallSharedCreate(d *schema.ResourceData, meta interface{}) e
 			},
 		}
 		_, err := services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(&productOrderContainer, sl.Bool(false))
-		
+
 		log.Printf("[INFO] Wait one minute before fetching the firewall/device.")
 		time.Sleep(time.Second * 30)
 
