@@ -26,16 +26,21 @@ func resourceIBMCDN() *schema.Resource {
 			"hostname": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"vendor_name": &schema.Schema{
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
+				Default:  "akamai",
+				ForceNew: true,
 			},
 
 			"origin_type": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "HOST_SERVER",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "HOST_SERVER",
+				ForceNew:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"HOST_SERVER", "OBJECT_STORAGE"}),
 			},
 			"origin_address": &schema.Schema{
 				Type:     schema.TypeString,
@@ -46,9 +51,11 @@ func resourceIBMCDN() *schema.Resource {
 				Optional: true,
 			},
 			"protocol": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "HTTP",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "HTTP",
+				ForceNew:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"HTTP", "HTTPS", "HTTP_AND_HTTPS"}),
 			},
 			"httpport": &schema.Schema{
 				Type:     schema.TypeInt,
@@ -66,13 +73,13 @@ func resourceIBMCDN() *schema.Resource {
 			},
 			"cname": &schema.Schema{
 				Type:     schema.TypeString,
+				Computed: true,
 				Optional: true,
-				Default:  false,
+				ForceNew: true,
 			},
 			"header": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
-				Default:  "",
 			},
 			"respectheaders": &schema.Schema{
 				Type:     schema.TypeBool,
@@ -85,24 +92,28 @@ func resourceIBMCDN() *schema.Resource {
 				Default:  "",
 			},
 			"certificatetype": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "0",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"SHARED_SAN_CERT", "WILDCARD_CERT"}),
+				ForceNew:     true,
 			},
 			"cachekeyqueryrule": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "include-all",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"include-all", "ignore-all", "ignore: space separated query-args", "include: space separated query-args"}),
+				Default:      "include-all",
 			},
 			"performanceconfiguration": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "General web delivery",
+				ForceNew: true,
 			},
 			"path": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "/",
+				ForceNew: true,
 			},
 		},
 	}
@@ -128,12 +139,10 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 	respectheaders := d.Get("respectheaders").(bool)
 	cname := d.Get("cname").(string)
 	certificateType := d.Get("certificatetype").(string)
-	if cname != "0" {
-		cname = cname + str
+	if name, ok := d.GetOk("cname"); ok {
+		cname = name.(string) + str
 	}
-	if cname == "0" {
-		cname = ""
-	}
+
 	///creat an object of CDN service
 	service := services.GetNetworkCdnMarketplaceConfigurationMappingService(sess)
 	//////pass the parameters to create domain mapping
@@ -156,13 +165,11 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 		if err != nil {
 			return fmt.Errorf("Error creating CDN: %s", err)
 		}
-		///Print the response of the requested the service.
-		log.Print("Response for cdn order")
-		log.Println(receipt1)
+
 		d.SetId(*receipt1[0].UniqueId)
 		id, err := strconv.Atoi((d.Id()))
 		result1, err := service.VerifyDomainMapping(&id)
-		log.Println(result1)
+		log.Println("The status of domain mapping %s", result1)
 		return resourceIBMCDNRead(d, meta)
 
 	}
@@ -186,13 +193,11 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 		if err != nil {
 			return fmt.Errorf("Error creating CDN: %s", err)
 		}
-		///Print the response of the requested the service.
-		log.Print("Response for cdn order")
-		log.Println(receipt2)
+
 		d.SetId(*receipt2[0].UniqueId)
 		id, err := strconv.Atoi((d.Id()))
 		result2, err := service.VerifyDomainMapping(&id)
-		log.Println(result2)
+		log.Println("The status of domain mapping %s", result2)
 		return resourceIBMCDNRead(d, meta)
 	}
 	if origintype == "OBJECT_STORAGE" && protocol == "HTTP_AND_HTTPS" {
@@ -216,13 +221,11 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 		if err != nil {
 			return fmt.Errorf("Error creating CDN: %s", err)
 		}
-		///Print the response of the requested the service.
-		log.Print("Response for cdn order")
-		log.Println(receipt3)
+
 		d.SetId(*receipt3[0].UniqueId)
 		id, err := strconv.Atoi((d.Id()))
 		result3, err := service.VerifyDomainMapping(&id)
-		log.Println(result3)
+		log.Println("The status of domain mapping %s", result3)
 		return resourceIBMCDNRead(d, meta)
 	}
 	if origintype == "HOST_SERVER" && protocol == "HTTP" {
@@ -243,13 +246,11 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 		if err != nil {
 			return fmt.Errorf("Error creating CDN: %s", err)
 		}
-		///Print the response of the requested the service.
-		log.Print("Response for cdn order")
-		log.Println(receipt4)
+
 		d.SetId(*receipt4[0].UniqueId)
 		id, err := strconv.Atoi((d.Id()))
 		result4, err := service.VerifyDomainMapping(&id)
-		log.Println(result4)
+		log.Println("The status of domain mapping %s", result4)
 		return resourceIBMCDNRead(d, meta)
 	}
 	if origintype == "HOST_SERVER" && protocol == "HTTPS" {
@@ -271,13 +272,11 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 		if err != nil {
 			return fmt.Errorf("Error creating CDN: %s", err)
 		}
-		///Print the response of the requested the service.
-		log.Print("Response for cdn order")
-		log.Println(receipt5)
+
 		d.SetId(*receipt5[0].UniqueId)
 		id, err := strconv.Atoi((d.Id()))
 		result5, err := service.VerifyDomainMapping(&id)
-		log.Println(result5)
+		log.Println("The status of domain mapping %s", result5)
 		return resourceIBMCDNRead(d, meta)
 	}
 	if origintype == "HOST_SERVER" && protocol == "HTTP_AND_HTTPS" {
@@ -300,13 +299,11 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 		if err != nil {
 			return fmt.Errorf("Error creating CDN: %s", err)
 		}
-		///Print the response of the requested the service.
-		log.Print("Response for cdn order")
-		log.Println(receipt6)
+
 		d.SetId(*receipt6[0].UniqueId)
 		id, err := strconv.Atoi((d.Id()))
 		result6, err := service.VerifyDomainMapping(&id)
-		log.Println(result6)
+		log.Println("The status of domain mapping %s", result6)
 		return resourceIBMCDNRead(d, meta)
 	}
 
@@ -329,9 +326,21 @@ func resourceIBMCDNRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("cname", *read[0].Cname)
 	d.Set("origin_type", *read[0].OriginType)
 	d.Set("status", *read[0].Status)
-
-	log.Print("Response for cdn verification: ")
-
+	if *read[0].OriginType == "OBJECT_STORAGE" {
+		d.Set("bucketname", *read[0].BucketName)
+	}
+	if *read[0].Protocol == "HTTP" || *read[0].Protocol == "HTTP_AND_HTTPS" {
+		d.Set("httpport", *read[0].HttpPort)
+	}
+	if *read[0].Protocol == "HTTPS" || *read[0].Protocol == "HTTP_AND_HTTPS" {
+		d.Set("httpsport", *read[0].HttpsPort)
+	}
+	d.Set("protocol", *read[0].Protocol)
+	d.Set("respectheaders", *read[0].RespectHeaders)
+	d.Set("certificationtype", *read[0].CertificateType)
+	d.Set("cachekeyqueryrule", *read[0].CacheKeyQueryRule)
+	d.Set("path", *read[0].Path)
+	d.Set("performanceconfiguration", *read[0].PerformanceConfiguration)
 	if err != nil {
 		log.Println("error Reading")
 		log.Println(err)
@@ -382,8 +391,7 @@ func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
 			PerformanceConfiguration: sl.String(performanceconfiguration),
 		})
 		///Print the response of the requested service.
-		log.Print("Response for cdn update: ")
-		log.Println(update1)
+		log.Println("Response for cdn update: %s", update1)
 
 		if err != nil {
 			log.Println("error updating")
@@ -410,8 +418,7 @@ func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
 			PerformanceConfiguration: sl.String(performanceconfiguration),
 		})
 		///Print the response of the requested service.
-		log.Print("Response for cdn update: ")
-		log.Println(update2)
+		log.Println("Response for cdn update: %s", update2)
 		if err != nil {
 			log.Println("error updating")
 			log.Println(err)
@@ -437,8 +444,7 @@ func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
 			PerformanceConfiguration: sl.String(performanceconfiguration),
 		})
 		///Print the response of the requested service.
-		log.Print("Response for cdn update: ")
-		log.Println(update3)
+		log.Println("Response for cdn update: %s", update3)
 		if err != nil {
 			log.Println("error updating")
 			log.Println(err)
@@ -468,8 +474,7 @@ func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
 			PerformanceConfiguration: sl.String(performanceconfiguration),
 		})
 		///Print the response of the requested service.
-		log.Print("Response for cdn update: ")
-		log.Println(update4)
+		log.Println("Response for cdn update: %s", update4)
 		if err != nil {
 			log.Println("error updating")
 			log.Println(err)
@@ -497,8 +502,7 @@ func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
 			PerformanceConfiguration: sl.String(performanceconfiguration),
 		})
 		///Print the response of the requested service.
-		log.Print("Response for cdn update: ")
-		log.Println(update5)
+		log.Println("Response for cdn update: %s", update5)
 		if err != nil {
 			log.Println("error updating")
 			log.Println(err)
@@ -525,8 +529,7 @@ func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
 			PerformanceConfiguration: sl.String(performanceconfiguration),
 		})
 		///Print the response of the requested service.
-		log.Print("Response for cdn update: ")
-		log.Println(update6)
+		log.Println("Response for cdn update: %s", update6)
 		if err != nil {
 			log.Println("error updating")
 			log.Println(err)
@@ -551,8 +554,7 @@ func resourceIBMCDNDelete(d *schema.ResourceData, meta interface{}) error {
 		log.Println(err)
 	}
 	///print the delete response
-	log.Print("Delete response is : ")
-	log.Println(delete)
+	log.Print("Delete response is : %s", delete)
 	d.SetId("")
 	return nil
 }
@@ -565,8 +567,7 @@ func resourceIBMCDNExists(d *schema.ResourceData, meta interface{}) (bool, error
 	///check if the resource exists with the given id.
 	exists, err := service.ListDomainMappingByUniqueId(cdnId)
 	///Print the response for exist request.
-	log.Print("Exists response is : ")
-	log.Println(exists)
+	log.Print("Exists response is : %s", exists)
 	if err != nil {
 		if apiErr, ok := err.(sl.Error); ok {
 			if apiErr.StatusCode == 404 {

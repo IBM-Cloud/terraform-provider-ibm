@@ -33,9 +33,18 @@ resource "ibm_cdn" "test_cdn1" {
 * `httpport` - (Optional, Int) 80 is taken as default. **NOTE**: It can only be populated if protocol is set to “HTTP” or “HTTP_AND_HTTPS”
 * `httpsport` - (Optional, Int) 0 is taken as default. **NOTE**: It can only be populated if protocol is set to “HTTPS” or “HTTP_AND_HTTPS”
 * `bucketname` - (Required, string) required for “OBJECT_STORAGE” origin_type only.
+* `Certificate`: required for HTTPS protocol. SHARED_SAN_CERT or WILDCARD_CERT.
+* `respectHeader`: A boolean value that, if set to true, will cause TTL settings in the Origin to override CDN TTL settings.
+* `fileExtension` - (optional for Object Storage) File extensions that are allowed to be cached.
+* `cacheKeyQueryRule`: The following options are available to configure Cache Key behavior:
+    include-all - includes all query arguments default
+    ignore-all - ignores all query arguments
+    ignore: space separated query-args - ignores those specific query arguments. For example, ignore: query1 query2
+    include: space separated query-args: includes those specific query arguments. For example, include: query1 query2
 
 ## Attribute Reference
 
 The following attributes are exported:
 
 * `id` - The unique internal identifier of the cdn domian mapping.
+* `status` - The Status of the cdn domian mapping.
