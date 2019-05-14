@@ -20,7 +20,7 @@ Provides a IBM CIS Global Load Balancer resource. This sits in front of a number
 resource "ibm_cis_global_load_balancer" "example" {
   cis_id = "${ibm_cis.instance.id}"
   domain_id = "${ibm_cis_domain.example.id}"
-  name = "example.com"
+  name = "www.example.com"
   fallback_pool_id = "${ibm_cis_origin_pool.example.id}"
   default_pool_ids = ["${ibm_cis_origin_pool.example.id}"]
   description = "example load balancer using geo-balancing"
@@ -44,7 +44,7 @@ The following arguments are supported:
 
 * `cis_id` - (Required) The ID of the CIS service instance
 * `domain_id` - (Required) The ID of the domain to add the load balancer to.
-* `name` - (Required) The DNS name to associate with the load balancer.
+* `name` - (Required) The DNS name to associate with the load balancer. This can be a hostname, e.g. "www" or the fully qualified name "www.example.com". "example.com" is also accepted. 
 * `fallback_pool_id` - (Required) The pool ID to use when all other pools are detected as unhealthy.
 * `default_pool_ids` - (Required) A list of pool IDs ordered by their failover priority. Used whenever region/pop pools are not defined.
 * `description` - (Optional) Free text description.
@@ -58,6 +58,24 @@ Region and pop pools are not currently implemented in this version of the provid
 The following attributes are exported:
 
 * `id` - Unique identifier for the global load balancer.
+`name` - The fully qualified name of the load balancer, e.g. "www.example.com". 
 * `created_on` - The RFC3339 timestamp of when the load balancer was created.
 * `modified_on` - The RFC3339 timestamp of when the load balancer was last modified.
 
+## Import
+
+The `ibm_cis_global_load_balancer` resource can be imported using the `id`. The ID is formed from the `Global Load Balancer ID`, the `Domain ID` of the domain and the `CRN` (Cloud Resource Name) concatentated usinga `:` character.  
+
+The Domain ID and CRN will be located on the **Overview** page of the Internet Services instance under the **Domain** heading of the UI, or via using the `bx cis` CLI commands.
+
+* **Domain ID** is a 32 digit character string of the form: `9caf68812ae9b3f0377fdf986751a78f`
+
+* **CRN** is a 120 digit character string of the form: `crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::`
+
+* **Glb ID** is a 32 digit character string of the form: `57d96f0da6ed76251b475971b097205c`. The id of an existing GLB is not avaiable via the UI. It can be retrieved programatically via the CIS API or via the CLI using the CIS command to list the defined GLBs:  `bx cis glbs <domain_id>` 
+
+
+```
+$ terraform import ibm_cis_global_load_balancer.myorg <glb_id>:<domain-id>:<crn>
+
+$ terraform import ibm_cis_domain.myorg  57d96f0da6ed76251b475971b097205c:9caf68812ae9b3f0377fdf986751a78f:crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::

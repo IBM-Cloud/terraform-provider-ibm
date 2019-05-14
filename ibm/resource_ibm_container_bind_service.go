@@ -78,6 +78,16 @@ func resourceIBMContainerBindService() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 			},
+			"key": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
+			"role": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
 			"region": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -163,10 +173,19 @@ func resourceIBMContainerBindServiceCreate(d *schema.ResourceData, meta interfac
 	} else {
 		return fmt.Errorf("Please set either service_instance_name or service_instance_id")
 	}
+
 	bindService := v1.ServiceBindRequest{
 		ClusterNameOrID:         clusterNameID,
 		ServiceInstanceNameOrID: serviceInstanceNameID,
 		NamespaceID:             namespaceID,
+	}
+
+	if v, ok := d.GetOk("key"); ok {
+		bindService.ServiceKeyGUID = v.(string)
+	}
+
+	if v, ok := d.GetOk("role"); ok {
+		bindService.Role = v.(string)
 	}
 
 	targetEnv, err := getClusterTargetHeader(d, meta)

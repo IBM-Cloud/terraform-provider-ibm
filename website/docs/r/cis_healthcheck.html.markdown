@@ -8,7 +8,7 @@ description: |-
 
 # ibm_cis_healthcheck
 
-If you're using IBM's Cloud Internet Services Global Load Balancing to load-balance across multiple origin servers or data centers, you can configure one of a Healthcheck monitor to actively check the availability of those servers over HTTP(S). This resource is associated with an IBM Cloud Internet Services instance. 
+If you're using IBM's Cloud Internet Services Global Load Balancing to load-balance across multiple origin servers or data centers, you can configure a Healthcheck monitor to actively check the availability of those servers over HTTP(S). This resource is associated with an IBM Cloud Internet Services instance. 
 
 ## Example Usage
 
@@ -50,3 +50,19 @@ The following attributes are exported:
 * `id` - Load balancer monitor ID.
 * `created_on` - The RFC3339 timestamp of when the load balancer monitor was created.
 * `modified_on` - The RFC3339 timestamp of when the load balancer monitor was last modified.
+
+## Import
+
+The `ibm_cis_health_check` resource can be imported using the `id`. The ID is formed from the `Healthcheck Id` and the `CRN` (Cloud Resource Name) concatentated usinga `:` character.  
+
+The CRN will be located on the **Overview** page of the Internet Services instance under the **Domain** heading. 
+
+* **CRN** is a 120 digit character string of the form: `crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::`
+
+* **Healthcheck ID** is a 32 digit character string of the form: `1fc7c3247067ee00856729661c7d58c9`. The id of an existing Healthcheck monitor is not avaiable via the UI. It can be retrieved programmatically via the CIS API or via the CLI using the CIS command to list the defined GLBs:  `bx cis glb-monitors` 
+
+
+```
+$ terraform import ibm_cis_healthcheck.myorg <healthcheck_id>:<crn>
+
+$ terraform import ibm_cis_healthcheck.myorg 1fc7c3247067ee00856729661c7d58c9:crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::

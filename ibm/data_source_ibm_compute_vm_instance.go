@@ -39,16 +39,19 @@ func dataSourceIBMComputeVmInstance() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 			},
+
 			"status": &schema.Schema{
 				Description: "The VSI status",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+
 			"last_known_power_state": &schema.Schema{
 				Description: "The last known power state of a virtual guest in the event the guest is turned off outside of IMS or has gone offline.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+
 			"public_interface_id": {
 				Type:     schema.TypeInt,
 				Computed: true,
@@ -70,6 +73,67 @@ func dataSourceIBMComputeVmInstance() *schema.Resource {
 				Optional: true,
 				Default:  false,
 			},
+
+			"public_subnet_id": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+
+			"private_subnet_id": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+
+			"ipv4_address": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"ipv4_address_private": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"ip_address_id": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+
+			"ip_address_id_private": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+
+			"ipv6_address": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"ipv6_address_id": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+
+			"public_ipv6_subnet": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"public_ipv6_subnet_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"secondary_ip_addresses": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+
+			"secondary_ip_count": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -85,7 +149,10 @@ func dataSourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}
 	vgs, err := service.
 		Filter(filter.Build(filter.Path("virtualGuests.hostname").Eq(hostname),
 			filter.Path("virtualGuests.domain").Eq(domain))).Mask(
-		"hostname,domain,startCpus,datacenter[id,name,longName],statusId,status,id,powerState,lastKnownPowerState,createDate,primaryNetworkComponent[id],primaryBackendNetworkComponent[id]",
+		"hostname,domain,primaryIpAddress,primaryBackendIpAddress,startCpus,datacenter[id,name,longName],statusId,status,id,powerState,lastKnownPowerState,createDate,primaryNetworkComponent[id, primaryIpAddressRecord[subnet,guestNetworkComponentBinding[ipAddressId]]," +
+			"primaryVersion6IpAddressRecord[subnet,guestNetworkComponentBinding[ipAddressId]]]," +
+			"primaryBackendNetworkComponent[id],primaryBackendNetworkComponent[networkVlan[id]," +
+			"securityGroupBindings[securityGroup]]",
 	).GetVirtualGuests()
 
 	if err != nil {
@@ -94,8 +161,8 @@ func dataSourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}
 	if len(vgs) == 0 {
 		return fmt.Errorf("No virtual guest with hostname %s and domain  %s", hostname, domain)
 	}
-	var vg datatypes.Virtual_Guest
 
+	var vg datatypes.Virtual_Guest
 	if len(vgs) > 1 {
 		if mostRecent {
 			vg = mostRecentVirtualGuest(vgs)
@@ -128,7 +195,38 @@ func dataSourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}
 	}
 	d.Set("public_interface_id", vg.PrimaryNetworkComponent.Id)
 	d.Set("private_interface_id", vg.PrimaryBackendNetworkComponent.Id)
+	d.Set("ipv4_address", vg.PrimaryIpAddress)
+	d.Set("ipv4_address_private", vg.PrimaryBackendIpAddress)
+	if vg.PrimaryNetworkComponent.PrimaryIpAddressRecord != nil {
+		d.Set("ip_address_id", *vg.PrimaryNetworkComponent.PrimaryIpAddressRecord.GuestNetworkComponentBinding.IpAddressId)
+	}
+	if vg.PrimaryBackendNetworkComponent.PrimaryIpAddressRecord != nil {
+		d.Set("ip_address_id_private",
+			*vg.PrimaryBackendNetworkComponent.PrimaryIpAddressRecord.GuestNetworkComponentBinding.IpAddressId)
+	}
+	if vg.PrimaryNetworkComponent.PrimaryIpAddressRecord != nil {
+		d.Set("public_subnet_id", vg.PrimaryNetworkComponent.PrimaryIpAddressRecord.SubnetId)
+	}
 
+	if vg.PrimaryBackendNetworkComponent.PrimaryIpAddressRecord != nil {
+		d.Set("private_subnet_id", vg.PrimaryBackendNetworkComponent.PrimaryIpAddressRecord.SubnetId)
+	}
+
+	if vg.PrimaryNetworkComponent.PrimaryVersion6IpAddressRecord != nil {
+		d.Set("ipv6_address", *vg.PrimaryNetworkComponent.PrimaryVersion6IpAddressRecord.IpAddress)
+		d.Set("ipv6_address_id", *vg.PrimaryNetworkComponent.PrimaryVersion6IpAddressRecord.GuestNetworkComponentBinding.IpAddressId)
+		publicSubnet := vg.PrimaryNetworkComponent.PrimaryVersion6IpAddressRecord.Subnet
+		d.Set(
+			"public_ipv6_subnet",
+			fmt.Sprintf("%s/%d", *publicSubnet.NetworkIdentifier, *publicSubnet.Cidr),
+		)
+		d.Set("public_ipv6_subnet_id", vg.PrimaryNetworkComponent.PrimaryVersion6IpAddressRecord.SubnetId)
+	}
+
+	err = readSecondaryIPAddresses(d, meta, vg.PrimaryIpAddress)
+	if err != nil {
+		return fmt.Errorf("Error retrieving virtual guest details for host %s: %s", hostname, err)
+	}
 	return nil
 }
 

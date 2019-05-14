@@ -394,6 +394,28 @@ func resourceIBMContainerCluster() *schema.Resource {
 					},
 				},
 			},
+			"public_service_endpoint": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+			},
+
+			"private_service_endpoint": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+			},
+			"public_service_endpoint_url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"private_service_endpoint_url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -454,6 +476,12 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 
 	if v, ok := d.GetOk("kube_version"); ok {
 		params.MasterVersion = v.(string)
+	}
+	if v, ok := d.GetOkExists("private_service_endpoint"); ok {
+		params.PrivateEndpointEnabled = v.(bool)
+	}
+	if v, ok := d.GetOkExists("public_service_endpoint"); ok {
+		params.PublicEndpointEnabled = v.(bool)
 	}
 
 	targetEnv, err := getClusterTargetHeader(d, meta)
@@ -555,7 +583,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	albs, err := albsAPI.ListClusterALBs(clusterID, targetEnv)
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "The specified cluster is a lite cluster.") {
 		return fmt.Errorf("Error retrieving alb's of the cluster %s: %s", clusterID, err)
 	}
 
@@ -568,8 +596,12 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("workers_info", workers)
 	d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0])
 	d.Set("is_trusted", cls.IsTrusted)
-	d.Set("albs", flattenAlbs(albs))
+	d.Set("albs", flattenAlbs(albs, "all"))
 	d.Set("resource_group_id", cls.ResourceGroupID)
+	d.Set("public_service_endpoint", cls.PublicServiceEndpointEnabled)
+	d.Set("private_service_endpoint", cls.PrivateServiceEndpointEnabled)
+	d.Set("public_service_endpoint_url", cls.PublicServiceEndpointURL)
+	d.Set("private_service_endpoint_url", cls.PrivateServiceEndpointURL)
 
 	return nil
 }
@@ -900,7 +932,8 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 	//TODO put subnet can't deleted in the error message if such case is observed in the chnages
 	var publicSubnetAdded bool
 	noSubnet := d.Get("no_subnet").(bool)
-	if noSubnet == false {
+	publicVlanID := d.Get("public_vlan_id").(string)
+	if noSubnet == false && publicVlanID != "" {
 		publicSubnetAdded = true
 	}
 	if d.HasChange("subnet_id") {
@@ -1045,7 +1078,7 @@ func WaitForClusterAvailable(d *schema.ResourceData, meta interface{}, target v1
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", clusterProvisioning},
 		Target:     []string{clusterNormal},
-		Refresh:    clusterStateRefreshFunc(csClient.Clusters(), id, d, target),
+		Refresh:    clusterStateRefreshFunc(csClient.Clusters(), id, target),
 		Timeout:    time.Duration(d.Get("wait_time_minutes").(int)) * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -1054,9 +1087,9 @@ func WaitForClusterAvailable(d *schema.ResourceData, meta interface{}, target v1
 	return stateConf.WaitForState()
 }
 
-func clusterStateRefreshFunc(client v1.Clusters, instanceID string, d *schema.ResourceData, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
+func clusterStateRefreshFunc(client v1.Clusters, instanceID string, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		clusterFields, err := client.Find(instanceID, target)
+		clusterFields, err := client.FindWithOutShowResources(instanceID, target)
 		if err != nil {
 			return nil, "", fmt.Errorf("Error retrieving cluster: %s", err)
 		}
@@ -1083,7 +1116,7 @@ func WaitForWorkerAvailable(d *schema.ResourceData, meta interface{}, target v1.
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", workerProvisioning},
 		Target:     []string{workerNormal},
-		Refresh:    workerStateRefreshFunc(csClient.Workers(), id, d, target),
+		Refresh:    workerStateRefreshFunc(csClient.Workers(), id, target),
 		Timeout:    time.Duration(d.Get("wait_time_minutes").(int)) * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -1092,7 +1125,7 @@ func WaitForWorkerAvailable(d *schema.ResourceData, meta interface{}, target v1.
 	return stateConf.WaitForState()
 }
 
-func workerStateRefreshFunc(client v1.Workers, instanceID string, d *schema.ResourceData, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
+func workerStateRefreshFunc(client v1.Workers, instanceID string, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		workerFields, err := client.List(instanceID, target)
 		if err != nil {
@@ -1133,7 +1166,7 @@ func WaitForSubnetAvailable(d *schema.ResourceData, meta interface{}, target v1.
 
 func subnetStateRefreshFunc(client v1.Clusters, instanceID string, d *schema.ResourceData, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		cluster, err := client.Find(instanceID, target)
+		cluster, err := client.FindWithOutShowResources(instanceID, target)
 		if err != nil {
 			return nil, "", fmt.Errorf("Error retrieving cluster: %s", err)
 		}
@@ -1167,7 +1200,7 @@ func WaitForClusterVersionUpdate(d *schema.ResourceData, meta interface{}, targe
 
 func clusterVersionRefreshFunc(client v1.Clusters, instanceID string, d *schema.ResourceData, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		clusterFields, err := client.Find(instanceID, target)
+		clusterFields, err := client.FindWithOutShowResources(instanceID, target)
 		if err != nil {
 			return nil, "", fmt.Errorf("Error retrieving cluster: %s", err)
 		}
@@ -1190,7 +1223,7 @@ func resourceIBMContainerClusterExists(d *schema.ResourceData, meta interface{})
 		return false, err
 	}
 	clusterID := d.Id()
-	cls, err := csClient.Clusters().Find(clusterID, targetEnv)
+	cls, err := csClient.Clusters().FindWithOutShowResources(clusterID, targetEnv)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
 			if apiErr.StatusCode() == 404 {

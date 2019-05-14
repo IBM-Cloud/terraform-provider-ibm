@@ -110,7 +110,10 @@ Nested `resources` blocks have the following structure:
   * `region` - (Optional, string) Region of the policy definition.
   * `resource_type` - (Optional, string) Resource type of the policy definition.
   * `resource` - (Optional, string) Resource of the policy definition.
-  * `resource_group_id` - (Optional, string) The ID of the resource group. You can retrieve the value from data source `ibm_resource_group`.
+  * `resource_group_id` - (Optional, string) The ID of the resource group. You can retrieve the value from data source `ibm_resource_group`. 
+ **NOTE**: Conflicts with `account_management`.
+* `account_management` - (Optional, bool) Gives access to all account management services if set to `true`. Default value `false`. 
+ **NOTE**: Conflicts with `resources`.
 * `tags` - (Optional, array of strings) Tags associated with the user policy instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 

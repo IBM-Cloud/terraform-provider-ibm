@@ -168,7 +168,7 @@ The following arguments are supported:
     **NOTE**: Conflicts with `bulk_vms`.
 * `domain` - (Optional, string)  The domain for the computing instance.</br>
     **NOTE**: Conflicts with `bulk_vms`.
-* `bulk_vms` - (Optional, list) List of hostname and domain of the computing instance. Nested `bulk_vms` blocks must have the following structure:
+* `bulk_vms` - (Optional, list) List of hostname and domain of the computing instance. The minimum number of vm's to be defined is 2. Nested `bulk_vms` blocks must have the following structure:
     * `hostname` - (Required, string) The hostname for the computing instance.
     * `domain` - (Required, string) The domain for the computing instance.</br>
     **NOTE**: Conflicts with `hostname` and `domain`.
