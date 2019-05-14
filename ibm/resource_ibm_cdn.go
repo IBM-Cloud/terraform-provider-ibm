@@ -122,7 +122,6 @@ func resourceIBMCDN() *schema.Resource {
 func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 	///create  session
 	sess := meta.(ClientSession).SoftLayerSession()
-	log.Println("ordering cdn service...")
 	///get the value of all the parameters
 	domain := d.Get("hostname").(string)
 	vendorname := d.Get("vendor_name").(string)
@@ -312,7 +311,6 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceIBMCDNRead(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
-	log.Println("reading cdn service...")
 	service := services.GetNetworkCdnMarketplaceConfigurationMappingService(sess)
 	cdnId := sl.String(d.Id())
 	///read the changes in the remote resource and update in the local resource.
@@ -342,7 +340,6 @@ func resourceIBMCDNRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("path", *read[0].Path)
 	d.Set("performanceconfiguration", *read[0].PerformanceConfiguration)
 	if err != nil {
-		log.Println("error Reading")
 		log.Println(err)
 	}
 	return nil
@@ -351,7 +348,6 @@ func resourceIBMCDNRead(d *schema.ResourceData, meta interface{}) error {
 func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
 	/// Nothing to update for now. Not supported.
 	sess := meta.(ClientSession).SoftLayerSession()
-	log.Println("Updating cdn service...")
 	domain := d.Get("hostname").(string)
 	vendorname := d.Get("vendor_name").(string)
 	origintype := d.Get("origin_type").(string)
@@ -394,7 +390,6 @@ func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
 		log.Print("Response for cdn update: ", update1)
 
 		if err != nil {
-			log.Println("error updating")
 			log.Println(err)
 		}
 		return resourceIBMCDNRead(d, meta)
@@ -420,7 +415,6 @@ func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
 		///Print the response of the requested service.
 		log.Print("Response for cdn update: ", update2)
 		if err != nil {
-			log.Println("error updating")
 			log.Println(err)
 		}
 		return resourceIBMCDNRead(d, meta)
@@ -446,7 +440,6 @@ func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
 		///Print the response of the requested service.
 		log.Print("Response for cdn update: ", update3)
 		if err != nil {
-			log.Println("error updating")
 			log.Println(err)
 		}
 		return resourceIBMCDNRead(d, meta)
@@ -476,7 +469,6 @@ func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
 		///Print the response of the requested service.
 		log.Print("Response for cdn update: ", update4)
 		if err != nil {
-			log.Println("error updating")
 			log.Println(err)
 		}
 		return resourceIBMCDNRead(d, meta)
@@ -504,7 +496,6 @@ func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
 		///Print the response of the requested service.
 		log.Print("Response for cdn update: ", update5)
 		if err != nil {
-			log.Println("error updating")
 			log.Println(err)
 		}
 		return resourceIBMCDNRead(d, meta)
@@ -531,7 +522,6 @@ func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
 		///Print the response of the requested service.
 		log.Print("Response for cdn update: ", update6)
 		if err != nil {
-			log.Println("error updating")
 			log.Println(err)
 		}
 		return resourceIBMCDNRead(d, meta)
@@ -542,15 +532,12 @@ func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceIBMCDNDelete(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
-	log.Println("Deleting cdn service...")
 	service := services.GetNetworkCdnMarketplaceConfigurationMappingService(sess)
 
-	log.Printf("[INFO] Deleting Domain Mapping:")
 	cdnId := sl.String(d.Id())
 	///pass the id to delete the resource.
 	delete, err := service.DeleteDomainMapping(cdnId)
 	if err != nil {
-		log.Println("error destroying")
 		log.Println(err)
 	}
 	///print the delete response
@@ -561,7 +548,6 @@ func resourceIBMCDNDelete(d *schema.ResourceData, meta interface{}) error {
 
 func resourceIBMCDNExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	sess := meta.(ClientSession).SoftLayerSession()
-	log.Println("Exists cdn service...")
 	service := services.GetNetworkCdnMarketplaceConfigurationMappingService(sess)
 	cdnId := sl.String(d.Id())
 	///check if the resource exists with the given id.
