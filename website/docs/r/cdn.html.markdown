@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_cdn
 
-This iresource is used to order a cdn domain mapping.
+This resource is used to order a cdn domain mapping.
 
 ## Example Usage
 

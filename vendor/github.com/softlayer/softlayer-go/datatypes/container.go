@@ -2140,7 +2140,7 @@ type Container_Network_CdnMarketplace_Configuration_Input struct {
 	Protocol *string `json:"protocol,omitempty" xmlrpc:"protocol,omitempty"`
 
 	// no documentation yet
-	RespectHeaders *bool `json:"respectHeaders,omitempty" xmlrpc:"respectHeaders,omitempty"`
+	RespectHeaders *string `json:"respectHeaders,omitempty" xmlrpc:"respectHeaders,omitempty"`
 
 	// no documentation yet
 	ServeStale *string `json:"serveStale,omitempty" xmlrpc:"serveStale,omitempty"`

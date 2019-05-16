@@ -23,7 +23,7 @@ func resourceIBMCDN() *schema.Resource {
 		Exists: resourceIBMCDNExists,
 
 		Schema: map[string]*schema.Schema{
-			"hostname": &schema.Schema{
+			"host_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -46,7 +46,7 @@ func resourceIBMCDN() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"bucketname": &schema.Schema{
+			"bucket_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 			},
@@ -57,7 +57,7 @@ func resourceIBMCDN() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"HTTP", "HTTPS", "HTTP_AND_HTTPS"}),
 			},
-			"httpport": &schema.Schema{
+			"http_port": &schema.Schema{
 				Type:     schema.TypeInt,
 				Optional: true,
 				Default:  80,
@@ -66,7 +66,7 @@ func resourceIBMCDN() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"httpsport": &schema.Schema{
+			"https_port": &schema.Schema{
 				Type:     schema.TypeInt,
 				Optional: true,
 				Default:  443,
@@ -80,30 +80,31 @@ func resourceIBMCDN() *schema.Resource {
 			"header": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 			},
-			"respectheaders": &schema.Schema{
+			"respect_headers": &schema.Schema{
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  true,
 			},
-			"fileextension": &schema.Schema{
+			"file_extension": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "",
 			},
-			"certificatetype": &schema.Schema{
+			"certificate_type": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"SHARED_SAN_CERT", "WILDCARD_CERT"}),
 				ForceNew:     true,
 			},
-			"cachekeyqueryrule": &schema.Schema{
+			"cache_key_query_rule": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"include-all", "ignore-all", "ignore: space separated query-args", "include: space separated query-args"}),
 				Default:      "include-all",
 			},
-			"performanceconfiguration": &schema.Schema{
+			"performance_configuration": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "General web delivery",
@@ -112,7 +113,7 @@ func resourceIBMCDN() *schema.Resource {
 			"path": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
-				Default:  "/",
+				Default:  "/*",
 				ForceNew: true,
 			},
 		},
@@ -123,21 +124,25 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 	///create  session
 	sess := meta.(ClientSession).SoftLayerSession()
 	///get the value of all the parameters
-	domain := d.Get("hostname").(string)
+	domain := d.Get("host_name").(string)
 	vendorname := d.Get("vendor_name").(string)
 	origintype := d.Get("origin_type").(string)
 	originaddress := d.Get("origin_address").(string)
 	protocol := d.Get("protocol").(string)
-	httpport := d.Get("httpport").(int)
-	httpsport := d.Get("httpsport").(int)
-	bucketname := d.Get("bucketname").(string)
+	httpport := d.Get("http_port").(int)
+	httpsport := d.Get("https_port").(int)
+	bucketname := d.Get("bucket_name").(string)
 	path := d.Get("path").(string)
 	header := d.Get("header").(string)
-	cachekeyqueryrule := d.Get("cachekeyqueryrule").(string)
-	performanceconfiguration := d.Get("performanceconfiguration").(string)
-	respectheaders := d.Get("respectheaders").(bool)
+	cachekeyqueryrule := d.Get("cache_key_query_rule").(string)
+	performanceconfiguration := d.Get("performance_configuration").(string)
+	respectheaders := d.Get("respect_headers").(bool)
+	var rHeader = "0"
+	if respectheaders {
+		rHeader = "1"
+	}
 	cname := d.Get("cname").(string)
-	certificateType := d.Get("certificatetype").(string)
+	certificateType := d.Get("certificate_type").(string)
 	if name, ok := d.GetOk("cname"); ok {
 		cname = name.(string) + str
 	}
@@ -157,7 +162,7 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			OriginType:               sl.String(origintype),
 			BucketName:               sl.String(bucketname),
 			Header:                   sl.String(header),
-			RespectHeaders:           sl.Bool(respectheaders),
+			RespectHeaders:           sl.String(rHeader),
 			CacheKeyQueryRule:        sl.String(cachekeyqueryrule),
 			PerformanceConfiguration: sl.String(performanceconfiguration),
 		})
@@ -184,7 +189,7 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			OriginType:               sl.String(origintype),
 			BucketName:               sl.String(bucketname),
 			Header:                   sl.String(header),
-			RespectHeaders:           sl.Bool(respectheaders),
+			RespectHeaders:           sl.String(rHeader),
 			CertificateType:          sl.String(certificateType),
 			CacheKeyQueryRule:        sl.String(cachekeyqueryrule),
 			PerformanceConfiguration: sl.String(performanceconfiguration),
@@ -212,7 +217,7 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			OriginType:               sl.String(origintype),
 			BucketName:               sl.String(bucketname),
 			Header:                   sl.String(header),
-			RespectHeaders:           sl.Bool(respectheaders),
+			RespectHeaders:           sl.String(rHeader),
 			CertificateType:          sl.String(certificateType),
 			CacheKeyQueryRule:        sl.String(cachekeyqueryrule),
 			PerformanceConfiguration: sl.String(performanceconfiguration),
@@ -238,7 +243,7 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			HttpPort:                 sl.Int(httpport),
 			OriginType:               sl.String(origintype),
 			Header:                   sl.String(header),
-			RespectHeaders:           sl.Bool(respectheaders),
+			RespectHeaders:           sl.String(rHeader),
 			CacheKeyQueryRule:        sl.String(cachekeyqueryrule),
 			PerformanceConfiguration: sl.String(performanceconfiguration),
 		})
@@ -263,7 +268,7 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			HttpsPort:                sl.Int(httpsport),
 			OriginType:               sl.String(origintype),
 			Header:                   sl.String(header),
-			RespectHeaders:           sl.Bool(respectheaders),
+			RespectHeaders:           sl.String(rHeader),
 			CertificateType:          sl.String(certificateType),
 			CacheKeyQueryRule:        sl.String(cachekeyqueryrule),
 			PerformanceConfiguration: sl.String(performanceconfiguration),
@@ -290,7 +295,7 @@ func resourceIBMCDNCreate(d *schema.ResourceData, meta interface{}) error {
 			HttpsPort:                sl.Int(httpsport),
 			OriginType:               sl.String(origintype),
 			Header:                   sl.String(header),
-			RespectHeaders:           sl.Bool(respectheaders),
+			RespectHeaders:           sl.String(rHeader),
 			CertificateType:          sl.String(certificateType),
 			CacheKeyQueryRule:        sl.String(cachekeyqueryrule),
 			PerformanceConfiguration: sl.String(performanceconfiguration),
@@ -348,22 +353,26 @@ func resourceIBMCDNRead(d *schema.ResourceData, meta interface{}) error {
 func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
 	/// Nothing to update for now. Not supported.
 	sess := meta.(ClientSession).SoftLayerSession()
-	domain := d.Get("hostname").(string)
+	domain := d.Get("host_name").(string)
 	vendorname := d.Get("vendor_name").(string)
 	origintype := d.Get("origin_type").(string)
 	originaddress := d.Get("origin_address").(string)
 	protocol := d.Get("protocol").(string)
-	httpport := d.Get("httpport").(int)
-	httpsport := d.Get("httpsport").(int)
+	httpport := d.Get("http_port").(int)
+	httpsport := d.Get("https_port").(int)
 	path := d.Get("path").(string)
 	cname := d.Get("cname").(string)
 	header := d.Get("header").(string)
-	bucketname := d.Get("bucketname").(string)
-	fileextension := d.Get("fileextension").(string)
-	respectheaders := d.Get("respectheaders").(bool)
-	certificateType := d.Get("certificatetype").(string)
-	cachekeyqueryrule := d.Get("cachekeyqueryrule").(string)
-	performanceconfiguration := d.Get("performanceconfiguration").(string)
+	bucketname := d.Get("bucket_name").(string)
+	fileextension := d.Get("file_extension").(string)
+	respectheaders := d.Get("respect_headers").(bool)
+	var rHeader = "0"
+	if respectheaders {
+		rHeader = "1"
+	}
+	certificateType := d.Get("certificate_type").(string)
+	cachekeyqueryrule := d.Get("cache_key_query_rule").(string)
+	performanceconfiguration := d.Get("performance_configuration").(string)
 	uniqueId := d.Id()
 	service := services.GetNetworkCdnMarketplaceConfigurationMappingService(sess)
 	///pass the changed as well as unchanged parameters to update the resource.
@@ -379,7 +388,7 @@ func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
 			HttpPort:                 sl.Int(httpport),
 			HttpsPort:                sl.Int(httpsport),
 			OriginType:               sl.String(origintype),
-			RespectHeaders:           sl.Bool(respectheaders),
+			RespectHeaders:           sl.String(rHeader),
 			Header:                   sl.String(header),
 			UniqueId:                 sl.String(uniqueId),
 			CertificateType:          sl.String(certificateType),
@@ -405,7 +414,7 @@ func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
 			Cname:                    sl.String(cname),
 			HttpsPort:                sl.Int(httpsport),
 			OriginType:               sl.String(origintype),
-			RespectHeaders:           sl.Bool(respectheaders),
+			RespectHeaders:           sl.String(rHeader),
 			Header:                   sl.String(header),
 			UniqueId:                 sl.String(uniqueId),
 			CertificateType:          sl.String(certificateType),
@@ -431,7 +440,7 @@ func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
 			Cname:                    sl.String(cname),
 			HttpPort:                 sl.Int(httpport),
 			OriginType:               sl.String(origintype),
-			RespectHeaders:           sl.Bool(respectheaders),
+			RespectHeaders:           sl.String(rHeader),
 			Header:                   sl.String(header),
 			UniqueId:                 sl.String(uniqueId),
 			CacheKeyQueryRule:        sl.String(cachekeyqueryrule),
@@ -457,7 +466,7 @@ func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
 			HttpPort:                 sl.Int(httpport),
 			HttpsPort:                sl.Int(httpsport),
 			OriginType:               sl.String(origintype),
-			RespectHeaders:           sl.Bool(respectheaders),
+			RespectHeaders:           sl.String(rHeader),
 			BucketName:               sl.String(bucketname),
 			Header:                   sl.String(header),
 			FileExtension:            sl.String(fileextension),
@@ -484,7 +493,7 @@ func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
 			Cname:                    sl.String(cname),
 			HttpsPort:                sl.Int(httpsport),
 			OriginType:               sl.String(origintype),
-			RespectHeaders:           sl.Bool(respectheaders),
+			RespectHeaders:           sl.String(rHeader),
 			BucketName:               sl.String(bucketname),
 			Header:                   sl.String(header),
 			FileExtension:            sl.String(fileextension),
@@ -511,7 +520,7 @@ func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
 			Cname:                    sl.String(cname),
 			HttpPort:                 sl.Int(httpport),
 			OriginType:               sl.String(origintype),
-			RespectHeaders:           sl.Bool(respectheaders),
+			RespectHeaders:           sl.String(rHeader),
 			BucketName:               sl.String(bucketname),
 			Header:                   sl.String(header),
 			FileExtension:            sl.String(fileextension),
