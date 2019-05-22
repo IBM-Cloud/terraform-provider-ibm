@@ -67,8 +67,8 @@ func Provider() terraform.ResourceProvider {
 			"max_retries": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "The retry count to set for any SoftLayer API calls.",
-				DefaultFunc: schema.EnvDefaultFunc("MAX_RETRIES", 5),
+				Description: "The retry count to set for API calls.",
+				DefaultFunc: schema.EnvDefaultFunc("MAX_RETRIES", 10),
 			},
 			"function_namespace": {
 				Type:        schema.TypeString,
