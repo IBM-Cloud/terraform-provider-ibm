@@ -4,7 +4,7 @@ Sample Python script to dynamically parse terraform.tfstate file into Ansible in
 
 Copyright (c) 2018, IBM UK
 steve_strutt@uk.ibm.com
-ti_version = '0.7'
+ti_version = '0.8'
 
 ## Ansible dynamic inventory for Terraform with IBM Cloud ##
 This dynamic inventory script is written for use with Ansible and Terraform on IBM Cloud. Details of how to setup the script can be found in the IBM Cloud [Using Ansible to automate app deployment on Terraform-provided infrastructure](https://console.bluemix.net/docs/terraform/ansible/ansible.html#ansible).
@@ -20,7 +20,7 @@ This inventory script expects to find Terraform tags of the form
 group: host_group associated with each tf instance to define the 
 host group membership for Ansible. Multiple group tags are allowed per host
 
-This script was written for Terraform 0.11.07. It will break if Terraform change the format of the terraform.tf file. This is expected with 0.12.0. 
+This script was written for Terraform 0.11.07. It will break if Hashicorp change the format of the terraform.tf file. This is expected with 0.12.0. 
 
 ## Configuration
 

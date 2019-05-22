@@ -35,6 +35,7 @@ func TestAccIBMStorageBlock_Basic(t *testing.T) {
 						"ibm_storage_block.bs_endurance", "notes", "endurance notes"),
 					resource.TestCheckResourceAttr(
 						"ibm_storage_block.bs_endurance", "hourly_billing", "false"),
+					resource.TestCheckResourceAttrSet("ibm_storage_block.bs_endurance", "target_address.#"),
 					testAccCheckIBMResources("ibm_storage_block.bs_endurance", "datacenter",
 						"ibm_compute_vm_instance.storagevm2", "datacenter"),
 					// Performance Storage
@@ -49,6 +50,7 @@ func TestAccIBMStorageBlock_Basic(t *testing.T) {
 						"ibm_storage_block.bs_performance", "os_format_type", "Linux"),
 					resource.TestCheckResourceAttr(
 						"ibm_storage_block.bs_performance", "hourly_billing", "false"),
+					resource.TestCheckResourceAttrSet("ibm_storage_block.bs_performance", "target_address.#"),
 					testAccCheckIBMResources("ibm_storage_block.bs_performance", "datacenter",
 						"ibm_compute_vm_instance.storagevm2", "datacenter"),
 					resource.TestCheckResourceAttr("ibm_storage_block.bs_performance", "notes", "performance notes"),

@@ -10,8 +10,8 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/session"
 
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv2"
-	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 )
 
 func main() {
@@ -94,7 +94,7 @@ func main() {
 	}
 	clustersAPI := clusterClient.Clusters()
 
-	bindService, err := clustersAPI.BindService(v1.ServiceBindRequest{ClusterNameOrID: clusterName, SpaceGUID: myspace.GUID, ServiceInstanceNameOrID: serviceInstanceName, NamespaceID: namespace}, target)
+	bindService, err := clustersAPI.BindService(v1.ServiceBindRequest{ClusterNameOrID: clusterName, ServiceInstanceNameOrID: serviceInstanceName, NamespaceID: namespace}, target)
 	if err != nil {
 		log.Fatal(err)
 	}

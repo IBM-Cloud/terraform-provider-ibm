@@ -24,7 +24,7 @@ func dataSourceIBMCISInstance() *schema.Resource {
 
 			"resource_group_id": {
 				Type:        schema.TypeString,
-				Computed:    true,
+				Required:    true,
 				Description: "The id of the resource group in which the cis instance is present",
 			},
 

@@ -101,6 +101,9 @@ func Sanitize(input string) string {
 	re = regexp.MustCompile(`(?m)^X-Auth-Uaa-Token: .*`)
 	sanitized = re.ReplaceAllString(sanitized, "X-Auth-Uaa-Token: "+privateDataPlaceholder())
 
+	re = regexp.MustCompile(`(?m)^X-Auth-User-Token: .*`)
+	sanitized = re.ReplaceAllString(sanitized, "X-Auth-User-Token: "+privateDataPlaceholder())
+
 	re = regexp.MustCompile(`password=[^&]*&`)
 	sanitized = re.ReplaceAllString(sanitized, "password="+privateDataPlaceholder()+"&")
 

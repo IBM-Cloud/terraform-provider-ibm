@@ -47,9 +47,13 @@ OR
 
 The default region is _us_south_. You can override it in the [Config struct][bluemix_go_config]. You can also provide the value via environment variables; either via _BM_REGION_ or _BLUEMIX_REGION_. Valid regions are -
 * us-south
+* us-east
 * eu-gb
 * eu-de
 * au-syd
+* jp-tok
+
+The maximum retries is 3. You can override it in the [Config struct][bluemix_go_config]. You can also provide the value via environment variable; via MAX_RETRIES
 
 [bluemix_signup]: https://console.ng.bluemix.net/registration/?target=%2Fdashboard%2Fapps
 [bluemix_login]: https://console.ng.bluemix.net

@@ -16,12 +16,9 @@ func main() {
 	var resourcegrp string
 	flag.StringVar(&resourcegrp, "name", "", "Name of the group")
 
-	var resourcequota string
-	flag.StringVar(&resourcequota, "quota", "", "Name of the group")
-
 	flag.Parse()
 
-	if resourcegrp == "" || resourcequota == "" {
+	if resourcegrp == "" {
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -36,16 +33,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	resQuotaAPI := client.ResourceQuota()
-
-	quota, err := resQuotaAPI.FindByName(resourcequota)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println("Quota Defination Details :", quota)
 
 	resGrpAPI := client.ResourceGroup()
 
@@ -62,8 +49,7 @@ func main() {
 	log.Println("Resource group default Details :", grpList)
 
 	var grpInfo = models.ResourceGroup{
-		Name:    resourcegrp,
-		QuotaID: quota[0].ID,
+		Name: resourcegrp,
 	}
 
 	grp, err := resGrpAPI.Create(grpInfo)
@@ -74,7 +60,7 @@ func main() {
 
 	log.Println("Resource group create :", grp)
 
-	grps, err := resGrpAPI.FindByName(nil, grp.Name)
+	grps, err := resGrpAPI.FindByName(nil, resourcegrp)
 
 	if err != nil {
 		log.Fatal(err)
@@ -91,8 +77,7 @@ func main() {
 	log.Println("Resource group Details by ID:", grp)
 
 	var updateGrpInfo = management.ResourceGroupUpdateRequest{
-		Name:    "default",
-		QuotaID: quota[0].ID,
+		Name: "default",
 	}
 
 	grp, err = resGrpAPI.Update(grp.ID, &updateGrpInfo)

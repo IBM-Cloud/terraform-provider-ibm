@@ -70,8 +70,9 @@ func resourceIBMNetworkVlan() *schema.Resource {
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateVLANName,
 			},
 
 			"router_hostname": {
@@ -162,6 +163,9 @@ func resourceIBMNetworkVlanCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	vlan, err := findVlanByOrderId(sess, *receipt.OrderId)
+	if err != nil {
+		return fmt.Errorf("Error finding VLAN order %d: %s", *receipt.OrderId, err)
+	}
 
 	if len(name) > 0 {
 		_, err = services.GetNetworkVlanService(sess).

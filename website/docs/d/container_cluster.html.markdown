@@ -29,6 +29,7 @@ data "ibm_container_cluster" "cluster_foo" {
 The following arguments are supported:
 
 * `cluster_name_id` - (Required, string) The name or ID of the cluster.
+* `alb_type` - (Optional, string) Used to filter the albs based on type. Valid values are `private`, `public` and `all`. The default value is `all`.
 * `org_guid` - (Optional, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from the `ibm_org` data source or by running the `ibmcloud iam orgs --guid` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
 * `space_guid` - (Optional, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from the `ibm_space` data source or by running the `ibmcloud iam space <space-name> --guid` command in the IBM Cloud CLI.
 * `account_guid` - (Optional, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from the `ibm_account` data source or by running the `ibmcloud iam accounts` command in the IBM Cloud CLI.
@@ -65,13 +66,17 @@ The following attributes are exported:
 		* `private_vlan` - The ID of the private VLAN. 
 		* `public_vlan` - The ID of the public VLAN.
 		* `worker_count` - Number of workers attached to this zone.
-* `albs` - Alb's attached to the cluster
-  * `id` - The Alb id.
-  * `name` - The name of the Alb.
-  * `alb_type` - The Alb type public or private.
-  * `enable` -  Enable (true) or disable(false) ALB.
-  * `state` - The status of the ALB(enabled or disabled).
-  * `num_of_instances` - Desired number of ALB replicas.
-  * `alb_ip` - BYOIP VIP to use for ALB. Currently supported only for private ALB.
+* `albs` - Application load balancer (ALB)'s attached to the cluster
+  * `id` - The application load balancer (ALB) id.
+  * `name` - The name of the application load balancer (ALB).
+  * `alb_type` - The application load balancer (ALB) type public or private.
+  * `enable` -  Enable (true) or disable(false) application load balancer (ALB).
+  * `state` - The status of the application load balancer (ALB)(enabled or disabled).
+  * `num_of_instances` - Desired number of application load balancer (ALB) replicas.
+  * `alb_ip` - BYOIP VIP to use for application load balancer (ALB). Currently supported only for private application load balancer (ALB).
   * `resize` - Indicate whether resizing should be done.
-  * `disable_deployment` - Indicate whether to disable deployment only on disable alb.
+  * `disable_deployment` - Indicate whether to disable deployment only on disable application load balancer (ALB).
+* `private_service_endpoint_url` - Private service endpoint url.
+* `public_service_endpoint_url` - Public service endpoint url.
+* `public_service_endpoint` - Is public service endpoint enabled to make the master publicly accessible.
+* `private_service_endpoint` - Is private service endpoint enabled to make the master privately accessible.
