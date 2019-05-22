@@ -71,11 +71,10 @@ func resourceIBMDNSREVERSERecordRead(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("Not a valid ID, must be an integer: %s", err)
 	}
 
-	result, err := service.Id(id).GetObject()
-	if err != nil {
+	_, nexterr := service.Id(id).GetObject()
+	if nexterr != nil {
 		return fmt.Errorf("Error retrieving DNS Reverse Record: %s", err)
 	}
-	log.Print(result)
 	return nil
 }
 
