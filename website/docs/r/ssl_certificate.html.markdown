@@ -108,46 +108,63 @@ The following arguments are supported:
 * `serverCount` - (Required, string) The number of servers with provided server tye .
 * `validityMonths` - (Required, integer) The validity of ssl certificate in months it should be multiple of 12.
 * `orderApproverEmailAddress` - (Required, string) The email of approver to approve ssl certificate request.
-* `org_addressLine1` - (Required, string) The address of organization who is requesting for ssl certificate.
-* `org_addressLine2` - (optional, string) The address of organization who is requesting for ssl certificate.
-* `org_city` - (Required, string) The city of organization which is requesting for ssl certificate .
-* `org_postalCode` - (Required, integer) The postal code for the city of organization.
-* `org_state` - (Required, string) The two letter state code of organization who is requesting for ssl certificate. Allowed value for country which doesn't have states is `OT`.
-* `org_countryCode` - (Required, string) The two letter country code of organization.
-* `org_organizationName` - (Required, string) Name of organization.
-* `tech_addressLine1` - (Required, string) The address for technical contact.
-* `tech_addressLine2` - (optional, string) The address for technical contact.
-* `tech_city` - (Required, string) The city for technical contact.
-* `tech_postalCode` - (Required, integer) The postal code for technical contact.
-* `tech_state` - (Required, string) The two letter state code of technical contact. Allowed value for country which doesn't have states is `OT`.
-* `tech_countryCode` - (Required, string) The two letter country code for technical contact.
-* `tech_organizationName` - (Required, string) Name of organization for technical contact.
-* `tech_firstName` - (Required, string) The first name for technical contact.
-* `tech_lastName` - (Required, string) The last name for technical contact.
-* `tech_title` - (Required, string) The title for for technical contact.
-* `tech_emailAddress` -(Required, string) email address for technical contact.
-* `admin_addressLine1` - (Optional, string) The address for administrative contact.
-* `admin_addressLine2` - (optional, string) The address for administrative contact.
-* `admin_city` - (Optional, string) The city for administrative contact.
-* `admin_postalCode` - (Optional, integer) The postal code for administrative contact.
-* `admin_state` - (Optional, string) The two letter state code of administrative contact. Allowed value for country which doesn't have states is `OT`.
-* `admin_countryCode` - (Optional, string) The two letter country code for administrative contact.
-* `admin_organizationName` - (Optional, string) Name of organization for administrative contact.
-* `admin_firstName` - (Optional, string) The first name for administrative contact.
-* `admin_lastName` - (Optional, string) The last name for administrative contact.
-* `admin_title` - (Optional, string) The title for for administrative contact.
-* `admin_emailAddress` -(Optional, string) email address for administrative contact.
-* `billing_addressLine1` - (Optional, string) The address for billing contact.
-* `billing_addressLine2` - (optional, string) The address for billing contact.
-* `billing_city` - (Optional, string) The city for billing contact.
-* `billing_postalCode` - (Optional, integer) The postal code for billing contact.
-* `billing_state` - (Optional, string) The two letter state code of billing contact. Allowed value for country which doesn't have states is `OT`.
-* `billing_countryCode` - (Optional, string) The two letter country code for billing contact.
-* `billing_organizationName` - (Optional, string) Name of organization for billing contact.
-* `billing_firstName` - (Optional, string) The first name for billing contact.
-* `billing_lastName` - (Optional, string) The last name for billing contact.
-* `billing_title` - (Optional, string) The title for for billing contact.
-* `billing_emailAddress` -(Optional, string) email address for billing contact.
+* `organization_information`- (Required, set) Organization information from issuer belongs to.
+	* `org_address`- (Required, string) Organization address of the issuer.
+		* `org_addressLine1` - (Required, string) The address of organization who is requesting for ssl certificate.
+		* `org_addressLine2` - (optional, string) The address of organization who is requesting for ssl certificate.
+		* `org_city` - (Required, string) The city of organization which is requesting for ssl certificate .
+		* `org_postalCode` - (Required, integer) The postal code for the city of organization.
+		* `org_state` - (Required, string) The two letter state code of organization who is requesting for ssl certificate. Allowed value for country which doesn't have states is `OT`.
+		* `org_countryCode` - (Required, string) The two letter country code of organization.
+	* `org_organizationName` - (Required, string) Name of organization.
+	* `org_phone_number` - (Required, string) Phone number of organization
+	* `org_fax_number` - (Optional, string) Fax number for organization
+* `technical_contact` - (Required, set) Technical contact details of issuer.
+	* `tech_address` - (Optional, set) Technical address details
+		* `tech_addressLine1` - (Required, string) The address for technical contact.
+		* `tech_addressLine2` - (Optional, string) The address for technical contact.
+		* `tech_city` - (Required, string) The city for technical contact.
+		* `tech_postalCode` - (Required, integer) The postal code for technical contact.
+		* `tech_state` - (Required, string) The two letter state code of technical contact. Allowed value for country which doesn't have states is `OT`.
+		* `tech_countryCode` - (Required, string) The two letter country code for technical contact.
+	* `tech_organizationName` - (Required, string) Name of organization for technical contact.
+	* `tech_firstName` - (Required, string) The first name for technical contact.
+	* `tech_lastName` - (Required, string) The last name for technical contact.
+	* `tech_title` - (Required, string) The title for for technical contact.
+	* `tech_emailAddress` -(Required, string) email address for technical contact.
+	* `tech_phone_number`- (Required, string) phone number for technical detail.
+	* `tech_fax_number` - (Optional, string) Fax number for technical detail.
+* `administrative_contact` - (Optional, set) Administrator contact details.
+	* `admin_address` - (Optional, set) Administrator address details.
+		* `admin_addressLine1` - (Optional, string) The address for administrative contact.
+		* `admin_addressLine2` - (optional, string) The address for administrative contact.
+		* `admin_city` - (Optional, string) The city for administrative contact.
+		* `admin_postalCode` - (Optional, integer) The postal code for administrative contact.
+		* `admin_state` - (Optional, string) The two letter state code of administrative contact. Allowed value for country which doesn't have states is `OT`.
+		* `admin_countryCode` - (Optional, string) The two letter country code for administrative contact.
+	* `admin_organizationName` - (Optional, string) Name of organization for administrative contact.
+	* `admin_firstName` - (Optional, string) The first name for administrative contact.
+	* `admin_lastName` - (Optional, string) The last name for administrative contact.
+	* `admin_title` - (Optional, string) The title for for administrative contact.
+	* `admin_emailAddress` -(Optional, string) email address for administrative contact.
+	* `admin_phone_number` - (Optional, string) Phone number of administrator.
+	* `admin_fax_number` - (Optional, string) Fax number for administrator.
+
+* `billing_contact` - (Optional, set) Billing Contact details.
+	* `billing_address` - (Optional, set) Billing address details.
+		* `billing_addressLine1` - (Optional, string) The address for billing contact.
+		* `billing_addressLine2` - (optional, string) The address for billing contact.
+		* `billing_city` - (Optional, string) The city for billing contact.
+		* `billing_postalCode` - (Optional, integer) The postal code for billing contact.
+		* `billing_state` - (Optional, string) The two letter state code of billing contact. Allowed value for country which doesn't have states is `OT`.
+		* `billing_countryCode` - (Optional, string) The two letter country code for billing contact.
+	* `billing_organizationName` - (Optional, string) Name of organization for billing contact.
+	* `billing_firstName` - (Optional, string) The first name for billing contact.
+	* `billing_lastName` - (Optional, string) The last name for billing contact.
+	* `billing_title` - (Optional, string) The title for for billing contact.
+	* `billing_emailAddress` - (Optional, string) email address for billing contact.
+	* `billing_phone_number` - (Optional, string) Phone number for billing contact.
+	* `billing_fax_number` - (Optional, string) Fax number for billing contact.
 * `technicalContactSameAsOrgAddressFlag` -(Optional, bool) If your organization address and technical contact address is the same make this flag as true and skip technical contact address details.
 * `administrativeContactSameAsTechnicalFlag` -(Required, bool)- If your technical contact details and administrative contact details is the same then make this as true and skip details of administrative contact.
 * `billingContactSameAsTechnicalFlag` -(Required, bool)- If your technical contact details and billing contact details is the same then make this as true and skip details of billing contact. 

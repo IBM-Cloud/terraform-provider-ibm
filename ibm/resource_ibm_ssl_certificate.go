@@ -103,6 +103,7 @@ func resourceIBMSSLCertificate() *schema.Resource {
 			"organization_information": {
 				Type:     schema.TypeSet,
 				Required: true,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 
@@ -165,6 +166,7 @@ func resourceIBMSSLCertificate() *schema.Resource {
 			"technical_contact": {
 				Type:     schema.TypeSet,
 				Required: true,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 
@@ -244,6 +246,7 @@ func resourceIBMSSLCertificate() *schema.Resource {
 			"billing_contact": {
 				Type:     schema.TypeSet,
 				Optional: true,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 
@@ -324,6 +327,7 @@ func resourceIBMSSLCertificate() *schema.Resource {
 			"administrative_contact": {
 				Type:     schema.TypeSet,
 				Optional: true,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 
@@ -453,7 +457,7 @@ func resourceIBMSSLCertificateCreate(d *schema.ResourceData, m interface{}) erro
 		return resourceIBMSSLCertificateRead(d, m)
 	} else {
 		log.Println("Provided CSR is not valid.")
-		return nil
+		return fmt.Errorf("Error while validating CSR: %s", err)
 	}
 }
 
