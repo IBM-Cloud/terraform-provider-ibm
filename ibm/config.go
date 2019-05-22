@@ -24,8 +24,11 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv2"
 	"github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Cloud/bluemix-go/api/globalsearch/globalsearchv2"
+	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
+	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/catalog"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
@@ -101,43 +104,28 @@ type Session struct {
 
 // ClientSession ...
 type ClientSession interface {
-	SoftLayerSession() *slsession.Session
 	BluemixSession() (*bxsession.Session, error)
+	BluemixAcccountAPI() (accountv2.AccountServiceAPI, error)
+	BluemixAcccountv1API() (accountv1.AccountServiceAPI, error)
+	BluemixUserDetails() (*UserConfig, error)
 	ContainerAPI() (containerv1.ContainerServiceAPI, error)
 	CisAPI() (cisv1.CisServiceAPI, error)
+	FunctionClient() (*whisk.Client, error)
+	GlobalSearchAPI() (globalsearchv2.GlobalSearchServiceAPI, error)
+	GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServiceAPI, error)
+	ICDAPI() (icdv4.ICDServiceAPI, error)
 	IAMAPI() (iamv1.IAMServiceAPI, error)
 	IAMPAPAPI() (iampapv1.IAMPAPAPI, error)
 	IAMUUMAPI() (iamuumv1.IAMUUMServiceAPI, error)
 	MccpAPI() (mccpv2.MccpServiceAPI, error)
-	BluemixAcccountAPI() (accountv2.AccountServiceAPI, error)
-	BluemixAcccountv1API() (accountv1.AccountServiceAPI, error)
-	BluemixUserDetails() (*UserConfig, error)
-	FunctionClient() (*whisk.Client, error)
 	ResourceCatalogAPI() (catalog.ResourceCatalogAPI, error)
 	ResourceManagementAPI() (management.ResourceManagementAPI, error)
 	ResourceControllerAPI() (controller.ResourceControllerAPI, error)
+	SoftLayerSession() *slsession.Session
 }
 
 type clientSession struct {
 	session *Session
-
-	csConfigErr  error
-	csServiceAPI containerv1.ContainerServiceAPI
-
-	cfConfigErr  error
-	cfServiceAPI mccpv2.MccpServiceAPI
-
-	cisConfigErr  error
-	cisServiceAPI cisv1.CisServiceAPI
-
-	iamPAPConfigErr  error
-	iamPAPServiceAPI iampapv1.IAMPAPAPI
-
-	iamUUMConfigErr  error
-	iamUUMServiceAPI iamuumv1.IAMUUMServiceAPI
-
-	iamConfigErr  error
-	iamServiceAPI iamv1.IAMServiceAPI
 
 	accountConfigErr     error
 	bmxAccountServiceAPI accountv2.AccountServiceAPI
@@ -148,8 +136,35 @@ type clientSession struct {
 	bmxUserDetails  *UserConfig
 	bmxUserFetchErr error
 
+	csConfigErr  error
+	csServiceAPI containerv1.ContainerServiceAPI
+
+	cfConfigErr  error
+	cfServiceAPI mccpv2.MccpServiceAPI
+
+	cisConfigErr  error
+	cisServiceAPI cisv1.CisServiceAPI
+
 	functionConfigErr error
 	functionClient    *whisk.Client
+
+	globalSearchConfigErr  error
+	globalSearchServiceAPI globalsearchv2.GlobalSearchServiceAPI
+
+	globalTaggingConfigErr  error
+	globalTaggingServiceAPI globaltaggingv3.GlobalTaggingServiceAPI
+
+	iamPAPConfigErr  error
+	iamPAPServiceAPI iampapv1.IAMPAPAPI
+
+	iamUUMConfigErr  error
+	iamUUMServiceAPI iamuumv1.IAMUUMServiceAPI
+
+	iamConfigErr  error
+	iamServiceAPI iamv1.IAMServiceAPI
+
+	icdConfigErr  error
+	icdServiceAPI icdv4.ICDServiceAPI
 
 	resourceControllerConfigErr  error
 	resourceControllerServiceAPI controller.ResourceControllerAPI
@@ -161,16 +176,6 @@ type clientSession struct {
 	resourceCatalogServiceAPI catalog.ResourceCatalogAPI
 }
 
-// SoftLayerSession providers SoftLayer Session
-func (sess clientSession) SoftLayerSession() *slsession.Session {
-	return sess.session.SoftLayerSession
-}
-
-// MccpAPI provides Multi Cloud Controller Proxy APIs ...
-func (sess clientSession) MccpAPI() (mccpv2.MccpServiceAPI, error) {
-	return sess.cfServiceAPI, sess.cfConfigErr
-}
-
 // BluemixAcccountAPI ...
 func (sess clientSession) BluemixAcccountAPI() (accountv2.AccountServiceAPI, error) {
 	return sess.bmxAccountServiceAPI, sess.accountConfigErr
@@ -179,6 +184,41 @@ func (sess clientSession) BluemixAcccountAPI() (accountv2.AccountServiceAPI, err
 // BluemixAcccountAPI ...
 func (sess clientSession) BluemixAcccountv1API() (accountv1.AccountServiceAPI, error) {
 	return sess.bmxAccountv1ServiceAPI, sess.accountV1ConfigErr
+}
+
+// BluemixSession to provide the Bluemix Session
+func (sess clientSession) BluemixSession() (*bxsession.Session, error) {
+	return sess.session.BluemixSession, sess.cfConfigErr
+}
+
+// BluemixUserDetails ...
+func (sess clientSession) BluemixUserDetails() (*UserConfig, error) {
+	return sess.bmxUserDetails, sess.bmxUserFetchErr
+}
+
+// ContainerAPI provides Container Service APIs ...
+func (sess clientSession) ContainerAPI() (containerv1.ContainerServiceAPI, error) {
+	return sess.csServiceAPI, sess.csConfigErr
+}
+
+// CisAPI provides Cloud Internet Services APIs ...
+func (sess clientSession) CisAPI() (cisv1.CisServiceAPI, error) {
+	return sess.cisServiceAPI, sess.cisConfigErr
+}
+
+// FunctionClient ...
+func (sess clientSession) FunctionClient() (*whisk.Client, error) {
+	return sess.functionClient, sess.functionConfigErr
+}
+
+// GlobalSearchAPI provides Global Search  APIs ...
+func (sess clientSession) GlobalSearchAPI() (globalsearchv2.GlobalSearchServiceAPI, error) {
+	return sess.globalSearchServiceAPI, sess.globalSearchConfigErr
+}
+
+// GlobalTaggingAPI provides Global Search  APIs ...
+func (sess clientSession) GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServiceAPI, error) {
+	return sess.globalTaggingServiceAPI, sess.globalTaggingConfigErr
 }
 
 // IAMAPI provides IAM PAP APIs ...
@@ -196,29 +236,14 @@ func (sess clientSession) IAMUUMAPI() (iamuumv1.IAMUUMServiceAPI, error) {
 	return sess.iamUUMServiceAPI, sess.iamUUMConfigErr
 }
 
-// ContainerAPI provides Container Service APIs ...
-func (sess clientSession) ContainerAPI() (containerv1.ContainerServiceAPI, error) {
-	return sess.csServiceAPI, sess.csConfigErr
+// IcdAPI provides IBM Cloud Databases APIs ...
+func (sess clientSession) ICDAPI() (icdv4.ICDServiceAPI, error) {
+	return sess.icdServiceAPI, sess.icdConfigErr
 }
 
-// CisAPI provides Cloud Internet Services APIs ...
-func (sess clientSession) CisAPI() (cisv1.CisServiceAPI, error) {
-	return sess.cisServiceAPI, sess.cisConfigErr
-}
-
-// BluemixSession to provide the Bluemix Session
-func (sess clientSession) BluemixSession() (*bxsession.Session, error) {
-	return sess.session.BluemixSession, sess.cfConfigErr
-}
-
-// BluemixUserDetails ...
-func (sess clientSession) BluemixUserDetails() (*UserConfig, error) {
-	return sess.bmxUserDetails, sess.bmxUserFetchErr
-}
-
-// FunctionClient ...
-func (sess clientSession) FunctionClient() (*whisk.Client, error) {
-	return sess.functionClient, sess.functionConfigErr
+// MccpAPI provides Multi Cloud Controller Proxy APIs ...
+func (sess clientSession) MccpAPI() (mccpv2.MccpServiceAPI, error) {
+	return sess.cfServiceAPI, sess.cfConfigErr
 }
 
 // ResourceCatalogAPI ...
@@ -236,6 +261,11 @@ func (sess clientSession) ResourceControllerAPI() (controller.ResourceController
 	return sess.resourceControllerServiceAPI, sess.resourceControllerConfigErr
 }
 
+// SoftLayerSession providers SoftLayer Session
+func (sess clientSession) SoftLayerSession() *slsession.Session {
+	return sess.session.SoftLayerSession
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -249,15 +279,18 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if sess.BluemixSession == nil {
 		//Can be nil only  if bluemix_api_key is not provided
 		log.Println("Skipping Bluemix Clients configuration")
+		session.accountConfigErr = errEmptyBluemixCredentials
+		session.accountV1ConfigErr = errEmptyBluemixCredentials
 		session.csConfigErr = errEmptyBluemixCredentials
 		session.cfConfigErr = errEmptyBluemixCredentials
 		session.cisConfigErr = errEmptyBluemixCredentials
-		session.accountConfigErr = errEmptyBluemixCredentials
-		session.accountV1ConfigErr = errEmptyBluemixCredentials
-		session.iamConfigErr = errEmptyBluemixCredentials
 		session.functionConfigErr = errEmptyBluemixCredentials
+		session.globalSearchConfigErr = errEmptyBluemixCredentials
+		session.globalTaggingConfigErr = errEmptyBluemixCredentials
+		session.iamConfigErr = errEmptyBluemixCredentials
 		session.iamPAPConfigErr = errEmptyBluemixCredentials
 		session.iamUUMConfigErr = errEmptyBluemixCredentials
+		session.icdConfigErr = errEmptyBluemixCredentials
 		session.resourceCatalogConfigErr = errEmptyBluemixCredentials
 		session.resourceManagementConfigErr = errEmptyBluemixCredentials
 		session.resourceCatalogConfigErr = errEmptyBluemixCredentials
@@ -281,17 +314,24 @@ func (c *Config) ClientSession() (interface{}, error) {
 	sess.BluemixSession.Config.UAARefreshToken = ""
 
 	BluemixRegion = sess.BluemixSession.Config.Region
-	cfAPI, err := mccpv2.New(sess.BluemixSession)
+
+	accv1API, err := accountv1.New(sess.BluemixSession)
 	if err != nil {
-		session.cfConfigErr = fmt.Errorf("Error occured while configuring MCCP service: %q", err)
+		session.accountV1ConfigErr = fmt.Errorf("Error occured while configuring Bluemix Accountv1 Service: %q", err)
 	}
-	session.cfServiceAPI = cfAPI
+	session.bmxAccountv1ServiceAPI = accv1API
 
 	accAPI, err := accountv2.New(sess.BluemixSession)
 	if err != nil {
 		session.accountConfigErr = fmt.Errorf("Error occured while configuring  Account Service: %q", err)
 	}
 	session.bmxAccountServiceAPI = accAPI
+
+	cfAPI, err := mccpv2.New(sess.BluemixSession)
+	if err != nil {
+		session.cfConfigErr = fmt.Errorf("Error occured while configuring MCCP service: %q", err)
+	}
+	session.cfServiceAPI = cfAPI
 
 	clusterAPI, err := containerv1.New(sess.BluemixSession)
 	if err != nil {
@@ -305,11 +345,17 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.cisServiceAPI = cisAPI
 
-	accv1API, err := accountv1.New(sess.BluemixSession)
+	globalSearchAPI, err := globalsearchv2.New(sess.BluemixSession)
 	if err != nil {
-		session.accountV1ConfigErr = fmt.Errorf("Error occured while configuring Bluemix Accountv1 Service: %q", err)
+		session.globalSearchConfigErr = fmt.Errorf("Error occured while configuring Global Search: %q", err)
 	}
-	session.bmxAccountv1ServiceAPI = accv1API
+	session.globalSearchServiceAPI = globalSearchAPI
+
+	globalTaggingAPI, err := globaltaggingv3.New(sess.BluemixSession)
+	if err != nil {
+		session.globalTaggingConfigErr = fmt.Errorf("Error occured while configuring Global Tagging: %q", err)
+	}
+	session.globalTaggingServiceAPI = globalTaggingAPI
 
 	iampap, err := iampapv1.New(sess.BluemixSession)
 	if err != nil {
@@ -328,6 +374,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.iamUUMConfigErr = fmt.Errorf("Error occured while configuring Bluemix IAMUUM Service: %q", err)
 	}
 	session.iamUUMServiceAPI = iamuum
+
+	icdAPI, err := icdv4.New(sess.BluemixSession)
+	if err != nil {
+		session.icdConfigErr = fmt.Errorf("Error occured while configuring IBM Cloud Database Services: %q", err)
+	}
+	session.icdServiceAPI = icdAPI
 
 	resourceCatalogAPI, err := catalog.New(sess.BluemixSession)
 	if err != nil {

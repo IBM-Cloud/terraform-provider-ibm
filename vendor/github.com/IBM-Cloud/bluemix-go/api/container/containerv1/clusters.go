@@ -17,37 +17,43 @@ import (
 
 //ClusterInfo ...
 type ClusterInfo struct {
-	CreatedDate              string   `json:"createdDate"`
-	DataCenter               string   `json:"dataCenter"`
-	ID                       string   `json:"id"`
-	IngressHostname          string   `json:"ingressHostname"`
-	IngressSecretName        string   `json:"ingressSecretName"`
-	Location                 string   `json:"location"`
-	MasterKubeVersion        string   `json:"masterKubeVersion"`
-	ModifiedDate             string   `json:"modifiedDate"`
-	Name                     string   `json:"name"`
-	Region                   string   `json:"region"`
-	ResourceGroupID          string   `json:"resourceGroup"`
-	ServerURL                string   `json:"serverURL"`
-	State                    string   `json:"state"`
-	OrgID                    string   `json:"logOrg"`
-	OrgName                  string   `json:"logOrgName"`
-	SpaceID                  string   `json:"logSpace"`
-	SpaceName                string   `json:"logSpaceName"`
-	IsPaid                   bool     `json:"isPaid"`
-	IsTrusted                bool     `json:"isTrusted"`
-	WorkerCount              int      `json:"workerCount"`
-	Vlans                    []Vlan   `json:"vlans"`
-	Addons                   []Addon  `json:"addons"`
-	OwnerEmail               string   `json:"ownerEmail"`
-	APIUser                  string   `json:"apiUser"`
-	MonitoringURL            string   `json:"monitoringURL"`
-	DisableAutoUpdate        bool     `json:"disableAutoUpdate"`
-	EtcdPort                 string   `json:"etcdPort"`
-	MasterStatus             string   `json:"masterStatus"`
-	MasterStatusModifiedDate string   `json:"masterStatusModifiedDate"`
-	KeyProtectEnabled        bool     `json:"keyProtectEnabled"`
-	WorkerZones              []string `json:"workerZones"`
+	CreatedDate                   string   `json:"createdDate"`
+	DataCenter                    string   `json:"dataCenter"`
+	ID                            string   `json:"id"`
+	IngressHostname               string   `json:"ingressHostname"`
+	IngressSecretName             string   `json:"ingressSecretName"`
+	Location                      string   `json:"location"`
+	MasterKubeVersion             string   `json:"masterKubeVersion"`
+	ModifiedDate                  string   `json:"modifiedDate"`
+	Name                          string   `json:"name"`
+	Region                        string   `json:"region"`
+	ResourceGroupID               string   `json:"resourceGroup"`
+	ServerURL                     string   `json:"serverURL"`
+	State                         string   `json:"state"`
+	OrgID                         string   `json:"logOrg"`
+	OrgName                       string   `json:"logOrgName"`
+	SpaceID                       string   `json:"logSpace"`
+	SpaceName                     string   `json:"logSpaceName"`
+	IsPaid                        bool     `json:"isPaid"`
+	IsTrusted                     bool     `json:"isTrusted"`
+	WorkerCount                   int      `json:"workerCount"`
+	Vlans                         []Vlan   `json:"vlans"`
+	Addons                        []Addon  `json:"addons"`
+	OwnerEmail                    string   `json:"ownerEmail"`
+	APIUser                       string   `json:"apiUser"`
+	MonitoringURL                 string   `json:"monitoringURL"`
+	DisableAutoUpdate             bool     `json:"disableAutoUpdate"`
+	EtcdPort                      string   `json:"etcdPort"`
+	MasterStatus                  string   `json:"masterStatus"`
+	MasterStatusModifiedDate      string   `json:"masterStatusModifiedDate"`
+	KeyProtectEnabled             bool     `json:"keyProtectEnabled"`
+	WorkerZones                   []string `json:"workerZones"`
+	PullSecretApplied             bool     `json:"pullSecretApplied"`
+	CRN                           string   `json:"crn"`
+	PrivateServiceEndpointEnabled bool     `json:"privateServiceEndpointEnabled"`
+	PrivateServiceEndpointURL     string   `json:"privateServiceEndpointURL"`
+	PublicServiceEndpointEnabled  bool     `json:"publicServiceEndpointEnabled"`
+	PublicServiceEndpointURL      string   `json:"publicServiceEndpointURL"`
 }
 
 type ClusterUpdateParam struct {
@@ -77,6 +83,12 @@ type Addon struct {
 //ClusterCreateResponse ...
 type ClusterCreateResponse struct {
 	ID string
+}
+
+// MasterAPIServer describes the state to put the Master API server into
+// swagger:model
+type MasterAPIServer struct {
+	Action string `json:"action" binding:"required" description:"The action to perform on the API Server"`
 }
 
 //ClusterTargetHeader ...
@@ -125,27 +137,31 @@ func (c ClusterSoftlayerHeader) ToMap() map[string]string {
 
 //ClusterCreateRequest ...
 type ClusterCreateRequest struct {
-	Billing        string `json:"billing,omitempty"`
-	Datacenter     string `json:"dataCenter" description:"The worker's data center"`
-	Isolation      string `json:"isolation" description:"Can be 'public' or 'private'"`
-	MachineType    string `json:"machineType" description:"The worker's machine type"`
-	Name           string `json:"name" binding:"required" description:"The cluster's name"`
-	PrivateVlan    string `json:"privateVlan" description:"The worker's private vlan"`
-	PublicVlan     string `json:"publicVlan" description:"The worker's public vlan"`
-	WorkerNum      int    `json:"workerNum,omitempty" binding:"required" description:"The number of workers"`
-	NoSubnet       bool   `json:"noSubnet" description:"Indicate whether portable subnet should be ordered for user"`
-	MasterVersion  string `json:"masterVersion,omitempty" description:"Desired version of the requested master"`
-	Prefix         string `json:"prefix,omitempty" description:"hostname prefix for new workers"`
-	DiskEncryption bool   `json:"diskEncryption" description:"disable encryption on a worker"`
-	EnableTrusted  bool   `json:"enableTrusted" description:"Set to true if trusted hardware should be requested"`
+	Billing                string `json:"billing,omitempty"`
+	Datacenter             string `json:"dataCenter" description:"The worker's data center"`
+	Isolation              string `json:"isolation" description:"Can be 'public' or 'private'"`
+	MachineType            string `json:"machineType" description:"The worker's machine type"`
+	Name                   string `json:"name" binding:"required" description:"The cluster's name"`
+	PrivateVlan            string `json:"privateVlan" description:"The worker's private vlan"`
+	PublicVlan             string `json:"publicVlan" description:"The worker's public vlan"`
+	WorkerNum              int    `json:"workerNum,omitempty" binding:"required" description:"The number of workers"`
+	NoSubnet               bool   `json:"noSubnet" description:"Indicate whether portable subnet should be ordered for user"`
+	MasterVersion          string `json:"masterVersion,omitempty" description:"Desired version of the requested master"`
+	Prefix                 string `json:"prefix,omitempty" description:"hostname prefix for new workers"`
+	DiskEncryption         bool   `json:"diskEncryption" description:"disable encryption on a worker"`
+	EnableTrusted          bool   `json:"enableTrusted" description:"Set to true if trusted hardware should be requested"`
+	PrivateEndpointEnabled bool   `json:"privateSeviceEndpoint"`
+	PublicEndpointEnabled  bool   `json:"publicServiceEndpoint"`
 }
 
 // ServiceBindRequest ...
 type ServiceBindRequest struct {
 	ClusterNameOrID         string
-	SpaceGUID               string `json:"spaceGUID" binding:"required"`
 	ServiceInstanceNameOrID string `json:"serviceInstanceGUID" binding:"required"`
 	NamespaceID             string `json:"namespaceID" binding:"required"`
+	Role                    string `json:"role"`
+	ServiceKeyJSON          string `json:"serviceKeyJSON"`
+	ServiceKeyGUID          string `json:"serviceKeyGUID"`
 }
 
 // ServiceBindResponse ...
@@ -164,6 +180,14 @@ type BoundService struct {
 	Namespace      string `json:"namespace"`
 }
 
+// UpdateWorkerCommand ....
+// swagger:model
+type UpdateWorkerCommand struct {
+	Action string `json:"action" binding:"required" description:"Action to perform of the worker"`
+	// Setting force flag to true will ignore if the master is unavailable during 'os_reboot" and 'reload' action
+	Force bool `json:"force,omitempty"`
+}
+
 type BoundServices []BoundService
 
 //Clusters interface
@@ -171,8 +195,11 @@ type Clusters interface {
 	Create(params ClusterCreateRequest, target ClusterTargetHeader) (ClusterCreateResponse, error)
 	List(target ClusterTargetHeader) ([]ClusterInfo, error)
 	Update(name string, params ClusterUpdateParam, target ClusterTargetHeader) error
+	UpdateClusterWorker(clusterNameOrID string, workerID string, params UpdateWorkerCommand, target ClusterTargetHeader) error
+	UpdateClusterWorkers(clusterNameOrID string, workerIDs []string, params UpdateWorkerCommand, target ClusterTargetHeader) error
 	Delete(name string, target ClusterTargetHeader) error
 	Find(name string, target ClusterTargetHeader) (ClusterInfo, error)
+	FindWithOutShowResources(name string, target ClusterTargetHeader) (ClusterInfo, error)
 	GetClusterConfig(name, homeDir string, admin bool, target ClusterTargetHeader) (string, error)
 	StoreConfig(name, baseDir string, admin bool, createCalicoConfig bool, target ClusterTargetHeader) (string, string, error)
 	UnsetCredentials(target ClusterTargetHeader) error
@@ -181,6 +208,7 @@ type Clusters interface {
 	UnBindService(clusterNameOrID, namespaceID, serviceInstanceGUID string, target ClusterTargetHeader) error
 	ListServicesBoundToCluster(clusterNameOrID, namespace string, target ClusterTargetHeader) (BoundServices, error)
 	FindServiceBoundToCluster(clusterNameOrID, serviceName, namespace string, target ClusterTargetHeader) (BoundService, error)
+	RefreshAPIServers(clusterNameOrID string, target ClusterTargetHeader) error
 }
 
 type clusters struct {
@@ -207,6 +235,29 @@ func (r *clusters) Update(name string, params ClusterUpdateParam, target Cluster
 	return err
 }
 
+// UpdateClusterWorker ...
+func (r *clusters) UpdateClusterWorker(clusterNameOrID string, workerID string, params UpdateWorkerCommand, target ClusterTargetHeader) error {
+	rawURL := fmt.Sprintf("/v1/clusters/%s/workers/%s", clusterNameOrID, workerID)
+	// Make the request
+	_, err := r.client.Put(rawURL, params, nil, target.ToMap())
+	return err
+}
+
+// UpdateClusterWorkers updates a batch of workers in parallel
+func (r *clusters) UpdateClusterWorkers(clusterNameOrID string, workerIDs []string, params UpdateWorkerCommand, target ClusterTargetHeader) error {
+	for _, workerID := range workerIDs {
+		if workerID == "" {
+			return errors.New("workere id's can not be empty")
+		}
+		err := r.UpdateClusterWorker(clusterNameOrID, workerID, params, target)
+		if err != nil {
+			return err
+		}
+
+	}
+	return nil
+}
+
 //Delete ...
 func (r *clusters) Delete(name string, target ClusterTargetHeader) error {
 	rawURL := fmt.Sprintf("/v1/clusters/%s", name)
@@ -228,6 +279,18 @@ func (r *clusters) List(target ClusterTargetHeader) ([]ClusterInfo, error) {
 //Find ...
 func (r *clusters) Find(name string, target ClusterTargetHeader) (ClusterInfo, error) {
 	rawURL := fmt.Sprintf("/v1/clusters/%s?showResources=true", name)
+	cluster := ClusterInfo{}
+	_, err := r.client.Get(rawURL, &cluster, target.ToMap())
+	if err != nil {
+		return cluster, err
+	}
+
+	return cluster, err
+}
+
+//FindWithOutShowResources ...
+func (r *clusters) FindWithOutShowResources(name string, target ClusterTargetHeader) (ClusterInfo, error) {
+	rawURL := fmt.Sprintf("/v1/clusters/%s", name)
 	cluster := ClusterInfo{}
 	_, err := r.client.Get(rawURL, &cluster, target.ToMap())
 	if err != nil {
@@ -438,13 +501,16 @@ func (r *clusters) SetCredentials(slUsername, slAPIKey string, target ClusterTar
 func (r *clusters) BindService(params ServiceBindRequest, target ClusterTargetHeader) (ServiceBindResponse, error) {
 	rawURL := fmt.Sprintf("/v1/clusters/%s/services", params.ClusterNameOrID)
 	payLoad := struct {
-		SpaceGUID               string `json:"spaceGUID" binding:"required"`
 		ServiceInstanceNameOrID string `json:"serviceInstanceGUID" binding:"required"`
 		NamespaceID             string `json:"namespaceID" binding:"required"`
+		Role                    string `json:"role"`
+		ServiceKeyJSON          string `json:"serviceKeyJSON"`
+		ServiceKeyGUID          string `json:"serviceKeyGUID"`
 	}{
-		SpaceGUID:               params.SpaceGUID,
 		ServiceInstanceNameOrID: params.ServiceInstanceNameOrID,
 		NamespaceID:             params.NamespaceID,
+		Role:                    params.Role,
+		ServiceKeyGUID:          params.ServiceKeyGUID,
 	}
 	var cluster ServiceBindResponse
 	_, err := r.client.Post(rawURL, payLoad, &cluster, target.ToMap())
@@ -508,4 +574,12 @@ func (r *clusters) FindServiceBoundToCluster(clusterNameOrID, serviceNameOrId, n
 	}
 
 	return boundService, err
+}
+
+//RefreshAPIServers requests a refresh of a cluster's API server(s)
+func (r *clusters) RefreshAPIServers(clusterNameOrID string, target ClusterTargetHeader) error {
+	params := MasterAPIServer{Action: "refresh"}
+	rawURL := fmt.Sprintf("/v1/clusters/%s/masters", clusterNameOrID)
+	_, err := r.client.Put(rawURL, params, nil, target.ToMap())
+	return err
 }

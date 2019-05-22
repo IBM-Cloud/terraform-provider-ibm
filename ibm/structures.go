@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
@@ -17,6 +18,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
+	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -323,21 +325,23 @@ func flattenWorkerPools(list []containerv1.WorkerPoolResponse) []map[string]inte
 	return workerPools
 }
 
-func flattenAlbs(list []containerv1.ALBConfig) []map[string]interface{} {
-	albs := make([]map[string]interface{}, len(list))
-	for i, alb := range list {
-		l := map[string]interface{}{
-			"id":                 alb.ALBID,
-			"name":               alb.Name,
-			"alb_type":           alb.ALBType,
-			"enable":             alb.Enable,
-			"state":              alb.State,
-			"num_of_instances":   alb.NumOfInstances,
-			"alb_ip":             alb.ALBIP,
-			"resize":             alb.Resize,
-			"disable_deployment": alb.DisableDeployment,
+func flattenAlbs(list []containerv1.ALBConfig, filterType string) []map[string]interface{} {
+	albs := make([]map[string]interface{}, 0)
+	for _, alb := range list {
+		if alb.ALBType == filterType || filterType == "all" {
+			l := map[string]interface{}{
+				"id":                 alb.ALBID,
+				"name":               alb.Name,
+				"alb_type":           alb.ALBType,
+				"enable":             alb.Enable,
+				"state":              alb.State,
+				"num_of_instances":   alb.NumOfInstances,
+				"alb_ip":             alb.ALBIP,
+				"resize":             alb.Resize,
+				"disable_deployment": alb.DisableDeployment,
+			}
+			albs = append(albs, l)
 		}
-		albs[i] = l
 	}
 	return albs
 }
@@ -366,6 +370,51 @@ func flattenVlans(list []containerv1.Vlan) []map[string]interface{} {
 		vlans[i] = l
 	}
 	return vlans
+}
+
+func flattenIcdGroups(grouplist icdv4.GroupList) []map[string]interface{} {
+	groups := make([]map[string]interface{}, len(grouplist.Groups))
+	for i, group := range grouplist.Groups {
+		memorys := make([]map[string]interface{}, 1)
+		memory := make(map[string]interface{})
+		memory["units"] = group.Memory.Units
+		memory["allocation_mb"] = group.Memory.AllocationMb
+		memory["minimum_mb"] = group.Memory.MinimumMb
+		memory["step_size_mb"] = group.Memory.StepSizeMb
+		memory["is_adjustable"] = group.Memory.IsAdjustable
+		memory["can_scale_down"] = group.Memory.CanScaleDown
+		memorys[0] = memory
+
+		cpus := make([]map[string]interface{}, 1)
+		cpu := make(map[string]interface{})
+		cpu["units"] = group.Cpu.Units
+		cpu["allocation_count"] = group.Cpu.AllocationCount
+		cpu["minimum_count"] = group.Cpu.MinimumCount
+		cpu["step_size_count"] = group.Cpu.StepSizeCount
+		cpu["is_adjustable"] = group.Cpu.IsAdjustable
+		cpu["can_scale_down"] = group.Cpu.CanScaleDown
+		cpus[0] = cpu
+
+		disks := make([]map[string]interface{}, 1)
+		disk := make(map[string]interface{})
+		disk["units"] = group.Disk.Units
+		disk["allocation_mb"] = group.Disk.AllocationMb
+		disk["minimum_mb"] = group.Disk.MinimumMb
+		disk["step_size_mb"] = group.Disk.StepSizeMb
+		disk["is_adjustable"] = group.Disk.IsAdjustable
+		disk["can_scale_down"] = group.Disk.CanScaleDown
+		disks[0] = disk
+
+		l := map[string]interface{}{
+			"group_id": group.Id,
+			"count":    group.Count,
+			"memory":   memorys,
+			"cpu":      cpus,
+			"disk":     disks,
+		}
+		groups[i] = l
+	}
+	return groups
 }
 
 func normalizeJSONString(jsonString interface{}) (string, error) {
@@ -773,6 +822,7 @@ func flattenPolicyResource(list []iampapv1.Resource) []map[string]interface{} {
 	return result
 }
 
+// Cloud Internet Services
 func flattenHealthMonitors(list []datatypes.Network_LBaaS_Listener) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(list))
 	ports := make([]int, 0, 0)
@@ -864,6 +914,7 @@ func flattenServiceIds(services []string, meta interface{}) ([]string, error) {
 	return serviceids, nil
 }
 
+// Cloud Internet Services
 func expandOrigins(originsList *schema.Set) (origins []cisv1.Origin) {
 	for _, iface := range originsList.List() {
 		orig := iface.(map[string]interface{})
@@ -878,6 +929,91 @@ func expandOrigins(originsList *schema.Set) (origins []cisv1.Origin) {
 	return
 }
 
+func expandUsers(userList *schema.Set) (users []icdv4.User) {
+	for _, iface := range userList.List() {
+		userEl := iface.(map[string]interface{})
+		user := icdv4.User{
+			UserName: userEl["name"].(string),
+			Password: userEl["password"].(string),
+		}
+		users = append(users, user)
+	}
+	return
+}
+
+// IBM Cloud Databases
+func flattenConnectionStrings(cs []CsEntry) []map[string]interface{} {
+	entries := make([]map[string]interface{}, len(cs), len(cs))
+	for i, csEntry := range cs {
+		l := map[string]interface{}{
+			"name":         csEntry.Name,
+			"password":     csEntry.Password,
+			"composed":     csEntry.Composed,
+			"certname":     csEntry.CertName,
+			"certbase64":   csEntry.CertBase64,
+			"queryoptions": csEntry.QueryOptions,
+			"scheme":       csEntry.Scheme,
+			"path":         csEntry.Path,
+			"database":     csEntry.Database,
+		}
+		hosts := csEntry.Hosts
+		hostsList := make([]map[string]interface{}, len(hosts), len(hosts))
+		for j, host := range hosts {
+			z := map[string]interface{}{
+				"hostname": host.HostName,
+				"port":     strconv.Itoa(host.Port),
+			}
+			hostsList[j] = z
+		}
+		l["hosts"] = hostsList
+		var queryOpts string
+		if len(csEntry.QueryOptions) != 0 {
+			queryOpts = "?"
+			count := 0
+			for k, v := range csEntry.QueryOptions {
+				if count >= 1 {
+					queryOpts = queryOpts + "&"
+				}
+				queryOpts = queryOpts + fmt.Sprintf("%v", k) + "=" + fmt.Sprintf("%v", v)
+				count++
+			}
+		} else {
+			queryOpts = ""
+		}
+		l["queryoptions"] = queryOpts
+		entries[i] = l
+	}
+
+	return entries
+}
+
+// IBM Cloud Databases
+func expandWhitelist(whiteList *schema.Set) (whitelist []icdv4.WhitelistEntry) {
+	for _, iface := range whiteList.List() {
+		wlItem := iface.(map[string]interface{})
+		wlEntry := icdv4.WhitelistEntry{
+			Address:     wlItem["address"].(string),
+			Description: wlItem["description"].(string),
+		}
+		whitelist = append(whitelist, wlEntry)
+	}
+	return
+}
+
+// Cloud Internet Services
+func flattenWhitelist(whitelist icdv4.Whitelist) []map[string]interface{} {
+	entries := make([]map[string]interface{}, len(whitelist.WhitelistEntrys), len(whitelist.WhitelistEntrys))
+	for i, whitelistEntry := range whitelist.WhitelistEntrys {
+		l := map[string]interface{}{
+			"address":     whitelistEntry.Address,
+			"description": whitelistEntry.Description,
+		}
+		entries[i] = l
+	}
+	return entries
+}
+
+// Cloud Internet Services
 func flattenOrigins(list []cisv1.Origin) []map[string]interface{} {
 	origins := make([]map[string]interface{}, len(list), len(list))
 	for i, origin := range list {
@@ -904,6 +1040,7 @@ func expandStringMap(inVal interface{}) map[string]string {
 	return outVal
 }
 
+// Cloud Internet Services
 func convertTfToCisThreeVar(glbTfId string) (glbId string, zoneId string, cisId string, err error) {
 	g := strings.SplitN(glbTfId, ":", 3)
 	glbId = g[0]
@@ -911,12 +1048,13 @@ func convertTfToCisThreeVar(glbTfId string) (glbId string, zoneId string, cisId 
 		zoneId = g[1]
 		cisId = g[2]
 	} else {
-		err = errors.New("resourceCISGlbRead - cis_id or zone_id not passed")
+		err = errors.New("cis_id or zone_id not passed")
 		return
 	}
 	return
 }
 
+// Cloud Internet Services
 func convertCisToTfThreeVar(Id string, Id2 string, cisId string) (buildId string) {
 	if Id != "" {
 		buildId = Id + ":" + Id2 + ":" + cisId
@@ -926,6 +1064,7 @@ func convertCisToTfThreeVar(Id string, Id2 string, cisId string) (buildId string
 	return
 }
 
+// Cloud Internet Services
 func convertTfToCisTwoVarSlice(tfIds []string) (Ids []string, cisId string, err error) {
 	for _, item := range tfIds {
 		Id := strings.SplitN(item, ":", 2)
@@ -939,6 +1078,7 @@ func convertTfToCisTwoVarSlice(tfIds []string) (Ids []string, cisId string, err 
 	return
 }
 
+// Cloud Internet Services
 func convertCisToTfTwoVarSlice(Ids []string, cisId string) (buildIds []string) {
 	for _, Id := range Ids {
 		buildIds = append(buildIds, Id+":"+cisId)
@@ -946,6 +1086,7 @@ func convertCisToTfTwoVarSlice(Ids []string, cisId string) (buildIds []string) {
 	return
 }
 
+// Cloud Internet Services
 func convertCisToTfTwoVar(Id string, cisId string) (buildId string) {
 	if Id != "" {
 		buildId = Id + ":" + cisId
@@ -955,6 +1096,7 @@ func convertCisToTfTwoVar(Id string, cisId string) (buildId string) {
 	return
 }
 
+// Cloud Internet Services
 func convertTftoCisTwoVar(tfId string) (Id string, cisId string, err error) {
 	g := strings.SplitN(tfId, ":", 2)
 	if len(g) > 1 {
@@ -967,6 +1109,7 @@ func convertTftoCisTwoVar(tfId string) (Id string, cisId string, err error) {
 	return
 }
 
+// Cloud Internet Services
 func transformToIBMCISDnsData(recordType string, id string, value interface{}) (newValue interface{}, err error) {
 	switch {
 	case id == "flags":
@@ -987,4 +1130,141 @@ func transformToIBMCISDnsData(recordType string, id string, value interface{}) (
 	}
 
 	return
+}
+
+func indexOf(element string, data []string) int {
+	for k, v := range data {
+		if element == v {
+			return k
+		}
+	}
+	return -1 //not found.
+}
+
+func rcInstanceExists(resourceId string, resourceType string, meta interface{}) (bool, error) {
+	// Check to see if Resource Manager instance exists
+	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	if err != nil {
+		return true, nil
+	}
+	exists := true
+	instance, err := rsConClient.ResourceServiceInstance().GetInstance(resourceId)
+	if err != nil {
+		if strings.Contains(err.Error(), "Object not found") ||
+			strings.Contains(err.Error(), "status code: 404") {
+			exists = false
+		} else {
+			return true, fmt.Errorf("Error checking resource instance exists: %s", err)
+		}
+	} else {
+		if strings.Contains(instance.State, "removed") {
+			exists = false
+		}
+	}
+	if exists {
+		return true, nil
+	}
+	// Implement when pointer to terraform.State available
+	// If rcInstance is now in removed state, set TF state to removed
+	// s := *terraform.State
+	// for _, r := range s.RootModule().Resources {
+	//  if r.Type != resourceType {
+	//      continue
+	//  }
+	//  if r.Primary.ID == resourceId {
+	//      r.Primary.Set("status", "removed")
+	//  }
+	// }
+	return false, nil
+}
+
+// Implement when pointer to terraform.State available
+// func resourceInstanceExistsTf(resourceId string, resourceType string) bool {
+//  // Check TF state to see if Cloud resource instance has already been removed
+//  s := *terraform.State
+//  for _, r := range s.RootModule().Resources {
+//      if r.Type != resourceType {
+//          continue
+//      }
+//      if r.Primary.ID == resourceId {
+//          if strings.Contains(r.Primary.Attributes["status"], "removed") {
+//              return false
+//          }
+//      }
+//  }
+//  return true
+// }
+
+// convert CRN to be url safe
+func EscapeUrlParm(urlParm string) string {
+	if strings.Contains(urlParm, "/") {
+		newUrlParm := url.PathEscape(urlParm)
+		return newUrlParm
+	}
+	return urlParm
+}
+
+func GetTags(d *schema.ResourceData, meta interface{}) error {
+	resourceID := d.Id()
+	gtClient, err := meta.(ClientSession).GlobalTaggingAPI()
+	if err != nil {
+		return fmt.Errorf("Error getting global tagging client settings: %s", err)
+	}
+	taggingResult, err := gtClient.Tags().GetTags(resourceID)
+	if err != nil {
+		return err
+	}
+	var taglist []string
+	for _, item := range taggingResult.Items {
+		taglist = append(taglist, item.Name)
+	}
+	d.Set("tags", flattenStringList(taglist))
+	return nil
+}
+
+func UpdateTags(d *schema.ResourceData, meta interface{}) error {
+	resourceID := d.Id()
+	gtClient, err := meta.(ClientSession).GlobalTaggingAPI()
+	if err != nil {
+		return fmt.Errorf("Error getting global tagging client settings: %s", err)
+	}
+	oldList, newList := d.GetChange("tags")
+	if oldList == nil {
+		oldList = new(schema.Set)
+	}
+	if newList == nil {
+		newList = new(schema.Set)
+	}
+	os := oldList.(*schema.Set)
+	ns := newList.(*schema.Set)
+	removeInt := os.Difference(ns).List()
+	addInt := ns.Difference(os).List()
+	add := make([]string, len(addInt))
+	for i, v := range addInt {
+		add[i] = fmt.Sprint(v)
+	}
+	remove := make([]string, len(removeInt))
+	for i, v := range removeInt {
+		remove[i] = fmt.Sprint(v)
+	}
+
+	if len(add) > 0 {
+		_, err := gtClient.Tags().AttachTags(resourceID, add)
+		if err != nil {
+			return fmt.Errorf("Error updating database tags %v : %s", add, err)
+		}
+	}
+	if len(remove) > 0 {
+		_, err := gtClient.Tags().DetachTags(resourceID, remove)
+		if err != nil {
+			return fmt.Errorf("Error detaching database tags %v: %s", remove, err)
+		}
+		for _, v := range remove {
+			_, err := gtClient.Tags().DeleteTag(v)
+			if err != nil {
+				return fmt.Errorf("Error deleting database tag %v: %s", v, err)
+			}
+		}
+	}
+	return nil
 }

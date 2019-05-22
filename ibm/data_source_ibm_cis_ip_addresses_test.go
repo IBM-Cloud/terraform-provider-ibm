@@ -18,7 +18,7 @@ func TestAccIBMCisIPDataSource_Basic(t *testing.T) {
 			resource.TestStep{
 				Config: fmt.Sprintf(testAccCheckIBMCisIPDataSourceConfig_basic),
 				Check: resource.ComposeTestCheckFunc(
-					testAccIBMCisIPAddrs("data.ibm_cis_ip_addresses.wcpclouduk"),
+					testAccIBMCisIPAddrs("data.ibm_cis_ip_addresses.test_acc"),
 				),
 			},
 		},
@@ -45,6 +45,6 @@ func testAccIBMCisIPAddrs(n string) resource.TestCheckFunc {
 }
 
 const testAccCheckIBMCisIPDataSourceConfig_basic = `
-data "ibm_cis_ip_addresses" "wcpclouduk" {
+data "ibm_cis_ip_addresses" "test_acc" {
 }
 `

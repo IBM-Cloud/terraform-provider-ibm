@@ -634,6 +634,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
   hardware       = "shared"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
+  no_subnet		  = true
   subnet_id		  = ["%s","%s"]
 }	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID, privateSubnetID, publicSubnetID)
 }

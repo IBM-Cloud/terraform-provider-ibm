@@ -35,7 +35,33 @@ docker pull ibmterraform/terraform-provider-ibm-docker
 
 ## Using the provider
 
-See the [IBM Provider documentation](https://ibm-cloud.github.io/tf-ibm-docs/) to get started using the IBM provider.
+If you want to run Terraform with the IBM Cloud provider plugin on your system, complete the following steps:
+
+1. [Download and install Terraform for your system](https://www.terraform.io/intro/getting-started/install.html). 
+
+2. [Download the IBM Cloud provider plugin for Terraform](https://github.com/IBM-Bluemix/terraform-provider-ibm/releases).
+
+3. Unzip the release archive to extract the plugin binary (`terraform-provider-ibm_vX.Y.Z`).
+
+4. Move the binary into the Terraform [plugins directory](https://www.terraform.io/docs/configuration/providers.html#third-party-plugins) for the platform.
+    - Linux/Unix/OS X: `~/.terraform.d/plugins`
+    - Windows: `%APPDATA%\terraform.d\plugins`
+
+5. Export API credential tokens as environment variables. This can either be [IBM Cloud API keys](https://cloud.ibm.com/iam#/users) or Softlayer API keys and usernames, depending on the resources you are provisioning.
+
+```sh
+export BM_API_KEY="IBM Cloud API Key"
+export SL_API_KEY="SoftLayer API Key"
+export SL_USERNAME="SoftLayer username associated with SL_API_KEY".
+```
+
+6. Add the plug-in provider to the Terraform configuration file.
+
+```
+provider "ibm" {}
+```
+
+See the [official documentation](https://ibm-cloud.github.io/tf-ibm-docs/) for more details on using the IBM provider.
 
 ## Developing the Provider
 

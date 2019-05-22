@@ -65,7 +65,7 @@ type ALBSecretsPerCRN struct {
 type Albs interface {
 	ListClusterALBs(clusterNameOrID string, target ClusterTargetHeader) ([]ALBConfig, error)
 	GetALB(albID string, target ClusterTargetHeader) (ALBConfig, error)
-	ConfigureALB(albID string, config ALBConfig, target ClusterTargetHeader) error
+	ConfigureALB(albID string, config ALBConfig, disableDeployment bool, target ClusterTargetHeader) error
 	RemoveALB(albID string, target ClusterTargetHeader) error
 	DeployALBCert(config ALBSecretConfig, target ClusterTargetHeader) error
 	UpdateALBCert(config ALBSecretConfig, target ClusterTargetHeader) error
@@ -103,13 +103,13 @@ func (r *alb) GetALB(albID string, target ClusterTargetHeader) (ALBConfig, error
 }
 
 // ConfigureALB enables or disables alb for cluster
-func (r *alb) ConfigureALB(albID string, config ALBConfig, target ClusterTargetHeader) error {
+func (r *alb) ConfigureALB(albID string, config ALBConfig, disableDeployment bool, target ClusterTargetHeader) error {
 	var successV interface{}
 	if config.Enable {
 		_, err := r.client.Post("/v1/alb/albs", config, &successV, target.ToMap())
 		return err
 	}
-	_, err := r.client.Delete(fmt.Sprintf("/v1/alb/albs/%s", albID), target.ToMap())
+	_, err := r.client.Delete(fmt.Sprintf("/v1/alb/albs/%s?disableDeployment=%t", albID, disableDeployment), target.ToMap())
 	return err
 }
 

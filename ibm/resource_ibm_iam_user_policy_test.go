@@ -154,6 +154,28 @@ func TestAccIBMIAMUserPolicy_import(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMUserPolicy_account_management(t *testing.T) {
+	var conf iampapv1.Policy
+	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	resourceName := "ibm_iam_user_policy.policy"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIAMUserPolicy_account_management(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMUserPolicyExists(resourceName, conf),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "account_management", "true"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMUserPolicy_Invalid_User(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
@@ -370,4 +392,16 @@ func testAccCheckIBMIAMUserPolicy_invalid_user() string {
 		  }
 
 	`)
+}
+
+func testAccCheckIBMIAMUserPolicy_account_management(name string) string {
+	return fmt.Sprintf(`
+	
+		  resource "ibm_iam_user_policy" "policy" {
+			ibm_id = "%s"
+			roles        = ["Viewer"]
+			account_management = true
+		  }
+
+	`, IAMUser)
 }
