@@ -195,6 +195,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_storage_file":                          resourceIBMStorageFile(),
 			"ibm_subnet":                                resourceIBMSubnet(),
 			"ibm_dns_reverse_record":                    resourceIBMDNSReverseRecord(),
+			
 		},
 
 		ConfigureFunc: providerConfigure,
