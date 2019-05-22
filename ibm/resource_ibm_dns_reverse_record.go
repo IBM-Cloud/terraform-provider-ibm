@@ -70,12 +70,6 @@ func resourceIBMDNSREVERSERecordRead(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return fmt.Errorf("Not a valid ID, must be an integer: %s", err)
 	}
-	hostname := sl.String(d.Get("hostname").(string))
-	d.Set("hostname", hostname)
-	ipaddress := sl.String(d.Get("ipaddress").(string))
-	d.Set("ipaddress", ipaddress)
-	ttl := sl.Int(d.Get("ttl").(int))
-	d.Set("ttl", ttl)
 
 	result, err := service.Id(id).GetObject()
 	if err != nil {
