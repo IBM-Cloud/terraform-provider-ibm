@@ -31,3 +31,8 @@ The following arguments are supported:
 
 * `ttl` - (Optional, integer) The time to live (TTL) duration, expressed in seconds, of a resource record. Default value is 604800 seconds.
 
+## Attribute Reference
+
+The following attributes are exported:
+
+* `id` - The unique identifier of reverse dns record.
