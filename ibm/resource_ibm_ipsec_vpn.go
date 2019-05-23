@@ -295,47 +295,14 @@ func resourceIBMIPSecVPNRead(d *schema.ResourceData, meta interface{}) error {
 	if vpn.Datacenter != nil {
 		d.Set("datacenter", *vpn.Datacenter.Name)
 	}
-	phaseoneAttributesMap := make([]map[string]interface{}, 0, 1)
-	phaseoneAttributes := make(map[string]interface{})
-	phaseoneAttributes["authentication"] = *vpn.PhaseOneAuthentication
-	phaseoneAttributes["encryption"] = *vpn.PhaseOneEncryption
-	phaseoneAttributes["diffie_hellman_group"] = *vpn.PhaseOneDiffieHellmanGroup
-	phaseoneAttributes["keylife"] = *vpn.PhaseOneKeylife
-	phaseoneAttributesMap = append(phaseoneAttributesMap, phaseoneAttributes)
-	d.Set("phase_one", phaseoneAttributesMap)
-	phasetwoAttributesMap := make([]map[string]interface{}, 0, 1)
-	phasetwoAttributes := make(map[string]interface{})
-	phasetwoAttributes["authentication"] = *vpn.PhaseTwoAuthentication
-	phasetwoAttributes["encryption"] = *vpn.PhaseTwoEncryption
-	phasetwoAttributes["diffie_hellman_group"] = *vpn.PhaseTwoDiffieHellmanGroup
-	phasetwoAttributes["keylife"] = *vpn.PhaseTwoKeylife
-	phasetwoAttributesMap = append(phasetwoAttributesMap, phasetwoAttributes)
-	d.Set("phase_two", phasetwoAttributesMap)
-	addressTranslationMap := make([]map[string]interface{}, 0, 1)
-	addressTranslationAttributes := make(map[string]interface{})
+	d.Set("phase_one", flattenPhaseOneAttributes(&vpn))
+	d.Set("phase_two", flattenPhaseTwoAttributes(&vpn))
 	fwID, err := strconv.Atoi(d.Id())
 	if vpn.AddressTranslations != nil {
-		for _, networkAddressTranslation := range vpn.AddressTranslations {
-			if *networkAddressTranslation.NetworkTunnelContext.Id == fwID {
-				addressTranslationAttributes["remote_ip_adress"] = *networkAddressTranslation.CustomerIpAddress
-				addressTranslationAttributes["internal_ip_adress"] = *networkAddressTranslation.InternalIpAddress
-				addressTranslationAttributes["notes"] = *networkAddressTranslation.Notes
-			}
-		}
-		addressTranslationMap = append(addressTranslationMap, addressTranslationAttributes)
-		d.Set("address_translation", addressTranslationMap)
+		d.Set("address_translation", flattenaddressTranslation(&vpn, fwID))
 	}
-	remoteSubnetMap := make([]map[string]interface{}, 0, 1)
-	remoteSubnetAttributes := make(map[string]interface{})
 	if vpn.CustomerSubnets != nil {
-		for _, customerSubnet := range vpn.CustomerSubnets {
-			remoteSubnetAttributes["remote_ip_adress"] = customerSubnet.NetworkIdentifier
-			remoteSubnetAttributes["remote_ip_cidr"] = customerSubnet.Cidr
-			remoteSubnetAttributes["account_id"] = customerSubnet.AccountId
-		}
-
-		remoteSubnetMap = append(remoteSubnetMap, remoteSubnetAttributes)
-		d.Set("remote_subnet", remoteSubnetMap)
+		d.Set("remote_subnet", flattenremoteSubnet(&vpn))
 	}
 	if vpn.PresharedKey != nil {
 		d.Set("preshared_key", *vpn.PresharedKey)
