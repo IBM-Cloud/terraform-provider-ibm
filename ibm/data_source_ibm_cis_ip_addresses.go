@@ -32,7 +32,6 @@ func dataSourceIBMCISIPRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	rnd := rand.Intn(8999999) + 1000000
-	log.Printf("resourceCISSettingsRead - Getting CIS IPs \n")
 
 	ipsResults, err := cisClient.Ips().ListIps()
 	if err != nil {
