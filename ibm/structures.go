@@ -1285,3 +1285,64 @@ func flattenISLBSubnets(subnets []*vpc.LoadBalancerSubnetsItems) interface{} {
 	}
 	return out
 }
+
+func GetTagsUsingCRN(meta interface{}, resourceCRN string) ([]interface{}, error) {
+	gtClient, err := meta.(ClientSession).GlobalTaggingAPI()
+	if err != nil {
+		return nil, fmt.Errorf("Error getting global tagging client settings: %s", err)
+	}
+	taggingResult, err := gtClient.Tags().GetTags(resourceCRN)
+	if err != nil {
+		return nil, err
+	}
+	var taglist []string
+	for _, item := range taggingResult.Items {
+		taglist = append(taglist, item.Name)
+	}
+	return flattenStringList(taglist), nil
+}
+
+func UpdateTagsUsingCRN(oldList, newList interface{}, meta interface{}, resourceCRN string) error {
+	gtClient, err := meta.(ClientSession).GlobalTaggingAPI()
+	if err != nil {
+		return fmt.Errorf("Error getting global tagging client settings: %s", err)
+	}
+	if oldList == nil {
+		oldList = new(schema.Set)
+	}
+	if newList == nil {
+		newList = new(schema.Set)
+	}
+	os := oldList.(*schema.Set)
+	ns := newList.(*schema.Set)
+	removeInt := os.Difference(ns).List()
+	addInt := ns.Difference(os).List()
+	add := make([]string, len(addInt))
+	for i, v := range addInt {
+		add[i] = fmt.Sprint(v)
+	}
+	remove := make([]string, len(removeInt))
+	for i, v := range removeInt {
+		remove[i] = fmt.Sprint(v)
+	}
+
+	if len(add) > 0 {
+		_, err := gtClient.Tags().AttachTags(resourceCRN, add)
+		if err != nil {
+			return fmt.Errorf("Error updating database tags %v : %s", add, err)
+		}
+	}
+	if len(remove) > 0 {
+		_, err := gtClient.Tags().DetachTags(resourceCRN, remove)
+		if err != nil {
+			return fmt.Errorf("Error detaching database tags %v: %s", remove, err)
+		}
+		for _, v := range remove {
+			_, err := gtClient.Tags().DeleteTag(v)
+			if err != nil {
+				return fmt.Errorf("Error deleting database tag %v: %s", v, err)
+			}
+		}
+	}
+	return nil
+}
