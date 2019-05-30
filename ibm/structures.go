@@ -24,6 +24,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/sl"
+	vpc "github.ibm.com/riaas/rias-api/riaas/models"
 )
 
 //HashInt ...
@@ -1267,4 +1268,20 @@ func UpdateTags(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 	return nil
+}
+
+func flattenISLBIPs(ips []*vpc.LoadBalancerIP) interface{} {
+	out := make([]interface{}, len(ips))
+	for i, ip := range ips {
+		out[i] = ip.Address
+	}
+	return out
+}
+
+func flattenISLBSubnets(subnets []*vpc.LoadBalancerSubnetsItems) interface{} {
+	out := make([]interface{}, len(subnets))
+	for s, subnet := range subnets {
+		out[s] = subnet.ID
+	}
+	return out
 }

@@ -76,6 +76,12 @@ func Provider() terraform.ResourceProvider {
 				Description: "The IBM Cloud Function namespace",
 				DefaultFunc: schema.EnvDefaultFunc("FUNCTION_NAMESPACE", ""),
 			},
+			"riaas_endpoint": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The next generation infrastructure service endpoint url.",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"RIAAS_ENDPOINT"}, "us-south.iaas.cloud.ibm.com"),
+			},
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -107,6 +113,16 @@ func Provider() terraform.ResourceProvider {
 			"ibm_iam_user_policy":            dataSourceIBMIAMUserPolicy(),
 			"ibm_iam_service_id":             dataSourceIBMIAMServiceID(),
 			"ibm_iam_service_policy":         dataSourceIBMIAMServicePolicy(),
+			"ibm_is_image":                   dataSourceIBMISImage(),
+			"ibm_is_images":                  dataSourceIBMISImages(),
+			"ibm_is_instance_profile":        dataSourceIBMISInstanceProfile(),
+			"ibm_is_instance_profiles":       dataSourceIBMISInstanceProfiles(),
+			"ibm_is_region":                  dataSourceIBMISRegion(),
+			"ibm_is_ssh_key":                 dataSourceIBMISSSHKey(),
+			"ibm_is_subnet":                  dataSourceIBMISSubnet(),
+			"ibm_is_vpc":                     dataSourceIBMISVPC(),
+			"ibm_is_zone":                    dataSourceIBMISZone(),
+			"ibm_is_zones":                   dataSourceIBMISZones(),
 			"ibm_lbaas":                      dataSourceIBMLbaas(),
 			"ibm_network_vlan":               dataSourceIBMNetworkVlan(),
 			"ibm_org":                        dataSourceIBMOrg(),
@@ -221,6 +237,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	region := d.Get("region").(string)
 	retryCount := d.Get("max_retries").(int)
 	wskNameSpace := d.Get("function_namespace").(string)
+	riaasEndPoint := d.Get("riaas_endpoint").(string)
 
 	wskEnvVal, err := schema.EnvDefaultFunc("FUNCTION_NAMESPACE", "")()
 	if err != nil {
@@ -243,6 +260,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		SoftLayerEndpointURL: softlayerEndpointUrl,
 		RetryDelay:           RetryAPIDelay,
 		FunctionNameSpace:    wskNameSpace,
+		RiaasEndPoint:        riaasEndPoint,
 	}
 
 	return config.ClientSession()
