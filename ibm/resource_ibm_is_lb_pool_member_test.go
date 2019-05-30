@@ -17,8 +17,8 @@ func TestAccIBMISLBPoolMember_basic(t *testing.T) {
 
 	vpcname := fmt.Sprintf("terraformLBuat_vpc_%d", acctest.RandInt())
 	subnetname := fmt.Sprintf("terraformLBuat_create_step_name_%d", acctest.RandInt())
-	name := fmt.Sprintf("tf_create_step_name_%d", acctest.RandInt())
-	poolName := fmt.Sprintf("tf_lbpoolc_%d", acctest.RandInt())
+	name := fmt.Sprintf("tfcreate%d", acctest.RandInt())
+	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandInt())
 	port := "8080"
 	port1 := "9000"
 	address := "127.0.0.1"

@@ -16,9 +16,9 @@ func TestAccIBMISLBPool_basic(t *testing.T) {
 	var lb *models.Pool
 	vpcname := fmt.Sprintf("terraformLBuat_vpc_%d", acctest.RandInt())
 	subnetname := fmt.Sprintf("terraformLBuat_create_step_name_%d", acctest.RandInt())
-	name := fmt.Sprintf("tf_create_step_name_%d", acctest.RandInt())
-	poolName := fmt.Sprintf("tf_lbpoolc_%d", acctest.RandInt())
-	poolName1 := fmt.Sprintf("tf_lbpoolu_%d", acctest.RandInt())
+	name := fmt.Sprintf("tfcreate%d", acctest.RandInt())
+	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandInt())
+	poolName1 := fmt.Sprintf("tflbpoolu%d", acctest.RandInt())
 	alg1 := "round_robin"
 	protocol1 := "http"
 	delay1 := "45"

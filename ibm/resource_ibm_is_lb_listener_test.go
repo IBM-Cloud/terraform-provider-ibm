@@ -16,7 +16,7 @@ func TestAccIBMISLBListener_basic(t *testing.T) {
 	var lb *models.Listener
 	vpcname := fmt.Sprintf("terraformLBLisuat_vpc_%d", acctest.RandInt())
 	subnetname := fmt.Sprintf("terraformLBLisuat_subnet_%d", acctest.RandInt())
-	lbname := fmt.Sprintf("terraformLBLisuat_lb_%d", acctest.RandInt())
+	lbname := fmt.Sprintf("tflblisuat%d", acctest.RandInt())
 
 	protocol1 := "http"
 	port1 := "8080"

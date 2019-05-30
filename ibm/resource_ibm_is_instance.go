@@ -563,7 +563,7 @@ func isWaitForInstanceDelete(d *schema.ResourceData, meta interface{}) (interfac
 		Pending: []string{isInstanceDeleting, isInstanceAvailable},
 		Target:  []string{isInstanceDeleteDone},
 		Refresh: func() (interface{}, string, error) {
-			instance, err := instanceC.Get(d.Id())
+			instance, err := instanceC.Get(d.Id()) //Only in case there's a rias error with code "not found", resource is deleted, all other cases we keep attempting to delete
 			if err != nil {
 				iserror, ok := err.(iserrors.RiaasError)
 				if ok {
@@ -577,7 +577,7 @@ func isWaitForInstanceDelete(d *schema.ResourceData, meta interface{}) (interfac
 			if instance.Status == isInstanceFailed {
 				return instance, instance.Status, fmt.Errorf("The  instance %s failed to delete: %v", d.Id(), err)
 			}
-			return instance, instance.Status, nil
+			return instance, isInstanceDeleting, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutDelete),
 		Delay:      10 * time.Second,
