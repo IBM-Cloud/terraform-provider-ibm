@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/lbaas"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
@@ -25,6 +26,14 @@ const (
 	isLBPoolSessPersistenceType       = "session_persistence_type"
 	isLBPoolSessPersistenceCookieName = "session_persistence_cookie_name"
 	isLBPoolProvisioningStatus        = "provisioning_status"
+	isLBPoolActive                    = "active"
+	isLBPoolCreatePending             = "create_pending"
+	isLBPoolUpdatePending             = "update_pending"
+	isLBPoolDeletePending             = "delete_pending"
+	isLBPoolMaintainancePending       = "maintenance_pending"
+	isLBPoolFailed                    = "failed"
+	isLBPoolDeleteDone                = "deleted"
+	//isLBPoolActive,isLBPoolCreatePending,isLBPoolUpdatePending,isLBPoolDeletePending,isLBPoolMaintainancePending,isLBPoolFailed
 )
 
 func resourceIBMISLBPool() *schema.Resource {
@@ -160,6 +169,9 @@ func resourceIBMISLBPoolCreate(d *schema.ResourceData, meta interface{}) error {
 			Type:       spType,
 		}
 	}
+	isLBPoolKey := "load_balancer_pool_key_" + lbID
+	ibmMutexKV.Lock(isLBPoolKey)
+	defer ibmMutexKV.Unlock(isLBPoolKey)
 	_, err := isWaitForLBAvailable(client, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return fmt.Errorf(
@@ -176,6 +188,12 @@ func resourceIBMISLBPoolCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.SetId(fmt.Sprintf("%s/%s", lbID, lbPool.ID.String()))
 	log.Printf("[INFO] Ipsec : %s", lbPool.ID.String())
+
+	_, err = isWaitForLBPoolActive(client, lbID, lbPool.ID.String(), d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return fmt.Errorf(
+			"Error checking for load balancer pool (%s) is active: %s", lbPool.ID.String(), err)
+	}
 
 	_, err = isWaitForLBAvailable(client, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -261,15 +279,30 @@ func resourceIBMISLBPoolUpdate(d *schema.ResourceData, meta interface{}) error {
 		algorithm := d.Get(isLBPoolAlgorithm).(string)
 		protocol := d.Get(isLBPoolProtocol).(string)
 
+		isLBPoolKey := "load_balancer_pool_key_" + lbID + lbPoolID
+		ibmMutexKV.Lock(isLBPoolKey)
+		defer ibmMutexKV.Unlock(isLBPoolKey)
 		_, err := isWaitForLBAvailable(client, lbID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return fmt.Errorf(
 				"Error checking for load balancer (%s) is active: %s", lbID, err)
 		}
 
+		_, err = isWaitForLBPoolActive(client, lbID, lbPoolID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return fmt.Errorf(
+				"Error checking for load balancer pool (%s) is active: %s", lbPoolID, err)
+		}
+
 		_, err = client.UpdatePool(lbID, lbPoolID, algorithm, name, protocol, healthMonitorTemplate, sessionPersistence)
 		if err != nil {
 			return err
+		}
+
+		_, err = isWaitForLBPoolActive(client, lbID, lbPoolID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return fmt.Errorf(
+				"Error checking for load balancer pool (%s) is active: %s", lbPoolID, err)
 		}
 
 		_, err = isWaitForLBAvailable(client, lbID, d.Timeout(schema.TimeoutUpdate))
@@ -294,15 +327,30 @@ func resourceIBMISLBPoolDelete(d *schema.ResourceData, meta interface{}) error {
 	lbID := parts[0]
 	lbPoolID := parts[1]
 
+	isLBPoolKey := "load_balancer_pool_key_" + lbID + lbPoolID
+	ibmMutexKV.Lock(isLBPoolKey)
+	defer ibmMutexKV.Unlock(isLBPoolKey)
 	_, err = isWaitForLBAvailable(client, lbID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return fmt.Errorf(
 			"Error checking for load balancer (%s) is active: %s", lbID, err)
 	}
 
+	_, err = isWaitForLBPoolActive(client, lbID, lbPoolID, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return fmt.Errorf(
+			"Error checking for load balancer pool (%s) is active: %s", lbPoolID, err)
+	}
+
 	err = client.DeletePool(lbID, lbPoolID)
 	if err != nil {
 		return err
+	}
+
+	_, err = isWaitForLBPoolDeleted(client, lbID, lbPoolID, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return fmt.Errorf(
+			"Error checking for load balancer pool (%s) is deleted: %s", lbPoolID, err)
 	}
 
 	_, err = isWaitForLBAvailable(client, lbID, d.Timeout(schema.TimeoutDelete))
@@ -333,11 +381,75 @@ func resourceIBMISLBPoolExists(d *schema.ResourceData, meta interface{}) (bool, 
 		iserror, ok := err.(iserrors.RiaasError)
 		if ok {
 			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "not_found" {
+				iserror.Payload.Errors[0].Code == "pool_not_found" {
 				return false, nil
 			}
 		}
 		return false, err
 	}
 	return true, nil
+}
+
+func isWaitForLBPoolActive(client *lbaas.LoadBalancerClient, lbId, lbPoolId string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for load balancer pool (%s) to be available.", lbPoolId)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{isLBPoolCreatePending, isLBPoolUpdatePending, isLBPoolMaintainancePending},
+		Target:     []string{isLBPoolActive},
+		Refresh:    isLBPoolRefreshFunc(client, lbId, lbPoolId),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isLBPoolRefreshFunc(client *lbaas.LoadBalancerClient, lbId, lbPoolId string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		lbPool, err := client.GetPool(lbId, lbPoolId)
+		if err != nil {
+			return nil, "", err
+		}
+
+		if lbPool.ProvisioningStatus == isLBPoolActive || lbPool.ProvisioningStatus == isLBPoolFailed {
+			return lbPool, isLBPoolActive, nil
+		}
+
+		return lbPool, lbPool.ProvisioningStatus, nil
+	}
+}
+
+func isWaitForLBPoolDeleted(client *lbaas.LoadBalancerClient, lbId, lbPoolId string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for load balancer pool(%s) to be deleted.", lbPoolId)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{isLBPoolUpdatePending, isLBPoolMaintainancePending, isLBPoolDeletePending},
+		Target:     []string{},
+		Refresh:    isLBPoolDeleteRefreshFunc(client, lbId, lbPoolId),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isLBPoolDeleteRefreshFunc(client *lbaas.LoadBalancerClient, lbId, lbPoolId string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		lbPool, err := client.GetPool(lbId, lbPoolId)
+		if err == nil {
+			return lbPool, lbPool.ProvisioningStatus, nil
+		}
+
+		iserror, ok := err.(iserrors.RiaasError)
+		if ok {
+			log.Printf("[DEBUG] %s %d %s", iserror.Error(), len(iserror.Payload.Errors), iserror.Payload.Errors[0].Code)
+			if len(iserror.Payload.Errors) == 1 &&
+				iserror.Payload.Errors[0].Code == "pool_not_found" {
+				return nil, isLBPoolDeleteDone, nil
+			}
+		}
+		return nil, lbPool.ProvisioningStatus, err
+	}
 }
