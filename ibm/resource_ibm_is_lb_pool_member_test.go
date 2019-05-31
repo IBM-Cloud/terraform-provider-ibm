@@ -141,7 +141,7 @@ func testAccCheckIBMISLBPoolMemberConfig(vpcname, subnetname, zone, cidr, name, 
 	}
 	resource "ibm_is_lb_pool_member" "testacc_lb_mem" {
 		lb = "${ibm_is_lb.testacc_LB.id}"
-		pool = "${ibm_is_lb_pool.testacc_lb_pool.id}"
+		pool = "${element(split("/",ibm_is_lb_pool.testacc_lb_pool.id),1)}"
 		port 	=	"%s"
 		target_address = "%s"
 }`, vpcname, subnetname, zone, cidr, name, poolName, port, address)
