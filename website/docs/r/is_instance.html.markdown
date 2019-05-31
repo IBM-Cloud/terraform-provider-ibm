@@ -74,7 +74,7 @@ The following arguments are supported:
   **NOTE**: Conflicts with `image`.
 * `keys` - (Required, list) Comma separated IDs of ssh keys. 
 * `generation` - (Optional, string) Generation of the server instance. valid values are gc, gt. Defaults to gc. 
-* `primary_network_interface` - (Required, list) A nested block describing the primary network interface of this instance. We can have only one primary network interface. We can add multiple network interface using [ibm_is_instance_nic](../r/is_instance_nic.html.markdown).
+* `primary_network_interface` - (Required, list) A nested block describing the primary network interface of this instance. We can have only one primary network interface.
 Nested `primary_network_interface` block have the following structure:
   * `name` - (Optional, string) The name of the network interface.
   * `port_speed` - (Required, int) Speed of the network interface.
