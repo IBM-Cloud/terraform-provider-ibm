@@ -44,6 +44,12 @@ var err error
 var placementGroupName string
 var certCRN string
 var updatedCertCRN string
+var regionName string
+var ISZoneName string
+var ISCIDR string
+var ISAddressPrefixCIDR string
+var isImage string
+var instanceProfileName string
 
 func init() {
 	cfOrganization = os.Getenv("IBM_ORG")
@@ -234,6 +240,41 @@ func init() {
 	if placementGroupName == "" {
 		placementGroupName = "terraform_group"
 		fmt.Println("[WARN] Set the environment variable IBM_PLACEMENT_GROUP_NAME for testing ibm_compute_vm_instance resource else it is set to default value 'terraform-group'")
+	}
+
+	regionName = os.Getenv("SL_REGION")
+	if regionName == "" {
+		regionName = "us-south"
+		fmt.Println("[INFO] Set the environment variable SL_REGION for testing ibm_is_region datasource else it is set to default value 'us-south'")
+	}
+
+	ISZoneName = os.Getenv("SL_ZONE")
+	if ISZoneName == "" {
+		ISZoneName = "us-south-1"
+		fmt.Println("[INFO] Set the environment variable SL_ZONE for testing ibm_is_zone datasource else it is set to default value 'us-south-1'")
+	}
+
+	ISCIDR = os.Getenv("SL_CIDR")
+	if ISCIDR == "" {
+		ISCIDR = "10.240.0.0/24"
+		fmt.Println("[INFO] Set the environment variable SL_CIDR for testing ibm_is_subnet else it is set to default value '10.240.0.0/24'")
+	}
+
+	ISAddressPrefixCIDR = os.Getenv("SL_ADDRESS_PREFIX_CIDR")
+	if ISAddressPrefixCIDR == "" {
+		ISAddressPrefixCIDR = "10.120.0.0/24"
+		fmt.Println("[INFO] Set the environment variable SL_ADDRESS_PREFIX_CIDR for testing ibm_is_vpc_address_prefix else it is set to default value '10.120.0.0/24'")
+	}
+	isImage = os.Getenv("SL_IMAGE")
+	if isImage == "" {
+		isImage = "7eb4e35b-4257-56f8-d7da-326d85452591"
+		fmt.Println("[INFO] Set the environment variable SL_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value '7eb4e35b-4257-56f8-d7da-326d85452591'")
+	}
+
+	instanceProfileName = os.Getenv("SL_INSTANCE_PROFILE")
+	if instanceProfileName == "" {
+		instanceProfileName = "bc1-2x8"
+		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE for testing ibm_is_instance resource else it is set to default value 'b-2x8'")
 	}
 
 }
