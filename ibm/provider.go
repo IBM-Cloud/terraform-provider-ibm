@@ -138,7 +138,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_space":                      dataSourceIBMSpace(),
 		},
 
-		ResourcesMap: map[string]*schema.Resource{		
+		ResourcesMap: map[string]*schema.Resource{
 			"ibm_app":                                            resourceIBMApp(),
 			"ibm_app_domain_private":                             resourceIBMAppDomainPrivate(),
 			"ibm_app_domain_shared":                              resourceIBMAppDomainShared(),
@@ -237,7 +237,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_storage_block":                                  resourceIBMStorageBlock(),
 			"ibm_storage_file":                                   resourceIBMStorageFile(),
 			"ibm_subnet":                                         resourceIBMSubnet(),
-      "ibm_dns_reverse_record":                             resourceIBMDNSReverseRecord(),
+			"ibm_dns_reverse_record":                             resourceIBMDNSReverseRecord(),
 			"ibm_ssl_certificate":                                resourceIBMSSLCertificate(),
 			"ibm_cdn":                                            resourceIBMCDN(),
 			"ibm_hardware_firewall_shared":                       resourceIBMFirewallShared(),
