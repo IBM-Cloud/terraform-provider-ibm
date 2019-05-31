@@ -6,7 +6,7 @@ description: |-
   Manages IBM Cloud Infrastructure Images.
 ---
 
-# ibm\_is_images
+# ibm\_is_image
 
 Import the details of an existing IBM Cloud Infrastructure image as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
