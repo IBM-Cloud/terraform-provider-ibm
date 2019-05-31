@@ -162,7 +162,7 @@ The following arguments are supported in the `provider` block:
 
 * `region` - (optional) The IBM Cloud region. You can also source it from the `BM_REGION` (higher precedence) or `BLUEMIX_REGION` environment variable. The default value is `us-south`.
 
-Note: `BLUEMIX_REGION` is not supported for Infrastructure Service. If you want to create Infrastructure Service resource in another region, you need to set the RIAAS_ENDPOINT for that region. To get the supported endpoint , RUN `ic is regions`. This will be fixed in future releases.
+Note: `BLUEMIX_REGION` is not supported for Infrastructure Service. If you want to create Infrastructure Service resource in another region, you need to set the RIAAS_ENDPOINT for that region. To get the supported endpoint , RUN `ic is regions`.
 
 * `resource_group` - (optional) The Resource Group ID. You can also source it from the `BM_RESOURCE_GROUP` (higher precedence) or `BLUEMIX_RESOURCE_GROUP` environment variable.
 
