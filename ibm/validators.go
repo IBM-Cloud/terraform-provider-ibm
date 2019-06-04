@@ -689,6 +689,15 @@ func validateVLANName(v interface{}, k string) (ws []string, errors []error) {
 	return
 }
 
+func validateAuthProtocol(v interface{}, k string) (ws []string, errors []error) {
+	authProtocol := v.(string)
+	if authProtocol != "MD5" && authProtocol != "SHA1" && authProtocol != "SHA256" {
+		errors = append(errors, fmt.Errorf(
+			"%q auth protocol can be MD5 or SHA1 or SHA256", k))
+	}
+	return
+}
+
 func validateIPVersion(v interface{}, k string) (ws []string, errors []error) {
 	validVersions := map[string]bool{
 		"ipv4": true,
@@ -823,6 +832,15 @@ func validateGeneration(v interface{}, k string) (ws []string, errors []error) {
 	return
 }
 
+func validateEncyptionProtocol(v interface{}, k string) (ws []string, errors []error) {
+	encyptionProtocol := v.(string)
+	if encyptionProtocol != "DES" && encyptionProtocol != "3DES" && encyptionProtocol != "AES128" && encyptionProtocol != "AES192" && encyptionProtocol != "AES256" {
+		errors = append(errors, fmt.Errorf(
+			"%q encryption protocol can be DES or 3DES or AES128 or AES192 or AES256", k))
+	}
+	return
+}
+
 func validateDeadPeerDetectionInterval(v interface{}, k string) (ws []string, errors []error) {
 	secs := v.(int)
 	if secs < 15 || secs > 86399 {
@@ -834,6 +852,15 @@ func validateDeadPeerDetectionInterval(v interface{}, k string) (ws []string, er
 	return
 }
 
+func validateDiffieHellmanGroup(v interface{}, k string) (ws []string, errors []error) {
+	diffieHellmanGroup := v.(int)
+	if diffieHellmanGroup != 0 && diffieHellmanGroup != 1 && diffieHellmanGroup != 2 && diffieHellmanGroup != 5 {
+		errors = append(errors, fmt.Errorf(
+			"%q Diffie Hellman Group can be 0 or 1 or 2 or 5", k))
+	}
+	return
+}
+
 func validateDeadPeerDetectionTimeout(v interface{}, k string) (ws []string, errors []error) {
 	secs := v.(int)
 	if secs < 15 || secs > 86399 {
@@ -841,6 +868,15 @@ func validateDeadPeerDetectionTimeout(v interface{}, k string) (ws []string, err
 			"%q must be between 15 and 86399",
 			k))
 		return
+	}
+	return
+}
+
+func validatekeylife(v interface{}, k string) (ws []string, errors []error) {
+	keylife := v.(int)
+	if keylife < 120 || keylife > 172800 {
+		errors = append(errors, fmt.Errorf(
+			"%q keylife value can be between 120 and 172800", k))
 	}
 	return
 }
