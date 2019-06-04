@@ -17,7 +17,7 @@ For more information about how to configure a firewall, see the [docs](https://k
 ## Example Usage
 
 ```hcl
-resource "ibm_hardware-firewall_shared" "test_firewall" {
+resource "ibm_hardware_firewall_shared" "test_firewall" {
     firewall_type="100MBPS_HARDWARE_FIREWALL"
     hardware_instance_id="12345678"
 }
@@ -34,4 +34,5 @@ The following arguments are supported:
 ## Attribute Reference
 
 The following attributes are exported:
+
  * `id` - The unique identifier of the hardware firewall.

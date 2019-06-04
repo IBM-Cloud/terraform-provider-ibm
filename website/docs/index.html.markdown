@@ -65,6 +65,44 @@ resource "ibm_function_action" "nodehello" {
   }
 }
 
+# Create a IS VPC and instance
+resource "ibm_is_vpc" "testacc_vpc" {
+  name = "testvpc1"
+}
+
+resource "ibm_is_subnet" "testacc_subnet" {
+  name            = "testsubnet1"
+  vpc             = "${ibm_is_vpc.testacc_vpc.id}"
+  zone            = "us-south-1"
+  ipv4_cidr_block = "10.240.0.0/24"
+}
+
+resource "ibm_is_ssh_key" "testacc_sshkey" {
+  name       = "testssh1"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR"
+}
+
+resource "ibm_is_instance" "testacc_instance" {
+  name    = "testinstance1"
+  image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
+  profile = "b-2x8"
+
+  primary_network_interface = {
+    port_speed = "1000"
+    subnet     = "${ibm_is_subnet.testacc_subnet.id}"
+  }
+
+  vpc  = "${ibm_is_vpc.testacc_vpc.id}"
+  zone = "us-south-1"
+  keys = ["${ibm_is_ssh_key.testacc_sshkey.id}"]
+  user_data = "${file("nginx.sh")}"
+}
+
+resource "ibm_is_floating_ip" "testacc_floatingip" {
+  name   = "testfip"
+  target = "${ibm_is_instance.testacc_instance.primary_network_interface.0.id}"
+}
+
 ```
 
 ## Authentication
@@ -124,8 +162,13 @@ The following arguments are supported in the `provider` block:
 
 * `region` - (optional) The IBM Cloud region. You can also source it from the `BM_REGION` (higher precedence) or `BLUEMIX_REGION` environment variable. The default value is `us-south`.
 
+Note: `BLUEMIX_REGION` is not supported for Infrastructure Service. If you want to create Infrastructure Service resource in another region, you need to set the RIAAS_ENDPOINT for that region. To get the supported endpoint , RUN `ic is regions`.
+
 * `resource_group` - (optional) The Resource Group ID. You can also source it from the `BM_RESOURCE_GROUP` (higher precedence) or `BLUEMIX_RESOURCE_GROUP` environment variable.
 
 * `max_retries` - (Optional) This is the maximum number of times an IBM Cloud infrastructure API call is retried, in the case where requests are getting network related timeout and rate limit exceeded error code. You can also source it from the `MAX_RETRIES` environment variable. The default value is `10`.
 
 * `function_namespace` - (Optional) Your Cloud Functions namespace is composed from your IBM Cloud org and space like \<org\>_\<space\>. This attribute is required only when creating a Cloud Functions resource. It must be provided when you are creating such resources in IBM Cloud. You can also source it from the FUNCTION_NAMESPACE environment variable.
+
+* `riaas_endpoint` - (Optional) The next generation infrastructure service API endpoint . It can also be sourced from the `RIAAS_ENDPOINT`. Default value: `us-south.iaas.cloud.ibm.com`. 
+
