@@ -944,11 +944,6 @@ func resourceIBMComputeVmInstanceCreate(d *schema.ResourceData, meta interface{}
 				privateVlan, _ = strconv.Atoi(v.(string))
 			}
 
-			if publicVlan > 0 && privateVlan == 0 || publicVlan == 0 && privateVlan > 0 {
-				return fmt.Errorf("Provide both `public_vlan_id` and `private_vlan_id` in `datacenter_choice`")
-
-			}
-
 			receipt, err1 = placeOrder(d, meta, name, publicVlan, privateVlan)
 			if err1 == nil {
 				break
