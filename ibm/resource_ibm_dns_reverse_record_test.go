@@ -1,47 +1,51 @@
 package ibm
 
 import (
+	// "errors"
 	"errors"
 	"fmt"
 	"log"
 	"strconv"
+
+	// "log"
+	// "strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
+
+	// "github.com/hashicorp/terraform/terraform"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/services"
+	// "github.com/softlayer/softlayer-go/services"
 )
 
 func TestAccIBMDNSReverseRecord_Basic(t *testing.T) {
-	var dns_domain datatypes.Dns_Domain
 	var dns_domain_record datatypes.Dns_Domain_ResourceRecord
 
 	host1 := acctest.RandString(10) + "ibm.com"
 	host2 := acctest.RandString(10) + "ibm.com"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		// PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMDNSDomainDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMDNSReverseRecordConfigBasic(host1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMDNSDomainExists("ibm_dns_domain.test_dns_domain_records", &dns_domain),
-					testAccCheckIBMDNSRecordExists("ibm_dns_reverse_record.recordA", &dns_domain_record),
-					resource.TestCheckResourceAttr("ibm_dns_reverse_record.recordA", "ipaddress", "10.132.90.123"),
-					resource.TestCheckResourceAttr("ibm_dns_reverse_record.recordA", "data", host1),
-					resource.TestCheckResourceAttr("ibm_dns_reverse_record.recordA", "ttl", "900"),
+					testAccCheckIBMDNSReverseRecordExists("ibm_dns_reverse_record.testreverserecord", &dns_domain_record),
+					resource.TestCheckResourceAttr("ibm_dns_reverse_record.testreverserecord", "ipaddress", "1.2.3.4"),
+					resource.TestCheckResourceAttr("ibm_dns_reverse_record.testreverserecord", "data", host1),
+					resource.TestCheckResourceAttr("ibm_dns_reverse_record.testreverserecord", "ttl", "900"),
 				),
 			},
 			{
 				Config: testAccCheckIBMDNSReverseRecordConfigBasic(host2),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMDNSDomainExists("ibm_dns_domain.test_dns_domain_records", &dns_domain),
-					testAccCheckIBMDNSRecordExists("ibm_dns_reverse_record.recordA", &dns_domain_record),
-					resource.TestCheckResourceAttr("ibm_dns_reverse_record.recordA", "host", host2),
+					testAccCheckIBMDNSReverseRecordExists("ibm_dns_reverse_record.testreverserecord", &dns_domain_record),
+					resource.TestCheckResourceAttr("ibm_dns_reverse_record.testreverserecord", "host", host2),
 				),
 			},
 		},
@@ -78,10 +82,11 @@ func testAccCheckIBMDNSReverseRecordExists(n string, dns_domain_record *datatype
 		return nil
 	}
 }
+
 func testAccCheckIBMDNSReverseRecordConfigBasic(hostname string) string {
 	return fmt.Sprintf(`
 		resource "ibm_dns_reverse_record" "testreverserecord" {
-			ipaddress="158.175.87.35"
+			ipaddress="1.2.3.4"
 			hostname="%s"
 			ttl=900
 		}`, hostname)
