@@ -1,24 +1,17 @@
 package ibm
 
 import (
-	// "errors"
 	"errors"
 	"fmt"
 	"log"
 	"strconv"
-
-	// "log"
-	// "strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-
-	// "github.com/hashicorp/terraform/terraform"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/services"
-	// "github.com/softlayer/softlayer-go/services"
 )
 
 func TestAccIBMDNSReverseRecord_Basic(t *testing.T) {
@@ -28,7 +21,7 @@ func TestAccIBMDNSReverseRecord_Basic(t *testing.T) {
 	host2 := acctest.RandString(10) + "ibm.com"
 
 	resource.Test(t, resource.TestCase{
-		// PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMDNSDomainDestroy,
 		Steps: []resource.TestStep{
