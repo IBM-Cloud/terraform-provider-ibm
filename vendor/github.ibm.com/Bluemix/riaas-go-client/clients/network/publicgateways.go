@@ -4,10 +4,10 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.ibm.com/Bluemix/riaas-go-client/errors"
 	riaaserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/client/network"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 	"github.ibm.com/Bluemix/riaas-go-client/session"
 	"github.ibm.com/Bluemix/riaas-go-client/utils"
-	"github.ibm.com/riaas/rias-api/riaas/client/network"
-	"github.ibm.com/riaas/rias-api/riaas/models"
 )
 
 // PublicGatewayClient ...
@@ -24,19 +24,17 @@ func NewPublicGatewayClient(sess *session.Session) *PublicGatewayClient {
 
 // List ...
 func (f *PublicGatewayClient) List(start string) ([]*models.PublicGateway, string, error) {
-	return f.ListWithFilter(nil, start)
+	return f.ListWithFilter(start)
 }
 
 // ListWithFilter ...
-func (f *PublicGatewayClient) ListWithFilter(tag *string, start string) ([]*models.PublicGateway, string, error) {
-	params := network.NewGetPublicGatewaysParams()
-	if tag != nil {
-		params = params.WithTag(tag)
-	}
+func (f *PublicGatewayClient) ListWithFilter(start string) ([]*models.PublicGateway, string, error) {
+	params := network.NewGetPublicGatewaysParamsWithTimeout(f.session.Timeout)
 	if start != "" {
 		params = params.WithStart(&start)
 	}
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 
 	resp, err := f.session.Riaas.Network.GetPublicGateways(params, session.Auth(f.session))
 
@@ -49,8 +47,9 @@ func (f *PublicGatewayClient) ListWithFilter(tag *string, start string) ([]*mode
 
 // Get ...
 func (f *PublicGatewayClient) Get(id string) (*models.PublicGateway, error) {
-	params := network.NewGetPublicGatewaysIDParams().WithID(id)
+	params := network.NewGetPublicGatewaysIDParamsWithTimeout(f.session.Timeout).WithID(id)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.GetPublicGatewaysID(params, session.Auth(f.session))
 
 	if err != nil {
@@ -67,7 +66,7 @@ func (f *PublicGatewayClient) Create(name, zoneName, vpcID, FloatingIPaddr strin
 		Name: name,
 	}
 
-	var zone = models.NameReference{
+	var zone = models.PostPublicGatewaysParamsBodyZone{
 		Name: zoneName,
 	}
 	body.Zone = &zone
@@ -84,8 +83,9 @@ func (f *PublicGatewayClient) Create(name, zoneName, vpcID, FloatingIPaddr strin
 		body.FloatingIP = &floatingip
 	}
 
-	params := network.NewPostPublicGatewaysParams().WithBody(&body)
+	params := network.NewPostPublicGatewaysParamsWithTimeout(f.session.Timeout).WithBody(&body)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.PostPublicGateways(params, session.Auth(f.session))
 	if err != nil {
 		return nil, riaaserrors.ToError(err)
@@ -96,8 +96,9 @@ func (f *PublicGatewayClient) Create(name, zoneName, vpcID, FloatingIPaddr strin
 
 // Delete ...
 func (f *PublicGatewayClient) Delete(id string) error {
-	params := network.NewDeletePublicGatewaysIDParams().WithID(id)
+	params := network.NewDeletePublicGatewaysIDParamsWithTimeout(f.session.Timeout).WithID(id)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.Network.DeletePublicGatewaysID(params, session.Auth(f.session))
 	return riaaserrors.ToError(err)
 }
@@ -107,8 +108,9 @@ func (f *PublicGatewayClient) Update(id, name string) (*models.PublicGateway, er
 	var body = models.PatchPublicGatewaysIDParamsBody{
 		Name: name,
 	}
-	params := network.NewPatchPublicGatewaysIDParams().WithID(id).WithBody(&body)
+	params := network.NewPatchPublicGatewaysIDParamsWithTimeout(f.session.Timeout).WithID(id).WithBody(&body)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.PatchPublicGatewaysID(params, session.Auth(f.session))
 	if err != nil {
 		return nil, errors.ToError(err)

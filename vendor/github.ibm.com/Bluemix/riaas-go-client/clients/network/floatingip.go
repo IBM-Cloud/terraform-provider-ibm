@@ -1,8 +1,8 @@
 package network
 
 import (
-	"github.ibm.com/riaas/rias-api/riaas/client/network"
-	"github.ibm.com/riaas/rias-api/riaas/models"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/client/network"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 
 	"github.com/go-openapi/strfmt"
 	riaaserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
@@ -24,15 +24,12 @@ func NewFloatingIPClient(sess *session.Session) *FloatingIPClient {
 
 // List ...
 func (f *FloatingIPClient) List(start string) ([]*models.FloatingIP, string, error) {
-	return f.ListWithFilter("", "", "", start)
+	return f.ListWithFilter("", "", start)
 }
 
 // ListWithFilter ...
-func (f *FloatingIPClient) ListWithFilter(tag, zoneName, resourcegroupID, start string) ([]*models.FloatingIP, string, error) {
-	params := network.NewGetFloatingIpsParams()
-	if tag != "" {
-		params = params.WithTag(&tag)
-	}
+func (f *FloatingIPClient) ListWithFilter(zoneName, resourcegroupID, start string) ([]*models.FloatingIP, string, error) {
+	params := network.NewGetFloatingIpsParamsWithTimeout(f.session.Timeout)
 	if zoneName != "" {
 		params = params.WithZoneName(&zoneName)
 	}
@@ -43,6 +40,7 @@ func (f *FloatingIPClient) ListWithFilter(tag, zoneName, resourcegroupID, start 
 		params = params.WithStart(&start)
 	}
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.GetFloatingIps(params, session.Auth(f.session))
 
 	if err != nil {
@@ -54,8 +52,9 @@ func (f *FloatingIPClient) ListWithFilter(tag, zoneName, resourcegroupID, start 
 
 // Get ...
 func (f *FloatingIPClient) Get(id string) (*models.FloatingIP, error) {
-	params := network.NewGetFloatingIpsIDParams().WithID(id)
+	params := network.NewGetFloatingIpsIDParamsWithTimeout(f.session.Timeout).WithID(id)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.GetFloatingIpsID(params, session.Auth(f.session))
 
 	if err != nil {
@@ -73,7 +72,7 @@ func (f *FloatingIPClient) Create(name, zoneName, resourcegroupID, targetID stri
 	}
 
 	if zoneName != "" {
-		var zone = models.NameReference{
+		var zone = models.PostFloatingIpsParamsBodyZone{
 			Name: zoneName,
 		}
 		body.Zone = &zone
@@ -95,8 +94,9 @@ func (f *FloatingIPClient) Create(name, zoneName, resourcegroupID, targetID stri
 		body.ResourceGroup = &resourcegroup
 	}
 
-	params := network.NewPostFloatingIpsParams().WithBody(&body)
+	params := network.NewPostFloatingIpsParamsWithTimeout(f.session.Timeout).WithBody(&body)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.PostFloatingIps(params, session.Auth(f.session))
 	if err != nil {
 		return nil, riaaserrors.ToError(err)
@@ -107,8 +107,9 @@ func (f *FloatingIPClient) Create(name, zoneName, resourcegroupID, targetID stri
 
 // Delete ...
 func (f *FloatingIPClient) Delete(id string) error {
-	params := network.NewDeleteFloatingIpsIDParams().WithID(id)
+	params := network.NewDeleteFloatingIpsIDParamsWithTimeout(f.session.Timeout).WithID(id)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.Network.DeleteFloatingIpsID(params, session.Auth(f.session))
 	return riaaserrors.ToError(err)
 }
@@ -129,8 +130,9 @@ func (f *FloatingIPClient) Update(id, name, targetID string) (*models.FloatingIP
 		body.Target = &target
 	}
 
-	params := network.NewPatchFloatingIpsIDParams().WithID(id).WithBody(&body)
+	params := network.NewPatchFloatingIpsIDParamsWithTimeout(f.session.Timeout).WithID(id).WithBody(&body)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.PatchFloatingIpsID(params, session.Auth(f.session))
 	if err != nil {
 		return nil, riaaserrors.ToError(err)

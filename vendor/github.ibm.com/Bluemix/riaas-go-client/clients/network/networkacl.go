@@ -3,12 +3,11 @@ package network
 import (
 	"errors"
 
-	"github.com/go-openapi/strfmt"
 	riaaserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/client/network"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 	"github.ibm.com/Bluemix/riaas-go-client/session"
 	"github.ibm.com/Bluemix/riaas-go-client/utils"
-	"github.ibm.com/riaas/rias-api/riaas/client/network"
-	"github.ibm.com/riaas/rias-api/riaas/models"
 )
 
 // NetworkAclClient ...
@@ -25,15 +24,12 @@ func NewNetworkAclClient(sess *session.Session) *NetworkAclClient {
 
 // List ...
 func (f *NetworkAclClient) List(start string) ([]*models.NetworkACL, string, error) {
-	return f.ListWithFilter("", "", start)
+	return f.ListWithFilter("", start)
 }
 
 // ListWithFilter ...
-func (f *NetworkAclClient) ListWithFilter(tag, resourcegroupID, start string) ([]*models.NetworkACL, string, error) {
-	params := network.NewGetNetworkAclsParams()
-	if tag != "" {
-		params = params.WithTag(&tag)
-	}
+func (f *NetworkAclClient) ListWithFilter(resourcegroupID, start string) ([]*models.NetworkACL, string, error) {
+	params := network.NewGetNetworkAclsParamsWithTimeout(f.session.Timeout)
 	if resourcegroupID != "" {
 		params = params.WithResourceGroupID(&resourcegroupID)
 	}
@@ -42,6 +38,7 @@ func (f *NetworkAclClient) ListWithFilter(tag, resourcegroupID, start string) ([
 		params = params.WithStart(&start)
 	}
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 
 	resp, err := f.session.Riaas.Network.GetNetworkAcls(params, session.Auth(f.session))
 	if err != nil {
@@ -53,8 +50,9 @@ func (f *NetworkAclClient) ListWithFilter(tag, resourcegroupID, start string) ([
 
 // Get ...
 func (f *NetworkAclClient) Get(id string) (*models.NetworkACL, error) {
-	params := network.NewGetNetworkAclsIDParams().WithID(id)
+	params := network.NewGetNetworkAclsIDParamsWithTimeout(f.session.Timeout).WithID(id)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.GetNetworkAclsID(params, session.Auth(f.session))
 
 	if err != nil {
@@ -66,8 +64,9 @@ func (f *NetworkAclClient) Get(id string) (*models.NetworkACL, error) {
 
 // Create ...
 func (f *NetworkAclClient) Create(acldef *models.PostNetworkAclsParamsBody) (*models.NetworkACL, error) {
-	params := network.NewPostNetworkAclsParams().WithBody(acldef)
+	params := network.NewPostNetworkAclsParamsWithTimeout(f.session.Timeout).WithBody(acldef)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.PostNetworkAcls(params, session.Auth(f.session))
 	if err != nil {
 		return nil, riaaserrors.ToError(err)
@@ -78,8 +77,9 @@ func (f *NetworkAclClient) Create(acldef *models.PostNetworkAclsParamsBody) (*mo
 
 // Delete ...
 func (f *NetworkAclClient) Delete(id string) error {
-	params := network.NewDeleteNetworkAclsIDParams().WithID(id)
+	params := network.NewDeleteNetworkAclsIDParamsWithTimeout(f.session.Timeout).WithID(id)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.Network.DeleteNetworkAclsID(params, session.Auth(f.session))
 	return riaaserrors.ToError(err)
 }
@@ -89,8 +89,9 @@ func (f *NetworkAclClient) Update(id, name string) (*models.NetworkACL, error) {
 	var body = models.PatchNetworkAclsIDParamsBody{
 		Name: name,
 	}
-	params := network.NewPatchNetworkAclsIDParams().WithID(id).WithBody(&body)
+	params := network.NewPatchNetworkAclsIDParamsWithTimeout(f.session.Timeout).WithID(id).WithBody(&body)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.PatchNetworkAclsID(params, session.Auth(f.session))
 	if err != nil {
 		return nil, riaaserrors.ToError(err)
@@ -101,12 +102,13 @@ func (f *NetworkAclClient) Update(id, name string) (*models.NetworkACL, error) {
 
 // ListRules ...
 func (f *NetworkAclClient) ListRules(aclID, start string) ([]*models.NetworkACLRule, string, error) {
-	params := network.NewGetNetworkAclsNetworkACLIDRulesParams()
+	params := network.NewGetNetworkAclsNetworkACLIDRulesParamsWithTimeout(f.session.Timeout)
 	params = params.WithNetworkACLID(aclID)
 	if start != "" {
 		params = params.WithStart(&start)
 	}
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 
 	resp, err := f.session.Riaas.Network.GetNetworkAclsNetworkACLIDRules(params, session.Auth(f.session))
 
@@ -147,24 +149,25 @@ func (f *NetworkAclClient) AddRule(aclID, name, source, destination, direction, 
 		}
 	} else if protocol == ProtocolTCP || protocol == ProtocolUDP {
 		if portMax >= 0 {
-			rule.PortMax = &portMax
+			rule.PortMax = portMax
 		}
 		if portMin > 0 {
-			rule.PortMin = &portMin
+			rule.PortMin = portMin
 		}
 	} else {
 		return nil, errors.New("Unknown protocol " + protocol)
 	}
 
 	if before != "" {
-		rule.Before = &models.ResourceReference{
-			ID: strfmt.UUID(before),
+		rule.Before = &models.PostNetworkAclsNetworkACLIDRulesParamsBodyBefore{
+			ID: before,
 		}
 	}
 
-	params := network.NewPostNetworkAclsNetworkACLIDRulesParams()
+	params := network.NewPostNetworkAclsNetworkACLIDRulesParamsWithTimeout(f.session.Timeout)
 	params = params.WithNetworkACLID(aclID).WithBody(&rule)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 
 	resp, err := f.session.Riaas.Network.PostNetworkAclsNetworkACLIDRules(params, session.Auth(f.session))
 
@@ -177,16 +180,18 @@ func (f *NetworkAclClient) AddRule(aclID, name, source, destination, direction, 
 
 // DeleteRule ...
 func (f *NetworkAclClient) DeleteRule(aclID, ruleID string) error {
-	params := network.NewDeleteNetworkAclsNetworkACLIDRulesIDParams().WithNetworkACLID(aclID).WithID(ruleID)
+	params := network.NewDeleteNetworkAclsNetworkACLIDRulesIDParamsWithTimeout(f.session.Timeout).WithNetworkACLID(aclID).WithID(ruleID)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.Network.DeleteNetworkAclsNetworkACLIDRulesID(params, session.Auth(f.session))
 	return riaaserrors.ToError(err)
 }
 
 // GetRule ...
 func (f *NetworkAclClient) GetRule(aclID, ruleID string) (*models.NetworkACLRule, error) {
-	params := network.NewGetNetworkAclsNetworkACLIDRulesIDParams().WithNetworkACLID(aclID).WithID(ruleID)
+	params := network.NewGetNetworkAclsNetworkACLIDRulesIDParamsWithTimeout(f.session.Timeout).WithNetworkACLID(aclID).WithID(ruleID)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.GetNetworkAclsNetworkACLIDRulesID(params, session.Auth(f.session))
 	if err != nil {
 		return nil, riaaserrors.ToError(err)
@@ -200,7 +205,7 @@ func (f *NetworkAclClient) UpdateRule(aclID, ruleID, name, source, destination, 
 	portMin, portMax, icmpType, icmpCode int64,
 	before string) (*models.NetworkACLRule, error) {
 
-	params := network.NewPatchNetworkAclsNetworkACLIDRulesIDParams().WithNetworkACLID(aclID).WithID(ruleID)
+	params := network.NewPatchNetworkAclsNetworkACLIDRulesIDParamsWithTimeout(f.session.Timeout).WithNetworkACLID(aclID).WithID(ruleID)
 	rule := models.PatchNetworkAclsNetworkACLIDRulesIDParamsBody{}
 
 	if name != "" {
@@ -235,20 +240,21 @@ func (f *NetworkAclClient) UpdateRule(aclID, ruleID, name, source, destination, 
 	}
 
 	if portMax >= 0 {
-		rule.PortMax = &portMax
+		rule.PortMax = portMax
 	}
 	if portMin >= 0 {
-		rule.PortMin = &portMin
+		rule.PortMin = portMin
 	}
 
 	if before != "" {
-		rule.Before = &models.ResourceReference{
-			ID: strfmt.UUID(before),
+		rule.Before = &models.PatchNetworkAclsNetworkACLIDRulesIDParamsBodyBefore{
+			ID: before,
 		}
 	}
 
 	params = params.WithBody(&rule)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 
 	resp, err := f.session.Riaas.Network.PatchNetworkAclsNetworkACLIDRulesID(params, session.Auth(f.session))
 

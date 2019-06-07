@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.ibm.com/riaas/rias-api/riaas/models"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // ErrorTarget ...

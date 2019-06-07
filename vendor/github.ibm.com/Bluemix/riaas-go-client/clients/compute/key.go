@@ -1,8 +1,8 @@
 package compute
 
 import (
-	"github.ibm.com/riaas/rias-api/riaas/client/compute"
-	"github.ibm.com/riaas/rias-api/riaas/models"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/client/compute"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 
 	"github.ibm.com/Bluemix/riaas-go-client/errors"
 	"github.ibm.com/Bluemix/riaas-go-client/session"
@@ -23,15 +23,12 @@ func NewKeyClient(sess *session.Session) *KeyClient {
 
 // List ...
 func (f *KeyClient) List(start string) ([]*models.Key, string, error) {
-	return f.ListWithFilter("", "", start)
+	return f.ListWithFilter("", start)
 }
 
 // ListWithFilter ...
-func (f *KeyClient) ListWithFilter(tag, resourceGroupID, start string) ([]*models.Key, string, error) {
-	params := compute.NewGetKeysParams()
-	if tag != "" {
-		params.WithTag(&tag)
-	}
+func (f *KeyClient) ListWithFilter(resourceGroupID, start string) ([]*models.Key, string, error) {
+	params := compute.NewGetKeysParamsWithTimeout(f.session.Timeout)
 	if resourceGroupID != "" {
 		params.WithResourceGroupID(&resourceGroupID)
 	}
@@ -39,6 +36,7 @@ func (f *KeyClient) ListWithFilter(tag, resourceGroupID, start string) ([]*model
 		params.WithStart(&start)
 	}
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 
 	resp, err := f.session.Riaas.Compute.GetKeys(params, session.Auth(f.session))
 
@@ -46,13 +44,14 @@ func (f *KeyClient) ListWithFilter(tag, resourceGroupID, start string) ([]*model
 		return nil, "", errors.ToError(err)
 	}
 
-	return resp.Payload.Keys, utils.GetPageLink(resp.Payload.Next), nil
+	return resp.Payload.Keys, utils.GetNext(resp.Payload.Next), nil
 }
 
 // Get ...
 func (f *KeyClient) Get(id string) (*models.Key, error) {
-	params := compute.NewGetKeysIDParams().WithID(id)
+	params := compute.NewGetKeysIDParamsWithTimeout(f.session.Timeout).WithID(id)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.GetKeysID(params, session.Auth(f.session))
 
 	if err != nil {
@@ -67,11 +66,12 @@ func (f *KeyClient) Create(name, keystring string) (*models.Key, error) {
 	keytype := models.PostKeysParamsBodyTypeRsa
 	var body = models.PostKeysParamsBody{
 		Name:      name,
-		PublicKey: keystring,
+		PublicKey: &keystring,
 		Type:      &keytype,
 	}
-	params := compute.NewPostKeysParams().WithBody(&body)
+	params := compute.NewPostKeysParamsWithTimeout(f.session.Timeout).WithBody(&body)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.PostKeys(params, session.Auth(f.session))
 	if err != nil {
 		return nil, errors.ToError(err)
@@ -82,8 +82,9 @@ func (f *KeyClient) Create(name, keystring string) (*models.Key, error) {
 
 // Delete ...
 func (f *KeyClient) Delete(id string) error {
-	params := compute.NewDeleteKeysIDParams().WithID(id)
+	params := compute.NewDeleteKeysIDParamsWithTimeout(f.session.Timeout).WithID(id)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.Compute.DeleteKeysID(params, session.Auth(f.session))
 	return err
 }
@@ -93,8 +94,9 @@ func (f *KeyClient) Update(id, name string) (*models.Key, error) {
 	var body = models.PatchKeysIDParamsBody{
 		Name: name,
 	}
-	params := compute.NewPatchKeysIDParams().WithID(id).WithBody(&body)
+	params := compute.NewPatchKeysIDParamsWithTimeout(f.session.Timeout).WithID(id).WithBody(&body)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.PatchKeysID(params, session.Auth(f.session))
 	if err != nil {
 		return nil, errors.ToError(err)

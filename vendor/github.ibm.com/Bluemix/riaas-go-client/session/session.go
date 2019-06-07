@@ -6,9 +6,11 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"time"
 
-	"github.ibm.com/riaas/rias-api/riaas/client"
-	"github.ibm.com/riaas/rias-api/riaas/models"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/client"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.ibm.com/Bluemix/riaas-go-client/utils"
 
 	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"
@@ -19,9 +21,11 @@ import (
 
 // Session ...
 type Session struct {
-	IAMToken string
-	IMSToken string
-	Riaas    *client.Riaas
+	IAMToken   string
+	IMSToken   string
+	Riaas      *client.Riaas
+	Timeout    time.Duration
+	Generation int64
 }
 
 func riaasJSONConsumer() runtime.Consumer {
@@ -72,16 +76,19 @@ func riaasJSONConsumer() runtime.Consumer {
 }
 
 // New ...
-func New(iamtoken, apiEndpointURL string, debug bool) (*Session, error) {
+func New(iamtoken, region string, generation int, debug bool, timeout time.Duration) (*Session, error) {
 	session := &Session{
 		IAMToken: iamtoken,
 	}
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: false}
+	apiEndpointURL := utils.GetEndpoint(generation, region)
 	transport := httptransport.New(apiEndpointURL, "/v1", []string{"https"})
 	transport.Debug = debug
 	transport.Consumers[runtime.JSONMime] = riaasJSONConsumer()
 	session.Riaas = client.New(transport, nil)
+	session.Timeout = timeout
+	session.Generation = int64(generation)
 	return session, nil
 }
 

@@ -2,17 +2,19 @@ package utils
 
 import (
 	"net/url"
+	"os"
+	"reflect"
 
-	"github.ibm.com/riaas/rias-api/riaas/models"
+	"github.ibm.com/Bluemix/riaas-go-client/helpers"
 )
 
 // GetNext ...
-func GetNext(next *models.Next) string {
-	if next == nil {
+func GetNext(next interface{}) string {
+	if reflect.ValueOf(next).IsNil() {
 		return ""
 	}
 
-	u, err := url.Parse(next.Href)
+	u, err := url.Parse(reflect.ValueOf(next).Elem().FieldByName("Href").Elem().String())
 	if err != nil {
 		return ""
 	}
@@ -21,17 +23,31 @@ func GetNext(next *models.Next) string {
 	return q.Get("start")
 }
 
-// GetPageLink ...
-func GetPageLink(pageLink *models.PageLink) string {
-	if pageLink == nil {
-		return ""
-	}
+// GetEndpoint ...
+func GetEndpoint(generation int, regionName string) string {
 
-	u, err := url.Parse(pageLink.Href)
-	if err != nil {
-		return ""
+	switch generation {
+	case 1:
+		ep := getGCEndpoint(regionName)
+		return helpers.EnvFallBack([]string{"IBMCLOUD_IS_API_ENDPOINT"}, ep)
+	case 2:
+		ep := getNGEndpoint(regionName)
+		return helpers.EnvFallBack([]string{"IBMCLOUD_IS_NG_API_ENDPOINT"}, ep)
 	}
+	ep := getNGEndpoint(regionName)
+	return helpers.EnvFallBack([]string{"IBMCLOUD_IS_NG_API_ENDPOINT"}, ep)
+}
 
-	q := u.Query()
-	return q.Get("start")
+func getGCEndpoint(regionName string) string {
+	if url := os.Getenv("IBMCLOUD_IS_API_ENDPOINT"); url != "" {
+		return url
+	}
+	return regionName + ".iaas.cloud.ibm.com"
+}
+
+func getNGEndpoint(regionName string) string {
+	if url := os.Getenv("IBMCLOUD_IS_NG_API_ENDPOINT"); url != "" {
+		return url
+	}
+	return regionName + ".iaas.cloud.ibm.com"
 }

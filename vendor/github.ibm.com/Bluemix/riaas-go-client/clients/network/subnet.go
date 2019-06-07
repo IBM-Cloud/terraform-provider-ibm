@@ -3,8 +3,8 @@ package network
 import (
 	"errors"
 
-	"github.ibm.com/riaas/rias-api/riaas/client/network"
-	"github.ibm.com/riaas/rias-api/riaas/models"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/client/network"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 
 	"github.com/go-openapi/strfmt"
 	riaaserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
@@ -26,15 +26,12 @@ func NewSubnetClient(sess *session.Session) *SubnetClient {
 
 // List ...
 func (f *SubnetClient) List(start string) ([]*models.Subnet, string, error) {
-	return f.ListWithFilter("", "", "", "", "", start)
+	return f.ListWithFilter("", "", "", "", start)
 }
 
 // ListWithFilter ...
-func (f *SubnetClient) ListWithFilter(tag, zoneName, vpcID, networkaclID, resourcegroupID, start string) ([]*models.Subnet, string, error) {
-	params := network.NewGetSubnetsParams()
-	if tag != "" {
-		params = params.WithTag(&tag)
-	}
+func (f *SubnetClient) ListWithFilter(zoneName, vpcID, networkaclID, resourcegroupID, start string) ([]*models.Subnet, string, error) {
+	params := network.NewGetSubnetsParamsWithTimeout(f.session.Timeout)
 	if zoneName != "" {
 		params = params.WithZoneName(&zoneName)
 	}
@@ -49,6 +46,7 @@ func (f *SubnetClient) ListWithFilter(tag, zoneName, vpcID, networkaclID, resour
 		params = params.WithResourceGroupID(&resourcegroupID)
 	}
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 
 	resp, err := f.session.Riaas.Network.GetSubnets(params, session.Auth(f.session))
 
@@ -61,8 +59,9 @@ func (f *SubnetClient) ListWithFilter(tag, zoneName, vpcID, networkaclID, resour
 
 // Get ...
 func (f *SubnetClient) Get(id string) (*models.Subnet, error) {
-	params := network.NewGetSubnetsIDParams().WithID(id)
+	params := network.NewGetSubnetsIDParamsWithTimeout(f.session.Timeout).WithID(id)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.GetSubnetsID(params, session.Auth(f.session))
 
 	if err != nil {
@@ -73,7 +72,7 @@ func (f *SubnetClient) Get(id string) (*models.Subnet, error) {
 }
 
 // Create ...
-func (f *SubnetClient) Create(name, zoneName, vpcID, networkaclID, publicgwID, generation,
+func (f *SubnetClient) Create(name, zoneName, vpcID, networkaclID, publicgwID,
 	resourcegroupID, ipv4CIDR string, totalIpv4AddressCount int) (*models.Subnet, error) {
 
 	var body = models.PostSubnetsParamsBody{
@@ -81,7 +80,7 @@ func (f *SubnetClient) Create(name, zoneName, vpcID, networkaclID, publicgwID, g
 		IPVersion: models.PostSubnetsParamsBodyIPVersionIPV4,
 	}
 
-	var zone = models.NameReference{
+	var zone = models.PostSubnetsParamsBodyZone{
 		Name: zoneName,
 	}
 	body.Zone = &zone
@@ -106,10 +105,6 @@ func (f *SubnetClient) Create(name, zoneName, vpcID, networkaclID, publicgwID, g
 		body.PublicGateway = &pubgw
 	}
 
-	if generation != "" {
-		body.Generation = models.Generation(generation)
-	}
-
 	if resourcegroupID != "" {
 		resourcegroupuuid := strfmt.UUID(resourcegroupID)
 		var resourcegroup = models.PostSubnetsParamsBodyResourceGroup{
@@ -129,8 +124,9 @@ func (f *SubnetClient) Create(name, zoneName, vpcID, networkaclID, publicgwID, g
 		body.TotalIPV4AddressCount = int64(totalIpv4AddressCount)
 	}
 
-	params := network.NewPostSubnetsParams().WithBody(&body)
+	params := network.NewPostSubnetsParamsWithTimeout(f.session.Timeout).WithBody(&body)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.PostSubnets(params, session.Auth(f.session))
 	if err != nil {
 		return nil, riaaserrors.ToError(err)
@@ -141,16 +137,18 @@ func (f *SubnetClient) Create(name, zoneName, vpcID, networkaclID, publicgwID, g
 
 // DetachPublicGateway ...
 func (f *SubnetClient) DetachPublicGateway(id string) error {
-	params := network.NewDeleteSubnetsSubnetIDPublicGatewayParams().WithSubnetID(id)
+	params := network.NewDeleteSubnetsSubnetIDPublicGatewayParamsWithTimeout(f.session.Timeout).WithSubnetID(id)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.Network.DeleteSubnetsSubnetIDPublicGateway(params, session.Auth(f.session))
 	return riaaserrors.ToError(err)
 }
 
 // Delete ...
 func (f *SubnetClient) Delete(id string) error {
-	params := network.NewDeleteSubnetsIDParams().WithID(id)
+	params := network.NewDeleteSubnetsIDParamsWithTimeout(f.session.Timeout).WithID(id)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.Network.DeleteSubnetsID(params, session.Auth(f.session))
 	return riaaserrors.ToError(err)
 }
@@ -179,8 +177,9 @@ func (f *SubnetClient) Update(id, name, networkaclID, publicgwID string) (*model
 		body.PublicGateway = &publicgw
 	}
 
-	params := network.NewPatchSubnetsIDParams().WithID(id).WithBody(&body)
+	params := network.NewPatchSubnetsIDParamsWithTimeout(f.session.Timeout).WithID(id).WithBody(&body)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.PatchSubnetsID(params, session.Auth(f.session))
 	if err != nil {
 		return nil, riaaserrors.ToError(err)
