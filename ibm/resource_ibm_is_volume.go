@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/storage"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
-	st "github.ibm.com/riaas/rias-api/riaas/client/storage"
-	"github.ibm.com/riaas/rias-api/riaas/models"
+	st "github.ibm.com/Bluemix/riaas-go-client/riaas/client/storage"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 const (
@@ -108,7 +108,7 @@ func resourceIBMISVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	volName := d.Get(isVolumeName).(string)
 	profile := d.Get(isVolumeProfileName).(string)
 	zone := d.Get(isVolumeZone).(string)
-	volCapacity := d.Get(isVolumeCapacity).(int)
+	volCapacity := int64(d.Get(isVolumeCapacity).(int))
 	client := storage.NewStorageClient(sess)
 
 	volZone := &models.PostVolumesParamsBodyZone{
@@ -122,7 +122,7 @@ func resourceIBMISVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		Name:     volName,
 		Zone:     volZone,
 		Profile:  volProfile,
-		Capacity: int64(volCapacity),
+		Capacity: &volCapacity,
 	}
 
 	var encryptionKey string
@@ -142,7 +142,8 @@ func resourceIBMISVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if iops, ok := d.GetOk(isVolumeIops); ok {
-		body.Iops = iops.(int64)
+		i := int64(iops.(int))
+		body.Iops = &i
 	}
 
 	vol, err := client.Create(&st.PostVolumesParams{

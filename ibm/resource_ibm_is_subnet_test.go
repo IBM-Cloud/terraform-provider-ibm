@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
-	"github.ibm.com/riaas/rias-api/riaas/models"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 func TestAccIBMISSubnet_basic(t *testing.T) {

@@ -26,11 +26,6 @@ func dataSourceIBMISInstanceProfile() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
-			isInstanceProfileGeneration: {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 		},
 	}
 }
@@ -50,6 +45,5 @@ func dataSourceIBMISInstanceProfileRead(d *schema.ResourceData, meta interface{}
 	d.SetId(id)
 	d.Set(isInstanceProfileName, profile.Name)
 	d.Set(isInstanceProfileFamily, profile.Family)
-	d.Set(isInstanceProfileGeneration, profile.Generation)
 	return nil
 }

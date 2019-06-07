@@ -125,11 +125,9 @@ func resourceIBMISIKEPolicyCreate(d *schema.ResourceData, meta interface{}) erro
 	ikeVersion := d.Get(isIKEVERSION).(int)
 	resourceGrpId := d.Get(isIKEResourceGroup).(string)
 	keyLifetime := d.Get(isIKEKeyLifeTime).(int)
-	//Send an empty array for tags as we are not able to read the tags back
-	tags := []string{}
 
 	vpnC := vpn.NewVpnClient(sess)
-	ike, err := vpnC.CreateIkePolicy(authenticationAlg, encryptionAlg, name, resourceGrpId, tags, dhGroup, ikeVersion, keyLifetime)
+	ike, err := vpnC.CreateIkePolicy(authenticationAlg, encryptionAlg, name, resourceGrpId, dhGroup, ikeVersion, keyLifetime)
 	if err != nil {
 		log.Printf("[DEBUG] ike policy err %s", err)
 		return err

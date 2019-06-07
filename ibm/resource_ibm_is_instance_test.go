@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/compute"
-	"github.ibm.com/riaas/rias-api/riaas/models"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 func TestAccIBMISInstance_basic(t *testing.T) {
@@ -116,6 +116,12 @@ func testAccCheckIBMISInstanceConfig(vpcname, subnetname, sshname, publicKey, na
 		vpc = "${ibm_is_vpc.testacc_vpc.id}"
 		zone = "%s"
 		keys = ["${ibm_is_ssh_key.testacc_sshkey.id}"]
+		network_interfaces = [
+			{
+				subnet      = "${ibm_is_subnet.testacc_subnet.id}"
+				name  = "eth1"
+			}
+		]
 	}
 	
 `, vpcname, subnetname, ISZoneName, ISCIDR, sshname, publicKey, name, isImage, instanceProfileName, ISZoneName)

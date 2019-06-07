@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/lbaas"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
-	"github.ibm.com/riaas/rias-api/riaas/client/l_baas"
-	"github.ibm.com/riaas/rias-api/riaas/models"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/client/l_baas"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 const (
@@ -98,7 +98,11 @@ func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) err
 
 	var defPool, certificateCRN string
 	if pool, ok := d.GetOk(isLBListenerDefaultPool); ok {
-		defPool = pool.(string)
+		lbPool, err := getPoolId(pool.(string))
+		if err != nil {
+			return err
+		}
+		defPool = lbPool
 	}
 
 	if crn, ok := d.GetOk(isLBListenerCertificateInstance); ok {
@@ -220,7 +224,11 @@ func resourceIBMISLBListenerUpdate(d *schema.ResourceData, meta interface{}) err
 	}
 
 	if d.HasChange(isLBListenerDefaultPool) {
-		defPool = d.Get(isLBListenerDefaultPool).(string)
+		lbpool, err := getPoolId(d.Get(isLBListenerDefaultPool).(string))
+		if err != nil {
+			return err
+		}
+		defPool = lbpool
 		hasChanged = true
 	}
 	if d.HasChange(isLBListenerPort) {

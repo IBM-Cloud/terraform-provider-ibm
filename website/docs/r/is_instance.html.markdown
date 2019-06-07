@@ -36,9 +36,14 @@ resource "ibm_is_instance" "testacc_instance" {
   profile = "b-2x8"
 
   primary_network_interface = {
-    port_speed = "100"
     subnet     = "${ibm_is_subnet.testacc_subnet.id}"
   }
+
+  network_interfaces = {
+    name       = "eth1"
+    subnet     = "${ibm_is_subnet.testacc_subnet.id}"
+  }
+
 
   vpc  = "${ibm_is_vpc.testacc_vpc.id}"
   zone = "us-south-1"
@@ -69,20 +74,26 @@ The following arguments are supported:
 * `zone` - (Required, string) Name of the zone. 
 * `profile` - (Required, string) The profile name. 
 * `image` - (Optional, string) ID of the image. 
-  **NOTE**: Conflicts with `boot_volume`.
-* `boot_volume` - (Optional, string) ID of the boot volume. 
-  **NOTE**: Conflicts with `image`.
-* `keys` - (Required, list) Comma separated IDs of ssh keys. 
-* `generation` - (Optional, string) Generation of the server instance. valid values are gc, gt. Defaults to gc. 
+* `boot_volume` - (Optional, list) A block describing the boot volume of this instance.  
+`boot_volume` block have the following structure:
+  * `name` - (Optional, string) The name of the boot volume.
+  * `encryption` -(Optional, string) The encryption of the boot volume.
+* `keys` - (Required, list) Comma separated IDs of ssh keys.  
 * `primary_network_interface` - (Required, list) A nested block describing the primary network interface of this instance. We can have only one primary network interface.
 Nested `primary_network_interface` block have the following structure:
   * `name` - (Optional, string) The name of the network interface.
-  * `port_speed` - (Required, int) Speed of the network interface.
+  * `port_speed` - (Deprecated, int) Speed of the network interface.
   * `subnet` -  (Required, string) ID of the subnet.
-  * `security_groups` - (Optional, string) Comma separated IDs of security groups.
+  * `security_groups` - (Optional, list) Comma separated IDs of security groups.
+* `network_interfaces` - (Optional, list) A nested block describing the additional network interface of this instance.
+Nested `network_interfaces` block have the following structure:
+  * `name` - (Optional, string) The name of the network interface.
+  * `port_speed` - (Deprecated, int) Speed of the network interface.
+  * `subnet` -  (Required, string) ID of the subnet.
+  * `security_groups` - (Optional, list) Comma separated IDs of security groups.
 
 * `volumes` - (Optional, list) Comma separated IDs of volumes. 
-* `user-data` - (Optional, string) User data to transfer to the server instance. 
+* `user_data` - (Optional, string) User data to transfer to the server instance. 
 
 ## Attribute Reference
 
@@ -107,10 +118,23 @@ Nested `gpu` blocks have the following structure:
 Nested `primary_network_interface` blocks have the following structure:
   * `id` - The id of the network interface.
   * `name` - The name of the network interface.
-  * `port_speed` - Speed of the network interface.
   * `subnet` -  ID of the subnet.
   * `security_groups` -  List of security groups.
   * `primary_ipv4_address` - The primary IPv4 address.
+* `network_interfaces` - A nested block describing the additional network interface of this instance.
+Nested `network_interfaces` blocks have the following structure:
+  * `id` - The id of the network interface.
+  * `name` - The name of the network interface.
+  * `subnet` -  ID of the subnet.
+  * `security_groups` -  List of security groups.
+  * `primary_ipv4_address` - The primary IPv4 address.
+* `boot_volume` - A nested block describing the boot volume.
+Nested `boot_volume` blocks have the following structure:
+  * `name` - The name of the boot volume.
+  * `size` -  Capacity of the volume in GB.
+  * `iops` -  Input/Output Operations Per Second for the volume.
+  * `profile` - The profile of the volume.
+  * `encryption` - The encryption of the boot volume.
 
 ## Import
 

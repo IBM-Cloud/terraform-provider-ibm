@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/lbaas"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
-	"github.ibm.com/riaas/rias-api/riaas/client/l_baas"
-	"github.ibm.com/riaas/rias-api/riaas/models"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/client/l_baas"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 const (

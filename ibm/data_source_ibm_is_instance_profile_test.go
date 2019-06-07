@@ -19,7 +19,6 @@ func TestAccIBMISInstanceProfileDataSource_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "name", instanceProfileName),
 					resource.TestCheckResourceAttrSet(resName, "family"),
-					resource.TestCheckResourceAttrSet(resName, "generation"),
 				),
 			},
 		},

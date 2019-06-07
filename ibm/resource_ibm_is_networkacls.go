@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
-	"github.ibm.com/riaas/rias-api/riaas/models"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 const (
@@ -253,8 +253,8 @@ func resourceIBMISNetworkACLRead(d *schema.ResourceData, meta interface{}) error
 			rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
 			tcp := make([]map[string]int, 1, 1)
 			tcp[0] = map[string]int{
-				isNetworkACLRulePortMax: checkNetworkACLNil(rulex.PortMax),
-				isNetworkACLRulePortMin: checkNetworkACLNil(rulex.PortMin),
+				isNetworkACLRulePortMax: checkNetworkACLNil(&rulex.PortMax),
+				isNetworkACLRulePortMin: checkNetworkACLNil(&rulex.PortMin),
 			}
 			rule[isNetworkACLRuleTCP] = tcp
 		} else if rulex.Protocol == "udp" {
@@ -262,8 +262,8 @@ func resourceIBMISNetworkACLRead(d *schema.ResourceData, meta interface{}) error
 			rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
 			udp := make([]map[string]int, 1, 1)
 			udp[0] = map[string]int{
-				isNetworkACLRulePortMax: checkNetworkACLNil(rulex.PortMax),
-				isNetworkACLRulePortMin: checkNetworkACLNil(rulex.PortMin),
+				isNetworkACLRulePortMax: checkNetworkACLNil(&rulex.PortMax),
+				isNetworkACLRulePortMin: checkNetworkACLNil(&rulex.PortMin),
 			}
 			rule[isNetworkACLRuleUDP] = udp
 		}

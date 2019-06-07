@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
-	"github.ibm.com/riaas/rias-api/riaas/models"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 func TestAccIBMISVPCDatasource_basic(t *testing.T) {
