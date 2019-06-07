@@ -31,10 +31,6 @@ func dataSourceIBMISInstanceProfiles() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"generation": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
 					},
 				},
 			},
@@ -59,8 +55,6 @@ func dataSourceIBMISInstanceProfilesRead(d *schema.ResourceData, meta interface{
 		p := make(map[string]string)
 		p["name"] = profile.Name
 		p["family"] = profile.Family
-		p["generation"] = string(profile.Generation)
-
 		profiles[i] = p
 	}
 	d.SetId(dataSourceIBMISInstanceProfilesID(d))

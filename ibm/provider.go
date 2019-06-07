@@ -81,6 +81,13 @@ func Provider() terraform.ResourceProvider {
 				Optional:    true,
 				Description: "The next generation infrastructure service endpoint url.",
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"RIAAS_ENDPOINT"}, "us-south.iaas.cloud.ibm.com"),
+				Deprecated:  "This field is deprecated use generation",
+			},
+			"generation": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Generation of Virtual Private Cloud. Default is 2",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_GENERATION", "IBMCLOUD_GENERATION"}, 2),
 			},
 		},
 
@@ -259,6 +266,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	retryCount := d.Get("max_retries").(int)
 	wskNameSpace := d.Get("function_namespace").(string)
 	riaasEndPoint := d.Get("riaas_endpoint").(string)
+	generation := d.Get("generation").(int)
 
 	wskEnvVal, err := schema.EnvDefaultFunc("FUNCTION_NAMESPACE", "")()
 	if err != nil {
@@ -282,6 +290,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		RetryDelay:           RetryAPIDelay,
 		FunctionNameSpace:    wskNameSpace,
 		RiaasEndPoint:        riaasEndPoint,
+		Generation:           generation,
 	}
 
 	return config.ClientSession()

@@ -9,8 +9,9 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/compute"
+	"github.ibm.com/Bluemix/riaas-go-client/clients/storage"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
-	"github.ibm.com/riaas/rias-api/riaas/models"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 const (
@@ -63,6 +64,12 @@ const (
 	isInstanceDeleting         = "deleting"
 	isInstanceDeleteDone       = "done"
 	isInstanceFailed           = "failed"
+
+	isInstanceBootName       = "name"
+	isInstanceBootSize       = "size"
+	isInstanceBootIOPS       = "iops"
+	isInstanceBootEncryption = "encryption"
+	isInstanceBootProfile    = "profile"
 )
 
 func resourceIBMISInstance() *schema.Resource {
@@ -131,8 +138,9 @@ func resourceIBMISInstance() *schema.Resource {
 						},
 						isInstanceNicPortSpeed: {
 							Type:             schema.TypeInt,
-							Required:         true,
+							Optional:         true,
 							DiffSuppressFunc: applyOnce,
+							Deprecated:       "This field is deprected",
 						},
 						isInstanceNicPrimaryIpv4Address: {
 							Type:     schema.TypeString,
@@ -141,6 +149,41 @@ func resourceIBMISInstance() *schema.Resource {
 						isInstanceNicSecurityGroups: {
 							Type:     schema.TypeSet,
 							Optional: true,
+							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+							Set:      schema.HashString,
+						},
+						isInstanceNicSubnet: {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
+
+			isInstanceNetworkInterfaces: {
+				Type:             schema.TypeList,
+				Optional:         true,
+				DiffSuppressFunc: applyOnce,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						isInstanceNicName: {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						isInstanceNicPrimaryIpv4Address: {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						isInstanceNicSecurityGroups: {
+							Type:     schema.TypeSet,
+							Optional: true,
+							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 							Set:      schema.HashString,
 						},
@@ -158,6 +201,7 @@ func resourceIBMISInstance() *schema.Resource {
 				Default:          "gc",
 				DiffSuppressFunc: applyOnce,
 				ValidateFunc:     validateGeneration,
+				Removed:          "This field is removed",
 			},
 
 			isInstanceUserData: {
@@ -167,26 +211,50 @@ func resourceIBMISInstance() *schema.Resource {
 			},
 
 			isInstanceImage: {
-				Type:          schema.TypeString,
-				ForceNew:      true,
-				Optional:      true,
-				ConflictsWith: []string{isInstanceBootVolume},
+				Type:     schema.TypeString,
+				ForceNew: true,
+				Optional: true,
 			},
 
 			isInstanceBootVolume: {
-				Type:          schema.TypeString,
-				ForceNew:      true,
-				Optional:      true,
-				Computed:      true,
-				ConflictsWith: []string{isInstanceImage},
+				Type:             schema.TypeList,
+				DiffSuppressFunc: applyOnce,
+				Optional:         true,
+				Computed:         true,
+				MaxItems:         1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isInstanceBootName: {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						isInstanceBootEncryption: {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						isInstanceBootSize: {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						isInstanceBootIOPS: {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						isInstanceBootProfile: {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
 			},
 
 			isInstanceVolumes: {
-				Type:             schema.TypeSet,
-				Optional:         true,
-				Elem:             &schema.Schema{Type: schema.TypeString},
-				Set:              schema.HashString,
-				DiffSuppressFunc: applyOnce,
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
 			},
 
 			isInstanceCPU: {
@@ -261,65 +329,62 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	profile := d.Get(isInstanceProfile).(string)
 	var body = &models.PostInstancesParamsBody{
 		Name: d.Get(isInstanceName).(string),
-		Vpc: &models.ResourceLocator{
+		Vpc: &models.PostInstancesParamsBodyVpc{
 			ID: strfmt.UUID(d.Get(isInstanceVPC).(string)),
 		},
-		Zone: &models.ZoneReference{
+		Zone: &models.NameReference{
 			Name: d.Get(isInstanceZone).(string),
 		},
-		Profile: &models.NameLocator{
+		Profile: &models.PostInstancesParamsBodyProfile{
 			Name: profile,
 		},
-		Flavor: &models.NameLocator{
-			Name: profile,
-		},
-		Generation: models.Generation(d.Get(isInstanceGeneration).(string)),
 	}
 
-	var imageID, bootvol string
-
 	if img, ok := d.GetOk(isInstanceImage); ok {
-		imageID = img.(string)
-		body.Image = &models.ResourceLocator{
-			ID: strfmt.UUID(imageID),
+		body.Image = &models.PostInstancesParamsBodyImage{
+			ID: strfmt.UUID(img.(string)),
 		}
 	}
 
 	if boot, ok := d.GetOk(isInstanceBootVolume); ok {
-		bootvol = boot.(string)
-
-		template := &models.VolumeAttachmentTemplateVolume{}
-		template.ID = strfmt.UUID(bootvol)
-
-		body.BootVolumeAttachment = &models.VolumeAttachmentTemplate{
+		bootvol := boot.([]interface{})[0].(map[string]interface{})
+		template := &models.PostInstancesParamsBodyBootVolumeAttachmentVolume{}
+		name, ok := bootvol[isInstanceBootName]
+		if ok {
+			template.Name = name.(string)
+		}
+		enc, ok := bootvol[isInstanceBootEncryption]
+		if ok && enc.(string) != "" {
+			template.EncryptionKey = &models.PostInstancesParamsBodyBootVolumeAttachmentVolumeEncryptionKey{
+				Crn: enc.(string),
+			}
+		}
+		body.BootVolumeAttachment = &models.PostInstancesParamsBodyBootVolumeAttachment{
 
 			Volume: template,
 		}
-	}
-
-	if imageID == "" && bootvol == "" {
-		return fmt.Errorf("%s or %s need to be provided", isInstanceImage, isInstanceBootVolume)
 	}
 
 	// implement boovol, nics, vols
 
 	if primnicintf, ok := d.GetOk(isInstancePrimaryNetworkInterface); ok {
 		primnic := primnicintf.([]interface{})[0].(map[string]interface{})
-		portspeedintf := (primnic[isInstanceNicPortSpeed].(int))
 		subnetintf, _ := primnic[isInstanceNicSubnet]
-		var primnicobj = models.PrimaryNetworkInterfaceTemplate{}
-		primnicobj.Subnet = &models.ResourceLocator{
+		var primnicobj = models.PostInstancesParamsBodyPrimaryNetworkInterface{}
+		primnicobj.Subnet = &models.PostInstancesParamsBodyPrimaryNetworkInterfaceSubnet{
 			ID: strfmt.UUID(subnetintf.(string)),
 		}
-
-		primnicobj.PortSpeed = int64(portspeedintf)
+		name, ok := primnic[isInstanceNicName]
+		if ok {
+			primnicobj.Name = name.(string)
+		}
 		secgrpintf, ok := primnic[isInstanceNicSecurityGroups]
 		if ok {
 			secgrpSet := secgrpintf.(*schema.Set)
 			if secgrpSet.Len() != 0 {
-				var secgrpobjs = make([]*models.ResourceLocator, secgrpSet.Len())
+				var secgrpobjs = make([]*models.PostInstancesParamsBodyPrimaryNetworkInterfaceSecurityGroupsItems, secgrpSet.Len())
 				for i, secgrpIntf := range secgrpSet.List() {
-					secgrpobjs[i] = &models.ResourceLocator{
+					secgrpobjs[i] = &models.PostInstancesParamsBodyPrimaryNetworkInterfaceSecurityGroupsItems{
 						ID: strfmt.UUID(secgrpIntf.(string)),
 					}
 				}
@@ -330,30 +395,49 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		body.PrimaryNetworkInterface = &primnicobj
 	}
 
+	if nicsintf, ok := d.GetOk(isInstanceNetworkInterfaces); ok {
+		nics := nicsintf.([]interface{})
+		var intfs []*models.PostInstancesParamsBodyNetworkInterfacesItems
+		for _, resource := range nics {
+			nic := resource.(map[string]interface{})
+			nwInterface := &models.PostInstancesParamsBodyNetworkInterfacesItems{}
+			subnetintf, _ := nic[isInstanceNicSubnet]
+			nwInterface.Subnet = &models.PostInstancesParamsBodyNetworkInterfacesItemsSubnet{
+				ID: strfmt.UUID(subnetintf.(string)),
+			}
+			name, ok := nic[isInstanceNicName]
+			if ok && name.(string) != "" {
+				nwInterface.Name = name.(string)
+			}
+			secgrpintf, ok := nic[isInstanceNicSecurityGroups]
+			if ok {
+				secgrpSet := secgrpintf.(*schema.Set)
+				if secgrpSet.Len() != 0 {
+					var secgrpobjs = make([]*models.PostInstancesParamsBodyNetworkInterfacesItemsSecurityGroupsItems, secgrpSet.Len())
+					for i, secgrpIntf := range secgrpSet.List() {
+						secgrpobjs[i] = &models.PostInstancesParamsBodyNetworkInterfacesItemsSecurityGroupsItems{
+							ID: strfmt.UUID(secgrpIntf.(string)),
+						}
+					}
+					nwInterface.SecurityGroups = secgrpobjs
+				}
+			}
+
+			intfs = append(intfs, nwInterface)
+		}
+
+		body.NetworkInterfaces = intfs
+	}
+
 	keySet := d.Get(isInstanceKeys).(*schema.Set)
 	if keySet.Len() != 0 {
-		keyobjs := make([]*models.KeyLocator, keySet.Len())
+		keyobjs := make([]*models.PostInstancesParamsBodyKeysItems, keySet.Len())
 		for i, key := range keySet.List() {
-			keyobjs[i] = &models.KeyLocator{
+			keyobjs[i] = &models.PostInstancesParamsBodyKeysItems{
 				ID: strfmt.UUID(key.(string)),
 			}
 		}
 		body.Keys = keyobjs
-	}
-
-	volSet := d.Get(isInstanceVolumes).(*schema.Set)
-	if volSet.Len() != 0 {
-		volobjs := make([]*models.VolumeAttachmentTemplate, volSet.Len())
-		for i, vol := range volSet.List() {
-
-			template := &models.VolumeAttachmentTemplateVolume{}
-			template.ID = strfmt.UUID(vol.(string))
-
-			volobjs[i] = &models.VolumeAttachmentTemplate{
-				Volume: template,
-			}
-		}
-		body.VolumeAttachments = volobjs
 	}
 
 	if userdata, ok := d.GetOk(isInstanceUserData); ok {
@@ -375,7 +459,7 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	return resourceIBMisInstanceRead(d, meta)
+	return resourceIBMisInstanceUpdate(d, meta)
 }
 
 func isWaitForInstanceAvailable(instanceC *compute.InstanceClient, id string, d *schema.ResourceData) (interface{}, error) {
@@ -448,23 +532,57 @@ func resourceIBMisInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.Set(isInstanceGpu, gpuList)
 
-	primaryNicList := make([]map[string]interface{}, 0)
 	if instance.PrimaryNetworkInterface != nil {
+		primaryNicList := make([]map[string]interface{}, 0)
 		currentPrimNic := map[string]interface{}{}
 		currentPrimNic["id"] = instance.PrimaryNetworkInterface.ID.String()
 		currentPrimNic[isInstanceNicName] = instance.PrimaryNetworkInterface.Name
 		currentPrimNic[isInstanceNicPrimaryIpv4Address] = instance.PrimaryNetworkInterface.PrimaryIPV4Address
+		insnic, err := instanceC.GetInterface(d.Id(), instance.PrimaryNetworkInterface.ID.String())
+		if err != nil {
+			return err
+		}
+		currentPrimNic[isInstanceNicSubnet] = insnic.Subnet.ID
+		if len(insnic.SecurityGroups) != 0 {
+			secgrpList := []string{}
+			for i := 0; i < len(insnic.SecurityGroups); i++ {
+				secgrpList = append(secgrpList, string((insnic.SecurityGroups[i].ID)))
+			}
+			currentPrimNic[isInstanceNicSecurityGroups] = newStringSet(schema.HashString, secgrpList)
+		}
+
 		primaryNicList = append(primaryNicList, currentPrimNic)
+		d.Set(isInstancePrimaryNetworkInterface, primaryNicList)
 	}
-	d.Set(isInstancePrimaryNetworkInterface, primaryNicList)
+
+	if instance.NetworkInterfaces != nil {
+		interfacesList := make([]map[string]interface{}, 0)
+		for _, intfc := range instance.NetworkInterfaces {
+			currentNic := map[string]interface{}{}
+			currentNic["id"] = intfc.ID
+			currentNic[isInstanceNicName] = intfc.Name
+			currentNic[isInstanceNicPrimaryIpv4Address] = intfc.PrimaryIPV4Address
+			insnic, err := instanceC.GetInterface(d.Id(), intfc.ID.String())
+			if err != nil {
+				return err
+			}
+			currentNic[isInstanceNicSubnet] = insnic.Subnet.ID
+			if len(insnic.SecurityGroups) != 0 {
+				secgrpList := []string{}
+				for i := 0; i < len(insnic.SecurityGroups); i++ {
+					secgrpList = append(secgrpList, string((insnic.SecurityGroups[i].ID)))
+				}
+				currentNic[isInstanceNicSecurityGroups] = newStringSet(schema.HashString, secgrpList)
+			}
+			interfacesList = append(interfacesList, currentNic)
+
+		}
+
+		d.Set(isInstanceNetworkInterfaces, interfacesList)
+	}
 
 	if instance.Image != nil {
 		d.Set(isInstanceImage, instance.Image.ID.String())
-	}
-
-	if instance.BootVolumeAttachment != nil {
-		d.Set(isInstanceBootVolume, instance.BootVolumeAttachment.ID.String())
-
 	}
 
 	d.Set(isInstanceStatus, instance.Status)
@@ -472,15 +590,31 @@ func resourceIBMisInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(isInstanceZone, instance.Zone.Name)
 
 	var volumes []string
-	volumes = make([]string, len(instance.VolumeAttachments), len(instance.VolumeAttachments))
+	volumes = make([]string, 0)
 	if instance.VolumeAttachments != nil {
-		for i := 0; i < len(instance.VolumeAttachments); i++ {
-			if instance.VolumeAttachments[i] != nil {
-				volumes[i] = instance.VolumeAttachments[i].ID.String()
+		for _, volume := range instance.VolumeAttachments {
+			if volume != nil && volume.Volume.ID != instance.BootVolumeAttachment.Volume.ID {
+				volumes = append(volumes, string(volume.Volume.ID))
 			}
 		}
 	}
-	d.Set(isInstanceVolumes, volumes)
+	d.Set(isInstanceVolumes, newStringSet(schema.HashString, volumes))
+
+	if instance.BootVolumeAttachment != nil {
+		bootVol := map[string]interface{}{}
+		bootVol[isInstanceBootName] = instance.BootVolumeAttachment.Name
+		stg := storage.NewStorageClient(sess)
+		vol, err := stg.Get(instance.BootVolumeAttachment.Volume.ID.String())
+		if err != nil {
+			return err
+		}
+		if vol.EncryptionKey != nil {
+			bootVol[isInstanceBootEncryption] = vol.EncryptionKey.Crn
+		}
+		bootVol[isInstanceBootSize] = vol.Capacity
+		bootVol[isInstanceBootIOPS] = vol.Iops
+		bootVol[isInstanceBootProfile] = vol.Profile
+	}
 
 	return nil
 }
@@ -492,6 +626,45 @@ func resourceIBMisInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 	instanceC := compute.NewInstanceClient(sess)
+
+	if d.HasChange(isInstanceVolumes) {
+		ovs, nvs := d.GetChange(isInstanceVolumes)
+		ov := ovs.(*schema.Set)
+		nv := nvs.(*schema.Set)
+
+		remove := expandStringList(ov.Difference(nv).List())
+		add := expandStringList(nv.Difference(ov).List())
+
+		if len(add) > 0 {
+			for i := range add {
+				_, err := instanceC.AttachVolume(d.Id(), add[i], "", "")
+				if err != nil {
+					return fmt.Errorf("Error while attaching volume %q for instance %s: %q", add[i], d.Id(), err)
+				}
+				_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d)
+				if err != nil {
+					return err
+				}
+			}
+
+		}
+		if len(remove) > 0 {
+			for i := range remove {
+				if remove[i] != "" {
+					err := instanceC.DeleteVolAttachment(d.Id(), remove[i])
+					if err != nil {
+						return fmt.Errorf("Error while removing volume %q for instance %s: %q", remove[i], d.Id(), err)
+					}
+					_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d)
+					if err != nil {
+						return err
+					}
+				}
+
+			}
+
+		}
+	}
 
 	name := ""
 	profile := ""

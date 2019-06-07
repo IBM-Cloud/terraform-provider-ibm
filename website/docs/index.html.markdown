@@ -172,3 +172,5 @@ Note: `BLUEMIX_REGION` is not supported for Infrastructure Service. If you want 
 
 * `riaas_endpoint` - (Optional) The next generation infrastructure service API endpoint . It can also be sourced from the `RIAAS_ENDPOINT`. Default value: `us-south.iaas.cloud.ibm.com`. 
 
+* `generation` - (Optional) The generation of Virtual Private Cloud. It can also be sourced from the `IC_GENERATION` (higher precedence) or `IBMCLOUD_GENERATION` environment variable. Default value: `2`.
+

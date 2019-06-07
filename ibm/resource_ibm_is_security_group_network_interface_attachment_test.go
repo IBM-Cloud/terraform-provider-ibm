@@ -10,11 +10,11 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
-	"github.ibm.com/riaas/rias-api/riaas/models"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 func TestAccIBMISSecurityGroupNwInterfaceAttachment_basic(t *testing.T) {
-	var instanceNic *models.InstanceNetworkInterface
+	var instanceNic *models.ServerNetworkInterface
 	vpcname := fmt.Sprintf("terraforminstanceuat_vpc_%d", acctest.RandInt())
 	name := fmt.Sprintf("terraforminstanceuat-%d", acctest.RandInt())
 	subnetname := fmt.Sprintf("terraforminstanceuat_subnet_%d", acctest.RandInt())
@@ -68,7 +68,7 @@ func testAccCheckIBMISSecurityGroupNwInterfaceAttachmentDestroy(s *terraform.Sta
 	return nil
 }
 
-func testAccCheckIBMISSecurityGroupNwInterfaceAttachmentExists(n string, instance **models.InstanceNetworkInterface) resource.TestCheckFunc {
+func testAccCheckIBMISSecurityGroupNwInterfaceAttachmentExists(n string, instance **models.ServerNetworkInterface) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 

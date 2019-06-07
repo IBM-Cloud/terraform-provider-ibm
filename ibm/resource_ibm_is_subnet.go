@@ -143,7 +143,7 @@ func resourceIBMISSubnetCreate(d *schema.ResourceData, meta interface{}) error {
 	gw := d.Get(isSubnetPublicGateway).(string)
 
 	subnetC := network.NewSubnetClient(sess)
-	subnet, err := subnetC.Create(name, zone, vpc, acl, gw, "", "", ipv4cidr, ipv4addrcount)
+	subnet, err := subnetC.Create(name, zone, vpc, acl, gw, "", ipv4cidr, ipv4addrcount)
 	if err != nil {
 		return err
 	}

@@ -24,7 +24,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/sl"
-	vpc "github.ibm.com/riaas/rias-api/riaas/models"
+	vpc "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 //HashInt ...
