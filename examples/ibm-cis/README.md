@@ -40,7 +40,7 @@ The following variables need to be set in the `terraform.tf` file before use
 
 * `softlayer_username` is an Infrastructure user name. Go to https://control.bluemix.net/account/user/profile, scroll down, and check API Username.
 * `softlayer_api_key` is an Infrastructure API Key. Go to https://control.bluemix.net/account/user/profile, scroll down, and check Authentication Key.
-* `bluemix_api_key` - An API key for IBM Cloud services. If you don't have one already, go to https://console.bluemix.net/iam/#/apikeys and create a new key.
+* `ibmcloud_api_key` - An API key for IBM Cloud services. If you don't have one already, go to https://console.bluemix.net/iam/#/apikeys and create a new key.
 
 
 Customise the variables in `variables.tf` to your local environment and chosen DNS domain name. 

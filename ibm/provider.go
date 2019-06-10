@@ -17,28 +17,46 @@ func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"bluemix_api_key": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The Bluemix API Key",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"BM_API_KEY", "BLUEMIX_API_KEY"}, ""),
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "The Bluemix API Key",
+				DefaultFunc:   schema.MultiEnvDefaultFunc([]string{"BM_API_KEY", "BLUEMIX_API_KEY"}, ""),
+				Deprecated:    "This field is deprecated please use ibmcloud_api_key",
+				ConflictsWith: []string{"ibmcloud_api_key"},
 			},
 			"bluemix_timeout": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "The timeout (in seconds) to set for any Bluemix API calls made.",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"BM_TIMEOUT", "BLUEMIX_TIMEOUT"}, 60),
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Description:   "The timeout (in seconds) to set for any Bluemix API calls made.",
+				DefaultFunc:   schema.MultiEnvDefaultFunc([]string{"BM_TIMEOUT", "BLUEMIX_TIMEOUT"}, 60),
+				Deprecated:    "This field is deprecated please use ibmcloud_timeout",
+				ConflictsWith: []string{"ibmcloud_timeout"},
+			},
+			"ibmcloud_api_key": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "The IBM Cloud API Key",
+				DefaultFunc:   schema.MultiEnvDefaultFunc([]string{"IC_API_KEY", "IBMCLOUD_API_KEY"}, ""),
+				ConflictsWith: []string{"bluemix_api_key"},
+			},
+			"ibmcloud_timeout": {
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Description:   "The timeout (in seconds) to set for any IBM Cloud API calls made.",
+				DefaultFunc:   schema.MultiEnvDefaultFunc([]string{"IC_TIMEOUT", "IBMCLOUD_TIMEOUT"}, 60),
+				ConflictsWith: []string{"bluemix_timeout"},
 			},
 			"region": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The Bluemix Region (for example 'us-south').",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"BM_REGION", "BLUEMIX_REGION"}, "us-south"),
+				Description: "The IBM cloud Region (for example 'us-south').",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_REGION", "IBMCLOUD_REGION", "BM_REGION", "BLUEMIX_REGION"}, "us-south"),
 			},
 			"resource_group": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The Resource group id.",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"BM_RESOURCE_GROUP", "BLUEMIX_RESOURCE_GROUP"}, ""),
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_RESOURCE_GROUP", "IBMCLOUD_RESOURCE_GROUP", "BM_RESOURCE_GROUP", "BLUEMIX_RESOURCE_GROUP"}, ""),
 			},
 			"softlayer_api_key": {
 				Type:        schema.TypeString,
@@ -255,12 +273,25 @@ func Provider() terraform.ResourceProvider {
 }
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
-	bluemixAPIKey := d.Get("bluemix_api_key").(string)
+	var bluemixAPIKey string
+	var bluemixTimeout int
+	if key, ok := d.GetOk("bluemix_api_key"); ok {
+		bluemixAPIKey = key.(string)
+	}
+	if key, ok := d.GetOk("ibmcloud_api_key"); ok {
+		bluemixAPIKey = key.(string)
+	}
 	softlayerUsername := d.Get("softlayer_username").(string)
 	softlayerAPIKey := d.Get("softlayer_api_key").(string)
 	softlayerEndpointUrl := d.Get("softlayer_endpoint_url").(string)
 	softlayerTimeout := d.Get("softlayer_timeout").(int)
-	bluemixTimeout := d.Get("bluemix_timeout").(int)
+	if tm, ok := d.GetOk("bluemix_timeout"); ok {
+		bluemixTimeout = tm.(int)
+	}
+	if tm, ok := d.GetOk("ibmcloud_timeout"); ok {
+		bluemixTimeout = tm.(int)
+	}
+
 	resourceGrp := d.Get("resource_group").(string)
 	region := d.Get("region").(string)
 	retryCount := d.Get("max_retries").(int)

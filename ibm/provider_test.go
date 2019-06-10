@@ -321,8 +321,8 @@ func TestProvider_impl(t *testing.T) {
 }
 
 func testAccPreCheck(t *testing.T) {
-	if v := os.Getenv("BM_API_KEY"); v == "" {
-		t.Fatal("BM_API_KEY must be set for acceptance tests")
+	if v := os.Getenv("IC_API_KEY"); v == "" {
+		t.Fatal("IC_API_KEY must be set for acceptance tests")
 	}
 	if v := os.Getenv("SL_API_KEY"); v == "" {
 		t.Fatal("SL_API_KEY must be set for acceptance tests")
