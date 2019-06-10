@@ -18,7 +18,7 @@ func main() {
 	c := new(bluemix.Config)
 	flag.StringVar(&c.IBMID, "ibmid", "", "The IBM ID. You can also source it from env IBMID")
 	flag.StringVar(&c.IBMIDPassword, "ibmidpass", "", "The IBMID Password. You can also source it from IBMID_PASSWORD")
-	flag.StringVar(&c.Region, "region", "us-south", "The Bluemix region. You can source it from env BM_REGION or BLUEMIX_REGION")
+	flag.StringVar(&c.Region, "region", "us-south", "The Bluemix region. You can source it from env IC_REGION or BLUEMIX_REGION")
 	flag.BoolVar(&c.Debug, "debug", false, "Show full trace if on")
 
 	var org string

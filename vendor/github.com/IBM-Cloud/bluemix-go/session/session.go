@@ -38,11 +38,11 @@ func New(configs ...*bluemix.Config) (*Session, error) {
 	}
 
 	if len(c.BluemixAPIKey) == 0 {
-		c.BluemixAPIKey = helpers.EnvFallBack([]string{"BM_API_KEY", "BLUEMIX_API_KEY"}, "")
+		c.BluemixAPIKey = helpers.EnvFallBack([]string{"IC_API_KEY", "IBMCLOUD_API_KEY", "BM_API_KEY", "BLUEMIX_API_KEY"}, "")
 	}
 
 	if len(c.Region) == 0 {
-		c.Region = helpers.EnvFallBack([]string{"BM_REGION", "BLUEMIX_REGION"}, "us-south")
+		c.Region = helpers.EnvFallBack([]string{"IC_REGION", "IBMCLOUD_REGION", "BM_REGION", "BLUEMIX_REGION"}, "us-south")
 	}
 	if c.MaxRetries == nil {
 		c.MaxRetries = helpers.Int(3)
@@ -60,10 +60,10 @@ func New(configs ...*bluemix.Config) (*Session, error) {
 	}
 	if c.HTTPTimeout == 0 {
 		c.HTTPTimeout = 180 * time.Second
-		timeout := helpers.EnvFallBack([]string{"BM_TIMEOUT", "BLUEMIX_TIMEOUT"}, "180")
+		timeout := helpers.EnvFallBack([]string{"IC_TIMEOUT", "IBMCLOUD_TIMEOUT", "BM_TIMEOUT", "BLUEMIX_TIMEOUT"}, "180")
 		timeoutDuration, err := time.ParseDuration(fmt.Sprintf("%ss", timeout))
 		if err != nil {
-			fmt.Printf("BM_TIMEOUT or BLUEMIX_TIMEOUT has invalid time format. Default timeout will be set to %q", c.HTTPTimeout)
+			fmt.Printf("IC_TIMEOUT or IBMCLOUD_TIMEOUT has invalid time format. Default timeout will be set to %q", c.HTTPTimeout)
 		}
 		if err == nil {
 			c.HTTPTimeout = timeoutDuration
