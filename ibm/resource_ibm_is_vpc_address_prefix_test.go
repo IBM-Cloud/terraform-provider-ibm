@@ -9,11 +9,11 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
-	"github.ibm.com/riaas/rias-api/riaas/models"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 func TestAccIBMISVPCAddressPrefix_basic(t *testing.T) {
-	var vpcAddressPrefix *models.AddressPoolPrefix
+	var vpcAddressPrefix *models.AddressPrefix
 	name1 := fmt.Sprintf("terraformvpcuat_create_step_name_%d", acctest.RandInt())
 	prefixName := fmt.Sprintf("terraformvpcuat_create_prefix_name_%d", acctest.RandInt())
 	prefixName1 := fmt.Sprintf("terraformvpcuat_create_prefix_name_%d", acctest.RandInt())
@@ -70,7 +70,7 @@ func testAccCheckIBMISVPCAddressPrefixDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMISVPCAddressPrefixExists(n string, vpcAddressPrefix **models.AddressPoolPrefix) resource.TestCheckFunc {
+func testAccCheckIBMISVPCAddressPrefixExists(n string, vpcAddressPrefix **models.AddressPrefix) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 

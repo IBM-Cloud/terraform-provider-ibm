@@ -95,6 +95,9 @@ type Config struct {
 
 	//Riaas End point
 	RiaasEndPoint string
+
+	//Generation
+	Generation int
 }
 
 //Session stores the information required for communication with the SoftLayer and Bluemix API
@@ -390,7 +393,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.iamUUMServiceAPI = iamuum
 
-	issession, err := issession.New(sess.BluemixSession.Config.IAMAccessToken, c.RiaasEndPoint, true)
+	issession, err := issession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, c.Generation, true, c.BluemixTimeout)
 	if err != nil {
 		session.isConfigErr = err
 		return nil, err

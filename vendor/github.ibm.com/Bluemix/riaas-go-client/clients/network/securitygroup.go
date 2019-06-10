@@ -2,8 +2,8 @@ package network
 
 import (
 	"github.com/go-openapi/strfmt"
-	"github.ibm.com/riaas/rias-api/riaas/client/network"
-	"github.ibm.com/riaas/rias-api/riaas/models"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/client/network"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 
 	"errors"
 
@@ -39,15 +39,13 @@ func NewSecurityGroupClient(sess *session.Session) *SecurityGroupClient {
 
 // List ...
 func (f *SecurityGroupClient) List(start string) ([]*models.SecurityGroup, string, error) {
-	return f.ListWithFilter("", "", "", start)
+	return f.ListWithFilter("", "", start)
 }
 
 // ListWithFilter ...
-func (f *SecurityGroupClient) ListWithFilter(tag, vpcID, resourcegroupID, start string) ([]*models.SecurityGroup, string, error) {
-	params := network.NewGetSecurityGroupsParams()
-	if tag != "" {
-		params = params.WithTag(&tag)
-	}
+func (f *SecurityGroupClient) ListWithFilter(vpcID, resourcegroupID, start string) ([]*models.SecurityGroup, string, error) {
+	params := network.NewGetSecurityGroupsParamsWithTimeout(f.session.Timeout)
+
 	if vpcID != "" {
 		params = params.WithVpcID(&vpcID)
 	}
@@ -58,6 +56,7 @@ func (f *SecurityGroupClient) ListWithFilter(tag, vpcID, resourcegroupID, start 
 		params = params.WithStart(&start)
 	}
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 
 	resp, err := f.session.Riaas.Network.GetSecurityGroups(params, session.Auth(f.session))
 
@@ -70,8 +69,9 @@ func (f *SecurityGroupClient) ListWithFilter(tag, vpcID, resourcegroupID, start 
 
 // Get ...
 func (f *SecurityGroupClient) Get(id string) (*models.SecurityGroup, error) {
-	params := network.NewGetSecurityGroupsIDParams().WithID(id)
+	params := network.NewGetSecurityGroupsIDParamsWithTimeout(f.session.Timeout).WithID(id)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.GetSecurityGroupsID(params, session.Auth(f.session))
 
 	if err != nil {
@@ -83,8 +83,9 @@ func (f *SecurityGroupClient) Get(id string) (*models.SecurityGroup, error) {
 
 // Create ...
 func (f *SecurityGroupClient) Create(sgdef *models.PostSecurityGroupsParamsBody) (*models.SecurityGroup, error) {
-	params := network.NewPostSecurityGroupsParams().WithBody(sgdef)
+	params := network.NewPostSecurityGroupsParamsWithTimeout(f.session.Timeout).WithBody(sgdef)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.PostSecurityGroups(params, session.Auth(f.session))
 	if err != nil {
 		return nil, riaaserrors.ToError(err)
@@ -95,8 +96,9 @@ func (f *SecurityGroupClient) Create(sgdef *models.PostSecurityGroupsParamsBody)
 
 // Delete ...
 func (f *SecurityGroupClient) Delete(id string) error {
-	params := network.NewDeleteSecurityGroupsIDParams().WithID(id)
+	params := network.NewDeleteSecurityGroupsIDParamsWithTimeout(f.session.Timeout).WithID(id)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.Network.DeleteSecurityGroupsID(params, session.Auth(f.session))
 	return riaaserrors.ToError(err)
 }
@@ -107,8 +109,9 @@ func (f *SecurityGroupClient) Update(id, name string) (*models.SecurityGroup, er
 		Name: name,
 	}
 
-	params := network.NewPatchSecurityGroupsIDParams().WithID(id).WithBody(&body)
+	params := network.NewPatchSecurityGroupsIDParamsWithTimeout(f.session.Timeout).WithID(id).WithRequestBody(&body)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.PatchSecurityGroupsID(params, session.Auth(f.session))
 	if err != nil {
 		return nil, riaaserrors.ToError(err)
@@ -118,10 +121,11 @@ func (f *SecurityGroupClient) Update(id, name string) (*models.SecurityGroup, er
 }
 
 // ListNetworkInterfaces ...
-func (f *SecurityGroupClient) ListNetworkInterfaces(secgrpID string) ([]*models.InstanceNetworkInterface, error) {
-	params := network.NewGetSecurityGroupsSecurityGroupIDNetworkInterfacesParams()
+func (f *SecurityGroupClient) ListNetworkInterfaces(secgrpID string) ([]*models.ServerNetworkInterface, error) {
+	params := network.NewGetSecurityGroupsSecurityGroupIDNetworkInterfacesParamsWithTimeout(f.session.Timeout)
 	params = params.WithSecurityGroupID(secgrpID)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 
 	resp, err := f.session.Riaas.Network.GetSecurityGroupsSecurityGroupIDNetworkInterfaces(params, session.Auth(f.session))
 
@@ -134,16 +138,18 @@ func (f *SecurityGroupClient) ListNetworkInterfaces(secgrpID string) ([]*models.
 
 // DeleteNetworkInterface ...
 func (f *SecurityGroupClient) DeleteNetworkInterface(secgrpID, networkIntfID string) error {
-	params := network.NewDeleteSecurityGroupsSecurityGroupIDNetworkInterfacesIDParams().WithSecurityGroupID(secgrpID).WithID(networkIntfID)
+	params := network.NewDeleteSecurityGroupsSecurityGroupIDNetworkInterfacesIDParamsWithTimeout(f.session.Timeout).WithSecurityGroupID(secgrpID).WithID(networkIntfID)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.Network.DeleteSecurityGroupsSecurityGroupIDNetworkInterfacesID(params, session.Auth(f.session))
 	return riaaserrors.ToError(err)
 }
 
 // GetNetworkInterface ...
-func (f *SecurityGroupClient) GetNetworkInterface(secgrpID, networkIntfID string) (*models.InstanceNetworkInterface, error) {
-	params := network.NewGetSecurityGroupsSecurityGroupIDNetworkInterfacesIDParams().WithSecurityGroupID(secgrpID).WithID(networkIntfID)
+func (f *SecurityGroupClient) GetNetworkInterface(secgrpID, networkIntfID string) (*models.ServerNetworkInterface, error) {
+	params := network.NewGetSecurityGroupsSecurityGroupIDNetworkInterfacesIDParamsWithTimeout(f.session.Timeout).WithSecurityGroupID(secgrpID).WithID(networkIntfID)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.GetSecurityGroupsSecurityGroupIDNetworkInterfacesID(params, session.Auth(f.session))
 	if err != nil {
 		return nil, riaaserrors.ToError(err)
@@ -153,9 +159,10 @@ func (f *SecurityGroupClient) GetNetworkInterface(secgrpID, networkIntfID string
 }
 
 // AddNetworkInterface ...
-func (f *SecurityGroupClient) AddNetworkInterface(secgrpID, networkIntfID string) (*models.InstanceNetworkInterface, error) {
-	params := network.NewPutSecurityGroupsSecurityGroupIDNetworkInterfacesIDParams().WithSecurityGroupID(secgrpID).WithID(networkIntfID)
+func (f *SecurityGroupClient) AddNetworkInterface(secgrpID, networkIntfID string) (*models.ServerNetworkInterface, error) {
+	params := network.NewPutSecurityGroupsSecurityGroupIDNetworkInterfacesIDParamsWithTimeout(f.session.Timeout).WithSecurityGroupID(secgrpID).WithID(networkIntfID)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.PutSecurityGroupsSecurityGroupIDNetworkInterfacesID(params, session.Auth(f.session))
 	if err != nil {
 		return nil, riaaserrors.ToError(err)
@@ -166,9 +173,10 @@ func (f *SecurityGroupClient) AddNetworkInterface(secgrpID, networkIntfID string
 
 // ListRules ...
 func (f *SecurityGroupClient) ListRules(secgrpID string) ([]*models.SecurityGroupRule, error) {
-	params := network.NewGetSecurityGroupsSecurityGroupIDRulesParams()
+	params := network.NewGetSecurityGroupsSecurityGroupIDRulesParamsWithTimeout(f.session.Timeout)
 	params = params.WithSecurityGroupID(secgrpID)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 
 	resp, err := f.session.Riaas.Network.GetSecurityGroupsSecurityGroupIDRules(params, session.Auth(f.session))
 
@@ -183,7 +191,7 @@ func (f *SecurityGroupClient) ListRules(secgrpID string) ([]*models.SecurityGrou
 func (f *SecurityGroupClient) AddRule(secgrpID, direction, ipversion, protocol, remoteAddress, remoteCIDR, remoteSecGrpID string,
 	icmpType, icmpCode, portMin, portMax int64) (*models.SecurityGroupRule, error) {
 
-	remote := models.SecurityGroupRuleTemplateRemote{}
+	remote := models.PostSecurityGroupsSecurityGroupIDRulesParamsBodyRemote{}
 
 	if remoteAddress != "" {
 		if remoteCIDR != "" || remoteSecGrpID != "" {
@@ -199,8 +207,8 @@ func (f *SecurityGroupClient) AddRule(secgrpID, direction, ipversion, protocol, 
 		remote.ID = strfmt.UUID(remoteSecGrpID)
 	}
 
-	rule := models.SecurityGroupRuleTemplate{
-		Direction: direction,
+	rule := models.PostSecurityGroupsSecurityGroupIDRulesParamsBody{
+		Direction: &direction,
 		IPVersion: ipversion,
 		Protocol:  &protocol,
 	}
@@ -228,9 +236,10 @@ func (f *SecurityGroupClient) AddRule(secgrpID, direction, ipversion, protocol, 
 		return nil, errors.New("Unknown protocol " + protocol)
 	}
 
-	params := network.NewPostSecurityGroupsSecurityGroupIDRulesParams()
+	params := network.NewPostSecurityGroupsSecurityGroupIDRulesParamsWithTimeout(f.session.Timeout)
 	params = params.WithSecurityGroupID(secgrpID).WithBody(&rule)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 
 	resp, err := f.session.Riaas.Network.PostSecurityGroupsSecurityGroupIDRules(params, session.Auth(f.session))
 
@@ -243,16 +252,18 @@ func (f *SecurityGroupClient) AddRule(secgrpID, direction, ipversion, protocol, 
 
 // DeleteRule ...
 func (f *SecurityGroupClient) DeleteRule(secgrpID, ruleID string) error {
-	params := network.NewDeleteSecurityGroupsSecurityGroupIDRulesIDParams().WithSecurityGroupID(secgrpID).WithID(ruleID)
+	params := network.NewDeleteSecurityGroupsSecurityGroupIDRulesIDParamsWithTimeout(f.session.Timeout).WithSecurityGroupID(secgrpID).WithID(ruleID)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.Network.DeleteSecurityGroupsSecurityGroupIDRulesID(params, session.Auth(f.session))
 	return riaaserrors.ToError(err)
 }
 
 // GetRule ...
 func (f *SecurityGroupClient) GetRule(secgrpID, ruleID string) (*models.SecurityGroupRule, error) {
-	params := network.NewGetSecurityGroupsSecurityGroupIDRulesIDParams().WithSecurityGroupID(secgrpID).WithID(ruleID)
+	params := network.NewGetSecurityGroupsSecurityGroupIDRulesIDParamsWithTimeout(f.session.Timeout).WithSecurityGroupID(secgrpID).WithID(ruleID)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.GetSecurityGroupsSecurityGroupIDRulesID(params, session.Auth(f.session))
 	if err != nil {
 		return nil, riaaserrors.ToError(err)
@@ -265,7 +276,7 @@ func (f *SecurityGroupClient) GetRule(secgrpID, ruleID string) (*models.Security
 func (f *SecurityGroupClient) UpdateRule(secgrpID, ruleID, direction, ipversion, protocol, remoteAddress, remoteCIDR, remoteSecGrpID string,
 	icmpType, icmpCode, portMin, portMax int64) (*models.SecurityGroupRule, error) {
 
-	remote := models.SecurityGroupRuleTemplateRemote{}
+	remote := models.PatchSecurityGroupsSecurityGroupIDRulesIDParamsBodyRemote{}
 
 	if remoteAddress != "" {
 		if remoteCIDR != "" || remoteSecGrpID != "" {
@@ -281,7 +292,7 @@ func (f *SecurityGroupClient) UpdateRule(secgrpID, ruleID, direction, ipversion,
 		remote.ID = strfmt.UUID(remoteSecGrpID)
 	}
 
-	rule := models.SecurityGroupRuleTemplate{}
+	rule := models.PatchSecurityGroupsSecurityGroupIDRulesIDParamsBody{}
 
 	if direction != "" {
 		rule.Direction = direction
@@ -292,7 +303,7 @@ func (f *SecurityGroupClient) UpdateRule(secgrpID, ruleID, direction, ipversion,
 	}
 
 	if protocol != "" {
-		rule.Protocol = &protocol
+		rule.Protocol = protocol
 	}
 
 	if icmpCode >= 0 {
@@ -313,9 +324,10 @@ func (f *SecurityGroupClient) UpdateRule(secgrpID, ruleID, direction, ipversion,
 		rule.Remote = &remote
 	}
 
-	params := network.NewPatchSecurityGroupsSecurityGroupIDRulesIDParams()
+	params := network.NewPatchSecurityGroupsSecurityGroupIDRulesIDParamsWithTimeout(f.session.Timeout)
 	params = params.WithSecurityGroupID(secgrpID).WithBody(&rule).WithID(ruleID)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 
 	resp, err := f.session.Riaas.Network.PatchSecurityGroupsSecurityGroupIDRulesID(params, session.Auth(f.session))
 

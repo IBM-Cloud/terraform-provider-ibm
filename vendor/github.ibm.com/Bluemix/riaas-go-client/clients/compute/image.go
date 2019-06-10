@@ -1,8 +1,8 @@
 package compute
 
 import (
-	"github.ibm.com/riaas/rias-api/riaas/client/compute"
-	"github.ibm.com/riaas/rias-api/riaas/models"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/client/compute"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 
 	"github.ibm.com/Bluemix/riaas-go-client/errors"
 	"github.ibm.com/Bluemix/riaas-go-client/session"
@@ -22,11 +22,9 @@ func NewImageClient(sess *session.Session) *ImageClient {
 }
 
 // ListWithFilter ...
-func (f *ImageClient) ListWithFilter(tag, visibility, start string) ([]*models.Image, string, error) {
-	params := compute.NewGetImagesParams()
-	if tag != "" {
-		params = params.WithTag(&tag)
-	}
+func (f *ImageClient) ListWithFilter(visibility, start string) ([]*models.Image, string, error) {
+	params := compute.NewGetImagesParamsWithTimeout(f.session.Timeout)
+
 	if visibility != "" {
 		params = params.WithVisibility(&visibility)
 	}
@@ -35,6 +33,7 @@ func (f *ImageClient) ListWithFilter(tag, visibility, start string) ([]*models.I
 		params = params.WithStart(&start)
 	}
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 
 	resp, err := f.session.Riaas.Compute.GetImages(params, session.Auth(f.session))
 
@@ -42,18 +41,19 @@ func (f *ImageClient) ListWithFilter(tag, visibility, start string) ([]*models.I
 		return nil, "", errors.ToError(err)
 	}
 
-	return resp.Payload.Images, utils.GetPageLink(resp.Payload.Next), nil
+	return resp.Payload.Images, utils.GetNext(resp.Payload.Next), nil
 }
 
 // List ...
 func (f *ImageClient) List(start string) ([]*models.Image, string, error) {
-	return f.ListWithFilter("", "", start)
+	return f.ListWithFilter("", start)
 }
 
 // Get ...
 func (f *ImageClient) Get(id string) (*models.Image, error) {
-	params := compute.NewGetImagesIDParams().WithID(id)
+	params := compute.NewGetImagesIDParamsWithTimeout(f.session.Timeout).WithID(id)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.GetImagesID(params, session.Auth(f.session))
 
 	if err != nil {

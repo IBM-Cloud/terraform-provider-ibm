@@ -32,4 +32,3 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `family` - The family of the virtual server instance profile.
-* `generation` - The platform generation of the virtual server instance profile.

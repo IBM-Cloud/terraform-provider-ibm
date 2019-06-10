@@ -55,7 +55,7 @@ func dataSourceIBMISImageRead(d *schema.ResourceData, meta interface{}) error {
 	if v, ok := d.GetOk("visibility"); ok {
 		visibility = v.(string)
 	}
-	images, _, err := imageC.ListWithFilter("", visibility, "")
+	images, _, err := imageC.ListWithFilter(visibility, "")
 	if err != nil {
 		return err
 	}

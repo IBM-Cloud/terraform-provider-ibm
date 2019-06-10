@@ -3,9 +3,9 @@ package vpn
 import (
 	"github.com/go-openapi/strfmt"
 	"github.ibm.com/Bluemix/riaas-go-client/errors"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/client/v_p_naa_s"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 	"github.ibm.com/Bluemix/riaas-go-client/session"
-	"github.ibm.com/riaas/rias-api/riaas/client/v_p_naa_s"
-	"github.ibm.com/riaas/rias-api/riaas/models"
 )
 
 // vpn ...
@@ -22,7 +22,7 @@ func NewVpnClient(sess *session.Session) *VpnClient {
 
 // GetIkePolicies ...
 func (f *VpnClient) ListIkePolicies(limit int32, start, tag string) (*models.IKEPolicyCollection, error) {
-	params := v_p_naa_s.NewGetIkePoliciesParams()
+	params := v_p_naa_s.NewGetIkePoliciesParamsWithTimeout(f.session.Timeout)
 	if start != "" {
 		params = params.WithStart(&start)
 	}
@@ -30,6 +30,7 @@ func (f *VpnClient) ListIkePolicies(limit int32, start, tag string) (*models.IKE
 		params = params.WithLimit(&limit)
 	}
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.VPNaaS.GetIkePolicies(params, session.Auth(f.session))
 
 	if err != nil {
@@ -40,7 +41,7 @@ func (f *VpnClient) ListIkePolicies(limit int32, start, tag string) (*models.IKE
 }
 
 // CreateIkePolicy ...
-func (f *VpnClient) CreateIkePolicy(authenticationAlgorithm, encryptionAlgorithm, name, resourceGrpId string, tags []string, dhGroup, ikeVersion, keyLifetime int) (*models.IKEPolicy, error) {
+func (f *VpnClient) CreateIkePolicy(authenticationAlgorithm, encryptionAlgorithm, name, resourceGrpId string, dhGroup, ikeVersion, keyLifetime int) (*models.IKEPolicy, error) {
 	var body = models.IKEPolicyTemplate{}
 	body.Name = name
 	body.AuthenticationAlgorithm = authenticationAlgorithm
@@ -56,11 +57,9 @@ func (f *VpnClient) CreateIkePolicy(authenticationAlgorithm, encryptionAlgorithm
 	if keyLifetime != 0 {
 		body.KeyLifetime = int64(keyLifetime)
 	}
-	if len(tags) != 0 {
-		body.Tags = tags
-	}
-	params := v_p_naa_s.NewPostIkePoliciesParams().WithBody(&body)
+	params := v_p_naa_s.NewPostIkePoliciesParamsWithTimeout(f.session.Timeout).WithBody(&body)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.VPNaaS.PostIkePolicies(params, session.Auth(f.session))
 	if err != nil {
 		return nil, errors.ToError(err)
@@ -71,8 +70,9 @@ func (f *VpnClient) CreateIkePolicy(authenticationAlgorithm, encryptionAlgorithm
 
 // DeleteIkePolicy ...
 func (f *VpnClient) DeleteIkePolicy(ikePolicyId string) error {
-	params := v_p_naa_s.NewDeleteIkePoliciesIDParams().WithID(ikePolicyId)
+	params := v_p_naa_s.NewDeleteIkePoliciesIDParamsWithTimeout(f.session.Timeout).WithID(ikePolicyId)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.VPNaaS.DeleteIkePoliciesID(params, session.Auth(f.session))
 	if err != nil {
 		return errors.ToError(err)
@@ -82,8 +82,9 @@ func (f *VpnClient) DeleteIkePolicy(ikePolicyId string) error {
 
 // GetIkePolicy ...
 func (f *VpnClient) GetIkePolicy(id string) (*models.IKEPolicy, error) {
-	params := v_p_naa_s.NewGetIkePoliciesIDParams().WithID(id)
+	params := v_p_naa_s.NewGetIkePoliciesIDParamsWithTimeout(f.session.Timeout).WithID(id)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.VPNaaS.GetIkePoliciesID(params, session.Auth(f.session))
 
 	if err != nil {
@@ -114,8 +115,9 @@ func (f *VpnClient) UpdateIkePolicy(id, authenticationAlgorithm, encryptionAlgor
 	if keyLifetime != 0 {
 		body.KeyLifetime = int64(keyLifetime)
 	}
-	params := v_p_naa_s.NewPatchIkePoliciesIDParams().WithID(id).WithBody(&body)
+	params := v_p_naa_s.NewPatchIkePoliciesIDParamsWithTimeout(f.session.Timeout).WithID(id).WithBody(&body)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.VPNaaS.PatchIkePoliciesID(params, session.Auth(f.session))
 	if err != nil {
 		return nil, errors.ToError(err)
@@ -126,8 +128,9 @@ func (f *VpnClient) UpdateIkePolicy(id, authenticationAlgorithm, encryptionAlgor
 
 // GetIkePoliciesConnections ...
 func (f *VpnClient) GetIkePoliciesConnections(id string) (*models.VPNGatewayConnectionCollection, error) {
-	params := v_p_naa_s.NewGetIkePoliciesIDConnectionsParams().WithID(id)
+	params := v_p_naa_s.NewGetIkePoliciesIDConnectionsParamsWithTimeout(f.session.Timeout).WithID(id)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.VPNaaS.GetIkePoliciesIDConnections(params, session.Auth(f.session))
 
 	if err != nil {
@@ -139,7 +142,7 @@ func (f *VpnClient) GetIkePoliciesConnections(id string) (*models.VPNGatewayConn
 
 // ListIpsecPolicies ...
 func (f *VpnClient) ListIpsecPolicies(limit int32, start string) (*models.IpsecPolicyCollection, error) {
-	params := v_p_naa_s.NewGetIpsecPoliciesParams()
+	params := v_p_naa_s.NewGetIpsecPoliciesParamsWithTimeout(f.session.Timeout)
 	if start != "" {
 		params = params.WithStart(&start)
 	}
@@ -147,6 +150,7 @@ func (f *VpnClient) ListIpsecPolicies(limit int32, start string) (*models.IpsecP
 		params = params.WithLimit(&limit)
 	}
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.VPNaaS.GetIpsecPolicies(params, session.Auth(f.session))
 
 	if err != nil {
@@ -172,8 +176,9 @@ func (f *VpnClient) CreateIpsecPolicy(authenticationAlgorithm, encryptionAlgorit
 	if keyLifetime != 0 {
 		body.KeyLifetime = int64(keyLifetime)
 	}
-	params := v_p_naa_s.NewPostIpsecPoliciesParams().WithBody(&body)
+	params := v_p_naa_s.NewPostIpsecPoliciesParamsWithTimeout(f.session.Timeout).WithBody(&body)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.VPNaaS.PostIpsecPolicies(params, session.Auth(f.session))
 	if err != nil {
 		return nil, errors.ToError(err)
@@ -184,8 +189,9 @@ func (f *VpnClient) CreateIpsecPolicy(authenticationAlgorithm, encryptionAlgorit
 
 // DeleteIpsecPolicy ...
 func (f *VpnClient) DeleteIpsecPolicy(id string) error {
-	params := v_p_naa_s.NewDeleteIpsecPoliciesIDParams().WithID(id)
+	params := v_p_naa_s.NewDeleteIpsecPoliciesIDParamsWithTimeout(f.session.Timeout).WithID(id)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.VPNaaS.DeleteIpsecPoliciesID(params, session.Auth(f.session))
 	if err != nil {
 		return errors.ToError(err)
@@ -195,8 +201,9 @@ func (f *VpnClient) DeleteIpsecPolicy(id string) error {
 
 // GetIpsecPolicy ...
 func (f *VpnClient) GetIpsecPolicy(id string) (*models.IpsecPolicy, error) {
-	params := v_p_naa_s.NewGetIpsecPoliciesIDParams().WithID(id)
+	params := v_p_naa_s.NewGetIpsecPoliciesIDParamsWithTimeout(f.session.Timeout).WithID(id)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.VPNaaS.GetIpsecPoliciesID(params, session.Auth(f.session))
 
 	if err != nil {
@@ -224,8 +231,9 @@ func (f *VpnClient) UpdateIpsecPolicy(id, authenticationAlgorithm, encryptionAlg
 	if keyLifetime != 0 {
 		body.KeyLifetime = int64(keyLifetime)
 	}
-	params := v_p_naa_s.NewPatchIpsecPoliciesIDParams().WithID(id).WithBody(&body)
+	params := v_p_naa_s.NewPatchIpsecPoliciesIDParamsWithTimeout(f.session.Timeout).WithID(id).WithBody(&body)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.VPNaaS.PatchIpsecPoliciesID(params, session.Auth(f.session))
 	if err != nil {
 		return nil, errors.ToError(err)
@@ -236,8 +244,9 @@ func (f *VpnClient) UpdateIpsecPolicy(id, authenticationAlgorithm, encryptionAlg
 
 // GetIpsecPoliciesConnections ...
 func (f *VpnClient) GetIpsecPoliciesConnections(id string) (*models.VPNGatewayConnectionCollection, error) {
-	params := v_p_naa_s.NewGetIpsecPoliciesIDConnectionsParams().WithID(id)
+	params := v_p_naa_s.NewGetIpsecPoliciesIDConnectionsParamsWithTimeout(f.session.Timeout).WithID(id)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.VPNaaS.GetIpsecPoliciesIDConnections(params, session.Auth(f.session))
 
 	if err != nil {
@@ -249,7 +258,7 @@ func (f *VpnClient) GetIpsecPoliciesConnections(id string) (*models.VPNGatewayCo
 
 // List ...
 func (f *VpnClient) List(limit int32, resourceGrpId, start string) (*models.VPNGatewayCollection, error) {
-	params := v_p_naa_s.NewGetVpnGatewaysParams()
+	params := v_p_naa_s.NewGetVpnGatewaysParamsWithTimeout(f.session.Timeout)
 	if start != "" {
 		params = params.WithStart(&start)
 	}
@@ -260,6 +269,7 @@ func (f *VpnClient) List(limit int32, resourceGrpId, start string) (*models.VPNG
 		params = params.WithLimit(&limit)
 	}
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.VPNaaS.GetVpnGateways(params, session.Auth(f.session))
 
 	if err != nil {
@@ -288,8 +298,9 @@ func (f *VpnClient) Create(name, subnetId, resourceGrpId string) (*models.VPNGat
 		body.Subnet = &subnetref
 	}
 
-	params := v_p_naa_s.NewPostVpnGatewaysParams().WithBody(&body)
+	params := v_p_naa_s.NewPostVpnGatewaysParamsWithTimeout(f.session.Timeout).WithBody(&body)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.VPNaaS.PostVpnGateways(params, session.Auth(f.session))
 	if err != nil {
 		return nil, errors.ToError(err)
@@ -300,8 +311,9 @@ func (f *VpnClient) Create(name, subnetId, resourceGrpId string) (*models.VPNGat
 
 // Delete ...
 func (f *VpnClient) Delete(id string) error {
-	params := v_p_naa_s.NewDeleteVpnGatewaysIDParams().WithID(id)
+	params := v_p_naa_s.NewDeleteVpnGatewaysIDParamsWithTimeout(f.session.Timeout).WithID(id)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.VPNaaS.DeleteVpnGatewaysID(params, session.Auth(f.session))
 	if err != nil {
 		return errors.ToError(err)
@@ -311,8 +323,9 @@ func (f *VpnClient) Delete(id string) error {
 
 // Get ...
 func (f *VpnClient) Get(id string) (*models.VPNGateway, error) {
-	params := v_p_naa_s.NewGetVpnGatewaysIDParams().WithID(id)
+	params := v_p_naa_s.NewGetVpnGatewaysIDParamsWithTimeout(f.session.Timeout).WithID(id)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.VPNaaS.GetVpnGatewaysID(params, session.Auth(f.session))
 
 	if err != nil {
@@ -329,8 +342,9 @@ func (f *VpnClient) Update(id, name string) (*models.VPNGateway, error) {
 		body.Name = name
 	}
 
-	params := v_p_naa_s.NewPatchVpnGatewaysIDParams().WithBody(&body)
+	params := v_p_naa_s.NewPatchVpnGatewaysIDParamsWithTimeout(f.session.Timeout).WithBody(&body)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.VPNaaS.PatchVpnGatewaysID(params, session.Auth(f.session))
 	if err != nil {
 		return nil, errors.ToError(err)
@@ -341,8 +355,9 @@ func (f *VpnClient) Update(id, name string) (*models.VPNGateway, error) {
 
 // GetConnections ...
 func (f *VpnClient) GetConnections(id string) (*models.VPNGatewayConnectionCollection, error) {
-	params := v_p_naa_s.NewGetVpnGatewaysVpnGatewayIDConnectionsParams().WithVpnGatewayID(id)
+	params := v_p_naa_s.NewGetVpnGatewaysVpnGatewayIDConnectionsParamsWithTimeout(f.session.Timeout).WithVpnGatewayID(id)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.VPNaaS.GetVpnGatewaysVpnGatewayIDConnections(params, session.Auth(f.session))
 
 	if err != nil {
@@ -375,8 +390,9 @@ func (f *VpnClient) CreateConnections(id, name, peerAddress, psk string, peerCid
 	if ipsecPolicy != nil {
 		body.IpsecPolicy = ipsecPolicy
 	}
-	params := v_p_naa_s.NewPostVpnGatewaysVpnGatewayIDConnectionsParams().WithVpnGatewayID(id).WithBody(&body)
+	params := v_p_naa_s.NewPostVpnGatewaysVpnGatewayIDConnectionsParamsWithTimeout(f.session.Timeout).WithVpnGatewayID(id).WithBody(&body)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.VPNaaS.PostVpnGatewaysVpnGatewayIDConnections(params, session.Auth(f.session))
 	if err != nil {
 		return nil, errors.ToError(err)
@@ -387,8 +403,9 @@ func (f *VpnClient) CreateConnections(id, name, peerAddress, psk string, peerCid
 
 // DeleteConnection ...
 func (f *VpnClient) DeleteConnection(vpnGatewayId, conenctionId string) error {
-	params := v_p_naa_s.NewDeleteVpnGatewaysVpnGatewayIDConnectionsIDParams().WithID(conenctionId).WithVpnGatewayID(vpnGatewayId)
+	params := v_p_naa_s.NewDeleteVpnGatewaysVpnGatewayIDConnectionsIDParamsWithTimeout(f.session.Timeout).WithID(conenctionId).WithVpnGatewayID(vpnGatewayId)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.VPNaaS.DeleteVpnGatewaysVpnGatewayIDConnectionsID(params, session.Auth(f.session))
 	if err != nil {
 		return errors.ToError(err)
@@ -398,8 +415,9 @@ func (f *VpnClient) DeleteConnection(vpnGatewayId, conenctionId string) error {
 
 // GetConnection ...
 func (f *VpnClient) GetConnection(vpnGatewayId, conenctionId string) (*models.VPNGatewayConnection, error) {
-	params := v_p_naa_s.NewGetVpnGatewaysVpnGatewayIDConnectionsIDParams().WithID(conenctionId).WithVpnGatewayID(vpnGatewayId)
+	params := v_p_naa_s.NewGetVpnGatewaysVpnGatewayIDConnectionsIDParamsWithTimeout(f.session.Timeout).WithID(conenctionId).WithVpnGatewayID(vpnGatewayId)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.VPNaaS.GetVpnGatewaysVpnGatewayIDConnectionsID(params, session.Auth(f.session))
 
 	if err != nil {
@@ -433,8 +451,9 @@ func (f *VpnClient) UpdateConnection(id, vpnGatewayId, name, peerAddress, psk st
 	if ipsecPolicy != nil {
 		body.IpsecPolicy = ipsecPolicy
 	}
-	params := v_p_naa_s.NewPatchVpnGatewaysVpnGatewayIDConnectionsIDParams().WithID(id).WithVpnGatewayID(vpnGatewayId).WithBody(&body)
+	params := v_p_naa_s.NewPatchVpnGatewaysVpnGatewayIDConnectionsIDParamsWithTimeout(f.session.Timeout).WithID(id).WithVpnGatewayID(vpnGatewayId).WithBody(&body)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.VPNaaS.PatchVpnGatewaysVpnGatewayIDConnectionsID(params, session.Auth(f.session))
 	if err != nil {
 		return nil, errors.ToError(err)
@@ -445,8 +464,9 @@ func (f *VpnClient) UpdateConnection(id, vpnGatewayId, name, peerAddress, psk st
 
 // ListIpsecPolicies ...
 func (f *VpnClient) ListLocalDirs(id, vpnGatewayId string) (*models.VPNGatewayConnectionLocalCIDRs, error) {
-	params := v_p_naa_s.NewGetVpnGatewaysVpnGatewayIDConnectionsIDLocalCidrsParams().WithID(id).WithVpnGatewayID(vpnGatewayId)
+	params := v_p_naa_s.NewGetVpnGatewaysVpnGatewayIDConnectionsIDLocalCidrsParamsWithTimeout(f.session.Timeout).WithID(id).WithVpnGatewayID(vpnGatewayId)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.VPNaaS.GetVpnGatewaysVpnGatewayIDConnectionsIDLocalCidrs(params, session.Auth(f.session))
 
 	if err != nil {
@@ -458,8 +478,9 @@ func (f *VpnClient) ListLocalDirs(id, vpnGatewayId string) (*models.VPNGatewayCo
 
 // DeleteLocalCidr ...
 func (f *VpnClient) DeleteLocalCidr(vpnGatewayId, conenctionId, prefixAddress, prefixLength string) error {
-	params := v_p_naa_s.NewDeleteVpnGatewaysVpnGatewayIDConnectionsIDLocalCidrsPrefixAddressPrefixLengthParams().WithID(conenctionId).WithVpnGatewayID(vpnGatewayId).WithPrefixAddress(prefixAddress).WithPrefixLength(prefixLength)
+	params := v_p_naa_s.NewDeleteVpnGatewaysVpnGatewayIDConnectionsIDLocalCidrsPrefixAddressPrefixLengthParamsWithTimeout(f.session.Timeout).WithID(conenctionId).WithVpnGatewayID(vpnGatewayId).WithPrefixAddress(prefixAddress).WithPrefixLength(prefixLength)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.VPNaaS.DeleteVpnGatewaysVpnGatewayIDConnectionsIDLocalCidrsPrefixAddressPrefixLength(params, session.Auth(f.session))
 	if err != nil {
 		return errors.ToError(err)
@@ -469,8 +490,9 @@ func (f *VpnClient) DeleteLocalCidr(vpnGatewayId, conenctionId, prefixAddress, p
 
 // DeletePeerCidr ...
 func (f *VpnClient) DeletePeerCidr(vpnGatewayId, conenctionId, prefixAddress, prefixLength string) error {
-	params := v_p_naa_s.NewDeleteVpnGatewaysVpnGatewayIDConnectionsIDPeerCidrsPrefixAddressPrefixLengthParams().WithID(conenctionId).WithVpnGatewayID(vpnGatewayId).WithPrefixAddress(prefixAddress).WithPrefixLength(prefixLength)
+	params := v_p_naa_s.NewDeleteVpnGatewaysVpnGatewayIDConnectionsIDPeerCidrsPrefixAddressPrefixLengthParamsWithTimeout(f.session.Timeout).WithID(conenctionId).WithVpnGatewayID(vpnGatewayId).WithPrefixAddress(prefixAddress).WithPrefixLength(prefixLength)
 	params.Version = "2019-03-26"
+	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.VPNaaS.DeleteVpnGatewaysVpnGatewayIDConnectionsIDPeerCidrsPrefixAddressPrefixLength(params, session.Auth(f.session))
 	if err != nil {
 		return errors.ToError(err)

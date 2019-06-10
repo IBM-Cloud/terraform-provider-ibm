@@ -69,6 +69,7 @@ func resourceIBMISSecurityGroupNetworkInterfaceAttachment() *schema.Resource {
 			isSGNICAPrimaryIPV6Address: {
 				Type:     schema.TypeString,
 				Computed: true,
+				Removed:  "This field is removed",
 			},
 			isSGNICASecondaryAddresses: {
 				Type:     schema.TypeSet,
@@ -100,6 +101,7 @@ func resourceIBMISSecurityGroupNetworkInterfaceAttachment() *schema.Resource {
 						isSGNICAFloatingIpAddress: {
 							Type:     schema.TypeString,
 							Computed: true,
+							Removed:  "This field is removed",
 						},
 						isSGNICAFloatingIpName: {
 							Type:     schema.TypeString,
@@ -178,7 +180,6 @@ func resourceIBMISSecurityGroupNetworkInterfaceAttachmentRead(d *schema.Resource
 	d.Set(isSGNICAName, instanceNic.Name)
 	d.Set(isSGNICAPortSpeed, instanceNic.PortSpeed)
 	d.Set(isSGNICAPrimaryIPV4Address, instanceNic.PrimaryIPV4Address)
-	d.Set(isSGNICAPrimaryIPV6Address, instanceNic.PrimaryIPV6Address)
 	d.Set(isSGNICAStatus, instanceNic.Status)
 	d.Set(isSGNICAType, instanceNic.Type)
 	if instanceNic.Subnet != nil {
@@ -200,7 +201,6 @@ func resourceIBMISSecurityGroupNetworkInterfaceAttachmentRead(d *schema.Resource
 		fp[isSGNICAFloatingIpCRN] = fpObj.Crn
 		fp[isSGNICAFloatingIpID] = fpObj.ID.String()
 		fp[isSGNICAFloatingIpName] = fpObj.Name
-		fp[isSGNICAFloatingIpAddress] = fpObj.Address
 		fps[i] = fp
 	}
 	d.Set(isSGNICAFloatingIps, fps)
