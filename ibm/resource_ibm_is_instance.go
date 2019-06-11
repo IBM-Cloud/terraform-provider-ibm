@@ -70,6 +70,11 @@ const (
 	isInstanceBootIOPS       = "iops"
 	isInstanceBootEncryption = "encryption"
 	isInstanceBootProfile    = "profile"
+
+	isInstanceVolumeAttaching = "attaching"
+	isInstanceVolumeAttached  = "attached"
+	isInstanceVolumeDetaching = "detaching"
+	isInstanceResourceGroup   = "resource_group"
 )
 
 func resourceIBMISInstance() *schema.Resource {
@@ -120,11 +125,11 @@ func resourceIBMISInstance() *schema.Resource {
 			},
 
 			isInstancePrimaryNetworkInterface: {
-				Type:             schema.TypeList,
-				MinItems:         1,
-				MaxItems:         1,
-				Required:         true,
-				DiffSuppressFunc: applyOnce,
+				Type:     schema.TypeList,
+				MinItems: 1,
+				MaxItems: 1,
+				Required: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -162,9 +167,9 @@ func resourceIBMISInstance() *schema.Resource {
 			},
 
 			isInstanceNetworkInterfaces: {
-				Type:             schema.TypeList,
-				Optional:         true,
-				DiffSuppressFunc: applyOnce,
+				Type:     schema.TypeList,
+				Optional: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -213,7 +218,7 @@ func resourceIBMISInstance() *schema.Resource {
 			isInstanceImage: {
 				Type:     schema.TypeString,
 				ForceNew: true,
-				Optional: true,
+				Required: true,
 			},
 
 			isInstanceBootVolume: {
@@ -255,6 +260,13 @@ func resourceIBMISInstance() *schema.Resource {
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
+			},
+
+			isInstanceResourceGroup: {
+				Type:     schema.TypeString,
+				ForceNew: true,
+				Optional: true,
+				Computed: true,
 			},
 
 			isInstanceCPU: {
@@ -338,12 +350,9 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		Profile: &models.PostInstancesParamsBodyProfile{
 			Name: profile,
 		},
-	}
-
-	if img, ok := d.GetOk(isInstanceImage); ok {
-		body.Image = &models.PostInstancesParamsBodyImage{
-			ID: strfmt.UUID(img.(string)),
-		}
+		Image: &models.PostInstancesParamsBodyImage{
+			ID: strfmt.UUID(d.Get(isInstanceImage).(string)),
+		},
 	}
 
 	if boot, ok := d.GetOk(isInstanceBootVolume); ok {
@@ -442,6 +451,13 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 
 	if userdata, ok := d.GetOk(isInstanceUserData); ok {
 		body.UserData = userdata.(string)
+	}
+
+	if grp, ok := d.GetOk(isInstanceResourceGroup); ok {
+		body.ResourceGroup = &models.PostInstancesParamsBodyResourceGroup{
+			ID: strfmt.UUID(grp.(string)),
+		}
+
 	}
 
 	instanceC := compute.NewInstanceClient(sess)
@@ -558,23 +574,26 @@ func resourceIBMisInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	if instance.NetworkInterfaces != nil {
 		interfacesList := make([]map[string]interface{}, 0)
 		for _, intfc := range instance.NetworkInterfaces {
-			currentNic := map[string]interface{}{}
-			currentNic["id"] = intfc.ID
-			currentNic[isInstanceNicName] = intfc.Name
-			currentNic[isInstanceNicPrimaryIpv4Address] = intfc.PrimaryIPV4Address
-			insnic, err := instanceC.GetInterface(d.Id(), intfc.ID.String())
-			if err != nil {
-				return err
-			}
-			currentNic[isInstanceNicSubnet] = insnic.Subnet.ID
-			if len(insnic.SecurityGroups) != 0 {
-				secgrpList := []string{}
-				for i := 0; i < len(insnic.SecurityGroups); i++ {
-					secgrpList = append(secgrpList, string((insnic.SecurityGroups[i].ID)))
+			if intfc.ID != instance.PrimaryNetworkInterface.ID {
+				currentNic := map[string]interface{}{}
+				currentNic["id"] = intfc.ID
+				currentNic[isInstanceNicName] = intfc.Name
+				currentNic[isInstanceNicPrimaryIpv4Address] = intfc.PrimaryIPV4Address
+				insnic, err := instanceC.GetInterface(d.Id(), intfc.ID.String())
+				if err != nil {
+					return err
 				}
-				currentNic[isInstanceNicSecurityGroups] = newStringSet(schema.HashString, secgrpList)
+				currentNic[isInstanceNicSubnet] = insnic.Subnet.ID
+				if len(insnic.SecurityGroups) != 0 {
+					secgrpList := []string{}
+					for i := 0; i < len(insnic.SecurityGroups); i++ {
+						secgrpList = append(secgrpList, string((insnic.SecurityGroups[i].ID)))
+					}
+					currentNic[isInstanceNicSecurityGroups] = newStringSet(schema.HashString, secgrpList)
+				}
+				interfacesList = append(interfacesList, currentNic)
+
 			}
-			interfacesList = append(interfacesList, currentNic)
 
 		}
 
@@ -601,6 +620,7 @@ func resourceIBMisInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(isInstanceVolumes, newStringSet(schema.HashString, volumes))
 
 	if instance.BootVolumeAttachment != nil {
+		bootVolList := make([]map[string]interface{}, 0)
 		bootVol := map[string]interface{}{}
 		bootVol[isInstanceBootName] = instance.BootVolumeAttachment.Name
 		stg := storage.NewStorageClient(sess)
@@ -613,8 +633,12 @@ func resourceIBMisInstanceRead(d *schema.ResourceData, meta interface{}) error {
 		}
 		bootVol[isInstanceBootSize] = vol.Capacity
 		bootVol[isInstanceBootIOPS] = vol.Iops
-		bootVol[isInstanceBootProfile] = vol.Profile
+		bootVol[isInstanceBootProfile] = vol.Profile.Name
+		bootVolList = append(bootVolList, bootVol)
+
+		d.Set(isInstanceBootVolume, bootVolList)
 	}
+	d.Set(isInstanceResourceGroup, instance.ResourceGroup.ID)
 
 	return nil
 }
@@ -637,11 +661,11 @@ func resourceIBMisInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 
 		if len(add) > 0 {
 			for i := range add {
-				_, err := instanceC.AttachVolume(d.Id(), add[i], "", "")
+				vol, err := instanceC.AttachVolume(d.Id(), add[i], "", "")
 				if err != nil {
 					return fmt.Errorf("Error while attaching volume %q for instance %s: %q", add[i], d.Id(), err)
 				}
-				_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d)
+				_, err = isWaitForInstanceVolumeAttached(instanceC, d.Id(), vol.ID.String(), d)
 				if err != nil {
 					return err
 				}
@@ -650,15 +674,23 @@ func resourceIBMisInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 		}
 		if len(remove) > 0 {
 			for i := range remove {
-				if remove[i] != "" {
-					err := instanceC.DeleteVolAttachment(d.Id(), remove[i])
-					if err != nil {
-						return fmt.Errorf("Error while removing volume %q for instance %s: %q", remove[i], d.Id(), err)
+				vols, err := instanceC.ListVolAttachments(d.Id())
+				if err != nil {
+					return err
+				}
+				for _, vol := range vols {
+					if vol.Volume.ID.String() == remove[i] {
+						err := instanceC.DeleteVolAttachment(d.Id(), vol.ID.String())
+						if err != nil {
+							return fmt.Errorf("Error while removing volume %q for instance %s: %q", remove[i], d.Id(), err)
+						}
+						_, err = isWaitForInstanceVolumeDetached(vol.ID.String(), d, meta)
+						if err != nil {
+							return err
+						}
+						break
 					}
-					_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d)
-					if err != nil {
-						return err
-					}
+
 				}
 
 			}
@@ -753,6 +785,71 @@ func isWaitForInstanceDelete(d *schema.ResourceData, meta interface{}) (interfac
 			return instance, isInstanceDeleting, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutDelete),
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isWaitForInstanceVolumeAttached(instanceC *compute.InstanceClient, id, volID string, d *schema.ResourceData) (interface{}, error) {
+	log.Printf("Waiting for instance volume (%s) to be attched.", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{isInstanceVolumeAttaching},
+		Target:     []string{isInstanceVolumeAttached},
+		Refresh:    isInstanceVolumeRefreshFunc(instanceC, id, volID),
+		Timeout:    d.Timeout(schema.TimeoutUpdate),
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isInstanceVolumeRefreshFunc(instanceC *compute.InstanceClient, id, volID string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		vol, err := instanceC.GetVolAttachment(id, volID)
+		if err != nil {
+			return nil, "", err
+		}
+
+		if vol.Status == isInstanceVolumeAttached {
+			return vol, isInstanceVolumeAttached, nil
+		}
+
+		return vol, isInstanceVolumeAttaching, nil
+	}
+}
+
+func isWaitForInstanceVolumeDetached(volID string, d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return false, err
+	}
+	instanceC := compute.NewInstanceClient(sess)
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{isInstanceVolumeAttached, isInstanceVolumeDetaching},
+		Target:  []string{isInstanceDeleteDone},
+		Refresh: func() (interface{}, string, error) {
+			vol, err := instanceC.GetVolAttachment(d.Id(), volID)
+			if err != nil {
+				iserror, ok := err.(iserrors.RiaasError)
+				if ok {
+					if len(iserror.Payload.Errors) == 1 &&
+						iserror.Payload.Errors[0].Code == "not_found" {
+						return vol, isInstanceDeleteDone, nil
+					}
+				}
+				return vol, "", err
+			}
+			if vol.Status == isInstanceFailed {
+				return vol, vol.Status, fmt.Errorf("The instance %s failed to detach volume %s: %v", d.Id(), volID, err)
+			}
+			return vol, isInstanceVolumeDetaching, nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutUpdate),
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
