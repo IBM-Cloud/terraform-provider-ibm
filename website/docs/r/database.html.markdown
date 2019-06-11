@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_database
 
-Creates an IBM Cloud Database (ICD) instance resource. This resource allows database instances to be created, updated, and deleted. The Bluemix_API_KEY used by Terraform must have been granted sufficient IAM rights to create and modify IBM Cloud Databases and have access to the Resource Group the ICD instance will be associated with. See https://cloud.ibm.com/docs/services/databases-for-postgresql/reference-access-management.html#identity-and-access-management for more details on setting IAM and Access Group rights to manage ICD instances.  
+Creates an IBM Cloud Database (ICD) instance resource. This resource allows database instances to be created, updated, and deleted. The ibmcloud_api_key used by Terraform must have been granted sufficient IAM rights to create and modify IBM Cloud Databases and have access to the Resource Group the ICD instance will be associated with. See https://cloud.ibm.com/docs/services/databases-for-postgresql/reference-access-management.html#identity-and-access-management for more details on setting IAM and Access Group rights to manage ICD instances.  
 
 If no resource_group_id is specified, the ICD instance is created under the default resource group. The API_KEY must have been assigned permissions for this group.  
 
@@ -51,7 +51,7 @@ provider.tf
 ```hcl
 
 provider "ibm" {
-  bluemix_api_key    = "${var.bluemix_api_key}"
+  ibmcloud_api_key    = "${var.ibmcloud_api_key}"
   region             = "eu-gb"
 }
 ```

@@ -1,6 +1,6 @@
 # Pool Get/Delete example
 
-This example shows how to get and delete a pool. CIS resource instance must be created first via UI or using the `resource/service-instance` example to create an `internet-svcs` instance. 64 digit CRN should be supplied as cis_id variable for pool create/delete. Environment variable BM_API_KEY must be set with API key. 
+This example shows how to get and delete a pool. CIS resource instance must be created first via UI or using the `resource/service-instance` example to create an `internet-svcs` instance. 64 digit CRN should be supplied as cis_id variable for pool create/delete. Environment variable IC_API_KEY must be set with API key. 
 
 Paired with Create/Get Pool example. Delete zone after running DNS/MONITOR/SETTINGS/GLB examples. 
 pool_id comes from output of Pool Create/Get"
