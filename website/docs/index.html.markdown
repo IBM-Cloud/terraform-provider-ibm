@@ -18,7 +18,7 @@ Use the navigation menu on the left to read about the available data sources and
 ```hcl
 # Configure the IBM Cloud Provider
 provider "ibm" {
-  bluemix_api_key    = "${var.ibm_bmx_api_key}"
+  ibmcloud_api_key    = "${var.ibm_bmx_api_key}"
   softlayer_username = "${var.ibm_sl_username}"
   softlayer_api_key  = "${var.ibm_sl_api_key}"
 }
@@ -114,13 +114,13 @@ The IBM Cloud provider offers a flexible means of providing credentials for auth
 
 ### Static credentials ###
 
-You can provide your static credentials by adding the `bluemix_api_key`, `softlayer_username`, and `softlayer_api_key` arguments in the IBM Cloud provider block.
+You can provide your static credentials by adding the `ibmcloud_api_key`, `softlayer_username`, and `softlayer_api_key` arguments in the IBM Cloud provider block.
 
 Usage:
 
 ```hcl
 provider "ibm" {
-    bluemix_api_key = ""
+    ibmcloud_api_key = ""
     softlayer_username = ""
     softlayer_api_key = ""
 }
@@ -129,7 +129,7 @@ provider "ibm" {
 
 ### Environment variables
 
-You can provide your credentials by exporting the `BM_API_KEY`, `SL_USERNAME`, and `SL_API_KEY` environment variables, representing your IBM Cloud platform API key, IBM Cloud infrastructure (SoftLayer) user name, and IBM Cloud infrastructure API key, respectively.
+You can provide your credentials by exporting the `IC_API_KEY`, `SL_USERNAME`, and `SL_API_KEY` environment variables, representing your IBM Cloud platform API key, IBM Cloud infrastructure (SoftLayer) user name, and IBM Cloud infrastructure API key, respectively.
 
 ```hcl
 provider "ibm" {}
@@ -138,7 +138,7 @@ provider "ibm" {}
 Usage:
 
 ```shell
-export BM_API_KEY="bmx_api_key"
+export IC_API_KEY="bmx_api_key"
 export SL_USERNAME="sl_username"
 export SL_API_KEY="sl_api_key"
 terraform plan
@@ -148,9 +148,13 @@ terraform plan
 
 The following arguments are supported in the `provider` block:
 
-* `bluemix_api_key` - (optional) The IBM Cloud platform API key. You must either add it as a credential in the provider block or source it from the `BM_API_KEY` (higher precedence) or `BLUEMIX_API_KEY` environment variable. The key is required to provision Cloud Foundry or IBM Cloud Container Service resources, such as any resource that begins with `ibm` or `ibm_container`.
+* `ibmcloud_api_key` - (optional) The IBM Cloud platform API key. You must either add it as a credential in the provider block or source it from the `IC_API_KEY` (higher precedence) or `IBMCLOUD_API_KEY` environment variable. The key is required to provision Cloud Foundry or IBM Cloud Container Service resources, such as any resource that begins with `ibm` or `ibm_container`.
 
-* `bluemix_timeout` - (optional) The timeout, expressed in seconds, for interacting with IBM Cloud APIs. You can also source the timeout from the `BM_TIMEOUT` (higher precedence) or `BLUEMIX_TIMEOUT` environment variable. The default value is `60`.
+* `bluemix_api_key` - (deprecated, optional) The IBM Cloud platform API key. You must either add it as a credential in the provider block or source it from the `BM_API_KEY` (higher precedence) or `BLUEMIX_API_KEY` environment variable. The key is required to provision Cloud Foundry or IBM Cloud Container Service resources, such as any resource that begins with `ibm` or `ibm_container`.
+
+* `ibmcloud_timeout` - (optional) The timeout, expressed in seconds, for interacting with IBM Cloud APIs. You can also source the timeout from the `IC_TIMEOUT` (higher precedence) or `IBMCLOUD_TIMEOUT` environment variable. The default value is `60`.
+
+* `bluemix_timeout` - (deprecated, optional) The timeout, expressed in seconds, for interacting with IBM Cloud APIs. You can also source the timeout from the `BM_TIMEOUT` (higher precedence) or `BLUEMIX_TIMEOUT` environment variable. The default value is `60`.
 
 * `softlayer_username` - (optional) The IBM Cloud infrastructure (SoftLayer) user name. You must either add it as a credential in the provider block or source it from the `SL_USERNAME` (higher precedence) or `SOFTLAYER_USERNAME` environment variable.
 
@@ -160,17 +164,17 @@ The following arguments are supported in the `provider` block:
 
 * `softlayer_timeout` - (optional) The timeout, expressed in seconds, for the IBM Cloud infrastructure API key. You can also source the timeout from the `SL_TIMEOUT` (higher precedence) or `SOFTLAYER_TIMEOUT` environment variable. The default value is `60`.
 
-* `region` - (optional) The IBM Cloud region. You can also source it from the `BM_REGION` (higher precedence) or `BLUEMIX_REGION` environment variable. The default value is `us-south`.
+* `region` - (optional) The IBM Cloud region. You can also source it from the `IC_REGION` (higher precedence) or `IBMCLOUD_REGION` `BM_REGION` `BLUEMIX_REGION` environment variable. The default value is `us-south`.
 
-Note: `BLUEMIX_REGION` is not supported for Infrastructure Service. If you want to create Infrastructure Service resource in another region, you need to set the RIAAS_ENDPOINT for that region. To get the supported endpoint , RUN `ic is regions`.
+Note: `IBMCLOUD_REGION` is not supported for Infrastructure Service. If you want to create Infrastructure Service resource in another region, you need to set the RIAAS_ENDPOINT for that region. To get the supported endpoint , RUN `ic is regions`.
 
-* `resource_group` - (optional) The Resource Group ID. You can also source it from the `BM_RESOURCE_GROUP` (higher precedence) or `BLUEMIX_RESOURCE_GROUP` environment variable.
+* `resource_group` - (optional) The Resource Group ID. You can also source it from the `IC_RESOURCE_GROUP` (higher precedence) or `IBMCLOUD_RESOURCE_GROUP` `BM_RESOURCE_GROUP` `BLUEMIX_RESOURCE_GROUP` environment variable.
 
 * `max_retries` - (Optional) This is the maximum number of times an IBM Cloud infrastructure API call is retried, in the case where requests are getting network related timeout and rate limit exceeded error code. You can also source it from the `MAX_RETRIES` environment variable. The default value is `10`.
 
 * `function_namespace` - (Optional) Your Cloud Functions namespace is composed from your IBM Cloud org and space like \<org\>_\<space\>. This attribute is required only when creating a Cloud Functions resource. It must be provided when you are creating such resources in IBM Cloud. You can also source it from the FUNCTION_NAMESPACE environment variable.
 
-* `riaas_endpoint` - (Optional) The next generation infrastructure service API endpoint . It can also be sourced from the `RIAAS_ENDPOINT`. Default value: `us-south.iaas.cloud.ibm.com`. 
+* `riaas_endpoint` - (deprected, Optional) The next generation infrastructure service API endpoint . It can also be sourced from the `RIAAS_ENDPOINT`. Default value: `us-south.iaas.cloud.ibm.com`. 
 
 * `generation` - (Optional) The generation of Virtual Private Cloud. It can also be sourced from the `IC_GENERATION` (higher precedence) or `IBMCLOUD_GENERATION` environment variable. Default value: `2`.
 

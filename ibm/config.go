@@ -49,7 +49,7 @@ var BluemixRegion string
 
 var (
 	errEmptySoftLayerCredentials = errors.New("softlayer_username and softlayer_api_key must be provided. Please see the documentation on how to configure them")
-	errEmptyBluemixCredentials   = errors.New("bluemix_api_key must be provided. Please see the documentation on how to configure it")
+	errEmptyBluemixCredentials   = errors.New("ibmcloud_api_key or bluemix_api_key must be provided. Please see the documentation on how to configure it")
 )
 
 //UserConfig ...
@@ -444,7 +444,7 @@ func newSession(c *Config) (*Session, error) {
 	ibmSession.SoftLayerSession = softlayerSession
 
 	if c.BluemixAPIKey != "" {
-		log.Println("Configuring Bluemix Session")
+		log.Println("Configuring IBM Cloud Session")
 		var sess *bxsession.Session
 		bmxConfig := &bluemix.Config{
 			BluemixAPIKey: c.BluemixAPIKey,

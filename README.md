@@ -50,7 +50,7 @@ If you want to run Terraform with the IBM Cloud provider plugin on your system, 
 5. Export API credential tokens as environment variables. This can either be [IBM Cloud API keys](https://cloud.ibm.com/iam#/users) or Softlayer API keys and usernames, depending on the resources you are provisioning.
 
 ```sh
-export BM_API_KEY="IBM Cloud API Key"
+export IC_API_KEY="IBM Cloud API Key"
 export SL_API_KEY="SoftLayer API Key"
 export SL_USERNAME="SoftLayer username associated with SL_API_KEY".
 ```
@@ -98,7 +98,7 @@ Issuing `make testacc` will now run the testcase with names matching `TestAccIBM
 `ibm/resource_ibm_network_vlan_test.go`
 
 You will also need to export the following environment variables for running the Acceptance tests.
-* `BM_API_KEY`- The Bluemix API Key
+* `IC_API_KEY`- The IBM Cloud API Key
 * `SL_API_KEY` - The SoftLayer API Key
 * `SL_USERNAME` - The SoftLayer username associated with the SoftLayer API Key.
 
