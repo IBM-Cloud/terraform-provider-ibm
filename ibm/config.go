@@ -24,6 +24,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv2"
 	"github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Cloud/bluemix-go/api/cse/csev2"
 	"github.com/IBM-Cloud/bluemix-go/api/globalsearch/globalsearchv2"
 	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
@@ -130,6 +131,7 @@ type ClientSession interface {
 	ResourceManagementAPI() (management.ResourceManagementAPI, error)
 	ResourceControllerAPI() (controller.ResourceControllerAPI, error)
 	SoftLayerSession() *slsession.Session
+	CseAPI() (csev2.CseServiceAPI, error)
 }
 
 type clientSession struct {
@@ -185,6 +187,9 @@ type clientSession struct {
 
 	resourceCatalogConfigErr  error
 	resourceCatalogServiceAPI catalog.ResourceCatalogAPI
+
+	cseConfigErr  error
+	cseServiceAPI csev2.CseServiceAPI
 }
 
 // BluemixAcccountAPI ...
@@ -280,6 +285,11 @@ func (sess clientSession) ResourceControllerAPI() (controller.ResourceController
 // SoftLayerSession providers SoftLayer Session
 func (sess clientSession) SoftLayerSession() *slsession.Session {
 	return sess.session.SoftLayerSession
+}
+
+// CseServiceAPI ...
+func (sess clientSession) CseAPI() (csev2.CseServiceAPI, error) {
+	return sess.cseServiceAPI, sess.cseConfigErr
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -423,6 +433,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.resourceControllerConfigErr = fmt.Errorf("Error occured while configuring Resource Controller service: %q", err)
 	}
 	session.resourceControllerServiceAPI = resourceControllerAPI
+
+	cseServiceAPI, err := csev2.New(sess.BluemixSession)
+	if err != nil {
+		session.cseConfigErr = fmt.Errorf("Error occured while configuring Cloud Service Endpoint service: %q", err)
+	}
+	session.cseServiceAPI = cseServiceAPI
 
 	return session, nil
 }
