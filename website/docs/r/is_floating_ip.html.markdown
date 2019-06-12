@@ -41,7 +41,8 @@ resource "ibm_is_floating_ip" "testacc_floatingip" {
 
 ibm_is_instance provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
-* `delete` - (Default 60 minutes) Used for deleting floating IP.
+* `create` - (Default 10 minutes) Used for creating floating IP.
+* `delete` - (Default 10 minutes) Used for deleting floating IP.
 
 ## Argument Reference
 
