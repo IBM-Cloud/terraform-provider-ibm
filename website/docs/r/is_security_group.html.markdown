@@ -44,7 +44,7 @@ Nested `rules` blocks have the following structure:
   * `protocol` - The type of the protocol `all`, `icmp`, `tcp`, `udp`. 
   * `type` - The ICMP traffic type to allow.
   * `code` - The ICMP traffic code to allow.
-  * `port-max` - The inclusive upper bound of TCP/UDP port range.
+  * `port_max` - The inclusive upper bound of TCP/UDP port range.
   * `port_min` - The inclusive lower bound of TCP/UDP port range. 
    
 ## Import
