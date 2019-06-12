@@ -88,7 +88,6 @@ resource "ibm_is_instance" "testacc_instance" {
   profile = "b-2x8"
 
   primary_network_interface = {
-    port_speed = "1000"
     subnet     = "${ibm_is_subnet.testacc_subnet.id}"
   }
 
