@@ -76,10 +76,10 @@ The following arguments are supported:
   * `code` - (Optional, int) The ICMP traffic code to allow. Valid values from 0 to 255.
 * `tcp` - (Optional, list) A nested block describing the `tcp` protocol of this security group rule.
   * `port_min` - (Required, int) The inclusive lower bound of TCP port range. Valid values are from 1 to 65535.
-  * `port-max` - (Required, int) The inclusive upper bound of TCP port range. Valid values are from 1 to 65535.
+  * `port_max` - (Required, int) The inclusive upper bound of TCP port range. Valid values are from 1 to 65535.
 * `udp` - (Optional, list) A nested block describing the `udp` protocol of this security group rule.
   * `port_min` - (Required, int) The inclusive lower bound of UDP port range. Valid values are from 1 to 65535.
-  * `port-max` - (Required, int) The inclusive upper bound of UDP port range. Valid values are from 1 to 65535.
+  * `port_max` - (Required, int) The inclusive upper bound of UDP port range. Valid values are from 1 to 65535.
 
 **NOTE**: If any of the `icmp` , `tcp` or `udp` is not specified it creates a rule with protocol `ALL`. 
 

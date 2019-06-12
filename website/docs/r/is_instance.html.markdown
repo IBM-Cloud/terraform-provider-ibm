@@ -73,7 +73,7 @@ The following arguments are supported:
 * `vpc` - (Required, string) The vpc id. 
 * `zone` - (Required, string) Name of the zone. 
 * `profile` - (Required, string) The profile name. 
-* `image` - (Optional, string) ID of the image. 
+* `image` - (Required, string) ID of the image. 
 * `boot_volume` - (Optional, list) A block describing the boot volume of this instance.  
 `boot_volume` block have the following structure:
   * `name` - (Optional, string) The name of the boot volume.
@@ -88,12 +88,12 @@ Nested `primary_network_interface` block have the following structure:
 * `network_interfaces` - (Optional, list) A nested block describing the additional network interface of this instance.
 Nested `network_interfaces` block have the following structure:
   * `name` - (Optional, string) The name of the network interface.
-  * `port_speed` - (Deprecated, int) Speed of the network interface.
   * `subnet` -  (Required, string) ID of the subnet.
   * `security_groups` - (Optional, list) Comma separated IDs of security groups.
 
 * `volumes` - (Optional, list) Comma separated IDs of volumes. 
-* `user_data` - (Optional, string) User data to transfer to the server instance. 
+* `user_data` - (Optional, string) User data to transfer to the server instance.
+* `resource_group` - (Optional, string) The resource group for this instance.
 
 ## Attribute Reference
 
