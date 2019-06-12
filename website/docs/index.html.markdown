@@ -165,8 +165,6 @@ The following arguments are supported in the `provider` block:
 
 * `region` - (optional) The IBM Cloud region. You can also source it from the `IC_REGION` (higher precedence) or `IBMCLOUD_REGION` `BM_REGION` `BLUEMIX_REGION` environment variable. The default value is `us-south`.
 
-Note: `IBMCLOUD_REGION` is not supported for Infrastructure Service. If you want to create Infrastructure Service resource in another region, you need to set the RIAAS_ENDPOINT for that region. To get the supported endpoint , RUN `ic is regions`.
-
 * `resource_group` - (optional) The Resource Group ID. You can also source it from the `IC_RESOURCE_GROUP` (higher precedence) or `IBMCLOUD_RESOURCE_GROUP` `BM_RESOURCE_GROUP` `BLUEMIX_RESOURCE_GROUP` environment variable.
 
 * `max_retries` - (Optional) This is the maximum number of times an IBM Cloud infrastructure API call is retried, in the case where requests are getting network related timeout and rate limit exceeded error code. You can also source it from the `MAX_RETRIES` environment variable. The default value is `10`.
