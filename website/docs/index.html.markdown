@@ -147,11 +147,11 @@ terraform plan
 
 The following arguments are supported in the `provider` block:
 
-* `ibmcloud_api_key` - (optional) The IBM Cloud platform API key. You must either add it as a credential in the provider block or source it from the `IC_API_KEY` (higher precedence) or `IBMCLOUD_API_KEY` environment variable. The key is required to provision Cloud Foundry or IBM Cloud Container Service resources, such as any resource that begins with `ibm` or `ibm_container`.
+* `ibmcloud_api_key` - (optional) The IBM Cloud platform API key. You must either add it as a credential in the provider block or source it from the `IC_API_KEY` (higher precedence) or `IBMCLOUD_API_KEY` environment variable. The key is required to provision Cloud Foundry or IBM Cloud Container Service resources, such as any resource that begins with `ibm` or `ibm_container`. `ibmcloud_api_key` will have higher precedence than `bluemix_api_key`.
 
 * `bluemix_api_key` - (deprecated, optional) The IBM Cloud platform API key. You must either add it as a credential in the provider block or source it from the `BM_API_KEY` (higher precedence) or `BLUEMIX_API_KEY` environment variable. The key is required to provision Cloud Foundry or IBM Cloud Container Service resources, such as any resource that begins with `ibm` or `ibm_container`.
 
-* `ibmcloud_timeout` - (optional) The timeout, expressed in seconds, for interacting with IBM Cloud APIs. You can also source the timeout from the `IC_TIMEOUT` (higher precedence) or `IBMCLOUD_TIMEOUT` environment variable. The default value is `60`.
+* `ibmcloud_timeout` - (optional) The timeout, expressed in seconds, for interacting with IBM Cloud APIs. You can also source the timeout from the `IC_TIMEOUT` (higher precedence) or `IBMCLOUD_TIMEOUT` environment variable. The default value is `60`. `ibmcloud_timeout` will have higher precedence than `bluemix_timeout`.
 
 * `bluemix_timeout` - (deprecated, optional) The timeout, expressed in seconds, for interacting with IBM Cloud APIs. You can also source the timeout from the `BM_TIMEOUT` (higher precedence) or `BLUEMIX_TIMEOUT` environment variable. The default value is `60`.
 
@@ -164,8 +164,6 @@ The following arguments are supported in the `provider` block:
 * `softlayer_timeout` - (optional) The timeout, expressed in seconds, for the IBM Cloud infrastructure API key. You can also source the timeout from the `SL_TIMEOUT` (higher precedence) or `SOFTLAYER_TIMEOUT` environment variable. The default value is `60`.
 
 * `region` - (optional) The IBM Cloud region. You can also source it from the `IC_REGION` (higher precedence) or `IBMCLOUD_REGION` `BM_REGION` `BLUEMIX_REGION` environment variable. The default value is `us-south`.
-
-Note: `IBMCLOUD_REGION` is not supported for Infrastructure Service. If you want to create Infrastructure Service resource in another region, you need to set the RIAAS_ENDPOINT for that region. To get the supported endpoint , RUN `ic is regions`.
 
 * `resource_group` - (optional) The Resource Group ID. You can also source it from the `IC_RESOURCE_GROUP` (higher precedence) or `IBMCLOUD_RESOURCE_GROUP` `BM_RESOURCE_GROUP` `BLUEMIX_RESOURCE_GROUP` environment variable.
 
