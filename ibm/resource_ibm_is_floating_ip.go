@@ -19,10 +19,10 @@ const (
 	isFloatingIPZone    = "zone"
 	isFloatingIPTarget  = "target"
 
-	isFloatingIPProvisioning     = "provisioning"
-	isFloatingIPProvisioningDone = "done"
-	isFloatingIPDeleting         = "deleting"
-	isFloatingIPDeleted          = "done"
+	isFloatingIPPending   = "pending"
+	isFloatingIPAvailable = "available"
+	isFloatingIPDeleting  = "deleting"
+	isFloatingIPDeleted   = "done"
 )
 
 func resourceIBMISFloatingIP() *schema.Resource {
@@ -35,7 +35,8 @@ func resourceIBMISFloatingIP() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
-			Delete: schema.DefaultTimeout(60 * time.Minute),
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -105,6 +106,10 @@ func resourceIBMISFloatingIPCreate(d *schema.ResourceData, meta interface{}) err
 
 	d.SetId(floatingip.ID.String())
 	log.Printf("[INFO] Floating IP : %s[%s]", floatingip.ID.String(), floatingip.Address)
+	_, err = isWaitForInstanceFloatingIP(floatingipC, d.Id(), d)
+	if err != nil {
+		return err
+	}
 
 	return resourceIBMISFloatingIPRead(d, meta)
 }
@@ -190,7 +195,7 @@ func isWaitForFloatingIPDeleted(fip *network.FloatingIPClient, id string, timeou
 	log.Printf("Waiting for FloatingIP (%s) to be deleted.", id)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", isFloatingIPDeleting},
+		Pending:    []string{isFloatingIPPending, isFloatingIPDeleting},
 		Target:     []string{},
 		Refresh:    isFloatingIPDeleteRefreshFunc(fip, id),
 		Timeout:    timeout,
@@ -206,7 +211,7 @@ func isFloatingIPDeleteRefreshFunc(fip *network.FloatingIPClient, id string) res
 		log.Printf("[DEBUG] delete function here")
 		FloatingIP, err := fip.Get(id)
 		if err == nil {
-			return FloatingIP, isFloatingIPDeleting, nil
+			return FloatingIP, FloatingIP.Status, nil
 		}
 
 		iserror, ok := err.(iserrors.RiaasError)
@@ -214,11 +219,9 @@ func isFloatingIPDeleteRefreshFunc(fip *network.FloatingIPClient, id string) res
 			log.Printf("[DEBUG] %s", iserror.Error())
 			if len(iserror.Payload.Errors) == 1 &&
 				iserror.Payload.Errors[0].Code == "not_found" {
-				log.Printf("[DEBUG] returning deleted")
 				return nil, isFloatingIPDeleted, nil
 			}
 		}
-		log.Printf("[DEBUG] returning x")
 		return nil, isFloatingIPDeleting, err
 	}
 }
@@ -242,4 +245,34 @@ func resourceIBMISFloatingIPExists(d *schema.ResourceData, meta interface{}) (bo
 		return false, err
 	}
 	return true, nil
+}
+
+func isWaitForInstanceFloatingIP(floatingipC *network.FloatingIPClient, id string, d *schema.ResourceData) (interface{}, error) {
+	log.Printf("Waiting for floating IP (%s) to be available.", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{isFloatingIPPending},
+		Target:     []string{isFloatingIPAvailable},
+		Refresh:    isInstanceFloatingIPRefreshFunc(floatingipC, id),
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isInstanceFloatingIPRefreshFunc(floatingipC *network.FloatingIPClient, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		instance, err := floatingipC.Get(id)
+		if err != nil {
+			return nil, "", err
+		}
+
+		if instance.Status == "available" {
+			return instance, isFloatingIPAvailable, nil
+		}
+
+		return instance, isFloatingIPPending, nil
+	}
 }

@@ -51,8 +51,8 @@ func TestAccIBMISLB_basic_private(t *testing.T) {
 	var lb *models.LoadBalancer
 	vpcname := fmt.Sprintf("terraformLBuat_vpc_%d", acctest.RandInt())
 	subnetname := fmt.Sprintf("terraformLBuat_create_step_name_%d", acctest.RandInt())
-	name := fmt.Sprintf("tf_create_step_name_%d", acctest.RandInt())
-	name1 := fmt.Sprintf("tf_update_step_name_%d", acctest.RandInt())
+	name := fmt.Sprintf("tfcreate%d", acctest.RandInt())
+	name1 := fmt.Sprintf("tfupdate%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
