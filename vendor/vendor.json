@@ -7,6 +7,11 @@
 			"revision": ""
 		},
 		{
+			"checksumSHA1": "UqpMe9m1zRYBEI/ds0mbAV+ZWiQ=",
+			"path": "git/github.ibm.com/riaas/rias-api",
+			"revision": ""
+		},
+		{
 			"checksumSHA1": "R76p0KjWqSxsd6Nf2ZT4jPa2UhQ=",
 			"path": "github.com/IBM-Cloud/bluemix-go",
 			"revision": "97ff73c619a9241412b0ec99204a2bfb2d59b2ef",
@@ -36,7 +41,7 @@
 			"revision": "97ff73c619a9241412b0ec99204a2bfb2d59b2ef",
 			"revisionTime": "2019-06-10T10:30:48Z"
 		},
-		{
+        {
 			"checksumSHA1": "H2TOe3MqDWY1FwV8czBE2D3sZ9o=",
 			"path": "github.com/IBM-Cloud/bluemix-go/api/cse/csev2",
 			"revision": "bb3b669b44220c27049454aa609c02f690276ca6",
@@ -1561,6 +1566,13 @@
 			"path": "github.com/zclconf/go-cty/cty/set",
 			"revision": "ba988ce11d9994867838957d4c40bb1ad78b433d",
 			"revisionTime": "2018-05-24T00:26:36Z"
+		},
+		{
+			"checksumSHA1": "Z9w7a3c8Ad7j+G80zCLxm4qKQPo=",
+			"path": "github.ibm.com/Bluemix/riaas-go-client",
+			"revision": "e59ccffc43881c03c8914364720950f008c8919b",
+			"revisionTime": "2019-06-06T10:53:29Z",
+			"tree": true
 		},
 		{
 			"checksumSHA1": "vE43s37+4CJ2CDU6TlOUOYE0K9c=",
