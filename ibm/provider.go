@@ -20,14 +20,14 @@ func Provider() terraform.ResourceProvider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The Bluemix API Key",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"BM_API_KEY", "BLUEMIX_API_KEY"}, ""),
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"BM_API_KEY", "BLUEMIX_API_KEY"}, nil),
 				Deprecated:  "This field is deprecated please use ibmcloud_api_key",
 			},
 			"bluemix_timeout": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The timeout (in seconds) to set for any Bluemix API calls made.",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"BM_TIMEOUT", "BLUEMIX_TIMEOUT"}, 60),
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"BM_TIMEOUT", "BLUEMIX_TIMEOUT"}, nil),
 				Deprecated:  "This field is deprecated please use ibmcloud_timeout",
 			},
 			"ibmcloud_api_key": {
@@ -94,7 +94,7 @@ func Provider() terraform.ResourceProvider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The next generation infrastructure service endpoint url.",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"RIAAS_ENDPOINT"}, "us-south.iaas.cloud.ibm.com"),
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"RIAAS_ENDPOINT"}, nil),
 				Deprecated:  "This field is deprecated use generation",
 			},
 			"generation": {
