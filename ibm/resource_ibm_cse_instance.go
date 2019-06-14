@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"errors"
+	"github.com/IBM-Cloud/bluemix-go/api/cse/csev2"
 	"github.com/hashicorp/terraform/helper/schema"
 	"log"
 )
@@ -62,16 +63,14 @@ func resourceCSEInstance() *schema.Resource {
 				Required:    true,
 				Description: "The exposed tcp ports for the CSE.",
 				Elem:        &schema.Schema{Type: schema.TypeInt},
-				//Set:         schema.HashInt,
-				Set: HashInt,
+				Set:         HashInt,
 			},
 			"udp_ports": &schema.Schema{
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "The exposed udp ports for the CSE.",
 				Elem:        &schema.Schema{Type: schema.TypeInt},
-				//Set:         schema.HashInt,
-				Set: HashInt,
+				Set:         HashInt,
 			},
 			"tcp_range": &schema.Schema{
 				Type:        schema.TypeString,
@@ -194,10 +193,6 @@ func resourceCSEInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	if len(payload) == 0 {
-		return errors.New("No things to change")
-	}
-
 	log.Printf("resourceCSEInstanceUpdate: payload=%v", payload)
 
 	cseClient, err := meta.(ClientSession).CseAPI()
@@ -242,133 +237,134 @@ func resourceCSEInstanceExists(d *schema.ResourceData, meta interface{}) (bool, 
 	return true, nil
 }
 
-func genCreatePayload(d *schema.ResourceData) map[string]interface{} {
-	payload := map[string]interface{}{}
-	payload["service"] = d.Get("service").(string)
-	payload["customer"] = d.Get("customer").(string)
-	payload["serviceAddresses"] = expandStringList(d.Get("service_addresses").(*schema.Set).List())
-	payload["region"] = d.Get("region").(string)
-	payload["dataCenters"] = expandStringList(d.Get("data_centers").(*schema.Set).List())
+func genCreatePayload(d *schema.ResourceData) csev2.SeCreateData {
+	payload := csev2.SeCreateData{}
+
+	payload.ServiceName = d.Get("service").(string)
+	payload.CustomerName = d.Get("customer").(string)
+	payload.ServiceAddresses = expandStringList(d.Get("service_addresses").(*schema.Set).List())
+	payload.Region = d.Get("region").(string)
+	payload.DataCenters = expandStringList(d.Get("data_centers").(*schema.Set).List())
 
 	if tcpPorts, ok := d.GetOk("tcp_ports"); ok {
-		payload["tcpports"] = expandIntList(tcpPorts.(*schema.Set).List())
+		payload.TCPPorts = expandIntList(tcpPorts.(*schema.Set).List())
 	}
 
 	if udpPorts, ok := d.GetOk("udp_ports"); ok {
-		payload["udpports"] = expandIntList(udpPorts.(*schema.Set).List())
+		payload.UDPPorts = expandIntList(udpPorts.(*schema.Set).List())
 	}
 
 	if tcpRange, ok := d.GetOk("tcp_range"); ok {
-		payload["tcpportrange"] = tcpRange.(string)
+		payload.TCPRange = tcpRange.(string)
 	}
 
 	if udpRange, ok := d.GetOk("udp_range"); ok {
-		payload["udpportrange"] = udpRange.(string)
+		payload.UDPRange = udpRange.(string)
 	}
 
 	if speed, ok := d.GetOk("max_speed"); ok {
-		payload["maxSpeed"] = speed.(string)
+		payload.MaxSpeed = speed.(string)
 	}
 
 	if estadoProto, ok := d.GetOk("estado_proto"); ok {
-		payload["estadoProto"] = estadoProto.(string)
+		payload.EstadoProto = estadoProto.(string)
 	}
 
 	if estadoPort, ok := d.GetOk("estado_port"); ok {
-		payload["estadoPort"] = estadoPort.(int)
+		payload.EstadoPort = estadoPort.(int)
 	}
 
 	if estadoPath, ok := d.GetOk("estado_path"); ok {
-		payload["estadoPath"] = estadoPath.(string)
+		payload.EstadoPath = estadoPath.(string)
 	}
 
 	if dedicated, ok := d.GetOkExists("dedicated"); ok {
-		payload["dedicated"] = dedicated.(int)
+		payload.Dedicated = dedicated.(int)
 	}
 
 	if multiTenant, ok := d.GetOkExists("multi_tenant"); ok {
-		payload["multitenant"] = multiTenant.(int)
+		payload.MultiTenant = multiTenant.(int)
 	}
 
 	if acl, ok := d.GetOk("acl"); ok {
-		payload["acl"] = expandStringList(acl.(*schema.Set).List())
+		payload.ACL = expandStringList(acl.(*schema.Set).List())
 	}
 
 	return payload
 }
 
-func genUpdatePayload(d *schema.ResourceData) (map[string]interface{}, error) {
-	ret := map[string]interface{}{}
+func genUpdatePayload(d *schema.ResourceData) (csev2.SeUpdateData, error) {
+	ret := csev2.SeUpdateData{}
 
 	if d.HasChange("service_addresses") {
 		_, newv := d.GetChange("service_addresses")
-		ret["serviceAddresses"] = expandStringList(newv.(*schema.Set).List())
+		ret.ServiceAddresses = expandStringList(newv.(*schema.Set).List())
 	} else {
 		if v, ok := d.GetOk("service_addresses"); ok {
-			ret["serviceAddresses"] = expandStringList(v.(*schema.Set).List())
+			ret.ServiceAddresses = expandStringList(v.(*schema.Set).List())
 		}
 	}
 
 	if d.HasChange("estado_proto") {
 		_, newv := d.GetChange("estado_proto")
-		ret["estadoProto"] = newv.(string)
+		ret.EstadoProto = newv.(string)
 	} else {
 		if v, ok := d.GetOk("estado_proto"); ok {
-			ret["estadoProto"] = v.(string)
+			ret.EstadoProto = v.(string)
 		}
 	}
 
 	if d.HasChange("estado_port") {
 		_, newv := d.GetChange("estado_port")
-		ret["estadoPort"] = newv.(int)
+		ret.EstadoPort = newv.(int)
 	} else {
 		if v, ok := d.GetOk("estado_port"); ok {
-			ret["estadoPort"] = v.(int)
+			ret.EstadoPort = v.(int)
 		}
 	}
 
 	if d.HasChange("estado_path") {
 		_, newv := d.GetChange("estado_path")
-		ret["estadoPath"] = newv.(string)
+		ret.EstadoPath = newv.(string)
 	} else {
 		if v, ok := d.GetOk("estado_path"); ok {
-			ret["estadoPath"] = v.(string)
+			ret.EstadoPath = v.(string)
 		}
 	}
 
 	if d.HasChange("tcp_ports") {
 		_, newv := d.GetChange("tcp_ports")
-		ret["tcpports"] = expandIntList(newv.(*schema.Set).List())
+		ret.TCPPorts = expandIntList(newv.(*schema.Set).List())
 	} else {
 		if v, ok := d.GetOk("tcp_ports"); ok {
-			ret["tcpports"] = expandIntList(v.(*schema.Set).List())
+			ret.TCPPorts = expandIntList(v.(*schema.Set).List())
 		}
 	}
 
 	if d.HasChange("udp_ports") {
 		_, newv := d.GetChange("udp_ports")
-		ret["udpports"] = expandIntList(newv.(*schema.Set).List())
+		ret.UDPPorts = expandIntList(newv.(*schema.Set).List())
 	} else {
 		if v, ok := d.GetOk("udp_ports"); ok {
-			ret["udpports"] = expandIntList(v.(*schema.Set).List())
+			ret.UDPPorts = expandIntList(v.(*schema.Set).List())
 		}
 	}
 
 	if d.HasChange("data_centers") {
 		_, newv := d.GetChange("data_centers")
-		ret["dataCenters"] = expandStringList(newv.(*schema.Set).List())
+		ret.DataCenters = expandStringList(newv.(*schema.Set).List())
 	} else {
 		if v, ok := d.GetOk("data_centers"); ok {
-			ret["dataCenters"] = expandStringList(v.(*schema.Set).List())
+			ret.DataCenters = expandStringList(v.(*schema.Set).List())
 		}
 	}
 
 	if d.HasChange("acl") {
 		_, newv := d.GetChange("acl")
-		ret["acl"] = expandStringList(newv.(*schema.Set).List())
+		ret.ACL = expandStringList(newv.(*schema.Set).List())
 	} else {
 		if v, ok := d.GetOk("acl"); ok {
-			ret["acl"] = expandStringList(v.(*schema.Set).List())
+			ret.ACL = expandStringList(v.(*schema.Set).List())
 		}
 	}
 
