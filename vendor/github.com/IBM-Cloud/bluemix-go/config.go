@@ -44,7 +44,8 @@ const (
 	ResourceCatalogrService ServiceName = ServiceName("resource-catalog ")
 	//UAAService ...
 	UAAService ServiceName = ServiceName("uaa")
-	
+	//CSEService
+	CseService ServiceName = ServiceName("cse")
 )
 
 //Config ...
