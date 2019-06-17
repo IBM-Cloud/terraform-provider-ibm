@@ -171,7 +171,7 @@ func resourceIBMISPublicGatewayRead(d *schema.ResourceData, meta interface{}) er
 	if publicgw.FloatingIP != nil {
 
 		floatIP := map[string]interface{}{
-			"id":                             publicgw.FloatingIP.ID.String(),
+			"id": publicgw.FloatingIP.ID.String(),
 			isPublicGatewayFloatingIPAddress: publicgw.FloatingIP.Address,
 		}
 		d.Set(isPublicGatewayFloatingIP, floatIP)
