@@ -2,9 +2,11 @@ package ibm
 
 import (
 	"errors"
+	"fmt"
 	"github.com/IBM-Cloud/bluemix-go/api/cse/csev2"
 	"github.com/hashicorp/terraform/helper/schema"
 	"log"
+	"strings"
 )
 
 var UnSupportedFields4Update = []string{
@@ -160,7 +162,7 @@ func resourceCSEInstanceCreate(d *schema.ResourceData, meta interface{}) error {
 	d.SetId(srvId)
 	d.Set("service_id", srvId)
 
-	return nil
+	return resourceCSEInstanceRead(d, meta)
 }
 
 func resourceCSEInstanceRead(d *schema.ResourceData, meta interface{}) error {
@@ -171,7 +173,7 @@ func resourceCSEInstanceRead(d *schema.ResourceData, meta interface{}) error {
 
 	seAPI := cseClient.ServiceEndpoints()
 
-	srvId := d.Get("service_id").(string)
+	srvId := d.Id()
 
 	srvObj, err := seAPI.GetServiceEndpoint(srvId)
 
@@ -205,7 +207,7 @@ func resourceCSEInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	seAPI := cseClient.ServiceEndpoints()
 
-	srvId := d.Get("service_id").(string)
+	srvId := d.Id()
 
 	err = seAPI.UpdateServiceEndpoint(srvId, payload)
 
@@ -224,7 +226,7 @@ func resourceCSEInstanceDelete(d *schema.ResourceData, meta interface{}) error {
 
 	seAPI := cseClient.ServiceEndpoints()
 
-	srvId := d.Get("service_id").(string)
+	srvId := d.Id()
 
 	err = seAPI.DeleteServiceEndpoint(srvId)
 
@@ -237,7 +239,26 @@ func resourceCSEInstanceDelete(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceCSEInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	return true, nil
+	//return true, nil
+	cseClient, err := meta.(ClientSession).CseAPI()
+	if err != nil {
+		return false, err
+	}
+
+	seAPI := cseClient.ServiceEndpoints()
+
+	srvId := d.Id()
+
+	srvObj, err := seAPI.GetServiceEndpoint(srvId)
+	if err != nil {
+		if strings.Contains(err.Error(), "Not found") {
+			d.SetId("")
+		}
+		return false, fmt.Errorf("Failed to query service. Error: %s", err)
+	}
+
+	return srvObj.Service.Srvid == srvId, nil
+
 }
 
 func genCreatePayload(d *schema.ResourceData) (csev2.SeCreateData, error) {
