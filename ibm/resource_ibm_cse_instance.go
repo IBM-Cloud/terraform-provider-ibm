@@ -144,7 +144,10 @@ func resourceCSEInstanceCreate(d *schema.ResourceData, meta interface{}) error {
 
 	seAPI := cseClient.ServiceEndpoints()
 
-	payload := genCreatePayload(d)
+	payload, err := genCreatePayload(d)
+	if err != nil {
+		return err
+	}
 
 	log.Printf("resourceCSEInstanceCreate: payload=%v\n", payload)
 
@@ -237,7 +240,7 @@ func resourceCSEInstanceExists(d *schema.ResourceData, meta interface{}) (bool, 
 	return true, nil
 }
 
-func genCreatePayload(d *schema.ResourceData) csev2.SeCreateData {
+func genCreatePayload(d *schema.ResourceData) (csev2.SeCreateData, error) {
 	payload := csev2.SeCreateData{}
 
 	payload.ServiceName = d.Get("service").(string)
@@ -278,19 +281,26 @@ func genCreatePayload(d *schema.ResourceData) csev2.SeCreateData {
 		payload.EstadoPath = estadoPath.(string)
 	}
 
-	if dedicated, ok := d.GetOkExists("dedicated"); ok {
-		payload.Dedicated = dedicated.(int)
-	}
-
-	if multiTenant, ok := d.GetOkExists("multi_tenant"); ok {
-		payload.MultiTenant = multiTenant.(int)
-	}
-
 	if acl, ok := d.GetOk("acl"); ok {
 		payload.ACL = expandStringList(acl.(*schema.Set).List())
 	}
 
-	return payload
+	dedicated, dediOk := d.GetOkExists("dedicated")
+	if dediOk {
+		payload.Dedicated = dedicated.(int)
+	}
+
+	multiTenant, multiOk := d.GetOkExists("multi_tenant")
+	if multiOk {
+		payload.MultiTenant = multiTenant.(int)
+	}
+
+	if dediOk && payload.Dedicated == 0 &&
+		multiOk && payload.MultiTenant == 0 {
+		return payload, errors.New("dedicated and multi_tenant are both 0")
+	}
+
+	return payload, nil
 }
 
 func genUpdatePayload(d *schema.ResourceData) (csev2.SeUpdateData, error) {

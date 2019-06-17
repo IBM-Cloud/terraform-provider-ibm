@@ -1,5 +1,5 @@
 # Need to run export IC_API_KEY="IBM Cloud API Key" firt
-privider "ibm" {}
+provider "ibm" {}
 
 # Create a CSE instance with the required parameters
 resource "ibm_cse_instance" "instance1" {
