@@ -49,7 +49,7 @@ var BluemixRegion string
 
 var (
 	errEmptySoftLayerCredentials = errors.New("softlayer_username and softlayer_api_key must be provided. Please see the documentation on how to configure them")
-	errEmptyBluemixCredentials   = errors.New("ibmcloud_api_key or bluemix_api_key must be provided. Please see the documentation on how to configure it")
+	errEmptyBluemixCredentials   = errors.New("ibmcloud_api_key or bluemix_api_key or iam_token and iam_refresh_token must be provided. Please see the documentation on how to configure it")
 )
 
 //UserConfig ...
@@ -98,6 +98,12 @@ type Config struct {
 
 	//Generation
 	Generation int
+
+	//IAM Token
+	IAMToken string
+
+	//IAM Refresh Token
+	IAMRefreshToken string
 }
 
 //Session stores the information required for communication with the SoftLayer and Bluemix API
@@ -314,22 +320,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 		return session, nil
 	}
-	err = authenticateAPIKey(sess.BluemixSession)
-	if err != nil {
-		session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
-		session.functionConfigErr = fmt.Errorf("Error occured while fetching auth key for function: %q", err)
-		session.isConfigErr = fmt.Errorf("Error occured while fetching auth key for vpc: %q", err)
-	} else {
-		userConfig, err := fetchUserDetails(sess.BluemixSession)
+
+	if sess.BluemixSession.Config.BluemixAPIKey != "" {
+		err = authenticateAPIKey(sess.BluemixSession)
 		if err != nil {
 			session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
+			session.functionConfigErr = fmt.Errorf("Error occured while fetching auth key for function: %q", err)
+			session.isConfigErr = fmt.Errorf("Error occured while fetching auth key for vpc: %q", err)
 		}
-		session.bmxUserDetails = userConfig
-
-		session.functionClient, session.functionConfigErr = FunctionClient(sess.BluemixSession.Config, c.FunctionNameSpace)
 	}
-	sess.BluemixSession.Config.UAAAccessToken = ""
-	sess.BluemixSession.Config.UAARefreshToken = ""
+
+	userConfig, err := fetchUserDetails(sess.BluemixSession)
+	if err != nil {
+		session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
+	}
+	session.bmxUserDetails = userConfig
+
+	session.functionClient, session.functionConfigErr = FunctionClient(sess.BluemixSession.Config, c.FunctionNameSpace)
+	if sess.BluemixSession.Config.BluemixAPIKey != "" {
+		sess.BluemixSession.Config.UAAAccessToken = ""
+		sess.BluemixSession.Config.UAARefreshToken = ""
+	}
 
 	BluemixRegion = sess.BluemixSession.Config.Region
 
@@ -444,7 +455,7 @@ func newSession(c *Config) (*Session, error) {
 	ibmSession.SoftLayerSession = softlayerSession
 
 	if c.BluemixAPIKey != "" {
-		log.Println("Configuring IBM Cloud Session")
+		log.Println("Configuring IBM Cloud Session with API key")
 		var sess *bxsession.Session
 		bmxConfig := &bluemix.Config{
 			BluemixAPIKey: c.BluemixAPIKey,
@@ -454,6 +465,28 @@ func newSession(c *Config) (*Session, error) {
 			ResourceGroup: c.ResourceGroup,
 			RetryDelay:    &c.RetryDelay,
 			MaxRetries:    &c.RetryCount,
+		}
+		sess, err := bxsession.New(bmxConfig)
+		if err != nil {
+			return nil, err
+		}
+		ibmSession.BluemixSession = sess
+	}
+
+	log.Println("*********", c.IAMToken, c.IAMRefreshToken)
+
+	if c.IAMToken != "" && c.IAMRefreshToken != "" {
+		log.Println("Configuring IBM Cloud Session with token")
+		var sess *bxsession.Session
+		bmxConfig := &bluemix.Config{
+			IAMAccessToken:  c.IAMToken,
+			IAMRefreshToken: c.IAMRefreshToken,
+			Debug:           os.Getenv("TF_LOG") != "",
+			HTTPTimeout:     c.BluemixTimeout,
+			Region:          c.Region,
+			ResourceGroup:   c.ResourceGroup,
+			RetryDelay:      &c.RetryDelay,
+			MaxRetries:      &c.RetryCount,
 		}
 		sess, err := bxsession.New(bmxConfig)
 		if err != nil {

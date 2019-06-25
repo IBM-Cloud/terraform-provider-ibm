@@ -44,7 +44,8 @@ const (
 	ResourceCatalogrService ServiceName = ServiceName("resource-catalog ")
 	//UAAService ...
 	UAAService ServiceName = ServiceName("uaa")
-	
+	//CSEService
+	CseService ServiceName = ServiceName("cse")
 )
 
 //Config ...
@@ -99,8 +100,8 @@ func (c *Config) Copy(mccpgs ...*Config) *Config {
 
 //ValidateConfigForService ...
 func (c *Config) ValidateConfigForService(svc ServiceName) error {
-	if (c.IBMID == "" || c.IBMIDPassword == "") && c.BluemixAPIKey == "" {
-		return bmxerror.New(ErrInsufficientCredentials, "Please check the documentation on how to configure the Bluemix credentials")
+	if (c.IBMID == "" || c.IBMIDPassword == "") && c.BluemixAPIKey == "" && (c.IAMAccessToken == "" || c.IAMRefreshToken == "") {
+		return bmxerror.New(ErrInsufficientCredentials, "Please check the documentation on how to configure the IBM Cloud credentials")
 	}
 
 	if c.Region == "" && (c.Endpoint == nil || *c.Endpoint == "") {
