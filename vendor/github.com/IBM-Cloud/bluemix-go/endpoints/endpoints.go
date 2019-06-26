@@ -24,6 +24,7 @@ type EndpointLocator interface {
 	ResourceControllerEndpoint() (string, error)
 	ResourceCatalogEndpoint() (string, error)
 	UAAEndpoint() (string, error)
+	CseEndpoint() (string, error)
 }
 
 const (
@@ -152,6 +153,14 @@ var regionToEndpoint = map[string]map[string]string{
 		"au-syd":   "https://login.au-syd.bluemix.net/UAALoginServerWAR",
 		"eu-de":    "https://login.eu-de.bluemix.net/UAALoginServerWAR",
 		"jp-tok":   "https://login.jp-tok.bluemix.net/UAALoginServerWAR",
+	},
+	"cse": {
+		"us-south": "https://api.serviceendpoint.cloud.ibm.com",
+		"us-east":  "https://api.serviceendpoint.cloud.ibm.com",
+		"eu-gb":    "https://api.serviceendpoint.cloud.ibm.com",
+		"au-syd":   "https://api.serviceendpoint.cloud.ibm.com",
+		"eu-de":    "https://api.serviceendpoint.cloud.ibm.com",
+		"jp-tok":   "https://api.serviceendpoint.cloud.ibm.com",
 	},
 }
 
@@ -296,4 +305,13 @@ func (e *endpointLocator) UAAEndpoint() (string, error) {
 
 	}
 	return "", bmxerror.New(ErrCodeServiceEndpoint, fmt.Sprintf("UAA endpoint doesn't exist for region: %q", e.region))
+}
+
+func (e *endpointLocator) CseEndpoint() (string, error) {
+	if ep, ok := regionToEndpoint["cse"][e.region]; ok {
+		//As the current list of regionToEndpoint above is not exhaustive we allow to read endpoints from the env
+		return helpers.EnvFallBack([]string{"IBMCLOUD_CSE_ENDPOINT"}, ep), nil
+
+	}
+	return "", bmxerror.New(ErrCodeServiceEndpoint, fmt.Sprintf("CSE endpoint doesn't exist for region: %q", e.region))
 }
