@@ -17,11 +17,12 @@ func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"bluemix_api_key": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The Bluemix API Key",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"BM_API_KEY", "BLUEMIX_API_KEY"}, nil),
-				Deprecated:  "This field is deprecated please use ibmcloud_api_key",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "The Bluemix API Key",
+				DefaultFunc:   schema.MultiEnvDefaultFunc([]string{"BM_API_KEY", "BLUEMIX_API_KEY"}, nil),
+				Deprecated:    "This field is deprecated please use ibmcloud_api_key",
+				ConflictsWith: []string{"ibmcloud_api_key", "iam_token", "iam_refresh_token"},
 			},
 			"bluemix_timeout": {
 				Type:        schema.TypeInt,
@@ -31,10 +32,11 @@ func Provider() terraform.ResourceProvider {
 				Deprecated:  "This field is deprecated please use ibmcloud_timeout",
 			},
 			"ibmcloud_api_key": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The IBM Cloud API Key",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_API_KEY", "IBMCLOUD_API_KEY"}, ""),
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "The IBM Cloud API Key",
+				DefaultFunc:   schema.MultiEnvDefaultFunc([]string{"IC_API_KEY", "IBMCLOUD_API_KEY"}, nil),
+				ConflictsWith: []string{"bluemix_api_key", "iam_token", "iam_refresh_token"},
 			},
 			"ibmcloud_timeout": {
 				Type:        schema.TypeInt,
@@ -102,6 +104,20 @@ func Provider() terraform.ResourceProvider {
 				Optional:    true,
 				Description: "Generation of Virtual Private Cloud. Default is 2",
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_GENERATION", "IBMCLOUD_GENERATION"}, 2),
+			},
+			"iam_token": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "IAM Authentication token",
+				DefaultFunc:   schema.MultiEnvDefaultFunc([]string{"IC_IAM_TOKEN", "IBMCLOUD_IAM_TOKEN"}, nil),
+				ConflictsWith: []string{"ibmcloud_api_key", "bluemix_api_key"},
+			},
+			"iam_refresh_token": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "IAM Authentication refresh token",
+				DefaultFunc:   schema.MultiEnvDefaultFunc([]string{"IC_IAM_REFRESH_TOKEN", "IBMCLOUD_IAM_REFRESH_TOKEN"}, nil),
+				ConflictsWith: []string{"ibmcloud_api_key", "bluemix_api_key"},
 			},
 		},
 
@@ -271,11 +287,18 @@ func Provider() terraform.ResourceProvider {
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	var bluemixAPIKey string
 	var bluemixTimeout int
+	var iamToken, iamRefreshToken string
 	if key, ok := d.GetOk("bluemix_api_key"); ok {
 		bluemixAPIKey = key.(string)
 	}
 	if key, ok := d.GetOk("ibmcloud_api_key"); ok {
 		bluemixAPIKey = key.(string)
+	}
+	if itoken, ok := d.GetOk("iam_token"); ok {
+		iamToken = itoken.(string)
+	}
+	if rtoken, ok := d.GetOk("iam_refresh_token"); ok {
+		iamRefreshToken = rtoken.(string)
 	}
 	softlayerUsername := d.Get("softlayer_username").(string)
 	softlayerAPIKey := d.Get("softlayer_api_key").(string)
@@ -318,6 +341,8 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		FunctionNameSpace:    wskNameSpace,
 		RiaasEndPoint:        riaasEndPoint,
 		Generation:           generation,
+		IAMToken:             iamToken,
+		IAMRefreshToken:      iamRefreshToken,
 	}
 
 	return config.ClientSession()
