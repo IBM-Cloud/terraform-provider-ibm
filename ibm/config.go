@@ -340,12 +340,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	session.functionClient, session.functionConfigErr = FunctionClient(sess.BluemixSession.Config, c.FunctionNameSpace)
-	if sess.BluemixSession.Config.BluemixAPIKey != "" {
-		sess.BluemixSession.Config.UAAAccessToken = ""
-		sess.BluemixSession.Config.UAARefreshToken = ""
-		sess.BluemixSession.Config.IAMAccessToken = ""
-		sess.BluemixSession.Config.IAMRefreshToken = ""
-	}
 
 	BluemixRegion = sess.BluemixSession.Config.Region
 
