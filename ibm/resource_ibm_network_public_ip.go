@@ -32,6 +32,9 @@ func resourceIBMNetworkPublicIp() *schema.Resource {
 		Delete:   resourceIBMNetworkPublicIpDelete,
 		Exists:   resourceIBMNetworkPublicIpExists,
 		Importer: &schema.ResourceImporter{},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Minute),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"ip_address": &schema.Schema{
@@ -92,7 +95,7 @@ func resourceIBMNetworkPublicIpCreate(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Error during creation of network public ip: %s", err)
 	}
 
-	globalIp, err := findGlobalIpByOrderId(sess, *receipt.OrderId)
+	globalIp, err := findGlobalIpByOrderId(sess, *receipt.OrderId, d)
 	if err != nil {
 		return fmt.Errorf("Error during creation of network public ip: %s", err)
 	}
@@ -242,7 +245,7 @@ func resourceIBMNetworkPublicIpExists(d *schema.ResourceData, meta interface{}) 
 	return result.Id != nil && *result.Id == globalIpId, nil
 }
 
-func findGlobalIpByOrderId(sess *session.Session, orderId int) (datatypes.Network_Subnet_IpAddress_Global, error) {
+func findGlobalIpByOrderId(sess *session.Session, orderId int, d *schema.ResourceData) (datatypes.Network_Subnet_IpAddress_Global, error) {
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"complete"},
@@ -264,9 +267,10 @@ func findGlobalIpByOrderId(sess *session.Session, orderId int) (datatypes.Networ
 				return nil, "", fmt.Errorf("Expected one network public ip: %s", err)
 			}
 		},
-		Timeout:    10 * time.Minute,
-		Delay:      5 * time.Second,
-		MinTimeout: 3 * time.Second,
+		Timeout:        d.Timeout(schema.TimeoutCreate),
+		Delay:          5 * time.Second,
+		MinTimeout:     3 * time.Second,
+		NotFoundChecks: 24 * 60,
 	}
 
 	pendingResult, err := stateConf.WaitForState()

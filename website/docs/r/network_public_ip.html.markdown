@@ -21,6 +21,11 @@ resource "ibm_network_public_ip" "test_public_ip " {
 }
 ```
 
+## Timeouts
+ibm_network_public_ip provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+
+* `create` - (Default 30 minutes) Used for Creating Instance.
+
 ## Argument Reference
 
 The following arguments are supported:
