@@ -37,7 +37,7 @@ The following arguments are supported:
 
 * `name` - (Required, string) The user-defined name for this volume.
 * `volume_id` - (Required, string) The volume id.
-* `resource_group` - (Optional, string) The resource group for this volume snapshot.
+* `resource_group` - (Optional, string) The resource group ID for this volume snapshot.
 
 ## Attribute Reference
 

@@ -54,7 +54,6 @@ The following arguments are supported:
 
 
 * `name` - (Required, string) The name of the network ACL.
-* `resource_group` - (Optional, string) The resource group to which the network ACL belongs.
 * `rules` - (Optional, array)   The rules for a network ACL
 Nested `rules` blocks have the following structure:
 	* `name` - (Required, string) The user-defined name for this rule.

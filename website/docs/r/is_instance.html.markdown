@@ -93,7 +93,7 @@ Nested `network_interfaces` block have the following structure:
 
 * `volumes` - (Optional, list) Comma separated IDs of volumes. 
 * `user_data` - (Optional, string) User data to transfer to the server instance.
-* `resource_group` - (Optional, string) The resource group for this instance.
+* `resource_group` - (Optional, string) The resource group ID for this instance.
 
 ## Attribute Reference
 
