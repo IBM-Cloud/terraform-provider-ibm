@@ -67,6 +67,7 @@ func dataSourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
 			d.Set(isVPCName, vpc.Name)
 			d.Set(isVPCClassicAccess, vpc.ClassicAccess)
 			d.Set(isVPCStatus, vpc.Status)
+			d.Set(isVPCResourceGroup, vpc.ResourceGroup.ID)
 			if vpc.DefaultNetworkACL != nil {
 				d.Set(isVPCDefaultNetworkACL, vpc.DefaultNetworkACL.ID)
 			} else {

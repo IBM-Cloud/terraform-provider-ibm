@@ -44,7 +44,7 @@ The following arguments are supported:
 * `iops` - (Optional, int) The bandwidth for the volume.
 * `capacity` - (Optional, int) The capacity of the volume in gigabytes. This defaults to `100`.
 * `encryption_key` - (Optional, string) The key to use for encrypting this volume.
-* `resource_group` - (Optional, string) The resource group for this volume.
+* `resource_group` - (Optional, string) The resource group ID for this volume.
 
 ## Attribute Reference
 
