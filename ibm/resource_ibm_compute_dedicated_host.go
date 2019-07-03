@@ -46,6 +46,13 @@ func resourceIBMComputeDedicatedHost() *schema.Resource {
 				ForceNew:    true,
 				Description: "The data center in which the dedicatated host is to be provisioned.",
 			},
+			"flavor": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "56_CORES_X_242_RAM_X_1_4_TB",
+				ForceNew:    true,
+				Description: "The flavor of the dedicatated host.",
+			},
 			"hourly_billing": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -99,6 +106,7 @@ func resourceIBMComputeDedicatedHostCreate(d *schema.ResourceData, meta interfac
 
 	datacenter := d.Get("datacenter").(string)
 	router := d.Get("router_hostname").(string)
+	flavor := d.Get("flavor").(string)
 
 	// Lookup the data center ID
 	dc, err := location.GetDatacenterByName(sess, datacenter)
@@ -132,15 +140,19 @@ func resourceIBMComputeDedicatedHostCreate(d *schema.ResourceData, meta interfac
 
 	priceItems := []datatypes.Product_Item_Price{}
 	for _, item := range productItems {
-		for _, price := range item.Prices {
-			if price.LocationGroupId == nil {
-				priceItem := datatypes.Product_Item_Price{
-					Id: price.Id,
+		if *item.KeyName == flavor {
+			for _, price := range item.Prices {
+				if price.LocationGroupId == nil {
+					priceItem := datatypes.Product_Item_Price{
+						Id: price.Id,
+					}
+					priceItems = append(priceItems, priceItem)
+					break
 				}
-				priceItems = append(priceItems, priceItem)
-				break
 			}
+
 		}
+
 	}
 
 	productOrderContainer := datatypes.Container_Product_Order_Virtual_DedicatedHost{
