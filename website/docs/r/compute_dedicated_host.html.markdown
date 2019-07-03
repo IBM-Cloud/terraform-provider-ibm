@@ -35,6 +35,7 @@ The following arguments are supported:
 * `domian` - (Required, string) The domain of dedicatated host..
 * `router_hostname` - (Required, string) The hostname of the primary router associated with the dedicated host.
 * `hourly_billing` - (Optional, boolean) The billing type for the host. When set to `true`, the dedicated host is billed on hourly usage. Otherwise, the dedicated host is billed on a monthly basis. The default value is `true`.
+* `flavor` - (Optional, string) The flavor of dedicated host. Default value `56_CORES_X_242_RAM_X_1_4_TB`. [Log in to the IBM-Cloud Infrastructure (SoftLayer) API to see available flavor types](https://api.softlayer.com/rest/v3/SoftLayer_Product_Package/813/getItems.json). Use your API as the password to log in. Log in and find the key called `keyName`.
 * `wait_time_minutes` - (Optional, integer) The duration, expressed in minutes, to wait for the dedicated host to become available before declaring it as created. The default value is `90`.
 * `tags` - (Optional, array of strings) Tags associated with the dedicated host.
 
