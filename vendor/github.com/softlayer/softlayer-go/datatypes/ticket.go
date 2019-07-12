@@ -242,7 +242,7 @@ type Ticket struct {
 	// A count of a ticket's updates.
 	UpdateCount *uint `json:"updateCount,omitempty" xmlrpc:"updateCount,omitempty"`
 
-	// Wether employees' updates of this ticket could be rated by customer
+	// Whether employees' updates of this ticket could be rated by customer
 	UpdateRatingFlag *bool `json:"updateRatingFlag,omitempty" xmlrpc:"updateRatingFlag,omitempty"`
 
 	// A ticket's updates.
@@ -370,6 +370,11 @@ type Ticket_Attachment_File struct {
 
 	// The type of user that attached a file to a ticket. This is either "USER" if the file was uploaded by a portal or API user or "EMPLOYEE" if the file was uploaded by a SoftLayer employee.
 	UploaderType *string `json:"uploaderType,omitempty" xmlrpc:"uploaderType,omitempty"`
+}
+
+// no documentation yet
+type Ticket_Attachment_File_ServiceNow struct {
+	Ticket_Attachment_File
 }
 
 // SoftLayer tickets have the ability to be associated with specific pieces of hardware in a customer's inventory. Attaching hardware to a ticket can greatly increase response time from SoftLayer for issues that are related to one or more specific servers on a customer's account. The SoftLayer_Ticket_Attachment_Hardware data type models the relationship between a piece of hardware and a ticket. Only one attachment record may exist per hardware item per ticket.

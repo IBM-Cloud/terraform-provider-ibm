@@ -136,6 +136,9 @@ type Virtual_Disk_Image struct {
 	// A disk image's unique ID.
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
 
+	// Return imported disk type
+	ImportedDiskType *string `json:"importedDiskType,omitempty" xmlrpc:"importedDiskType,omitempty"`
+
 	// Return if image is encrypted
 	IsEncrypted *bool `json:"isEncrypted,omitempty" xmlrpc:"isEncrypted,omitempty"`
 
@@ -1446,6 +1449,9 @@ type Virtual_ReservedCapacityGroup struct {
 
 	// The guest instances that are members of this reserved capacity group.
 	Instances []Virtual_ReservedCapacityGroup_Instance `json:"instances,omitempty" xmlrpc:"instances,omitempty"`
+
+	// The number of instances that are members of this reserved capacity group.
+	InstancesCount *uint `json:"instancesCount,omitempty" xmlrpc:"instancesCount,omitempty"`
 
 	// The date that the reserved capacity group was last modified.
 	ModifyDate *Time `json:"modifyDate,omitempty" xmlrpc:"modifyDate,omitempty"`

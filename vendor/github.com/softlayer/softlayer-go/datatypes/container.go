@@ -635,6 +635,9 @@ type Container_Account_ProofOfConcept_Review struct {
 	// Summary of request's review activity
 	ReviewHistory *Container_Account_ProofOfConcept_Review_History `json:"reviewHistory,omitempty" xmlrpc:"reviewHistory,omitempty"`
 
+	// URL for the individual review
+	ReviewUrl *string `json:"reviewUrl,omitempty" xmlrpc:"reviewUrl,omitempty"`
+
 	// Expected start date of the proof of concept period
 	StartDate *Time `json:"startDate,omitempty" xmlrpc:"startDate,omitempty"`
 
@@ -710,8 +713,25 @@ type Container_Account_ProofOfConcept_Review_Summary struct {
 	// Requesting IBMer's full name
 	RequesterName *string `json:"requesterName,omitempty" xmlrpc:"requesterName,omitempty"`
 
+	// URL for the individual review
+	ReviewUrl *string `json:"reviewUrl,omitempty" xmlrpc:"reviewUrl,omitempty"`
+
 	// Request's current status (Pending, Denied, or Approved)
 	Status *string `json:"status,omitempty" xmlrpc:"status,omitempty"`
+}
+
+// Contains data related to an account after editing its information.
+type Container_Account_Update_Response struct {
+	Entity
+
+	// Whether or not the update was accepted and applied.
+	AcceptedFlag *bool `json:"acceptedFlag,omitempty" xmlrpc:"acceptedFlag,omitempty"`
+
+	// The updated SoftLayer_Account.
+	Account *Account `json:"account,omitempty" xmlrpc:"account,omitempty"`
+
+	// If a manual review is required, this will be populated with the SoftLayer_Ticket for that review.
+	Ticket *Ticket `json:"ticket,omitempty" xmlrpc:"ticket,omitempty"`
 }
 
 // The SoftLayer_Container_Authentication_Request_Common data type contains common information for requests to the getPortalLogin API. This is an abstract class that serves as a base that more specialized classes will derive from. For example, a request class specific to SoftLayer Native IMS Login (username and password).
@@ -733,6 +753,9 @@ type Container_Authentication_Request_Contract struct {
 // The SoftLayer_Container_Authentication_Request_Native data type contains information for requests to the getPortalLogin API. This class is specific to the SoftLayer Native login (username/password). The request information will be verified to ensure it is valid, and then there will be an attempt to obtain a portal login token in authenticating the user with the provided information.
 type Container_Authentication_Request_Native struct {
 	Container_Authentication_Request_Common
+
+	// no documentation yet
+	AuxiliaryClaimsMiniToken *string `json:"auxiliaryClaimsMiniToken,omitempty" xmlrpc:"auxiliaryClaimsMiniToken,omitempty"`
 
 	// Your SoftLayer customer portal user's portal password.
 	Password *string `json:"password,omitempty" xmlrpc:"password,omitempty"`
@@ -858,6 +881,9 @@ type Container_Authentication_Response_Account struct {
 	DefaultAccount *bool `json:"defaultAccount,omitempty" xmlrpc:"defaultAccount,omitempty"`
 
 	// no documentation yet
+	IpAddressCheckRequired *bool `json:"ipAddressCheckRequired,omitempty" xmlrpc:"ipAddressCheckRequired,omitempty"`
+
+	// no documentation yet
 	IsMasterUserFlag *bool `json:"isMasterUserFlag,omitempty" xmlrpc:"isMasterUserFlag,omitempty"`
 
 	// no documentation yet
@@ -893,6 +919,14 @@ type Container_Authentication_Response_Common struct {
 
 	// The list of linked accounts for the authenticated SoftLayer customer portal user.
 	Accounts []Container_Authentication_Response_Account `json:"accounts,omitempty" xmlrpc:"accounts,omitempty"`
+}
+
+// The SoftLayer_Container_Authentication_Response_IpAddressRestrictionCheckNeeded data type indicates that the caller (IAM presumably) needs to do an IP address check of the logging-in user against the restricted IP list kept in BSS.  We don't know the IP address of the user here (only IAM does) so we return an indicator of which user matched the username and expect IAM to come back with another login call that will include a mini-JWT token that contains an assertion that the IP address was checked.
+type Container_Authentication_Response_IpAddressRestrictionCheckNeeded struct {
+	Container_Authentication_Response_Common
+
+	// no documentation yet
+	StatusKeyName *string `json:"statusKeyName,omitempty" xmlrpc:"statusKeyName,omitempty"`
 }
 
 // The SoftLayer_Container_Authentication_Response_LOGIN_FAILED data type contains information for specific responses from the getPortalLogin API. This class is indicative of a request where there was an inability to login based on the information that was provided.
@@ -2116,6 +2150,9 @@ type Container_Network_CdnMarketplace_Configuration_Input struct {
 	Header *string `json:"header,omitempty" xmlrpc:"header,omitempty"`
 
 	// no documentation yet
+	HotlinkProtection *Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection `json:"hotlinkProtection,omitempty" xmlrpc:"hotlinkProtection,omitempty"`
+
+	// no documentation yet
 	HttpPort *int `json:"httpPort,omitempty" xmlrpc:"httpPort,omitempty"`
 
 	// no documentation yet
@@ -2365,227 +2402,6 @@ type Container_Network_CdnMarketplace_Vendor struct {
 
 	// no documentation yet
 	VendorName *string `json:"vendorName,omitempty" xmlrpc:"vendorName,omitempty"`
-}
-
-// SoftLayer_Container_Network_ContentDelivery_Authentication_Directory represents a token authentication directory on your CDN FTP or on your origin server.
-type Container_Network_ContentDelivery_Authentication_Directory struct {
-	Entity
-
-	// The date that a token authentication directory was created.
-	CreateDate *Time `json:"createDate,omitempty" xmlrpc:"createDate,omitempty"`
-
-	// The name of a directory or a file within a directory listing.
-	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
-
-	// The type of platform that a token authentication directory is defined for. Possible types are HTTP Large, HTTP Small, Flash and Windows Media
-	Type *string `json:"type,omitempty" xmlrpc:"type,omitempty"`
-}
-
-// This container is used for CDN content authentication service.
-type Container_Network_ContentDelivery_Authentication_Parameter struct {
-	Entity
-
-	// A CDN account name
-	CdnAccountName *string `json:"cdnAccountName,omitempty" xmlrpc:"cdnAccountName,omitempty"`
-
-	// A client IP address
-	ClientIp *string `json:"clientIp,omitempty" xmlrpc:"clientIp,omitempty"`
-
-	// A client referrer information
-	Referrer *string `json:"referrer,omitempty" xmlrpc:"referrer,omitempty"`
-
-	// A source URL
-	SourceUrl *string `json:"sourceUrl,omitempty" xmlrpc:"sourceUrl,omitempty"`
-
-	// An authentication token string
-	Token *string `json:"token,omitempty" xmlrpc:"token,omitempty"`
-}
-
-// CDN supports the content authentication service. With the content authentication service, customers can control access to their contents. There are several scenarios where this authentication capability could be useful. Websites can prevent other rogue websites from linking to their videos. Content owners can prevent users from passing around http links, thus forcing them to login to view contents. It is also possible to authenticate via the client IP address. Referrer information is also checked if provided by a client's browser. servers will invoke a web service method to validate a content authentication token.
-//
-// CDN uses the default authentication web service provided by SoftLayer to validate a token. A customer can use their own implementation of the token authentication web service by using [[SoftLayer_Network_ContentDelivery_Account::setAuthenticationServiceEndpoint|setAuthenticationServiceEndpoint]] method.
-//
-// This container class holds the token validation web service endpoint information. CDN supports 3 different protocols: HTTP, RTMP (streaming Flash), and MMS (streaming Windows Media)
-type Container_Network_ContentDelivery_Authentication_ServiceEndpoint struct {
-	Entity
-
-	// The authentication web service endpoint that CDN servers will use to validate a token
-	Endpoint *string `json:"endpoint,omitempty" xmlrpc:"endpoint,omitempty"`
-
-	// The protocol that the WSDL will be used for.  This can be HTTP, WINDOWSMEDIA, or FLASH
-	Protocol *string `json:"protocol,omitempty" xmlrpc:"protocol,omitempty"`
-}
-
-// SoftLayer_Container_Network_ContentDelivery_Bandwidth_PointsOfPresence_Summary models an individual CDN point of presence's bandwidth usage for a CDN account within a given date range. CDN POPs are located throughout the world, so individual POP usage may be beneficial in determining who is downloading your CDN hosted content.
-type Container_Network_ContentDelivery_Bandwidth_PointsOfPresence_Summary struct {
-	Entity
-
-	// The amount of bandwidth used by a CDN POP.
-	Bandwidth *uint `json:"bandwidth,omitempty" xmlrpc:"bandwidth,omitempty"`
-
-	// The ending date of a CDN POP bandwidth summary.
-	EndDateTime *Time `json:"endDateTime,omitempty" xmlrpc:"endDateTime,omitempty"`
-
-	// A CDN POP's name. This is typically the city the POP resides in.
-	PopName *string `json:"popName,omitempty" xmlrpc:"popName,omitempty"`
-
-	// The starting date of a CDN POP bandwidth summary.
-	StartDateTime *Time `json:"startDateTime,omitempty" xmlrpc:"startDateTime,omitempty"`
-
-	// The unit of measurement used in a CDN POP bandwidth summary.
-	UsageUnits *string `json:"usageUnits,omitempty" xmlrpc:"usageUnits,omitempty"`
-
-	// The view count
-	ViewCount *uint `json:"viewCount,omitempty" xmlrpc:"viewCount,omitempty"`
-}
-
-// SoftLayer_Container_Network_ContentDelivery_Bandwidth_Summary models a CDN account's overall bandwidth usage and overages within a given date range.
-type Container_Network_ContentDelivery_Bandwidth_Summary struct {
-	Entity
-
-	// The CDN account id
-	CdnAccountId *int `json:"cdnAccountId,omitempty" xmlrpc:"cdnAccountId,omitempty"`
-
-	// The ending date of a CDN bandwidth summary.
-	EndDateTime *Time `json:"endDateTime,omitempty" xmlrpc:"endDateTime,omitempty"`
-
-	// The name of a file that is requested by visitors
-	FileName *string `json:"fileName,omitempty" xmlrpc:"fileName,omitempty"`
-
-	// The media type
-	MediaType *string `json:"mediaType,omitempty" xmlrpc:"mediaType,omitempty"`
-
-	// The starting date of a CDN bandwidth summary.
-	StartDateTime *Time `json:"startDateTime,omitempty" xmlrpc:"startDateTime,omitempty"`
-
-	// The amount of bandwidth used by a CDN account in between a given starting and ending date.
-	Usage *Float64 `json:"usage,omitempty" xmlrpc:"usage,omitempty"`
-
-	// The unit of measurement used in a CDN bandwidth summary.
-	UsageUnits *string `json:"usageUnits,omitempty" xmlrpc:"usageUnits,omitempty"`
-}
-
-// SoftLayer_Container_Network_ContentDelivery_Bandwidth_Summary_File models a CDN account's overall bandwidth usage and overages within a given date range.
-type Container_Network_ContentDelivery_Bandwidth_Summary_Detail struct {
-	Container_Network_ContentDelivery_Bandwidth_Summary
-
-	// The duration of a file that is viewed.
-	Duration *Float64 `json:"duration,omitempty" xmlrpc:"duration,omitempty"`
-
-	// The number of times that a file is viewed.
-	ViewCount *int `json:"viewCount,omitempty" xmlrpc:"viewCount,omitempty"`
-}
-
-// SoftLayer's CDN allows for multiple origin pull domains and CNAME records. This container holds the origin pull configuration details. CDN currently supports origin pull method for HTTP content.
-type Container_Network_ContentDelivery_OriginPull_Mapping struct {
-	Entity
-
-	// The CNAME record.
-	Cname *string `json:"cname,omitempty" xmlrpc:"cname,omitempty"`
-
-	// The unique identifier of an origin pull configuration
-	Id *string `json:"id,omitempty" xmlrpc:"id,omitempty"`
-
-	// This indicates if an origin pull mapping is for the secure content or not.
-	IsSecureContent *bool `json:"isSecureContent,omitempty" xmlrpc:"isSecureContent,omitempty"`
-
-	// The type of a media supported by CDN. Supported media types are: "HTTP", "FLASH" and "WM"
-	MediaType *string `json:"mediaType,omitempty" xmlrpc:"mediaType,omitempty"`
-
-	// The URL of a origin server.  A URL can contain a directory path.
-	OriginUrl *string `json:"originUrl,omitempty" xmlrpc:"originUrl,omitempty"`
-}
-
-// SoftLayer's CDN content delivery network offering replicates your data to a number of Points of Presence (POP's) around the world. SoftLayer_Container_Network_ContentDelivery_PointsOfPresence models one of these POP locations.
-type Container_Network_ContentDelivery_PointsOfPresence struct {
-	Entity
-
-	// A CDN Point of Presence's internal identifier.
-	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
-
-	// A CDN Point of Presence's name. This is typically the city that the POP is located in.
-	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
-}
-
-// This container holds information on a purge request. [[SoftLayer_Network_ContentDelivery_Account::purgeCache|Purge method]] for more details.
-//
-// Status code can be "SUCCESS", "FAILED", or "INVALID_URL" "INVALID_URL" code is returned when a URL is malformed or does not belong to customer. "FAILED" is returned in case there was an internal error.
-type Container_Network_ContentDelivery_PurgeService_Response struct {
-	Entity
-
-	// A status code indicates whether your request was successful or not
-	StatusCode *string `json:"statusCode,omitempty" xmlrpc:"statusCode,omitempty"`
-
-	// A URL that you wish to purge its cache object
-	Url *string `json:"url,omitempty" xmlrpc:"url,omitempty"`
-}
-
-// no documentation yet
-type Container_Network_ContentDelivery_Report_Usage struct {
-	Entity
-
-	// no documentation yet
-	ApplicationDeliveryNetwork *Float64 `json:"applicationDeliveryNetwork,omitempty" xmlrpc:"applicationDeliveryNetwork,omitempty"`
-
-	// no documentation yet
-	ApplicationDeliveryNetworkSsl *Float64 `json:"applicationDeliveryNetworkSsl,omitempty" xmlrpc:"applicationDeliveryNetworkSsl,omitempty"`
-
-	// no documentation yet
-	DiskSpace *Float64 `json:"diskSpace,omitempty" xmlrpc:"diskSpace,omitempty"`
-
-	// no documentation yet
-	EndDate *Time `json:"endDate,omitempty" xmlrpc:"endDate,omitempty"`
-
-	// no documentation yet
-	Flash *Float64 `json:"flash,omitempty" xmlrpc:"flash,omitempty"`
-
-	// no documentation yet
-	Http *Float64 `json:"http,omitempty" xmlrpc:"http,omitempty"`
-
-	// no documentation yet
-	HttpSmall *Float64 `json:"httpSmall,omitempty" xmlrpc:"httpSmall,omitempty"`
-
-	// no documentation yet
-	Https *Float64 `json:"https,omitempty" xmlrpc:"https,omitempty"`
-
-	// no documentation yet
-	HttpsSmall *Float64 `json:"httpsSmall,omitempty" xmlrpc:"httpsSmall,omitempty"`
-
-	// no documentation yet
-	Region *string `json:"region,omitempty" xmlrpc:"region,omitempty"`
-
-	// no documentation yet
-	SslTotal *Float64 `json:"sslTotal,omitempty" xmlrpc:"sslTotal,omitempty"`
-
-	// no documentation yet
-	StandardTotal *Float64 `json:"standardTotal,omitempty" xmlrpc:"standardTotal,omitempty"`
-
-	// no documentation yet
-	StartDate *Time `json:"startDate,omitempty" xmlrpc:"startDate,omitempty"`
-
-	// no documentation yet
-	WindowsMedia *Float64 `json:"windowsMedia,omitempty" xmlrpc:"windowsMedia,omitempty"`
-}
-
-// SoftLayer's CDN content delivery network allows for multiple types of media hosting in addition to traditional HTTP hosting. Each of these media types are accessible form a different URL. SoftLayer_Container_Network_ContentDelivery_SupportedProtocol holds details about CDN supported media types and their associated URLs.
-//
-// CDN media URLs follow the standard <protocol>://<cdn-name>.<platform-name>.cdn.softlayer.net
-//
-// Flash streaming, Windows Media streaming and HTTP protocols are supported: Flash streaming: <nowiki>rtmp://<cdn-name>.flash.cdn.softlayer.net</nowiki> Windows Media streaming: <nowiki>mms://<cdn-name>.wm.cdn.softlayer.net</nowiki> HTTP: <nowiki>http://<cdn-name>.http.cdn.softlayer.net</nowiki>
-type Container_Network_ContentDelivery_SupportedProtocol struct {
-	Entity
-
-	// The host name related to CDN supported media, and is represented in the hostname portion of a CDN URL.
-	Host *string `json:"host,omitempty" xmlrpc:"host,omitempty"`
-
-	// The type of a media supported by CDN such as "FLASH", "WINDOWSMEDIA" or "HTTP"
-	MediaType *string `json:"mediaType,omitempty" xmlrpc:"mediaType,omitempty"`
-
-	// The platform name. It's a friendly name of media type.
-	Platform *string `json:"platform,omitempty" xmlrpc:"platform,omitempty"`
-
-	// The media protocol supported by CDN. This represents the media portion of a CDN URL.  Currently supported protocols are: rtmp, mms and http
-	Protocol *string `json:"protocol,omitempty" xmlrpc:"protocol,omitempty"`
 }
 
 // SoftLayer_Container_Network_Directory_Listing represents a single entry in a listing of files within a remote directory. API methods that return remote directory listings typically return arrays of SoftLayer_Container_Network_Directory_Listing objects.
@@ -3289,6 +3105,9 @@ type Container_Network_Storage_Hub_ObjectStorage_Endpoint struct {
 	Entity
 
 	// no documentation yet
+	Legacy *bool `json:"legacy,omitempty" xmlrpc:"legacy,omitempty"`
+
+	// no documentation yet
 	Location *string `json:"location,omitempty" xmlrpc:"location,omitempty"`
 
 	// no documentation yet
@@ -3817,6 +3636,9 @@ type Container_Product_Order struct {
 	// The tax amount of the setup fees.
 	TotalSetupTax *Float64 `json:"totalSetupTax,omitempty" xmlrpc:"totalSetupTax,omitempty"`
 
+	// This is a collection of [[SoftLayer_Product_Item_Price]] objects which will be used when the service offering being ordered generates usage. This is a read-only property. Setting this property will not change the order.
+	UsagePrices []Product_Item_Price `json:"usagePrices,omitempty" xmlrpc:"usagePrices,omitempty"`
+
 	// An optional flag to use hourly pricing instead of standard monthly pricing.
 	UseHourlyPricing *bool `json:"useHourlyPricing,omitempty" xmlrpc:"useHourlyPricing,omitempty"`
 
@@ -3959,6 +3781,9 @@ type Container_Product_Order_Billing_Information struct {
 	// 1 = opted in,  0 = not opted in. Select the EU Supported option if you use IBM Bluemix Infrastructure services to process EU citizens' personal data. This option limits Level 1 and Level 2 support to the EU. However, IBM Bluemix and SoftLayer teams outside the EU perform processing activities when they are not resolved at Level 1 or 2. These activities are always at your instruction and do not impact the security or privacy of your data. As with our standard services, you must review the impact these cross-border processing activities have on your services and take any necessary measures, including review of IBM's US-EU Privacy Shield registration and Data Processing Addendum.  If you select products, services, or locations outside the EU, all processing activities will be performed outside of the EU. If you select other IBM services in addition to Bluemix IaaS (IBM or a third party), determine the service location in order to meet any additional data protection or processing requirements that permit cross-border transfers.
 	EuSupported *bool `json:"euSupported,omitempty" xmlrpc:"euSupported,omitempty"`
 
+	// If true, order is being placed by a business.
+	IsBusinessFlag *bool `json:"isBusinessFlag,omitempty" xmlrpc:"isBusinessFlag,omitempty"`
+
 	// Tax exempt status. 1 = exempt (not taxable),  0 = not exempt (taxable)
 	TaxExempt *int `json:"taxExempt,omitempty" xmlrpc:"taxExempt,omitempty"`
 
@@ -4054,6 +3879,41 @@ type Container_Product_Order_Hardware_Server_Upgrade struct {
 	Container_Product_Order_Hardware_Server
 }
 
+// no documentation yet
+type Container_Product_Order_Hardware_Server_Vpc struct {
+	Container_Product_Order_Hardware_Server
+
+	// no documentation yet
+	Crn *string `json:"crn,omitempty" xmlrpc:"crn,omitempty"`
+
+	// no documentation yet
+	InstanceProfile *string `json:"instanceProfile,omitempty" xmlrpc:"instanceProfile,omitempty"`
+
+	// no documentation yet
+	IpAllocations []Container_Product_Order_Vpc_IpAllocation `json:"ipAllocations,omitempty" xmlrpc:"ipAllocations,omitempty"`
+
+	// no documentation yet
+	ResourceGroup *string `json:"resourceGroup,omitempty" xmlrpc:"resourceGroup,omitempty"`
+
+	// no documentation yet
+	ServerId *string `json:"serverId,omitempty" xmlrpc:"serverId,omitempty"`
+
+	// no documentation yet
+	ServicePortInterfaceId *string `json:"servicePortInterfaceId,omitempty" xmlrpc:"servicePortInterfaceId,omitempty"`
+
+	// no documentation yet
+	ServicePortIpAllocationId *string `json:"servicePortIpAllocationId,omitempty" xmlrpc:"servicePortIpAllocationId,omitempty"`
+
+	// no documentation yet
+	ServicePortVpcId *string `json:"servicePortVpcId,omitempty" xmlrpc:"servicePortVpcId,omitempty"`
+
+	// no documentation yet
+	Subnets []Container_Product_Order_Vpc_Subnet `json:"subnets,omitempty" xmlrpc:"subnets,omitempty"`
+
+	// no documentation yet
+	Zone *string `json:"zone,omitempty" xmlrpc:"zone,omitempty"`
+}
+
 // This is the datatype that needs to be populated and sent to SoftLayer_Product_Order::placeOrder. This datatype has everything required to place a Monitoring Package order with SoftLayer.
 type Container_Product_Order_Monitoring_Package struct {
 	Container_Product_Order
@@ -4097,27 +3957,6 @@ type Container_Product_Order_Network_Application_Delivery_Controller struct {
 	ApplicationDeliveryControllerId *int `json:"applicationDeliveryControllerId,omitempty" xmlrpc:"applicationDeliveryControllerId,omitempty"`
 }
 
-// This is the datatype that needs to be populated and sent to SoftLayer_Product_Order::placeOrder. This datatype has everything required to place a CDN order with SoftLayer.
-type Container_Product_Order_Network_ContentDelivery_Account struct {
-	Container_Product_Order
-
-	// The CDN account name
-	CdnAccountName *string `json:"cdnAccountName,omitempty" xmlrpc:"cdnAccountName,omitempty"`
-}
-
-// This is the datatype that needs to be populated and sent to SoftLayer_Product_Order::placeOrder. This datatype has everything required to place a CDN order with SoftLayer.
-type Container_Product_Order_Network_ContentDelivery_Account_Upgrade struct {
-	Container_Product_Order
-
-	// ID of an existing CDN account. You can use this to upgrade an existing CDN account.
-	CdnAccountId *string `json:"cdnAccountId,omitempty" xmlrpc:"cdnAccountId,omitempty"`
-}
-
-// This is the datatype that needs to be populated and sent to SoftLayer_Product_Order::placeOrder. This datatype has everything required to place a CDN Service order with SoftLayer.
-type Container_Product_Order_Network_ContentDelivery_Service struct {
-	Container_Product_Order
-}
-
 // This is the datatype that needs to be populated and sent to SoftLayer_Product_Order::placeOrder when purchasing a Network Interconnect.
 type Container_Product_Order_Network_Interconnect struct {
 	Container_Product_Order
@@ -4131,6 +3970,12 @@ type Container_Product_Order_Network_Interconnect struct {
 	// The [[SoftLayer_Network_DirectLink_Location]] for this order, ID must be provided.
 	InterconnectLocation *Network_DirectLink_Location `json:"interconnectLocation,omitempty" xmlrpc:"interconnectLocation,omitempty"`
 
+	// The [[SoftLayer_Network_Interconnect_Tenant]] being ordered. Only the ID is required. If this ID is specified, then properties such as networkIdentifier, ipAddressRange, and interconnectId do not need to be specified.
+	InterconnectTenant *Network_Interconnect_Tenant `json:"interconnectTenant,omitempty" xmlrpc:"interconnectTenant,omitempty"`
+
+	// Optional IP address for this link.
+	IpAddressRange *string `json:"ipAddressRange,omitempty" xmlrpc:"ipAddressRange,omitempty"`
+
 	// A name to identify this Direct Link resource.
 	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
 
@@ -4141,9 +3986,6 @@ type Container_Product_Order_Network_Interconnect struct {
 // This is the datatype that needs to be populated and sent to SoftLayer_Product_Order::placeOrder. This datatype has everything required to place an upgrade order for Direct Link.
 type Container_Product_Order_Network_Interconnect_Upgrade struct {
 	Container_Product_Order_Network_Interconnect
-
-	// The [[SoftLayer_Network_Interconnect_Tenant]] being modified. Only the ID is required.
-	InterconnectTenant *Network_Interconnect_Tenant `json:"interconnectTenant,omitempty" xmlrpc:"interconnectTenant,omitempty"`
 }
 
 // This is the default container type for network load balancer orders.
@@ -4800,10 +4642,16 @@ type Container_Product_Order_Virtual_Guest_Vpc struct {
 	AdditionalNetworkInterfaces []Container_Product_Order_Virtual_Guest_Vpc_NetworkInterface `json:"additionalNetworkInterfaces,omitempty" xmlrpc:"additionalNetworkInterfaces,omitempty"`
 
 	// no documentation yet
+	Crn *string `json:"crn,omitempty" xmlrpc:"crn,omitempty"`
+
+	// no documentation yet
 	InstanceProfile *string `json:"instanceProfile,omitempty" xmlrpc:"instanceProfile,omitempty"`
 
 	// no documentation yet
-	IpAllocations []Container_Product_Order_Virtual_Guest_Vpc_IpAllocation `json:"ipAllocations,omitempty" xmlrpc:"ipAllocations,omitempty"`
+	IpAllocations []Container_Product_Order_Vpc_IpAllocation `json:"ipAllocations,omitempty" xmlrpc:"ipAllocations,omitempty"`
+
+	// no documentation yet
+	OverlayNetworkFlag *bool `json:"overlayNetworkFlag,omitempty" xmlrpc:"overlayNetworkFlag,omitempty"`
 
 	// no documentation yet
 	ResourceGroup *string `json:"resourceGroup,omitempty" xmlrpc:"resourceGroup,omitempty"`
@@ -4812,7 +4660,19 @@ type Container_Product_Order_Virtual_Guest_Vpc struct {
 	ServerId *string `json:"serverId,omitempty" xmlrpc:"serverId,omitempty"`
 
 	// no documentation yet
+	ServicePortCidr *string `json:"servicePortCidr,omitempty" xmlrpc:"servicePortCidr,omitempty"`
+
+	// no documentation yet
+	ServicePortDns []string `json:"servicePortDns,omitempty" xmlrpc:"servicePortDns,omitempty"`
+
+	// no documentation yet
+	ServicePortGateway *string `json:"servicePortGateway,omitempty" xmlrpc:"servicePortGateway,omitempty"`
+
+	// no documentation yet
 	ServicePortInterfaceId *string `json:"servicePortInterfaceId,omitempty" xmlrpc:"servicePortInterfaceId,omitempty"`
+
+	// no documentation yet
+	ServicePortIpAddress *string `json:"servicePortIpAddress,omitempty" xmlrpc:"servicePortIpAddress,omitempty"`
 
 	// no documentation yet
 	ServicePortIpAllocationId *string `json:"servicePortIpAllocationId,omitempty" xmlrpc:"servicePortIpAllocationId,omitempty"`
@@ -4824,21 +4684,10 @@ type Container_Product_Order_Virtual_Guest_Vpc struct {
 	StorageVolumes []Container_Product_Order_Virtual_Guest_Vpc_StorageVolume `json:"storageVolumes,omitempty" xmlrpc:"storageVolumes,omitempty"`
 
 	// no documentation yet
-	Subnets []Container_Product_Order_Virtual_Guest_Vpc_Subnet `json:"subnets,omitempty" xmlrpc:"subnets,omitempty"`
+	Subnets []Container_Product_Order_Vpc_Subnet `json:"subnets,omitempty" xmlrpc:"subnets,omitempty"`
 
 	// no documentation yet
 	Zone *string `json:"zone,omitempty" xmlrpc:"zone,omitempty"`
-}
-
-// no documentation yet
-type Container_Product_Order_Virtual_Guest_Vpc_IpAllocation struct {
-	Entity
-
-	// no documentation yet
-	Id *string `json:"id,omitempty" xmlrpc:"id,omitempty"`
-
-	// no documentation yet
-	Ip *string `json:"ip,omitempty" xmlrpc:"ip,omitempty"`
 }
 
 // no documentation yet
@@ -4846,7 +4695,19 @@ type Container_Product_Order_Virtual_Guest_Vpc_NetworkInterface struct {
 	Entity
 
 	// no documentation yet
+	Cidr *string `json:"cidr,omitempty" xmlrpc:"cidr,omitempty"`
+
+	// no documentation yet
+	Dns []string `json:"dns,omitempty" xmlrpc:"dns,omitempty"`
+
+	// no documentation yet
+	Gateway *string `json:"gateway,omitempty" xmlrpc:"gateway,omitempty"`
+
+	// no documentation yet
 	InterfaceId *string `json:"interfaceId,omitempty" xmlrpc:"interfaceId,omitempty"`
+
+	// no documentation yet
+	IpAddress *string `json:"ipAddress,omitempty" xmlrpc:"ipAddress,omitempty"`
 
 	// no documentation yet
 	IpAllocationId *string `json:"ipAllocationId,omitempty" xmlrpc:"ipAllocationId,omitempty"`
@@ -4891,10 +4752,40 @@ type Container_Product_Order_Virtual_Guest_Vpc_StorageVolume struct {
 
 	// no documentation yet
 	ResourceGroup *string `json:"resourceGroup,omitempty" xmlrpc:"resourceGroup,omitempty"`
+
+	// no documentation yet
+	RootKeyCrn *string `json:"rootKeyCrn,omitempty" xmlrpc:"rootKeyCrn,omitempty"`
 }
 
 // no documentation yet
-type Container_Product_Order_Virtual_Guest_Vpc_Subnet struct {
+type Container_Product_Order_Virtual_Guest_Vpc_Upgrade struct {
+	Container_Product_Order_Virtual_Guest_Vpc
+}
+
+// This is the default container type for Reserved Capacity orders.
+type Container_Product_Order_Virtual_ReservedCapacity struct {
+	Container_Product_Order
+
+	// Identifier of [[SoftLayer_Hardware_Router]] on which the capacity will be
+	BackendRouterId *int `json:"backendRouterId,omitempty" xmlrpc:"backendRouterId,omitempty"`
+
+	// Name for the [[SoftLayer_Virtual_ReservedCapacityGroup]] being ordered.
+	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
+}
+
+// no documentation yet
+type Container_Product_Order_Vpc_IpAllocation struct {
+	Entity
+
+	// no documentation yet
+	Id *string `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// no documentation yet
+	Ip *string `json:"ip,omitempty" xmlrpc:"ip,omitempty"`
+}
+
+// no documentation yet
+type Container_Product_Order_Vpc_Subnet struct {
 	Entity
 
 	// no documentation yet
@@ -4913,20 +4804,35 @@ type Container_Product_Order_Virtual_Guest_Vpc_Subnet struct {
 	Vlan *int `json:"vlan,omitempty" xmlrpc:"vlan,omitempty"`
 }
 
-// no documentation yet
-type Container_Product_Order_Virtual_Guest_Vpc_Upgrade struct {
-	Container_Product_Order_Virtual_Guest_Vpc
+// The SoftLayer_Container_Product_Promotion data type contains information about a promotion and its requirements.
+type Container_Product_Promotion struct {
+	Entity
+
+	// no documentation yet
+	Code *string `json:"code,omitempty" xmlrpc:"code,omitempty"`
+
+	// no documentation yet
+	ExpirationDate *Time `json:"expirationDate,omitempty" xmlrpc:"expirationDate,omitempty"`
+
+	// no documentation yet
+	Locations []Location `json:"locations,omitempty" xmlrpc:"locations,omitempty"`
+
+	// no documentation yet
+	RequirementGroups []Container_Product_Promotion_RequirementGroup `json:"requirementGroups,omitempty" xmlrpc:"requirementGroups,omitempty"`
 }
 
-// This is the default container type for Reserved Capacity orders.
-type Container_Product_Order_Virtual_ReservedCapacity struct {
-	Container_Product_Order
+// The SoftLayer_Container_Product_Promotion_RequirementGroup data type contains the required options that must be present on an order for the promotion to be applied. At least one of the categories, presets, or prices must be on the order.
+type Container_Product_Promotion_RequirementGroup struct {
+	Entity
 
-	// Identifier of [[SoftLayer_Hardware_Router]] on which the capacity will be
-	BackendRouterId *int `json:"backendRouterId,omitempty" xmlrpc:"backendRouterId,omitempty"`
+	// The category options to choose from for this requirement group
+	Categories []Product_Item_Category `json:"categories,omitempty" xmlrpc:"categories,omitempty"`
 
-	// Name for the [[SoftLayer_Virtual_ReservedCapacityGroup]] being ordered.
-	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
+	// The preset options to choose from for this requirement group
+	Presets []Product_Package_Preset `json:"presets,omitempty" xmlrpc:"presets,omitempty"`
+
+	// The price options to choose from for this requirement group
+	Prices []Product_Item_Price `json:"prices,omitempty" xmlrpc:"prices,omitempty"`
 }
 
 // This is the datatype that needs to be populated and sent to SoftLayer_Provisioning_Maintenance_Window::addCustomerUpgradeWindow. This datatype has everything required to place an order with SoftLayer.
@@ -5550,6 +5456,87 @@ type Container_User_Customer_Portal_Token struct {
 	UserId *int `json:"userId,omitempty" xmlrpc:"userId,omitempty"`
 }
 
+// no documentation yet
+type Container_User_Customer_Profile_Event_HyperWarp_ProfileChange struct {
+	Entity
+
+	// no documentation yet
+	Account_id *string `json:"account_id,omitempty" xmlrpc:"account_id,omitempty"`
+
+	// no documentation yet
+	Context *Container_User_Customer_Profile_Event_HyperWarp_ProfileChange_Context `json:"context,omitempty" xmlrpc:"context,omitempty"`
+
+	// no documentation yet
+	Event_id *string `json:"event_id,omitempty" xmlrpc:"event_id,omitempty"`
+
+	// no documentation yet
+	Event_properties *Container_User_Customer_Profile_Event_HyperWarp_ProfileChange_EventProperties `json:"event_properties,omitempty" xmlrpc:"event_properties,omitempty"`
+
+	// no documentation yet
+	Event_type *string `json:"event_type,omitempty" xmlrpc:"event_type,omitempty"`
+
+	// no documentation yet
+	Publisher *string `json:"publisher,omitempty" xmlrpc:"publisher,omitempty"`
+
+	// no documentation yet
+	Timestamp *string `json:"timestamp,omitempty" xmlrpc:"timestamp,omitempty"`
+
+	// no documentation yet
+	Version *string `json:"version,omitempty" xmlrpc:"version,omitempty"`
+}
+
+// no documentation yet
+type Container_User_Customer_Profile_Event_HyperWarp_ProfileChange_Context struct {
+	Entity
+
+	// no documentation yet
+	Previous_values *Container_User_Customer_Profile_Event_HyperWarp_ProfileChange_EventProperties `json:"previous_values,omitempty" xmlrpc:"previous_values,omitempty"`
+}
+
+// no documentation yet
+type Container_User_Customer_Profile_Event_HyperWarp_ProfileChange_EventProperties struct {
+	Entity
+
+	// no documentation yet
+	Allowed_ip_addresses *string `json:"allowed_ip_addresses,omitempty" xmlrpc:"allowed_ip_addresses,omitempty"`
+
+	// no documentation yet
+	Altphonenumber *string `json:"altphonenumber,omitempty" xmlrpc:"altphonenumber,omitempty"`
+
+	// no documentation yet
+	Email *string `json:"email,omitempty" xmlrpc:"email,omitempty"`
+
+	// no documentation yet
+	Firstname *string `json:"firstname,omitempty" xmlrpc:"firstname,omitempty"`
+
+	// no documentation yet
+	Iam_id *string `json:"iam_id,omitempty" xmlrpc:"iam_id,omitempty"`
+
+	// no documentation yet
+	Language *string `json:"language,omitempty" xmlrpc:"language,omitempty"`
+
+	// no documentation yet
+	Lastname *string `json:"lastname,omitempty" xmlrpc:"lastname,omitempty"`
+
+	// no documentation yet
+	Notification_language *string `json:"notification_language,omitempty" xmlrpc:"notification_language,omitempty"`
+
+	// no documentation yet
+	Phonenumber *string `json:"phonenumber,omitempty" xmlrpc:"phonenumber,omitempty"`
+
+	// no documentation yet
+	Photo *string `json:"photo,omitempty" xmlrpc:"photo,omitempty"`
+
+	// no documentation yet
+	Self_manage *bool `json:"self_manage,omitempty" xmlrpc:"self_manage,omitempty"`
+
+	// no documentation yet
+	State *string `json:"state,omitempty" xmlrpc:"state,omitempty"`
+
+	// no documentation yet
+	User_id *string `json:"user_id,omitempty" xmlrpc:"user_id,omitempty"`
+}
+
 // This container holds user's phone information.
 type Container_User_Data_Phone struct {
 	Entity
@@ -5760,6 +5747,9 @@ type Container_Virtual_DedicatedHost_Pci_Device_AllocationStatus struct {
 	// The number of PCI devices on the host.
 	DeviceCount *int `json:"deviceCount,omitempty" xmlrpc:"deviceCount,omitempty"`
 
+	// The name of the PCI devices on the host.
+	DeviceName *string `json:"deviceName,omitempty" xmlrpc:"deviceName,omitempty"`
+
 	// The number of PCI devices currently allocated to guests.
 	DevicesAllocated *int `json:"devicesAllocated,omitempty" xmlrpc:"devicesAllocated,omitempty"`
 
@@ -5790,16 +5780,28 @@ type Container_Virtual_Guest_Block_Device_Template_Configuration struct {
 	CloudInit *bool `json:"cloudInit,omitempty" xmlrpc:"cloudInit,omitempty"`
 
 	//
+	// CRN to customer root key
+	CrkCrn *string `json:"crkCrn,omitempty" xmlrpc:"crkCrn,omitempty"`
+
+	//
+	// For future use; not currently defined.
+	EnvironmentType []string `json:"environmentType,omitempty" xmlrpc:"environmentType,omitempty"`
+
+	//
+	// IBM Cloud HMAC Access Key
+	IbmAccessKey *string `json:"ibmAccessKey,omitempty" xmlrpc:"ibmAccessKey,omitempty"`
+
+	//
 	// IBM Cloud (Bluemix) API Key
 	IbmApiKey *string `json:"ibmApiKey,omitempty" xmlrpc:"ibmApiKey,omitempty"`
 
 	//
-	// Specifies if image is encrypted or not.
-	IsEncrypted *bool `json:"isEncrypted,omitempty" xmlrpc:"isEncrypted,omitempty"`
+	// IBM HMAC Secret Key
+	IbmSecretKey *string `json:"ibmSecretKey,omitempty" xmlrpc:"ibmSecretKey,omitempty"`
 
 	//
-	// ID of the IBM Key Protect Instance
-	KeyProtectId *string `json:"keyProtectId,omitempty" xmlrpc:"keyProtectId,omitempty"`
+	// Specifies if image is encrypted or not.
+	IsEncrypted *bool `json:"isEncrypted,omitempty" xmlrpc:"isEncrypted,omitempty"`
 
 	// The group name to be applied to the imported template
 	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`

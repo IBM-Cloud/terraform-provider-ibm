@@ -69,134 +69,51 @@ func (r Network) Offset(offset int) Network {
 	return r
 }
 
-// Connect user account network to Private Endpoint Service account. Network update occurs asynchronously after a successful connect request.
+// Initiate the automated process to establish connectivity granting the account private back-end network access to the services available through IBM Cloud Service Endpoint. Once initiated, the configuration process occurs asynchronously in the background.
+//
+//
+//
+// <h2>Responses</h2>
+//
+// <code>True</code> The request to connect was successfully initiated.
+//
+// <code>False</code> The account and Service Endpoint networks are already connected.
+//
+//
+//
+// <h2>Exceptions</h2>
+//
+// <code>SoftLayer_Exception_NotReady</code> Thrown when the current network configuration will not support connection alteration.
+//
+//
+//
+//
 func (r Network) ConnectPrivateEndpointService() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network", "connectPrivateEndpointService", nil, &r.Options, &resp)
 	return
 }
 
-// Provide a template containing the following properties to create a Network:
-// * networkIdentifier
-// * cidr
-// * name
+// Initiate the automated process to revoke mutual connectivity from the account network and IBM Cloud Service Endpoint network. Once initiated, the configuration process occurs asynchronously in the background.
 //
 //
-// The ``networkIdentifier`` must be an IP address within RFC 1918 blocks:
-// * 192.168.0.0/16
-// * 172.16.0.0/12
-// * 10.0.0.0/8
-// The ``cidr`` must be an integer between 16 and 24, inclusive. The ``networkIdentifier``/``cidr`` must represent a valid subnet specification. The ``name`` must not be empty, but otherwise can contain up to 50 characters of user specified information to identify the Network.
 //
-// The subnet specification of the Network bounds the IP address space which can be utilized and constrains the creation of Subnets within the Network.
+// <h2>Responses</h2>
 //
-// Example networkIdentifier/CIDR combinations:
-// * 192.168.0.0/16
-// * 192.168.0.0/17
-// * 172.16.0.0/16
-// * 172.31.0.0/16
-// * 10.0.0.0/16
-// * 10.255.0.0/16
-func (r Network) CreateObject(templateObject *datatypes.Network) (resp datatypes.Network, err error) {
-	params := []interface{}{
-		templateObject,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network", "createObject", params, &r.Options, &resp)
-	return
-}
-
-// Creation of a Subnet is necessary prior to provisioning compute resources into a Network. In order to create a Subnet, both a [[SoftLayer_Network_Subnet|Subnet]] and [[SoftLayer_Network_Pod|Pod]] must be specified. The Pod determines where the Subnet will be available for use by compute resources.
+// <code>True</code> The request to disconnect was successfully initiated.
 //
-// Provide a Subnet template containing the following properties:
-// * networkIdentifier
-// * cidr
-// The ``networkIdentifier`` must represent an IP address within that specified by the Network. The ``cidr`` must be an integer between 24 and 29, inclusive, and represent a subnet size smaller than the Network's. The ``networkIdentifier``/``cidr`` must represent a valid subnet specification.
-//
-// Provide a Pod template containing the following property:
-// * name
-// The ``name`` must represent a valid Pod e.g. sjc01.pod02. See [[SoftLayer_Network_Pod (type)]] for more information.
-//
-// The following constraints apply to Subnet creation:
-// * It must fit within the bounds of the Network.
-// * It must be no larger than /24 and no smaller than /29.
-// * Its size must not equal that of the Network. This implies that a fully
-// utilized Network will have a minimum of two Subnets.
-// * The Pod must support the ability to create Networks by having the
-// SUPPORTS_CUSTOMER_DEFINED_NETWORK capability. See [[SoftLayer_Network_Pod/getCapabilities]].
-func (r Network) CreateSubnet(subnet *datatypes.Network_Subnet, pod *datatypes.Network_Pod) (resp datatypes.Network_Subnet, err error) {
-	params := []interface{}{
-		subnet,
-		pod,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network", "createSubnet", params, &r.Options, &resp)
-	return
-}
-
-// Remove the specified Network along with any Subnets.
-func (r Network) DeleteObject() (resp bool, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network", "deleteObject", nil, &r.Options, &resp)
-	return
-}
-
+// <code>False</code> The account and Service Endpoint networks are already disconnected.
 //
 //
-// Provide a Subnet template containing the following properties:
-// * networkIdentifier
-// * cidr
-// The ``networkIdentifier`` must represent an IP address within that specified by the Network. The ``cidr`` must be an integer between 24 and 29, inclusive, and represent a subnet size smaller than the Network's. The ``networkIdentifier``/``cidr`` must represent a valid subnet specification. Or:
-// * id
-// The ``id`` must identify a Subnet in the Network. If the ``id`` is provided, the ``networkIdentifier``/``cidr`` will be ignored.
 //
-// Subnets may only be removed when no compute resources are utilizing them.
-func (r Network) DeleteSubnet(subnet *datatypes.Network_Subnet) (resp bool, err error) {
-	params := []interface{}{
-		subnet,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network", "deleteSubnet", params, &r.Options, &resp)
-	return
-}
-
-// Disconnect user account network from Private Endpoint Service account. Network update occurs asynchronously after a successful disconnect request.
+// <h2>Exceptions</h2>
+//
+// <code>SoftLayer_Exception_NotReady</code> Thrown when the current network configuration will not support connection alteration.
+//
+//
+//
+//
 func (r Network) DisconnectPrivateEndpointService() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network", "disconnectPrivateEndpointService", nil, &r.Options, &resp)
-	return
-}
-
-// Modify either the ``name`` or ``notes`` properties of a Network.
-func (r Network) EditObject(templateObject *datatypes.Network) (resp bool, err error) {
-	params := []interface{}{
-		templateObject,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network", "editObject", params, &r.Options, &resp)
-	return
-}
-
-// no documentation yet
-func (r Network) GetAllObjects() (resp []datatypes.Network, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network", "getAllObjects", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve The size of the Network specified in CIDR notation. Specified in conjunction with the ``networkIdentifier`` to describe the bounding subnet size for the Network. Required for creation. See [[SoftLayer_Network/createObject]] documentation for creation details.
-func (r Network) GetCidr() (resp int, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network", "getCidr", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve A name for the Network. This is required during creation of a Network and is entirely user defined.
-func (r Network) GetName() (resp string, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network", "getName", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve The starting IP address of the Network. Specified in conjunction with the ``cidr`` property to specify the bounding IP address space for the Network. Required for creation. See [[SoftLayer_Network/createObject]] documentation for creation details.
-func (r Network) GetNetworkIdentifier() (resp string, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network", "getNetworkIdentifier", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve Notes, or a description of the Network. This is entirely user defined.
-func (r Network) GetNotes() (resp string, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network", "getNotes", nil, &r.Options, &resp)
 	return
 }
 
@@ -206,13 +123,25 @@ func (r Network) GetObject() (resp datatypes.Network, err error) {
 	return
 }
 
-// Retrieve The Subnets within the Network. These represent the realized segments of the Network and reside within a [[SoftLayer_Network_Pod|Pod]]. A Subnet must be specified when provisioning a compute resource within a Network.
-func (r Network) GetSubnets() (resp []datatypes.Network_Subnet, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network", "getSubnets", nil, &r.Options, &resp)
-	return
-}
-
-// Checks connectivity between user account and Private Endpoint Service. Returns True if user account and Private Endpoint Service are connected. Returns False if user account and Private Endpoint Service are ready for connections but not connected.
+// Accessing select IBM Cloud services attached to the private back-end network is made possible by establishing a network relationship between an account's private network and the Service Endpoint network.
+//
+//
+//
+// <h2>Responses</h2>
+//
+// <code>True</code> The account and Service Endpoint networks are currently connected.
+//
+// <code>False</code> The account and Service Endpoint networks are not connected; both networks are properly configured to connect.
+//
+//
+//
+// <h2>Exceptions</h2>
+//
+// <code>SoftLayer_Exception_NotReady</code> Thrown when the current network configuration will not support connection alteration.
+//
+//
+//
+//
 func (r Network) IsConnectedToPrivateEndpointService() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network", "isConnectedToPrivateEndpointService", nil, &r.Options, &resp)
 	return
@@ -2066,6 +1995,88 @@ func (r Network_CdnMarketplace_Configuration_Behavior_Geoblocking) UpdateGeobloc
 	return
 }
 
+// no documentation yet
+type Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetNetworkCdnMarketplaceConfigurationBehaviorHotlinkProtectionService returns an instance of the Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection SoftLayer service
+func GetNetworkCdnMarketplaceConfigurationBehaviorHotlinkProtectionService(sess *session.Session) Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection {
+	return Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection{Session: sess}
+}
+
+func (r Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection) Id(id int) Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection) Mask(mask string) Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection) Filter(filter string) Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection) Limit(limit int) Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection) Offset(offset int) Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection {
+	r.Options.Offset = &offset
+	return r
+}
+
+// no documentation yet
+func (r Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection) CreateHotlinkProtection(input *datatypes.Container_Network_CdnMarketplace_Configuration_Input) (resp datatypes.Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection, err error) {
+	params := []interface{}{
+		input,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection", "createHotlinkProtection", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection) DeleteHotlinkProtection(input *datatypes.Container_Network_CdnMarketplace_Configuration_Input) (resp datatypes.Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection, err error) {
+	params := []interface{}{
+		input,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection", "deleteHotlinkProtection", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection) GetHotlinkProtection(input *datatypes.Container_Network_CdnMarketplace_Configuration_Input) (resp datatypes.Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection, err error) {
+	params := []interface{}{
+		input,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection", "getHotlinkProtection", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection) GetObject() (resp datatypes.Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection) UpdateHotlinkProtection(input *datatypes.Container_Network_CdnMarketplace_Configuration_Input) (resp datatypes.Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection, err error) {
+	params := []interface{}{
+		input,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_CdnMarketplace_Configuration_Behavior_HotlinkProtection", "updateHotlinkProtection", params, &r.Options, &resp)
+	return
+}
+
 // This data type models a purge event that occurs in caching server. It contains a reference to a mapping configuration, the path to execute the purge on, the status of the purge, and flag that enables saving the purge information for future use.
 type Network_CdnMarketplace_Configuration_Cache_Purge struct {
 	Session *session.Session
@@ -2976,735 +2987,6 @@ func (r Network_Component_Firewall) GetSubnets() (resp []datatypes.Network_Subne
 	return
 }
 
-// The SoftLayer_Network_ContentDelivery_Account data type models an individual CDN account. CDN accounts contain references to the SoftLayer customer account they belong to, login credentials for upload services, and a CDN account's status. Please contact SoftLayer sales to purchase or cancel a CDN account
-type Network_ContentDelivery_Account struct {
-	Session *session.Session
-	Options sl.Options
-}
-
-// GetNetworkContentDeliveryAccountService returns an instance of the Network_ContentDelivery_Account SoftLayer service
-func GetNetworkContentDeliveryAccountService(sess *session.Session) Network_ContentDelivery_Account {
-	return Network_ContentDelivery_Account{Session: sess}
-}
-
-func (r Network_ContentDelivery_Account) Id(id int) Network_ContentDelivery_Account {
-	r.Options.Id = &id
-	return r
-}
-
-func (r Network_ContentDelivery_Account) Mask(mask string) Network_ContentDelivery_Account {
-	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
-		mask = fmt.Sprintf("mask[%s]", mask)
-	}
-
-	r.Options.Mask = mask
-	return r
-}
-
-func (r Network_ContentDelivery_Account) Filter(filter string) Network_ContentDelivery_Account {
-	r.Options.Filter = filter
-	return r
-}
-
-func (r Network_ContentDelivery_Account) Limit(limit int) Network_ContentDelivery_Account {
-	r.Options.Limit = &limit
-	return r
-}
-
-func (r Network_ContentDelivery_Account) Offset(offset int) Network_ContentDelivery_Account {
-	r.Options.Offset = &offset
-	return r
-}
-
-// Internap servers attempts to validate a token before serving a protected content. SoftLayer customer does not need to invoke this method.  Please refer to [[SoftLayer_Network_ContentDelivery_Authentication_Token|Authentication Token]] object for more details on Content Authentication Service.
-func (r Network_ContentDelivery_Account) AuthenticateResourceRequest(parameter *datatypes.Container_Network_ContentDelivery_Authentication_Parameter) (resp bool, err error) {
-	params := []interface{}{
-		parameter,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "authenticateResourceRequest", params, &r.Options, &resp)
-	return
-}
-
-// You can further organize your contents on the CDN FTP server by creating sub directories.  This method creates a directory on the CDN FTP server. A user must have CDN_FILE_MANAGE privilege to use this method. A directory name must be an absolute path and you can only create sub directories in /media folder.
-func (r Network_ContentDelivery_Account) CreateDirectory(directoryName *string) (resp bool, err error) {
-	params := []interface{}{
-		directoryName,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "createDirectory", params, &r.Options, &resp)
-	return
-}
-
-// This method allows you to create a default CDN FTP user record on the ftp.cdnlayer.service.softlayer.com server. As with a CDN FTP user account, you can upload contents to the CDN host server through the SoftLayer private network.  SoftLayer currently allows only one FTP user for each CDN account. Your default CDN FTP user record is created upon successful creation of a CDN account.  You may not need to use this method at all. This is provided in support of the previous CDN customers. SoftLayer may offer multiple CDN FTP users for a single CDN account in the future.
-//
-// Optionally, you can provide a new password when invoking this method and a new password must follow the rules below:
-// * ...must be between 8 and 20 characters long
-// * ...must be an alphanumeric value
-// * ...can contain these characters: - _ ! % # $ ^ & *
-func (r Network_ContentDelivery_Account) CreateFtpUser(newPassword *string) (resp bool, err error) {
-	params := []interface{}{
-		newPassword,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "createFtpUser", params, &r.Options, &resp)
-	return
-}
-
-// With Origin Pull, content is pulled from your origin server as needed and then delivered to visitors. You do not need to upload your files to the CDN FTP: you can utilize the files that currently exist on your origin server. It will take 10 to 15 minutes for this to take effect after you create an Origin Pull rule. Origin Pull is only supported for HTTP protocol and you would continue to use the CDN FTP for Flash and Windows Media streaming services.
-//
-// A valid origin host can include a directory information.  You may include an authentication username and password along with an origin host. If you set an authentication username and password, CDN servers will include "Authorization:" header in every request. You may use the "Authorization:" header to grant access to CDN servers or you may use it to distinguish CDN servers from normal visitors. Here is a list of valid origin hosts:
-// * www.website.com
-// * www.website.com/cdn_content
-// * cdn_user:password@www.website.com
-// * cdn_user:password@www.website.com/images
-//
-//
-// An authentication username should be an alphanumeric string and allowed special characters are . - _<br /> An authentication password should be an alphanumeric string and allowed special characters are . - _ ! # $ % ^ & *<br /> Both username and password must be between 3 to 10 characters long.
-//
-// CDN nodes will cache your contents and you can control cache lifetime by modifying your web server's configuration. This method also creates a FTP directory restriction upon successful Origin Pull set up. You will not be able to access /media/http directory since contents will be pulled from your origin server. An origin domain must be a valid domain name and it can contain path information. This can help you organize contents on your origin server. For example, you could set an origin domain as: mydomain.com/cdn_contents
-//
-// A CNAME record allows you to have a customized URL. You can get rid of your CDN account name from the URL. A valid CNAME for the Origin Pull method must point to <CDN_AcccountName>.http.cdn.softlayer.net.
-//
-// There are 2 types of origin pull mappings.  The one with a CNAME record or the one without a CNAME record and they work very differently.
-//
-// gzip is supported if your web server sends a proper gzip header. For more details, visit our [http://knowledgelayer.softlayer.com/topic/cdn KnowledgeLayer]
-func (r Network_ContentDelivery_Account) CreateOriginPullMapping(mappingObject *datatypes.Container_Network_ContentDelivery_OriginPull_Mapping) (resp bool, err error) {
-	params := []interface{}{
-		mappingObject,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "createOriginPullMapping", params, &r.Options, &resp)
-	return
-}
-
-// This method is deprecated, please use [[[[SoftLayer_Network_ContentDelivery_Account::createOriginPullMapping|createOriginPullMapping]] method instead.
-func (r Network_ContentDelivery_Account) CreateOriginPullRule(originDomain *string, cnameRecord *string) (resp bool, err error) {
-	params := []interface{}{
-		originDomain,
-		cnameRecord,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "createOriginPullRule", params, &r.Options, &resp)
-	return
-}
-
-// You need to specify a directory on your CDN FTP or on your origin host in which your secure content resides to enable the token authentication . It will take about about 30 minutes for a newly configured token authentication directory to take effect.
-func (r Network_ContentDelivery_Account) CreateTokenAuthenticationDirectory(directory *string, mediaType *string) (resp bool, err error) {
-	params := []interface{}{
-		directory,
-		mediaType,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "createTokenAuthenticationDirectory", params, &r.Options, &resp)
-	return
-}
-
-// This method deletes your FTP user record on the ftp.cdnlayer.service.softlayer.com server. Refer to the service overview of [[SoftLayer_Network_ContentDelivery_Account::createFtpUser|createFtpUser]] method for more information on the CDN FTP server.
-func (r Network_ContentDelivery_Account) DeleteFtpUser() (resp bool, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "deleteFtpUser", nil, &r.Options, &resp)
-	return
-}
-
-// This method removes an Origin Pull domain rule.  Once an Origin Pull rule is removed, you will be able to access the /media/http directory. It will take 10 to 15 minutes for this to take effect after you remove your Origin Pull rule.  Cached contents on CDN POPs may live longer than 15 minutes.
-func (r Network_ContentDelivery_Account) DeleteOriginPullRule(originMappingId *string) (resp bool, err error) {
-	params := []interface{}{
-		originMappingId,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "deleteOriginPullRule", params, &r.Options, &resp)
-	return
-}
-
-// This method disables CDN access log.
-func (r Network_ContentDelivery_Account) DisableLogging() (resp bool, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "disableLogging", nil, &r.Options, &resp)
-	return
-}
-
-// This method enables CDN access log.
-func (r Network_ContentDelivery_Account) EnableLogging() (resp bool, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "enableLogging", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve The customer account that a CDN account belongs to.
-func (r Network_ContentDelivery_Account) GetAccount() (resp datatypes.Account, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getAccount", nil, &r.Options, &resp)
-	return
-}
-
-// This method returns bandwidth data for each POP. [[SoftLayer_Container_Network_ContentDelivery_Bandwidth_PointsOfPresence_Summary|POP Bandwidth]] object contains a starting time, ending time, total bytes, POP name and bandwidth unit.
-//
-// POP bandwidth data is updated everyday at 22:50 CST (or CDT). It queries and stores POP data from the day before. It is a more resource intensive process than a regular CDN bandwidth update thus we run this once a day. Since the POP bandwidth data is delayed for a day, there is no correction process for POP data. The POP bandwidth is not associated with any billing process and is mainly used to generate a POP bandwidth graph.
-func (r Network_ContentDelivery_Account) GetAllPopsBandwidthData(beginDateTime *datatypes.Time, endDateTime *datatypes.Time) (resp []datatypes.Container_Network_ContentDelivery_Bandwidth_PointsOfPresence_Summary, err error) {
-	params := []interface{}{
-		beginDateTime,
-		endDateTime,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getAllPopsBandwidthData", params, &r.Options, &resp)
-	return
-}
-
-// This method returns a bandwidth graph for every POP wrapped in [[SoftLayer_Container_Bandwidth_GraphOutputsExtended|Bandwidth Graph]] object. A POP bandwidth graph shows bandwidth consumption per each POP in a bar graph. [[SoftLayer_Container_Bandwidth_GraphOutputsExtended|Bandwidth Graph]] object contains a begin time, end time, title of the graph, binary date, in and outbound total bandwidth in bytes
-func (r Network_ContentDelivery_Account) GetAllPopsBandwidthImage(title *string, beginDateTime *datatypes.Time, endDateTime *datatypes.Time, unit *string) (resp datatypes.Container_Bandwidth_GraphOutputsExtended, err error) {
-	params := []interface{}{
-		title,
-		beginDateTime,
-		endDateTime,
-		unit,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getAllPopsBandwidthImage", params, &r.Options, &resp)
-	return
-}
-
-// Retrieve The CDN account id that this CDN account is associated with.
-func (r Network_ContentDelivery_Account) GetAssociatedCdnAccountId() (resp string, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getAssociatedCdnAccountId", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve The IP addresses that are used for the content authentication service.
-func (r Network_ContentDelivery_Account) GetAuthenticationIpAddresses() (resp []datatypes.Network_ContentDelivery_Authentication_Address, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getAuthenticationIpAddresses", nil, &r.Options, &resp)
-	return
-}
-
-// CDN servers will invoke a Web Service method to validate a content authentication token. This method returns all token validation web service endpoints set for a CDN account. You can override the default web service by calling [[SoftLayer_Network_ContentDelivery_Authentication_Token|setContentAuthenticationWsdl setContentAuthenticationWsdl]] method.
-func (r Network_ContentDelivery_Account) GetAuthenticationServiceEndpoints() (resp []datatypes.Container_Network_ContentDelivery_Authentication_ServiceEndpoint, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getAuthenticationServiceEndpoints", nil, &r.Options, &resp)
-	return
-}
-
-// This method returns bandwidth data for a given time range.  It returns an array of [[SoftLayer_Container_Network_ContentDelivery_Bandwidth_Summary|bandwidth summary]] objects. [[SoftLayer_Container_Network_ContentDelivery_Bandwidth_Summary|Bandwidth summary]] object contains a beginning time, ending time, and bandwidth in bytes.
-//
-// A Beginning and ending date parameters have to be a timestamp in "yyyy-mm-dd HH24:mi:ss" format and it assumes the time is in Central Standard Time (CST) or Central Daylight Time (CDT) time zone. CDN bandwidth data is stored in Greenwich Mean Time (GMT) internally and converts a beginning and ending time to GMT before querying.
-//
-// Unlike server bandwidth, CDN bandwidth returns total bytes consumed within an hour. For example, if you pass "2008-10-10 00:00:00" for a beginning time and "2008-10-10 05:00:00" for an ending time, your return value will have 6 elements of bandwidth summary objects. The first bandwidth summary object will have the total bytes consumed between 2008-10-10 00:00:00 and 2008-10-10 05:00:00. And the last object will have the bandwidth consumed between 2008-10-10 05:00:00 and 2008-10-10 00:59:59. The bandwidth data is updated at 10 minutes after every hour.  The queried data is on a two hour time delay. The two hour delay is required to gather bandwidth data from each POP and that is the minimum delay required to create a feasible graph. It usually takes about 8 hours to reconcile all the data from every CDN POP. This hourly data is corrected after 24 hours if necessary.  If you consume a large amount of bandwidth, your bandwidth data will be updated the next day.
-func (r Network_ContentDelivery_Account) GetBandwidthData(beginDateTime *datatypes.Time, endDateTime *datatypes.Time) (resp []datatypes.Container_Network_ContentDelivery_Bandwidth_Summary, err error) {
-	params := []interface{}{
-		beginDateTime,
-		endDateTime,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getBandwidthData", params, &r.Options, &resp)
-	return
-}
-
-// This method returns bandwidth data for a given time range.  It returns an array of [[SoftLayer_Container_Network_ContentDelivery_Report_Usage|bandwidth usage report]] objects.
-//
-// These will be first sorted by timestamp, and there will be one entry with that timestamp for each enabled region. The region type 'NONE' is provided only when non-region-specific data is returned. [[SoftLayer_Container_Network_ContentDelivery_Report_Usage|bandwidth usage report]] objects with a region will never contain non-region-specific data. Non-region-specific values are standardTotal and sslTotal; standardTotal is computed by adding the HTTP Large, Windows Media, Flash and Application Delivery Network bandwidth. The sslTotal is computed by adding the HTTP Large SSL bandwidth and the Application Delivery Network SSL bandwidth.
-//
-// A Beginning and ending date parameters have to be a timestamp in "yyyy-mm-dd HH24:mi:ss" format and it assumes the time is in Central Standard Time (CST) or Central Daylight Time (CDT) time zone. CDN bandwidth data is stored in Greenwich Mean Time (GMT) internally and converts a beginning and ending time to GMT before querying.
-//
-// Unlike server bandwidth, CDN bandwidth returns total bytes consumed within an hour. For example, if you pass "2008-10-10 00:00:00" for a beginning time and "2008-10-10 05:00:00" for an ending time, your return value will have 6 elements of bandwidth summary objects. The first bandwidth summary object will have the total bytes consumed between 2008-10-10 00:00:00 and 2008-10-10 05:00:00. And the last object will have the bandwidth consumed between 2008-10-10 05:00:00 and 2008-10-10 00:59:59. The bandwidth data is updated at 10 minutes after every hour.  The queried data is on a two hour time delay. The two hour delay is required to gather bandwidth data from each POP and that is the minimum delay required to create a feasible graph. It usually takes about 8 hours to reconcile all the data from every CDN POP. This hourly data is corrected after 24 hours if necessary.  If you consume a large amount of bandwidth, your bandwidth data will be updated the next day.
-func (r Network_ContentDelivery_Account) GetBandwidthDataWithTypes(beginDateTime *datatypes.Time, endDateTime *datatypes.Time, period *string) (resp []datatypes.Container_Network_ContentDelivery_Report_Usage, err error) {
-	params := []interface{}{
-		beginDateTime,
-		endDateTime,
-		period,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getBandwidthDataWithTypes", params, &r.Options, &resp)
-	return
-}
-
-// This method returns a bandwidth graph wrapped in [[SoftLayer_Container_Bandwidth_GraphOutputsExtended|Bandwidth Graph]] object. [[SoftLayer_Container_Bandwidth_GraphOutputsExtended|Bandwidth Graph]] object contains a starting time, ending time, graph title, graph binary data, and in and outbound total bytes.
-func (r Network_ContentDelivery_Account) GetBandwidthImage(title *string, beginDateTime *datatypes.Time, endDateTime *datatypes.Time) (resp datatypes.Container_Bandwidth_GraphOutputsExtended, err error) {
-	params := []interface{}{
-		title,
-		beginDateTime,
-		endDateTime,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getBandwidthImage", params, &r.Options, &resp)
-	return
-}
-
-// Retrieve The current billing item for a CDN account.
-func (r Network_ContentDelivery_Account) GetBillingItem() (resp datatypes.Billing_Item, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getBillingItem", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve The name of a CDN account.
-func (r Network_ContentDelivery_Account) GetCdnAccountName() (resp string, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getCdnAccountName", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve A brief note on a CDN account.
-func (r Network_ContentDelivery_Account) GetCdnAccountNote() (resp string, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getCdnAccountNote", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve The solution type of a CDN account.
-func (r Network_ContentDelivery_Account) GetCdnSolutionName() (resp string, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getCdnSolutionName", nil, &r.Options, &resp)
-	return
-}
-
-// An origin pull mapping is a combination of your customer origin record and a CNAME (optional) record. You can now keep track of your customer origin records separate from your CNAME records. This service returns your customer origin records.
-func (r Network_ContentDelivery_Account) GetCustomerOrigins(mediaType *string) (resp []datatypes.Container_Network_ContentDelivery_OriginPull_Mapping, err error) {
-	params := []interface{}{
-		mediaType,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getCustomerOrigins", params, &r.Options, &resp)
-	return
-}
-
-// Retrieve Indicates if CDN account is dependent on other service. If set, this CDN account is limited to these services: createOriginPullMapping, deleteOriginPullRule, getOriginPullMappingInformation, getCdnUrls, purgeCache, loadContent, manageHttpCompression
-func (r Network_ContentDelivery_Account) GetDependantServiceFlag() (resp bool, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getDependantServiceFlag", nil, &r.Options, &resp)
-	return
-}
-
-// This method returns an array of [[SoftLayer_Container_Network_Directory_Listing|Directory Listing]] objects. You must have CDN_FILE_MANAGE privilege and you can only retrieve directory information within <b>/media</b> directory. A [[SoftLayer_Container_Network_Directory_Listing|Directory Listing]] object contains type (indicating whether it is a file or a directory), name and file count if it is a directory.
-func (r Network_ContentDelivery_Account) GetDirectoryInformation(directoryName *string) (resp []datatypes.Container_Network_Directory_Listing, err error) {
-	params := []interface{}{
-		directoryName,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getDirectoryInformation", params, &r.Options, &resp)
-	return
-}
-
-// This method returns disk space usage data for your CDN FTP.
-func (r Network_ContentDelivery_Account) GetDiskSpaceUsageDataByDate(beginDateTime *datatypes.Time, endDateTime *datatypes.Time) (resp []datatypes.Metric_Tracking_Object_Data, err error) {
-	params := []interface{}{
-		beginDateTime,
-		endDateTime,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getDiskSpaceUsageDataByDate", params, &r.Options, &resp)
-	return
-}
-
-// This method returns a disk usage graph wrapped in [[SoftLayer_Container_Bandwidth_GraphOutputsExtended|Bandwidth Graph]] object. [[SoftLayer_Container_Bandwidth_GraphOutputsExtended|Bandwidth Graph]] object contains a starting time, ending time, graph title, graph binary data, and in and outbound total bytes.
-func (r Network_ContentDelivery_Account) GetDiskSpaceUsageImageByDate(beginDateTime *datatypes.Time, endDateTime *datatypes.Time) (resp datatypes.Container_Bandwidth_GraphOutputs, err error) {
-	params := []interface{}{
-		beginDateTime,
-		endDateTime,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getDiskSpaceUsageImageByDate", params, &r.Options, &resp)
-	return
-}
-
-// This method returns your login credentials to the CDN FTP server (ftp.cdnlayer.service.softlayer.com server). You must have CDN_FILE_MANAGE privilege. Refer to the service overview of [[SoftLayer_Network_ContentDelivery_Account::createFtpUser|createFtpUser]] method for more information on the CDN FTP server.
-//
-// If you want to download raw log files, prefix the username with "LOGS-" (without quotes) when logging in. SoftLayer designed CDN accounts so they can have multiple CDN FTP users. However, this method returns the default CDN FTP user information: multi user support may be implemented in the future.
-func (r Network_ContentDelivery_Account) GetFtpAttributes() (resp datatypes.Container_Network_Authentication_Data, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getFtpAttributes", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve Indicates if it is a legacy CDN or not
-func (r Network_ContentDelivery_Account) GetLegacyCdnFlag() (resp bool, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getLegacyCdnFlag", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve Indicates if CDN logging is enabled.
-func (r Network_ContentDelivery_Account) GetLogEnabledFlag() (resp string, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getLogEnabledFlag", nil, &r.Options, &resp)
-	return
-}
-
-// This method returns CDN URLs for static file (http), Flash streaming (rtmp) and Window Media (mms) streaming services. You can generate your CDN URLs based on the information retrieved by this method.
-func (r Network_ContentDelivery_Account) GetMediaUrls() (resp []datatypes.Container_Network_ContentDelivery_SupportedProtocol, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getMediaUrls", nil, &r.Options, &resp)
-	return
-}
-
-// getObject retrieves the SoftLayer_Network_ContentDelivery_Account object whose ID number corresponds to the ID number of the initial parameter passed to the SoftLayer_Network_ContentDelivery_Account service. You can only retrieve CDN accounts assigned to your SoftLayer customer account.
-func (r Network_ContentDelivery_Account) GetObject() (resp datatypes.Network_ContentDelivery_Account, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getObject", nil, &r.Options, &resp)
-	return
-}
-
-// This method returns a list of origin pull configuration data.
-func (r Network_ContentDelivery_Account) GetOriginPullMappingInformation() (resp []datatypes.Container_Network_ContentDelivery_OriginPull_Mapping, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getOriginPullMappingInformation", nil, &r.Options, &resp)
-	return
-}
-
-// This method returns CDN URLs that supports Origin Pull mappings.
-func (r Network_ContentDelivery_Account) GetOriginPullSupportedMediaUrls() (resp []datatypes.Container_Network_ContentDelivery_SupportedProtocol, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getOriginPullSupportedMediaUrls", nil, &r.Options, &resp)
-	return
-}
-
-// This method returns the domain name of your Origin Pull rule.  It assumes you have already setup an Origin Pull rule.  Otherwise, it will throw an exception. A returning value is the value of the first parameter (origin pull domain) you provided to [[SoftLayer_Network_ContentDelivery_Account::createOriginPullRule|createOriginPullRule]] method. See Error Handling section below for possible errors.
-func (r Network_ContentDelivery_Account) GetOriginPullUrl() (resp string, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getOriginPullUrl", nil, &r.Options, &resp)
-	return
-}
-
-// This method returns an array of CDN POPs (Points of Presence) object. [[SoftLayer_Container_Network_ContentDelivery_PointsOfPresence|POP object]] object contains the POP id and name.
-func (r Network_ContentDelivery_Account) GetPopNames() (resp []datatypes.Container_Network_ContentDelivery_PointsOfPresence, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getPopNames", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve Indicates if customer is allowed to access the CDN provider's management portal.
-func (r Network_ContentDelivery_Account) GetProviderPortalAccessFlag() (resp bool, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getProviderPortalAccessFlag", nil, &r.Options, &resp)
-	return
-}
-
-// This method returns your login credentials to the CDN provider portal.
-func (r Network_ContentDelivery_Account) GetProviderPortalCredentials() (resp datatypes.Container_Network_Authentication_Data, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getProviderPortalCredentials", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve A CDN account's status presented in a more detailed data type.
-func (r Network_ContentDelivery_Account) GetStatus() (resp datatypes.Network_ContentDelivery_Account_Status, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getStatus", nil, &r.Options, &resp)
-	return
-}
-
-// This method returns all token authentication directories.
-func (r Network_ContentDelivery_Account) GetTokenAuthenticationDirectories() (resp []datatypes.Container_Network_Directory_Listing, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getTokenAuthenticationDirectories", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve Indicates if the token authentication service is enabled or not.
-func (r Network_ContentDelivery_Account) GetTokenAuthenticationEnabledFlag() (resp bool, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getTokenAuthenticationEnabledFlag", nil, &r.Options, &resp)
-	return
-}
-
-// This method returns your login credentials to the public CDN FTP.
-func (r Network_ContentDelivery_Account) GetVendorFtpAttributes() (resp datatypes.Container_Network_Authentication_Data, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "getVendorFtpAttributes", nil, &r.Options, &resp)
-	return
-}
-
-// Whether you are using Origin Pull or POP Pull, your content will be transferred and cached on CDN POP (node) on the initial request. If you wish to load your content to all CDN POPs, you may use this service to accomplish that. Please keep in mind, it will take about 10 to 15 minutes to load content to all CDN POPs depending on the load.
-//
-// You can only specify 5 URLs at a time.
-func (r Network_ContentDelivery_Account) LoadContent(objectUrls []string) (resp bool, err error) {
-	params := []interface{}{
-		objectUrls,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "loadContent", params, &r.Options, &resp)
-	return
-}
-
-// HTTP Compression is used to reduce the bandwidth used to deliver an object. You can specify list of content types that needs to be compressed. If you omit the content type parameter, these values will be used by default:
-// * text/plain
-// * text/html
-// * text/css
-// * application/x-javascript
-// * text/javascript
-//
-//
-// Note that files larger than 1MB will never be served with compression regardless of whether their content-type is enabled for compression.
-func (r Network_ContentDelivery_Account) ManageHttpCompression(enableFlag *bool, mimeTypes []string) (resp bool, err error) {
-	params := []interface{}{
-		enableFlag,
-		mimeTypes,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "manageHttpCompression", params, &r.Options, &resp)
-	return
-}
-
-// CDN's cache mechanism works similar to that of web browsers. When CDN pulls a file from your origin server or from your CDN FTP directory for the first time, it creates a cache file on itself. CDN re-uses cache files to save trips to the origin server and thus it speeds up delivering content to visitors. This method removes cached objects on every server in the CDN network. If you see a stale content or a file that send an incorrect header, purging cache will correct the issue. CDN will pull a fresh content from your origin server or your CDN FTP.
-//
-// This method takes an array of URLs. A URL must be exact as it is being requested by clients. An example URLs may look like this:
-// * http://<your CDN username>.http.cdn.softlayer.net/mycdnname/some_file.txt
-//
-//
-// If you created a CNAME that points to CDN host, use your CNAME URL instead.
-// * http://image.mydomain.com/some_file.txt
-//
-//
-// It takes approximately 3-5 minutes for the system to delete the requested object on every CDN server from submission .
-func (r Network_ContentDelivery_Account) PurgeCache(objectUrls []string) (resp []datatypes.Container_Network_ContentDelivery_PurgeService_Response, err error) {
-	params := []interface{}{
-		objectUrls,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "purgeCache", params, &r.Options, &resp)
-	return
-}
-
-// If you want to turn off the token authentication, use this method to remove a directory from the token authentication directory.
-func (r Network_ContentDelivery_Account) RemoveAuthenticationDirectory(directory *string, mediaType *string) (resp bool, err error) {
-	params := []interface{}{
-		directory,
-		mediaType,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "removeAuthenticationDirectory", params, &r.Options, &resp)
-	return
-}
-
-// With this method you can remove a file or a directory on the CDN FTP server. If a source name ends with a slash (/), this method assumes it is a directory.  A source name must be an absolute path. It does not check to see if a file or directory exists before deletion. You can only remove files and directories that are in /media folder. Be sure to catch an exception for the detail on an error.
-func (r Network_ContentDelivery_Account) RemoveFile(source *string) (resp bool, err error) {
-	params := []interface{}{
-		source,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "removeFile", params, &r.Options, &resp)
-	return
-}
-
-// CDN servers will invoke a Web Service method to validate a content authentication token. CDN uses the default Web Service provided by SoftLayer to validate a token. A customer can use their own implementation of the token authentication Web Service. A valid SOAP WSDL will look similar [https://manage.softlayer.com/CdnService/authenticationWsdlExample/wsdl this].
-func (r Network_ContentDelivery_Account) SetAuthenticationServiceEndpoint(webserviceEndpoint *string, protocol *string) (resp bool, err error) {
-	params := []interface{}{
-		webserviceEndpoint,
-		protocol,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "setAuthenticationServiceEndpoint", params, &r.Options, &resp)
-	return
-}
-
-// With a CDN FTP, you can upload contents to CDN host server. Once you uploaded contents, your contents will be fetched by the CDN POP (Points of Presence) servers as needed.
-//
-// CDN supports three protocols: Flash streaming (rtmp), Window Media streaming (mms) and HTTP. Once you log in to the CDN FTP server, you will see three directories under /media directory.  You have to upload your contents to a proper directory to use the different services. Refer to [[SoftLayer_Network_ContentDelivery_Account|CDN Account]] service overview for details on the CDN FTP server. "gzip" is supported if you compress your content before uploading and you have to change its extension to ".gz".  [SoftLayer_Network_ContentDelivery_Account::createOriginPullRule|Origin Pull] also supports "gzip" contents and you don't have to modify file extension with Origin Pull. Once uploaded, your contents should be available almost immediately to visitors.  However, it may take about 30 minutes to propagate files to the entire CDN network after uploading. For more details, visit our [hhttp://knowledgelayer.softlayer.com/topic/cdn KnowledgeLayer]
-//
-// This method updates the password for your CDN FTP account on the ftp.cdnlayer.service.softlayer.com server. You must provide an alphanumeric value for a new password.  - _ ! % # $ ^ & * characters are allowed beside an alphanumeric string.
-func (r Network_ContentDelivery_Account) SetFtpPassword(newPassword *string) (resp bool, err error) {
-	params := []interface{}{
-		newPassword,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "setFtpPassword", params, &r.Options, &resp)
-	return
-}
-
-// This method allows you to edit CDN account note. The maximum length for CDN account note is 30 characters.
-func (r Network_ContentDelivery_Account) UpdateNote(note *string) (resp bool, err error) {
-	params := []interface{}{
-		note,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "updateNote", params, &r.Options, &resp)
-	return
-}
-
-// With this method, you can upload binary data to the CDN FTP server.  This method supports files up to 20 Mega Bytes. You need to use the CDN FTP (ftp.cdnlayer.service.softlayer.com) to upload files larger than 20 MB.  This method takes [[SoftLayer_Container_Utility_File_Attachment]] a first parameter. A target name must be an absolute path and you can only upload a file to a directory that is in /media folder.
-func (r Network_ContentDelivery_Account) UploadStream(source *datatypes.Container_Utility_File_Attachment, target *string) (resp bool, err error) {
-	params := []interface{}{
-		source,
-		target,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Account", "uploadStream", params, &r.Options, &resp)
-	return
-}
-
-// The SoftLayer_Network_ContentDelivery_Authentication_Address data type models an individual IP address that CDN allow or deny access from.
-type Network_ContentDelivery_Authentication_Address struct {
-	Session *session.Session
-	Options sl.Options
-}
-
-// GetNetworkContentDeliveryAuthenticationAddressService returns an instance of the Network_ContentDelivery_Authentication_Address SoftLayer service
-func GetNetworkContentDeliveryAuthenticationAddressService(sess *session.Session) Network_ContentDelivery_Authentication_Address {
-	return Network_ContentDelivery_Authentication_Address{Session: sess}
-}
-
-func (r Network_ContentDelivery_Authentication_Address) Id(id int) Network_ContentDelivery_Authentication_Address {
-	r.Options.Id = &id
-	return r
-}
-
-func (r Network_ContentDelivery_Authentication_Address) Mask(mask string) Network_ContentDelivery_Authentication_Address {
-	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
-		mask = fmt.Sprintf("mask[%s]", mask)
-	}
-
-	r.Options.Mask = mask
-	return r
-}
-
-func (r Network_ContentDelivery_Authentication_Address) Filter(filter string) Network_ContentDelivery_Authentication_Address {
-	r.Options.Filter = filter
-	return r
-}
-
-func (r Network_ContentDelivery_Authentication_Address) Limit(limit int) Network_ContentDelivery_Authentication_Address {
-	r.Options.Limit = &limit
-	return r
-}
-
-func (r Network_ContentDelivery_Authentication_Address) Offset(offset int) Network_ContentDelivery_Authentication_Address {
-	r.Options.Offset = &offset
-	return r
-}
-
-// This method creates an authentication IP record.  Required parameters are
-//
-//
-// * cdnAccountId - A CDN account id that belongs to your SoftLayer Account
-// * ipAddress - An IP address or a IP range
-// * accessType- It can be "ALLOW" or "DENY"
-func (r Network_ContentDelivery_Authentication_Address) CreateObject(templateObject *datatypes.Network_ContentDelivery_Authentication_Address) (resp datatypes.Network_ContentDelivery_Authentication_Address, err error) {
-	params := []interface{}{
-		templateObject,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Authentication_Address", "createObject", params, &r.Options, &resp)
-	return
-}
-
-// This method deletes an authentication IP address.
-func (r Network_ContentDelivery_Authentication_Address) DeleteObject() (resp bool, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Authentication_Address", "deleteObject", nil, &r.Options, &resp)
-	return
-}
-
-// This method let you edit an authentication IP object by passing a modified object.
-func (r Network_ContentDelivery_Authentication_Address) EditObject(templateObject *datatypes.Network_ContentDelivery_Authentication_Address) (resp bool, err error) {
-	params := []interface{}{
-		templateObject,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Authentication_Address", "editObject", params, &r.Options, &resp)
-	return
-}
-
-// getObject retrieves the SoftLayer_Network_ContentDelivery_Authentication_Address object whose ID number corresponds to the ID number of the initial parameter passed to the SoftLayer_Network_ContentDelivery_Authentication_Address service. You can only retrieve authentication IP addresses assigned to one of your CDN account.
-func (r Network_ContentDelivery_Authentication_Address) GetObject() (resp datatypes.Network_ContentDelivery_Authentication_Address, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Authentication_Address", "getObject", nil, &r.Options, &resp)
-	return
-}
-
-// The authentication IP address match occurs from the higher priority IP to the lower. This method will be helpful if you want to modify the order (priority) of the authentication IP addresses. You can use this method instead of editing individual authentication IP addresses.
-//
-// You can retrieve authentication IP address using [[SoftLayer_Network_ContentDelivery_Account::getAuthenticationIpAddresses|getAuthenticationIpAddresses]] method. Then, rearrange the authentication IP addresses and pass them to this method. When creating template objects as parameter, make sure to include the id of each authentication IP addresses. You must provide every authentication IP address.  New priorities will be assigned to each authentication IP addresses in the order of they are passed.
-func (r Network_ContentDelivery_Authentication_Address) RearrangeAuthenticationIp(cdnAccountId *int, templateObjects []datatypes.Network_ContentDelivery_Authentication_Address) (resp bool, err error) {
-	params := []interface{}{
-		cdnAccountId,
-		templateObjects,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Authentication_Address", "rearrangeAuthenticationIp", params, &r.Options, &resp)
-	return
-}
-
-// The SoftLayer_Network_ContentDelivery_Authentication_Address data type models an individual IP address that CDN allow or deny access from.
-type Network_ContentDelivery_Authentication_Token struct {
-	Session *session.Session
-	Options sl.Options
-}
-
-// GetNetworkContentDeliveryAuthenticationTokenService returns an instance of the Network_ContentDelivery_Authentication_Token SoftLayer service
-func GetNetworkContentDeliveryAuthenticationTokenService(sess *session.Session) Network_ContentDelivery_Authentication_Token {
-	return Network_ContentDelivery_Authentication_Token{Session: sess}
-}
-
-func (r Network_ContentDelivery_Authentication_Token) Id(id int) Network_ContentDelivery_Authentication_Token {
-	r.Options.Id = &id
-	return r
-}
-
-func (r Network_ContentDelivery_Authentication_Token) Mask(mask string) Network_ContentDelivery_Authentication_Token {
-	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
-		mask = fmt.Sprintf("mask[%s]", mask)
-	}
-
-	r.Options.Mask = mask
-	return r
-}
-
-func (r Network_ContentDelivery_Authentication_Token) Filter(filter string) Network_ContentDelivery_Authentication_Token {
-	r.Options.Filter = filter
-	return r
-}
-
-func (r Network_ContentDelivery_Authentication_Token) Limit(limit int) Network_ContentDelivery_Authentication_Token {
-	r.Options.Limit = &limit
-	return r
-}
-
-func (r Network_ContentDelivery_Authentication_Token) Offset(offset int) Network_ContentDelivery_Authentication_Token {
-	r.Options.Offset = &offset
-	return r
-}
-
-// This method is deprecated! Use the [[SoftLayer_Network_ContentDelivery_Authentication_Token::getTimedToken|getTimedToken]] method.
-//
-// This method creates a managed authentication token. When passing a parameter, the only required value is your CDN account id which can be obtained from the [[SoftLayer_Account::getCdnAccounts|getCdnAccounts]] method. There are 3 optional parameters you can pass:
-//
-//
-// * name - This helps you keep track of managed tokens.
-// * referrer - If set, the token validation will check the client's referrer. Keep in mind, if a client doesn't have the referrer information, the token validation will fail.
-// * clientIp - If set, the token validation will check the client's IP address.
-//
-//
-func (r Network_ContentDelivery_Authentication_Token) CreateObject(templateObject *datatypes.Network_ContentDelivery_Authentication_Token) (resp datatypes.Network_ContentDelivery_Authentication_Token, err error) {
-	params := []interface{}{
-		templateObject,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Authentication_Token", "createObject", params, &r.Options, &resp)
-	return
-}
-
-// This method is deprecated!
-//
-// This method returns all managed tokens for a CDN account.
-func (r Network_ContentDelivery_Authentication_Token) GetAllManagedTokens(cdnAccountId *int) (resp []datatypes.Network_ContentDelivery_Authentication_Token, err error) {
-	params := []interface{}{
-		cdnAccountId,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Authentication_Token", "getAllManagedTokens", params, &r.Options, &resp)
-	return
-}
-
-// This method is deprecated!
-//
-// getObject retrieves the SoftLayer_Network_ContentDelivery_Authentication_Token object whose ID number corresponds to the ID number of the initial parameter passed to the SoftLayer_Network_ContentDelivery_Authentication_Token service. You can only retrieve managed tokens assigned to one of your CDN account.
-func (r Network_ContentDelivery_Authentication_Token) GetObject() (resp datatypes.Network_ContentDelivery_Authentication_Token, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Authentication_Token", "getObject", nil, &r.Options, &resp)
-	return
-}
-
-// This method returns an authentication token that expires after the seconds you specify. You can provide number of seconds to manage the token life.  This parameter sets the expiration time for a token. A valid life time must be an integer between 60 and 604800 (1 week). A customer can also provide client ip and (or) referrer information.  If used, a client from the same IP and referrer can view the protected contents.
-//
-// A valid IP address must be an IPv4 format or an IP block. if you want to block access from IP 211.37.0.0/16, you can enter "211.37." instead. IP blocks can be specified in the manner of "8bit times n".
-//
-// The referrer is the URL of the previous webpage from which a link was followed.  A referrer should not include "http://" prefix and it can be maximum of 30 characters.
-func (r Network_ContentDelivery_Authentication_Token) GetTimedToken(cdnAccountId *int, tokenLife *int, clientIp *string, referrer *string, mediaType *string) (resp string, err error) {
-	params := []interface{}{
-		cdnAccountId,
-		tokenLife,
-		clientIp,
-		referrer,
-		mediaType,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Authentication_Token", "getTimedToken", params, &r.Options, &resp)
-	return
-}
-
-// This method is deprecated!
-//
-// This method revokes all managed tokens belong to a CDN account.
-func (r Network_ContentDelivery_Authentication_Token) RevokeAllManagedTokens(cdnAccountId *int) (resp bool, err error) {
-	params := []interface{}{
-		cdnAccountId,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Authentication_Token", "revokeAllManagedTokens", params, &r.Options, &resp)
-	return
-}
-
-// This method revokes all tokens belong to a CDN account.  Valid media types are "HTTP", "FLASH" and "WM".
-func (r Network_ContentDelivery_Authentication_Token) RevokeAllTokens(cdnAccountId *int, mediaType *string) (resp bool, err error) {
-	params := []interface{}{
-		cdnAccountId,
-		mediaType,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Authentication_Token", "revokeAllTokens", params, &r.Options, &resp)
-	return
-}
-
-// This method is deprecated!
-//
-// Revokes a managed token. If you revoke a token, the token will be removed from SoftLayer's system but it will not remove your content on CDN FTP. The content that requires token validation will not be available to the visitor who is using a revoked token.
-func (r Network_ContentDelivery_Authentication_Token) RevokeManagedToken(cdnAccountId *int, token *string) (resp bool, err error) {
-	params := []interface{}{
-		cdnAccountId,
-		token,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Authentication_Token", "revokeManagedToken", params, &r.Options, &resp)
-	return
-}
-
-// This method is deprecated!
-//
-// Deletes multiple managed tokens
-func (r Network_ContentDelivery_Authentication_Token) RevokeManagedTokens(templateObjects []datatypes.Network_ContentDelivery_Authentication_Token) (resp bool, err error) {
-	params := []interface{}{
-		templateObjects,
-	}
-	err = r.Session.DoRequest("SoftLayer_Network_ContentDelivery_Authentication_Token", "revokeManagedTokens", params, &r.Options, &resp)
-	return
-}
-
 // The SoftLayer_Network_Customer_Subnet data type contains general information relating to a single customer subnet (remote).
 type Network_Customer_Subnet struct {
 	Session *session.Session
@@ -4411,6 +3693,29 @@ func (r Network_Gateway) BypassVlans(vlans []datatypes.Network_Gateway_Vlan) (er
 	return
 }
 
+// Returns true if rollback is allowed.
+//
+//
+func (r Network_Gateway) CanRollbackVersion(activeStatus *bool) (resp bool, err error) {
+	params := []interface{}{
+		activeStatus,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_Gateway", "canRollbackVersion", params, &r.Options, &resp)
+	return
+}
+
+// Used to create a transaction to upgrade or rollback the vSRX version for Juniper gateway.
+//
+//
+func (r Network_Gateway) ChangeGatewayVersion(versionId *int, rollbackVersion *bool) (resp bool, err error) {
+	params := []interface{}{
+		versionId,
+		rollbackVersion,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_Gateway", "changeGatewayVersion", params, &r.Options, &resp)
+	return
+}
+
 // Create and return a new gateway. This object can be created with any number of members or VLANs, but they all must be in the same pod. By creating a gateway with members and/or VLANs attached, it is the equivalent of individually calling their createObject methods except this will start a single asynchronous process to setup the gateway. The status of this process can be checked using the status field.
 func (r Network_Gateway) CreateObject(templateObject *datatypes.Network_Gateway) (resp datatypes.Network_Gateway, err error) {
 	params := []interface{}{
@@ -4449,11 +3754,14 @@ func (r Network_Gateway) GetInsideVlans() (resp []datatypes.Network_Gateway_Vlan
 	return
 }
 
-// Returns manufacturer name for a given gateway object
+// Returns manufacturer name for a given gateway object.
 //
 //
-func (r Network_Gateway) GetManufacturer() (resp string, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_Gateway", "getManufacturer", nil, &r.Options, &resp)
+func (r Network_Gateway) GetManufacturer(checkSameOs *bool) (resp string, err error) {
+	params := []interface{}{
+		checkSameOs,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_Gateway", "getManufacturer", params, &r.Options, &resp)
 	return
 }
 
@@ -4735,6 +4043,80 @@ func (r Network_Gateway_Status) GetObject() (resp datatypes.Network_Gateway_Stat
 }
 
 // no documentation yet
+type Network_Gateway_VersionUpgrade struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetNetworkGatewayVersionUpgradeService returns an instance of the Network_Gateway_VersionUpgrade SoftLayer service
+func GetNetworkGatewayVersionUpgradeService(sess *session.Session) Network_Gateway_VersionUpgrade {
+	return Network_Gateway_VersionUpgrade{Session: sess}
+}
+
+func (r Network_Gateway_VersionUpgrade) Id(id int) Network_Gateway_VersionUpgrade {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Network_Gateway_VersionUpgrade) Mask(mask string) Network_Gateway_VersionUpgrade {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Network_Gateway_VersionUpgrade) Filter(filter string) Network_Gateway_VersionUpgrade {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Network_Gateway_VersionUpgrade) Limit(limit int) Network_Gateway_VersionUpgrade {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Network_Gateway_VersionUpgrade) Offset(offset int) Network_Gateway_VersionUpgrade {
+	r.Options.Offset = &offset
+	return r
+}
+
+// no documentation yet
+func (r Network_Gateway_VersionUpgrade) GetAllByFromVersion(fromVersion *string) (resp []datatypes.Network_Gateway_VersionUpgrade, err error) {
+	params := []interface{}{
+		fromVersion,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_Gateway_VersionUpgrade", "getAllByFromVersion", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Gateway_VersionUpgrade) GetAllByUpgradePkgUrlId(upgradePkgUrlId *int) (resp []datatypes.Network_Gateway_VersionUpgrade, err error) {
+	params := []interface{}{
+		upgradePkgUrlId,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_Gateway_VersionUpgrade", "getAllByUpgradePkgUrlId", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Gateway_VersionUpgrade) GetObject() (resp datatypes.Network_Gateway_VersionUpgrade, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Gateway_VersionUpgrade", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Gateway_VersionUpgrade) ValidateVersionChange(gatewayId *int, versionUpgradeId *int) (resp bool, err error) {
+	params := []interface{}{
+		gatewayId,
+		versionUpgradeId,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_Gateway_VersionUpgrade", "validateVersionChange", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
 type Network_Gateway_Vlan struct {
 	Session *session.Session
 	Options sl.Options
@@ -4934,6 +4316,12 @@ func (r Network_Interconnect_Tenant) GetAllPortLabelsWithCurrentUsage(directLink
 		directLinkLocationId,
 	}
 	err = r.Session.DoRequest("SoftLayer_Network_Interconnect_Tenant", "getAllPortLabelsWithCurrentUsage", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Interconnect_Tenant) GetBgpIpRange() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Interconnect_Tenant", "getBgpIpRange", nil, &r.Options, &resp)
 	return
 }
 
@@ -5556,6 +4944,16 @@ func (r Network_LBaaS_LoadBalancer) CancelLoadBalancer(uuid *string) (resp bool,
 		uuid,
 	}
 	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_LoadBalancer", "cancelLoadBalancer", params, &r.Options, &resp)
+	return
+}
+
+// When enabled, data log would be forwarded to logging service.
+func (r Network_LBaaS_LoadBalancer) EnableOrDisableDataLogs(uuid *string, enabled *bool) (resp datatypes.Network_LBaaS_LoadBalancer, err error) {
+	params := []interface{}{
+		uuid,
+		enabled,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_LBaaS_LoadBalancer", "enableOrDisableDataLogs", params, &r.Options, &resp)
 	return
 }
 
@@ -8576,6 +7974,12 @@ func (r Network_Storage) IsDuplicateReadyToMount() (resp bool, err error) {
 	return
 }
 
+// no documentation yet
+func (r Network_Storage) IsVolumeActive() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage", "isVolumeActive", nil, &r.Options, &resp)
+	return
+}
+
 // This method is used to modify the access control list for this Storage volume.  The SoftLayer_Hardware objects which have been allowed access to this storage will be listed in the allowedHardware property of this storage volume.
 func (r Network_Storage) RemoveAccessFromHardware(hardwareObjectTemplate *datatypes.Hardware) (resp bool, err error) {
 	params := []interface{}{
@@ -10763,6 +10167,12 @@ func (r Network_Storage_Backup_Evault) IsDuplicateReadyToMount() (resp bool, err
 	return
 }
 
+// no documentation yet
+func (r Network_Storage_Backup_Evault) IsVolumeActive() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Backup_Evault", "isVolumeActive", nil, &r.Options, &resp)
+	return
+}
+
 // This method is used to modify the access control list for this Storage volume.  The SoftLayer_Hardware objects which have been allowed access to this storage will be listed in the allowedHardware property of this storage volume.
 func (r Network_Storage_Backup_Evault) RemoveAccessFromHardware(hardwareObjectTemplate *datatypes.Hardware) (resp bool, err error) {
 	params := []interface{}{
@@ -11653,6 +11063,70 @@ func (r Network_Storage_Hub_Cleversafe_Account) GetObject() (resp datatypes.Netw
 // Retrieve Unique identifier for an IBM Cloud Object Storage account.
 func (r Network_Storage_Hub_Cleversafe_Account) GetUuid() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Storage_Hub_Cleversafe_Account", "getUuid", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+type Network_Storage_Hub_Swift_Metrics struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetNetworkStorageHubSwiftMetricsService returns an instance of the Network_Storage_Hub_Swift_Metrics SoftLayer service
+func GetNetworkStorageHubSwiftMetricsService(sess *session.Session) Network_Storage_Hub_Swift_Metrics {
+	return Network_Storage_Hub_Swift_Metrics{Session: sess}
+}
+
+func (r Network_Storage_Hub_Swift_Metrics) Id(id int) Network_Storage_Hub_Swift_Metrics {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Network_Storage_Hub_Swift_Metrics) Mask(mask string) Network_Storage_Hub_Swift_Metrics {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Network_Storage_Hub_Swift_Metrics) Filter(filter string) Network_Storage_Hub_Swift_Metrics {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Network_Storage_Hub_Swift_Metrics) Limit(limit int) Network_Storage_Hub_Swift_Metrics {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Network_Storage_Hub_Swift_Metrics) Offset(offset int) Network_Storage_Hub_Swift_Metrics {
+	r.Options.Offset = &offset
+	return r
+}
+
+// no documentation yet
+func (r Network_Storage_Hub_Swift_Metrics) GetMetricData(startDateTime *datatypes.Time, endDateTime *datatypes.Time, metricKey *string, location *string) (resp []datatypes.Metric_Tracking_Object_Data, err error) {
+	params := []interface{}{
+		startDateTime,
+		endDateTime,
+		metricKey,
+		location,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Hub_Swift_Metrics", "getMetricData", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Network_Storage_Hub_Swift_Metrics) GetSummaryData(startDateTime *datatypes.Time, endDateTime *datatypes.Time, validTypes []datatypes.Container_Metric_Data_Type, summaryPeriod *int) (resp []datatypes.Metric_Tracking_Object_Data, err error) {
+	params := []interface{}{
+		startDateTime,
+		endDateTime,
+		validTypes,
+		summaryPeriod,
+	}
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Hub_Swift_Metrics", "getSummaryData", params, &r.Options, &resp)
 	return
 }
 
@@ -12832,6 +12306,12 @@ func (r Network_Storage_Iscsi) IsDuplicateReadyToMount() (resp bool, err error) 
 	return
 }
 
+// no documentation yet
+func (r Network_Storage_Iscsi) IsVolumeActive() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Storage_Iscsi", "isVolumeActive", nil, &r.Options, &resp)
+	return
+}
+
 // This method is used to modify the access control list for this Storage volume.  The SoftLayer_Hardware objects which have been allowed access to this storage will be listed in the allowedHardware property of this storage volume.
 func (r Network_Storage_Iscsi) RemoveAccessFromHardware(hardwareObjectTemplate *datatypes.Hardware) (resp bool, err error) {
 	params := []interface{}{
@@ -13886,12 +13366,6 @@ func (r Network_Subnet) GetIpAddresses() (resp []datatypes.Network_Subnet_IpAddr
 // Retrieve The upstream network component firewall.
 func (r Network_Subnet) GetNetworkComponentFirewall() (resp datatypes.Network_Component_Firewall, err error) {
 	err = r.Session.DoRequest("SoftLayer_Network_Subnet", "getNetworkComponentFirewall", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve The Private Network identifier this subnet is within, if applicable.
-func (r Network_Subnet) GetNetworkId() (resp int, err error) {
-	err = r.Session.DoRequest("SoftLayer_Network_Subnet", "getNetworkId", nil, &r.Options, &resp)
 	return
 }
 
@@ -15725,6 +15199,14 @@ func (r Network_Vlan) UpdateFirewallIntraVlanCommunication(enabled *bool) (err e
 		enabled,
 	}
 	err = r.Session.DoRequest("SoftLayer_Network_Vlan", "updateFirewallIntraVlanCommunication", params, &r.Options, &resp)
+	return
+}
+
+// Convert the VLAN this operation is executed against to a paid resource. This can be done for any Automatic VLAN. This operation can only be executed on an Automatic VLAN, and will transition it to being a Premium VLAN. The VLAN will then provide the benefits of a Premium VLAN. A Premium VLAN will remain on the account until cancelled. This operation cannot be undone! Once a VLAN becomes Premium, it can only be removed through cancellation, which will result in it being reclaimed.
+//
+// This operation is a convenience for utilizing the SoftLayer_Product_Order.placeOrder operation. It will place an order to upgrade the VLAN it is executed against. It will take a few moments for the order to be processed and the upgrade to complete. Note that the order is placed in such a way that any account state which prevents automatic order approval will prevent the order from being placed. Thus, if no error is received, the order was placed and approved, and the VLAN will be upgraded shortly.
+func (r Network_Vlan) Upgrade() (resp datatypes.Container_Product_Order_Network_Vlan, err error) {
+	err = r.Session.DoRequest("SoftLayer_Network_Vlan", "upgrade", nil, &r.Options, &resp)
 	return
 }
 

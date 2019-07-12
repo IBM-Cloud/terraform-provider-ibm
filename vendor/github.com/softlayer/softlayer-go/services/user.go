@@ -141,6 +141,8 @@ func (r User_Customer) AddBulkVirtualGuestAccess(virtualGuestIds []int) (resp bo
 // Grants the user access to a single dedicated host device.  The user will only be allowed to see and access devices in both the portal and the API to which they have been granted access.  If the user's account has devices to which the user has not been granted access, then "not found" exceptions are thrown if the user attempts to access any of these devices.
 //
 // Users can assign device access to their child users, but not to themselves. An account's master has access to all devices on their customer account and can set dedicated host access for any of the other users on their account.
+//
+// Only the USER_MANAGE permission is required to execute this.
 func (r User_Customer) AddDedicatedHostAccess(dedicatedHostId *int) (resp bool, err error) {
 	params := []interface{}{
 		dedicatedHostId,
@@ -161,6 +163,8 @@ func (r User_Customer) AddExternalBinding(externalBinding *datatypes.User_Extern
 // Add hardware to a portal user's hardware access list. A user's hardware access list controls which of an account's hardware objects a user has access to in the SoftLayer customer portal and API. Hardware does not exist in the SoftLayer portal and returns "not found" exceptions in the API if the user doesn't have access to it. If a user already has access to the hardware you're attempting to add then addHardwareAccess() returns true.
 //
 // Users can assign hardware access to their child users, but not to themselves. An account's master has access to all hardware on their customer account and can set hardware access for any of the other users on their account.
+//
+// Only the USER_MANAGE permission is required to execute this.
 func (r User_Customer) AddHardwareAccess(hardwareId *int) (resp bool, err error) {
 	params := []interface{}{
 		hardwareId,
@@ -204,6 +208,8 @@ func (r User_Customer) AddRole(role *datatypes.User_Permission_Role) (err error)
 // Add a CloudLayer Computing Instance to a portal user's access list. A user's CloudLayer Computing Instance access list controls which of an account's CloudLayer Computing Instance objects a user has access to in the SoftLayer customer portal and API. CloudLayer Computing Instances do not exist in the SoftLayer portal and returns "not found" exceptions in the API if the user doesn't have access to it. If a user already has access to the CloudLayer Computing Instance you're attempting to add then addVirtualGuestAccess() returns true.
 //
 // Users can assign CloudLayer Computing Instance access to their child users, but not to themselves. An account's master has access to all CloudLayer Computing Instances on their customer account and can set CloudLayer Computing Instance access for any of the other users on their account.
+//
+// Only the USER_MANAGE permission is required to execute this.
 func (r User_Customer) AddVirtualGuestAccess(virtualGuestId *int) (resp bool, err error) {
 	params := []interface{}{
 		virtualGuestId,
@@ -281,7 +287,7 @@ func (r User_Customer) CreateNotificationSubscriber(keyName *string, resourceTab
 //
 // vpnPassword If the vpnPassword is provided, then the user's vpnPassword will be set to the provided password.  When creating a vpn only user, the vpnPassword MUST be supplied.  If the vpnPassword is not provided, then the user will need to use the portal to edit their profile and set the vpnPassword.
 //
-//
+// IBMid considerations When a SoftLayer account is linked to a Platform Services (PaaS, formerly Bluemix) account, AND the trait on the SoftLayer Account indicating IBMid authentication is set, then SoftLayer will delegate the creation of the user to PaaS.  The Platform Services "invite user" API call is asynchronous, and so no user object can be returned from this API call.  In this specific case, this API will throw a SoftLayer_Exception_User_Customer_DelegateIamIdInvitationToPaas exception, with text indicating that the call was at least accepted by Platform Services.  The Platform Services API is the preferred API for creating users based on IBMid in a linked account pair.  If you have automation using this API that depends on getting a synchronous response with a user object with an id, you should contact SoftLayer Support to have the "IBMid authentication" trait set to 0 on this account.  In that case, a normal SoftLayer user will be created (no IBMid association set up) and the createObject call will return synchronously as before.
 func (r User_Customer) CreateObject(templateObject *datatypes.User_Customer, password *string, vpnPassword *string) (resp datatypes.User_Customer, err error) {
 	params := []interface{}{
 		templateObject,
@@ -383,7 +389,7 @@ func (r User_Customer) GetAllowedVirtualGuestIds() (resp []int, err error) {
 	return
 }
 
-// Retrieve A portal user's API Authentication keys. There is a max limit of two API keys per user.
+// Retrieve A portal user's API Authentication keys. There is a max limit of one API key per user.
 func (r User_Customer) GetApiAuthenticationKeys() (resp []datatypes.User_Customer_ApiAuthentication, err error) {
 	err = r.Session.DoRequest("SoftLayer_User_Customer", "getApiAuthenticationKeys", nil, &r.Options, &resp)
 	return
@@ -395,12 +401,6 @@ func (r User_Customer) GetAuthenticationToken(token *datatypes.Container_User_Au
 		token,
 	}
 	err = r.Session.DoRequest("SoftLayer_User_Customer", "getAuthenticationToken", params, &r.Options, &resp)
-	return
-}
-
-// Retrieve The CDN accounts associated with a portal user.
-func (r User_Customer) GetCdnAccounts() (resp []datatypes.Network_ContentDelivery_Account, err error) {
-	err = r.Session.DoRequest("SoftLayer_User_Customer", "getCdnAccounts", nil, &r.Options, &resp)
 	return
 }
 
@@ -2487,11 +2487,12 @@ func (r User_Customer_OpenIdConnect) AcknowledgeSupportPolicy() (err error) {
 }
 
 // Completes invitation process for an OpenIdConnect user created by Bluemix Unified User Console.
-func (r User_Customer_OpenIdConnect) ActivateOpenIdConnectUser(verificationCode *string, userInfo *datatypes.User_Customer) (err error) {
+func (r User_Customer_OpenIdConnect) ActivateOpenIdConnectUser(verificationCode *string, userInfo *datatypes.User_Customer, iamId *string) (err error) {
 	var resp datatypes.Void
 	params := []interface{}{
 		verificationCode,
 		userInfo,
+		iamId,
 	}
 	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "activateOpenIdConnectUser", params, &r.Options, &resp)
 	return
@@ -2562,6 +2563,8 @@ func (r User_Customer_OpenIdConnect) AddBulkVirtualGuestAccess(virtualGuestIds [
 // Grants the user access to a single dedicated host device.  The user will only be allowed to see and access devices in both the portal and the API to which they have been granted access.  If the user's account has devices to which the user has not been granted access, then "not found" exceptions are thrown if the user attempts to access any of these devices.
 //
 // Users can assign device access to their child users, but not to themselves. An account's master has access to all devices on their customer account and can set dedicated host access for any of the other users on their account.
+//
+// Only the USER_MANAGE permission is required to execute this.
 func (r User_Customer_OpenIdConnect) AddDedicatedHostAccess(dedicatedHostId *int) (resp bool, err error) {
 	params := []interface{}{
 		dedicatedHostId,
@@ -2582,6 +2585,8 @@ func (r User_Customer_OpenIdConnect) AddExternalBinding(externalBinding *datatyp
 // Add hardware to a portal user's hardware access list. A user's hardware access list controls which of an account's hardware objects a user has access to in the SoftLayer customer portal and API. Hardware does not exist in the SoftLayer portal and returns "not found" exceptions in the API if the user doesn't have access to it. If a user already has access to the hardware you're attempting to add then addHardwareAccess() returns true.
 //
 // Users can assign hardware access to their child users, but not to themselves. An account's master has access to all hardware on their customer account and can set hardware access for any of the other users on their account.
+//
+// Only the USER_MANAGE permission is required to execute this.
 func (r User_Customer_OpenIdConnect) AddHardwareAccess(hardwareId *int) (resp bool, err error) {
 	params := []interface{}{
 		hardwareId,
@@ -2625,6 +2630,8 @@ func (r User_Customer_OpenIdConnect) AddRole(role *datatypes.User_Permission_Rol
 // Add a CloudLayer Computing Instance to a portal user's access list. A user's CloudLayer Computing Instance access list controls which of an account's CloudLayer Computing Instance objects a user has access to in the SoftLayer customer portal and API. CloudLayer Computing Instances do not exist in the SoftLayer portal and returns "not found" exceptions in the API if the user doesn't have access to it. If a user already has access to the CloudLayer Computing Instance you're attempting to add then addVirtualGuestAccess() returns true.
 //
 // Users can assign CloudLayer Computing Instance access to their child users, but not to themselves. An account's master has access to all CloudLayer Computing Instances on their customer account and can set CloudLayer Computing Instance access for any of the other users on their account.
+//
+// Only the USER_MANAGE permission is required to execute this.
 func (r User_Customer_OpenIdConnect) AddVirtualGuestAccess(virtualGuestId *int) (resp bool, err error) {
 	params := []interface{}{
 		virtualGuestId,
@@ -2714,7 +2721,7 @@ func (r User_Customer_OpenIdConnect) CreateNotificationSubscriber(keyName *strin
 //
 // vpnPassword If the vpnPassword is provided, then the user's vpnPassword will be set to the provided password.  When creating a vpn only user, the vpnPassword MUST be supplied.  If the vpnPassword is not provided, then the user will need to use the portal to edit their profile and set the vpnPassword.
 //
-//
+// IBMid considerations When a SoftLayer account is linked to a Platform Services (PaaS, formerly Bluemix) account, AND the trait on the SoftLayer Account indicating IBMid authentication is set, then SoftLayer will delegate the creation of the user to PaaS.  The Platform Services "invite user" API call is asynchronous, and so no user object can be returned from this API call.  In this specific case, this API will throw a SoftLayer_Exception_User_Customer_DelegateIamIdInvitationToPaas exception, with text indicating that the call was at least accepted by Platform Services.  The Platform Services API is the preferred API for creating users based on IBMid in a linked account pair.  If you have automation using this API that depends on getting a synchronous response with a user object with an id, you should contact SoftLayer Support to have the "IBMid authentication" trait set to 0 on this account.  In that case, a normal SoftLayer user will be created (no IBMid association set up) and the createObject call will return synchronously as before.
 func (r User_Customer_OpenIdConnect) CreateObject(templateObject *datatypes.User_Customer_OpenIdConnect, password *string, vpnPassword *string) (resp datatypes.User_Customer_OpenIdConnect, err error) {
 	params := []interface{}{
 		templateObject,
@@ -2839,7 +2846,7 @@ func (r User_Customer_OpenIdConnect) GetAllowedVirtualGuestIds() (resp []int, er
 	return
 }
 
-// Retrieve A portal user's API Authentication keys. There is a max limit of two API keys per user.
+// Retrieve A portal user's API Authentication keys. There is a max limit of one API key per user.
 func (r User_Customer_OpenIdConnect) GetApiAuthenticationKeys() (resp []datatypes.User_Customer_ApiAuthentication, err error) {
 	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "getApiAuthenticationKeys", nil, &r.Options, &resp)
 	return
@@ -2851,12 +2858,6 @@ func (r User_Customer_OpenIdConnect) GetAuthenticationToken(token *datatypes.Con
 		token,
 	}
 	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "getAuthenticationToken", params, &r.Options, &resp)
-	return
-}
-
-// Retrieve The CDN accounts associated with a portal user.
-func (r User_Customer_OpenIdConnect) GetCdnAccounts() (resp []datatypes.Network_ContentDelivery_Account, err error) {
-	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "getCdnAccounts", nil, &r.Options, &resp)
 	return
 }
 
@@ -3191,10 +3192,11 @@ func (r User_Customer_OpenIdConnect) GetUnsuccessfulLogins() (resp []datatypes.U
 }
 
 // Returns an IMS User Object from the provided OpenIdConnect User ID or IBMid Unique Identifier for the Account of the active user. Enforces the User Management permissions for the Active User. An exception will be thrown if no matching IMS User is found. NOTE that providing IBMid Unique Identifier is optional, but it will be preferred over OpenIdConnect User ID if provided.
-func (r User_Customer_OpenIdConnect) GetUserForUnifiedInvitation(openIdConnectUserId *string, uniqueIdentifier *string) (resp datatypes.User_Customer_OpenIdConnect, err error) {
+func (r User_Customer_OpenIdConnect) GetUserForUnifiedInvitation(openIdConnectUserId *string, uniqueIdentifier *string, searchInvitationsNotLinksFlag *string) (resp datatypes.User_Customer_OpenIdConnect, err error) {
 	params := []interface{}{
 		openIdConnectUserId,
 		uniqueIdentifier,
+		searchInvitationsNotLinksFlag,
 	}
 	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "getUserForUnifiedInvitation", params, &r.Options, &resp)
 	return
@@ -3661,6 +3663,55 @@ func (r User_Customer_OpenIdConnect) ValidateAuthenticationToken(authenticationT
 	return
 }
 
+// no documentation yet
+type User_Customer_Profile_Event_HyperWarp struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetUserCustomerProfileEventHyperWarpService returns an instance of the User_Customer_Profile_Event_HyperWarp SoftLayer service
+func GetUserCustomerProfileEventHyperWarpService(sess *session.Session) User_Customer_Profile_Event_HyperWarp {
+	return User_Customer_Profile_Event_HyperWarp{Session: sess}
+}
+
+func (r User_Customer_Profile_Event_HyperWarp) Id(id int) User_Customer_Profile_Event_HyperWarp {
+	r.Options.Id = &id
+	return r
+}
+
+func (r User_Customer_Profile_Event_HyperWarp) Mask(mask string) User_Customer_Profile_Event_HyperWarp {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r User_Customer_Profile_Event_HyperWarp) Filter(filter string) User_Customer_Profile_Event_HyperWarp {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r User_Customer_Profile_Event_HyperWarp) Limit(limit int) User_Customer_Profile_Event_HyperWarp {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r User_Customer_Profile_Event_HyperWarp) Offset(offset int) User_Customer_Profile_Event_HyperWarp {
+	r.Options.Offset = &offset
+	return r
+}
+
+// no documentation yet
+func (r User_Customer_Profile_Event_HyperWarp) ReceiveEventDirect(eventJson *datatypes.Container_User_Customer_Profile_Event_HyperWarp_ProfileChange) (resp bool, err error) {
+	params := []interface{}{
+		eventJson,
+	}
+	err = r.Session.DoRequest("SoftLayer_User_Customer_Profile_Event_HyperWarp", "receiveEventDirect", params, &r.Options, &resp)
+	return
+}
+
 // Contains user information for Service Provider Enrollment.
 type User_Customer_Prospect_ServiceProvider_EnrollRequest struct {
 	Session *session.Session
@@ -3780,7 +3831,11 @@ func (r User_Customer_Security_Answer) GetUser() (resp datatypes.User_Customer, 
 	return
 }
 
-// Each SoftLayer portal account is assigned a status code that determines how it's treated in the customer portal. This status is reflected in the SoftLayer_User_Customer_Status data type. Status differs from user permissions in that user status applies globally to the portal while user permissions are applied to specific portal functions.
+// Each SoftLayer User Customer instance is assigned a status code that determines how it's treated in the customer portal. This status is reflected in the SoftLayer_User_Customer_Status data type. Status differs from user permissions in that user status applies globally to the portal while user permissions are applied to specific portal functions.
+//
+// Note that a status of "PENDING" also has been added. This status is specific to users that are configured to use IBMid authentication. This would include some (not all) users on accounts that are linked to Platform Services (PaaS, formerly Bluemix) accounts, but is not limited to users in such accounts. Using IBMid authentication is optional for active users even if it is not required by the account type. PENDING status indicates that a relationship between an IBMid and a user is being set up but is not complete. To be complete, PENDING users need to perform an action ("accepting the invitation") before becoming an active user within IBM Cloud and/or IMS. PENDING is a system state, and can not be administered by users (including the account master user). SoftLayer Commercial is the only environment where IBMid and/or account linking are used.
+//
+//
 type User_Customer_Status struct {
 	Session *session.Session
 	Options sl.Options

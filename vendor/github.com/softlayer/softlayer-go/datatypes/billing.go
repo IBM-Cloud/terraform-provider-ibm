@@ -154,6 +154,9 @@ type Billing_Info struct {
 	SparePoolAmount *int `json:"sparePoolAmount,omitempty" xmlrpc:"sparePoolAmount,omitempty"`
 
 	// no documentation yet
+	TaxCertificateId *string `json:"taxCertificateId,omitempty" xmlrpc:"taxCertificateId,omitempty"`
+
+	// no documentation yet
 	VatId *string `json:"vatId,omitempty" xmlrpc:"vatId,omitempty"`
 }
 
@@ -2005,6 +2008,9 @@ type Billing_Order_Item struct {
 
 	// The id for the preset configuration ordered.
 	PresetId *int `json:"presetId,omitempty" xmlrpc:"presetId,omitempty"`
+
+	// no documentation yet
+	PromoCode *Product_Promotion `json:"promoCode,omitempty" xmlrpc:"promoCode,omitempty"`
 
 	// no documentation yet
 	PromoCodeId *int `json:"promoCodeId,omitempty" xmlrpc:"promoCodeId,omitempty"`

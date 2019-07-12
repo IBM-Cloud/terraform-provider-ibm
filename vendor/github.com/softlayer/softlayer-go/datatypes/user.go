@@ -143,20 +143,14 @@ type User_Customer struct {
 	// A portal user's secondary phone number.
 	AlternatePhone *string `json:"alternatePhone,omitempty" xmlrpc:"alternatePhone,omitempty"`
 
-	// A count of a portal user's API Authentication keys. There is a max limit of two API keys per user.
+	// A count of a portal user's API Authentication keys. There is a max limit of one API key per user.
 	ApiAuthenticationKeyCount *uint `json:"apiAuthenticationKeyCount,omitempty" xmlrpc:"apiAuthenticationKeyCount,omitempty"`
 
-	// A portal user's API Authentication keys. There is a max limit of two API keys per user.
+	// A portal user's API Authentication keys. There is a max limit of one API key per user.
 	ApiAuthenticationKeys []User_Customer_ApiAuthentication `json:"apiAuthenticationKeys,omitempty" xmlrpc:"apiAuthenticationKeys,omitempty"`
 
 	// The authentication token used for logging into the SoftLayer customer portal.
 	AuthenticationToken *Container_User_Authentication_Token `json:"authenticationToken,omitempty" xmlrpc:"authenticationToken,omitempty"`
-
-	// A count of the CDN accounts associated with a portal user.
-	CdnAccountCount *uint `json:"cdnAccountCount,omitempty" xmlrpc:"cdnAccountCount,omitempty"`
-
-	// The CDN accounts associated with a portal user.
-	CdnAccounts []Network_ContentDelivery_Account `json:"cdnAccounts,omitempty" xmlrpc:"cdnAccounts,omitempty"`
 
 	// A count of a portal user's child users. Some portal users may not have child users.
 	ChildUserCount *uint `json:"childUserCount,omitempty" xmlrpc:"childUserCount,omitempty"`
@@ -235,6 +229,12 @@ type User_Customer struct {
 
 	// Whether or not a portal user has access to all hardware on their account.
 	HasFullVirtualGuestAccessFlag *bool `json:"hasFullVirtualGuestAccessFlag,omitempty" xmlrpc:"hasFullVirtualGuestAccessFlag,omitempty"`
+
+	// no documentation yet
+	IamAuthorizationStatus *int `json:"iamAuthorizationStatus,omitempty" xmlrpc:"iamAuthorizationStatus,omitempty"`
+
+	// The IAMid (realm-identifier) of the user being created by PaaS
+	IamId *string `json:"iamId,omitempty" xmlrpc:"iamId,omitempty"`
 
 	// no documentation yet
 	IbmIdLink *User_Customer_Link `json:"ibmIdLink,omitempty" xmlrpc:"ibmIdLink,omitempty"`
@@ -892,6 +892,11 @@ type User_Customer_OpenIdConnect struct {
 }
 
 // no documentation yet
+type User_Customer_Profile_Event_HyperWarp struct {
+	Entity
+}
+
+// no documentation yet
 type User_Customer_Prospect struct {
 	Entity
 
@@ -1070,7 +1075,11 @@ type User_Customer_Security_Answer struct {
 	UserId *int `json:"userId,omitempty" xmlrpc:"userId,omitempty"`
 }
 
-// Each SoftLayer portal account is assigned a status code that determines how it's treated in the customer portal. This status is reflected in the SoftLayer_User_Customer_Status data type. Status differs from user permissions in that user status applies globally to the portal while user permissions are applied to specific portal functions.
+// Each SoftLayer User Customer instance is assigned a status code that determines how it's treated in the customer portal. This status is reflected in the SoftLayer_User_Customer_Status data type. Status differs from user permissions in that user status applies globally to the portal while user permissions are applied to specific portal functions.
+//
+// Note that a status of "PENDING" also has been added. This status is specific to users that are configured to use IBMid authentication. This would include some (not all) users on accounts that are linked to Platform Services (PaaS, formerly Bluemix) accounts, but is not limited to users in such accounts. Using IBMid authentication is optional for active users even if it is not required by the account type. PENDING status indicates that a relationship between an IBMid and a user is being set up but is not complete. To be complete, PENDING users need to perform an action ("accepting the invitation") before becoming an active user within IBM Cloud and/or IMS. PENDING is a system state, and can not be administered by users (including the account master user). SoftLayer Commercial is the only environment where IBMid and/or account linking are used.
+//
+//
 type User_Customer_Status struct {
 	Entity
 
@@ -1087,12 +1096,6 @@ type User_Customer_Status struct {
 // A SoftLayer_User_Employee models a single SoftLayer employee for the purposes of ticket updates created by SoftLayer employees. SoftLayer portal and API users cannot see individual employee names in ticket responses.  SoftLayer employees can be assigned to customer accounts as a personal support representative.  Employee names and email will be available if an employee is assigned to the account.
 type User_Employee struct {
 	User_Interface
-
-	// A count of
-	ActionCount *uint `json:"actionCount,omitempty" xmlrpc:"actionCount,omitempty"`
-
-	// no documentation yet
-	Actions []User_Permission_Action `json:"actions,omitempty" xmlrpc:"actions,omitempty"`
 
 	// no documentation yet
 	ChatTranscript []Ticket_Chat `json:"chatTranscript,omitempty" xmlrpc:"chatTranscript,omitempty"`
@@ -1129,18 +1132,6 @@ type User_Employee struct {
 
 	// no documentation yet
 	OfficePhone *string `json:"officePhone,omitempty" xmlrpc:"officePhone,omitempty"`
-
-	// A count of
-	PermissionCount *uint `json:"permissionCount,omitempty" xmlrpc:"permissionCount,omitempty"`
-
-	// no documentation yet
-	Permissions []User_Permission_Action `json:"permissions,omitempty" xmlrpc:"permissions,omitempty"`
-
-	// A count of
-	RoleCount *uint `json:"roleCount,omitempty" xmlrpc:"roleCount,omitempty"`
-
-	// no documentation yet
-	Roles []User_Permission_Role `json:"roles,omitempty" xmlrpc:"roles,omitempty"`
 
 	// A count of
 	SecurityLevelCount *uint `json:"securityLevelCount,omitempty" xmlrpc:"securityLevelCount,omitempty"`

@@ -57,6 +57,12 @@ type Location struct {
 	// A location's physical address.
 	LocationAddress *Account_Address `json:"locationAddress,omitempty" xmlrpc:"locationAddress,omitempty"`
 
+	// A count of a location's physical addresses.
+	LocationAddressCount *uint `json:"locationAddressCount,omitempty" xmlrpc:"locationAddressCount,omitempty"`
+
+	// A location's physical addresses.
+	LocationAddresses []Account_Address `json:"locationAddresses,omitempty" xmlrpc:"locationAddresses,omitempty"`
+
 	// A location's Dedicated Rack member
 	LocationReservationMember *Location_Reservation_Rack_Member `json:"locationReservationMember,omitempty" xmlrpc:"locationReservationMember,omitempty"`
 

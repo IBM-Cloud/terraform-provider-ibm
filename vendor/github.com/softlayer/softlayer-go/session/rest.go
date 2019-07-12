@@ -232,10 +232,13 @@ func makeHTTPRequest(
 		return nil, 0, err
 	}
 
-	if session.APIKey != "" {
+	switch {
+	case session.APIKey != "":
 		req.SetBasicAuth(session.UserName, session.APIKey)
-	} else if session.AuthToken != "" {
+	case session.AuthToken != "":
 		req.SetBasicAuth(fmt.Sprintf("%d", session.UserId), session.AuthToken)
+	case session.IAMToken != "":
+		req.Header.Set("Authorization", session.IAMToken)
 	}
 
 	// For cases where session is built from the raw structure and not using New() , the UserAgent would be empty
@@ -256,6 +259,11 @@ func makeHTTPRequest(
 	if session.Debug {
 		log.Println("[DEBUG] Request URL: ", requestType, req.URL)
 		log.Println("[DEBUG] Parameters: ", requestBody.String())
+	}
+
+	// Apply custom context.Context, if supplied
+	if session.Context != nil {
+		req = req.WithContext(session.Context)
 	}
 
 	resp, err := client.Do(req)
