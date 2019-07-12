@@ -168,6 +168,9 @@ type Product_Item struct {
 	// An item's category conflicts. For example, 10 Gbps redundant network functionality cannot be ordered with a secondary GPU and as such is a conflict.
 	GlobalCategoryConflicts []Product_Item_Resource_Conflict `json:"globalCategoryConflicts,omitempty" xmlrpc:"globalCategoryConflicts,omitempty"`
 
+	// The hardware generic component model ID of the product.
+	HardwareGenericComponentId *int `json:"hardwareGenericComponentId,omitempty" xmlrpc:"hardwareGenericComponentId,omitempty"`
+
 	// The generic hardware component that this item represents.
 	HardwareGenericComponentModel *Hardware_Component_Model_Generic `json:"hardwareGenericComponentModel,omitempty" xmlrpc:"hardwareGenericComponentModel,omitempty"`
 
@@ -583,6 +586,9 @@ type Product_Item_Price struct {
 	// no documentation yet
 	Attributes []Product_Item_Price_Attribute `json:"attributes,omitempty" xmlrpc:"attributes,omitempty"`
 
+	// Signifies pricing that is only available on a bare metal reserved capacity order.
+	BareMetalReservedCapacityFlag *bool `json:"bareMetalReservedCapacityFlag,omitempty" xmlrpc:"bareMetalReservedCapacityFlag,omitempty"`
+
 	// Whether the price is for Big Data OS/Journal disks only. (Deprecated)
 	BigDataOsJournalDiskFlag *bool `json:"bigDataOsJournalDiskFlag,omitempty" xmlrpc:"bigDataOsJournalDiskFlag,omitempty"`
 
@@ -615,6 +621,9 @@ type Product_Item_Price struct {
 
 	// Whether this price defines a software license for its product item.
 	DefinedSoftwareLicenseFlag *bool `json:"definedSoftwareLicenseFlag,omitempty" xmlrpc:"definedSoftwareLicenseFlag,omitempty"`
+
+	// Eligibility strategy to assess if a customer can order using this price.
+	EligibilityStrategy *string `json:"eligibilityStrategy,omitempty" xmlrpc:"eligibilityStrategy,omitempty"`
 
 	// The hourly price for this item, should this item be part of an hourly pricing package.
 	HourlyRecurringFee *Float64 `json:"hourlyRecurringFee,omitempty" xmlrpc:"hourlyRecurringFee,omitempty"`
@@ -1505,6 +1514,9 @@ type Product_Package_Preset struct {
 	// no documentation yet
 	AvailableStorageUnits *uint `json:"availableStorageUnits,omitempty" xmlrpc:"availableStorageUnits,omitempty"`
 
+	// When true this preset is for ordering a Bare Metal Reserved server.
+	BareMetalReservedFlag *bool `json:"bareMetalReservedFlag,omitempty" xmlrpc:"bareMetalReservedFlag,omitempty"`
+
 	// The item categories that are included in this package preset configuration.
 	Categories []Product_Item_Category `json:"categories,omitempty" xmlrpc:"categories,omitempty"`
 
@@ -1638,6 +1650,9 @@ type Product_Package_Preset_Configuration struct {
 // The SoftLayer_Product_Package_Server data type contains summarized information for bare metal servers regarding pricing, processor stats, and feature sets.
 type Product_Package_Server struct {
 	Entity
+
+	// Flag to indicate if the server a Bare Metal Reserved offering.
+	BareMetalReservedFlag *bool `json:"bareMetalReservedFlag,omitempty" xmlrpc:"bareMetalReservedFlag,omitempty"`
 
 	// no documentation yet
 	Catalog *Product_Catalog `json:"catalog,omitempty" xmlrpc:"catalog,omitempty"`
@@ -1807,6 +1822,11 @@ type Product_Package_Type struct {
 
 	// All the packages associated with the given package type.
 	Packages []Product_Package `json:"packages,omitempty" xmlrpc:"packages,omitempty"`
+}
+
+// no documentation yet
+type Product_Promotion struct {
+	Entity
 }
 
 // The SoftLayer_Product_Upgrade_Request data type contains general information relating to a hardware, virtual server, or service upgrade. It also relates a [[SoftLayer_Billing_Order]] to a [[SoftLayer_Ticket]].

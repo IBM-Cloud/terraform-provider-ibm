@@ -255,6 +255,12 @@ func (r Virtual_Disk_Image) GetCopyOnWriteFlag() (resp bool, err error) {
 	return
 }
 
+// Retrieve Return imported disk type
+func (r Virtual_Disk_Image) GetImportedDiskType() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Disk_Image", "getImportedDiskType", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve Return if image is encrypted
 func (r Virtual_Disk_Image) GetIsEncrypted() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Disk_Image", "getIsEncrypted", nil, &r.Options, &resp)
@@ -2389,10 +2395,11 @@ func (r Virtual_Guest_Block_Device_Template_Group) EditObject(templateObject *da
 	return
 }
 
-// Find block device template groups contain GC enabled image for the current active user. Caller can optionally specify data center names to retrieve GC image from those data centers only.
-func (r Virtual_Guest_Block_Device_Template_Group) FindGcImagesByCurrentUser(dataCenters []string) (resp []datatypes.Virtual_Guest_Block_Device_Template_Group, err error) {
+// Find block device template groups containing a GC enabled cloudinit image for the current active user. A sorted collection of groups is returned. The Caller can optionally specify data center or region names to retrieve GC images from only those locations.
+func (r Virtual_Guest_Block_Device_Template_Group) FindGcImagesByCurrentUser(dataCenters []string, regions []string) (resp []datatypes.Virtual_Guest_Block_Device_Template_Group, err error) {
 	params := []interface{}{
 		dataCenters,
+		regions,
 	}
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "findGcImagesByCurrentUser", params, &r.Options, &resp)
 	return
@@ -2413,6 +2420,12 @@ func (r Virtual_Guest_Block_Device_Template_Group) GetAccountContacts() (resp []
 // Retrieve The accounts which may have read-only access to an image template group. Will only be populated for parent template group objects.
 func (r Virtual_Guest_Block_Device_Template_Group) GetAccountReferences() (resp []datatypes.Virtual_Guest_Block_Device_Template_Group_Accounts, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "getAccountReferences", nil, &r.Options, &resp)
+	return
+}
+
+// Get all available compatible platform names that can be added to a template group.
+func (r Virtual_Guest_Block_Device_Template_Group) GetAllAvailableCompatiblePlatformNames() (resp []string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "getAllAvailableCompatiblePlatformNames", nil, &r.Options, &resp)
 	return
 }
 
@@ -2443,6 +2456,12 @@ func (r Virtual_Guest_Block_Device_Template_Group) GetByolFlag() (resp bool, err
 // Retrieve The image template groups that are clones of an image template group.
 func (r Virtual_Guest_Block_Device_Template_Group) GetChildren() (resp []datatypes.Virtual_Guest_Block_Device_Template_Group, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "getChildren", nil, &r.Options, &resp)
+	return
+}
+
+// Get compatible platform names currently set on the template group.
+func (r Virtual_Guest_Block_Device_Template_Group) GetCurrentCompatiblePlatformNames() (resp []string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "getCurrentCompatiblePlatformNames", nil, &r.Options, &resp)
 	return
 }
 
@@ -2611,6 +2630,15 @@ func (r Virtual_Guest_Block_Device_Template_Group) PermitSharingAccess(accountId
 	return
 }
 
+// Removes compatible platforms on the template group.
+func (r Virtual_Guest_Block_Device_Template_Group) RemoveCompatiblePlatforms(platformNames []string) (resp bool, err error) {
+	params := []interface{}{
+		platformNames,
+	}
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "removeCompatiblePlatforms", params, &r.Options, &resp)
+	return
+}
+
 // This method will create transaction(s) to remove available locations from an archive image template.
 func (r Virtual_Guest_Block_Device_Template_Group) RemoveLocations(locations []datatypes.Location) (resp bool, err error) {
 	params := []interface{}{
@@ -2644,6 +2672,15 @@ func (r Virtual_Guest_Block_Device_Template_Group) SetBootMode(newBootMode *stri
 		newBootMode,
 	}
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "setBootMode", params, &r.Options, &resp)
+	return
+}
+
+// Sets compatible platforms on the template group.
+func (r Virtual_Guest_Block_Device_Template_Group) SetCompatiblePlatforms(platformNames []string) (resp bool, err error) {
+	params := []interface{}{
+		platformNames,
+	}
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "setCompatiblePlatforms", params, &r.Options, &resp)
 	return
 }
 
@@ -3252,6 +3289,12 @@ func (r Virtual_PlacementGroup_Rule) Offset(offset int) Virtual_PlacementGroup_R
 	return r
 }
 
+// Get all placement group rules.
+func (r Virtual_PlacementGroup_Rule) GetAllObjects() (resp []datatypes.Virtual_PlacementGroup_Rule, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_PlacementGroup_Rule", "getAllObjects", nil, &r.Options, &resp)
+	return
+}
+
 // no documentation yet
 func (r Virtual_PlacementGroup_Rule) GetObject() (resp datatypes.Virtual_PlacementGroup_Rule, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_PlacementGroup_Rule", "getObject", nil, &r.Options, &resp)
@@ -3328,6 +3371,12 @@ func (r Virtual_ReservedCapacityGroup) GetBackendRouter() (resp datatypes.Hardwa
 // Retrieve The guest instances that are members of this reserved capacity group.
 func (r Virtual_ReservedCapacityGroup) GetInstances() (resp []datatypes.Virtual_ReservedCapacityGroup_Instance, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_ReservedCapacityGroup", "getInstances", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The number of instances that are members of this reserved capacity group.
+func (r Virtual_ReservedCapacityGroup) GetInstancesCount() (resp uint, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_ReservedCapacityGroup", "getInstancesCount", nil, &r.Options, &resp)
 	return
 }
 
@@ -3462,6 +3511,16 @@ func (r Virtual_Storage_Repository) GetAccount() (resp datatypes.Account, err er
 // Returns the archive storage disk usage fee rate per gigabyte.
 func (r Virtual_Storage_Repository) GetArchiveDiskUsageRatePerGb() (resp datatypes.Float64, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Storage_Repository", "getArchiveDiskUsageRatePerGb", nil, &r.Options, &resp)
+	return
+}
+
+// Returns the average disk space usage for a storage repository.
+func (r Virtual_Storage_Repository) GetAverageDiskUsageMetricDataFromInfluxByDate(startDateTime *datatypes.Time, endDateTime *datatypes.Time) (resp datatypes.Float64, err error) {
+	params := []interface{}{
+		startDateTime,
+		endDateTime,
+	}
+	err = r.Session.DoRequest("SoftLayer_Virtual_Storage_Repository", "getAverageDiskUsageMetricDataFromInfluxByDate", params, &r.Options, &resp)
 	return
 }
 

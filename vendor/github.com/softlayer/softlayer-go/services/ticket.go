@@ -524,7 +524,7 @@ func (r Ticket) GetTicketsClosedSinceDate(closeDate *datatypes.Time) (resp []dat
 	return
 }
 
-// Retrieve Wether employees' updates of this ticket could be rated by customer
+// Retrieve Whether employees' updates of this ticket could be rated by customer
 func (r Ticket) GetUpdateRatingFlag() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Ticket", "getUpdateRatingFlag", nil, &r.Options, &resp)
 	return
@@ -681,6 +681,70 @@ func (r Ticket_Attachment_File) GetTicket() (resp datatypes.Ticket, err error) {
 // Retrieve The ticket that a file is attached to.
 func (r Ticket_Attachment_File) GetUpdate() (resp datatypes.Ticket_Update, err error) {
 	err = r.Session.DoRequest("SoftLayer_Ticket_Attachment_File", "getUpdate", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+type Ticket_Attachment_File_ServiceNow struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetTicketAttachmentFileServiceNowService returns an instance of the Ticket_Attachment_File_ServiceNow SoftLayer service
+func GetTicketAttachmentFileServiceNowService(sess *session.Session) Ticket_Attachment_File_ServiceNow {
+	return Ticket_Attachment_File_ServiceNow{Session: sess}
+}
+
+func (r Ticket_Attachment_File_ServiceNow) Id(id int) Ticket_Attachment_File_ServiceNow {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Ticket_Attachment_File_ServiceNow) Mask(mask string) Ticket_Attachment_File_ServiceNow {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Ticket_Attachment_File_ServiceNow) Filter(filter string) Ticket_Attachment_File_ServiceNow {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Ticket_Attachment_File_ServiceNow) Limit(limit int) Ticket_Attachment_File_ServiceNow {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Ticket_Attachment_File_ServiceNow) Offset(offset int) Ticket_Attachment_File_ServiceNow {
+	r.Options.Offset = &offset
+	return r
+}
+
+// no documentation yet
+func (r Ticket_Attachment_File_ServiceNow) GetExtensionWhitelist() (resp []string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Ticket_Attachment_File_ServiceNow", "getExtensionWhitelist", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Ticket_Attachment_File_ServiceNow) GetObject() (resp datatypes.Ticket_Attachment_File_ServiceNow, err error) {
+	err = r.Session.DoRequest("SoftLayer_Ticket_Attachment_File_ServiceNow", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve
+func (r Ticket_Attachment_File_ServiceNow) GetTicket() (resp datatypes.Ticket, err error) {
+	err = r.Session.DoRequest("SoftLayer_Ticket_Attachment_File_ServiceNow", "getTicket", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The ticket that a file is attached to.
+func (r Ticket_Attachment_File_ServiceNow) GetUpdate() (resp datatypes.Ticket_Update, err error) {
+	err = r.Session.DoRequest("SoftLayer_Ticket_Attachment_File_ServiceNow", "getUpdate", nil, &r.Options, &resp)
 	return
 }
 

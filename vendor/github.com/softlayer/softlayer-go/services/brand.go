@@ -90,6 +90,16 @@ func (r Brand) CreateObject(templateObject *datatypes.Brand) (resp datatypes.Bra
 	return
 }
 
+// Disable an account associated with this Brand.  Anything that would disqualify the account from being disabled will cause an exception to be raised.
+func (r Brand) DisableAccount(accountId *int) (err error) {
+	var resp datatypes.Void
+	params := []interface{}{
+		accountId,
+	}
+	err = r.Session.DoRequest("SoftLayer_Brand", "disableAccount", params, &r.Options, &resp)
+	return
+}
+
 // Retrieve
 func (r Brand) GetAccount() (resp datatypes.Account, err error) {
 	err = r.Session.DoRequest("SoftLayer_Brand", "getAccount", nil, &r.Options, &resp)
@@ -255,6 +265,36 @@ func (r Brand) IsIbmSlicBrand() (resp bool, err error) {
 // Check if the alternate billing system of brand is Bluemix.
 func (r Brand) IsPlatformServicesBrand() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Brand", "isPlatformServicesBrand", nil, &r.Options, &resp)
+	return
+}
+
+// Reactivate an account associated with this Brand.  Anything that would disqualify the account from being reactivated will cause an exception to be raised.
+func (r Brand) ReactivateAccount(accountId *int) (err error) {
+	var resp datatypes.Void
+	params := []interface{}{
+		accountId,
+	}
+	err = r.Session.DoRequest("SoftLayer_Brand", "reactivateAccount", params, &r.Options, &resp)
+	return
+}
+
+// Verify that an account may be disabled by a Brand Agent.  Anything that would disqualify the account from being disabled will cause an exception to be raised.
+func (r Brand) VerifyCanDisableAccount(accountId *int) (err error) {
+	var resp datatypes.Void
+	params := []interface{}{
+		accountId,
+	}
+	err = r.Session.DoRequest("SoftLayer_Brand", "verifyCanDisableAccount", params, &r.Options, &resp)
+	return
+}
+
+// Verify that an account may be reactivated by a Brand Agent.  Anything that would disqualify the account from being reactivated will cause an exception to be raised.
+func (r Brand) VerifyCanReactivateAccount(accountId *int) (err error) {
+	var resp datatypes.Void
+	params := []interface{}{
+		accountId,
+	}
+	err = r.Session.DoRequest("SoftLayer_Brand", "verifyCanReactivateAccount", params, &r.Options, &resp)
 	return
 }
 
