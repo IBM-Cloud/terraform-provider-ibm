@@ -987,7 +987,7 @@ func getItemPriceId(items []datatypes.Product_Item, categoryCode string, keyName
 
 						}
 						for _, category := range price.Categories {
-							if *category.CategoryCode == categoryCode && price.LocationGroupId == nil {
+							if *category.CategoryCode == categoryCode && price.LocationGroupId == nil && !*price.BareMetalReservedCapacityFlag {
 
 								if len(capacity) > 0 && capacityMin != -1 && capacityMax != -1 {
 
@@ -1354,7 +1354,7 @@ func findNetworkItemPriceId(items []datatypes.Product_Item, d dataRetriever) (da
 					break
 				}
 				for _, price := range item.Prices {
-					if price.LocationGroupId == nil {
+					if price.LocationGroupId == nil && !*price.BareMetalReservedCapacityFlag {
 						return datatypes.Product_Item_Price{Id: price.Id}, nil
 					}
 				}
@@ -1377,7 +1377,7 @@ func findMemoryItemPriceId(items []datatypes.Product_Item, d dataRetriever) (dat
 				availableMemories = availableMemories + *item.KeyName + "(" + *item.Description + ")" + ", "
 				if int(*item.Capacity) == memory {
 					for _, price := range item.Prices {
-						if price.LocationGroupId == nil {
+						if price.LocationGroupId == nil && !*price.BareMetalReservedCapacityFlag {
 							return datatypes.Product_Item_Price{Id: price.Id}, nil
 						}
 					}

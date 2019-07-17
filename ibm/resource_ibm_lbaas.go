@@ -33,7 +33,7 @@ const (
 
 const NOT_FOUND = "SoftLayer_Exception_Network_LBaaS_ObjectNotFound"
 
-const productItemMaskWithPriceLocationGroupID = "id,categories,capacity,description,units,keyName,prices[id,categories[id,name,categoryCode],locationGroupId,capacityRestrictionMaximum,capacityRestrictionMinimum,capacityRestrictionType],totalPhysicalCoreCapacity"
+const productItemMaskWithPriceLocationGroupID = "id,categories,capacity,description,units,keyName,prices[id,categories[id,name,categoryCode],locationGroupId,capacityRestrictionMaximum,capacityRestrictionMinimum,capacityRestrictionType,bareMetalReservedCapacityFlag],totalPhysicalCoreCapacity"
 
 func init() {
 
@@ -443,7 +443,7 @@ func buildLbaasLBProductOrderContainer(d *schema.ResourceData, sess *session.Ses
 	priceItems := []datatypes.Product_Item_Price{}
 	for _, item := range productItems {
 		for _, price := range item.Prices {
-			if price.LocationGroupId == nil {
+			if price.LocationGroupId == nil && !*price.BareMetalReservedCapacityFlag {
 				priceItem := datatypes.Product_Item_Price{
 					Id: price.Id,
 				}
