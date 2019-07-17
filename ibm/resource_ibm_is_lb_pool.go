@@ -23,6 +23,7 @@ const (
 	isLBPoolHealthTimeout             = "health_timeout"
 	isLBPoolHealthType                = "health_type"
 	isLBPoolHealthMonitorURL          = "health_monitor_url"
+	isLBPoolHealthMonitorPort         = "health_monitor_port"
 	isLBPoolSessPersistenceType       = "session_persistence_type"
 	isLBPoolSessPersistenceCookieName = "session_persistence_cookie_name"
 	isLBPoolProvisioningStatus        = "provisioning_status"
@@ -102,6 +103,12 @@ func resourceIBMISLBPool() *schema.Resource {
 				Computed: true,
 			},
 
+			isLBPoolHealthMonitorPort: {
+				Type:     schema.TypeInt,
+				Optional: true,
+				Computed: true,
+			},
+
 			isLBPoolSessPersistenceType: {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -135,6 +142,7 @@ func resourceIBMISLBPoolCreate(d *schema.ResourceData, meta interface{}) error {
 	healthType := d.Get(isLBPoolHealthType).(string)
 
 	var spType, cName, healthMonitorURL string
+	var healthMonitorPort int
 	if pt, ok := d.GetOk(isLBPoolSessPersistenceType); ok {
 		spType = pt.(string)
 	}
@@ -145,6 +153,10 @@ func resourceIBMISLBPoolCreate(d *schema.ResourceData, meta interface{}) error {
 
 	if hmu, ok := d.GetOk(isLBPoolHealthMonitorURL); ok {
 		healthMonitorURL = hmu.(string)
+	}
+
+	if hmp, ok := d.GetOk(isLBPoolHealthMonitorPort); ok {
+		healthMonitorPort = hmp.(int)
 	}
 
 	client := lbaas.NewLoadBalancerClient(sess)
@@ -162,6 +174,9 @@ func resourceIBMISLBPoolCreate(d *schema.ResourceData, meta interface{}) error {
 
 	if healthMonitorURL != "" {
 		body.HealthMonitor.URLPath = healthMonitorURL
+	}
+	if healthMonitorPort > 0 {
+		body.HealthMonitor.Port = int64(healthMonitorPort)
 	}
 	if spType != "" {
 		body.SessionPersistence = &models.SessionPersistenceTemplate{
@@ -230,6 +245,7 @@ func resourceIBMISLBPoolRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(isLBPoolHealthTimeout, lbPool.HealthMonitor.Timeout)
 	d.Set(isLBPoolHealthType, lbPool.HealthMonitor.Type)
 	d.Set(isLBPoolHealthMonitorURL, lbPool.HealthMonitor.URLPath)
+	d.Set(isLBPoolHealthMonitorPort, lbPool.HealthMonitor.Port)
 	if lbPool.SessionPersistence != nil {
 		d.Set(isLBPoolSessPersistenceType, lbPool.SessionPersistence.Type)
 		d.Set(isLBPoolSessPersistenceCookieName, lbPool.SessionPersistence.CookieName)
@@ -255,13 +271,17 @@ func resourceIBMISLBPoolUpdate(d *schema.ResourceData, meta interface{}) error {
 	hasChanged := false
 	var healthMonitorTemplate models.HealthMonitorTemplate
 	if d.HasChange(isLBPoolHealthDelay) || d.HasChange(isLBPoolHealthRetries) ||
-		d.HasChange(isLBPoolHealthTimeout) || d.HasChange(isLBPoolHealthType) || d.HasChange(isLBPoolHealthMonitorURL) {
+		d.HasChange(isLBPoolHealthTimeout) || d.HasChange(isLBPoolHealthType) || d.HasChange(isLBPoolHealthMonitorURL) || d.HasChange(isLBPoolHealthMonitorPort) {
 		healthMonitorTemplate = models.HealthMonitorTemplate{
 			Delay:      int64(d.Get(isLBPoolHealthDelay).(int)),
 			MaxRetries: int64(d.Get(isLBPoolHealthRetries).(int)),
 			Timeout:    int64(d.Get(isLBPoolHealthTimeout).(int)),
 			Type:       d.Get(isLBPoolHealthType).(string),
 			URLPath:    d.Get(isLBPoolHealthMonitorURL).(string),
+		}
+		port := d.Get(isLBPoolHealthMonitorPort).(int)
+		if port > 0 {
+			healthMonitorTemplate.Port = int64(port)
 		}
 		hasChanged = true
 
