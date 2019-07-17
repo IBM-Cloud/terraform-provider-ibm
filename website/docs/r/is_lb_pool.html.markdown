@@ -49,7 +49,8 @@ The following arguments are supported:
 * `health_retries` - (Required, int) The health check max retries
 * `health_timeout` - (Required, int) The health check timeout in seconds
 * `health_type` - (Required, string) The pool protocol. Enumeration type: http, tcp
-* `health_monitor_url` - (Required, string) The health check url. This option is applicable only to http type of --health-type
+* `health_monitor_url` - (Optional, string) The health check url. This option is applicable only to http type of --health-type
+* `health_monitor_port` - (Optional, int) The health check port number
 * `session_persistence_type` - (Optional, string) The session persistence type, Enumeration type: source_ip, http_cookie, app_cookie
 * `session_persistence_cookie_name` - (Optional, string) Session persistence cookie name. This option is applicable only to --session-persistence-type
 
