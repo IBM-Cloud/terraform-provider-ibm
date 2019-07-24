@@ -31,7 +31,6 @@ func TestAccIBMResourceInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "service", "cloud-object-storage"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "plan", "lite"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "location", "global"),
-					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "parameters.%", "1"),
 				),
 			},
 			resource.TestStep{
@@ -42,7 +41,6 @@ func TestAccIBMResourceInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "service", "cloud-object-storage"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "plan", "lite"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "location", "global"),
-					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "parameters.%", "1"),
 				),
 			},
 			resource.TestStep{
@@ -52,7 +50,6 @@ func TestAccIBMResourceInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "service", "cloud-object-storage"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "plan", "lite"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "location", "global"),
-					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "parameters.%", "1"),
 				),
 			},
 			resource.TestStep{
@@ -86,7 +83,6 @@ func TestAccIBMResourceInstance_import(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "service", "cloud-object-storage"),
 					resource.TestCheckResourceAttr(resourceName, "plan", "lite"),
 					resource.TestCheckResourceAttr(resourceName, "location", "global"),
-					resource.TestCheckResourceAttr(resourceName, "parameters.%", "1"),
 				),
 			},
 			resource.TestStep{
@@ -94,7 +90,7 @@ func TestAccIBMResourceInstance_import(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes"},
+					"wait_time_minutes", "parameters"},
 			},
 		},
 	})
@@ -118,7 +114,6 @@ func TestAccIBMResourceInstance_with_resource_group(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "service", "cloud-object-storage"),
 					resource.TestCheckResourceAttr(resourceName, "plan", "lite"),
 					resource.TestCheckResourceAttr(resourceName, "location", "global"),
-					resource.TestCheckResourceAttr(resourceName, "parameters.%", "1"),
 				),
 			},
 		},

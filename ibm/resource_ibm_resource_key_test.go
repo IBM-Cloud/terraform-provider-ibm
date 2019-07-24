@@ -88,7 +88,6 @@ func TestAccIBMResourceKey_Parameters(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey", conf),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "name", resourceKey),
-					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "parameters.%", "1"),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "role", "Manager"),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "credentials.%", "9"),
 				),

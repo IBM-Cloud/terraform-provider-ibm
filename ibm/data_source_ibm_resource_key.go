@@ -63,6 +63,12 @@ func dataSourceIBMResourceKey() *schema.Resource {
 				Optional: true,
 				Default:  false,
 			},
+
+			"crn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "crn of resource key",
+			},
 		},
 	}
 }
@@ -126,6 +132,7 @@ func dataSourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) erro
 
 	d.Set("credentials", flatmap.Flatten(key.Credentials))
 	d.Set("status", key.State)
+	d.Set("crn", key.Crn.String())
 	return nil
 }
 
