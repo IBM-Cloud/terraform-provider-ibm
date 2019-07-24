@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hashicorp/terraform/flatmap"
-
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
 	"github.com/IBM-Cloud/bluemix-go/models"
@@ -84,13 +82,19 @@ func resourceIBMResourceInstance() *schema.Resource {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Set:      resourceIBMVPCHash,
 			},
 
 			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Status of resource instance",
+			},
+
+			"crn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "CRN of resource instance",
 			},
 		},
 	}
@@ -175,10 +179,6 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 		rsInst.Parameters = parameters.(map[string]interface{})
 	}
 
-	if _, ok := d.GetOk("tags"); ok {
-		rsInst.Tags = getServiceTags(d)
-	}
-
 	instance, err := rsConClient.ResourceServiceInstance().CreateInstance(rsInst)
 	if err != nil {
 		return fmt.Errorf("Error creating resource instance: %s", err)
@@ -190,6 +190,15 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return fmt.Errorf(
 			"Error waiting for create resource instance (%s) to be succeeded: %s", d.Id(), err)
+	}
+
+	if _, ok := d.GetOk("tags"); ok {
+		oldList, newList := d.GetChange("tags")
+		err = UpdateTagsUsingCRN(oldList, newList, meta, instance.Crn.String())
+		if err != nil {
+			return fmt.Errorf(
+				"Error on create of resource instance tags (%s) tags: %s", d.Id(), err)
+		}
 	}
 
 	return resourceIBMResourceInstanceRead(d, meta)
@@ -208,12 +217,17 @@ func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("Error retrieving resource instance: %s", err)
 	}
 
-	d.Set("tags", instance.Tags)
+	tags, err := GetTagsUsingCRN(meta, instance.Crn.String())
+	if err != nil {
+		return fmt.Errorf(
+			"Error on get of resource instance tags (%s) tags: %s", d.Id(), err)
+	}
+	d.Set("tags", tags)
 	d.Set("name", instance.Name)
 	d.Set("status", instance.State)
 	d.Set("resource_group_id", instance.ResourceGroupID)
-	d.Set("parameters", flatmap.Flatten(instance.Parameters))
 	d.Set("location", instance.RegionID)
+	d.Set("crn", instance.Crn.String())
 
 	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
 	if err != nil {

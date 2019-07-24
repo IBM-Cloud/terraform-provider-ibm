@@ -54,6 +54,12 @@ func dataSourceIBMResourceInstance() *schema.Resource {
 				Type:        schema.TypeMap,
 				Computed:    true,
 			},
+
+			"crn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "CRN of resource instance",
+			},
 		},
 	}
 }
@@ -154,6 +160,7 @@ func dataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("Error retrieving plan: %s", err)
 	}
 	d.Set("plan", servicePlan)
+	d.Set("crn", instance.Crn.String())
 
 	return nil
 }

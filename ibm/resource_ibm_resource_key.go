@@ -62,11 +62,12 @@ func resourceIBMResourceKey() *schema.Resource {
 			},
 
 			"parameters": {
-				Type:        schema.TypeMap,
-				Optional:    true,
-				Computed:    true,
-				ForceNew:    true,
-				Description: "Arbitrary parameters to pass. Must be a JSON object",
+				Type:             schema.TypeMap,
+				Optional:         true,
+				Computed:         true,
+				DiffSuppressFunc: applyOnce,
+				ForceNew:         true,
+				Description:      "Arbitrary parameters to pass. Must be a JSON object",
 			},
 
 			"credentials": {
@@ -87,6 +88,12 @@ func resourceIBMResourceKey() *schema.Resource {
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
+			},
+
+			"crn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "crn of resource key",
 			},
 		},
 	}
@@ -186,6 +193,7 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	d.Set("parameters", flatmap.Flatten(filterResourceKeyParameters(resourceKey.Parameters)))
+	d.Set("crn", (resourceKey.Crn).String())
 
 	return nil
 }
