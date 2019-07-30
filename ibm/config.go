@@ -205,7 +205,7 @@ func (sess clientSession) BluemixAcccountv1API() (accountv1.AccountServiceAPI, e
 
 // BluemixSession to provide the Bluemix Session
 func (sess clientSession) BluemixSession() (*bxsession.Session, error) {
-	return sess.session.BluemixSession, sess.cfConfigErr
+	return sess.session.BluemixSession, nil
 }
 
 // BluemixUserDetails ...
@@ -331,6 +331,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	if sess.BluemixSession.Config.IAMAccessToken != "" {
+		/*err := fetchUAATokens(sess.BluemixSession)
+		if err != nil {
+			session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching UAA token: %q", err)
+		}*/
 		userConfig, err := fetchUserDetails(sess.BluemixSession)
 		if err != nil {
 			session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
@@ -529,4 +533,18 @@ func fetchUserDetails(sess *bxsession.Session) (*UserConfig, error) {
 	user.userID = claims["id"].(string)
 	user.userAccount = claims["account"].(map[string]interface{})["bss"].(string)
 	return &user, nil
+}
+
+func fetchUAATokens(sess *bxsession.Session) error {
+	config := sess.Config
+	tokenRefresher, err := authentication.NewIAMAuthRepository(config, &rest.Client{
+		DefaultHeader: gohttp.Header{
+			"User-Agent": []string{http.UserAgent()},
+		},
+	})
+	if err != nil {
+		return err
+	}
+	_, err = tokenRefresher.RefreshToken()
+	return err
 }
