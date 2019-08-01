@@ -19,11 +19,6 @@ import (
 // swagger:model postInstancesParamsBody
 type PostInstancesParamsBody struct {
 
-	// The total bandwidth (in megabits per second) shared across the virtual server instance's network interfaces
-	// Maximum: 1e+06
-	// Minimum: 100
-	Bandwidth int64 `json:"bandwidth,omitempty"`
-
 	// boot volume attachment
 	BootVolumeAttachment *PostInstancesParamsBodyBootVolumeAttachment `json:"boot_volume_attachment,omitempty"`
 
@@ -34,7 +29,7 @@ type PostInstancesParamsBody struct {
 	Keys []*PostInstancesParamsBodyKeysItems `json:"keys,omitempty"`
 
 	// The user-defined name for this instance
-	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	// Pattern: ^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$
 	Name string `json:"name,omitempty"`
 
 	// Collection of network interfaces to create for the instance
@@ -65,10 +60,6 @@ type PostInstancesParamsBody struct {
 // Validate validates this post instances params body
 func (m *PostInstancesParamsBody) Validate(formats strfmt.Registry) error {
 	var res []error
-
-	if err := m.validateBandwidth(formats); err != nil {
-		res = append(res, err)
-	}
 
 	if err := m.validateBootVolumeAttachment(formats); err != nil {
 		res = append(res, err)
@@ -117,23 +108,6 @@ func (m *PostInstancesParamsBody) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *PostInstancesParamsBody) validateBandwidth(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Bandwidth) { // not required
-		return nil
-	}
-
-	if err := validate.MinimumInt("bandwidth", "body", int64(m.Bandwidth), 100, false); err != nil {
-		return err
-	}
-
-	if err := validate.MaximumInt("bandwidth", "body", int64(m.Bandwidth), 1e+06, false); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -204,7 +178,7 @@ func (m *PostInstancesParamsBody) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.Pattern("name", "body", string(m.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+	if err := validate.Pattern("name", "body", string(m.Name), `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`); err != nil {
 		return err
 	}
 

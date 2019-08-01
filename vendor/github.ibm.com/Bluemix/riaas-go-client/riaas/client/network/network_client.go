@@ -1048,37 +1048,6 @@ func (a *Client) GetVpcsVpcIDAddressPrefixesID(params *GetVpcsVpcIDAddressPrefix
 }
 
 /*
-GetVpcsVpcIDDefaultNetworkACL retrieves default network ACL
-
-This request retrieves the default network ACL for the VPC specified by the identifier in the URL. The default network ACL is applied to any new subnets in the VPC which do not specify a network ACL.
-*/
-func (a *Client) GetVpcsVpcIDDefaultNetworkACL(params *GetVpcsVpcIDDefaultNetworkACLParams, authInfo runtime.ClientAuthInfoWriter) (*GetVpcsVpcIDDefaultNetworkACLOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewGetVpcsVpcIDDefaultNetworkACLParams()
-	}
-
-	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "GetVpcsVpcIDDefaultNetworkACL",
-		Method:             "GET",
-		PathPattern:        "/vpcs/{vpc_id}/default_network_acl",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &GetVpcsVpcIDDefaultNetworkACLReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return result.(*GetVpcsVpcIDDefaultNetworkACLOK), nil
-
-}
-
-/*
 GetVpcsVpcIDDefaultSecurityGroup retrieves default security group
 
 This request retrieves the default security group for the VPC specified by the identifier in the URL. The default security group is applied to any new network interfaces in the VPC which do not specify a security group.
@@ -1757,37 +1726,6 @@ func (a *Client) PutSubnetsSubnetIDPublicGateway(params *PutSubnetsSubnetIDPubli
 		return nil, err
 	}
 	return result.(*PutSubnetsSubnetIDPublicGatewayCreated), nil
-
-}
-
-/*
-PutVpcsVpcIDDefaultNetworkACL sets the default network ACL for a v p c
-
-This request sets the network ACL specified in the request body as the default network ACL for the VPC specified by the VPC identifier in the URL.  The default network ACL is applied to any new subnets in the VPC which do not specify a network ACL.
-*/
-func (a *Client) PutVpcsVpcIDDefaultNetworkACL(params *PutVpcsVpcIDDefaultNetworkACLParams, authInfo runtime.ClientAuthInfoWriter) (*PutVpcsVpcIDDefaultNetworkACLCreated, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewPutVpcsVpcIDDefaultNetworkACLParams()
-	}
-
-	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "PutVpcsVpcIDDefaultNetworkACL",
-		Method:             "PUT",
-		PathPattern:        "/vpcs/{vpc_id}/default_network_acl",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &PutVpcsVpcIDDefaultNetworkACLReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return result.(*PutVpcsVpcIDDefaultNetworkACLCreated), nil
 
 }
 

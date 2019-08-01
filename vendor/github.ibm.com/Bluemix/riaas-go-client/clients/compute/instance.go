@@ -42,7 +42,7 @@ func (f *InstanceClient) ListWithFilter(zone, vpcid, subnetid, resourcegroupID, 
 	if start != "" {
 		params = params.WithStart(&start)
 	}
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 
 	resp, err := f.session.Riaas.Compute.GetInstances(params, session.Auth(f.session))
@@ -65,7 +65,7 @@ func (f *InstanceClient) List(start string) ([]*models.Instance, string, error) 
 // Get ...
 func (f *InstanceClient) Get(id string) (*models.Instance, error) {
 	params := compute.NewGetInstancesIDParamsWithTimeout(f.session.Timeout).WithID(id)
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.GetInstancesID(params, session.Auth(f.session))
 
@@ -79,7 +79,7 @@ func (f *InstanceClient) Get(id string) (*models.Instance, error) {
 // GetInitParms ...
 func (f *InstanceClient) GetInitParms(id string) (*models.InstanceInitialization, error) {
 	params := compute.NewGetInstancesInstanceIDInitializationParamsWithTimeout(f.session.Timeout).WithInstanceID(id)
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.GetInstancesInstanceIDInitialization(params, session.Auth(f.session))
 
@@ -93,7 +93,7 @@ func (f *InstanceClient) GetInitParms(id string) (*models.InstanceInitialization
 // Create ...
 func (f *InstanceClient) Create(instancedef *models.PostInstancesParamsBody) (*models.Instance, error) {
 	params := compute.NewPostInstancesParamsWithTimeout(f.session.Timeout).WithBody(instancedef)
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.PostInstances(params, session.Auth(f.session))
 	if err != nil {
@@ -126,7 +126,7 @@ func (f *InstanceClient) Update(id, name, profileName string) (*models.Instance,
 	}
 
 	params := compute.NewPatchInstancesIDParamsWithTimeout(f.session.Timeout).WithID(id).WithBody(&body)
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.PatchInstancesID(params, session.Auth(f.session))
 	if err != nil {
@@ -139,7 +139,7 @@ func (f *InstanceClient) Update(id, name, profileName string) (*models.Instance,
 // Delete ...
 func (f *InstanceClient) Delete(id string) error {
 	params := compute.NewDeleteInstancesIDParamsWithTimeout(f.session.Timeout).WithID(id)
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.Compute.DeleteInstancesID(params, session.Auth(f.session))
 	if err != nil {
@@ -154,7 +154,7 @@ func (f *InstanceClient) CreateAction(instanceid, actiontype string) (*models.In
 		Type: actiontype,
 	}
 	params := compute.NewPostInstancesInstanceIDActionsParamsWithTimeout(f.session.Timeout).WithInstanceID(instanceid).WithBody(&body)
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.PostInstancesInstanceIDActions(params, session.Auth(f.session))
 	if err != nil {
@@ -164,49 +164,10 @@ func (f *InstanceClient) CreateAction(instanceid, actiontype string) (*models.In
 	return resp.Payload, nil
 }
 
-// ListActions ...
-func (f *InstanceClient) ListActions(instanceid, start string) ([]*models.InstanceAction, string, error) {
-	params := compute.NewGetInstancesInstanceIDActionsParamsWithTimeout(f.session.Timeout).WithInstanceID(instanceid)
-	if start != "" {
-		params = params.WithStart(&start)
-	}
-	params.Version = "2019-03-26"
-	params.Generation = f.session.Generation
-	resp, err := f.session.Riaas.Compute.GetInstancesInstanceIDActions(params, session.Auth(f.session))
-	if err != nil {
-		return nil, "", errors.ToError(err)
-	}
-	return resp.Payload.Actions, utils.GetNext(resp.Payload.Next), nil
-}
-
-// GetAction ...
-func (f *InstanceClient) GetAction(instanceid, actionid string) (*models.InstanceAction, error) {
-	params := compute.NewGetInstancesInstanceIDActionsIDParamsWithTimeout(f.session.Timeout).WithInstanceID(instanceid).WithID(actionid)
-	params.Version = "2019-03-26"
-	params.Generation = f.session.Generation
-	resp, err := f.session.Riaas.Compute.GetInstancesInstanceIDActionsID(params, session.Auth(f.session))
-	if err != nil {
-		return nil, errors.ToError(err)
-	}
-	return resp.Payload, nil
-}
-
-// DeleteAction ...
-func (f *InstanceClient) DeleteAction(instanceid, actionid string) error {
-	params := compute.NewDeleteInstancesInstanceIDActionsIDParamsWithTimeout(f.session.Timeout).WithInstanceID(instanceid).WithID(actionid)
-	params.Version = "2019-03-26"
-	params.Generation = f.session.Generation
-	_, err := f.session.Riaas.Compute.DeleteInstancesInstanceIDActionsID(params, session.Auth(f.session))
-	if err != nil {
-		return errors.ToError(err)
-	}
-	return nil
-}
-
 // ListProfiles ...
 func (f *InstanceClient) ListProfiles(start string) ([]*models.InstanceProfile, string, error) {
 	params := compute.NewGetInstanceProfilesParamsWithTimeout(f.session.Timeout)
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.GetInstanceProfiles(params, session.Auth(f.session))
 	if err != nil {
@@ -218,7 +179,7 @@ func (f *InstanceClient) ListProfiles(start string) ([]*models.InstanceProfile, 
 // GetProfile ...
 func (f *InstanceClient) GetProfile(profileName string) (*models.InstanceProfile, error) {
 	params := compute.NewGetInstanceProfilesNameParamsWithTimeout(f.session.Timeout).WithName(profileName)
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.GetInstanceProfilesName(params, session.Auth(f.session))
 	if err != nil {
@@ -233,7 +194,7 @@ func (f *InstanceClient) ListInterfacesWithFilter(instanceid, resourcegroupID st
 	if resourcegroupID != "" {
 		params = params.WithResourceGroupID(&resourcegroupID)
 	}
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 
 	resp, err := f.session.Riaas.Compute.GetInstancesInstanceIDNetworkInterfaces(params, session.Auth(f.session))
@@ -253,7 +214,7 @@ func (f *InstanceClient) GetInterface(instanceid, interfaceid string) (*models.I
 	params := compute.NewGetInstancesInstanceIDNetworkInterfacesIDParamsWithTimeout(f.session.Timeout).
 		WithInstanceID(instanceid).
 		WithID(interfaceid)
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.GetInstancesInstanceIDNetworkInterfacesID(params, session.Auth(f.session))
 	if err != nil {
@@ -297,7 +258,7 @@ func (f *InstanceClient) AddInterface(instanceid, name, subnetID string, portSpe
 	body.Subnet = &subnetref
 
 	params := compute.NewPostInstancesInstanceIDNetworkInterfacesParamsWithTimeout(f.session.Timeout).WithInstanceID(instanceid).WithBody(&body)
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.PostInstancesInstanceIDNetworkInterfaces(params, session.Auth(f.session))
 	if err != nil {
@@ -309,7 +270,7 @@ func (f *InstanceClient) AddInterface(instanceid, name, subnetID string, portSpe
 // DeleteInterface ...
 func (f *InstanceClient) DeleteInterface(instanceid, interfaceid string) error {
 	params := compute.NewDeleteInstancesInstanceIDNetworkInterfacesIDParamsWithTimeout(f.session.Timeout).WithInstanceID(instanceid).WithID(interfaceid)
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.Compute.DeleteInstancesInstanceIDNetworkInterfacesID(params, session.Auth(f.session))
 	if err != nil {
@@ -329,7 +290,7 @@ func (f *InstanceClient) UpdateInterface(instanceid, interfaceid, name string, p
 		body.PortSpeed = int64(portSpeed)
 	}
 	params := compute.NewPatchInstancesInstanceIDNetworkInterfacesIDParamsWithTimeout(f.session.Timeout).WithInstanceID(instanceid).WithID(interfaceid).WithBody(&body)
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.PatchInstancesInstanceIDNetworkInterfacesID(params, session.Auth(f.session))
 	if err != nil {
@@ -342,7 +303,7 @@ func (f *InstanceClient) UpdateInterface(instanceid, interfaceid, name string, p
 func (f *InstanceClient) ListInterfaceFloatingIPs(instanceid, interfaceid string) ([]*models.FloatingIP, error) {
 	params := compute.NewGetInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsParamsWithTimeout(f.session.Timeout).
 		WithInstanceID(instanceid).WithNetworkInterfaceID(interfaceid)
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.GetInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIps(params, session.Auth(f.session))
 	if err != nil {
@@ -355,7 +316,7 @@ func (f *InstanceClient) ListInterfaceFloatingIPs(instanceid, interfaceid string
 func (f *InstanceClient) GetInterfaceFloatingIP(instanceid, interfaceid, address string) (*models.FloatingIP, error) {
 	params := compute.NewGetInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsAddressParamsWithTimeout(f.session.Timeout).
 		WithInstanceID(instanceid).WithNetworkInterfaceID(interfaceid).WithAddress(address)
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.GetInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsAddress(params, session.Auth(f.session))
 	if err != nil {
@@ -368,7 +329,7 @@ func (f *InstanceClient) GetInterfaceFloatingIP(instanceid, interfaceid, address
 func (f *InstanceClient) AddInterfaceFloatingIP(instanceid, interfaceid, address string) (*models.FloatingIP, error) {
 	params := compute.NewPutInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsAddressParamsWithTimeout(f.session.Timeout).
 		WithInstanceID(instanceid).WithNetworkInterfaceID(interfaceid).WithAddress(address)
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.PutInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsAddress(params, session.Auth(f.session))
 	if err != nil {
@@ -381,7 +342,7 @@ func (f *InstanceClient) AddInterfaceFloatingIP(instanceid, interfaceid, address
 func (f *InstanceClient) RemoveInterfaceFloatingIP(instanceid, interfaceid, address string) error {
 	params := compute.NewDeleteInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsAddressParamsWithTimeout(f.session.Timeout).
 		WithInstanceID(instanceid).WithNetworkInterfaceID(interfaceid).WithAddress(address)
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.Compute.DeleteInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsAddress(
 		params, session.Auth(f.session))
@@ -397,7 +358,7 @@ func (f *InstanceClient) ListVolAttachmentsWithFilter(instanceid, resourcegroupI
 	if resourcegroupID != "" {
 		params = params.WithResourceGroupID(&resourcegroupID)
 	}
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 
 	resp, err := f.session.Riaas.Compute.GetInstancesInstanceIDVolumeAttachments(params, session.Auth(f.session))
@@ -417,7 +378,7 @@ func (f *InstanceClient) GetVolAttachment(instanceid, volAttachID string) (*mode
 	params := compute.NewGetInstancesInstanceIDVolumeAttachmentsIDParamsWithTimeout(f.session.Timeout).
 		WithInstanceID(instanceid).
 		WithID(volAttachID)
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.GetInstancesInstanceIDVolumeAttachmentsID(params, session.Auth(f.session))
 	if err != nil {
@@ -438,7 +399,7 @@ func (f *InstanceClient) AttachVolume(instanceid, volumeID, name string, resourc
 	}
 
 	params := compute.NewPostInstancesInstanceIDVolumeAttachmentsParamsWithTimeout(f.session.Timeout).WithInstanceID(instanceid).WithBody(&body)
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.PostInstancesInstanceIDVolumeAttachments(params, session.Auth(f.session))
 	if err != nil {
@@ -450,7 +411,7 @@ func (f *InstanceClient) AttachVolume(instanceid, volumeID, name string, resourc
 // DeleteVolAttachment ...
 func (f *InstanceClient) DeleteVolAttachment(instanceid, volAttachID string) error {
 	params := compute.NewDeleteInstancesInstanceIDVolumeAttachmentsIDParamsWithTimeout(f.session.Timeout).WithInstanceID(instanceid).WithID(volAttachID)
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.Compute.DeleteInstancesInstanceIDVolumeAttachmentsID(params, session.Auth(f.session))
 	if err != nil {
@@ -468,7 +429,7 @@ func (f *InstanceClient) UpdateVolAttachment(instanceid, volAttachID, name strin
 	}
 
 	params := compute.NewPatchInstancesInstanceIDVolumeAttachmentsIDParamsWithTimeout(f.session.Timeout).WithInstanceID(instanceid).WithID(volAttachID).WithBody(&body)
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.PatchInstancesInstanceIDVolumeAttachmentsID(params, session.Auth(f.session))
 	if err != nil {

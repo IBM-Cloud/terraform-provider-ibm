@@ -63,6 +63,11 @@ for the delete images ID operation typically these are written to a http.Request
 */
 type DeleteImagesIDParams struct {
 
+	/*FutureVersion
+	  allows any date string to be accepted, enabling testing of features still under development
+
+	*/
+	FutureVersion *bool
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -117,6 +122,17 @@ func (o *DeleteImagesIDParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithFutureVersion adds the futureVersion to the delete images ID params
+func (o *DeleteImagesIDParams) WithFutureVersion(futureVersion *bool) *DeleteImagesIDParams {
+	o.SetFutureVersion(futureVersion)
+	return o
+}
+
+// SetFutureVersion adds the futureVersion to the delete images ID params
+func (o *DeleteImagesIDParams) SetFutureVersion(futureVersion *bool) {
+	o.FutureVersion = futureVersion
+}
+
 // WithGeneration adds the generation to the delete images ID params
 func (o *DeleteImagesIDParams) WithGeneration(generation int64) *DeleteImagesIDParams {
 	o.SetGeneration(generation)
@@ -157,6 +173,22 @@ func (o *DeleteImagesIDParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 		return err
 	}
 	var res []error
+
+	if o.FutureVersion != nil {
+
+		// query param future_version
+		var qrFutureVersion bool
+		if o.FutureVersion != nil {
+			qrFutureVersion = *o.FutureVersion
+		}
+		qFutureVersion := swag.FormatBool(qrFutureVersion)
+		if qFutureVersion != "" {
+			if err := r.SetQueryParam("future_version", qFutureVersion); err != nil {
+				return err
+			}
+		}
+
+	}
 
 	// query param generation
 	qrGeneration := o.Generation

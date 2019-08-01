@@ -87,6 +87,68 @@ func (a *Client) DeleteLoadBalancersIDListenersListenerID(params *DeleteLoadBala
 }
 
 /*
+DeleteLoadBalancersIDListenersListenerIDPoliciesPolicyID deletes a policy of the load balancer listener
+
+Deletes a policy of the load balancer listener. This operation cannot be reversed.
+*/
+func (a *Client) DeleteLoadBalancersIDListenersListenerIDPoliciesPolicyID(params *DeleteLoadBalancersIDListenersListenerIDPoliciesPolicyIDParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteLoadBalancersIDListenersListenerIDPoliciesPolicyIDNoContent, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDeleteLoadBalancersIDListenersListenerIDPoliciesPolicyIDParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "DeleteLoadBalancersIDListenersListenerIDPoliciesPolicyID",
+		Method:             "DELETE",
+		PathPattern:        "/load_balancers/{id}/listeners/{listener_id}/policies/{policy_id}",
+		ProducesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{""},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &DeleteLoadBalancersIDListenersListenerIDPoliciesPolicyIDReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*DeleteLoadBalancersIDListenersListenerIDPoliciesPolicyIDNoContent), nil
+
+}
+
+/*
+DeleteLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleID deletes a rule from the load balancer listener policy
+
+Deletes a rule from the load balancer listener policy. This operation cannot be reversed.
+*/
+func (a *Client) DeleteLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleID(params *DeleteLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleIDParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleIDNoContent, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDeleteLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleIDParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "DeleteLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleID",
+		Method:             "DELETE",
+		PathPattern:        "/load_balancers/{id}/listeners/{listener_id}/policies/{policy_id}/rules/{rule_id}",
+		ProducesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{""},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &DeleteLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleIDReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*DeleteLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleIDNoContent), nil
+
+}
+
+/*
 DeleteLoadBalancersIDPoolsPoolID deletes a pool
 
 Deletes a pool. This operation cannot be reversed.
@@ -269,6 +331,130 @@ func (a *Client) GetLoadBalancersIDListenersListenerID(params *GetLoadBalancersI
 		return nil, err
 	}
 	return result.(*GetLoadBalancersIDListenersListenerIDOK), nil
+
+}
+
+/*
+GetLoadBalancersIDListenersListenerIDPolicies retrieves all policies of the listener
+
+Retrieves a list of all policies belonging to the load balancer listener.
+*/
+func (a *Client) GetLoadBalancersIDListenersListenerIDPolicies(params *GetLoadBalancersIDListenersListenerIDPoliciesParams, authInfo runtime.ClientAuthInfoWriter) (*GetLoadBalancersIDListenersListenerIDPoliciesOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetLoadBalancersIDListenersListenerIDPoliciesParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "GetLoadBalancersIDListenersListenerIDPolicies",
+		Method:             "GET",
+		PathPattern:        "/load_balancers/{id}/listeners/{listener_id}/policies",
+		ProducesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{""},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &GetLoadBalancersIDListenersListenerIDPoliciesReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetLoadBalancersIDListenersListenerIDPoliciesOK), nil
+
+}
+
+/*
+GetLoadBalancersIDListenersListenerIDPoliciesPolicyID retrieves a policy of the load balancer listener
+
+Retrieve a single policy specified by the identifier in the URL path.
+*/
+func (a *Client) GetLoadBalancersIDListenersListenerIDPoliciesPolicyID(params *GetLoadBalancersIDListenersListenerIDPoliciesPolicyIDParams, authInfo runtime.ClientAuthInfoWriter) (*GetLoadBalancersIDListenersListenerIDPoliciesPolicyIDOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetLoadBalancersIDListenersListenerIDPoliciesPolicyIDParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "GetLoadBalancersIDListenersListenerIDPoliciesPolicyID",
+		Method:             "GET",
+		PathPattern:        "/load_balancers/{id}/listeners/{listener_id}/policies/{policy_id}",
+		ProducesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{""},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &GetLoadBalancersIDListenersListenerIDPoliciesPolicyIDReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetLoadBalancersIDListenersListenerIDPoliciesPolicyIDOK), nil
+
+}
+
+/*
+GetLoadBalancersIDListenersListenerIDPoliciesPolicyIDRules lists all rules of the load balancer listener policy
+
+Retrieves a list of all rules belonging to the load balancer listener policy.
+*/
+func (a *Client) GetLoadBalancersIDListenersListenerIDPoliciesPolicyIDRules(params *GetLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesParams, authInfo runtime.ClientAuthInfoWriter) (*GetLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "GetLoadBalancersIDListenersListenerIDPoliciesPolicyIDRules",
+		Method:             "GET",
+		PathPattern:        "/load_balancers/{id}/listeners/{listener_id}/policies/{policy_id}/rules",
+		ProducesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{""},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &GetLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesOK), nil
+
+}
+
+/*
+GetLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleID retrieves a rule of the load balancer listener policy
+
+Retrieves a single rule specified by the identifier in the URL path.
+*/
+func (a *Client) GetLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleID(params *GetLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleIDParams, authInfo runtime.ClientAuthInfoWriter) (*GetLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleIDOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleIDParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "GetLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleID",
+		Method:             "GET",
+		PathPattern:        "/load_balancers/{id}/listeners/{listener_id}/policies/{policy_id}/rules/{rule_id}",
+		ProducesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{""},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &GetLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleIDReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleIDOK), nil
 
 }
 
@@ -490,6 +676,68 @@ func (a *Client) PatchLoadBalancersIDListenersListenerID(params *PatchLoadBalanc
 }
 
 /*
+PatchLoadBalancersIDListenersListenerIDPoliciesPolicyID updates a policy of the load balancer listener
+
+Updates a policy from a policy template.
+*/
+func (a *Client) PatchLoadBalancersIDListenersListenerIDPoliciesPolicyID(params *PatchLoadBalancersIDListenersListenerIDPoliciesPolicyIDParams, authInfo runtime.ClientAuthInfoWriter) (*PatchLoadBalancersIDListenersListenerIDPoliciesPolicyIDOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPatchLoadBalancersIDListenersListenerIDPoliciesPolicyIDParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "PatchLoadBalancersIDListenersListenerIDPoliciesPolicyID",
+		Method:             "PATCH",
+		PathPattern:        "/load_balancers/{id}/listeners/{listener_id}/policies/{policy_id}",
+		ProducesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{""},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PatchLoadBalancersIDListenersListenerIDPoliciesPolicyIDReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PatchLoadBalancersIDListenersListenerIDPoliciesPolicyIDOK), nil
+
+}
+
+/*
+PatchLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleID updates a rule of the load balancer listener policy
+
+Updates a rule of the load balancer listener policy.
+*/
+func (a *Client) PatchLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleID(params *PatchLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleIDParams, authInfo runtime.ClientAuthInfoWriter) (*PatchLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleIDOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPatchLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleIDParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "PatchLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleID",
+		Method:             "PATCH",
+		PathPattern:        "/load_balancers/{id}/listeners/{listener_id}/policies/{policy_id}/rules/{rule_id}",
+		ProducesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{""},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PatchLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleIDReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PatchLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesRuleIDOK), nil
+
+}
+
+/*
 PatchLoadBalancersIDPoolsPoolID updates a pool
 
 Updates a pool from a pool template.
@@ -610,6 +858,68 @@ func (a *Client) PostLoadBalancersIDListeners(params *PostLoadBalancersIDListene
 		return nil, err
 	}
 	return result.(*PostLoadBalancersIDListenersCreated), nil
+
+}
+
+/*
+PostLoadBalancersIDListenersListenerIDPolicies creates a policy for the load balancer listener
+
+Creates a new policy to the load balancer listener.
+*/
+func (a *Client) PostLoadBalancersIDListenersListenerIDPolicies(params *PostLoadBalancersIDListenersListenerIDPoliciesParams, authInfo runtime.ClientAuthInfoWriter) (*PostLoadBalancersIDListenersListenerIDPoliciesCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPostLoadBalancersIDListenersListenerIDPoliciesParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "PostLoadBalancersIDListenersListenerIDPolicies",
+		Method:             "POST",
+		PathPattern:        "/load_balancers/{id}/listeners/{listener_id}/policies",
+		ProducesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{""},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PostLoadBalancersIDListenersListenerIDPoliciesReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PostLoadBalancersIDListenersListenerIDPoliciesCreated), nil
+
+}
+
+/*
+PostLoadBalancersIDListenersListenerIDPoliciesPolicyIDRules creates a rule for the load balancer listener policy
+
+Creates a new rule for the load balancer listener policy.
+*/
+func (a *Client) PostLoadBalancersIDListenersListenerIDPoliciesPolicyIDRules(params *PostLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesParams, authInfo runtime.ClientAuthInfoWriter) (*PostLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPostLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "PostLoadBalancersIDListenersListenerIDPoliciesPolicyIDRules",
+		Method:             "POST",
+		PathPattern:        "/load_balancers/{id}/listeners/{listener_id}/policies/{policy_id}/rules",
+		ProducesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{""},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PostLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PostLoadBalancersIDListenersListenerIDPoliciesPolicyIDRulesCreated), nil
 
 }
 

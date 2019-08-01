@@ -13,17 +13,18 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// GetInstancesInstanceIDActionsOKBodyFirst A reference to the first page of resources
-// swagger:model getInstancesInstanceIdActionsOKBodyFirst
-type GetInstancesInstanceIDActionsOKBodyFirst struct {
+// OperatingSystemCollectionFirst A reference to the first page of resources
+// swagger:model operatingSystemCollectionFirst
+type OperatingSystemCollectionFirst struct {
 
 	// The URL for the first page of resources
+	// Required: true
 	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
-	Href string `json:"href,omitempty"`
+	Href *string `json:"href"`
 }
 
-// Validate validates this get instances instance Id actions o k body first
-func (m *GetInstancesInstanceIDActionsOKBodyFirst) Validate(formats strfmt.Registry) error {
+// Validate validates this operating system collection first
+func (m *OperatingSystemCollectionFirst) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateHref(formats); err != nil {
@@ -36,13 +37,13 @@ func (m *GetInstancesInstanceIDActionsOKBodyFirst) Validate(formats strfmt.Regis
 	return nil
 }
 
-func (m *GetInstancesInstanceIDActionsOKBodyFirst) validateHref(formats strfmt.Registry) error {
+func (m *OperatingSystemCollectionFirst) validateHref(formats strfmt.Registry) error {
 
-	if swag.IsZero(m.Href) { // not required
-		return nil
+	if err := validate.Required("href", "body", m.Href); err != nil {
+		return err
 	}
 
-	if err := validate.Pattern("href", "body", string(m.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+	if err := validate.Pattern("href", "body", string(*m.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
 		return err
 	}
 
@@ -50,7 +51,7 @@ func (m *GetInstancesInstanceIDActionsOKBodyFirst) validateHref(formats strfmt.R
 }
 
 // MarshalBinary interface implementation
-func (m *GetInstancesInstanceIDActionsOKBodyFirst) MarshalBinary() ([]byte, error) {
+func (m *OperatingSystemCollectionFirst) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -58,8 +59,8 @@ func (m *GetInstancesInstanceIDActionsOKBodyFirst) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *GetInstancesInstanceIDActionsOKBodyFirst) UnmarshalBinary(b []byte) error {
-	var res GetInstancesInstanceIDActionsOKBodyFirst
+func (m *OperatingSystemCollectionFirst) UnmarshalBinary(b []byte) error {
+	var res OperatingSystemCollectionFirst
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

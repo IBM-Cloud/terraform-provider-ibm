@@ -66,7 +66,12 @@ for the post images operation typically these are written to a http.Request
 type PostImagesParams struct {
 
 	/*Body*/
-	Body *models.ImageFromServerTemplate
+	Body *models.ImageTemplate
+	/*FutureVersion
+	  allows any date string to be accepted, enabling testing of features still under development
+
+	*/
+	FutureVersion *bool
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -117,14 +122,25 @@ func (o *PostImagesParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the post images params
-func (o *PostImagesParams) WithBody(body *models.ImageFromServerTemplate) *PostImagesParams {
+func (o *PostImagesParams) WithBody(body *models.ImageTemplate) *PostImagesParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the post images params
-func (o *PostImagesParams) SetBody(body *models.ImageFromServerTemplate) {
+func (o *PostImagesParams) SetBody(body *models.ImageTemplate) {
 	o.Body = body
+}
+
+// WithFutureVersion adds the futureVersion to the post images params
+func (o *PostImagesParams) WithFutureVersion(futureVersion *bool) *PostImagesParams {
+	o.SetFutureVersion(futureVersion)
+	return o
+}
+
+// SetFutureVersion adds the futureVersion to the post images params
+func (o *PostImagesParams) SetFutureVersion(futureVersion *bool) {
+	o.FutureVersion = futureVersion
 }
 
 // WithGeneration adds the generation to the post images params
@@ -161,6 +177,22 @@ func (o *PostImagesParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err
 		}
+	}
+
+	if o.FutureVersion != nil {
+
+		// query param future_version
+		var qrFutureVersion bool
+		if o.FutureVersion != nil {
+			qrFutureVersion = *o.FutureVersion
+		}
+		qFutureVersion := swag.FormatBool(qrFutureVersion)
+		if qFutureVersion != "" {
+			if err := r.SetQueryParam("future_version", qFutureVersion); err != nil {
+				return err
+			}
+		}
+
 	}
 
 	// query param generation

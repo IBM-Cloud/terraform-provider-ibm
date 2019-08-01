@@ -46,6 +46,9 @@ type NetworkACL struct {
 
 	// The subnets to which this network ACL is attached
 	Subnets []*ResourceReference `json:"subnets"`
+
+	// vpc
+	Vpc *ResourceReference `json:"vpc,omitempty"`
 }
 
 // Validate validates this network acl
@@ -77,6 +80,10 @@ func (m *NetworkACL) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSubnets(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVpc(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -201,6 +208,24 @@ func (m *NetworkACL) validateSubnets(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *NetworkACL) validateVpc(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Vpc) { // not required
+		return nil
+	}
+
+	if m.Vpc != nil {
+		if err := m.Vpc.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("vpc")
+			}
+			return err
+		}
 	}
 
 	return nil

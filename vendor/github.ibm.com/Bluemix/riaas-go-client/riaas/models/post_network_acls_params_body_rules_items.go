@@ -32,6 +32,16 @@ type PostNetworkAclsParamsBodyRulesItems struct {
 	// The destination IP address or CIDR block
 	Destination string `json:"destination,omitempty"`
 
+	// The inclusive upper bound of TCP/UDP destination port range
+	// Maximum: 65535
+	// Minimum: 1
+	DestinationPortMax int64 `json:"destination_port_max,omitempty"`
+
+	// The inclusive lower bound of TCP/UDP destination port range
+	// Maximum: 65535
+	// Minimum: 1
+	DestinationPortMin int64 `json:"destination_port_min,omitempty"`
+
 	// Whether the traffic to be matched is ingress or egress
 	// Enum: [ingress egress]
 	Direction string `json:"direction,omitempty"`
@@ -40,10 +50,14 @@ type PostNetworkAclsParamsBodyRulesItems struct {
 	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
 	Name string `json:"name,omitempty"`
 
-	// The highest port in the range of ports to be matched; if unspecified, `65535` is used.
+	// The inclusive upper bound of TCP/UDP destination port range
+	// Maximum: 65535
+	// Minimum: 1
 	PortMax int64 `json:"port_max,omitempty"`
 
-	// The lowest port in the range of ports to be matched; if unspecified, `1` is used.
+	// The inclusive lower bound of TCP/UDP destination port range
+	// Maximum: 65535
+	// Minimum: 1
 	PortMin int64 `json:"port_min,omitempty"`
 
 	// Must be `all` to match all protocols.
@@ -52,10 +66,14 @@ type PostNetworkAclsParamsBodyRulesItems struct {
 	// The source IP address or CIDR block
 	Source string `json:"source,omitempty"`
 
-	// The highest port in the range of source ports to be matched; if unspecified, `65535` is used.
+	// The inclusive upper bound of TCP/UDP source port range
+	// Maximum: 65535
+	// Minimum: 1
 	SourcePortMax int64 `json:"source_port_max,omitempty"`
 
-	// The lowest port in the range of source ports to be matched; if unspecified, `1` is used.
+	// The inclusive lower bound of TCP/UDP source port range
+	// Maximum: 65535
+	// Minimum: 1
 	SourcePortMin int64 `json:"source_port_min,omitempty"`
 
 	// The highest in the range of ICMP types to be matched; if unspecified, `255` is used.
@@ -73,11 +91,35 @@ func (m *PostNetworkAclsParamsBodyRulesItems) Validate(formats strfmt.Registry) 
 		res = append(res, err)
 	}
 
+	if err := m.validateDestinationPortMax(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDestinationPortMin(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateDirection(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePortMax(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePortMin(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSourcePortMax(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSourcePortMin(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -124,6 +166,40 @@ func (m *PostNetworkAclsParamsBodyRulesItems) validateAction(formats strfmt.Regi
 
 	// value enum
 	if err := m.validateActionEnum("action", "body", m.Action); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PostNetworkAclsParamsBodyRulesItems) validateDestinationPortMax(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.DestinationPortMax) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("destination_port_max", "body", int64(m.DestinationPortMax), 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("destination_port_max", "body", int64(m.DestinationPortMax), 65535, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PostNetworkAclsParamsBodyRulesItems) validateDestinationPortMin(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.DestinationPortMin) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("destination_port_min", "body", int64(m.DestinationPortMin), 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("destination_port_min", "body", int64(m.DestinationPortMin), 65535, false); err != nil {
 		return err
 	}
 
@@ -180,6 +256,74 @@ func (m *PostNetworkAclsParamsBodyRulesItems) validateName(formats strfmt.Regist
 	}
 
 	if err := validate.Pattern("name", "body", string(m.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PostNetworkAclsParamsBodyRulesItems) validatePortMax(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.PortMax) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("port_max", "body", int64(m.PortMax), 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("port_max", "body", int64(m.PortMax), 65535, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PostNetworkAclsParamsBodyRulesItems) validatePortMin(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.PortMin) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("port_min", "body", int64(m.PortMin), 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("port_min", "body", int64(m.PortMin), 65535, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PostNetworkAclsParamsBodyRulesItems) validateSourcePortMax(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.SourcePortMax) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("source_port_max", "body", int64(m.SourcePortMax), 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("source_port_max", "body", int64(m.SourcePortMax), 65535, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PostNetworkAclsParamsBodyRulesItems) validateSourcePortMin(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.SourcePortMin) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("source_port_min", "body", int64(m.SourcePortMin), 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("source_port_min", "body", int64(m.SourcePortMin), 65535, false); err != nil {
 		return err
 	}
 

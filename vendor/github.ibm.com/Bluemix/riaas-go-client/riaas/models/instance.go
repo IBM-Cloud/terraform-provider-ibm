@@ -20,16 +20,8 @@ import (
 // swagger:model instance
 type Instance struct {
 
-	// The total bandwidth (in megabits per second) shared across the virtual server instance's network interfaces
-	// Maximum: 1e+06
-	// Minimum: 100
-	Bandwidth int64 `json:"bandwidth,omitempty"`
-
 	// boot volume attachment
 	BootVolumeAttachment *VolumeAttachmentReference `json:"boot_volume_attachment,omitempty"`
-
-	// cpu
-	CPU *InstanceCPU `json:"cpu,omitempty"`
 
 	// The date and time that the instance was created
 	// Format: date-time
@@ -78,6 +70,9 @@ type Instance struct {
 	// Enum: [stopped starting running pausing paused resuming stopping restarting]
 	Status string `json:"status,omitempty"`
 
+	// vcpu
+	Vcpu *InstanceVcpu `json:"vcpu,omitempty"`
+
 	// Collection of volume interfaces
 	VolumeAttachments []*VolumeAttachmentReference `json:"volume_attachments,omitempty"`
 
@@ -92,15 +87,7 @@ type Instance struct {
 func (m *Instance) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateBandwidth(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateBootVolumeAttachment(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateCPU(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -152,6 +139,10 @@ func (m *Instance) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateVcpu(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateVolumeAttachments(formats); err != nil {
 		res = append(res, err)
 	}
@@ -170,23 +161,6 @@ func (m *Instance) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Instance) validateBandwidth(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Bandwidth) { // not required
-		return nil
-	}
-
-	if err := validate.MinimumInt("bandwidth", "body", int64(m.Bandwidth), 100, false); err != nil {
-		return err
-	}
-
-	if err := validate.MaximumInt("bandwidth", "body", int64(m.Bandwidth), 1e+06, false); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (m *Instance) validateBootVolumeAttachment(formats strfmt.Registry) error {
 
 	if swag.IsZero(m.BootVolumeAttachment) { // not required
@@ -197,24 +171,6 @@ func (m *Instance) validateBootVolumeAttachment(formats strfmt.Registry) error {
 		if err := m.BootVolumeAttachment.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("boot_volume_attachment")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *Instance) validateCPU(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.CPU) { // not required
-		return nil
-	}
-
-	if m.CPU != nil {
-		if err := m.CPU.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("cpu")
 			}
 			return err
 		}
@@ -467,6 +423,24 @@ func (m *Instance) validateStatus(formats strfmt.Registry) error {
 	// value enum
 	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Instance) validateVcpu(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Vcpu) { // not required
+		return nil
+	}
+
+	if m.Vcpu != nil {
+		if err := m.Vcpu.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("vcpu")
+			}
+			return err
+		}
 	}
 
 	return nil

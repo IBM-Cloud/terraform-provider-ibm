@@ -27,7 +27,7 @@ type LoadBalancerTemplate struct {
 	Listeners []*ListenerTemplateWithPoolByName `json:"listeners,omitempty"`
 
 	// The load balancer's user-defined name. Load balancer names must be unique. within the scope of a user account. Load balancer names are part of FQDN auto-assigned to the load balancer.
-	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	// Pattern: ^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$
 	Name string `json:"name,omitempty"`
 
 	// The pools of this load balancer
@@ -114,7 +114,7 @@ func (m *LoadBalancerTemplate) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.Pattern("name", "body", string(m.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+	if err := validate.Pattern("name", "body", string(m.Name), `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`); err != nil {
 		return err
 	}
 

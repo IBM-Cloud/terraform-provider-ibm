@@ -31,7 +31,7 @@ type PoolTemplate struct {
 	Members []*MemberTemplate `json:"members,omitempty"`
 
 	// The name of the pool.
-	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	// Pattern: ^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$
 	Name string `json:"name,omitempty"`
 
 	// The pool protocol.
@@ -171,7 +171,7 @@ func (m *PoolTemplate) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.Pattern("name", "body", string(m.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+	if err := validate.Pattern("name", "body", string(m.Name), `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`); err != nil {
 		return err
 	}
 

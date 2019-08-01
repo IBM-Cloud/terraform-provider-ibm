@@ -36,10 +36,6 @@ type PatchSecurityGroupsSecurityGroupIDRulesIDParamsBody struct {
 	// The lowest port in the range of ports to be matched; if unspecified, `1` is used.
 	PortMin *int64 `json:"port_min,omitempty"`
 
-	// The protocol to enforce. Must be one of (icmp, tcp, udp, all). Defaults to 'all' if omitted.
-	// Enum: [all icmp tcp udp]
-	Protocol string `json:"protocol,omitempty"`
-
 	// remote
 	Remote *PatchSecurityGroupsSecurityGroupIDRulesIDParamsBodyRemote `json:"remote,omitempty"`
 
@@ -56,10 +52,6 @@ func (m *PatchSecurityGroupsSecurityGroupIDRulesIDParamsBody) Validate(formats s
 	}
 
 	if err := m.validateIPVersion(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateProtocol(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -153,55 +145,6 @@ func (m *PatchSecurityGroupsSecurityGroupIDRulesIDParamsBody) validateIPVersion(
 
 	// value enum
 	if err := m.validateIPVersionEnum("ip_version", "body", m.IPVersion); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-var patchSecurityGroupsSecurityGroupIdRulesIdParamsBodyTypeProtocolPropEnum []interface{}
-
-func init() {
-	var res []string
-	if err := json.Unmarshal([]byte(`["all","icmp","tcp","udp"]`), &res); err != nil {
-		panic(err)
-	}
-	for _, v := range res {
-		patchSecurityGroupsSecurityGroupIdRulesIdParamsBodyTypeProtocolPropEnum = append(patchSecurityGroupsSecurityGroupIdRulesIdParamsBodyTypeProtocolPropEnum, v)
-	}
-}
-
-const (
-
-	// PatchSecurityGroupsSecurityGroupIDRulesIDParamsBodyProtocolAll captures enum value "all"
-	PatchSecurityGroupsSecurityGroupIDRulesIDParamsBodyProtocolAll string = "all"
-
-	// PatchSecurityGroupsSecurityGroupIDRulesIDParamsBodyProtocolIcmp captures enum value "icmp"
-	PatchSecurityGroupsSecurityGroupIDRulesIDParamsBodyProtocolIcmp string = "icmp"
-
-	// PatchSecurityGroupsSecurityGroupIDRulesIDParamsBodyProtocolTCP captures enum value "tcp"
-	PatchSecurityGroupsSecurityGroupIDRulesIDParamsBodyProtocolTCP string = "tcp"
-
-	// PatchSecurityGroupsSecurityGroupIDRulesIDParamsBodyProtocolUDP captures enum value "udp"
-	PatchSecurityGroupsSecurityGroupIDRulesIDParamsBodyProtocolUDP string = "udp"
-)
-
-// prop value enum
-func (m *PatchSecurityGroupsSecurityGroupIDRulesIDParamsBody) validateProtocolEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, patchSecurityGroupsSecurityGroupIdRulesIdParamsBodyTypeProtocolPropEnum); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *PatchSecurityGroupsSecurityGroupIDRulesIDParamsBody) validateProtocol(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Protocol) { // not required
-		return nil
-	}
-
-	// value enum
-	if err := m.validateProtocolEnum("protocol", "body", m.Protocol); err != nil {
 		return err
 	}
 

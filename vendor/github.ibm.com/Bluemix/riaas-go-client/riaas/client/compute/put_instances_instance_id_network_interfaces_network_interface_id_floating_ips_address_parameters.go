@@ -17,6 +17,8 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
+
+	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPutInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsAddressParams creates a new PutInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsAddressParams object
@@ -83,6 +85,8 @@ type PutInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsAddress
 
 	*/
 	NetworkInterfaceID string
+	/*RequestBody*/
+	RequestBody *models.DummyEmptyTemplate
 	/*Version
 	  Requests the version of the API as of a date in the format `YYYY-MM-DD`. Any date up to the current date may be provided. Specify the current date to request the latest version.
 
@@ -171,6 +175,17 @@ func (o *PutInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsAdd
 	o.NetworkInterfaceID = networkInterfaceID
 }
 
+// WithRequestBody adds the requestBody to the put instances instance ID network interfaces network interface ID floating ips address params
+func (o *PutInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsAddressParams) WithRequestBody(requestBody *models.DummyEmptyTemplate) *PutInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsAddressParams {
+	o.SetRequestBody(requestBody)
+	return o
+}
+
+// SetRequestBody adds the requestBody to the put instances instance ID network interfaces network interface ID floating ips address params
+func (o *PutInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsAddressParams) SetRequestBody(requestBody *models.DummyEmptyTemplate) {
+	o.RequestBody = requestBody
+}
+
 // WithVersion adds the version to the put instances instance ID network interfaces network interface ID floating ips address params
 func (o *PutInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsAddressParams) WithVersion(version string) *PutInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsAddressParams {
 	o.SetVersion(version)
@@ -212,6 +227,12 @@ func (o *PutInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsAdd
 	// path param network_interface_id
 	if err := r.SetPathParam("network_interface_id", o.NetworkInterfaceID); err != nil {
 		return err
+	}
+
+	if o.RequestBody != nil {
+		if err := r.SetBodyParam(o.RequestBody); err != nil {
+			return err
+		}
 	}
 
 	// query param version

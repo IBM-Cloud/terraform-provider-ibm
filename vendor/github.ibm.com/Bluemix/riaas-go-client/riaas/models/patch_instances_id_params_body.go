@@ -17,13 +17,8 @@ import (
 // swagger:model patchInstancesIdParamsBody
 type PatchInstancesIDParamsBody struct {
 
-	// The total bandwidth (in megabits per second) shared across the virtual server instance's network interfaces
-	// Maximum: 1e+06
-	// Minimum: 100
-	Bandwidth int64 `json:"bandwidth,omitempty"`
-
 	// The user-defined name for this network ACL
-	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	// Pattern: ^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$
 	Name string `json:"name,omitempty"`
 
 	// profile
@@ -33,10 +28,6 @@ type PatchInstancesIDParamsBody struct {
 // Validate validates this patch instances Id params body
 func (m *PatchInstancesIDParamsBody) Validate(formats strfmt.Registry) error {
 	var res []error
-
-	if err := m.validateBandwidth(formats); err != nil {
-		res = append(res, err)
-	}
 
 	if err := m.validateName(formats); err != nil {
 		res = append(res, err)
@@ -52,30 +43,13 @@ func (m *PatchInstancesIDParamsBody) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PatchInstancesIDParamsBody) validateBandwidth(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Bandwidth) { // not required
-		return nil
-	}
-
-	if err := validate.MinimumInt("bandwidth", "body", int64(m.Bandwidth), 100, false); err != nil {
-		return err
-	}
-
-	if err := validate.MaximumInt("bandwidth", "body", int64(m.Bandwidth), 1e+06, false); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (m *PatchInstancesIDParamsBody) validateName(formats strfmt.Registry) error {
 
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
-	if err := validate.Pattern("name", "body", string(m.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+	if err := validate.Pattern("name", "body", string(m.Name), `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`); err != nil {
 		return err
 	}
 
