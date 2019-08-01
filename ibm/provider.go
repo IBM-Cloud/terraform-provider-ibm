@@ -17,12 +17,11 @@ func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"bluemix_api_key": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "The Bluemix API Key",
-				DefaultFunc:   schema.MultiEnvDefaultFunc([]string{"BM_API_KEY", "BLUEMIX_API_KEY"}, nil),
-				Deprecated:    "This field is deprecated please use ibmcloud_api_key",
-				ConflictsWith: []string{"ibmcloud_api_key", "iam_token", "iam_refresh_token"},
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Bluemix API Key",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"BM_API_KEY", "BLUEMIX_API_KEY"}, nil),
+				Deprecated:  "This field is deprecated please use ibmcloud_api_key",
 			},
 			"bluemix_timeout": {
 				Type:        schema.TypeInt,
@@ -32,11 +31,10 @@ func Provider() terraform.ResourceProvider {
 				Deprecated:  "This field is deprecated please use ibmcloud_timeout",
 			},
 			"ibmcloud_api_key": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "The IBM Cloud API Key",
-				DefaultFunc:   schema.MultiEnvDefaultFunc([]string{"IC_API_KEY", "IBMCLOUD_API_KEY"}, nil),
-				ConflictsWith: []string{"bluemix_api_key", "iam_token", "iam_refresh_token"},
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The IBM Cloud API Key",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_API_KEY", "IBMCLOUD_API_KEY"}, nil),
 			},
 			"ibmcloud_timeout": {
 				Type:        schema.TypeInt,
@@ -106,18 +104,16 @@ func Provider() terraform.ResourceProvider {
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_GENERATION", "IBMCLOUD_GENERATION"}, 2),
 			},
 			"iam_token": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "IAM Authentication token",
-				DefaultFunc:   schema.MultiEnvDefaultFunc([]string{"IC_IAM_TOKEN", "IBMCLOUD_IAM_TOKEN"}, nil),
-				ConflictsWith: []string{"ibmcloud_api_key", "bluemix_api_key"},
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "IAM Authentication token",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_IAM_TOKEN", "IBMCLOUD_IAM_TOKEN"}, nil),
 			},
 			"iam_refresh_token": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "IAM Authentication refresh token",
-				DefaultFunc:   schema.MultiEnvDefaultFunc([]string{"IC_IAM_REFRESH_TOKEN", "IBMCLOUD_IAM_REFRESH_TOKEN"}, nil),
-				ConflictsWith: []string{"ibmcloud_api_key", "bluemix_api_key"},
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "IAM Authentication refresh token",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_IAM_REFRESH_TOKEN", "IBMCLOUD_IAM_REFRESH_TOKEN"}, nil),
 			},
 		},
 
