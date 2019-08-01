@@ -53,7 +53,7 @@ func dataSourceIBMCISDomainRead(d *schema.ResourceData, meta interface{}) error 
 
 	cisId := d.Get("cis_id").(string)
 	zoneName := d.Get("domain").(string)
-	var zones *[]v1.Zone
+	var zones []v1.Zone
 	var zoneNames []string
 
 	zones, err = cisClient.Zones().ListZones(cisId)
@@ -61,7 +61,7 @@ func dataSourceIBMCISDomainRead(d *schema.ResourceData, meta interface{}) error 
 		log.Printf("dataSourcCISdomainRead - ListZones Failed %s\n", err)
 		return err
 	}
-	zonesObj := *zones
+	zonesObj := zones
 
 	for _, zone := range zonesObj {
 		zoneNames = append(zoneNames, zone.Name)
