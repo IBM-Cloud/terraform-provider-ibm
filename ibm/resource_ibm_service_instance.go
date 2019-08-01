@@ -229,7 +229,7 @@ func resourceIBMServiceInstanceUpdate(d *schema.ResourceData, meta interface{}) 
 
 	if d.HasChange("tags") {
 		tags := getServiceTags(d)
-		updateReq.Tags = &tags
+		updateReq.Tags = tags
 	}
 
 	_, err = cfClient.ServiceInstances().Update(serviceGUID, updateReq)
