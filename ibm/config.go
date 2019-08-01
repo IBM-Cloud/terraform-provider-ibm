@@ -333,13 +333,16 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if sess.BluemixSession.Config.IAMAccessToken != "" {
 		err := refreshToken(sess.BluemixSession)
 		if err != nil {
-			session.bmxUserFetchErr = fmt.Errorf("Error occured while refreshing token: %q", err)
+			return nil, err
 		}
 		userConfig, err := fetchUserDetails(sess.BluemixSession)
 		if err != nil {
 			session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
 		}
 		session.bmxUserDetails = userConfig
+		if sess.SoftLayerSession != nil && sess.SoftLayerSession.IAMToken != "" {
+			sess.SoftLayerSession.IAMToken = sess.BluemixSession.Config.IAMAccessToken
+		}
 
 	}
 
@@ -444,7 +447,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 func newSession(c *Config) (*Session, error) {
 	ibmSession := &Session{}
 
-	log.Println("Configuring SoftLayer Session")
 	softlayerSession := &slsession.Session{
 		Endpoint:  c.SoftLayerEndpointURL,
 		Timeout:   c.SoftLayerTimeout,
@@ -453,6 +455,16 @@ func newSession(c *Config) (*Session, error) {
 		Debug:     os.Getenv("TF_LOG") != "",
 		Retries:   c.RetryCount,
 		RetryWait: c.RetryDelay,
+	}
+
+	if c.IAMToken != "" {
+		log.Println("Configuring SoftLayer Session with token")
+		softlayerSession.IAMToken = c.IAMToken
+	}
+	if c.SoftLayerAPIKey != "" && c.SoftLayerUserName != "" {
+		log.Println("Configuring SoftLayer Session with API key")
+		softlayerSession.APIKey = c.SoftLayerAPIKey
+		softlayerSession.UserName = c.SoftLayerUserName
 	}
 	softlayerSession.AppendUserAgent(fmt.Sprintf("terraform-provider-ibm/%s", version.Version))
 	ibmSession.SoftLayerSession = softlayerSession
@@ -520,7 +532,14 @@ func fetchUserDetails(sess *bxsession.Session) (*UserConfig, error) {
 	config := sess.Config
 	user := UserConfig{}
 
-	bluemixToken := config.IAMAccessToken[7:len(config.IAMAccessToken)]
+	var bluemixToken string
+
+	if strings.HasPrefix(config.IAMAccessToken, "Bearer") {
+		bluemixToken = config.IAMAccessToken[7:len(config.IAMAccessToken)]
+	} else {
+		bluemixToken = config.IAMAccessToken
+	}
+
 	token, err := jwt.Parse(bluemixToken, func(token *jwt.Token) (interface{}, error) {
 		return "", nil
 	})
