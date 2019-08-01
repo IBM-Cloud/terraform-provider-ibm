@@ -525,11 +525,11 @@ func resourceIBMisInstanceRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set(isInstanceProfile, instance.Profile.Name)
 	}
 	cpuList := make([]map[string]interface{}, 0)
-	if instance.CPU != nil {
+	if instance.Vcpu != nil {
 		currentCPU := map[string]interface{}{}
-		currentCPU[isInstanceCPUArch] = instance.CPU.Architecture
-		currentCPU[isInstanceCPUCores] = instance.CPU.Cores
-		currentCPU[isInstanceCPUFrequency] = instance.CPU.Frequency
+		currentCPU[isInstanceCPUArch] = instance.Vcpu.Architecture
+		currentCPU[isInstanceCPUCores] = instance.Vcpu.Cores
+		currentCPU[isInstanceCPUFrequency] = instance.Vcpu.Count
 		cpuList = append(cpuList, currentCPU)
 	}
 	d.Set(isInstanceCPU, cpuList)
