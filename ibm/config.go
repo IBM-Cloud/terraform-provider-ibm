@@ -205,7 +205,7 @@ func (sess clientSession) BluemixAcccountv1API() (accountv1.AccountServiceAPI, e
 
 // BluemixSession to provide the Bluemix Session
 func (sess clientSession) BluemixSession() (*bxsession.Session, error) {
-	return sess.session.BluemixSession, sess.cfConfigErr
+	return sess.session.BluemixSession, nil
 }
 
 // BluemixUserDetails ...
@@ -321,7 +321,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		return session, nil
 	}
 
-	if sess.BluemixSession.Config.BluemixAPIKey != "" {
+	if sess.BluemixSession.Config.BluemixAPIKey != "" && (sess.BluemixSession.Config.IAMAccessToken == "" && sess.BluemixSession.Config.IAMRefreshToken == "") {
 		err = authenticateAPIKey(sess.BluemixSession)
 		if err != nil {
 			session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
@@ -331,6 +331,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	if sess.BluemixSession.Config.IAMAccessToken != "" {
+		err := refreshToken(sess.BluemixSession)
+		if err != nil {
+			session.bmxUserFetchErr = fmt.Errorf("Error occured while refreshing token: %q", err)
+		}
 		userConfig, err := fetchUserDetails(sess.BluemixSession)
 		if err != nil {
 			session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
@@ -453,7 +457,7 @@ func newSession(c *Config) (*Session, error) {
 	softlayerSession.AppendUserAgent(fmt.Sprintf("terraform-provider-ibm/%s", version.Version))
 	ibmSession.SoftLayerSession = softlayerSession
 
-	if c.BluemixAPIKey != "" {
+	if c.BluemixAPIKey != "" && (c.IAMToken == "" && c.IAMRefreshToken == "") {
 		log.Println("Configuring IBM Cloud Session with API key")
 		var sess *bxsession.Session
 		bmxConfig := &bluemix.Config{
@@ -529,4 +533,18 @@ func fetchUserDetails(sess *bxsession.Session) (*UserConfig, error) {
 	user.userID = claims["id"].(string)
 	user.userAccount = claims["account"].(map[string]interface{})["bss"].(string)
 	return &user, nil
+}
+
+func refreshToken(sess *bxsession.Session) error {
+	config := sess.Config
+	tokenRefresher, err := authentication.NewIAMAuthRepository(config, &rest.Client{
+		DefaultHeader: gohttp.Header{
+			"User-Agent": []string{http.UserAgent()},
+		},
+	})
+	if err != nil {
+		return err
+	}
+	_, err = tokenRefresher.RefreshToken()
+	return err
 }
