@@ -3,7 +3,6 @@ package icdv4
 import (
 	gohttp "net/http"
 
-
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/authentication"
 	"github.com/IBM-Cloud/bluemix-go/client"

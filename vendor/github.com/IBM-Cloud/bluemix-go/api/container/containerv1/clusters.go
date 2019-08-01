@@ -473,7 +473,9 @@ func generateCalicoConfig(desiredConfigPath string) (string, error) {
 		templateVars := map[string]string{
 			"certDir": desiredConfigPath,
 		}
-		tmpl.Execute(newCaliFile, templateVars)
+		if err := tmpl.Execute(newCaliFile, templateVars); err != nil {
+			return "", fmt.Errorf("Failed to execute template: %v", err)
+		}
 		return newCalicoConfigFile, nil
 	}
 	// Return an empty file path if the calico config doesn't exist

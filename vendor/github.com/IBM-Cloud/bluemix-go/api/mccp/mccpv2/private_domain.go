@@ -48,8 +48,8 @@ func (resource PrivateDomainResource) ToFields() PrivateDomain {
 	entity := resource.Entity
 
 	return PrivateDomain{
-		GUID: resource.Metadata.GUID,
-		Name: entity.Name,
+		GUID:                   resource.Metadata.GUID,
+		Name:                   entity.Name,
 		OwningOrganizationGUID: entity.OwningOrganizationGUID,
 		OwningOrganizationURL:  entity.OwningOrganizationURL,
 		SharedOrganizationURL:  entity.OwningOrganizationURL,

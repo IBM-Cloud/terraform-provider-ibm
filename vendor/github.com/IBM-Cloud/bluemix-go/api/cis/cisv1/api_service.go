@@ -104,13 +104,12 @@ func (c *cisService) Dns() Dns {
 	return newDnsAPI(c.Client)
 }
 
-func errorsToString(e []Error)  (string) {
+func errorsToString(e []Error) string {
 
-    var errMsg string
-    for _, err := range e {
-        errFrag := "Code: " + strconv.Itoa(err.Code) + " " + err.Msg
-        errMsg = errMsg + errFrag
-    }
-    return errMsg
+	var errMsg string
+	for _, err := range e {
+		errFrag := "Code: " + strconv.Itoa(err.Code) + " " + err.Msg
+		errMsg = errMsg + errFrag
+	}
+	return errMsg
 }
-

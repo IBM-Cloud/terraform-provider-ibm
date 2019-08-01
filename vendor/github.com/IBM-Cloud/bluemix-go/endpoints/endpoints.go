@@ -34,12 +34,12 @@ const (
 
 var regionToEndpoint = map[string]map[string]string{
 	"account": {
-		"us-south": "https://accountmanagement.ng.bluemix.net",
-		"us-east":  "https://accountmanagement.us-east.bluemix.net",
-		"eu-gb":    "https://accountmanagement.eu-gb.bluemix.net",
-		"au-syd":   "https://accountmanagement.au-syd.bluemix.net",
-		"eu-de":    "https://accountmanagement.eu-de.bluemix.net",
-		"jp-tok":   "https://accountmanagement.jp-tok.bluemix.net",
+		"us-south": "https://accounts.cloud.ibm.com",
+		"us-east":  "https://accounts.cloud.ibm.com",
+		"eu-gb":    "https://accounts.cloud.ibm.com",
+		"au-syd":   "https://accounts.cloud.ibm.com",
+		"eu-de":    "https://accounts.cloud.ibm.com",
+		"jp-tok":   "https://accounts.cloud.ibm.com",
 	},
 	"cf": {
 		"us-south": "https://api.ng.bluemix.net",
@@ -115,12 +115,12 @@ var regionToEndpoint = map[string]map[string]string{
 		"oslo01":   "https://api.osl01.databases.cloud.ibm.com",
 	},
 	"mccp": {
-		"us-south": "https://mccp.ng.bluemix.net",
-		"us-east":  "https://mccp.us-east.bluemix.net",
-		"eu-gb":    "https://mccp.eu-gb.bluemix.net",
-		"au-syd":   "https://mccp.au-syd.bluemix.net",
-		"eu-de":    "https://mccp.eu-de.bluemix.net",
-		"jp-tok":   "https://mccp.jp-tok.bluemix.net",
+		"us-south": "https://mccp.us-south.cf.cloud.ibm.com",
+		"us-east":  "https://mccp.us-east.cf.cloud.ibm.com",
+		"eu-gb":    "https://mccp.eu-gb.cf.cloud.ibm.com",
+		"au-syd":   "https://mccp.au-syd.cf.cloud.ibm.com",
+		"eu-de":    "https://mccp.eu-de.cf.cloud.ibm.com",
+		"jp-tok":   "https://mccp.jp-tok.cf.cloud.ibm.com",
 	},
 	"resource-manager": {
 		"us-south": "https://resource-controller.cloud.ibm.com",

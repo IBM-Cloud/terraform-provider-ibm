@@ -1,9 +1,9 @@
 package accountv2
 
 import (
+	"bytes"
 	"encoding/json"
 	"reflect"
-	"strings"
 )
 
 type GenericPaginatedResourcesHandler struct {
@@ -16,16 +16,16 @@ func NewAccountPaginatedResources(resource interface{}) GenericPaginatedResource
 	}
 }
 
-func (pr GenericPaginatedResourcesHandler) Resources(bytes []byte, curURL string) ([]interface{}, string, error) {
+func (pr GenericPaginatedResourcesHandler) Resources(data []byte, curURL string) ([]interface{}, string, error) {
 	var paginatedResources = struct {
 		NextUrl        string          `json:"next_url"`
 		ResourcesBytes json.RawMessage `json:"resources"`
 	}{}
 
-	err := json.Unmarshal(bytes, &paginatedResources)
+	err := json.Unmarshal(data, &paginatedResources)
 
 	slicePtr := reflect.New(reflect.SliceOf(pr.resourceType))
-	dc := json.NewDecoder(strings.NewReader(string(paginatedResources.ResourcesBytes)))
+	dc := json.NewDecoder(bytes.NewBuffer(paginatedResources.ResourcesBytes))
 	dc.UseNumber()
 	err = dc.Decode(slicePtr.Interface())
 	slice := reflect.Indirect(slicePtr)

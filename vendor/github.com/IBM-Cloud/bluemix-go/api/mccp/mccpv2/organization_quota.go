@@ -68,8 +68,8 @@ func (resource OrgQuotaResource) ToFields() OrgQuota {
 	entity := resource.Entity
 
 	return OrgQuota{
-		GUID: resource.Metadata.GUID,
-		Name: entity.Name,
+		GUID:                    resource.Metadata.GUID,
+		Name:                    entity.Name,
 		NonBasicServicesAllowed: entity.NonBasicServicesAllowed,
 		ServicesLimit:           entity.ServicesLimit,
 		RoutesLimit:             entity.RoutesLimit,
@@ -116,9 +116,6 @@ func (r *orgQuota) FindByName(name string) (*OrgQuota, error) {
 		return nil, err
 	}
 
-	if err != nil {
-		return nil, err
-	}
 	if len(orgQuotas) == 0 {
 		return nil, bmxerror.New(ErrCodeAppDoesnotExist,
 			fmt.Sprintf("Given quota definition: %q doesn't exist", name))

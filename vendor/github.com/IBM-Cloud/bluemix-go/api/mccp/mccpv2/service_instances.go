@@ -22,7 +22,7 @@ type ServiceInstanceUpdateRequest struct {
 	Name     *string                `json:"name,omitempty"`
 	PlanGUID *string                `json:"service_plan_guid,omitempty"`
 	Params   map[string]interface{} `json:"parameters,omitempty"`
-	Tags     *[]string              `json:"tags,omitempty"`
+	Tags     []string               `json:"tags,omitempty"`
 }
 
 //ServiceInstance ...

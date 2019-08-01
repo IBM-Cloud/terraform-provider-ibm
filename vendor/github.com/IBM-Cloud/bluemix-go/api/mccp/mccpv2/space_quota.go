@@ -82,8 +82,8 @@ func (resource SpaceQuotaResource) ToFields() SpaceQuota {
 	entity := resource.Entity
 
 	return SpaceQuota{
-		GUID: resource.Metadata.GUID,
-		Name: entity.Name,
+		GUID:                    resource.Metadata.GUID,
+		Name:                    entity.Name,
 		NonBasicServicesAllowed: entity.NonBasicServicesAllowed,
 		ServicesLimit:           entity.ServicesLimit,
 		RoutesLimit:             entity.RoutesLimit,

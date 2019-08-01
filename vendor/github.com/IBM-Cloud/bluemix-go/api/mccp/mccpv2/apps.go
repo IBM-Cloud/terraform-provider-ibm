@@ -68,7 +68,7 @@ type AppRequest struct {
 	DockerImage              *string                 `json:"docker_image,omitempty"`
 	StagingFailedReason      *string                 `json:"staging_failed_reason,omitempty"`
 	StagingFailedDescription *string                 `json:"staging_failed_description,omitempty"`
-	Ports                    *[]int                  `json:"ports,omitempty"`
+	Ports                    []int                   `json:"ports,omitempty"`
 	DockerCredentialsJSON    *map[string]interface{} `json:"docker_credentials_json,omitempty"`
 	EnvironmentJSON          *map[string]interface{} `json:"environment_json,omitempty"`
 }
@@ -163,12 +163,12 @@ func (resource AppResource) ToFields() App {
 		HealthCheckType:         entity.HealthCheckType,
 		HealthCheckTimeout:      entity.HealthCheckTimeout,
 		HealthCheckHTTPEndpoint: entity.HealthCheckHTTPEndpoint,
-		Diego:       entity.Diego,
-		DockerImage: entity.DockerImage,
-		EnableSSH:   entity.EnableSSH,
-		Ports:       entity.Ports,
-		DockerCredentialsJSON: entity.DockerCredentialsJSON,
-		EnvironmentJSON:       entity.EnvironmentJSON,
+		Diego:                   entity.Diego,
+		DockerImage:             entity.DockerImage,
+		EnableSSH:               entity.EnableSSH,
+		Ports:                   entity.Ports,
+		DockerCredentialsJSON:   entity.DockerCredentialsJSON,
+		EnvironmentJSON:         entity.EnvironmentJSON,
 	}
 }
 
@@ -489,14 +489,15 @@ func (r *app) Restage(appGUID string, maxWaitTime time.Duration) (*AppState, err
 
 func (r *app) WaitForAppStatus(waitForThisState, appGUID string, maxWaitTime time.Duration) (string, error) {
 	timeout := time.After(maxWaitTime)
-	tick := time.Tick(DefaultRetryDelayForStatusCheck)
+	tick := time.NewTicker(DefaultRetryDelayForStatusCheck)
+	defer tick.Stop()
 	status := AppPendingState
 	for {
 		select {
 		case <-timeout:
 			trace.Logger.Printf("Timed out while checking the app status for %q.  Waited for %q for the state to be %q", appGUID, maxWaitTime, waitForThisState)
 			return status, nil
-		case <-tick:
+		case <-tick.C:
 			appFields, err := r.Get(appGUID)
 			if err != nil {
 				return "", err
@@ -512,14 +513,15 @@ func (r *app) WaitForAppStatus(waitForThisState, appGUID string, maxWaitTime tim
 
 func (r *app) WaitForInstanceStatus(waitForThisState, appGUID string, maxWaitTime time.Duration) (string, error) {
 	timeout := time.After(maxWaitTime)
-	tick := time.Tick(DefaultRetryDelayForStatusCheck)
+	tick := time.NewTicker(DefaultRetryDelayForStatusCheck)
+	defer tick.Stop()
 	status := AppStartedState
 	for {
 		select {
 		case <-timeout:
 			trace.Logger.Printf("Timed out while checking the app status for %q. Waited for %q for the state to be %q", appGUID, maxWaitTime, waitForThisState)
 			return status, nil
-		case <-tick:
+		case <-tick.C:
 			appStat, err := r.Stat(appGUID)
 			if err != nil {
 				return status, err
@@ -552,7 +554,7 @@ func (r *app) WaitForStatus(appGUID string, maxWaitTime time.Duration) (*AppStat
 	}
 	status, err = r.WaitForInstanceStatus(AppRunningState, appGUID, maxWaitTime/2)
 	appState.InstanceState = status
-	return appState, nil
+	return appState, err
 }
 
 //TODO pull the wait logic in a auxiliary function which can be used by all
