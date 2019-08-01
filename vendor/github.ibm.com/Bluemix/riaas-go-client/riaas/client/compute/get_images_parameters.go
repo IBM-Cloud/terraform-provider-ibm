@@ -75,6 +75,11 @@ for the get images operation typically these are written to a http.Request
 */
 type GetImagesParams struct {
 
+	/*FutureVersion
+	  allows any date string to be accepted, enabling testing of features still under development
+
+	*/
+	FutureVersion *bool
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -142,6 +147,17 @@ func (o *GetImagesParams) WithHTTPClient(client *http.Client) *GetImagesParams {
 // SetHTTPClient adds the HTTPClient to the get images params
 func (o *GetImagesParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithFutureVersion adds the futureVersion to the get images params
+func (o *GetImagesParams) WithFutureVersion(futureVersion *bool) *GetImagesParams {
+	o.SetFutureVersion(futureVersion)
+	return o
+}
+
+// SetFutureVersion adds the futureVersion to the get images params
+func (o *GetImagesParams) SetFutureVersion(futureVersion *bool) {
+	o.FutureVersion = futureVersion
 }
 
 // WithGeneration adds the generation to the get images params
@@ -217,6 +233,22 @@ func (o *GetImagesParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 		return err
 	}
 	var res []error
+
+	if o.FutureVersion != nil {
+
+		// query param future_version
+		var qrFutureVersion bool
+		if o.FutureVersion != nil {
+			qrFutureVersion = *o.FutureVersion
+		}
+		qFutureVersion := swag.FormatBool(qrFutureVersion)
+		if qFutureVersion != "" {
+			if err := r.SetQueryParam("future_version", qFutureVersion); err != nil {
+				return err
+			}
+		}
+
+	}
 
 	// query param generation
 	qrGeneration := o.Generation

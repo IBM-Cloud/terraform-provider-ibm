@@ -24,9 +24,6 @@ type PostVpcsParamsBody struct {
 	//
 	ClassicAccess bool `json:"classic_access,omitempty"`
 
-	// default network acl
-	DefaultNetworkACL *PostVpcsParamsBodyDefaultNetworkACL `json:"default_network_acl,omitempty"`
-
 	// The user-defined name for this VPC
 	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
 	Name string `json:"name,omitempty"`
@@ -39,10 +36,6 @@ type PostVpcsParamsBody struct {
 func (m *PostVpcsParamsBody) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateDefaultNetworkACL(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateName(formats); err != nil {
 		res = append(res, err)
 	}
@@ -54,24 +47,6 @@ func (m *PostVpcsParamsBody) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *PostVpcsParamsBody) validateDefaultNetworkACL(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.DefaultNetworkACL) { // not required
-		return nil
-	}
-
-	if m.DefaultNetworkACL != nil {
-		if err := m.DefaultNetworkACL.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("default_network_acl")
-			}
-			return err
-		}
-	}
-
 	return nil
 }
 

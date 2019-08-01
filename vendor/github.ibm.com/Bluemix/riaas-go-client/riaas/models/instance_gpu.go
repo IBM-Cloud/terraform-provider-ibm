@@ -15,7 +15,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// InstanceGpu CPU
+// InstanceGpu GPU
 // swagger:model instanceGpu
 type InstanceGpu struct {
 

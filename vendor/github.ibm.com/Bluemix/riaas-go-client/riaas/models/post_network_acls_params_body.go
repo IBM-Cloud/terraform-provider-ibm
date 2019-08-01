@@ -27,10 +27,13 @@ type PostNetworkAclsParamsBody struct {
 	ResourceGroup *PostNetworkAclsParamsBodyResourceGroup `json:"resource_group,omitempty"`
 
 	// Collection of rule templates for rules to be created alongwith the network ACL
-	Rules []*PostNetworkAclsParamsBodyRulesItems `json:"rules,omitempty"`
+	Rules []*PostNetworkAclsParamsBodyRulesItems `json:"rules"`
 
 	// source network acl
 	SourceNetworkACL *PostNetworkAclsParamsBodySourceNetworkACL `json:"source_network_acl,omitempty"`
+
+	// vpc
+	Vpc *ResourceReference `json:"vpc,omitempty"`
 }
 
 // Validate validates this post network acls params body
@@ -50,6 +53,10 @@ func (m *PostNetworkAclsParamsBody) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSourceNetworkACL(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVpc(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -125,6 +132,24 @@ func (m *PostNetworkAclsParamsBody) validateSourceNetworkACL(formats strfmt.Regi
 		if err := m.SourceNetworkACL.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("source_network_acl")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *PostNetworkAclsParamsBody) validateVpc(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Vpc) { // not required
+		return nil
+	}
+
+	if m.Vpc != nil {
+		if err := m.Vpc.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("vpc")
 			}
 			return err
 		}

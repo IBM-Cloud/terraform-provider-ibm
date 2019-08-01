@@ -32,7 +32,7 @@ func (f *ImageClient) ListWithFilter(visibility, start string) ([]*models.Image,
 	if start != "" {
 		params = params.WithStart(&start)
 	}
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 
 	resp, err := f.session.Riaas.Compute.GetImages(params, session.Auth(f.session))
@@ -52,7 +52,7 @@ func (f *ImageClient) List(start string) ([]*models.Image, string, error) {
 // Get ...
 func (f *ImageClient) Get(id string) (*models.Image, error) {
 	params := compute.NewGetImagesIDParamsWithTimeout(f.session.Timeout).WithID(id)
-	params.Version = "2019-03-26"
+	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.GetImagesID(params, session.Auth(f.session))
 

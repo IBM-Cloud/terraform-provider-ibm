@@ -29,7 +29,7 @@ DeleteImagesID deletes specified image
 
 This request deletes an image. This operation cannot be reversed. It will not succeed for system-provided images.
 */
-func (a *Client) DeleteImagesID(params *DeleteImagesIDParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteImagesIDNoContent, error) {
+func (a *Client) DeleteImagesID(params *DeleteImagesIDParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteImagesIDAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewDeleteImagesIDParams()
@@ -51,7 +51,7 @@ func (a *Client) DeleteImagesID(params *DeleteImagesIDParams, authInfo runtime.C
 	if err != nil {
 		return nil, err
 	}
-	return result.(*DeleteImagesIDNoContent), nil
+	return result.(*DeleteImagesIDAccepted), nil
 
 }
 
@@ -83,37 +83,6 @@ func (a *Client) DeleteInstancesID(params *DeleteInstancesIDParams, authInfo run
 		return nil, err
 	}
 	return result.(*DeleteInstancesIDNoContent), nil
-
-}
-
-/*
-DeleteInstancesInstanceIDActionsID deletes a pending action preventing it from running
-
-This request deletes a instance action. It will only succeed if the action is currently pending.
-*/
-func (a *Client) DeleteInstancesInstanceIDActionsID(params *DeleteInstancesInstanceIDActionsIDParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteInstancesInstanceIDActionsIDNoContent, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewDeleteInstancesInstanceIDActionsIDParams()
-	}
-
-	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "DeleteInstancesInstanceIDActionsID",
-		Method:             "DELETE",
-		PathPattern:        "/instances/{instance_id}/actions/{id}",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &DeleteInstancesInstanceIDActionsIDReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return result.(*DeleteInstancesInstanceIDActionsIDNoContent), nil
 
 }
 
@@ -428,68 +397,6 @@ func (a *Client) GetInstancesID(params *GetInstancesIDParams, authInfo runtime.C
 }
 
 /*
-GetInstancesInstanceIDActions retrieves all actions on a instance
-
-This request retrieves all pending, running, and recent actions on a instance.
-*/
-func (a *Client) GetInstancesInstanceIDActions(params *GetInstancesInstanceIDActionsParams, authInfo runtime.ClientAuthInfoWriter) (*GetInstancesInstanceIDActionsOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewGetInstancesInstanceIDActionsParams()
-	}
-
-	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "GetInstancesInstanceIDActions",
-		Method:             "GET",
-		PathPattern:        "/instances/{instance_id}/actions",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &GetInstancesInstanceIDActionsReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return result.(*GetInstancesInstanceIDActionsOK), nil
-
-}
-
-/*
-GetInstancesInstanceIDActionsID retrieves specified instance action
-
-This request retrieves a single instance action specified by the identifier in the URL.
-*/
-func (a *Client) GetInstancesInstanceIDActionsID(params *GetInstancesInstanceIDActionsIDParams, authInfo runtime.ClientAuthInfoWriter) (*GetInstancesInstanceIDActionsIDOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewGetInstancesInstanceIDActionsIDParams()
-	}
-
-	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "GetInstancesInstanceIDActionsID",
-		Method:             "GET",
-		PathPattern:        "/instances/{instance_id}/actions/{id}",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &GetInstancesInstanceIDActionsIDReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return result.(*GetInstancesInstanceIDActionsIDOK), nil
-
-}
-
-/*
 GetInstancesInstanceIDInitialization retrieves configuration used to initialize the instance
 
 Retrieves configuration variables used to initialize the instance such as SSH keys and the Windows administrator password.
@@ -769,6 +676,68 @@ func (a *Client) GetKeysID(params *GetKeysIDParams, authInfo runtime.ClientAuthI
 }
 
 /*
+GetOperatingSystems retrieves all operating systems
+
+This request retrieves all operating systems.
+*/
+func (a *Client) GetOperatingSystems(params *GetOperatingSystemsParams, authInfo runtime.ClientAuthInfoWriter) (*GetOperatingSystemsOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetOperatingSystemsParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "GetOperatingSystems",
+		Method:             "GET",
+		PathPattern:        "/operating_systems",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &GetOperatingSystemsReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetOperatingSystemsOK), nil
+
+}
+
+/*
+GetOperatingSystemsName retrieves an operating system
+
+This request retrieves a single operating system specified by the name in the URL.
+*/
+func (a *Client) GetOperatingSystemsName(params *GetOperatingSystemsNameParams, authInfo runtime.ClientAuthInfoWriter) (*GetOperatingSystemsNameOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetOperatingSystemsNameParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "GetOperatingSystemsName",
+		Method:             "GET",
+		PathPattern:        "/operating_systems/{name}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &GetOperatingSystemsNameReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetOperatingSystemsNameOK), nil
+
+}
+
+/*
 PatchImagesID updates an image s name
 
 This request updates an image's name.
@@ -924,7 +893,9 @@ func (a *Client) PatchKeysID(params *PatchKeysIDParams, authInfo runtime.ClientA
 /*
 PostImages creates an image
 
-This request creates a new image from an image template. The image template object is structured in the same way as a retrieved image, and contains the information necessary to create the new image. If a source server is provided with the image template, the image will be created from that server; otherwise, a URL to the image file on object storage must be provided.
+This request creates a new image from an image template. The image template object is
+structured in the same way as a retrieved image, and contains the information necessary to
+create the new image. A URL to the image file on object storage must be provided.
 */
 func (a *Client) PostImages(params *PostImagesParams, authInfo runtime.ClientAuthInfoWriter) (*PostImagesCreated, error) {
 	// TODO: Validate the params before sending

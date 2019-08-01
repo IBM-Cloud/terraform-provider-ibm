@@ -25,8 +25,8 @@ type DeleteImagesIDReader struct {
 func (o *DeleteImagesIDReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
 
-	case 204:
-		result := NewDeleteImagesIDNoContent()
+	case 202:
+		result := NewDeleteImagesIDAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -51,31 +51,23 @@ func (o *DeleteImagesIDReader) ReadResponse(response runtime.ClientResponse, con
 	}
 }
 
-// NewDeleteImagesIDNoContent creates a DeleteImagesIDNoContent with default headers values
-func NewDeleteImagesIDNoContent() *DeleteImagesIDNoContent {
-	return &DeleteImagesIDNoContent{}
+// NewDeleteImagesIDAccepted creates a DeleteImagesIDAccepted with default headers values
+func NewDeleteImagesIDAccepted() *DeleteImagesIDAccepted {
+	return &DeleteImagesIDAccepted{}
 }
 
-/*DeleteImagesIDNoContent handles this case with default header values.
+/*DeleteImagesIDAccepted handles this case with default header values.
 
-error
+The image deletion request was accepted.
 */
-type DeleteImagesIDNoContent struct {
-	Payload *models.Riaaserror
+type DeleteImagesIDAccepted struct {
 }
 
-func (o *DeleteImagesIDNoContent) Error() string {
-	return fmt.Sprintf("[DELETE /images/{id}][%d] deleteImagesIdNoContent  %+v", 204, o.Payload)
+func (o *DeleteImagesIDAccepted) Error() string {
+	return fmt.Sprintf("[DELETE /images/{id}][%d] deleteImagesIdAccepted ", 202)
 }
 
-func (o *DeleteImagesIDNoContent) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	o.Payload = new(models.Riaaserror)
-
-	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
-		return err
-	}
+func (o *DeleteImagesIDAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	return nil
 }

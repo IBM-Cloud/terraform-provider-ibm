@@ -14,7 +14,7 @@ definitions:
         items: {$ref: '#/definitions/resource_reference'}
         type: array
         x-omitempty: true
-      href: {description: The URL for this network interface, example: 'http://iaas.bluemix.net/v1/instances/1e09281b-f177-46fb-baf1-bc152b2e391a/network_interfaces/10c02d81-0ecb-4dc5-897d-28392913b81e',
+      href: {description: The URL for this network interface, example: 'http://us-south.iaas.cloud.ibm.com/v1/instances/1e09281b-f177-46fb-baf1-bc152b2e391a/network_interfaces/10c02d81-0ecb-4dc5-897d-28392913b81e',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The unique identifier for this network interface, example: 10c02d81-0ecb-4dc5-897d-28392913b81e,
@@ -103,7 +103,7 @@ definitions:
     description: A reference to the next page of resources; this reference is included
       for all pages except the last page
     properties:
-      href: {description: The URL for the next page of resources, example: 'http://iaas.bluemix.net/v1/flavors?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
+      href: {description: The URL for the next page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/flavors?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$', 
         type: string}
     required: [href]
@@ -113,7 +113,7 @@ definitions:
       crn: {description: The CRN for this instanceprofile, example: 'crn:v1:bluemix:public:gt:us-south-1:a/123456::snapshot:349a61d8-7ab1-420f-a690-5fed76ef9d4f',
         format: crn, type: string}
       family: {example: balanced, type: string}
-      href: {description: The URL for this instance profile, example: 'http://iaas.bluemix.net/v1/volumes/1a6b7274-678d-4dfb-8981-c71dd9d4daa5',
+      href: {description: The URL for this instance profile, example: 'http://us-south.iaas.cloud.ibm.com/v1/volumes/1a6b7274-678d-4dfb-8981-c71dd9d4daa5',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       name: {description: The user-defined name for this instance profile, example: my-snapshot,
@@ -123,18 +123,27 @@ definitions:
   instance:
     properties:
       boot_volume_attachment: {$ref: '#/definitions/volume_attachment_reference'}
-      cpu:
-        description: The CPU for this instance
+      vcpu:
         properties:
           architecture:
-            description: The CPU architecture
-            enum: [amd64, powerpc]
+            description: The VCPU architecture
+            example: amd64
             type: string
-          cores: {description: The number of logical CPU cores per CPU, minimum: 1,
-            type: integer}
-          frequency: {description: The speed of the CPU in megahertz, example: 1000,
-            minimum: 500, multipleOf: 500, type: integer}
-        title: CPU
+          count:
+            description: The number of VCPUs assigned to the instance
+            example: 4
+            minimum: 1
+            type: integer
+          # workaround for https://jiracloud.swg.usma.ibm.com:8443/browse/RCS-1221
+          cores:
+            description: The number of VCPUs assigned to the instance
+            example: 4
+            minimum: 1
+            type: integer
+        required:
+          - architecture
+          - count
+        title: VCPU
       gpu:
         properties:
           model:
@@ -151,12 +160,12 @@ definitions:
             type: string            
           memory: {description: The amount of memory in megabytes,
             minimum: 512, maximum: 524288, multipleOf: 256, type: integer}
-        title: CPU
+        title: GPU
       created_at: {description: The date and time that the instance was created, format: date-time,
         type: string}
       crn: {description: The CRN for this instance, example: 'crn:v1:bluemix:public:gt:us-south-1:a/123456::instance:1e09281b-f177-46fb-baf1-bc152b2e391a',
         format: crn, type: string}
-      href: {description: The URL for this instance, example: 'http://iaas.bluemix.net/v1/instances/1e09281b-f177-46fb-baf1-bc152b2e391a',
+      href: {description: The URL for this instance, example: 'http://us-south.iaas.cloud.ibm.com/v1/instances/1e09281b-f177-46fb-baf1-bc152b2e391a',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The unique identifier for this instance, example: 1e09281b-f177-46fb-baf1-bc152b2e391a,
@@ -189,19 +198,13 @@ definitions:
       zone:
         description: The zone the instance resides in
         properties:
-          href: {description: The URL for this zone, example: 'http://iaas.bluemix.net/v1/regions/us-south/zones/us-south-1',
+          href: {description: The URL for this zone, example: 'http://us-south.iaas.cloud.ibm.com/v1/regions/us-south/zones/us-south-1',
             format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
             type: string}
           name: {description: The name for this zone, example: us-south-1, format: name,
             pattern: '^[A-Za-z][-A-Za-z0-9_]*$', type: string}
         title: ZoneReference
         type: object
-      bandwidth: 
-        description: The total bandwidth (in megabits per second) shared across the virtual server instance's network interfaces
-        example: 1000
-        maximum: 1000000
-        minimum: 100
-        type: integer
     title: instance
     type: object
   instance_volume_attachment:
@@ -213,7 +216,7 @@ definitions:
         type: string}
       crn: {description: The CRN for this volume, example: 'crn:v1:bluemix:public:gt:us-south-1:a/123456::volume-interfacs:82cbf856-9cbb-45fb-b62f-d7bcef32399a',
         format: crn, type: string}
-      href: {description: The URL for this volume interface, example: 'http://iaas.bluemix.net/v1/instances/1e09281b-f177-46fb-baf1-bc152b2e391a/volume_attachments/82cbf856-9cbb-45fb-b62f-d7bcef32399a',
+      href: {description: The URL for this volume interface, example: 'http://us-south.iaas.cloud.ibm.com/v1/instances/1e09281b-f177-46fb-baf1-bc152b2e391a/volume_attachments/82cbf856-9cbb-45fb-b62f-d7bcef32399a',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The unique identifier for this volume interface, example: 82cbf856-9cbb-45fb-b62f-d7bcef32399a,
@@ -237,7 +240,7 @@ definitions:
         format: date-time, type: string}
       created_at: {description: The date and time that the action was created, format: date-time,
         type: string}
-      href: {description: The URL for this action, example: 'http://iaas.bluemix.net/v1/instances/1e09281b-f177-46fb-baf1-bc152b2e391a/actions/109a1b6e-1242-4de1-be44-38705e9474ed',
+      href: {description: The URL for this action, example: 'http://us-south.iaas.cloud.ibm.com/v1/instances/1e09281b-f177-46fb-baf1-bc152b2e391a/actions/109a1b6e-1242-4de1-be44-38705e9474ed',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The identifier for this action, example: 109a1b6e-1242-4de1-be44-38705e9474ed,
@@ -260,12 +263,12 @@ definitions:
       first:
         properties:
           href:
-            example: "https://iaas.bluemix.net/v1/load_balancers?limit=20"
+            example: "https://us-south.iaas.cloud.ibm.com/v1/load_balancers?limit=20"
       next:
         description: A reference to the next page of resources; this reference
           is included for all pages except the last page
         properties:
-          href: {description: The URL for the next page of resources, example: 'http://iaas.bluemix.net/v1/public_gateways?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
+          href: {description: The URL for the next page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/public_gateways?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
             format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
             type: string}
         required: [href]
@@ -279,7 +282,7 @@ definitions:
           $ref: "#/definitions/LoadBalancer"
   LoadBalancer:
     properties:
-      href: {description: The load balancer's canonical URL., example: 'https://iaas.bluemix.net/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b/connections/93487806-7743-4c46-81d6-72869883ea0b',
+      href: {description: The load balancer's canonical URL., example: 'https://us-south.iaas.cloud.ibm.com/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b/connections/93487806-7743-4c46-81d6-72869883ea0b',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The load balancer's unique identifier, example: a10a5771-dc23-442c-8460-c3601d8542f7,
@@ -294,7 +297,7 @@ definitions:
       hostname:
         type: "string"
         description: "Fully qualified domain name assigned to this load balancer"
-        example: "myloadbalancer-123456-us-south-1.lb.bluemix.net"           
+        example: "myloadbalancer-123456-us-south-1.lb.cloud.ibm.com"           
       is_public:
         type: "boolean"
         description: "The type of this load balancer, public or private"
@@ -352,7 +355,7 @@ definitions:
         type: "array"
   ListenerReference:
     properties:
-      href: {description: The listener's canonical URL., example: 'https://iaas.bluemix.net/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b/connections/93487806-7743-4c46-81d6-72869883ea0b',
+      href: {description: The listener's canonical URL., example: 'https://us-south.iaas.cloud.ibm.com/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b/connections/93487806-7743-4c46-81d6-72869883ea0b',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The listener's unique identifier., example: a10a5771-dc23-442c-8460-c3601d8542f7,
@@ -360,7 +363,7 @@ definitions:
         type: string}
   PoolReference:
     properties:
-      href: {description: The pool's canonical URL., example: 'https://iaas.bluemix.net/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b/connections/93487806-7743-4c46-81d6-72869883ea0b',  
+      href: {description: The pool's canonical URL., example: 'https://us-south.iaas.cloud.ibm.com/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b/connections/93487806-7743-4c46-81d6-72869883ea0b',  
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The pool's unique identifier., example: a10a5771-dc23-442c-8460-c3601d8542f7,
@@ -380,7 +383,7 @@ definitions:
   LoadBalancerTemplate:
     properties:
       name: {description: The load balancer's user-defined name. Load balancer names must be unique. within the scope of a user account. Load balancer names are part of FQDN auto-assigned to the load balancer., example: my-load-balancer,
-        format: name, pattern: '^[A-Za-z][-A-Za-z0-9_]*$', type: string}
+        format: name, pattern: '^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$', type: string}
       subnets:
         type: "array"
         description: "The subnets to provision this load balancer"
@@ -459,7 +462,7 @@ definitions:
         description: 'The backend server members of this pool.'
         x-omitempty: true
       name: {description: The name of the pool., example: my-prod-servers,
-          format: name, pattern: '^[A-Za-z][-A-Za-z0-9_]*$', type: string}
+          format: name, pattern: '^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$', type: string}
       protocol:
         type: 'string'
         enum:
@@ -579,7 +582,7 @@ definitions:
           $ref: "#/definitions/Listener"
   Listener:
     properties:
-      href: {description: The listener's canonical URL., example: 'https://iaas.bluemix.net/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b/connections/93487806-7743-4c46-81d6-72869883ea0b',
+      href: {description: The listener's canonical URL., example: 'https://us-south.iaas.cloud.ibm.com/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b/connections/93487806-7743-4c46-81d6-72869883ea0b',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The listener's unique identifier., example: a10a5771-dc23-442c-8460-c3601d8542f7,
@@ -630,6 +633,127 @@ definitions:
         minimum: 1
         maximum: 15000
         example: 2000
+
+  ListenerPolicyCollection:
+    properties:
+      policies: 
+        type: "array"
+        description: "Collection of policies"
+        items:
+          $ref: "#/definitions/ListenerPolicy"
+  ListenerPolicy:
+    properties:
+      id: {description: The policys unique identifier., example: 70294e14-4e61-11e8-bcf4-0242ac110004, format: uuid, pattern: '^[-0-9a-z_]+$', type: string}
+      href: {description: The listener policy's canonical URL., example: https://us-south.iaas.cloud.ibm.com/v1/load_balancers/dd754295-e9e0-4c9d-bf6c-58fbc59e5727/listeners/70294e14-4e61-11e8-bcf4-0242ac110004/policies/f3187486-7b27-4c79-990c-47d33c0e2278,
+        format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
+        type: string}
+      name: {description: The user-defined name for this policy, example: my-policy, format: name, pattern: '^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$', type: string}
+      priority:
+        type: integer
+        description: 'Priority of the policy. Lower value indicates higher priority.'
+      target:
+        $ref: '#/definitions/ListenerPolicyTargetReference'
+        description: 'PoolReference is in the response if action is forward. ListenerPolicyRedirectUrl is in the response if action is redirect.'
+      action:
+        type: string
+        description: 'The policy action.'
+        enum:
+          - forward
+          - redirect
+          - reject  
+      created_at:
+        type: "string"
+        format: "date-time"
+        description: "The date and time that this policy was created"
+      provisioning_status:
+        type: "string"
+        enum:
+         - active
+         - create_pending
+         - update_pending
+         - delete_pending
+         - maintenance_pending
+         - failed
+        description: "The provisioning status of this policy"
+      rules:
+        type: "array"
+        description: "The rules of this policy"
+        items:
+          $ref: "#/definitions/ListenerPolicyRuleReference"
+  ListenerPolicyRuleReference:
+    properties:
+      condition:
+        type: string
+        description: The condition of the rule.
+        enum:
+          - contains
+          - equals
+          - matches_regex 
+      field: {description: HTTP header field. This is only applicable to "header" rule type., example: MY-APP-HEADER, type: string}
+      type: 
+        type: string
+        description: 'The type of the rule.'
+        enum:
+          - path
+          - hostname
+          - header  
+      value: {description: Value to be matched for rule condition, type: string}
+      id: {description: The policy's unique identifier., example: 70294e14-4e61-11e8-bcf4-0242ac110004, format: id, pattern: '^[-0-9a-z_]+$', type: string}
+      href: {description: The rule's canonical URL., example: https://us-south.iaas.cloud.ibm.com/v1/load_balancers/dd754295-e9e0-4c9d-bf6c-58fbc59e5727/listeners/70294e14-4e61-11e8-bcf4-0242ac110004/policies/f3187486-7b27-4c79-990c-47d33c0e2278/rules/873a84b0-84d6-49c6-8948-1fa527b25762,
+        format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',type: string}
+
+  ListenerPolicyRuleCollection:
+    title: "ListenerPolicyRuleCollection"
+    type: "object"
+    required:
+    - rules
+    properties:
+      rules:
+        type: "array"
+        description: "Collection of rules"
+        items:
+          $ref: "#/definitions/ListenerPolicyRule"
+  ListenerPolicyRule:
+    properties:
+      id: {description: The rule's unique identifier., example: 70294e14-4e61-11e8-bcf4-0242ac110004, format: uuid, pattern: '^[-0-9a-z_]+$', type: string}
+      href: {description: The rule's canonical URL., example: https://us-south.iaas.cloud.ibm.com/v1/load_balancers/dd754295-e9e0-4c9d-bf6c-58fbc59e5727/listeners/70294e14-4e61-11e8-bcf4-0242ac110004/policies/f3187486-7b27-4c79-990c-47d33c0e2278/rules/873a84b0-84d6-49c6-8948-1fa527b25762,
+        format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$', type: string}
+      name: {description: The user-defined name for this policy, example: my-policy, format: name, pattern: '^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$', type: string}
+      condition:
+        type: string
+        description: 'The condition of the rule.'
+        enum:
+          - contains
+          - equals
+          - matches_regex  
+      field:
+        type: string
+        description: 'HTTP header field. This is only applicable to "header" rule type.'
+      type:
+        type: string
+        description: 'The type of the rule.'
+        enum:
+          - header
+          - hostname
+          - path
+      value:
+        type: string
+        description: 'Value to be matched for rule condition'
+      created_at:
+        type: "string"
+        format: "date-time"
+        description: "The date and time that this rule was created"
+      provisioning_status:
+        type: "string"
+        enum:
+         - active
+         - create_pending
+         - update_pending
+         - delete_pending
+         - maintenance_pending
+         - failed
+        description: "The provisioning status of this rule"
+
   ListenerPolicyReference:
     properties: 
       id: {description: The policy's unique identifier., example: 70294e14-4e61-11e8-bcf4-0242ac110004,
@@ -638,6 +762,23 @@ definitions:
       href: {description: The listener policy's canonical URL., example: https://us-south.iaas.cloud.ibm.com/v1/load_balancers/dd754295-e9e0-4c9d-bf6c-58fbc59e5727/listeners/70294e14-4e61-11e8-bcf4-0242ac110004/policies/f3187486-7b27-4c79-990c-47d33c0e2278,
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
+  ListenerPolicyTargetReference:
+    properties:
+      href: {description: The pool's canonical URL., example: https://us-south.iaas.cloud.ibm.com/v1/load_balancers/dd754295-e9e0-4c9d-bf6c-58fbc59e5727/pools/70294e14-4e61-11e8-bcf4-0242ac110004,
+        format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$', type: string}
+      id: {description: The unique identifier for this load balancer pool, example: 70294e14-4e61-11e8-bcf4-0242ac110004, format: uuid, pattern: '^[-0-9a-z_]+$', type: string}    
+      name: {description: The user-defined name for this load balancer pool, example:  my-load-balancer-pool, format: name, pattern: '^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$', type: string}
+      http_status_code:
+        type: integer
+        description: 'The http status code in the redirect response.'
+        enum:
+          - 301
+          - 302
+          - 303       
+          - 307 
+          - 308
+      url: {description: The redirect target URL., example: https://www.redirect.com, type: string}
+
   ListenerTemplate:
     properties:
       certificate_instance:
@@ -672,7 +813,7 @@ definitions:
       default_pool:
         description: 'The default pool associated with the listener.'
         properties:
-          href: {description: The pool's canonical URL., example: 'https://iaas.bluemix.net/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b/connections/93487806-7743-4c46-81d6-72869883ea0b',
+          href: {description: The pool's canonical URL., example: 'https://us-south.iaas.cloud.ibm.com/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b/connections/93487806-7743-4c46-81d6-72869883ea0b',
             format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
             type: string}
           id: {description: The pool's unique identifier., example: a10a5771-dc23-442c-8460-c3601d8542f7,
@@ -719,6 +860,54 @@ definitions:
         description: "The list of rules of this policy"
         items:
           $ref: "#/definitions/ListenerPolicyRuleTemplate"
+  ListenerPolicyTemplatePatch:
+    title: "ListenerPolicyTemplatePatch"
+    type: "object"
+    properties:
+      name: {description: The user-defined name for this policy. Names must be unique within the load balancer listener the policy resides in., example: my-policy, format: name, type: string}
+      priority:
+          type: integer
+          description: 'Priority of the policy. Lower value indicates higher priority.'
+      target:
+          properties:
+            href: {description: The pool's canonical URL., example: https://us-south.iaas.cloud.ibm.com/v1/load_balancers/dd754295-e9e0-4c9d-bf6c-58fbc59e5727/pools/70294e14-4e61-11e8-bcf4-0242ac110004,
+              format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$', type: string}
+            id: {description: The unique identifier for this load balancer pool, example: a10a5771-dc23-442c-8460-c3601d8542f7, format: uuid, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$', type: string}    
+            http_status_code:
+              type: integer
+              description: 'The http status code in the redirect response.'
+              enum:
+                - 301
+                - 302
+                - 303       
+                - 307 
+                - 308
+            url: {description: The redirect target URL., example: https://www.redirect.com, type: string}
+
+  ListenerPolicyRuleTemplatePatch:
+    title: "ListenerPolicyRuleTemplatePatch"
+    type: "object"
+    properties:
+      condition:
+        type: string
+        description: 'The condition of the rule.'
+        enum:
+          - contains
+          - equals
+          - matches_regex
+      field:
+          type: string
+          description: 'HTTP header field. This is only applicable to "header" rule type.'
+      type:
+        type: string
+        description: 'The type of the rule.'
+        enum:
+          - header
+          - hostname
+          - path
+      value:
+          type: string
+          description: 'Value to be matched for rule condition'
 
   ListenerPolicyRuleTemplate:
     properties:
@@ -768,7 +957,7 @@ definitions:
       default_pool:
         description: 'The default pool associated with the listener.'
         properties:
-          href: {description: The pool's canonical URL., example: 'https://iaas.bluemix.net/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b/connections/93487806-7743-4c46-81d6-72869883ea0b',
+          href: {description: The pool's canonical URL., example: 'https://us-south.iaas.cloud.ibm.com/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b/connections/93487806-7743-4c46-81d6-72869883ea0b',
             format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
             type: string}
           id: {description: The pool's unique identifier., example: a10a5771-dc23-442c-8460-c3601d8542f7,
@@ -791,7 +980,7 @@ definitions:
     properties:
       name: {description: The name of the pool., example: my-pool,
         format: name, pattern: '^[A-Za-z][-A-Za-z0-9_]*$', type: string}
-      href: {description: The pool's canonical URL.., example: 'https://iaas.bluemix.net/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b/connections/93487806-7743-4c46-81d6-72869883ea0b',
+      href: {description: The pool's canonical URL.., example: 'https://us-south.iaas.cloud.ibm.com/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b/connections/93487806-7743-4c46-81d6-72869883ea0b',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The pool's unique identifier., example: a10a5771-dc23-442c-8460-c3601d8542f7,
@@ -836,7 +1025,7 @@ definitions:
           $ref: "#/definitions/MemberReference"
   MemberReference:
     properties:
-      href: {description: The member's canonical URL., example: 'https://iaas.bluemix.net/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b/connections/93487806-7743-4c46-81d6-72869883ea0b',
+      href: {description: The member's canonical URL., example: 'https://us-south.iaas.cloud.ibm.com/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b/connections/93487806-7743-4c46-81d6-72869883ea0b',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The member's unique identifier., example: a10a5771-dc23-442c-8460-c3601d8542f7,
@@ -870,12 +1059,12 @@ definitions:
       first:
         properties:
           href:
-            example: "https://iaas.bluemix.net/v1/load_balancers/dd754295-e9e0-4c9d-bf6c-58fbc59e5727/pools/de754295-e9e0-4c9d-bf6c-58fbc59e5727/members?limit=20"
+            example: "https://us-south.iaas.cloud.ibm.com/v1/load_balancers/dd754295-e9e0-4c9d-bf6c-58fbc59e5727/pools/de754295-e9e0-4c9d-bf6c-58fbc59e5727/members?limit=20"
       next:
         description: A reference to the next page of resources; this reference
           is included for all pages except the last page
         properties:
-          href: {description: The URL for the next page of resources, example: 'http://iaas.bluemix.net/v1/public_gateways?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
+          href: {description: The URL for the next page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/public_gateways?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
             format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
             type: string}
         required: [href]
@@ -889,7 +1078,7 @@ definitions:
           $ref: "#/definitions/Member"
   Member:
     properties:
-      href: {description: The member's canonical URL., example: 'https://iaas.bluemix.net/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b/connections/93487806-7743-4c46-81d6-72869883ea0b',
+      href: {description: The member's canonical URL., example: 'https://us-south.iaas.cloud.ibm.com/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b/connections/93487806-7743-4c46-81d6-72869883ea0b',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The member's unique identifier., example: a10a5771-dc23-442c-8460-c3601d8542f7,
@@ -1005,7 +1194,7 @@ definitions:
       first:
         description: A reference to the first page of resources
         properties:
-          href: {description: The URL for the first page of resources, example: 'http://iaas.bluemix.net/v1/floating_ips?limit=20',
+          href: {description: The URL for the first page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/floating_ips?limit=20',
             format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
             type: string}
         required: [href]
@@ -1014,7 +1203,7 @@ definitions:
         description: A reference to the next page of resources; this reference
           is included for all pages except the last page
         properties:
-          href: {description: The URL for the next page of resources, example: 'http://iaas.bluemix.net/v1/public_gateways?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
+          href: {description: The URL for the next page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/public_gateways?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
             format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
             type: string}
         required: [href]
@@ -1027,7 +1216,7 @@ definitions:
           $ref: "#/definitions/IKEPolicy"
   IKEPolicy:
     properties:
-      href: {description: The IKE policy's canonical URL, example: 'https://iaas.bluemix.net/v1/ike_policies/ddf51bec-3424-11e8-b467-0ed5f89f718b',
+      href: {description: The IKE policy's canonical URL, example: 'https://us-south.iaas.cloud.ibm.com/v1/ike_policies/ddf51bec-3424-11e8-b467-0ed5f89f718b',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The IKE policy's unique identifier, example: a10a5771-dc23-442c-8460-c3601d8542f7,
@@ -1088,7 +1277,7 @@ definitions:
           $ref: '#/definitions/VPNGatewayConnectionReference'
   VPNGatewayConnectionReference:
     properties:
-      href: {description: The VPN connection's canonical URL, example: 'https://iaas.bluemix.net/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b/connections/93487806-7743-4c46-81d6-72869883ea0b',
+      href: {description: The VPN connection's canonical URL, example: 'https://us-south.iaas.cloud.ibm.com/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b/connections/93487806-7743-4c46-81d6-72869883ea0b',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The unique identifier of a VPN connection, example: a10a5771-dc23-442c-8460-c3601d8542f7,
@@ -1236,7 +1425,7 @@ definitions:
           $ref: "#/definitions/VPNGatewayConnection"
   VPNGatewayConnection:
     properties:
-      href: {description: The VPN connection's canonical URL, example: 'https://iaas.bluemix.net/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b/connections/93487806-7743-4c46-81d6-72869883ea0b',
+      href: {description: The VPN connection's canonical URL, example: 'https://us-south.iaas.cloud.ibm.com/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b/connections/93487806-7743-4c46-81d6-72869883ea0b',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The unique identifier of a VPN connection, example: a10a5771-dc23-442c-8460-c3601d8542f7,
@@ -1324,7 +1513,7 @@ definitions:
         default: 120
   IKEPolicyIdentity:
     properties:
-      href: {description: The IKE policy's canonical URL, example: 'https://iaas.bluemix.net/v1/ike_policies/ddf51bec-3424-11e8-b467-0ed5f89f718b',
+      href: {description: The IKE policy's canonical URL, example: 'https://us-south.iaas.cloud.ibm.com/v1/ike_policies/ddf51bec-3424-11e8-b467-0ed5f89f718b',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The IKE policy's unique identifier, example: a10a5771-dc23-442c-8460-c3601d8542f7,
@@ -1334,7 +1523,7 @@ definitions:
         format: crn, type: string}
   IPsecPolicyIdentity:
     properties:
-      href: {description: The IPsec policy's canonical URL, example: 'https://iaas.bluemix.net/v1/ipsec_policies/ddf51bec-3424-11e8-b467-0ed5f89f718b',
+      href: {description: The IPsec policy's canonical URL, example: 'https://us-south.iaas.cloud.ibm.com/v1/ipsec_policies/ddf51bec-3424-11e8-b467-0ed5f89f718b',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The IPsec policy's unique identifier, example: a10a5771-dc23-442c-8460-c3601d8542f7,
@@ -1347,7 +1536,7 @@ definitions:
       first:
         description: A reference to the first page of resources
         properties:
-          href: {description: The URL for the first page of resources, example: 'http://iaas.bluemix.net/v1/floating_ips?limit=20',
+          href: {description: The URL for the first page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/floating_ips?limit=20',
             format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
             type: string}
         required: [href]
@@ -1356,7 +1545,7 @@ definitions:
         description: A reference to the next page of resources; this reference
           is included for all pages except the last page
         properties:
-          href: {description: The URL for the next page of resources, example: 'http://iaas.bluemix.net/v1/public_gateways?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
+          href: {description: The URL for the next page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/public_gateways?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
             format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
             type: string}
         required: [href]
@@ -1369,7 +1558,7 @@ definitions:
           $ref: "#/definitions/IPsecPolicy"
   IPsecPolicy:
     properties:
-      href: {description: The IPsec policy's canonical URL, example: 'https://iaas.bluemix.net/v1/ipsec_policies/ddf51bec-3424-11e8-b467-0ed5f89f718b',
+      href: {description: The IPsec policy's canonical URL, example: 'https://us-south.iaas.cloud.ibm.com/v1/ipsec_policies/ddf51bec-3424-11e8-b467-0ed5f89f718b',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The IPsec policy's unique identifier, example: a10a5771-dc23-442c-8460-c3601d8542f7,
@@ -1471,7 +1660,7 @@ definitions:
       first:
         description: A reference to the first page of resources
         properties:
-          href: {description: The URL for the first page of resources, example: 'http://iaas.bluemix.net/v1/floating_ips?limit=20',
+          href: {description: The URL for the first page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/floating_ips?limit=20',
             format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
             type: string}
         required: [href]
@@ -1481,7 +1670,7 @@ definitions:
         description: A reference to the next page of resources; this reference
           is included for all pages except the last page
         properties:
-          href: {description: The URL for the next page of resources, example: 'http://iaas.bluemix.net/v1/public_gateways?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
+          href: {description: The URL for the next page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/public_gateways?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
             format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
             type: string}
         required: [href]
@@ -1517,7 +1706,7 @@ definitions:
         type: object
   VPNGateway:
     properties:
-      href: {description: The VPN gateway's canonical URL, example: 'https://iaas.bluemix.net/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b',
+      href: {description: The VPN gateway's canonical URL, example: 'https://us-south.iaas.cloud.ibm.com/v1/vpn_gateways/ddf51bec-3424-11e8-b467-0ed5f89f718b',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The VPN gateway's unique identifier, example: a10a5771-dc23-442c-8460-c3601d8542f7,
@@ -1707,7 +1896,7 @@ definitions:
   share:
     properties:
       name: {description: The user-defined name for this file profile., example: my-share, format: name, pattern: '^[A-Za-z][-A-Za-z0-9_]*$', type: string}
-      href: {description: The URL for this share, example: 'https://iaas.bluemix.net/v1/shares/0fe9e5d8-0a4d-4818-96ec-e99708644a58',
+      href: {description: The URL for this share, example: 'https://us-south.iaas.cloud.ibm.com/v1/shares/0fe9e5d8-0a4d-4818-96ec-e99708644a58',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       crn: {description: The CRN for this share, example: 'crn:v1:bluemix:public::us-south-1::gt:share-profile:gt.local',
@@ -1741,7 +1930,7 @@ definitions:
       zone:
         description: The zone where this public gateway lives
         properties:
-          href: {description: The URL for this zone, example: 'http://iaas.bluemix.net/v1/regions/us-south/zones/us-south-1',
+          href: {description: The URL for this zone, example: 'http://us-south.iaas.cloud.ibm.com/v1/regions/us-south/zones/us-south-1',
             format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
             type: string}
           name: {description: The name for this zone, example: us-south-1,
@@ -1752,7 +1941,7 @@ definitions:
       address: {description: A single IPv4 or IPv6 address., example: 10.0.1.12, type: string}
       subnet:
         properties:
-          href: {description: The URL for this file share mount target, example: 'http://iaas.bluemix.net/v1/volumes?limit=20',format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',type: string}
+          href: {description: The URL for this file share mount target, example: 'http://us-south.iaas.cloud.ibm.com/v1/volumes?limit=20',format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',type: string}
           id: {description: The unique identifier for this resource, example: 349a61d8-7ab1-420f-a690-5fed76ef9d4f,format: uuid, pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',type: string}
           name: {description: The user-defined name for this resource, example: my-snapshot,format: name, pattern: '^[A-Za-z][-A-Za-z0-9_]*$', type: string}
           crn: {description: The CRN for this snapshot, example: 'crn:v1:bluemix:public:gt:us-south-1:a/123456::snapshot:349a61d8-7ab1-420f-a690-5fed76ef9d4f',format: crn, type: string}
@@ -1763,13 +1952,13 @@ definitions:
         enum: [pending, available, failed]
         type: string
       created_at: {description: The date and time that the mount target was created, format: date-time, type: string}
-      href: {description: The URL for this file share mount target, example: 'http://iaas.bluemix.net/v1/volumes?limit=20',format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',type: string}
+      href: {description: The URL for this file share mount target, example: 'http://us-south.iaas.cloud.ibm.com/v1/volumes?limit=20',format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',type: string}
       crn: {description: The CRN for this file share mount target, example: 'crn:v1:bluemix:public:gt:us-south-1:a/123456::encryption-key:1a6b7274-678d-4dfb-8981-c71dd9d4daa5',format: crn, type: string}
     type: object
   ShareProfile:
     properties:
       name: {description: The user-defined name for share profile., example: gc.local, format: name, pattern: '^[A-Za-z][-A-Za-z0-9_]*$', type: string}
-      href: {description: The URL for this share profile, example: 'https://iaas.bluemix.net/v1/vpcs/8e454ead-0db7-48ac-9a8b-2698d8c470a7/address_prefixes/1a15dca5-7e33-45e1-b7c5-bc690e569531',
+      href: {description: The URL for this share profile, example: 'https://us-south.iaas.cloud.ibm.com/v1/vpcs/8e454ead-0db7-48ac-9a8b-2698d8c470a7/address_prefixes/1a15dca5-7e33-45e1-b7c5-bc690e569531',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       crn: {description: The CRN for this profile, example: 'crn:v1:bluemix:public::us-south-1::gt:share-profile:gt.local',
@@ -1786,7 +1975,7 @@ definitions:
   volume_profile:
     properties:
       name: {description: The name for this volume profile, example: gc.tiered.gold, format: name, pattern: '^[A-Za-z].*[-A-Za-z0-9_]*$', type: string, x-isnullable: false}
-      href: {description: The URL for this volume profile, example: 'https://iaas.bluemix.net/v1/volume/profiles/gt.tiered.gold',
+      href: {description: The URL for this volume profile, example: 'https://us-south.iaas.cloud.ibm.com/v1/volume/profiles/gt.tiered.gold',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       crn: {description: The CRN for this volume profile, example: 'crn:v1:bluemix:public::us-south-1::gt:volume-profile:gt.tiered.gold',
@@ -1797,7 +1986,7 @@ definitions:
       name: {description: The user-defined name for this prefix., example: my-address-pool-prefix-2t,
           format: name, pattern: '^[A-Za-z][-A-Za-z0-9_]*$', type: string}
       cidr: {description: The CIDR block, example: 10.0.0.0/24, type: string}
-      href: {description: The URL for this prefix, example: 'https://iaas.bluemix.net/v1/vpcs/8e454ead-0db7-48ac-9a8b-2698d8c470a7/address_prefixes/1a15dca5-7e33-45e1-b7c5-bc690e569531',
+      href: {description: The URL for this prefix, example: 'https://us-south.iaas.cloud.ibm.com/v1/vpcs/8e454ead-0db7-48ac-9a8b-2698d8c470a7/address_prefixes/1a15dca5-7e33-45e1-b7c5-bc690e569531',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The unique identifier for this prefix, example: 349a61d8-7ab1-420f-a690-5fed76ef9d4f,
@@ -1806,7 +1995,7 @@ definitions:
       created_at: {description: The date and time that the prefix was created, format: date-time, type: string}
       zone:
         properties:
-          href: {description: The URL for this zone, example: 'http://iaas.bluemix.net/v1/regions/us-south/zones/us-south-1',
+          href: {description: The URL for this zone, example: 'http://us-south.iaas.cloud.ibm.com/v1/regions/us-south/zones/us-south-1',
             format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
             type: string}
           name: {description: The name for this zone, example: us-south-1,
@@ -1841,7 +2030,7 @@ definitions:
     type: string
   ResourceReferenceWithOutCrn:
     properties:
-      href: {description: The URL for this resource, example: 'https://resource-manager.bluemix.net/v1/resource_groups/56969d60-43e9-465c-883c-b9f7363e78e8',
+      href: {description: The URL for this resource, example: 'https://resource-controller.cloud.ibm.com/v1/resource_groups/56969d60-43e9-465c-883c-b9f7363e78e8',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The unique identifier for this resource, example: 349a61d8-7ab1-420f-a690-5fed76ef9d4f,
@@ -1853,7 +2042,7 @@ definitions:
     type: object
   resource_reference:
     properties:
-      href: {description: The URL for this resource, example: 'http://iaas.bluemix.net/v1/volumes/1a6b7274-678d-4dfb-8981-c71dd9d4daa5/snapshots/349a61d8-7ab1-420f-a690-5fed76ef9d4f',
+      href: {description: The URL for this resource, example: 'http://us-south.iaas.cloud.ibm.com/v1/volumes/1a6b7274-678d-4dfb-8981-c71dd9d4daa5/snapshots/349a61d8-7ab1-420f-a690-5fed76ef9d4f',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The unique identifier for this resource, example: 349a61d8-7ab1-420f-a690-5fed76ef9d4f,
@@ -1871,7 +2060,7 @@ definitions:
           was created, format: date-time, type: string}
       crn: {description: The CRN for this snapshot, example: 'crn:v1:bluemix:public:gt:us-south-1:a/123456::snapshot:349a61d8-7ab1-420f-a690-5fed76ef9d4f',
         format: crn, type: string}
-      href: {description: The URL for this snapshot, example: 'http://iaas.bluemix.net/v1/volumes/1a6b7274-678d-4dfb-8981-c71dd9d4daa5/snapshots/349a61d8-7ab1-420f-a690-5fed76ef9d4f',
+      href: {description: The URL for this snapshot, example: 'http://us-south.iaas.cloud.ibm.com/v1/volumes/1a6b7274-678d-4dfb-8981-c71dd9d4daa5/snapshots/349a61d8-7ab1-420f-a690-5fed76ef9d4f',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The unique identifier for this snapshot, example: 349a61d8-7ab1-420f-a690-5fed76ef9d4f,
@@ -1914,7 +2103,7 @@ definitions:
         type: string}
       crn: {description: The CRN for this volume, example: 'crn:v1:bluemix:public:gt:us-south-1:a/123456::volume:1a6b7274-678d-4dfb-8981-c71dd9d4daa5',
         format: crn, type: string}
-      href: {description: The URL for this volume, example: 'http://iaas.bluemix.net/v1/volumes/1a6b7274-678d-4dfb-8981-c71dd9d4daa5',
+      href: {description: The URL for this volume, example: 'http://us-south.iaas.cloud.ibm.com/v1/volumes/1a6b7274-678d-4dfb-8981-c71dd9d4daa5',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       created_at: {description: The date and time that the volume was
@@ -1934,7 +2123,7 @@ definitions:
             id: {description: The unique identifier for this volume attachment, example: 1a6b7274-678d-4dfb-8981-c71dd9d4daa5,
               format: uuid, pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
               type: string}
-            href: {description: The URL for this volume attachment, example: 'http://iaas.bluemix.net/v1/volumes/1a6b7274-678d-4dfb-8981-c71dd9d4daa5',
+            href: {description: The URL for this volume attachment, example: 'http://us-south.iaas.cloud.ibm.com/v1/volumes/1a6b7274-678d-4dfb-8981-c71dd9d4daa5',
               format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
               type: string}
             name: {description: The user-defined name for this volume attachment, example: my-volume,
@@ -1951,7 +2140,7 @@ definitions:
                 id: {description: The unique identifier for this virtual server instance, example: 1a6b7274-678d-4dfb-8981-c71dd9d4daa5,
                   format: uuid, pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
                   type: string}
-                href: {description: The URL for this vvirtual server instance, example: 'http://iaas.bluemix.net/v1/volumes/1a6b7274-678d-4dfb-8981-c71dd9d4daa5',
+                href: {description: The URL for this vvirtual server instance, example: 'http://us-south.iaas.cloud.ibm.com/v1/volumes/1a6b7274-678d-4dfb-8981-c71dd9d4daa5',
                   format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                   type: string}
                 name: {description: The user-defined name for this virtual server instance, example: my-virtual-server-instance,
@@ -1959,7 +2148,7 @@ definitions:
         type: array
       zone:
         properties:
-          href: {description: The URL for this zone, example: 'http://iaas.bluemix.net/v1/regions/us-south/zones/us-south-1',
+          href: {description: The URL for this zone, example: 'http://us-south.iaas.cloud.ibm.com/v1/regions/us-south/zones/us-south-1',
             format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
             type: string}
           name: {description: The name for this zone, example: us-south-1,
@@ -1978,7 +2167,7 @@ definitions:
           created, format: date-time, type: string}
       crn: {description: The CRN for this subnet, example: 'crn:v1:bluemix:public:gt:us-south-1:a/123456::subnet:7ec86020-1c6e-4889-b3f0-a15f2e50f87e',
         format: crn, type: string}
-      href: {description: The URL for this subnet, example: 'http://iaas.bluemix.net/v1/subnets/7ec86020-1c6e-4889-b3f0-a15f2e50f87e',
+      href: {description: The URL for this subnet, example: 'http://us-south.iaas.cloud.ibm.com/v1/subnets/7ec86020-1c6e-4889-b3f0-a15f2e50f87e',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The unique identifier for this subnet, example: 7ec86020-1c6e-4889-b3f0-a15f2e50f87e,
@@ -2014,7 +2203,7 @@ definitions:
       zone:
         description: The zone this subnet resides in
         properties:
-          href: {description: The URL for this zone, example: 'http://iaas.bluemix.net/v1/regions/us-south/zones/us-south-1',
+          href: {description: The URL for this zone, example: 'http://us-south.iaas.cloud.ibm.com/v1/regions/us-south/zones/us-south-1',
             format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
             type: string}
           name: {description: The name for this zone, example: us-south-1,
@@ -2029,7 +2218,7 @@ definitions:
           attached, format: date-time, type: string}
       crn: {description: The CRN for this volume, example: 'crn:v1:bluemix:public:gt:us-south-1:a/123456::volume-interfacs:82cbf856-9cbb-45fb-b62f-d7bcef32399a',
         format: crn, type: string}
-      href: {description: The URL for this volume interface, example: 'http://iaas.bluemix.net/v1/servers/1e09281b-f177-46fb-baf1-bc152b2e391a/volume_attachments/82cbf856-9cbb-45fb-b62f-d7bcef32399a',
+      href: {description: The URL for this volume interface, example: 'http://us-south.iaas.cloud.ibm.com/v1/servers/1e09281b-f177-46fb-baf1-bc152b2e391a/volume_attachments/82cbf856-9cbb-45fb-b62f-d7bcef32399a',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The unique identifier for this volume interface,
@@ -2060,7 +2249,7 @@ definitions:
         items:
           $ref: "#/definitions/resource_reference"
         type: array
-      href: {description: The URL for this network interface, example: 'http://iaas.bluemix.net/v1/servers/1e09281b-f177-46fb-baf1-bc152b2e391a/network_interfaces/10c02d81-0ecb-4dc5-897d-28392913b81e',
+      href: {description: The URL for this network interface, example: 'http://us-south.iaas.cloud.ibm.com/v1/servers/1e09281b-f177-46fb-baf1-bc152b2e391a/network_interfaces/10c02d81-0ecb-4dc5-897d-28392913b81e',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The unique identifier for this network interface,
@@ -2143,7 +2332,7 @@ definitions:
             in CIDR format.', example: 10.0.0.0/24, type: string}
           crn: {description: The security group's CRN, example: 'crn:v1:bluemix:public:gt:us-south-1:a/123456::security-group:be5df5ca-12a0-494b-907e-aa6ec2bfa271',
             format: crn, type: string}
-          href: {description: The security group's canonical URL., example: 'http://iaas.bluemix.net/v1/security_groups/be5df5ca-12a0-494b-907e-aa6ec2bfa271',
+          href: {description: The security group's canonical URL., example: 'http://us-south.iaas.cloud.ibm.com/v1/security_groups/be5df5ca-12a0-494b-907e-aa6ec2bfa271',
             format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
             type: string}
           id: {description: The security group's unique identifier.,
@@ -2183,7 +2372,7 @@ definitions:
           group was created, format: date-time, type: string}
       crn: {description: The security group's CRN, example: 'crn:v1:bluemix:public:gt:us-south-1:a/123456::security-group:be5df5ca-12a0-494b-907e-aa6ec2bfa271',
         format: crn, type: string}
-      href: {description: The security group's canonical URL., example: 'http://iaas.bluemix.net/v1/security_groups/be5df5ca-12a0-494b-907e-aa6ec2bfa271',
+      href: {description: The security group's canonical URL., example: 'http://us-south.iaas.cloud.ibm.com/v1/security_groups/be5df5ca-12a0-494b-907e-aa6ec2bfa271',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The security group's unique identifier., example: be5df5ca-12a0-494b-907e-aa6ec2bfa271,
@@ -2205,7 +2394,7 @@ definitions:
             crn: {description: The CRN for this network interface, example: 'crn:v1:staging:public:gt:us-south-1:a/123456::network-interface:10c02d81-0ecb-4dc5-897d-28392913b81e',
               format: crn, type: string}
             href: {description: The URL for this network interface,
-              example: 'http://iaas.bluemix.net/v1/servers/1e09281b-f177-46fb-baf1-bc152b2e391a/network_interfaces/10c02d81-0ecb-4dc5-897d-28392913b81e',
+              example: 'http://us-south.iaas.cloud.ibm.com/v1/servers/1e09281b-f177-46fb-baf1-bc152b2e391a/network_interfaces/10c02d81-0ecb-4dc5-897d-28392913b81e',
               format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
               type: string}
             id: {description: The unique identifier for this network
@@ -2233,7 +2422,7 @@ definitions:
           group was created, format: date-time, type: string}
       crn: {description: The security group's CRN, example: 'crn:v1:bluemix:public:gt:us-south-1:a/123456::security-group:be5df5ca-12a0-494b-907e-aa6ec2bfa271',
         format: crn, type: string}
-      href: {description: The security group's canonical URL., example: 'http://iaas.bluemix.net/v1/security_groups/be5df5ca-12a0-494b-907e-aa6ec2bfa271',
+      href: {description: The security group's canonical URL., example: 'http://us-south.iaas.cloud.ibm.com/v1/security_groups/be5df5ca-12a0-494b-907e-aa6ec2bfa271',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The security group's unique identifier., example: be5df5ca-12a0-494b-907e-aa6ec2bfa271,
@@ -2257,7 +2446,7 @@ definitions:
     type: object
   zone:
     properties:
-      href: {description: The URL for this zone, example: 'http://iaas.bluemix.net/v1/regions/us-south/zones/us-south-1',
+      href: {description: The URL for this zone, example: 'http://us-south.iaas.cloud.ibm.com/v1/regions/us-south/zones/us-south-1',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       name: {description: The name for this zone, example: us-south-1,
@@ -2265,7 +2454,7 @@ definitions:
       region:
         description: The region this zone belongs to
         properties:
-          href: {description: The URL for this region, example: 'http://iaas.bluemix.net/v1/regions/us-south',
+          href: {description: The URL for this region, example: 'http://us-south.iaas.cloud.ibm.com/v1/regions/us-south',
             format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
             type: string}
           name: {description: The name for this region, example: us-south,
@@ -2280,7 +2469,7 @@ definitions:
   region:
     properties:
       endpoint: {description: The API endpoint for this region., type: string, x-isnullable: false}
-      href: {description: The URL for this region, example: 'http://iaas.bluemix.net/v1/regions/us-south',
+      href: {description: The URL for this region, example: 'http://us-south.iaas.cloud.ibm.com/v1/regions/us-south',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string, x-isnullable: false}
       name: {description: The name for this region, example: us-south,
@@ -2306,7 +2495,7 @@ definitions:
             type: string}
           crn: {description: The CRN for this floating ip, example: 'crn:v1:bluemix:public::us-south::gt:floating-ip:203.0.113.1',
             format: crn, type: string}
-          href: {description: The URL for this floating ips, example: 'http://iaas.bluemix.net/v1/floating_ips/203.0.113.1',
+          href: {description: The URL for this floating ips, example: 'http://us-south.iaas.cloud.ibm.com/v1/floating_ips/203.0.113.1',
             format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
             type: string}
           name: {description: The user-defined name for this floating
@@ -2318,7 +2507,7 @@ definitions:
             type: string}
         title: FloatingIPReference
         type: object
-      href: {description: The URL for this gateway, example: 'http://iaas.bluemix.net/v1/gateways/dc5431ef-1fc6-4861-adc9-a59d077d1241',
+      href: {description: The URL for this gateway, example: 'http://us-south.iaas.cloud.ibm.com/v1/gateways/dc5431ef-1fc6-4861-adc9-a59d077d1241',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The unique identifier for this public gateway,
@@ -2333,7 +2522,7 @@ definitions:
       zone:
         description: The zone where this public gateway lives
         properties:
-          href: {description: The URL for this zone, example: 'http://iaas.bluemix.net/v1/regions/us-south/zones/us-south-1',
+          href: {description: The URL for this zone, example: 'http://us-south.iaas.cloud.ibm.com/v1/regions/us-south/zones/us-south-1',
             format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
             type: string}
           name: {description: The name for this zone, example: us-south-1,
@@ -2380,7 +2569,7 @@ definitions:
           enum:
             - ipv4
             - ipv6
-      href: {description: The URL for this network ACL, example: 'http://iaas.bluemix.net/v1/network_acls/a4e28308-8ee7-46ab-8108-9f881f22bdbf',
+      href: {description: The URL for this network ACL, example: 'http://us-south.iaas.cloud.ibm.com/v1/network_acls/a4e28308-8ee7-46ab-8108-9f881f22bdbf',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       name: {description: The user-defined name for this network ACL,
@@ -2398,18 +2587,48 @@ definitions:
           enum:
             - ingress
             - egress
-      port_max: {description: 'The highest port in the range of ports
-          to be matched; if unspecified, `65535` is used.', example: 65535,
-        type: integer}
-      port_min: {description: 'The lowest port in the range of ports
-          to be matched; if unspecified, `1` is used.', example: 49152,
-        type: integer}
-      source_port_max: {description: "The highest port in the range of source ports to be matched; if unspecified, `65535` is used.",
-        example: 80,
-        type: integer}
-      source_port_min: {description: 'The lowest port in the range of source ports to be matched; if unspecified, `1` is used.',
-        example: 22,
-        type: integer}
+      port_max:
+        example: 22
+        maximum: 65535
+        minimum: 1
+        type: integer
+        default: 65535
+        description: The inclusive upper bound of TCP/UDP destination port range
+      port_min:
+        example: 22
+        maximum: 65535
+        minimum: 1
+        type: integer
+        default: 1
+        description: The inclusive lower bound of TCP/UDP destination port range
+      destination_port_max:
+        example: 22
+        maximum: 65535
+        minimum: 1
+        type: integer
+        default: 65535
+        description: The inclusive upper bound of TCP/UDP destination port range
+      destination_port_min:
+        example: 22
+        maximum: 65535
+        minimum: 1
+        type: integer
+        default: 1
+        description: The inclusive lower bound of TCP/UDP destination port range
+      source_port_max:
+        example: 65535
+        maximum: 65535
+        minimum: 1
+        type: integer
+        default: 65335
+        description: The inclusive upper bound of TCP/UDP source port range
+      source_port_min:
+        example: 49152
+        maximum: 65535
+        minimum: 1
+        type: integer
+        default: 1
+        description: The inclusive lower bound of TCP/UDP source port range
       protocol: {description: Must be `all` to match all protocols.,
         example: all, type: string}
       source:
@@ -2426,7 +2645,7 @@ definitions:
           was created, format: date-time, type: string}
       crn: {description: The CRN for this network ACL, example: 'crn:v1:bluemix:public:rias:us-south:a/123456::network-acl:a4e28308-8ee7-46ab-8108-9f881f22bdbf',
         format: crn, type: string}
-      href: {description: The URL for this network ACL, example: 'http://iaas.bluemix.net/v1/network_acls/a4e28308-8ee7-46ab-8108-9f881f22bdbf',
+      href: {description: The URL for this network ACL, example: 'http://us-south.iaas.cloud.ibm.com/v1/network_acls/a4e28308-8ee7-46ab-8108-9f881f22bdbf',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The unique identifier for this network ACL,
@@ -2449,6 +2668,8 @@ definitions:
       resource_group:
         description: The resource group for this network ACL
         $ref: "#/definitions/resource_reference"
+      vpc:
+        $ref: "#/definitions/resource_reference"
     title: NetworkACL
     type: object
   key:
@@ -2460,7 +2681,7 @@ definitions:
       fingerprint: {description: The SHA256 fingerprint of the public
           key, example: yxavE4CIOL2NlsqcurRO3xGjkP6m/0mp8ugojH5yxlY,
         type: string}
-      href: {description: The URL for this key, example: 'http://iaas.bluemix.net/v1/keys/a6b1a881-2ce8-41a3-80fc-36316a73f803',
+      href: {description: The URL for this key, example: 'http://us-south.iaas.cloud.ibm.com/v1/keys/a6b1a881-2ce8-41a3-80fc-36316a73f803',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The unique identifier for this key, example: a6b1a881-2ce8-41a3-80fc-36316a73f803,
@@ -2510,7 +2731,7 @@ definitions:
       format:
         enum: [raw, qcow2, vmdk, vhdx, vdi, ova, box]
         type: string
-      href: {description: The URL for this image, example: 'http://iaas.bluemix.net/v1/images/72b27b5c-f4b0-48bb-b954-5becc7c1dcb8',
+      href: {description: The URL for this image, example: 'http://us-south.iaas.cloud.ibm.com/v1/images/72b27b5c-f4b0-48bb-b954-5becc7c1dcb8',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The unique identifier for this image, example: 72b27b5c-f4b0-48bb-b954-5becc7c1dcb8,
@@ -2542,48 +2763,158 @@ definitions:
         type: string
     title: Image
     type: object
-  imageFromServerTemplate:
+  ImagePatch:
     properties:
-      architecture:
-        description: The image architecture
-        enum: [amd64, powerpc]
+      name:
+        example: my-image
+        maxLength: 63
+        minLength: 1
+        pattern: '^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$'
         type: string
+        description: The unique user-defined name for this image. Names starting with
+          "ibm-" are not allowed.
+    title: ImagePatch
+    type: object
+  ImageTemplate:
+    properties:
+      name:
+        example: my-image
+        maxLength: 63
+        minLength: 1
+        pattern: '^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$'
+        type: string
+        description: The unique user-defined name for this image. Names starting with
+          \"ibm-\" are not allowed. If unspecified, the name will be a hyphenated list of
+          randomly-selected words.
       file:
-        description: The checksum and download location of the image
-          file
-        properties:
-          checksum: {description: A SHA-3 checksum of the image file,
-            example: 1e26748b7e61580b2d081a6de3645449960053138c5c70747454810e2110372b4c68492c748ced01f4df402a6787269e6891a4ab1cc4e6a62b21d91719950cf2,
-            type: string}
-          href: {description: The location of the image file, example: 'https://dal.objectstorage.open.softlayer.com/v1/AUTH_4abf7d7bac2c4eda89c03dd3afa7a0a3/images/ubuntu.qcow2',
-            format: url, type: string}
-        required: [href, checksum]
-        title: ImageFile
-        type: object
-      format:
-        enum: [raw, qcow2, vmdk, vhdx, vdi, ova, box]
-        type: string
-      name: {description: The user-defined name for this image, example: my-image,
-        format: name, pattern: '^[A-Za-z][-A-Za-z0-9_]*$', type: string}
+        $ref: '#/definitions/ImageFileTemplate'
+        description: Details for the image file to be imported
       operating_system:
-        description: The operating system included in this image
-        properties:
-          name: {description: 'The name of the operating system, to
-              be used for display purposes', example: Ubuntu Server
-              16 LTS, type: string}
-          vendor: {description: The vendor of the operating system,
-            example: Canonical, type: string}
-          version: {description: The version of the operating system,
-            example: 16.04.3, type: string}
-        required: [vendor, name, version]
-        title: OperatingSystem
-        type: object
+        $ref: '#/definitions/OperatingSystemIdentity'
       resource_group:
-        $ref: "#/definitions/ResourceReferenceWithOutCrn"
-      source_instance:
-        $ref: "#/definitions/ResourceReferenceWithOutCrn"
-    required: [ name, architecture, format, file]
-    title: Image
+        $ref: "#/definitions/resource_reference"
+    title: ImageTemplate
+    type: object
+    required:
+      - operating_system
+      - file
+  ImageFileTemplate:
+    properties:
+      href:
+        description: The Cloud Object Store (COS) location of the image file
+        example: 'cos://us-south/custom-image-vpc-bucket/customImage-0.vhd'
+        pattern: '^cos:\/\/([^\/?#]*)([^?#]*)$'
+        type: string
+    title: ImageFileTemplate
+    type: object
+    required:
+      - href
+  OperatingSystem:
+    properties:
+      href:
+        example: https://us-south.iaas.cloud.ibm.com/v1/operating_systems/ubuntu-16-amd64
+        pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$'
+        type: string
+        description: The URL for this operating system
+      name:
+        example: ubuntu-16-amd64
+        maxLength: 63
+        minLength: 1
+        pattern: '^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$'
+        type: string
+        description: The unique name of the operating system
+      architecture:
+        description: The operating system architecture
+        example: amd64
+        type: string
+      display_name:
+        example: Ubuntu Server 16.04 LTS amd64
+        maxLength: 120
+        minLength: 1
+        pattern: '^[-A-Za-z0-9 !$@#%&*''=_+:;,?\./\(\)\[\]]+$'
+        type: string
+        description: 'A unique, display-friendly name for the operating system'
+      family:
+        description: The name of the software family this operating system belongs to
+        example: Ubuntu Server
+        type: string
+      vendor:
+        description: The vendor of the operating system
+        example: Canonical
+        type: string
+      version:
+        description: The major release version of this operating system
+        example: 16.04 LTS
+        type: string
+    required:
+      - href
+      - name
+      - architecture
+      - display_name
+      - family
+      - vendor
+      - version
+    title: OperatingSystem
+    type: object
+  OperatingSystemCollection:
+    properties:
+      first:
+        description: A reference to the first page of resources
+        properties:
+          href:
+            example: https://us-south.iaas.cloud.ibm.com/v1/operating_systems?limit=20
+            pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$'
+            type: string
+            description: The URL for the first page of resources
+        required:
+          - href
+        type: object
+      limit:
+        description: The maximum number of resources that can be returned by the request
+        example: 20
+        format: int64
+        maximum: 100
+        minimum: 1
+        type: integer
+      next:
+        description: A reference to the next page of resources; this reference is
+          included for all pages
+
+          except the last page
+        properties:
+          href:
+            example: https://us-south.iaas.cloud.ibm.com/v1/operating_systems?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20
+            pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$'
+            type: string
+            description: The URL for the next page of resources
+        required:
+          - href
+        type: object
+      operating_systems:
+        description: Collection of operating systems
+        items:
+          $ref: '#/definitions/OperatingSystem'
+        type: array
+    required:
+      - first
+      - limit
+      - operating_systems
+    title: OperatingSystemCollection
+    type: object
+  OperatingSystemIdentity:
+    example:
+      name: ubuntu-16-amd64
+    properties:
+      name:
+        example: ubuntu-16-amd64
+        maxLength: 63
+        minLength: 1
+        pattern: '^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$'
+        type: string
+        description: The unique name of the operating system
+    required:
+      - name
+    title: OperatingSystemIdentity
     type: object
   floating_ip:
     properties:
@@ -2596,7 +2927,7 @@ definitions:
         type: string}   
       crn: {description: The CRN for this floating ip, example: 'crn:v1:bluemix:public::us-south::gt:floating-ip:203.0.113.1',
         format: crn, type: string}
-      href: {description: The URL for this floating ips, example: 'http://iaas.bluemix.net/v1/floating_ips/203.0.113.1',
+      href: {description: The URL for this floating ips, example: 'http://us-south.iaas.cloud.ibm.com/v1/floating_ips/203.0.113.1',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       name: {description: The user-defined name for this floating ip,
@@ -2614,7 +2945,7 @@ definitions:
         properties:
           crn: {description: The CRN for this public gateway, example: 'crn:v1:bluemix:public::us-south::gt:public-gateway:dc5431ef-1fc6-4861-adc9-a59d077d1241',
             format: crn, type: string}
-          href: {description: The URL for this gateway, example: 'http://iaas.bluemix.net/v1/gateways/dc5431ef-1fc6-4861-adc9-a59d077d1241',
+          href: {description: The URL for this gateway, example: 'http://us-south.iaas.cloud.ibm.com/v1/gateways/dc5431ef-1fc6-4861-adc9-a59d077d1241',
             format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
             type: string}
           id: {description: The unique identifier for this public gateway,
@@ -2631,7 +2962,7 @@ definitions:
       zone:
         description: The zone the floating ip resides in
         properties:
-          href: {description: The URL for this zone, example: 'http://iaas.bluemix.net/v1/regions/us-south/zones/us-south-1',
+          href: {description: The URL for this zone, example: 'http://us-south.iaas.cloud.ibm.com/v1/regions/us-south/zones/us-south-1',
             format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
             type: string}
           name: {description: The name for this zone, example: us-south-1,
@@ -2647,7 +2978,7 @@ definitions:
           created, format: date-time, type: string}
       has_subnets: {description: Indicates whether subnets exist with
           addresses from this prefix., type: boolean}
-      href: {description: The URL for this prefix, example: 'http://iaas.bluemix.net/v1/address_pools/8e454ead-0db7-48ac-9a8b-2698d8c470a7/prefixes/1a15dca5-7e33-45e1-b7c5-bc690e569531',
+      href: {description: The URL for this prefix, example: 'http://us-south.iaas.cloud.ibm.com/v1/address_pools/8e454ead-0db7-48ac-9a8b-2698d8c470a7/prefixes/1a15dca5-7e33-45e1-b7c5-bc690e569531',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The unique identifier for this prefix, example: 1a15dca5-7e33-45e1-b7c5-bc690e569531,
@@ -2661,7 +2992,7 @@ definitions:
         description: The zone this address pool prefix is to belong
           to
         properties:
-          href: {description: The URL for this zone, example: 'http://iaas.bluemix.net/v1/regions/us-south/zones/us-south-1',
+          href: {description: The URL for this zone, example: 'http://us-south.iaas.cloud.ibm.com/v1/regions/us-south/zones/us-south-1',
             format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
             type: string}
           name: {description: The name for this zone, example: us-south-1,
@@ -2678,7 +3009,7 @@ definitions:
           was created, format: date-time, type: string}
       crn: {description: The CRN for this address pool, example: 'crn:v1:bluemix:public:gt:us-south-1:a/123456::address_pool:e16378f7-33c8-47e3-b112-2f30d780463e',
         format: crn, type: string}
-      href: {description: The URL for this address pool, example: 'http://iaas.bluemix.net/v1/address_pools/e16378f7-33c8-47e3-b112-2f30d780463e',
+      href: {description: The URL for this address pool, example: 'http://us-south.iaas.cloud.ibm.com/v1/address_pools/e16378f7-33c8-47e3-b112-2f30d780463e',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The unique identifier for this address pool,
@@ -2706,7 +3037,7 @@ definitions:
         $ref: "#/definitions/resource_reference"
       default_security_group:
         $ref: "#/definitions/resource_reference"
-      href: {description: The URL for this VPC, example: 'http://iaas.bluemix.net/v1/vpcs/4727d842-f94f-4a2d-824a-9bc9b02c523b',
+      href: {description: The URL for this VPC, example: 'http://us-south.iaas.cloud.ibm.com/v1/vpcs/4727d842-f94f-4a2d-824a-9bc9b02c523b',
         format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
         type: string}
       id: {description: The unique identifier for this VPC, example: 4727d842-f94f-4a2d-824a-9bc9b02c523b,
@@ -2733,7 +3064,7 @@ definitions:
             message: {description: An explanation of the solution to the problem,
               example: The `flavor.id` field is required.,x-isnullable: false, type: string}
             more_info: {description: Link to documentation about this error,
-              example: 'https://console.bluemix.net/docs/iaas/servers.html#template',
+              example: 'https://console.cloud.ibm.com/docs/iaas/servers.html#template',
               format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
               type: string}
             target:
@@ -2757,6 +3088,12 @@ definitions:
         type: string}
     required: [errors]
     title: ErrorContainer
+    type: object
+  DummyEmptyTemplate: 
+    properties:
+      dumpProps:
+        description: Dummy property
+        type: string
     type: object
 paths:
   /floating_ips:
@@ -2785,7 +3122,7 @@ paths:
               first:
                 description: A reference to the first page of resources
                 properties:
-                  href: {description: The URL for the first page of resources, example: 'http://iaas.bluemix.net/v1/floating_ips?limit=20',
+                  href: {description: The URL for the first page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/floating_ips?limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -2802,7 +3139,7 @@ paths:
                 description: A reference to the next page of resources; this reference
                   is included for all pages except the last page
                 properties:
-                  href: {description: The URL for the next page of resources, example: 'http://iaas.bluemix.net/v1/floating_ips?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
+                  href: {description: The URL for the next page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/floating_ips?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -2982,6 +3319,10 @@ paths:
         name: visibility
         required: false
         type: string
+      - in: query
+        name: future_version
+        description: allows any date string to be accepted, enabling testing of features still under development
+        type: boolean
       produces: [application/json]
       responses:
         200:
@@ -2991,7 +3332,7 @@ paths:
               first:
                 description: A reference to the first page of resources
                 properties:
-                  href: {description: The URL for the first page of resources, example: 'http://iaas.bluemix.net/v1/images?limit=20',
+                  href: {description: The URL for the first page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/images?limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -3008,7 +3349,7 @@ paths:
                 description: A reference to the next page of resources; this reference
                   is included for all pages except the last page
                 properties:
-                  href: {description: The URL for the next page of resources, example: 'http://iaas.bluemix.net/v1/images?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
+                  href: {description: The URL for the next page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/images?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -3025,18 +3366,25 @@ paths:
       tags: [Compute]
     post:
       description: This request creates a new image from an image template. The image
-        template object is structured in the same way as a retrieved image, and contains
-        the information necessary to create the new image. If a source server is provided
-        with the image template, the image will be created from that server; otherwise,
-        a URL to the image file on object storage must be provided.
+        template object is
+
+        structured in the same way as a retrieved image, and contains the
+        information necessary to
+
+        create the new image. A URL to the image file on object storage must be
+        provided.
       parameters:
       - {description: Requests the version of the API as of a date in the format `YYYY-MM-DD`. Any date up to the current date may be provided. Specify the current date to request the latest version., in: query, name: version, required: true, format: data, type: string}
       - {description: The infrastructure generation for the request., in: query, name: generation, required: true, type: integer}
+      - in: query
+        name: future_version
+        description: allows any date string to be accepted, enabling testing of features still under development
+        type: boolean
       - in: body
         name: body
         required: true
         schema:
-          $ref: "#/definitions/imageFromServerTemplate"
+          $ref: "#/definitions/ImageTemplate"
       responses:
         201:
           description: dummy
@@ -3061,11 +3409,14 @@ paths:
       - {description: Requests the version of the API as of a date in the format `YYYY-MM-DD`. Any date up to the current date may be provided. Specify the current date to request the latest version., in: query, name: version, required: true, format: data, type: string}
       - {description: The infrastructure generation for the request., in: query, name: generation, required: true, type: integer}
       - {description: The image identifier, in: path, name: id, required: true, type: string}
+      - in: query
+        name: future_version
+        description: allows any date string to be accepted, enabling testing of features still under development
+        type: boolean
       produces: [application/json]
       responses:
-        204:
-          description: error
-          schema: {$ref: '#/definitions/riaaserror'}
+        202:
+          description: The image deletion request was accepted.
         404:
           description: error
           schema: {$ref: '#/definitions/riaaserror'}
@@ -3082,6 +3433,10 @@ paths:
       - {description: Requests the version of the API as of a date in the format `YYYY-MM-DD`. Any date up to the current date may be provided. Specify the current date to request the latest version., in: query, name: version, required: true, format: data, type: string}
       - {description: The infrastructure generation for the request., in: query, name: generation, required: true, type: integer}
       - {description: The image identifier, in: path, name: id, required: true, type: string}
+      - in: query
+        name: future_version
+        description: allows any date string to be accepted, enabling testing of features still under development
+        type: boolean
       produces: [application/json]
       responses:
         200:
@@ -3103,15 +3458,15 @@ paths:
       - {description: Requests the version of the API as of a date in the format `YYYY-MM-DD`. Any date up to the current date may be provided. Specify the current date to request the latest version., in: query, name: version, required: true, format: data, type: string}
       - {description: The infrastructure generation for the request., in: query, name: generation, required: true, type: integer}
       - {description: The image identifier, in: path, name: id, required: true, type: string}
+      - in: query
+        name: future_version
+        description: allows any date string to be accepted, enabling testing of features still under development
+        type: boolean
       - in: body
         name: Request body
         required: true
         schema:
-          properties:
-            name: {description: The user-defined name for this image, example: my-image,
-              format: name, pattern: '^[A-Za-z][-A-Za-z0-9_]*$', type: string}
-          type: object
-          title: ImagePatch
+          $ref: '#/definitions/ImagePatch'
       produces: [application/json]
       responses:
         200:
@@ -3130,6 +3485,55 @@ paths:
           description: error
           schema: {$ref: '#/definitions/riaaserror'}
       summary: Updates an image's name
+      tags: [Compute]
+  /operating_systems:
+    get:
+      consumes: [application/json]
+      description: This request retrieves all operating systems.
+      parameters:
+      - {description: Requests the version of the API as of a date in the format `YYYY-MM-DD`. Any date up to the current date may be provided. Specify the current date to request the latest version., in: query, name: version, required: true, format: data, type: string}
+      - {description: The infrastructure generation for the request., in: query, name: generation, required: true, type: integer}
+      - {description: A server-supplied token determining what resource to start the
+          page on, in: query, name: start, required: false, type: string}
+      - {default: 50, description: The number of resources to return on a page, format: int32,
+        in: query, maximum: 100, minimum: 1, name: limit, required: false, type: integer}
+      produces: [application/json]
+      responses:
+        200:
+          description: dummy
+          schema:
+            $ref: "#/definitions/OperatingSystemCollection"
+        500:
+          description: error
+          schema: {$ref: '#/definitions/riaaserror'}
+      summary: Retrieves all operating systems
+      tags: [Compute]
+  /operating_systems/{name}:
+    get:
+      consumes: [application/json]
+      description: This request retrieves a single operating system specified by the name
+        in the URL.
+      parameters:
+        - {description: Requests the version of the API as of a date in the format `YYYY-MM-DD`. Any date up to the current date may be provided. Specify the current date to request the latest version., in: query, name: version, required: true, format: data, type: string}
+        - {description: The infrastructure generation for the request., in: query, name: generation, required: true, type: integer}
+        - description: The operating system name
+          in: path
+          name: name
+          required: true
+          type: string
+      produces: [application/json]
+      responses:
+        200:
+          description: dummy
+          schema:
+            $ref: "#/definitions/OperatingSystem"
+        404:
+          description: error
+          schema: {$ref: '#/definitions/riaaserror'}
+        500:
+          description: error
+          schema: {$ref: '#/definitions/riaaserror'}
+      summary: Retrieves an operating system
       tags: [Compute]
   /keys:
     get:
@@ -3156,7 +3560,7 @@ paths:
               first:
                 description: A reference to the first page of resources
                 properties:
-                  href: {description: The URL for the first page of resources, example: 'http://iaas.bluemix.net/v1/keys?limit=20',
+                  href: {description: The URL for the first page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/keys?limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -3173,7 +3577,7 @@ paths:
                 description: A reference to the next page of resources; this reference
                   is included for all pages except the last page
                 properties:
-                  href: {description: The URL for the next page of resources, example: 'http://iaas.bluemix.net/v1/keys?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
+                  href: {description: The URL for the next page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/keys?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -3336,7 +3740,7 @@ paths:
               first:
                 description: A reference to the first page of resources
                 properties:
-                  href: {description: The URL for the first page of resources, example: 'http://iaas.bluemix.net/v1/network_acls?limit=20',
+                  href: {description: The URL for the first page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/network_acls?limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -3353,7 +3757,7 @@ paths:
                 description: A reference to the next page of resources; this reference
                   is included for all pages except the last page
                 properties:
-                  href: {description: The URL for the next page of resources, example: 'http://iaas.bluemix.net/v1/network_acls?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
+                  href: {description: The URL for the next page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/network_acls?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -3384,9 +3788,10 @@ paths:
           properties:
             name: {description: The user-defined name for this network ACL, example: my-network-acl,
               format: name, pattern: '^[A-Za-z][-A-Za-z0-9_]*$', type: string}
+            vpc:
+              $ref: "#/definitions/resource_reference"
             rules:
               description: Collection of rule templates for rules to be created alongwith the network ACL
-              x-omitempty: true
               items:
                 properties:
                   name: {description: The user-defined name for this network ACL rule,
@@ -3418,17 +3823,48 @@ paths:
                   code_min: {description: 'The lowest in the range of ICMP codes to
                       be matched; if unspecified, `0` is used. This can be specified
                       only if type_min and type_max are equal.', example: 0, type: string}
-                  port_max: {description: 'The highest port in the range of ports
-                      to be matched; if unspecified, `65535` is used.', example: 65535,
-                    type: integer}
-                  port_min: {description: 'The lowest port in the range of ports to
-                      be matched; if unspecified, `1` is used.', example: 49152, type: integer}
-                  source_port_max: {description: "The highest port in the range of source ports to be matched; if unspecified, `65535` is used.",
-                    example: 80,
-                    type: integer}
-                  source_port_min: {description: 'The lowest port in the range of source ports to be matched; if unspecified, `1` is used.',
-                    example: 22,
-                    type: integer}
+                  port_max:
+                    example: 22
+                    maximum: 65535
+                    minimum: 1
+                    type: integer
+                    default: 65535
+                    description: The inclusive upper bound of TCP/UDP destination port range
+                  port_min:
+                    example: 22
+                    maximum: 65535
+                    minimum: 1
+                    type: integer
+                    default: 1
+                    description: The inclusive lower bound of TCP/UDP destination port range
+                  destination_port_max:
+                    example: 22
+                    maximum: 65535
+                    minimum: 1
+                    type: integer
+                    default: 65535
+                    description: The inclusive upper bound of TCP/UDP destination port range
+                  destination_port_min:
+                    example: 22
+                    maximum: 65535
+                    minimum: 1
+                    type: integer
+                    default: 1
+                    description: The inclusive lower bound of TCP/UDP destination port range
+                  source_port_max:
+                    example: 65535
+                    maximum: 65535
+                    minimum: 1
+                    type: integer
+                    default: 65335
+                    description: The inclusive upper bound of TCP/UDP source port range
+                  source_port_min:
+                    example: 49152
+                    maximum: 65535
+                    minimum: 1
+                    type: integer
+                    default: 1
+                    description: The inclusive lower bound of TCP/UDP source port range
                   protocol: {description: Must be `all` to match all protocols., example: all,
                     type: string}
                   type_max: {description: 'The highest in the range of ICMP types
@@ -3455,8 +3891,8 @@ paths:
             resource_group:
               description: The resource group for this network ACL
               properties:
-                id: {description: The unique identifier for this resource group, example: 56969d60-43e9-465c-883c-b9f7363e78e8,
-                  format: uuid, pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+                id: {description: The unique identifier for this resource group, example: fee82deba12e4c0fb69c3b09d1f12345,
+                  format: uuid, pattern: '^[0-9a-f]{32}$',
                   type: string}
               title: ResourceGroupIdentity
               type: object
@@ -3581,7 +4017,7 @@ paths:
               first:
                 description: A reference to the first page of resources
                 properties:
-                  href: {description: The URL for the first page of resources, example: 'http://iaas.bluemix.net/v1/network_acls/a4e28308-8ee7-46ab-8108-9f881f22bdbf/rules?limit=20',
+                  href: {description: The URL for the first page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/network_acls/a4e28308-8ee7-46ab-8108-9f881f22bdbf/rules?limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -3593,7 +4029,7 @@ paths:
                 description: A reference to the next page of resources; this reference
                   is included for all pages except the last page
                 properties:
-                  href: {description: The URL for the next page of resources, example: 'http://iaas.bluemix.net/v1/network_acls/a4e28308-8ee7-46ab-8108-9f881f22bdbf/rules?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
+                  href: {description: The URL for the next page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/network_acls/a4e28308-8ee7-46ab-8108-9f881f22bdbf/rules?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -3655,17 +4091,48 @@ paths:
                 id: {description: The unique identifier for this rule, example: 8daca77a-4980-4d33-8f3e-7038797be8f9, pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$', format: url, type: string}
               type: object
             code: {description: 'The ICMP traffic code to allow. Valid values from 0 to 255. If unspecified, all codes are allowed. This can only be specified if type is also specified.', example: 0, type: integer, x-isnullable: true}
-            port_max: {description: 'The highest port in the range of ports
-                to be matched; if unspecified, `65535` is used.', example: 65535,
-              type: integer}
-            port_min: {description: 'The lowest port in the range of ports to
-                be matched; if unspecified, `1` is used.', example: 49152, type: integer}
-            source_port_max: {description: "The highest port in the range of source ports to be matched; if unspecified, `65535` is used.",
-              example: 80,
-              type: integer}
-            source_port_min: {description: 'The lowest port in the range of source ports to be matched; if unspecified, `1` is used.',
-              example: 22,
-              type: integer}
+            port_max:
+              example: 22
+              maximum: 65535
+              minimum: 1
+              type: integer
+              default: 65535
+              description: The inclusive upper bound of TCP/UDP destination port range
+            port_min:
+              example: 22
+              maximum: 65535
+              minimum: 1
+              type: integer
+              default: 1
+              description: The inclusive lower bound of TCP/UDP destination port range
+            destination_port_max:
+              example: 22
+              maximum: 65535
+              minimum: 1
+              type: integer
+              default: 65535
+              description: The inclusive upper bound of TCP/UDP destination port range
+            destination_port_min:
+              example: 22
+              maximum: 65535
+              minimum: 1
+              type: integer
+              default: 1
+              description: The inclusive lower bound of TCP/UDP destination port range
+            source_port_max:
+              example: 65535
+              maximum: 65535
+              minimum: 1
+              type: integer
+              default: 65335
+              description: The inclusive upper bound of TCP/UDP source port range
+            source_port_min:
+              example: 49152
+              maximum: 65535
+              minimum: 1
+              type: integer
+              default: 1
+              description: The inclusive lower bound of TCP/UDP source port range
             protocol: {description: Must be `all` to match all protocols., example: all,
               type: string}
             type: {description: 'The ICMP traffic type to allow. Valid values from 0 to 254. If unspecified, all types are allowed by this rule.', example: 3,type: integer,x-isnullable: true}
@@ -3774,17 +4241,48 @@ paths:
                 id: {description: The unique identifier for this rule, example: 8daca77a-4980-4d33-8f3e-7038797be8f9, pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$', format: url, type: string}
               type: object
             code: {description: 'The ICMP traffic code to allow. Valid values from 0 to 255. If unspecified, all codes are allowed. This can only be specified if type is also specified.', example: 0, type: integer, x-isnullable: true}
-            port_max: {description: 'The highest port in the range of ports
-                to be matched; if unspecified, `65535` is used.', example: 65535,
-              type: integer}
-            port_min: {description: 'The lowest port in the range of ports to
-                be matched; if unspecified, `1` is used.', example: 49152, type: integer}
-            source_port_max: {description: 'The highest port in the range of source ports to be matched; if unspecified, `65535` is used.',
-              example: 80,
-              type: integer}
-            source_port_min: {description: 'The lowest port in the range of source ports to be matched; if unspecified, `1` is used.',
-              example: 22,
-              type: integer}
+            port_max:
+              example: 22
+              maximum: 65535
+              minimum: 1
+              type: integer
+              default: 65535
+              description: The inclusive upper bound of TCP/UDP destination port range
+            port_min:
+              example: 22
+              maximum: 65535
+              minimum: 1
+              type: integer
+              default: 1
+              description: The inclusive lower bound of TCP/UDP destination port range
+            destination_port_max:
+              example: 22
+              maximum: 65535
+              minimum: 1
+              type: integer
+              default: 65535
+              description: The inclusive upper bound of TCP/UDP destination port range
+            destination_port_min:
+              example: 22
+              maximum: 65535
+              minimum: 1
+              type: integer
+              default: 1
+              description: The inclusive lower bound of TCP/UDP destination port range
+            source_port_max:
+              example: 65535
+              maximum: 65535
+              minimum: 1
+              type: integer
+              default: 65335
+              description: The inclusive upper bound of TCP/UDP source port range
+            source_port_min:
+              example: 49152
+              maximum: 65535
+              minimum: 1
+              type: integer
+              default: 1
+              description: The inclusive lower bound of TCP/UDP source port range
             protocol: {description: Must be `all` to match all protocols., example: all,
               type: string}
             type: {description: 'The ICMP traffic type to allow. Valid values from 0 to 254. If unspecified, all types are allowed by this rule.', example: 3,type: integer, x-isnullable: true}
@@ -3840,7 +4338,7 @@ paths:
               first:
                 description: A reference to the first page of resources
                 properties:
-                  href: {description: The URL for the first page of resources, example: 'http://iaas.bluemix.net/v1/public_gateways?limit=20',
+                  href: {description: The URL for the first page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/public_gateways?limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -3852,7 +4350,7 @@ paths:
                 description: A reference to the next page of resources; this reference
                   is included for all pages except the last page
                 properties:
-                  href: {description: The URL for the next page of resources, example: 'http://iaas.bluemix.net/v1/public_gateways?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
+                  href: {description: The URL for the next page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/public_gateways?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -4160,7 +4658,7 @@ paths:
               first:
                 description: A reference to the first page of resources
                 properties:
-                  href: {description: The URL for the first page of resources, example: 'http://iaas.bluemix.net/v1/security_groups?limit=20',
+                  href: {description: The URL for the first page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/security_groups?limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -4172,7 +4670,7 @@ paths:
                 description: A reference to the next page of resources; this reference
                   is included for all pages except the last page
                 properties:
-                  href: {description: The URL for the next page of resources, example: 'http://iaas.bluemix.net/v1/security_groups?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
+                  href: {description: The URL for the next page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/security_groups?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -4459,6 +4957,11 @@ paths:
         required: true, type: string}
       - {description: The network interface identifier, in: path, name: id, required: true,
         type: string}
+      - in: body
+        name: request body
+        required: true
+        schema:
+          $ref: "#/definitions/DummyEmptyTemplate"
       produces: [application/json]
       responses:
         201:
@@ -4650,12 +5153,6 @@ paths:
               enum: [ipv4, ipv6]
               example: ipv4
               type: string
-            protocol:
-              description: The protocol to enforce. Must be one of (icmp, tcp,
-                udp, all). Defaults to 'all' if omitted.
-              enum: [all, icmp, tcp, udp]
-              example: tcp
-              type: string
             remote:
               description: Uniquely identifies a security group using any one
                 of ID, CRN, or name.
@@ -4715,7 +5212,7 @@ paths:
             properties:
               first:
                 properties:
-                  href: {example: 'https://iaas.bluemix.net/v1/instance/profiles?limit=20'}
+                  href: {example: 'https://us-south.iaas.cloud.ibm.com/v1/instance/profiles?limit=20'}
               limit: {description: The maximum number of resources can be returned
                   by the request, example: 20, format: int64, maximum: 100, minimum: 1,
                 type: integer}
@@ -4790,7 +5287,7 @@ paths:
               first:
                 description: A reference to the first page of resources
                 properties:
-                  href: {description: The URL for the first page of resources, example: 'http://iaas.bluemix.net/v1/instances?limit=20',
+                  href: {description: The URL for the first page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/instances?limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 type: object
@@ -4912,12 +5409,6 @@ paths:
                   format: name, pattern: '^[A-Za-z][-A-Za-z0-9_]*$', type: string}
               title: ImageIdentityByName
               type: object
-            bandwidth: 
-              description: The total bandwidth (in megabits per second) shared across the virtual server instance's network interfaces
-              example: 1000
-              maximum: 1000000
-              minimum: 100
-              type: integer
             keys:
               description: The public SSH keys to install on the instance; if no keys
                 are provided the instance will be inaccessible unless the image used
@@ -4940,7 +5431,7 @@ paths:
               type: array
               x-omitempty: true
             name: {description: The user-defined name for this instance, example: my-instance,
-              format: name, pattern: '^[A-Za-z][-A-Za-z0-9_]*$', type: string}
+              format: name, pattern: '^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$', type: string}
             network_interfaces:
               description: Collection of network interfaces to create for the instance
               items:
@@ -5237,7 +5728,7 @@ paths:
         schema:
           properties:
             name: {description: The user-defined name for this network ACL, example: my-network-acl,
-              format: name, pattern: '^[A-Za-z][-A-Za-z0-9_]*$', type: string}
+              format: name, pattern: '^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$', type: string}
             profile:
               properties:
                 crn: {description: The CRN for this profile, example: 'crn:v1:bluemix:public:gt:us-south-1:a/123456::snapshot:349a61d8-7ab1-420f-a690-5fed76ef9d4f',
@@ -5246,12 +5737,6 @@ paths:
                   format: name, pattern: '^[A-Za-z][-A-Za-z0-9_]*$', type: string}
               title: reference
               type: object
-            bandwidth: 
-              description: The total bandwidth (in megabits per second) shared across the virtual server instance's network interfaces
-              example: 1000
-              maximum: 1000000
-              minimum: 100
-              type: integer
           type: object
       produces: [application/json]
       responses:
@@ -5285,50 +5770,6 @@ paths:
           description: error
           schema: {$ref: '#/definitions/riaaserror'}
   /instances/{instance_id}/actions:
-    get:
-      consumes: [application/json]
-      description: This request retrieves all pending, running, and recent actions
-        on a instance.
-      parameters:
-      - {description: Requests the version of the API as of a date in the format `YYYY-MM-DD`. Any date up to the current date may be provided. Specify the current date to request the latest version., in: query, name: version, required: true, format: data, type: string}
-      - {description: The infrastructure generation for the request., in: query, name: generation, required: true, type: integer}
-      - {description: The instance identifier, in: path, name: instance_id, required: true,
-        type: string}
-      - {description: A instance-supplied token determining what resource to start
-          the page on, in: query, name: start, required: false, type: string}
-      - {default: 50, description: The number of resources to return on a page, format: int32,
-        in: query, maximum: 100, minimum: 1, name: limit, required: false, type: integer}
-      produces: [application/json]
-      responses:
-        200:
-          description: dummy
-          schema:
-            properties:
-              actions:
-                description: Collection of instance actions
-                items: {$ref: '#/definitions/instance_action'}
-                type: array
-                x-omitempty: true
-              first:
-                description: A reference to the first page of resources
-                properties:
-                  href: {description: The URL for the first page of resources, example: 'http://iaas.bluemix.net/v1/instances/1e09281b-f177-46fb-baf1-bc152b2e391a/actions?limit=20',
-                    format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
-                    type: string}
-                type: object
-              limit: {description: The maximum number of resources can be returned
-                  by the request, example: 20, format: int64, maximum: 100, minimum: 1,
-                type: integer}
-              next: {$ref: '#/definitions/Next'}
-              total_count: {description: The total number of resources across all
-                  pages, example: 132, format: int64, minimum: 0, type: integer}
-            title: instanceActionCollection
-            type: object
-        404:
-          description: error
-          schema: {$ref: '#/definitions/riaaserror'}
-      summary: Retrieves all actions on a instance
-      tags: [Compute]
     post:
       description: This request creates a new action which will be queued up to run
         as soon as any currently pending or running actions have completed.
@@ -5359,52 +5800,6 @@ paths:
           description: error
           schema: {$ref: '#/definitions/riaaserror'}
       summary: Creates a new action
-      tags: [Compute]
-  /instances/{instance_id}/actions/{id}:
-    delete:
-      consumes: [application/json]
-      description: This request deletes a instance action. It will only succeed if
-        the action is currently pending.
-      parameters:
-      - {description: Requests the version of the API as of a date in the format `YYYY-MM-DD`. Any date up to the current date may be provided. Specify the current date to request the latest version., in: query, name: version, required: true, format: data, type: string}
-      - {description: The infrastructure generation for the request., in: query, name: generation, required: true, type: integer}
-      - {description: The instance identifier, in: path, name: instance_id, required: true,
-        type: string}
-      - {description: The instance action identifier, in: path, name: id, required: true,
-        type: string}
-      produces: [application/json]
-      responses:
-        204:
-          description: error
-          schema: {$ref: '#/definitions/riaaserror'}
-        400:
-          description: error
-          schema: {$ref: '#/definitions/riaaserror'}
-        404:
-          description: error
-          schema: {$ref: '#/definitions/riaaserror'}
-      summary: Deletes a pending action, preventing it from running
-      tags: [Compute]
-    get:
-      consumes: [application/json]
-      description: This request retrieves a single instance action specified by the
-        identifier in the URL.
-      parameters:
-      - {description: Requests the version of the API as of a date in the format `YYYY-MM-DD`. Any date up to the current date may be provided. Specify the current date to request the latest version., in: query, name: version, required: true, format: data, type: string}
-      - {description: The infrastructure generation for the request., in: query, name: generation, required: true, type: integer}
-      - {description: The instance identifier, in: path, name: instance_id, required: true,
-        type: string}
-      - {description: The instance action identifier, in: path, name: id, required: true,
-        type: string}
-      produces: [application/json]
-      responses:
-        200:
-          description: dummy
-          schema: {$ref: '#/definitions/instance_action'}
-        404:
-          description: error
-          schema: {$ref: '#/definitions/riaaserror'}
-      summary: Retrieves specified instance action
       tags: [Compute]
   /instances/{instance_id}/network_interfaces:
     get:
@@ -5699,6 +6094,11 @@ paths:
         required: true, type: string}
       - {description: The floating IP address, in: path, name: address, required: true,
         type: string}
+      - in: body
+        name: request body
+        required: true
+        schema:
+          $ref: "#/definitions/DummyEmptyTemplate"
       produces: [application/json]
       responses:
         201:
@@ -5911,7 +6311,7 @@ paths:
               first:
                 description: A reference to the first page of resources
                 properties:
-                  href: {description: The URL for the first page of resources, example: 'http://iaas.bluemix.net/v1/subnets?limit=20',
+                  href: {description: The URL for the first page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/subnets?limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -5923,7 +6323,7 @@ paths:
                 description: A reference to the next page of resources; this reference
                   is included for all pages except the last page
                 properties:
-                  href: {description: The URL for the next page of resources, example: 'http://iaas.bluemix.net/v1/subnets?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
+                  href: {description: The URL for the next page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/subnets?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -6101,7 +6501,7 @@ paths:
               format: name, pattern: '^[A-Za-z][-A-Za-z0-9_]*$', type: string}
             network_acl:
               properties:
-                href: {description: The URL for this resource, example: 'http://iaas.bluemix.net/v1/volumes/1a6b7274-678d-4dfb-8981-c71dd9d4daa5/snapshots/349a61d8-7ab1-420f-a690-5fed76ef9d4f',
+                href: {description: The URL for this resource, example: 'http://us-south.iaas.cloud.ibm.com/v1/volumes/1a6b7274-678d-4dfb-8981-c71dd9d4daa5/snapshots/349a61d8-7ab1-420f-a690-5fed76ef9d4f',
                   format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                   type: string}
                 id: {description: The unique identifier for this resource, example: 349a61d8-7ab1-420f-a690-5fed76ef9d4f,
@@ -6115,7 +6515,7 @@ paths:
               type: object
             public_gateway:
               properties:
-                href: {description: The URL for this resource, example: 'http://iaas.bluemix.net/v1/volumes/1a6b7274-678d-4dfb-8981-c71dd9d4daa5/snapshots/349a61d8-7ab1-420f-a690-5fed76ef9d4f',
+                href: {description: The URL for this resource, example: 'http://us-south.iaas.cloud.ibm.com/v1/volumes/1a6b7274-678d-4dfb-8981-c71dd9d4daa5/snapshots/349a61d8-7ab1-420f-a690-5fed76ef9d4f',
                   format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                   type: string}
                 id: {description: The unique identifier for this resource, example: 349a61d8-7ab1-420f-a690-5fed76ef9d4f,
@@ -6300,7 +6700,7 @@ paths:
               first:
                 description: A reference to the first page of resources
                 properties:
-                  href: {description: The URL for the first page of resources, example: 'http://iaas.bluemix.net/v1/volumes?limit=20',
+                  href: {description: The URL for the first page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/volumes?limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -6312,7 +6712,7 @@ paths:
                 description: A reference to the next page of resources; this reference
                   is included for all pages except the last page
                 properties:
-                  href: {description: The URL for the next page of resources, example: 'http://iaas.bluemix.net/v1/volumes?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
+                  href: {description: The URL for the next page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/volumes?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -6370,7 +6770,7 @@ paths:
               first:
                 description: A reference to the first page of resources
                 properties:
-                  href: {description: The URL for the first page of resources, example: 'http://iaas.bluemix.net/v1/volumes?limit=20',
+                  href: {description: The URL for the first page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/volumes?limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -6382,7 +6782,7 @@ paths:
                 description: A reference to the next page of resources; this reference
                   is included for all pages except the last page
                 properties:
-                  href: {description: The URL for the next page of resources, example: 'http://iaas.bluemix.net/v1/volumes?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
+                  href: {description: The URL for the next page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/volumes?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -6704,7 +7104,7 @@ paths:
               first:
                 description: A reference to the first page of resources
                 properties:
-                  href: {description: The URL for the first page of resources, example: 'http://iaas.bluemix.net/v1/volumes?limit=20',
+                  href: {description: The URL for the first page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/volumes?limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -6716,7 +7116,7 @@ paths:
                 description: A reference to the next page of resources; this reference
                   is included for all pages except the last page
                 properties:
-                  href: {description: The URL for the next page of resources, example: 'http://iaas.bluemix.net/v1/volumes?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
+                  href: {description: The URL for the next page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/volumes?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -6786,7 +7186,7 @@ paths:
               first:
                 description: A reference to the first page of resources
                 properties:
-                  href: {description: The URL for the first page of resources, example: 'http://iaas.bluemix.net/v1/volumes?limit=20',
+                  href: {description: The URL for the first page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/volumes?limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -6798,7 +7198,7 @@ paths:
                 description: A reference to the next page of resources; this reference
                   is included for all pages except the last page
                 properties:
-                  href: {description: The URL for the next page of resources, example: 'http://iaas.bluemix.net/v1/volumes?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
+                  href: {description: The URL for the next page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/volumes?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -7170,7 +7570,7 @@ paths:
               first:
                 description: A reference to the first page of resources
                 properties:
-                  href: {description: The URL for the first page of resources, example: 'http://iaas.bluemix.net/v1/vpcs?limit=20',
+                  href: {description: The URL for the first page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/vpcs?limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -7182,7 +7582,7 @@ paths:
                 description: A reference to the next page of resources; this reference
                   is included for all pages except the last page
                 properties:
-                  href: {description: The URL for the next page of resources, example: 'http://iaas.bluemix.net/v1/vpcs?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
+                  href: {description: The URL for the next page of resources, example: 'http://us-south.iaas.cloud.ibm.com/v1/vpcs?start=9d5a91a3e2cbd233b5a5b33436855ed1&limit=20',
                     format: url, pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$',
                     type: string}
                 required: [href]
@@ -7216,21 +7616,6 @@ paths:
           properties:
             classic_access: {description: "Indicates whether this VPC is connected to Classic Infrastructure. If true, this VPC's\nresources have private network connectivity to the account's Classice Infrastructure\nresources. Only one VPC on an account may be connected in this way. This value is set at\ncreation and subsequently immutable.\n",
               type: boolean}
-            default_network_acl:
-              description: The default network ACL to use for subnets created in this
-                VPC; if no default network ACL is provided a new one which allows
-                all traffic will be created
-              example: {id: a4e28308-8ee7-46ab-8108-9f881f22bdbf}
-              properties:
-                crn: {description: The CRN for this network ACL, example: 'crn:v1:bluemix:public:rias:us-south:a/123456::network-acl:a4e28308-8ee7-46ab-8108-9f881f22bdbf',
-                  format: crn, type: string}
-                id: {description: The unique identifier for this network ACL, example: a4e28308-8ee7-46ab-8108-9f881f22bdbf,
-                  format: uuid, pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
-                  type: string}
-                name: {description: The user-defined name for this network ACL, example: my-network-acl,
-                  format: name, pattern: '^[A-Za-z][-A-Za-z0-9_]*$', type: string}
-              title: NetworkACLIdentityByName
-              type: object
             name: {description: The user-defined name for this VPC, example: my-vpc,
               format: name, pattern: '^[A-Za-z][-A-Za-z0-9_]*$', type: string}
             resource_group:
@@ -7334,64 +7719,6 @@ paths:
           description: error
           schema: {$ref: '#/definitions/riaaserror'}
       summary: Updates specified VPC
-      tags: [Network]
-  /vpcs/{vpc_id}/default_network_acl:
-    get:
-      consumes: [application/json]
-      description: This request retrieves the default network ACL for the VPC specified
-        by the identifier in the URL. The default network ACL is applied to any new
-        subnets in the VPC which do not specify a network ACL.
-      parameters:
-      - {description: Requests the version of the API as of a date in the format `YYYY-MM-DD`. Any date up to the current date may be provided. Specify the current date to request the latest version., in: query, name: version, required: true, format: data, type: string}
-      - {description: The infrastructure generation for the request., in: query, name: generation, required: true, type: integer}
-      - {description: The VPC identifier, in: path, name: vpc_id, required: true,
-        type: string}
-      produces: [application/json]
-      responses:
-        200:
-          description: dummy
-          schema:
-            $ref: "#/definitions/network_acl"
-        404:
-          description: error
-          schema: {$ref: '#/definitions/riaaserror'}
-        500:
-          description: error
-          schema: {$ref: '#/definitions/riaaserror'}
-      summary: Retrieves default network ACL
-      tags: [Network]
-    put:
-      consumes: [application/json]
-      description: This request sets the network ACL specified in the request body
-        as the default network ACL for the VPC specified by the VPC identifier in
-        the URL.  The default network ACL is applied to any new subnets in the VPC
-        which do not specify a network ACL.
-      parameters:
-      - {description: Requests the version of the API as of a date in the format `YYYY-MM-DD`. Any date up to the current date may be provided. Specify the current date to request the latest version., in: query, name: version, required: true, format: data, type: string}
-      - {description: The infrastructure generation for the request., in: query, name: generation, required: true, type: integer}
-      - {description: The VPC identifier, in: path, name: vpc_id, required: true,
-        type: string}
-      - in: body
-        name: body
-        required: true
-        schema:
-          properties:
-            identifier: {description: The unique identifier for this network ACL, example: a4e28308-8ee7-46ab-8108-9f881f22bdbf,
-              format: uuid, pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$', type: string}
-          type: object
-      produces: [application/json]
-      responses:
-        201:
-          description: dummy
-          schema:
-            $ref: "#/definitions/network_acl"
-        400:
-          description: error
-          schema: {$ref: '#/definitions/riaaserror'}
-        500:
-          description: error
-          schema: {$ref: '#/definitions/riaaserror'}
-      summary: Sets the default network ACL for a VPC
       tags: [Network]
   /vpcs/{vpc_id}/default_security_group:
     get:
@@ -8568,6 +8895,224 @@ paths:
           description: "The listener deletion request was accepted."
         404:
           description: "A load balancer or listener with the specified identifier could not be found."
+          schema: {$ref: '#/definitions/riaaserror'}
+      tags: [LBaas]
+
+  /load_balancers/{id}/listeners/{listener_id}/policies:
+    get:
+      summary: "Retrieves all policies of the listener"
+      description: "Retrieves a list of all policies belonging to the load balancer listener."
+      parameters:
+      - {description: Requests the version of the API as of a date in the format `YYYY-MM-DD`. Any date up to the current date may be provided. Specify the current date to request the latest version., in: query, name: version, required: true, format: data, type: string}
+      - {description: "The infrastructure generation for the request. For the API behavior documented here, use 1.", in: query, name: generation, required: true, type: integer}
+      - {name: id, in: "path", description: "The load balancer identifier", required: true, type: "string"}
+      - {name: listener_id, in: "path", description: "The listener identifier", required: true, type: "string"}
+      responses:
+        200:
+          description: "The policies of the listener were retrieved successfully."
+          schema:
+            $ref: "#/definitions/ListenerPolicyCollection"
+      tags: [LBaas]
+    post:
+      summary: "Create a policy for the load balancer listener"
+      description: "Creates a new policy to the load balancer listener."
+      parameters:
+      - {description: Requests the version of the API as of a date in the format `YYYY-MM-DD`. Any date up to the current date may be provided. Specify the current date to request the latest version., in: query, name: version, required: true, format: data, type: string}
+      - {description: "The infrastructure generation for the request. For the API behavior documented here, use 1.", in: query, name: generation, required: true, type: integer}
+      - {name: id, in: "path", description: "The load balancer identifier", required: true, type: "string"}
+      - {name: listener_id, in: "path", description: "The listener identifier", required: true, type: "string"}
+      - in: body
+        name: body
+        description: "The policy template"
+        required: true
+        schema:
+          $ref: "#/definitions/ListenerPolicyTemplate"
+      responses:
+        201:
+          description: "The policy was created successfully."
+          schema:
+            $ref: "#/definitions/ListenerPolicy"
+        400:
+          description: "An invalid policy template was provided."
+          schema: {$ref: '#/definitions/riaaserror'}
+        404:
+          description: "A load balancer or listener with the specified identifier could not be found."
+          schema: {$ref: '#/definitions/riaaserror'}
+      tags: [LBaas]
+
+  /load_balancers/{id}/listeners/{listener_id}/policies/{policy_id}:
+    get:
+      summary: "Retrieve a policy of the load balancer listener"
+      description: "Retrieve a single policy specified by the identifier in the URL path."
+      parameters:
+      - {description: Requests the version of the API as of a date in the format `YYYY-MM-DD`. Any date up to the current date may be provided. Specify the current date to request the latest version., in: query, name: version, required: true, format: data, type: string}
+      - {description: The infrastructure generation for the request., in: query, name: generation, required: true, type: integer}
+      - {name: id, in: "path", description: "The load balancer identifier", required: true, type: "string"}
+      - {name: listener_id, in: "path", description: "The listener identifier", required: true, type: "string"}
+      - {name: policy_id, in: "path", description: "The policy identifier", required: true, type: "string"}
+      responses:
+        200:
+          description: "The policy was retrieved successfully."
+          schema:
+            $ref: "#/definitions/ListenerPolicy"
+        404:
+          description: "A load balancer or listener with the specified identifier could not be found."
+          schema: {$ref: '#/definitions/riaaserror'}
+      tags: [LBaas]
+    patch:
+      summary: "Update a policy of the load balancer listener"
+      description: "Updates a policy from a policy template."
+      parameters:
+      - {description: Requests the version of the API as of a date in the format `YYYY-MM-DD`. Any date up to the current date may be provided. Specify the current date to request the latest version., in: query, name: version, required: true, format: data, type: string}
+      - {description: The infrastructure generation for the request., in: query, name: generation, required: true, type: integer}
+      - {name: id, in: "path", description: "The load balancer identifier", required: true, type: "string"}
+      - {name: listener_id, in: "path", description: "The listener identifier", required: true, type: "string"}
+      - {name: policy_id, in: "path", description: "The policy identifier", required: true, type: "string"}
+      - in: body
+        name: body
+        description: "The policy template"
+        required: true
+        schema:
+          $ref: "#/definitions/ListenerPolicyTemplatePatch"
+      responses:
+        200:
+          description: "The policy update request was accepted."
+          schema:
+            $ref: "#/definitions/ListenerPolicy"
+        400:
+          description: "An invalid policy template was provided."
+          schema: {$ref: '#/definitions/riaaserror'}
+        404:
+          description: "A load balancer or listener with the specified identifier could not be found."
+          schema: {$ref: '#/definitions/riaaserror'}
+      tags: [LBaas]
+    delete:
+      summary: "Delete a policy of the load balancer listener"
+      description: "Deletes a policy of the load balancer listener. This operation cannot be reversed."
+      parameters:
+      - {description: Requests the version of the API as of a date in the format `YYYY-MM-DD`. Any date up to the current date may be provided. Specify the current date to request the latest version., in: query, name: version, required: true, format: data, type: string}
+      - {description: The infrastructure generation for the request., in: query, name: generation, required: true, type: integer}
+      - {name: id, in: "path", description: "The load balancer identifier", required: true, type: "string"}
+      - {name: listener_id, in: "path", description: "The listener identifier", required: true, type: "string"}
+      - {name: policy_id, in: "path", description: "The policy identifier", required: true, type: "string"}
+      responses:
+        204:
+          description: "The policy deletion request was accepted."
+        404:
+          description: "A load balancer or listener with the specified identifier could not be found."
+          schema: {$ref: '#/definitions/riaaserror'}
+      tags: [LBaas]
+
+  /load_balancers/{id}/listeners/{listener_id}/policies/{policy_id}/rules:
+    get:
+      summary: "List all rules of the load balancer listener policy"
+      description: "Retrieves a list of all rules belonging to the load balancer listener policy."
+      parameters:
+      - {description: Requests the version of the API as of a date in the format `YYYY-MM-DD`. Any date up to the current date may be provided. Specify the current date to request the latest version., in: query, name: version, required: true, format: data, type: string}
+      - {description: The infrastructure generation for the request., in: query, name: generation, required: true, type: integer}
+      - {name: id, in: "path", description: "The load balancer identifier", required: true, type: "string"}
+      - {name: listener_id, in: "path", description: "The listener identifier", required: true, type: "string"}
+      - {name: policy_id, in: "path", description: "The policy identifier", required: true, type: "string"}
+      responses:
+        200:
+          description: "The rules of the policy were retrieved successfully."
+          schema:
+            $ref: "#/definitions/ListenerPolicyRuleCollection"
+        404:
+          description: "A load balancer, listener or policy with the specified identifier could not be found."
+          schema: {$ref: '#/definitions/riaaserror'}
+      tags: [LBaas]
+    post:
+      summary: "Create a rule for the load balancer listener policy"
+      description: "Creates a new rule for the load balancer listener policy."
+      parameters:
+      - {description: Requests the version of the API as of a date in the format `YYYY-MM-DD`. Any date up to the current date may be provided. Specify the current date to request the latest version., in: query, name: version, required: true, format: data, type: string}
+      - {description: "The infrastructure generation for the request. For the API behavior documented here, use 1.", in: query, name: generation, required: true, type: integer}
+      - {name: id, in: "path", description: "The load balancer identifier", required: true, type: "string"}
+      - {name: listener_id, in: "path", description: "The listener identifier", required: true, type: "string"}
+      - {name: policy_id, in: "path", description: "The policy identifier", required: true, type: "string"}
+      - in: body
+        name: body
+        description: "The policy rule template"
+        required: true
+        schema:
+          $ref: "#/definitions/ListenerPolicyRuleTemplate"
+      responses:
+        201:
+          description: "The rule was created successfully."
+          schema:
+            $ref: "#/definitions/ListenerPolicyRule"
+        400:
+          description: "An invalid policy rule template was provided."
+          schema: {$ref: '#/definitions/riaaserror'}
+        404:
+          description: "A load balancer, listener or policy with the specified identifier could not be found."
+          schema: {$ref: '#/definitions/riaaserror'}
+      tags: [LBaas]
+
+  /load_balancers/{id}/listeners/{listener_id}/policies/{policy_id}/rules/{rule_id}:
+    get:
+      summary: "Retrieve a rule of the load balancer listener policy"
+      description: "Retrieves a single rule specified by the identifier in the URL path."
+      parameters:
+      - {description: Requests the version of the API as of a date in the format `YYYY-MM-DD`. Any date up to the current date may be provided. Specify the current date to request the latest version., in: query, name: version, required: true, format: data, type: string}
+      - {description: The infrastructure generation for the request., in: query, name: generation, required: true, type: integer}
+      - {name: id, in: "path", description: "The load balancer identifier", required: true, type: "string"}
+      - {name: listener_id, in: "path", description: "The listener identifier", required: true, type: "string"}
+      - {name: policy_id, in: "path", description: "The policy identifier", required: true, type: "string"}
+      - {name: rule_id, in: "path", description: "The rule identifier", required: true, type: "string"}
+      responses:
+        200:
+          description: "The rule was retrieved successfully."
+          schema:
+            $ref: "#/definitions/ListenerPolicyRule"
+        404:
+          description: "A load balancer, listener or policy with the specified identifier could not be found."
+          schema: {$ref: '#/definitions/riaaserror'}
+      tags: [LBaas]
+    patch:
+      summary: "Update a rule of the load balancer listener policy"
+      description: "Updates a rule of the load balancer listener policy."
+      parameters:
+      - {description: Requests the version of the API as of a date in the format `YYYY-MM-DD`. Any date up to the current date may be provided. Specify the current date to request the latest version., in: query, name: version, required: true, format: data, type: string}
+      - {description: The infrastructure generation for the request., in: query, name: generation, required: true, type: integer}
+      - {name: id, in: "path", description: "The load balancer identifier", required: true, type: "string"}
+      - {name: listener_id, in: "path", description: "The listener identifier", required: true, type: "string"}
+      - {name: policy_id, in: "path", description: "The policy identifier", required: true, type: "string"}
+      - {name: rule_id, in: "path", description: "The rule identifier", required: true, type: "string"}
+      - in: body
+        name: body
+        description: "The rule template"
+        required: true
+        schema:
+          $ref: "#/definitions/ListenerPolicyRuleTemplatePatch"
+      responses:
+        200:
+          description: "The rule update request was accepted."
+          schema:
+            $ref: "#/definitions/ListenerPolicyRule"
+        400:
+          description: "An invalid rule template was provided."
+          schema: {$ref: '#/definitions/riaaserror'}
+        404:
+          description: "A load balancer, listener or policy with the specified identifier could not be found."
+          schema: {$ref: '#/definitions/riaaserror'}
+      tags: [LBaas]
+    delete:
+      summary: "Delete a rule from the load balancer listener policy"
+      description: "Deletes a rule from the load balancer listener policy. This operation cannot be reversed."
+      parameters:
+      - {description: Requests the version of the API as of a date in the format `YYYY-MM-DD`. Any date up to the current date may be provided. Specify the current date to request the latest version., in: query, name: version, required: true, format: data, type: string}
+      - {description: The infrastructure generation for the request., in: query, name: generation, required: true, type: integer}
+      - {name: id, in: "path", description: "The load balancer identifier", required: true, type: "string"}
+      - {name: listener_id, in: "path", description: "The listener identifier", required: true, type: "string"}
+      - {name: policy_id, in: "path", description: "The policy identifier", required: true, type: "string"}
+      - {name: rule_id, in: "path", description: "The rule identifier", required: true, type: "string"}
+      responses:
+        204:
+          description: "The rule deletion request was accepted."
+        404:
+          description: "A load balancer, listener or policy with the specified identifier could not be found."
           schema: {$ref: '#/definitions/riaaserror'}
       tags: [LBaas]
 

@@ -66,7 +66,12 @@ for the patch images ID operation typically these are written to a http.Request
 type PatchImagesIDParams struct {
 
 	/*RequestBody*/
-	RequestBody *models.PatchImagesIDParamsBody
+	RequestBody *models.ImagePatch
+	/*FutureVersion
+	  allows any date string to be accepted, enabling testing of features still under development
+
+	*/
+	FutureVersion *bool
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -122,14 +127,25 @@ func (o *PatchImagesIDParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequestBody adds the requestBody to the patch images ID params
-func (o *PatchImagesIDParams) WithRequestBody(requestBody *models.PatchImagesIDParamsBody) *PatchImagesIDParams {
+func (o *PatchImagesIDParams) WithRequestBody(requestBody *models.ImagePatch) *PatchImagesIDParams {
 	o.SetRequestBody(requestBody)
 	return o
 }
 
 // SetRequestBody adds the requestBody to the patch images ID params
-func (o *PatchImagesIDParams) SetRequestBody(requestBody *models.PatchImagesIDParamsBody) {
+func (o *PatchImagesIDParams) SetRequestBody(requestBody *models.ImagePatch) {
 	o.RequestBody = requestBody
+}
+
+// WithFutureVersion adds the futureVersion to the patch images ID params
+func (o *PatchImagesIDParams) WithFutureVersion(futureVersion *bool) *PatchImagesIDParams {
+	o.SetFutureVersion(futureVersion)
+	return o
+}
+
+// SetFutureVersion adds the futureVersion to the patch images ID params
+func (o *PatchImagesIDParams) SetFutureVersion(futureVersion *bool) {
+	o.FutureVersion = futureVersion
 }
 
 // WithGeneration adds the generation to the patch images ID params
@@ -177,6 +193,22 @@ func (o *PatchImagesIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		if err := r.SetBodyParam(o.RequestBody); err != nil {
 			return err
 		}
+	}
+
+	if o.FutureVersion != nil {
+
+		// query param future_version
+		var qrFutureVersion bool
+		if o.FutureVersion != nil {
+			qrFutureVersion = *o.FutureVersion
+		}
+		qFutureVersion := swag.FormatBool(qrFutureVersion)
+		if qFutureVersion != "" {
+			if err := r.SetQueryParam("future_version", qFutureVersion); err != nil {
+				return err
+			}
+		}
+
 	}
 
 	// query param generation

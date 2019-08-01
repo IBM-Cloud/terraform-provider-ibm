@@ -13,17 +13,19 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// PatchImagesIDParamsBody ImagePatch
-// swagger:model patchImagesIdParamsBody
-type PatchImagesIDParamsBody struct {
+// ImagePatch ImagePatch
+// swagger:model ImagePatch
+type ImagePatch struct {
 
-	// The user-defined name for this image
-	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	// The unique user-defined name for this image. Names starting with "ibm-" are not allowed.
+	// Max Length: 63
+	// Min Length: 1
+	// Pattern: ^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$
 	Name string `json:"name,omitempty"`
 }
 
-// Validate validates this patch images Id params body
-func (m *PatchImagesIDParamsBody) Validate(formats strfmt.Registry) error {
+// Validate validates this image patch
+func (m *ImagePatch) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -36,13 +38,21 @@ func (m *PatchImagesIDParamsBody) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PatchImagesIDParamsBody) validateName(formats strfmt.Registry) error {
+func (m *ImagePatch) validateName(formats strfmt.Registry) error {
 
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
-	if err := validate.Pattern("name", "body", string(m.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+	if err := validate.MinLength("name", "body", string(m.Name), 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("name", "body", string(m.Name), 63); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("name", "body", string(m.Name), `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`); err != nil {
 		return err
 	}
 
@@ -50,7 +60,7 @@ func (m *PatchImagesIDParamsBody) validateName(formats strfmt.Registry) error {
 }
 
 // MarshalBinary interface implementation
-func (m *PatchImagesIDParamsBody) MarshalBinary() ([]byte, error) {
+func (m *ImagePatch) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -58,8 +68,8 @@ func (m *PatchImagesIDParamsBody) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PatchImagesIDParamsBody) UnmarshalBinary(b []byte) error {
-	var res PatchImagesIDParamsBody
+func (m *ImagePatch) UnmarshalBinary(b []byte) error {
+	var res ImagePatch
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

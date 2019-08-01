@@ -17,6 +17,8 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
+
+	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPutSecurityGroupsSecurityGroupIDNetworkInterfacesIDParams creates a new PutSecurityGroupsSecurityGroupIDNetworkInterfacesIDParams object
@@ -73,6 +75,8 @@ type PutSecurityGroupsSecurityGroupIDNetworkInterfacesIDParams struct {
 
 	*/
 	ID string
+	/*RequestBody*/
+	RequestBody *models.DummyEmptyTemplate
 	/*SecurityGroupID
 	  The security group identifier
 
@@ -144,6 +148,17 @@ func (o *PutSecurityGroupsSecurityGroupIDNetworkInterfacesIDParams) SetID(id str
 	o.ID = id
 }
 
+// WithRequestBody adds the requestBody to the put security groups security group ID network interfaces ID params
+func (o *PutSecurityGroupsSecurityGroupIDNetworkInterfacesIDParams) WithRequestBody(requestBody *models.DummyEmptyTemplate) *PutSecurityGroupsSecurityGroupIDNetworkInterfacesIDParams {
+	o.SetRequestBody(requestBody)
+	return o
+}
+
+// SetRequestBody adds the requestBody to the put security groups security group ID network interfaces ID params
+func (o *PutSecurityGroupsSecurityGroupIDNetworkInterfacesIDParams) SetRequestBody(requestBody *models.DummyEmptyTemplate) {
+	o.RequestBody = requestBody
+}
+
 // WithSecurityGroupID adds the securityGroupID to the put security groups security group ID network interfaces ID params
 func (o *PutSecurityGroupsSecurityGroupIDNetworkInterfacesIDParams) WithSecurityGroupID(securityGroupID string) *PutSecurityGroupsSecurityGroupIDNetworkInterfacesIDParams {
 	o.SetSecurityGroupID(securityGroupID)
@@ -186,6 +201,12 @@ func (o *PutSecurityGroupsSecurityGroupIDNetworkInterfacesIDParams) WriteToReque
 	// path param id
 	if err := r.SetPathParam("id", o.ID); err != nil {
 		return err
+	}
+
+	if o.RequestBody != nil {
+		if err := r.SetBodyParam(o.RequestBody); err != nil {
+			return err
+		}
 	}
 
 	// path param security_group_id
