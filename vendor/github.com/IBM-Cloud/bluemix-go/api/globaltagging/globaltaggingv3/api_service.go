@@ -3,7 +3,6 @@ package globaltaggingv3
 import (
 	gohttp "net/http"
 
-
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/authentication"
 	"github.com/IBM-Cloud/bluemix-go/client"
@@ -67,4 +66,3 @@ func New(sess *session.Session) (GlobalTaggingServiceAPI, error) {
 func (c *globalTaggingService) Tags() Tags {
 	return newTaggingAPI(c.Client)
 }
-

@@ -1,11 +1,10 @@
 package icdv4
 
 import (
-    "github.com/IBM-Cloud/bluemix-go/client"
-    "github.com/IBM-Cloud/bluemix-go/utils"
-    "fmt"
+	"fmt"
+	"github.com/IBM-Cloud/bluemix-go/client"
+	"github.com/IBM-Cloud/bluemix-go/utils"
 )
-
 
 // type TaskResult struct {
 //       Task Task `json:"task"`
@@ -22,30 +21,25 @@ import (
 // }
 
 type Tasks interface {
-     GetTask(taskId string) (Task, error)
+	GetTask(taskId string) (Task, error)
 }
 
 type tasks struct {
-    client *client.Client
+	client *client.Client
 }
 
 func newTaskAPI(c *client.Client) Tasks {
-    return &tasks{
-        client: c,
-    }
+	return &tasks{
+		client: c,
+	}
 }
 
-func (r *tasks)  GetTask(taskId string) (Task, error) {
-    taskResult := TaskResult{}      
-    rawURL := fmt.Sprintf("/v4/ibm/tasks/%s", utils.EscapeUrlParm(taskId))
-      _, err := r.client.Get(rawURL, &taskResult)
-      if err != nil {
-        return taskResult.Task, err
-    }   
-    return taskResult.Task, nil
+func (r *tasks) GetTask(taskId string) (Task, error) {
+	taskResult := TaskResult{}
+	rawURL := fmt.Sprintf("/v4/ibm/tasks/%s", utils.EscapeUrlParm(taskId))
+	_, err := r.client.Get(rawURL, &taskResult)
+	if err != nil {
+		return taskResult.Task, err
+	}
+	return taskResult.Task, nil
 }
-
-
-
-
-

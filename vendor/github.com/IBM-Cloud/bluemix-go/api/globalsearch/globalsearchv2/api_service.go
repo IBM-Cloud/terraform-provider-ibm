@@ -3,7 +3,6 @@ package globalsearchv2
 import (
 	gohttp "net/http"
 
-
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/authentication"
 	"github.com/IBM-Cloud/bluemix-go/client"
@@ -67,4 +66,3 @@ func New(sess *session.Session) (GlobalSearchServiceAPI, error) {
 func (c *globalSearchService) Searches() Searches {
 	return newSearchAPI(c.Client)
 }
-

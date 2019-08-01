@@ -64,10 +64,7 @@ type AccountUserEntity struct {
 	Photo       string `json:"photo"`
 }
 
-type AccountUserMetadata struct {
-	Metadata
-	VerifiedAt string `json:"verified_at"`
-}
+type AccountUserMetadata Metadata
 
 type Identity struct {
 	Id         string `json:"id"`

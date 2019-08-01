@@ -1,35 +1,33 @@
 package globalsearchv2
 
 import (
+	"fmt"
 	"github.com/IBM-Cloud/bluemix-go/client"
-    "fmt"
 )
 
 type SearchResult struct {
-      Items []Item `json:"items"`
-      MoreData bool `json:"more_data"`
-      Token string `json:"token"`
-      FilterError bool `json:"filter_error"`
-      PartialData int `json:"partial_data"`
-    }
-
-type Item struct {
-      Name string `json:"name,omitempty"`
-      CRN string `json:"crn,omitempty"`
-      ServiceName string `json:"service_name,omitempty"`
-      Tags []string `json:"tags,omitempty"`
-    }
-
-type SearchBody struct {
-    Query string `json:"query"`
-    Fields []string `json:"fields,omitempty"`
-    Token string `json:"token,omitempty"`
+	Items       []Item `json:"items"`
+	MoreData    bool   `json:"more_data"`
+	Token       string `json:"token"`
+	FilterError bool   `json:"filter_error"`
+	PartialData int    `json:"partial_data"`
 }
 
+type Item struct {
+	Name        string   `json:"name,omitempty"`
+	CRN         string   `json:"crn,omitempty"`
+	ServiceName string   `json:"service_name,omitempty"`
+	Tags        []string `json:"tags,omitempty"`
+}
 
+type SearchBody struct {
+	Query  string   `json:"query"`
+	Fields []string `json:"fields,omitempty"`
+	Token  string   `json:"token,omitempty"`
+}
 
 type Searches interface {
-    	PostQuery(searchBody SearchBody) (SearchResult, error)
+	PostQuery(searchBody SearchBody) (SearchResult, error)
 }
 
 type searches struct {
@@ -42,16 +40,12 @@ func newSearchAPI(c *client.Client) Searches {
 	}
 }
 
-
-func (r *searches)  PostQuery(searchBody SearchBody) (SearchResult, error) {
-  searchResult := SearchResult{}    
-  rawURL := fmt.Sprintf("/v2/resources/search")
-      _, err := r.client.Post(rawURL, &searchBody, &searchResult)
-      if err != nil {
-    return searchResult, err
-  }   
-  return searchResult, nil
+func (r *searches) PostQuery(searchBody SearchBody) (SearchResult, error) {
+	searchResult := SearchResult{}
+	rawURL := fmt.Sprintf("/v2/resources/search")
+	_, err := r.client.Post(rawURL, &searchBody, &searchResult)
+	if err != nil {
+		return searchResult, err
+	}
+	return searchResult, nil
 }
-
-
-
