@@ -44,6 +44,7 @@ resource "ibm_database" "<your_database>" {
 
 output "ICD Etcd database connection string" {
   value = "http://${"${ibm_database.test_acc.connectionstrings.0.composed}"}"
+}
 ```
 
 provider.tf
