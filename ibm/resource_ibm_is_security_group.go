@@ -11,9 +11,10 @@ import (
 )
 
 const (
-	isSecurityGroupName  = "name"
-	isSecurityGroupVPC   = "vpc"
-	isSecurityGroupRules = "rules"
+	isSecurityGroupName          = "name"
+	isSecurityGroupVPC           = "vpc"
+	isSecurityGroupRules         = "rules"
+	isSecurityGroupResourceGroup = "resource_group"
 )
 
 func resourceIBMISSecurityGroup() *schema.Resource {
@@ -50,6 +51,13 @@ func resourceIBMISSecurityGroup() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: makeIBMISSecurityRuleSchema(),
 				},
+			},
+
+			isSecurityGroupResourceGroup: {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
 			},
 		},
 	}
@@ -120,6 +128,10 @@ func resourceIBMISSecurityGroupRead(d *schema.ResourceData, meta interface{}) er
 	}
 	d.Set(isSecurityGroupRules, rules)
 	d.SetId(group.ID.String())
+	if group.ResourceGroup != nil {
+		d.Set(isSecurityGroupResourceGroup, group.ResourceGroup.ID)
+	}
+
 	return nil
 }
 
@@ -229,6 +241,11 @@ func parseIBMISSecurityGroupDictionary(d *schema.ResourceData, tag string) (*par
 	parsed := newParsedIBMISSecurityGroupDictionary()
 	parsed.name = d.Get(isSecurityGroupName).(string)
 	parsed.vpc = d.Get(isSecurityGroupVPC).(string)
+	if rg, ok := d.GetOk(isSecurityGroupResourceGroup); ok {
+		parsed.resourceGroup = rg.(string)
+
+	}
+
 	return parsed, nil
 }
 
@@ -244,18 +261,17 @@ func makeIBMISSecurityGroupCreateParams(parsed *parsedIBMISSecurityGroupDictiona
 	params := &models.PostSecurityGroupsParamsBody{}
 	params.Name = parsed.name
 	if parsed.resourceGroup != "" {
-		uuid, err := makeStrfmtUUID(parsed.resourceGroup)
-		if err != nil {
-			return nil, err
+		rgref := models.PostSecurityGroupsParamsBodyResourceGroup{
+			ID: strfmt.UUID(parsed.resourceGroup),
 		}
-		params.ResourceGroup = &models.PostSecurityGroupsParamsBodyResourceGroup{ID: uuid}
+		params.ResourceGroup = &rgref
 	}
+
 	uuid, err := makeStrfmtUUID(parsed.vpc)
 	if err != nil {
 		return nil, err
 	}
 	params.Vpc = &models.PostSecurityGroupsParamsBodyVpc{ID: uuid}
-
 	return params, nil
 }
 
