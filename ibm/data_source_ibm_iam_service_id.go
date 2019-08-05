@@ -3,6 +3,7 @@ package ibm
 import (
 	"fmt"
 
+	"github.com/IBM-Cloud/bluemix-go/crn"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -69,28 +70,17 @@ func dataSourceIBMIAMServiceIDRead(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 	name := d.Get("name").(string)
-	bmxSess, err := meta.(ClientSession).BluemixSession()
-	if err != nil {
-		return err
-	}
-
-	mccpAPI, err := meta.(ClientSession).MccpAPI()
-	if err != nil {
-		return err
-	}
-	region, err := mccpAPI.Regions().FindRegionByName(bmxSess.Config.Region)
-	if err != nil {
-		return err
-	}
 
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
 
-	boundTo := GenerateBoundToCRN(*region, userDetails.userAccount).String()
+	boundTo := crn.New(userDetails.cloudName, userDetails.cloudType)
+	boundTo.ScopeType = crn.ScopeAccount
+	boundTo.Scope = userDetails.userAccount
 
-	serviceIDS, err := iamClient.ServiceIds().FindByName(boundTo, name)
+	serviceIDS, err := iamClient.ServiceIds().FindByName(boundTo.String(), name)
 	if err != nil {
 		return err
 	}

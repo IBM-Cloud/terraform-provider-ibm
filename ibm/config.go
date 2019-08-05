@@ -57,6 +57,8 @@ type UserConfig struct {
 	userID      string
 	userEmail   string
 	userAccount string
+	cloudName   string
+	cloudType   string
 }
 
 //Config stores user provider input
@@ -551,6 +553,13 @@ func fetchUserDetails(sess *bxsession.Session) (*UserConfig, error) {
 	user.userEmail = claims["email"].(string)
 	user.userID = claims["id"].(string)
 	user.userAccount = claims["account"].(map[string]interface{})["bss"].(string)
+	iss := claims["iss"].(string)
+	if strings.Contains(iss, "https://iam.cloud.ibm.com") {
+		user.cloudName = "bluemix"
+	} else {
+		user.cloudName = "staging"
+	}
+	user.cloudType = "public"
 	return &user, nil
 }
 
