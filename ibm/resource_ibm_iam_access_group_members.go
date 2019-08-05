@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
+	"github.com/IBM-Cloud/bluemix-go/crn"
 	"github.com/IBM-Cloud/bluemix-go/models"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -124,21 +125,6 @@ func resourceIBMIAMAccessGroupMembersRead(d *schema.ResourceData, meta interface
 
 	d.Set("access_group_id", grpID)
 
-	mccpAPI, err := meta.(ClientSession).MccpAPI()
-	if err != nil {
-		return err
-	}
-
-	bmxSess, err := meta.(ClientSession).BluemixSession()
-	if err != nil {
-		return err
-	}
-
-	region, err := mccpAPI.Regions().FindRegionByName(bmxSess.Config.Region)
-	if err != nil {
-		return err
-	}
-
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
@@ -160,7 +146,12 @@ func resourceIBMIAMAccessGroupMembersRead(d *schema.ResourceData, meta interface
 	if err != nil {
 		return err
 	}
-	serviceIDs, err := iamClient.ServiceIds().List(GenerateBoundToCRN(*region, accountID).String())
+
+	boundTo := crn.New(userDetails.cloudName, userDetails.cloudType)
+	boundTo.ScopeType = crn.ScopeAccount
+	boundTo.Scope = userDetails.userAccount
+
+	serviceIDs, err := iamClient.ServiceIds().List(boundTo.String())
 	if err != nil {
 		return err
 	}
