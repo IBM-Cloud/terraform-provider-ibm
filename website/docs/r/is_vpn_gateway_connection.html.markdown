@@ -42,13 +42,13 @@ The following arguments are supported:
 * `peer_address` - (Required, string) The IP address of the peer VPN gateway.
 * `preshared_key`: The preshared key.
 * `local_cidrs` - (Optional, list) List of CIDRs for this resource.
-* `peer-cidrs` - (Optional, list) List of CIDRs for this resource.
-* `admin-state-up` - (Optional, bool) VPN gateway connection status. Default false. If set to false, the VPN gateway connection is shut down
-* `dead-peer-detection-action` - (Optional, string) Dead Peer Detection actions. Supported values are restart, clear, hold, none. Default `none`
-* `dead-peer-detection-interval` - (Optional, int) Dead Peer Detection interval in seconds. Default 30.
-* `dead-peer-detection-timeout` - (Optional, int) Dead Peer Detection timeout in seconds. Default 120.
-* `ike-policy` - (Optional, string) ID of the IKE policy.
-* `ipsec-policy` - (Optional, string) ID of the IPSec policy.
+* `peer_cidrs` - (Optional, list) List of CIDRs for this resource.
+* `admin_state_up` - (Optional, bool) VPN gateway connection status. Default false. If set to false, the VPN gateway connection is shut down
+* `action` - (Optional, string) Dead Peer Detection actions. Supported values are restart, clear, hold, none. Default `none`
+* `interval` - (Optional, int) Dead Peer Detection interval in seconds. Default 30.
+* `timeout` - (Optional, int) Dead Peer Detection timeout in seconds. Default 120.
+* `ike_policy` - (Optional, string) ID of the IKE policy.
+* `ipsec_policy` - (Optional, string) ID of the IPSec policy.
 
 ## Attribute Reference
 
