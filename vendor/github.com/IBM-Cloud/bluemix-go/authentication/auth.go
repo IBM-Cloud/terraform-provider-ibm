@@ -18,7 +18,7 @@ func PopulateTokens(tokenProvider client.TokenProvider, c *bluemix.Config) error
 		err := tokenProvider.AuthenticatePassword(c.IBMID, c.IBMIDPassword)
 		return err
 	}
-	if c.BluemixAPIKey != "" && (c.IAMAccessToken == "" && c.IAMRefreshToken == "") {
+	if c.BluemixAPIKey != "" {
 		err := tokenProvider.AuthenticateAPIKey(c.BluemixAPIKey)
 		return err
 	}
