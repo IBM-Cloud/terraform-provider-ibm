@@ -471,25 +471,6 @@ func newSession(c *Config) (*Session, error) {
 	softlayerSession.AppendUserAgent(fmt.Sprintf("terraform-provider-ibm/%s", version.Version))
 	ibmSession.SoftLayerSession = softlayerSession
 
-	if c.BluemixAPIKey != "" && (c.IAMToken == "" && c.IAMRefreshToken == "") {
-		log.Println("Configuring IBM Cloud Session with API key")
-		var sess *bxsession.Session
-		bmxConfig := &bluemix.Config{
-			BluemixAPIKey: c.BluemixAPIKey,
-			Debug:         os.Getenv("TF_LOG") != "",
-			HTTPTimeout:   c.BluemixTimeout,
-			Region:        c.Region,
-			ResourceGroup: c.ResourceGroup,
-			RetryDelay:    &c.RetryDelay,
-			MaxRetries:    &c.RetryCount,
-		}
-		sess, err := bxsession.New(bmxConfig)
-		if err != nil {
-			return nil, err
-		}
-		ibmSession.BluemixSession = sess
-	}
-
 	if (c.IAMToken != "" && c.IAMRefreshToken == "") || (c.IAMToken == "" && c.IAMRefreshToken != "") {
 		return nil, fmt.Errorf("iam_token and iam_refresh_token must be provided")
 	}
@@ -506,6 +487,25 @@ func newSession(c *Config) (*Session, error) {
 			ResourceGroup:   c.ResourceGroup,
 			RetryDelay:      &c.RetryDelay,
 			MaxRetries:      &c.RetryCount,
+		}
+		sess, err := bxsession.New(bmxConfig)
+		if err != nil {
+			return nil, err
+		}
+		ibmSession.BluemixSession = sess
+	}
+
+	if c.BluemixAPIKey != "" {
+		log.Println("Configuring IBM Cloud Session with API key")
+		var sess *bxsession.Session
+		bmxConfig := &bluemix.Config{
+			BluemixAPIKey: c.BluemixAPIKey,
+			Debug:         os.Getenv("TF_LOG") != "",
+			HTTPTimeout:   c.BluemixTimeout,
+			Region:        c.Region,
+			ResourceGroup: c.ResourceGroup,
+			RetryDelay:    &c.RetryDelay,
+			MaxRetries:    &c.RetryCount,
 		}
 		sess, err := bxsession.New(bmxConfig)
 		if err != nil {
