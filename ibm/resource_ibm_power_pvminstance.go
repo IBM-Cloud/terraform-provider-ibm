@@ -31,6 +31,7 @@ const (
 	PowerPVMInstanceNetworkName  = "name"
 	PowerPVMInstanceMigratable   = "migratable"
 	PowerPVMInstanceAvailable    = "ACTIVE"
+	PowerPVMInstanceHealthOk     = "OK"
 	PowerPVMInstanceBuilding     = "BUILD"
 	PowerPVMInstanceDeleting     = "DELETING"
 	PowerPVMInstanceNetworkId    = "networkid"
@@ -216,6 +217,7 @@ func resourceIBMPowerPVMInstanceCreate(d *schema.ResourceData, meta interface{})
 
 	truepvmid := (*pvm)[0].PvmInstanceID
 	d.SetId(*truepvmid)
+	//d.Set("addresses",(*pvm)[0].Addresses)
 
 	log.Printf("Printing the instance id .. after the create ... %s", *truepvmid)
 
@@ -371,11 +373,9 @@ func isPowerPvmInstanceDeleteRefreshFunc(client *st.PowerPvmClient, id string) r
 func isWaitForPowerPVMInstanceAvailable(client *st.PowerPvmClient, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for PowerPVMInstance (%s) to be available and sleeping ", id)
 
-	time.Sleep(60 * time.Second)
-
 	stateConf := &resource.StateChangeConf{
 		Pending:      []string{"PENDING", PowerPVMInstanceBuilding},
-		Target:       []string{PowerPVMInstanceAvailable},
+		Target:       []string{"OK", PowerPVMInstanceHealthOk},
 		Refresh:      isPowerPVMInstanceRefreshFunc(client, id),
 		Timeout:      timeout,
 		PollInterval: 1 * time.Minute, // Added this because of the change that was made by the Power Team
@@ -394,22 +394,26 @@ func isPowerPVMInstanceRefreshFunc(client *st.PowerPvmClient, id string) resourc
 			return nil, "", err
 		}
 
-		if checkActive(pvm); checkifIP(pvm.Addresses) {
+		//if checkActive(pvm) ; checkifIP(pvm.Addresses) {
+		//if checkActive(pvm) {
 
+		if pvm.Health.Status == PowerPVMInstanceHealthOk {
 			//if *pvm.Status == "active" ; if *pvm.Addresses[0].IP == nil  {
-			return pvm, PowerPVMInstanceAvailable, nil
+			return pvm, PowerPVMInstanceHealthOk, nil
 			//}
 		}
-		return pvm, PowerPVMInstanceAvailable, nil
+		return pvm, PowerPVMInstanceHealthOk, nil
 	}
 }
 
 func checkActive(vminstance *models.PVMInstance) bool {
 
-	log.Printf("Calling the check vm status function")
+	log.Printf("Calling the check vm status function and the health status is %s", vminstance.Health.Status)
 	activeStatus := false
 
-	if *vminstance.Status == "active" {
+	if vminstance.Health.Status == "OK" {
+		//if *vminstance.Status == "active" {
+		log.Printf(" The status of the vm is now set to what we want it to be %s", vminstance.Health.Status)
 		activeStatus = true
 
 	}
