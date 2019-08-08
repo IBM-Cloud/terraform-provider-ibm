@@ -188,13 +188,13 @@ The following arguments are supported:
 * `local_disk`- (Optional, boolean) The disk type for the instance. When set to `true`, the disks for the computing instance are provisioned on the host that the instance runs. Otherwise, SAN disks are provisioned. The default value is `true`.
 * `dedicated_acct_host_only` - (Optional, boolean) Specifies whether the instance must only run on hosts with instances from the same account. The default value is `false`. If VM is provisioned using flavorKeyName, value should be set to `false`.  
      **NOTE**: Conflicts with `dedicated_host_name`, `dedicated_host_id`, `placement_group_name` and `placement_group_id`.
-* `dedicated_host_id` - (Optional, integer) Specifies [dedicated host](https://console.bluemix.net/docs/vsi/vsi_dedicated.html) for the instance by its id.  
+* `dedicated_host_id` - (Optional, integer) Specifies [dedicated host](https://cloud.ibm.com/docs/vsi/vsi_dedicated.html) for the instance by its id.  
      **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_name`, `placement_group_name` and `placement_group_id`.
-* `dedicated_host_name` - (Optional, string) Specifies [dedicated host](https://console.bluemix.net/docs/vsi/vsi_dedicated.html) for the instance by its name.  
+* `dedicated_host_name` - (Optional, string) Specifies [dedicated host](https://cloud.ibm.com/docs/vsi/vsi_dedicated.html) for the instance by its name.  
      **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_id`, `placement_group_name` and `placement_group_id`.
-* `placement_group_id` - (Optional, integer) Specifies [placement group](https://console.bluemix.net/docs/vsi/vsi_dedicated.html) for the instance by its id.  
+* `placement_group_id` - (Optional, integer) Specifies [placement group](https://cloud.ibm.com/docs/vsi/vsi_dedicated.html) for the instance by its id.  
      **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_name`, `dedicated_host_id` and `placement_group_name`.
-* `placement_group_name` - (Optional, string) Specifies [placement group](https://console.bluemix.net/docs/vsi/vsi_dedicated.html) for the instance by its name.  
+* `placement_group_name` - (Optional, string) Specifies [placement group](https://cloud.ibm.com/docs/vsi/vsi_dedicated.html) for the instance by its name.  
      **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_id`, `dedicated_host_name` and `placement_group_id`
 * `transient` - (Optional, boolean) Specifies whether to provision a transient virtual server. The default value is `false`. Transient instances cannot be upgraded or downgraded. Transient instances cannot use local storage.  
     **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_id`, `dedicated_host_name`, `cores`, `memory`, `public_bandwidth_limited` and `public_bandwidth_unlimited`

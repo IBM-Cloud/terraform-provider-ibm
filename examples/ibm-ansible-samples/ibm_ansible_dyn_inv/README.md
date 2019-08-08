@@ -7,7 +7,7 @@ steve_strutt@uk.ibm.com
 ti_version = '0.8'
 
 ## Ansible dynamic inventory for Terraform with IBM Cloud ##
-This dynamic inventory script is written for use with Ansible and Terraform on IBM Cloud. Details of how to setup the script can be found in the IBM Cloud [Using Ansible to automate app deployment on Terraform-provided infrastructure](https://console.bluemix.net/docs/terraform/ansible/ansible.html#ansible).
+This dynamic inventory script is written for use with Ansible and Terraform on IBM Cloud. Details of how to setup the script can be found in the IBM Cloud [Using Ansible to automate app deployment on Terraform-provided infrastructure](https://cloud.ibm.com/docs/terraform/ansible/ansible.html#ansible).
 
 
 ## Static and dynamic inventory

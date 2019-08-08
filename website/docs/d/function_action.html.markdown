@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_function_action
 
-Import the details of an existing [IBM Cloud Functions action](https://console.bluemix.net/docs/openwhisk/openwhisk_actions.html#openwhisk_actions) as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Import the details of an existing [IBM Cloud Functions action](https://cloud.ibm.com/docs/openwhisk/openwhisk_actions.html#openwhisk_actions) as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 

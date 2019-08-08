@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_function_package
 
-Import the details of an existing [IBM Cloud Functions package](https://console.bluemix.net/docs/openwhisk/openwhisk_packages.html#openwhisk_packages) as a read-only data source. The fields of the data source can then be referenced by other resources within the same configuration using interpolation syntax.
+Import the details of an existing [IBM Cloud Functions package](https://cloud.ibm.com/docs/openwhisk/openwhisk_packages.html#openwhisk_packages) as a read-only data source. The fields of the data source can then be referenced by other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 

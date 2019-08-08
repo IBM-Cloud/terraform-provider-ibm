@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_function_package
 
-Create, update, or delete [IBM Cloud Functions packages](https://console.bluemix.net/docs/openwhisk/openwhisk_packages.html#openwhisk_packages). You can use packages to bundle together a set of related actions, and share them with others. To create actions, use the `function_action` resource.
+Create, update, or delete [IBM Cloud Functions packages](https://cloud.ibm.com/docs/openwhisk/openwhisk_packages.html#openwhisk_packages). You can use packages to bundle together a set of related actions, and share them with others. To create actions, use the `function_action` resource.
 
 ## Example Usage
 

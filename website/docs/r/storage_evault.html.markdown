@@ -7,7 +7,7 @@ description: |-
 ---
 # ibm\_storage_evault
 
-Provides a evault storage resource. This allows [Evault Backup](https://console.bluemix.net/docs/infrastructure/Backup/index.html#getting-started-with-evault-backup-services) storage to be created, updated, and deleted.
+Provides a evault storage resource. This allows [Evault Backup](https://cloud.ibm.com/docs/infrastructure/Backup/index.html#getting-started-with-evault-backup-services) storage to be created, updated, and deleted.
 
 ## Example Usage
 

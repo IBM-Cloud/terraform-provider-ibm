@@ -23,7 +23,7 @@ data "ibm_service_plan" "service_plan" {
 
 The following arguments are supported:
 
-* `service` - (Required, string) The name of the service offering. You can retrieve the name of the service by running the `ibmcloud service offerings` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `service` - (Required, string) The name of the service offering. You can retrieve the name of the service by running the `ibmcloud service offerings` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
 * `plan` - (Required, string) The name of the plan type supported by the service. You can retrieve the plan type by running the `ibmcloud service offerings` command in the IBM Cloud CLI.
 
 ## Attribute Reference

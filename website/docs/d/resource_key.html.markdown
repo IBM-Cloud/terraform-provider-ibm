@@ -23,7 +23,7 @@ data "ibm_resource_key" "resourceKeydata" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The name of the resource key. You can retrieve the value by running the `ibmcloud resource service-keys` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `name` - (Required, string) The name of the resource key. You can retrieve the value by running the `ibmcloud resource service-keys` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
 * `resource_instance_id` - (Optional, string) The id of the resource instance that the resource key is associated with. You can retrieve the value by running the `ibmcloud resource service-instances` command in the IBM Cloud CLI.  
   **NOTE**: Conflicts with `resource_alias_id`.
 * `resource_alias_id` - (Optional, string) The id of the resource alias that the resource key is associated with. You can retrieve the value by running the `ibmcloud resource service-alias` command in the IBM Cloud CLI.  
