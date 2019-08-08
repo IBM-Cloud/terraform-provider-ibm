@@ -36,9 +36,10 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/authentication"
 	"github.com/IBM-Cloud/bluemix-go/http"
 	"github.com/IBM-Cloud/bluemix-go/rest"
-	issession "github.ibm.com/Bluemix/riaas-go-client/session"
-
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
+	issession "github.ibm.com/Bluemix/riaas-go-client/session"
+	// Added code for the Power Colo Offering
+	powersession "github.ibm.com/Bluemix/power-go-client/session"
 )
 
 //RetryDelay
@@ -106,6 +107,9 @@ type Config struct {
 
 	//IAM Refresh Token
 	IAMRefreshToken string
+
+	// PowerService Instance
+	PowerServiceInstance string
 }
 
 //Session stores the information required for communication with the SoftLayer and Bluemix API
@@ -138,6 +142,8 @@ type ClientSession interface {
 	ResourceManagementAPI() (management.ResourceManagementAPI, error)
 	ResourceControllerAPI() (controller.ResourceControllerAPI, error)
 	SoftLayerSession() *slsession.Session
+
+	PowerSession() (*powersession.Session, error)
 }
 
 type clientSession struct {
@@ -193,6 +199,9 @@ type clientSession struct {
 
 	resourceCatalogConfigErr  error
 	resourceCatalogServiceAPI catalog.ResourceCatalogAPI
+
+	powerConfigErr error
+	powerSession   *powersession.Session
 }
 
 // BluemixAcccountAPI ...
@@ -290,6 +299,11 @@ func (sess clientSession) SoftLayerSession() *slsession.Session {
 	return sess.session.SoftLayerSession
 }
 
+// Session to the Power Colo Service
+func (sess clientSession) PowerSession() (*powersession.Session, error) {
+	return sess.powerSession, sess.powerConfigErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -319,6 +333,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.resourceManagementConfigErr = errEmptyBluemixCredentials
 		session.resourceCatalogConfigErr = errEmptyBluemixCredentials
 		session.isConfigErr = errEmptyBluemixCredentials
+		session.powerConfigErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -329,6 +344,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 			session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
 			session.functionConfigErr = fmt.Errorf("Error occured while fetching auth key for function: %q", err)
 			session.isConfigErr = fmt.Errorf("Error occured while fetching auth key for vpc: %q", err)
+			session.powerConfigErr = fmt.Errorf("Error occured while fetching the auth key for power iaas: %q", err)
 		}
 	}
 
@@ -445,6 +461,16 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.resourceControllerServiceAPI = resourceControllerAPI
 
+	// Power Colo Session
+
+	powersession, err := powersession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, c.PowerServiceInstance, c.Generation, true, c.BluemixTimeout, session.bmxUserDetails.userAccount)
+
+	if err != nil {
+		session.powerConfigErr = err
+		return nil, err
+	}
+	session.powerSession = powersession
+
 	return session, nil
 }
 
@@ -502,13 +528,14 @@ func newSession(c *Config) (*Session, error) {
 		log.Println("Configuring IBM Cloud Session with API key")
 		var sess *bxsession.Session
 		bmxConfig := &bluemix.Config{
-			BluemixAPIKey: c.BluemixAPIKey,
-			Debug:         os.Getenv("TF_LOG") != "",
-			HTTPTimeout:   c.BluemixTimeout,
-			Region:        c.Region,
-			ResourceGroup: c.ResourceGroup,
-			RetryDelay:    &c.RetryDelay,
-			MaxRetries:    &c.RetryCount,
+			BluemixAPIKey:        c.BluemixAPIKey,
+			Debug:                os.Getenv("TF_LOG") != "",
+			HTTPTimeout:          c.BluemixTimeout,
+			Region:               c.Region,
+			ResourceGroup:        c.ResourceGroup,
+			RetryDelay:           &c.RetryDelay,
+			MaxRetries:           &c.RetryCount,
+			PowerServiceInstance: c.PowerServiceInstance,
 		}
 		sess, err := bxsession.New(bmxConfig)
 		if err != nil {
