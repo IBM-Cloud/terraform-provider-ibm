@@ -90,3 +90,16 @@ func (f *PowerPvmClient) Update(id string,powerupdateparams *p_cloud_p_vm_instan
 	}
 	return   resp.Payload,nil
 }
+
+
+func (f *PowerPvmClient) Action(id string,poweractionparams *p_cloud_p_vm_instances.PcloudPvminstancesActionPostParams) (models.Object,error){
+
+	log.Printf("Calling the Power PVM Action Method")
+	params := p_cloud_p_vm_instances.NewPcloudPvminstancesActionPostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(f.session.PowerServiceInstance).WithPvmInstanceID(id)
+	postok, err := f.session.Power.PCloudPVMInstances.PcloudPvminstancesActionPost(params,session.NewAuth(f.session))
+	if err != nil{
+		return nil,errors.ToError(err)
+	}
+	return postok.Payload,nil
+
+}
