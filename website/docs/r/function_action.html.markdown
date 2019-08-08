@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_function_action
 
-Create, update, or delete [IBM Cloud Functions actions](https://console.bluemix.net/docs/openwhisk/openwhisk_actions.html#openwhisk_actions). Actions are stateless code snippets that run on the IBM Cloud Functions platform. An action can be written as a JavaScript, Swift, or Python function, a Java method, or a custom executable program packaged in a Docker container. To bundle and share related actions, use the `function_package` resource.
+Create, update, or delete [IBM Cloud Functions actions](https://cloud.ibm.com/docs/openwhisk/openwhisk_actions.html#openwhisk_actions). Actions are stateless code snippets that run on the IBM Cloud Functions platform. An action can be written as a JavaScript, Swift, or Python function, a Java method, or a custom executable program packaged in a Docker container. To bundle and share related actions, use the `function_package` resource.
 
 
 ## Example Usage

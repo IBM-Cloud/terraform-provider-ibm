@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_container_cluster_versions
 
-Get the list of supported kubernetes versions on IBM Cloud. Please refer to https://console.bluemix.net/docs/containers/cs_versions.html#cs_versions for detail instructions.
+Get the list of supported kubernetes versions on IBM Cloud. Please refer to https://cloud.ibm.com/docs/containers/cs_versions.html#cs_versions for detail instructions.
 
 ## Example Usage
 
@@ -25,7 +25,7 @@ data "ibm_container_cluster_versions" "cluster_versions" {
 
 The following arguments are supported:
 
-* `org_guid` - (Optional, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from the `ibm_org` data source or by running the `ibmcloud iam orgs --guid` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `org_guid` - (Optional, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from the `ibm_org` data source or by running the `ibmcloud iam orgs --guid` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
 * `space_guid` - (Optional, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from the `ibm_space` data source or by running the `ibmcloud iam space <space-name> --guid` command in the IBM Cloud CLI.
 * `account_guid` - (Optional, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from the `ibm_account` data source or by running the `ibmcloud iam accounts` command in the IBM Cloud CLI.
 * `region` - (Optional, string) The region to target. If the region is not specified it will be defaulted to provider region(IC_REGION/IBMCLOUD_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.

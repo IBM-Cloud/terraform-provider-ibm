@@ -36,7 +36,7 @@ The following arguments are supported:
 * `cluster` - (Required, string) The cluster name or id.
 * `public_service_endpoint` - (Optional, bool)  Enable or disable the public service endpoint.
 * `private_service_endpoint` - (Optional, bool) Enable the private service endpoint to make the master privately accessible. Once enabled this feature cannot be disabled later.
-  **NOTE**: As a prerequisite for using Service Endpoints, Account must be enabled for Virtual Routing and Forwarding (VRF). Learn more about VRF on IBM Cloud [here](https://console.bluemix.net/docs/infrastructure/direct-link/vrf-on-ibm-cloud.html#overview-of-virtual-routing-and-forwarding-vrf-on-ibm-cloud). Account must be enabled for connectivity to Service Endpoints.
+  **NOTE**: As a prerequisite for using Service Endpoints, Account must be enabled for Virtual Routing and Forwarding (VRF). Learn more about VRF on IBM Cloud [here](https://cloud.ibm.com/docs/infrastructure/direct-link/vrf-on-ibm-cloud.html#overview-of-virtual-routing-and-forwarding-vrf-on-ibm-cloud). Account must be enabled for connectivity to Service Endpoints.
 * `refresh_api_servers` - (Optional, bool) To apply these changes, refresh the cluster's API server. Default value is true.
 * `reload_workers` - (Optional, bool) To apply these changes, reload workers. Default value is true.
 * `resource_group_id` - (Optional, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.

@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_function_trigger
 
-Import the details of an existing [IBM Cloud Functions trigger](https://console.bluemix.net/docs/openwhisk/openwhisk_triggers_rules.html#openwhisk_triggers) as a read-only data source. The fields of the data source can then be referenced by other resources within the same configuration using interpolation syntax.
+Import the details of an existing [IBM Cloud Functions trigger](https://cloud.ibm.com/docs/openwhisk/openwhisk_triggers_rules.html#openwhisk_triggers) as a read-only data source. The fields of the data source can then be referenced by other resources within the same configuration using interpolation syntax.
 
 
 ## Example Usage

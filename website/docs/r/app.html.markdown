@@ -31,7 +31,7 @@ resource "ibm_app" "app" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The name of the application. You can retrieve the value by running the `ibmcloud app list` command in the [IBM Cloud CLI](https://console.bluemix.net/docs/cli/reference/bluemix_cli/get_started.html#getting-started).
+* `name` - (Required, string) The name of the application. You can retrieve the value by running the `ibmcloud app list` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
 * `memory` - (Optional, integer) The amount of memory, specified in megabytes, that each instance has. If you don't specify a value, the system assigns pre-defined values based on the quota allocated to the application. You can check the default values by running `ibmcloud cf org <org-name>`. The command lists the quotas that are defined in your organization and space. If space quotas are defined, you can get them by running `ibmcloud cf space-quota <space-quota-name>`, where <quota-name> is the name of the quota. Otherwise you can check the organization quotas by running `ibmcloud cf quota <quota-name>`.
 * `instances` - (Optional, integer) The number of instances of the application.
 * `disk_quota` - (Optional, integer) The maximum amount of disk, specified in megabytes, available to an instance of an application. The default value is [1024 MB](http://bosh.io/jobs/cloud_controller_ng?source=github.com/cloudfoundry/cf-release&version=234#p=cc.default_app_disk_in_mb). Check with your cloud provider if the value has been set differently.

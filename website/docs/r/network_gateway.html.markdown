@@ -14,7 +14,7 @@ A network gateway can be created in standalone mode and HA mode with both member
 
 For additional details, see the [IBM Cloud infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/services/SoftLayer_Network_Gateway).
 
-For more information about getting started, see the [IBM Virtual Router Appliance docs](https://console.bluemix.net/docs/infrastructure/virtual-router-appliance/getting-started.html#getting-started).
+For more information about getting started, see the [IBM Virtual Router Appliance docs](https://cloud.ibm.com/docs/infrastructure/virtual-router-appliance/getting-started.html#getting-started).
 
 ## Example Usage
 

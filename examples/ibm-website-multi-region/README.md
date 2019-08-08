@@ -12,7 +12,7 @@ Demo Terraform configuration to deploy the IBM Cloud IaaS infrastructure for a s
  - 2 x mariadb
  - Vlan spanning 
 
-This is written as a capability demonstration for the automated deployment of high availability web sites utilising IBM Cloud Internet Services (CIS). A demo website using Wordpress can be installed using the example in `terraform-provider-ibm/examples/ibm-ansible-samples/` A tutorial covering installation of Terraform, execution of this configuration and deployment of Wordpress on this infrastructure can be found in the tutorials section of [Automating cloud resource provisioning with Terraform](https://cloud.ibm.com/docs/terraform/index.html#index) on IBM Cloud Docs.  
+This is written as a capability demonstration for the automated deployment of high availability web sites utilising IBM Cloud Internet Services (CIS). A demo website using Wordpress can be installed using the example in `terraform-provider-ibm/examples/ibm-ansible-samples/` A tutorial covering installation of Terraform, execution of this configuration and deployment of Wordpress on this infrastructure can be found in the tutorials section of [Automating cloud resource provisioning with Terraform](https://cloud.ibm.com/docs/terraform?topic=terraform-getting-started) on IBM Cloud Docs.  
 
 
 <p style="text-align: center;">
@@ -98,7 +98,7 @@ The following variables need to be set in the `terraform.tf` file before use
 
 * `softlayer_username` is an Infrastructure user name. Go to https://control.bluemix.net/account/user/profile, scroll down, and check API Username.
 * `softlayer_api_key` is an Infrastructure API Key. Go to https://control.bluemix.net/account/user/profile, scroll down, and check Authentication Key.
-* `ibmcloud_api_key` - An API key for IBM Cloud services. If you don't have one already, go to https://console.bluemix.net/iam/#/apikeys and create a new key.
+* `ibmcloud_api_key` - An API key for IBM Cloud services. If you don't have one already, go to https://cloud.ibm.com/iam/#/apikeys and create a new key.
 
 
 Customise the variables in `variables.tf` to your local environment and chosen DNS domain name. 
