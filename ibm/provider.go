@@ -143,6 +143,12 @@ func Provider() terraform.ResourceProvider {
 				Description: "IAM Authentication refresh token",
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_IAM_REFRESH_TOKEN", "IBMCLOUD_IAM_REFRESH_TOKEN"}, nil),
 			},
+			"power_instance": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Power Service Instance",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"POWER_SERVICE_INSTANCE", "POWER_INSTANCE"}, nil),
+			},
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -197,6 +203,14 @@ func Provider() terraform.ResourceProvider {
 			"ibm_service_key":                dataSourceIBMServiceKey(),
 			"ibm_service_plan":               dataSourceIBMServicePlan(),
 			"ibm_space":                      dataSourceIBMSpace(),
+
+			// Added for Power Resources
+
+			"ibm_power_image":       dataSourceIBMPowerImage(),
+			"ibm_power_network":     dataSourceIBMPowerNetwork(),
+			"ibm_power_volume":      dataSourceIBMPowerVolume(),
+			"ibm_power_sshkey":      dataSourceIBMPowerSSHKey(),
+			"ibm_power_pvminstance": dataSourceIBMPowerPVMInstance(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -304,6 +318,13 @@ func Provider() terraform.ResourceProvider {
 			"ibm_ssl_certificate":                                resourceIBMSSLCertificate(),
 			"ibm_cdn":                                            resourceIBMCDN(),
 			"ibm_hardware_firewall_shared":                       resourceIBMFirewallShared(),
+
+			//Added for Power Colo
+
+			"ibm_power_volume":      resourceIBMPowerVolume(),
+			"ibm_power_sshkey":      resourceIBMPowerSSHKey(),
+			"ibm_power_network":     resourceIBMPowerNetwork(),
+			"ibm_power_pvminstance": resourceIBMPowerPVMInstance(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -376,6 +397,10 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		os.Setenv("FUNCTION_NAMESPACE", wskNameSpace)
 	}
 
+	// Added code for the Power Colo
+
+	powerServiceInstance := d.Get("power_instance").(string)
+
 	config := Config{
 		BluemixAPIKey:        bluemixAPIKey,
 		Region:               region,
@@ -392,6 +417,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		Generation:           generation,
 		IAMToken:             iamToken,
 		IAMRefreshToken:      iamRefreshToken,
+		PowerServiceInstance: powerServiceInstance,
 	}
 
 	return config.ClientSession()
