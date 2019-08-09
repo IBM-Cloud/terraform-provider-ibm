@@ -13,31 +13,32 @@ import (
 )
 
 const (
-	PowerPVMInstanceName         = "servername"
-	PowerPVMInstanceDate         = "creationdate"
-	PowerPVMInstanceSSHKeyName   = "keypairname"
-	PowerPVMImageName            = "imageid"
-	PowerPVMInstanceProcessors   = "processors"
-	PowerPVMInstanceProcType     = "proctype"
-	PowerPVMInstanceMemory       = "memory"
-	PowerPVMInstanceSystemType   = "systype"
-	PowerPVMInstanceId           = "pvminstanceid"
-	PowerPVMInstanceDiskSize     = "pvmdisksize"
-	PowerPVMInstanceStatus       = "status"
-	PowerPVMInstanceMinProc      = "minproc"
-	PowerPVMInstanceVolumeIds    = "volumeids"
-	PowerPVMInstanceNetworkIds   = "networkids"
-	PowerPVMInstanceAddress      = "addresses"
-	PowerPVMInstanceNetworkName  = "name"
-	PowerPVMInstanceMigratable   = "migratable"
-	PowerPVMInstanceAvailable    = "ACTIVE"
-	PowerPVMInstanceHealthOk     = "OK"
-	PowerPVMInstanceBuilding     = "BUILD"
-	PowerPVMInstanceDeleting     = "DELETING"
-	PowerPVMInstanceNetworkId    = "networkid"
-	PowerPVMInstanceNetworkCidr  = "cidr"
-	PowerPVMInstanceNotFound     = "Not Found"
-	PowerPVMInstanceHealthStatus = "healthstatus"
+	PowerPVMInstanceName          = "servername"
+	PowerPVMInstanceDate          = "creationdate"
+	PowerPVMInstanceSSHKeyName    = "keypairname"
+	PowerPVMImageName             = "imageid"
+	PowerPVMInstanceProcessors    = "processors"
+	PowerPVMInstanceProcType      = "proctype"
+	PowerPVMInstanceMemory        = "memory"
+	PowerPVMInstanceSystemType    = "systype"
+	PowerPVMInstanceId            = "pvminstanceid"
+	PowerPVMInstanceDiskSize      = "pvmdisksize"
+	PowerPVMInstanceStatus        = "status"
+	PowerPVMInstanceMinProc       = "minproc"
+	PowerPVMInstanceVolumeIds     = "volumeids"
+	PowerPVMInstanceNetworkIds    = "networkids"
+	PowerPVMInstanceAddress       = "addresses"
+	PowerPVMInstanceNetworkName   = "name"
+	PowerPVMInstanceMigratable    = "migratable"
+	PowerPVMInstanceAvailable     = "ACTIVE"
+	PowerPVMInstanceHealthOk      = "OK"
+	PowerPVMInstanceHealthWarning = "WARNING"
+	PowerPVMInstanceBuilding      = "BUILD"
+	PowerPVMInstanceDeleting      = "DELETING"
+	PowerPVMInstanceNetworkId     = "networkid"
+	PowerPVMInstanceNetworkCidr   = "cidr"
+	PowerPVMInstanceNotFound      = "Not Found"
+	PowerPVMInstanceHealthStatus  = "healthstatus"
 )
 
 func resourceIBMPowerPVMInstance() *schema.Resource {
@@ -86,7 +87,7 @@ func resourceIBMPowerPVMInstance() *schema.Resource {
 			},
 
 			PowerPVMInstanceAddress: {
-				Type:     schema.TypeList,
+				Type:     schema.TypeMap,
 				Computed: true,
 
 				Elem: &schema.Resource{
@@ -187,6 +188,7 @@ func resourceIBMPowerPVMInstanceCreate(d *schema.ResourceData, meta interface{})
 	networks := expandStringList((d.Get(PowerPVMInstanceNetworkIds).(*schema.Set)).List())
 	volids := expandStringList((d.Get(PowerPVMInstanceVolumeIds).(*schema.Set)).List())
 	imageid := d.Get(PowerPVMImageName).(string)
+
 	processortype := d.Get(PowerPVMInstanceProcType).(string)
 
 	body := &models.PVMInstanceCreate{
@@ -374,13 +376,12 @@ func isWaitForPowerPVMInstanceAvailable(client *st.PowerPvmClient, id string, ti
 	log.Printf("Waiting for PowerPVMInstance (%s) to be available and sleeping ", id)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:      []string{"PENDING", PowerPVMInstanceBuilding},
-		Target:       []string{"OK", PowerPVMInstanceHealthOk},
-		Refresh:      isPowerPVMInstanceRefreshFunc(client, id),
-		Timeout:      timeout,
-		PollInterval: 1 * time.Minute, // Added this because of the change that was made by the Power Team
-		Delay:        120 * time.Second,
-		MinTimeout:   30 * time.Second,
+		Pending:    []string{"PENDING", PowerPVMInstanceHealthWarning},
+		Target:     []string{"OK", PowerPVMInstanceHealthOk},
+		Refresh:    isPowerPVMInstanceRefreshFunc(client, id),
+		Delay:      3 * time.Minute,
+		MinTimeout: 30 * time.Second,
+		Timeout:    30 * time.Minute,
 	}
 
 	return stateConf.WaitForState()
@@ -394,15 +395,14 @@ func isPowerPVMInstanceRefreshFunc(client *st.PowerPvmClient, id string) resourc
 			return nil, "", err
 		}
 
-		//if checkActive(pvm) ; checkifIP(pvm.Addresses) {
-		//if checkActive(pvm) {
-
 		if pvm.Health.Status == PowerPVMInstanceHealthOk {
+			log.Printf("The health status is now ok")
 			//if *pvm.Status == "active" ; if *pvm.Addresses[0].IP == nil  {
 			return pvm, PowerPVMInstanceHealthOk, nil
 			//}
 		}
-		return pvm, PowerPVMInstanceHealthOk, nil
+		log.Printf("The Health status is %s", PowerPVMInstanceHealthWarning)
+		return pvm, PowerPVMInstanceHealthWarning, nil
 	}
 }
 
