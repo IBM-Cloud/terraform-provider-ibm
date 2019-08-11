@@ -87,7 +87,7 @@ func resourceIBMPowerPVMInstance() *schema.Resource {
 			},
 
 			PowerPVMInstanceAddress: {
-				Type:     schema.TypeMap,
+				Type:     schema.TypeList,
 				Computed: true,
 
 				Elem: &schema.Resource{
@@ -367,9 +367,6 @@ func isPowerPvmInstanceDeleteRefreshFunc(client *st.PowerPvmClient, id string) r
 		return pvm, PowerPVMInstanceNotFound, nil
 
 	}
-
-	//return stateConf.WaitForState()
-
 }
 
 func isWaitForPowerPVMInstanceAvailable(client *st.PowerPvmClient, id string, timeout time.Duration) (interface{}, error) {

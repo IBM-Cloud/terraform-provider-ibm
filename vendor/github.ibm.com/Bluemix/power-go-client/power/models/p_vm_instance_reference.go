@@ -19,8 +19,8 @@ import (
 // swagger:model PVMInstanceReference
 type PVMInstanceReference struct {
 
-	// The list of addresses and their network information
-	Addresses []*PVMInstanceAddress `json:"addresses"`
+	// (deprecated - replaced by networks) The list of addresses and their network information
+	Addresses []*PVMInstanceNetwork `json:"addresses"`
 
 	// Date/Time of PVM creation
 	// Format: date-time
@@ -39,6 +39,9 @@ type PVMInstanceReference struct {
 	// The ImageID used by the server
 	// Required: true
 	ImageID *string `json:"imageID"`
+
+	// The list of addresses and their network information
+	Networks []*PVMInstanceNetwork `json:"networks"`
 
 	// The progress of an operation
 	Progress float64 `json:"progress,omitempty"`
@@ -88,6 +91,10 @@ func (m *PVMInstanceReference) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateImageID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNetworks(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -204,6 +211,31 @@ func (m *PVMInstanceReference) validateImageID(formats strfmt.Registry) error {
 
 	if err := validate.Required("imageID", "body", m.ImageID); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *PVMInstanceReference) validateNetworks(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Networks) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Networks); i++ {
+		if swag.IsZero(m.Networks[i]) { // not required
+			continue
+		}
+
+		if m.Networks[i] != nil {
+			if err := m.Networks[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("networks" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil

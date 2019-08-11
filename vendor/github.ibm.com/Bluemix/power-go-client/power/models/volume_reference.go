@@ -21,6 +21,11 @@ type VolumeReference struct {
 	// Required: true
 	Bootable *bool `json:"bootable"`
 
+	// Creation Date
+	// Required: true
+	// Format: date-time
+	CreationDate *strfmt.DateTime `json:"creationDate"`
+
 	// Type of Disk
 	// Required: true
 	DiskType *string `json:"diskType"`
@@ -28,6 +33,11 @@ type VolumeReference struct {
 	// Link to Volume resource
 	// Required: true
 	Href *string `json:"href"`
+
+	// Last Update Date
+	// Required: true
+	// Format: date-time
+	LastUpdateDate *strfmt.DateTime `json:"lastUpdateDate"`
 
 	// Volume Name
 	// Required: true
@@ -58,11 +68,19 @@ func (m *VolumeReference) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateCreationDate(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateDiskType(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLastUpdateDate(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -101,6 +119,19 @@ func (m *VolumeReference) validateBootable(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *VolumeReference) validateCreationDate(formats strfmt.Registry) error {
+
+	if err := validate.Required("creationDate", "body", m.CreationDate); err != nil {
+		return err
+	}
+
+	if err := validate.FormatOf("creationDate", "body", "date-time", m.CreationDate.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *VolumeReference) validateDiskType(formats strfmt.Registry) error {
 
 	if err := validate.Required("diskType", "body", m.DiskType); err != nil {
@@ -113,6 +144,19 @@ func (m *VolumeReference) validateDiskType(formats strfmt.Registry) error {
 func (m *VolumeReference) validateHref(formats strfmt.Registry) error {
 
 	if err := validate.Required("href", "body", m.Href); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeReference) validateLastUpdateDate(formats strfmt.Registry) error {
+
+	if err := validate.Required("lastUpdateDate", "body", m.LastUpdateDate); err != nil {
+		return err
+	}
+
+	if err := validate.FormatOf("lastUpdateDate", "body", "date-time", m.LastUpdateDate.String(), formats); err != nil {
 		return err
 	}
 

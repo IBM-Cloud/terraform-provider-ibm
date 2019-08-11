@@ -7,7 +7,6 @@ package p_cloud_p_vm_instances
 
 import (
 	"github.com/go-openapi/runtime"
-	"log"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -206,6 +205,122 @@ func (a *Client) PcloudPvminstancesGetall(params *PcloudPvminstancesGetallParams
 }
 
 /*
+PcloudPvminstancesNetworksDelete removes a network from a p VM instance
+*/
+func (a *Client) PcloudPvminstancesNetworksDelete(params *PcloudPvminstancesNetworksDeleteParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudPvminstancesNetworksDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPcloudPvminstancesNetworksDeleteParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "pcloud.pvminstances.networks.delete",
+		Method:             "DELETE",
+		PathPattern:        "/pcloud/v1/cloud-instances/{cloud_instance_id}/pvm-instances/{pvm_instance_id}/networks/{network_id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PcloudPvminstancesNetworksDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PcloudPvminstancesNetworksDeleteOK), nil
+
+}
+
+/*
+PcloudPvminstancesNetworksGet gets a p VM instance s network information
+*/
+func (a *Client) PcloudPvminstancesNetworksGet(params *PcloudPvminstancesNetworksGetParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudPvminstancesNetworksGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPcloudPvminstancesNetworksGetParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "pcloud.pvminstances.networks.get",
+		Method:             "GET",
+		PathPattern:        "/pcloud/v1/cloud-instances/{cloud_instance_id}/pvm-instances/{pvm_instance_id}/networks/{network_id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PcloudPvminstancesNetworksGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PcloudPvminstancesNetworksGetOK), nil
+
+}
+
+/*
+PcloudPvminstancesNetworksGetall gets all networks for this p VM instance
+*/
+func (a *Client) PcloudPvminstancesNetworksGetall(params *PcloudPvminstancesNetworksGetallParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudPvminstancesNetworksGetallOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPcloudPvminstancesNetworksGetallParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "pcloud.pvminstances.networks.getall",
+		Method:             "GET",
+		PathPattern:        "/pcloud/v1/cloud-instances/{cloud_instance_id}/pvm-instances/{pvm_instance_id}/networks",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PcloudPvminstancesNetworksGetallReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PcloudPvminstancesNetworksGetallOK), nil
+
+}
+
+/*
+PcloudPvminstancesNetworksPost performs network addition deletion and listing
+*/
+func (a *Client) PcloudPvminstancesNetworksPost(params *PcloudPvminstancesNetworksPostParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudPvminstancesNetworksPostAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPcloudPvminstancesNetworksPostParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "pcloud.pvminstances.networks.post",
+		Method:             "POST",
+		PathPattern:        "/pcloud/v1/cloud-instances/{cloud_instance_id}/pvm-instances/{pvm_instance_id}/networks",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PcloudPvminstancesNetworksPostReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PcloudPvminstancesNetworksPostAccepted), nil
+
+}
+
+/*
 PcloudPvminstancesPost creates a new power VM instance
 */
 func (a *Client) PcloudPvminstancesPost(params *PcloudPvminstancesPostParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudPvminstancesPostOK, *PcloudPvminstancesPostCreated, *PcloudPvminstancesPostAccepted, error) {
@@ -214,7 +329,6 @@ func (a *Client) PcloudPvminstancesPost(params *PcloudPvminstancesPostParams, au
 		params = NewPcloudPvminstancesPostParams()
 	}
 
-	log.Printf("Printing the params that are passed to the create instance calls %+v ",params.Body)
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "pcloud.pvminstances.post",
 		Method:             "POST",
@@ -251,7 +365,7 @@ func (a *Client) PcloudPvminstancesPut(params *PcloudPvminstancesPutParams, auth
 	if params == nil {
 		params = NewPcloudPvminstancesPutParams()
 	}
-	log.Printf("Calling this update with the following params %+v ",params)
+
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "pcloud.pvminstances.put",
 		Method:             "PUT",

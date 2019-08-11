@@ -7,7 +7,6 @@ package p_cloud_networks
 
 import (
 	"github.com/go-openapi/runtime"
-	"log"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -121,7 +120,6 @@ func (a *Client) PcloudNetworksPost(params *PcloudNetworksPostParams, authInfo r
 		params = NewPcloudNetworksPostParams()
 	}
 
-	log.Printf("Printining in the PCloudPost method with the params %s ",&params.Body.Type)
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "pcloud.networks.post",
 		Method:             "POST",
@@ -138,8 +136,6 @@ func (a *Client) PcloudNetworksPost(params *PcloudNetworksPostParams, authInfo r
 	if err != nil {
 		return nil, nil, err
 	}
-
-	
 	switch value := result.(type) {
 	case *PcloudNetworksPostOK:
 		return value, nil, nil

@@ -22,11 +22,16 @@ type CreateImage struct {
 	// Service access key
 	AccessKey string `json:"accessKey,omitempty"`
 
+	// Type of Disk {ssd, standard}
+	// Enum: [ssd standard]
+	DiskType *string `json:"diskType,omitempty"`
+
 	// Image ID of existing source image; required for copy image
 	ImageID string `json:"imageID,omitempty"`
 
 	// Name to give created image; required for import image
-	ImageName string `json:"imageName,omitempty"`
+	// Required: true
+	ImageName *string `json:"imageName"`
 
 	// Path to image starting with service endpoint and ending with image filename
 	ImagePath string `json:"imagePath,omitempty"`
@@ -48,6 +53,14 @@ type CreateImage struct {
 func (m *CreateImage) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateDiskType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateImageName(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateOsType(formats); err != nil {
 		res = append(res, err)
 	}
@@ -59,6 +72,58 @@ func (m *CreateImage) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+var createImageTypeDiskTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ssd","standard"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		createImageTypeDiskTypePropEnum = append(createImageTypeDiskTypePropEnum, v)
+	}
+}
+
+const (
+
+	// CreateImageDiskTypeSsd captures enum value "ssd"
+	CreateImageDiskTypeSsd string = "ssd"
+
+	// CreateImageDiskTypeStandard captures enum value "standard"
+	CreateImageDiskTypeStandard string = "standard"
+)
+
+// prop value enum
+func (m *CreateImage) validateDiskTypeEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, createImageTypeDiskTypePropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *CreateImage) validateDiskType(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.DiskType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateDiskTypeEnum("diskType", "body", *m.DiskType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *CreateImage) validateImageName(formats strfmt.Registry) error {
+
+	if err := validate.Required("imageName", "body", m.ImageName); err != nil {
+		return err
+	}
+
 	return nil
 }
 

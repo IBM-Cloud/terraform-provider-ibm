@@ -33,6 +33,10 @@ type CloudInstanceReference struct {
 	// Required: true
 	Initialized *bool `json:"initialized"`
 
+	// Limits on the cloud instance
+	// Required: true
+	Limits *CloudInstanceUsageLimits `json:"limits"`
+
 	// Cloud Instance Name
 	// Required: true
 	Name *string `json:"name"`
@@ -59,6 +63,10 @@ func (m *CloudInstanceReference) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateInitialized(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLimits(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -107,6 +115,24 @@ func (m *CloudInstanceReference) validateInitialized(formats strfmt.Registry) er
 
 	if err := validate.Required("initialized", "body", m.Initialized); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *CloudInstanceReference) validateLimits(formats strfmt.Registry) error {
+
+	if err := validate.Required("limits", "body", m.Limits); err != nil {
+		return err
+	}
+
+	if m.Limits != nil {
+		if err := m.Limits.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("limits")
+			}
+			return err
+		}
 	}
 
 	return nil

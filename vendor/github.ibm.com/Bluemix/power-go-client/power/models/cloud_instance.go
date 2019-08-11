@@ -31,12 +31,9 @@ type CloudInstance struct {
 	// Required: true
 	Initialized *bool `json:"initialized"`
 
-	// Number of power instances allowed
-	Instances float64 `json:"instances,omitempty"`
-
-	// Amount of memory allowed
+	// Limits on the cloud instance
 	// Required: true
-	Memory *float64 `json:"memory"`
+	Limits *CloudInstanceUsageLimits `json:"limits"`
 
 	// Cloud Instance Name
 	// Required: true
@@ -46,14 +43,6 @@ type CloudInstance struct {
 	// Required: true
 	OpenstackID *string `json:"openstackID"`
 
-	// Number of processor units allowed
-	// Required: true
-	ProcUnits *float64 `json:"procUnits"`
-
-	// Number of processors allowed
-	// Required: true
-	Processors *float64 `json:"processors"`
-
 	// PVM instances owned by the Cloud Instance
 	// Required: true
 	PvmInstances []*PVMInstanceReference `json:"pvmInstances"`
@@ -62,12 +51,13 @@ type CloudInstance struct {
 	// Required: true
 	Region *string `json:"region"`
 
-	// Amount of storage allowed (TB)
-	Storage float64 `json:"storage,omitempty"`
-
 	// The tenant ID that owns this cloud instance
 	// Required: true
 	TenantID *string `json:"tenantID"`
+
+	// Current usage on the cloud instance
+	// Required: true
+	Usage *CloudInstanceUsageLimits `json:"usage"`
 }
 
 // Validate validates this cloud instance
@@ -86,7 +76,7 @@ func (m *CloudInstance) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateMemory(formats); err != nil {
+	if err := m.validateLimits(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -95,14 +85,6 @@ func (m *CloudInstance) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateOpenstackID(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateProcUnits(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateProcessors(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -115,6 +97,10 @@ func (m *CloudInstance) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateTenantID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateUsage(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -151,10 +137,19 @@ func (m *CloudInstance) validateInitialized(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CloudInstance) validateMemory(formats strfmt.Registry) error {
+func (m *CloudInstance) validateLimits(formats strfmt.Registry) error {
 
-	if err := validate.Required("memory", "body", m.Memory); err != nil {
+	if err := validate.Required("limits", "body", m.Limits); err != nil {
 		return err
+	}
+
+	if m.Limits != nil {
+		if err := m.Limits.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("limits")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -172,24 +167,6 @@ func (m *CloudInstance) validateName(formats strfmt.Registry) error {
 func (m *CloudInstance) validateOpenstackID(formats strfmt.Registry) error {
 
 	if err := validate.Required("openstackID", "body", m.OpenstackID); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *CloudInstance) validateProcUnits(formats strfmt.Registry) error {
-
-	if err := validate.Required("procUnits", "body", m.ProcUnits); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *CloudInstance) validateProcessors(formats strfmt.Registry) error {
-
-	if err := validate.Required("processors", "body", m.Processors); err != nil {
 		return err
 	}
 
@@ -234,6 +211,24 @@ func (m *CloudInstance) validateTenantID(formats strfmt.Registry) error {
 
 	if err := validate.Required("tenantID", "body", m.TenantID); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *CloudInstance) validateUsage(formats strfmt.Registry) error {
+
+	if err := validate.Required("usage", "body", m.Usage); err != nil {
+		return err
+	}
+
+	if m.Usage != nil {
+		if err := m.Usage.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("usage")
+			}
+			return err
+		}
 	}
 
 	return nil

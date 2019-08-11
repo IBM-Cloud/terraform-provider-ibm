@@ -20,8 +20,8 @@ import (
 // swagger:model PVMInstance
 type PVMInstance struct {
 
-	// The list of addresses and their network information
-	Addresses []*PVMInstanceAddress `json:"addresses"`
+	// (deprecated - replaced by networks) The list of addresses and their network information
+	Addresses []*PVMInstanceNetwork `json:"addresses"`
 
 	// Date/Time of PVM creation
 	// Format: date-time
@@ -63,6 +63,9 @@ type PVMInstance struct {
 	// List of Network IDs
 	// Required: true
 	NetworkIds []string `json:"networkIDs"`
+
+	// (deprecated - replaced with networks) The pvm instance networks information
+	Networks []*PVMInstanceNetwork `json:"networks"`
 
 	// Processor type (dedicated or shared)
 	// Required: true
@@ -133,6 +136,10 @@ func (m *PVMInstance) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateNetworkIds(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNetworks(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -279,6 +286,31 @@ func (m *PVMInstance) validateNetworkIds(formats strfmt.Registry) error {
 
 	if err := validate.Required("networkIDs", "body", m.NetworkIds); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *PVMInstance) validateNetworks(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Networks) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Networks); i++ {
+		if swag.IsZero(m.Networks[i]) { // not required
+			continue
+		}
+
+		if m.Networks[i] != nil {
+			if err := m.Networks[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("networks" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil

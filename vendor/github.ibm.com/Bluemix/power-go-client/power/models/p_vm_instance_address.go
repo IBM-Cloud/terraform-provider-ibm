@@ -11,30 +11,35 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// PVMInstanceAddress A map containing information about a network address
+// PVMInstanceAddress deprecated - replaced by PVMInstanceNetwork
 // swagger:model PVMInstanceAddress
 type PVMInstanceAddress struct {
+	PVMInstanceNetwork
+}
 
-	// The external ip address (for pub-vlan networks)
-	ExternalIP string `json:"externalIP,omitempty"`
+// UnmarshalJSON unmarshals this object from a JSON structure
+func (m *PVMInstanceAddress) UnmarshalJSON(raw []byte) error {
+	// AO0
+	var aO0 PVMInstanceNetwork
+	if err := swag.ReadJSON(raw, &aO0); err != nil {
+		return err
+	}
+	m.PVMInstanceNetwork = aO0
 
-	// The ip address
-	IP string `json:"ip,omitempty"`
+	return nil
+}
 
-	// The mac address of the network interface
-	MacAddress string `json:"macAddress,omitempty"`
+// MarshalJSON marshals this object to a JSON structure
+func (m PVMInstanceAddress) MarshalJSON() ([]byte, error) {
+	_parts := make([][]byte, 0, 1)
 
-	// ID of the primary network to use for the server
-	NetworkID string `json:"networkID,omitempty"`
+	aO0, err := swag.WriteJSON(m.PVMInstanceNetwork)
+	if err != nil {
+		return nil, err
+	}
+	_parts = append(_parts, aO0)
 
-	// The name of the network the address is on
-	NetworkName string `json:"networkName,omitempty"`
-
-	// The address type (fixed or dynamic)
-	Type string `json:"type,omitempty"`
-
-	// The version of the information provided
-	Version float64 `json:"version,omitempty"`
+	return swag.ConcatJSON(_parts...), nil
 }
 
 // Validate validates this p VM instance address

@@ -100,3 +100,22 @@ func(f *PowerVolumeClient) Update(id, volumename string,volumesize float64,volum
 	log.Print("Printing the response data .. %+v",resp.Payload)
 	return resp.Payload, nil
 }
+
+
+
+// Attach a volume 
+
+func (f *PowerVolumeClient) Attach(id,volumename string) (models.Object, error){
+
+	log.Printf("Calling the Power Volume Attach method")
+	var cloudinstanceid = f.session.PowerServiceInstance
+	params := p_cloud_volumes.NewPcloudPvminstancesVolumesPostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(cloudinstanceid).WithPvmInstanceID(id).WithVolumeID(volumename)
+	resp,err := f.session.Power.PCloudVolumes.PcloudPvminstancesVolumesPost(params,session.NewAuth(f.session))
+	if err != nil{
+		return nil, errors.ToError(err)
+	}
+	log.Printf("Successfully attached the volume to the instance")
+
+	return resp.Payload,nil
+	
+}
