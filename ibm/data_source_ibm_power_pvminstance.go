@@ -132,10 +132,10 @@ func dataSourceIBMPowerPVMInstancesRead(d *schema.ResourceData, meta interface{}
 	d.Set("proctype", powervmdata.ProcType)
 
 	if powervmdata.Addresses != nil {
-		pvmaddress := make([]map[string]string, len(powervmdata.Addresses))
+		pvmaddress := make([]map[string]interface{}, len(powervmdata.Addresses))
 		for i, pvmip := range powervmdata.Addresses {
 
-			p := make(map[string]string)
+			p := make(map[string]interface{})
 			p["ip"] = pvmip.IP
 			p["networkname"] = pvmip.NetworkName
 			p["networkid"] = pvmip.NetworkID

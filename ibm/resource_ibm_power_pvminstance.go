@@ -86,40 +86,35 @@ func resourceIBMPowerPVMInstance() *schema.Resource {
 				Set:      schema.HashString,
 			},
 
-			PowerPVMInstanceAddress: {
+			"addresses": {
 				Type:     schema.TypeList,
 				Computed: true,
-
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-
-						PowerPVMInstanceNetworkId: {
+						"ip": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-
-						PowerPVMInstanceNetworkCidr: {
+						"macaddress": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						PowerPVMInstanceNetworkName: {
+						"networkid": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-
+						"networkname": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"type": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-
-						"vlanid": {
-							Type:     schema.TypeInt,
+						/*"version": {
+							Type:     schema.TypeFloat,
 							Computed: true,
-						},
-						"gateway": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
+						},*/
 					},
 				},
 			},
@@ -274,7 +269,7 @@ func resourceIBMPowerPVMInstanceRead(d *schema.ResourceData, meta interface{}) e
 		}
 		d.Set("addresses", pvmaddress)
 
-		log.Printf("Printing the value after the read - this should set it.... %+v", pvmaddress)
+		//log.Printf("Printing the value after the read - this should set it.... %+v", pvmaddress)
 
 	}
 
@@ -398,7 +393,7 @@ func isPowerPVMInstanceRefreshFunc(client *st.PowerPvmClient, id string) resourc
 			return pvm, PowerPVMInstanceHealthOk, nil
 			//}
 		}
-		log.Printf("The Health status is %s", PowerPVMInstanceHealthWarning)
+
 		return pvm, PowerPVMInstanceHealthWarning, nil
 	}
 }

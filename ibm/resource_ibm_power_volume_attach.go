@@ -162,6 +162,7 @@ func resourceIBMPowerVolumeAttachDelete(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
+	// wait for power volume states to be back as available. if it's attached it will be in-use
 	d.SetId("")
 	return nil
 }
