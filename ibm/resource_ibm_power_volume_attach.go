@@ -1,6 +1,7 @@
 package ibm
 
 import (
+	"errors"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	st "github.ibm.com/Bluemix/power-go-client/clients/instance"
@@ -11,6 +12,7 @@ import (
 const (
 	PowerVolumeAttachName             = "volumename"
 	PowerInstanceName                 = "servername"
+	PowerVolumeAllowableAttachStatus  = "in-use"
 	PowerVolumeAttachStatus           = "status"
 	PowerVolumeAttachDeleting         = "deleting"
 	PowerVolumeAttachProvisioning     = "creating"
@@ -40,7 +42,7 @@ func resourceIBMPowerVolumeAttach() *schema.Resource {
 				Optional: true,
 			},
 
-			PowerVolumeName: {
+			PowerVolumeAttachName: {
 				Type:     schema.TypeString,
 				Required: true,
 			},
@@ -55,6 +57,11 @@ func resourceIBMPowerVolumeAttach() *schema.Resource {
 				Computed: true,
 				Optional: true,
 			},
+			PowerVolumeShareable: {
+				Type:     schema.TypeBool,
+				Computed: true,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -65,13 +72,24 @@ func resourceIBMPowerVolumeAttachCreate(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
-	name := d.Get(PowerVolumeName).(string)
+	name := d.Get(PowerVolumeAttachName).(string)
+
 	servername := d.Get(PowerInstanceName).(string)
 
 	client := st.NewPowerVolumeClient(sess)
+	log.Print("Now doing a get with the volumename %s  ", name)
+	volinfo, err := client.Get(name)
 
-	volinfo, err := client.Get("volumename")
+	if err != nil {
+		return errors.New("The volume cannot be attached since it's not available")
+		log.Printf(" The volume that is being attached is not available ")
+	}
 	log.Print("The volume info is %s", volinfo)
+
+	if volinfo.State == PowerVolumeAllowableAttachStatus {
+
+		return errors.New("The volume cannot be attached in the current state. The volume must be in the *available* state. No other states are permissible")
+	}
 
 	resp, err := client.Attach(servername, name)
 
@@ -85,7 +103,7 @@ func resourceIBMPowerVolumeAttachCreate(d *schema.ResourceData, meta interface{}
 		log.Printf("[DEBUG]  err %s", isErrorToString(err))
 		return err
 	}
-	_, err = isWaitForPowerVolumeAvailable(client, d.Id(), d.Timeout(schema.TimeoutCreate))
+	_, err = isWaitForPowerVolumeAttachAvailable(client, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
 	}
@@ -205,8 +223,8 @@ func isWaitForPowerVolumeAttachAvailable(client *st.PowerVolumeClient, id string
 	log.Printf("Waiting for Volume (%s) to be available.", id)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", PowerVolumeProvisioning},
-		Target:     []string{PowerVolumeProvisioningDone},
+		Pending:    []string{"retry", PowerVolumeAttachProvisioningDone},
+		Target:     []string{PowerVolumeAllowableAttachStatus},
 		Refresh:    isPowerVolumeAttachRefreshFunc(client, id),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
@@ -223,10 +241,10 @@ func isPowerVolumeAttachRefreshFunc(client *st.PowerVolumeClient, id string) res
 			return nil, "", err
 		}
 
-		if vol.State == "available" {
-			return vol, PowerVolumeProvisioningDone, nil
+		if vol.State == "in-use" {
+			return vol, PowerVolumeAllowableAttachStatus, nil
 		}
 
-		return vol, PowerVolumeProvisioningDone, nil
+		return vol, PowerVolumeAttachProvisioningDone, nil
 	}
 }

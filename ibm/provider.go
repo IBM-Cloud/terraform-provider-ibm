@@ -321,10 +321,11 @@ func Provider() terraform.ResourceProvider {
 
 			//Added for Power Colo
 
-			"ibm_power_volume":      resourceIBMPowerVolume(),
-			"ibm_power_sshkey":      resourceIBMPowerSSHKey(),
-			"ibm_power_network":     resourceIBMPowerNetwork(),
-			"ibm_power_pvminstance": resourceIBMPowerPVMInstance(),
+			"ibm_power_volume":        resourceIBMPowerVolume(),
+			"ibm_power_sshkey":        resourceIBMPowerSSHKey(),
+			"ibm_power_network":       resourceIBMPowerNetwork(),
+			"ibm_power_pvminstance":   resourceIBMPowerPVMInstance(),
+			"ibm_power_volume_attach": resourceIBMPowerVolumeAttach(),
 		},
 
 		ConfigureFunc: providerConfigure,

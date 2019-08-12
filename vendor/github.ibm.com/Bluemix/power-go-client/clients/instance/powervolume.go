@@ -29,11 +29,13 @@ func NewPowerVolumeClient(sess *session.Session) *PowerVolumeClient {
 //Get information about a single volume only
 func (f *PowerVolumeClient) Get(id string) (*models.Volume, error) {
 
+	var cloudinstanceid = f.session.PowerServiceInstance
 
 
-	//var cloudinstanceid = f.session.PowerServiceInstance
+	log.Printf("The input volume name is %s and trying to attach it to the cloudinstance id %s",id,cloudinstanceid)
 
-	params := p_cloud_volumes.NewPcloudCloudinstancesVolumesGetParams().WithCloudInstanceID(f.session.PowerServiceInstance).WithVolumeID(id)
+
+	params := p_cloud_volumes.NewPcloudCloudinstancesVolumesGetParams().WithCloudInstanceID(cloudinstanceid).WithVolumeID(id)
 	resp,err := f.session.Power.PCloudVolumes.PcloudCloudinstancesVolumesGet(params,session.NewAuth(f.session))
 
 	if err != nil || resp.Payload == nil  {
@@ -118,4 +120,19 @@ func (f *PowerVolumeClient) Attach(id,volumename string) (models.Object, error){
 
 	return resp.Payload,nil
 	
+}
+
+//Detach a volume
+
+func (f *PowerVolumeClient) Detach(id, volumename string) (models.Object, error){
+	log.Printf("Calling the Power Volume Detach method")
+	var cloudinstanceid = f.session.PowerServiceInstance
+	params := p_cloud_volumes.NewPcloudPvminstancesVolumesDeleteParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(cloudinstanceid).WithPvmInstanceID(id).WithVolumeID(volumename)
+	resp,err := f.session.Power.PCloudVolumes.PcloudPvminstancesVolumesDelete(params,session.NewAuth(f.session))
+
+	if err != nil{
+		return nil, errors.ToError(err)
+	}
+	return resp.Payload, nil
+
 }

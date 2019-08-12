@@ -260,11 +260,11 @@ func resourceIBMPowerPVMInstanceRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("minproc", powervmdata.Minproc)
 
 	if powervmdata.Addresses != nil {
-		pvmaddress := make([]map[string]string, len(powervmdata.Addresses))
+		pvmaddress := make([]map[string]interface{}, len(powervmdata.Addresses))
 		for i, pvmip := range powervmdata.Addresses {
 			log.Printf("Now entering the powervm address space....")
 
-			p := make(map[string]string)
+			p := make(map[string]interface{})
 			p["ip"] = pvmip.IP
 			p["networkname"] = pvmip.NetworkName
 			p["networkid"] = pvmip.NetworkID
