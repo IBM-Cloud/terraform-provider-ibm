@@ -69,7 +69,7 @@ The following arguments are supported:
 
 * `group` - (Required, string) The security group id.
 * `direction` - (Required, string)  The direction of the traffic either `ingress` or `egress`.
-* `remote` - (Required, string) Security group id - an IP address, a CIDR block, or a single security group identifier.
+* `remote` - (Optional, string) Security group id - an IP address, a CIDR block, or a single security group identifier.
 * `ip_version` - (Optional, string) IP version either `IPv4` or `IPv6`. Default `IPv4`.
 * `icmp` - (Optional, list) A nested block describing the `icmp` protocol of this security group rule.
   * `type` - (Required, int) The ICMP traffic type to allow. Valid values from 0 to 254.
