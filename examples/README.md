@@ -20,6 +20,8 @@ $ terraform apply
 
 [IBM Cloud Terraform Templates](https://github.com/Cloud-Schematics/)
 
+[IBM Cloud Architecture Center public cloud reference archiectures and terraform code patterns](https://www.ibm.com/cloud/garage/architectures/public-cloud)
+
 [IBM Cloud docs](https://cloud.ibm.com/docs/terraform?topic=terraform-getting-started)
 
 [Deploying Red Hat OpenShift Container Platform on IBM Cloud](https://github.com/IBM-Cloud/terraform-ibm-openshift)
