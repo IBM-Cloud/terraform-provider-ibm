@@ -70,7 +70,7 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 
 			isSecurityGroupRuleRemote: {
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
 				Description:  "Security group id: an IP address, a CIDR block, or a single security group identifier",
 				ValidateFunc: validateSecurityGroupRemote,
 			},
@@ -234,10 +234,7 @@ func resourceIBMISSecurityGroupRuleRead(d *schema.ResourceData, meta interface{}
 		protocolList = append(protocolList, icmpProtocol)
 		d.Set(isSecurityGroupRuleProtocolICMP, protocolList)
 	}
-	remote, err := extractRuleRemote(rule.Remote)
-	if err != nil {
-		return err
-	}
+	remote := extractRuleRemote(rule.Remote)
 	d.Set(isSecurityGroupRuleRemote, remote)
 	d.SetId(tfID)
 	return nil
@@ -375,8 +372,17 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string) (
 	}
 	parsed.direction = d.Get(isSecurityGroupRuleDirection).(string)
 	parsed.ipversion = d.Get(isSecurityGroupRuleIPVersion).(string)
-	parsed.remote = d.Get(isSecurityGroupRuleRemote).(string)
-	parsed.remoteAddress, parsed.remoteCIDR, parsed.remoteSecGrpID, err = inferRemoteSecurityGroup(parsed.remote)
+	parsed.remote = ""
+	if pr, ok := d.GetOk(isSecurityGroupRuleRemote); ok {
+		parsed.remote = pr.(string)
+	}
+	parsed.remoteAddress = ""
+	parsed.remoteCIDR = ""
+	parsed.remoteSecGrpID = ""
+	err = nil
+	if parsed.remote != "" {
+		parsed.remoteAddress, parsed.remoteCIDR, parsed.remoteSecGrpID, err = inferRemoteSecurityGroup(parsed.remote)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -439,18 +445,18 @@ func makeTerraformRuleID(id1, id2 string) string {
 	return id1 + "." + id2
 }
 
-func extractRuleRemote(remote *models.SecurityGroupRuleRemote) (string, error) {
+func extractRuleRemote(remote *models.SecurityGroupRuleRemote) string {
 	if remote == nil {
-		return "", fmt.Errorf("security group remote is nil")
+		return ""
 	}
 	if remote.Address != "" {
-		return remote.Address, nil
+		return remote.Address
 	}
 	if remote.CidrBlock != "" {
-		return remote.CidrBlock, nil
+		return remote.CidrBlock
 	}
 	if remote.ID.String() != "" {
-		return remote.ID.String(), nil
+		return remote.ID.String()
 	}
-	return "", fmt.Errorf("security group remote is not set.")
+	return ""
 }
