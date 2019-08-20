@@ -288,7 +288,7 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				Set: func(v interface{}) int {
 					return v.(int)
 				},
-				ForceNew: true,
+				ForceNew: false,
 				MaxItems: 5,
 			},
 
@@ -323,7 +323,7 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				Set: func(v interface{}) int {
 					return v.(int)
 				},
-				ForceNew: true,
+				ForceNew: false,
 				MaxItems: 5,
 			},
 
