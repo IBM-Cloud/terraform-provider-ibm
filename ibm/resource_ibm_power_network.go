@@ -1,9 +1,13 @@
 package ibm
 
 import (
+	"github.com/apparentlymart/go-cidr/cidr"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+	"net"
+	"strconv"
+
 	st "github.ibm.com/Bluemix/power-go-client/clients/instance"
 	"log"
 	"time"
@@ -89,14 +93,15 @@ func resourceIBMPowerNetworkCreate(d *schema.ResourceData, meta interface{}) err
 	networktype := d.Get(PowerNetworkType).(string)
 	networkcidr := d.Get(PowerNetworkCidr).(string)
 	networkdns := expandStringList((d.Get(PowerNetworkDNS).(*schema.Set)).List())
-	ipranges := expandStringList((d.Get(PowerNetworkIPAddressRange).(*schema.Set)).List())
-	networkgateway := d.Get(PowerNetworkGateway).(string)
+	//ipranges := expandStringList((d.Get(PowerNetworkIPAddressRange).(*schema.Set)).List())
+	//networkgateway := d.Get(PowerNetworkGateway).(string)
 
 	log.Printf("Printing the data ")
 
 	client := st.NewPowerNetworkClient(sess)
-
-	networkResponse, _, err := client.Create(networkname, networktype, networkcidr, networkdns, networkgateway, ipranges[1], ipranges[0])
+	networkgateway, firstip, lastip := generateData(networkcidr)
+	//networkResponse, _, err := client.Create(networkname, networktype, networkcidr, networkdns, networkgateway, ipranges[1], ipranges[0])
+	networkResponse, _, err := client.Create(networkname, networktype, networkcidr, networkdns, networkgateway, firstip, lastip)
 
 	if err != nil {
 		return err
@@ -131,7 +136,7 @@ func resourceIBMPowerNetworkRead(d *schema.ResourceData, meta interface{}) error
 	}
 
 	networkC := st.NewPowerNetworkClient(sess)
-	networkdata, err := networkC.Get(d.Get("networkname").(string))
+	networkdata, err := networkC.Get(d.Get("name").(string))
 
 	if err != nil {
 		return err
@@ -197,4 +202,39 @@ func isPowerNetworkRefreshFunc(client *st.PowerNetworkClient, id string) resourc
 
 		return network, PowerNetworkReady, nil
 	}
+}
+
+func generateData(cdir string) (gway, firstip, lastip string) {
+	_, ipv4Net, err := net.ParseCIDR(cdir)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var subnet_to_size = map[string]int{
+		"21": 2048,
+		"22": 1024,
+		"23": 512,
+		"24": 256,
+		"25": 128,
+		"26": 64,
+		"27": 32,
+		"28": 16,
+		"29": 8,
+		"30": 4,
+		"31": 2,
+	}
+
+	subnetsize, _ := ipv4Net.Mask.Size()
+
+	gateway, err := cidr.Host(ipv4Net, 1)
+	ad := cidr.AddressCount(ipv4Net)
+
+	convertedad := strconv.FormatUint(ad, 10)
+	firstusable, err := cidr.Host(ipv4Net, 2)
+	lastusable, err := cidr.Host(ipv4Net, subnet_to_size[convertedad]-2)
+	log.Printf("The gateway  value is %s and  %s the count is %s and first ip is %s last one is  %s", gateway, subnetsize, convertedad, firstusable, lastusable)
+
+	return gateway.String(), firstusable.String(), lastusable.String()
+
 }

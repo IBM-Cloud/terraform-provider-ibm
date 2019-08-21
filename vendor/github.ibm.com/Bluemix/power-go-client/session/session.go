@@ -20,29 +20,27 @@ import (
 
 //const apiEndpointURL = "rias.wrig.me:5000"
 
-const(
-
-	offering="power-iaas"
-	crnString="crn"
-	version = "v1"
-	service="bluemix"
-	serviceType="public"
-	serviceInstanceSeparator="/"
-	separator=":"
-
+const (
+	offering                 = "power-iaas"
+	crnString                = "crn"
+	version                  = "v1"
+	service                  = "bluemix"
+	serviceType              = "public"
+	serviceInstanceSeparator = "/"
+	separator                = ":"
 
 //var crn = "crn:v1:bluemix:public:power-iaas:us-east:a/ba6042d7f84a4a318f64003e691bf700:d16705bd-7f1a-48c9-9e0e-1c17b71e7331::"
 )
 
 // Session ...
 type Session struct {
-	IAMToken   string
-	IMSToken   string
-	Power 	   *client.PowerIaas
-	Timeout    time.Duration
-	Generation int64
+	IAMToken string
+	IMSToken string
+	Power    *client.PowerIaas
+	Timeout  time.Duration
+	//Generation int64
 	PowerServiceInstance string
-	UserAccount string
+	UserAccount          string
 }
 
 func powerJSONConsumer() runtime.Consumer {
@@ -79,14 +77,14 @@ func powerJSONConsumer() runtime.Consumer {
 			//	errorRecord.Errors = make([]*models.RiaaserrorErrorsItems, 1, 1)
 			//	errorRecord.Errors[0] = &models.RiaaserrorErrorsItems{
 			///		Message:  string(b),
-				//	Code:     "unexpected_return_value",
-				//	MoreInfo: "",
-				//	Target: &models.RiaaserrorErrorsItemsTarget{
-				//		Name: "",
-				//		Type: "",
-				//	},
-				//}
-		//	}
+			//	Code:     "unexpected_return_value",
+			//	MoreInfo: "",
+			//	Target: &models.RiaaserrorErrorsItemsTarget{
+			//		Name: "",
+			//		Type: "",
+			//	},
+			//}
+			//	}
 			return nil
 		}
 		return err
@@ -94,41 +92,35 @@ func powerJSONConsumer() runtime.Consumer {
 }
 
 // New ...
-func New(iamtoken, region , powerinstance string, generation int, debug bool, timeout time.Duration,useraccount string) (*Session, error) {
+func New(iamtoken, region, powerinstance string, debug bool, timeout time.Duration, useraccount string) (*Session, error) {
 	session := &Session{
-		IAMToken: iamtoken,
+		IAMToken:             iamtoken,
 		PowerServiceInstance: powerinstance,
-		UserAccount: useraccount,
+		UserAccount:          useraccount,
 	}
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: false}
-	apiEndpointURL := utils.GetEndpoint(generation, region)
-	log.Printf("the apiendpoint url for power is %s",apiEndpointURL)
+	apiEndpointURL := utils.GetPowerEndPoint(region)
+	log.Printf("the apiendpoint url for power is %s", apiEndpointURL)
 	transport := httptransport.New(apiEndpointURL, "/", []string{"https"})
 	transport.Debug = debug
 	transport.Consumers[runtime.JSONMime] = powerJSONConsumer()
 	session.Power = client.New(transport, nil)
 	session.Timeout = timeout
-	session.Generation = int64(generation)
 	return session, nil
 }
 
-
-
 func NewAuth(sess *Session) runtime.ClientAuthInfoWriter {
 	log.Printf("Calling the New Auth Method")
-	var crndata = crnBuilder(sess.PowerServiceInstance,sess.UserAccount)
+	var crndata = crnBuilder(sess.PowerServiceInstance, sess.UserAccount)
 	return runtime.ClientAuthInfoWriterFunc(func(r runtime.ClientRequest, _ strfmt.Registry) error {
-		if err := r.SetHeaderParam("Authorization",sess.IAMToken); err != nil {
+		if err := r.SetHeaderParam("Authorization", sess.IAMToken); err != nil {
 			return err
 		}
 		return r.SetHeaderParam("CRN", crndata)
 	})
 
-
 }
-
-
 
 func BearerTokenAndCRN(session *Session, crn string) runtime.ClientAuthInfoWriter {
 	return runtime.ClientAuthInfoWriterFunc(func(r runtime.ClientRequest, _ strfmt.Registry) error {
@@ -139,9 +131,9 @@ func BearerTokenAndCRN(session *Session, crn string) runtime.ClientAuthInfoWrite
 	})
 }
 
-func crnBuilder(powerinstance ,useraccount string) string{
+func crnBuilder(powerinstance, useraccount string) string {
 	//log.Printf ("Calling the crn constructor that is to be passed back to the caller  %s",useraccount)
-	var crnData=crnString+separator+version+separator+service+separator+serviceType+separator+offering+separator+"us-east"+separator+"a"+serviceInstanceSeparator+useraccount+separator+powerinstance+separator+separator
+	var crnData = crnString + separator + version + separator + service + separator + serviceType + separator + offering + separator + "us-east" + separator + "a" + serviceInstanceSeparator + useraccount + separator + powerinstance + separator + separator
 	//log.Printf("the crndata is ... %s ",crnData)
 	return crnData
 }

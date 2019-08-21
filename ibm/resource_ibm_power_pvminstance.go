@@ -182,6 +182,7 @@ func resourceIBMPowerPVMInstanceCreate(d *schema.ResourceData, meta interface{})
 	systype := d.Get(PowerPVMInstanceSystemType).(string)
 	networks := expandStringList((d.Get(PowerPVMInstanceNetworkIds).(*schema.Set)).List())
 	volids := expandStringList((d.Get(PowerPVMInstanceVolumeIds).(*schema.Set)).List())
+
 	imageid := d.Get(PowerPVMImageName).(string)
 
 	processortype := d.Get(PowerPVMInstanceProcType).(string)
@@ -201,9 +202,7 @@ func resourceIBMPowerPVMInstanceCreate(d *schema.ResourceData, meta interface{})
 	pvm, _, _, err := client.Create(&p_cloud_p_vm_instances.PcloudPvminstancesPostParams{
 		Body: body,
 	})
-	if err != nil {
-		return err
-	}
+	log.Printf("the number of instances is %d", len(*pvm))
 
 	if err != nil {
 		log.Printf("[DEBUG]  err %s", isErrorToString(err))

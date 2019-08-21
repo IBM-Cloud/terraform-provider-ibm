@@ -8,8 +8,6 @@ import (
 	"github.ibm.com/Bluemix/power-go-client/helpers"
 )
 
-
-
 // GetNext ...
 func GetNext(next interface{}) string {
 	if reflect.ValueOf(next).IsNil() {
@@ -47,6 +45,7 @@ func getGCEndpoint(regionName string) string {
 	return regionName + ".iaas.cloud.ibm.com"
 }
 
+// For Power-IAAS
 func getNGEndpoint(regionName string) string {
 	if url := os.Getenv("IBMCLOUD_IS_NG_API_ENDPOINT"); url != "" {
 		return url
@@ -54,7 +53,10 @@ func getNGEndpoint(regionName string) string {
 	return regionName + ".power-iaas.cloud.ibm.com"
 }
 
+func GetPowerEndPoint(regionName string) string {
+	if url := os.Getenv("IBMCLOUD_IS_NG_API_ENDPOINT"); url != "" {
+		return url
+	}
+	return regionName + ".power-iaas.cloud.ibm.com"
 
-
-
-
+}

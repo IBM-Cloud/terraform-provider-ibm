@@ -206,11 +206,12 @@ func Provider() terraform.ResourceProvider {
 
 			// Added for Power Resources
 
-			"ibm_power_image":       dataSourceIBMPowerImage(),
-			"ibm_power_network":     dataSourceIBMPowerNetwork(),
-			"ibm_power_volume":      dataSourceIBMPowerVolume(),
-			"ibm_power_sshkey":      dataSourceIBMPowerSSHKey(),
-			"ibm_power_pvminstance": dataSourceIBMPowerPVMInstance(),
+			"ibm_power_image":          dataSourceIBMPowerImage(),
+			"ibm_power_network":        dataSourceIBMPowerNetwork(),
+			"ibm_power_volume":         dataSourceIBMPowerVolume(),
+			"ibm_power_sshkey":         dataSourceIBMPowerSSHKey(),
+			"ibm_power_pvminstance":    dataSourceIBMPowerPVMInstance(),
+			"ibm_power_cloud_instance": dataSourceIBMPowerCloudInstance(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{

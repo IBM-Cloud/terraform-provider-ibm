@@ -463,7 +463,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// Power Colo Session
 
-	powersession, err := powersession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, c.PowerServiceInstance, c.Generation, true, c.BluemixTimeout, session.bmxUserDetails.userAccount)
+	powersession, err := powersession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, c.PowerServiceInstance, true, c.BluemixTimeout, session.bmxUserDetails.userAccount)
 
 	if err != nil {
 		session.powerConfigErr = err
@@ -528,14 +528,14 @@ func newSession(c *Config) (*Session, error) {
 		log.Println("Configuring IBM Cloud Session with API key")
 		var sess *bxsession.Session
 		bmxConfig := &bluemix.Config{
-			BluemixAPIKey:        c.BluemixAPIKey,
-			Debug:                os.Getenv("TF_LOG") != "",
-			HTTPTimeout:          c.BluemixTimeout,
-			Region:               c.Region,
-			ResourceGroup:        c.ResourceGroup,
-			RetryDelay:           &c.RetryDelay,
-			MaxRetries:           &c.RetryCount,
-			PowerServiceInstance: c.PowerServiceInstance,
+			BluemixAPIKey: c.BluemixAPIKey,
+			Debug:         os.Getenv("TF_LOG") != "",
+			HTTPTimeout:   c.BluemixTimeout,
+			Region:        c.Region,
+			ResourceGroup: c.ResourceGroup,
+			RetryDelay:    &c.RetryDelay,
+			MaxRetries:    &c.RetryCount,
+			//PowerServiceInstance: c.PowerServiceInstance,
 		}
 		sess, err := bxsession.New(bmxConfig)
 		if err != nil {
