@@ -39,6 +39,9 @@ const (
 	PowerPVMInstanceNetworkCidr   = "cidr"
 	PowerPVMInstanceNotFound      = "Not Found"
 	PowerPVMInstanceHealthStatus  = "healthstatus"
+	PowerPVMReplicants            = "replicants"
+	PowerPVMReplicationPolicy     = "replicationpolicy"
+	PowerPVMProgress              = "progress"
 )
 
 func resourceIBMPowerPVMInstance() *schema.Resource {
@@ -162,6 +165,19 @@ func resourceIBMPowerPVMInstance() *schema.Resource {
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"any", "s922", "e880"}),
 			},
+			PowerPVMReplicants: {
+				Type:     schema.TypeFloat,
+				Optional: true,
+			},
+			PowerPVMReplicationPolicy: {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			PowerPVMProgress: {
+				Type:        schema.TypeFloat,
+				Computed:    true,
+				Description: "Progress of the operation",
+			},
 		},
 	}
 }
@@ -182,6 +198,14 @@ func resourceIBMPowerPVMInstanceCreate(d *schema.ResourceData, meta interface{})
 	systype := d.Get(PowerPVMInstanceSystemType).(string)
 	networks := expandStringList((d.Get(PowerPVMInstanceNetworkIds).(*schema.Set)).List())
 	volids := expandStringList((d.Get(PowerPVMInstanceVolumeIds).(*schema.Set)).List())
+	replicants := d.Get("replicants").(float64)
+	if d.Get("replicants") == "" {
+		replicants = 1
+	}
+	replicationpolicy := d.Get("replicationpolicy").(string)
+	if d.Get("replicationpolicy") == "" {
+		replicationpolicy = "none"
+	}
 
 	imageid := d.Get(PowerPVMImageName).(string)
 
@@ -190,11 +214,13 @@ func resourceIBMPowerPVMInstanceCreate(d *schema.ResourceData, meta interface{})
 	body := &models.PVMInstanceCreate{
 
 		VolumeIds: volids, NetworkIds: networks, Processors: &procs, Memory: &mem, ServerName: ptrToString(name),
-		Migratable:  &migrateable,
-		SysType:     ptrToString(systype),
-		KeyPairName: sshkey,
-		ImageID:     ptrToString(imageid),
-		ProcType:    ptrToString(processortype),
+		Migratable:              &migrateable,
+		SysType:                 ptrToString(systype),
+		KeyPairName:             sshkey,
+		ImageID:                 ptrToString(imageid),
+		ProcType:                ptrToString(processortype),
+		Replicants:              replicants,
+		ReplicantAffinityPolicy: ptrToString(replicationpolicy),
 	}
 
 	client := st.NewPowerPvmClient(sess)
@@ -252,6 +278,7 @@ func resourceIBMPowerPVMInstanceRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("proctype", powervmdata.ProcType)
 	d.Set("migratable", powervmdata.Migratable)
 	d.Set("minproc", powervmdata.Minproc)
+	d.Set("progress", powervmdata.Progress)
 
 	if powervmdata.Addresses != nil {
 		pvmaddress := make([]map[string]interface{}, len(powervmdata.Addresses))

@@ -125,13 +125,14 @@ func resourceIBMPowerVolumeRead(d *schema.ResourceData, meta interface{}) error 
 
 func resourceIBMPowerVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 
+	log.Printf("Calling the IBM Power Volume update call")
 	sess, _ := meta.(ClientSession).PowerSession()
 	client := st.NewPowerVolumeClient(sess)
 
-	name := ""
-	if d.HasChange(PowerVolumeName) {
-		name = d.Get(PowerVolumeName).(string)
-	}
+	//name := ""
+	//if d.HasChange(PowerVolumeName) {
+	name := d.Get(PowerVolumeName).(string)
+	//}
 
 	size := float64(d.Get(PowerVolumeSize).(float64))
 	shareable := bool(d.Get(PowerVolumeShareable).(bool))
@@ -241,6 +242,6 @@ func isPowerVolumeRefreshFunc(client *st.PowerVolumeClient, id string) resource.
 			return vol, PowerVolumeProvisioningDone, nil
 		}
 
-		return vol, PowerVolumeProvisioningDone, nil
+		return vol, PowerVolumeProvisioning, nil
 	}
 }

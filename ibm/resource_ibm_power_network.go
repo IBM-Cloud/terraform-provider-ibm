@@ -25,6 +25,7 @@ const (
 	PowerNetworkEndingIPAddress   = "endip"
 	PowerNetworkIPAddressRange    = "ipaddressrange"
 	PowerNetworkVlanId            = "vlanId"
+	PowerNetworkProvisioning      = "build"
 )
 
 func resourceIBMPowerNetwork() *schema.Resource {
@@ -93,14 +94,11 @@ func resourceIBMPowerNetworkCreate(d *schema.ResourceData, meta interface{}) err
 	networktype := d.Get(PowerNetworkType).(string)
 	networkcidr := d.Get(PowerNetworkCidr).(string)
 	networkdns := expandStringList((d.Get(PowerNetworkDNS).(*schema.Set)).List())
-	//ipranges := expandStringList((d.Get(PowerNetworkIPAddressRange).(*schema.Set)).List())
-	//networkgateway := d.Get(PowerNetworkGateway).(string)
 
 	log.Printf("Printing the data ")
 
 	client := st.NewPowerNetworkClient(sess)
 	networkgateway, firstip, lastip := generateData(networkcidr)
-	//networkResponse, _, err := client.Create(networkname, networktype, networkcidr, networkdns, networkgateway, ipranges[1], ipranges[0])
 	networkResponse, _, err := client.Create(networkname, networktype, networkcidr, networkdns, networkgateway, firstip, lastip)
 
 	if err != nil {
@@ -175,7 +173,7 @@ func isWaitForPowerNetworkAvailable(client *st.PowerNetworkClient, id string, ti
 	log.Printf("Waiting for Power Network (%s) to be available.", id)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", PowerVolumeProvisioning},
+		Pending:    []string{"retry", PowerNetworkProvisioning},
 		Target:     []string{PowerNetworkReady},
 		Refresh:    isPowerNetworkRefreshFunc(client, id),
 		Timeout:    timeout,
@@ -200,7 +198,7 @@ func isPowerNetworkRefreshFunc(client *st.PowerNetworkClient, id string) resourc
 			return network, PowerNetworkReady, nil
 		}
 
-		return network, PowerNetworkReady, nil
+		return network, PowerNetworkProvisioning, nil
 	}
 }
 

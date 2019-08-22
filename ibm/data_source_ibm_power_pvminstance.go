@@ -28,6 +28,14 @@ func dataSourceIBMPowerPVMInstance() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"replicationpolicy": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"replicants": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
 			"processors": {
 				Type:     schema.TypeInt,
 				Computed: true,
