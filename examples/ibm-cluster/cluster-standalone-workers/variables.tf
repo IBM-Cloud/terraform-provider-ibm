@@ -33,5 +33,5 @@ variable "plan" {
 }
 
 variable "cluster_name" {
-  default = "cluster"
+  default = "mycluster"
 }
