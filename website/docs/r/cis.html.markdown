@@ -24,6 +24,7 @@ resource "ibm_cis" "cis_instance" {
   plan              = "standard"
   resource_group_id = "${data.ibm_resource_group.group.id}"
   tags              = ["tag1", "tag2"]
+  location          = "global"
 
   //User can increase timeouts 
   timeouts {
