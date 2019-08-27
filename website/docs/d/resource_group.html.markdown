@@ -12,7 +12,7 @@ Import the details of an existing IBM resource Group as a read-only data source.
 
 ## Example Usage
 
-Import the reosource group by name
+Import the resource group by name
 
 ```hcl
 data "ibm_resource_group" "group" {
