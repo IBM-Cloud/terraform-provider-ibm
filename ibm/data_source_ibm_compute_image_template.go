@@ -62,7 +62,7 @@ func dataSourceIBMComputeImageTemplateRead(d *schema.ResourceData, meta interfac
 	}
 
 	if len(pubImageTemplates) > 0 {
-		imageTemplate := pubImageTemplates[0]
+		imageTemplate := pubImageTemplates[len(pubImageTemplates)-1]
 		d.SetId(fmt.Sprintf("%d", *imageTemplate.Id))
 		return nil
 	}
