@@ -291,7 +291,10 @@ func isErrorToString(err error) string {
 		retmsg := ""
 
 		for _, e := range iserror.Payload.Errors {
-			retmsg = retmsg + "\n" + e.Message + "\n" + e.Code + "\n" + e.MoreInfo + "\n" + e.Target.Name + "\n" + e.Target.Type
+			retmsg = retmsg + "\n" + e.Message + "\n" + e.Code + "\n" + e.MoreInfo + "\n"
+			if e.Target != nil {
+				retmsg = retmsg + e.Target.Name + "\n" + e.Target.Type
+			}
 		}
 		return retmsg
 	}
