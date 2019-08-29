@@ -212,6 +212,12 @@ func Provider() terraform.ResourceProvider {
 			"ibm_power_sshkey":         dataSourceIBMPowerSSHKey(),
 			"ibm_power_pvminstance":    dataSourceIBMPowerPVMInstance(),
 			"ibm_power_cloud_instance": dataSourceIBMPowerCloudInstance(),
+			"ibm_pi_key":               dataSourceIBMPIKey(),
+			"ibm_pi_image":             dataSourceIBMPIImage(),
+			"ibm_pi_instance":          dataSourceIBMPIInstance(),
+			"ibm_pi_tenant":            dataSourceIBMPITenant(),
+			//"ibm_pi_volume"			  : dataSourceIBMPIVolume(),
+
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -327,6 +333,13 @@ func Provider() terraform.ResourceProvider {
 			"ibm_power_network":       resourceIBMPowerNetwork(),
 			"ibm_power_pvminstance":   resourceIBMPowerPVMInstance(),
 			"ibm_power_volume_attach": resourceIBMPowerVolumeAttach(),
+			//"ibm_pi_key"			 : resourceIBMPIKey(),
+			//"ibm_pi_instance"		 : resourceIBMPIInstance(),
+			//"ibm_pi_network" 		 :
+			//"ibm_pi_volume" 		 :
+			//"ibm_pi_volume_operations":
+			//"ibm_pi_instance_capture"
+
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -401,7 +414,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 
 	// Added code for the Power Colo
 
-	powerServiceInstance := d.Get("power_instance").(string)
+	//powerServiceInstance := d.Get("power_instance").(string)
 
 	config := Config{
 		BluemixAPIKey:        bluemixAPIKey,
@@ -419,7 +432,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		Generation:           generation,
 		IAMToken:             iamToken,
 		IAMRefreshToken:      iamRefreshToken,
-		PowerServiceInstance: powerServiceInstance,
+		//PowerServiceInstance: powerServiceInstance,
 	}
 
 	return config.ClientSession()

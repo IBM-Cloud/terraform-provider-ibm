@@ -39,6 +39,7 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	issession "github.ibm.com/Bluemix/riaas-go-client/session"
 	// Added code for the Power Colo Offering
+	ibmpisession "github.ibm.com/Bluemix/power-go-client/ibmpisession"
 	powersession "github.ibm.com/Bluemix/power-go-client/session"
 )
 
@@ -144,6 +145,7 @@ type ClientSession interface {
 	SoftLayerSession() *slsession.Session
 
 	PowerSession() (*powersession.Session, error)
+	IBMPISession() (*ibmpisession.IBMPISession, error)
 }
 
 type clientSession struct {
@@ -202,6 +204,9 @@ type clientSession struct {
 
 	powerConfigErr error
 	powerSession   *powersession.Session
+
+	ibmpiConfigErr error
+	ibmpiSession   *ibmpisession.IBMPISession
 }
 
 // BluemixAcccountAPI ...
@@ -304,6 +309,10 @@ func (sess clientSession) PowerSession() (*powersession.Session, error) {
 	return sess.powerSession, sess.powerConfigErr
 }
 
+func (sess clientSession) IBMPISession() (*ibmpisession.IBMPISession, error) {
+	return sess.ibmpiSession, sess.powerConfigErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -334,6 +343,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.resourceCatalogConfigErr = errEmptyBluemixCredentials
 		session.isConfigErr = errEmptyBluemixCredentials
 		session.powerConfigErr = errEmptyBluemixCredentials
+		session.ibmpiConfigErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -345,6 +355,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 			session.functionConfigErr = fmt.Errorf("Error occured while fetching auth key for function: %q", err)
 			session.isConfigErr = fmt.Errorf("Error occured while fetching auth key for vpc: %q", err)
 			session.powerConfigErr = fmt.Errorf("Error occured while fetching the auth key for power iaas: %q", err)
+			session.ibmpiConfigErr = fmt.Errorf("Error occured while fetching the auth key for power iaas: %q", err)
 		}
 	}
 
@@ -470,6 +481,13 @@ func (c *Config) ClientSession() (interface{}, error) {
 		return nil, err
 	}
 	session.powerSession = powersession
+
+	ibmpisession, err := ibmpisession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, true, c.BluemixTimeout, session.bmxUserDetails.userAccount)
+	if err != nil {
+		session.ibmpiConfigErr = err
+		return nil, err
+	}
+	session.ibmpiSession = ibmpisession
 
 	return session, nil
 }
