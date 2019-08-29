@@ -61,9 +61,10 @@ func resourceIBMContainerALBCert() *schema.Resource {
 				Computed: true,
 			},
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:       schema.TypeString,
+				Optional:   true,
+				Computed:   true,
+				Deprecated: "This field is deprecated",
 			},
 		},
 	}

@@ -210,22 +210,26 @@ func dataSourceIBMContainerCluster() *schema.Resource {
 				Description: "The bluemix organization guid this cluster belongs to",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Deprecated:  "This field is deprecated",
 			},
 			"space_guid": {
 				Description: "The bluemix space guid this cluster belongs to",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Deprecated:  "This field is deprecated",
 			},
 			"account_guid": {
 				Description: "The bluemix account guid this cluster belongs to",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Deprecated:  "This field is deprecated",
 			},
 			"region": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
 				Description: "The cluster region",
+				Deprecated:  "This field is deprecated",
 			},
 			"resource_group_id": {
 				Type:        schema.TypeString,
@@ -250,6 +254,12 @@ func dataSourceIBMContainerCluster() *schema.Resource {
 			"private_service_endpoint_url": {
 				Type:     schema.TypeString,
 				Computed: true,
+			},
+
+			"crn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "CRN of resource instance",
 			},
 		},
 	}
@@ -323,6 +333,7 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	d.Set("private_service_endpoint", clusterFields.PrivateServiceEndpointEnabled)
 	d.Set("public_service_endpoint_url", clusterFields.PublicServiceEndpointURL)
 	d.Set("private_service_endpoint_url", clusterFields.PrivateServiceEndpointURL)
+	d.Set("crn", clusterFields.CRN)
 
 	return nil
 }
