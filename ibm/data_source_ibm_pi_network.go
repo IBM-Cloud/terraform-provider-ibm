@@ -62,13 +62,14 @@ func dataSourceIBMPINetwork() *schema.Resource {
 
 func dataSourceIBMPINetworksRead(d *schema.ResourceData, meta interface{}) error {
 
-	sess, err := meta.(ClientSession).PowerSession()
+	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
 		return err
 	}
 
-	networkC := instance.NewPowerNetworkClient(sess)
-	networkdata, err := networkC.Get(d.Get("networkname").(string))
+	var powerinstanceid = d.Get("powerinstanceid").(string)
+	networkC := instance.NewIBMPINetworkClient(sess, powerinstanceid)
+	networkdata, err := networkC.Get(d.Get("networkname").(string), powerinstanceid)
 
 	if err != nil {
 		return err

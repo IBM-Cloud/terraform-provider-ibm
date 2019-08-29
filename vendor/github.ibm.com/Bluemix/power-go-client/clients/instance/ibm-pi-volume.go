@@ -14,7 +14,7 @@ type IBMPIVolumeClient struct {
 }
 
 // NewPowerVolumeClient ...
-func NewPIBMPIVolumeClient(sess *ibmpisession.IBMPISession, powerinstanceid string) *IBMPIVolumeClient {
+func NewIBMPIVolumeClient(sess *ibmpisession.IBMPISession, powerinstanceid string) *IBMPIVolumeClient {
 	return &IBMPIVolumeClient{
 		sess, powerinstanceid,
 	}

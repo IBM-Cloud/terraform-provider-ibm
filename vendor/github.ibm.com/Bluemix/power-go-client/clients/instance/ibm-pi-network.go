@@ -14,8 +14,8 @@ type IBMPINetworkClient struct {
 }
 
 // NewPowerImageClient ...
-func NewIBMPINetworkClient(sess *ibmpisession.IBMPISession, powerinstanceid string) *IBMPIImageClient {
-	return &IBMPIImageClient{
+func NewIBMPINetworkClient(sess *ibmpisession.IBMPISession, powerinstanceid string) *IBMPINetworkClient {
+	return &IBMPINetworkClient{
 		session:         sess,
 		powerinstanceid: powerinstanceid,
 	}
