@@ -24,12 +24,11 @@ func dataSourceIBMPITenant() *schema.Resource {
 
 			// Computed Attributes
 
-			"id": {
+			"tenantid": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
-			"icn": {
+			"creationdate": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -39,24 +38,12 @@ func dataSourceIBMPITenant() *schema.Resource {
 				Computed: true,
 			},
 
-			"tenantinstances": {
+			"cloudinstances": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"creationdate": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"enabled": {
-							Type:     schema.TypeBool,
-							Computed: true,
-						},
-						"tenantid": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"cloudinstances": {
+						"cloudinstancereferences": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -88,41 +75,8 @@ func dataSourceIBMPITenant() *schema.Resource {
 								},
 							},
 						},
-						"os": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"architecture": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"crn": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
 					},
 				},
-			},
-
-			"sshkey": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"size": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"architecture": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"operatingsystem": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"hypervisor": {
-				Type:     schema.TypeString,
-				Computed: true,
 			},
 		},
 	}
@@ -148,57 +102,17 @@ func dataSourceIBMPITenantRead(d *schema.ResourceData, meta interface{}) error {
 
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
-	d.Set("icn", tenantData.TenantID)
-	d.Set("creationdate", tenantData.CreationDate)
-	d.Set("sshkey", tenantData.SSHKeys[0].Name)
+
+	log.Printf("The creation date is %s", tenantData.CreationDate.String())
+	d.Set("tenantid", tenantData.TenantID)
+	d.Set("creationdate", tenantData.CreationDate.String())
 	d.Set("enabled", tenantData.Enabled)
-	d.Set("tenantinstances", flattenCloudInstances(tenantData.CloudInstances))
+	d.Set("cloudinstances", flattenCloudInstances(tenantData.CloudInstances))
 	log.Printf("Printing the tenant data %s", tenantData.CloudInstances)
-	/*if tenantData.CloudInstances != nil {
-		tenantInstances := make([]map[string]interface{}, len(tenantData.CloudInstances))
-		for i, tenantinfo := range tenantData.CloudInstances {
-
-			p := make(map[string]interface{})
-			p["name"] = tenantinfo.Name
-			p["region"] = tenantinfo.Region
-			p["memory"] = tenantinfo.Limits.Memory
-
-			tenantInstances[i] = p
-		}
-		d.Set("tenantinstances", tenantInstances)
-
-	}*/
 
 	return nil
 
 }
-
-/*
-groups := make([]map[string]interface{}, len(grouplist.Groups))
-	for i, group := range grouplist.Groups {
-		memorys := make([]map[string]interface{}, 1)
-		memory := make(map[string]interface{})
-		memory["units"] = group.Memory.Units
-		memory["allocation_mb"] = group.Memory.AllocationMb
-		memory["minimum_mb"] = group.Memory.MinimumMb
-		memory["step_size_mb"] = group.Memory.StepSizeMb
-		memory["is_adjustable"] = group.Memory.IsAdjustable
-		memory["can_scale_down"] = group.Memory.CanScaleDown
-		memorys[0] = memory
-
-
-
-		l := map[string]interface{}{
-			"group_id": group.Id,
-			"count":    group.Count,
-			"memory":   memorys,
-			"cpu":      cpus,
-			"disk":     disks,
-		}
-		groups[i] = l
-	}
-	return groups
-*/
 
 func flattenCloudInstances(cloudinstances []*models.CloudInstanceReference) []map[string]interface{} {
 	cloudInstances := make([]map[string]interface{}, len(cloudinstances))

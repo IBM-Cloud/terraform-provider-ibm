@@ -25,8 +25,6 @@ func (f *IBMPITenantClient) Get(powerinstanceid string) (*models.Tenant, error) 
 
 	params := p_cloud_tenants.NewPcloudTenantsGetParams().WithTenantID(f.session.UserAccount)
 	resp, err := f.session.Power.PCloudTenants.PcloudTenantsGet(params, ibmpisession.NewAuth(f.session, powerinstanceid))
-	//params := p_cloud_images.NewPcloudCloudinstancesImagesGetParams().WithCloudInstanceID(powerinstanceid).WithImageID(id)
-	//resp, err := f.session.Power.PCloudImages.PcloudCloudinstancesImagesGet(params, ibmpisession.NewAuth(f.session, powerinstanceid))
 
 	if err != nil || resp.Payload == nil {
 		log.Printf("Failed to perform the operation... %v", err)
