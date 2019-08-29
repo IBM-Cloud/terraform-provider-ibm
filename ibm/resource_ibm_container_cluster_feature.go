@@ -83,6 +83,7 @@ func resourceIBMContainerClusterFeature() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
+				Removed:  "This field is deprecated",
 			},
 		},
 	}

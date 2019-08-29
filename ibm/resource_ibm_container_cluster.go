@@ -61,6 +61,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 			"region": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Deprecated:  "This field is deprecated",
 				Computed:    true,
 				ForceNew:    true,
 				Description: "The cluster region",
@@ -69,7 +70,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Type:          schema.TypeList,
 				Optional:      true,
 				ConflictsWith: []string{"worker_num"},
-				Deprecated:    "Use worker_num instead.",
+				Removed:       "Use worker_num instead.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -102,6 +103,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Description:   "Number of worker nodes",
 				ConflictsWith: []string{"workers"},
 				ValidateFunc:  validateWorkerNum,
+				Deprecated:    "This field is deprecated",
 			},
 
 			"default_pool_size": {
@@ -148,6 +150,18 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 				Optional: true,
+				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
+					if o == "" {
+						return false
+					}
+					new := strings.Split(n, ".")
+					old := strings.Split(o, ".")
+
+					if strings.Compare(new[0]+"."+strings.Split(new[1], "_")[0], old[0]+"."+strings.Split(old[1], "_")[0]) == 0 {
+						return true
+					}
+					return false
+				},
 			},
 
 			"update_all_workers": {
@@ -162,20 +176,17 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Optional: true,
 			},
 			"isolation": {
-				Type:          schema.TypeString,
-				ForceNew:      true,
-				Optional:      true,
-				Computed:      true,
-				ConflictsWith: []string{"hardware"},
-				Deprecated:    "Use hardware instead",
+				Type:     schema.TypeString,
+				ForceNew: true,
+				Optional: true,
+				Computed: true,
+				Removed:  "Use hardware instead",
 			},
 			"hardware": {
-				Type:          schema.TypeString,
-				ForceNew:      true,
-				Optional:      true,
-				Computed:      true,
-				ConflictsWith: []string{"isolation"},
-				ValidateFunc:  validateAllowedStringValue([]string{hardwareShared, hardwareDedicated}),
+				Type:         schema.TypeString,
+				ForceNew:     true,
+				Required:     true,
+				ValidateFunc: validateAllowedStringValue([]string{hardwareShared, hardwareDedicated}),
 			},
 
 			"billing": {
@@ -190,6 +201,16 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 				Default:  nil,
+				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
+					if o == "" {
+						return false
+					}
+
+					if n == "nil" {
+						return true
+					}
+					return false
+				},
 			},
 
 			"private_vlan_id": {
@@ -197,6 +218,16 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 				Default:  nil,
+				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
+					if o == "" {
+						return false
+					}
+
+					if n == "nil" {
+						return true
+					}
+					return false
+				},
 			},
 			"ingress_hostname": {
 				Type:     schema.TypeString,
@@ -265,18 +296,21 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
+				Deprecated:  "This field is deprecated",
 			},
 			"space_guid": {
 				Description: "The bluemix space guid this cluster belongs to",
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
+				Deprecated:  "This field is deprecated",
 			},
 			"account_guid": {
 				Description: "The bluemix account guid this cluster belongs to",
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
+				Deprecated:  "This field is deprecated",
 			},
 			"wait_time_minutes": {
 				Type:     schema.TypeInt,
@@ -287,7 +321,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Set:      resourceIBMVPCHash,
 			},
 
 			"worker_pools": {
@@ -416,6 +450,12 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+
+			"crn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "CRN of resource instance",
+			},
 		},
 	}
 }
@@ -437,27 +477,12 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	diskEncryption := d.Get("disk_encryption").(bool)
 	defaultPoolSize := d.Get("default_pool_size").(int)
 
-	//Read the hardware and convert it to appropriate
-	var isolation string
-
-	if v, ok := d.GetOk("hardware"); ok {
-		hardware := v.(string)
-		switch strings.ToLower(hardware) {
-		case "": // do nothing
-		case hardwareDedicated:
-			isolation = isolationPrivate
-		case hardwareShared:
-			isolation = isolationPublic
-		}
-	}
-
-	if v, ok := d.GetOk("isolation"); ok {
-		isolation = v.(string)
-	}
-
-	if isolation == "" {
-		return fmt.Errorf("Please set either the hardware or isolation.")
-
+	hardware := d.Get("hardware").(string)
+	switch strings.ToLower(hardware) {
+	case hardwareDedicated:
+		hardware = isolationPrivate
+	case hardwareShared:
+		hardware = isolationPublic
 	}
 
 	params := v1.ClusterCreateRequest{
@@ -469,7 +494,7 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 		PublicVlan:     publicVlanID,
 		PrivateVlan:    privateVlanID,
 		NoSubnet:       noSubnet,
-		Isolation:      isolation,
+		Isolation:      hardware,
 		DiskEncryption: diskEncryption,
 		EnableTrusted:  enableTrusted,
 	}
@@ -528,6 +553,16 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return fmt.Errorf("Error retrieving workers for cluster: %s", err)
 	}
+	if len(workerFields) > 0 {
+		d.Set("machine_type", strings.Split(workerFields[0].MachineType, ".encrypted")[0])
+		d.Set("public_vlan_id", workerFields[0].PublicVlan)
+		d.Set("private_vlan_id", workerFields[0].PrivateVlan)
+		if strings.HasSuffix(workerFields[0].MachineType, ".encrypted") {
+			d.Set("disk_encryption", true)
+		} else {
+			d.Set("disk_encryption", false)
+		}
+	}
 	workerCount := 0
 	workers := []map[string]string{}
 	for _, w := range workerFields {
@@ -564,7 +599,6 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 			case isolationPublic:
 				hardware = hardwareShared
 			}
-			d.Set("isolation", workersByPool[0].Isolation)
 			d.Set("hardware", hardware)
 		}
 
@@ -594,7 +628,12 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("region", cls.Region)
 	d.Set("subnet_id", d.Get("subnet_id").(*schema.Set))
 	d.Set("workers_info", workers)
-	d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0])
+	if strings.HasSuffix(cls.MasterKubeVersion, "_openshift") {
+		d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0]+"_openshift")
+	} else {
+		d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0])
+
+	}
 	d.Set("is_trusted", cls.IsTrusted)
 	d.Set("albs", flattenAlbs(albs, "all"))
 	d.Set("resource_group_id", cls.ResourceGroupID)
@@ -602,6 +641,13 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("private_service_endpoint", cls.PrivateServiceEndpointEnabled)
 	d.Set("public_service_endpoint_url", cls.PublicServiceEndpointURL)
 	d.Set("private_service_endpoint_url", cls.PrivateServiceEndpointURL)
+	d.Set("crn", cls.CRN)
+	tags, err := GetTagsUsingCRN(meta, cls.CRN)
+	if err != nil {
+		log.Printf(
+			"An error occured during reading of instance (%s) tags : %s", d.Id(), err)
+	}
+	d.Set("tags", tags)
 
 	return nil
 }
@@ -674,7 +720,6 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		}
 	}
 
-	workersInfo := []map[string]string{}
 	if d.HasChange("default_pool_size") && !d.IsNewResource() {
 		workerPoolsAPI := csClient.WorkerPools()
 		workerPools, err := workerPoolsAPI.ListWorkerPools(clusterID, targetEnv)
@@ -774,7 +819,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 
 	}
 
-	if d.HasChange("workers") {
+	/*if d.HasChange("workers") {
 		oldWorkers, newWorkers := d.GetChange("workers")
 		oldWorker := oldWorkers.([]interface{})
 		newWorker := newWorkers.([]interface{})
@@ -902,7 +947,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		//wait for new workers to available
 		//Done - Can we not put WaitForWorkerAvailable after all client.DeleteWorker
 		d.Set("workers", workersInfo)
-	}
+	}*/
 
 	//TODO put webhooks can't deleted in the error message if such case is observed in the chnages
 	if d.HasChange("webhook") {
@@ -975,6 +1020,21 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 				"Error waiting for initializing ingress hostname and secret: %s", err)
 		}
 	}
+
+	if d.HasChange("tags") {
+		oldList, newList := d.GetChange("tags")
+		cluster, err := clusterAPI.Find(clusterID, targetEnv)
+		if err != nil {
+			return fmt.Errorf("Error retrieving cluster %s: %s", clusterID, err)
+		}
+		err = UpdateTagsUsingCRN(oldList, newList, meta, cluster.CRN)
+		if err != nil {
+			log.Printf(
+				"An error occured during update of instance (%s) tags: %s", clusterID, err)
+		}
+
+	}
+
 	return resourceIBMContainerClusterRead(d, meta)
 }
 
