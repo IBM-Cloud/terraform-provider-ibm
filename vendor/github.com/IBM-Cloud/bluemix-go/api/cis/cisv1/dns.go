@@ -51,6 +51,7 @@ type Dns interface {
 	GetDns(cisId string, zoneId string, dnsId string) (*DnsRecord, error)
 	CreateDns(cisId string, zoneId string, dnsBody DnsBody) (*DnsRecord, error)
 	DeleteDns(cisId string, zoneId string, dnsId string) error
+	UpdateDns(cisId string, zoneId string, dnsId string, dnsBody DnsBody) (*DnsRecord, error)
 }
 
 type dns struct {
@@ -96,6 +97,16 @@ func (r *dns) CreateDns(cisId string, zoneId string, dnsBody DnsBody) (*DnsRecor
 	dnsResult := DnsResult{}
 	rawURL := fmt.Sprintf("/v1/%s/zones/%s/dns_records", cisId, zoneId)
 	log.Printf(">>>> rawURL : %s\n", rawURL)
+	_, err := r.client.Post(rawURL, &dnsBody, &dnsResult)
+	if err != nil {
+		return nil, err
+	}
+	return &dnsResult.Dns, nil
+}
+
+func (r *dns) UpdateDns(cisId string, zoneId string, dnsId string, dnsBody DnsBody) (*DnsRecord, error) {
+	dnsResult := DnsResult{}
+	rawURL := fmt.Sprintf("/v1/%s/zones/%s/dns_records/%s", cisId, zoneId, dnsId)
 	_, err := r.client.Post(rawURL, &dnsBody, &dnsResult)
 	if err != nil {
 		return nil, err

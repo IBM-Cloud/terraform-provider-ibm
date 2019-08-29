@@ -112,6 +112,47 @@ func (resource *OrgRoleResource) ToFields() OrgRole {
 	}
 }
 
+// OrgRegionInformation is the region information associated with an org
+type OrgRegionInformation struct {
+	ID          string `json:"id"`
+	Domain      string `json:"domain"`
+	Name        string `json:"name"`
+	Region      string `json:"region"`
+	DisplayName string `json:"display_name"`
+	Customer    struct {
+		Name        string `json:"name"`
+		DisplayName string `json:"display_name"`
+	} `json:"customer"`
+	Deployment struct {
+		Name        string `json:"name"`
+		DisplayName string `json:"display_name"`
+	} `json:"deployment"`
+	Geo struct {
+		Name        string `json:"name"`
+		DisplayName string `json:"display_name"`
+	} `json:"geo"`
+	Account struct {
+		GUID       string   `json:"guid"`
+		OwnerGUIDs []string `json:"owner_guids"`
+	} `json:"account"`
+	PublicRegionsByProximity []string `json:"public_regions_by_proximity"`
+	ConsoleURL               string   `json:"console_url"`
+	CFAPI                    string   `json:"cf_api"`
+	MCCPAPI                  string   `json:"mccp_api"`
+	Type                     string   `json:"type"`
+	Home                     bool     `json:"home"`
+	Stealth                  string   `json:"stealth"`
+	Aliases                  []string `json:"aliases"`
+	Settings                 struct {
+		Devops struct {
+			Enabled bool `json:"enabled"`
+		} `json:"devops"`
+		EnhancedAutoFix bool `json:"enhancedAutofix"`
+	} `json:"settings"`
+	OrgName string `json:"org_name"`
+	OrgGUID string `json:"org_guid"`
+}
+
 //Organizations ...
 type Organizations interface {
 	Create(req OrgCreateRequest, opts ...bool) (*OrganizationFields, error)
@@ -121,6 +162,7 @@ type Organizations interface {
 	DeleteByRegion(guid string, region string, opts ...bool) error
 	Delete(guid string, opts ...bool) error
 	Update(guid string, req OrgUpdateRequest, opts ...bool) (*OrganizationFields, error)
+	GetRegionInformation(orgGUID string) ([]OrgRegionInformation, error)
 
 	AssociateBillingManager(orgGUID string, userMail string) (*OrganizationFields, error)
 	AssociateAuditor(orgGUID string, userMail string) (*OrganizationFields, error)
@@ -272,6 +314,17 @@ func (o *organization) FindByName(name string, region string) (*Organization, er
 	return nil, bmxerror.New(ErrCodeOrgDoesnotExist,
 		fmt.Sprintf("Given org %q doesn't exist in the given region %q", name, region))
 
+}
+
+// GetRegionInformation get the region information associated with this org.
+func (o *organization) GetRegionInformation(orgGUID string) ([]OrgRegionInformation, error) {
+	rawURL := fmt.Sprintf("/v2/organizations/%s/regions", orgGUID)
+	var regionOrgInfo []OrgRegionInformation
+	_, err := o.client.Get(rawURL, &regionOrgInfo)
+	if err != nil {
+		return nil, err
+	}
+	return regionOrgInfo, nil
 }
 
 func (o *organization) listOrgResourcesWithPath(path string, cb func(OrgResource) bool) error {

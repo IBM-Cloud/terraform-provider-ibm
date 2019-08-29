@@ -71,6 +71,7 @@ type Pools interface {
 	GetPool(cisId string, poolId string) (*Pool, error)
 	CreatePool(cisId string, poolBody PoolBody) (*Pool, error)
 	DeletePool(cisId string, poolId string) error
+	UpdatePool(cisId string, poolId string, poolBody PoolBody) (*Pool, error)
 }
 
 type pools struct {
@@ -115,6 +116,16 @@ func (r *pools) DeletePool(cisId string, poolId string) error {
 func (r *pools) CreatePool(cisId string, poolBody PoolBody) (*Pool, error) {
 	poolResult := PoolResult{}
 	rawURL := fmt.Sprintf("/v1/%s/load_balancers/pools/", cisId)
+	_, err := r.client.Post(rawURL, &poolBody, &poolResult)
+	if err != nil {
+		return nil, err
+	}
+	return &poolResult.Pool, nil
+}
+
+func (r *pools) UpdatePool(cisId string, poolId string, poolBody PoolBody) (*Pool, error) {
+	poolResult := PoolResult{}
+	rawURL := fmt.Sprintf("/v1/%s/load_balancers/pools/%s", cisId, poolId)
 	_, err := r.client.Post(rawURL, &poolBody, &poolResult)
 	if err != nil {
 		return nil, err
