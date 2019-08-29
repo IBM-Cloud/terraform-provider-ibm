@@ -34,12 +34,7 @@ const (
 
 var regionToEndpoint = map[string]map[string]string{
 	"account": {
-		"us-south": "https://accounts.cloud.ibm.com",
-		"us-east":  "https://accounts.cloud.ibm.com",
-		"eu-gb":    "https://accounts.cloud.ibm.com",
-		"au-syd":   "https://accounts.cloud.ibm.com",
-		"eu-de":    "https://accounts.cloud.ibm.com",
-		"jp-tok":   "https://accounts.cloud.ibm.com",
+		"global": "https://accounts.cloud.ibm.com",
 	},
 	"cf": {
 		"us-south": "https://api.ng.bluemix.net",
@@ -58,52 +53,22 @@ var regionToEndpoint = map[string]map[string]string{
 		"jp-tok":   "https://registry.jp-tok.bluemix.net",
 	},
 	"cs": {
-		"us-south": "https://containers.cloud.ibm.com",
-		"us-east":  "https://containers.cloud.ibm.com",
-		"eu-de":    "https://containers.cloud.ibm.com",
-		"au-syd":   "https://containers.cloud.ibm.com",
-		"eu-gb":    "https://containers.cloud.ibm.com",
-		"jp-tok":   "https://containers.cloud.ibm.com",
+		"global": "https://containers.cloud.ibm.com/global",
 	},
 	"cis": {
-		"us-south": "https://api.cis.cloud.ibm.com",
-		"us-east":  "https://api.cis.cloud.ibm.com",
-		"eu-de":    "https://api.cis.cloud.ibm.com",
-		"au-syd":   "https://api.cis.cloud.ibm.com",
-		"eu-gb":    "https://api.cis.cloud.ibm.com",
-		"jp-tok":   "https://api.cis.cloud.ibm.com",
+		"global": "https://api.cis.cloud.ibm.com",
 	},
 	"global-search": {
-		"us-south": "https://api.global-search-tagging.cloud.ibm.com",
-		"us-east":  "https://api.global-search-tagging.cloud.ibm.com",
-		"eu-de":    "https://api.global-search-tagging.cloud.ibm.com",
-		"eu-gb":    "https://api.global-search-tagging.cloud.ibm.com",
-		"au-syd":   "https://api.global-search-tagging.cloud.ibm.com",
-		"jp-tok":   "https://api.global-search-tagging.cloud.ibm.com",
+		"global": "https://api.global-search-tagging.cloud.ibm.com",
 	},
 	"global-tagging": {
-		"us-south": "https://tags.global-search-tagging.cloud.ibm.com",
-		"us-east":  "https://tags.global-search-tagging.cloud.ibm.com",
-		"eu-de":    "https://tags.global-search-tagging.cloud.ibm.com",
-		"eu-gb":    "https://tags.global-search-tagging.cloud.ibm.com",
-		"au-syd":   "https://tags.global-search-tagging.cloud.ibm.com",
-		"jp-tok":   "https://tags.global-search-tagging.cloud.ibm.com",
+		"global": "https://tags.global-search-tagging.cloud.ibm.com",
 	},
 	"iam": {
-		"us-south": "https://iam.cloud.ibm.com",
-		"us-east":  "https://iam.cloud.ibm.com",
-		"eu-gb":    "https://iam.cloud.ibm.com",
-		"au-syd":   "https://iam.cloud.ibm.com",
-		"eu-de":    "https://iam.cloud.ibm.com",
-		"jp-tok":   "https://iam.cloud.ibm.com",
+		"global": "https://iam.cloud.ibm.com",
 	},
 	"iampap": {
-		"us-south": "https://iam.cloud.ibm.com",
-		"us-east":  "https://iam.cloud.ibm.com",
-		"eu-gb":    "https://iam.cloud.ibm.com",
-		"au-syd":   "https://iam.cloud.ibm.com",
-		"eu-de":    "https://iam.cloud.ibm.com",
-		"jp-tok":   "https://iam.cloud.ibm.com",
+		"global": "https://iam.cloud.ibm.com",
 	},
 	"icd": {
 		"us-south": "https://api.us-south.databases.cloud.ibm.com",
@@ -123,28 +88,13 @@ var regionToEndpoint = map[string]map[string]string{
 		"jp-tok":   "https://mccp.jp-tok.cf.cloud.ibm.com",
 	},
 	"resource-manager": {
-		"us-south": "https://resource-controller.cloud.ibm.com",
-		"us-east":  "https://resource-controller.cloud.ibm.com",
-		"eu-de":    "https://resource-controller.cloud.ibm.com",
-		"au-syd":   "https://resource-controller.cloud.ibm.com",
-		"eu-gb":    "https://resource-controller.cloud.ibm.com",
-		"jp-tok":   "https://resource-controller.cloud.ibm.com",
+		"global": "https://resource-controller.cloud.ibm.com",
 	},
 	"resource-catalog": {
-		"us-south": "https://globalcatalog.cloud.ibm.com",
-		"us-east":  "https://globalcatalog.cloud.ibm.com",
-		"eu-de":    "https://globalcatalog.cloud.ibm.com",
-		"au-syd":   "https://globalcatalog.cloud.ibm.com",
-		"eu-gb":    "https://globalcatalog.cloud.ibm.com",
-		"jp-tok":   "https://globalcatalog.cloud.ibm.com",
+		"global": "https://globalcatalog.cloud.ibm.com",
 	},
 	"resource-controller": {
-		"us-south": "https://resource-controller.cloud.ibm.com",
-		"us-east":  "https://resource-controller.cloud.ibm.com",
-		"eu-de":    "https://resource-controller.cloud.ibm.com",
-		"au-syd":   "https://resource-controller.cloud.ibm.com",
-		"eu-gb":    "https://resource-controller.cloud.ibm.com",
-		"jp-tok":   "https://resource-controller.cloud.ibm.com",
+		"global": "https://resource-controller.cloud.ibm.com",
 	},
 	"uaa": {
 		"us-south": "https://login.ng.bluemix.net/UAALoginServerWAR",
@@ -155,12 +105,7 @@ var regionToEndpoint = map[string]map[string]string{
 		"jp-tok":   "https://login.jp-tok.bluemix.net/UAALoginServerWAR",
 	},
 	"cse": {
-		"us-south": "https://api.serviceendpoint.cloud.ibm.com",
-		"us-east":  "https://api.serviceendpoint.cloud.ibm.com",
-		"eu-gb":    "https://api.serviceendpoint.cloud.ibm.com",
-		"au-syd":   "https://api.serviceendpoint.cloud.ibm.com",
-		"eu-de":    "https://api.serviceendpoint.cloud.ibm.com",
-		"jp-tok":   "https://api.serviceendpoint.cloud.ibm.com",
+		"global": "https://api.serviceendpoint.cloud.ibm.com",
 	},
 }
 
@@ -179,7 +124,7 @@ func NewEndpointLocator(region string) EndpointLocator {
 }
 
 func (e *endpointLocator) AccountManagementEndpoint() (string, error) {
-	if ep, ok := regionToEndpoint["account"][e.region]; ok {
+	if ep, ok := regionToEndpoint["account"]["global"]; ok {
 		//As the current list of regionToEndpoint above is not exhaustive we allow to read endpoints from the env
 		return helpers.EnvFallBack([]string{"IBMCLOUD_ACCOUNT_MANAGEMENT_API_ENDPOINT"}, ep), nil
 
@@ -197,7 +142,7 @@ func (e *endpointLocator) CFAPIEndpoint() (string, error) {
 }
 
 func (e *endpointLocator) ContainerEndpoint() (string, error) {
-	if ep, ok := regionToEndpoint["cs"][e.region]; ok {
+	if ep, ok := regionToEndpoint["cs"]["global"]; ok {
 		//As the current list of regionToEndpoint above is not exhaustive we allow to read endpoints from the env
 		return helpers.EnvFallBack([]string{"IBMCLOUD_CS_API_ENDPOINT"}, ep), nil
 	}
@@ -213,7 +158,7 @@ func (e *endpointLocator) ContainerRegistryEndpoint() (string, error) {
 }
 
 func (e *endpointLocator) CisEndpoint() (string, error) {
-	if ep, ok := regionToEndpoint["cis"][e.region]; ok {
+	if ep, ok := regionToEndpoint["cis"]["global"]; ok {
 		//As the current list of regionToEndpoint above is not exhaustive we allow to read endpoints from the env
 		return helpers.EnvFallBack([]string{"IBMCLOUD_CIS_API_ENDPOINT"}, ep), nil
 	}
@@ -221,7 +166,7 @@ func (e *endpointLocator) CisEndpoint() (string, error) {
 }
 
 func (e *endpointLocator) GlobalSearchEndpoint() (string, error) {
-	if ep, ok := regionToEndpoint["global-search"][e.region]; ok {
+	if ep, ok := regionToEndpoint["global-search"]["global"]; ok {
 		//As the current list of regionToEndpoint above is not exhaustive we allow to read endpoints from the env
 		return helpers.EnvFallBack([]string{"IBMCLOUD_GS_API_ENDPOINT"}, ep), nil
 	}
@@ -229,7 +174,7 @@ func (e *endpointLocator) GlobalSearchEndpoint() (string, error) {
 }
 
 func (e *endpointLocator) GlobalTaggingEndpoint() (string, error) {
-	if ep, ok := regionToEndpoint["global-tagging"][e.region]; ok {
+	if ep, ok := regionToEndpoint["global-tagging"]["global"]; ok {
 		//As the current list of regionToEndpoint above is not exhaustive we allow to read endpoints from the env
 		return helpers.EnvFallBack([]string{"IBMCLOUD_GT_API_ENDPOINT"}, ep), nil
 	}
@@ -237,7 +182,7 @@ func (e *endpointLocator) GlobalTaggingEndpoint() (string, error) {
 }
 
 func (e *endpointLocator) IAMEndpoint() (string, error) {
-	if ep, ok := regionToEndpoint["iam"][e.region]; ok {
+	if ep, ok := regionToEndpoint["iam"]["global"]; ok {
 		//As the current list of regionToEndpoint above is not exhaustive we allow to read endpoints from the env
 		return helpers.EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, ep), nil
 
@@ -246,7 +191,7 @@ func (e *endpointLocator) IAMEndpoint() (string, error) {
 }
 
 func (e *endpointLocator) IAMPAPEndpoint() (string, error) {
-	if ep, ok := regionToEndpoint["iampap"][e.region]; ok {
+	if ep, ok := regionToEndpoint["iampap"]["global"]; ok {
 		//As the current list of regionToEndpoint above is not exhaustive we allow to read endpoints from the env
 		return helpers.EnvFallBack([]string{"IBMCLOUD_IAMPAP_API_ENDPOINT"}, ep), nil
 
@@ -272,7 +217,7 @@ func (e *endpointLocator) MCCPAPIEndpoint() (string, error) {
 }
 
 func (e *endpointLocator) ResourceManagementEndpoint() (string, error) {
-	if ep, ok := regionToEndpoint["resource-manager"][e.region]; ok {
+	if ep, ok := regionToEndpoint["resource-manager"]["global"]; ok {
 		//As the current list of regionToEndpoint above is not exhaustive we allow to read endpoints from the env
 		return helpers.EnvFallBack([]string{"IBMCLOUD_RESOURCE_MANAGEMENT_API_ENDPOINT"}, ep), nil
 
@@ -281,7 +226,7 @@ func (e *endpointLocator) ResourceManagementEndpoint() (string, error) {
 }
 
 func (e *endpointLocator) ResourceControllerEndpoint() (string, error) {
-	if ep, ok := regionToEndpoint["resource-controller"][e.region]; ok {
+	if ep, ok := regionToEndpoint["resource-controller"]["global"]; ok {
 		//As the current list of regionToEndpoint above is not exhaustive we allow to read endpoints from the env
 		return helpers.EnvFallBack([]string{"IBMCLOUD_RESOURCE_CONTROLLER_API_ENDPOINT"}, ep), nil
 
@@ -290,7 +235,7 @@ func (e *endpointLocator) ResourceControllerEndpoint() (string, error) {
 }
 
 func (e *endpointLocator) ResourceCatalogEndpoint() (string, error) {
-	if ep, ok := regionToEndpoint["resource-catalog"][e.region]; ok {
+	if ep, ok := regionToEndpoint["resource-catalog"]["global"]; ok {
 		//As the current list of regionToEndpoint above is not exhaustive we allow to read endpoints from the env
 		return helpers.EnvFallBack([]string{"IBMCLOUD_RESOURCE_CATALOG_API_ENDPOINT"}, ep), nil
 
@@ -308,7 +253,7 @@ func (e *endpointLocator) UAAEndpoint() (string, error) {
 }
 
 func (e *endpointLocator) CseEndpoint() (string, error) {
-	if ep, ok := regionToEndpoint["cse"][e.region]; ok {
+	if ep, ok := regionToEndpoint["cse"]["global"]; ok {
 		//As the current list of regionToEndpoint above is not exhaustive we allow to read endpoints from the env
 		return helpers.EnvFallBack([]string{"IBMCLOUD_CSE_ENDPOINT"}, ep), nil
 

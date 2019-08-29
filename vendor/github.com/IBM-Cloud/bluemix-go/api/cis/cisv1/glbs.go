@@ -60,6 +60,7 @@ type Glbs interface {
 	GetGlb(cisId string, zoneId string, glbId string) (*Glb, error)
 	CreateGlb(cisId string, zoneId string, glbBody GlbBody) (*Glb, error)
 	DeleteGlb(cisId string, zoneId string, glbId string) error
+	UpdateGlb(cisId string, zoneId string, glbId string, glbBody GlbBody) (*Glb, error)
 }
 
 type glbs struct {
@@ -104,6 +105,16 @@ func (r *glbs) DeleteGlb(cisId string, zoneId string, glbId string) error {
 func (r *glbs) CreateGlb(cisId string, zoneId string, glbBody GlbBody) (*Glb, error) {
 	glbResult := GlbResult{}
 	rawURL := fmt.Sprintf("/v1/%s/zones/%s/load_balancers", cisId, zoneId)
+	_, err := r.client.Post(rawURL, &glbBody, &glbResult)
+	if err != nil {
+		return nil, err
+	}
+	return &glbResult.Glb, nil
+}
+
+func (r *glbs) UpdateGlb(cisId string, zoneId string, glbId string, glbBody GlbBody) (*Glb, error) {
+	glbResult := GlbResult{}
+	rawURL := fmt.Sprintf("/v1/%s/zones/%s/load_balancers/%s", cisId, zoneId, glbId)
 	_, err := r.client.Post(rawURL, &glbBody, &glbResult)
 	if err != nil {
 		return nil, err
