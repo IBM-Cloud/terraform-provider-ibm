@@ -102,11 +102,10 @@ The following attributes are exported:
 * `id` - The id of the instance.
 * `memory` - Memory of the instance.
 * `status` - Status of the instance.
-* `cpu` - A nested block describing the cpu of this instance.
-Nested `cpu` blocks have the following structure:
+* `vcpu` - A nested block describing the VCPU configuration of this instance.
+Nested `vcpu` blocks have the following structure:
   * `architecture` - The architecture of the instance.
-  * `cores` - Number of cores of the instance.
-  * `frequency` - Frequency of the instance.
+  * `count` - The number of VCPUs assigned to the instance.
 * `gpu` - A nested block describing the gpu of this instance.
 Nested `gpu` blocks have the following structure:
   * `cores` - The cores of the gpu.

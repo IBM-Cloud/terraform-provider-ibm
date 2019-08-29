@@ -44,10 +44,10 @@ const (
 	isInstanceVolAttVolType           = "type"
 	isInstanceVolAttVolProfile        = "profile"
 	isInstanceImage                   = "image"
-	isInstanceCPU                     = "cpu"
+	isInstanceCPU                     = "vcpu"
 	isInstanceCPUArch                 = "architecture"
 	isInstanceCPUCores                = "cores"
-	isInstanceCPUFrequency            = "frequency"
+	isInstanceCPUCount                = "count"
 	isInstanceGpu                     = "gpu"
 	isInstanceGpuCores                = "cores"
 	isInstanceGpuCount                = "count"
@@ -278,11 +278,7 @@ func resourceIBMISInstance() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						isInstanceCPUCores: {
-							Type:     schema.TypeInt,
-							Computed: true,
-						},
-						isInstanceCPUFrequency: {
+						isInstanceCPUCount: {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
@@ -527,9 +523,8 @@ func resourceIBMisInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	cpuList := make([]map[string]interface{}, 0)
 	if instance.Vcpu != nil {
 		currentCPU := map[string]interface{}{}
-		currentCPU[isInstanceCPUArch] = instance.Vcpu.Architecture
-		currentCPU[isInstanceCPUCores] = instance.Vcpu.Cores
-		currentCPU[isInstanceCPUFrequency] = instance.Vcpu.Count
+		currentCPU[isInstanceCPUArch] = *instance.Vcpu.Architecture
+		currentCPU[isInstanceCPUCount] = *instance.Vcpu.Count
 		cpuList = append(cpuList, currentCPU)
 	}
 	d.Set(isInstanceCPU, cpuList)
