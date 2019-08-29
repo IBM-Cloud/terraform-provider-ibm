@@ -25,8 +25,13 @@ data "ibm_database" "<your_database>" {
 
 The following arguments are required:
 
-* `name` - (Required, string) The name used to identify the IBM Cloud Database instance in the IBM Cloud UI. IBM Cloud does not enforce that service names are unique and it is possible that duplicate service names exist. The first located service instance is used by Terraform. The name must not include spaces. 
-* `resource_group_id` - (Optional, string) The ID of the resource group where you want to create the service. You can retrieve the value from data source
+* `name` - (Required, string) The name used to identify the IBM Cloud Database instance in the IBM Cloud UI. IBM Cloud does not enforce that service names are unique and it is possible that duplicate service names exist. The first located service instance is used by Terraform. The name must not include spaces.
+
+* `resource_group_id` - (Optional, string) The id of the resource group where the resource instance exists. If not provided it takes the default resource group.
+
+* `location` - (Optional, string) The location or the environment in which instance exists.
+
+* `service` - (Optional, string) The service type of the instance. You can retrieve the value by running the `ibmcloud catalog service-marketplace` or `ibmcloud catalog search` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
 
 ## Attribute Reference
 
