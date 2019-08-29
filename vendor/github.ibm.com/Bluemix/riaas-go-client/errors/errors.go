@@ -2,9 +2,13 @@ package errors
 
 import (
 	"encoding/json"
+	"errors"
+	"io"
+	"io/ioutil"
 	"reflect"
 	"strconv"
 
+	"github.com/go-openapi/runtime"
 	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
@@ -37,30 +41,26 @@ func ToError(err error) error {
 	if err == nil {
 		return nil
 	}
-
-	/*
-		fmt.Println(reflect.TypeOf(err))
-		v, isAPIError := err.(*runtime.APIError)
-		if isAPIError {
-			response := reflect.ValueOf(v.Response)
-			fun := response.MethodByName("Body")
-			retvals := fun.Call([]reflect.Value{})
-			body, _ := retvals[0].Interface().(io.ReadCloser)
-			var bodyBytes []byte
-			if body != nil {
-				bodyBytes, _ = ioutil.ReadAll(body)
-			}
-			var payload models.Riaaserror
-
-			berr := json.Unmarshal(bodyBytes, &payload)
-			if berr != nil {
-				return errors.New(string(bodyBytes))
-			}
-			return RiaasError{
-				Payload: &payload,
-			}
+	v, isAPIError := err.(*runtime.APIError)
+	if isAPIError {
+		response := reflect.ValueOf(v.Response)
+		fun := response.MethodByName("Body")
+		retvals := fun.Call([]reflect.Value{})
+		body, _ := retvals[0].Interface().(io.ReadCloser)
+		var bodyBytes []byte
+		if body != nil {
+			bodyBytes, _ = ioutil.ReadAll(body)
 		}
-	*/
+		var payload models.Riaaserror
+
+		berr := json.Unmarshal(bodyBytes, &payload)
+		if berr != nil {
+			return errors.New(string(bodyBytes))
+		}
+		return RiaasError{
+			Payload: &payload,
+		}
+	}
 
 	// check if its ours
 	kind := reflect.TypeOf(err).Kind()
