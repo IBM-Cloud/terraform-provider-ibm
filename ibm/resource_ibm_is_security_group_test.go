@@ -15,8 +15,8 @@ import (
 func TestAccIBMISSecurityGroup_basic(t *testing.T) {
 	var securityGroup *models.SecurityGroup
 
-	vpcname := fmt.Sprintf("terraformsecurityuat_vpc_%d", acctest.RandInt())
-	name1 := fmt.Sprintf("terraformsecurityuat_create_step_name_%d", acctest.RandInt())
+	vpcname := fmt.Sprintf("terraformsecurityuat-vpc-%d", acctest.RandInt())
+	name1 := fmt.Sprintf("terraformsecurityuat-create-step-name-%d", acctest.RandInt())
 	//name2 := fmt.Sprintf("terraformsecurityuat_update_step_name_%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
