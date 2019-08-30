@@ -283,8 +283,8 @@ func validateURLPath(v interface{}, k string) (ws []string, errors []error) {
 
 func validateSecurityRuleDirection(v interface{}, k string) (ws []string, errors []error) {
 	validDirections := map[string]bool{
-		"ingress": true,
-		"egress":  true,
+		"inbound":  true,
+		"outbound": true,
 	}
 
 	value := v.(string)

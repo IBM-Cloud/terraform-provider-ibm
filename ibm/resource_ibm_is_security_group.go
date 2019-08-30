@@ -34,14 +34,12 @@ func resourceIBMISSecurityGroup() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "Security group name",
-				//ValidateFunc: validateSecurityGroupId,
 			},
 			isSecurityGroupVPC: {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "Security group's resource group id",
-				ValidateFunc: validateVPCIdentity,
-				ForceNew:     true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Security group's resource group id",
+				ForceNew:    true,
 			},
 
 			isSecurityGroupRules: {
@@ -267,11 +265,7 @@ func makeIBMISSecurityGroupCreateParams(parsed *parsedIBMISSecurityGroupDictiona
 		params.ResourceGroup = &rgref
 	}
 
-	uuid, err := makeStrfmtUUID(parsed.vpc)
-	if err != nil {
-		return nil, err
-	}
-	params.Vpc = &models.PostSecurityGroupsParamsBodyVpc{ID: uuid}
+	params.Vpc = &models.PostSecurityGroupsParamsBodyVpc{ID: strfmt.UUID(parsed.vpc)}
 	return params, nil
 }
 

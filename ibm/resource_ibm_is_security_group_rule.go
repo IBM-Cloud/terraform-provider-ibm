@@ -40,11 +40,10 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			isSecurityGroupID: {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "Security group id",
-				ForceNew:     true,
-				ValidateFunc: validateSecurityGroupId,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Security group id",
+				ForceNew:    true,
 			},
 
 			isSecurityGroupRuleID: {
@@ -190,12 +189,6 @@ func resourceIBMISSecurityGroupRuleRead(d *schema.ResourceData, meta interface{}
 
 	d.Set(isSecurityGroupID, secgrpID)
 	d.Set(isSecurityGroupRuleID, rule.ID.String())
-	if rule.Direction == "inbound" {
-		d.Set(isSecurityGroupRuleDirection, "ingress")
-	} else {
-		d.Set(isSecurityGroupRuleDirection, "egress")
-	}
-
 	d.Set(isSecurityGroupRuleIPVersion, rule.IPVersion)
 	d.Set(isSecurityGroupRuleProtocol, rule.Protocol)
 	protocol := "all"
