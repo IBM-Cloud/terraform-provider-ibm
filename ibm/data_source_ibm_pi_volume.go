@@ -14,10 +14,10 @@ func dataSourceIBMPIVolume() *schema.Resource {
 		Read: dataSourceIBMPIVolumeRead,
 		Schema: map[string]*schema.Schema{
 
-			"networkname": {
+			"volumename": {
 				Type:         schema.TypeString,
 				Required:     true,
-				Description:  "Network Name to be used for pvminstances",
+				Description:  "Volume Name to be used for pvminstances",
 				ValidateFunc: validation.NoZeroValues,
 			},
 
@@ -90,8 +90,5 @@ func dataSourceIBMPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("state", volumedata.State)
 
 	return nil
-
-	return nil
-	//return fmt.Errorf("No Image found with name %s", imagedata.)
 
 }

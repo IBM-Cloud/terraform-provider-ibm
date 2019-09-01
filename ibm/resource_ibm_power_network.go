@@ -160,15 +160,6 @@ func resourceIBMPowerNetworkDelete(data *schema.ResourceData, meta interface{}) 
 	return nil
 }
 
-func expanddnsServerAttribute(strings []interface{}) []string {
-	expandedStrings := make([]string, len(strings))
-	for i, v := range strings {
-		expandedStrings[i] = v.(string)
-	}
-
-	return expandedStrings
-}
-
 func isWaitForPowerNetworkAvailable(client *st.PowerNetworkClient, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for Power Network (%s) to be available.", id)
 

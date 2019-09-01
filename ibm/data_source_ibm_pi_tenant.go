@@ -37,44 +37,36 @@ func dataSourceIBMPITenant() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-
 			"cloudinstances": {
-				Type:     schema.TypeList,
+
+				Type:     schema.TypeSet,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"cloudinstancereferences": {
-							Type:     schema.TypeList,
+						"cloudinstanceid": {
+							Type:     schema.TypeString,
 							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"cloudinstanceid": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"name": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"region": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"href": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"initialize": {
-										Type:     schema.TypeBool,
-										Computed: true,
-									},
-									"limits": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
 						},
+						"name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"region": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"href": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"initialize": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+						//"limits": {
+						//	Type:     schema.TypeString,
+						//	Computed: true,
+						//},
 					},
 				},
 			},
@@ -105,10 +97,22 @@ func dataSourceIBMPITenantRead(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("The creation date is %s", tenantData.CreationDate.String())
 	d.Set("tenantid", tenantData.TenantID)
-	d.Set("creationdate", tenantData.CreationDate.String())
+	d.Set("creationdate", tenantData.CreationDate)
 	d.Set("enabled", tenantData.Enabled)
-	d.Set("cloudinstances", flattenCloudInstances(tenantData.CloudInstances))
+	//d.Set("cloudinstances", flattenCloudInstances(tenantData.CloudInstances))
 	log.Printf("Printing the tenant data %s", tenantData.CloudInstances)
+
+	if tenantData.CloudInstances != nil {
+		tenants := make([]map[string]interface{}, len(tenantData.CloudInstances))
+		for i, cloudinstance := range tenantData.CloudInstances {
+			j := make(map[string]interface{})
+			j["region"] = cloudinstance.Region
+			j["cloudinstanceid"] = cloudinstance.CloudInstanceID
+			tenants[i] = j
+		}
+
+		d.Set("cloudinstances", tenants)
+	}
 
 	return nil
 
@@ -116,26 +120,37 @@ func dataSourceIBMPITenantRead(d *schema.ResourceData, meta interface{}) error {
 
 func flattenCloudInstances(cloudinstances []*models.CloudInstanceReference) []map[string]interface{} {
 	cloudInstances := make([]map[string]interface{}, len(cloudinstances))
-	for i, cloudinstance := range cloudinstances {
-		cloudinstancereferences := make([]map[string]interface{}, 1)
-		cloudinstanceref := make(map[string]interface{})
-
-		cloudinstanceref["cloudinstanceid"] = cloudinstance.CloudInstanceID
-		cloudinstanceref["name"] = cloudinstance.Name
-		cloudinstanceref["region"] = cloudinstance.Region
-		cloudinstanceref["href"] = cloudinstance.Href
-
-		cloudinstancereferences[0] = cloudinstanceref
+	for _, i := range cloudinstances {
 		l := map[string]interface{}{
 
-			//"cloudinstanceid": cloudinstance.CloudInstanceID,
-			//"count":    group.Count,
-			"cloudinstances": cloudinstances,
-			//"cpu":      cpus,
-			//"disk":     disks,
+			"region":          &i.Region,
+			"href":            &i.Href,
+			"cloudinstanceid": &i.CloudInstanceID,
+			"initialized":     &i.Enabled,
+			"name":            &i.Name,
 		}
-		cloudInstances[i] = l
+		cloudInstances = append(cloudInstances, l)
 	}
 	log.Printf("printing the cloudinstances %+v", cloudInstances)
 	return cloudInstances
 }
+
+/*
+
+if powervmdata.Addresses != nil {
+		pvmaddress := make([]map[string]interface{}, len(powervmdata.Addresses))
+		for i, pvmip := range powervmdata.Addresses {
+
+			p := make(map[string]interface{})
+			p["ip"] = pvmip.IP
+			p["networkname"] = pvmip.NetworkName
+			p["networkid"] = pvmip.NetworkID
+			p["macaddress"] = pvmip.MacAddress
+			p["type"] = pvmip.Type
+			pvmaddress[i] = p
+		}
+		d.Set("addresses", pvmaddress)
+
+	}
+
+*/

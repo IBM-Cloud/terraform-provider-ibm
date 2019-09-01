@@ -63,8 +63,6 @@ func resourceIBMPowerSSHKeyCreate(d *schema.ResourceData, meta interface{}) erro
 
 	name := d.Get(PowerSSHKeyName).(string)
 	sshkey := d.Get(PowerSSHKey).(string)
-	//createdate := d.Get(PowerSSHKeyDate).(strfmt.DateTime)
-
 	client := st.NewPowerSSHKeyClient(sess)
 
 	sshResponse, _, err := client.Create(name, sshkey)

@@ -216,6 +216,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_pi_image":             dataSourceIBMPIImage(),
 			"ibm_pi_instance":          dataSourceIBMPIInstance(),
 			"ibm_pi_tenant":            dataSourceIBMPITenant(),
+			"ibm_pi_network":           dataSourceIBMPINetwork(),
 			//"ibm_pi_volume"			  : dataSourceIBMPIVolume(),
 
 		},
@@ -333,10 +334,10 @@ func Provider() terraform.ResourceProvider {
 			"ibm_power_network":       resourceIBMPowerNetwork(),
 			"ibm_power_pvminstance":   resourceIBMPowerPVMInstance(),
 			"ibm_power_volume_attach": resourceIBMPowerVolumeAttach(),
-			//"ibm_pi_key"			 : resourceIBMPIKey(),
-			//"ibm_pi_instance"		 : resourceIBMPIInstance(),
-			//"ibm_pi_network" 		 :
-			//"ibm_pi_volume" 		 :
+			"ibm_pi_key":              resourceIBMPIKey(),
+			"ibm_pi_volume":           resourceIBMPIVolume(),
+			"ibm_pi_network":          resourceIBMPINetwork(),
+			"ibm_pi_instance":         resourceIBMPIInstance(),
 			//"ibm_pi_volume_operations":
 			//"ibm_pi_instance_capture"
 
