@@ -120,8 +120,8 @@ func resourceIBMLbaas() *schema.Resource {
 						"backend_protocol": {
 							Type:         schema.TypeString,
 							Required:     true,
-							Description:  "Backend protocol, one of 'TCP', 'HTTP'.",
-							ValidateFunc: validateAllowedStringValue([]string{"HTTP", "TCP"}),
+							Description:  "Backend protocol, one of 'TCP', 'HTTP', 'HTTPS'.",
+							ValidateFunc: validateAllowedStringValue([]string{"HTTP", "HTTPS", "TCP"}),
 						},
 						"backend_port": {
 							Type:         schema.TypeInt,

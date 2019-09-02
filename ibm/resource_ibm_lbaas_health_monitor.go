@@ -22,7 +22,7 @@ func resourceIBMLbaasHealthMonitor() *schema.Resource {
 			"protocol": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"HTTP", "TCP"}),
+				ValidateFunc: validateAllowedStringValue([]string{"HTTP", "HTTPS", "TCP"}),
 			},
 			"port": {
 				Type:         schema.TypeInt,
