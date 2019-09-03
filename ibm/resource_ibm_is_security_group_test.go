@@ -17,7 +17,7 @@ func TestAccIBMISSecurityGroup_basic(t *testing.T) {
 
 	vpcname := fmt.Sprintf("terraformsecurityuat-vpc-%d", acctest.RandInt())
 	name1 := fmt.Sprintf("terraformsecurityuat-create-step-name-%d", acctest.RandInt())
-	//name2 := fmt.Sprintf("terraformsecurityuat_update_step_name_%d", acctest.RandInt())
+	//name2 := fmt.Sprintf("terraformsecurityuat-update-step-name-%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

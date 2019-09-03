@@ -283,6 +283,26 @@ func validateURLPath(v interface{}, k string) (ws []string, errors []error) {
 
 func validateSecurityRuleDirection(v interface{}, k string) (ws []string, errors []error) {
 	validDirections := map[string]bool{
+		"ingress": true,
+		"egress":  true,
+	}
+
+	value := v.(string)
+	_, found := validDirections[value]
+	if !found {
+		strarray := make([]string, 0, len(validDirections))
+		for key := range validDirections {
+			strarray = append(strarray, key)
+		}
+		errors = append(errors, fmt.Errorf(
+			"%q contains an invalid security group rule direction %q. Valid types are %q.",
+			k, value, strings.Join(strarray, ",")))
+	}
+	return
+}
+
+func validateIsSecurityRuleDirection(v interface{}, k string) (ws []string, errors []error) {
+	validDirections := map[string]bool{
 		"inbound":  true,
 		"outbound": true,
 	}

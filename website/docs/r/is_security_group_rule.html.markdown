@@ -27,13 +27,13 @@ resource "ibm_is_security_group" "testacc_security_group" {
 
 resource "ibm_is_security_group_rule" "testacc_security_group_rule_all" {
 	group = "${ibm_is_security_group.testacc_security_group.id}"
-	direction = "ingress"
+	direction = "inbound"
 	remote = "127.0.0.1"
  }
  
  resource "ibm_is_security_group_rule" "testacc_security_group_rule_icmp" {
 	group = "${ibm_is_security_group.testacc_security_group.id}"
-	direction = "ingress"
+	direction = "inbound"
 	remote = "127.0.0.1"
 	icmp = {
 		code = 20
@@ -44,7 +44,7 @@ resource "ibm_is_security_group_rule" "testacc_security_group_rule_all" {
 
  resource "ibm_is_security_group_rule" "testacc_security_group_rule_udp" {
 	group = "${ibm_is_security_group.testacc_security_group.id}"
-	direction = "ingress"
+	direction = "inbound"
 	remote = "127.0.0.1"
 	udp = {
 		port_min = 805
@@ -68,7 +68,7 @@ resource "ibm_is_security_group_rule" "testacc_security_group_rule_all" {
 The following arguments are supported:
 
 * `group` - (Required, string) The security group id.
-* `direction` - (Required, string)  The direction of the traffic either `ingress` or `egress`.
+* `direction` - (Required, string)  The direction of the traffic either `inbound` or `outbound`.
 * `remote` - (Optional, string) Security group id - an IP address, a CIDR block, or a single security group identifier.
 * `ip_version` - (Optional, string) IP version either `IPv4` or `IPv6`. Default `IPv4`.
 * `icmp` - (Optional, list) A nested block describing the `icmp` protocol of this security group rule.

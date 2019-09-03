@@ -15,14 +15,14 @@ import (
 
 func TestAccIBMISFloatingIP_basic(t *testing.T) {
 	var ip *models.FloatingIP
-	vpcname := fmt.Sprintf("terraformipuat_vpc_%d", acctest.RandInt())
+	vpcname := fmt.Sprintf("terraformipuat-vpc-%d", acctest.RandInt())
 	name := fmt.Sprintf("terraformipuat-%d", acctest.RandInt())
 	instancename := fmt.Sprintf("terraformipuat-instance-%d", acctest.RandInt())
-	subnetname := fmt.Sprintf("terraformipuat_subnet_%d", acctest.RandInt())
+	subnetname := fmt.Sprintf("terraformipuat-subnet-%d", acctest.RandInt())
 	publicKey := strings.TrimSpace(`
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
 `)
-	sshname := fmt.Sprintf("terraformsecurityuat_create_step_name_%d", acctest.RandInt())
+	sshname := fmt.Sprintf("terraformsecurityuat-create-step-name-%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

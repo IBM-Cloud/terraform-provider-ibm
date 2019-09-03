@@ -55,8 +55,8 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 			isSecurityGroupRuleDirection: {
 				Type:         schema.TypeString,
 				Required:     true,
-				Description:  "Direction of traffic to enforce, either ingress or egress",
-				ValidateFunc: validateSecurityRuleDirection,
+				Description:  "Direction of traffic to enforce, either inbound or outbound",
+				ValidateFunc: validateIsSecurityRuleDirection,
 			},
 
 			isSecurityGroupRuleIPVersion: {

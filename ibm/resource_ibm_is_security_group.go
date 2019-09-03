@@ -275,7 +275,7 @@ func makeIBMISSecurityRuleSchema() map[string]*schema.Schema {
 		isSecurityGroupRuleDirection: {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Direction of traffic to enforce, either ingress or egress",
+			Description: "Direction of traffic to enforce, either inbound or outbound",
 		},
 
 		isSecurityGroupRuleIPVersion: {

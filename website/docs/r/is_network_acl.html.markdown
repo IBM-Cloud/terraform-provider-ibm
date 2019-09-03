@@ -18,12 +18,12 @@ resource "ibm_is_network_acl" "isExampleACL" {
 			name = "is-example-acl"
 			rules=[
 			{
-				name = "egress"
+				name = "outbound"
 				action = "allow"
 				protocol = "icmp"
 				source = "0.0.0.0/0"
 				destination = "0.0.0.0/0"
-				direction = "egress"
+				direction = "outbound"
 				icmp=[
 				{
 					code = 1
@@ -31,12 +31,12 @@ resource "ibm_is_network_acl" "isExampleACL" {
 				}]
 			},
 			{
-				name = "ingress"
+				name = "inbound"
 				action = "allow"
 				protocol = "icmp"
 				source = "0.0.0.0/0"
 				destination = "0.0.0.0/0"
-				direction = "ingress"
+				direction = "inbound"
 				icmp=[
 				{
 					code = 1

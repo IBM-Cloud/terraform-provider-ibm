@@ -14,9 +14,9 @@ import (
 
 func TestAccIBMISPublicGateway_basic(t *testing.T) {
 	var publicgw *models.PublicGateway
-	vpcname := fmt.Sprintf("terraformpublicgwuat_vpc_%d", acctest.RandInt())
-	name1 := fmt.Sprintf("terraformpublicgwuat_create_step_name_%d", acctest.RandInt())
-	//name2 := fmt.Sprintf("terraformpublicgwuat_update_step_name_%d", acctest.RandInt())
+	vpcname := fmt.Sprintf("terraformpublicgwuat-vpc-%d", acctest.RandInt())
+	name1 := fmt.Sprintf("terraformpublicgwuat-create-step-name-%d", acctest.RandInt())
+	//name2 := fmt.Sprintf("terraformpublicgwuat-update-step-name-%d", acctest.RandInt())
 
 	zone := "us-south-1"
 

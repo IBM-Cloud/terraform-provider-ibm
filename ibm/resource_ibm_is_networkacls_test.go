@@ -84,11 +84,11 @@ func testAccCheckIBMISNetworkACLConfig() string {
 			name = "is-example-acl"
 			rules=[
 			{
-				name = "egress"
+				name = "outbound"
 				action = "allow"
 				source = "0.0.0.0/0"
 				destination = "0.0.0.0/0"
-				direction = "egress"
+				direction = "outbound"
 				icmp=[
 				{
 					code = 1
@@ -99,11 +99,11 @@ func testAccCheckIBMISNetworkACLConfig() string {
 				# port_min = 
 			},
 			{
-				name = "ingress"
+				name = "inbound"
 				action = "allow"
 				source = "0.0.0.0/0"
 				destination = "0.0.0.0/0"
-				direction = "ingress"
+				direction = "inbound"
 				icmp=[
 				{
 					code = 1

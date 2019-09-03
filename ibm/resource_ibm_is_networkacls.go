@@ -233,11 +233,6 @@ func resourceIBMISNetworkACLRead(d *schema.ResourceData, meta interface{}) error
 		rule[isNetworkACLRuleIPVersion] = rulex.IPVersion
 		rule[isNetworkACLRuleSource] = rulex.Source
 		rule[isNetworkACLRuleDestination] = rulex.Destination
-		if rulex.Direction == "inbound" {
-			rule[isNetworkACLRuleDirection] = "ingress"
-		} else {
-			rule[isNetworkACLRuleDirection] = "egress"
-		}
 
 		if rulex.Protocol == "icmp" {
 			rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
@@ -404,8 +399,8 @@ func validateInlineRules(rules []interface{}) error {
 
 		direction := rulex[isNetworkACLRuleDirection].(string)
 		direction = strings.ToLower(direction)
-		if (direction != "ingress") && (direction != "egress") {
-			return fmt.Errorf("Invalid direction. valid values are ingress|egress")
+		if (direction != "inbound") && (direction != "outbound") {
+			return fmt.Errorf("Invalid direction. valid values are inbound|outbound")
 		}
 
 		icmp := len(rulex[isNetworkACLRuleICMP].([]interface{})) > 0
