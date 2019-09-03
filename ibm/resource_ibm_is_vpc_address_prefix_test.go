@@ -14,9 +14,9 @@ import (
 
 func TestAccIBMISVPCAddressPrefix_basic(t *testing.T) {
 	var vpcAddressPrefix *models.AddressPrefix
-	name1 := fmt.Sprintf("terraformvpcuat_create_step_name_%d", acctest.RandInt())
-	prefixName := fmt.Sprintf("terraformvpcuat_create_prefix_name_%d", acctest.RandInt())
-	prefixName1 := fmt.Sprintf("terraformvpcuat_create_prefix_name_%d", acctest.RandInt())
+	name1 := fmt.Sprintf("terraformvpcuat-create-step-name-%d", acctest.RandInt())
+	prefixName := fmt.Sprintf("terraformvpcuat-create-prefix-name-%d", acctest.RandInt())
+	prefixName1 := fmt.Sprintf("terraformvpcuat-create-prefix-name-%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

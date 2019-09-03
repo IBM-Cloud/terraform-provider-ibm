@@ -14,8 +14,8 @@ import (
 
 func TestAccIBMISLBPool_basic(t *testing.T) {
 	var lb *models.Pool
-	vpcname := fmt.Sprintf("terraformLBuat_vpc_%d", acctest.RandInt())
-	subnetname := fmt.Sprintf("terraformLBuat_create_step_name_%d", acctest.RandInt())
+	vpcname := fmt.Sprintf("terraformLBuat-vpc-%d", acctest.RandInt())
+	subnetname := fmt.Sprintf("terraformLBuat-create-step-name-%d", acctest.RandInt())
 	name := fmt.Sprintf("tfcreate%d", acctest.RandInt())
 	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandInt())
 	poolName1 := fmt.Sprintf("tflbpoolu%d", acctest.RandInt())
@@ -87,8 +87,8 @@ func TestAccIBMISLBPool_basic(t *testing.T) {
 
 func TestAccIBMISLBPool_port(t *testing.T) {
 	var lb *models.Pool
-	vpcname := fmt.Sprintf("terraformLBuat_vpc_%d", acctest.RandInt())
-	subnetname := fmt.Sprintf("terraformLBuat_create_step_name_%d", acctest.RandInt())
+	vpcname := fmt.Sprintf("terraformLBuat-vpc-%d", acctest.RandInt())
+	subnetname := fmt.Sprintf("terraformLBuat-create-step-name-%d", acctest.RandInt())
 	name := fmt.Sprintf("tfcreate%d", acctest.RandInt())
 	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandInt())
 	alg1 := "round_robin"

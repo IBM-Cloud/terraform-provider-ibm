@@ -14,17 +14,17 @@ import (
 
 func TestAccIBMISVPNGatewayConnection_basic(t *testing.T) {
 	var VPNGatewayConnection *models.VPNGatewayConnection
-	vpcname1 := fmt.Sprintf("terraformvpnuatConn_vpc_%d", acctest.RandInt())
-	subnetname1 := fmt.Sprintf("terraformvpnuatConn_subnet_%d", acctest.RandInt())
-	vpnname1 := fmt.Sprintf("terraformvpnuatConn_vpn_%d", acctest.RandInt())
-	name1 := fmt.Sprintf("terraformvpnconnuat_create_step_name_%d", acctest.RandInt())
+	vpcname1 := fmt.Sprintf("terraformvpnuatConn-vpc-%d", acctest.RandInt())
+	subnetname1 := fmt.Sprintf("terraformvpnuatConn-subnet-%d", acctest.RandInt())
+	vpnname1 := fmt.Sprintf("terraformvpnuatConn-vpn-%d", acctest.RandInt())
+	name1 := fmt.Sprintf("terraformvpnconnuat-create-step-name-%d", acctest.RandInt())
 
-	vpcname2 := fmt.Sprintf("terraformvpnuatConn_vpc_%d", acctest.RandInt())
-	subnetname2 := fmt.Sprintf("terraformvpnuatConn_subnet_%d", acctest.RandInt())
-	vpnname2 := fmt.Sprintf("terraformvpnuatConn_vpn_%d", acctest.RandInt())
-	name2 := fmt.Sprintf("terraformvpnconnuat_create_step_name_%d", acctest.RandInt())
+	vpcname2 := fmt.Sprintf("terraformvpnuatConn-vpc-%d", acctest.RandInt())
+	subnetname2 := fmt.Sprintf("terraformvpnuatConn-subnet-%d", acctest.RandInt())
+	vpnname2 := fmt.Sprintf("terraformvpnuatConn-vpn-%d", acctest.RandInt())
+	name2 := fmt.Sprintf("terraformvpnconnuat-create-step-name-%d", acctest.RandInt())
 
-	updname2 := fmt.Sprintf("terraformvpnconnuat_update_step_name_%d", acctest.RandInt())
+	updname2 := fmt.Sprintf("terraformvpnconnuat-update-step-name-%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
