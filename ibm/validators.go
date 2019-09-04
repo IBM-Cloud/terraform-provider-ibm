@@ -301,6 +301,26 @@ func validateSecurityRuleDirection(v interface{}, k string) (ws []string, errors
 	return
 }
 
+func validateIsNetworkAclRuleDirection(v interface{}, k string) (ws []string, errors []error) {
+	validDirections := map[string]bool{
+		"inbound":  true,
+		"outbound": true,
+	}
+
+	value := v.(string)
+	_, found := validDirections[value]
+	if !found {
+		strarray := make([]string, 0, len(validDirections))
+		for key := range validDirections {
+			strarray = append(strarray, key)
+		}
+		errors = append(errors, fmt.Errorf(
+			"%q contains an invalid Network Acls direction %q. Valid types are %q.",
+			k, value, strings.Join(strarray, ",")))
+	}
+	return
+}
+
 func validateIsSecurityRuleDirection(v interface{}, k string) (ws []string, errors []error) {
 	validDirections := map[string]bool{
 		"inbound":  true,
