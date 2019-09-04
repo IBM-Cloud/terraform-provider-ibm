@@ -84,9 +84,11 @@ func resourceIBMISNetworkACL() *schema.Resource {
 							ForceNew: false,
 						},
 						isNetworkACLRuleDirection: {
-							Type:     schema.TypeString,
-							Required: true,
-							ForceNew: false,
+							Type:         schema.TypeString,
+							Required:     true,
+							ForceNew:     false,
+							Description:  "Direction of traffic to enforce, either inbound or outbound",
+							ValidateFunc: validateIsNetworkAclRuleDirection,
 						},
 						isNetworkACLSubnets: {
 							Type:     schema.TypeInt,
@@ -233,6 +235,7 @@ func resourceIBMISNetworkACLRead(d *schema.ResourceData, meta interface{}) error
 		rule[isNetworkACLRuleIPVersion] = rulex.IPVersion
 		rule[isNetworkACLRuleSource] = rulex.Source
 		rule[isNetworkACLRuleDestination] = rulex.Destination
+		rule[isNetworkACLRuleDirection] = rulex.Direction
 
 		if rulex.Protocol == "icmp" {
 			rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
@@ -399,9 +402,6 @@ func validateInlineRules(rules []interface{}) error {
 
 		direction := rulex[isNetworkACLRuleDirection].(string)
 		direction = strings.ToLower(direction)
-		if (direction != "inbound") && (direction != "outbound") {
-			return fmt.Errorf("Invalid direction. valid values are inbound|outbound")
-		}
 
 		icmp := len(rulex[isNetworkACLRuleICMP].([]interface{})) > 0
 		tcp := len(rulex[isNetworkACLRuleTCP].([]interface{})) > 0
