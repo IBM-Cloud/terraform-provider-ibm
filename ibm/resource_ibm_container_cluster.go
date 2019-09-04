@@ -205,8 +205,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 					if o == "" {
 						return false
 					}
-
-					if n == "nil" {
+					if o != "" && n == "" {
 						return true
 					}
 					return false
@@ -222,8 +221,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 					if o == "" {
 						return false
 					}
-
-					if n == "nil" {
+					if o != "" && n == "" {
 						return true
 					}
 					return false
@@ -557,10 +555,12 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 		d.Set("machine_type", strings.Split(workerFields[0].MachineType, ".encrypted")[0])
 		d.Set("public_vlan_id", workerFields[0].PublicVlan)
 		d.Set("private_vlan_id", workerFields[0].PrivateVlan)
-		if strings.HasSuffix(workerFields[0].MachineType, ".encrypted") {
-			d.Set("disk_encryption", true)
-		} else {
-			d.Set("disk_encryption", false)
+		if workerFields[0].MachineType != "free" {
+			if strings.HasSuffix(workerFields[0].MachineType, ".encrypted") {
+				d.Set("disk_encryption", true)
+			} else {
+				d.Set("disk_encryption", false)
+			}
 		}
 	}
 	workerCount := 0
@@ -754,13 +754,19 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 			machineType := d.Get("machine_type").(string)
 			publicVlanID := d.Get("public_vlan_id").(string)
 			privateVlanID := d.Get("private_vlan_id").(string)
-			isolation := d.Get("isolation").(string)
+			hardware := d.Get("hardware").(string)
+			switch strings.ToLower(hardware) {
+			case hardwareDedicated:
+				hardware = isolationPrivate
+			case hardwareShared:
+				hardware = isolationPublic
+			}
 			params := v1.WorkerParam{
 				WorkerNum:   count,
 				MachineType: machineType,
 				PublicVlan:  publicVlanID,
 				PrivateVlan: privateVlanID,
-				Isolation:   isolation,
+				Isolation:   hardware,
 			}
 			wrkAPI.Add(clusterID, params, targetEnv)
 		} else if oldCount > newCount {
