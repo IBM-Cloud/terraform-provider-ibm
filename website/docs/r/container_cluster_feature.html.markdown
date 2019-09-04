@@ -40,7 +40,7 @@ The following arguments are supported:
 * `refresh_api_servers` - (Optional, bool) To apply these changes, refresh the cluster's API server. Default value is true.
 * `reload_workers` - (Optional, bool) To apply these changes, reload workers. Default value is true.
 * `resource_group_id` - (Optional, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
-* `region` - (Optional, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(IC_REGION/IBMCLOUD_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
+* `region` - (Deprecated, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(IC_REGION/IBMCLOUD_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
 
 ## Attribute Reference
 

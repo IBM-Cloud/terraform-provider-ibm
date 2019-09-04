@@ -70,13 +70,13 @@ resource "ibm_service_key" "key" {
 }
 
 resource "ibm_container_bind_service" "bind_service" {
-  cluster_name_id     = "${ibm_container_cluster.cluster.name}"
+  cluster_name_id     = "${ibm_container_cluster.cluster.id}"
   service_instance_id = "${ibm_service_instance.service.id}"
   namespace_id        = "default"
 }
 
 data "ibm_container_cluster_config" "cluster_config" {
-  cluster_name_id = "${ibm_container_cluster.cluster.name}"
+  cluster_name_id = "${ibm_container_cluster.cluster.id}"
 }
 
 resource "random_id" "name" {

@@ -29,7 +29,6 @@ resource "ibm_container_cluster" "testacc_cluster" {
   public_vlan_id  = "vlan"
   private_vlan_id = "vlan"
   subnet_id       = ["1154643"]
-  region          = "eu-de"
 
   default_pool_size      = 1
 
@@ -39,9 +38,6 @@ resource "ibm_container_cluster" "testacc_cluster" {
     url = "https://hooks.slack.com/services/yt7rebjhgh2r4rd44fjk"
   }]
 
-  org_guid     = "test"
-  space_guid   = "test_space"
-  account_guid = "test_acc"
 }
 ```
 
@@ -65,8 +61,6 @@ resource "ibm_container_cluster" "testacc_cluster" {
     url = "https://hooks.slack.com/services/yt7rebjhgh2r4rd44fjk"
   }]
 
-  account_guid = "test_acc"
-  region = "us-south"
 }
 ```
 
@@ -78,12 +72,12 @@ The following arguments are supported:
 * `datacenter` - (Required, string)  The datacenter of the worker nodes. You can retrieve the value by running the `bluemix cs locations` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
 * `kube_version` - (Optional, string) The desired Kubernetes version of the created cluster. If present, at least major.minor must be specified.
 * `update_all_workers` - (Optional, bool)  Set to `true` if you want to update workers kube version along with the cluster kube_version
-* `org_guid` - (Optional, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from data source `ibm_org` or by running the `ibmcloud iam orgs --guid` command in the IBM Cloud CLI.
-* `space_guid` - (Optional, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from data source `ibm_space` or by running the `ibmcloud iam space <space-name> --guid` command in the IBM Cloud CLI.
-* `account_guid` - (Optional, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from data source `ibm_account` or by running the `ibmcloud iam accounts` command in the IBM Cloud CLI.
-* `region` - (Optional, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(IC_REGION/IBMCLOUD_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
+* `org_guid` - (Deprecated, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from data source `ibm_org` or by running the `ibmcloud iam orgs --guid` command in the IBM Cloud CLI.
+* `space_guid` - (Deprecated, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from data source `ibm_space` or by running the `ibmcloud iam space <space-name> --guid` command in the IBM Cloud CLI.
+* `account_guid` - (Deprecated, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from data source `ibm_account` or by running the `ibmcloud iam accounts` command in the IBM Cloud CLI.
+* `region` - (Deprecated, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(IC_REGION/IBMCLOUD_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
 * `resource_group_id` - (Optional, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
-* `workers` - (Deprecated) The worker nodes that you want to add to the cluster. Nested `workers` blocks have the following structure:
+* `workers` - (Removed) The worker nodes that you want to add to the cluster. Nested `workers` blocks have the following structure:
 	* `action` - valid actions are add, reboot and reload.
 	* `name` - Name of the worker.
 	* `version` - worker version.
@@ -97,7 +91,7 @@ The following arguments are supported:
 * `default_pool_size` - (Optional,int) The number of workers created under the default worker pool which support Multi-AZ. 
 * `machine_type` - (Optional, string) The machine type of the worker nodes. You can retrieve the value by running the `ibmcloud ks machine-types <data-center>` command in the IBM Cloud CLI.
 * `billing` - (Optional, string) The billing type for the instance. Accepted values are `hourly` or `monthly`.
-* `isolation` - (Deprecated) Accepted values are `public` or `private`. Use `private` if you want to have available physical resources dedicated to you only or `public` to allow physical resources to be shared with other IBM customers. Use hardware instead.
+* `isolation` - (Removed) Accepted values are `public` or `private`. Use `private` if you want to have available physical resources dedicated to you only or `public` to allow physical resources to be shared with other IBM customers. Use hardware instead.
 * `hardware` - (Optional, string) The level of hardware isolation for your worker node. Use `dedicated` to have available physical resources dedicated to you only, or `shared` to allow physical resources to be shared with other IBM customers. For IBM Cloud Public accounts, it can be shared or dedicated. For IBM Cloud Dedicated accounts, dedicated is the only available option.
 * `public_vlan_id`- (Optional, string) The public VLAN ID for the worker node. You can retrieve the value by running the ibmcloud ks vlans <data-center> command in the IBM Cloud CLI.
   * Free clusters: You must not specify any public VLAN. Your free cluster is automatically connected to a public VLAN that is owned by IBM.
@@ -120,7 +114,7 @@ The following arguments are supported:
   **NOTE**: As a prerequisite for using Service Endpoints, Account must be enabled for Virtual Routing and Forwarding (VRF). Learn more about VRF on IBM Cloud [here](https://cloud.ibm.com/docs/infrastructure/direct-link/vrf-on-ibm-cloud.html#overview-of-virtual-routing-and-forwarding-vrf-on-ibm-cloud). Account must be enabled for connectivity to Service Endpoints. Use the resource `ibm_container_cluster_feature` to update the `public_service_endpoint` and `private_service_endpoint`. 
 * `wait_time_minutes` - (Optional, integer) The duration, expressed in minutes, to wait for the cluster to become available before declaring it as created. It is also the same amount of time waited for no active transactions before proceeding with an update or deletion. The default value is `90`.
 * `tags` - (Optional, array of strings) Tags associated with the container cluster instance.  
-  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
+  **NOTE**: For users on account to add tags to a resource, they must be assigned the appropriate access. Learn more about tags permission [here](https://cloud.ibm.com/docs/resources?topic=resources-access)
 
 ## Attribute Reference
 
@@ -161,3 +155,4 @@ The following attributes are exported:
   * `disable_deployment` - Indicate whether to disable deployment only on disable application load balancer (ALB).
 * `private_service_endpoint_url` - Private service endpoint url.
 * `public_service_endpoint_url` - Public service endpoint url.
+* `crn` - CRN of the instance.
