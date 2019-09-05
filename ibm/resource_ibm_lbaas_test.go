@@ -328,7 +328,7 @@ resource "ibm_lbaas" "lbaas" {
   protocols = [{
     "frontend_protocol" = "HTTP"
     "frontend_port" = 80
-    "backend_protocol" = "HTTPS"
+    "backend_protocol" = "SSL"
     "backend_port" = 80
     "load_balancing_method" = "round_robin"
   }]
