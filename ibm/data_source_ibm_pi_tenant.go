@@ -37,6 +37,11 @@ func dataSourceIBMPITenant() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
+
+			"tenantname": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"cloudinstances": {
 
 				Type:     schema.TypeSet,
@@ -99,8 +104,14 @@ func dataSourceIBMPITenantRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("tenantid", tenantData.TenantID)
 	d.Set("creationdate", tenantData.CreationDate)
 	d.Set("enabled", tenantData.Enabled)
+	//d.Set("tenantname",tenantData.CloudInstances[0].Name)
 	//d.Set("cloudinstances", flattenCloudInstances(tenantData.CloudInstances))
 	log.Printf("Printing the tenant data %s", tenantData.CloudInstances)
+
+	if tenantData.CloudInstances != nil {
+
+		d.Set("tenantname", tenantData.CloudInstances[0].Name)
+	}
 
 	if tenantData.CloudInstances != nil {
 		tenants := make([]map[string]interface{}, len(tenantData.CloudInstances))

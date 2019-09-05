@@ -7,7 +7,7 @@ package p_cloud_p_vm_instances
 
 import (
 	"github.com/go-openapi/runtime"
-
+	"log"
 	strfmt "github.com/go-openapi/strfmt"
 )
 
@@ -33,6 +33,7 @@ func (a *Client) PcloudPvminstancesActionPost(params *PcloudPvminstancesActionPo
 		params = NewPcloudPvminstancesActionPostParams()
 	}
 
+	log.Printf("DEBUG - Calling the pCloudPVMInstancesaction ... on instanceid %s and cloudinstanceid %s and body %+v", params.PvmInstanceID,params.CloudInstanceID,params.Body)
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "pcloud.pvminstances.action.post",
 		Method:             "POST",

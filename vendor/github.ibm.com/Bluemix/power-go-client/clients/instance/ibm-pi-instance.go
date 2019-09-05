@@ -53,6 +53,7 @@ func (f *IBMPIInstanceClient) Create(powerdef *p_cloud_p_vm_instances.PcloudPvmi
 	return &resp.Payload, nil, nil, nil
 }
 
+// PVM Instances Delete
 func (f *IBMPIInstanceClient) Delete(id, powerinstanceid string) error {
 
 	log.Printf("Calling the Power PVM Delete Method")
@@ -66,6 +67,7 @@ func (f *IBMPIInstanceClient) Delete(id, powerinstanceid string) error {
 	return nil
 }
 
+// PVM Instances Update
 func (f *IBMPIInstanceClient) Update(id, powerinstanceid string, powerupdateparams *p_cloud_p_vm_instances.PcloudPvminstancesPutParams) (*models.PVMInstanceUpdateResponse, error) {
 
 	log.Printf("Calling the Power PVM Update Instance Method")
@@ -79,14 +81,31 @@ func (f *IBMPIInstanceClient) Update(id, powerinstanceid string, powerupdatepara
 	return resp.Payload, nil
 }
 
-func (f *IBMPIInstanceClient) Action(id, powerinstanceid string, poweractionparams *p_cloud_p_vm_instances.PcloudPvminstancesActionPostParams) (models.Object, error) {
+// PVM Instances Operations
+func (f *IBMPIInstanceClient) Action(poweractionparams *p_cloud_p_vm_instances.PcloudPvminstancesActionPostParams, id, powerinstanceid string) (models.Object, error) {
 
 	log.Printf("Calling the Power PVM Action Method")
-	params := p_cloud_p_vm_instances.NewPcloudPvminstancesActionPostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithPvmInstanceID(id)
+	log.Printf("the params are %s - powerinstance id is %s", id, powerinstanceid)
+	log.Printf("printing the poweraction params %s", *poweractionparams.Body)
+	params := p_cloud_p_vm_instances.NewPcloudPvminstancesActionPostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithPvmInstanceID(id).WithBody(poweractionparams.Body)
+
 	postok, err := f.session.Power.PCloudPVMInstances.PcloudPvminstancesActionPost(params, ibmpisession.NewAuth(f.session, powerinstanceid))
 	if err != nil {
 		return nil, errors.ToError(err)
 	}
 	return postok.Payload, nil
 
+}
+
+// Generate the Console URL
+
+func (f *IBMPIInstanceClient) PostConsoleURL(id, powerinstanceid string) (models.Object, error) {
+	params := p_cloud_p_vm_instances.NewPcloudPvminstancesConsolePostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithPvmInstanceID(id)
+
+	postok, err := f.session.Power.PCloudPVMInstances.PcloudPvminstancesConsolePost(params, ibmpisession.NewAuth(f.session, powerinstanceid))
+
+	if err != nil {
+		return nil, errors.ToError(err)
+	}
+	return postok.Payload, nil
 }

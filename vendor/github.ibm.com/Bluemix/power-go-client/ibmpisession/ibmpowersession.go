@@ -132,7 +132,7 @@ func BearerTokenAndCRN(session *IBMPISession, crn string) runtime.ClientAuthInfo
 
 func crnBuilder(powerinstance, useraccount string) string {
 	log.Printf("Calling the crn constructor that is to be passed back to the caller  %s", useraccount)
-	var crnData = crnString + separator + version + separator + service + separator + serviceType + separator + offering + separator + "us-east" + separator + "a" + serviceInstanceSeparator + useraccount + separator + powerinstance + separator + separator
+	var crnData = crnString + separator + version + separator + service + separator + serviceType + separator + offering + separator + "us-south" + separator + "a" + serviceInstanceSeparator + useraccount + separator + powerinstance + separator + separator
 	log.Printf("the crndata is ... %s ", crnData)
 	return crnData
 }

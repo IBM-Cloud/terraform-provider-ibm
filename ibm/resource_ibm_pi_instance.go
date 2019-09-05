@@ -12,20 +12,20 @@ import (
 )
 
 const (
-	PIInstanceName              = "servername"
-	PIInstanceDate              = "creationdate"
-	PIInstanceSSHKeyName        = "keypairname"
-	PIInstanceImageName         = "imageid"
+	PIInstanceName              = "server_name"
+	PIInstanceDate              = "creation_date"
+	PIInstanceSSHKeyName        = "key_pair_name"
+	PIInstanceImageName         = "image_id"
 	PIInstanceProcessors        = "processors"
-	PIInstanceProcType          = "proctype"
+	PIInstanceProcType          = "proc_type"
 	PIInstanceMemory            = "memory"
-	PIInstanceSystemType        = "systype"
-	PIInstanceId                = "pvminstanceid"
-	PIInstanceDiskSize          = "pvmdisksize"
+	PIInstanceSystemType        = "sys_type"
+	PIInstanceId                = "pvm_instance_id"
+	PIInstanceDiskSize          = "pvm_disk_size"
 	PIInstanceStatus            = "status"
 	PIInstanceMinProc           = "minproc"
-	PIInstanceVolumeIds         = "volumeids"
-	PIInstanceNetworkIds        = "networkids"
+	PIInstanceVolumeIds         = "volume_ids"
+	PIInstanceNetworkIds        = "network_ids"
 	PIInstanceAddress           = "addresses"
 	PIInstanceNetworkName       = "name"
 	PIInstanceMigratable        = "migratable"
@@ -37,19 +37,19 @@ const (
 	PIInstanceNetworkId         = "networkid"
 	PIInstanceNetworkCidr       = "cidr"
 	PIInstanceNotFound          = "Not Found"
-	PIInstanceHealthStatus      = "healthstatus"
+	PIInstanceHealthStatus      = "health_status"
 	PIInstanceReplicants        = "replicants"
-	PIInstanceReplicationPolicy = "replicationpolicy"
+	PIInstanceReplicationPolicy = "replication_policy"
 	PIInstanceProgress          = "progress"
 )
 
 func resourceIBMPIInstance() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceIBMPIInstanceCreate,
-		Read:   resourceIBMPIInstanceRead,
-		Update: resourceIBMPIInstanceUpdate,
-		Delete: resourceIBMPIInstanceDelete,
-		//Exists:   resourceIBMPIInstanceExists,
+		Create:   resourceIBMPIInstanceCreate,
+		Read:     resourceIBMPIInstanceRead,
+		Update:   resourceIBMPIInstanceUpdate,
+		Delete:   resourceIBMPIInstanceDelete,
+		Exists:   resourceIBMPIInstanceExists,
 		Importer: &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
@@ -177,7 +177,7 @@ func resourceIBMPIInstance() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			PowerPVMProgress: {
+			PIInstanceProgress: {
 				Type:        schema.TypeFloat,
 				Computed:    true,
 				Description: "Progress of the operation",
@@ -194,6 +194,7 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 	powerinstanceid := d.Get(IBMPIInstanceId).(string)
+
 	name := d.Get(PIInstanceName).(string)
 	sshkey := d.Get(PIInstanceSSHKeyName).(string)
 	mem := d.Get(PIInstanceMemory).(float64)

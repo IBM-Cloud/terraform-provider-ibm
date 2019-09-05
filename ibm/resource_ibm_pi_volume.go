@@ -15,8 +15,8 @@ const (
 	IBMPIVolumeSize      = "size"
 	IBMPIVolumeType      = "type"
 	IBMPIVolumeShareable = "shareable"
-	IBMPIVolumeId        = "volumeid"
-	IBMPIInstanceId      = "powerinstanceid"
+	IBMPIVolumeId        = "volume_id"
+	IBMPIInstanceId      = "power_instance_id"
 
 	IBMPIVolumeStatus           = "status"
 	IBMPIVolumeDeleting         = "deleting"
