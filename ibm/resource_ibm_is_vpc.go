@@ -25,6 +25,9 @@ const (
 	isVPCDeleted               = "done"
 	isVPCTags                  = "tags"
 	isVPCClassicAccess         = "classic_access"
+	isVPCAvailable             = "available"
+	isVPCFailed                = "failed"
+	isVPCPending               = "pending"
 )
 
 func resourceIBMISVPC() *schema.Resource {
@@ -122,11 +125,15 @@ func resourceIBMISVPCCreate(d *schema.ResourceData, meta interface{}) error {
 	d.SetId(vpc.ID.String())
 	log.Printf("[INFO] VPC : %s", vpc.ID.String())
 
+	_, err = isWaitForVPCAvailable(vpcC, d.Id(), d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return err
+	}
 	if _, ok := d.GetOk(isVPCTags); ok {
 		oldList, newList := d.GetChange(isVPCTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, vpc.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on create of resource vpc (%s) tags: %s", d.Id(), err)
 		}
 	}
@@ -163,7 +170,7 @@ func resourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	tags, err := GetTagsUsingCRN(meta, vpc.Crn)
 	if err != nil {
-		return fmt.Errorf(
+		log.Printf(
 			"Error on get of resource vpc (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isVPCTags, tags)
@@ -196,8 +203,8 @@ func resourceIBMISVPCUpdate(d *schema.ResourceData, meta interface{}) error {
 		oldList, newList := d.GetChange(isVPCTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, vpc.Crn)
 		if err != nil {
-			return fmt.Errorf(
-				"Error on create of resource vpc (%s) tags: %s", d.Id(), err)
+			log.Printf(
+				"Error on update of resource vpc (%s) tags: %s", d.Id(), err)
 		}
 
 	}
@@ -306,4 +313,34 @@ func resourceIBMVPCHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%s",
 		strings.ToLower(v.(string))))
 	return hashcode.String(buf.String())
+}
+
+func isWaitForVPCAvailable(vpc *network.VPCClient, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for VPC (%s) to be available.", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{isVPCPending},
+		Target:     []string{isVPCAvailable, isVPCFailed},
+		Refresh:    isVPCRefreshFunc(vpc, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isVPCRefreshFunc(vpc *network.VPCClient, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		VPC, err := vpc.Get(id)
+		if err != nil {
+			return VPC, "", err
+		}
+
+		if VPC.Status == isVPCAvailable || VPC.Status == isVPCFailed {
+			return VPC, VPC.Status, nil
+		}
+
+		return VPC, VPC.Status, nil
+	}
 }
