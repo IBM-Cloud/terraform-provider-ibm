@@ -65,6 +65,12 @@ const (
 	isInstanceDeleteDone       = "done"
 	isInstanceFailed           = "failed"
 
+	isInstanceActionStatusStopping = "stoppping"
+	isInstanceActionStatusStopped  = "stopped"
+	isInstanceStatusPending        = "pending"
+	isInstanceStatusRunning        = "running"
+	isInstanceStatusFailed         = "failed"
+
 	isInstanceBootName       = "name"
 	isInstanceBootSize       = "size"
 	isInstanceBootIOPS       = "iops"
@@ -717,11 +723,19 @@ func resourceIBMisInstanceDelete(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 	instanceC := compute.NewInstanceClient(sess)
-	err = instanceC.Delete(d.Id())
+	_, err = instanceC.CreateAction(d.Id(), "stop")
+	if err != nil {
+		return err
+	}
+	_, err = isWaitForInstanceActionStop(d, meta)
 	if err != nil {
 		return err
 	}
 
+	err = instanceC.Delete(d.Id())
+	if err != nil {
+		return err
+	}
 	_, err = isWaitForInstanceDelete(d, meta)
 	if err != nil {
 		return err
@@ -780,6 +794,31 @@ func isWaitForInstanceDelete(d *schema.ResourceData, meta interface{}) (interfac
 			return instance, isInstanceDeleting, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutDelete),
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isWaitForInstanceActionStop(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return false, err
+	}
+	instanceC := compute.NewInstanceClient(sess)
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{isInstanceStatusRunning, isInstanceStatusPending, isInstanceActionStatusStopping},
+		Target:  []string{isInstanceActionStatusStopped, isInstanceStatusFailed},
+		Refresh: func() (interface{}, string, error) {
+			instance, err := instanceC.Get(d.Id())
+			if err != nil {
+				return nil, "", err
+			}
+			return instance, instance.Status, nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
