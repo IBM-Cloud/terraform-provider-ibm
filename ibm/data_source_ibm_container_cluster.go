@@ -261,6 +261,12 @@ func dataSourceIBMContainerCluster() *schema.Resource {
 				Computed:    true,
 				Description: "CRN of resource instance",
 			},
+
+			"resource_controller_url": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this cluster",
+			},
 		},
 	}
 }
@@ -334,6 +340,12 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	d.Set("public_service_endpoint_url", clusterFields.PublicServiceEndpointURL)
 	d.Set("private_service_endpoint_url", clusterFields.PrivateServiceEndpointURL)
 	d.Set("crn", clusterFields.CRN)
+
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return err
+	}
+	d.Set("resource_controller_url", controller+"/kubernetes/clusters")
 
 	return nil
 }

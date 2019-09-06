@@ -71,6 +71,11 @@ func dataSourceIBMContainerClusterWorker() *schema.Resource {
 				Optional:    true,
 				Description: "ID of the resource group.",
 			},
+			"resource_controller_url": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this cluster",
+			},
 		},
 	}
 }
@@ -100,6 +105,11 @@ func dataSourceIBMContainerClusterWorkerRead(d *schema.ResourceData, meta interf
 	d.Set("public_vlan", workerFields.PublicVlan)
 	d.Set("private_ip", workerFields.PrivateIP)
 	d.Set("public_ip", workerFields.PublicIP)
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return err
+	}
+	d.Set("resource_controller_url", controller+"/kubernetes/clusters")
 
 	return nil
 }
