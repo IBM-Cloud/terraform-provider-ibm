@@ -27,6 +27,11 @@ import (
 	vpc "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
+const (
+	prodBaseController  = "https://cloud.ibm.com"
+	stageBaseController = "https://test.cloud.ibm.com"
+)
+
 //HashInt ...
 func HashInt(v interface{}) int { return v.(int) }
 
@@ -1393,4 +1398,15 @@ func UpdateTagsUsingCRN(oldList, newList interface{}, meta interface{}, resource
 		}
 	}
 	return nil
+}
+
+func getBaseController(meta interface{}) (string, error) {
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return "", err
+	}
+	if userDetails.cloudName == "staging" {
+		return stageBaseController, nil
+	}
+	return prodBaseController, nil
 }
