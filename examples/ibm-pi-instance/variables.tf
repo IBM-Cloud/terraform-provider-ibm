@@ -7,7 +7,8 @@ variable "servername"
 variable "powerinstanceid"
 {
 description="Power Instance associated with the account"
-default="49fba6c9-23f8-40bc-9899-aca322ee7d5b"
+#default="49fba6c9-23f8-40bc-9899-aca322ee7d5b"
+default="d16705bd-7f1a-48c9-9e0e-1c17b71e7331"
 }
 
 
@@ -30,7 +31,7 @@ default="shared"
 variable "sshkeyname"
 {
 description="Key Name to be passed"
-default="bramcolo"
+default="brampoc"
 }
 
 variable "volumename"
@@ -56,7 +57,7 @@ default="true"
 }
 
 variable "networks" {
-  default=["POWERCFN","POWERBACKUP","POWERADMIN"]
+  default=["APP","DB","MGMT"]
 }
 
 variable "systemtype"{

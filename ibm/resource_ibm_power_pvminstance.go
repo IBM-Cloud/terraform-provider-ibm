@@ -270,7 +270,7 @@ func resourceIBMPowerPVMInstanceRead(d *schema.ResourceData, meta interface{}) e
 	pvminstanceid := *powervmdata.PvmInstanceID
 
 	log.Printf("The Power pvm instance id is %s", pvminstanceid)
-	log.Printf("the power vm address data is %s", powervmdata.Addresses)
+
 	d.SetId(pvminstanceid)
 	d.Set("memory", powervmdata.Memory)
 	d.Set("processors", powervmdata.Processors)

@@ -3,6 +3,8 @@ package ibm
 import (
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.ibm.com/Bluemix/power-go-client/helpers"
+
 	//"fmt"
 	"github.com/hashicorp/terraform/helper/validation"
 	"github.ibm.com/Bluemix/power-go-client/clients/instance"
@@ -14,13 +16,13 @@ func dataSourceIBMPIImage() *schema.Resource {
 		Read: dataSourceIBMPIImagesRead,
 		Schema: map[string]*schema.Schema{
 
-			"name": {
+			helpers.PIImageName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "Imagename Name to be used for pvminstances",
 				ValidateFunc: validation.NoZeroValues,
 			},
-			"powerinstanceid": {
+			helpers.PICloudInstanceId: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
@@ -69,10 +71,10 @@ func dataSourceIBMPIImagesRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	powerinstanceid := d.Get("powerinstanceid").(string)
+	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 
 	imageC := instance.NewIBMPIImageClient(sess, powerinstanceid)
-	imagedata, err := imageC.Get(d.Get("name").(string), powerinstanceid)
+	imagedata, err := imageC.Get(d.Get(helpers.PIImageName).(string), powerinstanceid)
 
 	if err != nil {
 		return err

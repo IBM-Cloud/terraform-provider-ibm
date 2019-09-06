@@ -3,6 +3,8 @@ package ibm
 import (
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.ibm.com/Bluemix/power-go-client/helpers"
+
 	//"fmt"
 	"github.com/hashicorp/terraform/helper/validation"
 	"github.ibm.com/Bluemix/power-go-client/clients/instance"
@@ -14,14 +16,14 @@ func dataSourceIBMPINetwork() *schema.Resource {
 		Read: dataSourceIBMPINetworksRead,
 		Schema: map[string]*schema.Schema{
 
-			"networkname": {
+			helpers.PINetworkName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "Network Name to be used for pvminstances",
 				ValidateFunc: validation.NoZeroValues,
 			},
 
-			"powerinstanceid": {
+			helpers.PICloudInstanceId: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
@@ -67,9 +69,9 @@ func dataSourceIBMPINetworksRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	var powerinstanceid = d.Get("powerinstanceid").(string)
+	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	networkC := instance.NewIBMPINetworkClient(sess, powerinstanceid)
-	networkdata, err := networkC.Get(d.Get("networkname").(string), powerinstanceid)
+	networkdata, err := networkC.Get(d.Get(helpers.PINetworkName).(string), powerinstanceid)
 
 	if err != nil {
 		return err

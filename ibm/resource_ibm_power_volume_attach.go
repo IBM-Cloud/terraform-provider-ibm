@@ -77,14 +77,14 @@ func resourceIBMPowerVolumeAttachCreate(d *schema.ResourceData, meta interface{}
 	servername := d.Get(PowerInstanceName).(string)
 
 	client := st.NewPowerVolumeClient(sess)
-	log.Print("Now doing a get with the volumename %s  ", name)
+	//log.Print("Now doing a get with the volumename %s  ", name)
 	volinfo, err := client.Get(name)
 
 	if err != nil {
 		return errors.New("The volume cannot be attached since it's not available")
 		log.Printf(" The volume that is being attached is not available ")
 	}
-	log.Print("The volume info is %s", volinfo)
+	//log.Print("The volume info is %s", volinfo)
 
 	if volinfo.State == PowerVolumeAllowableAttachStatus {
 

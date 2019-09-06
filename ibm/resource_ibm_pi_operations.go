@@ -5,6 +5,7 @@ import (
 	_ "github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	st "github.ibm.com/Bluemix/power-go-client/clients/instance"
+	"github.ibm.com/Bluemix/power-go-client/helpers"
 	"github.ibm.com/Bluemix/power-go-client/power/client/p_cloud_p_vm_instances"
 	"github.ibm.com/Bluemix/power-go-client/power/models"
 
@@ -27,13 +28,6 @@ SHUTOFF--> ACTIVE
 
 */
 
-const (
-	PIInstanceOperationType       = "operation"
-	PIInstanceOperationProgress   = "progress"
-	PIInstanceOperationStatus     = "status"
-	PIInstanceOperationServerName = "pvm_instance_name"
-)
-
 func resourceIBMPIIOperations() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMPIOperationsCreate,
@@ -50,16 +44,16 @@ func resourceIBMPIIOperations() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 
-			"power_instance_id": {
+			helpers.PICloudInstanceId: {
 				Type:     schema.TypeString,
 				Required: true,
 			},
 
-			PIInstanceOperationStatus: {
+			helpers.PIInstanceOperationStatus: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			PIInstanceOperationServerName: {
+			helpers.PIInstanceOperationServerName: {
 				Type:     schema.TypeString,
 				Required: true,
 			},
@@ -93,23 +87,18 @@ func resourceIBMPIIOperations() *schema.Resource {
 				},
 			},
 
-			PIInstanceHealthStatus: {
+			helpers.PIInstanceHealthStatus: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 
-			PIInstanceDate: {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
-			PIInstanceOperationType: {
+			helpers.PIInstanceOperationType: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"start", "stop", "hard-reboot", "soft-reboot"}),
 			},
 
-			PIInstanceOperationProgress: {
+			helpers.PIInstanceOperationProgress: {
 				Type:        schema.TypeFloat,
 				Computed:    true,
 				Description: "Progress of the operation",
@@ -125,9 +114,9 @@ func resourceIBMPIOperationsCreate(d *schema.ResourceData, meta interface{}) err
 	if err != nil {
 		return err
 	}
-	powerinstanceid := d.Get(IBMPIInstanceId).(string)
-	operation := d.Get(PIInstanceOperationType).(string)
-	name := d.Get(PIInstanceOperationServerName).(string)
+	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	operation := d.Get(helpers.PIInstanceOperationType).(string)
+	name := d.Get(helpers.PIInstanceOperationServerName).(string)
 
 	body := &models.PVMInstanceAction{Action: ptrToString(operation)}
 	log.Printf("Calling the IBM PI Operations with the following attributes %s - %s", powerinstanceid, name)
@@ -174,13 +163,13 @@ func resourceIBMPIOperationsCreate(d *schema.ResourceData, meta interface{}) err
 
 func resourceIBMPIOperationsRead(d *schema.ResourceData, meta interface{}) error {
 
-	log.Printf("Calling the PowerOperations Read code..for instance id %s", d.Get(IBMPIInstanceId).(string))
+	log.Printf("Calling the PowerOperations Read code..for instance id %s", d.Get(helpers.PICloudInstanceId).(string))
 
 	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
 		return err
 	}
-	powerinstanceid := d.Get(IBMPIInstanceId).(string)
+	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	powerC := st.NewIBMPIInstanceClient(sess, powerinstanceid)
 	powervmdata, err := powerC.Get(d.Id(), powerinstanceid)
 
@@ -219,7 +208,7 @@ func resourceIBMPIOperationsExists(d *schema.ResourceData, meta interface{}) (bo
 		return false, err
 	}
 	id := d.Id()
-	powerinstanceid := d.Get(IBMPIInstanceId).(string)
+	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
 
 	instance, err := client.Get(d.Id(), powerinstanceid)
@@ -235,7 +224,7 @@ func isWaitForPIInstanceOperationStatus(client *st.IBMPIInstanceClient, name str
 	log.Printf("Waiting for the Operation( %s) to be performed on the instance with name (%s)", name, operation)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"ACTIVE", "SHUTOFF", PIInstanceHealthWarning},
+		Pending:    []string{"ACTIVE", "SHUTOFF", helpers.PIInstanceHealthWarning},
 		Target:     []string{targetstatus},
 		Refresh:    isPIOperationsRefreshFunc(client, name, powerinstanceid, targetstatus),
 		Delay:      1 * time.Minute,
@@ -263,6 +252,6 @@ func isPIOperationsRefreshFunc(client *st.IBMPIInstanceClient, id, powerinstance
 			//}
 		}
 
-		return pvm, PIInstanceHealthWarning, nil
+		return pvm, helpers.PIInstanceHealthWarning, nil
 	}
 }

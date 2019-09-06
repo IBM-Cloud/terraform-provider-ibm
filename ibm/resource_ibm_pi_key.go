@@ -4,15 +4,9 @@ import (
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform/helper/schema"
 	st "github.ibm.com/Bluemix/power-go-client/clients/instance"
+	"github.ibm.com/Bluemix/power-go-client/helpers"
 	"log"
 	"time"
-)
-
-const (
-	PIKeyName = "name"
-	PIKey     = "sshkey"
-	PIKeyDate = "creationdate"
-	PIKeyId   = "keyid"
 )
 
 func resourceIBMPIKey() *schema.Resource {
@@ -31,28 +25,28 @@ func resourceIBMPIKey() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 
-			PIKeyId: {
+			helpers.PIKeyId: {
 				Type:     schema.TypeString,
 				Computed: true,
 				ForceNew: true,
 				Optional: true,
 			},
 
-			PIKeyName: {
+			helpers.PIKeyName: {
 				Type:     schema.TypeString,
 				Required: true,
 			},
 
-			PIKey: {
+			helpers.PIKey: {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			PIKeyDate: {
+			helpers.PIKeyDate: {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
 
-			"powerinstanceid": {
+			helpers.PICloudInstanceId: {
 				Type:     schema.TypeString,
 				Required: true,
 			},
@@ -66,9 +60,9 @@ func resourceIBMPIKeyCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	powerinstanceid := d.Get("powerinstanceid").(string)
-	name := d.Get(PIKeyName).(string)
-	sshkey := d.Get(PIKey).(string)
+	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	name := d.Get(helpers.PIKeyName).(string)
+	sshkey := d.Get(helpers.PIKey).(string)
 	client := st.NewIBMPIKeyClient(sess, powerinstanceid)
 
 	sshResponse, _, err := client.Create(name, sshkey, powerinstanceid)
@@ -96,7 +90,7 @@ func resourceIBMPIKeyRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	powerinstanceid := d.Get("powerinstanceid").(string)
+	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	sshkeyC := st.NewIBMPIKeyClient(sess, powerinstanceid)
 	sshkeydata, err := sshkeyC.Get(d.Get("name").(string), powerinstanceid)
 
@@ -127,7 +121,7 @@ func resourceIBMPIKeyExists(d *schema.ResourceData, meta interface{}) (bool, err
 		return false, err
 	}
 	id := d.Id()
-	powerinstanceid := d.Get(IBMPIInstanceId).(string)
+	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	client := st.NewIBMPIKeyClient(sess, powerinstanceid)
 
 	key, err := client.Get(d.Id(), powerinstanceid)

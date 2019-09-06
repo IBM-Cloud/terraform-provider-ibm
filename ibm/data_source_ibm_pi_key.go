@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
 	"github.ibm.com/Bluemix/power-go-client/clients/instance"
+	"github.ibm.com/Bluemix/power-go-client/helpers"
 	"log"
 )
 
@@ -14,13 +15,13 @@ func dataSourceIBMPIKey() *schema.Resource {
 		Read: dataSourceIBMPIKeysRead,
 		Schema: map[string]*schema.Schema{
 
-			"name": {
+			helpers.PIKeyName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "SSHKey Name to be used for pvminstances",
 				ValidateFunc: validation.NoZeroValues,
 			},
-			"powerinstanceid": {
+			helpers.PICloudInstanceId: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
@@ -46,11 +47,10 @@ func dataSourceIBMPIKeysRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	powerinstanceid := d.Get("powerinstanceid").(string)
-
+	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	log.Printf("Calling the ibm-pi-key datasource with the %s instanceid ", powerinstanceid)
 	sshkeyC := instance.NewIBMPIKeyClient(sess, powerinstanceid)
-	sshkeydata, err := sshkeyC.Get(d.Get("name").(string), powerinstanceid)
+	sshkeydata, err := sshkeyC.Get(d.Get(helpers.PIKeyName).(string), powerinstanceid)
 
 	if err != nil {
 		return err

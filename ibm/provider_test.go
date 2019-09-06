@@ -56,6 +56,11 @@ var instanceProfileName string
 var ISRouteDestination string
 var ISRouteNextHop string
 
+// For Power Colo
+
+var pi_image string
+var pi_cloud_instance_id string
+
 func init() {
 	cfOrganization = os.Getenv("IBM_ORG")
 	if cfOrganization == "" {
@@ -312,6 +317,17 @@ func init() {
 	if ISRouteNextHop == "" {
 		ISRouteNextHop = "10.0.0.4"
 		fmt.Println("[INFO] Set the environment variable SL_ROUTE_NEXTHOP for testing ibm_is_vpc_route else it is set to default value '10.0.0.4'")
+	}
+	// Added for Power Colo Testing
+	pi_image = os.Getenv("PI_IMAGE")
+	if pi_image == "" {
+		pi_image = "7200-03-03"
+		fmt.Println("[INFO] Set the environment variable PI_IMAGE for testing ibm_pi_image resource else it is set to default value '7200-03-03'")
+	}
+	pi_cloud_instance_id = os.Getenv("PI_CLOUDINSTANCE_ID")
+	if pi_cloud_instance_id == "" {
+		pi_cloud_instance_id = "d16705bd-7f1a-48c9-9e0e-1c17b71e7331"
+		fmt.Println("[INFO] Set the environment variable PI_CLOUDINSTANCE_ID for testing ibm_pi_image resource else it is set to default value 'd16705bd-7f1a-48c9-9e0e-1c17b71e7331'")
 	}
 
 }

@@ -214,7 +214,7 @@ func generateData(cdir string) (gway, firstip, lastip string) {
 		"31": 2,
 	}
 
-	subnetsize, _ := ipv4Net.Mask.Size()
+	//subnetsize, _ := ipv4Net.Mask.Size()
 
 	gateway, err := cidr.Host(ipv4Net, 1)
 	ad := cidr.AddressCount(ipv4Net)
@@ -222,7 +222,6 @@ func generateData(cdir string) (gway, firstip, lastip string) {
 	convertedad := strconv.FormatUint(ad, 10)
 	firstusable, err := cidr.Host(ipv4Net, 2)
 	lastusable, err := cidr.Host(ipv4Net, subnet_to_size[convertedad]-2)
-	log.Printf("The gateway  value is %s and  %s the count is %s and first ip is %s last one is  %s", gateway, subnetsize, convertedad, firstusable, lastusable)
 
 	return gateway.String(), firstusable.String(), lastusable.String()
 

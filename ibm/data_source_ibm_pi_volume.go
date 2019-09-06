@@ -3,6 +3,8 @@ package ibm
 import (
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.ibm.com/Bluemix/power-go-client/helpers"
+
 	//"fmt"
 	"github.com/hashicorp/terraform/helper/validation"
 	"github.ibm.com/Bluemix/power-go-client/clients/instance"
@@ -14,14 +16,14 @@ func dataSourceIBMPIVolume() *schema.Resource {
 		Read: dataSourceIBMPIVolumeRead,
 		Schema: map[string]*schema.Schema{
 
-			"volumename": {
+			helpers.PIVolumeName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "Volume Name to be used for pvminstances",
 				ValidateFunc: validation.NoZeroValues,
 			},
 
-			"powerinstanceid": {
+			helpers.PICloudInstanceId: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
@@ -73,9 +75,9 @@ func dataSourceIBMPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	var powerinstanceid = d.Get("powerinstanceid").(string)
+	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	volumeC := instance.NewIBMPIVolumeClient(sess, powerinstanceid)
-	volumedata, err := volumeC.Get(d.Get("volumename").(string), powerinstanceid)
+	volumedata, err := volumeC.Get(d.Get(helpers.PIVolumeName).(string), powerinstanceid)
 
 	if err != nil {
 		return err

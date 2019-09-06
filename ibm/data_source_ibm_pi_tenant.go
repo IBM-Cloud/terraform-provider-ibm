@@ -3,7 +3,7 @@ package ibm
 import (
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.ibm.com/Bluemix/power-go-client/power/models"
+	"github.ibm.com/Bluemix/power-go-client/helpers"
 	"log"
 
 	//"fmt"
@@ -16,7 +16,7 @@ func dataSourceIBMPITenant() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMPITenantRead,
 		Schema: map[string]*schema.Schema{
-			"powerinstanceid": {
+			helpers.PICloudInstanceId: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
@@ -87,7 +87,7 @@ func dataSourceIBMPITenantRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	powerinstanceid := d.Get("powerinstanceid").(string)
+	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	//tenantid := d.Get("tenantid").(string)
 
 	tenantC := instance.NewIBMPITenantClient(sess, powerinstanceid)
@@ -104,9 +104,6 @@ func dataSourceIBMPITenantRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("tenantid", tenantData.TenantID)
 	d.Set("creationdate", tenantData.CreationDate)
 	d.Set("enabled", tenantData.Enabled)
-	//d.Set("tenantname",tenantData.CloudInstances[0].Name)
-	//d.Set("cloudinstances", flattenCloudInstances(tenantData.CloudInstances))
-	log.Printf("Printing the tenant data %s", tenantData.CloudInstances)
 
 	if tenantData.CloudInstances != nil {
 
@@ -128,40 +125,3 @@ func dataSourceIBMPITenantRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 
 }
-
-func flattenCloudInstances(cloudinstances []*models.CloudInstanceReference) []map[string]interface{} {
-	cloudInstances := make([]map[string]interface{}, len(cloudinstances))
-	for _, i := range cloudinstances {
-		l := map[string]interface{}{
-
-			"region":          &i.Region,
-			"href":            &i.Href,
-			"cloudinstanceid": &i.CloudInstanceID,
-			"initialized":     &i.Enabled,
-			"name":            &i.Name,
-		}
-		cloudInstances = append(cloudInstances, l)
-	}
-	log.Printf("printing the cloudinstances %+v", cloudInstances)
-	return cloudInstances
-}
-
-/*
-
-if powervmdata.Addresses != nil {
-		pvmaddress := make([]map[string]interface{}, len(powervmdata.Addresses))
-		for i, pvmip := range powervmdata.Addresses {
-
-			p := make(map[string]interface{})
-			p["ip"] = pvmip.IP
-			p["networkname"] = pvmip.NetworkName
-			p["networkid"] = pvmip.NetworkID
-			p["macaddress"] = pvmip.MacAddress
-			p["type"] = pvmip.Type
-			pvmaddress[i] = p
-		}
-		d.Set("addresses", pvmaddress)
-
-	}
-
-*/

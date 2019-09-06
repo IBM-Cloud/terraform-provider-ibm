@@ -1,8 +1,7 @@
 data "ibm_pi_image" "imagedata"
 {
-name="${var.imagename}"
-powerinstanceid="${var.powerinstanceid}"
-
+pi_image_name="${var.imagename}"
+pi_cloud_instance_id="${var.powerinstanceid}"
 }
 
 

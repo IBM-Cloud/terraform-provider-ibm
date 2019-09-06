@@ -6,25 +6,11 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	st "github.ibm.com/Bluemix/power-go-client/clients/instance"
+	"github.ibm.com/Bluemix/power-go-client/helpers"
 	"log"
 	"net"
 	"strconv"
 	"time"
-)
-
-const (
-	IBMPINetworkReady             = "ready"
-	IBMPINetworkID                = "networkid"
-	IBMPINetworkName              = "name"
-	IBMPINetworkCidr              = "cidr"
-	IBMPINetworkDNS               = "dns"
-	IBMPINetworkType              = "networktype"
-	IBMPINetworkGateway           = "gateway"
-	IBMPINetworkStartingIPAddress = "startip"
-	IBMPINetworkEndingIPAddress   = "endip"
-	IBMPINetworkIPAddressRange    = "ipaddressrange"
-	IBMPINetworkVlanId            = "vlanId"
-	IBMPINetworkProvisioning      = "build"
 )
 
 func resourceIBMPINetwork() *schema.Resource {
@@ -43,47 +29,47 @@ func resourceIBMPINetwork() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 
-			IBMPINetworkType: {
+			helpers.PINetworkType: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"vlan", "public-vlan"}),
 			},
 
-			IBMPINetworkName: {
+			helpers.PINetworkName: {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			IBMPINetworkDNS: {
+			helpers.PINetworkDNS: {
 				Type:     schema.TypeSet,
 				Required: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 
-			IBMPINetworkCidr: {
+			helpers.PINetworkCidr: {
 				Type:     schema.TypeString,
 				Required: true,
 			},
 
-			IBMPINetworkIPAddressRange: {
+			helpers.PINetworkIPAddressRange: {
 				Type:     schema.TypeSet,
 				Optional: true,
 				ForceNew: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
 			},
-			IBMPINetworkGateway: {
+			helpers.PINetworkGateway: {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
 
-			"powerinstanceid": {
+			helpers.PICloudInstanceId: {
 				Type:     schema.TypeString,
 				Required: true,
 			},
 
 			//Computed Attributes
 
-			IBMPINetworkID: {
+			helpers.PINetworkID: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -96,11 +82,11 @@ func resourceIBMPINetworkCreate(d *schema.ResourceData, meta interface{}) error 
 	if err != nil {
 		return err
 	}
-	powerinstanceid := d.Get(IBMPIInstanceId).(string)
-	networkname := d.Get(IBMPINetworkName).(string)
-	networktype := d.Get(IBMPINetworkType).(string)
-	networkcidr := d.Get(IBMPINetworkCidr).(string)
-	networkdns := expandStringList((d.Get(IBMPINetworkDNS).(*schema.Set)).List())
+	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	networkname := d.Get(helpers.PINetworkName).(string)
+	networktype := d.Get(helpers.PINetworkType).(string)
+	networkcidr := d.Get(helpers.PINetworkCidr).(string)
+	networkdns := expandStringList((d.Get(helpers.PINetworkDNS).(*schema.Set)).List())
 
 	log.Printf("Printing the data ")
 
@@ -135,7 +121,7 @@ func resourceIBMPINetworkRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	powerinstanceid := d.Get(IBMPIInstanceId).(string)
+	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	networkC := st.NewIBMPINetworkClient(sess, powerinstanceid)
 	networkdata, err := networkC.Get(d.Get("name").(string), powerinstanceid)
 
@@ -172,7 +158,7 @@ func resourceIBMPINetworkExists(d *schema.ResourceData, meta interface{}) (bool,
 		return false, err
 	}
 	id := d.Id()
-	powerinstanceid := d.Get(IBMPIInstanceId).(string)
+	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	client := st.NewIBMPINetworkClient(sess, powerinstanceid)
 
 	network, err := client.Get(d.Id(), powerinstanceid)
@@ -187,8 +173,8 @@ func isWaitForIBMPINetworkAvailable(client *st.IBMPINetworkClient, id string, ti
 	log.Printf("Waiting for Power Network (%s) to be available.", id)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", IBMPINetworkProvisioning},
-		Target:     []string{IBMPINetworkReady},
+		Pending:    []string{"retry", helpers.PINetworkProvisioning},
+		Target:     []string{helpers.PINetworkReady},
 		Refresh:    isIBMPINetworkRefreshFunc(client, id, powerinstanceid),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
@@ -209,10 +195,10 @@ func isIBMPINetworkRefreshFunc(client *st.IBMPINetworkClient, id, powerinstancei
 
 		if network.VlanID == nil {
 			//if network.State == "available" {
-			return network, IBMPINetworkReady, nil
+			return network, helpers.PINetworkReady, nil
 		}
 
-		return network, IBMPINetworkProvisioning, nil
+		return network, helpers.PINetworkProvisioning, nil
 	}
 }
 
@@ -237,7 +223,7 @@ func generateIPData(cdir string) (gway, firstip, lastip string) {
 		"31": 2,
 	}
 
-	subnetsize, _ := ipv4Net.Mask.Size()
+	//subnetsize, _ := ipv4Net.Mask.Size()
 
 	gateway, err := cidr.Host(ipv4Net, 1)
 	if err != nil {
@@ -249,7 +235,7 @@ func generateIPData(cdir string) (gway, firstip, lastip string) {
 	convertedad := strconv.FormatUint(ad, 10)
 	firstusable, err := cidr.Host(ipv4Net, 2)
 	lastusable, err := cidr.Host(ipv4Net, subnet_to_size[convertedad]-2)
-	log.Printf("The gateway  value is %s and  %s the count is %s and first ip is %s last one is  %s", gateway, subnetsize, convertedad, firstusable, lastusable)
+	//log.Printf("The gateway  value is %s and  %s the count is %s and first ip is %s last one is  %s", gateway, subnetsize, convertedad, firstusable, lastusable)
 
 	return gateway.String(), firstusable.String(), lastusable.String()
 

@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
 	"github.ibm.com/Bluemix/power-go-client/clients/instance"
+	"github.ibm.com/Bluemix/power-go-client/helpers"
 	_ "github.ibm.com/Bluemix/power-go-client/power/client"
 )
 
@@ -21,7 +22,7 @@ func dataSourceIBMPIInstance() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 			},
 
-			"powerinstanceid": {
+			helpers.PICloudInstanceId: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
@@ -134,7 +135,7 @@ func dataSourceIBMPIInstancesRead(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 
-	powerinstanceid := d.Get("powerinstanceid").(string)
+	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 
 	powerC := instance.NewIBMPIInstanceClient(sess, powerinstanceid)
 	powervmdata, err := powerC.Get(d.Get("instancename").(string), powerinstanceid)

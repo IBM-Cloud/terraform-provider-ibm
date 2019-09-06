@@ -4,43 +4,12 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	st "github.ibm.com/Bluemix/power-go-client/clients/instance"
+	"github.ibm.com/Bluemix/power-go-client/helpers"
 	"github.ibm.com/Bluemix/power-go-client/power/client/p_cloud_p_vm_instances"
 	"github.ibm.com/Bluemix/power-go-client/power/models"
 
 	"log"
 	"time"
-)
-
-const (
-	PIInstanceName              = "server_name"
-	PIInstanceDate              = "creation_date"
-	PIInstanceSSHKeyName        = "key_pair_name"
-	PIInstanceImageName         = "image_id"
-	PIInstanceProcessors        = "processors"
-	PIInstanceProcType          = "proc_type"
-	PIInstanceMemory            = "memory"
-	PIInstanceSystemType        = "sys_type"
-	PIInstanceId                = "pvm_instance_id"
-	PIInstanceDiskSize          = "pvm_disk_size"
-	PIInstanceStatus            = "status"
-	PIInstanceMinProc           = "minproc"
-	PIInstanceVolumeIds         = "volume_ids"
-	PIInstanceNetworkIds        = "network_ids"
-	PIInstanceAddress           = "addresses"
-	PIInstanceNetworkName       = "name"
-	PIInstanceMigratable        = "migratable"
-	PIInstanceAvailable         = "ACTIVE"
-	PIInstanceHealthOk          = "OK"
-	PIInstanceHealthWarning     = "WARNING"
-	PIInstanceBuilding          = "BUILD"
-	PIInstanceDeleting          = "DELETING"
-	PIInstanceNetworkId         = "networkid"
-	PIInstanceNetworkCidr       = "cidr"
-	PIInstanceNotFound          = "Not Found"
-	PIInstanceHealthStatus      = "health_status"
-	PIInstanceReplicants        = "replicants"
-	PIInstanceReplicationPolicy = "replication_policy"
-	PIInstanceProgress          = "progress"
 )
 
 func resourceIBMPIInstance() *schema.Resource {
@@ -59,34 +28,34 @@ func resourceIBMPIInstance() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 
-			"powerinstanceid": {
+			helpers.PICloudInstanceId: {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			PIInstanceDiskSize: {
+			helpers.PIInstanceDiskSize: {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			PIInstanceStatus: {
+			helpers.PIInstanceStatus: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			PIInstanceMigratable: {
+			helpers.PIInstanceMigratable: {
 				Type:     schema.TypeBool,
 				Required: true,
 			},
-			PIInstanceMinProc: {
+			helpers.PIInstanceMinProc: {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
-			PIInstanceNetworkIds: {
+			helpers.PIInstanceNetworkIds: {
 				Type:     schema.TypeSet,
 				Required: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
 			},
 
-			PIInstanceVolumeIds: {
+			helpers.PIInstanceVolumeIds: {
 				Type:     schema.TypeSet,
 				Required: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
@@ -126,58 +95,58 @@ func resourceIBMPIInstance() *schema.Resource {
 				},
 			},
 
-			PIInstanceHealthStatus: {
+			helpers.PIInstanceHealthStatus: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			PIInstanceId: {
+			helpers.PIInstanceId: {
 				Type:     schema.TypeString,
 				Computed: true,
 				Optional: true,
 			},
-			PIInstanceDate: {
+			helpers.PIInstanceDate: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			PowerPVMImageName: {
+			helpers.PIInstanceImageName: {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			PIInstanceProcessors: {
+			helpers.PIInstanceProcessors: {
 				Type:     schema.TypeFloat,
 				Required: true,
 			},
-			PIInstanceName: {
+			helpers.PIInstanceName: {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			PIInstanceProcType: {
+			helpers.PIInstanceProcType: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"dedicated", "shared"}),
 			},
-			PIInstanceSSHKeyName: {
+			helpers.PIInstanceSSHKeyName: {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			PIInstanceMemory: {
+			helpers.PIInstanceMemory: {
 				Type:     schema.TypeFloat,
 				Required: true,
 			},
-			PIInstanceSystemType: {
+			helpers.PIInstanceSystemType: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"any", "s922", "e880"}),
 			},
-			PowerPVMReplicants: {
+			helpers.PIInstanceReplicants: {
 				Type:     schema.TypeFloat,
 				Optional: true,
 			},
-			PowerPVMReplicationPolicy: {
+			helpers.PIInstanceReplicationPolicy: {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			PIInstanceProgress: {
+			helpers.PIInstanceProgress: {
 				Type:        schema.TypeFloat,
 				Computed:    true,
 				Description: "Progress of the operation",
@@ -193,28 +162,28 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	if err != nil {
 		return err
 	}
-	powerinstanceid := d.Get(IBMPIInstanceId).(string)
+	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 
-	name := d.Get(PIInstanceName).(string)
-	sshkey := d.Get(PIInstanceSSHKeyName).(string)
-	mem := d.Get(PIInstanceMemory).(float64)
-	procs := d.Get(PIInstanceProcessors).(float64)
-	migrateable := d.Get(PIInstanceMigratable).(bool)
-	systype := d.Get(PIInstanceSystemType).(string)
-	networks := expandStringList((d.Get(PIInstanceNetworkIds).(*schema.Set)).List())
-	volids := expandStringList((d.Get(PIInstanceVolumeIds).(*schema.Set)).List())
-	replicants := d.Get("replicants").(float64)
-	if d.Get("replicants") == "" {
+	name := d.Get(helpers.PIInstanceName).(string)
+	sshkey := d.Get(helpers.PIInstanceSSHKeyName).(string)
+	mem := d.Get(helpers.PIInstanceMemory).(float64)
+	procs := d.Get(helpers.PIInstanceProcessors).(float64)
+	migrateable := d.Get(helpers.PIInstanceMigratable).(bool)
+	systype := d.Get(helpers.PIInstanceSystemType).(string)
+	networks := expandStringList((d.Get(helpers.PIInstanceNetworkIds).(*schema.Set)).List())
+	volids := expandStringList((d.Get(helpers.PIInstanceVolumeIds).(*schema.Set)).List())
+	replicants := d.Get(helpers.PIInstanceReplicants).(float64)
+	if d.Get(helpers.PIInstanceReplicants) == "" {
 		replicants = 1
 	}
-	replicationpolicy := d.Get("replicationpolicy").(string)
-	if d.Get("replicationpolicy") == "" {
+	replicationpolicy := d.Get(helpers.PIInstanceReplicationPolicy).(string)
+	if d.Get(helpers.PIInstanceReplicationPolicy) == "" {
 		replicationpolicy = "none"
 	}
 
-	imageid := d.Get(PIInstanceImageName).(string)
+	imageid := d.Get(helpers.PIInstanceImageName).(string)
 
-	processortype := d.Get(PIInstanceProcType).(string)
+	processortype := d.Get(helpers.PIInstanceProcType).(string)
 
 	body := &models.PVMInstanceCreate{
 
@@ -264,7 +233,7 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	powerinstanceid := d.Get(IBMPIInstanceId).(string)
+	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	powerC := st.NewIBMPIInstanceClient(sess, powerinstanceid)
 	powervmdata, err := powerC.Get(d.Id(), powerinstanceid)
 
@@ -275,7 +244,7 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	pvminstanceid := *powervmdata.PvmInstanceID
 
 	log.Printf("The Power pvm instance id is %s", pvminstanceid)
-	log.Printf("the power vm address data is %s", powervmdata.Addresses)
+
 	d.SetId(pvminstanceid)
 	d.Set("memory", powervmdata.Memory)
 	d.Set("processors", powervmdata.Processors)
@@ -317,12 +286,12 @@ func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 
 	sess, _ := meta.(ClientSession).IBMPISession()
 
-	name := d.Get(PIInstanceName).(string)
-	mem := d.Get(PIInstanceMemory).(float64)
-	procs := d.Get(PIInstanceProcessors).(float64)
-	migrateable := d.Get(PIInstanceMigratable).(bool)
-	processortype := d.Get(PIInstanceProcType).(string)
-	powerinstanceid := d.Get("powerinstanceid").(string)
+	name := d.Get(helpers.PIInstanceName).(string)
+	mem := d.Get(helpers.PIInstanceMemory).(float64)
+	procs := d.Get(helpers.PIInstanceProcessors).(float64)
+	migrateable := d.Get(helpers.PIInstanceMigratable).(bool)
+	processortype := d.Get(helpers.PIInstanceProcType).(string)
+	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 
 	client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
 
@@ -353,7 +322,7 @@ func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 
 func resourceIBMPIInstanceDelete(data *schema.ResourceData, meta interface{}) error {
 	sess, _ := meta.(ClientSession).IBMPISession()
-	powerinstanceid := data.Get(IBMPIInstanceId).(string)
+	powerinstanceid := data.Get(helpers.PICloudInstanceId).(string)
 	client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
 	err := client.Delete(data.Id(), powerinstanceid)
 	if err != nil {
@@ -378,7 +347,7 @@ func resourceIBMPIInstanceExists(d *schema.ResourceData, meta interface{}) (bool
 		return false, err
 	}
 	id := d.Id()
-	powerinstanceid := d.Get(IBMPIInstanceId).(string)
+	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
 
 	instance, err := client.Get(d.Id(), powerinstanceid)
@@ -394,8 +363,8 @@ func isWaitForPIInstanceDeleted(client *st.IBMPIInstanceClient, id string, timeo
 	log.Printf("Waiting for  (%s) to be deleted.", id)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", PIInstanceDeleting},
-		Target:     []string{PIInstanceNotFound},
+		Pending:    []string{"retry", helpers.PIInstanceDeleting},
+		Target:     []string{helpers.PIInstanceNotFound},
 		Refresh:    isPIInstanceDeleteRefreshFunc(client, id, powerinstanceid),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
@@ -410,10 +379,10 @@ func isPIInstanceDeleteRefreshFunc(client *st.IBMPIInstanceClient, id, powerinst
 		pvm, err := client.Get(id, powerinstanceid)
 		if err != nil {
 			log.Printf("The power vm does not exist")
-			return pvm, PIInstanceNotFound, nil
+			return pvm, helpers.PIInstanceNotFound, nil
 
 		}
-		return pvm, PIInstanceNotFound, nil
+		return pvm, helpers.PIInstanceNotFound, nil
 
 	}
 }
@@ -422,8 +391,8 @@ func isWaitForPIInstanceAvailable(client *st.IBMPIInstanceClient, id string, tim
 	log.Printf("Waiting for PIInstance (%s) to be available and sleeping ", id)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"PENDING", PIInstanceHealthWarning},
-		Target:     []string{"OK", PIInstanceHealthOk},
+		Pending:    []string{"PENDING", helpers.PIInstanceHealthWarning},
+		Target:     []string{"OK", helpers.PIInstanceHealthOk},
 		Refresh:    isPIInstanceRefreshFunc(client, id, powerinstanceid),
 		Delay:      3 * time.Minute,
 		MinTimeout: 30 * time.Second,
@@ -441,14 +410,14 @@ func isPIInstanceRefreshFunc(client *st.IBMPIInstanceClient, id, powerinstanceid
 			return nil, "", err
 		}
 
-		if pvm.Health.Status == PIInstanceHealthOk {
+		if pvm.Health.Status == helpers.PIInstanceHealthOk {
 			log.Printf("The health status is now ok")
 			//if *pvm.Status == "active" ; if *pvm.Addresses[0].IP == nil  {
-			return pvm, PIInstanceHealthOk, nil
+			return pvm, helpers.PIInstanceHealthOk, nil
 			//}
 		}
 
-		return pvm, PIInstanceHealthWarning, nil
+		return pvm, helpers.PIInstanceHealthWarning, nil
 	}
 }
 
