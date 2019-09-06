@@ -248,11 +248,11 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	d.SetId(pvminstanceid)
 	d.Set("memory", powervmdata.Memory)
 	d.Set("processors", powervmdata.Processors)
-	d.Set("status", powervmdata.Status)
+	d.Set(helpers.PIInstanceStatus, powervmdata.Status)
 	d.Set("proctype", powervmdata.ProcType)
 	d.Set("migratable", powervmdata.Migratable)
-	d.Set("minproc", powervmdata.Minproc)
-	d.Set("progress", powervmdata.Progress)
+	d.Set(helpers.PIInstanceMinProc, powervmdata.Minproc)
+	d.Set(helpers.PIInstanceProgress, powervmdata.Progress)
 
 	if powervmdata.Addresses != nil {
 		pvmaddress := make([]map[string]interface{}, len(powervmdata.Addresses))
@@ -274,7 +274,7 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if powervmdata.Health != nil {
-		d.Set("healthstatus", powervmdata.Health.Status)
+		d.Set(helpers.PIInstanceHealthStatus, powervmdata.Health.Status)
 
 	}
 
