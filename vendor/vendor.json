@@ -1426,80 +1426,80 @@
 		{
 			"checksumSHA1": "0UGgUxnVI3dnXrI0Lae2mFZCW0o=",
 			"path": "github.com/softlayer/softlayer-go",
-			"revision": "ba6e7f29521771a05a8faa6c1782735b4b74dc36",
-			"revisionTime": "2019-06-15T20:12:52Z"
+			"revision": "b9062a914a22c292ef4e4a8e9849531a9da9ac54",
+			"revisionTime": "2019-08-14T16:53:17Z"
 		},
 		{
 			"checksumSHA1": "KeNIYJQUdE6o196SaYuLMmjEPZM=",
 			"path": "github.com/softlayer/softlayer-go/config",
-			"revision": "ba6e7f29521771a05a8faa6c1782735b4b74dc36",
-			"revisionTime": "2019-06-15T20:12:52Z"
+			"revision": "b9062a914a22c292ef4e4a8e9849531a9da9ac54",
+			"revisionTime": "2019-08-14T16:53:17Z"
 		},
 		{
 			"checksumSHA1": "BWVsf+bF5ifZuT2YIIe4eO0VEQ0=",
 			"path": "github.com/softlayer/softlayer-go/datatypes",
-			"revision": "ba6e7f29521771a05a8faa6c1782735b4b74dc36",
-			"revisionTime": "2019-06-15T20:12:52Z"
+			"revision": "b9062a914a22c292ef4e4a8e9849531a9da9ac54",
+			"revisionTime": "2019-08-14T16:53:17Z"
 		},
 		{
 			"checksumSHA1": "oDShnvgm/cL6wRpU4CCE/7CxSlU=",
 			"path": "github.com/softlayer/softlayer-go/filter",
-			"revision": "ba6e7f29521771a05a8faa6c1782735b4b74dc36",
-			"revisionTime": "2019-06-15T20:12:52Z"
+			"revision": "b9062a914a22c292ef4e4a8e9849531a9da9ac54",
+			"revisionTime": "2019-08-14T16:53:17Z"
 		},
 		{
 			"checksumSHA1": "8w7mbrWkcP0yCAdX3BpPr1vndrY=",
 			"path": "github.com/softlayer/softlayer-go/helpers/hardware",
-			"revision": "ba6e7f29521771a05a8faa6c1782735b4b74dc36",
-			"revisionTime": "2019-06-15T20:12:52Z"
+			"revision": "b9062a914a22c292ef4e4a8e9849531a9da9ac54",
+			"revisionTime": "2019-08-14T16:53:17Z"
 		},
 		{
 			"checksumSHA1": "5McX4q+mXpfYWBSde87Wjb4UoPs=",
 			"path": "github.com/softlayer/softlayer-go/helpers/location",
-			"revision": "ba6e7f29521771a05a8faa6c1782735b4b74dc36",
-			"revisionTime": "2019-06-15T20:12:52Z"
+			"revision": "b9062a914a22c292ef4e4a8e9849531a9da9ac54",
+			"revisionTime": "2019-08-14T16:53:17Z"
 		},
 		{
 			"checksumSHA1": "r0ijpEVlR3yuirWa/4b6yCDIjEE=",
 			"path": "github.com/softlayer/softlayer-go/helpers/network",
-			"revision": "ba6e7f29521771a05a8faa6c1782735b4b74dc36",
-			"revisionTime": "2019-06-15T20:12:52Z"
+			"revision": "b9062a914a22c292ef4e4a8e9849531a9da9ac54",
+			"revisionTime": "2019-08-14T16:53:17Z"
 		},
 		{
 			"checksumSHA1": "lKoK/9XI5sPMGXnTwmXjKmdUGko=",
 			"path": "github.com/softlayer/softlayer-go/helpers/order",
-			"revision": "ba6e7f29521771a05a8faa6c1782735b4b74dc36",
-			"revisionTime": "2019-06-15T20:12:52Z"
+			"revision": "b9062a914a22c292ef4e4a8e9849531a9da9ac54",
+			"revisionTime": "2019-08-14T16:53:17Z"
 		},
 		{
 			"checksumSHA1": "d9+/lLlDQ16F8hW/zem2vREo2mg=",
 			"path": "github.com/softlayer/softlayer-go/helpers/product",
-			"revision": "ba6e7f29521771a05a8faa6c1782735b4b74dc36",
-			"revisionTime": "2019-06-15T20:12:52Z"
+			"revision": "b9062a914a22c292ef4e4a8e9849531a9da9ac54",
+			"revisionTime": "2019-08-14T16:53:17Z"
 		},
 		{
 			"checksumSHA1": "FD91CtldgDaeeCRD71rAYcFyNBU=",
 			"path": "github.com/softlayer/softlayer-go/helpers/virtual",
-			"revision": "ba6e7f29521771a05a8faa6c1782735b4b74dc36",
-			"revisionTime": "2019-06-15T20:12:52Z"
+			"revision": "b9062a914a22c292ef4e4a8e9849531a9da9ac54",
+			"revisionTime": "2019-08-14T16:53:17Z"
 		},
 		{
 			"checksumSHA1": "H/J541TxnginOwoksCIRj8orfJQ=",
 			"path": "github.com/softlayer/softlayer-go/services",
-			"revision": "ba6e7f29521771a05a8faa6c1782735b4b74dc36",
-			"revisionTime": "2019-06-15T20:12:52Z"
+			"revision": "b9062a914a22c292ef4e4a8e9849531a9da9ac54",
+			"revisionTime": "2019-08-14T16:53:17Z"
 		},
 		{
-			"checksumSHA1": "aGX9zYY9NZ8nn46nVrrKNkSzaUo=",
+			"checksumSHA1": "ZqUdZoZdGFoO6QuMOpP55UK0Mec=",
 			"path": "github.com/softlayer/softlayer-go/session",
-			"revision": "ba6e7f29521771a05a8faa6c1782735b4b74dc36",
-			"revisionTime": "2019-06-15T20:12:52Z"
+			"revision": "b9062a914a22c292ef4e4a8e9849531a9da9ac54",
+			"revisionTime": "2019-08-14T16:53:17Z"
 		},
 		{
 			"checksumSHA1": "rRLFLMdzIFBSVSNDy34s01ZYGjs=",
 			"path": "github.com/softlayer/softlayer-go/sl",
-			"revision": "ba6e7f29521771a05a8faa6c1782735b4b74dc36",
-			"revisionTime": "2019-06-15T20:12:52Z"
+			"revision": "b9062a914a22c292ef4e4a8e9849531a9da9ac54",
+			"revisionTime": "2019-08-14T16:53:17Z"
 		},
 		{
 			"checksumSHA1": "z2kAtVle4NFV2OExI85fZoTcsI4=",
