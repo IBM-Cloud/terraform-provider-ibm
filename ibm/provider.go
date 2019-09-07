@@ -206,19 +206,12 @@ func Provider() terraform.ResourceProvider {
 
 			// Added for Power Resources
 
-			"ibm_power_image":          dataSourceIBMPowerImage(),
-			"ibm_power_network":        dataSourceIBMPowerNetwork(),
-			"ibm_power_volume":         dataSourceIBMPowerVolume(),
-			"ibm_power_sshkey":         dataSourceIBMPowerSSHKey(),
-			"ibm_power_pvminstance":    dataSourceIBMPowerPVMInstance(),
-			"ibm_power_cloud_instance": dataSourceIBMPowerCloudInstance(),
-			"ibm_pi_key":               dataSourceIBMPIKey(),
-			"ibm_pi_image":             dataSourceIBMPIImage(),
-			"ibm_pi_instance":          dataSourceIBMPIInstance(),
-			"ibm_pi_tenant":            dataSourceIBMPITenant(),
-			"ibm_pi_network":           dataSourceIBMPINetwork(),
-			//"ibm_pi_volume"			  : dataSourceIBMPIVolume(),
-
+			"ibm_pi_key":      dataSourceIBMPIKey(),
+			"ibm_pi_image":    dataSourceIBMPIImage(),
+			"ibm_pi_instance": dataSourceIBMPIInstance(),
+			"ibm_pi_tenant":   dataSourceIBMPITenant(),
+			"ibm_pi_network":  dataSourceIBMPINetwork(),
+			"ibm_pi_volume":   dataSourceIBMPIVolume(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -329,19 +322,12 @@ func Provider() terraform.ResourceProvider {
 
 			//Added for Power Colo
 
-			"ibm_power_volume":        resourceIBMPowerVolume(),
-			"ibm_power_sshkey":        resourceIBMPowerSSHKey(),
-			"ibm_power_network":       resourceIBMPowerNetwork(),
-			"ibm_power_pvminstance":   resourceIBMPowerPVMInstance(),
 			"ibm_power_volume_attach": resourceIBMPowerVolumeAttach(),
 			"ibm_pi_key":              resourceIBMPIKey(),
 			"ibm_pi_volume":           resourceIBMPIVolume(),
 			"ibm_pi_network":          resourceIBMPINetwork(),
 			"ibm_pi_instance":         resourceIBMPIInstance(),
 			"ibm_pi_operations":       resourceIBMPIIOperations(),
-			//"ibm_pi_volume_operations":
-			//"ibm_pi_instance_capture"
-
 		},
 
 		ConfigureFunc: providerConfigure,

@@ -35,17 +35,20 @@ func resourceIBMPIVolume() *schema.Resource {
 			},
 
 			helpers.PIVolumeName: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Volume Name to create",
 			},
 
 			helpers.PIVolumeShareable: {
-				Type:     schema.TypeBool,
-				Required: true,
+				Type:        schema.TypeBool,
+				Required:    true,
+				Description: "Flag to indicate if the volume can be shared across multiple instances?",
 			},
 			helpers.PIVolumeSize: {
-				Type:     schema.TypeFloat,
-				Required: true,
+				Type:        schema.TypeFloat,
+				Required:    true,
+				Description: "Size of the volume in GB",
 			},
 			helpers.PIVolumeType: {
 				Type:         schema.TypeString,
@@ -54,8 +57,9 @@ func resourceIBMPIVolume() *schema.Resource {
 			},
 
 			helpers.PICloudInstanceId: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: " Cloud Instance ID - This is the service_instance_id.",
 			},
 
 			// Computed Attributes
