@@ -99,6 +99,12 @@ func resourceIBMISLB() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+
+			isVPCResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
 		},
 	}
 }
@@ -179,6 +185,15 @@ func resourceIBMISLBRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(isLBSubnets, flattenISLBSubnets(lb.Subnets))
 	d.Set(isLBResourceGroup, lb.ResourceGroup.ID)
 	d.Set(isLBHostName, lb.Hostname)
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return err
+	}
+	if sess.Generation == 1 {
+		d.Set(isVPCResourceControllerURL, controller+"/vpc/network/loadBalancers")
+	} else {
+		d.Set(isVPCResourceControllerURL, controller+"/vpc-ext/network/loadBalancers")
+	}
 
 	return nil
 }

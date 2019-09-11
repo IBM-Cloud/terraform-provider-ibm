@@ -52,6 +52,12 @@ func resourceIBMISSSHKey() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
+
+			isVPCResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
 		},
 	}
 }
@@ -95,6 +101,15 @@ func resourceIBMISSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(isKeyType, key.Type)
 	d.Set(isKeyFingerprint, key.Fingerprint)
 	d.Set(isKeyLength, key.Length)
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return err
+	}
+	if sess.Generation == 1 {
+		d.Set(isVPCResourceControllerURL, controller+"/vpc/compute/sshKeys")
+	} else {
+		d.Set(isVPCResourceControllerURL, controller+"/vpc-ext/compute/sshKeys")
+	}
 	return nil
 }
 

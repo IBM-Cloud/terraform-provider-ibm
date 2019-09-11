@@ -28,6 +28,7 @@ const (
 	isVPCAvailable             = "available"
 	isVPCFailed                = "failed"
 	isVPCPending               = "pending"
+	isVPCResourceControllerURL = "resource_controller_url"
 )
 
 func resourceIBMISVPC() *schema.Resource {
@@ -94,6 +95,11 @@ func resourceIBMISVPC() *schema.Resource {
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      resourceIBMVPCHash,
+			},
+			isVPCResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
 			},
 		},
 	}
@@ -175,6 +181,16 @@ func resourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.Set(isVPCTags, tags)
 	d.Set(isVPCResourceGroup, vpc.ResourceGroup.ID)
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return err
+	}
+	if sess.Generation == 1 {
+		d.Set(isVPCResourceControllerURL, controller+"/vpc/network/vpcs")
+	} else {
+		d.Set(isVPCResourceControllerURL, controller+"/vpc-ext/network/vpcs")
+	}
+
 	return nil
 }
 

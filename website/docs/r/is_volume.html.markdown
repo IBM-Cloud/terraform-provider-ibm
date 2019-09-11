@@ -45,6 +45,8 @@ The following arguments are supported:
 * `capacity` - (Optional, int) The capacity of the volume in gigabytes. This defaults to `100`.
 * `encryption_key` - (Optional, string) The key to use for encrypting this volume.
 * `resource_group` - (Optional, string) The resource group ID for this volume.
+* `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
+
 
 ## Attribute Reference
 

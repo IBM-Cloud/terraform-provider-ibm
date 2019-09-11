@@ -37,6 +37,8 @@ The following attributes are exported:
 
 * `id` - The unique identifier of the VPN gateway.
 * `status` - The status of VPN gateway.
+* `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
+
 
 ## Import
 

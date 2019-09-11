@@ -95,6 +95,12 @@ func resourceIBMISVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+
+			isVPCResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
 		},
 	}
 }
@@ -185,6 +191,15 @@ func resourceIBMISVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(isVolumeCrn, vol.Crn)
 	d.Set(isVolumeResourceGroup, vol.ResourceGroup.ID)
 	d.Set(isVolumeStatus, vol.Status)
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return err
+	}
+	if sess.Generation == 1 {
+		d.Set(isVPCResourceControllerURL, controller+"/vpc/storage/storageVolumes")
+	} else {
+		d.Set(isVPCResourceControllerURL, controller+"/vpc-ext/storage/storageVolumes")
+	}
 
 	return nil
 }
