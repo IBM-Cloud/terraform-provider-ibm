@@ -57,6 +57,18 @@ func dataSourceIBMPINetwork() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"available_ip_count": {
+				Type:     schema.TypeFloat,
+				Computed: true,
+			},
+			"used_ip_count": {
+				Type:     schema.TypeFloat,
+				Computed: true,
+			},
+			"used_ip_percent": {
+				Type:     schema.TypeFloat,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -83,6 +95,9 @@ func dataSourceIBMPINetworksRead(d *schema.ResourceData, meta interface{}) error
 	d.Set("type", networkdata.Type)
 	d.Set("gateway", networkdata.Gateway)
 	d.Set("vlanid", networkdata.VlanID)
+	d.Set("available_ip_count", networkdata.IPAddressMetrics.Available)
+	d.Set("used_ip_count", networkdata.IPAddressMetrics.Used)
+	d.Set("used_ip_percent", networkdata.IPAddressMetrics.Utilization)
 
 	return nil
 	//return fmt.Errorf("No Image found with name %s", imagedata.)
