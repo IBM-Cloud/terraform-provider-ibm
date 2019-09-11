@@ -3,12 +3,12 @@ package ibm
 import (
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.ibm.com/Bluemix/power-go-client/helpers"
 	"log"
 
 	//"fmt"
 	"github.com/hashicorp/terraform/helper/validation"
 	"github.ibm.com/Bluemix/power-go-client/clients/instance"
+	"github.ibm.com/Bluemix/power-go-client/helpers"
 )
 
 func dataSourceIBMPITenant() *schema.Resource {

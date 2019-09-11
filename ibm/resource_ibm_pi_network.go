@@ -91,7 +91,7 @@ func resourceIBMPINetworkCreate(d *schema.ResourceData, meta interface{}) error 
 	log.Printf("Printing the data ")
 
 	client := st.NewIBMPINetworkClient(sess, powerinstanceid)
-	networkgateway, firstip, lastip := generateData(networkcidr)
+	networkgateway, firstip, lastip := generateIPData(networkcidr)
 	networkResponse, _, err := client.Create(networkname, networktype, networkcidr, networkdns, networkgateway, firstip, lastip, powerinstanceid)
 
 	if err != nil {

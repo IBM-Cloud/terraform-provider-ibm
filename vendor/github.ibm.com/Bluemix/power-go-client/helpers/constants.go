@@ -63,12 +63,21 @@ const (
 	PIInstanceOperationServerName = "pi_instance_name"
 
 	// IBM PI Volume Attach
-
-	PowerVolumeAllowableAttachStatus  = "in-use"
-	PowerVolumeAttachStatus           = "status"
+	PIVolumeAttachName                = "name"
+	PIVolumeAllowableAttachStatus     = "in-use"
+	PIVolumeAttachStatus              = "status"
 	PowerVolumeAttachDeleting         = "deleting"
 	PowerVolumeAttachProvisioning     = "creating"
 	PowerVolumeAttachProvisioningDone = "available"
+
+	// IBM PI Instance Capture
+	PIInstanceCaptureName                  = "pi_capture_name"
+	PIInstanceCaptureDestination           = "pi_capture_destination"
+	PIInstanceCaptureVolumeIds             = "pi_capture_volume_ids"
+	PIInstanceCaptureCloudStorageImagePath = "pi_capture_storage_image_path"
+	PIInstanceCaptureCloudStorageRegion    = "pi_capture_cloud_storage_region"
+	PIInstanceCaptureCloudStorageAccessKey = "pi_capture_cloud_storage_access_key"
+	PIInstanceCaptureCloudStorageSecretKey = "pi_capture_cloud_storage_secret_key"
 
 	// Status For all the resources
 

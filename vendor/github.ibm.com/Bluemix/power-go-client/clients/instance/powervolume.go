@@ -1,22 +1,16 @@
 package instance
 
-
-import
-
-(
-	"github.ibm.com/Bluemix/power-go-client/session"
-	"github.ibm.com/Bluemix/power-go-client/power/models"
+import (
 	"github.ibm.com/Bluemix/power-go-client/errors"
 	"github.ibm.com/Bluemix/power-go-client/power/client/p_cloud_volumes"
+	"github.ibm.com/Bluemix/power-go-client/power/models"
+	"github.ibm.com/Bluemix/power-go-client/session"
 	"log"
 )
 
 type PowerVolumeClient struct {
-
 	session *session.Session
-
 }
-
 
 // NewPowerVolumeClient ...
 func NewPowerVolumeClient(sess *session.Session) *PowerVolumeClient {
@@ -25,21 +19,18 @@ func NewPowerVolumeClient(sess *session.Session) *PowerVolumeClient {
 	}
 }
 
-
 //Get information about a single volume only
 func (f *PowerVolumeClient) Get(id string) (*models.Volume, error) {
 
 	var cloudinstanceid = f.session.PowerServiceInstance
 
-
-	log.Printf("The input volume name is %s and trying to attach it to the cloudinstance id %s",id,cloudinstanceid)
-
+	log.Printf("The input volume name is %s and trying to attach it to the cloudinstance id %s", id, cloudinstanceid)
 
 	params := p_cloud_volumes.NewPcloudCloudinstancesVolumesGetParams().WithCloudInstanceID(cloudinstanceid).WithVolumeID(id)
-	resp,err := f.session.Power.PCloudVolumes.PcloudCloudinstancesVolumesGet(params,session.NewAuth(f.session))
+	resp, err := f.session.Power.PCloudVolumes.PcloudCloudinstancesVolumesGet(params, session.NewAuth(f.session))
 
-	if err != nil || resp.Payload == nil  {
-		log.Printf("Failed to perform the operation... %v",err)
+	if err != nil || resp.Payload == nil {
+		log.Printf("Failed to perform the operation... %v", err)
 		return nil, errors.ToError(err)
 	}
 	return resp.Payload, nil
@@ -47,21 +38,19 @@ func (f *PowerVolumeClient) Get(id string) (*models.Volume, error) {
 
 //Create
 
-func( f *PowerVolumeClient) Create(volumename string,volumesize float64,volumetype string,volumeshareable bool) (*models.Volume, error) {
+func (f *PowerVolumeClient) Create(volumename string, volumesize float64, volumetype string, volumeshareable bool) (*models.Volume, error) {
 
 	log.Printf("calling the PowerVolume Create Method")
 
 	var body = models.CreateDataVolume{
-		Name: &volumename,
-		Size: &volumesize,
-		DiskType: &volumetype,
+		Name:      &volumename,
+		Size:      &volumesize,
+		DiskType:  &volumetype,
 		Shareable: &volumeshareable,
-
 	}
 
-
 	params := p_cloud_volumes.NewPcloudCloudinstancesVolumesPostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(f.session.PowerServiceInstance).WithBody(&body)
-	resp, err := f.session.Power.PCloudVolumes.PcloudCloudinstancesVolumesPost(params,session.NewAuth(f.session))
+	resp, err := f.session.Power.PCloudVolumes.PcloudCloudinstancesVolumesPost(params, session.NewAuth(f.session))
 
 	if err != nil {
 		return nil, errors.ToError(err)
@@ -69,8 +58,6 @@ func( f *PowerVolumeClient) Create(volumename string,volumesize float64,volumety
 
 	return resp.Payload, nil
 }
-
-
 
 // Delete ...
 func (f *PowerVolumeClient) Delete(id string) error {
@@ -84,53 +71,51 @@ func (f *PowerVolumeClient) Delete(id string) error {
 }
 
 // Update..
-func(f *PowerVolumeClient) Update(id, volumename string,volumesize float64,volumeshare bool) (*models.Volume, error){
+func (f *PowerVolumeClient) Update(id, volumename string, volumesize float64, volumeshare bool) (*models.Volume, error) {
 
 	var cloudinstanceid = f.session.PowerServiceInstance
 	var patchbody = models.UpdateVolume{}
-	patchbody.Name=&volumename
-	patchbody.Size=volumesize
-	patchbody.Shareable =&volumeshare
+	patchbody.Name = &volumename
+	patchbody.Size = volumesize
+	patchbody.Shareable = &volumeshare
 	params := p_cloud_volumes.NewPcloudCloudinstancesVolumesPutParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(cloudinstanceid).WithVolumeID(id).WithBody(&patchbody)
 
-	resp,err := f.session.Power.PCloudVolumes.PcloudCloudinstancesVolumesPut(params,session.NewAuth(f.session))
+	resp, err := f.session.Power.PCloudVolumes.PcloudCloudinstancesVolumesPut(params, session.NewAuth(f.session))
 
 	if err != nil {
 		return nil, errors.ToError(err)
 	}
 
-	log.Print("Printing the response data .. %+v",resp.Payload)
+	log.Print("Printing the response data .. %+v", resp.Payload)
 	return resp.Payload, nil
 }
 
+// Attach a volume
 
-
-// Attach a volume 
-
-func (f *PowerVolumeClient) Attach(id,volumename string) (models.Object, error){
+func (f *PowerVolumeClient) Attach(id, volumename string) (models.Object, error) {
 
 	log.Printf("Calling the Power Volume Attach method")
 	var cloudinstanceid = f.session.PowerServiceInstance
 	params := p_cloud_volumes.NewPcloudPvminstancesVolumesPostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(cloudinstanceid).WithPvmInstanceID(id).WithVolumeID(volumename)
-	resp,err := f.session.Power.PCloudVolumes.PcloudPvminstancesVolumesPost(params,session.NewAuth(f.session))
-	if err != nil{
+	resp, err := f.session.Power.PCloudVolumes.PcloudPvminstancesVolumesPost(params, session.NewAuth(f.session))
+	if err != nil {
 		return nil, errors.ToError(err)
 	}
 	log.Printf("Successfully attached the volume to the instance")
 
-	return resp.Payload,nil
-	
+	return resp.Payload, nil
+
 }
 
 //Detach a volume
 
-func (f *PowerVolumeClient) Detach(id, volumename string) (models.Object, error){
+func (f *PowerVolumeClient) Detach(id, volumename string) (models.Object, error) {
 	log.Printf("Calling the Power Volume Detach method")
 	var cloudinstanceid = f.session.PowerServiceInstance
 	params := p_cloud_volumes.NewPcloudPvminstancesVolumesDeleteParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(cloudinstanceid).WithPvmInstanceID(id).WithVolumeID(volumename)
-	resp,err := f.session.Power.PCloudVolumes.PcloudPvminstancesVolumesDelete(params,session.NewAuth(f.session))
+	resp, err := f.session.Power.PCloudVolumes.PcloudPvminstancesVolumesDelete(params, session.NewAuth(f.session))
 
-	if err != nil{
+	if err != nil {
 		return nil, errors.ToError(err)
 	}
 	return resp.Payload, nil

@@ -109,3 +109,16 @@ func (f *IBMPIInstanceClient) PostConsoleURL(id, powerinstanceid string) (models
 	}
 	return postok.Payload, nil
 }
+
+// Capture an instance
+
+func (f *IBMPIInstanceClient) CaptureInstanceToImageCatalog(id, powerinstanceid string, picaptureparams *p_cloud_p_vm_instances.PcloudPvminstancesCapturePostParams) (models.Object, error) {
+
+	params := p_cloud_p_vm_instances.NewPcloudPvminstancesCapturePostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithPvmInstanceID(id).WithBody(picaptureparams.Body)
+	postok, _, err := f.session.Power.PCloudPVMInstances.PcloudPvminstancesCapturePost(params, ibmpisession.NewAuth(f.session, powerinstanceid))
+	if err != nil {
+		return nil, errors.ToError(err)
+	}
+	return postok.Payload, nil
+
+}

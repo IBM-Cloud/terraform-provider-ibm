@@ -322,12 +322,13 @@ func Provider() terraform.ResourceProvider {
 
 			//Added for Power Colo
 
-			"ibm_power_volume_attach": resourceIBMPowerVolumeAttach(),
-			"ibm_pi_key":              resourceIBMPIKey(),
-			"ibm_pi_volume":           resourceIBMPIVolume(),
-			"ibm_pi_network":          resourceIBMPINetwork(),
-			"ibm_pi_instance":         resourceIBMPIInstance(),
-			"ibm_pi_operations":       resourceIBMPIIOperations(),
+			"ibm_pi_key":           resourceIBMPIKey(),
+			"ibm_pi_volume":        resourceIBMPIVolume(),
+			"ibm_pi_network":       resourceIBMPINetwork(),
+			"ibm_pi_instance":      resourceIBMPIInstance(),
+			"ibm_pi_operations":    resourceIBMPIIOperations(),
+			"ibm_pi_volume_attach": resourceIBMPIVolumeAttach(),
+			"ibm_pi_capture":       resourceIBMPICapture(),
 		},
 
 		ConfigureFunc: providerConfigure,

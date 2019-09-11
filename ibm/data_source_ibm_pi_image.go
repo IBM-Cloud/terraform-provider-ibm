@@ -89,6 +89,5 @@ func dataSourceIBMPIImagesRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("hypervisor", imagedata.Specifications.HypervisorType)
 
 	return nil
-	//return fmt.Errorf("No Image found with name %s", imagedata.)
 
 }
