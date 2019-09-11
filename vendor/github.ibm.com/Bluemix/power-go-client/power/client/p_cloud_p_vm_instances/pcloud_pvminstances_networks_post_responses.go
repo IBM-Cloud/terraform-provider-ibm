@@ -25,8 +25,8 @@ type PcloudPvminstancesNetworksPostReader struct {
 func (o *PcloudPvminstancesNetworksPostReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
 
-	case 202:
-		result := NewPcloudPvminstancesNetworksPostAccepted()
+	case 201:
+		result := NewPcloudPvminstancesNetworksPostCreated()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -65,24 +65,24 @@ func (o *PcloudPvminstancesNetworksPostReader) ReadResponse(response runtime.Cli
 	}
 }
 
-// NewPcloudPvminstancesNetworksPostAccepted creates a PcloudPvminstancesNetworksPostAccepted with default headers values
-func NewPcloudPvminstancesNetworksPostAccepted() *PcloudPvminstancesNetworksPostAccepted {
-	return &PcloudPvminstancesNetworksPostAccepted{}
+// NewPcloudPvminstancesNetworksPostCreated creates a PcloudPvminstancesNetworksPostCreated with default headers values
+func NewPcloudPvminstancesNetworksPostCreated() *PcloudPvminstancesNetworksPostCreated {
+	return &PcloudPvminstancesNetworksPostCreated{}
 }
 
-/*PcloudPvminstancesNetworksPostAccepted handles this case with default header values.
+/*PcloudPvminstancesNetworksPostCreated handles this case with default header values.
 
-Accepted
+Created
 */
-type PcloudPvminstancesNetworksPostAccepted struct {
+type PcloudPvminstancesNetworksPostCreated struct {
 	Payload *models.PVMInstanceNetwork
 }
 
-func (o *PcloudPvminstancesNetworksPostAccepted) Error() string {
-	return fmt.Sprintf("[POST /pcloud/v1/cloud-instances/{cloud_instance_id}/pvm-instances/{pvm_instance_id}/networks][%d] pcloudPvminstancesNetworksPostAccepted  %+v", 202, o.Payload)
+func (o *PcloudPvminstancesNetworksPostCreated) Error() string {
+	return fmt.Sprintf("[POST /pcloud/v1/cloud-instances/{cloud_instance_id}/pvm-instances/{pvm_instance_id}/networks][%d] pcloudPvminstancesNetworksPostCreated  %+v", 201, o.Payload)
 }
 
-func (o *PcloudPvminstancesNetworksPostAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+func (o *PcloudPvminstancesNetworksPostCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.PVMInstanceNetwork)
 

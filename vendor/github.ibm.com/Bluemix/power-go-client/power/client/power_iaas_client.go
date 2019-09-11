@@ -19,7 +19,6 @@ import (
 	"github.ibm.com/Bluemix/power-go-client/power/client/open_stacks"
 	"github.ibm.com/Bluemix/power-go-client/power/client/p_cloud_images"
 	"github.ibm.com/Bluemix/power-go-client/power/client/p_cloud_instances"
-	"github.ibm.com/Bluemix/power-go-client/power/client/p_cloud_limits"
 	"github.ibm.com/Bluemix/power-go-client/power/client/p_cloud_networks"
 	"github.ibm.com/Bluemix/power-go-client/power/client/p_cloud_p_vm_instances"
 	"github.ibm.com/Bluemix/power-go-client/power/client/p_cloud_tasks"
@@ -89,8 +88,6 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *PowerIaas 
 	cli.PCloudImages = p_cloud_images.New(transport, formats)
 
 	cli.PCloudInstances = p_cloud_instances.New(transport, formats)
-
-	cli.PCloudLimits = p_cloud_limits.New(transport, formats)
 
 	cli.PCloudNetworks = p_cloud_networks.New(transport, formats)
 
@@ -170,8 +167,6 @@ type PowerIaas struct {
 
 	PCloudInstances *p_cloud_instances.Client
 
-	PCloudLimits *p_cloud_limits.Client
-
 	PCloudNetworks *p_cloud_networks.Client
 
 	PCloudPVMInstances *p_cloud_p_vm_instances.Client
@@ -212,8 +207,6 @@ func (c *PowerIaas) SetTransport(transport runtime.ClientTransport) {
 	c.PCloudImages.SetTransport(transport)
 
 	c.PCloudInstances.SetTransport(transport)
-
-	c.PCloudLimits.SetTransport(transport)
 
 	c.PCloudNetworks.SetTransport(transport)
 

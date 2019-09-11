@@ -25,8 +25,13 @@ website/node_modules
 *.iml
 .vscode
 website/vendor
+terraform-provider-*
+*.attach
+*.xml
+*.old
 
 # Test exclusions
 !command/test-fixtures/**/*.tfstate
 !command/test-fixtures/**/.terraform/
 
+/main.tf.serviceinstance_power

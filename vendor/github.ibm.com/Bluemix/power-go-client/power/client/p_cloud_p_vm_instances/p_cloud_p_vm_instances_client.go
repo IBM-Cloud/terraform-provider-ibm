@@ -7,7 +7,7 @@ package p_cloud_p_vm_instances
 
 import (
 	"github.com/go-openapi/runtime"
-	"log"
+
 	strfmt "github.com/go-openapi/strfmt"
 )
 
@@ -33,7 +33,6 @@ func (a *Client) PcloudPvminstancesActionPost(params *PcloudPvminstancesActionPo
 		params = NewPcloudPvminstancesActionPostParams()
 	}
 
-	log.Printf("DEBUG - Calling the pCloudPVMInstancesaction ... on instanceid %s and cloudinstanceid %s and body %+v", params.PvmInstanceID,params.CloudInstanceID,params.Body)
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "pcloud.pvminstances.action.post",
 		Method:             "POST",
@@ -206,7 +205,7 @@ func (a *Client) PcloudPvminstancesGetall(params *PcloudPvminstancesGetallParams
 }
 
 /*
-PcloudPvminstancesNetworksDelete removes a network from a p VM instance
+PcloudPvminstancesNetworksDelete removes all address of network from a p VM instance
 */
 func (a *Client) PcloudPvminstancesNetworksDelete(params *PcloudPvminstancesNetworksDeleteParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudPvminstancesNetworksDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -295,7 +294,7 @@ func (a *Client) PcloudPvminstancesNetworksGetall(params *PcloudPvminstancesNetw
 /*
 PcloudPvminstancesNetworksPost performs network addition deletion and listing
 */
-func (a *Client) PcloudPvminstancesNetworksPost(params *PcloudPvminstancesNetworksPostParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudPvminstancesNetworksPostAccepted, error) {
+func (a *Client) PcloudPvminstancesNetworksPost(params *PcloudPvminstancesNetworksPostParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudPvminstancesNetworksPostCreated, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewPcloudPvminstancesNetworksPostParams()
@@ -317,7 +316,7 @@ func (a *Client) PcloudPvminstancesNetworksPost(params *PcloudPvminstancesNetwor
 	if err != nil {
 		return nil, err
 	}
-	return result.(*PcloudPvminstancesNetworksPostAccepted), nil
+	return result.(*PcloudPvminstancesNetworksPostCreated), nil
 
 }
 

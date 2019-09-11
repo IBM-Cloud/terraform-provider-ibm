@@ -17,6 +17,12 @@ import (
 // swagger:model CloudInstanceUsageLimits
 type CloudInstanceUsageLimits struct {
 
+	// Maximum memory (in GB) per PVMInstance
+	InstanceMemory *float64 `json:"instanceMemory,omitempty"`
+
+	// Maximum proc units per PVMInstance
+	InstanceProcUnits *float64 `json:"instanceProcUnits,omitempty"`
+
 	// Number of power instances allowed
 	// Required: true
 	Instances *float64 `json:"instances"`
@@ -24,6 +30,12 @@ type CloudInstanceUsageLimits struct {
 	// Amount of memory allowed
 	// Required: true
 	Memory *float64 `json:"memory"`
+
+	// Maximum network bandwidth to GCP Mbps
+	PeeringBandwidth *int64 `json:"peeringBandwidth,omitempty"`
+
+	// Amount of storage allowed (TB)
+	PeeringNetworks *int64 `json:"peeringNetworks,omitempty"`
 
 	// Number of processor units allowed
 	// Required: true
@@ -36,6 +48,9 @@ type CloudInstanceUsageLimits struct {
 	// Amount of storage allowed (TB)
 	// Required: true
 	Storage *float64 `json:"storage"`
+
+	// Maximum Flash storage for data LUNs (TB)
+	StorageFlash *int64 `json:"storageFlash,omitempty"`
 }
 
 // Validate validates this cloud instance usage limits

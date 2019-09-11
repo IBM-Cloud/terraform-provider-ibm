@@ -65,6 +65,9 @@ type PVMInstanceCreate struct {
 	// Enum: [s922 e880 any]
 	SysType *string `json:"sysType,omitempty"`
 
+	// Cloud init user defined data
+	UserData string `json:"userData,omitempty"`
+
 	// List of volume IDs
 	// Required: true
 	VolumeIds []string `json:"volumeIDs"`

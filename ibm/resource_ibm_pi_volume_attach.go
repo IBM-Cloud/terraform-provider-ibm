@@ -111,10 +111,11 @@ func resourceIBMPIVolumeAttachCreate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceIBMPIVolumeAttachRead(d *schema.ResourceData, meta interface{}) error {
-	sess, _ := meta.(ClientSession).PowerSession()
-	client := st.NewPowerVolumeClient(sess)
+	sess, _ := meta.(ClientSession).IBMPISession()
+	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 
-	vol, err := client.Get(d.Id())
+	client := st.NewIBMPIVolumeClient(sess, powerinstanceid)
+	vol, err := client.Get(d.Id(), powerinstanceid)
 	if err != nil {
 		return err
 	}

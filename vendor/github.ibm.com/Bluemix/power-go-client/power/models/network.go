@@ -31,6 +31,10 @@ type Network struct {
 	// Gateway IP Address
 	Gateway string `json:"gateway,omitempty"`
 
+	// ip address metrics
+	// Required: true
+	IPAddressMetrics *NetworkIPAddressMetrics `json:"ipAddressMetrics"`
+
 	// IP Address Ranges
 	// Required: true
 	IPAddressRanges []*IPAddressRange `json:"ipAddressRanges"`
@@ -65,6 +69,10 @@ func (m *Network) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateDNSServers(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIPAddressMetrics(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -111,6 +119,24 @@ func (m *Network) validateDNSServers(formats strfmt.Registry) error {
 
 	if err := validate.Required("dnsServers", "body", m.DNSServers); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Network) validateIPAddressMetrics(formats strfmt.Registry) error {
+
+	if err := validate.Required("ipAddressMetrics", "body", m.IPAddressMetrics); err != nil {
+		return err
+	}
+
+	if m.IPAddressMetrics != nil {
+		if err := m.IPAddressMetrics.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ipAddressMetrics")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -247,6 +273,107 @@ func (m *Network) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *Network) UnmarshalBinary(b []byte) error {
 	var res Network
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NetworkIPAddressMetrics IP Address Metrics
+// swagger:model NetworkIPAddressMetrics
+type NetworkIPAddressMetrics struct {
+
+	// Number of available IP addresses
+	// Required: true
+	Available *float64 `json:"available"`
+
+	// Total number of all IP addresses in all ipAddressRanges
+	// Required: true
+	Total *float64 `json:"total"`
+
+	// Number of IP addresses currently in use
+	// Required: true
+	Used *float64 `json:"used"`
+
+	// Utilization of IP addresses in percent form (used / total) [0 - 100]
+	// Required: true
+	Utilization *float64 `json:"utilization"`
+}
+
+// Validate validates this network IP address metrics
+func (m *NetworkIPAddressMetrics) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateAvailable(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTotal(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateUsed(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateUtilization(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NetworkIPAddressMetrics) validateAvailable(formats strfmt.Registry) error {
+
+	if err := validate.Required("ipAddressMetrics"+"."+"available", "body", m.Available); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetworkIPAddressMetrics) validateTotal(formats strfmt.Registry) error {
+
+	if err := validate.Required("ipAddressMetrics"+"."+"total", "body", m.Total); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetworkIPAddressMetrics) validateUsed(formats strfmt.Registry) error {
+
+	if err := validate.Required("ipAddressMetrics"+"."+"used", "body", m.Used); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetworkIPAddressMetrics) validateUtilization(formats strfmt.Registry) error {
+
+	if err := validate.Required("ipAddressMetrics"+"."+"utilization", "body", m.Utilization); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NetworkIPAddressMetrics) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NetworkIPAddressMetrics) UnmarshalBinary(b []byte) error {
+	var res NetworkIPAddressMetrics
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

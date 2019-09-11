@@ -66,6 +66,11 @@ type PcloudNetworksGetallParams struct {
 
 	*/
 	CloudInstanceID string
+	/*Filter
+	  A filter expression that filters resources listed in the response
+
+	*/
+	Filter *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -116,6 +121,17 @@ func (o *PcloudNetworksGetallParams) SetCloudInstanceID(cloudInstanceID string) 
 	o.CloudInstanceID = cloudInstanceID
 }
 
+// WithFilter adds the filter to the pcloud networks getall params
+func (o *PcloudNetworksGetallParams) WithFilter(filter *string) *PcloudNetworksGetallParams {
+	o.SetFilter(filter)
+	return o
+}
+
+// SetFilter adds the filter to the pcloud networks getall params
+func (o *PcloudNetworksGetallParams) SetFilter(filter *string) {
+	o.Filter = filter
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *PcloudNetworksGetallParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -127,6 +143,22 @@ func (o *PcloudNetworksGetallParams) WriteToRequest(r runtime.ClientRequest, reg
 	// path param cloud_instance_id
 	if err := r.SetPathParam("cloud_instance_id", o.CloudInstanceID); err != nil {
 		return err
+	}
+
+	if o.Filter != nil {
+
+		// query param filter
+		var qrFilter string
+		if o.Filter != nil {
+			qrFilter = *o.Filter
+		}
+		qFilter := qrFilter
+		if qFilter != "" {
+			if err := r.SetQueryParam("filter", qFilter); err != nil {
+				return err
+			}
+		}
+
 	}
 
 	if len(res) > 0 {

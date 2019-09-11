@@ -142,21 +142,11 @@ func resourceIBMPICaptureCreate(d *schema.ResourceData, meta interface{}) error 
 	//}
 	return nil
 	//return resourceIBMPIVolumeAttachRead(d, meta)
+
 }
 
 func resourceIBMPICaptureRead(d *schema.ResourceData, meta interface{}) error {
-	sess, _ := meta.(ClientSession).PowerSession()
-	client := st.NewPowerVolumeClient(sess)
 
-	vol, err := client.Get(d.Id())
-	if err != nil {
-		return err
-	}
-
-	//d.SetId(vol.ID.String())
-	d.Set(helpers.PIVolumeAttachName, vol.Name)
-	d.Set(helpers.PIVolumeSize, vol.Size)
-	d.Set(helpers.PIVolumeShareable, vol.Shareable)
 	return nil
 }
 

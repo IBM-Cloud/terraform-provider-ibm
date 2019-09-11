@@ -61,7 +61,7 @@ func NewPcloudPvminstancesNetworksGetOK() *PcloudPvminstancesNetworksGetOK {
 OK
 */
 type PcloudPvminstancesNetworksGetOK struct {
-	Payload *models.PVMInstanceNetwork
+	Payload *models.PVMInstanceNetworks
 }
 
 func (o *PcloudPvminstancesNetworksGetOK) Error() string {
@@ -70,7 +70,7 @@ func (o *PcloudPvminstancesNetworksGetOK) Error() string {
 
 func (o *PcloudPvminstancesNetworksGetOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.PVMInstanceNetwork)
+	o.Payload = new(models.PVMInstanceNetworks)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

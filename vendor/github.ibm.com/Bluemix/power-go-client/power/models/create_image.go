@@ -19,28 +19,37 @@ import (
 // swagger:model CreateImage
 type CreateImage struct {
 
-	// Service access key
+	// Cloud Storage access key; required for import image
 	AccessKey string `json:"accessKey,omitempty"`
+
+	// Cloud Storage bucket name; bucket-name[/optional/folder]; required for import image
+	BucketName string `json:"bucketName,omitempty"`
 
 	// Type of Disk {ssd, standard}
 	// Enum: [ssd standard]
 	DiskType *string `json:"diskType,omitempty"`
 
+	// Cloud Storage image filename; required for import image
+	ImageFilename string `json:"imageFilename,omitempty"`
+
 	// Image ID of existing source image; required for copy image
 	ImageID string `json:"imageID,omitempty"`
 
 	// Name to give created image; required for import image
-	// Required: true
-	ImageName *string `json:"imageName"`
+	ImageName string `json:"imageName,omitempty"`
 
-	// Path to image starting with service endpoint and ending with image filename
+	// (deprecated - replaced by region, imageFilename and bucketName) Path to image starting with service endpoint and ending with image filename
 	ImagePath string `json:"imagePath,omitempty"`
 
-	// Image OS Type
+	// Image OS Type, required if importing a raw image; raw images can only be imported using the command line interface
 	// Enum: [aix ibmi redhat sles]
 	OsType string `json:"osType,omitempty"`
 
-	// Service secret key
+	// Cloud Storage Region; only required to access IBM Cloud Storage
+	// Enum: [us-east us-south]
+	Region *string `json:"region,omitempty"`
+
+	// Cloud Storage secret key; required for import image
 	SecretKey string `json:"secretKey,omitempty"`
 
 	// Source of the image
@@ -57,11 +66,11 @@ func (m *CreateImage) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateImageName(formats); err != nil {
+	if err := m.validateOsType(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateOsType(formats); err != nil {
+	if err := m.validateRegion(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -118,15 +127,6 @@ func (m *CreateImage) validateDiskType(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CreateImage) validateImageName(formats strfmt.Registry) error {
-
-	if err := validate.Required("imageName", "body", m.ImageName); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 var createImageTypeOsTypePropEnum []interface{}
 
 func init() {
@@ -170,6 +170,49 @@ func (m *CreateImage) validateOsType(formats strfmt.Registry) error {
 
 	// value enum
 	if err := m.validateOsTypeEnum("osType", "body", m.OsType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var createImageTypeRegionPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["us-east","us-south"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		createImageTypeRegionPropEnum = append(createImageTypeRegionPropEnum, v)
+	}
+}
+
+const (
+
+	// CreateImageRegionUsEast captures enum value "us-east"
+	CreateImageRegionUsEast string = "us-east"
+
+	// CreateImageRegionUsSouth captures enum value "us-south"
+	CreateImageRegionUsSouth string = "us-south"
+)
+
+// prop value enum
+func (m *CreateImage) validateRegionEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, createImageTypeRegionPropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *CreateImage) validateRegion(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Region) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateRegionEnum("region", "body", *m.Region); err != nil {
 		return err
 	}
 

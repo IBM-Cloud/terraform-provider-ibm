@@ -15,6 +15,8 @@ import (
 	cr "github.com/go-openapi/runtime/client"
 
 	strfmt "github.com/go-openapi/strfmt"
+
+	models "github.ibm.com/Bluemix/power-go-client/power/models"
 )
 
 // NewPcloudPvminstancesNetworksDeleteParams creates a new PcloudPvminstancesNetworksDeleteParams object
@@ -61,6 +63,11 @@ for the pcloud pvminstances networks delete operation typically these are writte
 */
 type PcloudPvminstancesNetworksDeleteParams struct {
 
+	/*Body
+	  Remove a network from PVM Instance parameters
+
+	*/
+	Body *models.PVMInstanceRemoveNetwork
 	/*CloudInstanceID
 	  Cloud Instance ID of a PCloud Instance
 
@@ -115,6 +122,17 @@ func (o *PcloudPvminstancesNetworksDeleteParams) SetHTTPClient(client *http.Clie
 	o.HTTPClient = client
 }
 
+// WithBody adds the body to the pcloud pvminstances networks delete params
+func (o *PcloudPvminstancesNetworksDeleteParams) WithBody(body *models.PVMInstanceRemoveNetwork) *PcloudPvminstancesNetworksDeleteParams {
+	o.SetBody(body)
+	return o
+}
+
+// SetBody adds the body to the pcloud pvminstances networks delete params
+func (o *PcloudPvminstancesNetworksDeleteParams) SetBody(body *models.PVMInstanceRemoveNetwork) {
+	o.Body = body
+}
+
 // WithCloudInstanceID adds the cloudInstanceID to the pcloud pvminstances networks delete params
 func (o *PcloudPvminstancesNetworksDeleteParams) WithCloudInstanceID(cloudInstanceID string) *PcloudPvminstancesNetworksDeleteParams {
 	o.SetCloudInstanceID(cloudInstanceID)
@@ -155,6 +173,12 @@ func (o *PcloudPvminstancesNetworksDeleteParams) WriteToRequest(r runtime.Client
 		return err
 	}
 	var res []error
+
+	if o.Body != nil {
+		if err := r.SetBodyParam(o.Body); err != nil {
+			return err
+		}
+	}
 
 	// path param cloud_instance_id
 	if err := r.SetPathParam("cloud_instance_id", o.CloudInstanceID); err != nil {

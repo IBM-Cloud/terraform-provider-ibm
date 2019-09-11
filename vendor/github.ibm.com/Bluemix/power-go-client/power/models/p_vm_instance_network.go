@@ -21,8 +21,11 @@ type PVMInstanceNetwork struct {
 	// Link to PVM Instance Network
 	Href string `json:"href,omitempty"`
 
-	// The ip address
+	// (deprecated - replaced by ipAddress)
 	IP string `json:"ip,omitempty"`
+
+	// The ip address of this network interface
+	IPAddress string `json:"ipAddress,omitempty"`
 
 	// The mac address of the network interface
 	MacAddress string `json:"macAddress,omitempty"`

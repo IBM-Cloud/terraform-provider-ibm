@@ -19,6 +19,13 @@ import (
 // swagger:model CreateDataVolume
 type CreateDataVolume struct {
 
+	// Affinity policy for data volume being created; requires affinityVolume to be specified
+	// Enum: [affinity anti-affinity]
+	AffinityPolicy *string `json:"affinityPolicy,omitempty"`
+
+	// Volume (ID or Name)to base volume affinity policy against; required if affinityPolicy provided
+	AffinityVolume *string `json:"affinityVolume,omitempty"`
+
 	// Type of Disk {ssd, standard}
 	// Required: true
 	// Enum: [ssd standard]
@@ -40,6 +47,10 @@ type CreateDataVolume struct {
 func (m *CreateDataVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateAffinityPolicy(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateDiskType(formats); err != nil {
 		res = append(res, err)
 	}
@@ -55,6 +66,49 @@ func (m *CreateDataVolume) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+var createDataVolumeTypeAffinityPolicyPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["affinity","anti-affinity"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		createDataVolumeTypeAffinityPolicyPropEnum = append(createDataVolumeTypeAffinityPolicyPropEnum, v)
+	}
+}
+
+const (
+
+	// CreateDataVolumeAffinityPolicyAffinity captures enum value "affinity"
+	CreateDataVolumeAffinityPolicyAffinity string = "affinity"
+
+	// CreateDataVolumeAffinityPolicyAntiAffinity captures enum value "anti-affinity"
+	CreateDataVolumeAffinityPolicyAntiAffinity string = "anti-affinity"
+)
+
+// prop value enum
+func (m *CreateDataVolume) validateAffinityPolicyEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, createDataVolumeTypeAffinityPolicyPropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *CreateDataVolume) validateAffinityPolicy(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.AffinityPolicy) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAffinityPolicyEnum("affinityPolicy", "body", *m.AffinityPolicy); err != nil {
+		return err
+	}
+
 	return nil
 }
 
