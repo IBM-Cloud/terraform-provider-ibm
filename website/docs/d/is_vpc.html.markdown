@@ -39,3 +39,4 @@ The following attributes are exported:
 * `classic_access` - Indicates whether this VPC is connected to Classic Infrastructure.
 * `resource_group` - The resource group ID where the VPC created.
 * `tags` - Tags associated with the instance.
+* `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.

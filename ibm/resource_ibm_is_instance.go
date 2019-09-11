@@ -330,6 +330,12 @@ func resourceIBMISInstance() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+
+			isVPCResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
 		},
 	}
 }
@@ -640,6 +646,16 @@ func resourceIBMisInstanceRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set(isInstanceBootVolume, bootVolList)
 	}
 	d.Set(isInstanceResourceGroup, instance.ResourceGroup.ID)
+
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return err
+	}
+	if sess.Generation == 1 {
+		d.Set(isVPCResourceControllerURL, controller+"/vpc/compute/vs")
+	} else {
+		d.Set(isVPCResourceControllerURL, controller+"/vpc-ext/compute/vs")
+	}
 
 	return nil
 }

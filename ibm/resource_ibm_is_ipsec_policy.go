@@ -100,6 +100,11 @@ func resourceIBMISIPSecPolicy() *schema.Resource {
 					},
 				},
 			},
+			isVPCResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
 		},
 	}
 }
@@ -168,6 +173,15 @@ func resourceIBMISIPSecPolicyRead(d *schema.ResourceData, meta interface{}) erro
 		}
 	}
 	d.Set(isIPSecVPNConnections, connList)
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return err
+	}
+	if sess.Generation == 1 {
+		d.Set(isVPCResourceControllerURL, controller+"/vpc/network/ipsecpolicies")
+	} else {
+		d.Set(isVPCResourceControllerURL, controller+"/vpc-ext/network/ipsecpolicies")
+	}
 	return nil
 }
 

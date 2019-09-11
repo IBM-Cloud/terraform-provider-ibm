@@ -134,6 +134,8 @@ Nested `boot_volume` blocks have the following structure:
   * `iops` -  Input/Output Operations Per Second for the volume.
   * `profile` - The profile of the volume.
   * `encryption` - The encryption of the boot volume.
+* `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
+
 
 ## Import
 

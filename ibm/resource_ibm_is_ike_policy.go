@@ -107,6 +107,11 @@ func resourceIBMISIKEPolicy() *schema.Resource {
 					},
 				},
 			},
+			isVPCResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
 		},
 	}
 }
@@ -176,6 +181,15 @@ func resourceIBMISIKEPolicyRead(d *schema.ResourceData, meta interface{}) error 
 		}
 	}
 	d.Set(isIKEVPNConnections, connList)
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return err
+	}
+	if sess.Generation == 1 {
+		d.Set(isVPCResourceControllerURL, controller+"/vpc/network/ikepolicies")
+	} else {
+		d.Set(isVPCResourceControllerURL, controller+"/vpc-ext/network/ikepolicies")
+	}
 	return nil
 }
 

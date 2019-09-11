@@ -42,6 +42,12 @@ func dataSourceIBMISVPC() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
+
+			isVPCResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
 		},
 	}
 }
@@ -79,6 +85,16 @@ func dataSourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
 					"Error on get of resource vpc (%s) tags: %s", d.Id(), err)
 			}
 			d.Set(isVPCTags, tags)
+
+			controller, err := getBaseController(meta)
+			if err != nil {
+				return err
+			}
+			if sess.Generation == 1 {
+				d.Set(isVPCResourceControllerURL, controller+"/vpc/network/vpcs")
+			} else {
+				d.Set(isVPCResourceControllerURL, controller+"/vpc-ext/network/vpcs")
+			}
 			return nil
 		}
 	}

@@ -66,6 +66,12 @@ func resourceIBMISVPNGateway() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+
+			isVPCResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
 		},
 	}
 }
@@ -120,6 +126,15 @@ func resourceIBMISVPNGatewayRead(d *schema.ResourceData, meta interface{}) error
 	d.Set(isVPNGatewayResourceGroup, VPNGateway.ResourceGroup.ID)
 	d.Set(isVPNGatewayStatus, VPNGateway.Status)
 	d.Set(isVPNGatewayPublicIPAddress, VPNGateway.PublicIP.Address)
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return err
+	}
+	if sess.Generation == 1 {
+		d.Set(isVPCResourceControllerURL, controller+"/vpc/network/vpngateways")
+	} else {
+		d.Set(isVPCResourceControllerURL, controller+"/vpc-ext/network/vpngateways")
+	}
 	return nil
 }
 

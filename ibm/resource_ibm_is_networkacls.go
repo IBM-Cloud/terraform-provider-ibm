@@ -49,6 +49,11 @@ func resourceIBMISNetworkACL() *schema.Resource {
 				Required: true,
 				ForceNew: false,
 			},
+			isVPCResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
 			isNetworkACLRules: {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -269,6 +274,16 @@ func resourceIBMISNetworkACLRead(d *schema.ResourceData, meta interface{}) error
 	}
 
 	d.Set(isNetworkACLRules, rules)
+
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return err
+	}
+	if sess.Generation == 1 {
+		d.Set(isVPCResourceControllerURL, controller+"/vpc/network/acl")
+	} else {
+		d.Set(isVPCResourceControllerURL, controller+"/vpc-ext/network/acl")
+	}
 
 	return nil
 }
