@@ -1,6 +1,8 @@
 package ibm
 
 import (
+	"fmt"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	st "github.ibm.com/Bluemix/power-go-client/clients/instance"
@@ -320,21 +322,25 @@ func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 	return nil
 }
 
-func resourceIBMPIInstanceDelete(data *schema.ResourceData, meta interface{}) error {
+func resourceIBMPIInstanceDelete(d *schema.ResourceData, meta interface{}) error {
+
+	log.Printf("Calling the Instance Delete method")
 	sess, _ := meta.(ClientSession).IBMPISession()
-	powerinstanceid := data.Get(helpers.PICloudInstanceId).(string)
+	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
-	err := client.Delete(data.Id(), powerinstanceid)
+
+	log.Printf("Deleting the instance with name/id %s and cloud_instance_id %s", d.Id(), powerinstanceid)
+	err := client.Delete(d.Id(), powerinstanceid)
 	if err != nil {
 		return err
 	}
 
-	_, err = isWaitForPIInstanceDeleted(client, data.Id(), data.Timeout(schema.TimeoutDelete), powerinstanceid)
+	_, err = isWaitForPIInstanceDeleted(client, d.Id(), d.Timeout(schema.TimeoutDelete), powerinstanceid)
 	if err != nil {
 		return err
 	}
 
-	data.SetId("")
+	d.SetId("")
 	return nil
 }
 
@@ -352,10 +358,16 @@ func resourceIBMPIInstanceExists(d *schema.ResourceData, meta interface{}) (bool
 
 	instance, err := client.Get(d.Id(), powerinstanceid)
 	if err != nil {
-
-		return false, err
+		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
+			if apiErr.StatusCode() == 404 {
+				return false, nil
+			}
+		}
+		return false, fmt.Errorf("Error communicating with the API: %s", err)
 	}
-	return instance.PvmInstanceID == &id, nil
+
+	truepvmid := *instance.PvmInstanceID
+	return truepvmid == id, nil
 }
 
 func isWaitForPIInstanceDeleted(client *st.IBMPIInstanceClient, id string, timeout time.Duration, powerinstanceid string) (interface{}, error) {

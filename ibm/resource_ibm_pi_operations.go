@@ -30,11 +30,11 @@ SHUTOFF--> ACTIVE
 
 func resourceIBMPIIOperations() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMPIOperationsCreate,
-		Read:     resourceIBMPIOperationsRead,
-		Update:   resourceIBMPIOperationsUpdate,
-		Delete:   resourceIBMPIOperationsDelete,
-		Exists:   resourceIBMPIOperationsExists,
+		Create: resourceIBMPIOperationsCreate,
+		Read:   resourceIBMPIOperationsRead,
+		Update: resourceIBMPIOperationsUpdate,
+		Delete: resourceIBMPIOperationsDelete,
+		//Exists:   resourceIBMPIOperationsExists,
 		Importer: &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{

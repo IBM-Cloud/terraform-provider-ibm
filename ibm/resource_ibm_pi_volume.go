@@ -1,6 +1,8 @@
 package ibm
 
 import (
+	"fmt"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	_ "github.com/IBM-Cloud/bluemix-go/bmxerror"
 	_ "github.com/go-openapi/runtime"
 	"github.com/hashicorp/terraform/helper/resource"
@@ -172,15 +174,25 @@ func resourceIBMPIVolumeExists(d *schema.ResourceData, meta interface{}) (bool, 
 		return false, err
 	}
 	id := d.Id()
+
+	log.Printf("the value of id is %s", id)
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	client := st.NewIBMPIVolumeClient(sess, powerinstanceid)
 
-	vol, err := client.Get(d.Id(), powerinstanceid)
+	vol, err := client.Get(id, powerinstanceid)
 	if err != nil {
-
-		return false, err
+		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
+			if apiErr.StatusCode() == 404 {
+				return false, nil
+			}
+		}
+		return false, fmt.Errorf("Error communicating with the API: %s", err)
 	}
-	return vol.VolumeID == &id, nil
+
+	log.Printf("Calling the existing function.. %s", &vol.VolumeID)
+
+	volumeid := *vol.VolumeID
+	return volumeid == id, nil
 }
 
 /*

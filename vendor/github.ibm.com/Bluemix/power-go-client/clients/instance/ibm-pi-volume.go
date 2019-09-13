@@ -23,7 +23,8 @@ func NewIBMPIVolumeClient(sess *ibmpisession.IBMPISession, powerinstanceid strin
 //Get information about a single volume only
 func (f *IBMPIVolumeClient) Get(id, powerinstanceid string) (*models.Volume, error) {
 
-	log.Printf("The input volume name is %s and trying to attach it to the cloudinstance id %s", id, powerinstanceid)
+	log.Printf("Calling the VolumeGet Method..")
+	log.Printf("The input volume name is %s and  to the cloudinstance id %s", id, powerinstanceid)
 
 	params := p_cloud_volumes.NewPcloudCloudinstancesVolumesGetParams().WithCloudInstanceID(powerinstanceid).WithVolumeID(id)
 	resp, err := f.session.Power.PCloudVolumes.PcloudCloudinstancesVolumesGet(params, ibmpisession.NewAuth(f.session, powerinstanceid))

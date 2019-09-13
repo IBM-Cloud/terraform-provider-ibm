@@ -7,7 +7,7 @@ package p_cloud_volumes
 
 import (
 	"github.com/go-openapi/runtime"
-
+	"log"
 	strfmt "github.com/go-openapi/strfmt"
 )
 
@@ -32,7 +32,7 @@ func (a *Client) PcloudCloudinstancesVolumesDelete(params *PcloudCloudinstancesV
 	if params == nil {
 		params = NewPcloudCloudinstancesVolumesDeleteParams()
 	}
-
+	log.Printf("Now in the volume delete method with the follow params %+v",params)
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "pcloud.cloudinstances.volumes.delete",
 		Method:             "DELETE",

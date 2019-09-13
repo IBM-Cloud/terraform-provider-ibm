@@ -3,13 +3,15 @@
 
 resource "ibm_pi_volume" "powervolumes"{
 
-  size = "${var.volumesize}"
-  name = "${var.volumename}"
-  type = "${var.volumetype}"
-  shareable="${var.volumeshareable}"
-  powerinstanceid="${var.powerinstanceid}"
+
+  pi_volume_size = "${var.volumesize}"
+  pi_volume_name = "${var.volumename}"
+  pi_volume_type = "${var.volumetype}"
+  pi_volume_shareable="${var.volumeshareable}"
+  pi_cloud_instance_id="${var.powerinstanceid}"
 
 }
+
 
 output "id"
 {
