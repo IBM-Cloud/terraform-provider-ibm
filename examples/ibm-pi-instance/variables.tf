@@ -1,3 +1,4 @@
+## Added the variable for cloud_init data to be passed in
 variable "servername"
 {
   description="Name of the server"
@@ -84,4 +85,10 @@ variable "replicants"
 {
 description="Number of replicants"
 default=1
+}
+
+variable "cloud_init_data"
+{
+description="Data to be passed to the instance via cloud init - Must be base64 encoded string"
+default="I2Nsb3VkLWNvbmZpZwoKcnVuY21kOgogLSBbIGxzLCAtbCwgLyBdCiAtIFsgc2gsIC14YywgJ2VjaG8gJChkYXRlKSAiOiBoZWxsbyB3b3JsZCEiJyBdCiAtIFsgc2gsIC1jLCAnZWNobyAiPT09PT09PT09aGVsbG8gd29ybGQ9PT09PT09PT0iJyBdCgpmaW5hbF9tZXNzYWdlOiAiVGhlIHN5c3RlbSBpcyBmaW5hbGx5IHVwIgoKb3V0cHV0IDogeyBhbGwgOiAnfCB0ZWUgLWEgL3Zhci9sb2cvY2xvdWQtaW5pdC1vdXRwdXQubG9nJyB9Cg=="
 }

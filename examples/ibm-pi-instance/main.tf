@@ -1,5 +1,6 @@
 ## Template to be used by the IBM Provider for Power
 ##
+## Added the cloud_init_data to be passed in 
 
 resource "ibm_pi_volume" "powervolumes"{
 
@@ -52,6 +53,7 @@ resource "ibm_pi_instance" "pvminstance"
 	pi_replication_policy="${var.replicationpolicy}"
 	pi_replicants="${var.replicants}"
         pi_cloud_instance_id="${var.powerinstanceid}"
+	pi_user_data="${var.cloud_init_data}"
 }
 
 output "status"

@@ -24,6 +24,7 @@ const (
 	PIInstanceReplicants        = "pi_replicants"
 	PIInstanceReplicationPolicy = "pi_replication_policy"
 	PIInstanceProgress          = "pi_progress"
+	PIInstanceUserData          = "pi_user_data"
 
 	// IBM PI Volume
 	PIVolumeName      = "pi_volume_name"

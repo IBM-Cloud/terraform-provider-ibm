@@ -1,0 +1,47 @@
+{
+    "version": 3,
+    "terraform_version": "0.11.8",
+    "serial": 1,
+    "lineage": "ce269d3f-82f7-fcd6-4eeb-2eb00f4bb001",
+    "modules": [
+        {
+            "path": [
+                "root"
+            ],
+            "outputs": {
+                "id": {
+                    "sensitive": false,
+                    "type": "string",
+                    "value": "451fd39d-1baa-4482-841c-1c159a8f1845"
+                }
+            },
+            "resources": {
+                "ibm_pi_volume.powervolumes": {
+                    "type": "ibm_pi_volume",
+                    "depends_on": [],
+                    "primary": {
+                        "id": "451fd39d-1baa-4482-841c-1c159a8f1845",
+                        "attributes": {
+                            "id": "451fd39d-1baa-4482-841c-1c159a8f1845",
+                            "pi_cloud_instance_id": "d16705bd-7f1a-48c9-9e0e-1c17b71e7331",
+                            "pi_volume_name": "vgsuraj1",
+                            "pi_volume_shareable": "true",
+                            "pi_volume_size": "10",
+                            "pi_volume_type": "ssd"
+                        },
+                        "meta": {
+                            "e2bfb730-ecaa-11e6-8f88-34363bc7c4c0": {
+                                "create": 3600000000000,
+                                "delete": 3600000000000
+                            }
+                        },
+                        "tainted": false
+                    },
+                    "deposed": [],
+                    "provider": "provider.ibm"
+                }
+            },
+            "depends_on": []
+        }
+    ]
+}

@@ -31,8 +31,9 @@ func resourceIBMPIInstance() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			helpers.PICloudInstanceId: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "This is the Power Instance id that is assigned to the account",
 			},
 			helpers.PIInstanceDiskSize: {
 				Type:     schema.TypeInt,
@@ -51,10 +52,11 @@ func resourceIBMPIInstance() *schema.Resource {
 				Computed: true,
 			},
 			helpers.PIInstanceNetworkIds: {
-				Type:     schema.TypeSet,
-				Required: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Required:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "Set of Networks that have been configured for the account",
 			},
 
 			helpers.PIInstanceVolumeIds: {
@@ -62,6 +64,12 @@ func resourceIBMPIInstance() *schema.Resource {
 				Required: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
+			},
+
+			helpers.PIInstanceUserData: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Base64 encoded data to be passed in for invoking a cloud init script",
 			},
 
 			"addresses": {
@@ -184,8 +192,14 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	}
 
 	imageid := d.Get(helpers.PIInstanceImageName).(string)
-
 	processortype := d.Get(helpers.PIInstanceProcType).(string)
+
+	//var userdata = ""
+	user_data := d.Get(helpers.PIInstanceUserData).(string)
+
+	if d.Get(helpers.PIInstanceUserData) == "" {
+		user_data = ""
+	}
 
 	body := &models.PVMInstanceCreate{
 
@@ -196,6 +210,7 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		ImageID:                 ptrToString(imageid),
 		ProcType:                ptrToString(processortype),
 		Replicants:              replicants,
+		UserData:                user_data,
 		ReplicantAffinityPolicy: ptrToString(replicationpolicy),
 	}
 

@@ -1,6 +1,8 @@
 package ibm
 
 import (
+	"fmt"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform/helper/schema"
 	st "github.ibm.com/Bluemix/power-go-client/clients/instance"
@@ -11,11 +13,11 @@ import (
 
 func resourceIBMPIKey() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceIBMPIKeyCreate,
-		Read:   resourceIBMPIKeyRead,
-		Update: resourceIBMPIKeyUpdate,
-		Delete: resourceIBMPIKeyDelete,
-		//Exists:   resourceIBMPIKeyExists,
+		Create:   resourceIBMPIKeyCreate,
+		Read:     resourceIBMPIKeyRead,
+		Update:   resourceIBMPIKeyUpdate,
+		Delete:   resourceIBMPIKeyDelete,
+		Exists:   resourceIBMPIKeyExists,
 		Importer: &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
@@ -120,14 +122,19 @@ func resourceIBMPIKeyExists(d *schema.ResourceData, meta interface{}) (bool, err
 	if err != nil {
 		return false, err
 	}
-	id := d.Id()
+	//id := d.Id()
+	name := d.Get("name")
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	client := st.NewIBMPIKeyClient(sess, powerinstanceid)
 
-	key, err := client.Get(d.Id(), powerinstanceid)
+	key, err := client.Get(d.Get("name").(string), powerinstanceid)
 	if err != nil {
-
-		return false, err
+		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
+			if apiErr.StatusCode() == 404 {
+				return false, nil
+			}
+		}
+		return false, fmt.Errorf("Error communicating with the API: %s", err)
 	}
-	return key.Name == &id, nil
+	return key.Name == name, nil
 }
