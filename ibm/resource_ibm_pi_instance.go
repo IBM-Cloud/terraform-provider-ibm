@@ -1,6 +1,7 @@
 package ibm
 
 import (
+	"encoding/base64"
 	"fmt"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform/helper/resource"
@@ -199,6 +200,11 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 
 	if d.Get(helpers.PIInstanceUserData) == "" {
 		user_data = ""
+	}
+	err = checkBase64(user_data)
+	if err != nil {
+		log.Printf("Data is not base64 encoded")
+		return err
 	}
 
 	body := &models.PVMInstanceCreate{
@@ -460,4 +466,16 @@ func checkPIActive(vminstance *models.PVMInstance) bool {
 
 	}
 	return activeStatus
+}
+
+func checkBase64(input string) error {
+	fmt.Println("Calling the checkBase64")
+	data, err := base64.StdEncoding.DecodeString(input)
+	if err != nil {
+		fmt.Println("error:", err)
+		return err
+	}
+	fmt.Printf("Data is correctly Encoded to Base64", data)
+	return err
+
 }

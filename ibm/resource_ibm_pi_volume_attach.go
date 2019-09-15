@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"errors"
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	st "github.ibm.com/Bluemix/power-go-client/clients/instance"
 	"github.ibm.com/Bluemix/power-go-client/helpers"
@@ -102,7 +103,7 @@ func resourceIBMPIVolumeAttachCreate(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 
-	_, err = isWaitForIBMPIVolumeAvailable(client, d.Id(), powerinstanceid, d.Timeout(schema.TimeoutCreate))
+	_, err = isWaitForIBMPIVolumeAttachAvailable(client, d.Id(), powerinstanceid, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
 	}
@@ -146,7 +147,7 @@ func resourceIBMPIVolumeAttachUpdate(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 
-	_, err = isWaitForIBMPIVolumeAvailable(client, *volrequest.VolumeID, powerinstanceid, d.Timeout(schema.TimeoutCreate))
+	_, err = isWaitForIBMPIVolumeAttachAvailable(client, *volrequest.VolumeID, powerinstanceid, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
 	}
@@ -158,9 +159,12 @@ func resourceIBMPIVolumeAttachDelete(d *schema.ResourceData, meta interface{}) e
 
 	sess, _ := meta.(ClientSession).IBMPISession()
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	name := d.Get(helpers.PIVolumeAttachName).(string)
+	servername := d.Get(helpers.PIInstanceName).(string)
 	client := st.NewIBMPIVolumeClient(sess, powerinstanceid)
 
-	err := client.Delete(d.Id(), powerinstanceid)
+	log.Printf("the id of the volume to detach is%s ", d.Id())
+	_, err := client.Detach(servername, name, powerinstanceid)
 	if err != nil {
 		return err
 	}
@@ -168,4 +172,34 @@ func resourceIBMPIVolumeAttachDelete(d *schema.ResourceData, meta interface{}) e
 	// wait for power volume states to be back as available. if it's attached it will be in-use
 	d.SetId("")
 	return nil
+}
+
+func isWaitForIBMPIVolumeAttachAvailable(client *st.IBMPIVolumeClient, id, powerinstanceid string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for Volume (%s) to be available for attachment", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", helpers.PIVolumeProvisioning},
+		Target:     []string{helpers.PIVolumeAllowableAttachStatus},
+		Refresh:    isIBMPIVolumeAttachRefreshFunc(client, id, powerinstanceid),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isIBMPIVolumeAttachRefreshFunc(client *st.IBMPIVolumeClient, id, powerinstanceid string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		vol, err := client.Get(id, powerinstanceid)
+		if err != nil {
+			return nil, "", err
+		}
+
+		if vol.State == "in-use" {
+			return vol, helpers.PIVolumeAllowableAttachStatus, nil
+		}
+
+		return vol, helpers.PIVolumeProvisioning, nil
+	}
 }

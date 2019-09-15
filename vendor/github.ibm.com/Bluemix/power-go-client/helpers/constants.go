@@ -64,7 +64,7 @@ const (
 	PIInstanceOperationServerName = "pi_instance_name"
 
 	// IBM PI Volume Attach
-	PIVolumeAttachName                = "name"
+	PIVolumeAttachName                = "pi_volume_attach_name"
 	PIVolumeAllowableAttachStatus     = "in-use"
 	PIVolumeAttachStatus              = "status"
 	PowerVolumeAttachDeleting         = "deleting"
