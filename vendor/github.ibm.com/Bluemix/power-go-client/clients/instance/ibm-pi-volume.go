@@ -120,3 +120,17 @@ func (f *IBMPIVolumeClient) Detach(id, volumename string, powerinstanceid string
 	return resp.Payload, nil
 
 }
+
+// All volumes part of an instance
+
+func (f *IBMPIVolumeClient) GetAll(id, cloud_instance_id string) (*models.Volumes, error) {
+
+	log.Printf("Calling the Power Volumes GetAll Method")
+	params := p_cloud_volumes.NewPcloudPvminstancesVolumesGetallParamsWithTimeout(f.session.Timeout).WithPvmInstanceID(id).WithCloudInstanceID(cloud_instance_id)
+	resp, err := f.session.Power.PCloudVolumes.PcloudPvminstancesVolumesGetall(params, ibmpisession.NewAuth(f.session, cloud_instance_id))
+	if err != nil {
+		return nil, errors.ToError(err)
+	}
+	return resp.Payload, nil
+
+}

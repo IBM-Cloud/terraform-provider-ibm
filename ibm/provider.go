@@ -206,12 +206,13 @@ func Provider() terraform.ResourceProvider {
 
 			// Added for Power Resources
 
-			"ibm_pi_key":      dataSourceIBMPIKey(),
-			"ibm_pi_image":    dataSourceIBMPIImage(),
-			"ibm_pi_instance": dataSourceIBMPIInstance(),
-			"ibm_pi_tenant":   dataSourceIBMPITenant(),
-			"ibm_pi_network":  dataSourceIBMPINetwork(),
-			"ibm_pi_volume":   dataSourceIBMPIVolume(),
+			"ibm_pi_key":              dataSourceIBMPIKey(),
+			"ibm_pi_image":            dataSourceIBMPIImage(),
+			"ibm_pi_instance":         dataSourceIBMPIInstance(),
+			"ibm_pi_tenant":           dataSourceIBMPITenant(),
+			"ibm_pi_network":          dataSourceIBMPINetwork(),
+			"ibm_pi_volume":           dataSourceIBMPIVolume(),
+			"ibm_pi_instance_volumes": dataSourceIBMPIVolumes(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{

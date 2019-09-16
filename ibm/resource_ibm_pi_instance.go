@@ -424,8 +424,8 @@ func isWaitForPIInstanceAvailable(client *st.IBMPIInstanceClient, id string, tim
 	log.Printf("Waiting for PIInstance (%s) to be available and sleeping ", id)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"PENDING", helpers.PIInstanceHealthWarning},
-		Target:     []string{"OK", helpers.PIInstanceHealthOk},
+		Pending:    []string{"PENDING", "BUILD", helpers.PIInstanceHealthWarning},
+		Target:     []string{"OK", "ACTIVE", helpers.PIInstanceHealthOk},
 		Refresh:    isPIInstanceRefreshFunc(client, id, powerinstanceid),
 		Delay:      3 * time.Minute,
 		MinTimeout: 30 * time.Second,
@@ -443,14 +443,17 @@ func isPIInstanceRefreshFunc(client *st.IBMPIInstanceClient, id, powerinstanceid
 			return nil, "", err
 		}
 
-		if pvm.Health.Status == helpers.PIInstanceHealthOk {
+		//if pvm.Health.Status == helpers.PIInstanceHealthOk {
+		if *pvm.Status == helpers.PIInstanceAvailable {
 			log.Printf("The health status is now ok")
 			//if *pvm.Status == "active" ; if *pvm.Addresses[0].IP == nil  {
-			return pvm, helpers.PIInstanceHealthOk, nil
+			//return pvm, helpers.PIInstanceHealthOk, nil
+			return pvm, helpers.PIInstanceAvailable, nil
 			//}
 		}
 
-		return pvm, helpers.PIInstanceHealthWarning, nil
+		//return pvm, helpers.PIInstanceHealthWarning, nil
+		return pvm, helpers.PIInstanceBuilding, nil
 	}
 }
 
