@@ -262,10 +262,39 @@ func dataSourceIBMContainerCluster() *schema.Resource {
 				Description: "CRN of resource instance",
 			},
 
-			"resource_controller_url": {
+			"server_url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this cluster",
+			},
+
+			ResourceName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the resource",
+			},
+
+			ResourceCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+
+			ResourceStatus: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the resource",
+			},
+
+			ResourceGroupName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The resource group name in which resource is provisioned",
 			},
 		},
 	}
@@ -340,12 +369,25 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	d.Set("public_service_endpoint_url", clusterFields.PublicServiceEndpointURL)
 	d.Set("private_service_endpoint_url", clusterFields.PrivateServiceEndpointURL)
 	d.Set("crn", clusterFields.CRN)
+	d.Set("server_url", clusterFields.ServerURL)
 
 	controller, err := getBaseController(meta)
 	if err != nil {
 		return err
 	}
-	d.Set("resource_controller_url", controller+"/kubernetes/clusters")
+	d.Set(ResourceControllerURL, controller+"/kubernetes/clusters")
+	d.Set(ResourceName, clusterFields.Name)
+	d.Set(ResourceCRN, clusterFields.CRN)
+	d.Set(ResourceStatus, clusterFields.State)
+	rsMangClient, err := meta.(ClientSession).ResourceManagementAPI()
+	if err != nil {
+		return err
+	}
+	grp, err := rsMangClient.ResourceGroup().Get(clusterFields.ResourceGroupID)
+	if err != nil {
+		return err
+	}
+	d.Set(ResourceGroupName, grp.Name)
 
 	return nil
 }
