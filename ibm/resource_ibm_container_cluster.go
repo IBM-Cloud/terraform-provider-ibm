@@ -455,10 +455,34 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Description: "CRN of resource instance",
 			},
 
-			"resource_controller_url": {
+			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this cluster",
+			},
+
+			ResourceName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the resource",
+			},
+
+			ResourceCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+
+			ResourceStatus: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the resource",
+			},
+
+			ResourceGroupName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The resource group name in which resource is provisioned",
 			},
 		},
 	}
@@ -658,7 +682,19 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return err
 	}
-	d.Set("resource_controller_url", controller+"/kubernetes/clusters")
+	d.Set(ResourceControllerURL, controller+"/kubernetes/clusters")
+	d.Set(ResourceName, cls.Name)
+	d.Set(ResourceCRN, cls.CRN)
+	d.Set(ResourceStatus, cls.State)
+	rsMangClient, err := meta.(ClientSession).ResourceManagementAPI()
+	if err != nil {
+		return err
+	}
+	grp, err := rsMangClient.ResourceGroup().Get(cls.ResourceGroupID)
+	if err != nil {
+		return err
+	}
+	d.Set(ResourceGroupName, grp.Name)
 	return nil
 }
 

@@ -71,7 +71,7 @@ func dataSourceIBMContainerClusterWorker() *schema.Resource {
 				Optional:    true,
 				Description: "ID of the resource group.",
 			},
-			"resource_controller_url": {
+			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this cluster",
@@ -109,7 +109,7 @@ func dataSourceIBMContainerClusterWorkerRead(d *schema.ResourceData, meta interf
 	if err != nil {
 		return err
 	}
-	d.Set("resource_controller_url", controller+"/kubernetes/clusters")
+	d.Set(ResourceControllerURL, controller+"/kubernetes/clusters")
 
 	return nil
 }

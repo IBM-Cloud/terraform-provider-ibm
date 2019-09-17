@@ -123,7 +123,7 @@ func resourceIBMContainerWorkerPool() *schema.Resource {
 				ForceNew:         true,
 				DiffSuppressFunc: applyOnce,
 			},
-			"resource_controller_url": {
+			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this cluster",
@@ -236,7 +236,7 @@ func resourceIBMContainerWorkerPoolRead(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return err
 	}
-	d.Set("resource_controller_url", controller+"/kubernetes/clusters")
+	d.Set(ResourceControllerURL, controller+"/kubernetes/clusters")
 	return nil
 }
 
