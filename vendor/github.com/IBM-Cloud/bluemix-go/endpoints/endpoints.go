@@ -85,7 +85,6 @@ var regionToEndpoint = map[string]map[string]string{
 		"eu-gb":    "https://mccp.eu-gb.cf.cloud.ibm.com",
 		"au-syd":   "https://mccp.au-syd.cf.cloud.ibm.com",
 		"eu-de":    "https://mccp.eu-de.cf.cloud.ibm.com",
-		"jp-tok":   "https://mccp.jp-tok.cf.cloud.ibm.com",
 	},
 	"resource-manager": {
 		"global": "https://resource-controller.cloud.ibm.com",
@@ -97,12 +96,11 @@ var regionToEndpoint = map[string]map[string]string{
 		"global": "https://resource-controller.cloud.ibm.com",
 	},
 	"uaa": {
-		"us-south": "https://login.ng.bluemix.net/UAALoginServerWAR",
-		"us-east":  "https://login.us-east.bluemix.net/UAALoginServerWAR",
-		"eu-gb":    "https://login.eu-gb.bluemix.net/UAALoginServerWAR",
-		"au-syd":   "https://login.au-syd.bluemix.net/UAALoginServerWAR",
-		"eu-de":    "https://login.eu-de.bluemix.net/UAALoginServerWAR",
-		"jp-tok":   "https://login.jp-tok.bluemix.net/UAALoginServerWAR",
+		"us-south": "https://iam.cloud.ibm.com/cloudfoundry/login/us-south",
+		"us-east":  "https://iam.cloud.ibm.com/cloudfoundry/login/us-east",
+		"eu-gb":    "https://iam.cloud.ibm.com/cloudfoundry/login/eu-gb",
+		"au-syd":   "https://iam.cloud.ibm.com/cloudfoundry/login/au-syd",
+		"eu-de":    "https://iam.cloud.ibm.com/cloudfoundry/login/eu-de",
 	},
 	"cse": {
 		"global": "https://api.serviceendpoint.cloud.ibm.com",
