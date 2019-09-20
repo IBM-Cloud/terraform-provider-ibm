@@ -1,6 +1,6 @@
 # terraform_cluster_job
 This example shows how to run a shell script in IBM Openshift cluster job using terraform. 
-To run, configure your IBM Cloud provider 
+To run, configure your IBM Cloud provider and paste your api-key in token.sh file
 
 Running the example
 
