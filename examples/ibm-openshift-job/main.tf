@@ -7,13 +7,13 @@ data "external" "iks_token" {
   program = ["sh", "${path.module}/token.sh"]
 
   query = {
-    server_url = "https://c100-e.us-east.containers.cloud.ibm.com:30129"
+    server_url = "${var.server_url}"
   }
 }
 
 
 provider "kubernetes" {
-  host      = "https://c100-e.us-east.containers.cloud.ibm.com:30129"
+  host      = "${var.server_url}"
   token    = "${data.external.iks_token.result.token}"
   config_path = "${data.ibm_container_cluster_config.test_config.config_file_path}"
 }
