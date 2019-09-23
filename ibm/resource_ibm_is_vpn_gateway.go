@@ -67,10 +67,34 @@ func resourceIBMISVPNGateway() *schema.Resource {
 				Computed: true,
 			},
 
-			isVPCResourceControllerURL: {
+			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
+
+			ResourceName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the resource",
+			},
+
+			ResourceCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+
+			ResourceStatus: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the resource",
+			},
+
+			ResourceGroupName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The resource group name in which resource is provisioned",
 			},
 		},
 	}
@@ -131,10 +155,22 @@ func resourceIBMISVPNGatewayRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 	if sess.Generation == 1 {
-		d.Set(isVPCResourceControllerURL, controller+"/vpc/network/vpngateways")
+		d.Set(ResourceControllerURL, controller+"/vpc/network/vpngateways")
 	} else {
-		d.Set(isVPCResourceControllerURL, controller+"/vpc-ext/network/vpngateways")
+		d.Set(ResourceControllerURL, controller+"/vpc-ext/network/vpngateways")
 	}
+	d.Set(ResourceName, VPNGateway.Name)
+	d.Set(ResourceCRN, VPNGateway.Crn)
+	d.Set(ResourceStatus, VPNGateway.Status)
+	rsMangClient, err := meta.(ClientSession).ResourceManagementAPI()
+	if err != nil {
+		return err
+	}
+	grp, err := rsMangClient.ResourceGroup().Get(VPNGateway.ResourceGroup.ID.String())
+	if err != nil {
+		return err
+	}
+	d.Set(ResourceGroupName, grp.Name)
 	return nil
 }
 

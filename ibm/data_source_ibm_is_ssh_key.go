@@ -30,10 +30,27 @@ func dataSourceIBMISSSHKey() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			isVPCResourceControllerURL: {
+			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
+			ResourceName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the resource",
+			},
+
+			ResourceCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+
+			ResourceGroupName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The resource group name in which resource is provisioned",
 			},
 		},
 	}
@@ -65,11 +82,13 @@ func dataSourceIBMISSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 				return err
 			}
 			if sess.Generation == 1 {
-				d.Set(isVPCResourceControllerURL, controller+"/vpc/compute/sshKeys")
+				d.Set(ResourceControllerURL, controller+"/vpc/compute/sshKeys")
 			} else {
-				d.Set(isVPCResourceControllerURL, controller+"/vpc-ext/compute/sshKeys")
+				d.Set(ResourceControllerURL, controller+"/vpc-ext/compute/sshKeys")
 			}
-
+			d.Set(ResourceName, key.Name)
+			d.Set(ResourceCRN, key.Crn)
+			d.Set(ResourceGroupName, key.ResourceGroup.Name)
 			return nil
 		}
 	}

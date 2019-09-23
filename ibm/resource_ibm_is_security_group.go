@@ -58,10 +58,28 @@ func resourceIBMISSecurityGroup() *schema.Resource {
 				ForceNew: true,
 			},
 
-			isVPCResourceControllerURL: {
+			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
+
+			ResourceName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the resource",
+			},
+
+			ResourceCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+
+			ResourceGroupName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The resource group name in which resource is provisioned",
 			},
 		},
 	}
@@ -140,11 +158,13 @@ func resourceIBMISSecurityGroupRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 	if sess.Generation == 1 {
-		d.Set(isVPCResourceControllerURL, controller+"/vpc/network/securityGroups")
+		d.Set(ResourceControllerURL, controller+"/vpc/network/securityGroups")
 	} else {
-		d.Set(isVPCResourceControllerURL, controller+"/vpc-ext/network/securityGroups")
+		d.Set(ResourceControllerURL, controller+"/vpc-ext/network/securityGroups")
 	}
-
+	d.Set(ResourceName, group.Name)
+	d.Set(ResourceCRN, group.Crn)
+	d.Set(ResourceGroupName, group.ResourceGroup.Name)
 	return nil
 }
 

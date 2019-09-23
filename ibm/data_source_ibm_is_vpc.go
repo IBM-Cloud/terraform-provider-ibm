@@ -43,10 +43,33 @@ func dataSourceIBMISVPC() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 
-			isVPCResourceControllerURL: {
+			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
+			ResourceName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the resource",
+			},
+
+			ResourceCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+
+			ResourceStatus: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the resource",
+			},
+
+			ResourceGroupName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The resource group name in which resource is provisioned",
 			},
 		},
 	}
@@ -91,10 +114,14 @@ func dataSourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
 				return err
 			}
 			if sess.Generation == 1 {
-				d.Set(isVPCResourceControllerURL, controller+"/vpc/network/vpcs")
+				d.Set(ResourceControllerURL, controller+"/vpc/network/vpcs")
 			} else {
-				d.Set(isVPCResourceControllerURL, controller+"/vpc-ext/network/vpcs")
+				d.Set(ResourceControllerURL, controller+"/vpc-ext/network/vpcs")
 			}
+			d.Set(ResourceName, vpc.Name)
+			d.Set(ResourceCRN, vpc.Crn)
+			d.Set(ResourceStatus, vpc.Status)
+			d.Set(ResourceGroupName, vpc.ResourceGroup.Name)
 			return nil
 		}
 	}

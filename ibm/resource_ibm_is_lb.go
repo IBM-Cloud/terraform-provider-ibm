@@ -100,10 +100,22 @@ func resourceIBMISLB() *schema.Resource {
 				Computed: true,
 			},
 
-			isVPCResourceControllerURL: {
+			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
+
+			ResourceName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the resource",
+			},
+
+			ResourceGroupName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The resource group name in which resource is provisioned",
 			},
 		},
 	}
@@ -190,11 +202,12 @@ func resourceIBMISLBRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	if sess.Generation == 1 {
-		d.Set(isVPCResourceControllerURL, controller+"/vpc/network/loadBalancers")
+		d.Set(ResourceControllerURL, controller+"/vpc/network/loadBalancers")
 	} else {
-		d.Set(isVPCResourceControllerURL, controller+"/vpc-ext/network/loadBalancers")
+		d.Set(ResourceControllerURL, controller+"/vpc-ext/network/loadBalancers")
 	}
-
+	d.Set(ResourceName, lb.Name)
+	d.Set(ResourceGroupName, lb.ResourceGroup.Name)
 	return nil
 }
 
