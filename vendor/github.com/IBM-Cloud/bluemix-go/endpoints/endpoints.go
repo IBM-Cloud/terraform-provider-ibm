@@ -98,9 +98,9 @@ var regionToEndpoint = map[string]map[string]string{
 	"uaa": {
 		"us-south": "https://iam.cloud.ibm.com/cloudfoundry/login/us-south",
 		"us-east":  "https://iam.cloud.ibm.com/cloudfoundry/login/us-east",
-		"eu-gb":    "https://iam.cloud.ibm.com/cloudfoundry/login/eu-gb",
-		"au-syd":   "https://iam.cloud.ibm.com/cloudfoundry/login/au-syd",
-		"eu-de":    "https://iam.cloud.ibm.com/cloudfoundry/login/eu-de",
+		"eu-gb":    "https://iam.cloud.ibm.com/cloudfoundry/login/uk-south",
+		"au-syd":   "https://iam.cloud.ibm.com/cloudfoundry/login/ap-south",
+		"eu-de":    "https://iam.cloud.ibm.com/cloudfoundry/login/eu-central",
 	},
 	"cse": {
 		"global": "https://api.serviceendpoint.cloud.ibm.com",
