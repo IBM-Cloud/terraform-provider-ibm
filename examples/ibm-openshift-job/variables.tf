@@ -7,3 +7,7 @@ variable "cluster_name_id" {
 variable "secret_name" {
   default = "example"
 }
+
+variable "server_url" {
+  description = "your server url here"
+}
