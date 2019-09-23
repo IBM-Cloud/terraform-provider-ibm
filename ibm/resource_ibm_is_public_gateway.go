@@ -82,10 +82,34 @@ func resourceIBMISPublicGateway() *schema.Resource {
 				Required: true,
 			},
 
-			isVPCResourceControllerURL: {
+			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
+
+			ResourceName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the resource",
+			},
+
+			ResourceCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+
+			ResourceStatus: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the resource",
+			},
+
+			ResourceGroupName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The resource group name in which resource is provisioned",
 			},
 		},
 	}
@@ -193,11 +217,14 @@ func resourceIBMISPublicGatewayRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 	if sess.Generation == 1 {
-		d.Set(isVPCResourceControllerURL, controller+"/vpc/network/publicGateways")
+		d.Set(ResourceControllerURL, controller+"/vpc/network/publicGateways")
 	} else {
-		d.Set(isVPCResourceControllerURL, controller+"/vpc-ext/network/publicGateways")
+		d.Set(ResourceControllerURL, controller+"/vpc-ext/network/publicGateways")
 	}
-
+	d.Set(ResourceName, publicgw.Name)
+	d.Set(ResourceCRN, publicgw.Crn)
+	d.Set(ResourceStatus, publicgw.Status)
+	d.Set(ResourceGroupName, publicgw.ResourceGroup.Name)
 	return nil
 }
 

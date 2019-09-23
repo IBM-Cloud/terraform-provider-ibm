@@ -107,10 +107,21 @@ func resourceIBMISIKEPolicy() *schema.Resource {
 					},
 				},
 			},
-			isVPCResourceControllerURL: {
+			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
+			ResourceName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the resource",
+			},
+
+			ResourceGroupName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The resource group name in which resource is provisioned",
 			},
 		},
 	}
@@ -186,10 +197,20 @@ func resourceIBMISIKEPolicyRead(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 	if sess.Generation == 1 {
-		d.Set(isVPCResourceControllerURL, controller+"/vpc/network/ikepolicies")
+		d.Set(ResourceControllerURL, controller+"/vpc/network/ikepolicies")
 	} else {
-		d.Set(isVPCResourceControllerURL, controller+"/vpc-ext/network/ikepolicies")
+		d.Set(ResourceControllerURL, controller+"/vpc-ext/network/ikepolicies")
 	}
+	d.Set(ResourceName, ike.Name)
+	rsMangClient, err := meta.(ClientSession).ResourceManagementAPI()
+	if err != nil {
+		return err
+	}
+	grp, err := rsMangClient.ResourceGroup().Get(ike.ResourceGroup.ID.String())
+	if err != nil {
+		return err
+	}
+	d.Set(ResourceGroupName, grp.Name)
 	return nil
 }
 

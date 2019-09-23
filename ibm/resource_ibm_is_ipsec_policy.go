@@ -100,10 +100,28 @@ func resourceIBMISIPSecPolicy() *schema.Resource {
 					},
 				},
 			},
-			isVPCResourceControllerURL: {
+			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
+
+			ResourceName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the resource",
+			},
+
+			ResourceCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+
+			ResourceGroupName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The resource group name in which resource is provisioned",
 			},
 		},
 	}
@@ -178,10 +196,21 @@ func resourceIBMISIPSecPolicyRead(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 	if sess.Generation == 1 {
-		d.Set(isVPCResourceControllerURL, controller+"/vpc/network/ipsecpolicies")
+		d.Set(ResourceControllerURL, controller+"/vpc/network/ipsecpolicies")
 	} else {
-		d.Set(isVPCResourceControllerURL, controller+"/vpc-ext/network/ipsecpolicies")
+		d.Set(ResourceControllerURL, controller+"/vpc-ext/network/ipsecpolicies")
 	}
+	d.Set(ResourceName, ipSec.Name)
+	d.Set(ResourceCRN, ipSec.Crn)
+	rsMangClient, err := meta.(ClientSession).ResourceManagementAPI()
+	if err != nil {
+		return err
+	}
+	grp, err := rsMangClient.ResourceGroup().Get(ipSec.ResourceGroup.ID.String())
+	if err != nil {
+		return err
+	}
+	d.Set(ResourceGroupName, grp.Name)
 	return nil
 }
 

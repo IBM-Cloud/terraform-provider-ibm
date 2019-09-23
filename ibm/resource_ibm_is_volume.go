@@ -96,10 +96,34 @@ func resourceIBMISVolume() *schema.Resource {
 				Computed: true,
 			},
 
-			isVPCResourceControllerURL: {
+			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
+
+			ResourceName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the resource",
+			},
+
+			ResourceCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+
+			ResourceStatus: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the resource",
+			},
+
+			ResourceGroupName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The resource group name in which resource is provisioned",
 			},
 		},
 	}
@@ -196,11 +220,14 @@ func resourceIBMISVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	if sess.Generation == 1 {
-		d.Set(isVPCResourceControllerURL, controller+"/vpc/storage/storageVolumes")
+		d.Set(ResourceControllerURL, controller+"/vpc/storage/storageVolumes")
 	} else {
-		d.Set(isVPCResourceControllerURL, controller+"/vpc-ext/storage/storageVolumes")
+		d.Set(ResourceControllerURL, controller+"/vpc-ext/storage/storageVolumes")
 	}
-
+	d.Set(ResourceName, vol.Name)
+	d.Set(ResourceCRN, vol.Crn)
+	d.Set(ResourceStatus, vol.Status)
+	d.Set(ResourceGroupName, vol.ResourceGroup.Name)
 	return nil
 }
 
