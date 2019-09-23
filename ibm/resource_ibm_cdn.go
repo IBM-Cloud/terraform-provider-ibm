@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/softlayer/softlayer-go/sl"
 
@@ -12,7 +13,7 @@ import (
 	"github.com/softlayer/softlayer-go/services"
 )
 
-const str string = ".cdnedge.bluemix.net"
+const str string = ".cdn.appdomain.cloud"
 
 func resourceIBMCDN() *schema.Resource {
 	return &schema.Resource{
@@ -76,6 +77,16 @@ func resourceIBMCDN() *schema.Resource {
 				Computed: true,
 				Optional: true,
 				ForceNew: true,
+				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
+					if o == "" {
+						return false
+					}
+
+					if strings.Compare(n+str, o) == 0 || (n == "" && o != "") {
+						return true
+					}
+					return false
+				},
 			},
 			"header": &schema.Schema{
 				Type:     schema.TypeString,
