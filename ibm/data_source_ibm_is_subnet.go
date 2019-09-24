@@ -147,6 +147,8 @@ func dataSourceIBMISSubnetRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(ResourceName, subnet.Name)
 	d.Set(ResourceCRN, subnet.Crn)
 	d.Set(ResourceStatus, subnet.Status)
-	d.Set(ResourceGroupName, subnet.ResourceGroup.Name)
+	if subnet.ResourceGroup != nil {
+		d.Set(ResourceGroupName, subnet.ResourceGroup.Name)
+	}
 	return nil
 }

@@ -202,15 +202,18 @@ func resourceIBMISIPSecPolicyRead(d *schema.ResourceData, meta interface{}) erro
 	}
 	d.Set(ResourceName, ipSec.Name)
 	d.Set(ResourceCRN, ipSec.Crn)
-	rsMangClient, err := meta.(ClientSession).ResourceManagementAPI()
-	if err != nil {
-		return err
+	if ipSec.ResourceGroup != nil {
+		rsMangClient, err := meta.(ClientSession).ResourceManagementAPI()
+		if err != nil {
+			return err
+		}
+		grp, err := rsMangClient.ResourceGroup().Get(ipSec.ResourceGroup.ID.String())
+		if err != nil {
+			return err
+		}
+		d.Set(ResourceGroupName, grp.Name)
+
 	}
-	grp, err := rsMangClient.ResourceGroup().Get(ipSec.ResourceGroup.ID.String())
-	if err != nil {
-		return err
-	}
-	d.Set(ResourceGroupName, grp.Name)
 	return nil
 }
 

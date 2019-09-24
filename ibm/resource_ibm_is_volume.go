@@ -227,7 +227,9 @@ func resourceIBMISVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(ResourceName, vol.Name)
 	d.Set(ResourceCRN, vol.Crn)
 	d.Set(ResourceStatus, vol.Status)
-	d.Set(ResourceGroupName, vol.ResourceGroup.Name)
+	if vol.ResourceGroup != nil {
+		d.Set(ResourceGroupName, vol.ResourceGroup.Name)
+	}
 	return nil
 }
 

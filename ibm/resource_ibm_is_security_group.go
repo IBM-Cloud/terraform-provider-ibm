@@ -164,7 +164,9 @@ func resourceIBMISSecurityGroupRead(d *schema.ResourceData, meta interface{}) er
 	}
 	d.Set(ResourceName, group.Name)
 	d.Set(ResourceCRN, group.Crn)
-	d.Set(ResourceGroupName, group.ResourceGroup.Name)
+	if group.ResourceGroup != nil {
+		d.Set(ResourceGroupName, group.ResourceGroup.Name)
+	}
 	return nil
 }
 

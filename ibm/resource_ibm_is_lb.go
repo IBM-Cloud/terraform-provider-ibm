@@ -207,7 +207,9 @@ func resourceIBMISLBRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set(ResourceControllerURL, controller+"/vpc-ext/network/loadBalancers")
 	}
 	d.Set(ResourceName, lb.Name)
-	d.Set(ResourceGroupName, lb.ResourceGroup.Name)
+	if lb.ResourceGroup != nil {
+		d.Set(ResourceGroupName, lb.ResourceGroup.Name)
+	}
 	return nil
 }
 

@@ -130,7 +130,9 @@ func resourceIBMISSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.Set(ResourceName, key.Name)
 	d.Set(ResourceCRN, key.Crn)
-	d.Set(ResourceGroupName, key.ResourceGroup.Name)
+	if key.ResourceGroup != nil {
+		d.Set(ResourceGroupName, key.ResourceGroup.Name)
+	}
 	return nil
 }
 
