@@ -10,7 +10,7 @@ description: |-
 
 Provides a resource for local load balancer service groups. This allows local load balancer service groups to be created, updated, and deleted.
 
-For additional details, see the [IBM Cloud Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_Application_Delivery_Controller_LoadBalancer_Service_Group).
+For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_Application_Delivery_Controller_LoadBalancer_Service_Group).
 
 ## Example Usage
 

@@ -10,7 +10,7 @@ description: |-
 
 Provides a resource for VM instances. This allows VM instances to be created, updated, and deleted.
 
-For additional details, see the [IBM Cloud Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/services/SoftLayer_Virtual_Guest).
+For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/services/SoftLayer_Virtual_Guest).
 
 **NOTE**: Update is not supported when the `bulk_vms` parameter is used.
 
@@ -176,7 +176,7 @@ The following arguments are supported:
     **NOTE**: Conflicts with `flavor_key_name`.
 * `memory` - (Optional, integer) The amount of memory, expressed in megabytes, that you want to allocate.  
     **NOTE**: Conflicts with `flavor_key_name`.
-* `flavor_key_name` - (Optional, string) The flavor key name that you want to use to provision the instance. To see available Flavor key name, log in to the [IBM Cloud Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest/getCreateObjectOptions.json), using your API key as the password.  
+* `flavor_key_name` - (Optional, string) The flavor key name that you want to use to provision the instance. To see available Flavor key name, log in to the [IBM Cloud Classic Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest/getCreateObjectOptions.json), using your API key as the password.  
     **NOTE**: Conflicts with `cores` and `memory`.
 * `datacenter` - (Optional, string) The datacenter in which you want to provision the instance.  
     **NOTE**: If `dedicated_host_name` or `dedicated_host_id`
@@ -198,7 +198,7 @@ The following arguments are supported:
      **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_id`, `dedicated_host_name` and `placement_group_id`
 * `transient` - (Optional, boolean) Specifies whether to provision a transient virtual server. The default value is `false`. Transient instances cannot be upgraded or downgraded. Transient instances cannot use local storage.  
     **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_id`, `dedicated_host_name`, `cores`, `memory`, `public_bandwidth_limited` and `public_bandwidth_unlimited`
-* `os_reference_code` - (Optional, string) The operating system reference code that is used to provision the computing instance. To see available OS reference codes, log in to the [IBM Cloud Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest_Block_Device_Template_Group/getVhdImportSoftwareDescriptions.json?objectMask=referenceCode), using your API key as the password.  
+* `os_reference_code` - (Optional, string) The operating system reference code that is used to provision the computing instance. To see available OS reference codes, log in to the [IBM Cloud Classic Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest_Block_Device_Template_Group/getVhdImportSoftwareDescriptions.json?objectMask=referenceCode), using your API key as the password.  
     **NOTE**: Conflicts with `image_id`.
 *   `image_id` - (Optional, integer) The image template ID you want to use to provision the computing instance. This is not the global identifier (UUID), but the image template group ID that should point to a valid global identifier. To retrieve the image template ID from the IBM Cloud infrastructure customer portal, navigate to **Devices > Manage > Images**, click the desired image, and note the ID number in the resulting URL.  
 
@@ -207,14 +207,14 @@ The following arguments are supported:
 *  `private_network_only` - (Optional, boolean) When set to `true`, a compute instance only has access to the private network. The default value is `false`.
 *  `private_security_group_ids` - (Optional, array of integers) The ids of security groups to apply on the private interface.
 This attribute can't be updated. This is provided so that you can apply security groups to  your VSI right from the beginning, the first time it comes up. If you would like to add or remove security groups in the future to this VSI then you should consider using `ibm_network_interface_sg_attachment` resource. If you use this attribute in addition to `ibm_network_interface_sg_attachment` resource you might get some spurious diffs. So use one of these consistently for a particular VSI.
-*  `public_vlan_id` - (Optional, integer) The public VLAN ID for the public network interface of the instance. Accepted values are in the [VLAN doc](https://control.softlayer.com/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).  
+*  `public_vlan_id` - (Optional, integer) The public VLAN ID for the public network interface of the instance. Accepted values are in the [VLAN doc](https://cloud.ibm.com/classic/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).  
     **NOTE**: Conflicts with `datacenter_choice`.
-* `private_vlan_id` - (Optional, integer) The private VLAN ID for the private network interface of the instance. You can find accepted values in the [VLAN doc](https://control.softlayer.com/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).  
+* `private_vlan_id` - (Optional, integer) The private VLAN ID for the private network interface of the instance. You can find accepted values in the [VLAN doc](https://cloud.ibm.com/classic/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).  
     **NOTE**: Conflicts with `datacenter_choice`.
 * `public_security_group_ids` - (Optional, array of integers) The ids of security groups to apply on the public interface.
 This attribute can't be updated. This is provided so that you can apply security groups to  your VSI right from the beginning, the first time it comes up. If you would like to add or remove security groups in the future to this VSI then you should consider using `ibm_network_interface_sg_attachment` resource. If you use this attribute in addition to `ibm_network_interface_sg_attachment` resource you might get some spurious diffs. So use one of these consistently for a particular VSI.
-* `public_subnet` - (Optional, string) The public subnet for the public network interface of the instance. Accepted values are primary public networks. You can find accepted values in the [subnets doc](https://control.softlayer.com/network/subnets).
-* `private_subnet` - (Optional, string) The private subnet for the private network interface of the instance. Accepted values are primary private networks. You can find accepted values in the [subnets doc](https://control.softlayer.com/network/subnets).
+* `public_subnet` - (Optional, string) The public subnet for the public network interface of the instance. Accepted values are primary public networks. You can find accepted values in the [subnets doc](https://cloud.ibm.com/classic/network/subnets).
+* `private_subnet` - (Optional, string) The private subnet for the private network interface of the instance. Accepted values are primary private networks. You can find accepted values in the [subnets doc](https://cloud.ibm.com/classic/network/subnets).
 * `disks` - (Optional, array of integers) The numeric disk sizes (in GBs) for the instance's block device and disk image settings. The default value is the smallest available capacity for the primary disk. If you specify an image template, the template provides the disk capacity. If you specify the flavorKeyName, first disk is provided by the flavor.
 * `user_metadata` - (Optional, string) Arbitrary data to be made available to the computing instance.
 *  `notes` - (Optional, string) Descriptive text of up to 1000 characters about the VM instance.
@@ -235,8 +235,8 @@ This attribute can't be updated. This is provided so that you can apply security
 * `evault` - (Optional, int). Allowed evault(GB) per month for monthly based servers.
 * `datacenter_choice` - (Optional, list) A nested block to describe datacenter choice options to retry on different datacenters and vlans. Nested `datacenter_choice` blocks must have the following structure:
     * `datacenter` - (Required, string) The datacenter in which you want to provision the instance.
-    * `public_vlan_id` - (Optional, string) The public VLAN ID for the public network interface of the instance. Accepted values are in the [VLAN doc](https://control.softlayer.com/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
-    * `private_vlan_id` - (Optional, string) The private VLAN ID for the private network interface of the instance. You can find accepted values in the [VLAN doc](https://control.softlayer.com/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).   
+    * `public_vlan_id` - (Optional, string) The public VLAN ID for the public network interface of the instance. Accepted values are in the [VLAN doc](https://cloud.ibm.com/classic/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
+    * `private_vlan_id` - (Optional, string) The private VLAN ID for the private network interface of the instance. You can find accepted values in the [VLAN doc](https://cloud.ibm.com/classic/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).   
     **NOTE**: Conflicts with `datacenter`, `private_vlan_id`, `public_vlan_id`, `placement_group_name` and `placement_group_id`.
 
 

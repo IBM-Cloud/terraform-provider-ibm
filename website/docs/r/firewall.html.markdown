@@ -34,7 +34,7 @@ The following arguments are supported:
 
 * `firewall_type` - (Optional, string) Specifies the type of firewall to create. Valid options are HARDWARE_FIREWALL_DEDICATED or FORTIGATE_SECURITY_APPLIANCE. Defaults to HARDWARE_FIREWALL_DEDICATED
 * `ha_enabled` - (Required, boolean) Specifies whether the local load balancer needs to be HA-enabled.
-* `public_vlan_id` - (Required, integer) The target public VLAN ID that you want the firewall to protect. You can find accepted values [here](https://control.softlayer.com/network/vlans). Click the desired VLAN and note the ID number in the resulting URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
+* `public_vlan_id` - (Required, integer) The target public VLAN ID that you want the firewall to protect. You can find accepted values [here](https://cloud.ibm.com/classic/network/vlans). Click the desired VLAN and note the ID number in the resulting URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
 * `tags` - (Optional, array of strings) Set tages on the firewall. Permitted characters include: A-Z, 0-9, whitespace, _ (underscore), - (hyphen), . (period), and : (colon). All other characters are removed.
 
 ## Attribute Reference

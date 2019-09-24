@@ -32,7 +32,7 @@ resource "ibm_compute_vm_instance" "vm1" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The name of the image template as it was defined in IBM Cloud Infrastructure (SoftLayer). You can find the name in the [IBM Cloud infrastructure customer portal](https://control.softlayer.com) by navigating to **Devices > Manage > Images**.
+* `name` - (Required, string) The name of the image template as it was defined in IBM Cloud Classic Infrastructure (SoftLayer). You can find the name in the [IBM Cloud infrastructure customer portal](https://cloud.ibm.com/classic) by navigating to **Devices > Manage > Images**.
 
 ## Attribute Reference
 

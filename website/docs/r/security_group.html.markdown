@@ -10,7 +10,7 @@ description: |-
 
 Provides a networking security group resource that controls access to the public and private interfaces of a virtual server instance. This resource allows security groups to be created, updated, and deleted. To create rules for the security group, use the `security_group_rule` resource.
 
-For additional details, see the [IBM Cloud Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_SecurityGroup).
+For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_SecurityGroup).
 
 ## Example Usage
 

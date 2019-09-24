@@ -32,7 +32,7 @@ The following arguments are supported:
   **NOTE**: Conflicts with `global_identifier`.
 * `domain` - (Optional, string) The domain of the bare metal server.  
   **NOTE**: Conflicts with `global_identifier`.
-* `global_identifier` - (Optional, string) The unique global identifier of the bare metal server. To see global identifier, log in to the [IBM Cloud Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3.1/SoftLayer_Account/getHardware.json), using your API key as the password.  
+* `global_identifier` - (Optional, string) The unique global identifier of the bare metal server. To see global identifier, log in to the [IBM Cloud Classic Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3.1/SoftLayer_Account/getHardware.json), using your API key as the password.  
   **NOTE**: Conflicts with `hostname`, `domain`, `most_recent`.
 * `most_recent` - (Optional, boolean) If there are multiple bare metals, you can set this argument to `true` to import only the most recently created server.  
    **NOTE**: Conflicts with `global_identifier`.

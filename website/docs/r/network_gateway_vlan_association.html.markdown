@@ -10,7 +10,7 @@ description: |-
 
 Provide a resource to associate a VLAN with a network gateway. The VLANs can be disassociated or updated later to be bypassed or routed.
 
-For additional details, see the [IBM Cloud infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/services/SoftLayer_Network_Gateway_Vlan).
+For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/services/SoftLayer_Network_Gateway_Vlan).
 
 For more information about getting started, see the [IBM Virtual Router Appliance docs](https://cloud.ibm.com/docs/infrastructure/virtual-router-appliance/getting-started.html#getting-started).
 

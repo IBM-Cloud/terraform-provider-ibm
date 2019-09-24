@@ -58,25 +58,53 @@ func Provider() terraform.ResourceProvider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The SoftLayer API Key",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"SL_API_KEY", "SOFTLAYER_API_KEY"}, ""),
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"SL_API_KEY", "SOFTLAYER_API_KEY"}, nil),
+				Deprecated:  "This field is deprecated please use iaas_classic_api_key",
 			},
 			"softlayer_username": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The SoftLayer user name",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"SL_USERNAME", "SOFTLAYER_USERNAME"}, ""),
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"SL_USERNAME", "SOFTLAYER_USERNAME"}, nil),
+				Deprecated:  "This field is deprecated please use iaas_classic_username",
 			},
 			"softlayer_endpoint_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The Softlayer Endpoint",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"SL_ENDPOINT_URL", "SOFTLAYER_ENDPOINT_URL"}, "https://api.softlayer.com/rest/v3"),
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"SL_ENDPOINT_URL", "SOFTLAYER_ENDPOINT_URL"}, nil),
+				Deprecated:  "This field is deprecated please use iaas_classic_endpoint_url",
 			},
 			"softlayer_timeout": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The timeout (in seconds) to set for any SoftLayer API calls made.",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"SL_TIMEOUT", "SOFTLAYER_TIMEOUT"}, 60),
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"SL_TIMEOUT", "SOFTLAYER_TIMEOUT"}, nil),
+				Deprecated:  "This field is deprecated please use iaas_classic_timeout",
+			},
+			"iaas_classic_api_key": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Classic Infrastructure API Key",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IAAS_CLASSIC_API_KEY"}, nil),
+			},
+			"iaas_classic_username": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Classic Infrastructure API user name",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IAAS_CLASSIC_USERNAME"}, nil),
+			},
+			"iaas_classic_endpoint_url": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Classic Infrastructure Endpoint",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IAAS_CLASSIC_ENDPOINT_URL"}, "https://api.softlayer.com/rest/v3"),
+			},
+			"iaas_classic_timeout": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The timeout (in seconds) to set for any Classic Infrastructure API calls made.",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IAAS_CLASSIC_TIMEOUT"}, 60),
 			},
 			"max_retries": {
 				Type:        schema.TypeInt,
@@ -296,10 +324,33 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if rtoken, ok := d.GetOk("iam_refresh_token"); ok {
 		iamRefreshToken = rtoken.(string)
 	}
-	softlayerUsername := d.Get("softlayer_username").(string)
-	softlayerAPIKey := d.Get("softlayer_api_key").(string)
-	softlayerEndpointUrl := d.Get("softlayer_endpoint_url").(string)
-	softlayerTimeout := d.Get("softlayer_timeout").(int)
+	var softlayerUsername, softlayerAPIKey, softlayerEndpointUrl string
+	var softlayerTimeout int
+	if username, ok := d.GetOk("softlayer_username"); ok {
+		softlayerUsername = username.(string)
+	}
+	if username, ok := d.GetOk("iaas_classic_username"); ok {
+		softlayerUsername = username.(string)
+	}
+	if apikey, ok := d.GetOk("softlayer_api_key"); ok {
+		softlayerAPIKey = apikey.(string)
+	}
+	if apikey, ok := d.GetOk("iaas_classic_api_key"); ok {
+		softlayerAPIKey = apikey.(string)
+	}
+	if endpoint, ok := d.GetOk("softlayer_endpoint_url"); ok {
+		softlayerEndpointUrl = endpoint.(string)
+	}
+	if endpoint, ok := d.GetOk("iaas_classic_endpoint_url"); ok {
+		softlayerEndpointUrl = endpoint.(string)
+	}
+	if tm, ok := d.GetOk("softlayer_timeout"); ok {
+		softlayerTimeout = tm.(int)
+	}
+	if tm, ok := d.GetOk("iaas_classic_timeout"); ok {
+		softlayerTimeout = tm.(int)
+	}
+
 	if tm, ok := d.GetOk("bluemix_timeout"); ok {
 		bluemixTimeout = tm.(int)
 	}

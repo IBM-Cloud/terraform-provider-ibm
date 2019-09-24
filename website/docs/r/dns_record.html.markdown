@@ -10,15 +10,15 @@ description: |-
 
 Provides a single-resource record entry in `ibm_dns_domain`. Each resource record contains a `host` and a `data` property to define the name and target data of a resource.
 
-The IBM Cloud Infrastructure (SoftLayer) object  [SoftLayer_Dns_Domain_ResourceRecord](https://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord) is used for most CRUD operations. The IBM Cloud Infrastructure (SoftLayer) object [SoftLayer_Dns_Domain_ResourceRecord_SrvType](https://sldn.softlayer.com/reference/services/SoftLayer_Dns_Domain_ResourceRecord_SrvType) is used for SRV record types.
+The IBM Cloud Classic Infrastructure (SoftLayer) object  [SoftLayer_Dns_Domain_ResourceRecord](https://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord) is used for most CRUD operations. The IBM Cloud Classic Infrastructure (SoftLayer) object [SoftLayer_Dns_Domain_ResourceRecord_SrvType](https://sldn.softlayer.com/reference/services/SoftLayer_Dns_Domain_ResourceRecord_SrvType) is used for SRV record types.
 
-The SOA and NS records are automatically created by IBM Cloud Infrastructure (SoftLayer) when the domain is created, you don't need to create those manually.
+The SOA and NS records are automatically created by IBM Cloud Classic Infrastructure (SoftLayer) when the domain is created, you don't need to create those manually.
 
 ## Example Usage
 
 ### `A` Record
 
-Review the [IBM Cloud Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_AType) to properly implement the `A` record.
+Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_AType) to properly implement the `A` record.
 
 ```hcl
 resource "ibm_dns_domain" "main" {
@@ -37,7 +37,7 @@ resource "ibm_dns_record" "www" {
 
 ### `AAAA` Record
 
-Review the [IBM Cloud Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_AaaaType) to properly implement the `AAAA` record.
+Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_AaaaType) to properly implement the `AAAA` record.
 
 ```hcl
 resource "ibm_dns_record" "aaaa" {
@@ -52,7 +52,7 @@ resource "ibm_dns_record" "aaaa" {
 
 ### `CNAME` Record
 
-Review the [IBM Cloud Infrastructure (SoftLayer) docs] to properly implement the `CNAME` record.
+Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs] to properly implement the `CNAME` record.
 
 ```hcl
 resource "ibm_dns_record" "cname" {
@@ -67,7 +67,7 @@ resource "ibm_dns_record" "cname" {
 
 ### `NS` Record
 
-Review the [IBM Cloud Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_NsType) to properly implement the `NS` record.
+Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_NsType) to properly implement the `NS` record.
 
 ```hcl
 resource "ibm_dns_record" "recordNS" {
@@ -82,7 +82,7 @@ resource "ibm_dns_record" "recordNS" {
 
 ### `MX` Record
 
-Review the [IBM Cloud Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_MxType) to properly implement the `MX` record.
+Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_MxType) to properly implement the `MX` record.
 
 ```hcl
 resource "sibm_dns_record" "recordMX-1" {
@@ -98,7 +98,7 @@ resource "sibm_dns_record" "recordMX-1" {
 
 ### `SOA` Record
 
-Review the [IBM Cloud Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_SoaType) to properly implement the `SOA` record.
+Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_SoaType) to properly implement the `SOA` record.
 
 ```hcl
 resource "ibm_dns_record" "recordSOA" {
@@ -113,7 +113,7 @@ resource "ibm_dns_record" "recordSOA" {
 
 ### `SPF` Record
 
-Review the [IBM Cloud Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_SpfType) to properly implement the `SPF` record.
+Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_SpfType) to properly implement the `SPF` record.
 
 ```hcl
 resource "ibm_dns_record" "recordSPF" {
@@ -128,7 +128,7 @@ resource "ibm_dns_record" "recordSPF" {
 
 ### `TXT` Record
 
-Review the [IBM Cloud Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_TxtType/) to properly implement the `TXT` record.
+Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_TxtType/) to properly implement the `TXT` record.
 
 ```hcl
 resource "ibm_dns_record" "recordTXT" {
@@ -143,7 +143,7 @@ resource "ibm_dns_record" "recordTXT" {
 
 ### `SRV` Record
 
-Review the [IBM Cloud Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_SrvType) to properly implement the `SRV` record.
+Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_SrvType) to properly implement the `SRV` record.
 
 ```hcl
 resource "ibm_dns_record" "recordSRV" {
@@ -163,7 +163,7 @@ resource "ibm_dns_record" "recordSRV" {
 
 ### `PTR` Record
 
-Review the [IBM Cloud Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_PtrType/) to properly implement the `PTR` record.
+Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_PtrType/) to properly implement the `PTR` record.
 
 ```hcl
 resource "ibm_dns_record" "recordPTR" {

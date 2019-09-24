@@ -8,9 +8,9 @@ description: |-
 
 # ibm\_dns_reverse_record
 
-Provides a single DNS reverse record managed on IBM Cloud Infrastructure (SoftLayer). Record contain general information about the reverse record, such as the hostname, ip address and time to leave(ttl).
+Provides a single DNS reverse record managed on IBM Cloud Classic Infrastructure (SoftLayer). Record contain general information about the reverse record, such as the hostname, ip address and time to leave(ttl).
 
-The IBM Cloud Infrastructure (SoftLayer) object  [SoftLayer_Dns_Domain_ResourceRecord](https://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord) is used for most CRUD operations.
+The IBM Cloud Classic Infrastructure (SoftLayer) object  [SoftLayer_Dns_Domain_ResourceRecord](https://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord) is used for most CRUD operations.
 
 ## Example Usage
 ```hcl

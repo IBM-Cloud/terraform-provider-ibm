@@ -32,7 +32,7 @@ resource "ibm_dns_record" "www" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The name of the domain, as it was defined in IBM Cloud Infrastructure (SoftLayer).
+* `name` - (Required, string) The name of the domain, as it was defined in IBM Cloud Classic Infrastructure (SoftLayer).
 
 ## Attribute Reference
 
