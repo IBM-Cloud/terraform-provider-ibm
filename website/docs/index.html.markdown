@@ -175,3 +175,10 @@ The following arguments are supported in the `provider` block:
 
 * `generation` - (Optional) The generation of Virtual Private Cloud. It can also be sourced from the `IC_GENERATION` (higher precedence) or `IBMCLOUD_GENERATION` environment variable. Default value: `2`.
 
+
+***Note***
+The CloudFoundry endpoint has been updated in this release of IBM Cloud Terraform provider v0.17.4.  If you are using an earlier version of IBM Cloud Terraform provider, export the `IBMCLOUD_UAA_ENDPOINT` to the new authentication endpoint, as illustrated below
+
+```shell
+export IBMCLOUD_UAA_ENDPOINT="https://iam.cloud.ibm.com/cloudfoundry/login/<region>/"
+```
