@@ -1,9 +1,9 @@
-variable "softlayer_username" {
-  description = "Enter your IBM Infrastructure (SoftLayer) full username, you can get this using: https://control.bluemix.net/account/user/profile"
+variable "iaas_classic_username" {
+  description = "Enter the user name to access IBM Cloud classic infrastructure. You can retrieve the user name by following the instructions for retrieving your classic infrastructure API key."
 }
 
-variable "softlayer_api_key" {
-  description = "Enter your IBM Infrastructure (SoftLayer) API key, you can get this using: https://control.bluemix.net/account/user/profile"
+variable "iaas_classic_api_key" {
+  description = "Enter the API key to access IBM Cloud classic infrastructure. For more information for how to create an API key and retrieve it, see [Managing classic infrastructure API keys](https://cloud.ibm.com/docs/iam?topic=iam-classic_keys)."
 }
 
 variable "ibmcloud_api_key" {
@@ -11,7 +11,7 @@ variable "ibmcloud_api_key" {
 }
 
 provider "ibm" {
-  softlayer_username = "${var.softlayer_username}"
-  softlayer_api_key  = "${var.softlayer_api_key}"
+  iaas_classic_username = "${var.iaas_classic_username}"
+  iaas_classic_api_key  = "${var.iaas_classic_api_key}"
   ibmcloud_api_key    = "${var.ibmcloud_api_key}"
 }

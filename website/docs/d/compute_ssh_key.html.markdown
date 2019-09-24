@@ -32,7 +32,7 @@ resource "ibm_compute_vm_instance" "vm1" {
 
 The following arguments are supported:
 
-* `label` - (Required, string) The label of the SSH key, as it was defined in IBM Cloud Infrastructure (SoftLayer).
+* `label` - (Required, string) The label of the SSH key, as it was defined in IBM Cloud Classic Infrastructure (SoftLayer).
 * `most_recent` - (Optional, boolean) If more than one SSH key matches the label, you can set this argument to `true` to import only the most recent key.
   **NOTE**: The search must return only one match. More or less than one match causes Terraform to fail. Ensure that your label is specific enough to return a single SSH key only, or use the `most_recent` argument.
 

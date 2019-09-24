@@ -22,7 +22,7 @@ data "ibm_dns_secondary" "secondary_id" {
 
 The following arguments are supported:
 
-* `zone_name` - (Required, string) The name of the secondary zone, as it was defined in IBM Cloud Infrastructure (SoftLayer).
+* `zone_name` - (Required, string) The name of the secondary zone, as it was defined in IBM Cloud Classic Infrastructure (SoftLayer).
 
 ## Attribute Reference
 

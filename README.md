@@ -51,8 +51,8 @@ If you want to run Terraform with the IBM Cloud provider plugin on your system, 
 
 ```sh
 export IC_API_KEY="IBM Cloud API Key"
-export SL_API_KEY="SoftLayer API Key"
-export SL_USERNAME="SoftLayer username associated with SL_API_KEY".
+export IAAS_CLASSIC_API_KEY="IBM Cloud Classic Infrastructure API Key"
+export IAAS_CLASSIC_USERNAME="IBM Cloud Classic Infrastructure username associated with Classic Infrastructure API KEY".
 ```
 
 6. Add the plug-in provider to the Terraform configuration file.
@@ -99,7 +99,7 @@ Issuing `make testacc` will now run the testcase with names matching `TestAccIBM
 
 You will also need to export the following environment variables for running the Acceptance tests.
 * `IC_API_KEY`- The IBM Cloud API Key
-* `SL_API_KEY` - The SoftLayer API Key
-* `SL_USERNAME` - The SoftLayer username associated with the SoftLayer API Key.
+* `IAAS_CLASSIC_API_KEY` - The IBM Cloud Classic Infrastructure API Key
+* `IAAS_CLASSIC_USERNAME` - The IBM Cloud Classic Infrastructure username associated with the Classic InfrastAPI Key.
 
 Additional environment variables may be required depending on the tests being run. Check console log for warning messages about required variables. 

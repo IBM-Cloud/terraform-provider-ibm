@@ -11,7 +11,7 @@ description: |-
 
 Provides provisioning placement groups. This allows placement groups to be created, updated, and deleted.
 
-For additional details, see the [IBM Cloud Infrastructure (SoftLayer) API docs](https://softlayer.github.io/reference/datatypes/SoftLayer_Virtual_PlacementGroup).
+For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](https://softlayer.github.io/reference/datatypes/SoftLayer_Virtual_PlacementGroup).
 
 ## Example Usage
 

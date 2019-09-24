@@ -10,7 +10,7 @@ description: |-
 
 Provides an SSL certificate resource. This allows SSL certificates to be requested, and delete request for ssl certificates.
 
-For additional details, see the [IBM Cloud (SoftLayer) security certificates Request docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Security_Certificate/Request).
+For additional details, see the [IBM Cloud Classic Infrastructure(SoftLayer) security certificates Request docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Security_Certificate/Request).
 
 ## Example Usage
 

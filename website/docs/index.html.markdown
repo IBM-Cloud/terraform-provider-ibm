@@ -19,8 +19,8 @@ Use the navigation menu on the left to read about the available data sources and
 # Configure the IBM Cloud Provider
 provider "ibm" {
   ibmcloud_api_key    = "${var.ibm_bmx_api_key}"
-  softlayer_username = "${var.ibm_sl_username}"
-  softlayer_api_key  = "${var.ibm_sl_api_key}"
+  iaas_classic_username = "${var.ibm_sl_username}"
+  iaas_classic_api_key  = "${var.ibm_sl_api_key}"
 }
 
 # Create an IBM Cloud infrastructure SSH key. You can find the SSH key surfaces in the infrastructure console under Devices > Manage > SSH Keys
@@ -113,22 +113,22 @@ The IBM Cloud provider offers a flexible means of providing credentials for auth
 
 ### Static credentials ###
 
-You can provide your static credentials by adding the `ibmcloud_api_key`, `softlayer_username`, and `softlayer_api_key` arguments in the IBM Cloud provider block.
+You can provide your static credentials by adding the `ibmcloud_api_key`, `iaas_classic_username`, and `iaas_classic_api_key` arguments in the IBM Cloud provider block.
 
 Usage:
 
 ```hcl
 provider "ibm" {
     ibmcloud_api_key = ""
-    softlayer_username = ""
-    softlayer_api_key = ""
+    iaas_classic_username = ""
+    iaas_classic_api_key = ""
 }
 ```
 
 
 ### Environment variables
 
-You can provide your credentials by exporting the `IC_API_KEY`, `SL_USERNAME`, and `SL_API_KEY` environment variables, representing your IBM Cloud platform API key, IBM Cloud infrastructure (SoftLayer) user name, and IBM Cloud infrastructure API key, respectively.
+You can provide your credentials by exporting the `IC_API_KEY`, `SL_USERNAME`, and `SL_API_KEY` environment variables, representing your IBM Cloud platform API key, IBM Cloud Classic Infrastructure (SoftLayer) user name, and IBM Cloud infrastructure API key, respectively.
 
 ```hcl
 provider "ibm" {}
@@ -155,13 +155,21 @@ The following arguments are supported in the `provider` block:
 
 * `bluemix_timeout` - (deprecated, optional) The timeout, expressed in seconds, for interacting with IBM Cloud APIs. You can also source the timeout from the `BM_TIMEOUT` (higher precedence) or `BLUEMIX_TIMEOUT` environment variable. The default value is `60`.
 
-* `softlayer_username` - (optional) The IBM Cloud infrastructure (SoftLayer) user name. You must either add it as a credential in the provider block or source it from the `SL_USERNAME` (higher precedence) or `SOFTLAYER_USERNAME` environment variable.
+* `softlayer_username` - (deprecated, optional) The IBM Cloud Classic Infrastructure (SoftLayer) user name. You must either add it as a credential in the provider block or source it from the `SL_USERNAME` (higher precedence) or `SOFTLAYER_USERNAME` environment variable. `iaas_classic_username` will have higher precedence than `softlayer_username`.
 
-* `softlayer_api_key` - (optional) The IBM Cloud infrastructure API key. You must either add it as a credential in the provider block or source it from the `SL_API_KEY` (higher precedence) or `SOFTLAYER_API_KEY` environment variable. The key is required to provision infrastructure resources, such as any resource that begins with `ibm_compute`.
+* `iaas_classic_username` - (optional) The IBM Cloud Classic Infrastructure (SoftLayer) user name. You must either add it as a credential in the provider block or source it from the `IAAS_CLASSIC_USERNAME`  environment variable.
 
-* `softlayer_endpoint_url` - (optional) The IBM Cloud infrastructure endpoint url. You can also source it from the `SL_ENDPOINT_URL` (higher precedence) or `SOFTLAYER_ENDPOINT_URL` environment variable. The default value is `https://api.softlayer.com/rest/v3`.
+* `softlayer_api_key` - (deprecated, optional) The IBM Cloud Classic Infrastructure API key. You must either add it as a credential in the provider block or source it from the `SL_API_KEY` (higher precedence) or `SOFTLAYER_API_KEY` environment variable. The key is required to provision infrastructure resources, such as any resource that begins with `ibm_compute`. `iaas_classic_api_key` will have higher precedence than `softlayer_api_key`.
 
-* `softlayer_timeout` - (optional) The timeout, expressed in seconds, for the IBM Cloud infrastructure API key. You can also source the timeout from the `SL_TIMEOUT` (higher precedence) or `SOFTLAYER_TIMEOUT` environment variable. The default value is `60`.
+* `iaas_classic_api_key` - (optional) The IBM Cloud Classic Infrastructure API key. You must either add it as a credential in the provider block or source it from the `IAAS_CLASSIC_API_KEY` environment variable.
+
+* `softlayer_endpoint_url` - (deprecated, optional) The IBM Cloud Classic Infrastructure endpoint url. You can also source it from the `SL_ENDPOINT_URL` (higher precedence) or `SOFTLAYER_ENDPOINT_URL` environment variable. `iaas_classic_endpoint_url` will have higher precedence than `softlayer_endpoint_url`.
+
+* `iaas_classic_endpoint_url` - (optional) The IBM Cloud Classic Infrastructure endpoint url. You can also source it from the `IAAS_CLASSIC_ENDPOINT_URL` environment variable. The default value is `https://api.softlayer.com/rest/v3`.
+
+* `softlayer_timeout` - (optional) The timeout, expressed in seconds, for the IBM Cloud Classic Infrastructure APIs. You can also source the timeout from the `SL_TIMEOUT` (higher precedence) or `SOFTLAYER_TIMEOUT` environment variable. `iaas_classic_timeout` will have higher precedence than `softlayer_timeout`.
+
+* `iaas_classic_timeout` - (optional) The timeout, expressed in seconds, for the IBM Cloud Clasic Infrastructure APIs. You can also source the timeout from the `IAAS_CLASSIC_TIMEOUT` environment variable. The default value is `60`.
 
 * `region` - (optional) The IBM Cloud region. You can also source it from the `IC_REGION` (higher precedence) or `IBMCLOUD_REGION` `BM_REGION` `BLUEMIX_REGION` environment variable. The default value is `us-south`.
 
@@ -173,7 +181,7 @@ The following arguments are supported in the `provider` block:
 
 * `riaas_endpoint` - (deprected, Optional) The next generation infrastructure service API endpoint . It can also be sourced from the `RIAAS_ENDPOINT`. Default value: `us-south.iaas.cloud.ibm.com`. 
 
-* `generation` - (Optional) The generation of Virtual Private Cloud. It can also be sourced from the `IC_GENERATION` (higher precedence) or `IBMCLOUD_GENERATION` environment variable. Default value: `2`.
+* `generation` - (Optional) The generation of Virtual Private Cloud. It can also be sourced from the `IC_GENERATION` (higher precedence) or `IBMCLOUD_GENERATION` environment variable. Default value: `2`. `1` for VPC Classic and `2` for VPC NextGen.
 
 
 ***Note***

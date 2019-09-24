@@ -61,8 +61,8 @@ There is no dependancy on an IaaS existing networking configuration or firewalls
 
 The following variables need to be set in the terraform.tf file before use
 
-- softlayer_username is a Infrastructure user name. Go to https://control.bluemix.net/account/user/profile, scroll down, and check API Username.
-- softlayer_api_key is a Infrastructure API Key. Go to https://control.bluemix.net/account/user/profile, scroll down, and check Authentication Key.
+- iaas_classic_username is a Infrastructure user name. Go to https://control.bluemix.net/account/user/profile, scroll down, and check API Username.
+- iaas_classic_api_key is a Infrastructure API Key. Go to https://control.bluemix.net/account/user/profile, scroll down, and check Authentication Key.
 - ibmcloud_api_key - An API key for IBM Cloud services. If you don't have one already, go to https://cloud.ibm.com/iam/#/apikeys and create a new key.
 
 

@@ -12,7 +12,7 @@ Provides a resource for an IBM Cloud network gateway appliance. This resource al
 
 A network gateway can be created in standalone mode and HA mode with both members, with either the same or different configurations.
 
-For additional details, see the [IBM Cloud infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/services/SoftLayer_Network_Gateway).
+For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/services/SoftLayer_Network_Gateway).
 
 For more information about getting started, see the [IBM Virtual Router Appliance docs](https://cloud.ibm.com/docs/infrastructure/virtual-router-appliance/getting-started.html#getting-started).
 
