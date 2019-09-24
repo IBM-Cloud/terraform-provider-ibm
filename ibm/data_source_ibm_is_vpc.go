@@ -121,7 +121,9 @@ func dataSourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
 			d.Set(ResourceName, vpc.Name)
 			d.Set(ResourceCRN, vpc.Crn)
 			d.Set(ResourceStatus, vpc.Status)
-			d.Set(ResourceGroupName, vpc.ResourceGroup.Name)
+			if vpc.ResourceGroup != nil {
+				d.Set(ResourceGroupName, vpc.ResourceGroup.Name)
+			}
 			return nil
 		}
 	}

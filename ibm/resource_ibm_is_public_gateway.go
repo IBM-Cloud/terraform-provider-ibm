@@ -224,7 +224,9 @@ func resourceIBMISPublicGatewayRead(d *schema.ResourceData, meta interface{}) er
 	d.Set(ResourceName, publicgw.Name)
 	d.Set(ResourceCRN, publicgw.Crn)
 	d.Set(ResourceStatus, publicgw.Status)
-	d.Set(ResourceGroupName, publicgw.ResourceGroup.Name)
+	if publicgw.ResourceGroup != nil {
+		d.Set(ResourceGroupName, publicgw.ResourceGroup.Name)
+	}
 	return nil
 }
 

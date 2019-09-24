@@ -202,15 +202,17 @@ func resourceIBMISIKEPolicyRead(d *schema.ResourceData, meta interface{}) error 
 		d.Set(ResourceControllerURL, controller+"/vpc-ext/network/ikepolicies")
 	}
 	d.Set(ResourceName, ike.Name)
-	rsMangClient, err := meta.(ClientSession).ResourceManagementAPI()
-	if err != nil {
-		return err
+	if ike.ResourceGroup != nil {
+		rsMangClient, err := meta.(ClientSession).ResourceManagementAPI()
+		if err != nil {
+			return err
+		}
+		grp, err := rsMangClient.ResourceGroup().Get(ike.ResourceGroup.ID.String())
+		if err != nil {
+			return err
+		}
+		d.Set(ResourceGroupName, grp.Name)
 	}
-	grp, err := rsMangClient.ResourceGroup().Get(ike.ResourceGroup.ID.String())
-	if err != nil {
-		return err
-	}
-	d.Set(ResourceGroupName, grp.Name)
 	return nil
 }
 

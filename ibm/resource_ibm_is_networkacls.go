@@ -303,7 +303,9 @@ func resourceIBMISNetworkACLRead(d *schema.ResourceData, meta interface{}) error
 	}
 	d.Set(ResourceName, nwacl.Name)
 	d.Set(ResourceCRN, nwacl.Crn)
-	d.Set(ResourceGroupName, nwacl.ResourceGroup.Name)
+	if nwacl.ResourceGroup != nil {
+		d.Set(ResourceGroupName, nwacl.ResourceGroup.Name)
+	}
 	return nil
 }
 

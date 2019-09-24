@@ -683,7 +683,9 @@ func resourceIBMisInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(ResourceName, instance.Name)
 	d.Set(ResourceCRN, instance.Crn)
 	d.Set(ResourceStatus, instance.Status)
-	d.Set(ResourceGroupName, instance.ResourceGroup.Name)
+	if instance.ResourceGroup != nil {
+		d.Set(ResourceGroupName, instance.ResourceGroup.Name)
+	}
 	return nil
 }
 
