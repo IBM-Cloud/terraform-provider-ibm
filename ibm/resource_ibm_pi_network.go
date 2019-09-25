@@ -73,6 +73,10 @@ func resourceIBMPINetwork() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			helpers.PINetworkVlanId: {
+				Type:     schema.TypeFloat,
+				Computed: true,
+			},
 		},
 	}
 }

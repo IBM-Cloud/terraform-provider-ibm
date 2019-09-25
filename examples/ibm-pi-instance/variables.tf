@@ -75,7 +75,13 @@ variable "replicationpolicy" {
 
 variable "replicants" {
   description = "Number of replicants"
-  default     = 1
+  default     = 2
+}
+
+variable "replicant_naming_scheme"
+{
+description="How to name the created vms"
+default="suffix"
 }
 
 variable "cloud_init_data" {

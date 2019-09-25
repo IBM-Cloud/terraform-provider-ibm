@@ -60,6 +60,13 @@ func resourceIBMPIInstance() *schema.Resource {
 				Description: "Set of Networks that have been configured for the account",
 			},
 
+			helpers.PIInstancePublicNetwork: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Public Network to be attached to the vm",
+				Default:     false,
+			},
+
 			helpers.PIInstanceVolumeIds: {
 				Type:     schema.TypeSet,
 				Required: true,
@@ -95,6 +102,10 @@ func resourceIBMPIInstance() *schema.Resource {
 							Computed: true,
 						},
 						"type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"externalip": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -157,6 +168,11 @@ func resourceIBMPIInstance() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			helpers.PIInstanceReplicationScheme: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"prefix", "suffix"}),
+			},
 			helpers.PIInstanceProgress: {
 				Type:        schema.TypeFloat,
 				Computed:    true,
@@ -192,6 +208,8 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		replicationpolicy = "none"
 	}
 
+	replicationNamingScheme := d.Get(helpers.PIInstanceReplicationScheme).(string)
+
 	imageid := d.Get(helpers.PIInstanceImageName).(string)
 	processortype := d.Get(helpers.PIInstanceProcType).(string)
 
@@ -207,6 +225,7 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
+	//publicinterface := d.Get(helpers.PIInstancePublicNetwork).(bool)
 	body := &models.PVMInstanceCreate{
 
 		VolumeIds: volids, NetworkIds: networks, Processors: &procs, Memory: &mem, ServerName: ptrToString(name),
@@ -217,6 +236,7 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		ProcType:                ptrToString(processortype),
 		Replicants:              replicants,
 		UserData:                user_data,
+		ReplicantNamingScheme:   ptrToString(replicationNamingScheme),
 		ReplicantAffinityPolicy: ptrToString(replicationpolicy),
 	}
 
@@ -288,6 +308,7 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 			p["networkid"] = pvmip.NetworkID
 			p["macaddress"] = pvmip.MacAddress
 			p["type"] = pvmip.Type
+			p["externalip"] = pvmip.ExternalIP
 			pvmaddress[i] = p
 		}
 		d.Set("addresses", pvmaddress)

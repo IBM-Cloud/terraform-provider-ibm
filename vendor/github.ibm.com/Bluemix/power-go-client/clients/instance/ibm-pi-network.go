@@ -65,3 +65,18 @@ func (f *IBMPINetworkClient) Create(name string, networktype string, cidr string
 
 	return resp.Payload, nil, nil
 }
+
+func (f *IBMPINetworkClient) GetPublic(cloud_instance_id string) (*models.Networks, error) {
+
+	filterQuery := "type=\"pub-vlan\""
+	params := p_cloud_networks.NewPcloudNetworksGetallParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(cloud_instance_id).WithFilter(&filterQuery)
+
+	resp, err := f.session.Power.PCloudNetworks.PcloudNetworksGetall(params, ibmpisession.NewAuth(f.session, cloud_instance_id))
+
+	if err != nil || resp.Payload == nil {
+		log.Printf("Failed to perform the operation... %v", err)
+		return nil, errors.ToError(err)
+	}
+
+	return resp.Payload, nil
+}

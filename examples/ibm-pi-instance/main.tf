@@ -42,6 +42,7 @@ resource "ibm_pi_instance" "pvminstance" {
   pi_key_pair_name      = "${var.sshkeyname}"
   pi_sys_type           = "${var.systemtype}"
   pi_replication_policy = "${var.replicationpolicy}"
+  pi_replication_scheme = "${var.replicant_naming_scheme}"
   pi_replicants         = "${var.replicants}"
   pi_cloud_instance_id  = "${var.powerinstanceid}"
   pi_user_data          = "${var.cloud_init_data}"
