@@ -157,10 +157,22 @@ func resourceIBMPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 
 	sess, _ := meta.(ClientSession).IBMPISession()
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+
 	client := st.NewIBMPIVolumeClient(sess, powerinstanceid)
-	err := client.Delete(d.Id(), powerinstanceid)
+
+	vol, err := client.Get(d.Id(), powerinstanceid)
 	if err != nil {
 		return err
+	}
+
+	log.Printf("The volume to be deleted is in the following state ..", vol.State)
+	_, err = isWaitForIBMPIVolumeAvailable(client, d.Id(), powerinstanceid, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return err
+	}
+	voldelete_err := client.Delete(d.Id(), powerinstanceid)
+	if voldelete_err != nil {
+		return voldelete_err
 	}
 
 	d.SetId("")
