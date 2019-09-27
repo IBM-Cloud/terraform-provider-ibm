@@ -75,7 +75,7 @@ variable "replicationpolicy" {
 
 variable "replicants" {
   description = "Number of replicants"
-  default     = 2
+  default     = 1
 }
 
 variable "replicant_naming_scheme"

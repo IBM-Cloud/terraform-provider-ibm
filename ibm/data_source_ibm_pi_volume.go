@@ -1,13 +1,13 @@
 package ibm
 
 import (
+	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.ibm.com/Bluemix/power-go-client/helpers"
 
 	//"fmt"
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/hashicorp/terraform/helper/validation"
-	"github.ibm.com/Bluemix/power-go-client/clients/instance"
 )
 
 func dataSourceIBMPIVolume() *schema.Resource {

@@ -6,9 +6,9 @@ import (
 	"log"
 
 	//"fmt"
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/hashicorp/terraform/helper/validation"
-	"github.ibm.com/Bluemix/power-go-client/clients/instance"
-	"github.ibm.com/Bluemix/power-go-client/helpers"
 )
 
 func dataSourceIBMPITenant() *schema.Resource {

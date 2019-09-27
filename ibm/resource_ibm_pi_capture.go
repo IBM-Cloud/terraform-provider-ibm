@@ -2,11 +2,11 @@ package ibm
 
 import (
 	"errors"
+	st "github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/power-go-client/helpers"
+	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_p_vm_instances"
+	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/hashicorp/terraform/helper/schema"
-	st "github.ibm.com/Bluemix/power-go-client/clients/instance"
-	"github.ibm.com/Bluemix/power-go-client/helpers"
-	"github.ibm.com/Bluemix/power-go-client/power/client/p_cloud_p_vm_instances"
-	"github.ibm.com/Bluemix/power-go-client/power/models"
 	"log"
 	"time"
 )

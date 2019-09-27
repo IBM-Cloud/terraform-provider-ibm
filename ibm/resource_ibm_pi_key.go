@@ -3,10 +3,10 @@ package ibm
 import (
 	"fmt"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	st "github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform/helper/schema"
-	st "github.ibm.com/Bluemix/power-go-client/clients/instance"
-	"github.ibm.com/Bluemix/power-go-client/helpers"
 	"log"
 	"time"
 )

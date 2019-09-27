@@ -39,8 +39,8 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	issession "github.ibm.com/Bluemix/riaas-go-client/session"
 	// Added code for the Power Colo Offering
-	ibmpisession "github.ibm.com/Bluemix/power-go-client/ibmpisession"
-	powersession "github.ibm.com/Bluemix/power-go-client/session"
+	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
+	powersession "github.com/IBM-Cloud/power-go-client/session"
 )
 
 //RetryDelay

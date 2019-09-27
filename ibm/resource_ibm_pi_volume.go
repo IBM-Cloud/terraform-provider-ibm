@@ -3,12 +3,10 @@ package ibm
 import (
 	"fmt"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	_ "github.com/IBM-Cloud/bluemix-go/bmxerror"
-	_ "github.com/go-openapi/runtime"
+	st "github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	st "github.ibm.com/Bluemix/power-go-client/clients/instance"
-	"github.ibm.com/Bluemix/power-go-client/helpers"
 	"log"
 	"time"
 )
@@ -123,6 +121,7 @@ func resourceIBMPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(helpers.PIVolumeName, vol.Name)
 	d.Set(helpers.PIVolumeSize, vol.Size)
 	d.Set(helpers.PIVolumeShareable, vol.Shareable)
+
 	return nil
 }
 

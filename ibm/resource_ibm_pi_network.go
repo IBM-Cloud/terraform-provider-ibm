@@ -1,12 +1,12 @@
 package ibm
 
 import (
+	st "github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/apparentlymart/go-cidr/cidr"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	st "github.ibm.com/Bluemix/power-go-client/clients/instance"
-	"github.ibm.com/Bluemix/power-go-client/helpers"
 	"log"
 	"net"
 	"strconv"
