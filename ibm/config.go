@@ -323,7 +323,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		return session, nil
 	}
 
-	if sess.BluemixSession.Config.BluemixAPIKey != "" && (sess.BluemixSession.Config.IAMAccessToken == "" && sess.BluemixSession.Config.IAMRefreshToken == "") {
+	if sess.BluemixSession.Config.BluemixAPIKey != "" {
 		err = authenticateAPIKey(sess.BluemixSession)
 		if err != nil {
 			session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
@@ -332,7 +332,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		}
 	}
 
-	if sess.BluemixSession.Config.IAMAccessToken != "" {
+	if sess.BluemixSession.Config.IAMAccessToken != "" && sess.BluemixSession.Config.BluemixAPIKey == "" {
 		err := refreshToken(sess.BluemixSession)
 		if err != nil {
 			return nil, err
