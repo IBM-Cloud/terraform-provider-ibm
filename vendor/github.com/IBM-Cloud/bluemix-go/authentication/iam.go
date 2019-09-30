@@ -104,7 +104,7 @@ func (auth *IAMAuthRepository) RefreshToken() (string, error) {
 func (auth *IAMAuthRepository) getToken(data map[string]string) error {
 	request := rest.PostRequest(auth.endpoint+"/identity/token").
 		Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte("bx:bx"))).
-		Field("response_type", "cloud_iam,ims_portal")
+		Field("response_type", "cloud_iam")
 
 	for k, v := range data {
 		request.Field(k, v)
