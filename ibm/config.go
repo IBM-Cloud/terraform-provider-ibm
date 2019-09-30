@@ -57,8 +57,8 @@ type UserConfig struct {
 	userID      string
 	userEmail   string
 	userAccount string
-	cloudName   string
-	cloudType   string
+	cloudName   string `default:"bluemix"`
+	cloudType   string `default:"public"`
 }
 
 //Config stores user provider input
@@ -337,15 +337,17 @@ func (c *Config) ClientSession() (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		userConfig, err := fetchUserDetails(sess.BluemixSession)
-		if err != nil {
-			session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
-		}
-		session.bmxUserDetails = userConfig
-		if sess.SoftLayerSession != nil && sess.SoftLayerSession.IAMToken != "" {
-			sess.SoftLayerSession.IAMToken = sess.BluemixSession.Config.IAMAccessToken
-		}
 
+	}
+	userConfig, err := fetchUserDetails(sess.BluemixSession)
+	if err != nil {
+		session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
+	}
+	session.bmxUserDetails = userConfig
+
+	if sess.SoftLayerSession != nil && sess.SoftLayerSession.IAMToken != "" {
+		sess.SoftLayerSession.IAMToken = sess.BluemixSession.Config.IAMAccessToken
+		sess.SoftLayerSession.IAMRefreshToken = sess.BluemixSession.Config.IAMRefreshToken
 	}
 
 	session.functionClient, session.functionConfigErr = FunctionClient(sess.BluemixSession.Config, c.FunctionNameSpace)
@@ -462,6 +464,7 @@ func newSession(c *Config) (*Session, error) {
 	if c.IAMToken != "" {
 		log.Println("Configuring SoftLayer Session with token")
 		softlayerSession.IAMToken = c.IAMToken
+		softlayerSession.IAMRefreshToken = c.IAMRefreshToken
 	}
 	if c.SoftLayerAPIKey != "" && c.SoftLayerUserName != "" {
 		log.Println("Configuring SoftLayer Session with API key")

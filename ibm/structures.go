@@ -1415,7 +1415,7 @@ func getBaseController(meta interface{}) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if userDetails.cloudName == "staging" {
+	if userDetails != nil && userDetails.cloudName == "staging" {
 		return stageBaseController, nil
 	}
 	return prodBaseController, nil
