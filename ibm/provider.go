@@ -234,6 +234,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_container_bind_service":                         resourceIBMContainerBindService(),
 			"ibm_container_worker_pool":                          resourceIBMContainerWorkerPool(),
 			"ibm_container_worker_pool_zone_attachment":          resourceIBMContainerWorkerPoolZoneAttachment(),
+			"ibm_cos_bucket":                                     resourceIBMCOS(),
 			"ibm_dns_domain":                                     resourceIBMDNSDomain(),
 			"ibm_dns_domain_registration_nameservers":            resourceIBMDNSDomainRegistrationNameservers(),
 			"ibm_dns_secondary":                                  resourceIBMDNSSecondary(),
