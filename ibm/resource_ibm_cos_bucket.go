@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -106,23 +107,9 @@ func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	bucketName := d.Get("bucket_name").(string)
-	serviceID := d.Get("resource_instance_id").(string)
-	var bLocation string
-	var apiType string
-	if bucketLocation, ok := d.GetOk("cross_region_location"); ok {
-		bLocation = bucketLocation.(string)
-		apiType = "crl"
-	}
-	if bucketLocation, ok := d.GetOk("region_location"); ok {
-		bLocation = bucketLocation.(string)
-		apiType = "rl"
-	}
-	if bucketLocation, ok := d.GetOk("single_site_location"); ok {
-		bLocation = bucketLocation.(string)
-		apiType = "ssl"
-	}
-	apiEndpoint := selectCosApi(apiType, bLocation)
+	bucketName := parseBucketId(d.Id(), "bucketName")
+	serviceID := parseBucketId(d.Id(), "serviceID")
+	apiEndpoint := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
 
 	apiKey := rsConClient.Config.BluemixAPIKey
 	s3Conf := aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpoint, apiKey, serviceID)).WithS3ForcePathStyle(true)
@@ -138,9 +125,50 @@ func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("failed waiting for bucket %s to be created, %v",
 			bucketName, err)
 	}
+	bucketLocationInput := &s3.GetBucketLocationInput{
+		Bucket: aws.String(bucketName),
+	}
+	bucketLocationConstraint, err := s3Client.GetBucketLocation(bucketLocationInput)
+	if err != nil {
+		return err
+	}
+	bLocationConstraint := *bucketLocationConstraint.LocationConstraint
 
-	d.Set("bucket_name", d.Get("bucket_name").(string))
+	singleSiteLocationRegex, err := regexp.Compile("^[a-z]{3}[0-9][0-9]-[a-z]{4,8}")
+	if err != nil {
+		return err
+	}
+	regionLocationRegex, err := regexp.Compile("^[a-z]{2}-[a-z]{2,5}-[a-z]{4,8}")
+	if err != nil {
+		return err
+	}
+	crossRegionLocationRegex, err := regexp.Compile("^[a-z]{2}-[a-z]{4,8}")
+	if err != nil {
+		return err
+	}
 
+	if singleSiteLocationRegex.MatchString(bLocationConstraint) {
+		d.Set("single_site_location", strings.Split(bLocationConstraint, "-")[0])
+		d.Set("storage_class", strings.Split(bLocationConstraint, "-")[1])
+	}
+	if regionLocationRegex.MatchString(bLocationConstraint) {
+		d.Set("region_location", fmt.Sprintf("%s-%s", strings.Split(bLocationConstraint, "-")[0], strings.Split(bLocationConstraint, "-")[1]))
+		d.Set("storage_class", strings.Split(bLocationConstraint, "-")[2])
+	}
+	if crossRegionLocationRegex.MatchString(bLocationConstraint) {
+		d.Set("cross_region_location", strings.Split(bLocationConstraint, "-")[0])
+		d.Set("storage_class", strings.Split(bLocationConstraint, "-")[1])
+	}
+
+	head, err := s3Client.HeadBucket(headInput)
+	if err != nil {
+		return err
+	}
+	d.Set("key_protect", head.IBMSSEKPCrkId)
+	bucketCRN := fmt.Sprintf("%s:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName)
+	d.Set("crn", bucketCRN)
+	d.Set("resource_instance_id", serviceID)
+	d.Set("bucket_name", bucketName)
 	return nil
 }
 
@@ -191,15 +219,15 @@ func resourceIBMCOSCreate(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	// Generating CRN to create a "fake" id for TF
-	bucketCRN := fmt.Sprintf("%s:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName)
-	d.SetId(bucketCRN)
+	// Generating a fake id which contains every information about to get the bucket via s3 api
+	bucketID := fmt.Sprintf("%s:%s:%s:meta:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName, apiType, bLocation)
+	d.SetId(bucketID)
 	return resourceIBMCOSRead(d, meta)
 }
 
 func resourceIBMCOSDelete(d *schema.ResourceData, meta interface{}) error {
 	rsConClient, _ := meta.(ClientSession).BluemixSession()
-	bucketName := d.Get("bucket_name").(string)
+	bucketName := parseBucketId(d.Id(), "bucketName")
 	serviceID := d.Get("resource_instance_id").(string)
 	var bLocation string
 	var apiType string
@@ -236,33 +264,22 @@ func resourceIBMCOSExists(d *schema.ResourceData, meta interface{}) (bool, error
 	if err != nil {
 		return false, err
 	}
-	bucketName := d.Get("bucket_name").(string)
-	serviceID := d.Get("resource_instance_id").(string)
-	var bLocation string
-	var apiType string
-	if bucketLocation, ok := d.GetOk("cross_region_location"); ok {
-		bLocation = bucketLocation.(string)
-		apiType = "crl"
-	}
-	if bucketLocation, ok := d.GetOk("region_location"); ok {
-		bLocation = bucketLocation.(string)
-		apiType = "rl"
-	}
-	if bucketLocation, ok := d.GetOk("single_site_location"); ok {
-		bLocation = bucketLocation.(string)
-		apiType = "ssl"
-	}
-	apiEndpoint := selectCosApi(apiType, bLocation)
 
+	bucketName := parseBucketId(d.Id(), "bucketName")
+	serviceID := parseBucketId(d.Id(), "serviceID")
+	apiEndpoint := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
 	apiKey := rsConClient.Config.BluemixAPIKey
 	s3Conf := aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpoint, apiKey, serviceID)).WithS3ForcePathStyle(true)
 
 	s3Sess := session.Must(session.NewSession())
 	s3Client := s3.New(s3Sess, s3Conf)
 
-	bucketList, _ := s3Client.ListBuckets(&s3.ListBucketsInput{})
+	bucketList, err := s3Client.ListBuckets(&s3.ListBucketsInput{})
+	if err != nil {
+		return false, err
+	}
 	for _, bucket := range bucketList.Buckets {
-		if bucket.Name == aws.String(bucketName) {
+		if *bucket.Name == bucketName {
 			return true, nil
 		}
 	}
@@ -323,6 +340,25 @@ func selectCosApi(apiType string, bLocation string) string {
 		case "tor01":
 			return "s3.tor01.cloud-object-storage.appdomain.cloud"
 		}
+	}
+	return ""
+}
+
+func parseBucketId(id string, info string) string {
+	crn := strings.Split(id, ":meta:")[0]
+	meta := strings.Split(id, ":meta:")[1]
+
+	if info == "bucketName" {
+		return strings.Split(crn, ":bucket:")[1]
+	}
+	if info == "serviceID" {
+		return fmt.Sprintf("%s::", strings.Split(crn, ":bucket:")[0])
+	}
+	if info == "apiType" {
+		return strings.Split(meta, ":")[0]
+	}
+	if info == "bLocation" {
+		return strings.Split(meta, ":")[1]
 	}
 	return ""
 }
