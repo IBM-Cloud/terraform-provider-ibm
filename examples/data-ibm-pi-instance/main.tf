@@ -1,7 +1,7 @@
 data "ibm_pi_instance" "instance"
 {
 instancename="${var.instancename}"
-powerinstanceid="${var.powerinstanceid}"
+pi_cloud_instance_id="${var.powerinstanceid}"
 
 }
 
@@ -21,4 +21,11 @@ output "id"
 {
 value="${data.ibm_pi_instance.instance.id}"
 }
+
+output "volumeid"
+{
+value="${data.ibm_pi_instance.instance.volumeid}"
+}
+
+
 

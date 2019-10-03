@@ -149,6 +149,7 @@ func dataSourceIBMPIInstancesRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set("processors", powervmdata.Processors)
 	d.Set("status", powervmdata.Status)
 	d.Set("proctype", powervmdata.ProcType)
+	d.Set("volumeid", powervmdata.VolumeIds)
 
 	if powervmdata.Addresses != nil {
 		pvmaddress := make([]map[string]interface{}, len(powervmdata.Addresses))

@@ -1,7 +1,7 @@
 
 variable "instancename"
 {
-description="Name of the image key to be used"
+description="Name of the instance"
 }
 
 

@@ -5,6 +5,7 @@ import (
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform/helper/schema"
+	"log"
 
 	//"fmt"
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -20,7 +21,7 @@ func dataSourceIBMPIVolumes() *schema.Resource {
 			helpers.PIInstanceName: {
 				Type:         schema.TypeString,
 				Required:     true,
-				Description:  "Volume Name to be used for pvminstances",
+				Description:  "Instance Name to be used for pvminstances",
 				ValidateFunc: validation.NoZeroValues,
 			},
 
@@ -31,6 +32,11 @@ func dataSourceIBMPIVolumes() *schema.Resource {
 			},
 
 			//Computed Attributes
+
+			"bootvolumeid": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 
 			"instance_volumes": {
 				Type:     schema.TypeList,
@@ -90,6 +96,8 @@ func dataSourceIBMPIVolumesRead(d *schema.ResourceData, meta interface{}) error 
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
 
+	log.Printf("Printing the data %s", *volumedata.Volumes[0].VolumeID)
+	d.Set("bootvolumeid", *volumedata.Volumes[0].VolumeID)
 	d.Set("instance_volumes", flattenVolumesInInstances(volumedata.Volumes))
 
 	return nil
