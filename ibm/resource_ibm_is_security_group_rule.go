@@ -68,10 +68,9 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 			},
 
 			isSecurityGroupRuleRemote: {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Description:  "Security group id: an IP address, a CIDR block, or a single security group identifier",
-				ValidateFunc: validateSecurityGroupRemote,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Security group id: an IP address, a CIDR block, or a single security group identifier",
 			},
 
 			isSecurityGroupRuleProtocolICMP: {
@@ -339,17 +338,13 @@ func inferRemoteSecurityGroup(s string) (address, cidr, id string, err error) {
 	if isSecurityGroupAddress(s) {
 		address = s
 		return
-	}
-	if isSecurityGroupCIDR(s) {
+	} else if isSecurityGroupCIDR(s) {
 		cidr = s
 		return
-	}
-	if isSecurityGroupIdentityByID(s) {
+	} else {
 		id = s
 		return
 	}
-	err = fmt.Errorf("%s is not an acceptable %s ", s, isSecurityGroupRuleRemote)
-	return
 }
 
 func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string) (*parsedIBMISSecurityGroupRuleDictionary, error) {
