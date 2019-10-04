@@ -66,7 +66,7 @@ type LoadBalancer struct {
 	ResourceGroup *ResourceReference `json:"resource_group,omitempty"`
 
 	// SubnetReference
-	Subnets []*LoadBalancerSubnetsItems `json:"subnets"`
+	Subnets []*LoadBalancerSubnetsItems0 `json:"subnets"`
 }
 
 // Validate validates this load balancer
@@ -428,6 +428,84 @@ func (m *LoadBalancer) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *LoadBalancer) UnmarshalBinary(b []byte) error {
 	var res LoadBalancer
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LoadBalancerSubnetsItems0 load balancer subnets items0
+// swagger:model LoadBalancerSubnetsItems0
+type LoadBalancerSubnetsItems0 struct {
+
+	// The CRN for this subnet
+	Crn string `json:"crn,omitempty"`
+
+	// The unique identifier for this subnet
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+
+	// The user-defined name for this subnet
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this load balancer subnets items0
+func (m *LoadBalancerSubnetsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LoadBalancerSubnetsItems0) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("id", "body", "uuid", m.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LoadBalancerSubnetsItems0) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("name", "body", string(m.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LoadBalancerSubnetsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LoadBalancerSubnetsItems0) UnmarshalBinary(b []byte) error {
+	var res LoadBalancerSubnetsItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

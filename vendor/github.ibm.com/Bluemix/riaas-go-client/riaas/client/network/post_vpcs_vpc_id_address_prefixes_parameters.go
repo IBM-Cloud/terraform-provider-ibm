@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPostVpcsVpcIDAddressPrefixesParams creates a new PostVpcsVpcIDAddressPrefixesParams object
@@ -66,7 +64,7 @@ for the post vpcs vpc ID address prefixes operation typically these are written 
 type PostVpcsVpcIDAddressPrefixesParams struct {
 
 	/*AddressPoolPrefixTemplate*/
-	AddressPoolPrefixTemplate *models.PostVpcsVpcIDAddressPrefixesParamsBody
+	AddressPoolPrefixTemplate PostVpcsVpcIDAddressPrefixesBody
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -122,13 +120,13 @@ func (o *PostVpcsVpcIDAddressPrefixesParams) SetHTTPClient(client *http.Client) 
 }
 
 // WithAddressPoolPrefixTemplate adds the addressPoolPrefixTemplate to the post vpcs vpc ID address prefixes params
-func (o *PostVpcsVpcIDAddressPrefixesParams) WithAddressPoolPrefixTemplate(addressPoolPrefixTemplate *models.PostVpcsVpcIDAddressPrefixesParamsBody) *PostVpcsVpcIDAddressPrefixesParams {
+func (o *PostVpcsVpcIDAddressPrefixesParams) WithAddressPoolPrefixTemplate(addressPoolPrefixTemplate PostVpcsVpcIDAddressPrefixesBody) *PostVpcsVpcIDAddressPrefixesParams {
 	o.SetAddressPoolPrefixTemplate(addressPoolPrefixTemplate)
 	return o
 }
 
 // SetAddressPoolPrefixTemplate adds the addressPoolPrefixTemplate to the post vpcs vpc ID address prefixes params
-func (o *PostVpcsVpcIDAddressPrefixesParams) SetAddressPoolPrefixTemplate(addressPoolPrefixTemplate *models.PostVpcsVpcIDAddressPrefixesParamsBody) {
+func (o *PostVpcsVpcIDAddressPrefixesParams) SetAddressPoolPrefixTemplate(addressPoolPrefixTemplate PostVpcsVpcIDAddressPrefixesBody) {
 	o.AddressPoolPrefixTemplate = addressPoolPrefixTemplate
 }
 
@@ -173,10 +171,8 @@ func (o *PostVpcsVpcIDAddressPrefixesParams) WriteToRequest(r runtime.ClientRequ
 	}
 	var res []error
 
-	if o.AddressPoolPrefixTemplate != nil {
-		if err := r.SetBodyParam(o.AddressPoolPrefixTemplate); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.AddressPoolPrefixTemplate); err != nil {
+		return err
 	}
 
 	// query param generation

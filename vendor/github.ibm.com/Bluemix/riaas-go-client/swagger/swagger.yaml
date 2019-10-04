@@ -1,6 +1,136 @@
 
 basePath: /v1
 info: {title: Regional API, version: 0.3.0}
+parameters:
+  future_version:
+    description: >-
+      An internal-only future_version query parameter allows any date string to be accepted,
+      enabling testing of features still under development.
+    in: query
+    name: future_version
+    type: boolean
+  generation:
+    description: >-
+      The infrastructure generation for the request. For the API behavior
+      documented here, use `1` or `2`.
+    in: query
+    name: generation
+    required: true
+    type: integer
+  limit:
+    default: 50
+    description: The number of resources to return on a page
+    format: int32
+    in: query
+    maximum: 100
+    minimum: 1
+    name: limit
+    required: false
+    type: integer
+  listenerId:
+    description: The listener identifier
+    in: path
+    name: listener_id
+    required: true
+    type: string
+  loadBalancerId:
+    description: The load balancer identifier
+    in: path
+    name: load_balancer_id
+    required: true
+    type: string
+  id:
+    in: path
+    name: id
+    required: true
+    type: string
+  instanceId:
+    description: The instance identifier
+    in: path
+    name: instance_id
+    required: true
+    type: string
+  networkACLId:
+    description: The network ACL identifier
+    in: path
+    name: network_acl_id
+    required: true
+    type: string
+  networkInterfaceId:
+    description: The network interface identifier
+    in: path
+    name: network_interface_id
+    required: true
+    type: string
+  policyId:
+    description: The policy identifier
+    in: path
+    name: policy_id
+    required: true
+    type: string
+  poolId:
+    description: The pool identifier
+    in: path
+    name: pool_id
+    required: true
+    type: string
+  securityGroupId:
+    description: The security group identifier
+    in: path
+    name: security_group_id
+    required: true
+    type: string
+  start:
+    description: A server-supplied token determining what resource to start the page on
+    in: query
+    name: start
+    required: false
+    type: string
+  version:
+    description:
+      Requests the version of the API as of a date in the format `YYYY-MM-DD`.
+      Any date up to the current date may be provided. Specify the current date to request the
+      latest version.
+    in: query
+    name: version
+    required: true
+    type: string
+  vpcId:
+    description: The VPC identifier
+    in: path
+    name: vpc_id
+    required: true
+    type: string
+  vpcRouteIdUnqualified:
+    description: The route identifier
+    in: path
+    name: id
+    required: true
+    type: string
+  vpnGatewayConnectionCidrId:
+    description: The VPN connection identifier
+    in: path
+    name: vpn_gateway_connection_cidr_id
+    required: true
+    type: string
+  vpnGatewayConnectionId:
+    description: The VPN connection identifier
+    in: path
+    name: vpn_gateway_connection_id
+    required: true
+    type: string
+  vpnGatewayId:
+    description: The VPN gateway identifier
+    in: path
+    name: vpn_gateway_id
+    required: true
+    type: string
+  zone:
+    description: Filters the collection to resources within the specified zone
+    in: query
+    name: zone.name
+    required: false
+    type: string
 definitions:
   instance_network_interface:
     properties:
@@ -3094,6 +3224,296 @@ definitions:
       dumpProps:
         description: Dummy property
         type: string
+    type: object
+  ErrorTarget:
+    properties:
+      name:
+        description: 'The name of the problematic field, query parameter, or header'
+        example: zone.name
+        type: string
+      type:
+        description: The type of input where the problem was
+        enum:
+          - field
+          - header
+          - parameter
+        example: field
+        type: string
+      value:
+        description: >-
+          If present, the problematic value within the field, query parameter,
+          or header
+        type: string
+    required:
+      - name
+      - type
+    title: ErrorTarget
+    type: object
+  Error:
+    properties:
+      code:
+        description: A snake case string succinctly identifying the problem
+        example: missing_field
+        pattern: '^[a-z]+(_[a-z]+)*$'
+        type: string
+      message:
+        description: An explanation of the problem
+        example: The `zone.name` field is required.
+        type: string
+      more_info:
+        description: Link to documentation about this error
+        example: 'https://console.bluemix.net/docs/iaas/instances.html#template'
+        pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$'
+        type: string
+      target:
+        $ref: '#/definitions/ErrorTarget'
+    required:
+      - code
+      - message
+    title: Error
+    type: object
+  ErrorContainer:
+    properties:
+      errors:
+        description: Array of errors
+        items:
+          $ref: '#/definitions/Error'
+        type: array
+      trace:
+        description: Unique error identifier
+        example: b1fd1314d09b7aced81414f8f0f30f9a
+        maxLength: 64
+        minLength: 1
+        pattern: '^[-0-9a-zA-Z_]+$'
+        type: string
+    required:
+      - errors
+      - trace
+    title: ErrorContainer
+    type: object
+  RegionReference:
+    properties:
+      href:
+        description: The URL for this region
+        example: 'https://us-south.iaas.cloud.ibm.com/v1/regions/us-south'
+        pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$'
+        type: string
+      name:
+        description: The name for this region
+        example: us-south
+        maxLength: 63
+        minLength: 1
+        pattern: '^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$'
+        type: string
+    required:
+      - name
+      - href
+    title: RegionReference
+    type: object
+  Zone:
+    properties:
+      href:
+        description: The URL for this zone
+        example: >-
+          https://us-south.iaas.cloud.ibm.com/v1/regions/us-south/zones/us-south-1
+        pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$'
+        type: string
+      name:
+        description: The name for this zone
+        example: us-south-1
+        maxLength: 63
+        minLength: 1
+        pattern: '^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$'
+        type: string
+      region:
+        $ref: '#/definitions/RegionReference'
+        description: The region this zone belongs to
+      status:
+        description: The availability status of this zone.
+        enum:
+          - available
+          - impaired
+          - unavailable
+        type: string
+    required:
+      - name
+      - href
+      - region
+      - status
+    title: Zone
+    type: object
+  ZoneIdentityByName:
+    properties:
+      name:
+        description: The name for this zone
+        example: us-south-1
+        maxLength: 63
+        minLength: 1
+        pattern: '^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$'
+        type: string
+    required:
+      - name
+    title: ZoneIdentityByName
+    type: object
+  IP:
+    properties:
+      address:
+        example: 192.168.3.4
+        pattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$
+        type: string
+    title: IP
+    type: object
+  LifecycleState:
+    enum:
+      - deleted
+      - deleting
+      - failed
+      - pending
+      - stable
+      - updating
+      - waiting
+    example: stable
+    type: string
+  ZoneReference:
+    properties:
+      href:
+        description: The URL for this zone
+        example: >-
+          https://us-south.iaas.cloud.ibm.com/v1/regions/us-south/zones/us-south-1
+        pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$'
+        type: string
+      name:
+        description: The name for this zone
+        example: us-south-1
+        maxLength: 63
+        minLength: 1
+        pattern: '^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$'
+        type: string
+    required:
+      - name
+      - href
+    title: ZoneReference
+    type: object
+  CIDR:
+    example: 192.168.3.0/24
+    pattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(3[0-2]|[1-2][0-9]|[0-9]))$
+    type: string
+  CIDRBlockIdentity:
+    properties:
+      cidr_block:
+        description: 'A range of IPv4 addresses, in CIDR format.'
+        example: 10.0.0.0/24
+        type: string
+    required:
+      - cidr_block
+    title: CIDRBlockIdentity
+  Route:
+    properties:
+      id:
+        maxLength: 64
+        minLength: 1
+        pattern: '^[-0-9a-z_]+$'
+        type: string
+        description: The unique identifier for this route
+        example: 1a15dca5-7e33-45e1-b7c5-bc690e569531
+      href:
+        example: https://us-south.iaas.cloud.ibm.com/v1/vpcs/8e454ead-0db7-48ac-9a8b-2698d8c470a7/routes/1a15dca5-7e33-45e1-b7c5-bc690e569531
+        pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$'
+        type: string
+        description: The URL for this route
+      name:
+        example: my-route-1
+        maxLength: 63
+        minLength: 1
+        pattern: '^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$'
+        type: string
+        description: The user-defined name for this route
+      created_at:
+        description: The date and time that the route was created
+        format: date-time
+        type: string
+      destination:
+        allOf:
+          - $ref: '#/definitions/CIDR'
+          - description: The destination of the route
+      lifecycle_state:
+        allOf:
+          - $ref: '#/definitions/LifecycleState'
+          - description: The lifecycle state of the route
+      next_hop:
+        description: The next hop packets will be routed to
+        example:
+          address: 192.168.3.4
+        $ref: '#/definitions/IP'
+      zone:
+        allOf:
+          - $ref: '#/definitions/ZoneReference'
+          - description: The zone for which this route applies.
+    required:
+      - id
+      - href
+      - name
+      - created_at
+      - destination
+      - lifecycle_state
+      - next_hop
+      - zone
+    title: Route
+    type: object
+  RouteCollection:
+    properties:
+      routes:
+        description: Collection of routes
+        items:
+          $ref: '#/definitions/Route'
+        type: array
+    required:
+      - routes
+    title: RouteCollection
+    type: object
+  RouteNextHopIP:
+    $ref: '#/definitions/IP'
+    description: The IP address of the next hop to which to route packets
+    type: object
+  RoutePatch:
+    properties:
+      name:
+        example: my-route-2
+        maxLength: 63
+        minLength: 1
+        pattern: '^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$'
+        type: string
+        description: The user-defined name for this route. Names must be unique within
+          the VPC the route resides in.
+    title: RoutePatch
+  RouteTemplate:
+    properties:
+      name:
+        example: my-route-2
+        maxLength: 63
+        minLength: 1
+        pattern: '^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$'
+        type: string
+        description:
+          The user-defined name for this route. If unspecified, the name will
+          be a hyphenated list of randomly-selected words. Names must be unique within the VPC
+          the route resides in.
+      destination:
+        allOf:
+          - $ref: '#/definitions/CIDR'
+          - description: The destination of the route
+      next_hop:
+        example:
+          address: 192.168.3.4
+        $ref: '#/definitions/RouteNextHopIP'
+      zone:
+        $ref: '#/definitions/ZoneIdentityByName'
+        description: The zone for which this route applies.
+    title: RouteTemplate
+    required:
+      - destination
+      - next_hop
+      - zone
     type: object
 paths:
   /floating_ips:
@@ -9469,6 +9889,145 @@ paths:
           description: "A load balancer with the specified identifier could not be found."
           schema: {$ref: '#/definitions/riaaserror'}
       tags: [LBaas]
+  /vpcs/{vpc_id}/routes:
+    parameters:
+      - $ref: '#/parameters/version'
+      - $ref: '#/parameters/generation'
+      - $ref: '#/parameters/vpcId'
+    get:
+      consumes: [application/json]
+      description:
+        This request retrieves all user-defined routes for a VPC. Each route is
+        zone-specific and
+
+        directs any packets matching its destination CIDR block to a `next_hop`
+        IP address. The most
+
+        specific route matching a packet's destination will be used. If multiple
+        equally-specific
+
+        routes exist, traffic will be distributed across them.
+      parameters:
+        - $ref: '#/parameters/zone'
+      produces: [application/json]
+      operationId: list_vpc_routes
+      responses:
+        200:
+          schema: { $ref: '#/definitions/RouteCollection' }
+          description: The routes were retrieved successfully.
+        404:
+          schema: {$ref: '#/definitions/ErrorContainer'}
+          description: The specified VPC could not be found.
+      summary: List all user-defined routes for a VPC
+      tags:
+        [VPCs]
+    post:
+      description: >-
+        This request creates a new route. The route template object is
+        structured in the same way as
+
+        a retrieved route, and contains the information necessary to create the
+        new route. The
+
+        request will fail if the new route will cause a loop.
+      operationId: create_vpc_route
+      consumes: [application/json]
+      produces: [application/json]
+      parameters:
+      - in: body
+        name: RouteTemplate
+        required: true
+        schema:
+          $ref: '#/definitions/RouteTemplate'
+      responses:
+        201:
+          schema:
+            $ref: '#/definitions/Route'
+          description: The route was created successfully.
+        400:
+          schema:
+            $ref: '#/definitions/ErrorContainer'
+          description: An invalid route template was provided.
+        404:
+          schema:
+            $ref: '#/definitions/ErrorContainer'
+          description: The specified VPC could not be found.
+        409:
+          schema:
+            $ref: '#/definitions/ErrorContainer'
+          description: The route template conflicts with another route in the VPC.
+      summary: Create a route on your VPC
+      tags:
+        - VPCs
+  /vpcs/{vpc_id}/routes/{id}:
+    parameters:
+      - $ref: '#/parameters/version'
+      - $ref: '#/parameters/generation'
+      - $ref: '#/parameters/vpcId'
+      - $ref: '#/parameters/vpcRouteIdUnqualified'
+    delete:
+      description: This request deletes a route. This operation cannot be reversed.
+      operationId: delete_vpc_route
+      consumes: [application/json]
+      produces: [application/json]
+      responses:
+        204:
+          description: The route was deleted successfully.
+        404:
+          schema: {$ref: '#/definitions/ErrorContainer'}
+          description: A route with the specified identifier could not be found.
+      summary: Delete the specified route
+      tags:
+        - VPCs
+    get:
+      description: >-
+        This request retrieves a single route specified by the identifier in the
+        URL.
+      operationId: get_vpc_route
+      consumes: [application/json]
+      produces: [application/json]
+      responses:
+        200:
+          schema:
+            $ref: '#/definitions/Route'
+          description: The route was retrieved successfully.
+        404:
+          schema: {$ref: '#/definitions/ErrorContainer'}
+          description: A route with the specified identifier could not be found.
+      summary: Retrieve the specified route
+      tags:
+        - VPCs
+    patch:
+      description: >-
+        This request updates a route with the information in a provided route
+        patch. The route patch
+
+        object is structured in the same way as a retrieved route and contains
+        only the information
+
+        to be updated.
+      operationId: update_vpc_route
+      parameters:
+      - in: body
+        name: RoutePatch
+        schema:
+          $ref: '#/definitions/RoutePatch'
+        description: The route patch
+        required: true
+      responses:
+        200:
+          schema:
+            $ref: '#/definitions/Route'
+          description: The route was updated successfully.
+        400:
+          schema: {$ref: '#/definitions/ErrorContainer'}
+          description: An invalid route patch was provided.
+        404:
+          schema: {$ref: '#/definitions/ErrorContainer'}
+          description: A route with the specified identifier could not be found.
+      summary: Update a route
+      tags:
+        - VPCs
 security:
 - iamToken: []
 securityDefinitions:

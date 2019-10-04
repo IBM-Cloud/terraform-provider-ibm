@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPostVolumesVolumeIDSnapshotsParams creates a new PostVolumesVolumeIDSnapshotsParams object
@@ -66,7 +64,7 @@ for the post volumes volume ID snapshots operation typically these are written t
 type PostVolumesVolumeIDSnapshotsParams struct {
 
 	/*Body*/
-	Body *models.PostVolumesVolumeIDSnapshotsParamsBody
+	Body PostVolumesVolumeIDSnapshotsBody
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -122,13 +120,13 @@ func (o *PostVolumesVolumeIDSnapshotsParams) SetHTTPClient(client *http.Client) 
 }
 
 // WithBody adds the body to the post volumes volume ID snapshots params
-func (o *PostVolumesVolumeIDSnapshotsParams) WithBody(body *models.PostVolumesVolumeIDSnapshotsParamsBody) *PostVolumesVolumeIDSnapshotsParams {
+func (o *PostVolumesVolumeIDSnapshotsParams) WithBody(body PostVolumesVolumeIDSnapshotsBody) *PostVolumesVolumeIDSnapshotsParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the post volumes volume ID snapshots params
-func (o *PostVolumesVolumeIDSnapshotsParams) SetBody(body *models.PostVolumesVolumeIDSnapshotsParamsBody) {
+func (o *PostVolumesVolumeIDSnapshotsParams) SetBody(body PostVolumesVolumeIDSnapshotsBody) {
 	o.Body = body
 }
 
@@ -173,10 +171,8 @@ func (o *PostVolumesVolumeIDSnapshotsParams) WriteToRequest(r runtime.ClientRequ
 	}
 	var res []error
 
-	if o.Body != nil {
-		if err := r.SetBodyParam(o.Body); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.Body); err != nil {
+		return err
 	}
 
 	// query param generation

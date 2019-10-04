@@ -203,3 +203,109 @@ func (m *ListenerTemplatePatch) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
+
+// ListenerTemplatePatchCertificateInstance The certificate instance used for SSL termination. It is applicable only to `https` protocol.
+// swagger:model ListenerTemplatePatchCertificateInstance
+type ListenerTemplatePatchCertificateInstance struct {
+
+	// The ceritificate instance's CRN
+	Crn string `json:"crn,omitempty"`
+}
+
+// Validate validates this listener template patch certificate instance
+func (m *ListenerTemplatePatchCertificateInstance) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ListenerTemplatePatchCertificateInstance) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ListenerTemplatePatchCertificateInstance) UnmarshalBinary(b []byte) error {
+	var res ListenerTemplatePatchCertificateInstance
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ListenerTemplatePatchDefaultPool The default pool associated with the listener.
+// swagger:model ListenerTemplatePatchDefaultPool
+type ListenerTemplatePatchDefaultPool struct {
+
+	// The pool's canonical URL.
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href string `json:"href,omitempty"`
+
+	// The pool's unique identifier.
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+}
+
+// Validate validates this listener template patch default pool
+func (m *ListenerTemplatePatchDefaultPool) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ListenerTemplatePatchDefaultPool) validateHref(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Href) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("default_pool"+"."+"href", "body", string(m.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ListenerTemplatePatchDefaultPool) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("default_pool"+"."+"id", "body", "uuid", m.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ListenerTemplatePatchDefaultPool) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ListenerTemplatePatchDefaultPool) UnmarshalBinary(b []byte) error {
+	var res ListenerTemplatePatchDefaultPool
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

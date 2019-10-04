@@ -63,7 +63,7 @@ func (f *NetworkAclClient) Get(id string) (*models.NetworkACL, error) {
 }
 
 // Create ...
-func (f *NetworkAclClient) Create(acldef *models.PostNetworkAclsParamsBody) (*models.NetworkACL, error) {
+func (f *NetworkAclClient) Create(acldef network.PostNetworkAclsBody) (*models.NetworkACL, error) {
 	params := network.NewPostNetworkAclsParamsWithTimeout(f.session.Timeout).WithBody(acldef)
 	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
@@ -86,10 +86,10 @@ func (f *NetworkAclClient) Delete(id string) error {
 
 // Update ...
 func (f *NetworkAclClient) Update(id, name string) (*models.NetworkACL, error) {
-	var body = models.PatchNetworkAclsIDParamsBody{
+	var body = network.PatchNetworkAclsIDBody{
 		Name: name,
 	}
-	params := network.NewPatchNetworkAclsIDParamsWithTimeout(f.session.Timeout).WithID(id).WithBody(&body)
+	params := network.NewPatchNetworkAclsIDParamsWithTimeout(f.session.Timeout).WithID(id).WithBody(body)
 	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.PatchNetworkAclsID(params, session.Auth(f.session))
@@ -124,7 +124,7 @@ func (f *NetworkAclClient) AddRule(aclID, name, source, destination, direction, 
 	icmpType, icmpCode, portMin, portMax int64,
 	before string) (*models.NetworkACLRule, error) {
 
-	rule := models.PostNetworkAclsNetworkACLIDRulesParamsBody{
+	rule := network.PostNetworkAclsNetworkACLIDRulesBody{
 		Name:      name,
 		Direction: direction,
 		Protocol:  protocol,
@@ -159,13 +159,13 @@ func (f *NetworkAclClient) AddRule(aclID, name, source, destination, direction, 
 	}
 
 	if before != "" {
-		rule.Before = &models.PostNetworkAclsNetworkACLIDRulesParamsBodyBefore{
+		rule.Before = &network.PostNetworkAclsNetworkACLIDRulesParamsBodyBefore{
 			ID: before,
 		}
 	}
 
 	params := network.NewPostNetworkAclsNetworkACLIDRulesParamsWithTimeout(f.session.Timeout)
-	params = params.WithNetworkACLID(aclID).WithBody(&rule)
+	params = params.WithNetworkACLID(aclID).WithBody(rule)
 	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 
@@ -206,7 +206,7 @@ func (f *NetworkAclClient) UpdateRule(aclID, ruleID, name, source, destination, 
 	before string) (*models.NetworkACLRule, error) {
 
 	params := network.NewPatchNetworkAclsNetworkACLIDRulesIDParamsWithTimeout(f.session.Timeout).WithNetworkACLID(aclID).WithID(ruleID)
-	rule := models.PatchNetworkAclsNetworkACLIDRulesIDParamsBody{}
+	rule := network.PatchNetworkAclsNetworkACLIDRulesIDBody{}
 
 	if name != "" {
 		rule.Name = name
@@ -247,12 +247,12 @@ func (f *NetworkAclClient) UpdateRule(aclID, ruleID, name, source, destination, 
 	}
 
 	if before != "" {
-		rule.Before = &models.PatchNetworkAclsNetworkACLIDRulesIDParamsBodyBefore{
+		rule.Before = &network.PatchNetworkAclsNetworkACLIDRulesIDParamsBodyBefore{
 			ID: before,
 		}
 	}
 
-	params = params.WithBody(&rule)
+	params = params.WithBody(rule)
 	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 

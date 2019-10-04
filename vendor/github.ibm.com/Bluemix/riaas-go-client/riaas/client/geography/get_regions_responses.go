@@ -8,8 +8,12 @@ package geography
 import (
 	"fmt"
 	"io"
+	"strconv"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -54,7 +58,7 @@ func NewGetRegionsOK() *GetRegionsOK {
 dummy
 */
 type GetRegionsOK struct {
-	Payload *models.GetRegionsOKBody
+	Payload *GetRegionsOKBody
 }
 
 func (o *GetRegionsOK) Error() string {
@@ -63,7 +67,7 @@ func (o *GetRegionsOK) Error() string {
 
 func (o *GetRegionsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.GetRegionsOKBody)
+	o.Payload = new(GetRegionsOKBody)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -99,5 +103,72 @@ func (o *GetRegionsInternalServerError) readResponse(response runtime.ClientResp
 		return err
 	}
 
+	return nil
+}
+
+/*GetRegionsOKBody RegionCollection
+swagger:model GetRegionsOKBody
+*/
+type GetRegionsOKBody struct {
+
+	// Array of Region objects
+	// Required: true
+	Regions []*models.Region `json:"regions"`
+}
+
+// Validate validates this get regions o k body
+func (o *GetRegionsOKBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateRegions(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetRegionsOKBody) validateRegions(formats strfmt.Registry) error {
+
+	if err := validate.Required("getRegionsOK"+"."+"regions", "body", o.Regions); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(o.Regions); i++ {
+		if swag.IsZero(o.Regions[i]) { // not required
+			continue
+		}
+
+		if o.Regions[i] != nil {
+			if err := o.Regions[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("getRegionsOK" + "." + "regions" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetRegionsOKBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetRegionsOKBody) UnmarshalBinary(b []byte) error {
+	var res GetRegionsOKBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

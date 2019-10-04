@@ -9,7 +9,10 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -135,5 +138,63 @@ func (o *PatchInstancesInstanceIDVolumeAttachmentsIDNotFound) readResponse(respo
 		return err
 	}
 
+	return nil
+}
+
+/*PatchInstancesInstanceIDVolumeAttachmentsIDBody patch instances instance ID volume attachments ID body
+swagger:model PatchInstancesInstanceIDVolumeAttachmentsIDBody
+*/
+type PatchInstancesInstanceIDVolumeAttachmentsIDBody struct {
+
+	// If set to true, when deleting the instance the volume will also be deleted
+	DeleteVolumeOnInstanceDelete *bool `json:"delete_volume_on_instance_delete,omitempty"`
+
+	// The user-defined name for this volumeattachment
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this patch instances instance ID volume attachments ID body
+func (o *PatchInstancesInstanceIDVolumeAttachmentsIDBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PatchInstancesInstanceIDVolumeAttachmentsIDBody) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("body"+"."+"name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PatchInstancesInstanceIDVolumeAttachmentsIDBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PatchInstancesInstanceIDVolumeAttachmentsIDBody) UnmarshalBinary(b []byte) error {
+	var res PatchInstancesInstanceIDVolumeAttachmentsIDBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

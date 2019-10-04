@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPutSubnetsSubnetIDNetworkACLParams creates a new PutSubnetsSubnetIDNetworkACLParams object
@@ -71,7 +69,7 @@ type PutSubnetsSubnetIDNetworkACLParams struct {
 	*/
 	Generation int64
 	/*RequestBody*/
-	RequestBody *models.PutSubnetsSubnetIDNetworkACLParamsBody
+	RequestBody PutSubnetsSubnetIDNetworkACLBody
 	/*SubnetID
 	  The subnet identifier
 
@@ -133,13 +131,13 @@ func (o *PutSubnetsSubnetIDNetworkACLParams) SetGeneration(generation int64) {
 }
 
 // WithRequestBody adds the requestBody to the put subnets subnet ID network ACL params
-func (o *PutSubnetsSubnetIDNetworkACLParams) WithRequestBody(requestBody *models.PutSubnetsSubnetIDNetworkACLParamsBody) *PutSubnetsSubnetIDNetworkACLParams {
+func (o *PutSubnetsSubnetIDNetworkACLParams) WithRequestBody(requestBody PutSubnetsSubnetIDNetworkACLBody) *PutSubnetsSubnetIDNetworkACLParams {
 	o.SetRequestBody(requestBody)
 	return o
 }
 
 // SetRequestBody adds the requestBody to the put subnets subnet ID network ACL params
-func (o *PutSubnetsSubnetIDNetworkACLParams) SetRequestBody(requestBody *models.PutSubnetsSubnetIDNetworkACLParamsBody) {
+func (o *PutSubnetsSubnetIDNetworkACLParams) SetRequestBody(requestBody PutSubnetsSubnetIDNetworkACLBody) {
 	o.RequestBody = requestBody
 }
 
@@ -182,10 +180,8 @@ func (o *PutSubnetsSubnetIDNetworkACLParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.RequestBody != nil {
-		if err := r.SetBodyParam(o.RequestBody); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.RequestBody); err != nil {
+		return err
 	}
 
 	// path param subnet_id

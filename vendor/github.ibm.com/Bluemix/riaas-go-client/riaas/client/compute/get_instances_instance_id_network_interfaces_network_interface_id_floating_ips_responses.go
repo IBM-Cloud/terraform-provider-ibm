@@ -8,8 +8,11 @@ package compute
 import (
 	"fmt"
 	"io"
+	"strconv"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -54,7 +57,7 @@ func NewGetInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsOK()
 The associated floating IPs were retrieved successfully.
 */
 type GetInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsOK struct {
-	Payload *models.GetInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsOKBody
+	Payload *GetInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsOKBody
 }
 
 func (o *GetInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsOK) Error() string {
@@ -63,7 +66,7 @@ func (o *GetInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsOK)
 
 func (o *GetInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.GetInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsOKBody)
+	o.Payload = new(GetInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsOKBody)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -99,5 +102,73 @@ func (o *GetInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsNot
 		return err
 	}
 
+	return nil
+}
+
+/*GetInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsOKBody UnpaginatedFloatingIPCollection
+//
+// Collection of floating IPs
+swagger:model GetInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsOKBody
+*/
+type GetInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsOKBody struct {
+
+	// Collection of floating IPs
+	FloatingIps []*models.FloatingIP `json:"floating_ips,omitempty"`
+}
+
+// Validate validates this get instances instance ID network interfaces network interface ID floating ips o k body
+func (o *GetInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsOKBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateFloatingIps(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsOKBody) validateFloatingIps(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.FloatingIps) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(o.FloatingIps); i++ {
+		if swag.IsZero(o.FloatingIps[i]) { // not required
+			continue
+		}
+
+		if o.FloatingIps[i] != nil {
+			if err := o.FloatingIps[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("getInstancesInstanceIdNetworkInterfacesNetworkInterfaceIdFloatingIpsOK" + "." + "floating_ips" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsOKBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsOKBody) UnmarshalBinary(b []byte) error {
+	var res GetInstancesInstanceIDNetworkInterfacesNetworkInterfaceIDFloatingIpsOKBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

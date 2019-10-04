@@ -155,3 +155,113 @@ func (m *IKEPolicyCollection) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
+
+// IKEPolicyCollectionFirst A reference to the first page of resources
+// swagger:model IKEPolicyCollectionFirst
+type IKEPolicyCollectionFirst struct {
+
+	// The URL for the first page of resources
+	// Required: true
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href *string `json:"href"`
+}
+
+// Validate validates this i k e policy collection first
+func (m *IKEPolicyCollectionFirst) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IKEPolicyCollectionFirst) validateHref(formats strfmt.Registry) error {
+
+	if err := validate.Required("first"+"."+"href", "body", m.Href); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("first"+"."+"href", "body", string(*m.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IKEPolicyCollectionFirst) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IKEPolicyCollectionFirst) UnmarshalBinary(b []byte) error {
+	var res IKEPolicyCollectionFirst
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IKEPolicyCollectionNext A reference to the next page of resources; this reference is included for all pages except the last page
+// swagger:model IKEPolicyCollectionNext
+type IKEPolicyCollectionNext struct {
+
+	// The URL for the next page of resources
+	// Required: true
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href *string `json:"href"`
+}
+
+// Validate validates this i k e policy collection next
+func (m *IKEPolicyCollectionNext) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IKEPolicyCollectionNext) validateHref(formats strfmt.Registry) error {
+
+	if err := validate.Required("next"+"."+"href", "body", m.Href); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("next"+"."+"href", "body", string(*m.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IKEPolicyCollectionNext) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IKEPolicyCollectionNext) UnmarshalBinary(b []byte) error {
+	var res IKEPolicyCollectionNext
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

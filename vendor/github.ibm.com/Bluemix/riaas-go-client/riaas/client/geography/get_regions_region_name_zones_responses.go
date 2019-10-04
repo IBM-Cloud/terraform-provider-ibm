@@ -8,8 +8,12 @@ package geography
 import (
 	"fmt"
 	"io"
+	"strconv"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -61,7 +65,7 @@ func NewGetRegionsRegionNameZonesOK() *GetRegionsRegionNameZonesOK {
 dummy
 */
 type GetRegionsRegionNameZonesOK struct {
-	Payload *models.GetRegionsRegionNameZonesOKBody
+	Payload *GetRegionsRegionNameZonesOKBody
 }
 
 func (o *GetRegionsRegionNameZonesOK) Error() string {
@@ -70,7 +74,7 @@ func (o *GetRegionsRegionNameZonesOK) Error() string {
 
 func (o *GetRegionsRegionNameZonesOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.GetRegionsRegionNameZonesOKBody)
+	o.Payload = new(GetRegionsRegionNameZonesOKBody)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -135,5 +139,72 @@ func (o *GetRegionsRegionNameZonesInternalServerError) readResponse(response run
 		return err
 	}
 
+	return nil
+}
+
+/*GetRegionsRegionNameZonesOKBody ZoneCollection
+swagger:model GetRegionsRegionNameZonesOKBody
+*/
+type GetRegionsRegionNameZonesOKBody struct {
+
+	// Collection of zones
+	// Required: true
+	Zones []*models.Zone `json:"zones"`
+}
+
+// Validate validates this get regions region name zones o k body
+func (o *GetRegionsRegionNameZonesOKBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateZones(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetRegionsRegionNameZonesOKBody) validateZones(formats strfmt.Registry) error {
+
+	if err := validate.Required("getRegionsRegionNameZonesOK"+"."+"zones", "body", o.Zones); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(o.Zones); i++ {
+		if swag.IsZero(o.Zones[i]) { // not required
+			continue
+		}
+
+		if o.Zones[i] != nil {
+			if err := o.Zones[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("getRegionsRegionNameZonesOK" + "." + "zones" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetRegionsRegionNameZonesOKBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetRegionsRegionNameZonesOKBody) UnmarshalBinary(b []byte) error {
+	var res GetRegionsRegionNameZonesOKBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

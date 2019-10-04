@@ -8,8 +8,12 @@ package storage
 import (
 	"fmt"
 	"io"
+	"strconv"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -135,5 +139,440 @@ func (o *PostSharesShareIDTargetsNotFound) readResponse(response runtime.ClientR
 		return err
 	}
 
+	return nil
+}
+
+/*PostSharesShareIDTargetsBody post shares share ID targets body
+swagger:model PostSharesShareIDTargetsBody
+*/
+type PostSharesShareIDTargetsBody struct {
+
+	// security groups
+	SecurityGroups []*SecurityGroupsItems0 `json:"Security_groups"`
+
+	// A single IPv4 or IPv6 address.
+	Address string `json:"address,omitempty"`
+
+	// The user-defined name for this file share mount target
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+
+	// resource group
+	ResourceGroup *PostSharesShareIDTargetsParamsBodyResourceGroup `json:"resource_group,omitempty"`
+
+	// subnet
+	Subnet *PostSharesShareIDTargetsParamsBodySubnet `json:"subnet,omitempty"`
+
+	// zone
+	Zone *PostSharesShareIDTargetsParamsBodyZone `json:"zone,omitempty"`
+}
+
+// Validate validates this post shares share ID targets body
+func (o *PostSharesShareIDTargetsBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateSecurityGroups(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateResourceGroup(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateSubnet(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateZone(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostSharesShareIDTargetsBody) validateSecurityGroups(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.SecurityGroups) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(o.SecurityGroups); i++ {
+		if swag.IsZero(o.SecurityGroups[i]) { // not required
+			continue
+		}
+
+		if o.SecurityGroups[i] != nil {
+			if err := o.SecurityGroups[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("body" + "." + "Security_groups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (o *PostSharesShareIDTargetsBody) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("body"+"."+"name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PostSharesShareIDTargetsBody) validateResourceGroup(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ResourceGroup) { // not required
+		return nil
+	}
+
+	if o.ResourceGroup != nil {
+		if err := o.ResourceGroup.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("body" + "." + "resource_group")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *PostSharesShareIDTargetsBody) validateSubnet(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Subnet) { // not required
+		return nil
+	}
+
+	if o.Subnet != nil {
+		if err := o.Subnet.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("body" + "." + "subnet")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *PostSharesShareIDTargetsBody) validateZone(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Zone) { // not required
+		return nil
+	}
+
+	if o.Zone != nil {
+		if err := o.Zone.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("body" + "." + "zone")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostSharesShareIDTargetsBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostSharesShareIDTargetsBody) UnmarshalBinary(b []byte) error {
+	var res PostSharesShareIDTargetsBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*PostSharesShareIDTargetsParamsBodyResourceGroup ResourceGroupIdentity
+swagger:model PostSharesShareIDTargetsParamsBodyResourceGroup
+*/
+type PostSharesShareIDTargetsParamsBodyResourceGroup struct {
+
+	// The unique identifier for this resource
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+}
+
+// Validate validates this post shares share ID targets params body resource group
+func (o *PostSharesShareIDTargetsParamsBodyResourceGroup) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostSharesShareIDTargetsParamsBodyResourceGroup) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("body"+"."+"resource_group"+"."+"id", "body", "uuid", o.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostSharesShareIDTargetsParamsBodyResourceGroup) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostSharesShareIDTargetsParamsBodyResourceGroup) UnmarshalBinary(b []byte) error {
+	var res PostSharesShareIDTargetsParamsBodyResourceGroup
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*PostSharesShareIDTargetsParamsBodySubnet reference
+swagger:model PostSharesShareIDTargetsParamsBodySubnet
+*/
+type PostSharesShareIDTargetsParamsBodySubnet struct {
+
+	// The CRN for this snapshot
+	Crn string `json:"crn,omitempty"`
+
+	// The unique identifier for this resource
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+
+	// The user-defined name for this resource
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this post shares share ID targets params body subnet
+func (o *PostSharesShareIDTargetsParamsBodySubnet) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostSharesShareIDTargetsParamsBodySubnet) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("body"+"."+"subnet"+"."+"id", "body", "uuid", o.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PostSharesShareIDTargetsParamsBodySubnet) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("body"+"."+"subnet"+"."+"name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostSharesShareIDTargetsParamsBodySubnet) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostSharesShareIDTargetsParamsBodySubnet) UnmarshalBinary(b []byte) error {
+	var res PostSharesShareIDTargetsParamsBodySubnet
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*PostSharesShareIDTargetsParamsBodyZone ZoneIdentity
+//
+// The zone to place the file share mount target in
+swagger:model PostSharesShareIDTargetsParamsBodyZone
+*/
+type PostSharesShareIDTargetsParamsBodyZone struct {
+
+	// The name for this zone
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this post shares share ID targets params body zone
+func (o *PostSharesShareIDTargetsParamsBodyZone) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostSharesShareIDTargetsParamsBodyZone) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("body"+"."+"zone"+"."+"name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostSharesShareIDTargetsParamsBodyZone) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostSharesShareIDTargetsParamsBodyZone) UnmarshalBinary(b []byte) error {
+	var res PostSharesShareIDTargetsParamsBodyZone
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*SecurityGroupsItems0 reference
+swagger:model SecurityGroupsItems0
+*/
+type SecurityGroupsItems0 struct {
+
+	// The CRN for this snapshot
+	Crn string `json:"crn,omitempty"`
+
+	// The unique identifier for this resource
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+
+	// The user-defined name for this resource
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this security groups items0
+func (o *SecurityGroupsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *SecurityGroupsItems0) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("id", "body", "uuid", o.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *SecurityGroupsItems0) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *SecurityGroupsItems0) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *SecurityGroupsItems0) UnmarshalBinary(b []byte) error {
+	var res SecurityGroupsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

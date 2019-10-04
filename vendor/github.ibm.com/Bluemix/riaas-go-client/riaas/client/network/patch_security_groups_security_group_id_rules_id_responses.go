@@ -6,10 +6,14 @@ package network
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -135,5 +139,244 @@ func (o *PatchSecurityGroupsSecurityGroupIDRulesIDInternalServerError) readRespo
 		return err
 	}
 
+	return nil
+}
+
+/*PatchSecurityGroupsSecurityGroupIDRulesIDBody SecurityGroupRuleTemplate
+swagger:model PatchSecurityGroupsSecurityGroupIDRulesIDBody
+*/
+type PatchSecurityGroupsSecurityGroupIDRulesIDBody struct {
+
+	// The ICMP traffic code to allow. Valid values from 0 to 255. If unspecified, all codes are allowed. This can only be specified if type is also specified.
+	Code *int64 `json:"code,omitempty"`
+
+	// The direction of traffic to enforce (ingress, egress)
+	// Enum: [ingress egress]
+	Direction string `json:"direction,omitempty"`
+
+	// The IP version to enforce (ipv4, ipv6). The format of 'remote.address' or 'remote.cidr_block' must match this field, if they are used. Also, if 'remote' references another security group (ie. using remote.id, remote.name, remote.crn) then this rule will only apply to IP addresses (network interfaces) in that group which match this ip_version.
+	// Enum: [ipv4 ipv6]
+	IPVersion string `json:"ip_version,omitempty"`
+
+	// The highest port in the range of ports to be matched; if unspecified, `65535` is used.
+	PortMax *int64 `json:"port_max,omitempty"`
+
+	// The lowest port in the range of ports to be matched; if unspecified, `1` is used.
+	PortMin *int64 `json:"port_min,omitempty"`
+
+	// remote
+	Remote *PatchSecurityGroupsSecurityGroupIDRulesIDParamsBodyRemote `json:"remote,omitempty"`
+
+	// The ICMP traffic type to allow. Valid values from 0 to 254. If unspecified, all types are allowed by this rule.
+	Type *int64 `json:"type,omitempty"`
+}
+
+// Validate validates this patch security groups security group ID rules ID body
+func (o *PatchSecurityGroupsSecurityGroupIDRulesIDBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateDirection(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateIPVersion(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateRemote(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var patchSecurityGroupsSecurityGroupIdRulesIdBodyTypeDirectionPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ingress","egress"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		patchSecurityGroupsSecurityGroupIdRulesIdBodyTypeDirectionPropEnum = append(patchSecurityGroupsSecurityGroupIdRulesIdBodyTypeDirectionPropEnum, v)
+	}
+}
+
+const (
+
+	// PatchSecurityGroupsSecurityGroupIDRulesIDBodyDirectionIngress captures enum value "ingress"
+	PatchSecurityGroupsSecurityGroupIDRulesIDBodyDirectionIngress string = "ingress"
+
+	// PatchSecurityGroupsSecurityGroupIDRulesIDBodyDirectionEgress captures enum value "egress"
+	PatchSecurityGroupsSecurityGroupIDRulesIDBodyDirectionEgress string = "egress"
+)
+
+// prop value enum
+func (o *PatchSecurityGroupsSecurityGroupIDRulesIDBody) validateDirectionEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, patchSecurityGroupsSecurityGroupIdRulesIdBodyTypeDirectionPropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (o *PatchSecurityGroupsSecurityGroupIDRulesIDBody) validateDirection(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Direction) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := o.validateDirectionEnum("body"+"."+"direction", "body", o.Direction); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var patchSecurityGroupsSecurityGroupIdRulesIdBodyTypeIPVersionPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ipv4","ipv6"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		patchSecurityGroupsSecurityGroupIdRulesIdBodyTypeIPVersionPropEnum = append(patchSecurityGroupsSecurityGroupIdRulesIdBodyTypeIPVersionPropEnum, v)
+	}
+}
+
+const (
+
+	// PatchSecurityGroupsSecurityGroupIDRulesIDBodyIPVersionIPV4 captures enum value "ipv4"
+	PatchSecurityGroupsSecurityGroupIDRulesIDBodyIPVersionIPV4 string = "ipv4"
+
+	// PatchSecurityGroupsSecurityGroupIDRulesIDBodyIPVersionIPV6 captures enum value "ipv6"
+	PatchSecurityGroupsSecurityGroupIDRulesIDBodyIPVersionIPV6 string = "ipv6"
+)
+
+// prop value enum
+func (o *PatchSecurityGroupsSecurityGroupIDRulesIDBody) validateIPVersionEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, patchSecurityGroupsSecurityGroupIdRulesIdBodyTypeIPVersionPropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (o *PatchSecurityGroupsSecurityGroupIDRulesIDBody) validateIPVersion(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.IPVersion) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := o.validateIPVersionEnum("body"+"."+"ip_version", "body", o.IPVersion); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PatchSecurityGroupsSecurityGroupIDRulesIDBody) validateRemote(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Remote) { // not required
+		return nil
+	}
+
+	if o.Remote != nil {
+		if err := o.Remote.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("body" + "." + "remote")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PatchSecurityGroupsSecurityGroupIDRulesIDBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PatchSecurityGroupsSecurityGroupIDRulesIDBody) UnmarshalBinary(b []byte) error {
+	var res PatchSecurityGroupsSecurityGroupIDRulesIDBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*PatchSecurityGroupsSecurityGroupIDRulesIDParamsBodyRemote SecurityGroupIdentityByName
+//
+// Uniquely identifies a security group using any one of ID, CRN, or name.
+swagger:model PatchSecurityGroupsSecurityGroupIDRulesIDParamsBodyRemote
+*/
+type PatchSecurityGroupsSecurityGroupIDRulesIDParamsBodyRemote struct {
+
+	// A single IPv4 or IPv6 address.
+	Address string `json:"address,omitempty"`
+
+	// A range of IPv4 or IPv6 addresses, in CIDR format.
+	CidrBlock string `json:"cidr_block,omitempty"`
+
+	// The security group's CRN
+	Crn string `json:"crn,omitempty"`
+
+	// The security group's unique identifier.
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+}
+
+// Validate validates this patch security groups security group ID rules ID params body remote
+func (o *PatchSecurityGroupsSecurityGroupIDRulesIDParamsBodyRemote) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PatchSecurityGroupsSecurityGroupIDRulesIDParamsBodyRemote) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("body"+"."+"remote"+"."+"id", "body", "uuid", o.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PatchSecurityGroupsSecurityGroupIDRulesIDParamsBodyRemote) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PatchSecurityGroupsSecurityGroupIDRulesIDParamsBodyRemote) UnmarshalBinary(b []byte) error {
+	var res PatchSecurityGroupsSecurityGroupIDRulesIDParamsBodyRemote
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

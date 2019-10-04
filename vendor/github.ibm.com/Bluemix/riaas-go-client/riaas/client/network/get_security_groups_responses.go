@@ -8,8 +8,12 @@ package network
 import (
 	"fmt"
 	"io"
+	"strconv"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -54,7 +58,7 @@ func NewGetSecurityGroupsOK() *GetSecurityGroupsOK {
 dummy
 */
 type GetSecurityGroupsOK struct {
-	Payload *models.GetSecurityGroupsOKBody
+	Payload *GetSecurityGroupsOKBody
 }
 
 func (o *GetSecurityGroupsOK) Error() string {
@@ -63,7 +67,7 @@ func (o *GetSecurityGroupsOK) Error() string {
 
 func (o *GetSecurityGroupsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.GetSecurityGroupsOKBody)
+	o.Payload = new(GetSecurityGroupsOKBody)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -99,5 +103,281 @@ func (o *GetSecurityGroupsInternalServerError) readResponse(response runtime.Cli
 		return err
 	}
 
+	return nil
+}
+
+/*GetSecurityGroupsOKBody SecurityGroupCollection
+swagger:model GetSecurityGroupsOKBody
+*/
+type GetSecurityGroupsOKBody struct {
+
+	// first
+	First *GetSecurityGroupsOKBodyFirst `json:"first,omitempty"`
+
+	// The maximum number of resources can be returned by the request
+	// Maximum: 100
+	// Minimum: 1
+	Limit int64 `json:"limit,omitempty"`
+
+	// next
+	Next *GetSecurityGroupsOKBodyNext `json:"next,omitempty"`
+
+	// Collection of security groups
+	// Required: true
+	SecurityGroups []*models.SecurityGroup `json:"security_groups"`
+
+	// The total number of resources across all pages
+	// Minimum: 0
+	TotalCount *int64 `json:"total_count,omitempty"`
+}
+
+// Validate validates this get security groups o k body
+func (o *GetSecurityGroupsOKBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateFirst(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateLimit(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateNext(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateSecurityGroups(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateTotalCount(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetSecurityGroupsOKBody) validateFirst(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.First) { // not required
+		return nil
+	}
+
+	if o.First != nil {
+		if err := o.First.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("getSecurityGroupsOK" + "." + "first")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *GetSecurityGroupsOKBody) validateLimit(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Limit) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("getSecurityGroupsOK"+"."+"limit", "body", int64(o.Limit), 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("getSecurityGroupsOK"+"."+"limit", "body", int64(o.Limit), 100, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *GetSecurityGroupsOKBody) validateNext(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Next) { // not required
+		return nil
+	}
+
+	if o.Next != nil {
+		if err := o.Next.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("getSecurityGroupsOK" + "." + "next")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *GetSecurityGroupsOKBody) validateSecurityGroups(formats strfmt.Registry) error {
+
+	if err := validate.Required("getSecurityGroupsOK"+"."+"security_groups", "body", o.SecurityGroups); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(o.SecurityGroups); i++ {
+		if swag.IsZero(o.SecurityGroups[i]) { // not required
+			continue
+		}
+
+		if o.SecurityGroups[i] != nil {
+			if err := o.SecurityGroups[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("getSecurityGroupsOK" + "." + "security_groups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (o *GetSecurityGroupsOKBody) validateTotalCount(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.TotalCount) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("getSecurityGroupsOK"+"."+"total_count", "body", int64(*o.TotalCount), 0, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetSecurityGroupsOKBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetSecurityGroupsOKBody) UnmarshalBinary(b []byte) error {
+	var res GetSecurityGroupsOKBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*GetSecurityGroupsOKBodyFirst A reference to the first page of resources
+swagger:model GetSecurityGroupsOKBodyFirst
+*/
+type GetSecurityGroupsOKBodyFirst struct {
+
+	// The URL for the first page of resources
+	// Required: true
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href *string `json:"href"`
+}
+
+// Validate validates this get security groups o k body first
+func (o *GetSecurityGroupsOKBodyFirst) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetSecurityGroupsOKBodyFirst) validateHref(formats strfmt.Registry) error {
+
+	if err := validate.Required("getSecurityGroupsOK"+"."+"first"+"."+"href", "body", o.Href); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("getSecurityGroupsOK"+"."+"first"+"."+"href", "body", string(*o.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetSecurityGroupsOKBodyFirst) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetSecurityGroupsOKBodyFirst) UnmarshalBinary(b []byte) error {
+	var res GetSecurityGroupsOKBodyFirst
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*GetSecurityGroupsOKBodyNext A reference to the next page of resources; this reference is included for all pages except the last page
+swagger:model GetSecurityGroupsOKBodyNext
+*/
+type GetSecurityGroupsOKBodyNext struct {
+
+	// The URL for the next page of resources
+	// Required: true
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href *string `json:"href"`
+}
+
+// Validate validates this get security groups o k body next
+func (o *GetSecurityGroupsOKBodyNext) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetSecurityGroupsOKBodyNext) validateHref(formats strfmt.Registry) error {
+
+	if err := validate.Required("getSecurityGroupsOK"+"."+"next"+"."+"href", "body", o.Href); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("getSecurityGroupsOK"+"."+"next"+"."+"href", "body", string(*o.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetSecurityGroupsOKBodyNext) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetSecurityGroupsOKBodyNext) UnmarshalBinary(b []byte) error {
+	var res GetSecurityGroupsOKBodyNext
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

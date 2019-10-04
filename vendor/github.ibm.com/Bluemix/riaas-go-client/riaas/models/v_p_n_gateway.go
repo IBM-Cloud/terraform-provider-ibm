@@ -296,3 +296,166 @@ func (m *VPNGateway) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
+
+// VPNGatewayPublicIP v p n gateway public IP
+// swagger:model VPNGatewayPublicIP
+type VPNGatewayPublicIP struct {
+
+	// The IP address assigned to this VPN gateway
+	Address string `json:"address,omitempty"`
+}
+
+// Validate validates this v p n gateway public IP
+func (m *VPNGatewayPublicIP) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VPNGatewayPublicIP) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VPNGatewayPublicIP) UnmarshalBinary(b []byte) error {
+	var res VPNGatewayPublicIP
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VPNGatewayResourceGroup ResourceGroupIdentity
+// swagger:model VPNGatewayResourceGroup
+type VPNGatewayResourceGroup struct {
+
+	// The unique identifier for this resource
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+}
+
+// Validate validates this v p n gateway resource group
+func (m *VPNGatewayResourceGroup) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VPNGatewayResourceGroup) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("resource_group"+"."+"id", "body", "uuid", m.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VPNGatewayResourceGroup) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VPNGatewayResourceGroup) UnmarshalBinary(b []byte) error {
+	var res VPNGatewayResourceGroup
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VPNGatewaySubnet SubnetReference
+// swagger:model VPNGatewaySubnet
+type VPNGatewaySubnet struct {
+
+	// The CRN for this subnet
+	Crn string `json:"crn,omitempty"`
+
+	// The unique identifier for this subnet
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+
+	// The user-defined name for this subnet
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this v p n gateway subnet
+func (m *VPNGatewaySubnet) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VPNGatewaySubnet) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("subnet"+"."+"id", "body", "uuid", m.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VPNGatewaySubnet) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("subnet"+"."+"name", "body", string(m.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VPNGatewaySubnet) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VPNGatewaySubnet) UnmarshalBinary(b []byte) error {
+	var res VPNGatewaySubnet
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

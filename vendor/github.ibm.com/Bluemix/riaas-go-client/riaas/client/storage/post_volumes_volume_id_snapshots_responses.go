@@ -9,7 +9,10 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -135,5 +138,140 @@ func (o *PostVolumesVolumeIDSnapshotsInternalServerError) readResponse(response 
 		return err
 	}
 
+	return nil
+}
+
+/*PostVolumesVolumeIDSnapshotsBody VPCTemplate
+swagger:model PostVolumesVolumeIDSnapshotsBody
+*/
+type PostVolumesVolumeIDSnapshotsBody struct {
+
+	// The user-defined name for this subnet
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+
+	// resource group
+	ResourceGroup *PostVolumesVolumeIDSnapshotsParamsBodyResourceGroup `json:"resource_group,omitempty"`
+}
+
+// Validate validates this post volumes volume ID snapshots body
+func (o *PostVolumesVolumeIDSnapshotsBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateResourceGroup(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostVolumesVolumeIDSnapshotsBody) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("body"+"."+"name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PostVolumesVolumeIDSnapshotsBody) validateResourceGroup(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ResourceGroup) { // not required
+		return nil
+	}
+
+	if o.ResourceGroup != nil {
+		if err := o.ResourceGroup.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("body" + "." + "resource_group")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostVolumesVolumeIDSnapshotsBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostVolumesVolumeIDSnapshotsBody) UnmarshalBinary(b []byte) error {
+	var res PostVolumesVolumeIDSnapshotsBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*PostVolumesVolumeIDSnapshotsParamsBodyResourceGroup idreference
+swagger:model PostVolumesVolumeIDSnapshotsParamsBodyResourceGroup
+*/
+type PostVolumesVolumeIDSnapshotsParamsBodyResourceGroup struct {
+
+	// The unique identifier for this resource
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+}
+
+// Validate validates this post volumes volume ID snapshots params body resource group
+func (o *PostVolumesVolumeIDSnapshotsParamsBodyResourceGroup) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostVolumesVolumeIDSnapshotsParamsBodyResourceGroup) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("body"+"."+"resource_group"+"."+"id", "body", "uuid", o.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostVolumesVolumeIDSnapshotsParamsBodyResourceGroup) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostVolumesVolumeIDSnapshotsParamsBodyResourceGroup) UnmarshalBinary(b []byte) error {
+	var res PostVolumesVolumeIDSnapshotsParamsBodyResourceGroup
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

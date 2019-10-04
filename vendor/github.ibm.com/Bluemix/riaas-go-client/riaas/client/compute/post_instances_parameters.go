@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPostInstancesParams creates a new PostInstancesParams object
@@ -66,7 +64,7 @@ for the post instances operation typically these are written to a http.Request
 type PostInstancesParams struct {
 
 	/*Body*/
-	Body *models.PostInstancesParamsBody
+	Body PostInstancesBody
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -117,13 +115,13 @@ func (o *PostInstancesParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the post instances params
-func (o *PostInstancesParams) WithBody(body *models.PostInstancesParamsBody) *PostInstancesParams {
+func (o *PostInstancesParams) WithBody(body PostInstancesBody) *PostInstancesParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the post instances params
-func (o *PostInstancesParams) SetBody(body *models.PostInstancesParamsBody) {
+func (o *PostInstancesParams) SetBody(body PostInstancesBody) {
 	o.Body = body
 }
 
@@ -157,10 +155,8 @@ func (o *PostInstancesParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 	var res []error
 
-	if o.Body != nil {
-		if err := r.SetBodyParam(o.Body); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.Body); err != nil {
+		return err
 	}
 
 	// query param generation

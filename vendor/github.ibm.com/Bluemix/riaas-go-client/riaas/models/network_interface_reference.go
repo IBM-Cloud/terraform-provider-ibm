@@ -17,7 +17,8 @@ import (
 type NetworkInterfaceReference struct {
 	ResourceReference
 
-	NetworkInterfaceReferenceAllOf1
+	// The primary IPv4 address
+	PrimaryIPV4Address string `json:"primary_ipv4_address,omitempty"`
 }
 
 // UnmarshalJSON unmarshals this object from a JSON structure
@@ -30,11 +31,14 @@ func (m *NetworkInterfaceReference) UnmarshalJSON(raw []byte) error {
 	m.ResourceReference = aO0
 
 	// AO1
-	var aO1 NetworkInterfaceReferenceAllOf1
-	if err := swag.ReadJSON(raw, &aO1); err != nil {
+	var dataAO1 struct {
+		PrimaryIPV4Address string `json:"primary_ipv4_address,omitempty"`
+	}
+	if err := swag.ReadJSON(raw, &dataAO1); err != nil {
 		return err
 	}
-	m.NetworkInterfaceReferenceAllOf1 = aO1
+
+	m.PrimaryIPV4Address = dataAO1.PrimaryIPV4Address
 
 	return nil
 }
@@ -49,11 +53,17 @@ func (m NetworkInterfaceReference) MarshalJSON() ([]byte, error) {
 	}
 	_parts = append(_parts, aO0)
 
-	aO1, err := swag.WriteJSON(m.NetworkInterfaceReferenceAllOf1)
-	if err != nil {
-		return nil, err
+	var dataAO1 struct {
+		PrimaryIPV4Address string `json:"primary_ipv4_address,omitempty"`
 	}
-	_parts = append(_parts, aO1)
+
+	dataAO1.PrimaryIPV4Address = m.PrimaryIPV4Address
+
+	jsonDataAO1, errAO1 := swag.WriteJSON(dataAO1)
+	if errAO1 != nil {
+		return nil, errAO1
+	}
+	_parts = append(_parts, jsonDataAO1)
 
 	return swag.ConcatJSON(_parts...), nil
 }
@@ -64,10 +74,6 @@ func (m *NetworkInterfaceReference) Validate(formats strfmt.Registry) error {
 
 	// validation for a type composition with ResourceReference
 	if err := m.ResourceReference.Validate(formats); err != nil {
-		res = append(res, err)
-	}
-	// validation for a type composition with NetworkInterfaceReferenceAllOf1
-	if err := m.NetworkInterfaceReferenceAllOf1.Validate(formats); err != nil {
 		res = append(res, err)
 	}
 

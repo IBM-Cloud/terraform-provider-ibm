@@ -8,8 +8,12 @@ package network
 import (
 	"fmt"
 	"io"
+	"strconv"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -54,7 +58,7 @@ func NewGetSecurityGroupsSecurityGroupIDNetworkInterfacesOK() *GetSecurityGroups
 dummy
 */
 type GetSecurityGroupsSecurityGroupIDNetworkInterfacesOK struct {
-	Payload *models.GetSecurityGroupsSecurityGroupIDNetworkInterfacesOKBody
+	Payload *GetSecurityGroupsSecurityGroupIDNetworkInterfacesOKBody
 }
 
 func (o *GetSecurityGroupsSecurityGroupIDNetworkInterfacesOK) Error() string {
@@ -63,7 +67,7 @@ func (o *GetSecurityGroupsSecurityGroupIDNetworkInterfacesOK) Error() string {
 
 func (o *GetSecurityGroupsSecurityGroupIDNetworkInterfacesOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.GetSecurityGroupsSecurityGroupIDNetworkInterfacesOKBody)
+	o.Payload = new(GetSecurityGroupsSecurityGroupIDNetworkInterfacesOKBody)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -99,5 +103,72 @@ func (o *GetSecurityGroupsSecurityGroupIDNetworkInterfacesInternalServerError) r
 		return err
 	}
 
+	return nil
+}
+
+/*GetSecurityGroupsSecurityGroupIDNetworkInterfacesOKBody NetworkInterfaceCollection
+swagger:model GetSecurityGroupsSecurityGroupIDNetworkInterfacesOKBody
+*/
+type GetSecurityGroupsSecurityGroupIDNetworkInterfacesOKBody struct {
+
+	// Collection of network interfaces
+	// Required: true
+	NetworkInterfaces []*models.ServerNetworkInterface `json:"network_interfaces"`
+}
+
+// Validate validates this get security groups security group ID network interfaces o k body
+func (o *GetSecurityGroupsSecurityGroupIDNetworkInterfacesOKBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateNetworkInterfaces(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetSecurityGroupsSecurityGroupIDNetworkInterfacesOKBody) validateNetworkInterfaces(formats strfmt.Registry) error {
+
+	if err := validate.Required("getSecurityGroupsSecurityGroupIdNetworkInterfacesOK"+"."+"network_interfaces", "body", o.NetworkInterfaces); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(o.NetworkInterfaces); i++ {
+		if swag.IsZero(o.NetworkInterfaces[i]) { // not required
+			continue
+		}
+
+		if o.NetworkInterfaces[i] != nil {
+			if err := o.NetworkInterfaces[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("getSecurityGroupsSecurityGroupIdNetworkInterfacesOK" + "." + "network_interfaces" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetSecurityGroupsSecurityGroupIDNetworkInterfacesOKBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetSecurityGroupsSecurityGroupIDNetworkInterfacesOKBody) UnmarshalBinary(b []byte) error {
+	var res GetSecurityGroupsSecurityGroupIDNetworkInterfacesOKBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

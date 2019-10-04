@@ -9,7 +9,10 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -135,5 +138,394 @@ func (o *PostPublicGatewaysInternalServerError) readResponse(response runtime.Cl
 		return err
 	}
 
+	return nil
+}
+
+/*PostPublicGatewaysBody PublicGatewayTemplate
+swagger:model PostPublicGatewaysBody
+*/
+type PostPublicGatewaysBody struct {
+
+	// floating ip
+	FloatingIP *PostPublicGatewaysParamsBodyFloatingIP `json:"floating_ip,omitempty"`
+
+	// The user-defined name for this public gateway
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+
+	// resource group
+	ResourceGroup *PostPublicGatewaysParamsBodyResourceGroup `json:"resource_group,omitempty"`
+
+	// vpc
+	// Required: true
+	Vpc *PostPublicGatewaysParamsBodyVpc `json:"vpc"`
+
+	// zone
+	// Required: true
+	Zone *PostPublicGatewaysParamsBodyZone `json:"zone"`
+}
+
+// Validate validates this post public gateways body
+func (o *PostPublicGatewaysBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateFloatingIP(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateResourceGroup(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateVpc(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateZone(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostPublicGatewaysBody) validateFloatingIP(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.FloatingIP) { // not required
+		return nil
+	}
+
+	if o.FloatingIP != nil {
+		if err := o.FloatingIP.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("body" + "." + "floating_ip")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *PostPublicGatewaysBody) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("body"+"."+"name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PostPublicGatewaysBody) validateResourceGroup(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ResourceGroup) { // not required
+		return nil
+	}
+
+	if o.ResourceGroup != nil {
+		if err := o.ResourceGroup.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("body" + "." + "resource_group")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *PostPublicGatewaysBody) validateVpc(formats strfmt.Registry) error {
+
+	if err := validate.Required("body"+"."+"vpc", "body", o.Vpc); err != nil {
+		return err
+	}
+
+	if o.Vpc != nil {
+		if err := o.Vpc.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("body" + "." + "vpc")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *PostPublicGatewaysBody) validateZone(formats strfmt.Registry) error {
+
+	if err := validate.Required("body"+"."+"zone", "body", o.Zone); err != nil {
+		return err
+	}
+
+	if o.Zone != nil {
+		if err := o.Zone.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("body" + "." + "zone")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostPublicGatewaysBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostPublicGatewaysBody) UnmarshalBinary(b []byte) error {
+	var res PostPublicGatewaysBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*PostPublicGatewaysParamsBodyFloatingIP FloatingIPTemplateBasic
+swagger:model PostPublicGatewaysParamsBodyFloatingIP
+*/
+type PostPublicGatewaysParamsBodyFloatingIP struct {
+
+	// The globally unique IP address
+	Address string `json:"address,omitempty"`
+
+	// The CRN for this floating ip
+	Crn string `json:"crn,omitempty"`
+
+	// The unique identifier for this floating ip
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+}
+
+// Validate validates this post public gateways params body floating IP
+func (o *PostPublicGatewaysParamsBodyFloatingIP) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostPublicGatewaysParamsBodyFloatingIP) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("body"+"."+"floating_ip"+"."+"id", "body", "uuid", o.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostPublicGatewaysParamsBodyFloatingIP) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostPublicGatewaysParamsBodyFloatingIP) UnmarshalBinary(b []byte) error {
+	var res PostPublicGatewaysParamsBodyFloatingIP
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*PostPublicGatewaysParamsBodyResourceGroup ResourceGroupIdentity
+//
+// The resource group for this network ACL
+swagger:model PostPublicGatewaysParamsBodyResourceGroup
+*/
+type PostPublicGatewaysParamsBodyResourceGroup struct {
+
+	// The unique identifier for this resource group
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+}
+
+// Validate validates this post public gateways params body resource group
+func (o *PostPublicGatewaysParamsBodyResourceGroup) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostPublicGatewaysParamsBodyResourceGroup) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("body"+"."+"resource_group"+"."+"id", "body", "uuid", o.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostPublicGatewaysParamsBodyResourceGroup) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostPublicGatewaysParamsBodyResourceGroup) UnmarshalBinary(b []byte) error {
+	var res PostPublicGatewaysParamsBodyResourceGroup
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*PostPublicGatewaysParamsBodyVpc VPCIdentity
+//
+// The VPC this public gateway will serve
+swagger:model PostPublicGatewaysParamsBodyVpc
+*/
+type PostPublicGatewaysParamsBodyVpc struct {
+
+	// The unique identifier for this VPC
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+}
+
+// Validate validates this post public gateways params body vpc
+func (o *PostPublicGatewaysParamsBodyVpc) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostPublicGatewaysParamsBodyVpc) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("body"+"."+"vpc"+"."+"id", "body", "uuid", o.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostPublicGatewaysParamsBodyVpc) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostPublicGatewaysParamsBodyVpc) UnmarshalBinary(b []byte) error {
+	var res PostPublicGatewaysParamsBodyVpc
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*PostPublicGatewaysParamsBodyZone ZoneIdentity
+//
+// The Zone where this public gateway will be created
+swagger:model PostPublicGatewaysParamsBodyZone
+*/
+type PostPublicGatewaysParamsBodyZone struct {
+
+	// The name for this zone
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this post public gateways params body zone
+func (o *PostPublicGatewaysParamsBodyZone) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostPublicGatewaysParamsBodyZone) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("body"+"."+"zone"+"."+"name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostPublicGatewaysParamsBodyZone) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostPublicGatewaysParamsBodyZone) UnmarshalBinary(b []byte) error {
+	var res PostPublicGatewaysParamsBodyZone
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

@@ -9,7 +9,10 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -135,5 +138,60 @@ func (o *PatchSecurityGroupsIDInternalServerError) readResponse(response runtime
 		return err
 	}
 
+	return nil
+}
+
+/*PatchSecurityGroupsIDBody SecurityGroupPatch
+swagger:model PatchSecurityGroupsIDBody
+*/
+type PatchSecurityGroupsIDBody struct {
+
+	// The user-assigned name of this security group. If the user does not provide a name one will be automatically assigned. Security group names must be unique within the scope of a user account
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this patch security groups ID body
+func (o *PatchSecurityGroupsIDBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PatchSecurityGroupsIDBody) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("request body"+"."+"name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PatchSecurityGroupsIDBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PatchSecurityGroupsIDBody) UnmarshalBinary(b []byte) error {
+	var res PatchSecurityGroupsIDBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

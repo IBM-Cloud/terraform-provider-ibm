@@ -238,3 +238,109 @@ func (m *ListenerTemplate) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
+
+// ListenerTemplateCertificateInstance The certificate instance used for SSL termination. It is applicable only to `https` protocol.
+// swagger:model ListenerTemplateCertificateInstance
+type ListenerTemplateCertificateInstance struct {
+
+	// The ceritificate instance's CRN
+	Crn string `json:"crn,omitempty"`
+}
+
+// Validate validates this listener template certificate instance
+func (m *ListenerTemplateCertificateInstance) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ListenerTemplateCertificateInstance) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ListenerTemplateCertificateInstance) UnmarshalBinary(b []byte) error {
+	var res ListenerTemplateCertificateInstance
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ListenerTemplateDefaultPool The default pool associated with the listener.
+// swagger:model ListenerTemplateDefaultPool
+type ListenerTemplateDefaultPool struct {
+
+	// The pool's canonical URL.
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href string `json:"href,omitempty"`
+
+	// The pool's unique identifier.
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+}
+
+// Validate validates this listener template default pool
+func (m *ListenerTemplateDefaultPool) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ListenerTemplateDefaultPool) validateHref(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Href) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("default_pool"+"."+"href", "body", string(m.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ListenerTemplateDefaultPool) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("default_pool"+"."+"id", "body", "uuid", m.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ListenerTemplateDefaultPool) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ListenerTemplateDefaultPool) UnmarshalBinary(b []byte) error {
+	var res ListenerTemplateDefaultPool
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

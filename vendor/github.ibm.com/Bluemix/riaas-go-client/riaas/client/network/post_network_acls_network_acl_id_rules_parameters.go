@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPostNetworkAclsNetworkACLIDRulesParams creates a new PostNetworkAclsNetworkACLIDRulesParams object
@@ -66,7 +64,7 @@ for the post network acls network ACL ID rules operation typically these are wri
 type PostNetworkAclsNetworkACLIDRulesParams struct {
 
 	/*Body*/
-	Body *models.PostNetworkAclsNetworkACLIDRulesParamsBody
+	Body PostNetworkAclsNetworkACLIDRulesBody
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -122,13 +120,13 @@ func (o *PostNetworkAclsNetworkACLIDRulesParams) SetHTTPClient(client *http.Clie
 }
 
 // WithBody adds the body to the post network acls network ACL ID rules params
-func (o *PostNetworkAclsNetworkACLIDRulesParams) WithBody(body *models.PostNetworkAclsNetworkACLIDRulesParamsBody) *PostNetworkAclsNetworkACLIDRulesParams {
+func (o *PostNetworkAclsNetworkACLIDRulesParams) WithBody(body PostNetworkAclsNetworkACLIDRulesBody) *PostNetworkAclsNetworkACLIDRulesParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the post network acls network ACL ID rules params
-func (o *PostNetworkAclsNetworkACLIDRulesParams) SetBody(body *models.PostNetworkAclsNetworkACLIDRulesParamsBody) {
+func (o *PostNetworkAclsNetworkACLIDRulesParams) SetBody(body PostNetworkAclsNetworkACLIDRulesBody) {
 	o.Body = body
 }
 
@@ -173,10 +171,8 @@ func (o *PostNetworkAclsNetworkACLIDRulesParams) WriteToRequest(r runtime.Client
 	}
 	var res []error
 
-	if o.Body != nil {
-		if err := r.SetBodyParam(o.Body); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.Body); err != nil {
+		return err
 	}
 
 	// query param generation

@@ -63,13 +63,13 @@ func (f *KeyClient) Get(id string) (*models.Key, error) {
 
 // Create ...
 func (f *KeyClient) Create(name, keystring string) (*models.Key, error) {
-	keytype := models.PostKeysParamsBodyTypeRsa
-	var body = models.PostKeysParamsBody{
+	keytype := compute.PostKeysBodyTypeRsa
+	var body = compute.PostKeysBody{
 		Name:      name,
 		PublicKey: &keystring,
 		Type:      &keytype,
 	}
-	params := compute.NewPostKeysParamsWithTimeout(f.session.Timeout).WithBody(&body)
+	params := compute.NewPostKeysParamsWithTimeout(f.session.Timeout).WithBody(body)
 	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.PostKeys(params, session.Auth(f.session))
@@ -91,10 +91,10 @@ func (f *KeyClient) Delete(id string) error {
 
 // Update ...
 func (f *KeyClient) Update(id, name string) (*models.Key, error) {
-	var body = models.PatchKeysIDParamsBody{
+	var body = compute.PatchKeysIDBody{
 		Name: name,
 	}
-	params := compute.NewPatchKeysIDParamsWithTimeout(f.session.Timeout).WithID(id).WithBody(&body)
+	params := compute.NewPatchKeysIDParamsWithTimeout(f.session.Timeout).WithID(id).WithBody(body)
 	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.PatchKeysID(params, session.Auth(f.session))
