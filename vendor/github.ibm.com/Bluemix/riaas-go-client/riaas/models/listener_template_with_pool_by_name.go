@@ -203,3 +203,88 @@ func (m *ListenerTemplateWithPoolByName) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
+
+// ListenerTemplateWithPoolByNameCertificateInstance listener template with pool by name certificate instance
+// swagger:model ListenerTemplateWithPoolByNameCertificateInstance
+type ListenerTemplateWithPoolByNameCertificateInstance struct {
+
+	// The ceritificate instance's CRN
+	Crn string `json:"crn,omitempty"`
+}
+
+// Validate validates this listener template with pool by name certificate instance
+func (m *ListenerTemplateWithPoolByNameCertificateInstance) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ListenerTemplateWithPoolByNameCertificateInstance) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ListenerTemplateWithPoolByNameCertificateInstance) UnmarshalBinary(b []byte) error {
+	var res ListenerTemplateWithPoolByNameCertificateInstance
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ListenerTemplateWithPoolByNameDefaultPool listener template with pool by name default pool
+// swagger:model ListenerTemplateWithPoolByNameDefaultPool
+type ListenerTemplateWithPoolByNameDefaultPool struct {
+
+	// The pool's user-defined name.
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this listener template with pool by name default pool
+func (m *ListenerTemplateWithPoolByNameDefaultPool) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ListenerTemplateWithPoolByNameDefaultPool) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("default_pool"+"."+"name", "body", string(m.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ListenerTemplateWithPoolByNameDefaultPool) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ListenerTemplateWithPoolByNameDefaultPool) UnmarshalBinary(b []byte) error {
+	var res ListenerTemplateWithPoolByNameDefaultPool
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPostFloatingIpsParams creates a new PostFloatingIpsParams object
@@ -66,7 +64,7 @@ for the post floating ips operation typically these are written to a http.Reques
 type PostFloatingIpsParams struct {
 
 	/*Body*/
-	Body *models.PostFloatingIpsParamsBody
+	Body PostFloatingIpsBody
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -117,13 +115,13 @@ func (o *PostFloatingIpsParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the post floating ips params
-func (o *PostFloatingIpsParams) WithBody(body *models.PostFloatingIpsParamsBody) *PostFloatingIpsParams {
+func (o *PostFloatingIpsParams) WithBody(body PostFloatingIpsBody) *PostFloatingIpsParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the post floating ips params
-func (o *PostFloatingIpsParams) SetBody(body *models.PostFloatingIpsParamsBody) {
+func (o *PostFloatingIpsParams) SetBody(body PostFloatingIpsBody) {
 	o.Body = body
 }
 
@@ -157,10 +155,8 @@ func (o *PostFloatingIpsParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 	var res []error
 
-	if o.Body != nil {
-		if err := r.SetBodyParam(o.Body); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.Body); err != nil {
+		return err
 	}
 
 	// query param generation

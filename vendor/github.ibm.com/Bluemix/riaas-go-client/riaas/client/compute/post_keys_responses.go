@@ -6,10 +6,14 @@ package compute
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -135,5 +139,205 @@ func (o *PostKeysInternalServerError) readResponse(response runtime.ClientRespon
 		return err
 	}
 
+	return nil
+}
+
+/*PostKeysBody KeyTemplate
+swagger:model PostKeysBody
+*/
+type PostKeysBody struct {
+
+	// The user-defined name for this key
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+
+	// A public SSH key to be imported into the system
+	// Required: true
+	PublicKey *string `json:"public_key"`
+
+	// resource group
+	ResourceGroup *PostKeysParamsBodyResourceGroup `json:"resource_group,omitempty"`
+
+	// The cryptosystem used by this key
+	// Enum: [rsa]
+	Type *string `json:"type,omitempty"`
+}
+
+// Validate validates this post keys body
+func (o *PostKeysBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validatePublicKey(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateResourceGroup(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostKeysBody) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("body"+"."+"name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PostKeysBody) validatePublicKey(formats strfmt.Registry) error {
+
+	if err := validate.Required("body"+"."+"public_key", "body", o.PublicKey); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PostKeysBody) validateResourceGroup(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ResourceGroup) { // not required
+		return nil
+	}
+
+	if o.ResourceGroup != nil {
+		if err := o.ResourceGroup.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("body" + "." + "resource_group")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var postKeysBodyTypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["rsa"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		postKeysBodyTypeTypePropEnum = append(postKeysBodyTypeTypePropEnum, v)
+	}
+}
+
+const (
+
+	// PostKeysBodyTypeRsa captures enum value "rsa"
+	PostKeysBodyTypeRsa string = "rsa"
+)
+
+// prop value enum
+func (o *PostKeysBody) validateTypeEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, postKeysBodyTypeTypePropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (o *PostKeysBody) validateType(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Type) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := o.validateTypeEnum("body"+"."+"type", "body", *o.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostKeysBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostKeysBody) UnmarshalBinary(b []byte) error {
+	var res PostKeysBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*PostKeysParamsBodyResourceGroup idreference
+swagger:model PostKeysParamsBodyResourceGroup
+*/
+type PostKeysParamsBodyResourceGroup struct {
+
+	// The unique identifier for this resource
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+}
+
+// Validate validates this post keys params body resource group
+func (o *PostKeysParamsBodyResourceGroup) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostKeysParamsBodyResourceGroup) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("body"+"."+"resource_group"+"."+"id", "body", "uuid", o.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostKeysParamsBodyResourceGroup) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostKeysParamsBodyResourceGroup) UnmarshalBinary(b []byte) error {
+	var res PostKeysParamsBodyResourceGroup
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

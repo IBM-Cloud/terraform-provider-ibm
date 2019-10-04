@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPatchFloatingIpsIDParams creates a new PatchFloatingIpsIDParams object
@@ -66,7 +64,7 @@ for the patch floating ips ID operation typically these are written to a http.Re
 type PatchFloatingIpsIDParams struct {
 
 	/*Body*/
-	Body *models.PatchFloatingIpsIDParamsBody
+	Body PatchFloatingIpsIDBody
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -122,13 +120,13 @@ func (o *PatchFloatingIpsIDParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the patch floating ips ID params
-func (o *PatchFloatingIpsIDParams) WithBody(body *models.PatchFloatingIpsIDParamsBody) *PatchFloatingIpsIDParams {
+func (o *PatchFloatingIpsIDParams) WithBody(body PatchFloatingIpsIDBody) *PatchFloatingIpsIDParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the patch floating ips ID params
-func (o *PatchFloatingIpsIDParams) SetBody(body *models.PatchFloatingIpsIDParamsBody) {
+func (o *PatchFloatingIpsIDParams) SetBody(body PatchFloatingIpsIDBody) {
 	o.Body = body
 }
 
@@ -173,10 +171,8 @@ func (o *PatchFloatingIpsIDParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 	var res []error
 
-	if o.Body != nil {
-		if err := r.SetBodyParam(o.Body); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.Body); err != nil {
+		return err
 	}
 
 	// query param generation

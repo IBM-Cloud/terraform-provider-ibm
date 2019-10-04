@@ -122,3 +122,34 @@ func (m *MemberTemplate) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
+
+// MemberTemplateTarget MemberAddressTarget
+// swagger:model MemberTemplateTarget
+type MemberTemplateTarget struct {
+
+	// The IP address of the pool member.
+	Address string `json:"address,omitempty"`
+}
+
+// Validate validates this member template target
+func (m *MemberTemplateTarget) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *MemberTemplateTarget) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *MemberTemplateTarget) UnmarshalBinary(b []byte) error {
+	var res MemberTemplateTarget
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

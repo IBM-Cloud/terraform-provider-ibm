@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPatchSecurityGroupsIDParams creates a new PatchSecurityGroupsIDParams object
@@ -76,7 +74,7 @@ type PatchSecurityGroupsIDParams struct {
 	*/
 	ID string
 	/*RequestBody*/
-	RequestBody *models.PatchSecurityGroupsIDParamsBody
+	RequestBody PatchSecurityGroupsIDBody
 	/*Version
 	  Requests the version of the API as of a date in the format `YYYY-MM-DD`. Any date up to the current date may be provided. Specify the current date to request the latest version.
 
@@ -144,13 +142,13 @@ func (o *PatchSecurityGroupsIDParams) SetID(id string) {
 }
 
 // WithRequestBody adds the requestBody to the patch security groups ID params
-func (o *PatchSecurityGroupsIDParams) WithRequestBody(requestBody *models.PatchSecurityGroupsIDParamsBody) *PatchSecurityGroupsIDParams {
+func (o *PatchSecurityGroupsIDParams) WithRequestBody(requestBody PatchSecurityGroupsIDBody) *PatchSecurityGroupsIDParams {
 	o.SetRequestBody(requestBody)
 	return o
 }
 
 // SetRequestBody adds the requestBody to the patch security groups ID params
-func (o *PatchSecurityGroupsIDParams) SetRequestBody(requestBody *models.PatchSecurityGroupsIDParamsBody) {
+func (o *PatchSecurityGroupsIDParams) SetRequestBody(requestBody PatchSecurityGroupsIDBody) {
 	o.RequestBody = requestBody
 }
 
@@ -187,10 +185,8 @@ func (o *PatchSecurityGroupsIDParams) WriteToRequest(r runtime.ClientRequest, re
 		return err
 	}
 
-	if o.RequestBody != nil {
-		if err := r.SetBodyParam(o.RequestBody); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.RequestBody); err != nil {
+		return err
 	}
 
 	// query param version

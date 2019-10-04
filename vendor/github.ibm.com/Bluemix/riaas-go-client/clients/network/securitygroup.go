@@ -82,7 +82,7 @@ func (f *SecurityGroupClient) Get(id string) (*models.SecurityGroup, error) {
 }
 
 // Create ...
-func (f *SecurityGroupClient) Create(sgdef *models.PostSecurityGroupsParamsBody) (*models.SecurityGroup, error) {
+func (f *SecurityGroupClient) Create(sgdef network.PostSecurityGroupsBody) (*models.SecurityGroup, error) {
 	params := network.NewPostSecurityGroupsParamsWithTimeout(f.session.Timeout).WithBody(sgdef)
 	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
@@ -105,11 +105,11 @@ func (f *SecurityGroupClient) Delete(id string) error {
 
 // Update ...
 func (f *SecurityGroupClient) Update(id, name string) (*models.SecurityGroup, error) {
-	var body = models.PatchSecurityGroupsIDParamsBody{
+	var body = network.PatchSecurityGroupsIDBody{
 		Name: name,
 	}
 
-	params := network.NewPatchSecurityGroupsIDParamsWithTimeout(f.session.Timeout).WithID(id).WithRequestBody(&body)
+	params := network.NewPatchSecurityGroupsIDParamsWithTimeout(f.session.Timeout).WithID(id).WithRequestBody(body)
 	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.PatchSecurityGroupsID(params, session.Auth(f.session))
@@ -191,7 +191,7 @@ func (f *SecurityGroupClient) ListRules(secgrpID string) ([]*models.SecurityGrou
 func (f *SecurityGroupClient) AddRule(secgrpID, direction, ipversion, protocol, remoteAddress, remoteCIDR, remoteSecGrpID string,
 	icmpType, icmpCode, portMin, portMax int64) (*models.SecurityGroupRule, error) {
 
-	remote := models.PostSecurityGroupsSecurityGroupIDRulesParamsBodyRemote{}
+	remote := network.PostSecurityGroupsSecurityGroupIDRulesParamsBodyRemote{}
 
 	if remoteAddress != "" {
 		if remoteCIDR != "" || remoteSecGrpID != "" {
@@ -207,7 +207,7 @@ func (f *SecurityGroupClient) AddRule(secgrpID, direction, ipversion, protocol, 
 		remote.ID = strfmt.UUID(remoteSecGrpID)
 	}
 
-	rule := models.PostSecurityGroupsSecurityGroupIDRulesParamsBody{
+	rule := network.PostSecurityGroupsSecurityGroupIDRulesBody{
 		Direction: &direction,
 		IPVersion: ipversion,
 		Protocol:  &protocol,
@@ -237,7 +237,7 @@ func (f *SecurityGroupClient) AddRule(secgrpID, direction, ipversion, protocol, 
 	}
 
 	params := network.NewPostSecurityGroupsSecurityGroupIDRulesParamsWithTimeout(f.session.Timeout)
-	params = params.WithSecurityGroupID(secgrpID).WithBody(&rule)
+	params = params.WithSecurityGroupID(secgrpID).WithBody(rule)
 	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 
@@ -276,7 +276,7 @@ func (f *SecurityGroupClient) GetRule(secgrpID, ruleID string) (*models.Security
 func (f *SecurityGroupClient) UpdateRule(secgrpID, ruleID, direction, ipversion, protocol, remoteAddress, remoteCIDR, remoteSecGrpID string,
 	icmpType, icmpCode, portMin, portMax int64) (*models.SecurityGroupRule, error) {
 
-	remote := models.PatchSecurityGroupsSecurityGroupIDRulesIDParamsBodyRemote{}
+	remote := network.PatchSecurityGroupsSecurityGroupIDRulesIDParamsBodyRemote{}
 
 	if remoteAddress != "" {
 		if remoteCIDR != "" || remoteSecGrpID != "" {
@@ -292,7 +292,7 @@ func (f *SecurityGroupClient) UpdateRule(secgrpID, ruleID, direction, ipversion,
 		remote.ID = strfmt.UUID(remoteSecGrpID)
 	}
 
-	rule := models.PatchSecurityGroupsSecurityGroupIDRulesIDParamsBody{}
+	rule := network.PatchSecurityGroupsSecurityGroupIDRulesIDBody{}
 
 	if direction != "" {
 		rule.Direction = direction
@@ -321,7 +321,7 @@ func (f *SecurityGroupClient) UpdateRule(secgrpID, ruleID, direction, ipversion,
 	}
 
 	params := network.NewPatchSecurityGroupsSecurityGroupIDRulesIDParamsWithTimeout(f.session.Timeout)
-	params = params.WithSecurityGroupID(secgrpID).WithBody(&rule).WithID(ruleID)
+	params = params.WithSecurityGroupID(secgrpID).WithBody(rule).WithID(ruleID)
 	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 

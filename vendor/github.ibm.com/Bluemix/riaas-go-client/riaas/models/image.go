@@ -431,3 +431,81 @@ func (m *Image) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
+
+// ImageFile ImageFile
+//
+// The checksum and download location of the image file
+// swagger:model ImageFile
+type ImageFile struct {
+
+	// A SHA-3 checksum of the image file
+	Checksum string `json:"checksum,omitempty"`
+
+	// The location of the image file
+	Href string `json:"href,omitempty"`
+
+	// The size of the stored image file rounded up to the next gigabyte
+	Size int64 `json:"size,omitempty"`
+}
+
+// Validate validates this image file
+func (m *ImageFile) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ImageFile) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ImageFile) UnmarshalBinary(b []byte) error {
+	var res ImageFile
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ImageOperatingSystem OperatingSystem
+//
+// The operating system included in this image
+// swagger:model ImageOperatingSystem
+type ImageOperatingSystem struct {
+
+	// The name of the operating system, to be used for display purposes
+	Name string `json:"name,omitempty"`
+
+	// The vendor of the operating system
+	Vendor string `json:"vendor,omitempty"`
+
+	// The version of the operating system
+	Version string `json:"version,omitempty"`
+}
+
+// Validate validates this image operating system
+func (m *ImageOperatingSystem) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ImageOperatingSystem) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ImageOperatingSystem) UnmarshalBinary(b []byte) error {
+	var res ImageOperatingSystem
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

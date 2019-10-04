@@ -62,28 +62,28 @@ func (f *PublicGatewayClient) Get(id string) (*models.PublicGateway, error) {
 /// Create ...
 func (f *PublicGatewayClient) Create(name, zoneName, vpcID, FloatingIPaddr string) (*models.PublicGateway, error) {
 
-	var body = models.PostPublicGatewaysParamsBody{
+	var body = network.PostPublicGatewaysBody{
 		Name: name,
 	}
 
-	var zone = models.PostPublicGatewaysParamsBodyZone{
+	var zone = network.PostPublicGatewaysParamsBodyZone{
 		Name: zoneName,
 	}
 	body.Zone = &zone
 
 	targetvpc := strfmt.UUID(vpcID)
-	var vpc = models.PostPublicGatewaysParamsBodyVpc{
+	var vpc = network.PostPublicGatewaysParamsBodyVpc{
 		ID: targetvpc,
 	}
 	body.Vpc = &vpc
 	if FloatingIPaddr != "" {
-		var floatingip = models.PostPublicGatewaysParamsBodyFloatingIP{
+		var floatingip = network.PostPublicGatewaysParamsBodyFloatingIP{
 			Address: FloatingIPaddr,
 		}
 		body.FloatingIP = &floatingip
 	}
 
-	params := network.NewPostPublicGatewaysParamsWithTimeout(f.session.Timeout).WithBody(&body)
+	params := network.NewPostPublicGatewaysParamsWithTimeout(f.session.Timeout).WithBody(body)
 	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.PostPublicGateways(params, session.Auth(f.session))
@@ -105,10 +105,10 @@ func (f *PublicGatewayClient) Delete(id string) error {
 
 // Update ...
 func (f *PublicGatewayClient) Update(id, name string) (*models.PublicGateway, error) {
-	var body = models.PatchPublicGatewaysIDParamsBody{
+	var body = network.PatchPublicGatewaysIDBody{
 		Name: name,
 	}
-	params := network.NewPatchPublicGatewaysIDParamsWithTimeout(f.session.Timeout).WithID(id).WithBody(&body)
+	params := network.NewPatchPublicGatewaysIDParamsWithTimeout(f.session.Timeout).WithID(id).WithBody(body)
 	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.PatchPublicGatewaysID(params, session.Auth(f.session))

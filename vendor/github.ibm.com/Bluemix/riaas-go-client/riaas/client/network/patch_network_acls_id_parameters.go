@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPatchNetworkAclsIDParams creates a new PatchNetworkAclsIDParams object
@@ -66,7 +64,7 @@ for the patch network acls ID operation typically these are written to a http.Re
 type PatchNetworkAclsIDParams struct {
 
 	/*Body*/
-	Body *models.PatchNetworkAclsIDParamsBody
+	Body PatchNetworkAclsIDBody
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -122,13 +120,13 @@ func (o *PatchNetworkAclsIDParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the patch network acls ID params
-func (o *PatchNetworkAclsIDParams) WithBody(body *models.PatchNetworkAclsIDParamsBody) *PatchNetworkAclsIDParams {
+func (o *PatchNetworkAclsIDParams) WithBody(body PatchNetworkAclsIDBody) *PatchNetworkAclsIDParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the patch network acls ID params
-func (o *PatchNetworkAclsIDParams) SetBody(body *models.PatchNetworkAclsIDParamsBody) {
+func (o *PatchNetworkAclsIDParams) SetBody(body PatchNetworkAclsIDBody) {
 	o.Body = body
 }
 
@@ -173,10 +171,8 @@ func (o *PatchNetworkAclsIDParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 	var res []error
 
-	if o.Body != nil {
-		if err := r.SetBodyParam(o.Body); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.Body); err != nil {
+		return err
 	}
 
 	// query param generation

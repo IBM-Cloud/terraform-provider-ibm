@@ -9,7 +9,10 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -135,5 +138,60 @@ func (o *PutSubnetsSubnetIDNetworkACLInternalServerError) readResponse(response 
 		return err
 	}
 
+	return nil
+}
+
+/*PutSubnetsSubnetIDNetworkACLBody put subnets subnet ID network ACL body
+swagger:model PutSubnetsSubnetIDNetworkACLBody
+*/
+type PutSubnetsSubnetIDNetworkACLBody struct {
+
+	// The unique identifier for this network ACL
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+}
+
+// Validate validates this put subnets subnet ID network ACL body
+func (o *PutSubnetsSubnetIDNetworkACLBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PutSubnetsSubnetIDNetworkACLBody) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("request body"+"."+"id", "body", "uuid", o.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PutSubnetsSubnetIDNetworkACLBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PutSubnetsSubnetIDNetworkACLBody) UnmarshalBinary(b []byte) error {
+	var res PutSubnetsSubnetIDNetworkACLBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

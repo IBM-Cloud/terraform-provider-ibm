@@ -158,3 +158,114 @@ func (m *OperatingSystemCollection) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
+
+// OperatingSystemCollectionFirst A reference to the first page of resources
+// swagger:model OperatingSystemCollectionFirst
+type OperatingSystemCollectionFirst struct {
+
+	// The URL for the first page of resources
+	// Required: true
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href *string `json:"href"`
+}
+
+// Validate validates this operating system collection first
+func (m *OperatingSystemCollectionFirst) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *OperatingSystemCollectionFirst) validateHref(formats strfmt.Registry) error {
+
+	if err := validate.Required("first"+"."+"href", "body", m.Href); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("first"+"."+"href", "body", string(*m.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *OperatingSystemCollectionFirst) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *OperatingSystemCollectionFirst) UnmarshalBinary(b []byte) error {
+	var res OperatingSystemCollectionFirst
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// OperatingSystemCollectionNext A reference to the next page of resources; this reference is included for all pages
+// except the last page
+// swagger:model OperatingSystemCollectionNext
+type OperatingSystemCollectionNext struct {
+
+	// The URL for the next page of resources
+	// Required: true
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href *string `json:"href"`
+}
+
+// Validate validates this operating system collection next
+func (m *OperatingSystemCollectionNext) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *OperatingSystemCollectionNext) validateHref(formats strfmt.Registry) error {
+
+	if err := validate.Required("next"+"."+"href", "body", m.Href); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("next"+"."+"href", "body", string(*m.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *OperatingSystemCollectionNext) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *OperatingSystemCollectionNext) UnmarshalBinary(b []byte) error {
+	var res OperatingSystemCollectionNext
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

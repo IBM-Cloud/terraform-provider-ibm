@@ -9,7 +9,10 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -171,5 +174,140 @@ func (o *PatchFloatingIpsIDInternalServerError) readResponse(response runtime.Cl
 		return err
 	}
 
+	return nil
+}
+
+/*PatchFloatingIpsIDBody FloatingIPPatch
+swagger:model PatchFloatingIpsIDBody
+*/
+type PatchFloatingIpsIDBody struct {
+
+	// The user-defined name for this key
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+
+	// target
+	Target *PatchFloatingIpsIDParamsBodyTarget `json:"target,omitempty"`
+}
+
+// Validate validates this patch floating ips ID body
+func (o *PatchFloatingIpsIDBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateTarget(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PatchFloatingIpsIDBody) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("body"+"."+"name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PatchFloatingIpsIDBody) validateTarget(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Target) { // not required
+		return nil
+	}
+
+	if o.Target != nil {
+		if err := o.Target.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("body" + "." + "target")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PatchFloatingIpsIDBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PatchFloatingIpsIDBody) UnmarshalBinary(b []byte) error {
+	var res PatchFloatingIpsIDBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*PatchFloatingIpsIDParamsBodyTarget NetworkInterfaceIdentity
+swagger:model PatchFloatingIpsIDParamsBodyTarget
+*/
+type PatchFloatingIpsIDParamsBodyTarget struct {
+
+	// The unique identifier for this resource group
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+}
+
+// Validate validates this patch floating ips ID params body target
+func (o *PatchFloatingIpsIDParamsBodyTarget) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PatchFloatingIpsIDParamsBodyTarget) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("body"+"."+"target"+"."+"id", "body", "uuid", o.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PatchFloatingIpsIDParamsBodyTarget) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PatchFloatingIpsIDParamsBodyTarget) UnmarshalBinary(b []byte) error {
+	var res PatchFloatingIpsIDParamsBodyTarget
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

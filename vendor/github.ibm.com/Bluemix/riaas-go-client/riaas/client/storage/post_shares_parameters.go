@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPostSharesParams creates a new PostSharesParams object
@@ -66,7 +64,7 @@ for the post shares operation typically these are written to a http.Request
 type PostSharesParams struct {
 
 	/*ShareTemplate*/
-	ShareTemplate *models.PostSharesParamsBody
+	ShareTemplate PostSharesBody
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -117,13 +115,13 @@ func (o *PostSharesParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithShareTemplate adds the shareTemplate to the post shares params
-func (o *PostSharesParams) WithShareTemplate(shareTemplate *models.PostSharesParamsBody) *PostSharesParams {
+func (o *PostSharesParams) WithShareTemplate(shareTemplate PostSharesBody) *PostSharesParams {
 	o.SetShareTemplate(shareTemplate)
 	return o
 }
 
 // SetShareTemplate adds the shareTemplate to the post shares params
-func (o *PostSharesParams) SetShareTemplate(shareTemplate *models.PostSharesParamsBody) {
+func (o *PostSharesParams) SetShareTemplate(shareTemplate PostSharesBody) {
 	o.ShareTemplate = shareTemplate
 }
 
@@ -157,10 +155,8 @@ func (o *PostSharesParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 	var res []error
 
-	if o.ShareTemplate != nil {
-		if err := r.SetBodyParam(o.ShareTemplate); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.ShareTemplate); err != nil {
+		return err
 	}
 
 	// query param generation

@@ -67,12 +67,12 @@ func (f *FloatingIPClient) Get(id string) (*models.FloatingIP, error) {
 // Create ...
 func (f *FloatingIPClient) Create(name, zoneName, resourcegroupID, targetID string) (*models.FloatingIP, error) {
 
-	var body = models.PostFloatingIpsParamsBody{
+	var body = network.PostFloatingIpsBody{
 		Name: name,
 	}
 
 	if zoneName != "" {
-		var zone = models.PostFloatingIpsParamsBodyZone{
+		var zone = network.PostFloatingIpsParamsBodyZone{
 			Name: zoneName,
 		}
 		body.Zone = &zone
@@ -80,7 +80,7 @@ func (f *FloatingIPClient) Create(name, zoneName, resourcegroupID, targetID stri
 
 	if targetID != "" {
 		targetUUID := strfmt.UUID(targetID)
-		var target = models.PostFloatingIpsParamsBodyTarget{
+		var target = network.PostFloatingIpsParamsBodyTarget{
 			ID: targetUUID,
 		}
 		body.Target = &target
@@ -88,13 +88,13 @@ func (f *FloatingIPClient) Create(name, zoneName, resourcegroupID, targetID stri
 
 	if resourcegroupID != "" {
 		resourcegroupuuid := strfmt.UUID(resourcegroupID)
-		var resourcegroup = models.PostFloatingIpsParamsBodyResourceGroup{
+		var resourcegroup = network.PostFloatingIpsParamsBodyResourceGroup{
 			ID: resourcegroupuuid,
 		}
 		body.ResourceGroup = &resourcegroup
 	}
 
-	params := network.NewPostFloatingIpsParamsWithTimeout(f.session.Timeout).WithBody(&body)
+	params := network.NewPostFloatingIpsParamsWithTimeout(f.session.Timeout).WithBody(body)
 	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.PostFloatingIps(params, session.Auth(f.session))
@@ -116,7 +116,7 @@ func (f *FloatingIPClient) Delete(id string) error {
 
 // Update ...
 func (f *FloatingIPClient) Update(id, name, targetID string) (*models.FloatingIP, error) {
-	var body = models.PatchFloatingIpsIDParamsBody{}
+	var body = network.PatchFloatingIpsIDBody{}
 
 	if name != "" {
 		body.Name = name
@@ -124,13 +124,13 @@ func (f *FloatingIPClient) Update(id, name, targetID string) (*models.FloatingIP
 
 	if targetID != "" {
 		targetUUID := strfmt.UUID(targetID)
-		var target = models.PatchFloatingIpsIDParamsBodyTarget{
+		var target = network.PatchFloatingIpsIDParamsBodyTarget{
 			ID: targetUUID,
 		}
 		body.Target = &target
 	}
 
-	params := network.NewPatchFloatingIpsIDParamsWithTimeout(f.session.Timeout).WithID(id).WithBody(&body)
+	params := network.NewPatchFloatingIpsIDParamsWithTimeout(f.session.Timeout).WithID(id).WithBody(body)
 	params.Version = "2019-07-02"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.PatchFloatingIpsID(params, session.Auth(f.session))

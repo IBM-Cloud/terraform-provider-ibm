@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPostSharesShareIDTargetsParams creates a new PostSharesShareIDTargetsParams object
@@ -66,7 +64,7 @@ for the post shares share ID targets operation typically these are written to a 
 type PostSharesShareIDTargetsParams struct {
 
 	/*Body*/
-	Body *models.PostSharesShareIDTargetsParamsBody
+	Body PostSharesShareIDTargetsBody
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -122,13 +120,13 @@ func (o *PostSharesShareIDTargetsParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the post shares share ID targets params
-func (o *PostSharesShareIDTargetsParams) WithBody(body *models.PostSharesShareIDTargetsParamsBody) *PostSharesShareIDTargetsParams {
+func (o *PostSharesShareIDTargetsParams) WithBody(body PostSharesShareIDTargetsBody) *PostSharesShareIDTargetsParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the post shares share ID targets params
-func (o *PostSharesShareIDTargetsParams) SetBody(body *models.PostSharesShareIDTargetsParamsBody) {
+func (o *PostSharesShareIDTargetsParams) SetBody(body PostSharesShareIDTargetsBody) {
 	o.Body = body
 }
 
@@ -173,10 +171,8 @@ func (o *PostSharesShareIDTargetsParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.Body != nil {
-		if err := r.SetBodyParam(o.Body); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.Body); err != nil {
+		return err
 	}
 
 	// query param generation
