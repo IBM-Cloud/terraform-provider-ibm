@@ -16,14 +16,6 @@ Provides a volume resource. This allows volume to be created, updated, and cance
 In the following example, you can create a volume:
 
 ```hcl
-resource "ibm_pi_volume" "testacc_volume" {
-  name     = "test_volume"
-  profile  = "10iops-tier"
-  zone     = "us-south-1"
-  iops     = 10000
-  capacity = 100
-}
-
 resource "ibm_pi_volume" "testacc_volume"{
 
 
@@ -31,14 +23,11 @@ resource "ibm_pi_volume" "testacc_volume"{
   pi_volume_name = test-volume
   pi_volume_type = ssd
   pi_volume_shareable=true
-  pi_cloud_instance_id="cloud_instance_id"
+  pi_cloud_instance_id="<value of the cloud_instance_id>"
 
 }
 
-
-
 ```
-
 ## Timeouts
 
 ibm_pi_volume provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
@@ -53,9 +42,9 @@ The following arguments are supported:
 
 * `pi_volume_size` - (Required, int) The size for this volume.
 * `pi_volume_name` - (Required, string) The name of this volume
-* `pi_volume_type` - (Required, string) The volume type - Only two types are supported ssd/standard .
-* `pi_volume_shareable` - (Required, boolean) If the volume can be shared or not.
-* `pi_cloud_instance_id` - (Required, string) The cloud_instance_id for this account.`.
+* `pi_volume_type` - (Required, string) The volume type - Only two values are supported.  ssd/standard .
+* `pi_volume_shareable` - (Required, boolean) If the volume can be shared or not . true/false.
+* `pi_cloud_instance_id` - (Required, string) The cloud_instance_id for this account.`
 
 
 ## Attribute Reference
@@ -63,3 +52,4 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - The unique identifier of the volume.
+* `status` - The status of the volume.

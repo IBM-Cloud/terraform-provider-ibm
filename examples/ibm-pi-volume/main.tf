@@ -17,3 +17,8 @@ output "id"
 {
         value = "${ibm_pi_volume.powervolumes.id}"
 }
+
+output "status"
+{
+value="${ibm_pi_volume.powervolumes.pi_volume_status}"
+}

@@ -121,6 +121,7 @@ func resourceIBMPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(helpers.PIVolumeName, vol.Name)
 	d.Set(helpers.PIVolumeSize, vol.Size)
 	d.Set(helpers.PIVolumeShareable, vol.Shareable)
+	d.Set(helpers.PIVolumeStatus, vol.State)
 
 	return nil
 }

@@ -117,6 +117,12 @@ func resourceIBMPIInstance() *schema.Resource {
 				},
 			},
 
+			"instance_volumes": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem:     &schema.Resource{},
+			},
+
 			helpers.PIInstanceHealthStatus: {
 				Type:     schema.TypeString,
 				Computed: true,
