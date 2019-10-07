@@ -166,7 +166,7 @@ func resourceIBMPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	log.Printf("The volume to be deleted is in the following state ..", vol.State)
+	log.Printf("The volume to be deleted is in the following state .. %s", vol.State)
 	_, err = isWaitForIBMPIVolumeAvailable(client, d.Id(), powerinstanceid, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
@@ -201,7 +201,7 @@ func resourceIBMPIVolumeExists(d *schema.ResourceData, meta interface{}) (bool, 
 		return false, fmt.Errorf("Error communicating with the API: %s", err)
 	}
 
-	log.Printf("Calling the existing function.. %s", &vol.VolumeID)
+	log.Printf("Calling the existing function.. %s", *(vol.VolumeID))
 
 	volumeid := *vol.VolumeID
 	return volumeid == id, nil

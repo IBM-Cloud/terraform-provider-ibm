@@ -508,7 +508,7 @@ func checkBase64(input string) error {
 		fmt.Println("error:", err)
 		return err
 	}
-	fmt.Printf("Data is correctly Encoded to Base64", data)
+	fmt.Printf("Data is correctly Encoded to Base64 %s", data)
 	return err
 
 }
