@@ -98,7 +98,12 @@ func resourceIBMCOS() *schema.Resource {
 				ValidateFunc: validateAllowedStringValue(storageClass),
 				ForceNew:     true,
 			},
-			"s3_endpoint": {
+			"s3_endpoint_public": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "CRN of resource instance",
+			},
+			"s3_endpoint_private": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "CRN of resource instance",
@@ -115,8 +120,7 @@ func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	bucketName := parseBucketId(d.Id(), "bucketName")
 	serviceID := parseBucketId(d.Id(), "serviceID")
-	apiEndpoint := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
-
+	apiEndpoint, apiEndpointPrivate := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
 	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
 	if err != nil {
 		return err
@@ -194,7 +198,8 @@ func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("crn", bucketCRN)
 	d.Set("resource_instance_id", serviceID)
 	d.Set("bucket_name", bucketName)
-	d.Set("s3_endpoint", apiEndpoint)
+	d.Set("s3_endpoint_public", apiEndpoint)
+	d.Set("s3_endpoint_private", apiEndpointPrivate)
 	return nil
 }
 
@@ -223,7 +228,7 @@ func resourceIBMCOSCreate(d *schema.ResourceData, meta interface{}) error {
 		apiType = "ssl"
 	}
 	lConstraint := fmt.Sprintf("%s-%s", bLocation, storageClass)
-	apiEndpoint := selectCosApi(apiType, bLocation)
+	apiEndpoint, _ := selectCosApi(apiType, bLocation)
 	create := &s3.CreateBucketInput{
 		Bucket: aws.String(bucketName),
 		CreateBucketConfiguration: &s3.CreateBucketConfiguration{
@@ -291,7 +296,7 @@ func resourceIBMCOSDelete(d *schema.ResourceData, meta interface{}) error {
 		bLocation = bucketLocation.(string)
 		apiType = "ssl"
 	}
-	apiEndpoint := selectCosApi(apiType, bLocation)
+	apiEndpoint, _ := selectCosApi(apiType, bLocation)
 
 	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
 	if err != nil {
@@ -340,7 +345,7 @@ func resourceIBMCOSExists(d *schema.ResourceData, meta interface{}) (bool, error
 
 	bucketName := parseBucketId(d.Id(), "bucketName")
 	serviceID := parseBucketId(d.Id(), "serviceID")
-	apiEndpoint := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
+	apiEndpoint, _ := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
 
 	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
 	if err != nil {
@@ -381,62 +386,62 @@ func resourceIBMCOSExists(d *schema.ResourceData, meta interface{}) (bool, error
 	return false, nil
 }
 
-func selectCosApi(apiType string, bLocation string) string {
+func selectCosApi(apiType string, bLocation string) (string, string) {
 	if apiType == "crl" {
 		switch bLocation {
 		case "eu":
-			return "s3.eu.cloud-object-storage.appdomain.cloud"
+			return "s3.eu.cloud-object-storage.appdomain.cloud", "s3.private.eu.cloud-object-storage.appdomain.cloud"
 		case "ap":
-			return "s3.ap.cloud-object-storage.appdomain.cloud"
+			return "s3.ap.cloud-object-storage.appdomain.cloud", "s3.private.ap.cloud-object-storage.appdomain.cloud"
 		case "us":
-			return "s3.us.cloud-object-storage.appdomain.cloud"
+			return "s3.us.cloud-object-storage.appdomain.cloud", "s3.private.us.cloud-object-storage.appdomain.cloud"
 		}
 	}
 	if apiType == "rl" {
 		switch bLocation {
 		case "au-syd":
-			return "s3.au-syd.cloud-object-storage.appdomain.cloud"
+			return "s3.au-syd.cloud-object-storage.appdomain.cloud", "s3.private.au-syd.cloud-object-storage.appdomain.cloud"
 		case "eu-de":
-			return "s3.eu-de.cloud-object-storage.appdomain.cloud"
+			return "s3.eu-de.cloud-object-storage.appdomain.cloud", "s3.private.eu-de.cloud-object-storage.appdomain.cloud"
 		case "eu-gb":
-			return "s3.eu-gb.cloud-object-storage.appdomain.cloud"
+			return "s3.eu-gb.cloud-object-storage.appdomain.cloud", "s3.private.eu-gb.cloud-object-storage.appdomain.cloud"
 		case "jp-tok":
-			return "s3.jp-tok.cloud-object-storage.appdomain.cloud"
+			return "s3.jp-tok.cloud-object-storage.appdomain.cloud", "s3.private.jp-tok.cloud-object-storage.appdomain.cloud"
 		case "us-east":
-			return "s3.us-east.cloud-object-storage.appdomain.cloud"
+			return "s3.us-east.cloud-object-storage.appdomain.cloud", "s3.private.us-east.cloud-object-storage.appdomain.cloud"
 		case "us-south":
-			return "s3.us-south.cloud-object-storage.appdomain.cloud"
+			return "s3.us-south.cloud-object-storage.appdomain.cloud", "s3.private.us-south.cloud-object-storage.appdomain.cloud"
 		}
 	}
 	if apiType == "ssl" {
 		switch bLocation {
 		case "ams03":
-			return "s3.ams03.cloud-object-storage.appdomain.cloud"
+			return "s3.ams03.cloud-object-storage.appdomain.cloud", "s3.private.ams03.cloud-object-storage.appdomain.cloud"
 		case "che01":
-			return "s3.che01.cloud-object-storage.appdomain.cloud"
+			return "s3.che01.cloud-object-storage.appdomain.cloud", "s3.private.che01.cloud-object-storage.appdomain.cloud"
 		case "hkg02":
-			return "s3.hkg02.cloud-object-storage.appdomain.cloud"
+			return "s3.hkg02.cloud-object-storage.appdomain.cloud", "s3.private.hkg02.cloud-object-storage.appdomain.cloud"
 		case "mel01":
-			return "s3.mel01.cloud-object-storage.appdomain.cloud"
+			return "s3.mel01.cloud-object-storage.appdomain.cloud", "s3.private.mel01.cloud-object-storage.appdomain.cloud"
 		case "mex01":
-			return "s3.mex01.cloud-object-storage.appdomain.cloud"
+			return "s3.mex01.cloud-object-storage.appdomain.cloud", "s3.private.mex01.cloud-object-storage.appdomain.cloud"
 		case "mil01":
-			return "s3.mil01.cloud-object-storage.appdomain.cloud"
+			return "s3.mil01.cloud-object-storage.appdomain.cloud", "s3.private.mil01.cloud-object-storage.appdomain.cloud"
 		case "mon01":
-			return "s3.mon01.cloud-object-storage.appdomain.cloud"
+			return "s3.mon01.cloud-object-storage.appdomain.cloud", "s3.private.mon01.cloud-object-storage.appdomain.cloud"
 		case "osl01":
-			return "s3.osl01.cloud-object-storage.appdomain.cloud"
+			return "s3.osl01.cloud-object-storage.appdomain.cloud", "s3.private.osl01.cloud-object-storage.appdomain.cloud"
 		case "sjc04":
-			return "s3.sjc04.cloud-object-storage.appdomain.cloud"
+			return "s3.sjc04.cloud-object-storage.appdomain.cloud", "s3.private.sjc04.cloud-object-storage.appdomain.cloud"
 		case "sao01":
-			return "s3.sao01.cloud-object-storage.appdomain.cloud"
+			return "s3.sao01.cloud-object-storage.appdomain.cloud", "s3.private.sao01.cloud-object-storage.appdomain.cloud"
 		case "seo01":
-			return "s3.seo01.cloud-object-storage.appdomain.cloud"
+			return "s3.seo01.cloud-object-storage.appdomain.cloud", "s3.private.seo01.cloud-object-storage.appdomain.cloud"
 		case "tor01":
-			return "s3.tor01.cloud-object-storage.appdomain.cloud"
+			return "s3.tor01.cloud-object-storage.appdomain.cloud", "s3.private.tor01.cloud-object-storage.appdomain.cloud"
 		}
 	}
-	return ""
+	return "", ""
 }
 
 func parseBucketId(id string, info string) string {
