@@ -65,7 +65,7 @@ const (
 	isInstanceDeleteDone       = "done"
 	isInstanceFailed           = "failed"
 
-	isInstanceActionStatusStopping = "stoppping"
+	isInstanceActionStatusStopping = "stopping"
 	isInstanceActionStatusStopped  = "stopped"
 	isInstanceStatusPending        = "pending"
 	isInstanceStatusRunning        = "running"
