@@ -98,6 +98,11 @@ func resourceIBMCOS() *schema.Resource {
 				ValidateFunc: validateAllowedStringValue(storageClass),
 				ForceNew:     true,
 			},
+			"s3_endpoint": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "CRN of resource instance",
+			},
 		},
 	}
 }
@@ -189,6 +194,7 @@ func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("crn", bucketCRN)
 	d.Set("resource_instance_id", serviceID)
 	d.Set("bucket_name", bucketName)
+	d.Set("s3_endpoint", apiEndpoint)
 	return nil
 }
 
