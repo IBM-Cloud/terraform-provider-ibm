@@ -323,7 +323,10 @@ func resourceIBMCOSDelete(d *schema.ResourceData, meta interface{}) error {
 	delete := &s3.DeleteBucketInput{
 		Bucket: aws.String(bucketName),
 	}
-	s3Client.DeleteBucket(delete)
+	_, err = s3Client.DeleteBucket(delete)
+	if err != nil {
+		return err
+	}
 	d.SetId("")
 	return nil
 }
