@@ -553,7 +553,9 @@ func fetchUserDetails(sess *bxsession.Session) (*UserConfig, error) {
 		return &user, err
 	}
 	claims := token.Claims.(jwt.MapClaims)
-	user.userEmail = claims["email"].(string)
+	if email, ok := claims["email"]; ok {
+		user.userEmail = email.(string)
+	}
 	user.userID = claims["id"].(string)
 	user.userAccount = claims["account"].(map[string]interface{})["bss"].(string)
 	iss := claims["iss"].(string)
