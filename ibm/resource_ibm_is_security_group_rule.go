@@ -150,6 +150,10 @@ func resourceIBMISSecurityGroupRuleCreate(d *schema.ResourceData, meta interface
 	if err != nil {
 		return err
 	}
+	isSecurityGroupRuleKey := "security_group_rule_key_" + parsed.secgrpID
+	ibmMutexKV.Lock(isSecurityGroupRuleKey)
+	defer ibmMutexKV.Unlock(isSecurityGroupRuleKey)
+
 	sess, err := meta.(ClientSession).ISSession()
 	if err != nil {
 		return err
@@ -242,6 +246,9 @@ func resourceIBMISSecurityGroupRuleUpdate(d *schema.ResourceData, meta interface
 	if err != nil {
 		return err
 	}
+	isSecurityGroupRuleKey := "security_group_rule_key_" + parsed.secgrpID
+	ibmMutexKV.Lock(isSecurityGroupRuleKey)
+	defer ibmMutexKV.Unlock(isSecurityGroupRuleKey)
 
 	_, err = sgC.UpdateRule(parsed.secgrpID, parsed.ruleID, parsed.direction,
 		parsed.ipversion, parsed.protocol, parsed.remoteAddress,
@@ -264,6 +271,9 @@ func resourceIBMISSecurityGroupRuleDelete(d *schema.ResourceData, meta interface
 	if err != nil {
 		return err
 	}
+	isSecurityGroupRuleKey := "security_group_rule_key_" + secgrpID
+	ibmMutexKV.Lock(isSecurityGroupRuleKey)
+	defer ibmMutexKV.Unlock(isSecurityGroupRuleKey)
 	err = sgC.DeleteRule(secgrpID, ruleID)
 	if err != nil {
 		iserror, ok := err.(iserrors.RiaasError)

@@ -167,6 +167,9 @@ func resourceIBMISSubnetCreate(d *schema.ResourceData, meta interface{}) error {
 	if ipv4cidr != "" && ipv4addrcount != 0 {
 		return fmt.Errorf("only one of %s or %s needs to be provided", isSubnetIpv4CidrBlock, isSubnetTotalIpv4AddressCount)
 	}
+	isSubnetKey := "subnet_key_" + vpc + "_" + zone
+	ibmMutexKV.Lock(isSubnetKey)
+	defer ibmMutexKV.Unlock(isSubnetKey)
 
 	acl := d.Get(isSubnetNetworkACL).(string)
 	gw := d.Get(isSubnetPublicGateway).(string)
