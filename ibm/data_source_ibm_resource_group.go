@@ -41,10 +41,16 @@ func dataSourceIBMResourceGroupRead(d *schema.ResourceData, meta interface{}) er
 	if n, ok := d.GetOk("name"); ok {
 		name = n.(string)
 	}
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return err
+	}
+	accountID := userDetails.userAccount
 	var grp []models.ResourceGroup
 	if defaultGrp {
 		resourceGroupQuery := management.ResourceGroupQuery{
-			Default: true,
+			Default:   true,
+			AccountID: accountID,
 		}
 
 		grp, err = rsGroup.List(&resourceGroupQuery)
@@ -55,7 +61,10 @@ func dataSourceIBMResourceGroupRead(d *schema.ResourceData, meta interface{}) er
 		d.SetId(grp[0].ID)
 
 	} else if name != "" {
-		grp, err := rsGroup.FindByName(nil, name)
+		resourceGroupQuery := &management.ResourceGroupQuery{
+			AccountID: accountID,
+		}
+		grp, err := rsGroup.FindByName(resourceGroupQuery, name)
 		if err != nil {
 			return fmt.Errorf("Error retrieving resource group %s: %s", name, err)
 		}
