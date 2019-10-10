@@ -63,7 +63,6 @@ resource "ibm_iam_access_group_policy" "policy" {
 
   resources = [{
     service              = "kms"
-    region               = "us-south"
     resource_instance_id = "${element(split(":",ibm_resource_instance.instance.id),7)}"
   }]
 }
