@@ -272,6 +272,9 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	}
 
 	return resourceIBMPIInstanceRead(d, meta)
+
+	//return dataSourceIBMPIVolumesRead(d,meta)
+
 }
 
 func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
@@ -509,3 +512,28 @@ func checkBase64(input string) error {
 	return err
 
 }
+
+/*func getBootVolumeData(d *schema.ResourceData, meta interface{}) error{
+	sess, err := meta.(ClientSession).IBMPISession()
+	if err != nil {
+		return err
+	}
+
+	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	volumeC := instance.NewIBMPIVolumeClient(sess, powerinstanceid)
+	volumedata, err := volumeC.GetAll(d.Get(helpers.PIInstanceName).(string), powerinstanceid)
+
+	if err != nil {
+		return err
+	}
+
+	var clientgenU, _ = uuid.GenerateUUID()
+	d.SetId(clientgenU)
+
+	//log.Printf("Printing the data %s", *volumedata.Volumes[0].VolumeID)
+	d.Set("bootvolumeid",
+	d.Set("instance_volumes", flattenVolumesInInstances(volumedata.Volumes))
+
+	return nil
+
+}*/

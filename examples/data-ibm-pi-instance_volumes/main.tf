@@ -10,3 +10,8 @@ output "bootvolume"
 {
 value="${data.ibm_pi_instance_volumes.voldata.bootvolumeid}"
 }
+
+#output "instance_volumes"
+#{
+#value="${data.ibm_pi_instance_volumes.voldata.instance_volumes}"
+#}

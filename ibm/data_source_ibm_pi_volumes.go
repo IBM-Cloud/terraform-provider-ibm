@@ -5,6 +5,8 @@ import (
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform/helper/schema"
+	"log"
+
 	//"fmt"
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/hashicorp/terraform/helper/validation"
@@ -96,13 +98,14 @@ func dataSourceIBMPIVolumesRead(d *schema.ResourceData, meta interface{}) error 
 
 	//log.Printf("Printing the data %s", *volumedata.Volumes[0].VolumeID)
 	d.Set("bootvolumeid", *volumedata.Volumes[0].VolumeID)
-	d.Set("instance_volumes", flattenVolumesInInstances(volumedata.Volumes))
+	d.Set("instance_volumes", flattenVolumesInstances(volumedata.Volumes))
 
 	return nil
 
 }
 
-func flattenVolumesInInstances(list []*models.VolumeReference) []map[string]interface{} {
+func flattenVolumesInstances(list []*models.VolumeReference) []map[string]interface{} {
+	log.Printf("Calling the instance volumes method")
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
 		l := map[string]interface{}{
