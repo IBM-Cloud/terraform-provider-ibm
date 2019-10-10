@@ -301,7 +301,7 @@ func isVolumeDeleteRefreshFunc(vol *storage.StorageClient, id string) resource.S
 		if ok {
 			log.Printf("[DEBUG] %s", iserror.Error())
 			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "volume_not_found" {
+				iserror.Payload.Errors[0].Code == "volume_id_not_found" {
 				return nil, isVolumeDeleted, nil
 			}
 		}
