@@ -501,6 +501,7 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 
 	d.SetId(instance.ID.String())
 	log.Printf("[INFO] Instance : %s", instance.ID.String())
+	d.Set(isInstanceStatus, instance.Status)
 
 	_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d)
 	if err != nil {
@@ -516,7 +517,7 @@ func isWaitForInstanceAvailable(instanceC *compute.InstanceClient, id string, d 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", isInstanceProvisioning},
 		Target:     []string{isInstanceProvisioningDone},
-		Refresh:    isInstanceRefreshFunc(instanceC, id),
+		Refresh:    isInstanceRefreshFunc(instanceC, id, d),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -525,12 +526,13 @@ func isWaitForInstanceAvailable(instanceC *compute.InstanceClient, id string, d 
 	return stateConf.WaitForState()
 }
 
-func isInstanceRefreshFunc(instanceC *compute.InstanceClient, id string) resource.StateRefreshFunc {
+func isInstanceRefreshFunc(instanceC *compute.InstanceClient, id string, d *schema.ResourceData) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		instance, err := instanceC.Get(id)
 		if err != nil {
 			return nil, "", err
 		}
+		d.Set(isInstanceStatus, instance.Status)
 
 		if instance.Status == "available" || instance.Status == "failed" || instance.Status == "running" {
 			return instance, isInstanceProvisioningDone, nil
