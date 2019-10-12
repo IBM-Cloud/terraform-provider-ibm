@@ -3,6 +3,7 @@ package ibm
 import (
 	"fmt"
 	"log"
+	"sync/atomic"
 	"time"
 
 	"github.com/go-openapi/strfmt"
@@ -58,6 +59,7 @@ const (
 	isInstanceMemory                  = "memory"
 	isInstanceStatus                  = "status"
 	isInstanceGeneration              = "generation"
+	isInstanceLazyTimeout             = "lazy_timeout"
 
 	isInstanceProvisioning     = "provisioning"
 	isInstanceProvisioningDone = "done"
@@ -332,6 +334,11 @@ func resourceIBMISInstance() *schema.Resource {
 				Computed: true,
 			},
 
+			isInstanceLazyTimeout: {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -364,6 +371,8 @@ func resourceIBMISInstance() *schema.Resource {
 		},
 	}
 }
+
+var isCountPendingInstanceCreation int32
 
 func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(ClientSession).ISSession()
@@ -505,6 +514,12 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	d.Set(isInstanceStatus, instance.Status)
 
 	_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d)
+	if _, ok := d.GetOk(isInstanceLazyTimeout); ok {
+		log.Printf("Finished waiting for instance (%s) to be available.", d.Id())
+		if _, ok := err.(*resource.TimeoutError); ok {
+			_, err = isWaitForInstanceAvailableExtended(instanceC, d.Id(), d)
+		}
+	}
 	if err != nil {
 		return err
 	}
@@ -524,6 +539,9 @@ func isWaitForInstanceAvailable(instanceC *compute.InstanceClient, id string, d 
 		MinTimeout: 10 * time.Second,
 	}
 
+	atomic.AddInt32(&isCountPendingInstanceCreation, 1)
+	defer atomic.AddInt32(&isCountPendingInstanceCreation, -1)
+
 	return stateConf.WaitForState()
 }
 
@@ -534,6 +552,43 @@ func isInstanceRefreshFunc(instanceC *compute.InstanceClient, id string, d *sche
 			return nil, "", err
 		}
 		d.Set(isInstanceStatus, instance.Status)
+
+		if instance.Status == "available" || instance.Status == "failed" || instance.Status == "running" {
+			return instance, isInstanceProvisioningDone, nil
+		}
+
+		return instance, isInstanceProvisioning, nil
+	}
+}
+
+func isWaitForInstanceAvailableExtended(instanceC *compute.InstanceClient, id string, d *schema.ResourceData) (interface{}, error) {
+	log.Printf("Waiting for instance (%s) to be available (extended).", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", isInstanceProvisioning},
+		Target:     []string{isInstanceProvisioningDone},
+		Refresh:    isInstanceRefreshFuncExtended(instanceC, id, d),
+		Timeout:    3600 * time.Second,
+		Delay:      1 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isInstanceRefreshFuncExtended(instanceC *compute.InstanceClient, id string, d *schema.ResourceData) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		instance, err := instanceC.Get(id)
+		if err != nil {
+			return nil, "", err
+		}
+		d.Set(isInstanceStatus, instance.Status)
+
+		count := atomic.LoadInt32(&isCountPendingInstanceCreation)
+		log.Printf("Waiting for instance (%s) to be available (extended); %v other instances are being created.", id, count)
+		if count == 0 {
+			return nil, "", &resource.TimeoutError{}
+		}
 
 		if instance.Status == "available" || instance.Status == "failed" || instance.Status == "running" {
 			return instance, isInstanceProvisioningDone, nil
