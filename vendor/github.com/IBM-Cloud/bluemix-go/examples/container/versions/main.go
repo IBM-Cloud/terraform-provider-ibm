@@ -88,4 +88,10 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println(out)
+
+	outv1, err := clustersAPI.ListV1(target)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(outv1)
 }
