@@ -34,3 +34,4 @@ The following attributes are exported:
 
 * `id` - The unique identifier of the cluster versions.
 * `valid_kube_versions` - The supported kubernetes versions on IBM Cloud.
+* `valid_openshift_versions` - The supported openshift versions on IBM Cloud.

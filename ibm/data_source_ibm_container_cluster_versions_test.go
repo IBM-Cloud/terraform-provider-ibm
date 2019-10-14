@@ -16,6 +16,7 @@ func TestAccIBMContainerClusterVersionsDataSource_basic(t *testing.T) {
 				Config: testAccCheckIBMContainerClusterVersionsDataSource(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_container_cluster_versions.versions", "valid_kube_versions.0"),
+					resource.TestCheckResourceAttrSet("data.ibm_container_cluster_versions.versions", "valid_openshift_versions.0"),
 				),
 			},
 		},
@@ -39,23 +40,10 @@ func TestAccIBMContainerClusterVersionsDataSource_WithoutOptionalFields(t *testi
 
 func testAccCheckIBMContainerClusterVersionsDataSource() string {
 	return fmt.Sprintf(`
-data "ibm_org" "testacc_ds_org" {
-    org = "%s"
-}
-data "ibm_space" "testacc_ds_space" {
-    org = "%s"
-    space = "%s"
-}
-data "ibm_account" "testacc_acc" {
-    org_guid = "${data.ibm_org.testacc_ds_org.id}"
-}
 data "ibm_container_cluster_versions" "versions" {
-	org_guid = "${data.ibm_org.testacc_ds_org.id}"
-    space_guid = "${data.ibm_space.testacc_ds_space.id}"
-    account_guid = "${data.ibm_account.testacc_acc.id}"
     region = "%s"
 }
-`, cfOrganization, cfOrganization, cfSpace, csRegion)
+`, csRegion)
 }
 
 const testAccCheckIBMContainerClusterVersionsDataSourceWithoutOptionalFields = `
