@@ -101,12 +101,12 @@ func resourceIBMCOS() *schema.Resource {
 			"s3_endpoint_public": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "CRN of resource instance",
+				Description: "Public endpoint for the COS bucket",
 			},
 			"s3_endpoint_private": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "CRN of resource instance",
+				Description: "Private endpoint for the COS bucket",
 			},
 		},
 	}
