@@ -1,0 +1,89 @@
+module github.com/IBM-Cloud/terraform-provider-ibm
+
+go 1.13
+
+require (
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20190930133843-f4e8138bff9e
+	github.com/PuerkitoBio/purell v1.1.1
+	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
+	github.com/agext/levenshtein v1.2.1
+	github.com/apache/incubator-openwhisk-client-go v0.0.0-20171128215515-ad814bc98c32
+	github.com/apparentlymart/go-cidr v0.0.0-20170616213631-2bd8b58cf427
+	github.com/apparentlymart/go-rundeck-api v0.0.2-0.20160826143032-f6af74d34d1e
+	github.com/apparentlymart/go-textseg v1.0.0
+	github.com/armon/go-radix v0.0.0-20170727155443-1fca145dffbc
+	github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf
+	github.com/aws/aws-sdk-go v1.16.4
+	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d
+	github.com/bgentry/speakeasy v0.1.0
+	github.com/blang/semver v3.5.2-0.20180305174007-c5e971dbed78+incompatible
+	github.com/cloudfoundry/jibber_jabber v0.0.0-20151120183258-bcc4c8345a21
+	github.com/davecgh/go-spew v1.1.1
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/fatih/color v1.5.1-0.20170926111411-5df930a27be2
+	github.com/go-ini/ini v1.28.0
+	github.com/go-openapi/analysis v0.0.0-20180825180245-b006789cd277
+	github.com/go-openapi/errors v0.0.0-20180827163446-87bb65328877
+	github.com/go-openapi/jsonpointer v0.0.0-20180825180259-52eb3d4b47c6
+	github.com/go-openapi/jsonreference v0.0.0-20180825180305-1c6a3fa339f2
+	github.com/go-openapi/loads v0.0.0-20180825180312-fd899182a268
+	github.com/go-openapi/runtime v0.0.0-20180825180317-95364c1e5610
+	github.com/go-openapi/spec v0.0.0-20180825180323-f1468acb3b29
+	github.com/go-openapi/strfmt v0.0.0-20180825180330-6292e8b5de3b
+	github.com/go-openapi/swag v0.0.0-20180825180336-0dc164b7900e
+	github.com/go-openapi/validate v0.0.0-20180825180342-e0648ff40507
+	github.com/golang/protobuf v1.2.0
+	github.com/google/go-querystring v1.0.0
+	github.com/hashicorp/errwrap v1.0.0
+	github.com/hashicorp/go-cleanhttp v0.5.0
+	github.com/hashicorp/go-getter v0.0.0-20180425224130-3f60ec5cfbb2
+	github.com/hashicorp/go-hclog v0.0.0-20181001195459-61d530d6c27f
+	github.com/hashicorp/go-multierror v1.0.0
+	github.com/hashicorp/go-plugin v0.0.0-20190129155509-362c99b11937
+	github.com/hashicorp/go-safetemp v0.0.0-20180326211150-b1a1dbde6fdc
+	github.com/hashicorp/go-uuid v1.0.0
+	github.com/hashicorp/go-version v1.0.0
+	github.com/hashicorp/hcl v0.0.0-20170504190234-a4b07c25de5f
+	github.com/hashicorp/hcl2 v0.0.0-20190130225218-89dbc5eb3d9e
+	github.com/hashicorp/hil v0.0.0-20170627220502-fa9f258a9250
+	github.com/hashicorp/logutils v0.0.0-20150609070431-0dc08b1671f3
+	github.com/hashicorp/terraform v0.12.0-alpha4.0.20190208235153-5f8916b4fd85
+	github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb
+	github.com/hokaccha/go-prettyjson v0.0.0-20170213120834-e6b9231a2b1c
+	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
+	github.com/mailru/easyjson v0.0.0-20180823135443-60711f1a8329
+	github.com/mattn/go-colorable v0.0.10-0.20171111065953-6fcc0c1fd9b6
+	github.com/mattn/go-isatty v0.0.4
+	github.com/minsikl/netscaler-nitro-go v0.0.0-20170827154432-5b14ce3643e3
+	github.com/mitchellh/cli v0.0.0-20180414170447-c48282d14eba
+	github.com/mitchellh/copystructure v0.0.0-20170525013902-d23ffcb85de3
+	github.com/mitchellh/go-homedir v1.0.0
+	github.com/mitchellh/go-testing-interface v0.0.0-20171004221916-a61a99592b77
+	github.com/mitchellh/go-wordwrap v1.0.0
+	github.com/mitchellh/hashstructure v0.0.0-20160209213820-6b17d669fac5
+	github.com/mitchellh/mapstructure v0.0.0-20170307201123-53818660ed49
+	github.com/mitchellh/reflectwalk v0.0.0-20170726202117-63d60e9d0dbc
+	github.com/nicksnyder/go-i18n v1.10.1-0.20171206142411-aa0ce51472e0
+	github.com/oklog/run v1.0.1-0.20180308005104-6934b124db28
+	github.com/pelletier/go-toml v1.0.2-0.20171024211038-4e9e0ee19b60
+	github.com/posener/complete v1.1.2-0.20180413091813-e037c22b2fcf
+	github.com/rancher/go-rancher v0.1.1-0.20170407040943-ec24b7f12fca
+	github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03
+	github.com/satori/go.uuid v1.1.1-0.20160927100844-b061729afc07
+	github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22
+	github.com/ulikunitz/xz v0.5.4
+	github.com/zclconf/go-cty v0.0.0-20190201220620-4ca19710f056
+	github.ibm.com/Bluemix/riaas-go-client v0.0.0-20191004093720-339e6dc27b47
+	golang.org/x/crypto v0.0.0-20181127143415-eb0de9b17e85
+	golang.org/x/net v0.0.0-20181129055619-fae4c4e3ad76
+	golang.org/x/sys v0.0.0-20190129075346-302c3dd5f1cc
+	golang.org/x/text v0.3.1-0.20180810153555-6e3c4e7365dd
+	google.golang.org/genproto v0.0.0-20180831171423-11092d34479b
+	google.golang.org/grpc v1.14.0
+	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce
+	gopkg.in/yaml.v2 v2.2.2
+)
+
+replace github.ibm.com/Bluemix/riaas-go-client v0.0.0-20191004093720-339e6dc27b47 => ./vendor/github.ibm.com/Bluemix/riaas-go-client
+
+replace github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22 => ./vendor/github.com/softlayer/softlayer-go
