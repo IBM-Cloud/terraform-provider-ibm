@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : pi_key"
+page_title: "IBM: pi_key"
 sidebar_current: "docs-ibm-resource-pi-key"
 description: |-
   Manages IBM SSH keys in the Power Virtual Server Cloud.
