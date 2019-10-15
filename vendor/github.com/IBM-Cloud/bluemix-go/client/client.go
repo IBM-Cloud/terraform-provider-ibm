@@ -285,6 +285,10 @@ func getDefaultAuthHeaders(serviceName bluemix.ServiceName, c *bluemix.Config) g
 		h.Set(authorizationHeader, c.IAMAccessToken)
 		h.Set(iamRefreshTokenHeader, c.IAMRefreshToken)
 		h.Set(uaaAccessTokenHeader, c.UAAAccessToken)
+	case bluemix.VpcContainerService:
+		h.Set(userAgentHeader, http.UserAgent())
+		h.Set(authorizationHeader, c.IAMAccessToken)
+		h.Set(iamRefreshTokenHeader, c.IAMRefreshToken)
 	case bluemix.ContainerRegistryService:
 		h.Set(authorizationHeader, c.IAMAccessToken)
 		h.Set(crRefreshTokenHeader, c.IAMRefreshToken)
