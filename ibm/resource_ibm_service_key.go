@@ -91,7 +91,7 @@ func resourceIBMServiceKeyRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf("Error retrieving service key: %s", err)
 	}
-	d.Set("credentials", flatmap.Flatten(serviceKey.Entity.Credentials))
+	d.Set("credentials", serviceKey.Entity.Credentials)
 	d.Set("service_instance_guid", serviceKey.Entity.ServiceInstanceGUID)
 	d.Set("name", serviceKey.Entity.Name)
 

@@ -39,6 +39,6 @@ require (
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce // indirect
 )
 
-replace github.ibm.com/Bluemix/riaas-go-client v0.0.0-20191004093720-339e6dc27b47 => ./vendor/github.ibm.com/Bluemix/riaas-go-client
+replace github.ibm.com/Bluemix/riaas-go-client v0.0.0-20191004093720-339e6dc27b47 => ./common/github.ibm.com/Bluemix/riaas-go-client
 
-replace github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22 => ./vendor/github.com/softlayer/softlayer-go
+replace github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22 => ./common/github.com/softlayer/softlayer-go
