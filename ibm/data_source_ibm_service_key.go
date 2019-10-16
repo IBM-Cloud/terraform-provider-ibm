@@ -3,9 +3,7 @@ package ibm
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform/flatmap"
-
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func dataSourceIBMServiceKey() *schema.Resource {

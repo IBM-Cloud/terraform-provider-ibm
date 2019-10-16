@@ -3,7 +3,7 @@ package ibm
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccIBMComputeSSLCertificate_Basic(t *testing.T) {

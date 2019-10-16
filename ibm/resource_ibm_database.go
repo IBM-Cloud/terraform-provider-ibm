@@ -7,8 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform/flatmap"
-
 	//	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
@@ -16,9 +14,9 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/models"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
-	validation "github.com/hashicorp/terraform/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	validation "github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
 const (

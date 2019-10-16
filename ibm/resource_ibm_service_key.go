@@ -3,10 +3,8 @@ package ibm
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform/flatmap"
-
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceIBMServiceKey() *schema.Resource {
