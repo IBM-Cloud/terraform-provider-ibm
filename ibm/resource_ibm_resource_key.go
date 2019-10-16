@@ -180,7 +180,7 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 	if err != nil {
 		return fmt.Errorf("Error retrieving resource key: %s", err)
 	}
-	d.Set("credentials", flatmap.Flatten(resourceKey.Credentials))
+	d.Set("credentials", resourceKey.Credentials)
 	d.Set("name", resourceKey.Name)
 	d.Set("status", resourceKey.State)
 
@@ -190,7 +190,7 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 		d.Set("role", roleCrn[strings.LastIndex(roleCrn, ":")+1:])
 	}
 
-	d.Set("parameters", flatmap.Flatten(filterResourceKeyParameters(resourceKey.Parameters)))
+	d.Set("parameters", filterResourceKeyParameters(resourceKey.Parameters))
 	d.Set("crn", (resourceKey.Crn).String())
 
 	return nil
