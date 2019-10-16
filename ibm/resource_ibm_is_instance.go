@@ -657,9 +657,10 @@ func resourceIBMisInstanceRead(d *schema.ResourceData, meta interface{}) error {
 		bootVol := map[string]interface{}{}
 		bootVol[isInstanceBootName] = instance.BootVolumeAttachment.Name
 		stg := storage.NewStorageClient(sess)
-		vol, err := stg.Get(instance.BootVolumeAttachment.Volume.ID.String())
+		volId := instance.BootVolumeAttachment.Volume.ID.String()
+		vol, err := stg.Get(volId)
 		if err != nil {
-			return err
+			return fmt.Errorf("Error while retrieving boot volume %s for instance %s: %v", volId, d.Id(), err)
 		}
 		if vol.EncryptionKey != nil {
 			bootVol[isInstanceBootEncryption] = vol.EncryptionKey.Crn
