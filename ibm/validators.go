@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/IBM-Cloud/bluemix-go/helpers"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	homedir "github.com/mitchellh/go-homedir"
 	gouuid "github.com/satori/go.uuid"
 )

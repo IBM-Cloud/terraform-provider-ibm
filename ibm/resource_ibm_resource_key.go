@@ -7,12 +7,10 @@ import (
 
 	"github.com/IBM-Cloud/bluemix-go/models"
 
-	"github.com/hashicorp/terraform/flatmap"
-
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/crn"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceIBMResourceKey() *schema.Resource {

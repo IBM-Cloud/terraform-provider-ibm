@@ -1,8 +1,7 @@
 package ibm
 
 import (
-	"github.com/hashicorp/terraform/flatmap"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func dataSourceIBMApp() *schema.Resource {
