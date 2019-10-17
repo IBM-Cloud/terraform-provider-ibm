@@ -1341,7 +1341,7 @@ func flattenISLBIPs(ips []*vpc.LoadBalancerIP) interface{} {
 	return out
 }
 
-func flattenISLBSubnets(subnets []*vpc.LoadBalancerSubnetsItems) interface{} {
+func flattenISLBSubnets(subnets []*vpc.LoadBalancerSubnetsItems0) interface{} {
 	out := make([]interface{}, len(subnets))
 	for s, subnet := range subnets {
 		out[s] = subnet.ID
