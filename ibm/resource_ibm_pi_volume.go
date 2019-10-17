@@ -53,7 +53,7 @@ func resourceIBMPIVolume() *schema.Resource {
 			helpers.PIVolumeType: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"ssd", "shared"}),
+				ValidateFunc: validateAllowedStringValue([]string{"ssd", "standard"}),
 			},
 
 			helpers.PICloudInstanceId: {

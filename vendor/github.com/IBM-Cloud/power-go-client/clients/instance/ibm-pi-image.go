@@ -32,3 +32,15 @@ func (f *IBMPIImageClient) Get(id, powerinstanceid string) (*models.Image, error
 	}
 	return resp.Payload, nil
 }
+
+func(f *IBMPIImageClient) GetAll(powerinstanceid string) (*models.Images,error){
+
+	params:= p_cloud_images.NewPcloudImagesGetallParams()
+	resp,err := f.session.Power.PCloudImages.PcloudImagesGetall(params,ibmpisession.NewAuth(f.session,powerinstanceid))
+	if err != nil || resp.Payload == nil {
+		log.Printf("Failed to perform the operation... %v", err)
+		return nil, errors.ToError(err)
+	}
+	return resp.Payload, nil
+
+}

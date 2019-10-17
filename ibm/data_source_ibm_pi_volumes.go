@@ -38,6 +38,11 @@ func dataSourceIBMPIVolumes() *schema.Resource {
 				Computed: true,
 			},
 
+			"instance_volume": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
 			"instance_volumes": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -71,6 +76,10 @@ func dataSourceIBMPIVolumes() *schema.Resource {
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
+						"volume_bootable": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
 					},
 				},
 			},
@@ -95,8 +104,6 @@ func dataSourceIBMPIVolumesRead(d *schema.ResourceData, meta interface{}) error 
 
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
-
-	//log.Printf("Printing the data %s", *volumedata.Volumes[0].VolumeID)
 	d.Set("bootvolumeid", *volumedata.Volumes[0].VolumeID)
 	d.Set("instance_volumes", flattenVolumesInstances(volumedata.Volumes))
 
@@ -105,17 +112,18 @@ func dataSourceIBMPIVolumesRead(d *schema.ResourceData, meta interface{}) error 
 }
 
 func flattenVolumesInstances(list []*models.VolumeReference) []map[string]interface{} {
-	log.Printf("Calling the instance volumes method")
+	log.Printf("Calling the instance volumes method and the size is %d", len(list))
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
 		l := map[string]interface{}{
-			"volume_id":         *i.VolumeID,
-			"volume_state":      *i.State,
-			"volume_href":       *i.Href,
-			"volume_name":       *i.Name,
-			"volume_size_in_gb": *i.Size,
-			"volume_type":       *i.DiskType,
-			"volume_shareable":  *i.Shareable,
+			"volume_id":        *i.VolumeID,
+			"volume_state":     *i.State,
+			"volume_href":      *i.Href,
+			"volume_name":      *i.Name,
+			"volume_size":      *i.Size,
+			"volume_type":      *i.DiskType,
+			"volume_shareable": *i.Shareable,
+			"volume_bootable":  *i.Bootable,
 		}
 
 		result = append(result, l)

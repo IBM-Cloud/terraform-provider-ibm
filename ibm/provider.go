@@ -214,6 +214,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_pi_volume":           dataSourceIBMPIVolume(),
 			"ibm_pi_instance_volumes": dataSourceIBMPIVolumes(),
 			"ibm_pi_public_network":   dataSourceIBMPIPublicNetwork(),
+			"ibm_pi_images":           dataSourceIBMPIImages(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{

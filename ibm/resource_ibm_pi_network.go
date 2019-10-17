@@ -178,7 +178,7 @@ func isWaitForIBMPINetworkAvailable(client *st.IBMPINetworkClient, id string, ti
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", helpers.PINetworkProvisioning},
-		Target:     []string{helpers.PINetworkReady},
+		Target:     []string{""},
 		Refresh:    isIBMPINetworkRefreshFunc(client, id, powerinstanceid),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
