@@ -268,6 +268,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_is_vpn_gateway_connection":                      resourceIBMISVPNGatewayConnection(),
 			"ibm_is_vpc":                                         resourceIBMISVPC(),
 			"ibm_is_vpc_address_prefix":                          resourceIBMISVpcAddressPrefix(),
+			"ibm_is_vpc_route":                                   resourceIBMISVpcRoute(),
 			"ibm_lb":                                             resourceIBMLb(),
 			"ibm_lbaas":                                          resourceIBMLbaas(),
 			"ibm_lbaas_health_monitor":                           resourceIBMLbaasHealthMonitor(),

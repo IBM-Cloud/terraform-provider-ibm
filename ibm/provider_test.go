@@ -53,6 +53,8 @@ var ISCIDR string
 var ISAddressPrefixCIDR string
 var isImage string
 var instanceProfileName string
+var ISRouteDestination string
+var ISRouteNextHop string
 
 func init() {
 	cfOrganization = os.Getenv("IBM_ORG")
@@ -296,8 +298,20 @@ func init() {
 	instanceProfileName = os.Getenv("SL_INSTANCE_PROFILE")
 	if instanceProfileName == "" {
 		instanceProfileName = "bc1-2x8" // for classic infrastructure
-		// instanceProfileName = "c2-2x4" // for next gen infrastructure
+		// instanceProfileName = "cx2-2x4" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE for testing ibm_is_instance resource else it is set to default value 'b-2x8'")
+	}
+
+	ISRouteDestination = os.Getenv("SL_ROUTE_DESTINATION")
+	if ISRouteDestination == "" {
+		ISRouteDestination = "192.168.4.0/24"
+		fmt.Println("[INFO] Set the environment variable SL_ROUTE_DESTINATION for testing ibm_is_vpc_route else it is set to default value '192.168.4.0/24'")
+	}
+
+	ISRouteNextHop = os.Getenv("SL_ROUTE_NEXTHOP")
+	if ISRouteNextHop == "" {
+		ISRouteNextHop = "10.0.0.4"
+		fmt.Println("[INFO] Set the environment variable SL_ROUTE_NEXTHOP for testing ibm_is_vpc_route else it is set to default value '10.0.0.4'")
 	}
 
 }
