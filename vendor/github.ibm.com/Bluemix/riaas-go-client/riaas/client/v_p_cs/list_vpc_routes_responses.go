@@ -83,7 +83,7 @@ func NewListVpcRoutesNotFound() *ListVpcRoutesNotFound {
 The specified VPC could not be found.
 */
 type ListVpcRoutesNotFound struct {
-	Payload *models.ErrorContainer
+	Payload *models.Riaaserror
 }
 
 func (o *ListVpcRoutesNotFound) Error() string {
@@ -92,7 +92,7 @@ func (o *ListVpcRoutesNotFound) Error() string {
 
 func (o *ListVpcRoutesNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ErrorContainer)
+	o.Payload = new(models.Riaaserror)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

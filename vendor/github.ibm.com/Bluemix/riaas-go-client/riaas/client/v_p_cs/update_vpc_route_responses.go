@@ -90,7 +90,7 @@ func NewUpdateVpcRouteBadRequest() *UpdateVpcRouteBadRequest {
 An invalid route patch was provided.
 */
 type UpdateVpcRouteBadRequest struct {
-	Payload *models.ErrorContainer
+	Payload *models.Riaaserror
 }
 
 func (o *UpdateVpcRouteBadRequest) Error() string {
@@ -99,7 +99,7 @@ func (o *UpdateVpcRouteBadRequest) Error() string {
 
 func (o *UpdateVpcRouteBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ErrorContainer)
+	o.Payload = new(models.Riaaserror)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -119,7 +119,7 @@ func NewUpdateVpcRouteNotFound() *UpdateVpcRouteNotFound {
 A route with the specified identifier could not be found.
 */
 type UpdateVpcRouteNotFound struct {
-	Payload *models.ErrorContainer
+	Payload *models.Riaaserror
 }
 
 func (o *UpdateVpcRouteNotFound) Error() string {
@@ -128,7 +128,7 @@ func (o *UpdateVpcRouteNotFound) Error() string {
 
 func (o *UpdateVpcRouteNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ErrorContainer)
+	o.Payload = new(models.Riaaserror)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
