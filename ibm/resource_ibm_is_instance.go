@@ -11,6 +11,7 @@ import (
 	"github.ibm.com/Bluemix/riaas-go-client/clients/compute"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/storage"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
+	computec "github.ibm.com/Bluemix/riaas-go-client/riaas/client/compute"
 	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
@@ -371,36 +372,36 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	}
 
 	profile := d.Get(isInstanceProfile).(string)
-	var body = &models.PostInstancesParamsBody{
+	var body = computec.PostInstancesBody{
 		Name: d.Get(isInstanceName).(string),
-		Vpc: &models.PostInstancesParamsBodyVpc{
+		Vpc: &computec.PostInstancesParamsBodyVpc{
 			ID: strfmt.UUID(d.Get(isInstanceVPC).(string)),
 		},
 		Zone: &models.NameReference{
 			Name: d.Get(isInstanceZone).(string),
 		},
-		Profile: &models.PostInstancesParamsBodyProfile{
+		Profile: &computec.PostInstancesParamsBodyProfile{
 			Name: profile,
 		},
-		Image: &models.PostInstancesParamsBodyImage{
+		Image: &computec.PostInstancesParamsBodyImage{
 			ID: strfmt.UUID(d.Get(isInstanceImage).(string)),
 		},
 	}
 
 	if boot, ok := d.GetOk(isInstanceBootVolume); ok {
 		bootvol := boot.([]interface{})[0].(map[string]interface{})
-		template := &models.PostInstancesParamsBodyBootVolumeAttachmentVolume{}
+		template := &computec.PostInstancesParamsBodyBootVolumeAttachmentVolume{}
 		name, ok := bootvol[isInstanceBootName]
 		if ok {
 			template.Name = name.(string)
 		}
 		enc, ok := bootvol[isInstanceBootEncryption]
 		if ok && enc.(string) != "" {
-			template.EncryptionKey = &models.PostInstancesParamsBodyBootVolumeAttachmentVolumeEncryptionKey{
+			template.EncryptionKey = &computec.PostInstancesParamsBodyBootVolumeAttachmentVolumeEncryptionKey{
 				Crn: enc.(string),
 			}
 		}
-		body.BootVolumeAttachment = &models.PostInstancesParamsBodyBootVolumeAttachment{
+		body.BootVolumeAttachment = &computec.PostInstancesParamsBodyBootVolumeAttachment{
 
 			Volume: template,
 		}
@@ -411,8 +412,8 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	if primnicintf, ok := d.GetOk(isInstancePrimaryNetworkInterface); ok {
 		primnic := primnicintf.([]interface{})[0].(map[string]interface{})
 		subnetintf, _ := primnic[isInstanceNicSubnet]
-		var primnicobj = models.PostInstancesParamsBodyPrimaryNetworkInterface{}
-		primnicobj.Subnet = &models.PostInstancesParamsBodyPrimaryNetworkInterfaceSubnet{
+		var primnicobj = computec.PostInstancesParamsBodyPrimaryNetworkInterface{}
+		primnicobj.Subnet = &computec.PostInstancesParamsBodyPrimaryNetworkInterfaceSubnet{
 			ID: strfmt.UUID(subnetintf.(string)),
 		}
 		name, ok := primnic[isInstanceNicName]
@@ -423,9 +424,9 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		if ok {
 			secgrpSet := secgrpintf.(*schema.Set)
 			if secgrpSet.Len() != 0 {
-				var secgrpobjs = make([]*models.PostInstancesParamsBodyPrimaryNetworkInterfaceSecurityGroupsItems, secgrpSet.Len())
+				var secgrpobjs = make([]*computec.PostInstancesParamsBodyPrimaryNetworkInterfaceSecurityGroupsItems0, secgrpSet.Len())
 				for i, secgrpIntf := range secgrpSet.List() {
-					secgrpobjs[i] = &models.PostInstancesParamsBodyPrimaryNetworkInterfaceSecurityGroupsItems{
+					secgrpobjs[i] = &computec.PostInstancesParamsBodyPrimaryNetworkInterfaceSecurityGroupsItems0{
 						ID: strfmt.UUID(secgrpIntf.(string)),
 					}
 				}
@@ -438,12 +439,12 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 
 	if nicsintf, ok := d.GetOk(isInstanceNetworkInterfaces); ok {
 		nics := nicsintf.([]interface{})
-		var intfs []*models.PostInstancesParamsBodyNetworkInterfacesItems
+		var intfs []*computec.NetworkInterfacesItems0
 		for _, resource := range nics {
 			nic := resource.(map[string]interface{})
-			nwInterface := &models.PostInstancesParamsBodyNetworkInterfacesItems{}
+			nwInterface := &computec.NetworkInterfacesItems0{}
 			subnetintf, _ := nic[isInstanceNicSubnet]
-			nwInterface.Subnet = &models.PostInstancesParamsBodyNetworkInterfacesItemsSubnet{
+			nwInterface.Subnet = &computec.NetworkInterfacesItems0Subnet{
 				ID: strfmt.UUID(subnetintf.(string)),
 			}
 			name, ok := nic[isInstanceNicName]
@@ -454,9 +455,9 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 			if ok {
 				secgrpSet := secgrpintf.(*schema.Set)
 				if secgrpSet.Len() != 0 {
-					var secgrpobjs = make([]*models.PostInstancesParamsBodyNetworkInterfacesItemsSecurityGroupsItems, secgrpSet.Len())
+					var secgrpobjs = make([]*computec.NetworkInterfacesItems0SecurityGroupsItems0, secgrpSet.Len())
 					for i, secgrpIntf := range secgrpSet.List() {
-						secgrpobjs[i] = &models.PostInstancesParamsBodyNetworkInterfacesItemsSecurityGroupsItems{
+						secgrpobjs[i] = &computec.NetworkInterfacesItems0SecurityGroupsItems0{
 							ID: strfmt.UUID(secgrpIntf.(string)),
 						}
 					}
@@ -472,9 +473,9 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 
 	keySet := d.Get(isInstanceKeys).(*schema.Set)
 	if keySet.Len() != 0 {
-		keyobjs := make([]*models.PostInstancesParamsBodyKeysItems, keySet.Len())
+		keyobjs := make([]*computec.KeysItems0, keySet.Len())
 		for i, key := range keySet.List() {
-			keyobjs[i] = &models.PostInstancesParamsBodyKeysItems{
+			keyobjs[i] = &computec.KeysItems0{
 				ID: strfmt.UUID(key.(string)),
 			}
 		}
@@ -486,7 +487,7 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	}
 
 	if grp, ok := d.GetOk(isInstanceResourceGroup); ok {
-		body.ResourceGroup = &models.PostInstancesParamsBodyResourceGroup{
+		body.ResourceGroup = &computec.PostInstancesParamsBodyResourceGroup{
 			ID: strfmt.UUID(grp.(string)),
 		}
 

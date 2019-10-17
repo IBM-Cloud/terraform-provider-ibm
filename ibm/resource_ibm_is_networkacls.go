@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
+	networkc "github.ibm.com/Bluemix/riaas-go-client/riaas/client/network"
 	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
@@ -186,7 +187,7 @@ func resourceIBMISNetworkACLCreate(d *schema.ResourceData, meta interface{}) err
 	}
 	nwaclC := network.NewNetworkAclClient(sess)
 
-	var nwaclbody models.PostNetworkAclsParamsBody
+	var nwaclbody networkc.PostNetworkAclsBody
 	nwaclbody.Name = d.Get(isNetworkACLName).(string)
 
 	//validate each rule before attempting to create the ACL
@@ -201,7 +202,7 @@ func resourceIBMISNetworkACLCreate(d *schema.ResourceData, meta interface{}) err
 
 	//TODO : Tags
 
-	nwacl, err := nwaclC.Create(&nwaclbody)
+	nwacl, err := nwaclC.Create(nwaclbody)
 	if err != nil {
 		log.Printf("[DEBUG] Network ACL creation failed with error : %s", isErrorToString(err))
 		return err

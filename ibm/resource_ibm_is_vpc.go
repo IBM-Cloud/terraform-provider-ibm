@@ -297,6 +297,9 @@ func isVPCDeleteRefreshFunc(vpc *network.VPCClient, id string) resource.StateRef
 		log.Printf("[DEBUG] delete function here")
 		VPC, err := vpc.Get(id)
 		if err == nil {
+			if VPC.Status == isVPCFailed {
+				return VPC, isVPCFailed, fmt.Errorf("The VPC %s failed to delete: %v", VPC.ID, err)
+			}
 			return VPC, isVPCDeleting, nil
 		}
 

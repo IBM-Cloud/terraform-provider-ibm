@@ -7,7 +7,7 @@ import (
 	gouuid "github.com/satori/go.uuid"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	networkc "github.ibm.com/Bluemix/riaas-go-client/riaas/client/network"
 )
 
 const (
@@ -97,7 +97,7 @@ func resourceIBMISSecurityGroupCreate(d *schema.ResourceData, meta interface{}) 
 	sgC := network.NewSecurityGroupClient(sess)
 
 	sgdef, err := makeIBMISSecurityGroupCreateParams(parsed)
-	group, err := sgC.Create(sgdef)
+	group, err := sgC.Create(*sgdef)
 	if err != nil {
 		return err
 	}
@@ -292,17 +292,17 @@ func makeStrfmtUUID(s string) (strfmt.UUID, error) {
 	return strfmt.UUID(uuid.String()), nil
 }
 
-func makeIBMISSecurityGroupCreateParams(parsed *parsedIBMISSecurityGroupDictionary) (*models.PostSecurityGroupsParamsBody, error) {
-	params := &models.PostSecurityGroupsParamsBody{}
+func makeIBMISSecurityGroupCreateParams(parsed *parsedIBMISSecurityGroupDictionary) (*networkc.PostSecurityGroupsBody, error) {
+	params := &networkc.PostSecurityGroupsBody{}
 	params.Name = parsed.name
 	if parsed.resourceGroup != "" {
-		rgref := models.PostSecurityGroupsParamsBodyResourceGroup{
+		rgref := networkc.PostSecurityGroupsParamsBodyResourceGroup{
 			ID: strfmt.UUID(parsed.resourceGroup),
 		}
 		params.ResourceGroup = &rgref
 	}
 
-	params.Vpc = &models.PostSecurityGroupsParamsBodyVpc{ID: strfmt.UUID(parsed.vpc)}
+	params.Vpc = &networkc.PostSecurityGroupsParamsBodyVpc{ID: strfmt.UUID(parsed.vpc)}
 	return params, nil
 }
 
