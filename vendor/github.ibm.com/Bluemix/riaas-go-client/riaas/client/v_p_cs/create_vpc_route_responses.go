@@ -97,7 +97,7 @@ func NewCreateVpcRouteBadRequest() *CreateVpcRouteBadRequest {
 An invalid route template was provided.
 */
 type CreateVpcRouteBadRequest struct {
-	Payload *models.ErrorContainer
+	Payload *models.Riaaserror
 }
 
 func (o *CreateVpcRouteBadRequest) Error() string {
@@ -106,7 +106,7 @@ func (o *CreateVpcRouteBadRequest) Error() string {
 
 func (o *CreateVpcRouteBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ErrorContainer)
+	o.Payload = new(models.Riaaserror)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -126,7 +126,7 @@ func NewCreateVpcRouteNotFound() *CreateVpcRouteNotFound {
 The specified VPC could not be found.
 */
 type CreateVpcRouteNotFound struct {
-	Payload *models.ErrorContainer
+	Payload *models.Riaaserror
 }
 
 func (o *CreateVpcRouteNotFound) Error() string {
@@ -135,7 +135,7 @@ func (o *CreateVpcRouteNotFound) Error() string {
 
 func (o *CreateVpcRouteNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ErrorContainer)
+	o.Payload = new(models.Riaaserror)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -155,7 +155,7 @@ func NewCreateVpcRouteConflict() *CreateVpcRouteConflict {
 The route template conflicts with another route in the VPC.
 */
 type CreateVpcRouteConflict struct {
-	Payload *models.ErrorContainer
+	Payload *models.Riaaserror
 }
 
 func (o *CreateVpcRouteConflict) Error() string {
@@ -164,7 +164,7 @@ func (o *CreateVpcRouteConflict) Error() string {
 
 func (o *CreateVpcRouteConflict) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ErrorContainer)
+	o.Payload = new(models.Riaaserror)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

@@ -9916,7 +9916,7 @@ paths:
           schema: { $ref: '#/definitions/RouteCollection' }
           description: The routes were retrieved successfully.
         404:
-          schema: {$ref: '#/definitions/ErrorContainer'}
+          schema: {$ref: '#/definitions/riaaserror'}
           description: The specified VPC could not be found.
       summary: List all user-defined routes for a VPC
       tags:
@@ -9946,15 +9946,15 @@ paths:
           description: The route was created successfully.
         400:
           schema:
-            $ref: '#/definitions/ErrorContainer'
+            $ref: '#/definitions/riaaserror'
           description: An invalid route template was provided.
         404:
           schema:
-            $ref: '#/definitions/ErrorContainer'
+            $ref: '#/definitions/riaaserror'
           description: The specified VPC could not be found.
         409:
           schema:
-            $ref: '#/definitions/ErrorContainer'
+            $ref: '#/definitions/riaaserror'
           description: The route template conflicts with another route in the VPC.
       summary: Create a route on your VPC
       tags:
@@ -9974,7 +9974,7 @@ paths:
         204:
           description: The route was deleted successfully.
         404:
-          schema: {$ref: '#/definitions/ErrorContainer'}
+          schema: {$ref: '#/definitions/riaaserror'}
           description: A route with the specified identifier could not be found.
       summary: Delete the specified route
       tags:
@@ -9992,7 +9992,7 @@ paths:
             $ref: '#/definitions/Route'
           description: The route was retrieved successfully.
         404:
-          schema: {$ref: '#/definitions/ErrorContainer'}
+          schema: {$ref: '#/definitions/riaaserror'}
           description: A route with the specified identifier could not be found.
       summary: Retrieve the specified route
       tags:
@@ -10020,10 +10020,10 @@ paths:
             $ref: '#/definitions/Route'
           description: The route was updated successfully.
         400:
-          schema: {$ref: '#/definitions/ErrorContainer'}
+          schema: {$ref: '#/definitions/riaaserror'}
           description: An invalid route patch was provided.
         404:
-          schema: {$ref: '#/definitions/ErrorContainer'}
+          schema: {$ref: '#/definitions/riaaserror'}
           description: A route with the specified identifier could not be found.
       summary: Update a route
       tags:

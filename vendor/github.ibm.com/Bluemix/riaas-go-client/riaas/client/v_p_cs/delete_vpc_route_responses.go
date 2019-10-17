@@ -75,7 +75,7 @@ func NewDeleteVpcRouteNotFound() *DeleteVpcRouteNotFound {
 A route with the specified identifier could not be found.
 */
 type DeleteVpcRouteNotFound struct {
-	Payload *models.ErrorContainer
+	Payload *models.Riaaserror
 }
 
 func (o *DeleteVpcRouteNotFound) Error() string {
@@ -84,7 +84,7 @@ func (o *DeleteVpcRouteNotFound) Error() string {
 
 func (o *DeleteVpcRouteNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ErrorContainer)
+	o.Payload = new(models.Riaaserror)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
