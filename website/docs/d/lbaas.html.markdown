@@ -79,3 +79,5 @@ The following attributes are exported:
 * `server_instances_up` - The number of service instances which are in the `UP` health state.
 * `server_instances_down` - The number of service instances which are in the `DOWN` health state.
 * `active_connections` - The number of total established connections.
+* `use_system_public_ip_pool` - It specifies whether the public IP addresses are allocated from system public IP pool or public subnet from the account ordering the load balancer.
+* `ssl_ciphers` - The list of ssl offloads.
