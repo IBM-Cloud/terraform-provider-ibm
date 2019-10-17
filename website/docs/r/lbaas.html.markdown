@@ -60,6 +60,8 @@ The default is 'PUBLIC'.
   * `session_stickiness` - (Optional, string) The SOURCE_IP for session stickiness.
   * `max_conn` - (Optional, integer) The maximum number of connections the listener can accept. The number must be 1 - 64000.
   * `tls_certificate_id` - (Optional, integer) The ID of the SSL/TLS certificate being used for a protocol. This ID should be specified when `frontend protocol` has a value of `HTTPS`.
+* `ssl_ciphers` - (Optional, list) The comma seperated list of SSL Ciphers. You can find list of supported cipheres [ssl_offload](https://cloud.ibm.com/docs/infrastructure/loadbalancer-service?topic=loadbalancer-service-ssl-offload-with-ibm-cloud-load-balancer).
+* `use_system_public_ip_pool` - (Optional, bool) Applicable for public load balancer only. It specifies whether the public IP addresses are allocated from system public IP pool or public subnet from the account ordering the load balancer. Default Value is `true`.
 * `wait_time_minutes` - (Optional, integer) The duration, expressed in minutes, to wait for the lbaas instance to become available before declaring it as created. It is also the same amount of time waited for deletion to finish. The default value is `90`.
 
 ## Attributes Reference

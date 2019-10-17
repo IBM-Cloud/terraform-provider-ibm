@@ -49,6 +49,16 @@ func dataSourceIBMLbaas() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
+			"use_system_public_ip_pool": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"ssl_ciphers": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Set:      schema.HashString,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
 			"protocols": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -161,7 +171,7 @@ func dataSourceIBMLbaasRead(d *schema.ResourceData, meta interface{}) error {
 	name := d.Get("name").(string)
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetNetworkLBaaSLoadBalancerService(sess)
-	lbs, err := service.Mask("datacenter,members,listeners.defaultPool,listeners.defaultPool.sessionAffinity,listeners.defaultPool.healthMonitor,healthMonitors").Filter(filter.Build(
+	lbs, err := service.Mask("datacenter,members,listeners.defaultPool,listeners.defaultPool.sessionAffinity,listeners.defaultPool.healthMonitor,healthMonitors,sslCiphers[name],useSystemPublicIpPool,isPublic,name,description,operatingStatus,address,uuid").Filter(filter.Build(
 		filter.Path("name").Eq(name))).GetAllObjects()
 	if err != nil {
 		return err
@@ -216,5 +226,11 @@ func dataSourceIBMLbaasRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("protocols", flattenProtocols(result.Listeners))
 	d.Set("health_monitors", flattenHealthMonitors(result.Listeners))
 	d.Set("server_instances", members)
+	d.Set("ssl_ciphers", flattenSSLCiphers(result.SslCiphers))
+	if *result.UseSystemPublicIpPool == 1 {
+		d.Set("use_system_public_ip_pool", true)
+	} else {
+		d.Set("use_system_public_ip_pool", false)
+	}
 	return nil
 }

@@ -99,6 +99,13 @@ func resourceIBMLbaas() *schema.Resource {
 				Description: "The virtual ip address of this load balancer",
 				Computed:    true,
 			},
+			"use_system_public_ip_pool": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				ForceNew:    true,
+				Description: "Applicable for public load balancer only. It specifies whether the public IP addresses are allocated from system public IP pool or public subnet from the account ordering the load balancer.",
+			},
 			"protocols": {
 				Type:        schema.TypeSet,
 				Description: "Protocols to be assigned to this load balancer.",
@@ -161,6 +168,14 @@ func resourceIBMLbaas() *schema.Resource {
 					},
 				},
 				Set: resourceIBMLBProtocolHash,
+			},
+			"ssl_ciphers": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+				//ValidateFunc: validateAllowedStringValue([]string{"ECDHE-RSA-AES256-GCM-SHA384", "ECDHE-RSA-AES256-SHA384", "AES256-GCM-SHA384", "AES256-SHA256", "ECDHE-RSA-AES128-GCM-SHA256", "ECDHE-RSA-AES128-SHA256", "AES128-GCM-SHA256", "AES128-SHA256"}),
 			},
 			"wait_time_minutes": {
 				Type:     schema.TypeInt,
@@ -269,32 +284,14 @@ func resourceIBMLbaasCreate(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(*lbaasLB.Uuid)
 
-	if v, ok := d.GetOk("protocols"); ok && v.(*schema.Set).Len() > 0 {
-		listenerService := services.GetNetworkLBaaSListenerService(sess.SetRetries(0))
-		protocolParam, err := expandProtocols(v.(*schema.Set).List())
-		if err != nil {
-			return fmt.Errorf("Error adding protocols to Load balancer: %s", err)
-		}
-		_, err = listenerService.UpdateLoadBalancerProtocols(sl.String(d.Id()), protocolParam)
-		if err != nil {
-			return fmt.Errorf("Error adding protocols: %#v", err)
-		}
-		_, err = waitForLbaasLBAvailable(d, meta)
-		if err != nil {
-			return fmt.Errorf(
-				"Error waiting for load balancer (%s) to become ready: %s", d.Id(), err)
-		}
-
-	}
-
-	return resourceIBMLbaasRead(d, meta)
+	return resourceIBMLbaasUpdate(d, meta)
 }
 
 func resourceIBMLbaasRead(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetNetworkLBaaSLoadBalancerService(sess)
 
-	result, err := service.Mask("datacenter,members,listeners.defaultPool,listeners.defaultPool.sessionAffinity,listeners.defaultPool.healthMonitor,healthMonitors").GetLoadBalancer(sl.String(d.Id()))
+	result, err := service.Mask("datacenter,members,listeners.defaultPool,listeners.defaultPool.sessionAffinity,listeners.defaultPool.healthMonitor,healthMonitors,sslCiphers[name],useSystemPublicIpPool,isPublic,name,description,operatingStatus,address").GetLoadBalancer(sl.String(d.Id()))
 	if err != nil {
 		return fmt.Errorf("Error retrieving load balancer: %s", err)
 	}
@@ -316,6 +313,13 @@ func resourceIBMLbaasRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("vip", result.Address)
 	d.Set("health_monitors", flattenHealthMonitors(result.Listeners))
 	d.Set("protocols", flattenProtocols(result.Listeners))
+	d.Set("ssl_ciphers", flattenSSLCiphers(result.SslCiphers))
+	if *result.UseSystemPublicIpPool == 1 {
+		d.Set("use_system_public_ip_pool", true)
+	} else {
+		d.Set("use_system_public_ip_pool", false)
+	}
+
 	return nil
 }
 
@@ -375,6 +379,36 @@ func resourceIBMLbaasUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		d.SetPartial("protocols")
 	}
+	if d.HasChange("ssl_ciphers") {
+		if v, ok := d.GetOk("ssl_ciphers"); ok && v.(*schema.Set).Len() > 0 {
+			service := services.GetNetworkLBaaSLoadBalancerService(sess.SetRetries(0))
+			supportedCiphers, err := services.GetNetworkLBaaSSSLCipherService(sess).Mask("id,name").GetAllObjects()
+			if err != nil {
+				return fmt.Errorf("Error retreving list of ssl ciphers: %#v", err)
+			}
+			ciphers := make([]int, v.(*schema.Set).Len())
+			for i, v := range v.(*schema.Set).List() {
+				for _, c := range supportedCiphers {
+					if v == *c.Name {
+						ciphers[i] = *c.Id
+						break
+					}
+				}
+			}
+			_, err = service.UpdateSslCiphers(sl.String(d.Id()), ciphers)
+			if err != nil {
+				return fmt.Errorf("Error updating ssl ciphers: %#v", err)
+			}
+			_, err = waitForLbaasLBAvailable(d, meta)
+			if err != nil {
+				return fmt.Errorf(
+					"Error waiting for load balancer (%s) to become ready: %s", d.Id(), err)
+			}
+
+		}
+
+		d.SetPartial("ssl_ciphers")
+	}
 	d.Partial(false)
 
 	return resourceIBMLbaasRead(d, meta)
@@ -420,6 +454,7 @@ func buildLbaasLBProductOrderContainer(d *schema.ResourceData, sess *session.Ses
 	name := d.Get("name").(string)
 	subnets := d.Get("subnets").([]interface{})
 	lbType := d.Get("type").(string)
+	publicIPPool := d.Get("use_system_public_ip_pool").(bool)
 
 	subnetsParam := []datatypes.Network_Subnet{}
 	for _, subnet := range subnets {
@@ -470,6 +505,8 @@ func buildLbaasLBProductOrderContainer(d *schema.ResourceData, sess *session.Ses
 	if lbType == "PRIVATE" {
 		productOrderContainer.IsPublic = sl.Bool(false)
 	}
+
+	productOrderContainer.UseSystemPublicIpPool = sl.Bool(publicIPPool)
 
 	return &productOrderContainer, nil
 }
