@@ -12,12 +12,12 @@ type KubeVersion struct {
 	Default bool
 }
 
-type v1version map[string][]KubeVersion
+type V1Version map[string][]KubeVersion
 
 //KubeVersions interface
 type KubeVersions interface {
 	List(target ClusterTargetHeader) ([]KubeVersion, error)
-	ListV1(target ClusterTargetHeader) (v1version, error)
+	ListV1(target ClusterTargetHeader) (V1Version, error)
 }
 
 type version struct {
@@ -40,8 +40,8 @@ func (v *version) List(target ClusterTargetHeader) ([]KubeVersion, error) {
 	return versions, err
 }
 
-func (v *version) ListV1(target ClusterTargetHeader) (v1version, error) {
-	v1ver := v1version{}
+func (v *version) ListV1(target ClusterTargetHeader) (V1Version, error) {
+	v1ver := V1Version{}
 	_, err := v.client.Get("/v1/versions", &v1ver, target.ToMap())
 	if err != nil {
 		return nil, err
