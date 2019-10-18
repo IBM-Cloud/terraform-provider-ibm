@@ -471,24 +471,115 @@ func (m *ImageFile) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ImageOperatingSystem OperatingSystem
-//
-// The operating system included in this image
+// ImageOperatingSystem The operating system included in this image
 // swagger:model ImageOperatingSystem
 type ImageOperatingSystem struct {
 
-	// The name of the operating system, to be used for display purposes
+	// The operating system architecture
+	Architecture string `json:"architecture,omitempty"`
+
+	// A unique, display-friendly name for the operating system
+	// Max Length: 120
+	// Min Length: 1
+	// Pattern: ^[-A-Za-z0-9 !$@#%&*'=_+:;,?\./\(\)\[\]]+$
+	DisplayName string `json:"display_name,omitempty"`
+
+	// The name of the software family this operating system belongs to
+	Family string `json:"family,omitempty"`
+
+	// The URL for this operating system
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href string `json:"href,omitempty"`
+
+	// The unique name of the operating system
+	// Max Length: 63
+	// Min Length: 1
+	// Pattern: ^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$
 	Name string `json:"name,omitempty"`
 
 	// The vendor of the operating system
 	Vendor string `json:"vendor,omitempty"`
 
-	// The version of the operating system
-	Version string `json:"version,omitempty"`
+	// OperatingSystem
+	//
+	// The major release version of this operating system
+	Version interface{} `json:"version,omitempty"`
 }
 
 // Validate validates this image operating system
 func (m *ImageOperatingSystem) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateDisplayName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ImageOperatingSystem) validateDisplayName(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.DisplayName) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("operating_system"+"."+"display_name", "body", string(m.DisplayName), 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("operating_system"+"."+"display_name", "body", string(m.DisplayName), 120); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("operating_system"+"."+"display_name", "body", string(m.DisplayName), `^[-A-Za-z0-9 !$@#%&*'=_+:;,?\./\(\)\[\]]+$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ImageOperatingSystem) validateHref(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Href) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("operating_system"+"."+"href", "body", string(m.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ImageOperatingSystem) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("operating_system"+"."+"name", "body", string(m.Name), 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("operating_system"+"."+"name", "body", string(m.Name), 63); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("operating_system"+"."+"name", "body", string(m.Name), `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`); err != nil {
+		return err
+	}
+
 	return nil
 }
 

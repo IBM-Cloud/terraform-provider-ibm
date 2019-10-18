@@ -2872,13 +2872,42 @@ definitions:
       operating_system:
         description: The operating system included in this image
         properties:
-          name: {description: 'The name of the operating system, to
-              be used for display purposes', example: Ubuntu Server
-              16 LTS, type: string}
-          vendor: {description: The vendor of the operating system,
-            example: Canonical, type: string}
-          version: {description: The version of the operating system,
-            example: 16.04.3, type: string}
+          architecture:
+            description: The operating system architecture
+            example: amd64
+            type: string
+          display_name:
+            description: 'A unique, display-friendly name for the operating system'
+            example: Ubuntu Server 16.04 LTS amd64
+            maxLength: 120
+            minLength: 1
+            pattern: '^[-A-Za-z0-9 !$@#%&*''=_+:;,?\./\(\)\[\]]+$'
+            type: string
+          family:
+            description: The name of the software family this operating system belongs to
+            example: Ubuntu Server
+            type: string
+          href:
+            description: The URL for this operating system
+            example: >-
+              https://us-south.iaas.cloud.ibm.com/v1/operating_systems/ubuntu-16-amd64
+            pattern: '^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$'
+            type: string
+          name:
+            description: The unique name of the operating system
+            example: ubuntu-16-amd64
+            maxLength: 63
+            minLength: 1
+            pattern: '^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$'
+            type: string
+          vendor:
+            description: The vendor of the operating system
+            example: Canonical
+            type: string
+          version:
+            description: The major release version of this operating system
+            example: 16.04 LTS
+            type: string
         title: OperatingSystem
         type: object
       resource_group:
