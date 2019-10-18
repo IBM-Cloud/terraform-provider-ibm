@@ -29,6 +29,6 @@ func testAccCheckIBMISZoneDataSourceConfig() string {
 
 data "ibm_is_zone" "testacc_ds_zone" {
 	name = "%s",
-	region = "%s",
+	region = "%s"
 }`, ISZoneName, regionName)
 }

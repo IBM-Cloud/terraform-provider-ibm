@@ -119,7 +119,7 @@ func testAccCheckIBMISIKEPolicyConfigUpdate(name string) string {
 			encryption_algorithm = "aes128"
 			dh_group = 5
 			ike_version = 2
-			key_lifetime = 600
+			key_lifetime = 1800
 		}
 	`, name)
 }

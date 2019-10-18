@@ -29,6 +29,6 @@ func testAccCheckIBMISInstanceProfileDataSourceConfig(instanceProfileName string
 	return fmt.Sprintf(`
 
 data "ibm_is_instance_profile" "test1" {
-	name = "%s",
+	name = "%s"
 }`, instanceProfileName)
 }
