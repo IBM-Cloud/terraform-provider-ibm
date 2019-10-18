@@ -61,7 +61,7 @@ func testAccCheckIBMISImageDataSourceWithVisibility(image, visibility string) st
 	return fmt.Sprintf(`
 
 data "ibm_is_image" "test1" {
-	name = "%s",
+	name = "%s"
 	visibility = "%s"
 }`, image, visibility)
 }
