@@ -127,6 +127,12 @@ func getClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v1.Cluste
 		return v1.ClusterTargetHeader{}, err
 	}
 
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return v1.ClusterTargetHeader{}, err
+	}
+	accountID := userDetails.userAccount
+
 	if region == "" {
 		region = sess.Config.Region
 	}
@@ -139,7 +145,8 @@ func getClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v1.Cluste
 				return v1.ClusterTargetHeader{}, err
 			}
 			resourceGroupQuery := management.ResourceGroupQuery{
-				Default: true,
+				Default:   true,
+				AccountID: accountID,
 			}
 			grpList, err := rsMangClient.ResourceGroup().List(&resourceGroupQuery)
 			if err != nil {
