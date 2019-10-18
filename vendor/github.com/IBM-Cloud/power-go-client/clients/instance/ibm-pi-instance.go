@@ -38,7 +38,7 @@ func (f *IBMPIInstanceClient) Get(id, powerinstanceid string) (*models.PVMInstan
 
 func (f *IBMPIInstanceClient) Create(powerdef *p_cloud_p_vm_instances.PcloudPvminstancesPostParams, powerinstanceid string) (*models.PVMInstanceList, *models.PVMInstanceList, *models.PVMInstanceList, error) {
 
-	log.Printf("Calling the Power PVM Create Method")
+	log.Printf("Calling the Power PVM Create Method %s", powerdef.Body)
 	params := p_cloud_p_vm_instances.NewPcloudPvminstancesPostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithBody(powerdef.Body)
 
 	log.Printf("Printing the params to be passed %+v", params)

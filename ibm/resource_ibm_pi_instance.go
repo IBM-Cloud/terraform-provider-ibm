@@ -251,7 +251,7 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	pvm, _, _, err := client.Create(&p_cloud_p_vm_instances.PcloudPvminstancesPostParams{
 		Body: body,
 	}, powerinstanceid)
-	log.Printf("the number of instances is %d", len(*pvm))
+	//log.Printf("the number of instances is %d", len(*pvm))
 
 	if err != nil {
 		log.Printf("[DEBUG]  err %s", isErrorToString(err))
