@@ -44,6 +44,7 @@ type IBMPISession struct {
 	Power       *client.PowerIaas
 	Timeout     time.Duration
 	UserAccount string
+	Region      string
 }
 
 func powerJSONConsumer() runtime.Consumer {
@@ -94,6 +95,7 @@ func New(iamtoken, region string, debug bool, timeout time.Duration, useraccount
 	session := &IBMPISession{
 		IAMToken:    iamtoken,
 		UserAccount: useraccount,
+		Region:      region,
 	}
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: false}
@@ -110,8 +112,8 @@ func New(iamtoken, region string, debug bool, timeout time.Duration, useraccount
 func NewAuth(sess *IBMPISession, PowerInstanceId string) runtime.ClientAuthInfoWriter {
 	log.Printf("Calling the New Auth Method in the IBMPower Session Code")
 	//var generatedCRN := crn.New(
-
-	var crndata = crnBuilder(PowerInstanceId, sess.UserAccount)
+	//var region :=
+	var crndata = crnBuilder(PowerInstanceId, sess.UserAccount, sess.Region)
 	return runtime.ClientAuthInfoWriterFunc(func(r runtime.ClientRequest, _ strfmt.Registry) error {
 		if err := r.SetHeaderParam("Authorization", sess.IAMToken); err != nil {
 			return err
@@ -130,9 +132,11 @@ func BearerTokenAndCRN(session *IBMPISession, crn string) runtime.ClientAuthInfo
 	})
 }
 
-func crnBuilder(powerinstance, useraccount string) string {
+func crnBuilder(powerinstance, useraccount, region string) string {
 	log.Printf("Calling the crn constructor that is to be passed back to the caller  %s", useraccount)
-	var crnData = crnString + separator + version + separator + service + separator + serviceType + separator + offering + separator + "us-south" + separator + "a" + serviceInstanceSeparator + useraccount + separator + powerinstance + separator + separator
+	log.Printf("the region is %s", region)
+	//var crnData = crnString + separator + version + separator + service + separator + serviceType + separator + offering + separator + "us-south" + separator + "a" + serviceInstanceSeparator + useraccount + separator + powerinstance + separator + separator
+	var crnData = crnString + separator + version + separator + service + separator + serviceType + separator + offering + separator + region + separator + "a" + serviceInstanceSeparator + useraccount + separator + powerinstance + separator + separator
 	log.Printf("the crndata is ... %s ", crnData)
 	return crnData
 }

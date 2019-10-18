@@ -40,7 +40,6 @@ import (
 	issession "github.ibm.com/Bluemix/riaas-go-client/session"
 	// Added code for the Power Colo Offering
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
-	powersession "github.com/IBM-Cloud/power-go-client/session"
 )
 
 //RetryDelay
@@ -143,8 +142,6 @@ type ClientSession interface {
 	ResourceManagementAPI() (management.ResourceManagementAPI, error)
 	ResourceControllerAPI() (controller.ResourceControllerAPI, error)
 	SoftLayerSession() *slsession.Session
-
-	PowerSession() (*powersession.Session, error)
 	IBMPISession() (*ibmpisession.IBMPISession, error)
 }
 
@@ -203,8 +200,6 @@ type clientSession struct {
 	resourceCatalogServiceAPI catalog.ResourceCatalogAPI
 
 	powerConfigErr error
-	powerSession   *powersession.Session
-
 	ibmpiConfigErr error
 	ibmpiSession   *ibmpisession.IBMPISession
 }
@@ -305,9 +300,6 @@ func (sess clientSession) SoftLayerSession() *slsession.Session {
 }
 
 // Session to the Power Colo Service
-func (sess clientSession) PowerSession() (*powersession.Session, error) {
-	return sess.powerSession, sess.powerConfigErr
-}
 
 func (sess clientSession) IBMPISession() (*ibmpisession.IBMPISession, error) {
 	return sess.ibmpiSession, sess.powerConfigErr
@@ -471,16 +463,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.resourceControllerConfigErr = fmt.Errorf("Error occured while configuring Resource Controller service: %q", err)
 	}
 	session.resourceControllerServiceAPI = resourceControllerAPI
-
-	// Power Colo Session
-
-	powersession, err := powersession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, c.PowerServiceInstance, true, c.BluemixTimeout, session.bmxUserDetails.userAccount)
-
-	if err != nil {
-		session.powerConfigErr = err
-		return nil, err
-	}
-	session.powerSession = powersession
 
 	ibmpisession, err := ibmpisession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, true, c.BluemixTimeout, session.bmxUserDetails.userAccount)
 	if err != nil {
