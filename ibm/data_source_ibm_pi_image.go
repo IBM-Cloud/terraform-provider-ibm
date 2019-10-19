@@ -44,7 +44,7 @@ func dataSourceIBMPIImage() *schema.Resource {
 				Computed: true,
 			},
 			"size": {
-				Type:     schema.TypeString,
+				Type:     schema.TypeInt,
 				Computed: true,
 			},
 			"architecture": {
@@ -87,6 +87,7 @@ func dataSourceIBMPIImagesRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("size", imagedata.Size)
 	d.Set("architecture", imagedata.Specifications.Architecture)
 	d.Set("hypervisor", imagedata.Specifications.HypervisorType)
+	d.Set("operatingsystem", imagedata.Specifications.OperatingSystem)
 
 	return nil
 

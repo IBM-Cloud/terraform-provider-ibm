@@ -16,3 +16,18 @@ output "imageid"
 value="${data.ibm_pi_image.imagedata.imageid}"
 }
 
+output "operatingsystem"
+{
+value="${data.ibm_pi_image.imagedata.operatingsystem}"
+}
+
+output "arch"
+{
+value="${data.ibm_pi_image.imagedata.architecture}"
+}
+
+output "imagesize"
+{
+value="${data.ibm_pi_image.imagedata.size}"
+}
+
