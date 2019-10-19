@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : Image"
+page_title: "IBM : Network"
 sidebar_current: "docs-ibm-datasources-pi-network"
 description: |-
   Manages IBM Cloud Infrastructure Networks for IBM Power
@@ -15,7 +15,7 @@ Import the details of an existing IBM Cloud Infrastructure Network for IBM Power
 
 ```hcl
 
-data "ibm_pi_network" "ds_image" {
+data "ibm_pi_network" "ds_network" {
     name = "APP"
     powerinstanceid="49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 
