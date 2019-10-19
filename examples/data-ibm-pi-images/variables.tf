@@ -1,10 +1,4 @@
 
-variable "imagename"
-{
-description="Name of the image key to be used"
-}
-
-
 variable "powerinstanceid"
 {
 description="Power Instance associated with the account"

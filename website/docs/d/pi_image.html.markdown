@@ -6,7 +6,7 @@ description: |-
   Manages IBM Cloud Infrastructure Images for IBM Power
 ---
 
-# ibm\_is_image
+# ibm\_pi_image
 
 Import the details of an existing IBM Cloud Infrastructure image for IBM Power as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
@@ -17,6 +17,8 @@ Import the details of an existing IBM Cloud Infrastructure image for IBM Power a
 
 data "ibm_pi_image" "ds_image" {
     name = "7200-03-03"
+    powerinstanceid="49fba6c9-23f8-40bc-9899-aca322ee7d5b"
+
 }
 
 ```
@@ -25,8 +27,8 @@ data "ibm_pi_image" "ds_image" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The name of the image.
-
+* `imagename` - (Required, string) The name of the image.
+* `powerinstanceid` - (Required, string) The service instance associated with the account
 
 
 ## Attribute Reference

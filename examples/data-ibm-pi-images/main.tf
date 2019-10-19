@@ -5,7 +5,7 @@ pi_cloud_instance_id="${var.powerinstanceid}"
 
 
 
-output "state"
+output "images"
 {
 value="${data.ibm_pi_images.imagedata.image_info}"
 }
