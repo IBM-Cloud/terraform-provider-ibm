@@ -6,7 +6,7 @@ description: |-
   Manages IBM Cloud Infrastructure Volumes for IBM Power
 ---
 
-# ibm\_pi_image
+# ibm\_pi_volume
 
 Import the details of an existing IBM Cloud Infrastructure Volume for IBM Power as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 

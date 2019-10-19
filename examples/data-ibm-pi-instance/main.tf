@@ -22,10 +22,3 @@ output "id"
 value="${data.ibm_pi_instance.instance.id}"
 }
 
-output "volumeid"
-{
-value="${data.ibm_pi_instance.instance.volumeid}"
-}
-
-
-
