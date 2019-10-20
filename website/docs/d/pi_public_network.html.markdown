@@ -13,7 +13,7 @@ Import the details of an existing IBM Power Virtual Server Cloud public network 
 ## Example Usage
 
 ```hcl
-data "ibm_pi_network" "ds_network" {
+data "ibm_pi_public_network" "ds_public_network" {
     name            = "PUBLIC"
     powerinstanceid = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
