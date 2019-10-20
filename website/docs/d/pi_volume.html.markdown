@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM: Volume"
 sidebar_current: "docs-ibm-datasources-pi-volume"
 description: |-
-  Manages IBM Volume in the Power Virtual Server Cloud.
+  Manages a volume in the Power Virtual Server Cloud.
 ---
 
 # ibm\_pi_volume
