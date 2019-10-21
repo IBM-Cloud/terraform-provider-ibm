@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM: Instance"
+page_title: "IBM: pi_instance"
 sidebar_current: "docs-ibm-datasources-pi-instance"
 description: |-
   Manages an instance in the Power Virtual Server Cloud.
@@ -14,8 +14,8 @@ Import the details of an existing IBM Power Virtual Server instance as a read-on
 
 ```hcl
 data "ibm_pi_instance" "ds_instance" {
-    name            = "terraform-test-instance"
-    powerinstanceid = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
+  pi_instance_name     = "terraform-test-instance"
+  pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
 
@@ -23,8 +23,8 @@ data "ibm_pi_instance" "ds_instance" {
 
 The following arguments are supported:
 
-* `instancename` - (Required, string) The name of the instance.
-* `powerinstanceid` - (Required, string) The service instance associated with the account
+* `pi_instance_name` - (Required, string) The name of the instance.
+* `pi_cloud_instance_id` - (Required, string) The service instance associated with the account
 
 ## Attribute Reference
 

@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM: Volumes"
+page_title: "IBM: pi_volumes"
 sidebar_current: "docs-ibm-datasources-pi-volumes"
 description: |-
   Manages volumes in the Power Virtual Server Cloud.
@@ -14,8 +14,8 @@ Import the details of existing IBM Power Virtual Server Cloud volumes as a read-
 
 ```hcl
 data "ibm_pi_volumes" "ds_volumes" {
-    instance_name   = "volume_1"
-    powerinstanceid = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
+  pi_instance_name     = "volume_1"
+  pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
 
@@ -23,8 +23,8 @@ data "ibm_pi_volumes" "ds_volumes" {
 
 The following arguments are supported:
 
-* `instance_name` - (Required, string) The name of the instance whose volumes to retrieve.
-* `powerinstanceid` - (Required, string) The service instance associated with the account.
+* `pi_instance_name` - (Required, string) The name of the instance whose volumes to retrieve.
+* `pi_cloud_instance_id` - (Required, string) The service instance associated with the account.
 
 ## Attribute Reference
 

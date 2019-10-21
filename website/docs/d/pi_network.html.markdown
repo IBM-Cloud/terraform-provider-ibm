@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM: Network"
+page_title: "IBM: pi_network"
 sidebar_current: "docs-ibm-datasources-pi-network"
 description: |-
   Manages a network in the IBM Power Virtual Server Cloud.
@@ -14,8 +14,8 @@ Import the details of an existing IBM Power Virtual Server Cloud network as a re
 
 ```hcl
 data "ibm_pi_network" "ds_network" {
-    name            = "APP"
-    powerinstanceid = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
+  pi_network_name = "APP"
+  powerinstanceid = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
 
@@ -23,8 +23,8 @@ data "ibm_pi_network" "ds_network" {
 
 The following arguments are supported:
 
-* `networkname` - (Required, string) The name of the network.
-* `powerinstanceid` - (Required, string) The service instance associated with the account
+* `pi_network_name` - (Required, string) The name of the network.
+* `pi_cloud_instance_id` - (Required, string) The service instance associated with the account
 
 ## Attribute Reference
 
