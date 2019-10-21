@@ -16,7 +16,7 @@ func TestAccIBMPIVolumesDataSource_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMPIVolumesDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.ibm_pi_volumes.testacc_ds_volumes", "pi_volumes_name", pi_volume_name),
+					resource.TestCheckResourceAttr("data.ibm_pi_instance_volumes.testacc_ds_volumes", "pi_volumes_name", pi_volume_name),
 				),
 			},
 		},
@@ -26,7 +26,7 @@ func TestAccIBMPIVolumesDataSource_basic(t *testing.T) {
 func testAccCheckIBMPIVolumesDataSourceConfig() string {
 	return fmt.Sprintf(`
 	
-data "ibm_pi_volumes" "testacc_ds_volumes" {
+data "ibm_pi_instance_volumes" "testacc_ds_volumes" {
     pi_volume_name = "%s"
     pi_cloud_instance_id = "%s"
 }`, pi_volume_name, pi_cloud_instance_id)
