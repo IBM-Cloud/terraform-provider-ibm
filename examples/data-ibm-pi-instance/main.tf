@@ -1,6 +1,6 @@
 data "ibm_pi_instance" "instance"
 {
-instancename="${var.instancename}"
+pi_instance_name="${var.instancename}"
 pi_cloud_instance_id="${var.powerinstanceid}"
 
 }

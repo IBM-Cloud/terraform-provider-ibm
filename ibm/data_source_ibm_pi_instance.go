@@ -2,6 +2,7 @@ package ibm
 
 import (
 	_ "fmt"
+
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -14,7 +15,7 @@ func dataSourceIBMPIInstance() *schema.Resource {
 		Read: dataSourceIBMPIInstancesRead,
 		Schema: map[string]*schema.Schema{
 
-			"instancename": {
+			helpers.PIInstanceName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "Server Name to be used for pvminstances",
@@ -137,7 +138,7 @@ func dataSourceIBMPIInstancesRead(d *schema.ResourceData, meta interface{}) erro
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 
 	powerC := instance.NewIBMPIInstanceClient(sess, powerinstanceid)
-	powervmdata, err := powerC.Get(d.Get("instancename").(string), powerinstanceid)
+	powervmdata, err := powerC.Get(d.Get(helpers.PIInstanceName).(string), powerinstanceid)
 
 	if err != nil {
 		return err
