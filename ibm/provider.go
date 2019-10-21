@@ -197,6 +197,18 @@ func Provider() terraform.ResourceProvider {
 			"ibm_service_key":                dataSourceIBMServiceKey(),
 			"ibm_service_plan":               dataSourceIBMServicePlan(),
 			"ibm_space":                      dataSourceIBMSpace(),
+
+			// Added for Power Resources
+
+			"ibm_pi_key":              dataSourceIBMPIKey(),
+			"ibm_pi_image":            dataSourceIBMPIImage(),
+			"ibm_pi_instance":         dataSourceIBMPIInstance(),
+			"ibm_pi_tenant":           dataSourceIBMPITenant(),
+			"ibm_pi_network":          dataSourceIBMPINetwork(),
+			"ibm_pi_volume":           dataSourceIBMPIVolume(),
+			"ibm_pi_instance_volumes": dataSourceIBMPIVolumes(),
+			"ibm_pi_public_network":   dataSourceIBMPIPublicNetwork(),
+			"ibm_pi_images":           dataSourceIBMPIImages(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -304,6 +316,16 @@ func Provider() terraform.ResourceProvider {
 			"ibm_ssl_certificate":                                resourceIBMSSLCertificate(),
 			"ibm_cdn":                                            resourceIBMCDN(),
 			"ibm_hardware_firewall_shared":                       resourceIBMFirewallShared(),
+
+			//Added for Power Colo
+
+			"ibm_pi_key":           resourceIBMPIKey(),
+			"ibm_pi_volume":        resourceIBMPIVolume(),
+			"ibm_pi_network":       resourceIBMPINetwork(),
+			"ibm_pi_instance":      resourceIBMPIInstance(),
+			"ibm_pi_operations":    resourceIBMPIIOperations(),
+			"ibm_pi_volume_attach": resourceIBMPIVolumeAttach(),
+			"ibm_pi_capture":       resourceIBMPICapture(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -392,6 +414,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		Generation:           generation,
 		IAMToken:             iamToken,
 		IAMRefreshToken:      iamRefreshToken,
+		//PowerServiceInstance: powerServiceInstance,
 	}
 
 	return config.ClientSession()
