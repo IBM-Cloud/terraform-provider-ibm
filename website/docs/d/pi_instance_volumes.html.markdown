@@ -1,19 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM: pi_volumes"
-sidebar_current: "docs-ibm-datasources-pi-volumes"
+page_title: "IBM: pi_instance_volumes"
+sidebar_current: "docs-ibm-datasources-pi-instance-volumes"
 description: |-
-  Manages volumes in the Power Virtual Server Cloud.
+  Manages Instance volumes in the Power Virtual Server Cloud.
 ---
 
-# ibm\_pi_volumes
+# ibm\_pi_instance_volumes
 
-Import the details of existing IBM Power Virtual Server Cloud volumes as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Import the details of existing IBM Power Virtual Server Cloud instance volumes as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "ibm_pi_volumes" "ds_volumes" {
+data "ibm_pi_instance_volumes" "ds_volumes" {
   pi_instance_name     = "volume_1"
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
