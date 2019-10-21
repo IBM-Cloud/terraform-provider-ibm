@@ -2,12 +2,13 @@ package ibm
 
 import (
 	"errors"
+	"log"
+	"time"
+
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"log"
-	"time"
 )
 
 func resourceIBMPIVolumeAttach() *schema.Resource {
@@ -81,7 +82,6 @@ func resourceIBMPIVolumeAttachCreate(d *schema.ResourceData, meta interface{}) e
 
 	if err != nil {
 		return errors.New("The volume cannot be attached since it's not available")
-		log.Printf(" The volume that is being attached is not available ")
 	}
 	//log.Print("The volume info is %s", volinfo)
 

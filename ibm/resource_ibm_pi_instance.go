@@ -3,6 +3,7 @@ package ibm
 import (
 	"encoding/base64"
 	"fmt"
+
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
@@ -370,7 +371,6 @@ func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 
 	return resourceIBMPIInstanceRead(d, meta)
 
-	return nil
 }
 
 func resourceIBMPIInstanceDelete(d *schema.ResourceData, meta interface{}) error {

@@ -2,13 +2,14 @@ package ibm
 
 import (
 	"errors"
+	"log"
+	"time"
+
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_p_vm_instances"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/hashicorp/terraform/helper/schema"
-	"log"
-	"time"
 )
 
 func resourceIBMPICapture() *schema.Resource {
@@ -121,7 +122,6 @@ func resourceIBMPICaptureCreate(d *schema.ResourceData, meta interface{}) error 
 
 	if err != nil {
 		return errors.New("The capture cannot be performed")
-		log.Printf(" The volume that is being attached is not available ")
 	}
 
 	// If this is an image catalog then we need to check what the status is

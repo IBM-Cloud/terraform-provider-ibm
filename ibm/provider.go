@@ -143,12 +143,6 @@ func Provider() terraform.ResourceProvider {
 				Description: "IAM Authentication refresh token",
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_IAM_REFRESH_TOKEN", "IBMCLOUD_IAM_REFRESH_TOKEN"}, nil),
 			},
-			"power_instance": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Power Service Instance",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"POWER_SERVICE_INSTANCE", "POWER_INSTANCE"}, nil),
-			},
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -403,10 +397,6 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if wskEnvVal.(string) == "" {
 		os.Setenv("FUNCTION_NAMESPACE", wskNameSpace)
 	}
-
-	// Added code for the Power Colo
-
-	//powerServiceInstance := d.Get("power_instance").(string)
 
 	config := Config{
 		BluemixAPIKey:        bluemixAPIKey,
