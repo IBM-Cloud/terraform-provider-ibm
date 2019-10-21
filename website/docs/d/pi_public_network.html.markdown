@@ -1,12 +1,12 @@
 ---
 layout: "ibm"
-page_title: "IBM: Public Network"
+page_title: "IBM: pi_public_network"
 sidebar_current: "docs-ibm-datasources-pi-public-network"
 description: |-
   Manages a public network in the IBM Power Virtual Server Cloud.
 ---
 
-# ibm\_pi_network
+# ibm\_pi_public_network
 
 Import the details of an existing IBM Power Virtual Server Cloud public network as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
@@ -14,8 +14,8 @@ Import the details of an existing IBM Power Virtual Server Cloud public network 
 
 ```hcl
 data "ibm_pi_public_network" "ds_public_network" {
-    name            = "PUBLIC"
-    powerinstanceid = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
+  pi_network_name      = "PUBLIC"
+  pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
 
@@ -23,8 +23,8 @@ data "ibm_pi_public_network" "ds_public_network" {
 
 The following arguments are supported:
 
-* `networkname` - (Required, string) The name of the network.
-* `powerinstanceid` - (Required, string) The service instance associated with the account
+* `pi_network_name` - (Required, string) The name of the network.
+* `pi_cloud_instance_id` - (Required, string) The service instance associated with the account
 
 ## Attribute Reference
 

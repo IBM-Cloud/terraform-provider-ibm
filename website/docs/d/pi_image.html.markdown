@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM: Image"
+page_title: "IBM: pi_image"
 sidebar_current: "docs-ibm-datasources-pi-image"
 description: |-
   Manages an image in the Power Virtual Server Cloud.
@@ -14,8 +14,8 @@ Import the details of an existing IBM Power Virtual Server Cloud image as a read
 
 ```hcl
 data "ibm_pi_image" "ds_image" {
-    name            = "7200-03-03"
-    powerinstanceid = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
+  pi_image_name        = "7200-03-03"
+  pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
 
@@ -23,8 +23,8 @@ data "ibm_pi_image" "ds_image" {
 
 The following arguments are supported:
 
-* `imagename` - (Required, string) The name of the image.
-* `powerinstanceid` - (Required, string) The service instance associated with the account.
+* `pi_image_name` - (Required, string) The name of the image.
+* `pi_cloud_instance_id` - (Required, string) The service instance associated with the account.
 
 ## Attribute Reference
 
