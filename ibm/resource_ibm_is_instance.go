@@ -867,7 +867,7 @@ func isWaitForInstanceActionStop(d *schema.ResourceData, meta interface{}) (inte
 			}
 			return instance, instance.Status, nil
 		},
-		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Timeout:    d.Timeout(schema.TimeoutDelete),
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
