@@ -517,6 +517,21 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				ForceNew:         true,
 				DiffSuppressFunc: applyOnce,
 			},
+			ResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
+			ResourceName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the resource",
+			},
+			ResourceStatus: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the resource",
+			},
 		},
 	}
 }
@@ -1036,7 +1051,7 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 			"allowedNetworkStorage[id,nasType]," +
 			"notes,userData[value],tagReferences[id,tag[name]]," +
 			"datacenter[id,name,longName]," +
-			"sshKeys," +
+			"sshKeys,status[keyName,name]," +
 			"primaryNetworkComponent[networkVlan[id],subnets," +
 			"primaryVersion6IpAddressRecord[subnet,guestNetworkComponentBinding[ipAddressId]]," +
 			"primaryIpAddressRecord[subnet,guestNetworkComponentBinding[ipAddressId]]," +
@@ -1247,6 +1262,12 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 		}
 
 	}
+
+	d.Set(ResourceControllerURL, fmt.Sprintf("https://cloud.ibm.com/gen1/infrastructure/virtual-server/%s/details#main", d.Id()))
+
+	d.Set(ResourceName, *result.Hostname)
+
+	d.Set(ResourceStatus, *result.Status.Name)
 
 	err = readSecondaryIPAddresses(d, meta, result.PrimaryIpAddress)
 	return err

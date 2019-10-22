@@ -128,6 +128,22 @@ func resourceIBMNetworkVlan() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
 			},
+
+			ResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
+			ResourceName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the resource",
+			},
+			/*ResourceStatus: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the resource",
+			},*/
 		},
 	}
 }
@@ -263,6 +279,12 @@ func resourceIBMNetworkVlanRead(d *schema.ResourceData, meta interface{}) error 
 		}
 		d.Set("tags", tags)
 	}
+
+	d.Set(ResourceControllerURL, fmt.Sprintf("https://cloud.ibm.com/classic/network/vlans/%s", d.Id()))
+
+	d.Set(ResourceName, *vlan.Name)
+
+	//d.Set(ResourceStatus, *vlan.Status)
 
 	return nil
 }

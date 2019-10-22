@@ -5,6 +5,7 @@ provider "ibm" {
 resource "ibm_network_vlan" "test_vlan_public" {
   name            = "${var.vlan_name_public}"
   datacenter      = "${var.datacenter}"
+  router_hostname = "fcr01a.dal13"
   type            = "PUBLIC"
 }
 
@@ -12,6 +13,7 @@ resource "ibm_network_vlan" "test_vlan_public" {
 resource "ibm_network_vlan" "test_vlan_private" {
   name        = "${var.vlan_name_private}"
   datacenter  = "${var.datacenter}"
+  router_hostname = "bcr01a.dal13"
   type        = "PRIVATE"
 }
 

@@ -1,6 +1,6 @@
 variable "datacenter" {
   description = "The datacenter"
-  default = "dal01"
+  default = "dal13"
 }
 
 variable "ssh_label" {

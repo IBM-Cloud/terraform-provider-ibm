@@ -19,11 +19,13 @@ resource "ibm_compute_vm_instance" "vm1" {
   disks = [25]
   local_disk = false
   ssh_key_ids = [
-    "${ibm_compute_ssh_key.ssh_key_gip.id}"
+  "${ibm_compute_ssh_key.ssh_key_gip.id}"
   ]
   provisioner "remote-exec" {
     script = "gip.sh"
   }
+
+
 }
 
 resource "ibm_network_public_ip" "test-global-ip" {

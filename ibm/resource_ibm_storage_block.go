@@ -3,9 +3,8 @@ package ibm
 import (
 	"fmt"
 	"log"
-	"strconv"
-
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -204,6 +203,17 @@ func resourceIBMStorageBlock() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
+
+			ResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
+			ResourceName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the resource",
+			},
 		},
 	}
 }
@@ -391,6 +401,10 @@ func resourceIBMStorageBlockRead(d *schema.ResourceData, meta interface{}) error
 	}
 
 	d.Set("target_address", storage.IscsiTargetIpAddresses)
+
+	d.Set(ResourceControllerURL, fmt.Sprintf("https://cloud.ibm.com/classic/storage/block/%s", d.Id()))
+
+	d.Set(ResourceName, *storage.ServiceResourceBackendIpAddress)
 
 	return nil
 }

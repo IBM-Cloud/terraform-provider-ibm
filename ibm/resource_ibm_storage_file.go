@@ -210,6 +210,22 @@ func resourceIBMStorageFile() *schema.Resource {
 				Default:  false,
 				ForceNew: true,
 			},
+
+			ResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
+			ResourceName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the resource",
+			},
+			ResourceStatus: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the resource",
+			},
 		},
 	}
 }
@@ -297,7 +313,7 @@ func resourceIBMStorageFileRead(d *schema.ResourceData, meta interface{}) error 
 
 	storage, err := services.GetNetworkStorageService(sess).
 		Id(storageId).
-		Mask(storageDetailMask).
+		Mask(storageDetailMask + ",volumeStatus").
 		GetObject()
 
 	if err != nil {
@@ -404,6 +420,12 @@ func resourceIBMStorageFileRead(d *schema.ResourceData, meta interface{}) error 
 		schds[i] = s
 	}
 	d.Set("snapshot_schedule", schds)
+
+	d.Set(ResourceControllerURL, fmt.Sprintf("https://cloud.ibm.com/classic/storage/file/%s", d.Id()))
+
+	d.Set(ResourceName, *storage.ServiceResourceBackendIpAddress)
+
+	d.Set(ResourceStatus, *storage.VolumeStatus)
 
 	return nil
 }

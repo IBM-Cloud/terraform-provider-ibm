@@ -2295,6 +2295,10 @@
 		{
 			"path": "govendor",
 			"revision": ""
+		},
+		{
+			"path": "path",
+			"revision": ""
 		}
 	],
 	"rootPath": "github.com/IBM-Cloud/terraform-provider-ibm"

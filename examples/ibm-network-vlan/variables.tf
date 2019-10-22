@@ -12,7 +12,7 @@ variable "vm_os_reference_code" {
   default = "CENTOS_7_64"
 }
 variable "datacenter" {
-  default = "dal06"
+  default = "dal13"
 }
 variable "vm_domain" {
   default = "terraformuat.ibm.com"
