@@ -210,7 +210,6 @@ func resourceIBMISInstance() *schema.Resource {
 			isInstanceGeneration: {
 				Type:             schema.TypeString,
 				Optional:         true,
-				Default:          "gc",
 				DiffSuppressFunc: applyOnce,
 				ValidateFunc:     validateGeneration,
 				Removed:          "This field is removed",
