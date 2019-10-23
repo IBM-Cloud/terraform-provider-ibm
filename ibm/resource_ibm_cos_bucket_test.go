@@ -207,7 +207,7 @@ func testAccCheckIBMCosBucketExists(resource string, bucket string, regiontype s
 func testAccCheckIBMCosBucket_basic(serviceName string, bucketName string, regiontype string, region string) string {
 	return fmt.Sprintf(`
 		data "ibm_resource_group" "group" {
-			name = "contractor-rg"
+			name = "default"
 		}
 	  
 	  
@@ -232,7 +232,7 @@ func testAccCheckIBMCosBucket_basic(serviceName string, bucketName string, regio
 func testAccCheckIBMCosBucket_updateWithSameName(serviceName string, bucketName string, regiontype string, region string) string {
 	return fmt.Sprintf(`	
 		data "ibm_resource_group" "group" {
-			name = "contractor-rg"
+			name = "default"
 		}
 	
 	
