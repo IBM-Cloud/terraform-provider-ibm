@@ -193,3 +193,82 @@ func (m *AddressPoolPrefix) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
+
+// AddressPoolPrefixZone ZoneReference
+//
+// The zone this address pool prefix is to belong to
+// swagger:model AddressPoolPrefixZone
+type AddressPoolPrefixZone struct {
+
+	// The URL for this zone
+	// Required: true
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href *string `json:"href"`
+
+	// The name for this zone
+	// Required: true
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name *string `json:"name"`
+}
+
+// Validate validates this address pool prefix zone
+func (m *AddressPoolPrefixZone) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AddressPoolPrefixZone) validateHref(formats strfmt.Registry) error {
+
+	if err := validate.Required("zone"+"."+"href", "body", m.Href); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("zone"+"."+"href", "body", string(*m.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AddressPoolPrefixZone) validateName(formats strfmt.Registry) error {
+
+	if err := validate.Required("zone"+"."+"name", "body", m.Name); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("zone"+"."+"name", "body", string(*m.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *AddressPoolPrefixZone) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *AddressPoolPrefixZone) UnmarshalBinary(b []byte) error {
+	var res AddressPoolPrefixZone
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

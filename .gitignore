@@ -25,6 +25,9 @@ website/node_modules
 *.iml
 .vscode
 website/vendor
+*.attach
+*.xml
+*.old
 
 # Test exclusions
 !command/test-fixtures/**/*.tfstate

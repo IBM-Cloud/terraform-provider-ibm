@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPostVolumesParams creates a new PostVolumesParams object
@@ -66,7 +64,7 @@ for the post volumes operation typically these are written to a http.Request
 type PostVolumesParams struct {
 
 	/*Body*/
-	Body *models.PostVolumesParamsBody
+	Body PostVolumesBody
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -117,13 +115,13 @@ func (o *PostVolumesParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the post volumes params
-func (o *PostVolumesParams) WithBody(body *models.PostVolumesParamsBody) *PostVolumesParams {
+func (o *PostVolumesParams) WithBody(body PostVolumesBody) *PostVolumesParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the post volumes params
-func (o *PostVolumesParams) SetBody(body *models.PostVolumesParamsBody) {
+func (o *PostVolumesParams) SetBody(body PostVolumesBody) {
 	o.Body = body
 }
 
@@ -157,10 +155,8 @@ func (o *PostVolumesParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 	var res []error
 
-	if o.Body != nil {
-		if err := r.SetBodyParam(o.Body); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.Body); err != nil {
+		return err
 	}
 
 	// query param generation

@@ -17,7 +17,8 @@ import (
 type VolumeAttachmentReference struct {
 	ResourceReference
 
-	VolumeAttachmentReferenceAllOf1
+	// volume
+	Volume *ResourceReference `json:"volume,omitempty"`
 }
 
 // UnmarshalJSON unmarshals this object from a JSON structure
@@ -30,11 +31,14 @@ func (m *VolumeAttachmentReference) UnmarshalJSON(raw []byte) error {
 	m.ResourceReference = aO0
 
 	// AO1
-	var aO1 VolumeAttachmentReferenceAllOf1
-	if err := swag.ReadJSON(raw, &aO1); err != nil {
+	var dataAO1 struct {
+		Volume *ResourceReference `json:"volume,omitempty"`
+	}
+	if err := swag.ReadJSON(raw, &dataAO1); err != nil {
 		return err
 	}
-	m.VolumeAttachmentReferenceAllOf1 = aO1
+
+	m.Volume = dataAO1.Volume
 
 	return nil
 }
@@ -49,11 +53,17 @@ func (m VolumeAttachmentReference) MarshalJSON() ([]byte, error) {
 	}
 	_parts = append(_parts, aO0)
 
-	aO1, err := swag.WriteJSON(m.VolumeAttachmentReferenceAllOf1)
-	if err != nil {
-		return nil, err
+	var dataAO1 struct {
+		Volume *ResourceReference `json:"volume,omitempty"`
 	}
-	_parts = append(_parts, aO1)
+
+	dataAO1.Volume = m.Volume
+
+	jsonDataAO1, errAO1 := swag.WriteJSON(dataAO1)
+	if errAO1 != nil {
+		return nil, errAO1
+	}
+	_parts = append(_parts, jsonDataAO1)
 
 	return swag.ConcatJSON(_parts...), nil
 }
@@ -66,14 +76,32 @@ func (m *VolumeAttachmentReference) Validate(formats strfmt.Registry) error {
 	if err := m.ResourceReference.Validate(formats); err != nil {
 		res = append(res, err)
 	}
-	// validation for a type composition with VolumeAttachmentReferenceAllOf1
-	if err := m.VolumeAttachmentReferenceAllOf1.Validate(formats); err != nil {
+
+	if err := m.validateVolume(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *VolumeAttachmentReference) validateVolume(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Volume) { // not required
+		return nil
+	}
+
+	if m.Volume != nil {
+		if err := m.Volume.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("volume")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 

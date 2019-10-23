@@ -9,7 +9,10 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -171,5 +174,60 @@ func (o *PatchVolumesVolumeIDSnapshotsIDInternalServerError) readResponse(respon
 		return err
 	}
 
+	return nil
+}
+
+/*PatchVolumesVolumeIDSnapshotsIDBody patch volumes volume ID snapshots ID body
+swagger:model PatchVolumesVolumeIDSnapshotsIDBody
+*/
+type PatchVolumesVolumeIDSnapshotsIDBody struct {
+
+	// The user-defined name for this snapshot
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this patch volumes volume ID snapshots ID body
+func (o *PatchVolumesVolumeIDSnapshotsIDBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PatchVolumesVolumeIDSnapshotsIDBody) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("body"+"."+"name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PatchVolumesVolumeIDSnapshotsIDBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PatchVolumesVolumeIDSnapshotsIDBody) UnmarshalBinary(b []byte) error {
+	var res PatchVolumesVolumeIDSnapshotsIDBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPostInstancesInstanceIDVolumeAttachmentsParams creates a new PostInstancesInstanceIDVolumeAttachmentsParams object
@@ -66,7 +64,7 @@ for the post instances instance ID volume attachments operation typically these 
 type PostInstancesInstanceIDVolumeAttachmentsParams struct {
 
 	/*Body*/
-	Body *models.PostInstancesInstanceIDVolumeAttachmentsParamsBody
+	Body PostInstancesInstanceIDVolumeAttachmentsBody
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -122,13 +120,13 @@ func (o *PostInstancesInstanceIDVolumeAttachmentsParams) SetHTTPClient(client *h
 }
 
 // WithBody adds the body to the post instances instance ID volume attachments params
-func (o *PostInstancesInstanceIDVolumeAttachmentsParams) WithBody(body *models.PostInstancesInstanceIDVolumeAttachmentsParamsBody) *PostInstancesInstanceIDVolumeAttachmentsParams {
+func (o *PostInstancesInstanceIDVolumeAttachmentsParams) WithBody(body PostInstancesInstanceIDVolumeAttachmentsBody) *PostInstancesInstanceIDVolumeAttachmentsParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the post instances instance ID volume attachments params
-func (o *PostInstancesInstanceIDVolumeAttachmentsParams) SetBody(body *models.PostInstancesInstanceIDVolumeAttachmentsParamsBody) {
+func (o *PostInstancesInstanceIDVolumeAttachmentsParams) SetBody(body PostInstancesInstanceIDVolumeAttachmentsBody) {
 	o.Body = body
 }
 
@@ -173,10 +171,8 @@ func (o *PostInstancesInstanceIDVolumeAttachmentsParams) WriteToRequest(r runtim
 	}
 	var res []error
 
-	if o.Body != nil {
-		if err := r.SetBodyParam(o.Body); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.Body); err != nil {
+		return err
 	}
 
 	// query param generation

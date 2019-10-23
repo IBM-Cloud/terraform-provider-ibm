@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPatchPublicGatewaysIDParams creates a new PatchPublicGatewaysIDParams object
@@ -66,7 +64,7 @@ for the patch public gateways ID operation typically these are written to a http
 type PatchPublicGatewaysIDParams struct {
 
 	/*Body*/
-	Body *models.PatchPublicGatewaysIDParamsBody
+	Body PatchPublicGatewaysIDBody
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -122,13 +120,13 @@ func (o *PatchPublicGatewaysIDParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the patch public gateways ID params
-func (o *PatchPublicGatewaysIDParams) WithBody(body *models.PatchPublicGatewaysIDParamsBody) *PatchPublicGatewaysIDParams {
+func (o *PatchPublicGatewaysIDParams) WithBody(body PatchPublicGatewaysIDBody) *PatchPublicGatewaysIDParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the patch public gateways ID params
-func (o *PatchPublicGatewaysIDParams) SetBody(body *models.PatchPublicGatewaysIDParamsBody) {
+func (o *PatchPublicGatewaysIDParams) SetBody(body PatchPublicGatewaysIDBody) {
 	o.Body = body
 }
 
@@ -173,10 +171,8 @@ func (o *PatchPublicGatewaysIDParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 	var res []error
 
-	if o.Body != nil {
-		if err := r.SetBodyParam(o.Body); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.Body); err != nil {
+		return err
 	}
 
 	// query param generation

@@ -1341,7 +1341,7 @@ func flattenISLBIPs(ips []*vpc.LoadBalancerIP) interface{} {
 	return out
 }
 
-func flattenISLBSubnets(subnets []*vpc.LoadBalancerSubnetsItems) interface{} {
+func flattenISLBSubnets(subnets []*vpc.LoadBalancerSubnetsItems0) interface{} {
 	out := make([]interface{}, len(subnets))
 	for s, subnet := range subnets {
 		out[s] = subnet.ID
@@ -1419,4 +1419,12 @@ func getBaseController(meta interface{}) (string, error) {
 		return stageBaseController, nil
 	}
 	return prodBaseController, nil
+}
+
+func flattenSSLCiphers(ciphers []datatypes.Network_LBaaS_SSLCipher) *schema.Set {
+	c := make([]string, len(ciphers))
+	for i, v := range ciphers {
+		c[i] = *v.Name
+	}
+	return newStringSet(schema.HashString, c)
 }

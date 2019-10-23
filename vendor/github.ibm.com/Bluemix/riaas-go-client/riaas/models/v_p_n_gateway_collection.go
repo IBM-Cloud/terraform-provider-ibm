@@ -155,3 +155,113 @@ func (m *VPNGatewayCollection) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
+
+// VPNGatewayCollectionFirst A reference to the first page of resources
+// swagger:model VPNGatewayCollectionFirst
+type VPNGatewayCollectionFirst struct {
+
+	// The URL for the first page of resources
+	// Required: true
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href *string `json:"href"`
+}
+
+// Validate validates this v p n gateway collection first
+func (m *VPNGatewayCollectionFirst) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VPNGatewayCollectionFirst) validateHref(formats strfmt.Registry) error {
+
+	if err := validate.Required("first"+"."+"href", "body", m.Href); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("first"+"."+"href", "body", string(*m.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VPNGatewayCollectionFirst) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VPNGatewayCollectionFirst) UnmarshalBinary(b []byte) error {
+	var res VPNGatewayCollectionFirst
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VPNGatewayCollectionNext A reference to the next page of resources; this reference is included for all pages except the last page
+// swagger:model VPNGatewayCollectionNext
+type VPNGatewayCollectionNext struct {
+
+	// The URL for the next page of resources
+	// Required: true
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href *string `json:"href"`
+}
+
+// Validate validates this v p n gateway collection next
+func (m *VPNGatewayCollectionNext) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VPNGatewayCollectionNext) validateHref(formats strfmt.Registry) error {
+
+	if err := validate.Required("next"+"."+"href", "body", m.Href); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("next"+"."+"href", "body", string(*m.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VPNGatewayCollectionNext) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VPNGatewayCollectionNext) UnmarshalBinary(b []byte) error {
+	var res VPNGatewayCollectionNext
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

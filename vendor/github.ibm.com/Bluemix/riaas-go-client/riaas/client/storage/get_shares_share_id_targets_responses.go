@@ -8,8 +8,11 @@ package storage
 import (
 	"fmt"
 	"io"
+	"strconv"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -54,7 +57,7 @@ func NewGetSharesShareIDTargetsOK() *GetSharesShareIDTargetsOK {
 dummy
 */
 type GetSharesShareIDTargetsOK struct {
-	Payload *models.GetSharesShareIDTargetsOKBody
+	Payload *GetSharesShareIDTargetsOKBody
 }
 
 func (o *GetSharesShareIDTargetsOK) Error() string {
@@ -63,7 +66,7 @@ func (o *GetSharesShareIDTargetsOK) Error() string {
 
 func (o *GetSharesShareIDTargetsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.GetSharesShareIDTargetsOKBody)
+	o.Payload = new(GetSharesShareIDTargetsOKBody)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -99,5 +102,71 @@ func (o *GetSharesShareIDTargetsNotFound) readResponse(response runtime.ClientRe
 		return err
 	}
 
+	return nil
+}
+
+/*GetSharesShareIDTargetsOKBody ShareTargetCollection
+swagger:model GetSharesShareIDTargetsOKBody
+*/
+type GetSharesShareIDTargetsOKBody struct {
+
+	// Collection of file share mount targets
+	Targets []*models.Sharetarget `json:"targets"`
+}
+
+// Validate validates this get shares share ID targets o k body
+func (o *GetSharesShareIDTargetsOKBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateTargets(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetSharesShareIDTargetsOKBody) validateTargets(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Targets) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(o.Targets); i++ {
+		if swag.IsZero(o.Targets[i]) { // not required
+			continue
+		}
+
+		if o.Targets[i] != nil {
+			if err := o.Targets[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("getSharesShareIdTargetsOK" + "." + "targets" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetSharesShareIDTargetsOKBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetSharesShareIDTargetsOKBody) UnmarshalBinary(b []byte) error {
+	var res GetSharesShareIDTargetsOKBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

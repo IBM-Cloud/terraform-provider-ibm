@@ -6,6 +6,7 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"strconv"
 
 	strfmt "github.com/go-openapi/strfmt"
@@ -21,7 +22,7 @@ type Riaaserror struct {
 
 	// Array of errors
 	// Required: true
-	Errors []*RiaaserrorErrorsItems `json:"errors"`
+	Errors []*RiaaserrorErrorsItems0 `json:"errors"`
 
 	// Unique error identifier
 	// Pattern: ^[-0-9a-zA-Z_]+$
@@ -95,6 +96,214 @@ func (m *Riaaserror) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *Riaaserror) UnmarshalBinary(b []byte) error {
 	var res Riaaserror
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// RiaaserrorErrorsItems0 Error
+// swagger:model RiaaserrorErrorsItems0
+type RiaaserrorErrorsItems0 struct {
+
+	// A snake case string succinctly identifying the problem
+	// Pattern: ^[a-z]+(_[a-z]+)*$
+	Code string `json:"code,omitempty"`
+
+	// An explanation of the solution to the problem
+	Message string `json:"message,omitempty"`
+
+	// Link to documentation about this error
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	MoreInfo string `json:"more_info,omitempty"`
+
+	// target
+	Target *RiaaserrorErrorsItems0Target `json:"target,omitempty"`
+}
+
+// Validate validates this riaaserror errors items0
+func (m *RiaaserrorErrorsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateCode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMoreInfo(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTarget(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *RiaaserrorErrorsItems0) validateCode(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Code) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("code", "body", string(m.Code), `^[a-z]+(_[a-z]+)*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *RiaaserrorErrorsItems0) validateMoreInfo(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.MoreInfo) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("more_info", "body", string(m.MoreInfo), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *RiaaserrorErrorsItems0) validateTarget(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Target) { // not required
+		return nil
+	}
+
+	if m.Target != nil {
+		if err := m.Target.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("target")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *RiaaserrorErrorsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *RiaaserrorErrorsItems0) UnmarshalBinary(b []byte) error {
+	var res RiaaserrorErrorsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// RiaaserrorErrorsItems0Target ErrorTarget
+// swagger:model RiaaserrorErrorsItems0Target
+type RiaaserrorErrorsItems0Target struct {
+
+	// The name of the problematic field, query parameter, or header
+	// Required: true
+	Name string `json:"name"`
+
+	// The type of input where the problem was
+	// Required: true
+	// Enum: [field parameter header]
+	Type string `json:"type"`
+}
+
+// Validate validates this riaaserror errors items0 target
+func (m *RiaaserrorErrorsItems0Target) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *RiaaserrorErrorsItems0Target) validateName(formats strfmt.Registry) error {
+
+	if err := validate.RequiredString("target"+"."+"name", "body", string(m.Name)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var riaaserrorErrorsItems0TargetTypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["field","parameter","header"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		riaaserrorErrorsItems0TargetTypeTypePropEnum = append(riaaserrorErrorsItems0TargetTypeTypePropEnum, v)
+	}
+}
+
+const (
+
+	// RiaaserrorErrorsItems0TargetTypeField captures enum value "field"
+	RiaaserrorErrorsItems0TargetTypeField string = "field"
+
+	// RiaaserrorErrorsItems0TargetTypeParameter captures enum value "parameter"
+	RiaaserrorErrorsItems0TargetTypeParameter string = "parameter"
+
+	// RiaaserrorErrorsItems0TargetTypeHeader captures enum value "header"
+	RiaaserrorErrorsItems0TargetTypeHeader string = "header"
+)
+
+// prop value enum
+func (m *RiaaserrorErrorsItems0Target) validateTypeEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, riaaserrorErrorsItems0TargetTypeTypePropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *RiaaserrorErrorsItems0Target) validateType(formats strfmt.Registry) error {
+
+	if err := validate.RequiredString("target"+"."+"type", "body", string(m.Type)); err != nil {
+		return err
+	}
+
+	// value enum
+	if err := m.validateTypeEnum("target"+"."+"type", "body", m.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *RiaaserrorErrorsItems0Target) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *RiaaserrorErrorsItems0Target) UnmarshalBinary(b []byte) error {
+	var res RiaaserrorErrorsItems0Target
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

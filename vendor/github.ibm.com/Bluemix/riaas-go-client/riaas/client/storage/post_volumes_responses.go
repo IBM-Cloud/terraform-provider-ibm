@@ -6,10 +6,14 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -135,5 +139,429 @@ func (o *PostVolumesInternalServerError) readResponse(response runtime.ClientRes
 		return err
 	}
 
+	return nil
+}
+
+/*PostVolumesBody VolumeTemplateFromSnapshot
+swagger:model PostVolumesBody
+*/
+type PostVolumesBody struct {
+
+	// If set to true, this volume will be automatically deleted if the only server it is attached to is deleted
+	AutoDelete *bool `json:"auto_delete,omitempty"`
+
+	// The capacity of the volume in gigabytes
+	// Minimum: 10
+	Capacity *int64 `json:"capacity,omitempty"`
+
+	// encryption key
+	EncryptionKey *PostVolumesParamsBodyEncryptionKey `json:"encryption_key,omitempty"`
+
+	// The bandwidth for the volume
+	// Enum: [1000 10000 100000]
+	Iops *int64 `json:"iops,omitempty"`
+
+	// The user-defined name for this volume
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+
+	// profile
+	Profile *PostVolumesParamsBodyProfile `json:"profile,omitempty"`
+
+	// resource group
+	ResourceGroup *PostVolumesParamsBodyResourceGroup `json:"resource_group,omitempty"`
+
+	// zone
+	Zone *PostVolumesParamsBodyZone `json:"zone,omitempty"`
+}
+
+// Validate validates this post volumes body
+func (o *PostVolumesBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateCapacity(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateEncryptionKey(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateIops(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateProfile(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateResourceGroup(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateZone(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostVolumesBody) validateCapacity(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Capacity) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("body"+"."+"capacity", "body", int64(*o.Capacity), 10, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PostVolumesBody) validateEncryptionKey(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.EncryptionKey) { // not required
+		return nil
+	}
+
+	if o.EncryptionKey != nil {
+		if err := o.EncryptionKey.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("body" + "." + "encryption_key")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var postVolumesBodyTypeIopsPropEnum []interface{}
+
+func init() {
+	var res []int64
+	if err := json.Unmarshal([]byte(`[1000,10000,100000]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		postVolumesBodyTypeIopsPropEnum = append(postVolumesBodyTypeIopsPropEnum, v)
+	}
+}
+
+// prop value enum
+func (o *PostVolumesBody) validateIopsEnum(path, location string, value int64) error {
+	if err := validate.Enum(path, location, value, postVolumesBodyTypeIopsPropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (o *PostVolumesBody) validateIops(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Iops) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := o.validateIopsEnum("body"+"."+"iops", "body", *o.Iops); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PostVolumesBody) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("body"+"."+"name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PostVolumesBody) validateProfile(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Profile) { // not required
+		return nil
+	}
+
+	if o.Profile != nil {
+		if err := o.Profile.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("body" + "." + "profile")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *PostVolumesBody) validateResourceGroup(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ResourceGroup) { // not required
+		return nil
+	}
+
+	if o.ResourceGroup != nil {
+		if err := o.ResourceGroup.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("body" + "." + "resource_group")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *PostVolumesBody) validateZone(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Zone) { // not required
+		return nil
+	}
+
+	if o.Zone != nil {
+		if err := o.Zone.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("body" + "." + "zone")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostVolumesBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostVolumesBody) UnmarshalBinary(b []byte) error {
+	var res PostVolumesBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*PostVolumesParamsBodyEncryptionKey VolumeEncryptionKey
+swagger:model PostVolumesParamsBodyEncryptionKey
+*/
+type PostVolumesParamsBodyEncryptionKey struct {
+
+	// The CRN for this key
+	Crn string `json:"crn,omitempty"`
+}
+
+// Validate validates this post volumes params body encryption key
+func (o *PostVolumesParamsBodyEncryptionKey) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostVolumesParamsBodyEncryptionKey) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostVolumesParamsBodyEncryptionKey) UnmarshalBinary(b []byte) error {
+	var res PostVolumesParamsBodyEncryptionKey
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*PostVolumesParamsBodyProfile reference
+swagger:model PostVolumesParamsBodyProfile
+*/
+type PostVolumesParamsBodyProfile struct {
+
+	// The CRN for this snapshot
+	Crn string `json:"crn,omitempty"`
+
+	// The user-defined name for this resource
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this post volumes params body profile
+func (o *PostVolumesParamsBodyProfile) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostVolumesParamsBodyProfile) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("body"+"."+"profile"+"."+"name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostVolumesParamsBodyProfile) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostVolumesParamsBodyProfile) UnmarshalBinary(b []byte) error {
+	var res PostVolumesParamsBodyProfile
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*PostVolumesParamsBodyResourceGroup idreference
+swagger:model PostVolumesParamsBodyResourceGroup
+*/
+type PostVolumesParamsBodyResourceGroup struct {
+
+	// The unique identifier for this resource
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+}
+
+// Validate validates this post volumes params body resource group
+func (o *PostVolumesParamsBodyResourceGroup) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostVolumesParamsBodyResourceGroup) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("body"+"."+"resource_group"+"."+"id", "body", "uuid", o.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostVolumesParamsBodyResourceGroup) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostVolumesParamsBodyResourceGroup) UnmarshalBinary(b []byte) error {
+	var res PostVolumesParamsBodyResourceGroup
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*PostVolumesParamsBodyZone ZoneIdentity
+//
+// The location of the volume
+swagger:model PostVolumesParamsBodyZone
+*/
+type PostVolumesParamsBodyZone struct {
+
+	// The name for this zone
+	// Required: true
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name *string `json:"name"`
+}
+
+// Validate validates this post volumes params body zone
+func (o *PostVolumesParamsBodyZone) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostVolumesParamsBodyZone) validateName(formats strfmt.Registry) error {
+
+	if err := validate.Required("body"+"."+"zone"+"."+"name", "body", o.Name); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("body"+"."+"zone"+"."+"name", "body", string(*o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostVolumesParamsBodyZone) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostVolumesParamsBodyZone) UnmarshalBinary(b []byte) error {
+	var res PostVolumesParamsBodyZone
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

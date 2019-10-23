@@ -68,7 +68,7 @@ type Volume struct {
 	Status string `json:"status,omitempty"`
 
 	// volume attachments
-	VolumeAttachments []*VolumeVolumeAttachmentsItems `json:"volume_attachments"`
+	VolumeAttachments []*VolumeVolumeAttachmentsItems0 `json:"volume_attachments"`
 
 	// zone
 	Zone *VolumeZone `json:"zone,omitempty"`
@@ -422,6 +422,385 @@ func (m *Volume) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *Volume) UnmarshalBinary(b []byte) error {
 	var res Volume
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeEncryptionKey VolumeEncryptionKey
+// swagger:model VolumeEncryptionKey
+type VolumeEncryptionKey struct {
+
+	// The CRN for this key
+	Crn string `json:"crn,omitempty"`
+}
+
+// Validate validates this volume encryption key
+func (m *VolumeEncryptionKey) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeEncryptionKey) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeEncryptionKey) UnmarshalBinary(b []byte) error {
+	var res VolumeEncryptionKey
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeVolumeAttachmentsItems0 volume volume attachments items0
+// swagger:model VolumeVolumeAttachmentsItems0
+type VolumeVolumeAttachmentsItems0 struct {
+
+	// If set to true, when deleting the instance the volume will also be deleted
+	DeleteVolumeOnInstanceDelete bool `json:"delete_volume_on_instance_delete,omitempty"`
+
+	// The URL for this volume attachment
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href string `json:"href,omitempty"`
+
+	// The unique identifier for this volume attachment
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+
+	// instance
+	Instance *VolumeVolumeAttachmentsItems0Instance `json:"instance,omitempty"`
+
+	// The user-defined name for this volume attachment
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+
+	// The type of volume attachment
+	// Enum: [boot data]
+	Type string `json:"type,omitempty"`
+}
+
+// Validate validates this volume volume attachments items0
+func (m *VolumeVolumeAttachmentsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateInstance(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeVolumeAttachmentsItems0) validateHref(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Href) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("href", "body", string(m.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeVolumeAttachmentsItems0) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("id", "body", "uuid", m.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeVolumeAttachmentsItems0) validateInstance(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Instance) { // not required
+		return nil
+	}
+
+	if m.Instance != nil {
+		if err := m.Instance.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("instance")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *VolumeVolumeAttachmentsItems0) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("name", "body", string(m.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var volumeVolumeAttachmentsItems0TypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["boot","data"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeVolumeAttachmentsItems0TypeTypePropEnum = append(volumeVolumeAttachmentsItems0TypeTypePropEnum, v)
+	}
+}
+
+const (
+
+	// VolumeVolumeAttachmentsItems0TypeBoot captures enum value "boot"
+	VolumeVolumeAttachmentsItems0TypeBoot string = "boot"
+
+	// VolumeVolumeAttachmentsItems0TypeData captures enum value "data"
+	VolumeVolumeAttachmentsItems0TypeData string = "data"
+)
+
+// prop value enum
+func (m *VolumeVolumeAttachmentsItems0) validateTypeEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, volumeVolumeAttachmentsItems0TypeTypePropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VolumeVolumeAttachmentsItems0) validateType(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Type) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeVolumeAttachmentsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeVolumeAttachmentsItems0) UnmarshalBinary(b []byte) error {
+	var res VolumeVolumeAttachmentsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeVolumeAttachmentsItems0Instance volume volume attachments items0 instance
+// swagger:model VolumeVolumeAttachmentsItems0Instance
+type VolumeVolumeAttachmentsItems0Instance struct {
+
+	// The URL for this vvirtual server instance
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href string `json:"href,omitempty"`
+
+	// The unique identifier for this virtual server instance
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+
+	// The user-defined name for this virtual server instance
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this volume volume attachments items0 instance
+func (m *VolumeVolumeAttachmentsItems0Instance) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeVolumeAttachmentsItems0Instance) validateHref(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Href) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("instance"+"."+"href", "body", string(m.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeVolumeAttachmentsItems0Instance) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("instance"+"."+"id", "body", "uuid", m.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeVolumeAttachmentsItems0Instance) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("instance"+"."+"name", "body", string(m.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeVolumeAttachmentsItems0Instance) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeVolumeAttachmentsItems0Instance) UnmarshalBinary(b []byte) error {
+	var res VolumeVolumeAttachmentsItems0Instance
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeZone ZoneReference
+// swagger:model VolumeZone
+type VolumeZone struct {
+
+	// The URL for this zone
+	// Required: true
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href *string `json:"href"`
+
+	// The name for this zone
+	// Required: true
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name *string `json:"name"`
+}
+
+// Validate validates this volume zone
+func (m *VolumeZone) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeZone) validateHref(formats strfmt.Registry) error {
+
+	if err := validate.Required("zone"+"."+"href", "body", m.Href); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("zone"+"."+"href", "body", string(*m.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeZone) validateName(formats strfmt.Registry) error {
+
+	if err := validate.Required("zone"+"."+"name", "body", m.Name); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("zone"+"."+"name", "body", string(*m.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeZone) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeZone) UnmarshalBinary(b []byte) error {
+	var res VolumeZone
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

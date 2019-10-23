@@ -67,7 +67,7 @@ func dataSourceIBMISImageRead(d *schema.ResourceData, meta interface{}) error {
 			d.Set("name", image.Name)
 			d.Set("visibility", image.Visibility)
 			d.Set("os", image.OperatingSystem.Name)
-			d.Set("architecture", image.Architecture)
+			d.Set("architecture", image.OperatingSystem.Architecture)
 			d.Set("crn", image.Crn)
 			return nil
 		}

@@ -197,6 +197,18 @@ func Provider() terraform.ResourceProvider {
 			"ibm_service_key":                dataSourceIBMServiceKey(),
 			"ibm_service_plan":               dataSourceIBMServicePlan(),
 			"ibm_space":                      dataSourceIBMSpace(),
+
+			// Added for Power Resources
+
+			"ibm_pi_key":              dataSourceIBMPIKey(),
+			"ibm_pi_image":            dataSourceIBMPIImage(),
+			"ibm_pi_instance":         dataSourceIBMPIInstance(),
+			"ibm_pi_tenant":           dataSourceIBMPITenant(),
+			"ibm_pi_network":          dataSourceIBMPINetwork(),
+			"ibm_pi_volume":           dataSourceIBMPIVolume(),
+			"ibm_pi_instance_volumes": dataSourceIBMPIVolumes(),
+			"ibm_pi_public_network":   dataSourceIBMPIPublicNetwork(),
+			"ibm_pi_images":           dataSourceIBMPIImages(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -235,6 +247,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_container_bind_service":                         resourceIBMContainerBindService(),
 			"ibm_container_worker_pool":                          resourceIBMContainerWorkerPool(),
 			"ibm_container_worker_pool_zone_attachment":          resourceIBMContainerWorkerPoolZoneAttachment(),
+			"ibm_cos_bucket":                                     resourceIBMCOS(),
 			"ibm_dns_domain":                                     resourceIBMDNSDomain(),
 			"ibm_dns_domain_registration_nameservers":            resourceIBMDNSDomainRegistrationNameservers(),
 			"ibm_dns_secondary":                                  resourceIBMDNSSecondary(),
@@ -268,6 +281,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_is_vpn_gateway_connection":                      resourceIBMISVPNGatewayConnection(),
 			"ibm_is_vpc":                                         resourceIBMISVPC(),
 			"ibm_is_vpc_address_prefix":                          resourceIBMISVpcAddressPrefix(),
+			"ibm_is_vpc_route":                                   resourceIBMISVpcRoute(),
 			"ibm_lb":                                             resourceIBMLb(),
 			"ibm_lbaas":                                          resourceIBMLbaas(),
 			"ibm_lbaas_health_monitor":                           resourceIBMLbaasHealthMonitor(),
@@ -303,6 +317,16 @@ func Provider() terraform.ResourceProvider {
 			"ibm_ssl_certificate":                                resourceIBMSSLCertificate(),
 			"ibm_cdn":                                            resourceIBMCDN(),
 			"ibm_hardware_firewall_shared":                       resourceIBMFirewallShared(),
+
+			//Added for Power Colo
+
+			"ibm_pi_key":           resourceIBMPIKey(),
+			"ibm_pi_volume":        resourceIBMPIVolume(),
+			"ibm_pi_network":       resourceIBMPINetwork(),
+			"ibm_pi_instance":      resourceIBMPIInstance(),
+			"ibm_pi_operations":    resourceIBMPIIOperations(),
+			"ibm_pi_volume_attach": resourceIBMPIVolumeAttach(),
+			"ibm_pi_capture":       resourceIBMPICapture(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -391,6 +415,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		Generation:           generation,
 		IAMToken:             iamToken,
 		IAMRefreshToken:      iamRefreshToken,
+		//PowerServiceInstance: powerServiceInstance,
 	}
 
 	return config.ClientSession()

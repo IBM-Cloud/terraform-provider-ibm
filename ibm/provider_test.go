@@ -53,6 +53,16 @@ var ISCIDR string
 var ISAddressPrefixCIDR string
 var isImage string
 var instanceProfileName string
+var ISRouteDestination string
+var ISRouteNextHop string
+
+// For Power Colo
+
+var pi_image string
+var pi_key_name string
+var pi_volume_name string
+var pi_network_name string
+var pi_cloud_instance_id string
 
 func init() {
 	cfOrganization = os.Getenv("IBM_ORG")
@@ -296,8 +306,50 @@ func init() {
 	instanceProfileName = os.Getenv("SL_INSTANCE_PROFILE")
 	if instanceProfileName == "" {
 		instanceProfileName = "bc1-2x8" // for classic infrastructure
-		// instanceProfileName = "c2-2x4" // for next gen infrastructure
+		// instanceProfileName = "cx2-2x4" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE for testing ibm_is_instance resource else it is set to default value 'b-2x8'")
+	}
+
+	ISRouteDestination = os.Getenv("SL_ROUTE_DESTINATION")
+	if ISRouteDestination == "" {
+		ISRouteDestination = "192.168.4.0/24"
+		fmt.Println("[INFO] Set the environment variable SL_ROUTE_DESTINATION for testing ibm_is_vpc_route else it is set to default value '192.168.4.0/24'")
+	}
+
+	ISRouteNextHop = os.Getenv("SL_ROUTE_NEXTHOP")
+	if ISRouteNextHop == "" {
+		ISRouteNextHop = "10.0.0.4"
+		fmt.Println("[INFO] Set the environment variable SL_ROUTE_NEXTHOP for testing ibm_is_vpc_route else it is set to default value '10.0.0.4'")
+	}
+	// Added for Power Colo Testing
+	pi_image = os.Getenv("PI_IMAGE")
+	if pi_image == "" {
+		pi_image = "7200-03-03"
+		fmt.Println("[INFO] Set the environment variable PI_IMAGE for testing ibm_pi_image resource else it is set to default value '7200-03-03'")
+	}
+
+	pi_key_name = os.Getenv("PI_KEY_NAME")
+	if pi_key_name == "" {
+		pi_key_name = "brampoc"
+		fmt.Println("[INFO] Set the environment variable PI_KEY_NAME for testing ibm_pi_key_name resource else it is set to default value 'brampoc'")
+	}
+
+	pi_network_name = os.Getenv("PI_NETWORK_NAME")
+	if pi_network_name == "" {
+		pi_network_name = "APP"
+		fmt.Println("[INFO] Set the environment variable PI_NETWORK_NAME for testing ibm_pi_network_name resource else it is set to default value 'APP'")
+	}
+
+	pi_volume_name = os.Getenv("PI_VOLUME_NAME")
+	if pi_volume_name == "" {
+		pi_volume_name = "vg9"
+		fmt.Println("[INFO] Set the environment variable PI_VOLUME_NAME for testing ibm_pi_network_name resource else it is set to default value 'vg9'")
+	}
+
+	pi_cloud_instance_id = os.Getenv("PI_CLOUDINSTANCE_ID")
+	if pi_cloud_instance_id == "" {
+		pi_cloud_instance_id = "d16705bd-7f1a-48c9-9e0e-1c17b71e7331"
+		fmt.Println("[INFO] Set the environment variable PI_CLOUDINSTANCE_ID for testing ibm_pi_image resource else it is set to default value 'd16705bd-7f1a-48c9-9e0e-1c17b71e7331'")
 	}
 
 }

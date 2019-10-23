@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPostNetworkAclsParams creates a new PostNetworkAclsParams object
@@ -66,7 +64,7 @@ for the post network acls operation typically these are written to a http.Reques
 type PostNetworkAclsParams struct {
 
 	/*Body*/
-	Body *models.PostNetworkAclsParamsBody
+	Body PostNetworkAclsBody
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -117,13 +115,13 @@ func (o *PostNetworkAclsParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the post network acls params
-func (o *PostNetworkAclsParams) WithBody(body *models.PostNetworkAclsParamsBody) *PostNetworkAclsParams {
+func (o *PostNetworkAclsParams) WithBody(body PostNetworkAclsBody) *PostNetworkAclsParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the post network acls params
-func (o *PostNetworkAclsParams) SetBody(body *models.PostNetworkAclsParamsBody) {
+func (o *PostNetworkAclsParams) SetBody(body PostNetworkAclsBody) {
 	o.Body = body
 }
 
@@ -157,10 +155,8 @@ func (o *PostNetworkAclsParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 	var res []error
 
-	if o.Body != nil {
-		if err := r.SetBodyParam(o.Body); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.Body); err != nil {
+		return err
 	}
 
 	// query param generation

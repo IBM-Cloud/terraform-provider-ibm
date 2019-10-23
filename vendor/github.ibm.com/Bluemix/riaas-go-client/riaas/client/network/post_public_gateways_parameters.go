@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPostPublicGatewaysParams creates a new PostPublicGatewaysParams object
@@ -66,7 +64,7 @@ for the post public gateways operation typically these are written to a http.Req
 type PostPublicGatewaysParams struct {
 
 	/*Body*/
-	Body *models.PostPublicGatewaysParamsBody
+	Body PostPublicGatewaysBody
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -117,13 +115,13 @@ func (o *PostPublicGatewaysParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the post public gateways params
-func (o *PostPublicGatewaysParams) WithBody(body *models.PostPublicGatewaysParamsBody) *PostPublicGatewaysParams {
+func (o *PostPublicGatewaysParams) WithBody(body PostPublicGatewaysBody) *PostPublicGatewaysParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the post public gateways params
-func (o *PostPublicGatewaysParams) SetBody(body *models.PostPublicGatewaysParamsBody) {
+func (o *PostPublicGatewaysParams) SetBody(body PostPublicGatewaysBody) {
 	o.Body = body
 }
 
@@ -157,10 +155,8 @@ func (o *PostPublicGatewaysParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 	var res []error
 
-	if o.Body != nil {
-		if err := r.SetBodyParam(o.Body); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.Body); err != nil {
+		return err
 	}
 
 	// query param generation

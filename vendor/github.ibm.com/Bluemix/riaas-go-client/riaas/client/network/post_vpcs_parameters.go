@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPostVpcsParams creates a new PostVpcsParams object
@@ -66,7 +64,7 @@ for the post vpcs operation typically these are written to a http.Request
 type PostVpcsParams struct {
 
 	/*Body*/
-	Body *models.PostVpcsParamsBody
+	Body PostVpcsBody
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -117,13 +115,13 @@ func (o *PostVpcsParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the post vpcs params
-func (o *PostVpcsParams) WithBody(body *models.PostVpcsParamsBody) *PostVpcsParams {
+func (o *PostVpcsParams) WithBody(body PostVpcsBody) *PostVpcsParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the post vpcs params
-func (o *PostVpcsParams) SetBody(body *models.PostVpcsParamsBody) {
+func (o *PostVpcsParams) SetBody(body PostVpcsBody) {
 	o.Body = body
 }
 
@@ -157,10 +155,8 @@ func (o *PostVpcsParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 	}
 	var res []error
 
-	if o.Body != nil {
-		if err := r.SetBodyParam(o.Body); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.Body); err != nil {
+		return err
 	}
 
 	// query param generation

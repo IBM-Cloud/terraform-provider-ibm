@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPatchNetworkAclsNetworkACLIDRulesIDParams creates a new PatchNetworkAclsNetworkACLIDRulesIDParams object
@@ -66,7 +64,7 @@ for the patch network acls network ACL ID rules ID operation typically these are
 type PatchNetworkAclsNetworkACLIDRulesIDParams struct {
 
 	/*Body*/
-	Body *models.PatchNetworkAclsNetworkACLIDRulesIDParamsBody
+	Body PatchNetworkAclsNetworkACLIDRulesIDBody
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -127,13 +125,13 @@ func (o *PatchNetworkAclsNetworkACLIDRulesIDParams) SetHTTPClient(client *http.C
 }
 
 // WithBody adds the body to the patch network acls network ACL ID rules ID params
-func (o *PatchNetworkAclsNetworkACLIDRulesIDParams) WithBody(body *models.PatchNetworkAclsNetworkACLIDRulesIDParamsBody) *PatchNetworkAclsNetworkACLIDRulesIDParams {
+func (o *PatchNetworkAclsNetworkACLIDRulesIDParams) WithBody(body PatchNetworkAclsNetworkACLIDRulesIDBody) *PatchNetworkAclsNetworkACLIDRulesIDParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the patch network acls network ACL ID rules ID params
-func (o *PatchNetworkAclsNetworkACLIDRulesIDParams) SetBody(body *models.PatchNetworkAclsNetworkACLIDRulesIDParamsBody) {
+func (o *PatchNetworkAclsNetworkACLIDRulesIDParams) SetBody(body PatchNetworkAclsNetworkACLIDRulesIDBody) {
 	o.Body = body
 }
 
@@ -189,10 +187,8 @@ func (o *PatchNetworkAclsNetworkACLIDRulesIDParams) WriteToRequest(r runtime.Cli
 	}
 	var res []error
 
-	if o.Body != nil {
-		if err := r.SetBodyParam(o.Body); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.Body); err != nil {
+		return err
 	}
 
 	// query param generation

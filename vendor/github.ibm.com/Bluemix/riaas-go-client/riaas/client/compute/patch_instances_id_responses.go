@@ -9,7 +9,10 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -135,5 +138,143 @@ func (o *PatchInstancesIDNotFound) readResponse(response runtime.ClientResponse,
 		return err
 	}
 
+	return nil
+}
+
+/*PatchInstancesIDBody patch instances ID body
+swagger:model PatchInstancesIDBody
+*/
+type PatchInstancesIDBody struct {
+
+	// The user-defined name for this network ACL
+	// Pattern: ^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$
+	Name string `json:"name,omitempty"`
+
+	// profile
+	Profile *PatchInstancesIDParamsBodyProfile `json:"profile,omitempty"`
+}
+
+// Validate validates this patch instances ID body
+func (o *PatchInstancesIDBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateProfile(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PatchInstancesIDBody) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("body"+"."+"name", "body", string(o.Name), `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PatchInstancesIDBody) validateProfile(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Profile) { // not required
+		return nil
+	}
+
+	if o.Profile != nil {
+		if err := o.Profile.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("body" + "." + "profile")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PatchInstancesIDBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PatchInstancesIDBody) UnmarshalBinary(b []byte) error {
+	var res PatchInstancesIDBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*PatchInstancesIDParamsBodyProfile reference
+swagger:model PatchInstancesIDParamsBodyProfile
+*/
+type PatchInstancesIDParamsBodyProfile struct {
+
+	// The CRN for this profile
+	Crn string `json:"crn,omitempty"`
+
+	// The user-defined name for this resource
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this patch instances ID params body profile
+func (o *PatchInstancesIDParamsBodyProfile) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PatchInstancesIDParamsBodyProfile) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("body"+"."+"profile"+"."+"name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PatchInstancesIDParamsBodyProfile) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PatchInstancesIDParamsBodyProfile) UnmarshalBinary(b []byte) error {
+	var res PatchInstancesIDParamsBodyProfile
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

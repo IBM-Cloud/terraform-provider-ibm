@@ -9,7 +9,10 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -135,5 +138,63 @@ func (o *PatchInstancesInstanceIDNetworkInterfacesIDNotFound) readResponse(respo
 		return err
 	}
 
+	return nil
+}
+
+/*PatchInstancesInstanceIDNetworkInterfacesIDBody patch instances instance ID network interfaces ID body
+swagger:model PatchInstancesInstanceIDNetworkInterfacesIDBody
+*/
+type PatchInstancesInstanceIDNetworkInterfacesIDBody struct {
+
+	// The user-defined name for this interface
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+
+	// The network interface port speed in Mbps
+	PortSpeed int64 `json:"port_speed,omitempty"`
+}
+
+// Validate validates this patch instances instance ID network interfaces ID body
+func (o *PatchInstancesInstanceIDNetworkInterfacesIDBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PatchInstancesInstanceIDNetworkInterfacesIDBody) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("body"+"."+"name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PatchInstancesInstanceIDNetworkInterfacesIDBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PatchInstancesInstanceIDNetworkInterfacesIDBody) UnmarshalBinary(b []byte) error {
+	var res PatchInstancesInstanceIDNetworkInterfacesIDBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

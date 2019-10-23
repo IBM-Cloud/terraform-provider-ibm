@@ -36,10 +36,10 @@
 			"revisionTime": "2019-10-15T09:28:09Z"
 		},
 		{
-			"checksumSHA1": "3CL1NqYqgiV3k7skuWRB24/WP/I=",
+			"checksumSHA1": "Ozmw/z9Crvr+INUgISFCARmv4MM=",
 			"path": "github.com/IBM-Cloud/bluemix-go/api/container/containerv1",
-			"revision": "42cc8fe124a7d421f27e8ba5d360d1a4b4a52a9c",
-			"revisionTime": "2019-10-15T09:28:09Z"
+			"revision": "e96c4b83f980f3865672f165c1176dbc135e9811",
+			"revisionTime": "2019-10-15T09:46:11Z"
 		},
 		{
 			"checksumSHA1": "f5G/1BpCokGdO0U7lJc8GTt6Lgw=",
@@ -472,6 +472,198 @@
 			"path": "github.com/IBM-Cloud/bluemix-go/utils",
 			"revision": "42cc8fe124a7d421f27e8ba5d360d1a4b4a52a9c",
 			"revisionTime": "2019-10-15T09:28:09Z"
+		},
+		{
+			"checksumSHA1": "/MvaToh2ZEhrCpTNXblbVWRxpfg=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/aws",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "hUYGXS75r6vOY7inujcCT6wNvNA=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/aws/awserr",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "bZTxoFZtCzsYfjveM644A2OVH3w=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/aws/awsutil",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "gIn9FhFlbUA06XfeiusdfsKJAic=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/aws/client",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "J4fVudejXOcom/m8eORYGvTT4x4=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/aws/client/metadata",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "BTQiUHoV0137Z4gV0kQq0XUilWk=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/aws/corehandlers",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "/nuE7mqUUXwJxRX7qh4OCxsLmGw=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/aws/credentials",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "m65Ox73u0F87F8Brii0CARZdTcE=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/aws/credentials/endpointcreds",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "79ZQ4DX6XgYOM/8Jv9q0qw4OkNA=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "pMMCDL1OM7BMPMlNwx29vDV0XBU=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam/token",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "eaoTZrRmI+c23XYzJAou3rdLzh8=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam/tokenmanager",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "wksVegHLGzSzlTwtaS9tVA7zsKo=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/aws/credentials/processcreds",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "k/yVobGHcP7kBojrpx0LecgdT8U=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/aws/defaults",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "rhDeSKMbmvIG22aoNudesVajUUI=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/aws/endpoints",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "+m7hcjFd/8G4czBUYtNWCLVfDKY=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/aws/request",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "n88j8MDKa11IYwjWgBFEeaHR5E0=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/aws/session",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "mFGUpZPhOTaDY7eskwJ5RpqJqTs=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/aws/signer",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "7ovMFXd6UHRQ0NwPWXxIguHg1WA=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/aws/signer/ibmiam",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "1+tFrOwy6naBAxPioLTL6Z9gWEk=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/aws/signer/v4",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "Jee6bgCO3t0vrOyM03FooKE5jVk=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/internal/ini",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "qD4TO/uQ5juNJH0UES9MkzwSaIM=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/internal/s3err",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "xmIsrv2WBzGVoERczB8GdPKrcQE=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/internal/sdkio",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "vb1ovedY6Ftui/LcHMDzLNkS1tI=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/internal/sdkrand",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "zTp9PzwFhIbE2IkS6Kerfw1/lVk=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/internal/shareddefaults",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "c2GNz+dSP6Rre8cHTCh1AdM/A80=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/private/protocol",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "d55hhYFEfOaNEbwQCDmsJT1l/2Q=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/private/protocol/json/jsonutil",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "dZ6Z5WyS+1lOcYqN4YEDXOQnnj0=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/private/protocol/query",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "vg/2vamkNSuZRwc4Q2YTHeWvpRE=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/private/protocol/query/queryutil",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "lsV+upE1OiEijuoxFiEPcuto79M=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/private/protocol/rest",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "vHAix2Rkjes90fqRnB6oi6KaudQ=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/private/protocol/restxml",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "Je4XL9vBqp4U73098LWWmW+vCJw=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/private/protocol/xml/xmlutil",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
+		},
+		{
+			"checksumSHA1": "4eojtte5rC/JTVU4BSMvwJcSAnU=",
+			"path": "github.com/IBM/ibm-cos-sdk-go/service/s3",
+			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
+			"revisionTime": "2019-09-06T19:48:10Z"
 		},
 		{
 			"checksumSHA1": "fHWG411HBcfUlBEU8SJo2fQ8+ZE=",
@@ -1632,10 +1824,10 @@
 			"revisionTime": "2018-05-24T00:26:36Z"
 		},
 		{
-			"checksumSHA1": "UkzDtcg3mRyDVtixhJmI0q9ApD0=",
+			"checksumSHA1": "5HRMFTCgTgocy+2NuIc5CVswjr0=",
 			"path": "github.ibm.com/Bluemix/riaas-go-client",
-			"revision": "402ca3d23d7fe38ef9089980e5be39fb250458b9",
-			"revisionTime": "2019-08-29T10:17:07Z",
+			"revision": "afd27ac04d4f5bb044440877ac550801697f1972",
+			"revisionTime": "2019-10-18T07:03:54Z",
 			"tree": true
 		},
 		{

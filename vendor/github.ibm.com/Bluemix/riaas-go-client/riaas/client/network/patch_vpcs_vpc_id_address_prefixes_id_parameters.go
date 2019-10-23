@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPatchVpcsVpcIDAddressPrefixesIDParams creates a new PatchVpcsVpcIDAddressPrefixesIDParams object
@@ -66,7 +64,7 @@ for the patch vpcs vpc ID address prefixes ID operation typically these are writ
 type PatchVpcsVpcIDAddressPrefixesIDParams struct {
 
 	/*AddressPoolPrefixPatch*/
-	AddressPoolPrefixPatch *models.PatchVpcsVpcIDAddressPrefixesIDParamsBody
+	AddressPoolPrefixPatch PatchVpcsVpcIDAddressPrefixesIDBody
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -127,13 +125,13 @@ func (o *PatchVpcsVpcIDAddressPrefixesIDParams) SetHTTPClient(client *http.Clien
 }
 
 // WithAddressPoolPrefixPatch adds the addressPoolPrefixPatch to the patch vpcs vpc ID address prefixes ID params
-func (o *PatchVpcsVpcIDAddressPrefixesIDParams) WithAddressPoolPrefixPatch(addressPoolPrefixPatch *models.PatchVpcsVpcIDAddressPrefixesIDParamsBody) *PatchVpcsVpcIDAddressPrefixesIDParams {
+func (o *PatchVpcsVpcIDAddressPrefixesIDParams) WithAddressPoolPrefixPatch(addressPoolPrefixPatch PatchVpcsVpcIDAddressPrefixesIDBody) *PatchVpcsVpcIDAddressPrefixesIDParams {
 	o.SetAddressPoolPrefixPatch(addressPoolPrefixPatch)
 	return o
 }
 
 // SetAddressPoolPrefixPatch adds the addressPoolPrefixPatch to the patch vpcs vpc ID address prefixes ID params
-func (o *PatchVpcsVpcIDAddressPrefixesIDParams) SetAddressPoolPrefixPatch(addressPoolPrefixPatch *models.PatchVpcsVpcIDAddressPrefixesIDParamsBody) {
+func (o *PatchVpcsVpcIDAddressPrefixesIDParams) SetAddressPoolPrefixPatch(addressPoolPrefixPatch PatchVpcsVpcIDAddressPrefixesIDBody) {
 	o.AddressPoolPrefixPatch = addressPoolPrefixPatch
 }
 
@@ -189,10 +187,8 @@ func (o *PatchVpcsVpcIDAddressPrefixesIDParams) WriteToRequest(r runtime.ClientR
 	}
 	var res []error
 
-	if o.AddressPoolPrefixPatch != nil {
-		if err := r.SetBodyParam(o.AddressPoolPrefixPatch); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.AddressPoolPrefixPatch); err != nil {
+		return err
 	}
 
 	// query param generation

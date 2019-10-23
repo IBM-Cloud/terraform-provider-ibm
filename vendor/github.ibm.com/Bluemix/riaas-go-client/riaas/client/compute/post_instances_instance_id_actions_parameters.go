@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPostInstancesInstanceIDActionsParams creates a new PostInstancesInstanceIDActionsParams object
@@ -66,7 +64,7 @@ for the post instances instance ID actions operation typically these are written
 type PostInstancesInstanceIDActionsParams struct {
 
 	/*Body*/
-	Body *models.PostInstancesInstanceIDActionsParamsBody
+	Body PostInstancesInstanceIDActionsBody
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -122,13 +120,13 @@ func (o *PostInstancesInstanceIDActionsParams) SetHTTPClient(client *http.Client
 }
 
 // WithBody adds the body to the post instances instance ID actions params
-func (o *PostInstancesInstanceIDActionsParams) WithBody(body *models.PostInstancesInstanceIDActionsParamsBody) *PostInstancesInstanceIDActionsParams {
+func (o *PostInstancesInstanceIDActionsParams) WithBody(body PostInstancesInstanceIDActionsBody) *PostInstancesInstanceIDActionsParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the post instances instance ID actions params
-func (o *PostInstancesInstanceIDActionsParams) SetBody(body *models.PostInstancesInstanceIDActionsParamsBody) {
+func (o *PostInstancesInstanceIDActionsParams) SetBody(body PostInstancesInstanceIDActionsBody) {
 	o.Body = body
 }
 
@@ -173,10 +171,8 @@ func (o *PostInstancesInstanceIDActionsParams) WriteToRequest(r runtime.ClientRe
 	}
 	var res []error
 
-	if o.Body != nil {
-		if err := r.SetBodyParam(o.Body); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.Body); err != nil {
+		return err
 	}
 
 	// query param generation

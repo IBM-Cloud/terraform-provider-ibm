@@ -8,8 +8,12 @@ package network
 import (
 	"fmt"
 	"io"
+	"strconv"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -54,7 +58,7 @@ func NewGetNetworkAclsNetworkACLIDRulesOK() *GetNetworkAclsNetworkACLIDRulesOK {
 dummy
 */
 type GetNetworkAclsNetworkACLIDRulesOK struct {
-	Payload *models.GetNetworkAclsNetworkACLIDRulesOKBody
+	Payload *GetNetworkAclsNetworkACLIDRulesOKBody
 }
 
 func (o *GetNetworkAclsNetworkACLIDRulesOK) Error() string {
@@ -63,7 +67,7 @@ func (o *GetNetworkAclsNetworkACLIDRulesOK) Error() string {
 
 func (o *GetNetworkAclsNetworkACLIDRulesOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.GetNetworkAclsNetworkACLIDRulesOKBody)
+	o.Payload = new(GetNetworkAclsNetworkACLIDRulesOKBody)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -99,5 +103,281 @@ func (o *GetNetworkAclsNetworkACLIDRulesInternalServerError) readResponse(respon
 		return err
 	}
 
+	return nil
+}
+
+/*GetNetworkAclsNetworkACLIDRulesOKBody TupleRuleCollection
+swagger:model GetNetworkAclsNetworkACLIDRulesOKBody
+*/
+type GetNetworkAclsNetworkACLIDRulesOKBody struct {
+
+	// first
+	First *GetNetworkAclsNetworkACLIDRulesOKBodyFirst `json:"first,omitempty"`
+
+	// The maximum number of resources can be returned by the request
+	// Maximum: 100
+	// Minimum: 1
+	Limit int64 `json:"limit,omitempty"`
+
+	// next
+	Next *GetNetworkAclsNetworkACLIDRulesOKBodyNext `json:"next,omitempty"`
+
+	// Collection of rules
+	// Required: true
+	Rules []*models.NetworkACLRule `json:"rules"`
+
+	// The total number of resources across all pages
+	// Minimum: 0
+	TotalCount *int64 `json:"total_count,omitempty"`
+}
+
+// Validate validates this get network acls network ACL ID rules o k body
+func (o *GetNetworkAclsNetworkACLIDRulesOKBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateFirst(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateLimit(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateNext(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateRules(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateTotalCount(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetNetworkAclsNetworkACLIDRulesOKBody) validateFirst(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.First) { // not required
+		return nil
+	}
+
+	if o.First != nil {
+		if err := o.First.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("getNetworkAclsNetworkAclIdRulesOK" + "." + "first")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *GetNetworkAclsNetworkACLIDRulesOKBody) validateLimit(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Limit) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("getNetworkAclsNetworkAclIdRulesOK"+"."+"limit", "body", int64(o.Limit), 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("getNetworkAclsNetworkAclIdRulesOK"+"."+"limit", "body", int64(o.Limit), 100, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *GetNetworkAclsNetworkACLIDRulesOKBody) validateNext(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Next) { // not required
+		return nil
+	}
+
+	if o.Next != nil {
+		if err := o.Next.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("getNetworkAclsNetworkAclIdRulesOK" + "." + "next")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *GetNetworkAclsNetworkACLIDRulesOKBody) validateRules(formats strfmt.Registry) error {
+
+	if err := validate.Required("getNetworkAclsNetworkAclIdRulesOK"+"."+"rules", "body", o.Rules); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(o.Rules); i++ {
+		if swag.IsZero(o.Rules[i]) { // not required
+			continue
+		}
+
+		if o.Rules[i] != nil {
+			if err := o.Rules[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("getNetworkAclsNetworkAclIdRulesOK" + "." + "rules" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (o *GetNetworkAclsNetworkACLIDRulesOKBody) validateTotalCount(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.TotalCount) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("getNetworkAclsNetworkAclIdRulesOK"+"."+"total_count", "body", int64(*o.TotalCount), 0, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetNetworkAclsNetworkACLIDRulesOKBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetNetworkAclsNetworkACLIDRulesOKBody) UnmarshalBinary(b []byte) error {
+	var res GetNetworkAclsNetworkACLIDRulesOKBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*GetNetworkAclsNetworkACLIDRulesOKBodyFirst A reference to the first page of resources
+swagger:model GetNetworkAclsNetworkACLIDRulesOKBodyFirst
+*/
+type GetNetworkAclsNetworkACLIDRulesOKBodyFirst struct {
+
+	// The URL for the first page of resources
+	// Required: true
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href *string `json:"href"`
+}
+
+// Validate validates this get network acls network ACL ID rules o k body first
+func (o *GetNetworkAclsNetworkACLIDRulesOKBodyFirst) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetNetworkAclsNetworkACLIDRulesOKBodyFirst) validateHref(formats strfmt.Registry) error {
+
+	if err := validate.Required("getNetworkAclsNetworkAclIdRulesOK"+"."+"first"+"."+"href", "body", o.Href); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("getNetworkAclsNetworkAclIdRulesOK"+"."+"first"+"."+"href", "body", string(*o.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetNetworkAclsNetworkACLIDRulesOKBodyFirst) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetNetworkAclsNetworkACLIDRulesOKBodyFirst) UnmarshalBinary(b []byte) error {
+	var res GetNetworkAclsNetworkACLIDRulesOKBodyFirst
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*GetNetworkAclsNetworkACLIDRulesOKBodyNext A reference to the next page of resources; this reference is included for all pages except the last page
+swagger:model GetNetworkAclsNetworkACLIDRulesOKBodyNext
+*/
+type GetNetworkAclsNetworkACLIDRulesOKBodyNext struct {
+
+	// The URL for the next page of resources
+	// Required: true
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href *string `json:"href"`
+}
+
+// Validate validates this get network acls network ACL ID rules o k body next
+func (o *GetNetworkAclsNetworkACLIDRulesOKBodyNext) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetNetworkAclsNetworkACLIDRulesOKBodyNext) validateHref(formats strfmt.Registry) error {
+
+	if err := validate.Required("getNetworkAclsNetworkAclIdRulesOK"+"."+"next"+"."+"href", "body", o.Href); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("getNetworkAclsNetworkAclIdRulesOK"+"."+"next"+"."+"href", "body", string(*o.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetNetworkAclsNetworkACLIDRulesOKBodyNext) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetNetworkAclsNetworkACLIDRulesOKBodyNext) UnmarshalBinary(b []byte) error {
+	var res GetNetworkAclsNetworkACLIDRulesOKBodyNext
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

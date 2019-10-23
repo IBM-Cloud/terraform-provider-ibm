@@ -284,3 +284,57 @@ func (m *IpsecPolicyTemplate) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
+
+// IpsecPolicyTemplateResourceGroup ResourceGroupIdentity
+// swagger:model IpsecPolicyTemplateResourceGroup
+type IpsecPolicyTemplateResourceGroup struct {
+
+	// The unique identifier for this resource
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+}
+
+// Validate validates this ipsec policy template resource group
+func (m *IpsecPolicyTemplateResourceGroup) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IpsecPolicyTemplateResourceGroup) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("resource_group"+"."+"id", "body", "uuid", m.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IpsecPolicyTemplateResourceGroup) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IpsecPolicyTemplateResourceGroup) UnmarshalBinary(b []byte) error {
+	var res IpsecPolicyTemplateResourceGroup
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

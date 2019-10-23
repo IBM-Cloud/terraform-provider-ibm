@@ -8,8 +8,11 @@ package compute
 import (
 	"fmt"
 	"io"
+	"strconv"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -54,7 +57,7 @@ func NewGetInstancesInstanceIDVolumeAttachmentsOK() *GetInstancesInstanceIDVolum
 dummy
 */
 type GetInstancesInstanceIDVolumeAttachmentsOK struct {
-	Payload *models.GetInstancesInstanceIDVolumeAttachmentsOKBody
+	Payload *GetInstancesInstanceIDVolumeAttachmentsOKBody
 }
 
 func (o *GetInstancesInstanceIDVolumeAttachmentsOK) Error() string {
@@ -63,7 +66,7 @@ func (o *GetInstancesInstanceIDVolumeAttachmentsOK) Error() string {
 
 func (o *GetInstancesInstanceIDVolumeAttachmentsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.GetInstancesInstanceIDVolumeAttachmentsOKBody)
+	o.Payload = new(GetInstancesInstanceIDVolumeAttachmentsOKBody)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -99,5 +102,71 @@ func (o *GetInstancesInstanceIDVolumeAttachmentsNotFound) readResponse(response 
 		return err
 	}
 
+	return nil
+}
+
+/*GetInstancesInstanceIDVolumeAttachmentsOKBody VolumeAttachmentCollection
+swagger:model GetInstancesInstanceIDVolumeAttachmentsOKBody
+*/
+type GetInstancesInstanceIDVolumeAttachmentsOKBody struct {
+
+	// Collection of volume attachments
+	VolumeAttachments []*models.InstanceVolumeAttachment `json:"volume_attachments,omitempty"`
+}
+
+// Validate validates this get instances instance ID volume attachments o k body
+func (o *GetInstancesInstanceIDVolumeAttachmentsOKBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateVolumeAttachments(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetInstancesInstanceIDVolumeAttachmentsOKBody) validateVolumeAttachments(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.VolumeAttachments) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(o.VolumeAttachments); i++ {
+		if swag.IsZero(o.VolumeAttachments[i]) { // not required
+			continue
+		}
+
+		if o.VolumeAttachments[i] != nil {
+			if err := o.VolumeAttachments[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("getInstancesInstanceIdVolumeAttachmentsOK" + "." + "volume_attachments" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetInstancesInstanceIDVolumeAttachmentsOKBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetInstancesInstanceIDVolumeAttachmentsOKBody) UnmarshalBinary(b []byte) error {
+	var res GetInstancesInstanceIDVolumeAttachmentsOKBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

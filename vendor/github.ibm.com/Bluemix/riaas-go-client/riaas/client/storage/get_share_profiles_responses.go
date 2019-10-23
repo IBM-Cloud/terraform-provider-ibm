@@ -8,8 +8,12 @@ package storage
 import (
 	"fmt"
 	"io"
+	"strconv"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -54,7 +58,7 @@ func NewGetShareProfilesOK() *GetShareProfilesOK {
 dummy
 */
 type GetShareProfilesOK struct {
-	Payload *models.GetShareProfilesOKBody
+	Payload *GetShareProfilesOKBody
 }
 
 func (o *GetShareProfilesOK) Error() string {
@@ -63,7 +67,7 @@ func (o *GetShareProfilesOK) Error() string {
 
 func (o *GetShareProfilesOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.GetShareProfilesOKBody)
+	o.Payload = new(GetShareProfilesOKBody)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -99,5 +103,280 @@ func (o *GetShareProfilesInternalServerError) readResponse(response runtime.Clie
 		return err
 	}
 
+	return nil
+}
+
+/*GetShareProfilesOKBody ShareProfileCollection
+swagger:model GetShareProfilesOKBody
+*/
+type GetShareProfilesOKBody struct {
+
+	// first
+	First *GetShareProfilesOKBodyFirst `json:"first,omitempty"`
+
+	// The maximum number of resources can be returned by the request
+	// Maximum: 100
+	// Minimum: 1
+	Limit int64 `json:"limit,omitempty"`
+
+	// next
+	Next *GetShareProfilesOKBodyNext `json:"next,omitempty"`
+
+	// Collection of share profiles
+	Profiles []*models.ShareProfile `json:"profiles"`
+
+	// The total number of resources across all pages
+	// Minimum: 0
+	TotalCount *int64 `json:"total_count,omitempty"`
+}
+
+// Validate validates this get share profiles o k body
+func (o *GetShareProfilesOKBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateFirst(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateLimit(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateNext(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateProfiles(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateTotalCount(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetShareProfilesOKBody) validateFirst(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.First) { // not required
+		return nil
+	}
+
+	if o.First != nil {
+		if err := o.First.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("getShareProfilesOK" + "." + "first")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *GetShareProfilesOKBody) validateLimit(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Limit) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("getShareProfilesOK"+"."+"limit", "body", int64(o.Limit), 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("getShareProfilesOK"+"."+"limit", "body", int64(o.Limit), 100, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *GetShareProfilesOKBody) validateNext(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Next) { // not required
+		return nil
+	}
+
+	if o.Next != nil {
+		if err := o.Next.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("getShareProfilesOK" + "." + "next")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *GetShareProfilesOKBody) validateProfiles(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Profiles) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(o.Profiles); i++ {
+		if swag.IsZero(o.Profiles[i]) { // not required
+			continue
+		}
+
+		if o.Profiles[i] != nil {
+			if err := o.Profiles[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("getShareProfilesOK" + "." + "profiles" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (o *GetShareProfilesOKBody) validateTotalCount(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.TotalCount) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("getShareProfilesOK"+"."+"total_count", "body", int64(*o.TotalCount), 0, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetShareProfilesOKBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetShareProfilesOKBody) UnmarshalBinary(b []byte) error {
+	var res GetShareProfilesOKBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*GetShareProfilesOKBodyFirst A reference to the first page of resources
+swagger:model GetShareProfilesOKBodyFirst
+*/
+type GetShareProfilesOKBodyFirst struct {
+
+	// The URL for the first page of resources
+	// Required: true
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href *string `json:"href"`
+}
+
+// Validate validates this get share profiles o k body first
+func (o *GetShareProfilesOKBodyFirst) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetShareProfilesOKBodyFirst) validateHref(formats strfmt.Registry) error {
+
+	if err := validate.Required("getShareProfilesOK"+"."+"first"+"."+"href", "body", o.Href); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("getShareProfilesOK"+"."+"first"+"."+"href", "body", string(*o.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetShareProfilesOKBodyFirst) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetShareProfilesOKBodyFirst) UnmarshalBinary(b []byte) error {
+	var res GetShareProfilesOKBodyFirst
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*GetShareProfilesOKBodyNext A reference to the next page of resources; this reference is included for all pages except the last page
+swagger:model GetShareProfilesOKBodyNext
+*/
+type GetShareProfilesOKBodyNext struct {
+
+	// The URL for the next page of resources
+	// Required: true
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href *string `json:"href"`
+}
+
+// Validate validates this get share profiles o k body next
+func (o *GetShareProfilesOKBodyNext) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetShareProfilesOKBodyNext) validateHref(formats strfmt.Registry) error {
+
+	if err := validate.Required("getShareProfilesOK"+"."+"next"+"."+"href", "body", o.Href); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("getShareProfilesOK"+"."+"next"+"."+"href", "body", string(*o.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetShareProfilesOKBodyNext) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetShareProfilesOKBodyNext) UnmarshalBinary(b []byte) error {
+	var res GetShareProfilesOKBodyNext
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

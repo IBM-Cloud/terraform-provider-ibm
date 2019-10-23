@@ -359,3 +359,34 @@ func (m *Listener) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
+
+// ListenerCertificateInstance The certificate instance used for SSL termination. It is applicable only to `https` protocol.
+// swagger:model ListenerCertificateInstance
+type ListenerCertificateInstance struct {
+
+	// The ceritificate instance's CRN
+	Crn string `json:"crn,omitempty"`
+}
+
+// Validate validates this listener certificate instance
+func (m *ListenerCertificateInstance) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ListenerCertificateInstance) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ListenerCertificateInstance) UnmarshalBinary(b []byte) error {
+	var res ListenerCertificateInstance
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
