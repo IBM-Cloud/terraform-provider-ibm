@@ -24,6 +24,7 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 		Create:   resourceIBMContainerVpcClusterCreate,
 		Read:     resourceIBMContainerVpcClusterRead,
 		Delete:   resourceIBMContainerVpcClusterDelete,
+		Exists:   resourceIBMContainerVpcClusterExists,
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -41,13 +42,6 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				Description: "The cluster name",
 			},
 
-			"subnet_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The VPC subnet to assign the cluster",
-			},
-
 			"vpc_id": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -55,21 +49,46 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				Description: "The vpc id where the cluster is",
 			},
 
-			"zone": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Zone for the worker pool in a multizone cluster",
-			},
+			"zones": {
+				Type:     schema.TypeList,
+				Required: true,
+				ForceNew: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Required:    true,
+							ForceNew:    true,
+							Description: "Zone for the worker pool in a multizone cluster",
+						},
 
+						"subnet_id": {
+							Type:        schema.TypeString,
+							Required:    true,
+							ForceNew:    true,
+							Description: "The VPC subnet to assign the cluster",
+						},
+					},
+				},
+			},
 			//Optionals in cluster creation
 
 			"kube_version": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     "1.15.4",
-				Description: "The Kubernetes version",
+				Type:     schema.TypeString,
+				Computed: true,
+				Optional: true,
+				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
+					if o == "" {
+						return false
+					}
+					new := strings.Split(n, ".")
+					old := strings.Split(o, ".")
+
+					if strings.Compare(new[0]+"."+strings.Split(new[1], "_")[0], old[0]+"."+strings.Split(old[1], "_")[0]) == 0 {
+						return true
+					}
+					return false
+				},
 			},
 
 			"service_subnet": {
@@ -115,21 +134,10 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				Computed: true,
 			},
 
-			"provider": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
 			"created_date": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
-			},
-
-			"resource_group": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The resource group id in which resource is provisioned",
 			},
 
 			"vpcs": {
@@ -206,6 +214,14 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				Description: "ID of the resource group.",
 			},
 
+			"account_guid": {
+				Description: "The bluemix account guid this cluster belongs to",
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Deprecated:  "This field is deprecated",
+			},
+
 			"crn": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -253,21 +269,30 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 
 	disablePublicServiceEndpoint := d.Get("disable_public_service_endpoint").(bool)
 	name := d.Get("name").(string)
-	kubeVersion := d.Get("kube_version").(string)
+	var kubeVersion string
+	if v, ok := d.GetOk("kube_version"); ok {
+		kubeVersion = v.(string)
+	}
 	podSubnet := d.Get("pod_subnet").(string)
 	serviceSubnet := d.Get("service_subnet").(string)
-	zone := d.Get("zone").(string)
-	subnetID := d.Get("subnet_id").(string)
 	vpcID := d.Get("vpc_id").(string)
 	flavor := d.Get("flavor").(string)
 	workerCount := d.Get("worker_count").(int)
 
 	var zonesList = make([]v2.Zone, 0)
-	z := v2.Zone{
-		ID:       zone,
-		SubnetID: subnetID,
+
+	if res, ok := d.GetOk("zones"); ok {
+		zones := res.([]interface{})
+		for _, e := range zones {
+			r, _ := e.(map[string]interface{})
+			if ID, subnetID := r["id"], r["subnet_id"]; ID != nil && subnetID != nil {
+				zoneParam := v2.Zone{}
+				zoneParam.ID, zoneParam.SubnetID = ID.(string), subnetID.(string)
+				zonesList = append(zonesList, zoneParam)
+			}
+
+		}
 	}
-	zonesList = append(zonesList, z)
 
 	workerpool := v2.WorkerPoolConfig{
 		VpcID:       vpcID,
@@ -323,6 +348,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	}
 
 	d.Set("id", cls.ID)
+	//mandatory fields[zone]
 	d.Set("name", cls.Name)
 	d.Set("created_date", cls.CreatedDate)
 	d.Set("crn", cls.CRN)
@@ -336,13 +362,12 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	d.Set("modified_date", cls.Lifecycle.ModifiedDate)
 	d.Set("service_subnet", cls.ServiceSubnet)
 	d.Set("pod_subnet", cls.PodSubnet)
-	d.Set("provider", cls.Provider)
 	d.Set("state", cls.State)
-	d.Set("worker_zones", cls.WorkerZones)
+	d.Set("worker_zones", flattenStringList(cls.WorkerZones))
 	d.Set("region", cls.Region)
-	d.Set("resource_group", cls.ResourceGroupID)
+	d.Set("resource_group_id", cls.ResourceGroupID)
 	d.Set("state", cls.State)
-	d.Set("vpcs", cls.Vpcs)
+	d.Set("vpcs", flattenStringList(cls.Vpcs))
 
 	tags, err := GetTagsUsingCRN(meta, cls.CRN)
 	if err != nil {
@@ -442,6 +467,9 @@ func waitForVpcClusterCreate(d *schema.ResourceData, meta interface{}) (interfac
 			if err != nil {
 				return clusterInfo, deployInProgress, nil
 			}
+			if (clusterInfo.Lifecycle == v2.LifeCycleInfo{}) {
+				return clusterInfo, deployInProgress, nil
+			}
 			log.Println("Master Node Status:", clusterInfo.Lifecycle.MasterStatus)
 			log.Println("Checking cluster state", strings.Compare(clusterInfo.Lifecycle.MasterStatus, ready))
 			if strings.Compare(clusterInfo.Lifecycle.MasterStatus, ready) != 0 {
@@ -460,6 +488,7 @@ func waitForVpcClusterCreate(d *schema.ResourceData, meta interface{}) (interfac
 func getVpcClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v2.ClusterTargetHeader, error) {
 
 	resourceGroup := d.Get("resource_group_id").(string)
+	accountGUID := d.Get("account_guid").(string)
 
 	sess, err := meta.(ClientSession).BluemixSession()
 	if err != nil {
@@ -482,7 +511,7 @@ func getVpcClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v2.Clu
 				return v2.ClusterTargetHeader{}, err
 			}
 			if len(grpList) <= 0 {
-				return v2.ClusterTargetHeader{}, fmt.Errorf("the targeted resource group could not be found. Make sure you have required permissions to access the resource group.")
+				return v2.ClusterTargetHeader{}, fmt.Errorf("the targeted resource group could not be found. Make sure you have required permissions to access the resource group")
 			}
 			resourceGroup = grpList[0].ID
 		}
@@ -490,6 +519,29 @@ func getVpcClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v2.Clu
 
 	targetEnv := v2.ClusterTargetHeader{
 		ResourceGroup: resourceGroup,
+		AccountID:     accountGUID,
 	}
 	return targetEnv, nil
+}
+
+func resourceIBMContainerVpcClusterExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	csClient, err := meta.(ClientSession).VpcContainerAPI()
+	if err != nil {
+		return false, err
+	}
+	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	if err != nil {
+		return false, err
+	}
+	clusterID := d.Id()
+	cls, err := csClient.Clusters().GetCluster(clusterID, targetEnv)
+	if err != nil {
+		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
+			if apiErr.StatusCode() == 404 {
+				return false, nil
+			}
+		}
+		return false, fmt.Errorf("Error communicating with the API: %s", err)
+	}
+	return cls.ID == clusterID, nil
 }
