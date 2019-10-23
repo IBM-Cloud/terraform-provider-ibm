@@ -82,10 +82,15 @@ The following arguments are supported:
 * `tags` - (Optional, array of strings) Tags associated with the instance.
 * `service` - (Required, string) The ICD database type to be created. Only the following services are currently accepted: 
 `databases-for-etcd`, `databases-for-postgresql`, `databases-for-redis`, `databases-for-elasticsearch`, `messages-for-rabbitmq`, `databases-for-mongodb`
+* `version` - (Optiona, string)  The version of the database to be provisioned. If omitted, the database is created with the most recent major and minor version.
 * `adminpassword` - (Optional, string) If not specified the password is unitialised and the id unusable. In this case addditional users must be specified in a user block.   
 * `members_memory_allocation_mb` - (Optional) The memory size for the database, split across all members. If not specified defaults to the database default. These vary by database type. See the documentation related to each database for the defaults. https://cloud.ibm.com/docs/services/databases-for-postgresql/howto-provisioning.html#list-of-additional-parameters
 * `members_disk_allocation_mb`  - (Optional) The disk size of the database, split across all members. As above.
-
+* `members_cpu_allocation_count` - (Optional, int) Enables and allocates the number of specified dedicated cores to your deployment. 
+* `backup_id` - (Optional, string) A CRN of a backup resource to restore from. The backup must have been created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. A backup CRN is in the format crn:v1:<...>:backup:<uuid>. If omitted, the database is provisioned empty.
+* `key_protect_key` - (Optional, string) The CRN of a Key Protect key, which is then used for disk encryption. A key protect CRN is in the format crn:v1:<...>:key:<id>.
+* `key_protect_instance` - (Optional, string) The CRN of a Key Protect instance, which is then used for disk encryption. A key protect CRN is in the format crn:v1:<...>::.
+* `service_endpoints` - (Optional, string) Selects the types Service Endpoints supported on your deployment. Options are public, private, or public-and-private. The default is `public`.
 
 * `users` - (Optional) - Multiple blocks allowed       
   * `name` - Name of the userid to add to the database instance, Minimum of 5 characters up to 32.  
