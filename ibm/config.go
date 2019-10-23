@@ -24,6 +24,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv2"
 	"github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	"github.com/IBM-Cloud/bluemix-go/api/globalsearch/globalsearchv2"
 	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
@@ -124,6 +125,7 @@ type ClientSession interface {
 	BluemixAcccountv1API() (accountv1.AccountServiceAPI, error)
 	BluemixUserDetails() (*UserConfig, error)
 	ContainerAPI() (containerv1.ContainerServiceAPI, error)
+	VpcContainerAPI() (containerv2.ContainerServiceAPI, error)
 	CisAPI() (cisv1.CisServiceAPI, error)
 	FunctionClient() (*whisk.Client, error)
 	GlobalSearchAPI() (globalsearchv2.GlobalSearchServiceAPI, error)
@@ -154,6 +156,9 @@ type clientSession struct {
 
 	csConfigErr  error
 	csServiceAPI containerv1.ContainerServiceAPI
+
+	csv2ConfigErr  error
+	csv2ServiceAPI containerv2.ContainerServiceAPI
 
 	cfConfigErr  error
 	cfServiceAPI mccpv2.MccpServiceAPI
@@ -218,6 +223,11 @@ func (sess clientSession) BluemixUserDetails() (*UserConfig, error) {
 // ContainerAPI provides Container Service APIs ...
 func (sess clientSession) ContainerAPI() (containerv1.ContainerServiceAPI, error) {
 	return sess.csServiceAPI, sess.csConfigErr
+}
+
+// VpcContainerAPI provides v2Container Service APIs ...
+func (sess clientSession) VpcContainerAPI() (containerv2.ContainerServiceAPI, error) {
+	return sess.csv2ServiceAPI, sess.csv2ConfigErr
 }
 
 // CisAPI provides Cloud Internet Services APIs ...
@@ -377,6 +387,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.csConfigErr = fmt.Errorf("Error occured while configuring Container Service for K8s cluster: %q", err)
 	}
 	session.csServiceAPI = clusterAPI
+
+	v2clusterAPI, err := containerv2.New(sess.BluemixSession)
+	if err != nil {
+		session.csv2ConfigErr = fmt.Errorf("Error occured while configuring vpc Container Service for K8s cluster: %q", err)
+	}
+	session.csv2ServiceAPI = v2clusterAPI
 
 	cisAPI, err := cisv1.New(sess.BluemixSession)
 	if err != nil {
