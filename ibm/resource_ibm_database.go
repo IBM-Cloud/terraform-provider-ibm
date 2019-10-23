@@ -76,6 +76,7 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 
 			"resource_group_id": {
 				Type:        schema.TypeString,
+				Computed:    true,
 				Optional:    true,
 				Description: "The id of the resource group in which the Database instance is present",
 			},
@@ -124,6 +125,7 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
+				ForceNew:    true,
 			},
 			"members_memory_allocation_mb": {
 				Description:  "Memory allocation required for cluster",
@@ -138,6 +140,34 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.IntBetween(2048, 1048576),
+			},
+			"members_cpu_allocation_count": {
+				Description: "CPU allocation required for cluster",
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+			},
+			"service_endpoints": {
+				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "public",
+				ValidateFunc: validateAllowedStringValue([]string{"public", "private", "public-and-private"}),
+			},
+			"backup_id": {
+				Description: "The CRN of backup source database",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"key_protect_instance": {
+				Description: "The CRN of Key protect instance",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"key_protect_key": {
+				Description: "The CRN of Key protect key",
+				Type:        schema.TypeString,
+				Optional:    true,
 			},
 			"tags": {
 				Type:     schema.TypeSet,
@@ -246,7 +276,7 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 							Description:  "Whitelist IP address in CIDR notation",
 							Type:         schema.TypeString,
 							Optional:     true,
-							ValidateFunc: validation.CIDRNetwork(24, 32),
+							ValidateFunc: validateCIDR,
 						},
 						"description": {
 							Description:  "Unique white list description",
@@ -394,10 +424,14 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 }
 
 type Params struct {
-	Version       string `json:"version,omitempty"`
-	KeyProtectKey string `json:"key_protect_key,omitempty"`
-	Memory        int    `json:"members_memory_allocation_mb,omitempty"`
-	Disk          int    `json:"members_disk_allocation_mb,omitempty"`
+	Version            string `json:"version,omitempty"`
+	KeyProtectKey      string `json:"key_protect_key,omitempty"`
+	Memory             int    `json:"members_memory_allocation_mb,omitempty"`
+	Disk               int    `json:"members_disk_allocation_mb,omitempty"`
+	CPU                int    `json:"members_cpu_allocation_count,omitempty"`
+	KeyProtectInstance string `json:"key_protect_instance,omitempty"`
+	ServiceEndpoints   string `json:"service-endpoints,omitempty"`
+	BackupID           string `json:"backup-id,omitempty"`
 }
 
 // Replace with func wrapper for resourceIBMResourceInstanceCreate specifying serviceName := "database......."
@@ -406,7 +440,7 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return err
 	}
-
+	d.Partial(true)
 	serviceName := d.Get("service").(string)
 	plan := d.Get("plan").(string)
 	name := d.Get("name").(string)
@@ -476,12 +510,23 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 	if disk, ok := d.GetOk("members_disk_allocation_mb"); ok {
 		params.Disk = disk.(int)
 	}
+	if cpu, ok := d.GetOk("members_cpu_allocation_count"); ok {
+		params.CPU = cpu.(int)
+	}
 	if version, ok := d.GetOk("version"); ok {
 		params.Version = version.(string)
 	}
 	if keyProtect, ok := d.GetOk("key_protect_key"); ok {
 		params.KeyProtectKey = keyProtect.(string)
 	}
+	if keyProtectInstance, ok := d.GetOk("key_protect_instance"); ok {
+		params.KeyProtectInstance = keyProtectInstance.(string)
+	}
+	if backupID, ok := d.GetOk("backup_id"); ok {
+		params.BackupID = backupID.(string)
+	}
+	serviceEndpoint := d.Get("service_endpoints").(string)
+	params.ServiceEndpoints = serviceEndpoint
 	parameters, _ := json.Marshal(params)
 	var raw map[string]interface{}
 	json.Unmarshal(parameters, &raw)
@@ -505,6 +550,8 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf(
 			"Error waiting for create database instance (%s) to complete: %s", d.Id(), err)
 	}
+
+	d.SetId(instance.ID)
 
 	icdId := EscapeUrlParm(instance.ID)
 	icdClient, err := meta.(ClientSession).ICDAPI()
@@ -536,6 +583,7 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 			return fmt.Errorf(
 				"Error waiting for update of database (%s) admin password task to complete: %s", icdId, err)
 		}
+		d.SetPartial("adminpassword")
 	}
 
 	if wl, ok := d.GetOk("whitelist"); ok {
@@ -557,6 +605,7 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 					"Error waiting for update of database (%s) whitelist task to complete: %s", icdId, err)
 			}
 		}
+		d.SetPartial("whitelist")
 	}
 
 	if userlist, ok := d.GetOk("users"); ok {
@@ -578,10 +627,9 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 					"Error waiting for update of database (%s) user (%s) create task to complete: %s", icdId, user.UserName, err)
 			}
 		}
+		d.SetPartial("users")
 	}
-
-	d.SetId(instance.ID)
-
+	d.Partial(false)
 	return resourceIBMDatabaseInstanceRead(d, meta)
 }
 
@@ -618,6 +666,12 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("resource_group_id", instance.ResourceGroupID)
 	d.Set("parameters", flatmap.Flatten(instance.Parameters))
 	d.Set("location", instance.RegionID)
+	if instance.Parameters != nil {
+		if endpoint, ok := instance.Parameters["service-endpoints"]; ok {
+			d.Set("service_endpoints", endpoint)
+		}
+
+	}
 
 	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
 	if err != nil {
@@ -661,6 +715,7 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("groups", flattenIcdGroups(groupList))
 	d.Set("members_memory_allocation_mb", groupList.Groups[0].Memory.AllocationMb)
 	d.Set("members_disk_allocation_mb", groupList.Groups[0].Disk.AllocationMb)
+	d.Set("members_cpu_allocation_count", groupList.Groups[0].Cpu.AllocationCount)
 
 	whitelist, err := icdClient.Whitelists().GetWhitelist(icdId)
 	if err != nil {
@@ -700,6 +755,14 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 	if d.HasChange("name") {
 		updateReq.Name = d.Get("name").(string)
 	}
+	if d.HasChange("service_endpoints") {
+		params := Params{}
+		params.ServiceEndpoints = d.Get("service_endpoints").(string)
+		parameters, _ := json.Marshal(params)
+		var raw map[string]interface{}
+		json.Unmarshal(parameters, &raw)
+		updateReq.Parameters = raw
+	}
 
 	_, err = rsConClient.ResourceServiceInstance().UpdateInstance(instanceID, updateReq)
 	if err != nil {
@@ -726,7 +789,7 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 	}
 	icdId := EscapeUrlParm(instanceID)
 
-	if d.HasChange("members_memory_allocation_mb") || d.HasChange("members_disk_allocation_mb") {
+	if d.HasChange("members_memory_allocation_mb") || d.HasChange("members_disk_allocation_mb") || d.HasChange("members_cpu_allocation_count") {
 		params := icdv4.GroupReq{}
 		if d.HasChange("members_memory_allocation_mb") {
 			memory := d.Get("members_memory_allocation_mb").(int)
@@ -737,6 +800,11 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 			disk := d.Get("members_disk_allocation_mb").(int)
 			diskReq := icdv4.DiskReq{AllocationMb: disk}
 			params.GroupBdy.Disk = &diskReq
+		}
+		if d.HasChange("members_cpu_allocation_count") {
+			cpu := d.Get("members_cpu_allocation_count").(int)
+			cpuReq := icdv4.CpuReq{AllocationCount: cpu}
+			params.GroupBdy.Cpu = &cpuReq
 		}
 		task, err := icdClient.Groups().UpdateGroup(icdId, "member", params)
 		if err != nil {
