@@ -19,6 +19,7 @@ type ContainerServiceAPI interface {
 	Clusters() Clusters
 	WorkerPools() WorkerPool
 	Albs() Alb
+	Workers() Workers
 
 	//TODO Add other services
 }
@@ -77,4 +78,9 @@ func (c *csService) WorkerPools() WorkerPool {
 }
 func (c *csService) Albs() Alb {
 	return newAlbAPI(c.Client)
+}
+
+//Workers implements Cluster Workers API
+func (c *csService) Workers() Workers {
+	return newWorkerAPI(c.Client)
 }

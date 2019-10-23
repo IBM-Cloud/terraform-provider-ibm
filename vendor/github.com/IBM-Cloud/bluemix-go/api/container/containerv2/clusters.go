@@ -42,71 +42,73 @@ type Zone struct {
 
 //ClusterInfo ...
 type ClusterInfo struct {
-	CreatedDate                   string   `json:"createdDate"`
-	DataCenter                    string   `json:"dataCenter"`
-	ID                            string   `json:"id"`
-	IngressHostname               string   `json:"ingressHostname"`
-	IngressSecretName             string   `json:"ingressSecretName"`
-	Location                      string   `json:"location"`
-	MasterKubeVersion             string   `json:"masterKubeVersion"`
-	ModifiedDate                  string   `json:"modifiedDate"`
-	Name                          string   `json:"name"`
-	Region                        string   `json:"region"`
-	ResourceGroupID               string   `json:"resourceGroup"`
-	ServerURL                     string   `json:"serverURL"`
-	State                         string   `json:"state"`
-	OrgID                         string   `json:"logOrg"`
-	OrgName                       string   `json:"logOrgName"`
-	SpaceID                       string   `json:"logSpace"`
-	SpaceName                     string   `json:"logSpaceName"`
-	IsPaid                        bool     `json:"isPaid"`
-	IsTrusted                     bool     `json:"isTrusted"`
-	WorkerCount                   int      `json:"workerCount"`
-	Vlans                         []Vlan   `json:"vlans"`
-	Addons                        []Addon  `json:"addons"`
-	OwnerEmail                    string   `json:"ownerEmail"`
-	APIUser                       string   `json:"apiUser"`
-	MonitoringURL                 string   `json:"monitoringURL"`
-	DisableAutoUpdate             bool     `json:"disableAutoUpdate"`
-	EtcdPort                      string   `json:"etcdPort"`
-	MasterStatus                  string   `json:"masterStatus"`
-	MasterStatusModifiedDate      string   `json:"masterStatusModifiedDate"`
-	KeyProtectEnabled             bool     `json:"keyProtectEnabled"`
-	WorkerZones                   []string `json:"workerZones"`
-	PullSecretApplied             bool     `json:"pullSecretApplied"`
-	CRN                           string   `json:"crn"`
-	PrivateServiceEndpointEnabled bool     `json:"privateServiceEndpointEnabled"`
-	PrivateServiceEndpointURL     string   `json:"privateServiceEndpointURL"`
-	PublicServiceEndpointEnabled  bool     `json:"publicServiceEndpointEnabled"`
-	PublicServiceEndpointURL      string   `json:"publicServiceEndpointURL"`
+	CreatedDate       string        `json:"createdDate"`
+	DataCenter        string        `json:"dataCenter"`
+	ID                string        `json:"id"`
+	Location          string        `json:"location"`
+	MasterKubeVersion string        `json:"masterKubeVersion"`
+	Name              string        `json:"name"`
+	Region            string        `json:"region"`
+	ResourceGroupID   string        `json:"resourceGroup"`
+	State             string        `json:"state"`
+	IsPaid            bool          `json:"isPaid"`
+	Addons            []Addon       `json:"addons"`
+	OwnerEmail        string        `json:"ownerEmail"`
+	Type              string        `json:"type"`
+	TargetVersion     string        `json:"targetVersion"`
+	ServiceSubnet     string        `json:"serviceSubnet"`
+	ResourceGroupName string        `json:"resourceGroupName"`
+	Provider          string        `json:"provider"`
+	PodSubnet         string        `json:"podSubnet"`
+	MultiAzCapable    bool          `json:"multiAzCapable"`
+	APIUser           string        `json:"apiUser"`
+	MasterURL         string        `json:"masterURL"`
+	DisableAutoUpdate bool          `json:"disableAutoUpdate"`
+	WorkerZones       []string      `json:"workerZones"`
+	Vpcs              []string      `json:"vpcs"`
+	CRN               string        `json:"crn"`
+	VersionEOS        string        `json:"versionEOS"`
+	ServiceEndpoints  Endpoints     `json:"serviceEndpoints"`
+	Lifecycle         LifeCycleInfo `json:"lifecycle"`
+	WorkerCount       int           `json:"workerCount"`
+	Ingress           IngresInfo    `json:"ingress"`
+	Features          Feat          `json:"features"`
+}
+type Feat struct {
+	KeyProtectEnabled bool `json:"keyProtectEnabled"`
+	PullSecretApplied bool `json:"pullSecretApplied"`
+}
+type IngresInfo struct {
+	HostName   string `json:"hostname"`
+	SecretName string `json:"secretName"`
+}
+type LifeCycleInfo struct {
+	ModifiedDate             string `json:"modifiedDate"`
+	MasterStatus             string `json:"masterStatus"`
+	MasterStatusModifiedDate string `json:"masterStatusModifiedDate"`
+	MasterHealth             string `json:"masterHealth"`
+	MasterState              string `json:"masterState"`
 }
 
 //ClusterTargetHeader ...
 type ClusterTargetHeader struct {
 	ResourceGroup string
 }
-
-type Vlan struct {
-	ID      string `json:"id"`
-	Subnets []struct {
-		Cidr     string   `json:"cidr"`
-		ID       string   `json:"id"`
-		Ips      []string `json:"ips"`
-		IsByOIP  bool     `json:"is_byoip"`
-		IsPublic bool     `json:"is_public"`
-	}
-	Zone   string `json:"zone"`
-	Region string `json:"region"`
+type Endpoints struct {
+	PrivateServiceEndpointEnabled bool   `json:"privateServiceEndpointEnabled"`
+	PrivateServiceEndpointURL     string `json:"privateServiceEndpointURL"`
+	PublicServiceEndpointEnabled  bool   `json:"publicServiceEndpointEnabled"`
+	PublicServiceEndpointURL      string `json:"publicServiceEndpointURL"`
 }
 
 type Addon struct {
 	Name    string `json:"name"`
-	Enabled bool   `json:"enabled"`
+	Version string `json:"version"`
 }
 
 //ClusterCreateResponse ...
 type ClusterCreateResponse struct {
-	ID string
+	ID string `json:"clusterID"`
 }
 
 //Clusters interface

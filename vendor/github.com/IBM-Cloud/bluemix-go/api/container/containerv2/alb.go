@@ -1,6 +1,8 @@
 package containerv2
 
 import (
+	"fmt"
+
 	"github.com/IBM-Cloud/bluemix-go/client"
 )
 
@@ -37,6 +39,7 @@ type Alb interface {
 	CreateAlb(albCreateReq AlbCreateReq, target ClusterTargetHeader) error
 	DisableAlb(disableAlbReq AlbConfig, target ClusterTargetHeader) error
 	EnableAlb(enableAlbReq AlbConfig, target ClusterTargetHeader) error
+	GetAlb(albid string, target ClusterTargetHeader) (AlbConfig, error)
 }
 
 func newAlbAPI(c *client.Client) Alb {
@@ -61,4 +64,10 @@ func (r *alb) EnableAlb(enableAlbReq AlbConfig, target ClusterTargetHeader) erro
 	// Make the request, don't care about return value
 	_, err := r.client.Post("/v2/alb/vpc/enableAlb", enableAlbReq, nil, target.ToMap())
 	return err
+}
+
+func (r *alb) GetAlb(albID string, target ClusterTargetHeader) (AlbConfig, error) {
+	var successV AlbConfig
+	_, err := r.client.Get(fmt.Sprintf("/v2/alb/getAlb?albID=%s", albID), &successV, target.ToMap())
+	return successV, err
 }
