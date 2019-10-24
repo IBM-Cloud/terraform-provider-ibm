@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 func dataSourceIBMContainerClusterVersions() *schema.Resource {
@@ -47,6 +47,12 @@ func dataSourceIBMContainerClusterVersions() *schema.Resource {
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
+			"valid_openshift_versions": {
+				Description: "List of supported openshift-versions",
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 		},
 	}
 }
@@ -62,12 +68,18 @@ func dataSourceIBMContainerClusterVersionsRead(d *schema.ResourceData, meta inte
 		return err
 	}
 
-	availableVersions, _ := verAPI.List(targetEnv)
-	versions := make([]string, len(availableVersions))
-	for i, version := range availableVersions {
+	availableVersions, _ := verAPI.ListV1(targetEnv)
+	versions := make([]string, len(availableVersions["kubernetes"]))
+	for i, version := range availableVersions["kubernetes"] {
 		versions[i] = fmt.Sprintf("%d%s%d%s%d", version.Major, ".", version.Minor, ".", version.Patch)
+	}
+
+	openshiftVersions := make([]string, len(availableVersions["openshift"]))
+	for i, version := range availableVersions["openshift"] {
+		openshiftVersions[i] = fmt.Sprintf("%d%s%d%s%d", version.Major, ".", version.Minor, ".", version.Patch)
 	}
 	d.SetId(time.Now().UTC().String())
 	d.Set("valid_kube_versions", versions)
+	d.Set("valid_openshift_versions", openshiftVersions)
 	return nil
 }

@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPostSubnetsParams creates a new PostSubnetsParams object
@@ -66,7 +64,7 @@ for the post subnets operation typically these are written to a http.Request
 type PostSubnetsParams struct {
 
 	/*Body*/
-	Body *models.PostSubnetsParamsBody
+	Body PostSubnetsBody
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -117,13 +115,13 @@ func (o *PostSubnetsParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the post subnets params
-func (o *PostSubnetsParams) WithBody(body *models.PostSubnetsParamsBody) *PostSubnetsParams {
+func (o *PostSubnetsParams) WithBody(body PostSubnetsBody) *PostSubnetsParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the post subnets params
-func (o *PostSubnetsParams) SetBody(body *models.PostSubnetsParamsBody) {
+func (o *PostSubnetsParams) SetBody(body PostSubnetsBody) {
 	o.Body = body
 }
 
@@ -157,10 +155,8 @@ func (o *PostSubnetsParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 	var res []error
 
-	if o.Body != nil {
-		if err := r.SetBodyParam(o.Body); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.Body); err != nil {
+		return err
 	}
 
 	// query param generation

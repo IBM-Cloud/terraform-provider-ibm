@@ -5,12 +5,11 @@ import (
 	"time"
 
 	"github.com/go-openapi/strfmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/storage"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
 	st "github.ibm.com/Bluemix/riaas-go-client/riaas/client/storage"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 const (
@@ -141,14 +140,14 @@ func resourceIBMISVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	volCapacity := int64(d.Get(isVolumeCapacity).(int))
 	client := storage.NewStorageClient(sess)
 
-	volZone := &models.PostVolumesParamsBodyZone{
+	volZone := &st.PostVolumesParamsBodyZone{
 		Name: &zone,
 	}
-	volProfile := &models.PostVolumesParamsBodyProfile{
+	volProfile := &st.PostVolumesParamsBodyProfile{
 		Name: profile,
 	}
 
-	body := &models.PostVolumesParamsBody{
+	body := st.PostVolumesBody{
 		Name:     volName,
 		Zone:     volZone,
 		Profile:  volProfile,
@@ -158,14 +157,14 @@ func resourceIBMISVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	var encryptionKey string
 	if key, ok := d.GetOk(isVolumeEncryptionKey); ok {
 		encryptionKey = key.(string)
-		volEncryptionKey := models.PostVolumesParamsBodyEncryptionKey{
+		volEncryptionKey := st.PostVolumesParamsBodyEncryptionKey{
 			Crn: encryptionKey,
 		}
 		body.EncryptionKey = &volEncryptionKey
 	}
 
 	if rg, ok := d.GetOk(isVolumeResourceGroup); ok {
-		rgref := models.PostVolumesParamsBodyResourceGroup{
+		rgref := st.PostVolumesParamsBodyResourceGroup{
 			ID: strfmt.UUID(rg.(string)),
 		}
 		body.ResourceGroup = &rgref
@@ -241,7 +240,7 @@ func resourceIBMISVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	// Generating parameters for
 
 	if d.HasChange(isVolumeName) {
-		body := &models.PatchVolumesIDParamsBody{
+		body := st.PatchVolumesIDBody{
 			Name: d.Get(isVolumeName).(string),
 		}
 

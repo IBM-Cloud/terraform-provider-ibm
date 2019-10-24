@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform/helper/resource"
 )
 
 func TestAccIBMISZoneDataSource_basic(t *testing.T) {
@@ -28,7 +28,7 @@ func testAccCheckIBMISZoneDataSourceConfig() string {
 	return fmt.Sprintf(`
 
 data "ibm_is_zone" "testacc_ds_zone" {
-	name = "%s",
-	region = "%s",
+	name = "%s"
+	region = "%s"
 }`, ISZoneName, regionName)
 }

@@ -16,6 +16,7 @@ import (
 	"github.ibm.com/Bluemix/riaas-go-client/riaas/client/l_baas"
 	"github.ibm.com/Bluemix/riaas-go-client/riaas/client/network"
 	"github.ibm.com/Bluemix/riaas-go-client/riaas/client/storage"
+	"github.ibm.com/Bluemix/riaas-go-client/riaas/client/v_p_cs"
 	"github.ibm.com/Bluemix/riaas-go-client/riaas/client/v_p_naa_s"
 )
 
@@ -71,6 +72,8 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *Riaas {
 	cli.Network = network.New(transport, formats)
 
 	cli.Storage = storage.New(transport, formats)
+
+	cli.VPCs = v_p_cs.New(transport, formats)
 
 	cli.VPNaaS = v_p_naa_s.New(transport, formats)
 
@@ -128,6 +131,8 @@ type Riaas struct {
 
 	Storage *storage.Client
 
+	VPCs *v_p_cs.Client
+
 	VPNaaS *v_p_naa_s.Client
 
 	Transport runtime.ClientTransport
@@ -146,6 +151,8 @@ func (c *Riaas) SetTransport(transport runtime.ClientTransport) {
 	c.Network.SetTransport(transport)
 
 	c.Storage.SetTransport(transport)
+
+	c.VPCs.SetTransport(transport)
 
 	c.VPNaaS.SetTransport(transport)
 

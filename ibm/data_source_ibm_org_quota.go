@@ -3,7 +3,7 @@ package ibm
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 func dataSourceIBMOrgQuota() *schema.Resource {

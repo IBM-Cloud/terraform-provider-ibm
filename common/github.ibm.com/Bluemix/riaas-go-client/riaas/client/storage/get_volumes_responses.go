@@ -8,8 +8,12 @@ package storage
 import (
 	"fmt"
 	"io"
+	"strconv"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -54,7 +58,7 @@ func NewGetVolumesOK() *GetVolumesOK {
 dummy
 */
 type GetVolumesOK struct {
-	Payload *models.GetVolumesOKBody
+	Payload *GetVolumesOKBody
 }
 
 func (o *GetVolumesOK) Error() string {
@@ -63,7 +67,7 @@ func (o *GetVolumesOK) Error() string {
 
 func (o *GetVolumesOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.GetVolumesOKBody)
+	o.Payload = new(GetVolumesOKBody)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -99,5 +103,281 @@ func (o *GetVolumesInternalServerError) readResponse(response runtime.ClientResp
 		return err
 	}
 
+	return nil
+}
+
+/*GetVolumesOKBody VolumeCollection
+swagger:model GetVolumesOKBody
+*/
+type GetVolumesOKBody struct {
+
+	// first
+	First *GetVolumesOKBodyFirst `json:"first,omitempty"`
+
+	// The maximum number of resources can be returned by the request
+	// Maximum: 100
+	// Minimum: 1
+	Limit int64 `json:"limit,omitempty"`
+
+	// next
+	Next *GetVolumesOKBodyNext `json:"next,omitempty"`
+
+	// The total number of resources across all pages
+	// Minimum: 0
+	TotalCount *int64 `json:"total_count,omitempty"`
+
+	// Collection of volumes
+	// Required: true
+	Volumes []*models.Volume `json:"volumes"`
+}
+
+// Validate validates this get volumes o k body
+func (o *GetVolumesOKBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateFirst(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateLimit(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateNext(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateTotalCount(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateVolumes(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetVolumesOKBody) validateFirst(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.First) { // not required
+		return nil
+	}
+
+	if o.First != nil {
+		if err := o.First.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("getVolumesOK" + "." + "first")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *GetVolumesOKBody) validateLimit(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Limit) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("getVolumesOK"+"."+"limit", "body", int64(o.Limit), 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("getVolumesOK"+"."+"limit", "body", int64(o.Limit), 100, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *GetVolumesOKBody) validateNext(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Next) { // not required
+		return nil
+	}
+
+	if o.Next != nil {
+		if err := o.Next.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("getVolumesOK" + "." + "next")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *GetVolumesOKBody) validateTotalCount(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.TotalCount) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("getVolumesOK"+"."+"total_count", "body", int64(*o.TotalCount), 0, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *GetVolumesOKBody) validateVolumes(formats strfmt.Registry) error {
+
+	if err := validate.Required("getVolumesOK"+"."+"volumes", "body", o.Volumes); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(o.Volumes); i++ {
+		if swag.IsZero(o.Volumes[i]) { // not required
+			continue
+		}
+
+		if o.Volumes[i] != nil {
+			if err := o.Volumes[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("getVolumesOK" + "." + "volumes" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetVolumesOKBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetVolumesOKBody) UnmarshalBinary(b []byte) error {
+	var res GetVolumesOKBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*GetVolumesOKBodyFirst A reference to the first page of resources
+swagger:model GetVolumesOKBodyFirst
+*/
+type GetVolumesOKBodyFirst struct {
+
+	// The URL for the first page of resources
+	// Required: true
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href *string `json:"href"`
+}
+
+// Validate validates this get volumes o k body first
+func (o *GetVolumesOKBodyFirst) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetVolumesOKBodyFirst) validateHref(formats strfmt.Registry) error {
+
+	if err := validate.Required("getVolumesOK"+"."+"first"+"."+"href", "body", o.Href); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("getVolumesOK"+"."+"first"+"."+"href", "body", string(*o.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetVolumesOKBodyFirst) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetVolumesOKBodyFirst) UnmarshalBinary(b []byte) error {
+	var res GetVolumesOKBodyFirst
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*GetVolumesOKBodyNext A reference to the next page of resources; this reference is included for all pages except the last page
+swagger:model GetVolumesOKBodyNext
+*/
+type GetVolumesOKBodyNext struct {
+
+	// The URL for the next page of resources
+	// Required: true
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href *string `json:"href"`
+}
+
+// Validate validates this get volumes o k body next
+func (o *GetVolumesOKBodyNext) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetVolumesOKBodyNext) validateHref(formats strfmt.Registry) error {
+
+	if err := validate.Required("getVolumesOK"+"."+"next"+"."+"href", "body", o.Href); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("getVolumesOK"+"."+"next"+"."+"href", "body", string(*o.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetVolumesOKBodyNext) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetVolumesOKBodyNext) UnmarshalBinary(b []byte) error {
+	var res GetVolumesOKBodyNext
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

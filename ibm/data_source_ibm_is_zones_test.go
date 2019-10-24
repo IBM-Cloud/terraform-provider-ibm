@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform/helper/resource"
 )
 
 func TestAccIBMISZonesDataSource_1(t *testing.T) {
@@ -29,7 +29,7 @@ func testAccCheckIBMISZonesDataSourceConfig1() string {
 	return fmt.Sprintf(`
 
 data "ibm_is_zones" "testacc_ds_zones1" {
-	region = "%s",
+	region = "%s"
     }`, regionName)
 }
 
@@ -55,8 +55,8 @@ func testAccCheckIBMISZonesDataSourceConfig2() string {
 	return fmt.Sprintf(`
 
 data "ibm_is_zones" "testacc_ds_zones2" {
-	region = "%s",
-	status = "",
+	region = "%s"
+	status = ""
     }`, regionName)
 }
 
@@ -81,7 +81,7 @@ func testAccCheckIBMISZonesDataSourceConfig3() string {
 	return fmt.Sprintf(`
 
 data "ibm_is_zones" "testacc_ds_zones3" {
-	region = "%s",
-	status = "no.status.matches.this",
+	region = "%s"
+	status = "no.status.matches.this"
     }`, regionName)
 }

@@ -3,10 +3,10 @@ package ibm
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	networkc "github.ibm.com/Bluemix/riaas-go-client/riaas/client/network"
 )
 
 const (
@@ -70,10 +70,10 @@ func resourceIBMISVpcAddressPrefixCreate(d *schema.ResourceData, meta interface{
 	cidr := d.Get(isVPCAddressPrefixCIDR).(string)
 	vpcID := d.Get(isVPCAddressPrefixVPCID).(string)
 
-	params := &models.PostVpcsVpcIDAddressPrefixesParamsBody{
+	params := networkc.PostVpcsVpcIDAddressPrefixesBody{
 		Cidr: cidr,
 		Name: prefixName,
-		Zone: &models.PostVpcsVpcIDAddressPrefixesParamsBodyZone{
+		Zone: &networkc.PostVpcsVpcIDAddressPrefixesParamsBodyZone{
 			Name: zoneName,
 		},
 	}
@@ -125,7 +125,7 @@ func resourceIBMISVpcAddressPrefixUpdate(d *schema.ResourceData, meta interface{
 	}
 	vpcC := network.NewVPCClient(sess)
 	hasChanged := false
-	params := &models.PatchVpcsVpcIDAddressPrefixesIDParamsBody{}
+	params := networkc.PatchVpcsVpcIDAddressPrefixesIDBody{}
 	if d.HasChange(isVPCAddressPrefixCIDR) {
 		params.Cidr = d.Get(isVPCAddressPrefixCIDR).(string)
 		hasChanged = true

@@ -5,7 +5,7 @@ import (
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 func resourceIBMContainerBindService() *schema.Resource {
@@ -127,6 +127,12 @@ func getClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v1.Cluste
 		return v1.ClusterTargetHeader{}, err
 	}
 
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return v1.ClusterTargetHeader{}, err
+	}
+	accountID := userDetails.userAccount
+
 	if region == "" {
 		region = sess.Config.Region
 	}
@@ -139,7 +145,8 @@ func getClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v1.Cluste
 				return v1.ClusterTargetHeader{}, err
 			}
 			resourceGroupQuery := management.ResourceGroupQuery{
-				Default: true,
+				Default:   true,
+				AccountID: accountID,
 			}
 			grpList, err := rsMangClient.ResourceGroup().List(&resourceGroupQuery)
 			if err != nil {

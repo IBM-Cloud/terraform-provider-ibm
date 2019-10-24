@@ -6,11 +6,12 @@ import (
 	"time"
 
 	"github.com/go-openapi/strfmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/compute"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/storage"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
+	computec "github.ibm.com/Bluemix/riaas-go-client/riaas/client/compute"
 	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
@@ -209,7 +210,6 @@ func resourceIBMISInstance() *schema.Resource {
 			isInstanceGeneration: {
 				Type:             schema.TypeString,
 				Optional:         true,
-				Default:          "gc",
 				DiffSuppressFunc: applyOnce,
 				ValidateFunc:     validateGeneration,
 				Removed:          "This field is removed",
@@ -371,36 +371,36 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	}
 
 	profile := d.Get(isInstanceProfile).(string)
-	var body = &models.PostInstancesParamsBody{
+	var body = computec.PostInstancesBody{
 		Name: d.Get(isInstanceName).(string),
-		Vpc: &models.PostInstancesParamsBodyVpc{
+		Vpc: &computec.PostInstancesParamsBodyVpc{
 			ID: strfmt.UUID(d.Get(isInstanceVPC).(string)),
 		},
 		Zone: &models.NameReference{
 			Name: d.Get(isInstanceZone).(string),
 		},
-		Profile: &models.PostInstancesParamsBodyProfile{
+		Profile: &computec.PostInstancesParamsBodyProfile{
 			Name: profile,
 		},
-		Image: &models.PostInstancesParamsBodyImage{
+		Image: &computec.PostInstancesParamsBodyImage{
 			ID: strfmt.UUID(d.Get(isInstanceImage).(string)),
 		},
 	}
 
 	if boot, ok := d.GetOk(isInstanceBootVolume); ok {
 		bootvol := boot.([]interface{})[0].(map[string]interface{})
-		template := &models.PostInstancesParamsBodyBootVolumeAttachmentVolume{}
+		template := &computec.PostInstancesParamsBodyBootVolumeAttachmentVolume{}
 		name, ok := bootvol[isInstanceBootName]
 		if ok {
 			template.Name = name.(string)
 		}
 		enc, ok := bootvol[isInstanceBootEncryption]
 		if ok && enc.(string) != "" {
-			template.EncryptionKey = &models.PostInstancesParamsBodyBootVolumeAttachmentVolumeEncryptionKey{
+			template.EncryptionKey = &computec.PostInstancesParamsBodyBootVolumeAttachmentVolumeEncryptionKey{
 				Crn: enc.(string),
 			}
 		}
-		body.BootVolumeAttachment = &models.PostInstancesParamsBodyBootVolumeAttachment{
+		body.BootVolumeAttachment = &computec.PostInstancesParamsBodyBootVolumeAttachment{
 
 			Volume: template,
 		}
@@ -411,8 +411,8 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	if primnicintf, ok := d.GetOk(isInstancePrimaryNetworkInterface); ok {
 		primnic := primnicintf.([]interface{})[0].(map[string]interface{})
 		subnetintf, _ := primnic[isInstanceNicSubnet]
-		var primnicobj = models.PostInstancesParamsBodyPrimaryNetworkInterface{}
-		primnicobj.Subnet = &models.PostInstancesParamsBodyPrimaryNetworkInterfaceSubnet{
+		var primnicobj = computec.PostInstancesParamsBodyPrimaryNetworkInterface{}
+		primnicobj.Subnet = &computec.PostInstancesParamsBodyPrimaryNetworkInterfaceSubnet{
 			ID: strfmt.UUID(subnetintf.(string)),
 		}
 		name, ok := primnic[isInstanceNicName]
@@ -423,9 +423,9 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		if ok {
 			secgrpSet := secgrpintf.(*schema.Set)
 			if secgrpSet.Len() != 0 {
-				var secgrpobjs = make([]*models.PostInstancesParamsBodyPrimaryNetworkInterfaceSecurityGroupsItems, secgrpSet.Len())
+				var secgrpobjs = make([]*computec.PostInstancesParamsBodyPrimaryNetworkInterfaceSecurityGroupsItems0, secgrpSet.Len())
 				for i, secgrpIntf := range secgrpSet.List() {
-					secgrpobjs[i] = &models.PostInstancesParamsBodyPrimaryNetworkInterfaceSecurityGroupsItems{
+					secgrpobjs[i] = &computec.PostInstancesParamsBodyPrimaryNetworkInterfaceSecurityGroupsItems0{
 						ID: strfmt.UUID(secgrpIntf.(string)),
 					}
 				}
@@ -438,12 +438,12 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 
 	if nicsintf, ok := d.GetOk(isInstanceNetworkInterfaces); ok {
 		nics := nicsintf.([]interface{})
-		var intfs []*models.PostInstancesParamsBodyNetworkInterfacesItems
+		var intfs []*computec.NetworkInterfacesItems0
 		for _, resource := range nics {
 			nic := resource.(map[string]interface{})
-			nwInterface := &models.PostInstancesParamsBodyNetworkInterfacesItems{}
+			nwInterface := &computec.NetworkInterfacesItems0{}
 			subnetintf, _ := nic[isInstanceNicSubnet]
-			nwInterface.Subnet = &models.PostInstancesParamsBodyNetworkInterfacesItemsSubnet{
+			nwInterface.Subnet = &computec.NetworkInterfacesItems0Subnet{
 				ID: strfmt.UUID(subnetintf.(string)),
 			}
 			name, ok := nic[isInstanceNicName]
@@ -454,9 +454,9 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 			if ok {
 				secgrpSet := secgrpintf.(*schema.Set)
 				if secgrpSet.Len() != 0 {
-					var secgrpobjs = make([]*models.PostInstancesParamsBodyNetworkInterfacesItemsSecurityGroupsItems, secgrpSet.Len())
+					var secgrpobjs = make([]*computec.NetworkInterfacesItems0SecurityGroupsItems0, secgrpSet.Len())
 					for i, secgrpIntf := range secgrpSet.List() {
-						secgrpobjs[i] = &models.PostInstancesParamsBodyNetworkInterfacesItemsSecurityGroupsItems{
+						secgrpobjs[i] = &computec.NetworkInterfacesItems0SecurityGroupsItems0{
 							ID: strfmt.UUID(secgrpIntf.(string)),
 						}
 					}
@@ -472,9 +472,9 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 
 	keySet := d.Get(isInstanceKeys).(*schema.Set)
 	if keySet.Len() != 0 {
-		keyobjs := make([]*models.PostInstancesParamsBodyKeysItems, keySet.Len())
+		keyobjs := make([]*computec.KeysItems0, keySet.Len())
 		for i, key := range keySet.List() {
-			keyobjs[i] = &models.PostInstancesParamsBodyKeysItems{
+			keyobjs[i] = &computec.KeysItems0{
 				ID: strfmt.UUID(key.(string)),
 			}
 		}
@@ -486,7 +486,7 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	}
 
 	if grp, ok := d.GetOk(isInstanceResourceGroup); ok {
-		body.ResourceGroup = &models.PostInstancesParamsBodyResourceGroup{
+		body.ResourceGroup = &computec.PostInstancesParamsBodyResourceGroup{
 			ID: strfmt.UUID(grp.(string)),
 		}
 
@@ -501,6 +501,7 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 
 	d.SetId(instance.ID.String())
 	log.Printf("[INFO] Instance : %s", instance.ID.String())
+	d.Set(isInstanceStatus, instance.Status)
 
 	_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d)
 	if err != nil {
@@ -516,7 +517,7 @@ func isWaitForInstanceAvailable(instanceC *compute.InstanceClient, id string, d 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", isInstanceProvisioning},
 		Target:     []string{isInstanceProvisioningDone},
-		Refresh:    isInstanceRefreshFunc(instanceC, id),
+		Refresh:    isInstanceRefreshFunc(instanceC, id, d),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -525,12 +526,13 @@ func isWaitForInstanceAvailable(instanceC *compute.InstanceClient, id string, d 
 	return stateConf.WaitForState()
 }
 
-func isInstanceRefreshFunc(instanceC *compute.InstanceClient, id string) resource.StateRefreshFunc {
+func isInstanceRefreshFunc(instanceC *compute.InstanceClient, id string, d *schema.ResourceData) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		instance, err := instanceC.Get(id)
 		if err != nil {
 			return nil, "", err
 		}
+		d.Set(isInstanceStatus, instance.Status)
 
 		if instance.Status == "available" || instance.Status == "failed" || instance.Status == "running" {
 			return instance, isInstanceProvisioningDone, nil
@@ -655,9 +657,10 @@ func resourceIBMisInstanceRead(d *schema.ResourceData, meta interface{}) error {
 		bootVol := map[string]interface{}{}
 		bootVol[isInstanceBootName] = instance.BootVolumeAttachment.Name
 		stg := storage.NewStorageClient(sess)
-		vol, err := stg.Get(instance.BootVolumeAttachment.Volume.ID.String())
+		volId := instance.BootVolumeAttachment.Volume.ID.String()
+		vol, err := stg.Get(volId)
 		if err != nil {
-			return err
+			return fmt.Errorf("Error while retrieving boot volume %s for instance %s: %v", volId, d.Id(), err)
 		}
 		if vol.EncryptionKey != nil {
 			bootVol[isInstanceBootEncryption] = vol.EncryptionKey.Crn
@@ -863,7 +866,7 @@ func isWaitForInstanceActionStop(d *schema.ResourceData, meta interface{}) (inte
 			}
 			return instance, instance.Status, nil
 		},
-		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Timeout:    d.Timeout(schema.TimeoutDelete),
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}

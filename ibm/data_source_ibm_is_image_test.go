@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform/helper/resource"
 )
 
 func TestAccIBMISImageDataSource_basic(t *testing.T) {
@@ -61,7 +61,7 @@ func testAccCheckIBMISImageDataSourceWithVisibility(image, visibility string) st
 	return fmt.Sprintf(`
 
 data "ibm_is_image" "test1" {
-	name = "%s",
+	name = "%s"
 	visibility = "%s"
 }`, image, visibility)
 }

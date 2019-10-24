@@ -9,7 +9,10 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -171,5 +174,310 @@ func (o *PatchSubnetsIDInternalServerError) readResponse(response runtime.Client
 		return err
 	}
 
+	return nil
+}
+
+/*PatchSubnetsIDBody patch subnets ID body
+swagger:model PatchSubnetsIDBody
+*/
+type PatchSubnetsIDBody struct {
+
+	// The user-defined name for this subnet
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+
+	// network acl
+	NetworkACL *PatchSubnetsIDParamsBodyNetworkACL `json:"network_acl,omitempty"`
+
+	// public gateway
+	PublicGateway *PatchSubnetsIDParamsBodyPublicGateway `json:"public_gateway,omitempty"`
+}
+
+// Validate validates this patch subnets ID body
+func (o *PatchSubnetsIDBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateNetworkACL(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validatePublicGateway(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PatchSubnetsIDBody) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("body"+"."+"name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PatchSubnetsIDBody) validateNetworkACL(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.NetworkACL) { // not required
+		return nil
+	}
+
+	if o.NetworkACL != nil {
+		if err := o.NetworkACL.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("body" + "." + "network_acl")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *PatchSubnetsIDBody) validatePublicGateway(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.PublicGateway) { // not required
+		return nil
+	}
+
+	if o.PublicGateway != nil {
+		if err := o.PublicGateway.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("body" + "." + "public_gateway")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PatchSubnetsIDBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PatchSubnetsIDBody) UnmarshalBinary(b []byte) error {
+	var res PatchSubnetsIDBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*PatchSubnetsIDParamsBodyNetworkACL reference
+swagger:model PatchSubnetsIDParamsBodyNetworkACL
+*/
+type PatchSubnetsIDParamsBodyNetworkACL struct {
+
+	// The CRN for this snapshot
+	Crn string `json:"crn,omitempty"`
+
+	// The URL for this resource
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href string `json:"href,omitempty"`
+
+	// The unique identifier for this resource
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+
+	// The user-defined name for this resource
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this patch subnets ID params body network ACL
+func (o *PatchSubnetsIDParamsBodyNetworkACL) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PatchSubnetsIDParamsBodyNetworkACL) validateHref(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Href) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("body"+"."+"network_acl"+"."+"href", "body", string(o.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PatchSubnetsIDParamsBodyNetworkACL) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("body"+"."+"network_acl"+"."+"id", "body", "uuid", o.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PatchSubnetsIDParamsBodyNetworkACL) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("body"+"."+"network_acl"+"."+"name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PatchSubnetsIDParamsBodyNetworkACL) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PatchSubnetsIDParamsBodyNetworkACL) UnmarshalBinary(b []byte) error {
+	var res PatchSubnetsIDParamsBodyNetworkACL
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*PatchSubnetsIDParamsBodyPublicGateway reference
+swagger:model PatchSubnetsIDParamsBodyPublicGateway
+*/
+type PatchSubnetsIDParamsBodyPublicGateway struct {
+
+	// The CRN for this snapshot
+	Crn string `json:"crn,omitempty"`
+
+	// The URL for this resource
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href string `json:"href,omitempty"`
+
+	// The unique identifier for this resource
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+
+	// The user-defined name for this resource
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this patch subnets ID params body public gateway
+func (o *PatchSubnetsIDParamsBodyPublicGateway) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PatchSubnetsIDParamsBodyPublicGateway) validateHref(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Href) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("body"+"."+"public_gateway"+"."+"href", "body", string(o.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PatchSubnetsIDParamsBodyPublicGateway) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("body"+"."+"public_gateway"+"."+"id", "body", "uuid", o.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PatchSubnetsIDParamsBodyPublicGateway) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("body"+"."+"public_gateway"+"."+"name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PatchSubnetsIDParamsBodyPublicGateway) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PatchSubnetsIDParamsBodyPublicGateway) UnmarshalBinary(b []byte) error {
+	var res PatchSubnetsIDParamsBodyPublicGateway
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

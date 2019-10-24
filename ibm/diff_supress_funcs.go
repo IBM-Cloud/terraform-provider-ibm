@@ -5,7 +5,7 @@ import (
 	"log"
 	"reflect"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 func suppressEquivalentJSON(k, old, new string, d *schema.ResourceData) bool {

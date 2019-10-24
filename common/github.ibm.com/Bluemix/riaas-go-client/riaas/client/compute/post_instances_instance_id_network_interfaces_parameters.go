@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPostInstancesInstanceIDNetworkInterfacesParams creates a new PostInstancesInstanceIDNetworkInterfacesParams object
@@ -66,7 +64,7 @@ for the post instances instance ID network interfaces operation typically these 
 type PostInstancesInstanceIDNetworkInterfacesParams struct {
 
 	/*Body*/
-	Body *models.PostInstancesInstanceIDNetworkInterfacesParamsBody
+	Body PostInstancesInstanceIDNetworkInterfacesBody
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -122,13 +120,13 @@ func (o *PostInstancesInstanceIDNetworkInterfacesParams) SetHTTPClient(client *h
 }
 
 // WithBody adds the body to the post instances instance ID network interfaces params
-func (o *PostInstancesInstanceIDNetworkInterfacesParams) WithBody(body *models.PostInstancesInstanceIDNetworkInterfacesParamsBody) *PostInstancesInstanceIDNetworkInterfacesParams {
+func (o *PostInstancesInstanceIDNetworkInterfacesParams) WithBody(body PostInstancesInstanceIDNetworkInterfacesBody) *PostInstancesInstanceIDNetworkInterfacesParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the post instances instance ID network interfaces params
-func (o *PostInstancesInstanceIDNetworkInterfacesParams) SetBody(body *models.PostInstancesInstanceIDNetworkInterfacesParamsBody) {
+func (o *PostInstancesInstanceIDNetworkInterfacesParams) SetBody(body PostInstancesInstanceIDNetworkInterfacesBody) {
 	o.Body = body
 }
 
@@ -173,10 +171,8 @@ func (o *PostInstancesInstanceIDNetworkInterfacesParams) WriteToRequest(r runtim
 	}
 	var res []error
 
-	if o.Body != nil {
-		if err := r.SetBodyParam(o.Body); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.Body); err != nil {
+		return err
 	}
 
 	// query param generation

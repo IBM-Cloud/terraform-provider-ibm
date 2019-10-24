@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPatchSecurityGroupsSecurityGroupIDRulesIDParams creates a new PatchSecurityGroupsSecurityGroupIDRulesIDParams object
@@ -66,7 +64,7 @@ for the patch security groups security group ID rules ID operation typically the
 type PatchSecurityGroupsSecurityGroupIDRulesIDParams struct {
 
 	/*Body*/
-	Body *models.PatchSecurityGroupsSecurityGroupIDRulesIDParamsBody
+	Body PatchSecurityGroupsSecurityGroupIDRulesIDBody
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -127,13 +125,13 @@ func (o *PatchSecurityGroupsSecurityGroupIDRulesIDParams) SetHTTPClient(client *
 }
 
 // WithBody adds the body to the patch security groups security group ID rules ID params
-func (o *PatchSecurityGroupsSecurityGroupIDRulesIDParams) WithBody(body *models.PatchSecurityGroupsSecurityGroupIDRulesIDParamsBody) *PatchSecurityGroupsSecurityGroupIDRulesIDParams {
+func (o *PatchSecurityGroupsSecurityGroupIDRulesIDParams) WithBody(body PatchSecurityGroupsSecurityGroupIDRulesIDBody) *PatchSecurityGroupsSecurityGroupIDRulesIDParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the patch security groups security group ID rules ID params
-func (o *PatchSecurityGroupsSecurityGroupIDRulesIDParams) SetBody(body *models.PatchSecurityGroupsSecurityGroupIDRulesIDParamsBody) {
+func (o *PatchSecurityGroupsSecurityGroupIDRulesIDParams) SetBody(body PatchSecurityGroupsSecurityGroupIDRulesIDBody) {
 	o.Body = body
 }
 
@@ -189,10 +187,8 @@ func (o *PatchSecurityGroupsSecurityGroupIDRulesIDParams) WriteToRequest(r runti
 	}
 	var res []error
 
-	if o.Body != nil {
-		if err := r.SetBodyParam(o.Body); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.Body); err != nil {
+		return err
 	}
 
 	// query param generation

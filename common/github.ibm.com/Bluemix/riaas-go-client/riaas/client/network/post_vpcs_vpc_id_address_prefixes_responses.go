@@ -9,7 +9,10 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -135,5 +138,145 @@ func (o *PostVpcsVpcIDAddressPrefixesGatewayTimeout) readResponse(response runti
 		return err
 	}
 
+	return nil
+}
+
+/*PostVpcsVpcIDAddressPrefixesBody post vpcs vpc ID address prefixes body
+swagger:model PostVpcsVpcIDAddressPrefixesBody
+*/
+type PostVpcsVpcIDAddressPrefixesBody struct {
+
+	// The CIDR block for this prefix.
+	Cidr string `json:"cidr,omitempty"`
+
+	// The user-defined name for this prefix. By default, the base IP address will be the name. For example, for 10.0.0.0/24 the name will be 10.0.0.0.
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+
+	// zone
+	Zone *PostVpcsVpcIDAddressPrefixesParamsBodyZone `json:"zone,omitempty"`
+}
+
+// Validate validates this post vpcs vpc ID address prefixes body
+func (o *PostVpcsVpcIDAddressPrefixesBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateZone(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostVpcsVpcIDAddressPrefixesBody) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("AddressPoolPrefixTemplate"+"."+"name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PostVpcsVpcIDAddressPrefixesBody) validateZone(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Zone) { // not required
+		return nil
+	}
+
+	if o.Zone != nil {
+		if err := o.Zone.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("AddressPoolPrefixTemplate" + "." + "zone")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostVpcsVpcIDAddressPrefixesBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostVpcsVpcIDAddressPrefixesBody) UnmarshalBinary(b []byte) error {
+	var res PostVpcsVpcIDAddressPrefixesBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*PostVpcsVpcIDAddressPrefixesParamsBodyZone ZoneIdentity
+//
+// The name for this zone
+swagger:model PostVpcsVpcIDAddressPrefixesParamsBodyZone
+*/
+type PostVpcsVpcIDAddressPrefixesParamsBodyZone struct {
+
+	// The name for this zone
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this post vpcs vpc ID address prefixes params body zone
+func (o *PostVpcsVpcIDAddressPrefixesParamsBodyZone) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostVpcsVpcIDAddressPrefixesParamsBodyZone) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("AddressPoolPrefixTemplate"+"."+"zone"+"."+"name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostVpcsVpcIDAddressPrefixesParamsBodyZone) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostVpcsVpcIDAddressPrefixesParamsBodyZone) UnmarshalBinary(b []byte) error {
+	var res PostVpcsVpcIDAddressPrefixesParamsBodyZone
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

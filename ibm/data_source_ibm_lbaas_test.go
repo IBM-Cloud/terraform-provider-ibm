@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform/helper/acctest"
+	"github.com/hashicorp/terraform/helper/resource"
 )
 
 func TestAccIBMLbaasDataSource_basic(t *testing.T) {
@@ -25,6 +25,7 @@ func TestAccIBMLbaasDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.ibm_lbaas.tfacc_lbaas", "protocols.0.load_balancing_method", "round_robin"),
 					resource.TestCheckResourceAttr("data.ibm_lbaas.tfacc_lbaas", "protocols.#", "1"),
 					resource.TestCheckResourceAttr("data.ibm_lbaas.tfacc_lbaas", "server_instances.#", "1"),
+					resource.TestCheckResourceAttr("data.ibm_lbaas.tfacc_lbaas", "use_system_public_ip_pool", "false"),
 					resource.TestCheckResourceAttr(
 						"ibm_lbaas_server_instance_attachment.lbaas_member", "weight", "20"),
 				),
@@ -65,6 +66,7 @@ resource "ibm_lbaas" "lbaas" {
 
     "load_balancing_method" = "round_robin"
   }]
+  use_system_public_ip_pool = false
 }
 resource "ibm_lbaas_server_instance_attachment" "lbaas_member" {
   private_ip_address = "${ibm_compute_vm_instance.vm1.ipv4_address_private}"

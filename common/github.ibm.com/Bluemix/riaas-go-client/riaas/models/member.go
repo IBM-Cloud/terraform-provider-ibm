@@ -301,3 +301,34 @@ func (m *Member) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
+
+// MemberTarget MemberAddressTarget
+// swagger:model MemberTarget
+type MemberTarget struct {
+
+	// The IP address of the pool member.
+	Address string `json:"address,omitempty"`
+}
+
+// Validate validates this member target
+func (m *MemberTarget) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *MemberTarget) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *MemberTarget) UnmarshalBinary(b []byte) error {
+	var res MemberTarget
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

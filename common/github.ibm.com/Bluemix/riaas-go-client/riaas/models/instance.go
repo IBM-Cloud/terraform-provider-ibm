@@ -524,3 +524,378 @@ func (m *Instance) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
+
+// InstanceGpu GPU
+// swagger:model InstanceGpu
+type InstanceGpu struct {
+
+	// The number of logical GPU cores per GPU
+	// Minimum: 1
+	Cores int64 `json:"cores,omitempty"`
+
+	// The number of GPUs
+	// Minimum: 1
+	Count int64 `json:"count,omitempty"`
+
+	// The manufacturer of the GPU
+	// Enum: [nvidia]
+	Manufacturer string `json:"manufacturer,omitempty"`
+
+	// The amount of memory in megabytes
+	// Maximum: 524288
+	// Minimum: 512
+	// Multiple Of: 256
+	Memory int64 `json:"memory,omitempty"`
+
+	// The model number of the GPU
+	// Enum: [k40 k80]
+	Model string `json:"model,omitempty"`
+}
+
+// Validate validates this instance gpu
+func (m *InstanceGpu) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateCores(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateCount(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateManufacturer(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMemory(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateModel(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *InstanceGpu) validateCores(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Cores) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("gpu"+"."+"cores", "body", int64(m.Cores), 1, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *InstanceGpu) validateCount(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Count) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("gpu"+"."+"count", "body", int64(m.Count), 1, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var instanceGpuTypeManufacturerPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["nvidia"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		instanceGpuTypeManufacturerPropEnum = append(instanceGpuTypeManufacturerPropEnum, v)
+	}
+}
+
+const (
+
+	// InstanceGpuManufacturerNvidia captures enum value "nvidia"
+	InstanceGpuManufacturerNvidia string = "nvidia"
+)
+
+// prop value enum
+func (m *InstanceGpu) validateManufacturerEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, instanceGpuTypeManufacturerPropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *InstanceGpu) validateManufacturer(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Manufacturer) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateManufacturerEnum("gpu"+"."+"manufacturer", "body", m.Manufacturer); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *InstanceGpu) validateMemory(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Memory) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("gpu"+"."+"memory", "body", int64(m.Memory), 512, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("gpu"+"."+"memory", "body", int64(m.Memory), 524288, false); err != nil {
+		return err
+	}
+
+	if err := validate.MultipleOf("gpu"+"."+"memory", "body", float64(m.Memory), 256); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var instanceGpuTypeModelPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["k40","k80"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		instanceGpuTypeModelPropEnum = append(instanceGpuTypeModelPropEnum, v)
+	}
+}
+
+const (
+
+	// InstanceGpuModelK40 captures enum value "k40"
+	InstanceGpuModelK40 string = "k40"
+
+	// InstanceGpuModelK80 captures enum value "k80"
+	InstanceGpuModelK80 string = "k80"
+)
+
+// prop value enum
+func (m *InstanceGpu) validateModelEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, instanceGpuTypeModelPropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *InstanceGpu) validateModel(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Model) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateModelEnum("gpu"+"."+"model", "body", m.Model); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *InstanceGpu) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *InstanceGpu) UnmarshalBinary(b []byte) error {
+	var res InstanceGpu
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// InstanceVcpu VCPU
+// swagger:model InstanceVcpu
+type InstanceVcpu struct {
+
+	// The VCPU architecture
+	// Required: true
+	Architecture *string `json:"architecture"`
+
+	// The number of VCPUs assigned to the instance
+	// Minimum: 1
+	Cores int64 `json:"cores,omitempty"`
+
+	// The number of VCPUs assigned to the instance
+	// Required: true
+	// Minimum: 1
+	Count *int64 `json:"count"`
+}
+
+// Validate validates this instance vcpu
+func (m *InstanceVcpu) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateArchitecture(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateCores(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateCount(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *InstanceVcpu) validateArchitecture(formats strfmt.Registry) error {
+
+	if err := validate.Required("vcpu"+"."+"architecture", "body", m.Architecture); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *InstanceVcpu) validateCores(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Cores) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("vcpu"+"."+"cores", "body", int64(m.Cores), 1, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *InstanceVcpu) validateCount(formats strfmt.Registry) error {
+
+	if err := validate.Required("vcpu"+"."+"count", "body", m.Count); err != nil {
+		return err
+	}
+
+	if err := validate.MinimumInt("vcpu"+"."+"count", "body", int64(*m.Count), 1, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *InstanceVcpu) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *InstanceVcpu) UnmarshalBinary(b []byte) error {
+	var res InstanceVcpu
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// InstanceZone ZoneReference
+//
+// The zone the instance resides in
+// swagger:model InstanceZone
+type InstanceZone struct {
+
+	// The URL for this zone
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href string `json:"href,omitempty"`
+
+	// The name for this zone
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this instance zone
+func (m *InstanceZone) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *InstanceZone) validateHref(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Href) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("zone"+"."+"href", "body", string(m.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *InstanceZone) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("zone"+"."+"name", "body", string(m.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *InstanceZone) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *InstanceZone) UnmarshalBinary(b []byte) error {
+	var res InstanceZone
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

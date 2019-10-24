@@ -2,7 +2,7 @@ package ibm
 
 import (
 	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/schema"
 	"log"
 	"strings"
 )

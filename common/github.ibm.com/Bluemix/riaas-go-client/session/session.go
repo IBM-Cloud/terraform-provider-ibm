@@ -58,12 +58,12 @@ func riaasJSONConsumer() runtime.Consumer {
 		if string(b) == "null" || err != nil {
 			errorRecord, isError := data.(*models.Riaaserror)
 			if isError {
-				errorRecord.Errors = make([]*models.RiaaserrorErrorsItems, 1, 1)
-				errorRecord.Errors[0] = &models.RiaaserrorErrorsItems{
+				errorRecord.Errors = make([]*models.RiaaserrorErrorsItems0, 1, 1)
+				errorRecord.Errors[0] = &models.RiaaserrorErrorsItems0{
 					Message:  string(b),
 					Code:     "unexpected_return_value",
 					MoreInfo: "",
-					Target: &models.RiaaserrorErrorsItemsTarget{
+					Target: &models.RiaaserrorErrorsItems0Target{
 						Name: "",
 						Type: "",
 					},

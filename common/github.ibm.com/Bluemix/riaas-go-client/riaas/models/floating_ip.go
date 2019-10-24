@@ -269,3 +269,184 @@ func (m *FloatingIP) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
+
+// FloatingIPTarget PublicGatewayReference
+//
+// The target of this floating ip
+// swagger:model FloatingIPTarget
+type FloatingIPTarget struct {
+
+	// The CRN for this public gateway
+	Crn string `json:"crn,omitempty"`
+
+	// The URL for this gateway
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href string `json:"href,omitempty"`
+
+	// The unique identifier for this public gateway
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+
+	// The user-defined name for this public gateway
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+
+	// The primary IPv4 address
+	PrimaryIPV4Address string `json:"primary_ipv4_address,omitempty"`
+}
+
+// Validate validates this floating IP target
+func (m *FloatingIPTarget) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FloatingIPTarget) validateHref(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Href) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("target"+"."+"href", "body", string(m.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *FloatingIPTarget) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("target"+"."+"id", "body", "uuid", m.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *FloatingIPTarget) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("target"+"."+"name", "body", string(m.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FloatingIPTarget) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FloatingIPTarget) UnmarshalBinary(b []byte) error {
+	var res FloatingIPTarget
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// FloatingIPZone ZoneReference
+//
+// The zone the floating ip resides in
+// swagger:model FloatingIPZone
+type FloatingIPZone struct {
+
+	// The URL for this zone
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href string `json:"href,omitempty"`
+
+	// The name for this zone
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this floating IP zone
+func (m *FloatingIPZone) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FloatingIPZone) validateHref(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Href) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("zone"+"."+"href", "body", string(m.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *FloatingIPZone) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("zone"+"."+"name", "body", string(m.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FloatingIPZone) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FloatingIPZone) UnmarshalBinary(b []byte) error {
+	var res FloatingIPZone
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

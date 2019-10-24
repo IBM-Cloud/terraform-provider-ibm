@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 const feedLifeCycleEvent = "lifecycleEvent"

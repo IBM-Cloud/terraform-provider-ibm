@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPutSubnetsSubnetIDPublicGatewayParams creates a new PutSubnetsSubnetIDPublicGatewayParams object
@@ -71,7 +69,7 @@ type PutSubnetsSubnetIDPublicGatewayParams struct {
 	*/
 	Generation int64
 	/*RequestBody*/
-	RequestBody *models.PutSubnetsSubnetIDPublicGatewayParamsBody
+	RequestBody PutSubnetsSubnetIDPublicGatewayBody
 	/*SubnetID
 	  The subnet identifier
 
@@ -133,13 +131,13 @@ func (o *PutSubnetsSubnetIDPublicGatewayParams) SetGeneration(generation int64) 
 }
 
 // WithRequestBody adds the requestBody to the put subnets subnet ID public gateway params
-func (o *PutSubnetsSubnetIDPublicGatewayParams) WithRequestBody(requestBody *models.PutSubnetsSubnetIDPublicGatewayParamsBody) *PutSubnetsSubnetIDPublicGatewayParams {
+func (o *PutSubnetsSubnetIDPublicGatewayParams) WithRequestBody(requestBody PutSubnetsSubnetIDPublicGatewayBody) *PutSubnetsSubnetIDPublicGatewayParams {
 	o.SetRequestBody(requestBody)
 	return o
 }
 
 // SetRequestBody adds the requestBody to the put subnets subnet ID public gateway params
-func (o *PutSubnetsSubnetIDPublicGatewayParams) SetRequestBody(requestBody *models.PutSubnetsSubnetIDPublicGatewayParamsBody) {
+func (o *PutSubnetsSubnetIDPublicGatewayParams) SetRequestBody(requestBody PutSubnetsSubnetIDPublicGatewayBody) {
 	o.RequestBody = requestBody
 }
 
@@ -182,10 +180,8 @@ func (o *PutSubnetsSubnetIDPublicGatewayParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.RequestBody != nil {
-		if err := r.SetBodyParam(o.RequestBody); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.RequestBody); err != nil {
+		return err
 	}
 
 	// path param subnet_id

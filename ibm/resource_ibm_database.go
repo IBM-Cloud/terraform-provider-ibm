@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform/flatmap"
+
 	//	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
@@ -14,9 +16,9 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/models"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	validation "github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
+	validation "github.com/hashicorp/terraform/helper/validation"
 )
 
 const (
@@ -614,7 +616,7 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("name", instance.Name)
 	d.Set("status", instance.State)
 	d.Set("resource_group_id", instance.ResourceGroupID)
-	d.Set("parameters", instance.Parameters)
+	d.Set("parameters", flatmap.Flatten(instance.Parameters))
 	d.Set("location", instance.RegionID)
 
 	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()

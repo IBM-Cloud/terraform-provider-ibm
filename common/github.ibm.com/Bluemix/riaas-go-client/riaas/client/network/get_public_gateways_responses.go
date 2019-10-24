@@ -8,8 +8,12 @@ package network
 import (
 	"fmt"
 	"io"
+	"strconv"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -54,7 +58,7 @@ func NewGetPublicGatewaysOK() *GetPublicGatewaysOK {
 dummy
 */
 type GetPublicGatewaysOK struct {
-	Payload *models.GetPublicGatewaysOKBody
+	Payload *GetPublicGatewaysOKBody
 }
 
 func (o *GetPublicGatewaysOK) Error() string {
@@ -63,7 +67,7 @@ func (o *GetPublicGatewaysOK) Error() string {
 
 func (o *GetPublicGatewaysOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.GetPublicGatewaysOKBody)
+	o.Payload = new(GetPublicGatewaysOKBody)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -99,5 +103,281 @@ func (o *GetPublicGatewaysInternalServerError) readResponse(response runtime.Cli
 		return err
 	}
 
+	return nil
+}
+
+/*GetPublicGatewaysOKBody PublicGatewayCollection
+swagger:model GetPublicGatewaysOKBody
+*/
+type GetPublicGatewaysOKBody struct {
+
+	// first
+	First *GetPublicGatewaysOKBodyFirst `json:"first,omitempty"`
+
+	// The maximum number of resources can be returned by the request
+	// Maximum: 100
+	// Minimum: 1
+	Limit int64 `json:"limit,omitempty"`
+
+	// next
+	Next *GetPublicGatewaysOKBodyNext `json:"next,omitempty"`
+
+	// Collection of public gateways
+	// Required: true
+	PublicGateways []*models.PublicGateway `json:"public_gateways"`
+
+	// The total number of resources across all pages
+	// Minimum: 0
+	TotalCount *int64 `json:"total_count,omitempty"`
+}
+
+// Validate validates this get public gateways o k body
+func (o *GetPublicGatewaysOKBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateFirst(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateLimit(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateNext(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validatePublicGateways(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateTotalCount(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetPublicGatewaysOKBody) validateFirst(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.First) { // not required
+		return nil
+	}
+
+	if o.First != nil {
+		if err := o.First.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("getPublicGatewaysOK" + "." + "first")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *GetPublicGatewaysOKBody) validateLimit(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Limit) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("getPublicGatewaysOK"+"."+"limit", "body", int64(o.Limit), 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("getPublicGatewaysOK"+"."+"limit", "body", int64(o.Limit), 100, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *GetPublicGatewaysOKBody) validateNext(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Next) { // not required
+		return nil
+	}
+
+	if o.Next != nil {
+		if err := o.Next.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("getPublicGatewaysOK" + "." + "next")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *GetPublicGatewaysOKBody) validatePublicGateways(formats strfmt.Registry) error {
+
+	if err := validate.Required("getPublicGatewaysOK"+"."+"public_gateways", "body", o.PublicGateways); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(o.PublicGateways); i++ {
+		if swag.IsZero(o.PublicGateways[i]) { // not required
+			continue
+		}
+
+		if o.PublicGateways[i] != nil {
+			if err := o.PublicGateways[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("getPublicGatewaysOK" + "." + "public_gateways" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (o *GetPublicGatewaysOKBody) validateTotalCount(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.TotalCount) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("getPublicGatewaysOK"+"."+"total_count", "body", int64(*o.TotalCount), 0, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetPublicGatewaysOKBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetPublicGatewaysOKBody) UnmarshalBinary(b []byte) error {
+	var res GetPublicGatewaysOKBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*GetPublicGatewaysOKBodyFirst A reference to the first page of resources
+swagger:model GetPublicGatewaysOKBodyFirst
+*/
+type GetPublicGatewaysOKBodyFirst struct {
+
+	// The URL for the first page of resources
+	// Required: true
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href *string `json:"href"`
+}
+
+// Validate validates this get public gateways o k body first
+func (o *GetPublicGatewaysOKBodyFirst) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetPublicGatewaysOKBodyFirst) validateHref(formats strfmt.Registry) error {
+
+	if err := validate.Required("getPublicGatewaysOK"+"."+"first"+"."+"href", "body", o.Href); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("getPublicGatewaysOK"+"."+"first"+"."+"href", "body", string(*o.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetPublicGatewaysOKBodyFirst) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetPublicGatewaysOKBodyFirst) UnmarshalBinary(b []byte) error {
+	var res GetPublicGatewaysOKBodyFirst
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*GetPublicGatewaysOKBodyNext A reference to the next page of resources; this reference is included for all pages except the last page
+swagger:model GetPublicGatewaysOKBodyNext
+*/
+type GetPublicGatewaysOKBodyNext struct {
+
+	// The URL for the next page of resources
+	// Required: true
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href *string `json:"href"`
+}
+
+// Validate validates this get public gateways o k body next
+func (o *GetPublicGatewaysOKBodyNext) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetPublicGatewaysOKBodyNext) validateHref(formats strfmt.Registry) error {
+
+	if err := validate.Required("getPublicGatewaysOK"+"."+"next"+"."+"href", "body", o.Href); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("getPublicGatewaysOK"+"."+"next"+"."+"href", "body", string(*o.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetPublicGatewaysOKBodyNext) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetPublicGatewaysOKBodyNext) UnmarshalBinary(b []byte) error {
+	var res GetPublicGatewaysOKBodyNext
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

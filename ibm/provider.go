@@ -4,9 +4,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/mutexkv"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	//"github.com/hashicorp/terraform-plugin-sdk/helper/mutexkv"
+	//"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/mutexkv"
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/terraform"
 )
 
 // This is a global MutexKV for use within this plugin.
@@ -200,24 +202,24 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"ibm_app":                                            resourceIBMApp(),
-			"ibm_app_domain_private":                             resourceIBMAppDomainPrivate(),
-			"ibm_app_domain_shared":                              resourceIBMAppDomainShared(),
-			"ibm_app_route":                                      resourceIBMAppRoute(),
-			"ibm_function_action":                                resourceIBMFunctionAction(),
-			"ibm_function_package":                               resourceIBMFunctionPackage(),
-			"ibm_function_rule":                                  resourceIBMFunctionRule(),
-			"ibm_function_trigger":                               resourceIBMFunctionTrigger(),
-			"ibm_cis":                                            resourceIBMCISInstance(),
-			"ibm_database":                                       resourceIBMDatabaseInstance(),
-			"ibm_cis_domain":                                     resourceIBMCISDomain(),
-			"ibm_cis_domain_settings":                            resourceIBMCISSettings(),
-			"ibm_cis_healthcheck":                                resourceIBMCISHealthCheck(),
-			"ibm_cis_origin_pool":                                resourceIBMCISPool(),
-			"ibm_cis_global_load_balancer":                       resourceIBMCISGlb(),
-			"ibm_cis_dns_record":                                 resourceIBMCISDnsRecord(),
-			"ibm_compute_autoscale_group":                        resourceIBMComputeAutoScaleGroup(),
-			"ibm_compute_autoscale_policy":                       resourceIBMComputeAutoScalePolicy(),
+			"ibm_app":                      resourceIBMApp(),
+			"ibm_app_domain_private":       resourceIBMAppDomainPrivate(),
+			"ibm_app_domain_shared":        resourceIBMAppDomainShared(),
+			"ibm_app_route":                resourceIBMAppRoute(),
+			"ibm_function_action":          resourceIBMFunctionAction(),
+			"ibm_function_package":         resourceIBMFunctionPackage(),
+			"ibm_function_rule":            resourceIBMFunctionRule(),
+			"ibm_function_trigger":         resourceIBMFunctionTrigger(),
+			"ibm_cis":                      resourceIBMCISInstance(),
+			"ibm_database":                 resourceIBMDatabaseInstance(),
+			"ibm_cis_domain":               resourceIBMCISDomain(),
+			"ibm_cis_domain_settings":      resourceIBMCISSettings(),
+			"ibm_cis_healthcheck":          resourceIBMCISHealthCheck(),
+			"ibm_cis_origin_pool":          resourceIBMCISPool(),
+			"ibm_cis_global_load_balancer": resourceIBMCISGlb(),
+			"ibm_cis_dns_record":           resourceIBMCISDnsRecord(),
+			//"ibm_compute_autoscale_group":                        resourceIBMComputeAutoScaleGroup(),
+			//"ibm_compute_autoscale_policy":                       resourceIBMComputeAutoScalePolicy(),
 			"ibm_compute_bare_metal":                             resourceIBMComputeBareMetal(),
 			"ibm_compute_dedicated_host":                         resourceIBMComputeDedicatedHost(),
 			"ibm_compute_monitor":                                resourceIBMComputeMonitor(),
@@ -234,6 +236,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_container_bind_service":                         resourceIBMContainerBindService(),
 			"ibm_container_worker_pool":                          resourceIBMContainerWorkerPool(),
 			"ibm_container_worker_pool_zone_attachment":          resourceIBMContainerWorkerPoolZoneAttachment(),
+			"ibm_cos_bucket":                                     resourceIBMCOS(),
 			"ibm_dns_domain":                                     resourceIBMDNSDomain(),
 			"ibm_dns_domain_registration_nameservers":            resourceIBMDNSDomainRegistrationNameservers(),
 			"ibm_dns_secondary":                                  resourceIBMDNSSecondary(),
@@ -267,6 +270,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_is_vpn_gateway_connection":                      resourceIBMISVPNGatewayConnection(),
 			"ibm_is_vpc":                                         resourceIBMISVPC(),
 			"ibm_is_vpc_address_prefix":                          resourceIBMISVpcAddressPrefix(),
+			"ibm_is_vpc_route":                                   resourceIBMISVpcRoute(),
 			"ibm_lb":                                             resourceIBMLb(),
 			"ibm_lbaas":                                          resourceIBMLbaas(),
 			"ibm_lbaas_health_monitor":                           resourceIBMLbaasHealthMonitor(),
@@ -390,6 +394,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		Generation:           generation,
 		IAMToken:             iamToken,
 		IAMRefreshToken:      iamRefreshToken,
+		//PowerServiceInstance: powerServiceInstance,
 	}
 
 	return config.ClientSession()

@@ -35,7 +35,7 @@ func (f *KeyClient) ListWithFilter(resourceGroupID, start string) ([]*models.Key
 	if start != "" {
 		params.WithStart(&start)
 	}
-	params.Version = "2019-07-02"
+	params.Version = "2019-08-27"
 	params.Generation = f.session.Generation
 
 	resp, err := f.session.Riaas.Compute.GetKeys(params, session.Auth(f.session))
@@ -50,7 +50,7 @@ func (f *KeyClient) ListWithFilter(resourceGroupID, start string) ([]*models.Key
 // Get ...
 func (f *KeyClient) Get(id string) (*models.Key, error) {
 	params := compute.NewGetKeysIDParamsWithTimeout(f.session.Timeout).WithID(id)
-	params.Version = "2019-07-02"
+	params.Version = "2019-08-27"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.GetKeysID(params, session.Auth(f.session))
 
@@ -63,14 +63,14 @@ func (f *KeyClient) Get(id string) (*models.Key, error) {
 
 // Create ...
 func (f *KeyClient) Create(name, keystring string) (*models.Key, error) {
-	keytype := models.PostKeysParamsBodyTypeRsa
-	var body = models.PostKeysParamsBody{
+	keytype := compute.PostKeysBodyTypeRsa
+	var body = compute.PostKeysBody{
 		Name:      name,
 		PublicKey: &keystring,
 		Type:      &keytype,
 	}
-	params := compute.NewPostKeysParamsWithTimeout(f.session.Timeout).WithBody(&body)
-	params.Version = "2019-07-02"
+	params := compute.NewPostKeysParamsWithTimeout(f.session.Timeout).WithBody(body)
+	params.Version = "2019-08-27"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.PostKeys(params, session.Auth(f.session))
 	if err != nil {
@@ -83,7 +83,7 @@ func (f *KeyClient) Create(name, keystring string) (*models.Key, error) {
 // Delete ...
 func (f *KeyClient) Delete(id string) error {
 	params := compute.NewDeleteKeysIDParamsWithTimeout(f.session.Timeout).WithID(id)
-	params.Version = "2019-07-02"
+	params.Version = "2019-08-27"
 	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.Compute.DeleteKeysID(params, session.Auth(f.session))
 	return err
@@ -91,11 +91,11 @@ func (f *KeyClient) Delete(id string) error {
 
 // Update ...
 func (f *KeyClient) Update(id, name string) (*models.Key, error) {
-	var body = models.PatchKeysIDParamsBody{
+	var body = compute.PatchKeysIDBody{
 		Name: name,
 	}
-	params := compute.NewPatchKeysIDParamsWithTimeout(f.session.Timeout).WithID(id).WithBody(&body)
-	params.Version = "2019-07-02"
+	params := compute.NewPatchKeysIDParamsWithTimeout(f.session.Timeout).WithID(id).WithBody(body)
+	params.Version = "2019-08-27"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Compute.PatchKeysID(params, session.Auth(f.session))
 	if err != nil {

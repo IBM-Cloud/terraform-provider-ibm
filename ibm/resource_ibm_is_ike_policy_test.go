@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform/helper/acctest"
+	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/terraform"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/vpn"
 	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
@@ -119,7 +119,7 @@ func testAccCheckIBMISIKEPolicyConfigUpdate(name string) string {
 			encryption_algorithm = "aes128"
 			dh_group = 5
 			ike_version = 2
-			key_lifetime = 600
+			key_lifetime = 1800
 		}
 	`, name)
 }

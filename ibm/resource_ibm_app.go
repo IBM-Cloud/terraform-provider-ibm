@@ -5,10 +5,12 @@ import (
 	"log"
 	"time"
 
+	"github.com/hashicorp/terraform/flatmap"
+
 	v2 "github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/helpers"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/schema"
 	homedir "github.com/mitchellh/go-homedir"
 )
 
@@ -249,7 +251,7 @@ func resourceIBMAppRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("space_guid", appData.Entity.SpaceGUID)
 	d.Set("disk_quota", appData.Entity.DiskQuota)
 	d.Set("buildpack", appData.Entity.BuildPack)
-	d.Set("environment_json", appData.Entity.EnvironmentJSON)
+	d.Set("environment_json", flatmap.Flatten(appData.Entity.EnvironmentJSON))
 	d.Set("command", appData.Entity.Command)
 	d.Set("health_check_type", appData.Entity.HealthCheckType)
 	d.Set("health_check_http_endpoint", appData.Entity.HealthCheckHTTPEndpoint)

@@ -3,8 +3,10 @@ package ibm
 import (
 	"fmt"
 
+	"github.com/hashicorp/terraform/flatmap"
+
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 func resourceIBMServiceKey() *schema.Resource {
@@ -91,7 +93,7 @@ func resourceIBMServiceKeyRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf("Error retrieving service key: %s", err)
 	}
-	d.Set("credentials", serviceKey.Entity.Credentials)
+	d.Set("credentials", flatmap.Flatten(serviceKey.Entity.Credentials))
 	d.Set("service_instance_guid", serviceKey.Entity.ServiceInstanceGUID)
 	d.Set("name", serviceKey.Entity.Name)
 

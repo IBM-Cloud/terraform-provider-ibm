@@ -3,7 +3,7 @@ package ibm
 import (
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/compute"
 )
 
@@ -78,7 +78,7 @@ func dataSourceIBMISImagesRead(d *schema.ResourceData, meta interface{}) error {
 		img["status"] = image.Status
 		img["visibility"] = image.Visibility
 		img["os"] = image.OperatingSystem.Name
-		img["architecture"] = image.Architecture
+		img["architecture"] = image.OperatingSystem.Architecture
 		img["crn"] = image.Crn
 
 		images[i] = img

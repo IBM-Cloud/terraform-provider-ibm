@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/hashcode"
+	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
 )
@@ -297,6 +297,9 @@ func isVPCDeleteRefreshFunc(vpc *network.VPCClient, id string) resource.StateRef
 		log.Printf("[DEBUG] delete function here")
 		VPC, err := vpc.Get(id)
 		if err == nil {
+			if VPC.Status == isVPCFailed {
+				return VPC, isVPCFailed, fmt.Errorf("The VPC %s failed to delete: %v", VPC.ID, err)
+			}
 			return VPC, isVPCDeleting, nil
 		}
 

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/terraform"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
 	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
@@ -80,40 +80,34 @@ func testAccCheckIBMISNetworkACLExists(n string, nwACL **models.NetworkACL) reso
 
 func testAccCheckIBMISNetworkACLConfig() string {
 	return fmt.Sprintf(`
-		resource "ibm_is_network_acl" "isExampleACL" {
-			name = "is-example-acl"
-			rules=[
-			{
-				name = "outbound"
-				action = "allow"
-				source = "0.0.0.0/0"
-				destination = "0.0.0.0/0"
-				direction = "outbound"
-				icmp=[
-				{
-					code = 1
-					type = 1
-				}]
-				# Optionals : 
-				# port_max = 
-				# port_min = 
-			},
-			{
-				name = "inbound"
-				action = "allow"
-				source = "0.0.0.0/0"
-				destination = "0.0.0.0/0"
-				direction = "inbound"
-				icmp=[
-				{
-					code = 1
-					type = 1
-				}]
-				# Optionals : 
-				# port_max = 
-				# port_min = 
+	resource "ibm_is_network_acl" "isExampleACL" {
+		name = "is-example-acl"
+		rules { 
+			name = "outbound"
+			action = "allow"
+			#protocol = "icmp"
+			source = "0.0.0.0/0"
+			destination = "0.0.0.0/0"
+			direction = "outbound"
+			icmp { 
+				code = 1
+				type = 1
 			}
-			]
 		}
+
+		rules { 
+			name = "inbound"
+			action = "allow"
+			#protocol = "icmp"
+			source = "0.0.0.0/0"
+			destination = "0.0.0.0/0"
+			direction = "inbound"
+			icmp { 
+				code = 1
+				type = 1
+			}
+		}
+		
+	}
 	`)
 }

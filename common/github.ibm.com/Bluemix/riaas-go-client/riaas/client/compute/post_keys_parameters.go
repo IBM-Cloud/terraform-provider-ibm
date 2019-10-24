@@ -17,8 +17,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 // NewPostKeysParams creates a new PostKeysParams object
@@ -66,7 +64,7 @@ for the post keys operation typically these are written to a http.Request
 type PostKeysParams struct {
 
 	/*Body*/
-	Body *models.PostKeysParamsBody
+	Body PostKeysBody
 	/*Generation
 	  The infrastructure generation for the request.
 
@@ -117,13 +115,13 @@ func (o *PostKeysParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the post keys params
-func (o *PostKeysParams) WithBody(body *models.PostKeysParamsBody) *PostKeysParams {
+func (o *PostKeysParams) WithBody(body PostKeysBody) *PostKeysParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the post keys params
-func (o *PostKeysParams) SetBody(body *models.PostKeysParamsBody) {
+func (o *PostKeysParams) SetBody(body PostKeysBody) {
 	o.Body = body
 }
 
@@ -157,10 +155,8 @@ func (o *PostKeysParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 	}
 	var res []error
 
-	if o.Body != nil {
-		if err := r.SetBodyParam(o.Body); err != nil {
-			return err
-		}
+	if err := r.SetBodyParam(o.Body); err != nil {
+		return err
 	}
 
 	// query param generation

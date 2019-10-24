@@ -9,7 +9,10 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -135,5 +138,328 @@ func (o *PostFloatingIpsInternalServerError) readResponse(response runtime.Clien
 		return err
 	}
 
+	return nil
+}
+
+/*PostFloatingIpsBody FloatingIPTemplateWithTarget
+swagger:model PostFloatingIpsBody
+*/
+type PostFloatingIpsBody struct {
+
+	// The user-defined name for this floating ip
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+
+	// resource group
+	ResourceGroup *PostFloatingIpsParamsBodyResourceGroup `json:"resource_group,omitempty"`
+
+	// target
+	Target *PostFloatingIpsParamsBodyTarget `json:"target,omitempty"`
+
+	// zone
+	Zone *PostFloatingIpsParamsBodyZone `json:"zone,omitempty"`
+}
+
+// Validate validates this post floating ips body
+func (o *PostFloatingIpsBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateResourceGroup(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateTarget(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateZone(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostFloatingIpsBody) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("body"+"."+"name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PostFloatingIpsBody) validateResourceGroup(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ResourceGroup) { // not required
+		return nil
+	}
+
+	if o.ResourceGroup != nil {
+		if err := o.ResourceGroup.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("body" + "." + "resource_group")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *PostFloatingIpsBody) validateTarget(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Target) { // not required
+		return nil
+	}
+
+	if o.Target != nil {
+		if err := o.Target.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("body" + "." + "target")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *PostFloatingIpsBody) validateZone(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Zone) { // not required
+		return nil
+	}
+
+	if o.Zone != nil {
+		if err := o.Zone.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("body" + "." + "zone")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostFloatingIpsBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostFloatingIpsBody) UnmarshalBinary(b []byte) error {
+	var res PostFloatingIpsBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*PostFloatingIpsParamsBodyResourceGroup idreference
+swagger:model PostFloatingIpsParamsBodyResourceGroup
+*/
+type PostFloatingIpsParamsBodyResourceGroup struct {
+
+	// The unique identifier for this resource
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+}
+
+// Validate validates this post floating ips params body resource group
+func (o *PostFloatingIpsParamsBodyResourceGroup) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostFloatingIpsParamsBodyResourceGroup) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("body"+"."+"resource_group"+"."+"id", "body", "uuid", o.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostFloatingIpsParamsBodyResourceGroup) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostFloatingIpsParamsBodyResourceGroup) UnmarshalBinary(b []byte) error {
+	var res PostFloatingIpsParamsBodyResourceGroup
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*PostFloatingIpsParamsBodyTarget NetworkInterfaceIdentityByName
+//
+// The target this address is to be associated with
+swagger:model PostFloatingIpsParamsBodyTarget
+*/
+type PostFloatingIpsParamsBodyTarget struct {
+
+	// The CRN for this network interface
+	Crn string `json:"crn,omitempty"`
+
+	// The unique identifier for this network interface
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+
+	// The user-defined name for this network interface
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this post floating ips params body target
+func (o *PostFloatingIpsParamsBodyTarget) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostFloatingIpsParamsBodyTarget) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("body"+"."+"target"+"."+"id", "body", "uuid", o.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PostFloatingIpsParamsBodyTarget) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("body"+"."+"target"+"."+"name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostFloatingIpsParamsBodyTarget) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostFloatingIpsParamsBodyTarget) UnmarshalBinary(b []byte) error {
+	var res PostFloatingIpsParamsBodyTarget
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*PostFloatingIpsParamsBodyZone ZoneIdentity
+//
+// The identity of the zone to provision a floating floating IP in
+swagger:model PostFloatingIpsParamsBodyZone
+*/
+type PostFloatingIpsParamsBodyZone struct {
+
+	// The name for this zone
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this post floating ips params body zone
+func (o *PostFloatingIpsParamsBodyZone) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostFloatingIpsParamsBodyZone) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("body"+"."+"zone"+"."+"name", "body", string(o.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostFloatingIpsParamsBodyZone) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostFloatingIpsParamsBodyZone) UnmarshalBinary(b []byte) error {
+	var res PostFloatingIpsParamsBodyZone
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

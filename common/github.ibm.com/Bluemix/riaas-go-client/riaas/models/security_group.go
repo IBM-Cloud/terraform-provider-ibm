@@ -39,7 +39,7 @@ type SecurityGroup struct {
 	Name string `json:"name,omitempty"`
 
 	// Collection of references to network interfaces
-	NetworkInterfaces []*SecurityGroupNetworkInterfacesItems `json:"network_interfaces"`
+	NetworkInterfaces []*SecurityGroupNetworkInterfacesItems0 `json:"network_interfaces"`
 
 	// resource group
 	ResourceGroup *ResourceReference `json:"resource_group,omitempty"`
@@ -242,6 +242,108 @@ func (m *SecurityGroup) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *SecurityGroup) UnmarshalBinary(b []byte) error {
 	var res SecurityGroup
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SecurityGroupNetworkInterfacesItems0 NetworkInterfaceReference
+// swagger:model SecurityGroupNetworkInterfacesItems0
+type SecurityGroupNetworkInterfacesItems0 struct {
+
+	// The CRN for this network interface
+	Crn string `json:"crn,omitempty"`
+
+	// The URL for this network interface
+	// Pattern: ^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$
+	Href string `json:"href,omitempty"`
+
+	// The unique identifier for this network interface
+	// Format: uuid
+	ID strfmt.UUID `json:"id,omitempty"`
+
+	// The user-defined name for this network interface
+	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
+	Name string `json:"name,omitempty"`
+
+	// The primary IPv4 address
+	PrimaryIPV4Address string `json:"primary_ipv4_address,omitempty"`
+}
+
+// Validate validates this security group network interfaces items0
+func (m *SecurityGroupNetworkInterfacesItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateHref(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SecurityGroupNetworkInterfacesItems0) validateHref(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Href) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("href", "body", string(m.Href), `^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SecurityGroupNetworkInterfacesItems0) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("id", "body", "uuid", m.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SecurityGroupNetworkInterfacesItems0) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("name", "body", string(m.Name), `^[A-Za-z][-A-Za-z0-9_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SecurityGroupNetworkInterfacesItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SecurityGroupNetworkInterfacesItems0) UnmarshalBinary(b []byte) error {
+	var res SecurityGroupNetworkInterfacesItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
