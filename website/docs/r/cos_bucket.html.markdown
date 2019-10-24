@@ -8,11 +8,11 @@ description: |-
 
 # ibm\_cos_bucket
 
-Create or delete a bucket in a cloud object storage. 
+Create or delete a bucket in a cloud object storage.
 
 ## Example Usage
 
-In the following example, you can configure a alb:
+In the following example, you can create a three buckets:
 
 ```hcl
 data "ibm_resource_group" "cos_group" {
@@ -44,8 +44,8 @@ resource "ibm_cos_bucket" "flex-us-south" {
 resource "ibm_cos_bucket" "cold-ap" {
   bucket_name = "a-cold-bucket-at-ap"
   resource_instance_id = "${ibm_resource_instance.cos_instance.id}"
-  region_location = "ap"
-  cross_storage_class = "cold"
+  cross_region_location = "ap"
+  storage_class = "cold"
 }
 ```
 
@@ -55,12 +55,12 @@ The following arguments are supported:
 
 * `bucket_name` - (Required, string) The name of the bucket.
 * `resource_instance_id` - (Required, string) The id of Cloud Object Storage instance.
-* `key_protect` - (Optional, bool) CRN of the Key Protect instance where there a root key is already provisioned. Authorization required: [Docs](https://cloud.ibm.com/docs/services/cloud-object-storage?topic=cloud-object-storage-encryption#grant-service-authorization) 
+* `key_protect` - (Optional, bool) CRN of the Key Protect instance where there a root key is already provisioned. Authorization required: [Docs](https://cloud.ibm.com/docs/services/cloud-object-storage?topic=cloud-object-storage-encryption#grant-service-authorization)
 * `single_site_location` - (Optional,string) Location if single site bucket is desired. Accepted values: 'ams03', 'che01', 'hkg02', 'mel01', 'mex01', 'mil01', 'mon01', 'osl01', 'sjc04', 'sao01', 'seo01', 'tor01' Conflicts with: `region_location`, `cross_region_location`
 * `region_location` - (Optional,string) Location if regional bucket is desired. Accepted values: 'au-syd', 'eu-de', 'eu-gb', 'jp-tok', 'us-east', 'us-south' Conflicts with: `single_site_location`, `cross_region_location`
 * `cross_region_location` - (Optional,string) Location if cross regional bucket is desired. Accepted values: 'us', 'eu', 'ap' Conflicts with: `single_site_location`, `region_location`
 
-* **Note** - One of the location option must be present. 
+* **Note** - One of the location option must be present.
 * `storage_class` - (Required, string) Storage class of the bucket. Accepted values: 'standard', 'vault', 'cold', 'flex'
 
 ## Attribute Reference
@@ -78,7 +78,7 @@ The following attributes are exported:
 
 ## Import
 
-The `ibm_cos_bucket` resource can be imported using the `id`. The ID is formed from the `CRN` (Cloud Resource Name), the `bucket type` which must be `ssl` ofr single_site_location, `rl` for region_location or `crl` for cross_region_location, and the bucket location. The `CRN` and bucket location can be found on the portal.
+The `ibm_cos_bucket` resource can be imported using the `id`. The ID is formed from the `CRN` (Cloud Resource Name), the `bucket type` which must be `ssl` for single_site_location, `rl` for region_location or `crl` for cross_region_location, and the bucket location. The `CRN` and bucket location can be found on the portal.
 
 id = $CRN:meta:$buckettype:$bucketlocation
 
