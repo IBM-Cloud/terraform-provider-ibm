@@ -163,15 +163,15 @@ func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	bLocationConstraint := *bucketLocationConstraint.LocationConstraint
 
-	singleSiteLocationRegex, err := regexp.Compile("^[a-z]{3}[0-9][0-9]-[a-z]{4,8}")
+	singleSiteLocationRegex, err := regexp.Compile("^[a-z]{3}[0-9][0-9]-[a-z]{4,8}$")
 	if err != nil {
 		return err
 	}
-	regionLocationRegex, err := regexp.Compile("^[a-z]{2}-[a-z]{2,5}-[a-z]{4,8}")
+	regionLocationRegex, err := regexp.Compile("^[a-z]{2}-[a-z]{2,5}-[a-z]{4,8}$")
 	if err != nil {
 		return err
 	}
-	crossRegionLocationRegex, err := regexp.Compile("^[a-z]{2}-[a-z]{4,8}")
+	crossRegionLocationRegex, err := regexp.Compile("^[a-z]{2}-[a-z]{4,8}$")
 	if err != nil {
 		return err
 	}
