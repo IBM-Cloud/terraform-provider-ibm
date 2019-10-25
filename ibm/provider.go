@@ -242,6 +242,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_container_alb":                                  resourceIBMContainerALB(),
 			"ibm_container_alb_cert":                             resourceIBMContainerALBCert(),
 			"ibm_container_cluster":                              resourceIBMContainerCluster(),
+			"ibm_container_vpc_cluster":                          resourceIBMContainerVpcCluster(),
 			"ibm_container_cluster_feature":                      resourceIBMContainerClusterFeature(),
 			"ibm_container_bind_service":                         resourceIBMContainerBindService(),
 			"ibm_container_worker_pool":                          resourceIBMContainerWorkerPool(),
