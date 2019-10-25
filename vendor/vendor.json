@@ -42,10 +42,10 @@
 			"revisionTime": "2019-10-15T09:46:11Z"
 		},
 		{
-			"checksumSHA1": "f5G/1BpCokGdO0U7lJc8GTt6Lgw=",
+			"checksumSHA1": "y+4yNx+mWP1fmXEVS7nw3dlNz/Q=",
 			"path": "github.com/IBM-Cloud/bluemix-go/api/container/containerv2",
-			"revision": "42cc8fe124a7d421f27e8ba5d360d1a4b4a52a9c",
-			"revisionTime": "2019-10-15T09:28:09Z"
+			"revision": "f086593bfc4a275db37afa8ae0a59a3db508e74d",
+			"revisionTime": "2019-10-24T06:02:37Z"
 		},
 		{
 			"checksumSHA1": "H2TOe3MqDWY1FwV8czBE2D3sZ9o=",
