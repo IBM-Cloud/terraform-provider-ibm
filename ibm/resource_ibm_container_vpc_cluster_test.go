@@ -48,6 +48,29 @@ func TestAccIBMContainerVpcCluster_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMVpcContainerVpcCluster_importBasic(t *testing.T) {
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	vpcID := fmt.Sprintf("vpc_%d", acctest.RandInt())
+	flavor := fmt.Sprintf("c.%d", acctest.RandInt())
+	zoneName := fmt.Sprintf("zone.%d", acctest.RandInt())
+	subnetID := fmt.Sprintf("subnet.%d", acctest.RandInt())
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMContainerVpcCluster_basic(clusterName, vpcID, flavor, zoneName, subnetID),
+			},
+			resource.TestStep{
+				ResourceName:      "ibm_container_vpc_cluster.testacc_cluster",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckIBMContainerVpcClusterDestroy(s *terraform.State) error {
 	csClient, err := testAccProvider.Meta().(ClientSession).VpcContainerAPI()
 	if err != nil {
@@ -84,7 +107,7 @@ func getVpcClusterTargetHeaderTestACC() v2.ClusterTargetHeader {
 	return targetEnv
 }
 
-func testAccCheckIBMContainerVpcCluster_basic(clusterName, vpc_id, flavor, subnet_id, id string) string {
+func testAccCheckIBMContainerVpcCluster_basic(clusterName, vpc_id, flavor, subnet_id, name string) string {
 	return fmt.Sprintf(`	
 data "ibm_account" "acc" {
    org_guid = "${data.ibm_org.org.id}"
@@ -101,8 +124,8 @@ resource "ibm_container_vpc_cluster" "cluster" {
 	resource_group_id = "${data.ibm_resource_group.group.id}"
 	zones = [{
 		 subnet_id = "%s"
-		 id = "%s"
+		 name = "%s"
 	  }
 	]
-}`, clusterName, vpc_id, flavor, subnet_id, id)
+}`, clusterName, vpc_id, flavor, subnet_id, name)
 }

@@ -55,7 +55,7 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": {
+						"name": {
 							Type:        schema.TypeString,
 							Required:    true,
 							ForceNew:    true,
@@ -157,24 +157,6 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				Description: "list of zones",
 			},
 
-			"ingress": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"hostname": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"secret": {
-							Type:      schema.TypeString,
-							Computed:  true,
-							Sensitive: true,
-						},
-					},
-				},
-			},
-
 			"master_status": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -200,26 +182,12 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				Computed: true,
 			},
 
-			"owner_email": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-
 			"resource_group_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
 				Computed:    true,
 				Description: "ID of the resource group.",
-			},
-
-			"account_guid": {
-				Description: "The bluemix account guid this cluster belongs to",
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Deprecated:  "This field is deprecated",
 			},
 
 			"crn": {
@@ -285,7 +253,7 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		zones := res.([]interface{})
 		for _, e := range zones {
 			r, _ := e.(map[string]interface{})
-			if ID, subnetID := r["id"], r["subnet_id"]; ID != nil && subnetID != nil {
+			if ID, subnetID := r["name"], r["subnet_id"]; ID != nil && subnetID != nil {
 				zoneParam := v2.Zone{}
 				zoneParam.ID, zoneParam.SubnetID = ID.(string), subnetID.(string)
 				zonesList = append(zonesList, zoneParam)
@@ -488,7 +456,6 @@ func waitForVpcClusterCreate(d *schema.ResourceData, meta interface{}) (interfac
 func getVpcClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v2.ClusterTargetHeader, error) {
 
 	resourceGroup := d.Get("resource_group_id").(string)
-	accountGUID := d.Get("account_guid").(string)
 
 	sess, err := meta.(ClientSession).BluemixSession()
 	if err != nil {
@@ -519,7 +486,6 @@ func getVpcClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v2.Clu
 
 	targetEnv := v2.ClusterTargetHeader{
 		ResourceGroup: resourceGroup,
-		AccountID:     accountGUID,
 	}
 	return targetEnv, nil
 }
