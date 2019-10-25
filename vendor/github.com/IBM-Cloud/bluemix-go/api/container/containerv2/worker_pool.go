@@ -27,10 +27,10 @@ type WorkerPoolZone struct {
 }
 
 type GetWorkerPoolResponse struct {
-	Flavor      string `json:"flavor"`
-	ID          string `json:"id"`
-	Isolation   string `json:"isolation"`
-	Labels      Label  `json:"labels"`
+	Flavor      string            `json:"flavor"`
+	ID          string            `json:"id"`
+	Isolation   string            `json:"isolation"`
+	Labels      map[string]string `json:"labels,omitempty"`
 	Lifecycle   `json:"lifecycle"`
 	VpcID       string     `json:"vpcID"`
 	WorkerCount int        `json:"workerCount"`
