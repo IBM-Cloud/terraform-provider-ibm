@@ -202,7 +202,7 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			/*"ibm_app":                      resourceIBMApp(),
+			/*"ibm_app":                    resourceIBMApp(),
 			"ibm_app_domain_private":       resourceIBMAppDomainPrivate(),
 			"ibm_app_domain_shared":        resourceIBMAppDomainShared(),
 			"ibm_app_route":                resourceIBMAppRoute(),
