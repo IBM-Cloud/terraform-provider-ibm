@@ -53,7 +53,7 @@ func testAccCheckIBMISImageDataSourceConfig(image string) string {
 	return fmt.Sprintf(`
 
 data "ibm_is_image" "test1" {
-	name = "%s",
+	name = "%s"
 }`, image)
 }
 
