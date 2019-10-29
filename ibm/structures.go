@@ -878,6 +878,15 @@ func flattenPolicyResource(list []iampapv1.Resource) []map[string]interface{} {
 			"resource":             i.GetAttribute("resource"),
 			"resource_group_id":    i.GetAttribute("resourceGroupId"),
 		}
+		customAttributes := i.CustomAttributes()
+		if len(customAttributes) > 0 {
+			out := make(map[string]string)
+			for _, a := range customAttributes {
+				out[a.Name] = a.Value
+			}
+			l["attributes"] = out
+		}
+
 		result = append(result, l)
 	}
 	return result
