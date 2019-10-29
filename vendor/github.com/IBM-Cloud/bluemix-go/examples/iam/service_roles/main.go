@@ -56,6 +56,12 @@ func main() {
 		}
 		log.Println(roles)
 
+		roles, err = serviceRolesAPI.ListAuthorizationRoles("cloud-object-storage", "kms")
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println(roles)
+
 	}
 
 }

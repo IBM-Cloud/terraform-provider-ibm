@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 
@@ -15,10 +14,6 @@ import (
 func main() {
 
 	c := new(bluemix.Config)
-
-	var zone string
-	flag.StringVar(&zone, "zone", "us-south-1", "Zone")
-	flag.Parse()
 
 	trace.Logger = trace.NewLogger("true")
 

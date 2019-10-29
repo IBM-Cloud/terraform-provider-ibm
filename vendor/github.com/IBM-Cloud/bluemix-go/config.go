@@ -82,10 +82,6 @@ type Config struct {
 	HTTPClient *http.Client
 
 	SSLDisable bool
-
-	//Added for Power-Colo Offering
-
-	PowerServiceInstance string
 }
 
 //Copy allows the configuration to be overriden or added

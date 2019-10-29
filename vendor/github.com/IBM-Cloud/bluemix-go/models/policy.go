@@ -10,9 +10,10 @@ type Policy struct {
 }
 
 type PolicyRole struct {
-	ID          crn.CRN `json:"id"`
-	DisplayName string  `json:"displayName"`
-	Description string  `json:"description"`
+	ID          crn.CRN      `json:"id"`
+	DisplayName string       `json:"displayName"`
+	Description string       `json:"description"`
+	Actions     []RoleAction `json:"actions,omitempty"`
 }
 
 type PolicyResource struct {
