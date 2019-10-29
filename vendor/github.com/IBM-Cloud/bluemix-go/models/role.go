@@ -8,6 +8,12 @@ type Role struct {
 	Description string  `json:"description"`
 }
 
+type RoleAction struct {
+	ID          string `json:"id"`
+	Name        string `json:"displayName"`
+	Description string `json:"description"`
+}
+
 func (r Role) ToPolicyRole() PolicyRole {
 	return PolicyRole{
 		ID:          r.CRN,

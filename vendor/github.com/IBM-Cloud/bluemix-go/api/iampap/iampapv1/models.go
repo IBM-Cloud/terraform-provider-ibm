@@ -47,6 +47,20 @@ type Subject struct {
 	Attributes []Attribute `json:"attributes"`
 }
 
+const (
+	AccessGroupIDAttribute   = "accesGroupId"
+	AccountIDAttribute       = "accountId"
+	OrganizationIDAttribute  = "organizationId"
+	SpaceIDAttribute         = "spaceId"
+	RegionAttribute          = "region"
+	ServiceTypeAttribute     = "serviceType"
+	ServiceNameAttribute     = "serviceName"
+	ServiceInstanceAttribute = "serviceInstance"
+	ResourceTypeAttribute    = "resourceType"
+	ResourceAttribute        = "resource"
+	ResourceGroupIDAttribute = "resourceGroupId"
+)
+
 // GetAttribute returns an attribute of policy subject
 func (s *Subject) GetAttribute(name string) string {
 	for _, a := range s.Attributes {
@@ -96,6 +110,11 @@ func (s *Subject) ServiceInstance() string {
 	return s.GetAttribute("serviceInstance")
 }
 
+// ResourceType returns resource type of the policy subject if exists
+func (s *Subject) ResourceType() string {
+	return s.GetAttribute("resourceType")
+}
+
 // SetAccessGroupID sets value of access group ID attribute of policy subject
 func (s *Subject) SetAccessGroupID(value string) {
 	s.SetAttribute("access_group_id", value)
@@ -119,6 +138,11 @@ func (s *Subject) SetServiceName(value string) {
 // SetServiceInstance sets value of service instance attribute of policy subject
 func (s *Subject) SetServiceInstance(value string) {
 	s.SetAttribute("serviceInstance", value)
+}
+
+// SetResourceType sets value of resource type attribute of policy subject
+func (s *Subject) SetResourceType(value string) {
+	s.SetAttribute("resourceType", value)
 }
 
 // Resource is the object controlled by the policy
@@ -152,102 +176,125 @@ func (r *Resource) SetAttribute(name string, value string) {
 
 // AccessGroupID returns access group ID attribute of policy resource if exists
 func (r *Resource) AccessGroupID() string {
-	return r.GetAttribute("accessGroupId")
+	return r.GetAttribute(AccessGroupIDAttribute)
 }
 
 // AccountID returns account ID attribute of policy resource if exists
 func (r *Resource) AccountID() string {
-	return r.GetAttribute("accountId")
+	return r.GetAttribute(AccountIDAttribute)
 }
 
 // OrganizationID returns organization ID attribute of policy resource if exists
 func (r *Resource) OrganizationID() string {
-	return r.GetAttribute("organizationId")
+	return r.GetAttribute(OrganizationIDAttribute)
 }
 
 // Region returns region attribute of policy resource if exists
 func (r *Resource) Region() string {
-	return r.GetAttribute("region")
+	return r.GetAttribute(RegionAttribute)
 }
 
 // Resource returns resource attribute of policy resource if exists
 func (r *Resource) Resource() string {
-	return r.GetAttribute("resource")
+	return r.GetAttribute(ResourceAttribute)
 }
 
 // ResourceType returns resource type attribute of policy resource if exists
 func (r *Resource) ResourceType() string {
-	return r.GetAttribute("resourceType")
+	return r.GetAttribute(ResourceTypeAttribute)
 }
 
 // ResourceGroupID returns resource group ID attribute of policy resource if exists
 func (r *Resource) ResourceGroupID() string {
-	return r.GetAttribute("resourceGroupId")
+	return r.GetAttribute(ResourceGroupIDAttribute)
 }
 
 // ServiceName returns service name attribute of policy resource if exists
 func (r *Resource) ServiceName() string {
-	return r.GetAttribute("serviceName")
+	return r.GetAttribute(ServiceNameAttribute)
 }
 
 // ServiceInstance returns service instance attribute of policy resource if exists
 func (r *Resource) ServiceInstance() string {
-	return r.GetAttribute("serviceInstance")
+	return r.GetAttribute(ServiceInstanceAttribute)
 }
 
 // SpaceID returns space ID attribute of policy resource if exists
 func (r *Resource) SpaceID() string {
-	return r.GetAttribute("spaceId")
+	return r.GetAttribute(SpaceIDAttribute)
 }
 
 // ServiceType returns service type attribute of policy resource if exists
 func (r *Resource) ServiceType() string {
-	return r.GetAttribute("serviceType")
+	return r.GetAttribute(ServiceTypeAttribute)
+}
+
+// CustomAttributes will return all attributes which are not system defined
+func (r *Resource) CustomAttributes() []Attribute {
+	attributes := []Attribute{}
+	for _, a := range r.Attributes {
+		switch a.Name {
+		case AccessGroupIDAttribute:
+		case AccountIDAttribute:
+		case OrganizationIDAttribute:
+		case SpaceIDAttribute:
+		case RegionAttribute:
+		case ResourceAttribute:
+		case ResourceTypeAttribute:
+		case ResourceGroupIDAttribute:
+		case ServiceTypeAttribute:
+		case ServiceNameAttribute:
+		case ServiceInstanceAttribute:
+		default:
+			attributes = append(attributes, a)
+		}
+	}
+	return attributes
 }
 
 // SetAccessGroupID sets value of access group ID attribute of policy resource
 func (r *Resource) SetAccessGroupID(value string) {
-	r.SetAttribute("accessGroupId", value)
+	r.SetAttribute(AccessGroupIDAttribute, value)
 }
 
 // SetAccountID sets value of account ID attribute of policy resource
 func (r *Resource) SetAccountID(value string) {
-	r.SetAttribute("accountId", value)
+	r.SetAttribute(AccountIDAttribute, value)
 }
 
 // SetOrganizationID sets value of organization ID attribute of policy resource
 func (r *Resource) SetOrganizationID(value string) {
-	r.SetAttribute("organizationId", value)
+	r.SetAttribute(OrganizationIDAttribute, value)
 }
 
 // SetRegion sets value of region attribute of policy resource
 func (r *Resource) SetRegion(value string) {
-	r.SetAttribute("region", value)
+	r.SetAttribute(RegionAttribute, value)
 }
 
 // SetResource sets value of resource attribute of policy resource
 func (r *Resource) SetResource(value string) {
-	r.SetAttribute("resource", value)
+	r.SetAttribute(ResourceAttribute, value)
 }
 
 // SetResourceType sets value of resource type attribute of policy resource
 func (r *Resource) SetResourceType(value string) {
-	r.SetAttribute("resourceType", value)
+	r.SetAttribute(ResourceTypeAttribute, value)
 }
 
 // SetResourceGroupID sets value of resource group ID attribute of policy resource
 func (r *Resource) SetResourceGroupID(value string) {
-	r.SetAttribute("resourceGroupId", value)
+	r.SetAttribute(ResourceGroupIDAttribute, value)
 }
 
 // SetServiceName sets value of service name attribute of policy resource
 func (r *Resource) SetServiceName(value string) {
-	r.SetAttribute("serviceName", value)
+	r.SetAttribute(ServiceNameAttribute, value)
 }
 
 // SetServiceInstance sets value of service instance attribute of policy resource
 func (r *Resource) SetServiceInstance(value string) {
-	r.SetAttribute("serviceInstance", value)
+	r.SetAttribute(ServiceInstanceAttribute, value)
 }
 
 // SetSpaceID sets value of space ID attribute of policy resource
@@ -257,7 +304,7 @@ func (r *Resource) SetSpaceID(value string) {
 
 // SetServiceType sets value of service type attribute of policy resource
 func (r *Resource) SetServiceType(value string) {
-	r.SetAttribute("serviceType", value)
+	r.SetAttribute(ServiceTypeAttribute, value)
 }
 
 // Attribute is part of policy subject and resource

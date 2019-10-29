@@ -6,8 +6,6 @@ import (
 	"strings"
 )
 
-// CRN spec: https://github.ibm.com/ibmcloud/builders-guide/tree/master/specifications/crn
-
 const (
 	crn     = "crn"
 	version = "v1"
@@ -24,6 +22,10 @@ var (
 const (
 	ServiceBluemix = "bluemix"
 	ServiceIAM     = "iam"
+	// ServiceCF is the service name for public Cloudfoundry
+	ServiceCF = "cf"
+	// ServiceCFEE is the service name for CFEE Cloudfoundry
+	ServiceCFEE = "cfaas"
 	// more services ...
 
 	ScopeAccount      = "a"
@@ -31,10 +33,11 @@ const (
 	ScopeSpace        = "s"
 	ScopeProject      = "p"
 
-	ResourceTypeCFSpace   = "cf-space"
-	ResourceTypeCFApp     = "cf-application"
-	ResourceTypeCFService = "cf-service-instance"
-	ResourceTypeRole      = "role"
+	ResourceTypeCFSpace    = "cf-space"
+	ResourceTypeCFApp      = "cf-application"
+	ResourceTypeCFService  = "cf-service-instance"
+	ResourceTypeRole       = "role"
+	ResourceTypeDeployment = "deployment"
 	// more resources ...
 )
 
@@ -100,11 +103,16 @@ func Parse(s string) (CRN, error) {
 
 	scopeSegments := segments[6]
 	if scopeSegments != "" {
-		scopeParts := strings.Split(scopeSegments, scopeSeparator)
-		if len(scopeParts) != 2 {
-			return CRN{}, ErrMalformedScope
+		if scopeSegments == "global" {
+			crn.Scope = "global"
+		} else {
+			scopeParts := strings.Split(scopeSegments, scopeSeparator)
+			if len(scopeParts) == 2 {
+				crn.ScopeType, crn.Scope = scopeParts[0], scopeParts[1]
+			} else {
+				return CRN{}, ErrMalformedScope
+			}
 		}
-		crn.ScopeType, crn.Scope = scopeParts[0], scopeParts[1]
 	}
 
 	return crn, nil
@@ -126,8 +134,8 @@ func (c CRN) String() string {
 }
 
 func (c CRN) ScopeSegment() string {
-	if c.ScopeType == "" && c.Scope == "" {
-		return ""
+	if c.ScopeType == "" {
+		return c.Scope
 	}
 	return c.ScopeType + scopeSeparator + c.Scope
 }
