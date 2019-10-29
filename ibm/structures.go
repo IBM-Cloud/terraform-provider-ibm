@@ -16,6 +16,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
 	"github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
@@ -297,6 +298,30 @@ func flattenProtocols(list []datatypes.Network_LBaaS_Listener) []map[string]inte
 	return result
 }
 
+func flattenVpcZones(list []containerv2.ZoneResp) []map[string]interface{} {
+	zones := make([]map[string]interface{}, len(list))
+	for i, zone := range list {
+		l := map[string]interface{}{
+			"id":           zone.ID,
+			"subnet_id":    flattenSubnets(zone.Subnets),
+			"worker_count": zone.WorkerCount,
+		}
+		zones[i] = l
+	}
+	return zones
+}
+func flattenSubnets(list []containerv2.Subnet) []map[string]interface{} {
+	subs := make([]map[string]interface{}, len(list))
+	for i, sub := range list {
+		l := map[string]interface{}{
+			"id":           sub.ID,
+			"worker_count": sub.Primary,
+		}
+		subs[i] = l
+	}
+	return subs
+}
+
 func flattenZones(list []containerv1.WorkerPoolZoneResponse) []map[string]interface{} {
 	zones := make([]map[string]interface{}, len(list))
 	for i, zone := range list {
@@ -355,6 +380,26 @@ func flattenAlbs(list []containerv1.ALBConfig, filterType string) []map[string]i
 				"alb_ip":             alb.ALBIP,
 				"resize":             alb.Resize,
 				"disable_deployment": alb.DisableDeployment,
+			}
+			albs = append(albs, l)
+		}
+	}
+	return albs
+}
+
+func flattenVpcAlbs(list []containerv2.AlbConfig, filterType string) []map[string]interface{} {
+	albs := make([]map[string]interface{}, 0)
+	for _, alb := range list {
+		if alb.AlbType == filterType || filterType == "all" {
+			l := map[string]interface{}{
+				"id":                     alb.AlbID,
+				"name":                   alb.Name,
+				"alb_type":               alb.AlbType,
+				"enable":                 alb.Enable,
+				"state":                  alb.State,
+				"resize":                 alb.Resize,
+				"disable_deployment":     alb.DisableDeployment,
+				"load_balancer_hostname": alb.LoadBalancerHostname,
 			}
 			albs = append(albs, l)
 		}

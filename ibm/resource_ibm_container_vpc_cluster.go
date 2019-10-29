@@ -159,7 +159,46 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
+			"albs": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"alb_type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"enable": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+						"state": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"load_balancer_hostname": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"resize": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+						"disable_deployment": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+					},
+				},
+			},
 			"public_service_endpoint_url": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -314,6 +353,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return err
 	}
+	albsAPI := csClient.Albs()
 
 	targetEnv, err := getVpcClusterTargetHeader(d, meta)
 	if err != nil {
@@ -324,6 +364,11 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	cls, err := csClient.Clusters().GetCluster(clusterID, targetEnv)
 	if err != nil {
 		return fmt.Errorf("Error retrieving conatiner vpc cluster: %s", err)
+	}
+
+	albs, err := albsAPI.ListClusterAlbs(clusterID, targetEnv)
+	if err != nil {
+		return fmt.Errorf("Error retrieving alb's of the cluster %s: %s", clusterID, err)
 	}
 
 	d.Set("name", cls.Name)
@@ -341,6 +386,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	d.Set("pod_subnet", cls.PodSubnet)
 	d.Set("state", cls.State)
 	d.Set("region", cls.Region)
+	d.Set("albs", flattenVpcAlbs(albs, "all"))
 	d.Set("resource_group_id", cls.ResourceGroupID)
 	d.Set("public_service_endpoint_url", cls.ServiceEndpoints.PublicServiceEndpointURL)
 	d.Set("private_service_endpoint_url", cls.ServiceEndpoints.PrivateServiceEndpointURL)
@@ -469,6 +515,11 @@ func getVpcClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v2.Clu
 	if err != nil {
 		return v2.ClusterTargetHeader{}, err
 	}
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return v2.ClusterTargetHeader{}, err
+	}
+	accountID := userDetails.userAccount
 
 	if resourceGroup == "" {
 		resourceGroup = sess.Config.ResourceGroup
@@ -479,7 +530,8 @@ func getVpcClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v2.Clu
 				return v2.ClusterTargetHeader{}, err
 			}
 			resourceGroupQuery := management.ResourceGroupQuery{
-				Default: true,
+				Default:   true,
+				AccountID: accountID,
 			}
 			grpList, err := rsMangClient.ResourceGroup().List(&resourceGroupQuery)
 			if err != nil {

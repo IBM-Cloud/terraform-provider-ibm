@@ -42,10 +42,10 @@
 			"revisionTime": "2019-10-24T06:02:37Z"
 		},
 		{
-			"checksumSHA1": "y+4yNx+mWP1fmXEVS7nw3dlNz/Q=",
+			"checksumSHA1": "bEykNizJF0JzsGwd/bycBdWZdCY=",
 			"path": "github.com/IBM-Cloud/bluemix-go/api/container/containerv2",
-			"revision": "f086593bfc4a275db37afa8ae0a59a3db508e74d",
-			"revisionTime": "2019-10-24T06:02:37Z"
+			"revision": "1256a604ff28ed15c3aa3a1614bc8694d08d9358",
+			"revisionTime": "2019-10-29T07:30:16Z"
 		},
 		{
 			"checksumSHA1": "H2TOe3MqDWY1FwV8czBE2D3sZ9o=",
@@ -244,6 +244,12 @@
 			"path": "github.com/IBM-Cloud/bluemix-go/examples/container/V2containers/EnableAlbV2",
 			"revision": "f086593bfc4a275db37afa8ae0a59a3db508e74d",
 			"revisionTime": "2019-10-24T06:02:37Z"
+		},
+		{
+			"checksumSHA1": "UEICDZh/0tOvvq5eKGXW1kkwXp8=",
+			"path": "github.com/IBM-Cloud/bluemix-go/examples/container/V2containers/GetAlbV2",
+			"revision": "b8e87fb5beb7d7cf097f4da6e2c941b9f589c182",
+			"revisionTime": "2019-10-16T17:14:32Z"
 		},
 		{
 			"checksumSHA1": "eDwIP9egRFaDRFIdExvJKLL5qRk=",

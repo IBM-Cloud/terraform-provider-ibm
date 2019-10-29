@@ -12,6 +12,16 @@ type AlbCreateReq struct {
 	Type            string `json:"type"`
 	ZoneAlb         string `json:"zone"`
 }
+
+type ClusterALB struct {
+	ID                      string      `json:"id"`
+	Region                  string      `json:"region"`
+	DataCenter              string      `json:"dataCenter"`
+	IsPaid                  bool        `json:"isPaid"`
+	PublicIngressHostname   string      `json:"publicIngressHostname"`
+	PublicIngressSecretName string      `json:"publicIngressSecretName"`
+	ALBs                    []AlbConfig `json:"alb"`
+}
 type AlbConfig struct {
 	AlbBuild             string `json:"albBuild"`
 	AlbID                string `json:"albID"`
@@ -40,6 +50,7 @@ type Alb interface {
 	DisableAlb(disableAlbReq AlbConfig, target ClusterTargetHeader) error
 	EnableAlb(enableAlbReq AlbConfig, target ClusterTargetHeader) error
 	GetAlb(albid string, target ClusterTargetHeader) (AlbConfig, error)
+	ListClusterAlbs(clusterNameOrID string, target ClusterTargetHeader) ([]AlbConfig, error)
 }
 
 func newAlbAPI(c *client.Client) Alb {
@@ -70,4 +81,12 @@ func (r *alb) GetAlb(albID string, target ClusterTargetHeader) (AlbConfig, error
 	var successV AlbConfig
 	_, err := r.client.Get(fmt.Sprintf("/v2/alb/getAlb?albID=%s", albID), &successV, target.ToMap())
 	return successV, err
+}
+
+// ListClusterALBs returns the list of albs available for cluster
+func (r *alb) ListClusterAlbs(clusterNameOrID string, target ClusterTargetHeader) ([]AlbConfig, error) {
+	var successV ClusterALB
+	rawURL := fmt.Sprintf("v2/alb/getClusterAlbs?cluster=%s", clusterNameOrID)
+	_, err := r.client.Get(rawURL, &successV, target.ToMap())
+	return successV.ALBs, err
 }

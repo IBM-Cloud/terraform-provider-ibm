@@ -39,6 +39,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/rest"
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	issession "github.ibm.com/Bluemix/riaas-go-client/session"
+
 	// Added code for the Power Colo Offering
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 )
