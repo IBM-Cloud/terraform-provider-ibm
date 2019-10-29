@@ -77,6 +77,13 @@ func resourceIBMIAMAccessGroupPolicy() *schema.Resource {
 							Optional:    true,
 							Description: "ID of the resource group.",
 						},
+
+						"attributes": {
+							Type:        schema.TypeMap,
+							Optional:    true,
+							Description: "Set resource attributes in the form of 'name=value,name=value....",
+							Elem:        schema.TypeString,
+						},
 					},
 				},
 			},
@@ -340,6 +347,12 @@ func generateAccountPolicy(d *schema.ResourceData, meta interface{}) (iampapv1.P
 			if r, ok := r["resource_group_id"]; ok {
 				if r.(string) != "" {
 					policyResource.SetResourceGroupID(r.(string))
+				}
+
+			}
+			if r, ok := r["attributes"]; ok {
+				for k, v := range r.(map[string]interface{}) {
+					policyResource.SetAttribute(k, v.(string))
 				}
 
 			}

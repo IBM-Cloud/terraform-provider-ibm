@@ -77,6 +77,13 @@ func resourceIBMIAMServicePolicy() *schema.Resource {
 							Optional:    true,
 							Description: "ID of the resource group.",
 						},
+
+						"attributes": {
+							Type:        schema.TypeMap,
+							Optional:    true,
+							Description: "Set resource attributes in the form of 'name=value,name=value....",
+							Elem:        schema.TypeString,
+						},
 					},
 				},
 			},

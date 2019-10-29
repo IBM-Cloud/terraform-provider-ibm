@@ -115,6 +115,34 @@ resource "ibm_iam_access_group_policy" "policy" {
 
 ```
 
+### Access Group Policy using attributes
+
+```hcl
+resource "ibm_iam_access_group" "accgrp" {
+  name = "test"
+}
+
+data "ibm_resource_group" "group" {
+  name = "default"
+}
+
+resource "ibm_iam_access_group_policy" "policy" {
+  access_group_id = "${ibm_iam_access_group.accgrp.id}"
+  roles           = ["Viewer"]
+
+  resources = [{
+    service = "is"
+
+    attributes = {
+      "vpcId" = "*"
+    }
+
+    resource_group_id = "${data.ibm_resource_group.group.id}"
+  }]
+}
+
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -129,6 +157,7 @@ Nested `resources` blocks have the following structure:
   * `resource_type` - (Optional, string) Resource type of the policy definition.
   * `resource` - (Optional, string) Resource of the policy definition.
   * `resource_group_id` - (Optional, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. 
+  * `attributes` - (Optional, map) Set resource attributes in the form of `'name=value,name=value...`.
  **NOTE**: Conflicts with `account_management`.
 * `account_management` - (Optional, bool) Gives access to all account management services if set to `true`. Default value `false`. 
  **NOTE**: Conflicts with `resources`.

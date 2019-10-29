@@ -66,7 +66,6 @@ func TestAccIBMIAMAccessGroupPolicy_With_Service(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "resources.0.service", "kms"),
-					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "resources.0.region", "us-south"),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "roles.#", "2"),
 				),
 			},
@@ -183,6 +182,28 @@ func TestAccIBMIAMAccessGroupPolicy_account_management(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "roles.#", "1"),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "account_management", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMAccessGroupPolicy_With_Attributese(t *testing.T) {
+	var conf iampapv1.Policy
+	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAccessGroupPolicyDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIAMAccessGroupPolicy_attributes(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "resources.0.service", "is"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "roles.#", "1"),
 				),
 			},
 		},
@@ -307,7 +328,6 @@ func testAccCheckIBMIAMAccessGroupPolicy_updateServiceAndRegion(name string) str
 		  
 			resources = [{
 			  service = "kms"
-			  region  = "us-south"
 			}]
 		  }
 	`, name)
@@ -415,6 +435,29 @@ func testAccCheckIBMIAMAccessGroupPolicy_account_management(name string) string 
 			access_group_id = "${ibm_iam_access_group.accgrp.id}"
 			roles        = ["Administrator"]
 			account_management = true	
+		  }
+
+	`, name)
+}
+
+func testAccCheckIBMIAMAccessGroupPolicy_attributes(name string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_access_group" "accgrp" {
+			name = "%s"
+		  }
+		  
+		resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = "${ibm_iam_access_group.accgrp.id}"
+			roles        = ["Viewer"]
+		  
+			resources = [{
+			  service = "is"
+			  attributes = {
+				"vpcId" = "*"
+			  }
+			  
+			}]
 		  }
 
 	`, name)
