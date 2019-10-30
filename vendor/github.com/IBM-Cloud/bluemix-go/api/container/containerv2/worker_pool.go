@@ -47,7 +47,7 @@ type Lifecycle struct {
 type ZoneResp struct {
 	ID          string   `json:"id"`
 	WorkerCount int      `json:"workerCount"`
-	Subnets     []Subnet `json:"subnet"`
+	Subnets     []Subnet `json:"subnets"`
 }
 
 type Subnet struct {
@@ -59,6 +59,7 @@ type Subnet struct {
 type WorkerPool interface {
 	CreateWorkerPool(workerPoolReq WorkerPoolRequest, target ClusterTargetHeader) (WorkerPoolResponse, error)
 	GetWorkerPool(clusterNameOrID, workerPoolNameOrID string, target ClusterTargetHeader) (GetWorkerPoolResponse, error)
+	ListWorkerPools(clusterNameOrID string, target ClusterTargetHeader) ([]GetWorkerPoolResponse, error)
 	CreateWorkerPoolZone(workerPoolZone WorkerPoolZone, target ClusterTargetHeader) error
 	DeleteWorkerPool(clusterNameOrID string, workerPoolNameOrID string, target ClusterTargetHeader) error
 }
@@ -71,6 +72,13 @@ func newWorkerPoolAPI(c *client.Client) WorkerPool {
 	return &workerpool{
 		client: c,
 	}
+}
+
+// GetWorkerPool calls the API to get a worker pool
+func (w *workerpool) ListWorkerPools(clusterNameOrID string, target ClusterTargetHeader) ([]GetWorkerPoolResponse, error) {
+	successV := []GetWorkerPoolResponse{}
+	_, err := w.client.Get(fmt.Sprintf("/v2/vpc/getWorkerPools?cluster=%s", clusterNameOrID), &successV, target.ToMap())
+	return successV, err
 }
 
 // GetWorkerPool calls the API to get a worker pool
