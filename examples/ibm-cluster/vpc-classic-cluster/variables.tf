@@ -1,27 +1,29 @@
-variable "org" {}
+variable "flavor" {
+  default =  "c2.2x4"
+}
 
-variable "space"{}
+variable "worker_count" {
+  default = "1"
+}
 
-variable "subnet_id" {}
+variable "region" {
+  default = "us-south"
+}
 
-variable "vpc_id" {}
-
-variable "flavor" {}
-
-variable "worker_count" {}
-
-variable "zone_name" {}
+variable "resource_group" {
+  default = "default"
+}
 
 variable "cluster_name" {
   default = "cluster"
 }
 
-variable "service_instance_name" {
-  default = "myservice"
+variable "worker_pool_name" {
+  default = "workerpool"
 }
 
-variable "service_key" {
-  default = "myservicekey"
+variable "service_instance_name" {
+  default = "myservice"
 }
 
 variable "service_offering" {
