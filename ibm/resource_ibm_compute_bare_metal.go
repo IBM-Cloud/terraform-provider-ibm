@@ -604,9 +604,11 @@ func resourceIBMComputeBareMetalCreate(d *schema.ResourceData, meta interface{})
 	d.SetId(fmt.Sprintf("%d", id))
 
 	// Set tags
-	err = setHardwareTags(id, d, meta)
-	if err != nil {
-		return err
+	if _, ok := d.GetOk("tags"); ok {
+		err = setHardwareTags(id, d, meta)
+		if err != nil {
+			return err
+		}
 	}
 
 	var storageIds []int
