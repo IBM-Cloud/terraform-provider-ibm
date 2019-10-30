@@ -118,8 +118,7 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 			"disable_public_service_endpoint": {
 				Type:     schema.TypeBool,
 				Optional: true,
-				ForceNew: true,
-				Default:  true,
+				Default:  false,
 			},
 
 			"tags": {
@@ -366,6 +365,21 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("Error retrieving conatiner vpc cluster: %s", err)
 	}
 
+	workerPool, err := csClient.WorkerPools().GetWorkerPool(clusterID, "default", targetEnv)
+
+	var zones = make([]map[string]interface{}, 0)
+	for _, zone := range workerPool.Zones {
+		for _, subnet := range zone.Subnets {
+			if subnet.Primary == true {
+				zoneInfo := map[string]interface{}{
+					"name":      zone.ID,
+					"subnet_id": subnet.ID,
+				}
+				zones = append(zones, zoneInfo)
+			}
+		}
+	}
+
 	albs, err := albsAPI.ListClusterAlbs(clusterID, targetEnv)
 	if err != nil {
 		return fmt.Errorf("Error retrieving alb's of the cluster %s: %s", clusterID, err)
@@ -375,13 +389,17 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	d.Set("crn", cls.CRN)
 	d.Set("disable_auto_update", cls.DisableAutoUpdate)
 	d.Set("master_status", cls.Lifecycle.MasterStatus)
+	d.Set("zones", zones)
 	if strings.HasSuffix(cls.MasterKubeVersion, "_openshift") {
 		d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0]+"_openshift")
 	} else {
 		d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0])
 
 	}
+	d.Set("worker_count", workerPool.WorkerCount)
+	d.Set("vpc_id", cls.Vpcs[0])
 	d.Set("master_url", cls.MasterURL)
+	d.Set("flavor", workerPool.Flavor)
 	d.Set("service_subnet", cls.ServiceSubnet)
 	d.Set("pod_subnet", cls.PodSubnet)
 	d.Set("state", cls.State)
@@ -390,6 +408,11 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	d.Set("resource_group_id", cls.ResourceGroupID)
 	d.Set("public_service_endpoint_url", cls.ServiceEndpoints.PublicServiceEndpointURL)
 	d.Set("private_service_endpoint_url", cls.ServiceEndpoints.PrivateServiceEndpointURL)
+	if cls.ServiceEndpoints.PublicServiceEndpointURL != "" {
+		d.Set("disable_public_service_endpoint", false)
+	} else {
+		d.Set("disable_public_service_endpoint", true)
+	}
 
 	tags, err := GetTagsUsingCRN(meta, cls.CRN)
 	if err != nil {
@@ -485,19 +508,22 @@ func waitForVpcClusterCreate(d *schema.ResourceData, meta interface{}) (interfac
 		Pending: []string{deployRequested, deployInProgress},
 		Target:  []string{ready},
 		Refresh: func() (interface{}, string, error) {
-			clusterInfo, err := csClient.Clusters().GetCluster(clusterID, targetEnv)
+			workers, err := csClient.Workers().ListByWorkerPool(clusterID, "default", false, targetEnv)
 			if err != nil {
-				return clusterInfo, deployInProgress, nil
+				return workers, deployInProgress, nil
 			}
-			if (clusterInfo.Lifecycle == v2.LifeCycleInfo{}) {
-				return clusterInfo, deployInProgress, nil
+			if len(workers) == 0 {
+				return workers, deployInProgress, nil
 			}
-			log.Println("Master Node Status:", clusterInfo.Lifecycle.MasterStatus)
-			log.Println("Checking cluster state", strings.Compare(clusterInfo.Lifecycle.MasterStatus, ready))
-			if strings.Compare(clusterInfo.Lifecycle.MasterStatus, ready) != 0 {
-				return clusterInfo, deployInProgress, nil
+			for _, worker := range workers {
+				log.Println("woker ID: ", worker.ID)
+				log.Println("woker actual state : ", worker.LifeCycle.ActualState)
+				log.Println("woker Desired state : ", worker.LifeCycle.DesiredState)
+				if worker.LifeCycle.ActualState == worker.LifeCycle.DesiredState {
+					return workers, ready, nil
+				}
 			}
-			return clusterInfo, ready, nil
+			return workers, deployInProgress, nil
 		},
 		Timeout:                   d.Timeout(schema.TimeoutCreate),
 		Delay:                     10 * time.Second,
