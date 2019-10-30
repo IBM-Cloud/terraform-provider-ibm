@@ -53,6 +53,7 @@ type Network struct {
 type Workers interface {
 	ListByWorkerPool(clusterIDOrName, workerPoolIDOrName string, showDeleted bool, target ClusterTargetHeader) ([]Worker, error)
 	ListWorkers(clusterIDOrName string, showDeleted bool, target ClusterTargetHeader) ([]Worker, error)
+	Get(clusterIDOrName, workerID string, target ClusterTargetHeader) (Worker, error)
 }
 
 type worker struct {
@@ -88,4 +89,15 @@ func (r *worker) ListWorkers(clusterIDOrName string, showDeleted bool, target Cl
 		return nil, err
 	}
 	return workers, err
+}
+
+//Get ...
+func (r *worker) Get(clusterIDOrName, workerID string, target ClusterTargetHeader) (Worker, error) {
+	rawURL := fmt.Sprintf("/v2/vpc/getWorker?cluster=%s&worker=%s", clusterIDOrName, workerID)
+	worker := Worker{}
+	_, err := r.client.Get(rawURL, &worker, target.ToMap())
+	if err != nil {
+		return worker, err
+	}
+	return worker, err
 }
