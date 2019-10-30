@@ -298,6 +298,44 @@ func flattenProtocols(list []datatypes.Network_LBaaS_Listener) []map[string]inte
 	return result
 }
 
+func flattenVpcWorkerPools(list []containerv2.GetWorkerPoolResponse) []map[string]interface{} {
+	workerPools := make([]map[string]interface{}, len(list))
+	for i, workerPool := range list {
+		l := map[string]interface{}{
+			"id":           workerPool.ID,
+			"name":         workerPool.PoolName,
+			"flavor":       workerPool.Flavor,
+			"worker_count": workerPool.WorkerCount,
+			"isolation":    workerPool.Isolation,
+			"labels":       workerPool.Labels,
+			"state":        workerPool.Lifecycle.ActualState,
+		}
+		zones := workerPool.Zones
+		zonesConfig := make([]map[string]interface{}, len(zones))
+		for j, zone := range zones {
+			z := map[string]interface{}{
+				"zone":         zone.ID,
+				"worker_count": zone.WorkerCount,
+			}
+			subnets := zone.Subnets
+			subnetConfig := make([]map[string]interface{}, len(subnets))
+			for k, subnet := range subnets {
+				s := map[string]interface{}{
+					"id":      subnet.ID,
+					"primary": subnet.Primary,
+				}
+				subnetConfig[k] = s
+			}
+			z["subnets"] = subnetConfig
+			zonesConfig[j] = z
+		}
+		l["zones"] = zonesConfig
+		workerPools[i] = l
+	}
+
+	return workerPools
+}
+
 func flattenVpcZones(list []containerv2.ZoneResp) []map[string]interface{} {
 	zones := make([]map[string]interface{}, len(list))
 	for i, zone := range list {
@@ -405,6 +443,19 @@ func flattenVpcAlbs(list []containerv2.AlbConfig, filterType string) []map[strin
 		}
 	}
 	return albs
+}
+
+func flattenNetworkInterfaces(list []containerv2.Network) []map[string]interface{} {
+	nwInterfaces := make([]map[string]interface{}, len(list))
+	for i, nw := range list {
+		l := map[string]interface{}{
+			"cidr":       nw.Cidr,
+			"ip_address": nw.IpAddress,
+			"subnet_id":  nw.SubnetID,
+		}
+		nwInterfaces[i] = l
+	}
+	return nwInterfaces
 }
 
 func flattenVlans(list []containerv1.Vlan) []map[string]interface{} {
