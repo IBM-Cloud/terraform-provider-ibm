@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/go-openapi/strfmt"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/lbaas"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
 	"github.ibm.com/Bluemix/riaas-go-client/riaas/client/l_baas"

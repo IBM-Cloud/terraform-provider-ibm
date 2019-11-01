@@ -8,8 +8,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/models"
 
-	"github.com/hashicorp/terraform/flatmap"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func dataSourceIBMDatabaseInstance() *schema.Resource {
@@ -415,7 +414,7 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set("name", instance.Name)
 	d.Set("status", instance.State)
 	d.Set("resource_group_id", instance.ResourceGroupID)
-	d.Set("parameters", flatmap.Flatten(instance.Parameters))
+	d.Set("parameters", instance.Parameters)
 	d.Set("location", instance.RegionID)
 
 	serviceOff, err := rsCatRepo.GetServiceName(instance.ServiceID)

@@ -5,7 +5,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
-	"github.com/hashicorp/terraform/plugin"
+	"github.com/hashicorp/terraform-plugin-sdk/plugin"
 )
 
 func main() {

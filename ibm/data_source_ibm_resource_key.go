@@ -7,9 +7,8 @@ import (
 
 	"github.com/IBM-Cloud/bluemix-go/crn"
 	"github.com/IBM-Cloud/bluemix-go/models"
-	"github.com/hashicorp/terraform/flatmap"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func dataSourceIBMResourceKey() *schema.Resource {
@@ -130,7 +129,7 @@ func dataSourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) erro
 		d.Set("role", roleCrn[strings.LastIndex(roleCrn, ":")+1:])
 	}
 
-	d.Set("credentials", flatmap.Flatten(key.Credentials))
+	d.Set("credentials", key.Credentials)
 	d.Set("status", key.State)
 	d.Set("crn", key.Crn.String())
 	return nil
