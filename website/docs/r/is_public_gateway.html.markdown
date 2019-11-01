@@ -15,19 +15,20 @@ Provides a public gateway resource. This allows gateway to be created, updated, 
 
 ```hcl
 resource "ibm_is_vpc" "testacc_vpc" {
-	name = "test"
+  name = "test"
 }
 
 resource "ibm_is_public_gateway" "testacc_gateway" {
-	name = "test_gateway"
-	vpc = "${ibm_is_vpc.testacc_vpc.id}"
-	zone = "us-south-1"
+  name = "test_gateway"
+  vpc  = ibm_is_vpc.testacc_vpc.id
+  zone = "us-south-1"
 
-	//User can configure timeouts
-  	timeouts {
-      	create = "90m"
-    }
+  //User can configure timeouts
+  timeouts {
+    create = "90m"
+  }
 }
+
 ```
 
 ## Timeouts

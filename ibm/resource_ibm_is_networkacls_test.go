@@ -80,40 +80,36 @@ func testAccCheckIBMISNetworkACLExists(n string, nwACL **models.NetworkACL) reso
 
 func testAccCheckIBMISNetworkACLConfig() string {
 	return fmt.Sprintf(`
-		resource "ibm_is_network_acl" "isExampleACL" {
-			name = "is-example-acl"
-			rules=[
-			{
-				name = "outbound"
-				action = "allow"
-				source = "0.0.0.0/0"
-				destination = "0.0.0.0/0"
-				direction = "outbound"
-				icmp=[
-				{
-					code = 1
-					type = 1
-				}]
-				# Optionals : 
-				# port_max = 
-				# port_min = 
-			},
-			{
-				name = "inbound"
-				action = "allow"
-				source = "0.0.0.0/0"
-				destination = "0.0.0.0/0"
-				direction = "inbound"
-				icmp=[
-				{
-					code = 1
-					type = 1
-				}]
-				# Optionals : 
-				# port_max = 
-				# port_min = 
-			}
-			]
+	resource "ibm_is_network_acl" "isExampleACL" {
+		name = "is-example-acl"
+		rules {
+		  name        = "outbound"
+		  action      = "allow"
+		  source      = "0.0.0.0/0"
+		  destination = "0.0.0.0/0"
+		  direction   = "outbound"
+		  icmp {
+			code = 1
+			type = 1
+		  }
+		  # Optionals :
+		  # port_max =
+		  # port_min =
 		}
+		rules {
+		  name        = "inbound"
+		  action      = "allow"
+		  source      = "0.0.0.0/0"
+		  destination = "0.0.0.0/0"
+		  direction   = "inbound"
+		  icmp {
+			code = 1
+			type = 1
+		  }
+		  # Optionals :
+		  # port_max =
+		  # port_min =
+		}
+	  }
 	`)
 }

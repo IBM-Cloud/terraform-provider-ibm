@@ -13,3 +13,4 @@ variable "image" {
 variable "profile" {
   default = "cx2-2x4"
 }
+

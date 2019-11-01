@@ -20,9 +20,9 @@ resource "ibm_is_vpc" "testacc_vpc" {
 
 resource "ibm_is_vpc_address_prefix" "testacc_vpc_address_prefix" {
   name = "test"
-  zone   = "us-south-1"
-  vpc         = "${ibm_is_vpc.testacc_vpc.id}"
-  cidr        = "10.240.0.0/24"
+  zone = "us-south-1"
+  vpc  = ibm_is_vpc.testacc_vpc.id
+  cidr = "10.240.0.0/24"
 }
 
 ```
