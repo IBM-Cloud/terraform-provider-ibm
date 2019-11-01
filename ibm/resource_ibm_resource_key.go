@@ -7,12 +7,10 @@ import (
 
 	"github.com/IBM-Cloud/bluemix-go/models"
 
-	"github.com/hashicorp/terraform/flatmap"
-
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/crn"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceIBMResourceKey() *schema.Resource {
@@ -182,7 +180,7 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 	if err != nil {
 		return fmt.Errorf("Error retrieving resource key: %s", err)
 	}
-	d.Set("credentials", flatmap.Flatten(resourceKey.Credentials))
+	d.Set("credentials", resourceKey.Credentials)
 	d.Set("name", resourceKey.Name)
 	d.Set("status", resourceKey.State)
 
@@ -192,7 +190,7 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 		d.Set("role", roleCrn[strings.LastIndex(roleCrn, ":")+1:])
 	}
 
-	d.Set("parameters", flatmap.Flatten(filterResourceKeyParameters(resourceKey.Parameters)))
+	d.Set("parameters", filterResourceKeyParameters(resourceKey.Parameters))
 	d.Set("crn", (resourceKey.Crn).String())
 
 	return nil
