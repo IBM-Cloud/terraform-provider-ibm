@@ -17,8 +17,8 @@ In the following example, you can create a load balancer:
 
 ```hcl
 resource "ibm_is_lb" "lb" {
-    name = "loadbalancer1"
-    subnets = ["04813493-15d6-4150-9948-6cc646cb67f2"]
+  name    = "loadbalancer1"
+  subnets = ["04813493-15d6-4150-9948-6cc646cb67f2"]
 }
 
 ```

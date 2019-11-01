@@ -17,10 +17,10 @@ In the following example, you can create a ip sec policy:
 
 ```hcl
 resource "ibm_is_ipsec_policy" "example" {
-	name = "test"
-	authentication_algorithm = "md5"
-	encryption_algorithm = "3des"
-	pfs = "disabled"
+  name                     = "test"
+  authentication_algorithm = "md5"
+  encryption_algorithm     = "3des"
+  pfs                      = "disabled"
 }
 
 ```
