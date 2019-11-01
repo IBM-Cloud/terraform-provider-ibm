@@ -15,36 +15,30 @@ Provides a network ACL resource. This allows network ACL to be created, updated,
 
 ```hcl
 resource "ibm_is_network_acl" "isExampleACL" {
-			name = "is-example-acl"
-			rules=[
-			{
-				name = "outbound"
-				action = "allow"
-				protocol = "icmp"
-				source = "0.0.0.0/0"
-				destination = "0.0.0.0/0"
-				direction = "outbound"
-				icmp=[
-				{
-					code = 1
-					type = 1
-				}]
-			},
-			{
-				name = "inbound"
-				action = "allow"
-				protocol = "icmp"
-				source = "0.0.0.0/0"
-				destination = "0.0.0.0/0"
-				direction = "inbound"
-				icmp=[
-				{
-					code = 1
-					type = 1
-				}]
-			}
-			]
-		}
+  name = "is-example-acl"
+  rules {
+    name        = "outbound"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "0.0.0.0/0"
+    direction   = "outbound"
+    icmp {
+      code = 1
+      type = 1
+    }
+  }
+  rules {
+    name        = "inbound"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "0.0.0.0/0"
+    direction   = "inbound"
+    icmp {
+      code = 1
+      type = 1
+    }
+  }
+}
 ```
 
 ## Argument Reference

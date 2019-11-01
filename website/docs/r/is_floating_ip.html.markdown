@@ -20,7 +20,7 @@ resource "ibm_is_instance" "testacc_instance" {
   image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
   profile = "b-2x8"
 
-  primary_network_interface = {
+  primary_network_interface {
     port_speed = "1000"
     subnet     = "70be8eae-134c-436e-a86e-04849f84cb34"
   }
@@ -32,7 +32,7 @@ resource "ibm_is_instance" "testacc_instance" {
 
 resource "ibm_is_floating_ip" "testacc_floatingip" {
   name   = "testfip1"
-  target = "${ibm_is_instance.testacc_instance.primary_network_interface.0.id}"
+  target = ibm_is_instance.testacc_instance.primary_network_interface[0].id
 }
 
 ```

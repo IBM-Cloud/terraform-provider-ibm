@@ -16,7 +16,7 @@ Import the details of an existing IBM VPC SSh Key as a read-only data source. Yo
 ```hcl
 
 data "ibm_is_ssh_key" "ds_key" {
-    name = "test"
+  name = "test"
 }
 
 ```

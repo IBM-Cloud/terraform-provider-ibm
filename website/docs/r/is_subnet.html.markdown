@@ -15,20 +15,20 @@ Provides a subnet resource. This allows subnet to be created, updated, and cance
 
 ```hcl
 resource "ibm_is_vpc" "testacc_vpc" {
-	name = "test"
+  name = "test"
 }
 
 resource "ibm_is_subnet" "testacc_subnet" {
-	name = "test_subnet"
-	vpc = "${ibm_is_vpc.testacc_vpc.id}"
-	zone = "us-south-1"
-	ipv4_cidr_block = "192.168.0.0/1"
+  name            = "test_subnet"
+  vpc             = ibm_is_vpc.testacc_vpc.id
+  zone            = "us-south-1"
+  ipv4_cidr_block = "192.168.0.0/1"
 
-	//User can configure timeouts
-  	timeouts {
-      	create = "90m"
-      	delete = "30m"
-    }
+  //User can configure timeouts
+  timeouts {
+    create = "90m"
+    delete = "30m"
+  }
 }
 ```
 

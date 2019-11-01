@@ -22,6 +22,7 @@ resource "ibm_is_lb_listener" "testacc_lb_listener" {
   port     = "9080"
   protocol = "http"
 }
+
 resource "ibm_is_lb_pool" "webapptier-lb-pool" {
   lb                 = "8898e627-f61f-4ac8-be85-9db9d8bfd345"
   name               = "a-webapptier-lb-pool"
@@ -32,19 +33,17 @@ resource "ibm_is_lb_pool" "webapptier-lb-pool" {
   health_timeout     = "2"
   health_type        = "http"
   health_monitor_url = "/"
-  depends_on = ["ibm_is_lb_listener.testacc_lb_listener"]
+  depends_on         = [ibm_is_lb_listener.testacc_lb_listener]
 }
 
 resource "ibm_is_lb_pool_member" "webapptier-lb-pool-member-zone1" {
-  count = "2"
-  lb    = "8898e627-f61f-4ac8-be85-9db9d8bfd345"
-  pool  = "${element(split("/",ibm_is_lb_pool.webapptier-lb-pool.id),1)}"
-  port  = "80"
+  count          = "2"
+  lb             = "8898e627-f61f-4ac8-be85-9db9d8bfd345"
+  pool           = element(split("/", ibm_is_lb_pool.webapptier-lb-pool.id), 1)
+  port           = "80"
   target_address = "192.168.0.1"
-  depends_on = ["ibm_is_lb_listener.testacc_lb_listener"]
+  depends_on     = [ibm_is_lb_listener.testacc_lb_listener]
 }
-
-
 ```
 
 ## Timeouts
