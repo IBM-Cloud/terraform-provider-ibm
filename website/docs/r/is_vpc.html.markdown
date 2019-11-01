@@ -17,7 +17,7 @@ In the following example, you can create a VPC:
 
 ```hcl
 resource "ibm_is_vpc" "testacc_vpc" {
-    name = "test"
+  name = "test"
 }
 
 ```

@@ -15,17 +15,18 @@ Import the details of an existing IBM cloud subnet as a read-only data source. Y
 
 ```hcl
 resource "ibm_is_vpc" "testacc_vpc" {
-	name = "test"
+  name = "test"
 }
 
 resource "ibm_is_subnet" "testacc_subnet" {
-	name = "test_subnet"
-	vpc = "${ibm_is_vpc.testacc_vpc.id}"
-	zone = "us-south-1"
-	ipv4_cidr_block = "192.168.0.0/1"
+  name            = "test_subnet"
+  vpc             = ibm_is_vpc.testacc_vpc.id
+  zone            = "us-south-1"
+  ipv4_cidr_block = "192.168.0.0/1"
 }
+
 data "ibm_is_subnet" "ds_subnet" {
-	identifier = "${ibm_is_subnet.testacc_subnet.id}"
+  identifier = ibm_is_subnet.testacc_subnet.id
 }
 
 ```

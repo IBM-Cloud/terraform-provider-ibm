@@ -17,8 +17,8 @@ In the following example, you can create a VPN gateway:
 
 ```hcl
 resource "ibm_is_vpn_gateway" "testacc_vpn_gateway" {
-    name = "test"
-    subnet = "a4ce411d-e118-4802-95ad-525e6ea0cfc9"
+  name   = "test"
+  subnet = "a4ce411d-e118-4802-95ad-525e6ea0cfc9"
 }
 
 ```

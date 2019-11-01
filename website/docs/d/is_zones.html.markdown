@@ -14,11 +14,9 @@ Import the details of an existing IBM Cloud zones in a particular region as a re
 ## Example Usage
 
 ```hcl
-
 data "ibm_is_zones" "ds_zones" {
-    region = "us-south"
+  region = "us-south"
 }
-
 ```
 
 ## Argument Reference

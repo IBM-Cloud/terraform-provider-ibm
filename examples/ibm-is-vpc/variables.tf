@@ -17,3 +17,4 @@ variable "image" {
 variable "profile" {
   default = "b-2x8"
 }
+
