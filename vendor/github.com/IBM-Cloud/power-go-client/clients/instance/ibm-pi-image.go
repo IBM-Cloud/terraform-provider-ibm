@@ -44,6 +44,7 @@ func (f *IBMPIImageClient) GetAll(powerinstanceid string) (*models.Images, error
 	return resp.Payload, nil
 
 }
+<<<<<<< HEAD
 
 //Post the stock image
 
@@ -70,3 +71,5 @@ func (f *IBMPIImageClient) Create(name, imageid string, powerinstanceid string) 
 	return err.Payload, nil
 
 }
+=======
+>>>>>>> 643f668... Add support for terraform v0.12
