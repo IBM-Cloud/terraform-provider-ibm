@@ -17,50 +17,49 @@ In the following example, you can create a different types of protocol rules `AL
 
 ```hcl
 resource "ibm_is_vpc" "testacc_vpc" {
-	name = "test"
+  name = "test"
 }
 
 resource "ibm_is_security_group" "testacc_security_group" {
-	name = "test"
-	vpc = "${ibm_is_vpc.testacc_vpc.id}"
+  name = "test"
+  vpc  = ibm_is_vpc.testacc_vpc.id
 }
 
 resource "ibm_is_security_group_rule" "testacc_security_group_rule_all" {
-	group = "${ibm_is_security_group.testacc_security_group.id}"
-	direction = "inbound"
-	remote = "127.0.0.1"
- }
- 
- resource "ibm_is_security_group_rule" "testacc_security_group_rule_icmp" {
-	group = "${ibm_is_security_group.testacc_security_group.id}"
-	direction = "inbound"
-	remote = "127.0.0.1"
-	icmp = {
-		code = 20
-		type = 30
-	}
+  group     = ibm_is_security_group.testacc_security_group.id
+  direction = "inbound"
+  remote    = "127.0.0.1"
+}
 
- }
+resource "ibm_is_security_group_rule" "testacc_security_group_rule_icmp" {
+  group     = ibm_is_security_group.testacc_security_group.id
+  direction = "inbound"
+  remote    = "127.0.0.1"
+  icmp {
+    code = 20
+    type = 30
+  }
+}
 
- resource "ibm_is_security_group_rule" "testacc_security_group_rule_udp" {
-	group = "${ibm_is_security_group.testacc_security_group.id}"
-	direction = "inbound"
-	remote = "127.0.0.1"
-	udp = {
-		port_min = 805
-		port_max = 807
-	}
- }
+resource "ibm_is_security_group_rule" "testacc_security_group_rule_udp" {
+  group     = ibm_is_security_group.testacc_security_group.id
+  direction = "inbound"
+  remote    = "127.0.0.1"
+  udp {
+    port_min = 805
+    port_max = 807
+  }
+}
 
- resource "ibm_is_security_group_rule" "testacc_security_group_rule_tcp" {
-	group = "${ibm_is_security_group.testacc_security_group.id}"
-	direction = "egress"
-	remote = "127.0.0.1"
-	tcp = {
-		port_min = 8080
-		port_max = 8080
-	}
- }
+resource "ibm_is_security_group_rule" "testacc_security_group_rule_tcp" {
+  group     = ibm_is_security_group.testacc_security_group.id
+  direction = "egress"
+  remote    = "127.0.0.1"
+  tcp {
+    port_min = 8080
+    port_max = 8080
+  }
+}
 ```
 
 ## Argument Reference

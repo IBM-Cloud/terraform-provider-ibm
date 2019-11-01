@@ -17,11 +17,11 @@ In the following example, you can create a ike policy:
 
 ```hcl
 resource "ibm_is_ike_policy" "example" {
-	name = "test"
-	authentication_algorithm = "md5"
-	encryption_algorithm = "3des"
-	dh_group = 2
-	ike_version = 1
+  name                     = "test"
+  authentication_algorithm = "md5"
+  encryption_algorithm     = "3des"
+  dh_group                 = 2
+  ike_version              = 1
 }
 
 ```

@@ -21,7 +21,7 @@ resource "ibm_is_lb_pool_member" "testacc_lb_mem" {
   pool           = "f087d3bd-3da8-452d-9ce4-c1010c9fec04"
   port           = 8080
   target_address = "127.0.0.1"
-  weight		 = 60
+  weight         = 60
 }
 
 ```

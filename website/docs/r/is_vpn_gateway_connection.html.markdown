@@ -18,11 +18,11 @@ In the following example, you can create a VPN gateway:
 ```hcl
 resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection" {
   name          = "test2"
-  vpn_gateway   = "${ibm_is_vpn_gateway.testacc_VPNGateway2.id}"
-  peer_address  = "${ibm_is_vpn_gateway.testacc_VPNGateway2.public_ip_address}"
+  vpn_gateway   = ibm_is_vpn_gateway.testacc_VPNGateway2.id
+  peer_address  = ibm_is_vpn_gateway.testacc_VPNGateway2.public_ip_address
   preshared_key = "VPNDemoPassword"
-  local_cidrs   = ["${ibm_is_subnet.testacc_subnet2.ipv4_cidr_block}"]
-  peer_cidrs    = ["${ibm_is_subnet.testacc_subnet1.ipv4_cidr_block}"]
+  local_cidrs = [ibm_is_subnet.testacc_subnet2.ipv4_cidr_block]
+  peer_cidrs = [ibm_is_subnet.testacc_subnet1.ipv4_cidr_block]
 }
 
 ```

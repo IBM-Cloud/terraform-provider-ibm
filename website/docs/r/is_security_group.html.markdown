@@ -15,12 +15,12 @@ Provides a security group resource. This allows security group to be created, up
 
 ```hcl
 resource "ibm_is_vpc" "testacc_vpc" {
-	name = "test"
+  name = "test"
 }
 
 resource "ibm_is_security_group" "testacc_security_group" {
-	name = "test"
-	vpc = "${ibm_is_vpc.testacc_vpc.id}"
+  name = "test"
+  vpc  = ibm_is_vpc.testacc_vpc.id
 }
 ```
 
