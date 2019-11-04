@@ -50,7 +50,7 @@ func resourceIBMContainerVpcWorkerPool() *schema.Resource {
 
 			"zones": {
 				Type:     schema.TypeList,
-				Optional: true,
+				Required: true,
 				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
