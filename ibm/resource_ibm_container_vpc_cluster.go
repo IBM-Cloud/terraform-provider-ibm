@@ -17,6 +17,7 @@ const (
 	deployRequested  = "Deploy requested"
 	deployInProgress = "Deploy in progress"
 	ready            = "Ready"
+	normal           = "normal"
 )
 
 func resourceIBMContainerVpcCluster() *schema.Resource {
@@ -510,20 +511,28 @@ func waitForVpcClusterCreate(d *schema.ResourceData, meta interface{}) (interfac
 		Refresh: func() (interface{}, string, error) {
 			workers, err := csClient.Workers().ListByWorkerPool(clusterID, "default", false, targetEnv)
 			if err != nil {
-				return workers, deployInProgress, nil
+				return workers, deployInProgress, err
 			}
 			if len(workers) == 0 {
 				return workers, deployInProgress, nil
 			}
+			healthCounter := 0
+
 			for _, worker := range workers {
-				log.Println("woker ID: ", worker.ID)
-				log.Println("woker actual state : ", worker.LifeCycle.ActualState)
-				log.Println("woker Desired state : ", worker.LifeCycle.DesiredState)
-				if worker.LifeCycle.ActualState == worker.LifeCycle.DesiredState {
-					return workers, ready, nil
+				log.Println("worker: ", worker.ID)
+				log.Println("worker health state:  ", worker.Health.State)
+
+				if worker.Health.State == normal {
+					healthCounter++
 				}
 			}
+
+			if healthCounter == len(workers) {
+				return workers, ready, nil
+			}
+
 			return workers, deployInProgress, nil
+
 		},
 		Timeout:                   d.Timeout(schema.TimeoutCreate),
 		Delay:                     10 * time.Second,
