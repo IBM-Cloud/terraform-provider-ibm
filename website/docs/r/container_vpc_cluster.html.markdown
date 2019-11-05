@@ -34,6 +34,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
 ## Argument Reference
 
 The following arguments are supported:
+
 * `flavor` - (Required, string) The flavor of the VPC worker node.
 * `name` - (Required, string) The name of the cluster.
 * `vpc_id` - (Required, string) The ID of the VPC in which to create the worker nodes. To list available IDs, run 'ibmcloud ks vpcs'.
