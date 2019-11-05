@@ -44,21 +44,23 @@ func testAccCheckIBMContainerClusterWorkerDataSourceConfigWithoutOptionalFields(
 	return fmt.Sprintf(`
 
 resource "ibm_container_cluster" "testacc_cluster" {
-    name = "%s"
-    datacenter = "%s"
-	machine_type = "%s"
-	hardware       = "shared"
-	public_vlan_id = "%s"
-	private_vlan_id = "%s"
-	region = "%s"
+  name            = "%s"
+  datacenter      = "%s"
+  machine_type    = "%s"
+  hardware        = "shared"
+  public_vlan_id  = "%s"
+  private_vlan_id = "%s"
+  region          = "%s"
 }
+
 data "ibm_container_cluster" "testacc_ds_cluster" {
-    cluster_name_id = "${ibm_container_cluster.testacc_cluster.id}"
-    region = "%s"
+  cluster_name_id = ibm_container_cluster.testacc_cluster.id
+  region          = "%s"
 }
+
 data "ibm_container_cluster_worker" "testacc_ds_worker" {
-    worker_id = "${data.ibm_container_cluster.testacc_ds_cluster.workers[0]}"
-    region = "%s"
+  worker_id = data.ibm_container_cluster.testacc_ds_cluster.workers[0]
+  region    = "%s"
 }
 `, clusterName, datacenter, machineType, publicVlanID, privateVlanID, csRegion, csRegion, csRegion)
 }
@@ -66,43 +68,45 @@ data "ibm_container_cluster_worker" "testacc_ds_worker" {
 func testAccCheckIBMContainerClusterWorkerDataSourceConfig(clusterName string) string {
 	return fmt.Sprintf(`
 data "ibm_org" "org" {
-    org = "%s"
+  org = "%s"
 }
 
 data "ibm_space" "space" {
-  org    = "%s"
-  space  = "%s"
+  org   = "%s"
+  space = "%s"
 }
 
 data "ibm_account" "acc" {
-   org_guid = "${data.ibm_org.org.id}"
+  org_guid = data.ibm_org.org.id
 }
 
 resource "ibm_container_cluster" "testacc_cluster" {
-    name = "%s"
-    datacenter = "%s"
-	machine_type = "%s"
-	hardware       = "shared"
-	public_vlan_id = "%s"
-	private_vlan_id = "%s"
+  name            = "%s"
+  datacenter      = "%s"
+  machine_type    = "%s"
+  hardware        = "shared"
+  public_vlan_id  = "%s"
+  private_vlan_id = "%s"
 
-    org_guid = "${data.ibm_org.org.id}"
-	space_guid = "${data.ibm_space.space.id}"
-	account_guid = "${data.ibm_account.acc.id}"
+  org_guid     = data.ibm_org.org.id
+  space_guid   = data.ibm_space.space.id
+  account_guid = data.ibm_account.acc.id
 }
+
 data "ibm_container_cluster" "testacc_ds_cluster" {
-	org_guid = "${data.ibm_org.org.id}"
-	space_guid = "${data.ibm_space.space.id}"
-	account_guid = "${data.ibm_account.acc.id}"
-    cluster_name_id = "${ibm_container_cluster.testacc_cluster.id}"
-    region = "%s"
+  org_guid        = data.ibm_org.org.id
+  space_guid      = data.ibm_space.space.id
+  account_guid    = data.ibm_account.acc.id
+  cluster_name_id = ibm_container_cluster.testacc_cluster.id
+  region          = "%s"
 }
+
 data "ibm_container_cluster_worker" "testacc_ds_worker" {
-	org_guid = "${data.ibm_org.org.id}"
-	space_guid = "${data.ibm_space.space.id}"
-	account_guid = "${data.ibm_account.acc.id}"
-    worker_id = "${data.ibm_container_cluster.testacc_ds_cluster.workers[0]}"
-    region = "%s"
+  org_guid     = data.ibm_org.org.id
+  space_guid   = data.ibm_space.space.id
+  account_guid = data.ibm_account.acc.id
+  worker_id    = data.ibm_container_cluster.testacc_ds_cluster.workers[0]
+  region       = "%s"
 }
 `, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID, csRegion, csRegion)
 }

@@ -21,7 +21,7 @@ func TestAccIBMContainerALBCert_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMContainerALBCertDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMContainerALBCert_basic(clusterName, secretName),
+				Config: testAccCheckIBMContainerALBCertBasic(clusterName, secretName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"ibm_container_alb_cert.cert", "secret_name", secretName),
@@ -30,7 +30,7 @@ func TestAccIBMContainerALBCert_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMContainerALBCert_update(clusterName, secretName),
+				Config: testAccCheckIBMContainerALBCertUpdate(clusterName, secretName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"ibm_container_alb_cert.cert", "secret_name", secretName),
@@ -72,40 +72,42 @@ func testAccCheckIBMContainerALBCertDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMContainerALBCert_basic(clusterName, secretName string) string {
+func testAccCheckIBMContainerALBCertBasic(clusterName, secretName string) string {
 	return fmt.Sprintf(`
 resource "ibm_container_cluster" "testacc_cluster" {
-  name       = "%s"
-  datacenter = "%s"
+  name              = "%s"
+  datacenter        = "%s"
   default_pool_size = 1
-  machine_type    = "%s"
-  hardware       = "shared"
-  public_vlan_id  = "%s"
-  private_vlan_id = "%s"
+  machine_type      = "%s"
+  hardware          = "shared"
+  public_vlan_id    = "%s"
+  private_vlan_id   = "%s"
 }
-resource ibm_container_alb_cert cert {
+
+resource "ibm_container_alb_cert" "cert" {
   cert_crn    = "%s"
   secret_name = "%s"
-  cluster_id     = "${ibm_container_cluster.testacc_cluster.id}"
+  cluster_id  = ibm_container_cluster.testacc_cluster.id
   region      = "%s"
 }`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, certCRN, secretName, csRegion)
 }
 
-func testAccCheckIBMContainerALBCert_update(clusterName, secretName string) string {
+func testAccCheckIBMContainerALBCertUpdate(clusterName, secretName string) string {
 	return fmt.Sprintf(`
 resource "ibm_container_cluster" "testacc_cluster" {
-  name       = "%s"
-  datacenter = "%s"
+  name              = "%s"
+  datacenter        = "%s"
   default_pool_size = 1
-  machine_type    = "%s"
-  hardware       = "shared"
-  public_vlan_id  = "%s"
-  private_vlan_id = "%s"
+  machine_type      = "%s"
+  hardware          = "shared"
+  public_vlan_id    = "%s"
+  private_vlan_id   = "%s"
 }
-resource ibm_container_alb_cert cert {
+
+resource "ibm_container_alb_cert" "cert" {
   cert_crn    = "%s"
   secret_name = "%s"
-  cluster_id     = "${ibm_container_cluster.testacc_cluster.id}"
+  cluster_id  = ibm_container_cluster.testacc_cluster.id
   region      = "%s"
 }`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, updatedCertCRN, secretName, csRegion)
 }
