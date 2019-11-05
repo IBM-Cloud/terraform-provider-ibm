@@ -127,7 +127,7 @@ func resourceIBMPINetworkRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	networkC := st.NewIBMPINetworkClient(sess, powerinstanceid)
-	networkdata, err := networkC.Get(d.Get("name").(string), powerinstanceid)
+	networkdata, err := networkC.Get(d.Get("pi_network_name").(string), powerinstanceid)
 
 	if err != nil {
 		return err
@@ -140,6 +140,8 @@ func resourceIBMPINetworkRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("type", networkdata.Type)
 	d.Set("gateway", networkdata.Gateway)
 	d.Set("vlanid", networkdata.VlanID)
+	d.Set("pi_network_id", networkdata.NetworkID)
+	d.Set("pi_vlan_id", networkdata.VlanID)
 
 	return nil
 
@@ -178,7 +180,7 @@ func isWaitForIBMPINetworkAvailable(client *st.IBMPINetworkClient, id string, ti
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", helpers.PINetworkProvisioning},
-		Target:     []string{""},
+		Target:     []string{"NETWORK_READY"},
 		Refresh:    isIBMPINetworkRefreshFunc(client, id, powerinstanceid),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
@@ -190,16 +192,17 @@ func isWaitForIBMPINetworkAvailable(client *st.IBMPINetworkClient, id string, ti
 
 func isIBMPINetworkRefreshFunc(client *st.IBMPINetworkClient, id, powerinstanceid string) resource.StateRefreshFunc {
 
-	log.Printf("Calling the IsIBMPINetwork Refresh Function....")
+	log.Printf("Calling the IsIBMPINetwork Refresh Function....with the following id %s and waiting for network to be READY", id)
 	return func() (interface{}, string, error) {
 		network, err := client.Get(id, powerinstanceid)
 		if err != nil {
 			return nil, "", err
 		}
 
-		if network.VlanID == nil {
+		log.Printf("Printing %s", &network.VlanID)
+		if &network.VlanID != nil {
 			//if network.State == "available" {
-			return network, helpers.PINetworkReady, nil
+			return network, "NETWORK_READY", nil
 		}
 
 		return network, helpers.PINetworkProvisioning, nil

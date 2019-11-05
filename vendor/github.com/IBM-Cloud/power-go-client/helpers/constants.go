@@ -38,6 +38,8 @@ const (
 	// IBM PI Image
 
 	PIImageName = "pi_image_name"
+	PIImageQueStatus = "queued"
+	PIImageActiveStatus="active"
 
 	// IBM PI Key
 

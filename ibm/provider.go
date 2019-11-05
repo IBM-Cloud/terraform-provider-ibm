@@ -332,6 +332,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_pi_operations":    resourceIBMPIIOperations(),
 			"ibm_pi_volume_attach": resourceIBMPIVolumeAttach(),
 			"ibm_pi_capture":       resourceIBMPICapture(),
+			"ibm_pi_image":         resourceIBMPIImage(),
 		},
 
 		ConfigureFunc: providerConfigure,
