@@ -70,6 +70,10 @@ func resourceIBMISVpcAddressPrefixCreate(d *schema.ResourceData, meta interface{
 	cidr := d.Get(isVPCAddressPrefixCIDR).(string)
 	vpcID := d.Get(isVPCAddressPrefixVPCID).(string)
 
+	isVPCAddressPrefixKey := "vpc_address_prefix_key_" + vpcID
+	ibmMutexKV.Lock(isVPCAddressPrefixKey)
+	defer ibmMutexKV.Unlock(isVPCAddressPrefixKey)
+
 	params := networkc.PostVpcsVpcIDAddressPrefixesBody{
 		Cidr: cidr,
 		Name: prefixName,
@@ -144,6 +148,9 @@ func resourceIBMISVpcAddressPrefixUpdate(d *schema.ResourceData, meta interface{
 
 		vpcID := parts[0]
 		addrPrefixID := parts[1]
+		isVPCAddressPrefixKey := "vpc_address_prefix_key_" + vpcID
+		ibmMutexKV.Lock(isVPCAddressPrefixKey)
+		defer ibmMutexKV.Unlock(isVPCAddressPrefixKey)
 		_, err = vpcC.UpdateAddressPrefix(params, vpcID, addrPrefixID)
 		if err != nil {
 			return err
@@ -166,6 +173,9 @@ func resourceIBMISVpcAddressPrefixDelete(d *schema.ResourceData, meta interface{
 
 	vpcID := parts[0]
 	addrPrefixID := parts[1]
+	isVPCAddressPrefixKey := "vpc_address_prefix_key_" + vpcID
+	ibmMutexKV.Lock(isVPCAddressPrefixKey)
+	defer ibmMutexKV.Unlock(isVPCAddressPrefixKey)
 	err = vpcClient.DeleteAddressPrefix(vpcID, addrPrefixID)
 	if err != nil {
 		return err
