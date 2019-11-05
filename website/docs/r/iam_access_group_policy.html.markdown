@@ -26,6 +26,27 @@ resource "ibm_iam_access_group_policy" "policy" {
 
 ```
 
+### Access Group Policy for All Identity and Access enabled services within a resource group
+
+```hcl
+resource "ibm_iam_access_group" "accgrp" {
+  name = "test"
+}
+
+data "ibm_resource_group" "group" {
+  name = "default"
+}
+
+resource "ibm_iam_access_group_policy" "policy" {
+  access_group_id = "${ibm_iam_access_group.accgrp.id}"
+  roles        = ["Operator", "Writer"]
+
+  resources = [{
+    resource_group_id = "${data.ibm_resource_group.group.id}"
+  }]
+}
+```
+
 ### Access Group Policy using service with region
 
 ```hcl
