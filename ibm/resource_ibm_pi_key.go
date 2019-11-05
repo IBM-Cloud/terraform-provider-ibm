@@ -94,7 +94,7 @@ func resourceIBMPIKeyRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	sshkeyC := st.NewIBMPIKeyClient(sess, powerinstanceid)
-	sshkeydata, err := sshkeyC.Get(d.Get("name").(string), powerinstanceid)
+	sshkeydata, err := sshkeyC.Get(d.Get("pi_key_name").(string), powerinstanceid)
 
 	if err != nil {
 		return err
@@ -127,7 +127,7 @@ func resourceIBMPIKeyExists(d *schema.ResourceData, meta interface{}) (bool, err
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	client := st.NewIBMPIKeyClient(sess, powerinstanceid)
 
-	key, err := client.Get(d.Get("name").(string), powerinstanceid)
+	key, err := client.Get(d.Get("pi_key_name").(string), powerinstanceid)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
 			if apiErr.StatusCode() == 404 {
