@@ -2,7 +2,6 @@ package ibm
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 	"strings"
 	"time"
@@ -31,7 +30,7 @@ func dataSourceIBMCosBucket() *schema.Resource {
 				ValidateFunc: validateAllowedStringValue(bucketTypes),
 				Required:     true,
 			},
-			"region": &schema.Schema{
+			"bucket_region": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
 			},
@@ -88,11 +87,9 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	bucketName := d.Get("bucket_name").(string)
 	serviceID := d.Get("resource_instance_id").(string)
 	bucketType := d.Get("bucket_type").(string)
-	bucketRegion := d.Get("region").(string)
+	bucketRegion := d.Get("bucket_region").(string)
 
 	apiEndpoint, apiEndpointPrivate := selectCosApi(bucketLocationConvert(bucketType), bucketRegion)
-	log.Println("!!!!!!!!!!!!!")
-	log.Println(apiEndpoint)
 	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
 	if err != nil {
 		return err
