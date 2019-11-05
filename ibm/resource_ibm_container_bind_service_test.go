@@ -74,8 +74,8 @@ func TestAccIBMContainerBindService_WithoutOptionalFields(t *testing.T) {
 func testAccCheckIBMContainerBindService_WithoutOptionalFields(clusterName, serviceName, serviceKey string) string {
 	return fmt.Sprintf(`
 data "ibm_space" "space" {
-  org    = "%s"
-  space  = "%s"
+  org   = "%s"
+  space = "%s"
 }
 
 resource "ibm_container_cluster" "testacc_cluster" {
@@ -83,29 +83,30 @@ resource "ibm_container_cluster" "testacc_cluster" {
   datacenter = "%s"
 
   machine_type    = "%s"
-  hardware       = "shared"
+  hardware        = "shared"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
-  region = "%s"
+  region          = "%s"
 }
 
 resource "ibm_service_instance" "service" {
   name       = "%s"
-  space_guid = "${data.ibm_space.space.id}"
+  space_guid = data.ibm_space.space.id
   service    = "speech_to_text"
   plan       = "lite"
   tags       = ["cluster-service", "cluster-bind"]
 }
 
 resource "ibm_service_key" "serviceKey" {
-	name = "%s"
-	service_instance_guid = "${ibm_service_instance.service.id}"
+  name                  = "%s"
+  service_instance_guid = ibm_service_instance.service.id
 }
+
 resource "ibm_container_bind_service" "bind_service" {
-  cluster_name_id          = "${ibm_container_cluster.testacc_cluster.name}"
-  service_instance_id = "${ibm_service_instance.service.id}"
-  namespace_id 			   = "default"
-  region = "%s"
+  cluster_name_id     = ibm_container_cluster.testacc_cluster.name
+  service_instance_id = ibm_service_instance.service.id
+  namespace_id        = "default"
+  region              = "%s"
 }
 	`, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID, csRegion, serviceName, serviceKey, csRegion)
 }
@@ -114,28 +115,28 @@ func testAccCheckIBMContainerBindService_basic(clusterName, serviceName, service
 	return fmt.Sprintf(`
 
 data "ibm_org" "org" {
-    org = "%s"
+  org = "%s"
 }
 
 data "ibm_space" "space" {
-  org    = "%s"
-  space  = "%s"
+  org   = "%s"
+  space = "%s"
 }
 
 data "ibm_account" "acc" {
-   org_guid = "${data.ibm_org.org.id}"
+  org_guid = data.ibm_org.org.id
 }
 
 resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
   datacenter = "%s"
 
-  org_guid = "${data.ibm_org.org.id}"
-	space_guid = "${data.ibm_space.space.id}"
-	account_guid = "${data.ibm_account.acc.id}"
+  org_guid     = data.ibm_org.org.id
+  space_guid   = data.ibm_space.space.id
+  account_guid = data.ibm_account.acc.id
 
   machine_type    = "%s"
-  hardware       = "shared"
+  hardware        = "shared"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
 }
@@ -143,54 +144,54 @@ resource "ibm_container_cluster" "testacc_cluster" {
 
 resource "ibm_service_instance" "service" {
   name       = "%s"
-  space_guid = "${data.ibm_space.space.id}"
+  space_guid = data.ibm_space.space.id
   service    = "speech_to_text"
   plan       = "lite"
   tags       = ["cluster-service", "cluster-bind"]
 }
 
 resource "ibm_service_key" "serviceKey" {
-	name = "%s"
-	service_instance_guid = "${ibm_service_instance.service.id}"
+  name                  = "%s"
+  service_instance_guid = ibm_service_instance.service.id
 }
 
 resource "ibm_container_bind_service" "bind_service" {
-  cluster_name_id          = "${ibm_container_cluster.testacc_cluster.name}"
-  service_instance_id = "${ibm_service_instance.service.id}"
-  namespace_id 			   = "default"
-  org_guid = "${data.ibm_org.org.id}"
-	space_guid = "${data.ibm_space.space.id}"
-	account_guid = "${data.ibm_account.acc.id}"
+  cluster_name_id     = ibm_container_cluster.testacc_cluster.name
+  service_instance_id = ibm_service_instance.service.id
+  namespace_id        = "default"
+  org_guid            = data.ibm_org.org.id
+  space_guid          = data.ibm_space.space.id
+  account_guid        = data.ibm_account.acc.id
 }
 	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID, serviceName, serviceKey)
 }
 
 func testAccCheckIBMContainerBindServiceWithTag(clusterName, serviceName, serviceKey string) string {
 	return fmt.Sprintf(`
-
+	
 data "ibm_org" "org" {
-    org = "%s"
+  org = "%s"
 }
 
 data "ibm_space" "space" {
-  org    = "%s"
-  space  = "%s"
+  org   = "%s"
+  space = "%s"
 }
 
 data "ibm_account" "acc" {
-   org_guid = "${data.ibm_org.org.id}"
+  org_guid = data.ibm_org.org.id
 }
 
 resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
   datacenter = "%s"
 
-  org_guid = "${data.ibm_org.org.id}"
-	space_guid = "${data.ibm_space.space.id}"
-	account_guid = "${data.ibm_account.acc.id}"
+  org_guid     = data.ibm_org.org.id
+  space_guid   = data.ibm_space.space.id
+  account_guid = data.ibm_account.acc.id
 
   machine_type    = "%s"
-  hardware       = "shared"
+  hardware        = "shared"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
 }
@@ -198,25 +199,25 @@ resource "ibm_container_cluster" "testacc_cluster" {
 
 resource "ibm_service_instance" "service" {
   name       = "%s"
-  space_guid = "${data.ibm_space.space.id}"
+  space_guid = data.ibm_space.space.id
   service    = "speech_to_text"
   plan       = "lite"
   tags       = ["cluster-service", "cluster-bind"]
 }
 
 resource "ibm_service_key" "serviceKey" {
-	name = "%s"
-	service_instance_guid = "${ibm_service_instance.service.id}"
+  name                  = "%s"
+  service_instance_guid = ibm_service_instance.service.id
 }
 
 resource "ibm_container_bind_service" "bind_service" {
-  cluster_name_id          = "${ibm_container_cluster.testacc_cluster.name}"
-  service_instance_id = "${ibm_service_instance.service.id}"
-  namespace_id 			   = "default"
-  org_guid = "${data.ibm_org.org.id}"
-  space_guid = "${data.ibm_space.space.id}"
-  account_guid = "${data.ibm_account.acc.id}"
-  tags = ["test"]
+  cluster_name_id     = ibm_container_cluster.testacc_cluster.name
+  service_instance_id = ibm_service_instance.service.id
+  namespace_id        = "default"
+  org_guid            = data.ibm_org.org.id
+  space_guid          = data.ibm_space.space.id
+  account_guid        = data.ibm_account.acc.id
+  tags                = ["test"]
 }
 	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID, serviceName, serviceKey)
 }
