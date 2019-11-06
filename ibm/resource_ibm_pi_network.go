@@ -199,7 +199,6 @@ func isIBMPINetworkRefreshFunc(client *st.IBMPINetworkClient, id, powerinstancei
 			return nil, "", err
 		}
 
-		log.Printf("Printing %s", &network.VlanID)
 		if &network.VlanID != nil {
 			//if network.State == "available" {
 			return network, "NETWORK_READY", nil

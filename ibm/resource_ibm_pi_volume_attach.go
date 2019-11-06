@@ -85,7 +85,16 @@ func resourceIBMPIVolumeAttachCreate(d *schema.ResourceData, meta interface{}) e
 	}
 	//log.Print("The volume info is %s", volinfo)
 
-	if volinfo.State == helpers.PIVolumeAllowableAttachStatus {
+	if volinfo.State == "available" || *volinfo.Shareable == true {
+		log.Printf(" In the current state the volume can be attached to the instance ")
+	}
+
+	if volinfo.State == "in-use" && *volinfo.Shareable == true {
+
+		log.Printf("Volume State /Status is  permitted and hence attaching the volume to the instance")
+	}
+
+	if volinfo.State == helpers.PIVolumeAllowableAttachStatus && *volinfo.Shareable == false {
 
 		return errors.New("The volume cannot be attached in the current state. The volume must be in the *available* state. No other states are permissible")
 	}

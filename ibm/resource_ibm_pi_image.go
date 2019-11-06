@@ -81,7 +81,7 @@ func resourceIBMPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 	log.Printf("Printing the image post response %+v", &imageResponse)
 
 	IBMPIImageID := imageResponse.ImageID
-	log.Printf("the imageid from the post call is..%s", IBMPIImageID)
+	log.Printf("the imageid from the post call is..%s", *IBMPIImageID)
 
 	d.SetId(*IBMPIImageID)
 

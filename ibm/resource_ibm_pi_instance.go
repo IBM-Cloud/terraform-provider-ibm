@@ -474,7 +474,7 @@ func isPIInstanceRefreshFunc(client *st.IBMPIInstanceClient, id, powerinstanceid
 		}
 
 		//if pvm.Health.Status == helpers.PIInstanceHealthOk {
-		if *pvm.Status == helpers.PIInstanceAvailable {
+		if *pvm.Status == helpers.PIInstanceAvailable && pvm.Health.Status == helpers.PIInstanceHealthOk {
 			log.Printf("The health status is now ok")
 			//if *pvm.Status == "active" ; if *pvm.Addresses[0].IP == nil  {
 			//return pvm, helpers.PIInstanceHealthOk, nil
