@@ -57,6 +57,7 @@ The following arguments are supported:
 * `resource_group_id` - (Optional, string) The ID of the resource group where you want to create the service. You can retrieve the value from data source `ibm_resource_group`. If not provided creates the service in default resource group.
 * `tags` - (Optional, array of strings) Tags associated with the instance.
 * `parameters` - (Optional, map) Arbitrary parameters to create instance. The value must be a JSON object.
+* `guid`- (Optional, string) Guid of the resource instance.
 
 ## Attribute Reference
 
