@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
-	"github.com/IBM-Cloud/bluemix-go/models"
-
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+
+	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
+	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
 const (
@@ -95,6 +95,11 @@ func resourceIBMResourceInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "CRN of resource instance",
+			},
+			"guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Guid of resource instance",
 			},
 		},
 	}
@@ -247,7 +252,7 @@ func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("Error retrieving plan: %s", err)
 	}
 	d.Set("plan", servicePlan)
-
+	d.Set("guid", instance.Guid)
 	return nil
 }
 
