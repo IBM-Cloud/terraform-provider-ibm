@@ -8,7 +8,7 @@ import (
 
 type MetadataType struct {
 	ID string `json:"id"`
-	//Guid      string     `json:"guid"`
+	Guid      string     `json:"guid"`
 	Url       string     `json:"url"`
 	CreatedAt *time.Time `json:"created_at"`
 	UpdatedAt *time.Time `json:"updated_at"`
