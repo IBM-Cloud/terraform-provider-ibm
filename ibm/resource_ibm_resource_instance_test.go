@@ -2,15 +2,14 @@ package ibm
 
 import (
 	"fmt"
-	"testing"
-
-	"github.com/IBM-Cloud/bluemix-go/models"
-
 	"strings"
+	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
+
+	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
 func TestAccIBMResourceInstance_Basic(t *testing.T) {
@@ -58,6 +57,15 @@ func TestAccIBMResourceInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "name", updateName),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "service", "kms"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "plan", "tiered-pricing"),
+					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "location", "us-south"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMResourceInstance_serviceendpoints(serviceName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "name", serviceName),
+					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "service", "databases-for-postgresql"),
+					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "plan", "standard"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "location", "us-south"),
 				),
 			},
@@ -247,5 +255,20 @@ func testAccCheckIBMResourceInstance_with_resource_group(serviceName string) str
 				"HMAC" = true
 			  }
 		}
+	`, serviceName)
+}
+
+func testAccCheckIBMResourceInstance_serviceendpoints(serviceName string) string {
+	return fmt.Sprintf(`
+
+	name                = "test
+	location            = "us-south"
+	service             = "databases-for-postgresql"
+	plan                = "standard"
+	parameters = {
+	  members_memory_allocation_mb = "4096"
+	 }
+	service_endpoints = "public-and-private"
+	}
 	`, serviceName)
 }

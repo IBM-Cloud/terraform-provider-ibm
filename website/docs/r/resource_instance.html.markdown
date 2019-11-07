@@ -58,6 +58,7 @@ The following arguments are supported:
 * `tags` - (Optional, array of strings) Tags associated with the instance.
 * `parameters` - (Optional, map) Arbitrary parameters to create instance. The value must be a JSON object.
 * `guid`- (Optional, string) Guid of the resource instance.
+* `service_endpoints` - (Optional, string) Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.
 
 ## Attribute Reference
 

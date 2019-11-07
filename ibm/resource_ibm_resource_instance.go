@@ -101,6 +101,12 @@ func resourceIBMResourceInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Guid of resource instance",
 			},
+			"service_endpoints": {
+				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"public", "private", "public-and-private"}),
+			},
 		},
 	}
 }
@@ -179,10 +185,18 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 		}
 		rsInst.ResourceGroupID = grpList[0].ID
 	}
+	params := map[string]interface{}{}
+
+	if serviceEndpoints, ok := d.GetOk("service_endpoints"); ok {
+		params["service-endpoints"] = serviceEndpoints.(string)
+	}
 
 	if parameters, ok := d.GetOk("parameters"); ok {
-		rsInst.Parameters = parameters.(map[string]interface{})
+		for k, v := range parameters.(map[string]interface{}) {
+			params[k] = v
+		}
 	}
+	rsInst.Parameters = params
 
 	instance, err := rsConClient.ResourceServiceInstance().CreateInstance(rsInst)
 	if err != nil {
@@ -253,6 +267,7 @@ func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	}
 	d.Set("plan", servicePlan)
 	d.Set("guid", instance.Guid)
+
 	return nil
 }
 
@@ -290,6 +305,22 @@ func resourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{})
 
 		updateReq.ServicePlanID = servicePlan
 
+	}
+	params := map[string]interface{}{}
+
+	if d.HasChange("service_endpoints") {
+		params["service-endpoints"] = d.Get("service_endpoints").(string)
+	}
+
+	if d.HasChange("parameters") {
+		param := d.Get("parameters").(map[string]interface{})
+		for k, v := range param {
+			params[k] = v
+		}
+
+	}
+	if d.HasChange("service_endpoints") || d.HasChange("parameters") {
+		updateReq.Parameters = params
 	}
 
 	if d.HasChange("tags") {
