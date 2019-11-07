@@ -17,9 +17,10 @@ import (
 
 func TestAccIBMContainerVpcCluster_basic(t *testing.T) {
 	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	flavor := fmt.Sprintf("c.%d", acctest.RandInt())
+	vpc := fmt.Sprintf("vpc-%d", acctest.RandIntRange(10, 100))
+	flavor := "c2.2x4"
 	zone := "us-south"
-	workerCount := fmt.Sprintf("%d", acctest.RandInt())
+	workerCount := "1"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -27,7 +28,7 @@ func TestAccIBMContainerVpcCluster_basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMContainerVpcCluster_basic(zone, clusterName, flavor, workerCount),
+				Config: testAccCheckIBMContainerVpcCluster_basic(zone, vpc, clusterName, flavor, workerCount),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.testacc_cluster", "name", clusterName),
@@ -49,16 +50,17 @@ func TestAccIBMContainerVpcCluster_basic(t *testing.T) {
 
 func TestAccIBMVpcContainerVpcCluster_importBasic(t *testing.T) {
 	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	flavor := fmt.Sprintf("c.%d", acctest.RandInt())
+	vpc := fmt.Sprintf("vpc-%d", acctest.RandIntRange(10, 100))
+	flavor := "c2.2x4"
 	zone := "us-south"
-	workerCount := fmt.Sprintf("%d", acctest.RandInt())
+	workerCount := "1"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMContainerVpcCluster_basic(zone, clusterName, flavor, workerCount),
+				Config: testAccCheckIBMContainerVpcCluster_basic(zone, vpc, clusterName, flavor, workerCount),
 			},
 			resource.TestStep{
 				ResourceName:      "ibm_container_vpc_cluster.testacc_cluster",
@@ -105,22 +107,11 @@ func getVpcClusterTargetHeaderTestACC() v2.ClusterTargetHeader {
 	return targetEnv
 }
 
-func testAccCheckIBMContainerVpcCluster_basic(zone, clusterName, flavor, workerCount string) string {
-	return fmt.Sprintf(`	
-data "ibm_account" "acc" {
-   org_guid = "${data.ibm_org.org.id}"
-}
-
-data "ibm_resource_group" "group" {
+func testAccCheckIBMContainerVpcCluster_basic(zone, vpc, clusterName, flavor, workerCount string) string {
+	return fmt.Sprintf(`
+	
+data "ibm_resource_group" "resource_group" {
 	is_default = "true"
-}
-
-resource "random_id" "name1" {
-	byte_length = 2
-}
-  
-resource "random_id" "name2" {
-	byte_length = 2
 }
 
 locals {
@@ -128,18 +119,18 @@ locals {
 }
   
 resource "ibm_is_vpc" "vpc1" {
-	name = "vpc-${random_id.name1.hex}"
+	name = "%s"
 }
   
 resource "ibm_is_subnet" "subnet1" {
-	name                     = "subnet-${random_id.name1.hex}"
+	name                     = "subnet-1"
 	vpc                      = "${ibm_is_vpc.vpc1.id}"
 	zone                     = "${local.ZONE1}"
 	total_ipv4_address_count = 256
 }
 
 resource "ibm_container_vpc_cluster" "cluster" {
-	name              = "%s${random_id.name1.hex}"
+	name              = "%s-1"
 	vpc_id            = "${ibm_is_vpc.vpc1.id}"
 	flavor            = "%s"
 	worker_count      = "%s"
@@ -151,5 +142,5 @@ resource "ibm_container_vpc_cluster" "cluster" {
 		name      = "${local.ZONE1}"
 	  },
 	]
-  }`, zone, clusterName, flavor, workerCount)
+  }`, zone, vpc, clusterName, flavor, workerCount)
 }
