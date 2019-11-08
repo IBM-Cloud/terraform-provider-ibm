@@ -2,15 +2,14 @@ package ibm
 
 import (
 	"fmt"
-	"testing"
-
-	"github.com/IBM-Cloud/bluemix-go/models"
-
 	"strings"
+	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
+
+	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
 func TestAccIBMResourceInstance_Basic(t *testing.T) {
@@ -91,6 +90,31 @@ func TestAccIBMResourceInstance_import(t *testing.T) {
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
 					"wait_time_minutes", "parameters"},
+			},
+		},
+	})
+}
+
+func TestAccIBMResourceInstance_with_serviceendpoints(t *testing.T) {
+	var conf models.ServiceInstance
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	resourceName := "ibm_resource_instance.instance"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMResourceInstanceDestroy,
+		Steps: []resource.TestStep{
+
+			resource.TestStep{
+				Config: testAccCheckIBMResourceInstance_serviceendpoints(serviceName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMResourceInstanceExists(resourceName, conf),
+					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
+					resource.TestCheckResourceAttr(resourceName, "service", "databases-for-postgresql"),
+					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
+					resource.TestCheckResourceAttr(resourceName, "location", "us-south"),
+				),
 			},
 		},
 	})
@@ -247,5 +271,27 @@ func testAccCheckIBMResourceInstance_with_resource_group(serviceName string) str
 				"HMAC" = true
 			  }
 		}
+	`, serviceName)
+}
+
+func testAccCheckIBMResourceInstance_serviceendpoints(serviceName string) string {
+	return fmt.Sprintf(`
+	
+		resource "ibm_resource_instance" "postgresql_from_backup" {
+			name                = "%s"
+			location            = "us-south"
+			service             = "databases-for-postgresql"
+			plan                = "standard"
+			parameters = {
+				members_memory_allocation_mb = "4096"
+			 }
+			service_endpoints = "public-and-private"
+			timeouts {
+				create = "25m"
+				update = "15m"
+				delete = "15m"
+			  }
+		} 
+			
 	`, serviceName)
 }
