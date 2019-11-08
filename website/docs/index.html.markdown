@@ -128,7 +128,7 @@ provider "ibm" {
 
 ### Environment variables
 
-You can provide your credentials by exporting the `IC_API_KEY`, `SL_USERNAME`, and `SL_API_KEY` environment variables, representing your IBM Cloud platform API key, IBM Cloud Classic Infrastructure (SoftLayer) user name, and IBM Cloud infrastructure API key, respectively.
+You can provide your credentials by exporting the `IC_API_KEY`, `IAAS_CLASSIC_USERNAME`, and `IAAS_CLASSIC_API_KEY` environment variables, representing your IBM Cloud platform API key, IBM Cloud Classic Infrastructure (SoftLayer) user name, and IBM Cloud infrastructure API key, respectively.
 
 ```hcl
 provider "ibm" {}
@@ -138,8 +138,8 @@ Usage:
 
 ```shell
 export IC_API_KEY="bmx_api_key"
-export SL_USERNAME="sl_username"
-export SL_API_KEY="sl_api_key"
+export IAAS_CLASSIC_USERNAME="sl_username"
+export IAAS_CLASSIC_API_KEY="sl_api_key"
 terraform plan
 ```
 
