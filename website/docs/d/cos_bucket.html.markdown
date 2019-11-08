@@ -42,7 +42,7 @@ The following arguments are supported:
 * `bucket_name` - (Required, string) The name of the bucket.
 * `bucket_type` - (Required, string) The type of the bucket. Accepted values: single_site_location region_location cross_region_location
 * `resource_instance_id` - (Required, string) The id of Cloud Object Storage instance.
-* `region` - (Required, string) The region of the bucket.
+* `bucket_region` - (Required, string) The region of the bucket.
 
 ## Attribute Reference
 

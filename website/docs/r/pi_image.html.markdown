@@ -34,6 +34,7 @@ ibm_pi_image provides the following [timeouts](https://www.terraform.io/docs/con
 The following arguments are supported:
 
 * `pi_image_name` - (Required, string) The name for this image.
+* `pi_image_id` - (Required, string) The image id for this image.
 * `pi_cloud_instance_id` - (Required, string) The cloud_instance_id for this account.
 
 ## Attribute Reference
