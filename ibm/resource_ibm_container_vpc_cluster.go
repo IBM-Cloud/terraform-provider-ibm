@@ -516,21 +516,15 @@ func waitForVpcClusterCreate(d *schema.ResourceData, meta interface{}) (interfac
 			if len(workers) == 0 {
 				return workers, deployInProgress, nil
 			}
-			healthCounter := 0
 
 			for _, worker := range workers {
 				log.Println("worker: ", worker.ID)
 				log.Println("worker health state:  ", worker.Health.State)
 
 				if worker.Health.State == normal {
-					healthCounter++
+					return workers, ready, nil
 				}
 			}
-
-			if healthCounter == len(workers) {
-				return workers, ready, nil
-			}
-
 			return workers, deployInProgress, nil
 
 		},
