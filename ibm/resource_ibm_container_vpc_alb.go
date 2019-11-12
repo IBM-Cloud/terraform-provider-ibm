@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
@@ -19,8 +20,8 @@ func resourceIBMContainerVpcALB() *schema.Resource {
 		Delete:   resourceIBMContainerVpcALBDelete,
 		Importer: &schema.ResourceImporter{},
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(5 * time.Minute),
-			Update: schema.DefaultTimeout(5 * time.Minute),
+			Create: schema.DefaultTimeout(60 * time.Minute),
+			Update: schema.DefaultTimeout(60 * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -92,6 +93,12 @@ func resourceIBMContainerVpcALBCreate(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Provide either `enable` or `disable_deployment`")
 	}
 
+	_, err = waitForVpcClusterAvailable(d, meta, albID, schema.TimeoutCreate)
+	if err != nil {
+		return fmt.Errorf(
+			"Error waiting for cluster resource availabilty (%s) : %s", d.Id(), err)
+	}
+
 	params := v2.AlbConfig{
 		AlbID:  albID,
 		Enable: enable,
@@ -102,6 +109,7 @@ func resourceIBMContainerVpcALBCreate(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return err
 	}
+
 	if enable {
 		err = albAPI.EnableAlb(params, targetEnv)
 		if err != nil {
@@ -166,6 +174,13 @@ func resourceIBMContainerVpcALBUpdate(d *schema.ResourceData, meta interface{}) 
 		enable := d.Get("enable").(bool)
 		disableDeployment := d.Get("disable_deployment").(bool)
 		albID := d.Id()
+
+		_, err = waitForVpcClusterAvailable(d, meta, albID, schema.TimeoutCreate)
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for cluster resource availabilty (%s) : %s", d.Id(), err)
+		}
+
 		params := v2.AlbConfig{
 			AlbID:  albID,
 			Enable: enable,
@@ -200,13 +215,11 @@ func waitForVpcContainerALB(d *schema.ResourceData, meta interface{}, albID, tim
 	if err != nil {
 		return false, err
 	}
-
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"active"},
 		Refresh: func() (interface{}, string, error) {
 			targetEnv := v2.ClusterTargetHeader{}
-
 			alb, err := albClient.Albs().GetAlb(albID, targetEnv)
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
@@ -237,4 +250,54 @@ func resourceIBMContainerVpcALBDelete(d *schema.ResourceData, meta interface{}) 
 	d.SetId("")
 
 	return nil
+}
+
+func waitForVpcClusterAvailable(d *schema.ResourceData, meta interface{}, albID, timeout string) (interface{}, error) {
+	albClient, err := meta.(ClientSession).VpcContainerAPI()
+	if err != nil {
+		return false, err
+	}
+	createStateConf := &resource.StateChangeConf{
+		Pending: []string{deployRequested, deployInProgress},
+		Target:  []string{ready},
+		Refresh: func() (interface{}, string, error) {
+			targetEnv := v2.ClusterTargetHeader{}
+			albInfo, err := albClient.Albs().GetAlb(albID, targetEnv)
+			if err == nil {
+				cluster := albInfo.Cluster
+				workerPools, err := albClient.WorkerPools().ListWorkerPools(cluster, targetEnv)
+				if err != nil {
+					return workerPools, deployInProgress, err
+				}
+				for _, wpool := range workerPools {
+					workers, err := albClient.Workers().ListByWorkerPool(cluster, wpool.ID, false, targetEnv)
+					if err != nil {
+						return wpool, deployInProgress, err
+					}
+					healthCounter := 0
+
+					for _, worker := range workers {
+						log.Println("worker: ", worker.ID)
+						log.Println("worker health state:  ", worker.Health.State)
+
+						if worker.Health.State == normal {
+							healthCounter++
+						}
+					}
+					if healthCounter != len(workers) {
+						log.Println("all the worker nodes are not in normal state")
+						return wpool, deployInProgress, nil
+					}
+				}
+			} else {
+				log.Println("ALB info not available")
+				return albInfo, deployInProgress, err
+			}
+			return albInfo, ready, nil
+		},
+		Timeout:    d.Timeout(timeout),
+		Delay:      10 * time.Second,
+		MinTimeout: 5 * time.Second,
+	}
+	return createStateConf.WaitForState()
 }
