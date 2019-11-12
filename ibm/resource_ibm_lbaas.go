@@ -100,11 +100,11 @@ func resourceIBMLbaas() *schema.Resource {
 				Computed:    true,
 			},
 			"use_system_public_ip_pool": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
-				ForceNew:    true,
-				Description: "Applicable for public load balancer only. It specifies whether the public IP addresses are allocated from system public IP pool or public subnet from the account ordering the load balancer.",
+				Type:             schema.TypeBool,
+				Optional:         true,
+				Computed:         true,
+				DiffSuppressFunc: applyOnce,
+				Description:      "Applicable for public load balancer only. It specifies whether the public IP addresses are allocated from system public IP pool or public subnet from the account ordering the load balancer.",
 			},
 			"protocols": {
 				Type:        schema.TypeSet,
@@ -454,7 +454,6 @@ func buildLbaasLBProductOrderContainer(d *schema.ResourceData, sess *session.Ses
 	name := d.Get("name").(string)
 	subnets := d.Get("subnets").([]interface{})
 	lbType := d.Get("type").(string)
-	publicIPPool := d.Get("use_system_public_ip_pool").(bool)
 
 	subnetsParam := []datatypes.Network_Subnet{}
 	for _, subnet := range subnets {
@@ -505,8 +504,9 @@ func buildLbaasLBProductOrderContainer(d *schema.ResourceData, sess *session.Ses
 	if lbType == "PRIVATE" {
 		productOrderContainer.IsPublic = sl.Bool(false)
 	}
-
-	productOrderContainer.UseSystemPublicIpPool = sl.Bool(publicIPPool)
+	if publicIPPool, ok := d.GetOkExists("use_system_public_ip_pool"); ok {
+		productOrderContainer.UseSystemPublicIpPool = sl.Bool(publicIPPool.(bool))
+	}
 
 	return &productOrderContainer, nil
 }
