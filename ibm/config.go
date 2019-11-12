@@ -363,11 +363,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		}
 		err = authenticateCF(sess.BluemixSession)
 		if err != nil {
-			session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
 			session.functionConfigErr = fmt.Errorf("Error occured while fetching auth key for function: %q", err)
-			session.isConfigErr = fmt.Errorf("Error occured while fetching auth key for vpc: %q", err)
-			session.powerConfigErr = fmt.Errorf("Error occured while fetching the auth key for power iaas: %q", err)
-			session.ibmpiConfigErr = fmt.Errorf("Error occured while fetching the auth key for power iaas: %q", err)
 		}
 	}
 
