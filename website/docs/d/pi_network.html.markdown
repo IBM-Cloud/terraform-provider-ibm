@@ -15,7 +15,7 @@ Import the details of an existing IBM Power Virtual Server Cloud network as a re
 ```hcl
 data "ibm_pi_network" "ds_network" {
   pi_network_name = "APP"
-  powerinstanceid = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
+  pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
 
