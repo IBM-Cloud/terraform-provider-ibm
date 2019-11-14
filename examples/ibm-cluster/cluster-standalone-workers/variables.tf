@@ -1,37 +1,45 @@
 variable "org" {
-	default="example.com"
+	
 } 
 
 variable "space" {
+  
 }
 
 variable "region" {
+  
 }
 
 variable "datacenter" {
+  
 }
 
 variable "machine_type" {
+  
 }
 
-variable "isolation" {
-}
+/*variable "isolation" {
+  default="public"
+}*/
 
 variable "private_vlan_id" {
+  
 }
 
 variable "public_vlan_id" {
+  
 }
 
 variable "subnet_id" {
+  
 }
 
 variable "service_instance_name" {
-  default = "myservice"
+  default = "myservice3"
 }
 
 variable "service_key" {
-  default = "myservicekey"
+  default = "myservicekey3"
 }
 
 variable "service_offering" {
@@ -43,5 +51,5 @@ variable "plan" {
 }
 
 variable "cluster_name" {
-  default = "mycluster"
+  default = "mycluster3"
 }
