@@ -516,7 +516,7 @@ func isWaitForInstanceAvailable(instanceC *compute.InstanceClient, id string, d 
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", isInstanceProvisioning},
-		Target:     []string{isInstanceProvisioningDone},
+		Target:     []string{isInstanceStatusRunning},
 		Refresh:    isInstanceRefreshFunc(instanceC, id, d),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      10 * time.Second,
@@ -535,7 +535,7 @@ func isInstanceRefreshFunc(instanceC *compute.InstanceClient, id string, d *sche
 		d.Set(isInstanceStatus, instance.Status)
 
 		if instance.Status == "available" || instance.Status == "failed" || instance.Status == "running" {
-			return instance, isInstanceProvisioningDone, nil
+			return instance, isInstanceStatusRunning, nil
 		}
 
 		return instance, isInstanceProvisioning, nil
