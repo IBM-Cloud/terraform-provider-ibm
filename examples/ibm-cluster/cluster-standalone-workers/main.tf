@@ -30,7 +30,7 @@ resource "ibm_container_cluster" "cluster" {
   #worker_num = 2
 
   machine_type    = var.machine_type
-  isolation       = var.isolation
+  //isolation       = var.isolation
   public_vlan_id  = var.public_vlan_id
   private_vlan_id = var.private_vlan_id
   hardware        = "shared"
