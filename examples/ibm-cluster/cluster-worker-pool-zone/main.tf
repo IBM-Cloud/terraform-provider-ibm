@@ -11,7 +11,7 @@ data "ibm_space" "space" {
 }
 
 data "ibm_resource_group" "testacc_ds_resource_group" {
-  name = "default"
+  name = "Default"
 }
 
 resource "ibm_container_cluster" "cluster" {
@@ -23,7 +23,7 @@ resource "ibm_container_cluster" "cluster" {
   hardware          = "shared"
   resource_group_id = data.ibm_resource_group.testacc_ds_resource_group.id
   machine_type      = var.machine_type
-  isolation         = var.isolation
+  //isolation         = var.isolation
   public_vlan_id    = var.public_vlan_id
   private_vlan_id   = var.private_vlan_id
 }
