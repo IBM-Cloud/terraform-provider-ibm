@@ -125,16 +125,21 @@ func resourceIBMISPublicGatewayCreate(d *schema.ResourceData, meta interface{}) 
 	vpc := d.Get(isPublicGatewayVPC).(string)
 	zone := d.Get(isPublicGatewayZone).(string)
 	floatingipID := ""
+	floatingipadd := ""
 	if floatingipdataIntf, ok := d.GetOk(isPublicGatewayFloatingIP); ok {
 		floatingipdata := floatingipdataIntf.(map[string]interface{})
 		floatingipidintf, ispresent := floatingipdata["id"]
 		if ispresent {
 			floatingipID = floatingipidintf.(string)
 		}
+		floatingipaddintf, ispresentadd := floatingipdata[isPublicGatewayFloatingIPAddress]
+		if ispresentadd {
+			floatingipadd = floatingipaddintf.(string)
+		}
 	}
 
 	publicgwC := network.NewPublicGatewayClient(sess)
-	publicgw, err := publicgwC.Create(name, zone, vpc, floatingipID)
+	publicgw, err := publicgwC.Create(name, zone, vpc, floatingipID, floatingipadd)
 	if err != nil {
 		return err
 	}
