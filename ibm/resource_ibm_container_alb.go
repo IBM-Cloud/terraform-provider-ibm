@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
@@ -18,8 +19,8 @@ func resourceIBMContainerALB() *schema.Resource {
 		Delete:   resourceIBMContainerALBDelete,
 		Importer: &schema.ResourceImporter{},
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(5 * time.Minute),
-			Update: schema.DefaultTimeout(5 * time.Minute),
+			Create: schema.DefaultTimeout(60 * time.Minute),
+			Update: schema.DefaultTimeout(60 * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -102,6 +103,12 @@ func resourceIBMContainerALBCreate(d *schema.ResourceData, meta interface{}) err
 		params.ALBIP = userIP
 	}
 
+	_, err = waitForClusterAvailable(d, meta, albID)
+	if err != nil {
+		return fmt.Errorf(
+			"Error waiting for cluster resources availabilty (%s) : %s", d.Id(), err)
+	}
+
 	albAPI := albClient.Albs()
 	targetEnv, err := getAlbTargetHeader(d, meta)
 	if err != nil {
@@ -171,6 +178,13 @@ func resourceIBMContainerALBUpdate(d *schema.ResourceData, meta interface{}) err
 		if err != nil {
 			return err
 		}
+
+		_, err = waitForClusterAvailable(d, meta, albID)
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for cluster resources availabilty (%s) : %s", d.Id(), err)
+		}
+
 		err = albAPI.ConfigureALB(albID, params, disableDeployment, targetEnv)
 		if err != nil {
 			return err
@@ -229,4 +243,37 @@ func resourceIBMContainerALBDelete(d *schema.ResourceData, meta interface{}) err
 	d.SetId("")
 
 	return nil
+}
+
+// WaitForWorkerAvailable Waits for worker creation
+func waitForClusterAvailable(d *schema.ResourceData, meta interface{}, albID string) (interface{}, error) {
+	csClient, err := meta.(ClientSession).ContainerAPI()
+	if err != nil {
+		return nil, err
+	}
+
+	target, err := getAlbTargetHeader(d, meta)
+	if err != nil {
+		return nil, err
+	}
+
+	albConfig, err := csClient.Albs().GetALB(albID, target)
+	if err != nil {
+		return nil, err
+	}
+
+	ClusterID := albConfig.ClusterID
+
+	log.Printf("Waiting for worker of the cluster (%s) wokers to be available.", ClusterID)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", workerProvisioning},
+		Target:     []string{workerNormal},
+		Refresh:    workerStateRefreshFunc(csClient.Workers(), ClusterID, target),
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }

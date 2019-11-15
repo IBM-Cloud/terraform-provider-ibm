@@ -45,6 +45,12 @@ func resourceIBMContainerCluster() *schema.Resource {
 		Exists:   resourceIBMContainerClusterExists,
 		Importer: &schema.ResourceImporter{},
 
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(90 * time.Minute),
+			Delete: schema.DefaultTimeout(45 * time.Minute),
+			Update: schema.DefaultTimeout(45 * time.Minute),
+		},
+
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -311,9 +317,10 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Deprecated:  "This field is deprecated",
 			},
 			"wait_time_minutes": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  90,
+				Type:       schema.TypeInt,
+				Optional:   true,
+				Default:    90,
+				Deprecated: "This field is deprecated",
 			},
 			"tags": {
 				Type:     schema.TypeSet,
@@ -548,7 +555,7 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	}
 	d.SetId(cls.ID)
 	//wait for cluster availability
-	_, err = WaitForClusterAvailable(d, meta, targetEnv)
+	_, err = WaitForClusterCreation(d, meta, targetEnv)
 	if err != nil {
 		return fmt.Errorf(
 			"Error waiting for cluster (%s) to become ready: %s", d.Id(), err)
@@ -1169,7 +1176,7 @@ func waitForClusterDelete(d *schema.ResourceData, meta interface{}) (interface{}
 			}
 			return cluster, clusterDeletePending, nil
 		},
-		Timeout:      time.Duration(d.Get("wait_time_minutes").(int)) * time.Minute,
+		Timeout:      d.Timeout(schema.TimeoutDelete),
 		Delay:        60 * time.Second,
 		MinTimeout:   10 * time.Second,
 		PollInterval: 60 * time.Second,
@@ -1191,7 +1198,7 @@ func WaitForClusterAvailable(d *schema.ResourceData, meta interface{}, target v1
 		Pending:    []string{"retry", clusterProvisioning},
 		Target:     []string{clusterNormal},
 		Refresh:    clusterStateRefreshFunc(csClient.Clusters(), id, target),
-		Timeout:    time.Duration(d.Get("wait_time_minutes").(int)) * time.Minute,
+		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
@@ -1229,7 +1236,7 @@ func WaitForWorkerAvailable(d *schema.ResourceData, meta interface{}, target v1.
 		Pending:    []string{"retry", workerProvisioning},
 		Target:     []string{workerNormal},
 		Refresh:    workerStateRefreshFunc(csClient.Workers(), id, target),
-		Timeout:    time.Duration(d.Get("wait_time_minutes").(int)) * time.Minute,
+		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
@@ -1256,6 +1263,41 @@ func workerStateRefreshFunc(client v1.Workers, instanceID string, target v1.Clus
 	}
 }
 
+func WaitForClusterCreation(d *schema.ResourceData, meta interface{}, target v1.ClusterTargetHeader) (interface{}, error) {
+	csClient, err := meta.(ClientSession).ContainerAPI()
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("Waiting for cluster (%s) to be available.", d.Id())
+	ClusterID := d.Id()
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"retry", clusterProvisioning},
+		Target:  []string{clusterNormal},
+		Refresh: func() (interface{}, string, error) {
+			workerFields, err := csClient.Workers().List(ClusterID, target)
+			log.Println("Total workers: ", len(workerFields))
+			if err != nil {
+				return nil, "", fmt.Errorf("Error retrieving workers for cluster: %s", err)
+			}
+			log.Println("Checking workers...")
+			//verifying for atleast sing node to be in normal state
+			for _, e := range workerFields {
+				log.Println("Worker node status: ", e.State)
+				if e.State == workerNormal {
+					return workerFields, workerNormal, nil
+				}
+			}
+			return workerFields, workerProvisioning, nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
 func WaitForSubnetAvailable(d *schema.ResourceData, meta interface{}, target v1.ClusterTargetHeader) (interface{}, error) {
 	csClient, err := meta.(ClientSession).ContainerAPI()
 	if err != nil {
@@ -1268,7 +1310,7 @@ func WaitForSubnetAvailable(d *schema.ResourceData, meta interface{}, target v1.
 		Pending:    []string{"retry", workerProvisioning},
 		Target:     []string{workerNormal},
 		Refresh:    subnetStateRefreshFunc(csClient.Clusters(), id, d, target),
-		Timeout:    time.Duration(d.Get("wait_time_minutes").(int)) * time.Minute,
+		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
@@ -1302,7 +1344,7 @@ func WaitForClusterVersionUpdate(d *schema.ResourceData, meta interface{}, targe
 		Pending:    []string{"retry", versionUpdating},
 		Target:     []string{clusterNormal},
 		Refresh:    clusterVersionRefreshFunc(csClient.Clusters(), id, d, target),
-		Timeout:    time.Duration(d.Get("wait_time_minutes").(int)) * time.Minute,
+		Timeout:    d.Timeout(schema.TimeoutUpdate),
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}

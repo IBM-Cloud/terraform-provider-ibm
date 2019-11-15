@@ -64,6 +64,14 @@ resource "ibm_container_cluster" "testacc_cluster" {
 }
 ```
 
+## Timeouts
+
+ibm_container_alb provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+
+* `create` - (Default 90 minutes) Used for creating Instance.
+* `delete` - (Default 45 minutes) Used for deleting Instance.
+* `update` - (Default 45 minutes) Used for updating Instance.
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -112,7 +120,7 @@ The following arguments are supported:
 * `public_service_endpoint` - (Optional,bool) Enable the public service endpoint to make the master publicly accessible.
 * `private_service_endpoint` - (Optional,bool) Enable the private service endpoint to make the master privately accessible. Once enabled this feature cannot be disabled later.
   **NOTE**: As a prerequisite for using Service Endpoints, Account must be enabled for Virtual Routing and Forwarding (VRF). Learn more about VRF on IBM Cloud [here](https://cloud.ibm.com/docs/infrastructure/direct-link/vrf-on-ibm-cloud.html#overview-of-virtual-routing-and-forwarding-vrf-on-ibm-cloud). Account must be enabled for connectivity to Service Endpoints. Use the resource `ibm_container_cluster_feature` to update the `public_service_endpoint` and `private_service_endpoint`. 
-* `wait_time_minutes` - (Optional, integer) The duration, expressed in minutes, to wait for the cluster to become available before declaring it as created. It is also the same amount of time waited for no active transactions before proceeding with an update or deletion. The default value is `90`.
+* `wait_time_minutes` - (Deprecated, integer) The duration, expressed in minutes, to wait for the cluster to become available before declaring it as created. It is also the same amount of time waited for no active transactions before proceeding with an update or deletion. The default value is `90`.
 * `tags` - (Optional, array of strings) Tags associated with the container cluster instance.  
   **NOTE**: For users on account to add tags to a resource, they must be assigned the appropriate access. Learn more about tags permission [here](https://cloud.ibm.com/docs/resources?topic=resources-access)
 

@@ -22,7 +22,7 @@ resource "ibm_container_cluster" "cluster" {
 
   resource_group_id = "${data.ibm_resource_group.testacc_ds_resource_group.id}"
   machine_type      = "${var.machine_type}"
-  isolation         = "${var.isolation}"
+  hardware = "${var.hardware}"
   public_vlan_id    = "${var.public_vlan_id}"
   private_vlan_id   = "${var.private_vlan_id}"
 }
