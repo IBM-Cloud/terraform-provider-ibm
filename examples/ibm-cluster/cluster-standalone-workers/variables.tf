@@ -8,7 +8,7 @@ variable "datacenter" {}
 
 variable "machine_type" {}
 
-variable "isolation" {}
+variable "hardware" {}
 
 variable "private_vlan_id" {}
 
