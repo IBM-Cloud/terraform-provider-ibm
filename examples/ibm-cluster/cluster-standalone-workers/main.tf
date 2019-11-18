@@ -1,16 +1,8 @@
 provider "ibm" {}
 
-data "ibm_org" "org" {
-  org = "${var.org}"
-}
-
 data "ibm_space" "space" {
   org   = "${var.org}"
   space = "${var.space}"
-}
-
-data "ibm_account" "account" {
-  org_guid = "${data.ibm_org.org.id}"
 }
 
 resource "ibm_container_cluster" "cluster" {

@@ -2,8 +2,6 @@ variable "org" {}
 
 variable "space" {}
 
-variable "region" {}
-
 variable "datacenter" {}
 
 variable "machine_type" {}

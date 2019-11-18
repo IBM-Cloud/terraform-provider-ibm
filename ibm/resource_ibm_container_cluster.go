@@ -67,7 +67,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 			"region": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Deprecated:  "This field is deprecated",
+				Removed:     "This field is removed",
 				Computed:    true,
 				ForceNew:    true,
 				Description: "The cluster region",
@@ -109,7 +109,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Description:   "Number of worker nodes",
 				ConflictsWith: []string{"workers"},
 				ValidateFunc:  validateWorkerNum,
-				Deprecated:    "This field is deprecated",
+				Removed:       "This field is removed",
 			},
 
 			"default_pool_size": {
@@ -300,27 +300,27 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Deprecated:  "This field is deprecated",
+				Removed:     "This field is removed",
 			},
 			"space_guid": {
 				Description: "The bluemix space guid this cluster belongs to",
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Deprecated:  "This field is deprecated",
+				Removed:     "This field is removed",
 			},
 			"account_guid": {
 				Description: "The bluemix account guid this cluster belongs to",
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Deprecated:  "This field is deprecated",
+				Removed:     "This field is removed",
 			},
 			"wait_time_minutes": {
-				Type:       schema.TypeInt,
-				Optional:   true,
-				Default:    90,
-				Deprecated: "This field is deprecated",
+				Type:     schema.TypeInt,
+				Optional: true,
+				Default:  90,
+				Removed:  "This field is removed",
 			},
 			"tags": {
 				Type:     schema.TypeSet,

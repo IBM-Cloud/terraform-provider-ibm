@@ -1,9 +1,5 @@
 provider "ibm" {}
 
-data "ibm_org" "org" {
-  org = "${var.org}"
-}
-
 data "ibm_space" "space" {
   org   = "${var.org}"
   space = "${var.space}"

@@ -116,10 +116,7 @@ func resourceIBMContainerBindService() *schema.Resource {
 }
 
 func getClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v1.ClusterTargetHeader, error) {
-	orgGUID := d.Get("org_guid").(string)
-	spaceGUID := d.Get("space_guid").(string)
 	accountGUID := d.Get("account_guid").(string)
-	region := d.Get("region").(string)
 	resourceGroup := d.Get("resource_group_id").(string)
 
 	sess, err := meta.(ClientSession).BluemixSession()
@@ -133,9 +130,6 @@ func getClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v1.Cluste
 	}
 	accountID := userDetails.userAccount
 
-	if region == "" {
-		region = sess.Config.Region
-	}
 	if resourceGroup == "" {
 		resourceGroup = sess.Config.ResourceGroup
 
@@ -160,10 +154,7 @@ func getClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v1.Cluste
 	}
 
 	targetEnv := v1.ClusterTargetHeader{
-		OrgID:         orgGUID,
-		SpaceID:       spaceGUID,
 		AccountID:     accountGUID,
-		Region:        region,
 		ResourceGroup: resourceGroup,
 	}
 	return targetEnv, nil

@@ -65,10 +65,10 @@ func resourceIBMContainerALB() *schema.Resource {
 				Computed: true,
 			},
 			"region": {
-				Type:       schema.TypeString,
-				Optional:   true,
-				ForceNew:   true,
-				Deprecated: "This field is deprecated",
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Removed:  "This field is removed",
 			},
 		},
 	}
