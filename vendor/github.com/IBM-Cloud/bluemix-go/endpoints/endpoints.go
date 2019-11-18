@@ -25,6 +25,7 @@ type EndpointLocator interface {
 	ResourceCatalogEndpoint() (string, error)
 	UAAEndpoint() (string, error)
 	CseEndpoint() (string, error)
+	SchematicsEndpoint() (string, error)
 }
 
 const (
@@ -105,6 +106,9 @@ var regionToEndpoint = map[string]map[string]string{
 	"cse": {
 		"global": "https://api.serviceendpoint.cloud.ibm.com",
 	},
+	"schematics": {
+		"global": "https://schematics.cloud.ibm.com",
+	},
 }
 
 func init() {
@@ -145,6 +149,14 @@ func (e *endpointLocator) ContainerEndpoint() (string, error) {
 		return helpers.EnvFallBack([]string{"IBMCLOUD_CS_API_ENDPOINT"}, ep), nil
 	}
 	return "", bmxerror.New(ErrCodeServiceEndpoint, fmt.Sprintf("Container Service endpoint doesn't exist for region: %q", e.region))
+}
+
+func (e *endpointLocator) SchematicsEndpoint() (string, error) {
+	if ep, ok := regionToEndpoint["schematics"]["global"]; ok {
+		//As the current list of regionToEndpoint above is not exhaustive we allow to read endpoints from the env
+		return helpers.EnvFallBack([]string{"IBMCLOUD_SCHEMATICS_API_ENDPOINT"}, ep), nil
+	}
+	return "", bmxerror.New(ErrCodeServiceEndpoint, fmt.Sprintf("Schematics Service endpoint doesn't exist for region: %q", e.region))
 }
 
 func (e *endpointLocator) ContainerRegistryEndpoint() (string, error) {
