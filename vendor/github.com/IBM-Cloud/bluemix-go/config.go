@@ -48,6 +48,8 @@ const (
 	UAAService ServiceName = ServiceName("uaa")
 	//CSEService
 	CseService ServiceName = ServiceName("cse")
+	//SchematicsService ...
+	SchematicsService ServiceName = ServiceName("schematics")
 )
 
 //Config ...

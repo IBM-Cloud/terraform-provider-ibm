@@ -201,6 +201,9 @@ func Provider() terraform.ResourceProvider {
 			"ibm_service_key":                  dataSourceIBMServiceKey(),
 			"ibm_service_plan":                 dataSourceIBMServicePlan(),
 			"ibm_space":                        dataSourceIBMSpace(),
+			"ibm_schematics_workspace":         dataSourceSchematicsWorkspace(),
+			"ibm_schematics_output":            dataSourceSchematicsOut(),
+			"ibm_schematics_state":             dataSourceSchematicsState(),
 
 			// Added for Power Resources
 

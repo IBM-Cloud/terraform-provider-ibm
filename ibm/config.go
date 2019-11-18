@@ -34,6 +34,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/catalog"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
+	"github.com/IBM-Cloud/bluemix-go/api/schematics"
 	"github.com/IBM-Cloud/bluemix-go/authentication"
 	"github.com/IBM-Cloud/bluemix-go/http"
 	"github.com/IBM-Cloud/bluemix-go/rest"
@@ -146,6 +147,7 @@ type ClientSession interface {
 	ResourceControllerAPI() (controller.ResourceControllerAPI, error)
 	SoftLayerSession() *slsession.Session
 	IBMPISession() (*ibmpisession.IBMPISession, error)
+	SchematicsAPI() (schematics.SchematicsServiceAPI, error)
 }
 
 type clientSession struct {
@@ -165,6 +167,9 @@ type clientSession struct {
 
 	csv2ConfigErr  error
 	csv2ServiceAPI containerv2.ContainerServiceAPI
+
+	stxConfigErr  error
+	stxServiceAPI schematics.SchematicsServiceAPI
 
 	cfConfigErr  error
 	cfServiceAPI mccpv2.MccpServiceAPI
@@ -238,6 +243,11 @@ func (sess clientSession) ContainerAPI() (containerv1.ContainerServiceAPI, error
 // VpcContainerAPI provides v2Container Service APIs ...
 func (sess clientSession) VpcContainerAPI() (containerv2.ContainerServiceAPI, error) {
 	return sess.csv2ServiceAPI, sess.csv2ConfigErr
+}
+
+// SchematicsAPI provides schematics Service APIs ...
+func (sess clientSession) SchematicsAPI() (schematics.SchematicsServiceAPI, error) {
+	return sess.stxServiceAPI, sess.stxConfigErr
 }
 
 // CisAPI provides Cloud Internet Services APIs ...
@@ -333,6 +343,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.accountV1ConfigErr = errEmptyBluemixCredentials
 		session.csConfigErr = errEmptyBluemixCredentials
 		session.csv2ConfigErr = errEmptyBluemixCredentials
+		session.stxConfigErr = errEmptyBluemixCredentials
 		session.cfConfigErr = errEmptyBluemixCredentials
 		session.cisConfigErr = errEmptyBluemixCredentials
 		session.functionConfigErr = errEmptyBluemixCredentials
@@ -418,6 +429,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.csv2ConfigErr = fmt.Errorf("Error occured while configuring vpc Container Service for K8s cluster: %q", err)
 	}
 	session.csv2ServiceAPI = v2clusterAPI
+
+	schematicService, err := schematics.New(sess.BluemixSession)
+	if err != nil {
+		session.stxConfigErr = fmt.Errorf("Error occured while fetching schematics Configuration: %q", err)
+	}
+	session.stxServiceAPI = schematicService
 
 	cisAPI, err := cisv1.New(sess.BluemixSession)
 	if err != nil {
