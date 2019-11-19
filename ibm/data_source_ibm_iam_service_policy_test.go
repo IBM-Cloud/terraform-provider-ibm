@@ -46,28 +46,29 @@ func testAccCheckIBMIAMServicePolicyDataSourceConfig(name string) string {
 	return fmt.Sprintf(`
 
 resource "ibm_iam_service_id" "serviceID" {
-  name       	= "%s"
-  description	= "Service ID for test"
+  name        = "%s"
+  description = "Service ID for test"
 }
+
 resource "ibm_resource_instance" "instance" {
-	name     = "%s"
-	service  = "kms"
-	plan     = "tiered-pricing"
-	location = "us-south"
+  name     = "%s"
+  service  = "kms"
+  plan     = "tiered-pricing"
+  location = "us-south"
 }
-  
+
 resource "ibm_iam_service_policy" "policy" {
-	iam_service_id = "${ibm_iam_service_id.serviceID.id}"
-	roles        = ["Manager", "Viewer", "Administrator"]
-  
-	resources = [{
-	  service              = "kms"
-	  resource_instance_id = "${element(split(":",ibm_resource_instance.instance.id),7)}"
-	}]
+  iam_service_id = ibm_iam_service_id.serviceID.id
+  roles          = ["Manager", "Viewer", "Administrator"]
+
+  resources {
+    service              = "kms"
+    resource_instance_id = element(split(":", ibm_resource_instance.instance.id), 7)
   }
+}
 
 data "ibm_iam_service_policy" "testacc_ds_service_policy" {
-	iam_service_id = "${ibm_iam_service_policy.policy.iam_service_id}"
+  iam_service_id = ibm_iam_service_policy.policy.iam_service_id
 }`, name, name)
 
 }
@@ -76,44 +77,44 @@ func testAccCheckIBMIAMServicePolicyDataSourceMultiplePolicies(name string) stri
 	return fmt.Sprintf(`
 
 resource "ibm_iam_service_id" "serviceID" {
-  name       	= "%s"
-  description	= "Service ID for test"
+  name        = "%s"
+  description = "Service ID for test"
 }
 
 resource "ibm_resource_instance" "instance" {
-	name     = "%s"
-	service  = "kms"
-	plan     = "tiered-pricing"
-	location = "us-south"
+  name     = "%s"
+  service  = "kms"
+  plan     = "tiered-pricing"
+  location = "us-south"
 }
 
 resource "ibm_iam_service_policy" "policy" {
-	iam_service_id = "${ibm_iam_service_id.serviceID.id}"
-	roles        = ["Manager", "Viewer", "Administrator"]
-  
-	resources = [{
-	  service              = "kms"
-	  resource_instance_id = "${element(split(":",ibm_resource_instance.instance.id),7)}"
-	}]
-  }
+  iam_service_id = ibm_iam_service_id.serviceID.id
+  roles          = ["Manager", "Viewer", "Administrator"]
 
-  data "ibm_resource_group" "group" {
-	name = "default"
+  resources {
+    service              = "kms"
+    resource_instance_id = element(split(":", ibm_resource_instance.instance.id), 7)
   }
-  
+}
+
+data "ibm_resource_group" "group" {
+  name = "Default"
+}
+
 resource "ibm_iam_service_policy" "policy1" {
-	iam_service_id = "${ibm_iam_service_id.serviceID.id}"
-	roles        = ["Viewer"]
-  
-	resources = [{
-	  service           = "containers-kubernetes"
-	  resource_group_id = "${data.ibm_resource_group.group.id}"
-	}]
+  iam_service_id = ibm_iam_service_id.serviceID.id
+  roles          = ["Viewer"]
+
+  resources {
+    service           = "containers-kubernetes"
+    resource_group_id = data.ibm_resource_group.group.id
   }
+}
 
 
 data "ibm_iam_service_policy" "testacc_ds_service_policy" {
-	iam_service_id = "${ibm_iam_service_policy.policy.iam_service_id}"
+  iam_service_id = ibm_iam_service_policy.policy.iam_service_id
 }`, name, name)
 
 }
