@@ -23,24 +23,24 @@ resource "ibm_container_worker_pool" "test_pool" {
   hardware         = "shared"
   disk_encryption  = "true"
   labels = {
-    "test" = "test-pool"
-
+    "test"  = "test-pool"
     "test1" = "test-pool1"
   }
 }
+
 resource "ibm_container_worker_pool_zone_attachment" "test_zone" {
   cluster         = "my_cluster"
-  worker_pool     = "${element(split("/",ibm_container_worker_pool.test_pool.id),1)}"
+  worker_pool     = element(split("/", ibm_container_worker_pool.test_pool.id), 1)
   zone            = "dal12"
   private_vlan_id = "2320267"
   public_vlan_id  = "2320265"
 
   //User can increase timeouts
   timeouts {
-      create = "90m"
-      update = "3h"
-      delete = "30m"
-    }
+    create = "90m"
+    update = "3h"
+    delete = "30m"
+  }
 }
 
 ```

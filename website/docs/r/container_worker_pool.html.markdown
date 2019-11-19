@@ -30,9 +30,9 @@ resource "ibm_container_worker_pool" "testacc_workerpool" {
   }
 
   //User can increase timeouts 
-    timeouts {
-      update = "180m"
-    }
+  timeouts {
+    update = "180m"
+  }
 }
 ```
 

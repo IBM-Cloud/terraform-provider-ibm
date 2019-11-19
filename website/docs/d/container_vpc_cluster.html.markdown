@@ -13,10 +13,8 @@ Import the details of a Kubernetes VPC cluster on IBM Cloud as a read-only data 
 ## Example Usage
 ```hcl
 data "ibm_container_vpc_cluster" "cluster" {
-​
-  cluster_name_id              = "no-zones-tf"
-  resource_group_id = "${data.ibm_resource_group.group.id}"
-​
+  cluster_name_id   = "no-zones-tf"
+  resource_group_id = data.ibm_resource_group.group.id
 }
 ```
 ​

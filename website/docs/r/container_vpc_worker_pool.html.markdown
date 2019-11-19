@@ -23,12 +23,10 @@ resource "ibm_container_vpc_worker_pool" "test_pool" {
   vpc_id           = "6015365a-9d93-4bb4-8248-79ae0db2dc21"
   worker_count     = "1"
 
-  zones = [
-    {
-      name      = "us-south-1"
-      subnet_id = "015ffb8b-efb1-4c03-8757-29335a07493b"
-    },
-  ]
+  zones {
+    name      = "us-south-1"
+    subnet_id = "015ffb8b-efb1-4c03-8757-29335a07493b"
+  }
 }
 ```
 
