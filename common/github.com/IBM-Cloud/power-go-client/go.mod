@@ -1,3 +1,3 @@
-module github.com/IBM-Cloud/terraform-provider-ibm/vendor/github.com/IBM-Cloud/power-go-client
+module github.com/IBM-Cloud/terraform-provider-ibm/common/github.com/IBM-Cloud/power-go-client
 
-go 1.12
+go 1.13

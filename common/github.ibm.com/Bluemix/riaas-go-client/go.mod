@@ -1,3 +1,3 @@
-module github.com/IBM-Cloud/terraform-provider-ibm/vendor/github.ibm.com/Bluemix/riaas-go-client
+module github.com/IBM-Cloud/terraform-provider-ibm/common/github.ibm.com/Bluemix/riaas-go-client
 
-go 1.12
+go 1.13

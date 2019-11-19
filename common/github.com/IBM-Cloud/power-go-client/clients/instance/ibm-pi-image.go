@@ -44,3 +44,29 @@ func (f *IBMPIImageClient) GetAll(powerinstanceid string) (*models.Images, error
 	return resp.Payload, nil
 
 }
+
+//Post the stock image
+
+func (f *IBMPIImageClient) Create(name, imageid string, powerinstanceid string) (*models.Image, error) {
+
+	var source = "root-project"
+	//createDate := strfmt.DateTime(time.Now())
+	var body = models.CreateImage{
+		ImageName: name,
+		ImageID:   imageid,
+		Source:    &source,
+	}
+	params := p_cloud_images.NewPcloudCloudinstancesImagesPostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithBody(&body)
+	resp, err, _ := f.session.Power.PCloudImages.PcloudCloudinstancesImagesPost(params, ibmpisession.NewAuth(f.session, powerinstanceid))
+	if err.Payload.State == "queued" {
+		log.Printf("Post is successful %s", err.Payload.ImageID)
+
+	}
+
+	if resp != nil {
+		log.Printf("Failed to initiate the copy job ")
+	}
+
+	return err.Payload, nil
+
+}
