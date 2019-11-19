@@ -102,7 +102,7 @@ func New(iamtoken, region string, debug bool, timeout time.Duration, useraccount
 	apiEndpointURL := utils.GetPowerEndPoint(region)
 	log.Printf("the apiendpoint url for power is %s", apiEndpointURL)
 	transport := httptransport.New(apiEndpointURL, "/", []string{"https"})
-	transport.Debug = debug
+	//transport.Debug = debug
 	transport.Consumers[runtime.JSONMime] = powerJSONConsumer()
 	session.Power = client.New(transport, nil)
 	session.Timeout = timeout
