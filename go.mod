@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/Bowery/prompt v0.0.0-20190916142128-fa8279994f75 // indirect
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20191030071818-1b504e84af9a
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20191119065135-5dd21e1a144c
 	github.com/IBM-Cloud/power-go-client v0.0.0-00010101000000-000000000000
 	github.com/IBM/ibm-cos-sdk-go v1.2.0
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
