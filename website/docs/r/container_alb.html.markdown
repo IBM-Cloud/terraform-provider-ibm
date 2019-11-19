@@ -15,7 +15,7 @@ Create, update or delete a application load balancer.
 In the following example, you can configure a alb:
 
 ```hcl
-resource ibm_container_alb alb {
+resource "ibm_container_alb" "alb" {
   alb_id = "public-cr083d810e501d4c73b42184eab5a7ad56-alb"
   enable = true
 }

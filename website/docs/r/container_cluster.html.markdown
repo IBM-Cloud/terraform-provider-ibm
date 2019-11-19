@@ -30,14 +30,13 @@ resource "ibm_container_cluster" "testacc_cluster" {
   private_vlan_id = "vlan"
   subnet_id       = ["1154643"]
 
-  default_pool_size      = 1
+  default_pool_size = 1
 
-  webhook = [{
+  webhook {
     level = "Normal"
-    type = "slack"
-    url = "https://hooks.slack.com/services/yt7rebjhgh2r4rd44fjk"
-  }]
-
+    type  = "slack"
+    url   = "https://hooks.slack.com/services/yt7rebjhgh2r4rd44fjk"
+  }
 }
 ```
 
@@ -54,13 +53,12 @@ resource "ibm_container_cluster" "testacc_cluster" {
   subnet_id       = ["1154643"]
 
   default_pool_size = 2
-  worker_num = 1
-  webhook = [{
+  worker_num        = 1
+  webhook {
     level = "Normal"
-    type = "slack"
-    url = "https://hooks.slack.com/services/yt7rebjhgh2r4rd44fjk"
-  }]
-
+    type  = "slack"
+    url   = "https://hooks.slack.com/services/yt7rebjhgh2r4rd44fjk"
+  }
 }
 ```
 
