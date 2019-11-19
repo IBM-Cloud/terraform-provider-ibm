@@ -29,9 +29,9 @@ resource "ibm_iam_user_policy" "policy" {
   ibm_id = "test@in.ibm.com"
   roles  = ["Viewer"]
 
-  resources = [{
+  resources {
     service = "kms"
-  }]
+  }
 }
 
 ```
@@ -49,10 +49,10 @@ resource "ibm_iam_user_policy" "policy" {
   ibm_id = "test@in.ibm.com"
   roles  = ["Manager", "Viewer", "Administrator"]
 
-  resources = [{
+  resources {
     service              = "kms"
-    resource_instance_id = "${element(split(":",ibm_resource_instance.instance.id),7)}"
-  }]
+    resource_instance_id = element(split(":", ibm_resource_instance.instance.id), 7)
+  }
 }
 
 ```
@@ -68,10 +68,10 @@ resource "ibm_iam_user_policy" "policy" {
   ibm_id = "test@in.ibm.com"
   roles  = ["Viewer"]
 
-  resources = [{
+  resources {
     service           = "containers-kubernetes"
-    resource_group_id = "${data.ibm_resource_group.group.id}"
-  }]
+    resource_group_id = data.ibm_resource_group.group.id
+  }
 }
 
 ```
@@ -87,10 +87,10 @@ resource "ibm_iam_user_policy" "policy" {
   ibm_id = "test@in.ibm.com"
   roles  = ["Administrator"]
 
-  resources = [{
+  resources {
     resource_type = "resource-group"
-    resource      = "${data.ibm_resource_group.group.id}"
-  }]
+    resource      = data.ibm_resource_group.group.id
+  }
 }
 
 ```
@@ -106,14 +106,13 @@ resource "ibm_iam_user_policy" "policy" {
   ibm_id = "test@in.ibm.com"
   roles  = ["Administrator"]
 
-  resources = [{
+  resources {
     service = "is"
 
     attributes = {
       "vpcId" = "*"
     }
-    
-  }]
+  }
 }
 
 ```
