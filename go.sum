@@ -14,6 +14,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/IBM-Cloud/bluemix-go v0.0.0-20191030071818-1b504e84af9a h1:i7XRVg8rAb5jl+NwG0TAh/xMg3yacYHAy2xJuJWYdzY=
 github.com/IBM-Cloud/bluemix-go v0.0.0-20191030071818-1b504e84af9a/go.mod h1:gPJbH1etcDj7qS/hBRiLuYW9CY0bRcostSKusa51xR0=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20191119065135-5dd21e1a144c h1:BK5fHZggc+S7KCyLumevD7IIyIfWqauXa/HilsNG2DU=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20191119065135-5dd21e1a144c/go.mod h1:gPJbH1etcDj7qS/hBRiLuYW9CY0bRcostSKusa51xR0=
 github.com/IBM/ibm-cos-sdk-go v1.2.0 h1:oJG2eWmAhmz3XAkQLsmQweT7hmxoM3jKQkwLBZz6b5o=
 github.com/IBM/ibm-cos-sdk-go v1.2.0/go.mod h1:YLBAYobEA8bD27P7xpMwSQeNQu6W3DNBtBComXrRzRY=
 github.com/IBM/ibm-cos-sdk-go v1.3.0 h1:M1C2QP6bi1B9mCVgISz+qdwT31O34cuN+k9Mji+yaFM=
