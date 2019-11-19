@@ -138,24 +138,25 @@ func testAccCheckIBMIAMAuthorizationPolicyResourceInstance(instanceName string) 
 	return fmt.Sprintf(`
 		  
 	resource "ibm_resource_instance" "instance1" {
-		name       = "%s"
-		service    = "cloud-object-storage"
-		plan       = "lite"
-		location   = "global"
+		name     = "%s"
+		service  = "cloud-object-storage"
+		plan     = "lite"
+		location = "global"
 	  }
 	  
 	  resource "ibm_resource_instance" "instance2" {
-		  name       = "%s"
-		  service    = "kms"
-		  plan       = "tiered-pricing"
-		  location   = "us-south"
-		}
-	resource "ibm_iam_authorization_policy" "policy" {
-		source_service_name = "cloud-object-storage"
-		source_resource_instance_id = "${ibm_resource_instance.instance1.id}"
-		target_service_name = "kms"
-		target_resource_instance_id = "${ibm_resource_instance.instance2.id}"
-		roles               = ["Reader"]
+		name     = "%s"
+		service  = "kms"
+		plan     = "tiered-pricing"
+		location = "us-south"
+	  }
+	  
+	  resource "ibm_iam_authorization_policy" "policy" {
+		source_service_name         = "cloud-object-storage"
+		source_resource_instance_id = ibm_resource_instance.instance1.id
+		target_service_name         = "kms"
+		target_resource_instance_id = ibm_resource_instance.instance2.id
+		roles                       = ["Reader"]
 	  }
 	  
 	`, instanceName, instanceName)
@@ -165,10 +166,10 @@ func testAccCheckIBMIAMAuthorizationPolicyResourceType() string {
 	return fmt.Sprintf(`
 		  
 	resource "ibm_iam_authorization_policy" "policy" {
-		source_service_name = "is"
+		source_service_name  = "is"
 		source_resource_type = "image"
-		target_service_name = "cloud-object-storage"
-		roles               = ["Reader"]
+		target_service_name  = "cloud-object-storage"
+		roles                = ["Reader"]
 	  }
 	`)
 }

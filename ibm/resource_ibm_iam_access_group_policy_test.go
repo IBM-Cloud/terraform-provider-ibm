@@ -23,7 +23,7 @@ func TestAccIBMIAMAccessGroupPolicy_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMAccessGroupPolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMAccessGroupPolicy_basic(name),
+				Config: testAccCheckIBMIAMAccessGroupPolicyBasic(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
@@ -32,7 +32,7 @@ func TestAccIBMIAMAccessGroupPolicy_Basic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIAMAccessGroupPolicy_updateRole(name),
+				Config: testAccCheckIBMIAMAccessGroupPolicyUpdateRole(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "tags.#", "2"),
@@ -53,7 +53,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Service(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMAccessGroupPolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMAccessGroupPolicy_service(name),
+				Config: testAccCheckIBMIAMAccessGroupPolicyService(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
@@ -62,7 +62,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Service(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIAMAccessGroupPolicy_updateServiceAndRegion(name),
+				Config: testAccCheckIBMIAMAccessGroupPolicyUpdateServiceAndRegion(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "resources.0.service", "kms"),
@@ -83,7 +83,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_ResourceInstance(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMAccessGroupPolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMAccessGroupPolicy_resource_instance(name),
+				Config: testAccCheckIBMIAMAccessGroupPolicyResourceInstance(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
@@ -105,7 +105,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Resource_Group(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMAccessGroupPolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMAccessGroupPolicy_resource_group(name),
+				Config: testAccCheckIBMIAMAccessGroupPolicyResourceGroup(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
@@ -127,7 +127,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Resource_Type(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMAccessGroupPolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMAccessGroupPolicy_resource_type(name),
+				Config: testAccCheckIBMIAMAccessGroupPolicyResourceType(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
@@ -149,7 +149,7 @@ func TestAccIBMIAMAccessGroupPolicy_import(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMAccessGroupPolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMAccessGroupPolicy_import(name),
+				Config: testAccCheckIBMIAMAccessGroupPolicyImport(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMAccessGroupPolicyExists(resourceName, conf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
@@ -176,7 +176,7 @@ func TestAccIBMIAMAccessGroupPolicy_account_management(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMAccessGroupPolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMAccessGroupPolicy_account_management(name),
+				Config: testAccCheckIBMIAMAccessGroupPolicyAccountManagement(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMAccessGroupPolicyExists(resourceName, conf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
@@ -198,7 +198,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Attributese(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMAccessGroupPolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMAccessGroupPolicy_attributes(name),
+				Config: testAccCheckIBMIAMAccessGroupPolicyAttributes(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
@@ -265,200 +265,199 @@ func testAccCheckIBMIAMAccessGroupPolicyExists(n string, obj iampapv1.Policy) re
 	}
 }
 
-func testAccCheckIBMIAMAccessGroupPolicy_basic(name string) string {
+func testAccCheckIBMIAMAccessGroupPolicyBasic(name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_access_group" "accgrp" {
-			name = "%s"
-		  }
-		  
-		  resource "ibm_iam_access_group_policy" "policy" {
-			access_group_id = "${ibm_iam_access_group.accgrp.id}"
-			roles        = ["Viewer"]
-			tags         = ["tag1"]
-		  }
+  			name = "%s"
+		}
+
+		resource "ibm_iam_access_group_policy" "policy" {
+  			access_group_id = ibm_iam_access_group.accgrp.id
+  			roles           = ["Viewer"]
+  			tags            = ["tag1"]
+		}
 
 	`, name)
 }
 
-func testAccCheckIBMIAMAccessGroupPolicy_updateRole(name string) string {
+func testAccCheckIBMIAMAccessGroupPolicyUpdateRole(name string) string {
 	return fmt.Sprintf(`
 		
 		resource "ibm_iam_access_group" "accgrp" {
 			name = "%s"
-		  }
-		  
-		  resource "ibm_iam_access_group_policy" "policy" {
-			access_group_id = "${ibm_iam_access_group.accgrp.id}"
-			roles        = ["Viewer","Manager"]
-			tags         = ["tag1", "tag2"]
-		  }
+	  	}
+	  
+	  	resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = ibm_iam_access_group.accgrp.id
+			roles           = ["Viewer", "Manager"]
+			tags            = ["tag1", "tag2"]
+	  	}
 	`, name)
 }
 
-func testAccCheckIBMIAMAccessGroupPolicy_service(name string) string {
+func testAccCheckIBMIAMAccessGroupPolicyService(name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_access_group" "accgrp" {
 			name = "%s"
-		  }
-		  
-		resource "ibm_iam_access_group_policy" "policy" {
-			access_group_id = "${ibm_iam_access_group.accgrp.id}"
-			roles        = ["Viewer"]
-		  
-			resources = [{
-			  service = "cloud-object-storage"
-			}]
-		  }
+  		}
 
+		resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = ibm_iam_access_group.accgrp.id
+			roles        = ["Viewer"]
+
+			resources {
+		  	service = "cloud-object-storage"
+			}
+		  }
+		  
 	`, name)
 }
 
-func testAccCheckIBMIAMAccessGroupPolicy_updateServiceAndRegion(name string) string {
+func testAccCheckIBMIAMAccessGroupPolicyUpdateServiceAndRegion(name string) string {
 	return fmt.Sprintf(`
 		
 		resource "ibm_iam_access_group" "accgrp" {
 			name = "%s"
-		  }
-		  
-		resource "ibm_iam_access_group_policy" "policy" {
-			access_group_id = "${ibm_iam_access_group.accgrp.id}"
-			roles        = ["Viewer", "Manager"]
-		  
-			resources = [{
-			  service = "kms"
-			}]
-		  }
+	  	}
+	  
+	  	resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = ibm_iam_access_group.accgrp.id
+			roles           = ["Viewer", "Manager"]
+	  
+			resources {
+		 	 service = "kms"
+			}
+	  	}
 	`, name)
 }
 
-func testAccCheckIBMIAMAccessGroupPolicy_resource_instance(name string) string {
+func testAccCheckIBMIAMAccessGroupPolicyResourceInstance(name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_access_group" "accgrp" {
 			name = "%s"
-		  }
-		  
-		resource "ibm_resource_instance" "instance" {
+	  	}
+	  
+	  	resource "ibm_resource_instance" "instance" {
 			name     = "%s"
 			service  = "kms"
 			plan     = "tiered-pricing"
 			location = "us-south"
-		  }
-		  
-		resource "ibm_iam_access_group_policy" "policy" {
-			access_group_id = "${ibm_iam_access_group.accgrp.id}"
-			roles        = ["Manager", "Viewer", "Administrator"]
-		  
-			resources = [{
-			  service              = "kms"
-			  resource_instance_id = "${element(split(":",ibm_resource_instance.instance.id),7)}"
-			}]
-		  }
+	  	}
+	  
+	  	resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = ibm_iam_access_group.accgrp.id
+			roles           = ["Manager", "Viewer", "Administrator"]
+	  
+			resources {
+		 	 service              = "kms"
+		 	 resource_instance_id = element(split(":", ibm_resource_instance.instance.id), 7)
+			}
+	  	}
 		  
 
 	`, name, name)
 }
 
-func testAccCheckIBMIAMAccessGroupPolicy_resource_group(name string) string {
+func testAccCheckIBMIAMAccessGroupPolicyResourceGroup(name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_access_group" "accgrp" {
 			name = "%s"
-		  }
-		  
-		data "ibm_resource_group" "group" {
-			name = "default"
-		  }
-		  
-		resource "ibm_iam_access_group_policy" "policy" {
-			access_group_id = "${ibm_iam_access_group.accgrp.id}"
-			roles        = ["Viewer"]
-		  
-			resources = [{
-			  service           = "containers-kubernetes"
-			  resource_group_id = "${data.ibm_resource_group.group.id}"
-			}]
-		  }
+	  	}
+	  
+	  	data "ibm_resource_group" "group" {
+			name = "Default"
+	  	}
+	  
+	  	resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = ibm_iam_access_group.accgrp.id
+			roles           = ["Viewer"]
+	  
+			resources {
+		 	 service           = "containers-kubernetes"
+		 	 resource_group_id = data.ibm_resource_group.group.id
+			}
+	  	}
 		  
 
 	`, name)
 }
 
-func testAccCheckIBMIAMAccessGroupPolicy_resource_type(name string) string {
+func testAccCheckIBMIAMAccessGroupPolicyResourceType(name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_access_group" "accgrp" {
 			name = "%s"
-		  }
-		  
-		data "ibm_resource_group" "group" {
-			name = "default"
-		  }
-		  
-		resource "ibm_iam_access_group_policy" "policy" {
-			access_group_id = "${ibm_iam_access_group.accgrp.id}"
-			roles        = ["Administrator"]
-		  
-			resources = [{
-			  resource_type = "resource-group"
-			  resource      = "${data.ibm_resource_group.group.id}"
-			}]
-		  }
+	  	}
+	  
+	  	data "ibm_resource_group" "group" {
+			name = "Default"
+	  	}
+	  
+	  	resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = ibm_iam_access_group.accgrp.id
+			roles           = ["Administrator"]
+	  
+			resources {
+		  		resource_type = "resource-group"
+		  		resource      = data.ibm_resource_group.group.id
+			}
+	  	}
 	`, name)
 }
 
-func testAccCheckIBMIAMAccessGroupPolicy_import(name string) string {
+func testAccCheckIBMIAMAccessGroupPolicyImport(name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_access_group" "accgrp" {
 			name = "%s"
-		  }
-		  
-		  resource "ibm_iam_access_group_policy" "policy" {
-			access_group_id = "${ibm_iam_access_group.accgrp.id}"
-			roles        = ["Viewer"]
-		  }
-
-	`, name)
-}
-
-func testAccCheckIBMIAMAccessGroupPolicy_account_management(name string) string {
-	return fmt.Sprintf(`
-
-		resource "ibm_iam_access_group" "accgrp" {
-			name = "%s"
-		  }
-		  
-		  resource "ibm_iam_access_group_policy" "policy" {
-			access_group_id = "${ibm_iam_access_group.accgrp.id}"
-			roles        = ["Administrator"]
-			account_management = true	
-		  }
+	 	 }
+	  
+	  	resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = ibm_iam_access_group.accgrp.id
+			roles           = ["Viewer"]
+	  	}
 
 	`, name)
 }
 
-func testAccCheckIBMIAMAccessGroupPolicy_attributes(name string) string {
+func testAccCheckIBMIAMAccessGroupPolicyAccountManagement(name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_access_group" "accgrp" {
 			name = "%s"
-		  }
-		  
-		resource "ibm_iam_access_group_policy" "policy" {
-			access_group_id = "${ibm_iam_access_group.accgrp.id}"
-			roles        = ["Viewer"]
-		  
-			resources = [{
-			  service = "is"
-			  attributes = {
+	  	}
+	  
+	  	resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id    = ibm_iam_access_group.accgrp.id
+			roles              = ["Administrator"]
+			account_management = true
+	  	}
+
+	`, name)
+}
+
+func testAccCheckIBMIAMAccessGroupPolicyAttributes(name string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_access_group" "accgrp" {
+			name = "%s"
+	  	}
+	  
+	  	resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = ibm_iam_access_group.accgrp.id
+			roles           = ["Viewer"]
+	  
+			resources {
+		  	service = "is"
+		  	attributes = {
 				"vpcId" = "*"
-			  }
-			  
-			}]
-		  }
+		  	}
+			}
+	  	}
 
 	`, name)
 }

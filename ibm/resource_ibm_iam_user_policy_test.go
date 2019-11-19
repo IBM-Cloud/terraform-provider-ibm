@@ -22,7 +22,7 @@ func TestAccIBMIAMUserPolicy_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMUserPolicy_basic(),
+				Config: testAccCheckIBMIAMUserPolicyBasic(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "tags.#", "1"),
@@ -30,7 +30,7 @@ func TestAccIBMIAMUserPolicy_Basic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIAMUserPolicy_updateRole(),
+				Config: testAccCheckIBMIAMUserPolicyUpdateRole(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "tags.#", "2"),
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "2"),
@@ -49,7 +49,7 @@ func TestAccIBMIAMUserPolicy_With_Service(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMUserPolicy_service(),
+				Config: testAccCheckIBMIAMUserPolicyService(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resources.0.service", "cloud-object-storage"),
@@ -57,7 +57,7 @@ func TestAccIBMIAMUserPolicy_With_Service(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIAMUserPolicy_updateServiceAndRegion(),
+				Config: testAccCheckIBMIAMUserPolicyUpdateServiceAndRegion(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resources.0.service", "kms"),
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resources.0.region", "us-south"),
@@ -78,7 +78,7 @@ func TestAccIBMIAMUserPolicy_With_ResourceInstance(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMUserPolicy_resource_instance(name),
+				Config: testAccCheckIBMIAMUserPolicyResourceInstance(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resources.0.service", "kms"),
@@ -98,7 +98,7 @@ func TestAccIBMIAMUserPolicy_With_Resource_Group(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMUserPolicy_resource_group(),
+				Config: testAccCheckIBMIAMUserPolicyResourceGroup(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resources.0.service", "containers-kubernetes"),
@@ -118,7 +118,7 @@ func TestAccIBMIAMUserPolicy_With_Resource_Type(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMUserPolicy_resource_type(),
+				Config: testAccCheckIBMIAMUserPolicyResourceType(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "1"),
@@ -139,7 +139,7 @@ func TestAccIBMIAMUserPolicy_import(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMUserPolicy_import(name),
+				Config: testAccCheckIBMIAMUserPolicyImport(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMUserPolicyExists(resourceName, conf),
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "1"),
@@ -165,7 +165,7 @@ func TestAccIBMIAMUserPolicy_account_management(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMUserPolicy_account_management(name),
+				Config: testAccCheckIBMIAMUserPolicyAccountManagement(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMUserPolicyExists(resourceName, conf),
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "1"),
@@ -183,7 +183,7 @@ func TestAccIBMIAMUserPolicy_Invalid_User(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckIBMIAMUserPolicy_invalid_user(),
+				Config:      testAccCheckIBMIAMUserPolicyInvalidUser(),
 				ExpectError: regexp.MustCompile(`User test@in.ibm.com does not exist within the given account.`),
 			},
 		},
@@ -248,62 +248,62 @@ func testAccCheckIBMIAMUserPolicyExists(n string, obj iampapv1.Policy) resource.
 	}
 }
 
-func testAccCheckIBMIAMUserPolicy_basic() string {
+func testAccCheckIBMIAMUserPolicyBasic() string {
 	return fmt.Sprintf(`
 
 		  
-		  resource "ibm_iam_user_policy" "policy" {
-			ibm_id 		 = "%s"
-			roles        = ["Viewer"]
-			tags         = ["tag1"]
-		  }
+		resource "ibm_iam_user_policy" "policy" {
+			ibm_id = "%s"
+			roles  = ["Viewer"]
+			tags   = ["tag1"]
+	  	}
 
 	`, IAMUser)
 }
 
-func testAccCheckIBMIAMUserPolicy_updateRole() string {
+func testAccCheckIBMIAMUserPolicyUpdateRole() string {
 	return fmt.Sprintf(`
 		
-		  resource "ibm_iam_user_policy" "policy" {
-			ibm_id 		 = "%s"
-			roles        = ["Viewer","Manager"]
-			tags         = ["tag1", "tag2"]
-		  }
+		resource "ibm_iam_user_policy" "policy" {
+			ibm_id = "%s"
+			roles  = ["Viewer", "Manager"]
+			tags   = ["tag1", "tag2"]
+	  	}
 	`, IAMUser)
 }
 
-func testAccCheckIBMIAMUserPolicy_service() string {
+func testAccCheckIBMIAMUserPolicyService() string {
 	return fmt.Sprintf(`
 
 		
 		resource "ibm_iam_user_policy" "policy" {
-			ibm_id 		 = "%s"
-			roles        = ["Viewer"]
-		  
-			resources = [{
-			  service = "cloud-object-storage"
-			}]
-		  }
+			ibm_id = "%s"
+			roles  = ["Viewer"]
+	  
+			resources {
+		 		 service = "cloud-object-storage"
+			}
+	  	}
 
 	`, IAMUser)
 }
 
-func testAccCheckIBMIAMUserPolicy_updateServiceAndRegion() string {
+func testAccCheckIBMIAMUserPolicyUpdateServiceAndRegion() string {
 	return fmt.Sprintf(`
 		
 		resource "ibm_iam_user_policy" "policy" {
 			ibm_id 		 = "%s"
 			roles        = ["Viewer", "Manager"]
 		  
-			resources = [{
+			resources {
 			  service = "kms"
 			  region  = "us-south"
-			}]
+			}
 		  }
 	`, IAMUser)
 }
 
-func testAccCheckIBMIAMUserPolicy_resource_instance(name string) string {
+func testAccCheckIBMIAMUserPolicyResourceInstance(name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_resource_instance" "instance" {
@@ -311,65 +311,65 @@ func testAccCheckIBMIAMUserPolicy_resource_instance(name string) string {
 			service  = "kms"
 			plan     = "tiered-pricing"
 			location = "us-south"
-		  }
-		  
-		resource "ibm_iam_user_policy" "policy" {
-			ibm_id 		 = "%s"
-			roles        = ["Manager", "Viewer", "Administrator"]
-		  
-			resources = [{
-			  service              = "kms"
-			  resource_instance_id = "${element(split(":",ibm_resource_instance.instance.id),7)}"
-			}]
-		  }
+	  	}
+	  
+	  	resource "ibm_iam_user_policy" "policy" {
+			ibm_id = "%s"
+			roles  = ["Manager", "Viewer", "Administrator"]
+	  
+			resources {
+		  		service              = "kms"
+		  		resource_instance_id = element(split(":", ibm_resource_instance.instance.id), 7)
+			}
+	  	}
 		  
 
 	`, name, IAMUser)
 }
 
-func testAccCheckIBMIAMUserPolicy_resource_group() string {
+func testAccCheckIBMIAMUserPolicyResourceGroup() string {
 	return fmt.Sprintf(`
 
 		  
 		data "ibm_resource_group" "group" {
-			name = "default"
-		  }
-		  
-		resource "ibm_iam_user_policy" "policy" {
+			name = "Default"
+	  	}
+	  
+	  	resource "ibm_iam_user_policy" "policy" {
 			ibm_id = "%s"
-			roles        = ["Viewer"]
-		  
-			resources = [{
-			  service           = "containers-kubernetes"
-			  resource_group_id = "${data.ibm_resource_group.group.id}"
-			}]
-		  }
+			roles  = ["Viewer"]
+	  
+			resources {
+		 	 service           = "containers-kubernetes"
+		  	 resource_group_id = data.ibm_resource_group.group.id
+			}
+	  	}
 		  
 
 	`, IAMUser)
 }
 
-func testAccCheckIBMIAMUserPolicy_resource_type() string {
+func testAccCheckIBMIAMUserPolicyResourceType() string {
 	return fmt.Sprintf(`
 
 		  
 		data "ibm_resource_group" "group" {
-			name = "default"
+			name = "Default"
 		  }
 		  
 		resource "ibm_iam_user_policy" "policy" {
 			ibm_id = "%s"
-			roles        = ["Administrator"]
+			roles  = ["Administrator"]
 		  
-			resources = [{
+			resources {
 			  resource_type = "resource-group"
-			  resource      = "${data.ibm_resource_group.group.id}"
-			}]
+			  resource      = data.ibm_resource_group.group.id
+			}
 		  }
 	`, IAMUser)
 }
 
-func testAccCheckIBMIAMUserPolicy_import(name string) string {
+func testAccCheckIBMIAMUserPolicyImport(name string) string {
 	return fmt.Sprintf(`
 
 	
@@ -381,24 +381,24 @@ func testAccCheckIBMIAMUserPolicy_import(name string) string {
 	`, IAMUser)
 }
 
-func testAccCheckIBMIAMUserPolicy_invalid_user() string {
+func testAccCheckIBMIAMUserPolicyInvalidUser() string {
 	return fmt.Sprintf(`
 
 		  
-		  resource "ibm_iam_user_policy" "policy" {
-			ibm_id 		 = "test@in.ibm.com"
-			roles        = ["Viewer"]
-		  }
+		resource "ibm_iam_user_policy" "policy" {
+			ibm_id = "test@in.ibm.com"
+			roles  = ["Viewer"]
+	  	}
 
 	`)
 }
 
-func testAccCheckIBMIAMUserPolicy_account_management(name string) string {
+func testAccCheckIBMIAMUserPolicyAccountManagement(name string) string {
 	return fmt.Sprintf(`
 	
 		  resource "ibm_iam_user_policy" "policy" {
 			ibm_id = "%s"
-			roles        = ["Viewer"]
+			roles  = ["Viewer"]
 			account_management = true
 		  }
 
