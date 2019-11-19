@@ -25,9 +25,9 @@ resource "ibm_iam_service_id" "serviceID" {
 }
 
 resource "ibm_iam_access_group_members" "accgroupmem" {
-  access_group_id = "${ibm_iam_access_group.accgroup.id}"
+  access_group_id = ibm_iam_access_group.accgroup.id
   ibm_ids         = ["test@in.ibm.com"]
-  iam_service_ids = ["${ibm_iam_service_id.serviceID.id}"]
+  iam_service_ids = [ibm_iam_service_id.serviceID.id]
 }
 
 ```

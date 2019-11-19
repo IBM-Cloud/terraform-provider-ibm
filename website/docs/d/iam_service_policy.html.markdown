@@ -15,17 +15,17 @@ Import the details of an IAM (Identity and Access Management) service policy on 
 ```hcl
 resource "ibm_iam_service_policy" "policy" {
   iam_service_id = "ServiceId-d7bec597-4726-451f-8a63-e62e6f19c32c"
-  roles        = ["Manager", "Viewer", "Administrator"]
+  roles          = ["Manager", "Viewer", "Administrator"]
 
-  resources = [{
+  resources {
     service              = "kms"
     region               = "us-south"
-    resource_instance_id = "${element(split(":",ibm_resource_instance.instance.id),7)}"
-  }]
+    resource_instance_id = element(split(":", ibm_resource_instance.instance.id), 7)
+  }
 }
 
 data "ibm_iam_service_policy" "testacc_ds_service_policy" {
-  iam_service_id = "${ibm_iam_service_policy.policy.iam_service_id}"
+  iam_service_id = ibm_iam_service_policy.policy.iam_service_id
 }
 
 ```

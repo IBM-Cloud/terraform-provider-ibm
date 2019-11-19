@@ -20,8 +20,8 @@ resource "ibm_iam_access_group" "accgrp" {
 }
 
 resource "ibm_iam_access_group_policy" "policy" {
-  access_group_id = "${ibm_iam_access_group.accgrp.id}"
-  roles        = ["Viewer"]
+  access_group_id = ibm_iam_access_group.accgrp.id
+  roles           = ["Viewer"]
 }
 
 ```
@@ -38,12 +38,12 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_access_group_policy" "policy" {
-  access_group_id = "${ibm_iam_access_group.accgrp.id}"
-  roles        = ["Operator", "Writer"]
+  access_group_id = ibm_iam_access_group.accgrp.id
+  roles           = ["Operator", "Writer"]
 
-  resources = [{
-    resource_group_id = "${data.ibm_resource_group.group.id}"
-  }]
+  resources {
+    resource_group_id = data.ibm_resource_group.group.id
+  }
 }
 ```
 
@@ -55,12 +55,12 @@ resource "ibm_iam_access_group" "accgrp" {
 }
 
 resource "ibm_iam_access_group_policy" "policy" {
-  access_group_id = "${ibm_iam_access_group.accgrp.id}"
-  roles        = ["Viewer"]
+  access_group_id = ibm_iam_access_group.accgrp.id
+  roles           = ["Viewer"]
 
-  resources = [{
+  resources {
     service = "cloud-object-storage"
-  }]
+  }
 }
 
 ```
@@ -79,13 +79,13 @@ resource "ibm_resource_instance" "instance" {
 }
 
 resource "ibm_iam_access_group_policy" "policy" {
-  access_group_id = "${ibm_iam_access_group.accgrp.id}"
-  roles        = ["Manager", "Viewer", "Administrator"]
+  access_group_id = ibm_iam_access_group.accgrp.id
+  roles           = ["Manager", "Viewer", "Administrator"]
 
-  resources = [{
+  resources {
     service              = "kms"
-    resource_instance_id = "${element(split(":",ibm_resource_instance.instance.id),7)}"
-  }]
+    resource_instance_id = element(split(":", ibm_resource_instance.instance.id), 7)
+  }
 }
 
 ```
@@ -102,14 +102,15 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_access_group_policy" "policy" {
-  access_group_id = "${ibm_iam_access_group.accgrp.id}"
-  roles        = ["Viewer"]
+  access_group_id = ibm_iam_access_group.accgrp.id
+  roles           = ["Viewer"]
 
-  resources = [{
+  resources {
     service           = "containers-kubernetes"
-    resource_group_id = "${data.ibm_resource_group.group.id}"
-  }]
+    resource_group_id = data.ibm_resource_group.group.id
+  }
 }
+
 
 ```
 
@@ -125,13 +126,13 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_access_group_policy" "policy" {
-  access_group_id = "${ibm_iam_access_group.accgrp.id}"
-  roles        = ["Administrator"]
+  access_group_id = ibm_iam_access_group.accgrp.id
+  roles           = ["Administrator"]
 
-  resources = [{
+  resources {
     resource_type = "resource-group"
-    resource      = "${data.ibm_resource_group.group.id}"
-  }]
+    resource      = data.ibm_resource_group.group.id
+  }
 }
 
 ```
@@ -148,18 +149,18 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_access_group_policy" "policy" {
-  access_group_id = "${ibm_iam_access_group.accgrp.id}"
+  access_group_id = ibm_iam_access_group.accgrp.id
   roles           = ["Viewer"]
 
-  resources = [{
+  resources {
     service = "is"
 
     attributes = {
       "vpcId" = "*"
     }
 
-    resource_group_id = "${data.ibm_resource_group.group.id}"
-  }]
+    resource_group_id = data.ibm_resource_group.group.id
+  }
 }
 
 ```
