@@ -581,12 +581,13 @@ func newSession(c *Config) (*Session, error) {
 		bmxConfig := &bluemix.Config{
 			IAMAccessToken:  c.IAMToken,
 			IAMRefreshToken: c.IAMRefreshToken,
-			Debug:           os.Getenv("TF_LOG") != "",
-			HTTPTimeout:     c.BluemixTimeout,
-			Region:          c.Region,
-			ResourceGroup:   c.ResourceGroup,
-			RetryDelay:      &c.RetryDelay,
-			MaxRetries:      &c.RetryCount,
+			//Comment out debug mode for v0.12
+			//Debug:           os.Getenv("TF_LOG") != "",
+			HTTPTimeout:   c.BluemixTimeout,
+			Region:        c.Region,
+			ResourceGroup: c.ResourceGroup,
+			RetryDelay:    &c.RetryDelay,
+			MaxRetries:    &c.RetryCount,
 		}
 		sess, err := bxsession.New(bmxConfig)
 		if err != nil {
@@ -600,7 +601,8 @@ func newSession(c *Config) (*Session, error) {
 		var sess *bxsession.Session
 		bmxConfig := &bluemix.Config{
 			BluemixAPIKey: c.BluemixAPIKey,
-			Debug:         os.Getenv("TF_LOG") != "",
+			//Comment out debug mode for v0.12
+			//Debug:         os.Getenv("TF_LOG") != "",
 			HTTPTimeout:   c.BluemixTimeout,
 			Region:        c.Region,
 			ResourceGroup: c.ResourceGroup,
