@@ -588,18 +588,6 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return fmt.Errorf("Error retrieving workers for cluster: %s", err)
 	}
-	if len(workerFields) > 0 {
-		d.Set("machine_type", strings.Split(workerFields[0].MachineType, ".encrypted")[0])
-		d.Set("public_vlan_id", workerFields[0].PublicVlan)
-		d.Set("private_vlan_id", workerFields[0].PrivateVlan)
-		if workerFields[0].MachineType != "free" {
-			if strings.HasSuffix(workerFields[0].MachineType, ".encrypted") {
-				d.Set("disk_encryption", true)
-			} else {
-				d.Set("disk_encryption", false)
-			}
-		}
-	}
 	workerCount := 0
 	workers := []map[string]string{}
 	for _, w := range workerFields {
@@ -624,6 +612,17 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 		workersByPool, err := wrkAPI.ListByWorkerPool(clusterID, defaultWorkerPool, false, targetEnv)
 		if err != nil {
 			return fmt.Errorf("Error retrieving workers of default worker pool for cluster: %s", err)
+		}
+
+		d.Set("machine_type", strings.Split(workersByPool[0].MachineType, ".encrypted")[0])
+		d.Set("public_vlan_id", workersByPool[0].PublicVlan)
+		d.Set("private_vlan_id", workersByPool[0].PrivateVlan)
+		if workersByPool[0].MachineType != "free" {
+			if strings.HasSuffix(workersByPool[0].MachineType, ".encrypted") {
+				d.Set("disk_encryption", true)
+			} else {
+				d.Set("disk_encryption", false)
+			}
 		}
 
 		if len(workersByPool) > 0 {
