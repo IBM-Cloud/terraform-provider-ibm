@@ -55,7 +55,6 @@ func resourceIBMISVPC() *schema.Resource {
 			isVPCIsDefault: {
 				Type:     schema.TypeBool,
 				ForceNew: true,
-				Default:  false,
 				Optional: true,
 				Removed:  "This field is removed use classic_access",
 			},
