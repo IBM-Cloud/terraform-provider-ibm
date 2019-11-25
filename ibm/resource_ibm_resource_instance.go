@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
@@ -221,10 +222,19 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 	}
 
 	if parameters, ok := d.GetOk("parameters"); ok {
-		for k, v := range parameters.(map[string]interface{}) {
-			params[k] = v
+		temp := parameters.(map[string]interface{})
+		for k, v := range temp {
+			if v == "true" || v == "false" {
+				b, _ := strconv.ParseBool(v.(string))
+				params[k] = b
+
+			} else {
+				params[k] = v
+			}
 		}
+
 	}
+
 	rsInst.Parameters = params
 
 	instance, err := rsConClient.ResourceServiceInstance().CreateInstance(rsInst)

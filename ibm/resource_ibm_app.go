@@ -249,7 +249,7 @@ func resourceIBMAppRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("space_guid", appData.Entity.SpaceGUID)
 	d.Set("disk_quota", appData.Entity.DiskQuota)
 	d.Set("buildpack", appData.Entity.BuildPack)
-	d.Set("environment_json", appData.Entity.EnvironmentJSON)
+	d.Set("environment_json", Flatten(appData.Entity.EnvironmentJSON))
 	d.Set("command", appData.Entity.Command)
 	d.Set("health_check_type", appData.Entity.HealthCheckType)
 	d.Set("health_check_http_endpoint", appData.Entity.HealthCheckHTTPEndpoint)

@@ -444,7 +444,7 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set("name", instance.Name)
 	d.Set("status", instance.State)
 	d.Set("resource_group_id", instance.ResourceGroupID)
-	d.Set("parameters", instance.Parameters)
+	d.Set("parameters", Flatten(instance.Parameters))
 	d.Set("location", instance.RegionID)
 
 	serviceOff, err := rsCatRepo.GetServiceName(instance.ServiceID)

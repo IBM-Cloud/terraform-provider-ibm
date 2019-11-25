@@ -106,7 +106,7 @@ func dataSourceIBMAppRead(d *schema.ResourceData, meta interface{}) error {
 	if app.BuildPack != nil {
 		d.Set("buildpack", app.BuildPack)
 	}
-	d.Set("environment_json", app.EnvironmentJSON)
+	d.Set("environment_json", Flatten(app.EnvironmentJSON))
 	d.Set("package_state", app.PackageState)
 	d.Set("state", app.State)
 	d.Set("instances", app.Instances)
