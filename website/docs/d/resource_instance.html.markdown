@@ -20,7 +20,7 @@ data "ibm_resource_group" "group" {
 data "ibm_resource_instance" "testacc_ds_resource_instance" {
   name              = "myobjectstore"
   location          = "global"
-  resource_group_id = "${data.ibm_resource_group.group.id}"
+  resource_group_id = data.ibm_resource_group.group.id
   service           = "cloud-object-storage"
 }
 ```

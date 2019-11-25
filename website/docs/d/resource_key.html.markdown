@@ -15,7 +15,7 @@ Import the details of an existing IBM resource key from IBM Cloud as a read-only
 ```hcl
 data "ibm_resource_key" "resourceKeydata" {
   name                  = "myobjectKey"
-  resource_instance_id  = "${ibm_resource_instance.resource.id}"
+  resource_instance_id  = ibm_resource_instance.resource.id
 }
 ```
 
