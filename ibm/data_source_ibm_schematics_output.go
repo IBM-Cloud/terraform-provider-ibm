@@ -76,7 +76,7 @@ func resourceIBMSchematicsOutRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", workspaceID, templateID))
-	d.Set("output_values", items)
+	d.Set("output_values", Flatten(items))
 
 	controller, err := getBaseController(meta)
 	if err != nil {

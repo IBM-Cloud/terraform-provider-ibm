@@ -129,7 +129,7 @@ func dataSourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) erro
 		d.Set("role", roleCrn[strings.LastIndex(roleCrn, ":")+1:])
 	}
 
-	d.Set("credentials", key.Credentials)
+	d.Set("credentials", Flatten(key.Credentials))
 	d.Set("status", key.State)
 	d.Set("crn", key.Crn.String())
 	return nil

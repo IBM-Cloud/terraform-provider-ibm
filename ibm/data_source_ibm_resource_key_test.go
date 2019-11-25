@@ -56,27 +56,27 @@ func testAccCheckIBMResourceKeyDataSourceConfig(resourceName, resourceKey string
 	return fmt.Sprintf(`
 
 resource "ibm_resource_instance" "resource" {
-  name       = "%s"
-  service    = "cloud-object-storage"
-  plan       = "lite"
-  location   = "global"
- 
+  name     = "%s"
+  service  = "cloud-object-storage"
+  plan     = "lite"
+  location = "global"
 }
 
 resource "ibm_resource_key" "resourcekey" {
-  name                  = "%s"
-  role                  = "Writer"
-  resource_instance_id  = "${ibm_resource_instance.resource.id}"
+  name                 = "%s"
+  role                 = "Writer"
+  resource_instance_id = ibm_resource_instance.resource.id
 }
 
 data "ibm_resource_key" "testacc_ds_resource_key" {
-  name                  = "${ibm_resource_key.resourcekey.name}"
+  name = ibm_resource_key.resourcekey.name
 }
 
 data "ibm_resource_key" "testacc_ds_resource_key1" {
-	name                  = "${ibm_resource_key.resourcekey.name}"
-	resource_instance_id  = "${ibm_resource_instance.resource.id}"
-}`, resourceName, resourceKey)
+  name                 = ibm_resource_key.resourcekey.name
+  resource_instance_id = ibm_resource_instance.resource.id
+}
+`, resourceName, resourceKey)
 
 }
 
@@ -84,34 +84,34 @@ func testAccCheckIBMResourceKeyDataSourceConfigRecent(resourceName, resourceKey 
 	return fmt.Sprintf(`
 
 resource "ibm_resource_instance" "resource" {
-  name       = "%s"
-  service    = "cloud-object-storage"
-  plan       = "lite"
-  location   = "global"
- 
+  name     = "%s"
+  service  = "cloud-object-storage"
+  plan     = "lite"
+  location = "global"
 }
 
 resource "ibm_resource_key" "resourcekey" {
-  name                  = "%s"
-  role                  = "Reader"
-  resource_instance_id  = "${ibm_resource_instance.resource.id}"
+  name                 = "%s"
+  role                 = "Reader"
+  resource_instance_id = ibm_resource_instance.resource.id
 }
 
 resource "ibm_resource_key" "resourcekey1" {
-	name                  = "%s"
-	role                  = "Writer"
-	resource_instance_id  = "${ibm_resource_instance.resource.id}"
+  name                 = "%s"
+  role                 = "Writer"
+  resource_instance_id = ibm_resource_instance.resource.id
 }
 
 data "ibm_resource_key" "testacc_ds_resource_key" {
-  name                  = "${ibm_resource_key.resourcekey.name}"
-  most_recent           = "true"
+  name        = ibm_resource_key.resourcekey.name
+  most_recent = "true"
 }
 
 data "ibm_resource_key" "testacc_ds_resource_key1" {
-	name                  = "${ibm_resource_key.resourcekey.name}"
-	resource_instance_id  = "${ibm_resource_instance.resource.id}"
-	most_recent           = "true"
-}`, resourceName, resourceKey, resourceKey)
+  name                 = ibm_resource_key.resourcekey.name
+  resource_instance_id = ibm_resource_instance.resource.id
+  most_recent          = "true"
+}
+`, resourceName, resourceKey, resourceKey)
 
 }
