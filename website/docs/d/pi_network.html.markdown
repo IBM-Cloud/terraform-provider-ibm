@@ -36,3 +36,4 @@ The following attributes are exported:
 * `used_ip_count` - The IPs that are in use for this network.
 * `used_ip_percent` - The used ip in percent.
 * `vlan_type` - The type of vlan for this network.
+* `name` - The name of the network

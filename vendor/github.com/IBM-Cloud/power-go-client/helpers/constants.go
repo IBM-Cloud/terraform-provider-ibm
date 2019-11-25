@@ -37,10 +37,15 @@ const (
 
 	// IBM PI Image
 
-	PIImageName = "pi_image_name"
-	PIImageQueStatus = "queued"
-	PIImageActiveStatus="active"
-
+	PIImageName         = "pi_image_name"
+	PIImageQueStatus    = "queued"
+	PIImageActiveStatus = "active"
+	PIImageAccessKey    = "pi_image_access_key"
+	PIImageSecretKey    = "pi_image_secret_key"
+	PIImageSource       = "pi_image_source"
+	PIImageBucketName   = "pi_image_bucket_name"
+	PIImageFileName     = "pi_image_file_name"
+	PIImageRegion       = "pi_image_region"
 	// IBM PI Key
 
 	PIKeyName = "pi_key_name"

@@ -98,8 +98,8 @@ func dataSourceIBMPINetworksRead(d *schema.ResourceData, meta interface{}) error
 	d.Set("available_ip_count", networkdata.IPAddressMetrics.Available)
 	d.Set("used_ip_count", networkdata.IPAddressMetrics.Used)
 	d.Set("used_ip_percent", networkdata.IPAddressMetrics.Utilization)
+	d.Set("name", networkdata.Name)
 
 	return nil
-	//return fmt.Errorf("No Image found with name %s", imagedata.)
 
 }
