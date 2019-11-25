@@ -187,7 +187,7 @@ func flattenServiceInstanceCredentials(keys []mccpv2.ServiceKeyFields) []interfa
 	for i, k := range keys {
 		m := make(map[string]interface{})
 		m["name"] = k.Entity.Name
-		m["credentials"] = k.Entity.Credentials
+		m["credentials"] = Flatten(k.Entity.Credentials)
 		out[i] = m
 	}
 	return out

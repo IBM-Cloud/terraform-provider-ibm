@@ -80,7 +80,7 @@ func dataSourceIBMServiceInstanceRead(d *schema.ResourceData, meta interface{}) 
 
 	d.SetId(serviceInstance.Metadata.GUID)
 	serviceKeys := serviceInstance.Entity.ServiceKeys
-	d.Set("credentials", serviceInstance.Entity.Credentials)
+	d.Set("credentials", Flatten(serviceInstance.Entity.Credentials))
 	d.Set("service_keys", flattenServiceInstanceCredentials(serviceKeys))
 	d.Set("service_plan_guid", serviceInstance.Entity.ServicePlanGUID)
 

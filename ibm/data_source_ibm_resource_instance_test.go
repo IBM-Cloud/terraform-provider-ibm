@@ -50,18 +50,18 @@ func setupResourceInstanceConfig(instanceName string) string {
 	return fmt.Sprintf(`
 
 resource "ibm_resource_instance" "instance" {
-  name       = "%s"
-  service    = "cloud-object-storage"
-  plan       = "lite"
-  location   = "global"
+  name     = "%s"
+  service  = "cloud-object-storage"
+  plan     = "lite"
+  location = "global"
 }
 
 resource "ibm_resource_instance" "instance2" {
-	name       = "%s"
-	service    = "kms"
-	plan       = "tiered-pricing"
-	location   = "us-south"
-  }
+  name     = "%s"
+  service  = "kms"
+  plan     = "tiered-pricing"
+  location = "us-south"
+}
 
 `, instanceName, instanceName)
 
@@ -74,23 +74,23 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_resource_instance" "instance" {
-	name       = "%s"
-	service    = "cloud-object-storage"
-	plan       = "lite"
-	location   = "global"
+  name     = "%s"
+  service  = "cloud-object-storage"
+  plan     = "lite"
+  location = "global"
 }
 
 resource "ibm_resource_instance" "instance2" {
-	name       = "%s"
-	service    = "kms"
-	plan       = "tiered-pricing"
-	location   = "us-south"
-  }
+  name     = "%s"
+  service  = "kms"
+  plan     = "tiered-pricing"
+  location = "us-south"
+}
 
 data "ibm_resource_instance" "testacc_ds_resource_instance" {
-  name = "${ibm_resource_instance.instance.name}"
-  location = "global"
-  resource_group_id = "${data.ibm_resource_group.group.id}"
+  name              = ibm_resource_instance.instance.name
+  location          = "global"
+  resource_group_id = data.ibm_resource_group.group.id
 }
 `, instanceName, instanceName)
 
@@ -100,21 +100,21 @@ func testAccCheckIBMResourceInstanceDataSourceConfigWithService(instanceName str
 	return fmt.Sprintf(`
 
 resource "ibm_resource_instance" "instance" {
-	name       = "%s"
-	service    = "cloud-object-storage"
-	plan       = "lite"
-	location   = "global"
+  name     = "%s"
+  service  = "cloud-object-storage"
+  plan     = "lite"
+  location = "global"
 }
 
 resource "ibm_resource_instance" "instance2" {
-	name       = "%s"
-	service    = "kms"
-	plan       = "tiered-pricing"
-	location   = "us-south"
-  }
+  name     = "%s"
+  service  = "kms"
+  plan     = "tiered-pricing"
+  location = "us-south"
+}
 
 data "ibm_resource_instance" "testacc_ds_resource_instance2" {
-  name = "${ibm_resource_instance.instance2.name}"
+  name    = ibm_resource_instance.instance2.name
   service = "kms"
 }
 `, instanceName, instanceName)
