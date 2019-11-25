@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
@@ -414,7 +415,7 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set("name", instance.Name)
 	d.Set("status", instance.State)
 	d.Set("resource_group_id", instance.ResourceGroupID)
-	d.Set("parameters", instance.Parameters)
+	d.Set("parameters", Flatten(instance.Parameters))
 	d.Set("location", instance.RegionID)
 
 	serviceOff, err := rsCatRepo.GetServiceName(instance.ServiceID)

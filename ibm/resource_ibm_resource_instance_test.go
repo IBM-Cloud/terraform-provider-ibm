@@ -194,103 +194,105 @@ func testAccCheckIBMResourceInstanceExists(n string, obj models.ServiceInstance)
 func testAccCheckIBMResourceInstance_basic(serviceName string) string {
 	return fmt.Sprintf(`
 		
-		resource "ibm_resource_instance" "instance" {
-			name              = "%s"		
-			service           = "cloud-object-storage"
-			plan              = "lite"
-			location          = "global"
-			parameters = {
-				"HMAC" = true
-			  }
-
-			timeouts {
-				create = "15m"
-				update = "15m"
-				delete = "15m"
-			  }
+	resource "ibm_resource_instance" "instance" {
+		name     = "%s"
+		service  = "cloud-object-storage"
+		plan     = "lite"
+		location = "global"
+		parameters = {
+		  "HMAC" = true
 		}
+	  
+		timeouts {
+		  create = "15m"
+		  update = "15m"
+		  delete = "15m"
+		}
+	  }
 	`, serviceName)
 }
 
 func testAccCheckIBMResourceInstance_updateWithSameName(serviceName string) string {
 	return fmt.Sprintf(`
 		
-		resource "ibm_resource_instance" "instance" {
-			name              = "%s"
-			service           = "cloud-object-storage"
-			plan              = "lite"
-			location          = "global"
-			parameters = {
-				"HMAC" = true
-			  }
+	resource "ibm_resource_instance" "instance" {
+		name     = "%s"
+		service  = "cloud-object-storage"
+		plan     = "lite"
+		location = "global"
+		parameters = {
+		  "HMAC" = true
 		}
+	}
+	  
 	`, serviceName)
 }
 
 func testAccCheckIBMResourceInstance_update(updateName string) string {
 	return fmt.Sprintf(`
 
-		resource "ibm_resource_instance" "instance" {
-			name              = "%s"		
-			service           = "cloud-object-storage"
-			plan              = "lite"
-			location          = "global"
-			parameters = {
-				"HMAC" = true
-			  }
+	resource "ibm_resource_instance" "instance" {
+		name     = "%s"
+		service  = "cloud-object-storage"
+		plan     = "lite"
+		location = "global"
+		parameters = {
+		  "HMAC" = true
 		}
+	}
 	`, updateName)
 }
 
 func testAccCheckIBMResourceInstance_newServiceType(updateName string) string {
 	return fmt.Sprintf(`
-		resource "ibm_resource_instance" "instance" {
-			name              = "%s"		
-			service           = "kms"
-			plan              = "tiered-pricing"
-			location          = "us-south"
-		}
+	resource "ibm_resource_instance" "instance" {
+		name     = "%s"
+		service  = "kms"
+		plan     = "tiered-pricing"
+		location = "us-south"
+	}
 	`, updateName)
 }
 
 func testAccCheckIBMResourceInstance_with_resource_group(serviceName string) string {
 	return fmt.Sprintf(`
 
-		data "ibm_resource_group" "group" {
-			name = "default"
+	data "ibm_resource_group" "group" {
+		name = "default"
+	  }
+	  
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "lite"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.group.id
+		parameters = {
+		  "HMAC" = true
 		}
-		
-		resource "ibm_resource_instance" "instance" {
-			name              = "%s"		
-			service           = "cloud-object-storage"
-			plan              = "lite"
-			location          = "global"
-			resource_group_id = "${data.ibm_resource_group.group.id}"
-			parameters = {
-				"HMAC" = true
-			  }
-		}
+	}
 	`, serviceName)
 }
 
 func testAccCheckIBMResourceInstance_serviceendpoints(serviceName string) string {
 	return fmt.Sprintf(`
 	
-		resource "ibm_resource_instance" "postgresql_from_backup" {
-			name                = "%s"
-			location            = "us-south"
-			service             = "databases-for-postgresql"
-			plan                = "standard"
-			parameters = {
-				members_memory_allocation_mb = "4096"
-			 }
-			service_endpoints = "public-and-private"
-			timeouts {
-				create = "25m"
-				update = "15m"
-				delete = "15m"
-			  }
-		} 
+	resource "ibm_resource_instance" "instance" {
+		name     = "%s"
+		location = "us-south"
+		service  = "databases-for-postgresql"
+		plan     = "standard"
+		parameters = {
+		  members_memory_allocation_mb = "4096"
+		}
+	  
+		//service_endpoints = "public-and-private"
+		timeouts {
+		  create = "25m"
+		  update = "15m"
+		  delete = "15m"
+		}
+	}
 			
 	`, serviceName)
 }

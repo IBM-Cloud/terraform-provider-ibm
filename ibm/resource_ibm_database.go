@@ -662,7 +662,7 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("name", instance.Name)
 	d.Set("status", instance.State)
 	d.Set("resource_group_id", instance.ResourceGroupID)
-	d.Set("parameters", instance.Parameters)
+	d.Set("parameters", Flatten(instance.Parameters))
 	d.Set("location", instance.RegionID)
 	if instance.Parameters != nil {
 		if endpoint, ok := instance.Parameters["service-endpoints"]; ok {

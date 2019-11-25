@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -121,7 +122,17 @@ func resourceIBMResourceKeyCreate(d *schema.ResourceData, meta interface{}) erro
 	var keyParams map[string]interface{}
 
 	if parameters, ok := d.GetOk("parameters"); ok {
-		keyParams = parameters.(map[string]interface{})
+		temp := parameters.(map[string]interface{})
+		keyParams = make(map[string]interface{})
+		for k, v := range temp {
+			if v == "true" || v == "false" {
+				b, _ := strconv.ParseBool(v.(string))
+				keyParams[k] = b
+
+			} else {
+				keyParams[k] = v
+			}
+		}
 	} else {
 		keyParams = make(map[string]interface{})
 	}
@@ -180,7 +191,7 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 	if err != nil {
 		return fmt.Errorf("Error retrieving resource key: %s", err)
 	}
-	d.Set("credentials", resourceKey.Credentials)
+	d.Set("credentials", Flatten(resourceKey.Credentials))
 	d.Set("name", resourceKey.Name)
 	d.Set("status", resourceKey.State)
 

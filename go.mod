@@ -26,10 +26,10 @@ require (
 	github.com/go-openapi/swag v0.0.0-20180825180336-0dc164b7900e // indirect
 	github.com/go-openapi/validate v0.0.0-20180825180342-e0648ff40507 // indirect
 	github.com/go-test/deep v1.0.4 // indirect
-	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf // indirect
 	github.com/hashicorp/go-uuid v1.0.1
 	github.com/hashicorp/go-version v1.2.0
+	github.com/hashicorp/terraform v0.12.16
 	github.com/hashicorp/terraform-plugin-sdk v1.0.0
 	github.com/hokaccha/go-prettyjson v0.0.0-20170213120834-e6b9231a2b1c // indirect
 	github.com/kardianos/govendor v1.0.9 // indirect

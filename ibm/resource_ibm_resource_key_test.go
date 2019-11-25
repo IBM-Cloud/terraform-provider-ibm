@@ -89,7 +89,7 @@ func TestAccIBMResourceKey_Parameters(t *testing.T) {
 					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey", conf),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "name", resourceKey),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "role", "Manager"),
-					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "credentials.%", "9"),
+					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "credentials.%", "7"),
 				),
 			},
 		},
@@ -153,10 +153,9 @@ func testAccCheckIBMResourceKey_basic(resourceName, resourceKey string) string {
 			plan              = "lite"
 			location          = "global"
 		}
-
 		resource "ibm_resource_key" "resourceKey" {
 			name = "%s"
-			resource_instance_id = "${ibm_resource_instance.resource.id}"
+			resource_instance_id = ibm_resource_instance.resource.id
 			role = "Reader"
 		}
 	`, resourceName, resourceKey)
@@ -171,10 +170,9 @@ func testAccCheckIBMResourceKey_with_tags(resourceName, resourceKey string) stri
 			plan              = "lite"
 			location          = "global"
 		}
-
 		resource "ibm_resource_key" "resourceKey" {
 			name = "%s"
-			resource_instance_id = "${ibm_resource_instance.resource.id}"
+			resource_instance_id = ibm_resource_instance.resource.id
 			role = "Manager"
 			tags				  = ["one"]	
 		}
@@ -189,10 +187,9 @@ func testAccCheckIBMResourceKey_with_updated_tags(resourceName, resourceKey stri
 			plan              = "lite"
 			location          = "global"
 		}
-
 		resource "ibm_resource_key" "resourceKey" {
 			name = "%s"
-			resource_instance_id = "${ibm_resource_instance.resource.id}"
+			resource_instance_id = ibm_resource_instance.resource.id
 			role = "Manager"
 			tags				  = ["one", "two"]	
 		}
@@ -208,10 +205,9 @@ func testAccCheckIBMResourceKey_parameters(resourceName, resourceKey string) str
 			plan              = "lite"
 			location          = "global"
 		}
-
 		resource "ibm_resource_key" "resourceKey" {
 			name = "%s"
-			resource_instance_id = "${ibm_resource_instance.resource.id}"
+			resource_instance_id = ibm_resource_instance.resource.id
 			parameters        = {"HMAC" = true}
 			role = "Manager"
 		}

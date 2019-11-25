@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
@@ -136,7 +137,18 @@ func resourceIBMServiceInstanceCreate(d *schema.ResourceData, meta interface{}) 
 	svcInst.PlanGUID = servicePlan.GUID
 
 	if parameters, ok := d.GetOk("parameters"); ok {
-		svcInst.Params = parameters.(map[string]interface{})
+		temp := parameters.(map[string]interface{})
+		keyParams := make(map[string]interface{})
+		for k, v := range temp {
+			if v == "true" || v == "false" {
+				b, _ := strconv.ParseBool(v.(string))
+				keyParams[k] = b
+
+			} else {
+				keyParams[k] = v
+			}
+		}
+		svcInst.Params = keyParams
 	}
 
 	if _, ok := d.GetOk("tags"); ok {
@@ -177,7 +189,7 @@ func resourceIBMServiceInstanceRead(d *schema.ResourceData, meta interface{}) er
 	d.Set("space_guid", service.Entity.SpaceGUID)
 	serviceKeys := service.Entity.ServiceKeys
 	d.Set("service_keys", flattenServiceInstanceCredentials(serviceKeys))
-	d.Set("credentials", service.Entity.Credentials)
+	d.Set("credentials", Flatten(service.Entity.Credentials))
 	d.Set("tags", service.Entity.Tags)
 	d.Set("name", service.Entity.Name)
 

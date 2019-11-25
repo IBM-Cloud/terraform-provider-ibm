@@ -20,9 +20,9 @@ data "ibm_resource_instance" "resource_instance" {
 resource "ibm_resource_key" "resourceKey" {
   name                 = "myobjectkey"
   role                 = "Viewer"
-  resource_instance_id = "${data.ibm_resource_instance.resource_instance.id}"
+  resource_instance_id = data.ibm_resource_instance.resource_instance.id
 
-  //User can increase timeouts 
+  //User can increase timeouts
   timeouts {
     create = "15m"
     delete = "15m"
