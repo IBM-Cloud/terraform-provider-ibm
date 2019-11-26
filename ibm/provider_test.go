@@ -66,6 +66,11 @@ var pi_volume_name string
 var pi_network_name string
 var pi_cloud_instance_id string
 
+// For Image
+
+var image_cos_url string
+var image_operating_system string
+
 func init() {
 	cfOrganization = os.Getenv("IBM_ORG")
 	if cfOrganization == "" {
@@ -364,6 +369,18 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable TEMPLATE_ID for testing data_source_ibm_schematics_state_test else it is set to default value")
 	}
 
+	// Added for resource image testing
+	image_cos_url = os.Getenv("IMAGE_COS_URL")
+	if image_cos_url == "" {
+		image_cos_url = ""
+		fmt.Println("[WARN] Set the environment variable IMAGE_COS_URL with a VALID COS Image SQL URL for testing ibm_is_image resources on staging/test")
+	}
+
+	image_operating_system = os.Getenv("IMAGE_OPERATING_SYSTEM")
+	if image_operating_system == "" {
+		image_operating_system = ""
+		fmt.Println("[WARN] Set the environment variable IMAGE_OPERATING_SYSTEM with a VALID Operating system for testing ibm_is_image resources on staging/test")
+	}
 }
 
 var testAccProviders map[string]terraform.ResourceProvider
@@ -411,5 +428,15 @@ func testAccPreCheckCis(t *testing.T) {
 	}
 	if cisDomainTest == "" {
 		t.Fatal("IBM_CIS_DOMAIN_TEST must be set for acceptance tests")
+	}
+}
+
+func testAccPreCheckImage(t *testing.T) {
+	testAccPreCheck(t)
+	if image_cos_url == "" {
+		t.Fatal("IMAGE_COS_URL must be set for acceptance tests")
+	}
+	if image_operating_system == "" {
+		t.Fatal("IMAGE_OPERATING_SYSTEM must be set for acceptance tests")
 	}
 }
