@@ -60,7 +60,7 @@ type CliConn struct {
 }
 
 type Connections interface {
-	GetConnection(icdId string, userId string) (Connection, error)
+	GetConnection(icdId string, userId string, endpoint ...string) (Connection, error)
 	GetConnectionSubstitution(icdId string, userID string, connectionReq ConnectionReq) (Connection, error)
 }
 
@@ -74,9 +74,13 @@ func newConnectionAPI(c *client.Client) Connections {
 	}
 }
 
-func (r *connections) GetConnection(icdId string, userId string) (Connection, error) {
+func (r *connections) GetConnection(icdId string, userId string, endpoint ...string) (Connection, error) {
 	connectionRes := ConnectionRes{}
-	rawURL := fmt.Sprintf("/v4/ibm/deployments/%s/users/%s/connections", utils.EscapeUrlParm(icdId), userId)
+	connectionEndpoint := "public"
+	if len(endpoint) > 0 {
+		connectionEndpoint = endpoint[0]
+	}
+	rawURL := fmt.Sprintf("/v4/ibm/deployments/%s/users/%s/connections/%s", utils.EscapeUrlParm(icdId), userId, connectionEndpoint)
 	_, err := r.client.Get(rawURL, &connectionRes)
 	if err != nil {
 		return connectionRes.Connection, err
