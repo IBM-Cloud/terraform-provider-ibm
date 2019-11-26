@@ -213,6 +213,8 @@ type clientSession struct {
 	powerConfigErr error
 	ibmpiConfigErr error
 	ibmpiSession   *ibmpisession.IBMPISession
+
+	bluemixSessionErr error
 }
 
 // BluemixAcccountAPI ...
@@ -227,7 +229,7 @@ func (sess clientSession) BluemixAcccountv1API() (accountv1.AccountServiceAPI, e
 
 // BluemixSession to provide the Bluemix Session
 func (sess clientSession) BluemixSession() (*bxsession.Session, error) {
-	return sess.session.BluemixSession, nil
+	return sess.session.BluemixSession, sess.bluemixSessionErr
 }
 
 // BluemixUserDetails ...
@@ -339,6 +341,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if sess.BluemixSession == nil {
 		//Can be nil only  if bluemix_api_key is not provided
 		log.Println("Skipping Bluemix Clients configuration")
+		session.bluemixSessionErr = errEmptyBluemixCredentials
 		session.accountConfigErr = errEmptyBluemixCredentials
 		session.accountV1ConfigErr = errEmptyBluemixCredentials
 		session.csConfigErr = errEmptyBluemixCredentials
@@ -355,7 +358,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.icdConfigErr = errEmptyBluemixCredentials
 		session.resourceCatalogConfigErr = errEmptyBluemixCredentials
 		session.resourceManagementConfigErr = errEmptyBluemixCredentials
-		session.resourceCatalogConfigErr = errEmptyBluemixCredentials
+		session.resourceControllerConfigErr = errEmptyBluemixCredentials
 		session.isConfigErr = errEmptyBluemixCredentials
 		session.powerConfigErr = errEmptyBluemixCredentials
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
