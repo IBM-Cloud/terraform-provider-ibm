@@ -461,6 +461,16 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 	d.Set("whitelist", flattenWhitelist(whitelist))
 
+	connectionEndpoint := "public"
+	if instance.Parameters != nil {
+		if endpoint, ok := instance.Parameters["service-endpoints"]; ok {
+			if endpoint == "private" {
+				connectionEndpoint = "private"
+			}
+		}
+
+	}
+
 	var connectionStrings []CsEntry
 	//ICD does not implement a GetUsers API. Users populated from tf configuration.
 	tfusers := d.Get("users").(*schema.Set)
@@ -471,7 +481,7 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	users = append(users, user)
 	for _, user := range users {
 		userName := user.UserName
-		csEntry, err := getConnectionString(d, userName, meta)
+		csEntry, err := getConnectionString(d, userName, connectionEndpoint, meta)
 		if err != nil {
 			return fmt.Errorf("Error getting user connection string for user (%s): %s", userName, err)
 		}

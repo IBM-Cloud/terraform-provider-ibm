@@ -640,6 +640,7 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	instanceID := d.Id()
+	connectionEndpoint := "public"
 	instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
 	if err != nil {
 		if strings.Contains(err.Error(), "Object not found") ||
@@ -668,6 +669,9 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("location", instance.RegionID)
 	if instance.Parameters != nil {
 		if endpoint, ok := instance.Parameters["service-endpoints"]; ok {
+			if endpoint == "private" {
+				connectionEndpoint = "private"
+			}
 			d.Set("service_endpoints", endpoint)
 		}
 
@@ -733,7 +737,7 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 	users = append(users, user)
 	for _, user := range users {
 		userName := user.UserName
-		csEntry, err := getConnectionString(d, userName, meta)
+		csEntry, err := getConnectionString(d, userName, connectionEndpoint, meta)
 		if err != nil {
 			return fmt.Errorf("Error getting user connection string for user (%s): %s", userName, err)
 		}
@@ -972,7 +976,7 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 	return resourceIBMDatabaseInstanceRead(d, meta)
 }
 
-func getConnectionString(d *schema.ResourceData, userName string, meta interface{}) (CsEntry, error) {
+func getConnectionString(d *schema.ResourceData, userName, connectionEndpoint string, meta interface{}) (CsEntry, error) {
 	csEntry := CsEntry{}
 	icdClient, err := meta.(ClientSession).ICDAPI()
 	if err != nil {
@@ -980,7 +984,7 @@ func getConnectionString(d *schema.ResourceData, userName string, meta interface
 	}
 
 	icdId := d.Id()
-	connection, err := icdClient.Connections().GetConnection(icdId, userName)
+	connection, err := icdClient.Connections().GetConnection(icdId, userName, connectionEndpoint)
 	if err != nil {
 		return csEntry, fmt.Errorf("Error getting database user connection string via ICD API: %s", err)
 	}
