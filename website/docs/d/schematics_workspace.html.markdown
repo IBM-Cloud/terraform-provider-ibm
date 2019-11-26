@@ -15,8 +15,8 @@ Import details of a schematics workspace as a read-only data source. You can the
 ## Example Usage
 
 ```hcl
-data "ibm_schematics_worksapce" "test" {
-  workspace_id = "my-worspace-id"
+data "ibm_schematics_workspace" "test" {
+  workspace_id = "my-workspace-id"
 }
 ```
 

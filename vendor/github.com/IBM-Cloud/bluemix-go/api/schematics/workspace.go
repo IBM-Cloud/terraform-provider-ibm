@@ -50,7 +50,7 @@ type TemplateDataInfo struct {
 	Values              string              `json:"values"`
 	ValuesMetadata      []map[string]string `json:"values_metadata"`
 	ValuesURL           string              `json:"values_url"`
-	Variablestore       []map[string]string `json:"variablestore"`
+	Variablestore       []Variablestore     `json:"variablestore"`
 }
 
 type RuntimeDataInfo struct {
@@ -97,11 +97,44 @@ type OutputValues struct {
 	Type      string      `json:"type"`
 }
 
-// for index, value := range Output {
-// 	for key, val := range value {
+type CreateWorkspaceConfig struct {
+	Name            string             `json:"name"`
+	Type            []string           `json:"type"`
+	Description     string             `json:"description"`
+	Tags            []string           `json:"tags"`
+	WorkspaceStatus StatusInfo         `json:"workspace_status"`
+	TemplateRepo    RepoInfo           `json:"template_repo"`
+	TemplateRef     string             `json:"template_ref"`
+	TemplateData    []TemplateDataInfo `json:"template_data"`
+}
 
-// 	}
-// }
+type Payload struct {
+	Name            string          `json:"name"`
+	Type            []string        `json:"type"`
+	Description     string          `json:"description"`
+	Tags            []string        `json:"tags"`
+	TemplateRef     string          `json:"template_ref"`
+	TemplateRepo    TemplateRepo    `json:"template_repo"`
+	WorkspaceStatus WorkspaceStatus `json:"workspace_status"`
+	TemplateData    []TemplateData  `json:"template_data"`
+}
+type TemplateRepo struct {
+	URL string `json:"url"`
+}
+type WorkspaceStatus struct {
+	Frozen bool `json:"frozen"`
+}
+type Variablestore struct {
+	Name        string `json:"name"`
+	Secure      bool   `json:"secure,omitempty"`
+	Value       string `json:"value"`
+	Description string `json:"description,omitempty"`
+}
+type TemplateData struct {
+	Folder        string          `json:"folder"`
+	Type          string          `json:"type"`
+	Variablestore []Variablestore `json:"variablestore"`
+}
 
 type workspace struct {
 	client *client.Client
@@ -111,6 +144,7 @@ type Workspaces interface {
 	GetWorkspaceByID(WorskpaceID string) (WorkspaceConfig, error)
 	GetOutputValues(WorskpaceID string) ([]OutputResponse, error)
 	GetStateStore(WorskpaceID, TemplateID string) (interface{}, error)
+	CreateWorkspace(createReq Payload) (WorkspaceConfig, error)
 }
 
 func newWorkspaceAPI(c *client.Client) Workspaces {
@@ -136,4 +170,9 @@ func (r *workspace) GetOutputValues(WorskpaceID string) ([]OutputResponse, error
 		return nil, err
 	}
 	return outputs, err
+}
+func (r *workspace) CreateWorkspace(createReq Payload) (WorkspaceConfig, error) {
+	var successV WorkspaceConfig
+	_, err := r.client.Post("/v1/workspaces", createReq, &successV)
+	return successV, err
 }

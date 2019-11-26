@@ -1,0 +1,3 @@
+variable "workspaceID" {}
+
+variable "templateID" {}
