@@ -55,6 +55,8 @@ var isImage string
 var instanceProfileName string
 var ISRouteDestination string
 var ISRouteNextHop string
+var workspaceID string
+var templateID string
 
 // For Power Colo
 
@@ -350,6 +352,17 @@ func init() {
 	if pi_cloud_instance_id == "" {
 		pi_cloud_instance_id = "d16705bd-7f1a-48c9-9e0e-1c17b71e7331"
 		fmt.Println("[INFO] Set the environment variable PI_CLOUDINSTANCE_ID for testing ibm_pi_image resource else it is set to default value 'd16705bd-7f1a-48c9-9e0e-1c17b71e7331'")
+	}
+
+	workspaceID = os.Getenv("WORKSPACE_ID")
+	if workspaceID == "" {
+		workspaceID = "outwork-2737f163-b966-44"
+		fmt.Println("[INFO] Set the environment variable WORKSPACE_ID for testing data_source_ibm_schematics_state_test else it is set to default value")
+	}
+	templateID = os.Getenv("TEMPLATE_ID")
+	if templateID == "" {
+		templateID = "653f60a4-f64f-41"
+		fmt.Println("[INFO] Set the environment variable TEMPLATE_ID for testing data_source_ibm_schematics_state_test else it is set to default value")
 	}
 
 }
