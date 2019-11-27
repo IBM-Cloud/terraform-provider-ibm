@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccIBMSchematicsWorkspaceDataSource_basic(t *testing.T) {
@@ -29,7 +29,7 @@ func testAccCheckIBMSchematicsWorkspaceDataSourceConfig(workspaceID string) stri
 		workspace_id = "%s"
 	  }
 	  
-	  output "WorkSpace Values" {
+	  output "WorkSpaceValues" {
 		value = "${data.ibm_schematics_workspace.test.template_id.0}"
 	  }
 `, workspaceID)

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccIBMSchematicsStateDataSource_basic(t *testing.T) {
@@ -30,7 +30,7 @@ func testAccCheckIBMSchematicsStateDataSourceConfig(WorkspaceID, templateID stri
 		template_id = "%s"
 	  }
 	  
-	  output "StateStore Values" {
+	  output "state_store_values" {
 		value = "${data.ibm_schematics_state.test.state_store}"
 	  }
 `, WorkspaceID, templateID)

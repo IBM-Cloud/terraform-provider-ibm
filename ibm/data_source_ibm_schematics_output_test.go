@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccIBMSchematicsOutputDataSource_basic(t *testing.T) {
@@ -30,7 +30,7 @@ func testAccCheckIBMSchematicsOutputDataSourceConfig(WorkspaceID, templateID str
 		template_id = "%s"
 	  }
 	  
-	  output "StateStore Values" {
+	  output "output_values" {
 		value = "${data.ibm_schematics_output.test.output_values}"
 	  }
 `, WorkspaceID, templateID)
