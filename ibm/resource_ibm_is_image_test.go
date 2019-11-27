@@ -15,8 +15,6 @@ import (
 func TestAccIBMISImage_basic(t *testing.T) {
 	var image *models.Image
 
-	href := fmt.Sprintf("cos://us-south/vnfimages/BIGIP-15.0.1-0.0.11.qcow2")
-	operatingsystem := "centos-7-amd64"
 	name := fmt.Sprintf("terraformimageuat-create-step-name-%d", acctest.RandInt())
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckImage(t) },
@@ -24,7 +22,7 @@ func TestAccIBMISImage_basic(t *testing.T) {
 		CheckDestroy: checkImageDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMISImageConfig(href, name, operatingsystem),
+				Config: testAccCheckIBMISImageConfig(name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISImageExists("ibm_is_image.isExampleImage", &image),
 					resource.TestCheckResourceAttr(
@@ -81,7 +79,7 @@ func testAccCheckIBMISImageExists(n string, image **models.Image) resource.TestC
 	}
 }
 
-func testAccCheckIBMISImageConfig(href, name, operatingsystem string) string {
+func testAccCheckIBMISImageConfig(name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_is_image" "isExampleImage" {
 			href = "%s"

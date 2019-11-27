@@ -16,6 +16,10 @@ const (
 	isImageOperatingSystem = "operating_system"
 	isImageStatus          = "status"
 	isImageVisibility      = "visibility"
+	isImageFile            = "file"
+	isImageFormat          = "format"
+	isImageArchitecure     = "architecture"
+	isImageTags            = "tags"
 
 	isImageProvisioning     = "provisioning"
 	isImageProvisioningDone = "done"
@@ -32,11 +36,17 @@ func resourceIBMISImage() *schema.Resource {
 		Exists:   resourceIBMISImageExists,
 		Importer: &schema.ResourceImporter{},
 
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
+
 		Schema: map[string]*schema.Schema{
 			isImageHref: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:             schema.TypeString,
+				Required:         true,
+				DiffSuppressFunc: applyOnce,
 			},
 
 			isImageName: {
@@ -56,7 +66,29 @@ func resourceIBMISImage() *schema.Resource {
 				Computed: true,
 			},
 
+			isImageArchitecure: {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
 			isImageVisibility: {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			isImageTags: {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
+
+			isImageFile: {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			isImageFormat: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -77,6 +109,12 @@ func resourceIBMISImage() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The crn of the resource",
+			},
+
+			ResourceStatus: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the resource",
 			},
 
 			ResourceGroupName: {
@@ -102,7 +140,7 @@ func resourceIBMISImageCreate(d *schema.ResourceData, meta interface{}) error {
 	imageC := compute.NewImageClient(sess)
 	image, err := imageC.Create(href, name, operatingSystem)
 	if err != nil {
-		log.Printf("[DEBUG] Key err %s", err)
+		log.Printf("[DEBUG] Image err %s", err)
 		return err
 	}
 
@@ -114,6 +152,14 @@ func resourceIBMISImageCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
+	if _, ok := d.GetOk(isImageTags); ok {
+		oldList, newList := d.GetChange(isImageTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, image.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource image (%s) tags: %s", d.Id(), err)
+		}
+	}
 	return resourceIBMISImageRead(d, meta)
 }
 
@@ -178,8 +224,16 @@ func resourceIBMISImageRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
+	d.Set("id", image.ID.String())
+	d.Set("created_at", image.CreatedAt)
+	d.Set(isImageArchitecure, image.Architecture)
 	d.Set(isImageName, image.Name)
 	d.Set(isImageOperatingSystem, image.OperatingSystem)
+	d.Set(isImageFormat, image.Format)
+	d.Set(isImageFile, image.File)
+	d.Set(isImageHref, image.Href)
+	d.Set(isImageStatus, image.Status)
+	d.Set(isImageVisibility, image.Visibility)
 	controller, err := getBaseController(meta)
 	if err != nil {
 		return err
@@ -190,6 +244,7 @@ func resourceIBMISImageRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set(ResourceControllerURL, controller+"/vpc-ext/compute/image")
 	}
 	d.Set(ResourceName, image.Name)
+	d.Set(ResourceStatus, image.Status)
 	d.Set(ResourceCRN, image.Crn)
 	if image.ResourceGroup != nil {
 		d.Set(ResourceGroupName, image.ResourceGroup.Name)
@@ -249,7 +304,6 @@ func isImageDeleteRefreshFunc(imageC *compute.ImageClient, id string) resource.S
 				return nil, isImageDeleted, nil
 			}
 		}
-		log.Printf("[DEBUG] returning x")
 		return nil, isImageDeleting, err
 	}
 }

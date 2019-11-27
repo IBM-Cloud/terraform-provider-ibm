@@ -38,14 +38,11 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - The unique identifier of the image.
-* `name` - The name of an image.
 * `architecture` - The architecture which image is based on
 * `createdAt` - The date and time in which the image was created
 * `crn` - The CRN for an image
 * `file` - The file
 * `format` - The format of an image
-* `href` - The URL of an image
-* `os` - The operating system which image is based on
 * `resourceGroup` - The resource group which image is belonging to
 * `status` - The status of an image such as corrupt, available
 * `visibility` - The access scope of an image such as private or public
