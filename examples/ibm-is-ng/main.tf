@@ -43,9 +43,25 @@ resource "ibm_is_subnet" "subnet1" {
   zone            = var.zone1
   ipv4_cidr_block = "10.240.0.0/24"
 }
+resource "ibm_is_vpc" "vpc2" {
+  name = "vpc2"
+}
 
-resource "ibm_is_ssh_key" "ssh1" {
-  name       = "ssh1"
+resource "ibm_is_subnet" "subnet2" {
+  name            = "subnet2"
+  vpc             = ibm_is_vpc.vpc2.id
+  zone            = var.zone2
+  ipv4_cidr_block = "10.240.64.0/28"
+}
+
+resource "ibm_is_ipsec_policy" "example12" {
+  name                     = "test-ipsec4"
+  authentication_algorithm = "md5"
+  encryption_algorithm     = "3des"
+  pfs                      = "disabled"
+}
+resource "ibm_is_ssh_key" "ssh" {
+  name       = "ssh"
   public_key = var.ssh_public_key
 }
 
@@ -60,7 +76,7 @@ resource "ibm_is_instance" "ins1" {
 
   vpc  = ibm_is_vpc.vpc1.id
   zone = var.zone1
-  keys = [ibm_is_ssh_key.ssh1.id]
+  keys = [ibm_is_ssh_key.ssh.id]
 
   //User can configure timeouts
   timeouts {
@@ -83,5 +99,49 @@ resource "ibm_is_public_gateway" "gateway1" {
   timeouts {
     create = "90m"
   }
+}
+resource "ibm_is_lb" "lb" {
+    name = "loadbalancer1"
+    subnets = [ibm_is_subnet.subnet1.id]
+}
+resource "ibm_is_lb_listener" "testacc_lb_listener" {
+  lb       = ibm_is_lb.lb.id
+  port     = "9080"
+  protocol = "http"
+}
+resource "ibm_is_lb_pool" "webapptier-lb-pool" {
+  lb                 = ibm_is_lb.lb.id
+  name               = "a-webapptier-lb-pool"
+  protocol           = "http"
+  algorithm          = "round_robin"
+  health_delay       = "5"
+  health_retries     = "2"
+  health_timeout     = "2"
+  health_type        = "http"
+  health_monitor_url = "/"
+  depends_on = [ibm_is_lb_listener.testacc_lb_listener]
+}
+resource "ibm_is_lb_pool_member" "webapptier-lb-pool-member-zone1" {
+  count = "2"
+  lb    = ibm_is_lb.lb.id
+  pool  = element(split("/",ibm_is_lb_pool.webapptier-lb-pool.id),1)
+  port  = "80"
+  target_address = "192.168.0.1"
+  depends_on = [ibm_is_lb_listener.testacc_lb_listener]
+}
+
+resource "ibm_is_vpn_gateway" "VPNGateway1" {
+  name   = "vpn1"
+  subnet = ibm_is_subnet.subnet1.id
+}
+
+resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection1" {
+  name          = "vpnconn1"
+  vpn_gateway   = ibm_is_vpn_gateway.VPNGateway1.id  
+  peer_address  = ibm_is_vpn_gateway.VPNGateway1.public_ip_address  
+  preshared_key = "VPNDemoPassword"
+  local_cidrs   = [ibm_is_subnet.subnet1.ipv4_cidr_block]
+  peer_cidrs    = [ibm_is_subnet.subnet2.ipv4_cidr_block]
+  ipsec_policy  = ibm_is_ipsec_policy.example12.id  
 }
 
