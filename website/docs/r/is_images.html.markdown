@@ -29,9 +29,6 @@ The following arguments are supported:
 * `name` - (Required, string) The descriptive name used to identify an image.
 * `href` - (Required, string) The path of an image to be uploaded.
 * `operating_system` - (Required, string) Description of underlying OS of an image.
-* `tags` - (Optional, array of strings) Tags associated with the image.  
-
-**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
 ## Attribute Reference
 
@@ -39,7 +36,6 @@ The following attributes are exported:
 
 * `id` - The unique identifier of the image.
 * `architecture` - The architecture which image is based on
-* `createdAt` - The date and time in which the image was created
 * `crn` - The CRN for an image
 * `file` - The file
 * `format` - The format of an image

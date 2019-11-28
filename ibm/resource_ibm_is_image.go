@@ -19,7 +19,6 @@ const (
 	isImageFile            = "file"
 	isImageFormat          = "format"
 	isImageArchitecure     = "architecture"
-	isImageTags            = "tags"
 
 	isImageProvisioning     = "provisioning"
 	isImageProvisioningDone = "done"
@@ -74,13 +73,6 @@ func resourceIBMISImage() *schema.Resource {
 			isImageVisibility: {
 				Type:     schema.TypeString,
 				Computed: true,
-			},
-
-			isImageTags: {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
 			},
 
 			isImageFile: {
@@ -152,14 +144,6 @@ func resourceIBMISImageCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	if _, ok := d.GetOk(isImageTags); ok {
-		oldList, newList := d.GetChange(isImageTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, image.Crn)
-		if err != nil {
-			log.Printf(
-				"Error on create of resource image (%s) tags: %s", d.Id(), err)
-		}
-	}
 	return resourceIBMISImageRead(d, meta)
 }
 
@@ -225,7 +209,6 @@ func resourceIBMISImageRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.Set("id", image.ID.String())
-	d.Set("created_at", image.CreatedAt)
 	d.Set(isImageArchitecure, image.Architecture)
 	d.Set(isImageName, image.Name)
 	d.Set(isImageOperatingSystem, image.OperatingSystem)
