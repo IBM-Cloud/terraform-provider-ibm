@@ -779,7 +779,23 @@ func resourceIBMisInstanceDelete(d *schema.ResourceData, meta interface{}) error
 	if err != nil {
 		return err
 	}
-
+	vols, err := instanceC.ListVolAttachments(d.Id())
+	if err != nil {
+		return err
+	}
+	for _, vol := range vols {
+		if vol.Type == "data" {
+			err := instanceC.DeleteVolAttachment(d.Id(), vol.ID.String())
+			if err != nil {
+				return fmt.Errorf("Error while removing volume %q for instance %s: %q", vol.ID.String(), d.Id(), err)
+			}
+			_, err = isWaitForInstanceVolumeDetached(vol.ID.String(), d, meta)
+			if err != nil {
+				return err
+			}
+			break
+		}
+	}
 	err = instanceC.Delete(d.Id())
 	if err != nil {
 		return err
