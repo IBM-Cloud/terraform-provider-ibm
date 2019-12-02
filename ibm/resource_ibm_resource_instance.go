@@ -109,6 +109,34 @@ func resourceIBMResourceInstance() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"public", "private", "public-and-private"}),
 			},
+			ResourceName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the resource",
+			},
+
+			ResourceCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+
+			ResourceStatus: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the resource",
+			},
+
+			ResourceGroupName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The resource group name in which resource is provisioned",
+			},
+			ResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about the resource",
+			},
 		},
 	}
 }
@@ -262,6 +290,17 @@ func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	d.Set("service", serviceOff)
+
+	d.Set(ResourceName, instance.Name)
+	d.Set(ResourceCRN, instance.Crn.String())
+	d.Set(ResourceStatus, instance.State)
+	d.Set(ResourceGroupName, instance.ResourceGroupName)
+
+	rcontroller, err := getBaseController(meta)
+	if err != nil {
+		return err
+	}
+	d.Set(ResourceControllerURL, rcontroller+"/services/")
 
 	servicePlan, err := rsCatRepo.GetServicePlanName(instance.ServicePlanID)
 	if err != nil {
