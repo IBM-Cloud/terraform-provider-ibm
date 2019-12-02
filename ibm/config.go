@@ -27,6 +27,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	"github.com/IBM-Cloud/bluemix-go/api/globalsearch/globalsearchv2"
 	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
+	"github.com/IBM-Cloud/bluemix-go/api/iam/iamv2"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
@@ -148,6 +149,7 @@ type ClientSession interface {
 	SoftLayerSession() *slsession.Session
 	IBMPISession() (*ibmpisession.IBMPISession, error)
 	SchematicsAPI() (schematics.SchematicsServiceAPI, error)
+	UserManagementAPI() (iamv2.UserManagementAPI, error)
 }
 
 type clientSession struct {
@@ -194,6 +196,9 @@ type clientSession struct {
 
 	iamConfigErr  error
 	iamServiceAPI iamv1.IAMServiceAPI
+
+	userManagementErr error
+	userManagementAPI iamv2.UserManagementAPI
 
 	icdConfigErr  error
 	icdServiceAPI icdv4.ICDServiceAPI
@@ -275,6 +280,11 @@ func (sess clientSession) GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServi
 // IAMAPI provides IAM PAP APIs ...
 func (sess clientSession) IAMAPI() (iamv1.IAMServiceAPI, error) {
 	return sess.iamServiceAPI, sess.iamConfigErr
+}
+
+// UserManagementAPI provides IAM PAP APIs ...
+func (sess clientSession) UserManagementAPI() (iamv2.UserManagementAPI, error) {
+	return sess.userManagementAPI, sess.userManagementErr
 }
 
 // IAMPAPAPI provides IAM PAP APIs ...
@@ -362,6 +372,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.isConfigErr = errEmptyBluemixCredentials
 		session.powerConfigErr = errEmptyBluemixCredentials
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
+		session.userManagementErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -506,11 +517,18 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.resourceControllerServiceAPI = resourceControllerAPI
 
+	userManagementAPI, err := iamv2.New(sess.BluemixSession)
+	if err != nil {
+		session.userManagementErr = fmt.Errorf("Error occured while configuring user management service: %q", err)
+	}
+	session.userManagementAPI = userManagementAPI
+
 	ibmpisession, err := ibmpisession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, true, c.BluemixTimeout, session.bmxUserDetails.userAccount)
 	if err != nil {
 		session.ibmpiConfigErr = err
 		return nil, err
 	}
+
 	session.ibmpiSession = ibmpisession
 
 	return session, nil
