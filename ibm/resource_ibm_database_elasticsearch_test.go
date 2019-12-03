@@ -120,98 +120,102 @@ func TestAccIBMDatabaseInstance_Elasticsearch_import(t *testing.T) {
 
 func testAccCheckIBMDatabaseInstance_Elasticsearch_basic(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
-				data "ibm_resource_group" "test_acc" {
-				  is_default = true
-				  # name = "%[1]s"
-				}
-
-				resource "ibm_database" "%[2]s" {
-				  resource_group_id = "${data.ibm_resource_group.test_acc.id}"	
-				  name = "%[2]s"	
-				  service 			= "databases-for-elasticsearch"
-				  plan              = "standard"
-				  location          = "us-south"
-				  adminpassword     = "password12"
-				  members_memory_allocation_mb = 3072
-  				  members_disk_allocation_mb   = 15360
-				  users = {
-  				   		name     = "user123"
-  					   	password = "password12"
-  				  		}
-  				  whitelist = {
-  						address     = "172.168.1.2/32"
-  						description = "desc1"
-  						}
-				}`, databaseResourceGroup, name)
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+		# name = "%[1]s"
+	}
+	  
+	resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-elasticsearch"
+		plan                         = "standard"
+		location                     = "us-south"
+		adminpassword                = "password12"
+		members_memory_allocation_mb = 3072
+		members_disk_allocation_mb   = 15360
+		users {
+		  name     = "user123"
+		  password = "password12"
+		}
+		whitelist {
+		  address     = "172.168.1.2/32"
+		  description = "desc1"
+		}
+	}
+				`, databaseResourceGroup, name)
 }
 
 func testAccCheckIBMDatabaseInstance_Elasticsearch_fullyspecified(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
-				data "ibm_resource_group" "test_acc" {
-				  is_default = true
-				  # name = "%[1]s"
-				}
-
-				resource "ibm_database" "%[2]s" {
-				  resource_group_id = "${data.ibm_resource_group.test_acc.id}"	
-				  name = "%[2]s"	
-				  service 			= "databases-for-elasticsearch"
-				  plan              = "standard"
-				  location          = "us-south"
-				  adminpassword     = "password12"
-				  members_memory_allocation_mb = 6144
-  				  members_disk_allocation_mb   = 18432
-				  users = {
-  				   		name     = "user123"
-  					   	password = "password12"
-  				  		}
-  				  users = {
-  				   		name     = "user124"
-  					   	password = "password12"
-  				  		}		
-  					whitelist = {
-  						address     = "172.168.1.2/32"
-  						description = "desc1"
-  						}
-  					whitelist = {
-  						address     = "172.168.1.1/32"
-  						description = "desc"
-  						}	
-				}`, databaseResourceGroup, name)
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+		# name = "%[1]s"
+	}
+	  
+	resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-elasticsearch"
+		plan                         = "standard"
+		location                     = "us-south"
+		adminpassword                = "password12"
+		members_memory_allocation_mb = 6144
+		members_disk_allocation_mb   = 18432
+		users {
+		  name     = "user123"
+		  password = "password12"
+		}
+		users {
+		  name     = "user124"
+		  password = "password12"
+		}
+		whitelist {
+		  address     = "172.168.1.2/32"
+		  description = "desc1"
+		}
+		whitelist {
+		  address     = "172.168.1.1/32"
+		  description = "desc"
+		}
+	}
+	  
+				`, databaseResourceGroup, name)
 }
 
 func testAccCheckIBMDatabaseInstance_Elasticsearch_reduced(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
-				data "ibm_resource_group" "test_acc" {
-				  is_default = true
-				  # name = "%[1]s"
-				}
-
-				resource "ibm_database" "%[2]s" {
-				  resource_group_id = "${data.ibm_resource_group.test_acc.id}"	
-				  name = "%[2]s"	
-				  service 			= "databases-for-elasticsearch"
-				  plan              = "standard"
-				  location          = "us-south"
-				  adminpassword     = "password12"
-				  members_memory_allocation_mb = 3072
-  				  members_disk_allocation_mb   = 18432
-
-				}`, databaseResourceGroup, name)
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+		# name = "%[1]s"
+	}
+	  
+	resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-elasticsearch"
+		plan                         = "standard"
+		location                     = "us-south"
+		adminpassword                = "password12"
+		members_memory_allocation_mb = 3072
+		members_disk_allocation_mb   = 18432
+	}
+				`, databaseResourceGroup, name)
 }
 
 func testAccCheckIBMDatabaseInstance_Elasticsearch_import(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
-				data "ibm_resource_group" "test_acc" {
-				  is_default = true
-				  # name = "%[1]s"
-				}
-
-				resource "ibm_database" "%[2]s" {
-				  resource_group_id = "${data.ibm_resource_group.test_acc.id}"	
-				  name = "%[2]s"	
-				  service 			= "databases-for-elasticsearch"
-				  plan              = "standard"
-				  location          = "us-south"
-				}`, databaseResourceGroup, name)
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+		# name = "%[1]s"
+	}
+	  
+	resource "ibm_database" "%[2]s" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name              = "%[2]s"
+		service           = "databases-for-elasticsearch"
+		plan              = "standard"
+		location          = "us-south"
+	}
+				`, databaseResourceGroup, name)
 }

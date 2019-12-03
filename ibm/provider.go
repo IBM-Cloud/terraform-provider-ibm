@@ -293,10 +293,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_is_vpc":                                         resourceIBMISVPC(),
 			"ibm_is_vpc_address_prefix":                          resourceIBMISVpcAddressPrefix(),
 			"ibm_is_vpc_route":                                   resourceIBMISVpcRoute(),
-<<<<<<< HEAD
 			"ibm_is_image":                                       resourceIBMISImage(),
-=======
->>>>>>> 6c2e5c2... containet cluster adaptation to v0.12 : Test files & Examples
 			"ibm_lb":                                             resourceIBMLb(),
 			"ibm_lbaas":                                          resourceIBMLbaas(),
 			"ibm_lbaas_health_monitor":                           resourceIBMLbaasHealthMonitor(),
