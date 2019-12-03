@@ -195,6 +195,14 @@ func flattenServiceInstanceCredentials(keys []mccpv2.ServiceKeyFields) []interfa
 	return out
 }
 
+func flattenUsersSet(userList *schema.Set) []string {
+	users := make([]string, 0)
+	for _, user := range userList.List() {
+		users = append(users, user.(string))
+	}
+	return users
+}
+
 func expandProtocols(configured []interface{}) ([]datatypes.Network_LBaaS_LoadBalancerProtocolConfiguration, error) {
 	protocols := make([]datatypes.Network_LBaaS_LoadBalancerProtocolConfiguration, 0, len(configured))
 	for _, lRaw := range configured {
