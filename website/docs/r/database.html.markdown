@@ -26,25 +26,26 @@ resource "ibm_database" "<your_database>" {
   plan              = "standard"
   location          = "eu-gb"
   service           = "databases-for-etcd"
-  resource_group_id = "${data.ibm_resource_group.group.id}"
+  resource_group_id = data.ibm_resource_group.group.id
   tags              = ["tag1", "tag2"]
 
-  adminpassword     = "password12"
+  adminpassword                = "password12"
   members_memory_allocation_mb = 3072
   members_disk_allocation_mb   = 61440
-  users = {
-          name     = "user123"
-          password = "password12"
-          }
-  whitelist = {
-          address     = "172.168.1.1/32"
-          description = "desc"
-          }
+  users {
+    name     = "user123"
+    password = "password12"
+  }
+  whitelist {
+    address     = "172.168.1.1/32"
+    description = "desc"
+  }
 }
 
 output "ICD Etcd database connection string" {
-  value = "http://${"${ibm_database.test_acc.connectionstrings.0.composed}"}"
+  value = "http://${ibm_database.test_acc.connectionstrings[0].composed}"
 }
+
 ```
 
 provider.tf
@@ -52,8 +53,8 @@ provider.tf
 ```hcl
 
 provider "ibm" {
-  ibmcloud_api_key    = "${var.ibmcloud_api_key}"
-  region             = "eu-gb"
+  ibmcloud_api_key = var.ibmcloud_api_key
+  region           = "eu-gb"
 }
 ```
 
