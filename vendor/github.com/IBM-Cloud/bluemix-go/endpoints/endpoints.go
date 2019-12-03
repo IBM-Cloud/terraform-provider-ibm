@@ -26,6 +26,7 @@ type EndpointLocator interface {
 	UAAEndpoint() (string, error)
 	CseEndpoint() (string, error)
 	SchematicsEndpoint() (string, error)
+	UserManagementEndpoint() (string, error)
 }
 
 const (
@@ -108,6 +109,9 @@ var regionToEndpoint = map[string]map[string]string{
 	},
 	"schematics": {
 		"global": "https://schematics.cloud.ibm.com",
+	},
+	"usermanagement": {
+		"global": "https://user-management.cloud.ibm.com",
 	},
 }
 
@@ -269,4 +273,13 @@ func (e *endpointLocator) CseEndpoint() (string, error) {
 
 	}
 	return "", bmxerror.New(ErrCodeServiceEndpoint, fmt.Sprintf("CSE endpoint doesn't exist for region: %q", e.region))
+}
+
+func (e *endpointLocator) UserManagementEndpoint() (string, error) {
+	if ep, ok := regionToEndpoint["usermanagement"]["global"]; ok {
+		//As the current list of regionToEndpoint above is not exhaustive we allow to read endpoints from the env
+		return helpers.EnvFallBack([]string{"IBMCLOUD_USER_MANAGEMENT_ENDPOINT"}, ep), nil
+
+	}
+	return "", bmxerror.New(ErrCodeServiceEndpoint, fmt.Sprintf("User Management endpoint doesn't exist"))
 }
