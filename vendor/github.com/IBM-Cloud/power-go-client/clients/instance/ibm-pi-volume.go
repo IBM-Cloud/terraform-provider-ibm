@@ -42,14 +42,11 @@ func (f *IBMPIVolumeClient) Create(volumename string, volumesize float64, volume
 
 	log.Printf("calling the PowerVolume Create Method")
 
-
-
 	var body = models.CreateDataVolume{
 		Name:      &volumename,
 		Size:      &volumesize,
 		DiskType:  &volumetype,
 		Shareable: &volumeshareable,
-
 	}
 
 	params := p_cloud_volumes.NewPcloudCloudinstancesVolumesPostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithBody(&body)
