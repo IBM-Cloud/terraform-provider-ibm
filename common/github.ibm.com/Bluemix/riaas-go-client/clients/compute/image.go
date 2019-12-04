@@ -62,3 +62,56 @@ func (f *ImageClient) Get(id string) (*models.Image, error) {
 
 	return resp.Payload, nil
 }
+
+// Create ...
+func (f *ImageClient) Create(href, name, operatingSystem string) (*models.Image, error) {
+	var operatingSystemIdentity = models.OperatingSystemIdentity{
+		Name: &operatingSystem,
+	}
+	var imageFileTemplate = models.ImageFileTemplate{
+		Href: &href,
+	}
+	var imageTemplate = models.ImageTemplate{
+		File:            &imageFileTemplate,
+		Name:            name,
+		OperatingSystem: &operatingSystemIdentity,
+	}
+
+	params := compute.NewPostImagesParamsWithTimeout(f.session.Timeout).WithBody(&imageTemplate)
+	params.Version = "2019-11-22"
+	params.Generation = f.session.Generation
+	resp, err := f.session.Riaas.Compute.PostImages(params, session.Auth(f.session))
+	if err != nil {
+		return nil, errors.ToError(err)
+	}
+
+	return resp.Payload, nil
+}
+
+// Delete ...
+func (f *ImageClient) Delete(id string) error {
+	params := compute.NewDeleteImagesIDParamsWithTimeout(f.session.Timeout).WithID(id)
+	params.Version = "2019-11-22"
+	params.Generation = f.session.Generation
+	_, err := f.session.Riaas.Compute.DeleteImagesID(params, session.Auth(f.session))
+	if err != nil {
+		return errors.ToError(err)
+	}
+	return nil
+}
+
+// Update ...
+func (f *ImageClient) Update(id, name string) (*models.Image, error) {
+	var imagePatch = models.ImagePatch{
+		Name: name,
+	}
+	params := compute.NewPatchImagesIDParamsWithTimeout(f.session.Timeout).WithID(id).WithRequestBody(&imagePatch)
+	params.Version = "2019-11-22"
+	params.Generation = f.session.Generation
+	resp, err := f.session.Riaas.Compute.PatchImagesID(params, session.Auth(f.session))
+	if err != nil {
+		return nil, errors.ToError(err)
+	}
+
+	return resp.Payload, nil
+}

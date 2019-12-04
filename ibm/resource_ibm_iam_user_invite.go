@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/bluemix-go/models"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 const (
