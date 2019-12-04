@@ -9,7 +9,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	v2 "github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM-Cloud/bluemix-go/models"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 const (

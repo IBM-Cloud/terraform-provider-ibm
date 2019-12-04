@@ -257,6 +257,8 @@ github.com/hashicorp/terraform-plugin-sdk v1.0.0/go.mod h1:NuwtLpEpPsFaKJPJNGtMc
 github.com/hashicorp/terraform-plugin-sdk v1.2.0 h1:OASbbPmJHbajCSXelwWLSw/HkvnakG4rd/GcrqD2k/g=
 github.com/hashicorp/terraform-plugin-sdk v1.3.0 h1:leoaxwa8dUs7v11SX4xe33AZOwcb8dX5S+VXUjWPndM=
 github.com/hashicorp/terraform-svchost v0.0.0-20191011084731-65d371908596/go.mod h1:kNDNcF7sN4DocDLBkQYz73HGKwN1ANB1blq4lIYLYvg=
+github.com/hashicorp/tf-sdk-migrator v1.0.0 h1:vieVtcz8elxVkRxCyLMDeQha1uNL9hVCB5jva560TIg=
+github.com/hashicorp/tf-sdk-migrator v1.0.0/go.mod h1:QWLOMtAF2IMPDqKLN30L4ijNYVco4YF6HLul6VDPNfc=
 github.com/hashicorp/vault v0.10.4/go.mod h1:KfSyffbKxoVyspOdlaGVjIuwLobi07qD1bAbosPMpP0=
 github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb h1:b5rjCoWHc7eqmAS4/qyk21ZsHyb6Mxv/jykxvNTkU4M=
 github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb/go.mod h1:+NfK9FKeTrX5uv1uIXGdwYDTeHna2qgaIlx54MXqjAM=
@@ -280,6 +282,8 @@ github.com/kardianos/govendor v1.0.9 h1:WOH3FcVI9eOgnIZYg96iwUwrL4eOVx+aQ66oyX2R
 github.com/kardianos/govendor v1.0.9/go.mod h1:yvmR6q9ZZ7nSF5Wvh40v0wfP+3TwwL8zYQp+itoZSVM=
 github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0/go.mod h1:1NbS8ALrpOvjt0rHPNLyCIeMtbizbir8U//inJ+zuB8=
 github.com/keybase/go-crypto v0.0.0-20161004153544-93f5b35093ba/go.mod h1:ghbZscTyKdM07+Fw3KSi0hcJm+AlEUWj8QLlPtijN/M=
+github.com/kmoe/go-list v1.0.0 h1:MhzJwRRNiGE53t5y5LQxclnOvHiYiYtmO9QG9uMkbkQ=
+github.com/kmoe/go-list v1.0.0/go.mod h1:8bBhPyBnH3wJago3lVPOKvxA+KDmvAHFgLLmhpiQORE=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515/go.mod h1:+0opPa2QZZtGFBFZlji/RkVcI2GknAs/DXo4wKdlNEc=
 github.com/kr/pretty v0.1.0 h1:L/CwN0zerZDmRFUapSPitk6f+Q3+0za1rQkzVuMiMFI=
@@ -382,6 +386,10 @@ github.com/prometheus/client_model v0.0.0-20190115171406-56726106282f/go.mod h1:
 github.com/prometheus/common v0.2.0/go.mod h1:TNfzLD0ON7rHzMJeJkieUDPYmFC7Snx/y86RQel1bk4=
 github.com/prometheus/procfs v0.0.0-20181005140218-185b4288413d/go.mod h1:c3At6R/oaqEKCNdg8wHV1ftS6bRYblBhIjjI8uT2IGk=
 github.com/prometheus/procfs v0.0.0-20190117184657-bf6a532e95b1/go.mod h1:c3At6R/oaqEKCNdg8wHV1ftS6bRYblBhIjjI8uT2IGk=
+github.com/radeksimko/go-refs v0.0.0-20190823125319-880a3294a1a0 h1:wgpRbINntHeCGMi2xqGfLN1havFatiACGZ7q+yKqJyw=
+github.com/radeksimko/go-refs v0.0.0-20190823125319-880a3294a1a0/go.mod h1:PYFsT0d8q5IGFGbiXhnVA5sQFXxPRNXf7CS/IL90rHY=
+github.com/radeksimko/mod v0.0.0-20190807092412-93f771451dae h1:I7Nl7r9VPplepwIlnEODWuesa2/CurhkwoQGCl4MZj8=
+github.com/radeksimko/mod v0.0.0-20190807092412-93f771451dae/go.mod h1:Q2IM8KSMt66rTOMAXh3BvCD8bYed5rx/ITZ/zNqYakc=
 github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03 h1:Wdi9nwnhFNAlseAOekn6B5G/+GMtks9UKbvRU/CMM/o=
 github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03/go.mod h1:gRAiPF5C5Nd0eyyRdqIu9qTiFSoZzpTq727b5B8fkkU=
 github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af/go.mod h1:XWv6SoW27p1b0cqNHllgS5HIMJraePCO15w5zCzIWYg=
@@ -435,6 +443,7 @@ golang.org/x/crypto v0.0.0-20190222235706-ffb98f73852f/go.mod h1:6SG95UA2DQfeDnf
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2 h1:VklqNMn3ovrHsnt90PveolxSbWFaJdECFbxSq0Mqo2M=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20190426145343-a29dc8fdc734/go.mod h1:yigFU9vqHzYiE8UmvKecakEJjdnWj3jj499lnFckfCI=
+golang.org/x/crypto v0.0.0-20190510104115-cbcb75029529/go.mod h1:yigFU9vqHzYiE8UmvKecakEJjdnWj3jj499lnFckfCI=
 golang.org/x/crypto v0.0.0-20190605123033-f99c8df09eb5/go.mod h1:yigFU9vqHzYiE8UmvKecakEJjdnWj3jj499lnFckfCI=
 golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4/go.mod h1:yigFU9vqHzYiE8UmvKecakEJjdnWj3jj499lnFckfCI=
 golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586 h1:7KByu05hhLed2MO29w7p1XfZvZ13m8mub3shuVftRs0=
