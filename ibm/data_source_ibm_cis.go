@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/IBM-Cloud/bluemix-go/models"
 
@@ -24,7 +25,7 @@ func dataSourceIBMCISInstance() *schema.Resource {
 
 			"resource_group_id": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "The id of the resource group in which the cis instance is present",
 			},
 
@@ -50,6 +51,34 @@ func dataSourceIBMCISInstance() *schema.Resource {
 				Description: "The resource instance status",
 				Type:        schema.TypeMap,
 				Computed:    true,
+			},
+			ResourceName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the resource",
+			},
+
+			ResourceCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+
+			ResourceStatus: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the resource",
+			},
+
+			ResourceGroupName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The resource group name in which resource is provisioned",
+			},
+			ResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about the resource",
 			},
 		},
 	}
@@ -148,6 +177,17 @@ func dataSourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("Error retrieving plan: %s", err)
 	}
 	d.Set("plan", servicePlan)
+
+	d.Set(ResourceName, instance.Name)
+	d.Set(ResourceCRN, instance.Crn.String())
+	d.Set(ResourceStatus, instance.State)
+	d.Set(ResourceGroupName, instance.ResourceGroupName)
+
+	rcontroller, err := getBaseController(meta)
+	if err != nil {
+		return err
+	}
+	d.Set(ResourceControllerURL, rcontroller+"/internet-svcs/"+url.QueryEscape(instance.Crn.String()))
 
 	return nil
 }
