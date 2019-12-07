@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_compute_bare_metal
 
-Provides a bare metal resource. This allows bare metal servers to be created, updated, and deleted. This resource supports both monthly bare metal servers and hourly bare metal servers. For more detail on bare metal severs, refer to the [IBM Cloud bare metal server page](https://www.ibm.com/cloud-computing/bluemix/bare-metal-servers).
+Provides a bare metal resource. This allows bare metal servers to be created, updated, and deleted. This resource supports both monthly bare metal servers and hourly bare metal servers. For more detail on bare metal severs, refer to the [IBM Cloud bare metal server page](https://www.ibm.com/cloud/bare-metal-servers).
 
 
 ## Hourly bare metal server
