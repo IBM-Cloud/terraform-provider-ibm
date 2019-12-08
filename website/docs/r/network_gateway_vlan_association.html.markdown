@@ -48,8 +48,8 @@ resource "ibm_network_gateway_vlan_association" "gateway_vlan_association" {
 
 The following arguments are supported:
 
-* `gateway_id` - (Required, integer) The ID of the network gateway.
-* `network_vlan_id` - (Required, integer) The ID of the network VLAN to associate with the network gateway.
+* `gateway_id` - (Required, Forces new resource, integer) The ID of the network gateway.
+* `network_vlan_id` - (Required, Forces new resource, integer) The ID of the network VLAN to associate with the network gateway.
 * `bypass` - (Optional, boolean) Indicates if the VLAN should be in bypass or routed mode. Default value: `true`. 
 
 

@@ -54,9 +54,9 @@ resource "ibm_lbaas_health_monitor" "lbaas_hm" {
 
 The following arguments are supported:
 
-* `monitor_id` - (Required,string) Health Monitor unique identifier. The monitor id can be imported from either the ibm_lbaas resource or datasource.
+* `monitor_id` - (Required, Forces new resource,string) Health Monitor unique identifier. The monitor id can be imported from either the ibm_lbaas resource or datasource.
 ex: ibm_lbaas.lbaas.health_monitors.X.monitor_id or data.ibm_lbaas.lbaas.health_monitors.X.monitor_id
-* `lbaas_id` - (Required,string) Lbaas unique identifier
+* `lbaas_id` - (Required, Forces new resource,string) Lbaas unique identifier
 * `protocol` - (Required, string) Backends protocol
 * `port` - (Required, int) Backends port
 * `interval` - (Optional,int) Interval in seconds to perform 

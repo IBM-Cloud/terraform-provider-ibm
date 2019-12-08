@@ -25,7 +25,7 @@ resource "ibm_security_group" "sg1" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The descriptive name used to identify the security group.
+* `name` - (Required, Forces new resource, string) The descriptive name used to identify the security group.
 * `description` - (Optional, string) Additional details to describe the security group.
 
 ## Attribute Reference

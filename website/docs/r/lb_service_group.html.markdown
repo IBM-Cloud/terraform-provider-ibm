@@ -30,7 +30,7 @@ resource "ibm_lb_service_group" "test_service_group" {
 
 The following arguments are supported:
 
-* `load_balancer_id` - (Required, integer) The ID of the local load balancer.
+* `load_balancer_id` - (Required, Forces new resource, integer) The ID of the local load balancer.
 * `allocation` - (Required, integer) The connection allocation for the load balancer service group.
 * `port` - (Required, integer) The port for the local load balancer service group.
 * `routing_method` - (Required, string) The routing method for the load balancer group. For example, `CONSISTENT_HASH_IP`.

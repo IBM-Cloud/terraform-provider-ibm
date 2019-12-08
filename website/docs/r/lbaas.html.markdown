@@ -46,11 +46,11 @@ resource "ibm_lbaas" "lbaas" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The load balancer's name.
+* `name` - (Required, Forces new resource, string) The load balancer's name.
 * `description` - (Optional, string) A description of the load balancer.
-* `type` - (Optional, string) Specify whether this load balancer is a public or internal facing load balancer. Accepted values are `PUBLIC` or `PRIVATE`. 
+* `type` - (Optional, Forces new resource, string) Specify whether this load balancer is a public or internal facing load balancer. Accepted values are `PUBLIC` or `PRIVATE`. 
 The default is 'PUBLIC'.
-* `subnets` - (Required, array) The subnet where the load balancer will be provisioned. Only one subnet is supported.
+* `subnets` - (Required, Forces new resource, array) The subnet where the load balancer will be provisioned. Only one subnet is supported.
 * `protocols` - (Optional, array) A nested block describing the protocols assigned to load balancer. Nested `protocols` blocks have the following structure:
   * `frontend_protocol` - (Required, string) The frontend protocol. Accepted values are 'TCP', 'HTTP', and 'HTTPS'.
   * `frontend_port` - (Required, integer) The frontend protocol port number. The port number must be in the range of 1 - 65535.

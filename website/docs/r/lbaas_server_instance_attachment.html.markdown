@@ -58,9 +58,9 @@ resource "ibm_lbaas_server_instance_attachment" "lbaas_member" {
 
 The following arguments are supported:
 
-* `private_ip_address` - (Required, string) The private IP address of a load balancer member.
+* `private_ip_address` - (Required, Forces new resource, string) The private IP address of a load balancer member.
 * `weight` - (Optional, integer) The weight of a load balancer member.
-* `lbaas_id` - (Required, string) The UUID of a load balancer.
+* `lbaas_id` - (Required, Forces new resource, string) The UUID of a load balancer.
 * `depends_on` - (Required, string) the UUID of a load balancer 
 
 ## Attributes Reference

@@ -32,7 +32,7 @@ resource "ibm_compute_monitor" "test_monitor" {
 
 The following arguments are supported:
 
-* `guest_id` - (Required, integer) The ID of the virtual guest you want to monitor.
+* `guest_id` - (Required, Forces new resource, integer) The ID of the virtual guest you want to monitor.
 * `ip_address` - (Optional, strings) The IP address you want to monitor.
 * `query_type_id` - (Required, integer) The ID of the query type.
 * `response_action_id` - (Required, integer) The ID of the response action to take if the monitor fails. Accepted values are `1` or `2`.

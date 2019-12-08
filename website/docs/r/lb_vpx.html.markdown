@@ -40,15 +40,15 @@ resource "ibm_lb_vpx" "test_vpx" {
 
 The following arguments are supported:
 
-* `datacenter` - (Required, string) The data center in which you want to provision the VPX load balancer. You can find accepted values in the [data center docs](http://www.softlayer.com/data-centers).
-* `speed` - (Required, integer) The speed, expressed in Mbps. Accepted values are `10`, `200`, and `1000`.
-* `version` - (Required, string) The VPX load balancer version. Accepted values are `10.1`, `10.5`, `11.0`, `11.1` and `12.1`.
-* `plan` - (Required, string) The VPX load balancer plan. Accepted values are `Standard` and `Platinum`.
-* `ip_count` - (Required, integer) The number of static public IP addresses assigned to the VPX load balancer. Accepted values are `1`,`2`, `4`, `8`, and `16`.
-* `public_vlan_id` - (Optional, integer) The public VLAN ID that is used for the public network interface of the VPX load balancer. You can find accepted values in the [VLAN docs](https://cloud.ibm.com/classic/network/vlans) by clicking the desired VLAN and noting the ID in the resulting URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
-* `private_vlan_id` - (Optional, integer) The private VLAN ID that is used for the private network interface of the VPX load balancer. You can find accepted values in the [VLAN docs](https://cloud.ibm.com/classic/network/vlans) by clicking the desired VLAN and noting the ID in the resulting URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
-* `public_subnet` - (Optional, string) The public subnet that is used for the public network interface of the VPX load balancer. Accepted values are primary public networks. You can find accepted values in the [subnet docs](https://cloud.ibm.com/classic/network/subnets).
-* `private_subnet` - (Optional, string) Public subnet that is used for the private network interface of the VPX load balancer. Accepted values are primary private networks. You can find accepted values in the [subnet docs](https://cloud.ibm.com/classic/network/subnets).
+* `datacenter` - (Required, Forces new resource, string) The data center in which you want to provision the VPX load balancer. You can find accepted values in the [data center docs](http://www.softlayer.com/data-centers).
+* `speed` - (Required, Forces new resource, integer) The speed, expressed in Mbps. Accepted values are `10`, `200`, and `1000`.
+* `version` - (Required, Forces new resource, string) The VPX load balancer version. Accepted values are `10.1`, `10.5`, `11.0`, `11.1` and `12.1`.
+* `plan` - (Required, Forces new resource, string) The VPX load balancer plan. Accepted values are `Standard` and `Platinum`.
+* `ip_count` - (Required, Forces new resource, integer) The number of static public IP addresses assigned to the VPX load balancer. Accepted values are `1`,`2`, `4`, `8`, and `16`.
+* `public_vlan_id` - (Optional, Forces new resource, integer) The public VLAN ID that is used for the public network interface of the VPX load balancer. You can find accepted values in the [VLAN docs](https://cloud.ibm.com/classic/network/vlans) by clicking the desired VLAN and noting the ID in the resulting URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
+* `private_vlan_id` - (Optional,Forces new resource, integer) The private VLAN ID that is used for the private network interface of the VPX load balancer. You can find accepted values in the [VLAN docs](https://cloud.ibm.com/classic/network/vlans) by clicking the desired VLAN and noting the ID in the resulting URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
+* `public_subnet` - (Optional,Forces new resource, string) The public subnet that is used for the public network interface of the VPX load balancer. Accepted values are primary public networks. You can find accepted values in the [subnet docs](https://cloud.ibm.com/classic/network/subnets).
+* `private_subnet` - (Optional,Forces new resource, string) Public subnet that is used for the private network interface of the VPX load balancer. Accepted values are primary private networks. You can find accepted values in the [subnet docs](https://cloud.ibm.com/classic/network/subnets).
 * `tags` - (Optional, array of strings) Tags associated with the VPX load balancer instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 

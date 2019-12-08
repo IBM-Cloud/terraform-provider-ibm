@@ -51,7 +51,7 @@ The following arguments are supported:
 * `scale_type` - (Required, string) The scale type for the auto scaling policy. Accepted values are `ABSOLUTE`, `RELATIVE`, and `PERCENT`.
 * `scale_amount` - (Required, integer) A count of the scaling actions to perform upon any trigger hit.
 * `cooldown` - (Optional, integer) The duration, expressed in seconds, that the policy waits after the last action date before performing another scaling action. If you do not provide a value, the `scale_group` cooldown applies.
-* `scale_group_id` - (Required, integer) The ID of the auto scale group associated with the policy.
+* `scale_group_id` - (Required, Forces new resource, integer) The ID of the auto scale group associated with the policy.
 * `triggers` - (Optional, array of integers and strings) The triggers to check for this group.
 * `tags` - (Optional, array of strings) Tags associated with the auto scaling policy instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.

@@ -94,41 +94,41 @@ resource "ibm_network_gateway" "gateway" {
 The following arguments are supported:
 
 * `name` - (Required, string) The name of the gateway.
-* `ssh_key_ids` - (Optional, list) The SSH key IDs to install on the gateway when the gateway gets created.
-* `post_install_script_uri` - (Optional, string) The URI of the script to be downloaded and executed after the gateway installation is complete. Default value: `nil`. 
+* `ssh_key_ids` - (Optional, Forces new resource, list) The SSH key IDs to install on the gateway when the gateway gets created.
+* `post_install_script_uri` - (Optional, Forces new resource, string) The URI of the script to be downloaded and executed after the gateway installation is complete. Default value: `nil`. 
 * `members` - (Required, list) A nested block describing the hardware members of this network gateway.
 Nested `members` blocks have the following structure:
-  * `hostname` - (Optional, string) Hostname of the member.
-  * `domain` - (Required, string) The domain of the member
-  * `notes` - (Optional, string) Descriptive text of up to 1000 characters about the member.
-  * `datacenter` - (Required, string) The data center in which you want to provision the member.
-  * `network_speed` - (Optional, integer) The connection speed (in Mbps) for the member network components. Default value: `100`.
-  * `redundant_power_supply` - (Optional, boolean) When the value is `true`, an additional power supply is provided. Default value: `false`
-  * `tcp_monitoring` - (Optional, boolean) Whether to enable TCP monitoring for the member. Default value: `false`.
-  * `process_key_name` - (Optional, string) The process key name for the member. Default value:  `INTEL_SINGLE_XEON_1270_3_40_2`. Refer to the same attribute on the `ibm_compute_bare_metal` resource.
-  * `package_key_name` - (Optional, string) The key name for the network gateway package. You can find available package key names in the [Softlayer API](https://api.softlayer.com/rest/v3/SoftLayer_Product_Package/getAllObjects?objectFilter={"type":{"keyName":{"operation":"BARE_METAL_GATEWAY"}}}), using your API key as the password. Default value: `NETWORK_GATEWAY_APPLIANCE`. The default will allow to order Single Processor Multi-Core Servers. Use `2U_NETWORK_GATEWAY_APPLIANCE_1O_GBPS` for ordering Dual Processor Multi-Core Servers.
-  * `os_key_name` - (Optional, string) The os key name for member. Default value:  `OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT`. Refer to the same attribute on the `ibm_compute_bare_metal` resource.
-  * `redundant_network` - (Optional, boolean) When the value is `true`, two physical network interfaces are provided with a bonding configuration. Default value: `false`. 
-  * `unbonded_network` - (Optional, boolean) When the value is `true`, two physical network interfaces are provided without a bonding configuration. Default value: `false`. 
+  * `hostname` - (Optional, Forces new resource, string) Hostname of the member.
+  * `domain` - (Required, Forces new resource, string) The domain of the member
+  * `notes` - (Optional, Forces new resource, string) Descriptive text of up to 1000 characters about the member.
+  * `datacenter` - (Required, Forces new resource, string) The data center in which you want to provision the member.
+  * `network_speed` - (Optional, Forces new resource, integer) The connection speed (in Mbps) for the member network components. Default value: `100`.
+  * `redundant_power_supply` - (Optional, Forces new resource, boolean) When the value is `true`, an additional power supply is provided. Default value: `false`
+  * `tcp_monitoring` - (Optional, Forces new resource, boolean) Whether to enable TCP monitoring for the member. Default value: `false`.
+  * `process_key_name` - (Optional, Forces new resource, string) The process key name for the member. Default value:  `INTEL_SINGLE_XEON_1270_3_40_2`. Refer to the same attribute on the `ibm_compute_bare_metal` resource.
+  * `package_key_name` - (Optional, Forces new resource, string) The key name for the network gateway package. You can find available package key names in the [Softlayer API](https://api.softlayer.com/rest/v3/SoftLayer_Product_Package/getAllObjects?objectFilter={"type":{"keyName":{"operation":"BARE_METAL_GATEWAY"}}}), using your API key as the password. Default value: `NETWORK_GATEWAY_APPLIANCE`. The default will allow to order Single Processor Multi-Core Servers. Use `2U_NETWORK_GATEWAY_APPLIANCE_1O_GBPS` for ordering Dual Processor Multi-Core Servers.
+  * `os_key_name` - (Optional, Forces new resource, string) The os key name for member. Default value:  `OS_VYATTA_5600_5_X_UP_TO_1GBPS_SUBSCRIPTION_EDITION_64_BIT`. Refer to the same attribute on the `ibm_compute_bare_metal` resource.
+  * `redundant_network` - (Optional, Forces new resource, boolean) When the value is `true`, two physical network interfaces are provided with a bonding configuration. Default value: `false`. 
+  * `unbonded_network` - (Optional, Forces new resource, boolean) When the value is `true`, two physical network interfaces are provided without a bonding configuration. Default value: `false`. 
 
-  * `tags` - (Optional, set) Tags associated with the VM instance. Permitted characters include: A-Z, 0-9, whitespace, _ (underscore), - (hyphen), . (period), and : (colon). All other characters are removed.
-  * `public_bandwidth` - (Optional, integer) Allowed public network traffic (in GB) per month. Default value: `20000`.
-  * `memory` - (Required, integer) The amount of memory, expressed in megabytes, that you want to allocate.
-  * `storage_groups` - (Optional, list) A nested block describing the storage group for the member of the network gateway. Nested `storage_groups` blocks have the following structure:
+  * `tags` - (Optional, Forces new resource, set) Tags associated with the VM instance. Permitted characters include: A-Z, 0-9, whitespace, _ (underscore), - (hyphen), . (period), and : (colon). All other characters are removed.
+  * `public_bandwidth` - (Optional, Forces new resource, integer) Allowed public network traffic (in GB) per month. Default value: `20000`.
+  * `memory` - (Required, Forces new resource, integer) The amount of memory, expressed in megabytes, that you want to allocate.
+  * `storage_groups` - (Optional, Forces new resource, list) A nested block describing the storage group for the member of the network gateway. Nested `storage_groups` blocks have the following structure:
       * `array_type_id` - (Required, integer) The ID of the array type.
       * `hard_drives` - (Required, list) The list of hard drive associated with the gateway member.
       * `array_size` - (Optional, integer) The size of the array.
       * `partition_template_id` - (Optional, integer) The partition template ID for the member.
-  * `ssh_key_ids` - (Optional, list) The SSH key IDs to install on the member.
-  * `post_install_script_uri` - (Optional, string) The URI of the script to be downloaded and executed on the member. Default value: `nil`.
-  * `user_metadata` - (Optional, string) Arbitrary data to be made available to the member.
-  * `disk_key_names` - (Optional, list) Provide the disk key name. Refer to the same attribute in the `ibm_compute_bare_metal` resource.
-  * `public_vlan_id` - (Optional, integer) ID of the public VLAN.
-  * `private_vlan_id` - (Optional, integer) ID of the private VLAN.  
+  * `ssh_key_ids` - (Optional, Forces new resource, list) The SSH key IDs to install on the member.
+  * `post_install_script_uri` - (Optional, Forces new resource, string) The URI of the script to be downloaded and executed on the member. Default value: `nil`.
+  * `user_metadata` - (Optional, Forces new resource, string) Arbitrary data to be made available to the member.
+  * `disk_key_names` - (Optional, Forces new resource, list) Provide the disk key name. Refer to the same attribute in the `ibm_compute_bare_metal` resource.
+  * `public_vlan_id` - (Optional, Forces new resource, integer) ID of the public VLAN.
+  * `private_vlan_id` - (Optional, Forces new resource, integer) ID of the private VLAN.  
     **NOTE**: If there are two members in this gateway, then both should have same value for `public_vlan_id` and `private_vlan_id`.
     
-  * `ipv6_enabled` - (Optional, boolean) Whether to enable IPv6. Default value: `true`.
-  * `private_network_only` - (Optional, boolean) Whether to enable a private network only. Default value: `false`.
+  * `ipv6_enabled` - (Optional, Forces new resource, boolean) Whether to enable IPv6. Default value: `true`.
+  * `private_network_only` - (Optional, Forces new resource, boolean) Whether to enable a private network only. Default value: `false`.
 
 ## Attribute Reference
 

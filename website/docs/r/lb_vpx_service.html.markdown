@@ -33,9 +33,9 @@ resource "ibm_lb_vpx_service" "test_service" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The ID of the VPX load balancer service.
-* `vip_id` - (Required, string) The ID of the VPX load balancer virtual IP address to which the service is assigned.
-* `destination_ip_address` - (Required, string) The IP address of the server to which traffic directs. If you use NetScaler VPX 10.1, you must indicate a public IP address in an IBM Cloud Classic Infrastructure (SoftLayer) account. If you use NetScaler VPX 10.5, you can use any IP address.
+* `name` - (Required, Forces new resource, string) The ID of the VPX load balancer service.
+* `vip_id` - (Required, Forces new resource, string) The ID of the VPX load balancer virtual IP address to which the service is assigned.
+* `destination_ip_address` - (Required, Forces new resource, string) The IP address of the server to which traffic directs. If you use NetScaler VPX 10.1, you must indicate a public IP address in an IBM Cloud Classic Infrastructure (SoftLayer) account. If you use NetScaler VPX 10.5, you can use any IP address.
 * `destination_port` - (Required, integer) The destination port of the server to which traffic directs.
 * `weight` - (Required, integer) The percentage of the total connection limit allocated to the load balancer between all your services. See the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_LoadBalancer_Service) for details.  
     **NOTE**: If you use NetScaler VPX 10.5, the weight value is ignored.

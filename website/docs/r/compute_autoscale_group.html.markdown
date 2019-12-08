@@ -55,7 +55,7 @@ resource "ibm_compute_autoscale_group" "test_scale_group" {
 The following arguments are supported:
 
 * `name` - (Required, string) The name of the auto scaling group.
-* `regional_group` - (Required, string) The regional group for the auto scaling group.
+* `regional_group` - (Required, Forces new resource, string) The regional group for the auto scaling group.
 * `minimum_member_count` - (Required, integer) The fewest number of virtual guest members that are allowed in the auto scaling group.
 * `maximum_member_count` - (Required, integer) The greatest number of virtual guest members that are allowed in the auto scaling group.
 * `cooldown` - (Required, integer) The duration, expressed in seconds, that the auto scaling group waits before performing another scaling action.

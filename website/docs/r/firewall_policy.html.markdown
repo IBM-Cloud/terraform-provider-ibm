@@ -57,7 +57,7 @@ resource "ibm_firewall_policy" "rules" {
 
 The following arguments are supported:
 
-* `firewall_id` - (Required, integer) The device ID for the target hardware firewall.
+* `firewall_id` - (Required, Forces new resource, integer) The device ID for the target hardware firewall.
 * `rules` - (Required, array) The firewall rules. At least one rule is required.
 * `rules.action` - (Required, string) Specifies whether traffic is allowed when rules are matched. Accepted values are `permit` or `deny`.
 * `rules.src_ip_address` - (Required, string) Specifies either a specific IP address or the network address for a specific subnet.

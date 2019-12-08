@@ -96,17 +96,17 @@ ibm_subnet provides the following [Timeouts](https://www.terraform.io/docs/confi
 
 The following arguments are supported:
 
-* `private` - (Optional, boolean) Specifies whether the network is public or private.
-* `type` - (Required, string) The type of the subnet. Accepted values are `portable` and `static`.
-* `ip_version` - (Optional, integer) The IP version of the subnet. Accepted values are 4 and 6.
-* `capacity` - (Required, integer) The size of the subnet.
+* `private` - (Optional,Forces new resource, boolean) Specifies whether the network is public or private.
+* `type` - (Required,Forces new resource, string) The type of the subnet. Accepted values are `portable` and `static`.
+* `ip_version` - (Optional,Forces new resource, integer) The IP version of the subnet. Accepted values are 4 and 6.
+* `capacity` - (Required,Forces new resource, integer) The size of the subnet.
     * Accepted values for a public portable IPv4 subnet are 4, 8, 16, and 32.
     * Accepted values for a private portable IPv4 subnet are 4, 8, 16, 32, and 64.
     * Accepted values for a public static IPv4 subnet are 1, 2, 4, 8, 16, and 32.
     * Accepted value for a public portable IPv6 subnet is 64. A /64 block is created and 2^64 IP addresses are provided.
     * Accepted value for a public static IPv6 subnet is 64. A /64 block is created and 2^64 IP addresses are provided.
-* `vlan_id` - (Optional, integer) The VLAN ID for portable subnet. You can configure both public and private VLAN ID. You can find accepted values in the [Softlayer VLAN documentation](https://cloud.ibm.com/classic/network/vlans) by clicking on the desired VLAN and noting the ID in the resulting URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
-* `endpoint_ip` - (Optional, string) The target primary IP address for a static subnet. Only public IP addresses of virtual servers, bare metal servers, and netscaler VPXs can be configured as an `endpoint_ip`. The `static subnet` will be created on the VLAN where the `endpoint_ip` is located.
+* `vlan_id` - (Optional,Forces new resource, integer) The VLAN ID for portable subnet. You can configure both public and private VLAN ID. You can find accepted values in the [Softlayer VLAN documentation](https://cloud.ibm.com/classic/network/vlans) by clicking on the desired VLAN and noting the ID in the resulting URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
+* `endpoint_ip` - (Optional,Forces new resource, string) The target primary IP address for a static subnet. Only public IP addresses of virtual servers, bare metal servers, and netscaler VPXs can be configured as an `endpoint_ip`. The `static subnet` will be created on the VLAN where the `endpoint_ip` is located.
 * `notes` - (Optional, string) Descriptive text or comments about the subnet.
 * `tags` - (Optional, array of strings) Tags associated with the subnet instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
