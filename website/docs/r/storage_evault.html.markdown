@@ -32,11 +32,11 @@ ibm_storage_evault provides the following [Timeouts](https://www.terraform.io/do
 
 The following arguments are supported:
 
-* `datacenter` - (Required, string) The data center where you want to provision the evault storage instance.
+* `datacenter` - (Required, Forces new resource, string) The data center where you want to provision the evault storage instance.
 * `capacity` - (Required, integer) The amount of storage capacity you want to allocate, specified in gigabytes.
-* `virtual_instance_id` - (Optional, integer) The id of the virtual instance.
+* `virtual_instance_id` - (Optional, Forces new resource, integer) The id of the virtual instance.
     **NOTE**: Conflicts with `hardware_instance_id`.
-* `hardware_instance_id` - (Optional, integer) The id of the hardware instance.
+* `hardware_instance_id` - (Optional, Forces new resource, integer) The id of the hardware instance.
     **NOTE**: Conflicts with `virtual_instance_id`.
 * `tags` - (Optional, array of strings) Tags associated with the storage evault instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.

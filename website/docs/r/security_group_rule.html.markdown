@@ -40,7 +40,7 @@ The following arguments are supported:
 * `remote_ip` - (Optional, string) The CIDR or IP address for allowed connections.  
 
     **NOTE**: Conflicts with `remote_group_id`.
-* `security_group_id` - (Required, int) The ID of the security group this rule belongs to.
+* `security_group_id` - (Required, Forces new resource, int) The ID of the security group this rule belongs to.
 
 ## Attribute Reference
 

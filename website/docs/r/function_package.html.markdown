@@ -80,11 +80,11 @@ EOF
 
 The following arguments are supported:
 
-* `name` - (Required, string) The name of the package.
+* `name` - (Required,  Forces new resource, string) The name of the package.
 * `publish` - (Optional, boolean) Package visibility.
 * `user_defined_annotations` - (Optional, string) Annotations defined in key value format.
 * `user_defined_parameters` - (Optional, string) Parameters defined in key value format. Parameter bindings included in the context passed to the package.
-* `bind_package_name` - (Optional, string) Name of package to be binded.
+* `bind_package_name` - (Optional,  Forces new resource, string) Name of package to be binded.
 
 ## Attributes Reference
 

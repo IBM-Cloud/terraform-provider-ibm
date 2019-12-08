@@ -74,9 +74,9 @@ resource "ibm_function_trigger" "feedtrigger" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The name of the trigger.
-* `feed` - (Optional, list) A nested block to describe the feed. Nested `feed` blocks have the following structure:
-    * `name` - (Required, string) Trigger feed `ACTION_NAME`.
+* `name` - (Required, Forces new resource, string) The name of the trigger.
+* `feed` - (Optional, Forces new resource, list) A nested block to describe the feed. Nested `feed` blocks have the following structure:
+    * `name` - (Required, Forces new resource, string) Trigger feed `ACTION_NAME`.
     * `parameters` - (Optional, string) Parameters definitions in key value format. Parameter bindings are included in the context and passed when the action is invoked.
 * `user_defined_annotations` - (Optional, string) Annotation definitions in key value format.
 * `user_defined_parameters` - (Optional, string) Parameters definitions in key value format. Parameter bindings are included in the context and passed to the trigger.

@@ -33,9 +33,9 @@ The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/d
 The following arguments are supported:
 
 * `name` - (Required, string) The descriptive name used to identify a placement group.
-* `datacenter` - (Required, string) The datacenter in which you want to provision the placement group.
-* `pod` - (Required, string) The pod in which you want to provision the placement group.
-* `rule` - (Optional, string) The rule of the placement group. Default `SPREAD`. 
+* `datacenter` - (Required, Forces new resource, string) The datacenter in which you want to provision the placement group.
+* `pod` - (Required, Forces new resource, string) The pod in which you want to provision the placement group.
+* `rule` - (Optional, Forces new resource, string) The rule of the placement group. Default `SPREAD`. 
 * `tags` - (Optional, array of strings) Tags associated with the placement group.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 

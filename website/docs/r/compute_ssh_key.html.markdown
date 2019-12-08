@@ -27,7 +27,7 @@ resource "ibm_compute_ssh_key" "test_ssh_key" {
 The following arguments are supported:
 
 * `label` - (Required, string) The descriptive name used to identify an SSH key.
-* `public_key` - (Required, string) The public SSH key.
+* `public_key` - (Required, Forces new resource, string) The public SSH key.
 * `notes` - (Optional, string) Descriptive text about the SSH key.
 * `tags` - (Optional, array of strings) Tags associated with the SSH Key instance.  
 

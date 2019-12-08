@@ -42,8 +42,8 @@ ibm_network_interface_sg_attachment provides the following [Timeouts](https://ww
 
 The following arguments are supported:
 
-* `security_group_id` - (Required, int) The ID of the security group.
-* `network_interface_id` - (Required, int) The ID of the network interface to which the security group must be applied.
-* `soft_reboot` - (Optional, boolean) Default `true`. If true and if a reboot is required to apply the attachment then VSI on which the network interface lies would be soft rebooted. If false then no reboot is perfomed.
+* `security_group_id` - (Required, Forces new resource, int) The ID of the security group.
+* `network_interface_id` - (Required, Forces new resource, int) The ID of the network interface to which the security group must be applied.
+* `soft_reboot` - (Optional, Forces new resource, boolean) Default `true`. If true and if a reboot is required to apply the attachment then VSI on which the network interface lies would be soft rebooted. If false then no reboot is perfomed.
 
 **Note**: A reboot is required if this is first time any security group is applied to this network interface and it has never been rebooted since then.

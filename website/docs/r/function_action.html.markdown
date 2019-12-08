@@ -95,7 +95,7 @@ resource "ibm_function_action" "swifthello" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The name of the action.
+* `name` - (Required, Forces new resource, string) The name of the action.
 * `limits` - (Optional, list) A nested block to describe assigned limits. Nested `limits` blocks have the following structure:
     * `timeout` - The timeout limit to terminate the action, specified in milliseconds. Default value: `60000`.
     * `memory` - The maximum memory for the action, specified in MBs. Default value: `256`.

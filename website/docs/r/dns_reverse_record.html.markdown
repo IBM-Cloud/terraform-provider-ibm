@@ -25,7 +25,7 @@ resource "ibm_dns_reverse_record" "testreverserecord" {
 
 The following arguments are supported:
 
-* `ipaddress` - (Required, string) The IP address or a hostname of a domain's resource record.
+* `ipaddress` - (Required, Forces new resource, string) The IP address or a hostname of a domain's resource record.
 
 * `hostname` - (Required, string) The host defined by a reverse record.
 

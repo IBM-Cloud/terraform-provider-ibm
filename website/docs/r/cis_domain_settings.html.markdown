@@ -28,12 +28,12 @@ The following arguments are supported:
 
 * `cis_id` - (Required) The ID of the CIS service instance.
 * `domain_id` - (Required) The ID of the domain.
-* `waf`. Allowed values: "off", "on"
-* `min_tls_version`. Allowed values: 1.1", "1.2", "1.3".
-* `ssl`. Allowed values: "off", "flexible", "full", "strict", "origin_pull".
-* `automatic_https_rewrites`. Allowed values: "off", "on"
-* `opportunistic_encryption`. Allowed values: "off", "on"
-* `cname_flattening`. Allowed values: "flatten_at_root", "flatten_all", "flatten_none".
+* `waf`. (Optional, string) Allowed values: "off", "on"
+* `min_tls_version`. (Optional, string) Allowed values: 1.1", "1.2", "1.3".
+* `ssl`. (Optional, string) Allowed values: "off", "flexible", "full", "strict", "origin_pull".
+* `automatic_https_rewrites`. (Optional, string) Allowed values: "off", "on"
+* `opportunistic_encryption`. (Optional, string) Allowed values: "off", "on"
+* `cname_flattening`. (Optional, string) Allowed values: "flatten_at_root", "flatten_all", "flatten_none".
 
 
 Additional settings not implemented in this version of the provider. 

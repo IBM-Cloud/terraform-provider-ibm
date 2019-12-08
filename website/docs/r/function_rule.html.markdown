@@ -53,7 +53,7 @@ resource "ibm_function_rule" "rule" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The name of the rule.
+* `name` - (Required, Forces new resource, string) The name of the rule.
 * `trigger_name` - (Required, string) The name of the trigger.
 * `action_name` - (Required, string) The name of the action.
 

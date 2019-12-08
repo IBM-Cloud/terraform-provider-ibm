@@ -32,8 +32,8 @@ resource "ibm_lb_service" "test_lb_local_service" {
 
 The following arguments are supported:
 
-* `service_group_id` - (Required, integer) The ID of the local load balancer service group.
-* `ip_address_id` - (Required, integer) The ID of the virtual server.
+* `service_group_id` - (Required, Forces new resource, integer) The ID of the local load balancer service group.
+* `ip_address_id` - (Required, Forces new resource, integer) The ID of the virtual server.
 * `port` - (Required, integer) The port for the local load balancer service.
 * `enabled` - (Required, boolean) Specifies whether you want to enable the load balancer service. The default value is `false`.
 * `health_check_type` - (Required, string) The health check type for the load balancer service.

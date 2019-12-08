@@ -82,7 +82,7 @@ The following arguments are supported:
 * `tags` - (Optional, array of strings) Tags associated with the instance.
 * `service` - (Required, string) The ICD database type to be created. Only the following services are currently accepted: 
 `databases-for-etcd`, `databases-for-postgresql`, `databases-for-redis`, `databases-for-elasticsearch`, `messages-for-rabbitmq`, `databases-for-mongodb`
-* `version` - (Optiona, string)  The version of the database to be provisioned. If omitted, the database is created with the most recent major and minor version.
+* `version` - (Optiona, Forces new resource, string)  The version of the database to be provisioned. If omitted, the database is created with the most recent major and minor version.
 * `adminpassword` - (Optional, string) If not specified the password is unitialised and the id unusable. In this case addditional users must be specified in a user block.   
 * `members_memory_allocation_mb` - (Optional) The memory size for the database, split across all members. If not specified defaults to the database default. These vary by database type. See the documentation related to each database for the defaults. https://cloud.ibm.com/docs/services/databases-for-postgresql/howto-provisioning.html#list-of-additional-parameters
 * `members_disk_allocation_mb`  - (Optional) The disk size of the database, split across all members. As above.

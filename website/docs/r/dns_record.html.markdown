@@ -182,7 +182,7 @@ resource "ibm_dns_record" "recordPTR" {
 The following arguments are supported:
 
 * `data` - (Required, string) The IP address or a hostname of a domain's resource record. Fully qualified host and domain name data must end with the `.` character.
-* `domain_id` - (Required, integer) The ID for the domain associated with the resource record.
+* `domain_id` - (Required, Forces new resource, integer) The ID for the domain associated with the resource record.
 * `expire` - (Optional, integer) The duration, expressed in seconds, that a secondary name server (or servers) holds a zone before it is no longer considered authoritative.
 * `host` - (Required, string) The host defined by a resource record. The `@` symbol denotes a wildcard.
 * `minimum_ttl` - (Optional, integer) The duration, expressed in seconds, that a domain's resource records are valid. This is also known as a minimum time to live (TTL), and can be overridden by an individual resource record's TTL.
@@ -191,7 +191,7 @@ The following arguments are supported:
 * `responsible_person` - (Required, string) The email address of the person responsible for a domain. Replace the `@` symbol in the address with a `.`. For example: root@example.org would be expressed as `root.example.org.`.
 * `retry` - (Optional, integer) The duration, expressed in seconds, that the domain's primary name server (or servers) waits before attempting to refresh the domain's zone with the secondary name server. A failed attempt to refresh by a secondary name server triggers the retry action.
 * `ttl` - (Required, integer) The time to live (TTL) duration, expressed in seconds, of a resource record. A name server uses TTL to determine how long to cache a resource record. An SOA record's TTL value defines the domain's overall TTL.
-* `type` - (Required, string) The type of domain resource record. Accepted values are as follows:
+* `type` - (Required, Forces new resource, string) The type of domain resource record. Accepted values are as follows:
     * `a` for address records
     * `aaaa` for address records
     * `cname` for canonical name records
