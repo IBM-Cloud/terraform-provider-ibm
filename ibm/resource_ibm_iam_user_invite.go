@@ -31,12 +31,21 @@ func resourceIBMUserInvite() *schema.Resource {
 				Required:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
+			"access_groups": {
+				Description: "access group ids to associate the inviting user",
+				Type:        schema.TypeList,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 		},
 	}
 }
 
 func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 	userManagement, err := meta.(ClientSession).UserManagementAPI()
+	if err != nil {
+		return err
+	}
 	client := userManagement.UserInvite()
 
 	usersSet := d.Get("users").(*schema.Set)
@@ -48,13 +57,19 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 	if len(users) == 0 {
 		return fmt.Errorf("Users email not provided")
 	}
-	InviteUserPayload := models.UserInvite{Users: users}
+	var accessGroups = make([]string, 0)
+	if data, ok := d.GetOk("access_groups"); ok {
+		for _, accessGroup := range data.([]interface{}) {
+			accessGroups = append(accessGroups, fmt.Sprintf("%v", accessGroup))
+		}
+	}
+	inviteUserPayload := models.UserInvite{Users: users, AccessGroup: accessGroups}
 
 	accountID, err := getAccountID(d, meta)
 	if err != nil {
 		return err
 	}
-	_, InviteUserError := client.InviteUsers(accountID, InviteUserPayload)
+	_, InviteUserError := client.InviteUsers(accountID, inviteUserPayload)
 	if InviteUserError != nil {
 		return InviteUserError
 	}
@@ -64,6 +79,9 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 
 func resourceIBMIAMGetUsers(d *schema.ResourceData, meta interface{}) error {
 	userManagement, err := meta.(ClientSession).UserManagementAPI()
+	if err != nil {
+		return err
+	}
 	Client := userManagement.UserInvite()
 
 	accountID, err := getAccountID(d, meta)
@@ -145,6 +163,9 @@ func resourceIBMIAMUpdateUserProfile(d *schema.ResourceData, meta interface{}) e
 
 func resourceIBMIAMRemoveUser(d *schema.ResourceData, meta interface{}) error {
 	userManagement, err := meta.(ClientSession).UserManagementAPI()
+	if err != nil {
+		return err
+	}
 	Client := userManagement.UserInvite()
 
 	accountID, err := getAccountID(d, meta)
@@ -170,6 +191,9 @@ func resourceIBMIAMRemoveUser(d *schema.ResourceData, meta interface{}) error {
 
 func resourceIBMIAMGetUserProfileExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	userManagement, err := meta.(ClientSession).UserManagementAPI()
+	if err != nil {
+		return false, err
+	}
 	Client := userManagement.UserInvite()
 
 	accountID, err := getAccountID(d, meta)
@@ -211,6 +235,9 @@ func getAccountID(d *schema.ResourceData, meta interface{}) (string, error) {
 // getUserIAMID ...
 func getUserIAMID(d *schema.ResourceData, meta interface{}, user string) (string, error) {
 	userManagement, err := meta.(ClientSession).UserManagementAPI()
+	if err != nil {
+		return "", err
+	}
 	Client := userManagement.UserInvite()
 
 	accountID, err := getAccountID(d, meta)
