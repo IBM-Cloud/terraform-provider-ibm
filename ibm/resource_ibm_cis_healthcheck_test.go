@@ -12,7 +12,7 @@ import (
 func TestAccIBMCisHealthcheck_Basic(t *testing.T) {
 	//t.Parallel()
 	var monitor string
-	name := "ibm_cis_healthcheck.test"
+	name := "ibm_cis_healthcheck.health_check"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheckCis(t) },
@@ -34,7 +34,7 @@ func TestAccIBMCisHealthcheck_Basic(t *testing.T) {
 }
 
 func TestAccIBMCisHealthcheck_import(t *testing.T) {
-	name := "ibm_cis_healthcheck.test"
+	name := "ibm_cis_healthcheck.health_check"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -61,7 +61,7 @@ func TestAccIBMCisHealthcheck_import(t *testing.T) {
 func TestAccIBMCisHealthcheck_FullySpecified(t *testing.T) {
 	//t.Parallel()
 	var monitor string
-	name := "ibm_cis_healthcheck.test"
+	name := "ibm_cis_healthcheck.health_check"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -84,7 +84,7 @@ func TestAccIBMCisHealthcheck_FullySpecified(t *testing.T) {
 func TestAccIBMCisHealthcheck_CreateAfterManualDestroy(t *testing.T) {
 	t.Parallel()
 	var monitorOne, monitorTwo string
-	name := "ibm_cis_healthcheck.test"
+	name := "ibm_cis_healthcheck.health_check"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -119,7 +119,7 @@ func TestAccIBMCisHealthcheck_CreateAfterManualDestroy(t *testing.T) {
 func TestAccIBMCisHealthcheck_CreateAfterCisRIManualDestroy(t *testing.T) {
 	t.Parallel()
 	var monitorOne, monitorTwo string
-	name := "ibm_cis_healthcheck.test"
+	name := "ibm_cis_healthcheck.health_check"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -227,34 +227,36 @@ func testAccCheckCisHealthcheckExists(n string, tfMonitorId *string) resource.Te
 
 func testAccCheckCisHealthcheckConfigCisDS_Basic(resourceId string, cisDomain string) string {
 	return testAccCheckIBMCisDomainDataSourceConfig_basic1(resourceId, cisDomain) + fmt.Sprintf(`
-resource "ibm_cis_healthcheck" "%[1]s" {
-  cis_id = "${data.ibm_cis.%[2]s.id}"
-  expected_body = "alive"
-  expected_codes = "2xx"
-}`, resourceId, cisInstance)
+	resource "ibm_cis_healthcheck" "health_check" {
+		cis_id         = data.ibm_cis.cis.id
+		expected_body  = "alive"
+		expected_codes = "2xx"
+	  }
+	`)
 }
 
 func testAccCheckCisHealthcheckConfigCisRI_Basic(resourceId string, cisDomain string) string {
 	return testAccCheckCisDomainConfigCisRI_basic(resourceId, cisDomain) + fmt.Sprintf(`
-resource "ibm_cis_healthcheck" "%[1]s" {
-  cis_id = "${ibm_cis.%[2]s.id}"
-  expected_body = "alive"
-  expected_codes = "2xx"
-  expected_body = "alive"
-}`, resourceId, "testacc_ds_cis")
+	resource "ibm_cis_healthcheck" "health_check" {
+		cis_id         = ibm_cis.cis.id
+		expected_body  = "alive"
+		expected_codes = "2xx"
+	  }
+	`)
 }
 
 func testAccCheckCisHealthcheckConfigFullySpecified(resourceId string, cisDomain string) string {
 	return testAccCheckIBMCisDomainDataSourceConfig_basic1(resourceId, cisDomain) + fmt.Sprintf(`
-resource "ibm_cis_healthcheck" "%[1]s" {
-  cis_id = "${data.ibm_cis.%[2]s.id}"
-  expected_body = "dead"
-  expected_codes = "5xx"
-  method = "HEAD"
-  timeout = 9
-  path = "/custom"
-  interval = 60
-  retries = 5
-  description = "this is a very weird load balancer"
-}`, resourceId, cisInstance)
+	resource "ibm_cis_healthcheck" "health_check" {
+		cis_id         = data.ibm_cis.cis.id
+		expected_body  = "dead"
+		expected_codes = "5xx"
+		method         = "HEAD"
+		timeout        = 9
+		path           = "/custom"
+		interval       = 60
+		retries        = 5
+		description    = "this is a very weird load balancer"
+	  }
+	`)
 }

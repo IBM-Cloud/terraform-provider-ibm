@@ -2,8 +2,9 @@ package ibm
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccIBMCisDomainDataSource_Basic(t *testing.T) {
@@ -14,9 +15,9 @@ func TestAccIBMCisDomainDataSource_Basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMCisDomainDataSourceConfig_basic1("test_acc", cisDomainStatic),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.ibm_cis_domain.test_acc", "status", "pending"),
-					resource.TestCheckResourceAttr("data.ibm_cis_domain.test_acc", "original_name_servers.#", "2"),
-					resource.TestCheckResourceAttr("data.ibm_cis_domain.test_acc", "name_servers.#", "2"),
+					resource.TestCheckResourceAttr("data.ibm_cis_domain.cis_domain", "status", "pending"),
+					resource.TestCheckResourceAttr("data.ibm_cis_domain.cis_domain", "original_name_servers.#", "2"),
+					resource.TestCheckResourceAttr("data.ibm_cis_domain.cis_domain", "name_servers.#", "2"),
 				),
 			},
 		},
@@ -25,16 +26,19 @@ func TestAccIBMCisDomainDataSource_Basic(t *testing.T) {
 
 func testAccCheckIBMCisDomainDataSourceConfig_basic1(resourceName string, domain string) string {
 	return fmt.Sprintf(`
-				data "ibm_cis_domain" "%[1]s" {
-					cis_id = "${data.ibm_cis.%[4]s.id}"
-                    domain = "%[2]s"
-				}
-				data "ibm_resource_group" "test_acc" {
-				  name = "%[3]s"
-				}
-
-				data "ibm_cis" "%[4]s" {
-				  resource_group_id = "${data.ibm_resource_group.test_acc.id}"	
-				  name = "%[4]s"
-				}`, resourceName, domain, cisResourceGroup, cisInstance)
+	
+	data "ibm_cis_domain" "cis_domain" {
+		cis_id = data.ibm_cis.cis.id
+		domain = "test123.com"
+	}
+	  
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+	  
+	data "ibm_cis" "cis" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name              = "test-domain"
+	}
+	`)
 }

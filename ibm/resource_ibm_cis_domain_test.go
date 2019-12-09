@@ -11,7 +11,7 @@ import (
 
 func TestAccIBMCisDomain_basic(t *testing.T) {
 	//rnd := acctest.RandString(10)
-	name := "ibm_cis_domain." + "test_acc"
+	name := "ibm_cis_domain." + "cis_domain"
 	testDomain := cisDomainTest
 
 	resource.Test(t, resource.TestCase{
@@ -36,7 +36,7 @@ func TestAccIBMCisDomain_CreateAfterManualDestroy(t *testing.T) {
 	// Manual destroy of Domain resource
 	//t.Parallel()
 	var zoneOne, zoneTwo string
-	name := "ibm_cis_domain." + "test"
+	name := "ibm_cis_domain." + "cis_domain"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -66,7 +66,7 @@ func TestAccIBMCisDomain_CreateAfterManualCisRIDestroy(t *testing.T) {
 	// Manual destroy of Domain resource & CIS Resource Instance
 	//t.Parallel()
 	var zoneOne, zoneTwo string
-	name := "ibm_cis_domain." + "test"
+	name := "ibm_cis_domain." + "cis_domain"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -94,7 +94,7 @@ func TestAccIBMCisDomain_CreateAfterManualCisRIDestroy(t *testing.T) {
 }
 
 func TestAccIBMCisDomain_import(t *testing.T) {
-	name := "ibm_cis_domain.test_acc"
+	name := "ibm_cis_domain.cis_domain"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -179,40 +179,44 @@ func testAccCheckCisDomainExists(n string, tfZoneId *string) resource.TestCheckF
 func testAccCheckCisDomainConfigCisDS_basic(resourceName string, domain string) string {
 	// Cis instance data source
 	return testAccCheckCisInstanceDataSourceConfig_basic(cisResourceGroup, cisInstance) + fmt.Sprintf(`
-				resource "ibm_cis_domain" "%[1]s" {
-					cis_id = "${data.ibm_cis.testacc_ds_cis.id}"
-                    domain = "%[2]s"
-				}`, resourceName, domain)
+	resource "ibm_cis_domain" "%[1]s" {
+		cis_id = data.ibm_cis.testacc_ds_cis.id
+		domain = "%[2]s"
+	  }
+	`, resourceName, domain)
 }
 
 func testAccCheckCisDomainConfigCisRI_basic(resourceName string, domain string) string {
 	// Cis dynamically created resource instance
 	return testAccCheckIBMCisInstance_basic(cisResourceGroup, "testacc_ds_cis") + fmt.Sprintf(`
-				resource "ibm_cis_domain" "%[1]s" {
-					cis_id = "${ibm_cis.testacc_ds_cis.id}"
-                    domain = "%[2]s"
-				}`, resourceName, domain)
+	resource "ibm_cis_domain" "cis_domain" {
+		cis_id = ibm_cis.cis.id
+		domain = "%[1]s"
+	  }
+	`, domain)
 }
 
 func testAccCheckCisDomainDataSourceConfig_basic(resourceName string, domain string) string {
 	return testAccCheckCisInstanceDataSourceConfig_basic(cisResourceGroup, cisInstance) + fmt.Sprintf(`
-				data "ibm_cis_domain" "%[1]s" {
-					cis_id = "${data.ibm_cis.testacc_ds_cis.id}"
-                    domain = "%[2]s"
-				}`, resourceName, domain)
+	data "ibm_cis_domain" "%[1]s" {
+		cis_id = data.ibm_cis.testacc_ds_cis.id
+		domain = "%[2]s"
+	  }
+	`, resourceName, domain)
 }
 
 func testAccCheckCisInstanceDataSourceConfig_basic(cisResourceGroup string, cisInstance string) string {
 	// defaultResourceGroup from env vars
 	//cisInstance from env vars
 	return fmt.Sprintf(`
-data "ibm_resource_group" "test_acc" {
-  name = "%[1]s"
-}
-
-data "ibm_cis" "testacc_ds_cis" {
-  resource_group_id = "${data.ibm_resource_group.test_acc.id}"	
-  name = "%[2]s"
-}`, cisResourceGroup, cisInstance)
+	data "ibm_resource_group" "test_acc" {
+		name = "%[1]s"
+	  }
+	  
+	  data "ibm_cis" "testacc_ds_cis" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name              = "%[2]s"
+	  }
+	`, cisResourceGroup, cisInstance)
 
 }
