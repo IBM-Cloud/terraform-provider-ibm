@@ -26,9 +26,8 @@ type CreateDataVolume struct {
 	// Volume (ID or Name)to base volume affinity policy against; required if affinityPolicy provided
 	AffinityVolume *string `json:"affinityVolume,omitempty"`
 
-	// Type of Disk {ssd, standard}
+	// Type of Disk
 	// Required: true
-	// Enum: [ssd standard]
 	DiskType *string `json:"diskType"`
 
 	// Volume Name
@@ -112,43 +111,9 @@ func (m *CreateDataVolume) validateAffinityPolicy(formats strfmt.Registry) error
 	return nil
 }
 
-var createDataVolumeTypeDiskTypePropEnum []interface{}
-
-func init() {
-	var res []string
-	if err := json.Unmarshal([]byte(`["ssd","standard"]`), &res); err != nil {
-		panic(err)
-	}
-	for _, v := range res {
-		createDataVolumeTypeDiskTypePropEnum = append(createDataVolumeTypeDiskTypePropEnum, v)
-	}
-}
-
-const (
-
-	// CreateDataVolumeDiskTypeSsd captures enum value "ssd"
-	CreateDataVolumeDiskTypeSsd string = "ssd"
-
-	// CreateDataVolumeDiskTypeStandard captures enum value "standard"
-	CreateDataVolumeDiskTypeStandard string = "standard"
-)
-
-// prop value enum
-func (m *CreateDataVolume) validateDiskTypeEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, createDataVolumeTypeDiskTypePropEnum); err != nil {
-		return err
-	}
-	return nil
-}
-
 func (m *CreateDataVolume) validateDiskType(formats strfmt.Registry) error {
 
 	if err := validate.Required("diskType", "body", m.DiskType); err != nil {
-		return err
-	}
-
-	// value enum
-	if err := m.validateDiskTypeEnum("diskType", "body", *m.DiskType); err != nil {
 		return err
 	}
 

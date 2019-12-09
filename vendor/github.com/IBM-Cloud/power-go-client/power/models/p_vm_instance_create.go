@@ -7,6 +7,7 @@ package models
 
 import (
 	"encoding/json"
+	"strconv"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -33,9 +34,11 @@ type PVMInstanceCreate struct {
 	// Indicates if the server is allowed to migrate between hosts
 	Migratable *bool `json:"migratable,omitempty"`
 
-	// List of Network IDs
-	// Required: true
+	// (deprecated - replaced by networks) List of Network IDs
 	NetworkIds []string `json:"networkIDs"`
+
+	// The pvm instance networks information
+	Networks []*PVMInstanceAddNetwork `json:"networks"`
 
 	// Processor type (dedicated or shared)
 	// Required: true
@@ -62,14 +65,12 @@ type PVMInstanceCreate struct {
 	ServerName *string `json:"serverName"`
 
 	// System type used to host the instance
-	// Enum: [s922 e880 any]
-	SysType *string `json:"sysType,omitempty"`
+	SysType string `json:"sysType,omitempty"`
 
 	// Cloud init user defined data
 	UserData string `json:"userData,omitempty"`
 
 	// List of volume IDs
-	// Required: true
 	VolumeIds []string `json:"volumeIDs"`
 }
 
@@ -85,7 +86,7 @@ func (m *PVMInstanceCreate) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateNetworkIds(formats); err != nil {
+	if err := m.validateNetworks(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -106,14 +107,6 @@ func (m *PVMInstanceCreate) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateServerName(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateSysType(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateVolumeIds(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -141,10 +134,26 @@ func (m *PVMInstanceCreate) validateMemory(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PVMInstanceCreate) validateNetworkIds(formats strfmt.Registry) error {
+func (m *PVMInstanceCreate) validateNetworks(formats strfmt.Registry) error {
 
-	if err := validate.Required("networkIDs", "body", m.NetworkIds); err != nil {
-		return err
+	if swag.IsZero(m.Networks) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Networks); i++ {
+		if swag.IsZero(m.Networks[i]) { // not required
+			continue
+		}
+
+		if m.Networks[i] != nil {
+			if err := m.Networks[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("networks" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -294,61 +303,6 @@ func (m *PVMInstanceCreate) validateReplicantNamingScheme(formats strfmt.Registr
 func (m *PVMInstanceCreate) validateServerName(formats strfmt.Registry) error {
 
 	if err := validate.Required("serverName", "body", m.ServerName); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-var pVmInstanceCreateTypeSysTypePropEnum []interface{}
-
-func init() {
-	var res []string
-	if err := json.Unmarshal([]byte(`["s922","e880","any"]`), &res); err != nil {
-		panic(err)
-	}
-	for _, v := range res {
-		pVmInstanceCreateTypeSysTypePropEnum = append(pVmInstanceCreateTypeSysTypePropEnum, v)
-	}
-}
-
-const (
-
-	// PVMInstanceCreateSysTypeS922 captures enum value "s922"
-	PVMInstanceCreateSysTypeS922 string = "s922"
-
-	// PVMInstanceCreateSysTypeE880 captures enum value "e880"
-	PVMInstanceCreateSysTypeE880 string = "e880"
-
-	// PVMInstanceCreateSysTypeAny captures enum value "any"
-	PVMInstanceCreateSysTypeAny string = "any"
-)
-
-// prop value enum
-func (m *PVMInstanceCreate) validateSysTypeEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, pVmInstanceCreateTypeSysTypePropEnum); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *PVMInstanceCreate) validateSysType(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.SysType) { // not required
-		return nil
-	}
-
-	// value enum
-	if err := m.validateSysTypeEnum("sysType", "body", *m.SysType); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *PVMInstanceCreate) validateVolumeIds(formats strfmt.Registry) error {
-
-	if err := validate.Required("volumeIDs", "body", m.VolumeIds); err != nil {
 		return err
 	}
 

@@ -8,7 +8,7 @@ package bluemix_service_instances
 import (
 	"github.com/go-openapi/runtime"
 
-	"github.com/go-openapi/strfmt"
+	strfmt "github.com/go-openapi/strfmt"
 )
 
 // New creates a new bluemix service instances API client.

@@ -8,7 +8,7 @@ package iaas_service_broker
 import (
 	"github.com/go-openapi/runtime"
 
-	"github.com/go-openapi/strfmt"
+	strfmt "github.com/go-openapi/strfmt"
 )
 
 // New creates a new iaas service broker API client.
@@ -49,6 +49,34 @@ func (a *Client) ServiceBrokerHealth(params *ServiceBrokerHealthParams) (*Servic
 		return nil, err
 	}
 	return result.(*ServiceBrokerHealthOK), nil
+
+}
+
+/*
+ServiceBrokerHealthHead gets current server health
+*/
+func (a *Client) ServiceBrokerHealthHead(params *ServiceBrokerHealthHeadParams) (*ServiceBrokerHealthHeadOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewServiceBrokerHealthHeadParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "serviceBroker.health.head",
+		Method:             "HEAD",
+		PathPattern:        "/broker/v1/health",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &ServiceBrokerHealthHeadReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*ServiceBrokerHealthHeadOK), nil
 
 }
 

@@ -237,7 +237,7 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 
 		VolumeIds: volids, NetworkIds: networks, Processors: &procs, Memory: &mem, ServerName: ptrToString(name),
 		Migratable:              &migrateable,
-		SysType:                 ptrToString(systype),
+		SysType:                 systype,
 		KeyPairName:             sshkey,
 		ImageID:                 ptrToString(imageid),
 		ProcType:                ptrToString(processortype),
