@@ -243,34 +243,37 @@ func testAccCheckCisGlbExists(n string, tfGlbId *string) resource.TestCheckFunc 
 
 func testAccCheckCisGlbConfigCisDS_Basic(id string, cisDomain string) string {
 	return testAccCheckCisPoolConfigFullySpecified(id, cisDomain) + fmt.Sprintf(`
-resource "ibm_cis_global_load_balancer" "%[1]s" {
-  cis_id = "${data.ibm_cis.%[3]s.id}"
-  domain_id = "${data.ibm_cis_domain.%[1]s.id}"
-  name = "%[2]s"
-  fallback_pool_id = "${ibm_cis_origin_pool.%[1]s.id}"
-  default_pool_ids = ["${ibm_cis_origin_pool.%[1]s.id}"]
-}`, id, cisDomainStatic, cisInstance)
+	resource "ibm_cis_global_load_balancer" "%[1]s" {
+		cis_id           = data.ibm_cis.cis.id
+		domain_id        = data.ibm_cis_domain.cis_domain.id
+		name             = "%[2]s"
+		fallback_pool_id = ibm_cis_origin_pool.origin_pool.id
+		default_pool_ids = [ibm_cis_origin_pool.origin_pool.id]
+	  }
+	`, id, cisDomainStatic, cisInstance)
 }
 
 func testAccCheckCisGlbConfigCisRI_Basic(id string, cisDomain string) string {
 	return testAccCheckCisPoolConfigCisRI_Basic(id, cisDomain) + fmt.Sprintf(`
-resource "ibm_cis_global_load_balancer" "%[1]s" {
-  cis_id = "${ibm_cis.%[3]s.id}"
-  domain_id = "${ibm_cis_domain.%[1]s.id}"
-  name = "%[2]s"
-  fallback_pool_id = "${ibm_cis_origin_pool.%[1]s.id}"
-  default_pool_ids = ["${ibm_cis_origin_pool.%[1]s.id}"]
-}`, id, cisDomain, "testacc_ds_cis")
+	resource "ibm_cis_global_load_balancer" "%[1]s" {
+		cis_id           = ibm_cis.cis.id
+		domain_id        = ibm_cis_domain.cis_domain.id
+		name             = "%[2]s"
+		fallback_pool_id = ibm_cis_origin_pool.origin_pool.id
+		default_pool_ids = [ibm_cis_origin_pool.origin_pool.id]
+	  }	  
+	`, id, cisDomain, "testacc_ds_cis")
 }
 
 func testAccCheckCisGlbConfigSessionAffinity(id string, cisDomainStatic string) string {
 	return testAccCheckCisPoolConfigFullySpecified(id, cisDomainStatic) + fmt.Sprintf(`
-resource "ibm_cis_global_load_balancer" "%[1]s" {
-  cis_id = "${data.ibm_cis.%[3]s.id}"
-  domain_id = "${data.ibm_cis_domain.%[1]s.id}"
-  name = "%[2]s"
-  fallback_pool_id = "${ibm_cis_origin_pool.%[1]s.id}"
-  default_pool_ids = ["${ibm_cis_origin_pool.%[1]s.id}"]
-  session_affinity = "cookie"
-}`, id, cisDomainStatic, cisInstance)
+	resource "ibm_cis_global_load_balancer" "%[1]s" {
+		cis_id           = data.ibm_cis.cis.id
+		domain_id        = data.ibm_cis_domain.cis_domain.id
+		name             = "%[2]s"
+		fallback_pool_id = ibm_cis_origin_pool.origin_pool.id
+		default_pool_ids = [ibm_cis_origin_pool.origin_pool.id]
+		session_affinity = "cookie"
+	  }
+	`, id, cisDomainStatic, cisInstance)
 }
