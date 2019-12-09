@@ -30,13 +30,14 @@ func TestAccIBMCisDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMCisDataSourceConfig(instanceName string) string {
 	return fmt.Sprintf(`
-data "ibm_resource_group" "test_acc" {
-  name = "%[1]s"
-}
-
-data "ibm_cis" "testacc_ds_cis" {
-  resource_group_id = "${data.ibm_resource_group.test_acc.id}"	
-  name = "%[2]s"
-}`, cisResourceGroup, instanceName)
+	data "ibm_resource_group" "test_acc" {
+		name = "%[1]s"
+	}
+	  
+	  data "ibm_cis" "testacc_ds_cis" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name              = "%[2]s"
+	}
+	`, cisResourceGroup, instanceName)
 
 }

@@ -277,102 +277,109 @@ func testAccCheckIBMCisDnsRecordExists(n string, tfRecordId *string) resource.Te
 
 func testAccCheckIBMCisDNSRecordConfigCisDS_Basic(resourceId string, cisDomain string) string {
 	return testAccCheckIBMCisDomainDataSourceConfig_basic1(resourceId, cisDomain) + fmt.Sprintf(`
-resource "ibm_cis_dns_record" "%[1]s" {
-    cis_id = "${data.ibm_cis.%[2]s.id}"
-    domain_id = "${data.ibm_cis_domain.%[1]s.id}"
-
-    name = "%[1]s"
-    content = "192.168.0.10"
-    type = "A"
-}`, resourceId, cisInstance)
+	resource "ibm_cis_dns_record" "%[1]s" {
+		cis_id    = data.ibm_cis.cis.id
+		domain_id = data.ibm_cis_domain.cis_domain.id
+	  
+		name    = "%[1]s"
+		content = "192.168.0.10"
+		type    = "A"
+	  }
+	  `, resourceId)
 }
 
 func testAccCheckIBMCisDNSRecordConfigCisRI_Basic(resourceId string, cisDomain string) string {
 	return testAccCheckCisDomainConfigCisRI_basic(resourceId, cisDomain) + fmt.Sprintf(`
-resource "ibm_cis_dns_record" "%[1]s" {
-    cis_id = "${ibm_cis.%[2]s.id}"
-    domain_id = "${ibm_cis_domain.%[1]s.id}"
-
-    name = "%[1]s"
-    content = "192.168.0.10"
-    type = "A"
-}`, resourceId, "testacc_ds_cis")
+	resource "ibm_cis_dns_record" "%[1]s" {
+		cis_id    = ibm_cis.cis.id
+		domain_id = ibm_cis_domain.cis_domain.id
+	  
+		name    = "%[1]s"
+		content = "192.168.0.10"
+		type    = "A"
+	  }
+`, resourceId)
 }
 
 func testAccCheckIBMCisDNSRecordConfigCaseSensitive(resourceId string, cisDomainStatic string) string {
 	return testAccCheckIBMCisDomainDataSourceConfig_basic1(resourceId, cisDomainStatic) + fmt.Sprintf(`
-resource "ibm_cis_dns_record" "%[1]s" {
-    cis_id = "${data.ibm_cis.%[2]s.id}"
-    domain_id = "${data.ibm_cis_domain.%[1]s.id}"
-
-    name = "%[1]s"
-    content = "192.168.0.10"
-    type = "A"
-}`, resourceId, cisInstance)
+	resource "ibm_cis_dns_record" "%[1]s" {
+		cis_id    = data.ibm_cis.cis.id
+		domain_id = data.ibm_cis_domain.cis_domain.id
+	  
+		name    = "%[1]s"
+		content = "192.168.0.10"
+		type    = "A"
+	  }
+`, resourceId)
 }
 
 func testAccCheckIBMCisDNSRecordConfigApex(resourceId string, cisDomainStatic string) string {
 	return testAccCheckIBMCisDomainDataSourceConfig_basic1(resourceId, cisDomainStatic) + fmt.Sprintf(`
-resource "ibm_cis_dns_record" "%[1]s" {
-    cis_id = "${data.ibm_cis.%[2]s.id}"
-    domain_id = "${data.ibm_cis_domain.%[1]s.id}"
-    name = "@"
-    content = "192.168.0.10"
-    type = "A"
-}`, resourceId, cisInstance)
+	resource "ibm_cis_dns_record" "%[1]s" {
+		cis_id    = data.ibm_cis.cis.id
+		domain_id = data.ibm_cis_domain.cis_domain.id
+		name      = "@"
+		content   = "192.168.0.10"
+		type      = "A"
+	  }
+`, resourceId)
 }
 
 func testAccCheckIBMCisDNSRecordConfigLOC(resourceId string, cisDomainStatic string) string {
 	return testAccCheckIBMCisDomainDataSourceConfig_basic1(resourceId, cisDomainStatic) + fmt.Sprintf(`
-resource "ibm_cis_dns_record" "%[1]s" {
-    cis_id = "${data.ibm_cis.%[2]s.id}"
-    domain_id = "${data.ibm_cis_domain.%[1]s.id}"
-    name = "%[1]s"
-    data {
-      "lat_degrees" =  "37"
-      "lat_minutes" = "46"
-      "lat_seconds" = "46"
-      "lat_direction" = "N"
-      "long_degrees" = "122"
-      "long_minutes" = "23"
-      "long_seconds" = "35"
-      "long_direction" = "W"
-      "altitude" = 0
-      "size" = 100
-      "precision_horz" = 0
-      "precision_vert" = 0
-    }
-    type = "LOC"
-}`, resourceId, cisInstance)
+	resource "ibm_cis_dns_record" "%[1]s" {
+		cis_id    = data.ibm_cis.cis.id
+		domain_id = data.ibm_cis_domain.cis_domain.id
+		name      = "%[1]s"
+		data = {
+		  "lat_degrees"    = "37"
+		  "lat_minutes"    = "46"
+		  "lat_seconds"    = "46"
+		  "lat_direction"  = "N"
+		  "long_degrees"   = "122"
+		  "long_minutes"   = "23"
+		  "long_seconds"   = "35"
+		  "long_direction" = "W"
+		  "altitude"       = 0
+		  "size"           = 100
+		  "precision_horz" = 0
+		  "precision_vert" = 0
+		}
+		type = "LOC"
+	  }
+`, resourceId)
 }
 
 func testAccCheckIBMCisDNSRecordConfigSRV(resourceId string, cisDomainStatic string) string {
 	return testAccCheckIBMCisDomainDataSourceConfig_basic1(resourceId, cisDomainStatic) + fmt.Sprintf(`
-resource "ibm_cis_dns_record" "%[1]s" {
-    cis_id = "${data.ibm_cis.%[2]s.id}"
-    domain_id = "${data.ibm_cis_domain.%[1]s.id}"
-    name = "%[1]s"
-    data {
-      "priority" = 5
-      "weight" = 0
-      "port" = 5222
-      "target" = "talk.l.google.com"
-      "service" = "_xmpp-client"
-      "proto" = "_tcp"
-    }
-    type = "SRV"
-}`, resourceId, cisInstance)
+	resource "ibm_cis_dns_record" "%[1]s" {
+		cis_id    = data.ibm_cis.cis.id
+		domain_id = data.ibm_cis_domain.cis_domain.id
+		name      = "%[1]s"
+		data = {
+		  "priority" = 5
+		  "weight"   = 0
+		  "port"     = 5222
+		  "target"   = "talk.l.google.com"
+		  "service"  = "_xmpp-client"
+		  "proto"    = "_tcp"
+		}
+		type = "SRV"
+	  }
+`, resourceId)
 }
 
 func testAccCheckIBMCisDNSRecordConfigProxied(resourceId string, cisDomainStatic string) string {
 	return testAccCheckIBMCisDomainDataSourceConfig_basic1(resourceId, cisDomainStatic) + fmt.Sprintf(`
-resource "ibm_cis_dns_record" "%[1]s" {
-    cis_id = "${data.ibm_cis.%[2]s.id}"
-    domain_id = "${data.ibm_cis_domain.%[1]s.id}"
-
-    name = "%[1]s"
-    content = "%[1]s"
-    type = "CNAME"
-    proxied = true
-}`, resourceId, cisInstance)
+	resource "ibm_cis_dns_record" "%[1]s" {
+		cis_id    = data.ibm_cis.cis.id
+		domain_id = data.ibm_cis_domain.cis_domain.id
+	  
+		name    = "%[1]s"
+		content = "%[1]s"
+		type    = "CNAME"
+		proxied = true
+	  }
+`, resourceId)
 }

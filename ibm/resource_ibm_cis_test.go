@@ -15,7 +15,7 @@ import (
 func TestAccIBMCisInstance_Basic(t *testing.T) {
 	var cisInstanceOne string
 	testName := "test_acc"
-	name := "ibm_cis." + testName
+	name := "ibm_cis.cis"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckCis(t) },
@@ -40,7 +40,7 @@ func TestAccIBMCisInstance_CreateAfterManualDestroy(t *testing.T) {
 	//t.Parallel()
 	var cisInstanceOne, cisInstanceTwo string
 	testName := "test_acc"
-	name := "ibm_cis." + testName
+	name := "ibm_cis.cis"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckCis(t) },
@@ -74,7 +74,7 @@ func TestAccIBMCisInstance_CreateAfterManualDestroy(t *testing.T) {
 func TestAccIBMCisInstance_import(t *testing.T) {
 	var cisInstanceOne string
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	resourceName := "ibm_cis." + serviceName
+	resourceName := "ibm_cis.cis"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -210,14 +210,15 @@ func testAccCheckIBMCisInstanceExists(n string, tfCisId *string) resource.TestCh
 
 func testAccCheckIBMCisInstance_basic(cisResourceGroup string, name string) string {
 	return fmt.Sprintf(`
-				data "ibm_resource_group" "test_acc" {
-				  name = "%[1]s"
-				}
-
-				resource "ibm_cis" "%[2]s" {
-				  resource_group_id = "${data.ibm_resource_group.test_acc.id}"	
-				  name = "%[2]s"
-				  plan              = "standard"
-				  location          = "global"
-				}`, cisResourceGroup, name)
+	data "ibm_resource_group" "test_acc" {
+		name = "%[1]s"
+	  }
+	  
+	  resource "ibm_cis" "cis" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name              = "%[2]s"
+		plan              = "standard"
+		location          = "global"
+	  }
+				`, cisResourceGroup, name)
 }
