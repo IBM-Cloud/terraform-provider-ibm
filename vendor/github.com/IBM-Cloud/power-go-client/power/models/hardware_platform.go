@@ -6,8 +6,11 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"strconv"
+
 	strfmt "github.com/go-openapi/strfmt"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
 )
 
@@ -17,6 +20,9 @@ type HardwarePlatform struct {
 
 	// Description
 	Description string `json:"description,omitempty"`
+
+	// The DataCenter list of servers and their available resources
+	HostsResources []*HostResources `json:"hostsResources"`
 
 	// Configured Memory GB
 	Memory float64 `json:"memory,omitempty"`
@@ -36,6 +42,40 @@ type HardwarePlatform struct {
 
 // Validate validates this hardware platform
 func (m *HardwarePlatform) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateHostsResources(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *HardwarePlatform) validateHostsResources(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.HostsResources) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.HostsResources); i++ {
+		if swag.IsZero(m.HostsResources[i]) { // not required
+			continue
+		}
+
+		if m.HostsResources[i] != nil {
+			if err := m.HostsResources[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("hostsResources" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 

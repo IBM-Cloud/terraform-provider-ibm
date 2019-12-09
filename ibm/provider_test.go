@@ -65,6 +65,7 @@ var pi_key_name string
 var pi_volume_name string
 var pi_network_name string
 var pi_cloud_instance_id string
+var pi_instance_name string
 
 // For Image
 
