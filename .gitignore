@@ -33,3 +33,4 @@ website/vendor
 !command/test-fixtures/**/*.tfstate
 !command/test-fixtures/**/.terraform/
 
+/terraform-provider-ibm

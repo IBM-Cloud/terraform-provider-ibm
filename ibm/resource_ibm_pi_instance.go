@@ -3,6 +3,7 @@ package ibm
 import (
 	"encoding/base64"
 	"fmt"
+	"sort"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -205,6 +206,7 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	migrateable := d.Get(helpers.PIInstanceMigratable).(bool)
 	systype := d.Get(helpers.PIInstanceSystemType).(string)
 	networks := expandStringList((d.Get(helpers.PIInstanceNetworkIds).(*schema.Set)).List())
+	sort.Strings(networks)
 	volids := expandStringList((d.Get(helpers.PIInstanceVolumeIds).(*schema.Set)).List())
 	replicants := d.Get(helpers.PIInstanceReplicants).(float64)
 	if d.Get(helpers.PIInstanceReplicants) == "" {
@@ -233,6 +235,8 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	}
 
 	//publicinterface := d.Get(helpers.PIInstancePublicNetwork).(bool)
+
+	// todo - Power Team has deprecated networkids and wants to switch to networks. Code needs to be updated and tested
 	body := &models.PVMInstanceCreate{
 
 		VolumeIds: volids, NetworkIds: networks, Processors: &procs, Memory: &mem, ServerName: ptrToString(name),
