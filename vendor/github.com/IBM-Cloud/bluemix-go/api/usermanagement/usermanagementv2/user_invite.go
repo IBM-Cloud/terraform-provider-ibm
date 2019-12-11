@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/IBM-Cloud/bluemix-go/client"
-	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM-Cloud/bluemix-go/rest"
 )
 
@@ -16,10 +15,10 @@ const (
 
 // Users ...
 type Users interface {
-	GetUsers(ibmUniqueID string) (models.UsersList, error)
-	GetUserProfile(ibmUniqueID string, userID string) (models.UserInfo, error)
-	InviteUsers(ibmUniqueID string, users models.UserInvite) (models.UserInvite, error)
-	UpdateUserProfile(ibmUniqueID string, userID string, user models.UserInfo) error
+	GetUsers(ibmUniqueID string) (UsersList, error)
+	GetUserProfile(ibmUniqueID string, userID string) (UserInfo, error)
+	InviteUsers(ibmUniqueID string, users UserInvite) (UserInvite, error)
+	UpdateUserProfile(ibmUniqueID string, userID string, user UserInfo) error
 	RemoveUsers(ibmUniqueID string, userID string) error
 }
 
@@ -34,13 +33,13 @@ func NewUserInviteHandler(c *client.Client) Users {
 	}
 }
 
-func (r *inviteUsersHandler) GetUsers(ibmUniqueID string) (models.UsersList, error) {
-	result := models.UsersList{}
+func (r *inviteUsersHandler) GetUsers(ibmUniqueID string) (UsersList, error) {
+	result := UsersList{}
 	URL := fmt.Sprintf(_UsersURL, ibmUniqueID)
 	resp, err := r.client.Get(URL, &result)
 
 	if resp.StatusCode == http.StatusNotFound {
-		return models.UsersList{}, nil
+		return UsersList{}, nil
 	}
 
 	if err != nil {
@@ -50,29 +49,29 @@ func (r *inviteUsersHandler) GetUsers(ibmUniqueID string) (models.UsersList, err
 	return result, nil
 }
 
-func (r *inviteUsersHandler) GetUserProfile(ibmUniqueID string, userID string) (models.UserInfo, error) {
-	user := models.UserInfo{}
+func (r *inviteUsersHandler) GetUserProfile(ibmUniqueID string, userID string) (UserInfo, error) {
+	user := UserInfo{}
 	URL := fmt.Sprintf(_UsersIDPath, ibmUniqueID, userID)
 	_, err := r.client.Get(URL, &user)
 	if err != nil {
-		return models.UserInfo{}, err
+		return UserInfo{}, err
 	}
 
 	return user, nil
 }
 
-func (r *inviteUsersHandler) InviteUsers(ibmUniqueID string, users models.UserInvite) (models.UserInvite, error) {
-	usersInvited := models.UserInvite{}
+func (r *inviteUsersHandler) InviteUsers(ibmUniqueID string, users UserInvite) (UserInvite, error) {
+	usersInvited := UserInvite{}
 	URL := fmt.Sprintf(_UsersURL, ibmUniqueID)
 	_, err := r.client.Post(URL, &users, &usersInvited)
 	if err != nil {
-		return models.UserInvite{}, err
+		return UserInvite{}, err
 	}
 
 	return usersInvited, nil
 }
 
-func (r *inviteUsersHandler) UpdateUserProfile(ibmUniqueID string, userID string, user models.UserInfo) error {
+func (r *inviteUsersHandler) UpdateUserProfile(ibmUniqueID string, userID string, user UserInfo) error {
 	URL := fmt.Sprintf(_UsersIDPath, ibmUniqueID, userID)
 	request := rest.PutRequest(*r.client.Config.Endpoint + URL)
 	request = request.Body(&user)
