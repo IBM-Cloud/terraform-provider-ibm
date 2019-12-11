@@ -18,20 +18,20 @@ Provides a IBM CIS Global Load Balancer resource. This sits in front of a number
 # Within each availability zone or region we can define multiple pools in failover order
 
 resource "ibm_cis_global_load_balancer" "example" {
-  cis_id = "${ibm_cis.instance.id}"
-  domain_id = "${ibm_cis_domain.example.id}"
-  name = "www.example.com"
-  fallback_pool_id = "${ibm_cis_origin_pool.example.id}"
-  default_pool_ids = ["${ibm_cis_origin_pool.example.id}"]
-  description = "example load balancer using geo-balancing"
-  proxied = true
+  cis_id           = ibm_cis.instance.id
+  domain_id        = ibm_cis_domain.example.id
+  name             = "www.example.com"
+  fallback_pool_id = ibm_cis_origin_pool.example.id
+  default_pool_ids = [ibm_cis_origin_pool.example.id]
+  description      = "example load balancer using geo-balancing"
+  proxied          = true
 }
 
 resource "ibm_cis_origin_pool" "example" {
-  cis_id = "${ibm_cis.instance.id}"
-  name = "example-lb-pool"
+  cis_id = ibm_cis.instance.id
+  name   = "example-lb-pool"
   origins {
-    name = "example-1"
+    name    = "example-1"
     address = "192.0.2.1"
     enabled = false
   }
