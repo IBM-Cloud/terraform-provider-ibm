@@ -15,19 +15,20 @@ import (
 )
 
 const (
-	isVPCDefaultNetworkACL     = "default_network_acl"
-	isVPCIsDefault             = "is_default"
-	isVPCIDefaultSecurityGroup = "default_security_group"
-	isVPCName                  = "name"
-	isVPCResourceGroup         = "resource_group"
-	isVPCStatus                = "status"
-	isVPCDeleting              = "deleting"
-	isVPCDeleted               = "done"
-	isVPCTags                  = "tags"
-	isVPCClassicAccess         = "classic_access"
-	isVPCAvailable             = "available"
-	isVPCFailed                = "failed"
-	isVPCPending               = "pending"
+	isVPCDefaultNetworkACL       = "default_network_acl"
+	isVPCIsDefault               = "is_default"
+	isVPCIDefaultSecurityGroup   = "default_security_group"
+	isVPCName                    = "name"
+	isVPCResourceGroup           = "resource_group"
+	isVPCStatus                  = "status"
+	isVPCDeleting                = "deleting"
+	isVPCDeleted                 = "done"
+	isVPCTags                    = "tags"
+	isVPCClassicAccess           = "classic_access"
+	isVPCAvailable               = "available"
+	isVPCFailed                  = "failed"
+	isVPCPending                 = "pending"
+	isVPCAddressPrefixManagement = "address_prefix_management"
 )
 
 func resourceIBMISVPC() *schema.Resource {
@@ -45,6 +46,14 @@ func resourceIBMISVPC() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
+			isVPCAddressPrefixManagement: {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          "auto",
+				DiffSuppressFunc: applyOnce,
+				ValidateFunc:     validateAllowedStringValue([]string{"auto", "manual"}),
+			},
+
 			isVPCDefaultNetworkACL: {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -134,6 +143,7 @@ func resourceIBMISVPCCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("[DEBUG] VPC create")
 	name := d.Get(isVPCName).(string)
+	isVPCAddressPrefixManagement := d.Get(isVPCAddressPrefixManagement).(string)
 	isClassic := d.Get(isVPCClassicAccess).(bool)
 	nwacl := d.Get(isVPCDefaultNetworkACL).(string)
 	var rg string
@@ -143,7 +153,7 @@ func resourceIBMISVPCCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	vpcC := network.NewVPCClient(sess)
-	vpc, err := vpcC.Create(name, isClassic, nwacl, rg)
+	vpc, err := vpcC.Create(name, isVPCAddressPrefixManagement, isClassic, nwacl, rg)
 	if err != nil {
 		log.Printf("[DEBUG] VPC err %s", isErrorToString(err))
 		return err
