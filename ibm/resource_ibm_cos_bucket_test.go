@@ -206,49 +206,48 @@ func testAccCheckIBMCosBucketExists(resource string, bucket string, regiontype s
 
 func testAccCheckIBMCosBucket_basic(serviceName string, bucketName string, regiontype string, region string) string {
 	return fmt.Sprintf(`
-		data "ibm_resource_group" "group" {
-			name = "default"
-		}
+	data "ibm_resource_group" "group" {
+		name = "default"
+	}
 	  
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "lite"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.group.id
+	}
 	  
-		resource "ibm_resource_instance" "instance" {
-			name              = "%s"		
-			service           = "cloud-object-storage"
-			plan              = "lite"
-			location          = "global"
-			resource_group_id = "${data.ibm_resource_group.group.id}"
-		}
-
-		resource "ibm_cos_bucket" "bucket" {
-			bucket_name = "%s"
-			resource_instance_id = "${ibm_resource_instance.instance.id}"
-			%s = "%s"
-			storage_class = "standard"
-		}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		storage_class        = "standard"
+		cross_region_location = "%s"
+	}
+	  
 		  
-	`, serviceName, bucketName, regiontype, region)
+	`, serviceName, bucketName, region)
 }
 
 func testAccCheckIBMCosBucket_updateWithSameName(serviceName string, bucketName string, regiontype string, region string) string {
 	return fmt.Sprintf(`	
-		data "ibm_resource_group" "group" {
-			name = "default"
-		}
-	
-	
-		resource "ibm_resource_instance" "instance" {
-			name              = "%s"		
-			service           = "cloud-object-storage"
-			plan              = "lite"
-			location          = "global"
-			resource_group_id = "${data.ibm_resource_group.group.id}"
-		}
-
-		resource "ibm_cos_bucket" "bucket" {
-			bucket_name = "%s"
-			resource_instance_id = "${ibm_resource_instance.instance.id}"
-			%s = "%s"
-			storage_class = "standard"
-		}
-	`, serviceName, bucketName, regiontype, region)
+	data "ibm_resource_group" "group" {
+		name = "default"
+	}
+	  
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "lite"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.group.id
+	}
+	  
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		storage_class        = "standard"
+		cross_region_location = "%s"
+	}
+	`, serviceName, bucketName, region)
 }

@@ -14,13 +14,14 @@ Creates a DNS Domain resource that represents a DNS domain assigned to CIS. A do
 
 ```hcl
 resource "ibm_cis_domain" "example" {
-    domain = "example.com"
-    cis_id = "${ibm_cis.instance.id}"
+  domain = "example.com"
+  cis_id = ibm_cis.instance.id
 }
 
 resource "ibm_cis" "instance" {
-  name              = "test-domain"
-  plan              = "standard"
+  name = "test-domain"
+  plan = "standard"
+}
 ```
 
 ## Argument Reference

@@ -15,21 +15,21 @@ Provides a IBM Cloud Internet Services origin pool resource. This provides a poo
 
 ```hcl
 resource "ibm_cis_origin_pool" "example" {
-  cis_id = "${ibm_cis.instance.id}"
-  name = "example-pool"
+  cis_id = ibm_cis.instance.id
+  name   = "example-pool"
   origins {
-    name = "example-1"
+    name    = "example-1"
     address = "192.0.2.1"
     enabled = false
   }
   origins {
-    name = "example-2"
+    name    = "example-2"
     address = "192.0.2.2"
     enabled = false
   }
-  description = "example load balancer pool"
-  enabled = false
-  minimum_origins = 1
+  description        = "example load balancer pool"
+  enabled            = false
+  minimum_origins    = 1
   notification_email = "someone@example.com"
   check_regions      = ["WEU"]
 }
