@@ -51,7 +51,7 @@ The following arguments are supported:
 * `name` - (Required, string) The floating ip name.
 * `target` - (Optional, string) ID of the target network interface.
     **NOTE**: Conflicts with `zone`.
-* `zone` - (Optional, string) Name of the target zone. 
+* `zone` - (Optional, Forces new resource, string) Name of the target zone. 
     **NOTE**: Conflicts with `target`.
 
 ## Attribute Reference

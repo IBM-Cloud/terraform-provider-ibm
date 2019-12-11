@@ -36,7 +36,7 @@ The following arguments are supported:
 * `dh_group` - (Required, int) The Diffie-Hellman group. Enumeration type: 2, 5, 14.
 * `ike_version` - (Optional,int) The IKE protocol version. Enumeration type: 1, 2.
 * `key_lifetime` - (Optional, int) The key lifetime in seconds. Maximum: 86400, Minimum: 300. Default is 28800.
-* `resource_group` - (Optional, string) The resource group ID where the ike policy to be created.
+* `resource_group` - (Optional, Forces new resource, string) The resource group ID where the ike policy to be created.
 
 ## Attribute Reference
 

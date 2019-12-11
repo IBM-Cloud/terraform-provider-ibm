@@ -36,8 +36,8 @@ The following arguments are supported:
 
 * `name` - (Required, string) Name of the loadbalancer.
 * `subnets` - (Required, list) ID of the subnets to provision this load balancer.
-* `type` - (Optional, string) The type of the load balancer. Default value `public`. Supported values `public` and  `private`.
-* `resource_group` - (Optional, string) The resource group where the load balancer to be created.
+* `type` - (Optional, Forces new resource, string) The type of the load balancer. Default value `public`. Supported values `public` and  `private`.
+* `resource_group` - (Optional, Forces new resource, string) The resource group where the load balancer to be created.
 
 ## Attribute Reference
 

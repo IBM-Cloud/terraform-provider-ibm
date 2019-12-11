@@ -24,8 +24,8 @@ resource "ibm_is_security_group_network_interface_attachment" "sgnic" {
 
 The following arguments are supported:
 
-* `security_group` - (Required, string) The security group id.
-* `network_interface` - (Required, string) The network interface id. 
+* `security_group` - (Required, Forces new resource, string) The security group id.
+* `network_interface` - (Required, Forces new resource, string) The network interface id. 
 
 ## Attribute Reference
 

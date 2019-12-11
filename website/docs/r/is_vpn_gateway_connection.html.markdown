@@ -38,11 +38,11 @@ ibm_is_vpn_gateway_connection provides the following [Timeouts](https://www.terr
 The following arguments are supported:
 
 * `name` - (Required, string) Name of the VPN gateway connection.
-* `vpn_gateway` - (Required, string) The unique identifier of VPN gateway.
+* `vpn_gateway` - (Required, Forces new resource, string) The unique identifier of VPN gateway.
 * `peer_address` - (Required, string) The IP address of the peer VPN gateway.
 * `preshared_key`: The preshared key.
-* `local_cidrs` - (Optional, list) List of CIDRs for this resource.
-* `peer_cidrs` - (Optional, list) List of CIDRs for this resource.
+* `local_cidrs` - (Optional, Forces new resource, list) List of CIDRs for this resource.
+* `peer_cidrs` - (Optional, Forces new resource, list) List of CIDRs for this resource.
 * `admin_state_up` - (Optional, bool) VPN gateway connection status. Default false. If set to false, the VPN gateway connection is shut down
 * `action` - (Optional, string) Dead Peer Detection actions. Supported values are restart, clear, hold, none. Default `none`
 * `interval` - (Optional, int) Dead Peer Detection interval in seconds. Default 30.

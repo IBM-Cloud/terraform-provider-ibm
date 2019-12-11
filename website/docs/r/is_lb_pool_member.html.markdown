@@ -38,8 +38,8 @@ ibm_is_lb_pool_member provides the following [Timeouts](https://www.terraform.io
 
 The following arguments are supported:
 
-* `pool` - (Required, string) The load balancer pool unique identifier.
-* `lb` - (Required, string)  The load balancer unique identifier.
+* `pool` - (Required, Forces new resource, string) The load balancer pool unique identifier.
+* `lb` - (Required, Forces new resource, string)  The load balancer unique identifier.
 * `port` - (Required, int) The port number of the application running in the server member.
 * `target_address` - (Required, string) The IP address of the pool member.
 * `weight` - (Optional, int) Weight of the server member. This option takes effect only when the load balancing algorithm of its belonging pool is weighted_round_robin

@@ -67,7 +67,7 @@ resource "ibm_is_security_group_rule" "testacc_security_group_rule_all" {
 
 The following arguments are supported:
 
-* `group` - (Required, string) The security group id.
+* `group` - (Required, Forces new resource, string) The security group id.
 * `direction` - (Required, string)  The direction of the traffic either `inbound` or `outbound`.
 * `remote` - (Optional, string) Security group id - an IP address, a CIDR block, or a single security group identifier.
 * `ip_version` - (Optional, string) IP version either `IPv4` or `IPv6`. Default `IPv4`.

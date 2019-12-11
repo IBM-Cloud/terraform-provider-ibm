@@ -32,8 +32,8 @@ resource "ibm_is_vpc_address_prefix" "testacc_vpc_address_prefix" {
 The following arguments are supported:
 
 * `name` - (Required, string) The address prefix name.
-* `vpc` - (Required, string) The vpc id. 
-* `zone` - (Required, string) Name of the zone. 
+* `vpc` - (Required, Forces new resource, string) The vpc id. 
+* `zone` - (Required, Forces new resource, string) Name of the zone. 
 * `cidr` - (Required, string) The CIDR block for the address prefix. 
 
 ## Attribute Reference

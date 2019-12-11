@@ -34,7 +34,7 @@ The following arguments are supported:
 * `encryption_algorithm` - (Required, string) The encryption algorithm. Enumeration type: 3des, aes128, aes256.
 * `pfs` - (Required, string) Perfect Forward Secrecy. Enumeration type: disabled, group_2, group_5, group_14.
 * `key_lifetime` - (Optional, int) The key lifetime in seconds. Maximum: 86400, Minimum: 300. Default is 3600.
-* `resource_group` - (Optional, string) The resource group ID where the ip sec policy to be created.
+* `resource_group` - (Optional, Forces new resource, string) The resource group ID where the ip sec policy to be created.
 
 ## Attribute Reference
 

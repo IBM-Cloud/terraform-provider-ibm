@@ -33,9 +33,9 @@ resource "ibm_is_vpc_route" "testacc_vpc_route" {
 The following arguments are supported:
 
 * `name` - (Required, string) The route name.
-* `vpc` - (Required, string) The vpc id. 
-* `zone` - (Required, string) Name of the zone. 
-* `destination` - (Required, string) The destination of the route. 
+* `vpc` - (Required, Forces new resource, string) The vpc id. 
+* `zone` - (Required, Forces new resource, string) Name of the zone. 
+* `destination` - (Required, Forces new resource, string) The destination of the route. 
 * `next_hop` - (Required, string) The next hop of the route. 
 
 ## Attribute Reference

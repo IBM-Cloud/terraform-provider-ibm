@@ -42,8 +42,8 @@ ibm_is_public_gateway provides the following [Timeouts](https://www.terraform.io
 The following arguments are supported:
 
 * `name` - (Required, string) The name of the gateway.
-* `vpc` - (Required, string) The vpc id.
-* `zone` - (Required, string) The gateway zone name.
+* `vpc` - (Required, Forces new resource, string) The vpc id.
+* `zone` - (Required, Forces new resource, string) The gateway zone name.
 * `floating_ip` - (Optional, string) A nested block describing the floating IP of this gateway.
 Nested `floating_ip` blocks have the following structure:
   * `id` - (Optional, string) ID of the floating ip bound to the public gateway.

@@ -70,8 +70,8 @@ ibm_is_instance provides the following [Timeouts](https://www.terraform.io/docs/
 The following arguments are supported:
 
 * `name` - (Optional, string) The instance name.
-* `vpc` - (Required, string) The vpc id. 
-* `zone` - (Required, string) Name of the zone. 
+* `vpc` - (Required, Forces new resource, string) The vpc id. 
+* `zone` - (Required, Forces new resource, string) Name of the zone. 
 * `profile` - (Required, string) The profile name. 
 * `image` - (Required, string) ID of the image. 
 * `boot_volume` - (Optional, list) A block describing the boot volume of this instance.  
@@ -85,7 +85,7 @@ Nested `primary_network_interface` block have the following structure:
   * `port_speed` - (Deprecated, int) Speed of the network interface.
   * `subnet` -  (Required, string) ID of the subnet.
   * `security_groups` - (Optional, list) Comma separated IDs of security groups.
-* `network_interfaces` - (Optional, list) A nested block describing the additional network interface of this instance.
+* `network_interfaces` - (Optional, Forces new resource, list) A nested block describing the additional network interface of this instance.
 Nested `network_interfaces` block have the following structure:
   * `name` - (Optional, string) The name of the network interface.
   * `subnet` -  (Required, string) ID of the subnet.
@@ -93,7 +93,7 @@ Nested `network_interfaces` block have the following structure:
 
 * `volumes` - (Optional, list) Comma separated IDs of volumes. 
 * `user_data` - (Optional, string) User data to transfer to the server instance.
-* `resource_group` - (Optional, string) The resource group ID for this instance.
+* `resource_group` - (Optional, Forces new resource, string) The resource group ID for this instance.
 
 ## Attribute Reference
 

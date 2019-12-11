@@ -39,12 +39,12 @@ ibm_is_volume provides the following [Timeouts](https://www.terraform.io/docs/co
 The following arguments are supported:
 
 * `name` - (Required, string) The user-defined name for this volume.
-* `profile` - (Required, string) The profile to use for this volume.
-* `zone` - (Required, string) The location of the volume.
-* `iops` - (Optional, int) The bandwidth for the volume.
-* `capacity` - (Optional, int) The capacity of the volume in gigabytes. This defaults to `100`.
-* `encryption_key` - (Optional, string) The key to use for encrypting this volume.
-* `resource_group` - (Optional, string) The resource group ID for this volume.
+* `profile` - (Required, Forces new resource, string) The profile to use for this volume.
+* `zone` - (Required, Forces new resource, string) The location of the volume.
+* `iops` - (Optional, Forces new resource, int) The bandwidth for the volume.
+* `capacity` - (Optional, Forces new resource, int) The capacity of the volume in gigabytes. This defaults to `100`.
+* `encryption_key` - (Optional, Forces new resource, string) The key to use for encrypting this volume.
+* `resource_group` - (Optional, Forces new resource, string) The resource group ID for this volume.
 * `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
 
 
