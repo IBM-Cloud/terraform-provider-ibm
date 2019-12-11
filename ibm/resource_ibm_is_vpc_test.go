@@ -15,6 +15,8 @@ import (
 func TestAccIBMISVPC_basic(t *testing.T) {
 	var vpc *models.Vpc
 	name1 := fmt.Sprintf("terraformvpcuat-create-step-name-%d", acctest.RandInt())
+	name2 := fmt.Sprintf("terraformvpcuat-create-step-name-%d", acctest.RandInt())
+	apm := "manual"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -39,6 +41,16 @@ func TestAccIBMISVPC_basic(t *testing.T) {
 						"ibm_is_vpc.testacc_vpc", "name", name1),
 					resource.TestCheckResourceAttr(
 						"ibm_is_vpc.testacc_vpc", "tags.#", "1"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISVPCConfig1(name2, apm),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPCExists("ibm_is_vpc.testacc_vpc1", &vpc),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc1", "name", name2),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc1", "tags.#", "2"),
 				),
 			},
 		},
@@ -105,5 +117,15 @@ resource "ibm_is_vpc" "testacc_vpc" {
 	name = "%s"
 	tags = ["tag1"]
 }`, name)
+
+}
+
+func testAccCheckIBMISVPCConfig1(name string, apm string) string {
+	return fmt.Sprintf(`
+resource "ibm_is_vpc" "testacc_vpc1" {
+	name = "%s"
+	address_prefix_management = "%s"
+	tags = ["Tag1", "tag2"]
+}`, name, apm)
 
 }

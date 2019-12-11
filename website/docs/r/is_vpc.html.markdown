@@ -27,8 +27,9 @@ resource "ibm_is_vpc" "testacc_vpc" {
 The following arguments are supported:
 
 * `default_network_acl` - (Optional, string) ID of the default network ACL.
-* `is_default` - (Removed, Forces new resource, bool) This field is removed.
-* `classic_access` -(Optional, Forces new resource, bool) Indicates whether this VPC should be connected to Classic Infrastructure. If true, This VPC's resources will have private network connectivity to the account's Classic Infrastructure resources. Only one VPC on an account may be connected in this way. 
+* `is_default` - (Removed, bool) This field is removed.
+* `address_prefix_management` - (Optional, string) Indicates whether a default address prefix should be automatically created for each zone in this VPC. Default value `auto`
+* `classic_access` -(Optional, bool) Indicates whether this VPC should be connected to Classic Infrastructure. If true, This VPC's resources will have private network connectivity to the account's Classic Infrastructure resources. Only one VPC on an account may be connected in this way. 
 * `name` - (Required, string) The name of the VPC.
 * `resource_group` - (Optional, Forces new resource, string) The resource group ID where the VPC to be created
 * `tags` - (Optional, array of strings) Tags associated with the instance.
