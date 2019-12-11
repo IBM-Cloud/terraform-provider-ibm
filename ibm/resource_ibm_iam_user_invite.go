@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/IBM-Cloud/bluemix-go/models"
+	models "github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
