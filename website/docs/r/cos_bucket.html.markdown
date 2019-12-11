@@ -21,31 +21,31 @@ data "ibm_resource_group" "cos_group" {
 
 resource "ibm_resource_instance" "cos_instance" {
   name              = "cos-instance"
-  resource_group_id = "${data.ibm_resource_group.cos_group.id}"
+  resource_group_id = data.ibm_resource_group.cos_group.id
   service           = "cloud-object-storage"
   plan              = "standard"
   location          = "global"
 }
 
 resource "ibm_cos_bucket" "standard-ams03" {
-  bucket_name = "a-standard-bucket-at-ams"
-  resource_instance_id = "${ibm_resource_instance.cos_instance.id}"
+  bucket_name          = "a-standard-bucket-at-ams"
+  resource_instance_id = ibm_resource_instance.cos_instance.id
   single_site_location = "ams03"
-  storage_class = "standard"
+  storage_class        = "standard"
 }
 
 resource "ibm_cos_bucket" "flex-us-south" {
-  bucket_name = "a-flex-bucket-at-us-south"
-  resource_instance_id = "${ibm_resource_instance.cos_instance.id}"
-  region_location = "us-south"
-  storage_class = "flex"
+  bucket_name          = "a-flex-bucket-at-us-south"
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+  region_location      = "us-south"
+  storage_class        = "flex"
 }
 
 resource "ibm_cos_bucket" "cold-ap" {
-  bucket_name = "a-cold-bucket-at-ap"
-  resource_instance_id = "${ibm_resource_instance.cos_instance.id}"
+  bucket_name           = "a-cold-bucket-at-ap"
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
   cross_region_location = "ap"
-  storage_class = "cold"
+  storage_class         = "cold"
 }
 ```
 

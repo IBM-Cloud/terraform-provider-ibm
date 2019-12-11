@@ -14,8 +14,8 @@ Provides a resource which customizes IBM Cloud Internet Services domain settings
 
 ```hcl
 resource "ibm_cis_domain_settings" "test" {
-  cis_id          = "${ibm_cis.instance.id}"
-  domain_id       = "${ibm_cis_domain.example.id}"
+  cis_id          = ibm_cis.instance.id
+  domain_id       = ibm_cis_domain.example.id
   waf             = "on"
   ssl             = "full"
   min_tls_version = "1.2"
