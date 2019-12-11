@@ -60,7 +60,7 @@ ibm_is_lb_listener provides the following [Timeouts](https://www.terraform.io/do
 
 The following arguments are supported:
 
-* `lb` - (Required, string) The load balancer unique identifier.
+* `lb` - (Required, Forces new resource, string) The load balancer unique identifier.
 * `port` - (Required, int) The listener port number. Valid range 1 to 65535.
 * `protocol` - (Required, string) The listener protocol. Enumeration type: http, tcp, https.
 * `default_pool` - (Optional, string) The load balancer pool unique identifier.

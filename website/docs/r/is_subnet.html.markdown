@@ -45,14 +45,14 @@ ibm_is_subnet provides the following [Timeouts](https://www.terraform.io/docs/co
 The following arguments are supported:
 
 
-* `ipv4_cidr_block` - (Optional, string)   The IPv4 range of the subnet.
-* `total_ipv4_address_count` - (Optional, string) The total number of IPv4 addresses.
-* `ip_version` - (Optional, string) The Ip Version. The default is `ipv4`.
+* `ipv4_cidr_block` - (Optional, Forces new resource, string)   The IPv4 range of the subnet.
+* `total_ipv4_address_count` - (Optional, Forces new resource, string) The total number of IPv4 addresses.
+* `ip_version` - (Optional, Forces new resource, string) The Ip Version. The default is `ipv4`.
 * `name` - (Required, string) The name of the subnet.
 * `network_acl` - (Optional, string) The ID of the network ACL for the subnet.
 * `public_gateway` - (Optional, string) The ID of the public-gateway for the subnet.
-* `vpc` - (Required, string) The vpc id.
-* `zone` - (Required, string) The subnet zone name.
+* `vpc` - (Required, Forces new resource, string) The vpc id.
+* `zone` - (Required, Forces new resource, string) The subnet zone name.
 
 ## Attribute Reference
 

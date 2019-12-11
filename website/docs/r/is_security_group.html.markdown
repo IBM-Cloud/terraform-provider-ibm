@@ -29,8 +29,8 @@ resource "ibm_is_security_group" "testacc_security_group" {
 The following arguments are supported:
 
 * `name` - (Optional, string) The security group name.
-* `vpc` - (Required, string) The vpc id. 
-* `resource_group` - (Optional, string) The resource group ID where the security group to be created.
+* `vpc` - (Required, Forces new resource, string) The vpc id. 
+* `resource_group` - (Optional, Forces new resource, string) The resource group ID where the security group to be created.
 
 ## Attribute Reference
 

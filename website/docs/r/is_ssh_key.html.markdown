@@ -25,7 +25,7 @@ resource "ibm_is_ssh_key" "isExampleKey" {
 The following arguments are supported:
 
 * `name` - (Required, string) The user-defined name for this key.
-* `public_key` - (Required, string) The public SSH key.
+* `public_key` - (Required, Forces new resource, string) The public SSH key.
 
 ## Attribute Reference
 

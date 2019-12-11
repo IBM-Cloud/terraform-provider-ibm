@@ -28,8 +28,8 @@ resource "ibm_is_vpn_gateway" "testacc_vpn_gateway" {
 The following arguments are supported:
 
 * `name` - (Required, string) Name of the VPN gateway.
-* `subnet` - (Required, string) The unique identifier for this subnet.
-* `resource_group` - (Optional, string) The resource group where the VPN gateway to be created.
+* `subnet` - (Required, Forces new resource, string) The unique identifier for this subnet.
+* `resource_group` - (Optional, Forces new resource, string) The resource group where the VPN gateway to be created.
 
 ## Attribute Reference
 

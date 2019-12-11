@@ -42,7 +42,7 @@ ibm_is_lb_pool provides the following [Timeouts](https://www.terraform.io/docs/c
 The following arguments are supported:
 
 * `name` - (Required, string) The name of the pool
-* `lb` - (Required, string)  The load balancer unique identifier.
+* `lb` - (Required, Forces new resource, string)  The load balancer unique identifier.
 * `algorithm` - (Required, string) The load balancing algorithm. Enumeration type: round_robin, weighted_round_robin, least_connections
 * `protocol` - (Required, string) The pool protocol. Enumeration type: http, tcp
 * `health_delay` - (Required, int) The health check interval in seconds. Interval must be greater than timeout value
