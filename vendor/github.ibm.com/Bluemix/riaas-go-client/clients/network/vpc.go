@@ -37,7 +37,7 @@ func (f *VPCClient) ListWithFilter(start, resourcegroupID string) ([]*models.Vpc
 	if resourcegroupID != "" {
 		params = params.WithResourceGroupID(&resourcegroupID)
 	}
-	params.Version = "2019-08-27"
+	params.Version = "2019-10-08"
 	params.Generation = f.session.Generation
 
 	resp, err := f.session.Riaas.Network.GetVpcs(params, session.Auth(f.session))
@@ -52,7 +52,7 @@ func (f *VPCClient) ListWithFilter(start, resourcegroupID string) ([]*models.Vpc
 // Get ...
 func (f *VPCClient) Get(id string) (*models.Vpc, error) {
 	params := network.NewGetVpcsIDParamsWithTimeout(f.session.Timeout).WithID(id)
-	params.Version = "2019-08-27"
+	params.Version = "2019-10-08"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.GetVpcsID(params, session.Auth(f.session))
 
@@ -64,11 +64,12 @@ func (f *VPCClient) Get(id string) (*models.Vpc, error) {
 }
 
 // Create ...
-func (f *VPCClient) Create(name string, classicAccess bool, defaultacl, rg string) (*models.Vpc, error) {
+func (f *VPCClient) Create(name string, addressPrefixManagement string, classicAccess bool, defaultacl, rg string) (*models.Vpc, error) {
 
 	var body = network.PostVpcsBody{
-		Name:          name,
-		ClassicAccess: classicAccess,
+		Name:                    name,
+		ClassicAccess:           classicAccess,
+		AddressPrefixManagement: &addressPrefixManagement,
 	}
 	if rg != "" {
 		body.ResourceGroup = &network.PostVpcsParamsBodyResourceGroup{
@@ -77,7 +78,7 @@ func (f *VPCClient) Create(name string, classicAccess bool, defaultacl, rg strin
 	}
 
 	params := network.NewPostVpcsParamsWithTimeout(f.session.Timeout).WithBody(body)
-	params.Version = "2019-08-27"
+	params.Version = "2019-10-08"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.PostVpcs(params, session.Auth(f.session))
 	if err != nil {
@@ -90,7 +91,7 @@ func (f *VPCClient) Create(name string, classicAccess bool, defaultacl, rg strin
 // Delete ...
 func (f *VPCClient) Delete(id string) error {
 	params := network.NewDeleteVpcsIDParamsWithTimeout(f.session.Timeout).WithID(id)
-	params.Version = "2019-08-27"
+	params.Version = "2019-10-08"
 	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.Network.DeleteVpcsID(params, session.Auth(f.session))
 	return errors.ToError(err)
@@ -102,7 +103,7 @@ func (f *VPCClient) Update(id, name string) (*models.Vpc, error) {
 		Name: name,
 	}
 	params := network.NewPatchVpcsIDParamsWithTimeout(f.session.Timeout).WithID(id).WithBody(body)
-	params.Version = "2019-08-27"
+	params.Version = "2019-10-08"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.PatchVpcsID(params, session.Auth(f.session))
 	if err != nil {
@@ -119,7 +120,7 @@ func (f *VPCClient) UpdateDefaultNWACL(id, aclid string) (*models.NetworkACL, er
 		Identifier: strfmt.UUID(aclid),
 	}
 	params := network.NewPutVpcsVpcIDDefaultNetworkACLParamsWithTimeout(f.session.Timeout).WithVpcID(id).WithBody(&body)
-	params.Version = "2019-08-27"
+	params.Version = "2019-10-08"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.PutVpcsVpcIDDefaultNetworkACL(params, session.Auth(f.session))
 	if err != nil {
@@ -132,7 +133,7 @@ func (f *VPCClient) UpdateDefaultNWACL(id, aclid string) (*models.NetworkACL, er
 // CreateAddressPrefix ...
 func (f *VPCClient) CreateAddressPrefix(addressPrefixes network.PostVpcsVpcIDAddressPrefixesBody, vpcId string) (*models.AddressPrefix, error) {
 	params := network.NewPostVpcsVpcIDAddressPrefixesParamsWithTimeout(f.session.Timeout).WithAddressPoolPrefixTemplate(addressPrefixes).WithVpcID(vpcId)
-	params.Version = "2019-08-27"
+	params.Version = "2019-10-08"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.PostVpcsVpcIDAddressPrefixes(params, session.Auth(f.session))
 	if err != nil {
@@ -145,7 +146,7 @@ func (f *VPCClient) CreateAddressPrefix(addressPrefixes network.PostVpcsVpcIDAdd
 // UpdateAddressPrefix ...
 func (f *VPCClient) UpdateAddressPrefix(addressPrefixes network.PatchVpcsVpcIDAddressPrefixesIDBody, vpcID, addressPrefixID string) (*models.AddressPrefix, error) {
 	params := network.NewPatchVpcsVpcIDAddressPrefixesIDParamsWithTimeout(f.session.Timeout).WithAddressPoolPrefixPatch(addressPrefixes).WithID(addressPrefixID).WithVpcID(vpcID)
-	params.Version = "2019-08-27"
+	params.Version = "2019-10-08"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.PatchVpcsVpcIDAddressPrefixesID(params, session.Auth(f.session))
 	if err != nil {
@@ -158,7 +159,7 @@ func (f *VPCClient) UpdateAddressPrefix(addressPrefixes network.PatchVpcsVpcIDAd
 // GetAddressPrefix ...
 func (f *VPCClient) GetAddressPrefix(vpcID, addressPrefixesID string) (*models.AddressPrefix, error) {
 	params := network.NewGetVpcsVpcIDAddressPrefixesIDParamsWithTimeout(f.session.Timeout).WithVpcID(vpcID).WithID(addressPrefixesID)
-	params.Version = "2019-08-27"
+	params.Version = "2019-10-08"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.GetVpcsVpcIDAddressPrefixesID(params, session.Auth(f.session))
 	if err != nil {
@@ -171,7 +172,7 @@ func (f *VPCClient) GetAddressPrefix(vpcID, addressPrefixesID string) (*models.A
 // DeleteAddressPrefix ...
 func (f *VPCClient) DeleteAddressPrefix(vpcID, addressPrefixesID string) error {
 	params := network.NewDeleteVpcsVpcIDAddressPrefixesIDParamsWithTimeout(f.session.Timeout).WithVpcID(vpcID).WithID(addressPrefixesID)
-	params.Version = "2019-08-27"
+	params.Version = "2019-10-08"
 	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.Network.DeleteVpcsVpcIDAddressPrefixesID(params, session.Auth(f.session))
 	return errors.ToError(err)
@@ -180,7 +181,7 @@ func (f *VPCClient) DeleteAddressPrefix(vpcID, addressPrefixesID string) error {
 // ListPrefixes ...
 func (f *VPCClient) ListPrefixes(id string) ([]*models.AddressPrefix, error) {
 	params := network.NewGetVpcsVpcIDAddressPrefixesParamsWithTimeout(f.session.Timeout).WithVpcID(id)
-	params.Version = "2019-08-27"
+	params.Version = "2019-10-08"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.GetVpcsVpcIDAddressPrefixes(params, session.Auth(f.session))
 	if err != nil {
@@ -193,7 +194,7 @@ func (f *VPCClient) ListPrefixes(id string) ([]*models.AddressPrefix, error) {
 // GetSecurityGroups ...
 func (f *VPCClient) GetSecurityGroup(id string) (*models.DefaultSecurityGroup, error) {
 	params := network.NewGetVpcsVpcIDDefaultSecurityGroupParamsWithTimeout(f.session.Timeout).WithVpcID(id)
-	params.Version = "2019-08-27"
+	params.Version = "2019-10-08"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.Network.GetVpcsVpcIDDefaultSecurityGroup(params, session.Auth(f.session))
 	if err != nil {
@@ -215,7 +216,7 @@ func (f *VPCClient) ListWithFilterRoutes(vpc_id, zoneName string) ([]*models.Rou
 	if zoneName != "" {
 		params = params.WithZoneName(&zoneName)
 	}
-	params.Version = "2019-08-27"
+	params.Version = "2019-10-08"
 	params.Generation = f.session.Generation
 
 	resp, err := f.session.Riaas.VPCs.ListVpcRoutes(params, session.Auth(f.session))
@@ -230,7 +231,7 @@ func (f *VPCClient) ListWithFilterRoutes(vpc_id, zoneName string) ([]*models.Rou
 // CreateRoute ...
 func (f *VPCClient) CreateRoute(routes *models.RouteTemplate, vpcID string) (*models.Route, error) {
 	params := v_p_cs.NewCreateVpcRouteParamsWithTimeout(f.session.Timeout).WithRouteTemplate(routes).WithVpcID(vpcID)
-	params.Version = "2019-08-27"
+	params.Version = "2019-10-08"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.VPCs.CreateVpcRoute(params, session.Auth(f.session))
 	if err != nil {
@@ -242,7 +243,7 @@ func (f *VPCClient) CreateRoute(routes *models.RouteTemplate, vpcID string) (*mo
 // DeleteRoute ...
 func (f *VPCClient) DeleteRoute(vpcID, routeID string) error {
 	params := v_p_cs.NewDeleteVpcRouteParamsWithTimeout(f.session.Timeout).WithVpcID(vpcID).WithID(routeID)
-	params.Version = "2019-08-27"
+	params.Version = "2019-10-08"
 	params.Generation = f.session.Generation
 	_, err := f.session.Riaas.VPCs.DeleteVpcRoute(params, session.Auth(f.session))
 	return errors.ToError(err)
@@ -251,7 +252,7 @@ func (f *VPCClient) DeleteRoute(vpcID, routeID string) error {
 // GetRoute ...
 func (f *VPCClient) GetRoute(vpcID, routeID string) (*models.Route, error) {
 	params := v_p_cs.NewGetVpcRouteParamsWithTimeout(f.session.Timeout).WithVpcID(vpcID).WithID(routeID)
-	params.Version = "2019-08-27"
+	params.Version = "2019-10-08"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.VPCs.GetVpcRoute(params, session.Auth(f.session))
 	if err != nil {
@@ -264,7 +265,7 @@ func (f *VPCClient) GetRoute(vpcID, routeID string) (*models.Route, error) {
 // UpdateRoute ...
 func (f *VPCClient) UpdateRoute(routes *models.RoutePatch, vpcID, routeID string) (*models.Route, error) {
 	params := v_p_cs.NewUpdateVpcRouteParamsWithTimeout(f.session.Timeout).WithRoutePatch(routes).WithID(routeID).WithVpcID(vpcID)
-	params.Version = "2019-08-27"
+	params.Version = "2019-10-08"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.VPCs.UpdateVpcRoute(params, session.Auth(f.session))
 	if err != nil {
