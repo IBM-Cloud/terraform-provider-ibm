@@ -6,6 +6,7 @@ package network
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -146,6 +147,10 @@ swagger:model PostVpcsBody
 */
 type PostVpcsBody struct {
 
+	// Indicates whether a default address prefix should be automatically created for each zone in this VPC. If `manual`, this VPC will be created with no default address prefixes.
+	// Enum: [auto manual]
+	AddressPrefixManagement *string `json:"address_prefix_management,omitempty"`
+
 	// Indicates whether this VPC is connected to Classic Infrastructure. If true, this VPC's
 	// resources have private network connectivity to the account's Classice Infrastructure
 	// resources. Only one VPC on an account may be connected in this way. This value is set at
@@ -165,6 +170,10 @@ type PostVpcsBody struct {
 func (o *PostVpcsBody) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := o.validateAddressPrefixManagement(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := o.validateName(formats); err != nil {
 		res = append(res, err)
 	}
@@ -176,6 +185,49 @@ func (o *PostVpcsBody) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+var postVpcsBodyTypeAddressPrefixManagementPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["auto","manual"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		postVpcsBodyTypeAddressPrefixManagementPropEnum = append(postVpcsBodyTypeAddressPrefixManagementPropEnum, v)
+	}
+}
+
+const (
+
+	// PostVpcsBodyAddressPrefixManagementAuto captures enum value "auto"
+	PostVpcsBodyAddressPrefixManagementAuto string = "auto"
+
+	// PostVpcsBodyAddressPrefixManagementManual captures enum value "manual"
+	PostVpcsBodyAddressPrefixManagementManual string = "manual"
+)
+
+// prop value enum
+func (o *PostVpcsBody) validateAddressPrefixManagementEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, postVpcsBodyTypeAddressPrefixManagementPropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (o *PostVpcsBody) validateAddressPrefixManagement(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.AddressPrefixManagement) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := o.validateAddressPrefixManagementEnum("body"+"."+"address_prefix_management", "body", *o.AddressPrefixManagement); err != nil {
+		return err
+	}
+
 	return nil
 }
 

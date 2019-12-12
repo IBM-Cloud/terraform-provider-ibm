@@ -8063,6 +8063,19 @@ paths:
         required: false
         schema:
           properties:
+            address_prefix_management:
+              default: auto
+              description: >-
+                Indicates whether a default address prefix should be automatically
+                created for each
+                zone in this VPC. If `manual`, this VPC will be created with no
+                default address
+                prefixes.
+              enum:
+                - auto
+                - manual
+              example: manual
+              type: string
             classic_access: {description: "Indicates whether this VPC is connected to Classic Infrastructure. If true, this VPC's\nresources have private network connectivity to the account's Classice Infrastructure\nresources. Only one VPC on an account may be connected in this way. This value is set at\ncreation and subsequently immutable.\n",
               type: boolean}
             name: {description: The user-defined name for this VPC, example: my-vpc,
