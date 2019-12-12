@@ -6,13 +6,17 @@ import (
 	"strings"
 	"time"
 
-	models "github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
+	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
+	v2 "github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
+	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
 const (
 	// MEMBER ...
 	MEMBER = "MEMEBER"
+	// ACCESS ...
+	ACCESS = "access"
 )
 
 func resourceIBMUserInvite() *schema.Resource {
@@ -37,6 +41,73 @@ func resourceIBMUserInvite() *schema.Resource {
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
+			"iam_policy": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+
+						"roles": {
+							Type:        schema.TypeList,
+							Required:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "Role names of the policy definition",
+						},
+
+						"resources": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"service": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Service name of the policy definition",
+									},
+
+									"resource_instance_id": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "ID of resource instance of the policy definition",
+									},
+
+									"region": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Region of the policy definition",
+									},
+
+									"resource_type": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Resource type of the policy definition",
+									},
+
+									"resource": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Resource of the policy definition",
+									},
+
+									"resource_group_id": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "ID of the resource group.",
+									},
+
+									"attributes": {
+										Type:        schema.TypeMap,
+										Optional:    true,
+										Description: "Set resource attributes in the form of 'name=value,name=value....",
+										Elem:        schema.TypeString,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -50,9 +121,9 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 
 	usersSet := d.Get("users").(*schema.Set)
 	usersList := flattenUsersSet(usersSet)
-	users := make([]models.User, 0)
+	users := make([]v2.User, 0)
 	for _, user := range usersList {
-		users = append(users, models.User{Email: user, AccountRole: MEMBER})
+		users = append(users, v2.User{Email: user, AccountRole: MEMBER})
 	}
 	if len(users) == 0 {
 		return fmt.Errorf("Users email not provided")
@@ -63,12 +134,22 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 			accessGroups = append(accessGroups, fmt.Sprintf("%v", accessGroup))
 		}
 	}
-	inviteUserPayload := models.UserInvite{Users: users, AccessGroup: accessGroups}
 
+	var accessPolicies []v2.UserPolicy
+	if accessPolicyData, ok := d.GetOk("iam_policy"); ok {
+		accessPolicies, err = getPolicies(d, meta, accessPolicyData.([]interface{}))
+		if err != nil {
+			log.Println("IAM Acess policy: ", err.Error())
+			return err
+		}
+	}
+
+	inviteUserPayload := v2.UserInvite{Users: users, AccessGroup: accessGroups, IAMPolicy: accessPolicies}
 	accountID, err := getAccountID(d, meta)
 	if err != nil {
 		return err
 	}
+
 	_, InviteUserError := client.InviteUsers(accountID, inviteUserPayload)
 	if InviteUserError != nil {
 		return InviteUserError
@@ -127,14 +208,31 @@ func resourceIBMIAMUpdateUserProfile(d *schema.ResourceData, meta interface{}) e
 
 		//Update the added users
 		if len(added) > 0 {
-			users := make([]models.User, 0)
+			users := make([]v2.User, 0)
 			for _, user := range added {
-				users = append(users, models.User{Email: user, AccountRole: MEMBER})
+				users = append(users, v2.User{Email: user, AccountRole: MEMBER})
 			}
 			if len(users) == 0 {
 				return fmt.Errorf("Users email not provided")
 			}
-			InviteUserPayload := models.UserInvite{Users: users}
+
+			var accessPolicies []v2.UserPolicy
+			if accessPolicyData, ok := d.GetOk("iam_policy"); ok {
+				accessPolicies, err = getPolicies(d, meta, accessPolicyData.([]interface{}))
+				if err != nil {
+					log.Println("IAM Acess policy: ", err.Error())
+					return err
+				}
+			}
+
+			var accessGroups = make([]string, 0)
+			if data, ok := d.GetOk("access_groups"); ok {
+				for _, accessGroup := range data.([]interface{}) {
+					accessGroups = append(accessGroups, fmt.Sprintf("%v", accessGroup))
+				}
+			}
+
+			InviteUserPayload := v2.UserInvite{Users: users, AccessGroup: accessGroups, IAMPolicy: accessPolicies}
 
 			_, InviteUserError := Client.InviteUsers(accountID, InviteUserPayload)
 			if InviteUserError != nil {
@@ -257,4 +355,101 @@ func getUserIAMID(d *schema.ResourceData, meta interface{}, user string) (string
 	}
 	return "", nil
 
+}
+
+// getPolicies ...
+func getPolicies(d *schema.ResourceData, meta interface{}, policies []interface{}) ([]v2.UserPolicy, error) {
+	var policyList = make([]v2.UserPolicy, 0)
+	for _, policy := range policies {
+		p := policy.(map[string]interface{})
+		var serviceName string
+		policyResource := iampapv1.Resource{}
+		if res, ok := p["resources"]; ok {
+			resources := res.([]interface{})
+			for _, resource := range resources {
+				r, _ := resource.(map[string]interface{})
+				serviceName = r["service"].(string)
+				if r, ok := r["service"]; ok {
+					if r.(string) != "" {
+						policyResource.SetServiceName(r.(string))
+					}
+				}
+				if r, ok := r["resource_instance_id"]; ok {
+					if r.(string) != "" {
+						policyResource.SetServiceInstance(r.(string))
+					}
+
+				}
+				if r, ok := r["region"]; ok {
+					if r.(string) != "" {
+						policyResource.SetRegion(r.(string))
+					}
+
+				}
+				if r, ok := r["resource_type"]; ok {
+					if r.(string) != "" {
+						policyResource.SetResourceType(r.(string))
+					}
+
+				}
+				if r, ok := r["resource"]; ok {
+					if r.(string) != "" {
+						policyResource.SetResource(r.(string))
+					}
+
+				}
+				if r, ok := r["resource_group_id"]; ok {
+					if r.(string) != "" {
+						policyResource.SetResourceGroupID(r.(string))
+					}
+
+				}
+				if r, ok := r["attributes"]; ok {
+					for k, v := range r.(map[string]interface{}) {
+						policyResource.SetAttribute(k, v.(string))
+					}
+
+				}
+
+			}
+		}
+
+		if len(policyResource.Attributes) == 0 {
+			policyResource.SetServiceType("service")
+		}
+
+		accountID, err := getAccountID(d, meta)
+		if err != nil {
+			return policyList, err
+		}
+		policyResource.SetAccountID(accountID)
+
+		iamClient, err := meta.(ClientSession).IAMAPI()
+		if err != nil {
+			return policyList, err
+		}
+
+		iamRepo := iamClient.ServiceRoles()
+
+		var roles []models.PolicyRole
+
+		if serviceName == "" {
+			roles, err = iamRepo.ListSystemDefinedRoles()
+		} else {
+			roles, err = iamRepo.ListServiceRoles(serviceName)
+		}
+		if err != nil {
+			return policyList, err
+		}
+		var policyRoles = make([]models.PolicyRole, 0)
+		if userRoles, ok := p["roles"]; ok {
+			policyRoles, err = getRolesFromRoleNames(expandStringList(userRoles.([]interface{})), roles)
+			if err != nil {
+				return policyList, err
+			}
+		}
+
+		policyList = append(policyList, v2.UserPolicy{Roles: iampapv1.ConvertRoleModels(policyRoles), Resources: []iampapv1.Resource{policyResource}, Type: ACCESS})
+	}
+	return policyList, nil
 }
