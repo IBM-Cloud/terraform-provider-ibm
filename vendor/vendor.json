@@ -120,10 +120,10 @@
 			"revisionTime": "2019-12-11T04:38:12Z"
 		},
 		{
-			"checksumSHA1": "n+dNgCBtu+PtqndSUEpxq6s5B38=",
+			"checksumSHA1": "Vj3urDP/OU+sMhTYBbvgHh8gY9I=",
 			"path": "github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2",
-			"revision": "ac9b271eaf42942cb8c2c2e68b8343466ae6b3cc",
-			"revisionTime": "2019-12-11T04:38:12Z"
+			"revision": "c744a47c5ca8509a4100717f7081460ed698e27f",
+			"revisionTime": "2019-12-13T07:32:46Z"
 		},
 		{
 			"checksumSHA1": "+A8xwCjwX7LXmjWDjY/SKKrzCy8=",
