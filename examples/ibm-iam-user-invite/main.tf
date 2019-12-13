@@ -33,4 +33,11 @@ resource "ibm_iam_access_group_policy" "policy" {
              resource_group_id = "${data.ibm_resource_group.group.id}"
          }]
     }]
+    classic_infra_roles = {
+      permissions = [
+        "PORT_CONTROL", 
+        "DATACENTER_ACCESS"
+      ]
+      permission_set = "basicuser"
+    }
 }
