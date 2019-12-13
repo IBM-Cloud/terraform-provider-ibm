@@ -24,7 +24,7 @@ import (
 const (
 	storagePackageType = "STORAGE_AS_A_SERVICE"
 	storageMask        = "id,billingItem.orderItem.order.id"
-	storageDetailMask  = "id,capacityGb,iops,storageType,username,serviceResourceBackendIpAddress,properties[type]" +
+	storageDetailMask  = "id,billingItem[location],storageTierLevel,provisionedIops,capacityGb,iops,storageType[keyName,description],username,serviceResourceBackendIpAddress,properties[type]" +
 		",serviceResourceName,allowedIpAddresses[id,ipAddress,subnetId,allowedHost[name,credential[username,password]]],allowedSubnets[allowedHost[name,credential[username,password]]],allowedHardware[allowedHost[name,credential[username,password]]],allowedVirtualGuests[id,allowedHost[name,credential[username,password]]],snapshotCapacityGb,osType,notes,billingItem[hourlyFlag],serviceResource[datacenter[name]],schedules[dayOfWeek,hour,minute,retentionCount,type[keyname,name]],iscsiTargetIpAddresses"
 	itemMask        = "id,capacity,description,units,keyName,capacityMinimum,capacityMaximum,prices[id,categories[id,name,categoryCode],capacityRestrictionMinimum,capacityRestrictionMaximum,capacityRestrictionType,locationGroupId],itemCategory[categoryCode]"
 	enduranceType   = "Endurance"
@@ -71,6 +71,12 @@ func resourceIBMStorageFile() *schema.Resource {
 		Exists:   resourceIBMStorageFileExists,
 		Importer: &schema.ResourceImporter{},
 
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(45 * time.Minute),
+			Update: schema.DefaultTimeout(45 * time.Minute),
+			Delete: schema.DefaultTimeout(45 * time.Minute),
+		},
+
 		Schema: map[string]*schema.Schema{
 
 			"type": {
@@ -89,13 +95,11 @@ func resourceIBMStorageFile() *schema.Resource {
 			"capacity": {
 				Type:     schema.TypeInt,
 				Required: true,
-				ForceNew: true,
 			},
 
 			"iops": {
 				Type:     schema.TypeFloat,
 				Required: true,
-				ForceNew: true,
 			},
 
 			"volumename": {
@@ -262,7 +266,7 @@ func resourceIBMStorageFileCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	// Find the storage device
-	fileStorage, err := findStorageByOrderId(sess, *receipt.OrderId)
+	fileStorage, err := findStorageByOrderId(sess, *receipt.OrderId, d.Timeout(schema.TimeoutCreate))
 
 	if err != nil {
 		return fmt.Errorf("Error during creation of storage: %s", err)
@@ -278,7 +282,7 @@ func resourceIBMStorageFileCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	// SoftLayer changes the device ID after completion of provisioning. It is necessary to refresh device ID.
-	fileStorage, err = findStorageByOrderId(sess, *receipt.OrderId)
+	fileStorage, err = findStorageByOrderId(sess, *receipt.OrderId, d.Timeout(schema.TimeoutCreate))
 
 	if err != nil {
 		return fmt.Errorf("Error during creation of storage: %s", err)
@@ -472,6 +476,31 @@ func resourceIBMStorageFileUpdate(d *schema.ResourceData, meta interface{}) erro
 		}
 	}
 
+	if (d.HasChange("capacity") || d.HasChange("iops")) && !d.IsNewResource() {
+		size := d.Get("capacity").(int)
+		iops := d.Get("iops").(float64)
+
+		modifyOrder, err := prepareModifyOrder(sess, storage, iops, size)
+		if err != nil {
+			return fmt.Errorf("Error updating storage: %s", err)
+		}
+
+		_, err = services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(
+			&datatypes.Container_Product_Order_Network_Storage_AsAService_Upgrade{
+				Container_Product_Order_Network_Storage_AsAService: modifyOrder,
+				Volume: &datatypes.Network_Storage{
+					Id: sl.Int(id),
+				},
+			}, sl.Bool(false))
+		// Wait for storage availability
+		_, err = WaitForStorageUpdate(d, meta)
+
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for storage (%s) to update: %s", d.Id(), err)
+		}
+	}
+
 	return resourceIBMStorageFileRead(d, meta)
 }
 
@@ -626,7 +655,7 @@ func buildStorageProductOrderContainer(
 	return productOrderContainer, nil
 }
 
-func findStorageByOrderId(sess *session.Session, orderId int) (datatypes.Network_Storage, error) {
+func findStorageByOrderId(sess *session.Session, orderId int, timeout time.Duration) (datatypes.Network_Storage, error) {
 	filterPath := "networkStorage.billingItem.orderItem.order.id"
 
 	stateConf := &resource.StateChangeConf{
@@ -651,7 +680,7 @@ func findStorageByOrderId(sess *session.Session, orderId int) (datatypes.Network
 				return nil, "", fmt.Errorf("Expected one Storage: %s", err)
 			}
 		},
-		Timeout:        45 * time.Minute,
+		Timeout:        timeout,
 		Delay:          10 * time.Second,
 		MinTimeout:     10 * time.Second,
 		NotFoundChecks: 300,
@@ -721,7 +750,7 @@ func WaitForStorageAvailable(d *schema.ResourceData, meta interface{}) (interfac
 
 			return result, "available", nil
 		},
-		Timeout:    45 * time.Minute,
+		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
@@ -1076,9 +1105,9 @@ func updateNotes(d *schema.ResourceData, sess *session.Session, storage datatype
 
 func getStorageTypeFromKeyName(key string) (string, error) {
 	switch key {
-	case "ENDURANCE_FILE_STORAGE":
+	case "ENDURANCE_FILE_STORAGE", "ENDURANCE_BLOCK_STORAGE":
 		return enduranceType, nil
-	case "PERFORMANCE_FILE_STORAGE":
+	case "PERFORMANCE_FILE_STORAGE", "PERFORMANCE_BLOCK_STORAGE":
 		return performanceType, nil
 	}
 	return "", fmt.Errorf("Couldn't find storage type for key %s", key)
@@ -1304,4 +1333,184 @@ func getSaaSSnapshotSpacePrice(productItems []datatypes.Product_Item, size int, 
 	return datatypes.Product_Item_Price{},
 		fmt.Errorf("Could not find price for snapshot space")
 
+}
+
+func prepareModifyOrder(sess *session.Session, originalVolume datatypes.Network_Storage, newIops float64, newSize int) (datatypes.Container_Product_Order_Network_Storage_AsAService, error) {
+	// Verify that the origin volume has not been cancelled
+	if originalVolume.BillingItem == nil {
+		return datatypes.Container_Product_Order_Network_Storage_AsAService{}, fmt.Errorf("The volume has been cancelled; unable to modify volume.")
+	}
+
+	// Get the appropriate package for the order ('storage_as_a_service' is currently used for modifying volumes)
+	// Get a package type)
+	pkg, err := product.GetPackageByType(sess, storagePackageType)
+	if err != nil {
+		return datatypes.Container_Product_Order_Network_Storage_AsAService{}, err
+	}
+
+	// Get all prices
+	productItems, err := product.GetPackageProducts(sess, *pkg.Id, itemMask)
+	if err != nil {
+		return datatypes.Container_Product_Order_Network_Storage_AsAService{}, err
+	}
+
+	// Add IOPS price
+	targetItemPrices := []datatypes.Product_Item_Price{}
+	var volumeIsPerformance bool
+	// Based on volume storage type, ensure at least one volume property is being modified,
+	// use current values if some are not specified, and lookup price codes for the order
+	volumeStorageType := *originalVolume.StorageType.KeyName
+	if strings.Contains(volumeStorageType, "PERFORMANCE") {
+		volumeIsPerformance = true
+		if newSize == 0 && newIops == 0 {
+			return datatypes.Container_Product_Order_Network_Storage_AsAService{}, fmt.Errorf("A size or IOPS value must be given to modify this performance volume.")
+		}
+		if newSize == 0 {
+			newSize = *originalVolume.CapacityGb
+		} else if newIops == 0 {
+			storageType, err := getStorageTypeFromKeyName(*originalVolume.StorageType.KeyName)
+			if err != nil {
+				return datatypes.Container_Product_Order_Network_Storage_AsAService{}, fmt.Errorf("Error retrieving storage information: %s", err)
+			}
+			iops, err := getIops(originalVolume, storageType)
+			if err != nil {
+				return datatypes.Container_Product_Order_Network_Storage_AsAService{}, fmt.Errorf("Error retrieving storage information: %s", err)
+			}
+			newIops = iops
+			if newIops <= 0 {
+				return datatypes.Container_Product_Order_Network_Storage_AsAService{}, fmt.Errorf("Cannot find volume's provisioned IOPS.")
+			}
+
+		}
+		// Set up the prices array for the order
+		price, err := getPriceByCategory(productItems, "storage_as_a_service")
+		if err != nil {
+			return datatypes.Container_Product_Order_Network_Storage_AsAService{}, err
+		}
+		targetItemPrices = append(targetItemPrices, price)
+
+		price, err = getSaaSPerformSpacePrice(productItems, newSize)
+		if err != nil {
+			return datatypes.Container_Product_Order_Network_Storage_AsAService{}, err
+		}
+		targetItemPrices = append(targetItemPrices, price)
+
+		price, err = getSaaSPerformIOPSPrice(productItems, newSize, int(newIops))
+		if err != nil {
+			return datatypes.Container_Product_Order_Network_Storage_AsAService{}, err
+		}
+		targetItemPrices = append(targetItemPrices, price)
+
+	} else if strings.Contains(volumeStorageType, "ENDURANCE") {
+		volumeIsPerformance = false
+		if newSize == 0 && newIops == 0 {
+			return datatypes.Container_Product_Order_Network_Storage_AsAService{}, fmt.Errorf("A size or IOPS value must be given to modify this performance volume.")
+		}
+		if newSize == 0 {
+			newSize = *originalVolume.CapacityGb
+		} else if newIops == 0 {
+			newIops, err = findEnduranceTierIopsPerGb(originalVolume)
+			if err != nil {
+				return datatypes.Container_Product_Order_Network_Storage_AsAService{}, err
+			}
+		}
+		// Set up the prices array for the order
+		price, err := getPriceByCategory(productItems, "storage_as_a_service")
+		if err != nil {
+			return datatypes.Container_Product_Order_Network_Storage_AsAService{}, err
+		}
+		targetItemPrices = append(targetItemPrices, price)
+		price, err = getSaaSEnduranceSpacePrice(productItems, newSize, newIops)
+		if err != nil {
+			return datatypes.Container_Product_Order_Network_Storage_AsAService{}, err
+		}
+		targetItemPrices = append(targetItemPrices, price)
+
+		price, err = getSaaSEnduranceTierPrice(productItems, newIops)
+		if err != nil {
+			return datatypes.Container_Product_Order_Network_Storage_AsAService{}, err
+		}
+		targetItemPrices = append(targetItemPrices, price)
+
+	} else {
+		return datatypes.Container_Product_Order_Network_Storage_AsAService{}, fmt.Errorf("Volume does not have a valid storage type (with an appropriate keyName to indicate the volume is a PERFORMANCE or an ENDURANCE volume).")
+	}
+
+	modifyOrder := datatypes.Container_Product_Order_Network_Storage_AsAService{
+		Container_Product_Order: datatypes.Container_Product_Order{
+			ComplexType: sl.String("SoftLayer_Container_Product_Order_Network_Storage_AsAService_Upgrade"),
+			PackageId:   pkg.Id,
+			Prices:      targetItemPrices,
+		},
+		VolumeSize: sl.Int(newSize),
+	}
+
+	if volumeIsPerformance {
+		modifyOrder.Iops = sl.Int(int(newIops))
+	}
+
+	return modifyOrder, nil
+}
+
+func findEnduranceTierIopsPerGb(originalVolume datatypes.Network_Storage) (iopsPerGB float64, err error) {
+	tier := *originalVolume.StorageTierLevel
+	iopsPerGB = 0.25
+
+	if tier == "LOW_INTENSITY_TIER" {
+		iopsPerGB = 0.25
+	} else if tier == "READHEAVY_TIER" {
+		iopsPerGB = 2
+	} else if tier == "WRITEHEAVY_TIER" {
+		iopsPerGB = 4
+	} else if tier == "10_IOPS_PER_GB" {
+		iopsPerGB = 10
+	} else {
+		return iopsPerGB, fmt.Errorf("Could not find tier IOPS per GB for this volume")
+	}
+
+	return iopsPerGB, nil
+
+}
+
+// Waits for storage update
+func WaitForStorageUpdate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	log.Printf("Waiting for storage (%s) to be updated.", d.Id())
+	id, err := strconv.Atoi(d.Id())
+	if err != nil {
+		return nil, fmt.Errorf("The storage ID %s must be numeric", d.Id())
+	}
+	size := d.Get("capacity").(int)
+	iops := d.Get("iops").(float64)
+	sess := meta.(ClientSession).SoftLayerSession()
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"provisioning"},
+		Target:  []string{"available"},
+		Refresh: func() (interface{}, string, error) {
+			service := services.GetNetworkStorageService(sess)
+			result, err := service.Id(id).Mask(storageDetailMask).GetObject()
+			if err != nil {
+				if apiErr, ok := err.(sl.Error); ok && apiErr.StatusCode == 404 {
+					return nil, "", fmt.Errorf("Error retrieving storage: %s", err)
+				}
+				return result, "provisioning", nil
+			}
+			storageType, err := getStorageTypeFromKeyName(*result.StorageType.KeyName)
+			if err != nil {
+				return nil, "", fmt.Errorf("Error retrieving storage information: %s", err)
+			}
+			temp, err := getIops(result, storageType)
+			if err != nil {
+				return nil, "", fmt.Errorf("Error retrieving storage information: %s", err)
+			}
+			if *result.CapacityGb == size && iops == float64(temp) {
+				return result, "available", nil
+			}
+			return result, "provisioning", nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutUpdate),
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }

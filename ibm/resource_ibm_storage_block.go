@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 
 	"regexp"
 	"strings"
@@ -24,6 +25,12 @@ func resourceIBMStorageBlock() *schema.Resource {
 		Exists:   resourceIBMStorageBlockExists,
 		Importer: &schema.ResourceImporter{},
 
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(45 * time.Minute),
+			Update: schema.DefaultTimeout(45 * time.Minute),
+			Delete: schema.DefaultTimeout(45 * time.Minute),
+		},
+
 		Schema: map[string]*schema.Schema{
 			"type": {
 				Type:     schema.TypeString,
@@ -40,13 +47,11 @@ func resourceIBMStorageBlock() *schema.Resource {
 			"capacity": {
 				Type:     schema.TypeInt,
 				Required: true,
-				ForceNew: true,
 			},
 
 			"iops": {
 				Type:     schema.TypeFloat,
 				Required: true,
-				ForceNew: true,
 			},
 
 			"volumename": {
@@ -264,7 +269,7 @@ func resourceIBMStorageBlockCreate(d *schema.ResourceData, meta interface{}) err
 	}
 
 	// Find the storage device
-	blockStorage, err := findStorageByOrderId(sess, *receipt.OrderId)
+	blockStorage, err := findStorageByOrderId(sess, *receipt.OrderId, d.Timeout(schema.TimeoutCreate))
 
 	if err != nil {
 		return fmt.Errorf("Error during creation of storage: %s", err)
@@ -280,7 +285,7 @@ func resourceIBMStorageBlockCreate(d *schema.ResourceData, meta interface{}) err
 	}
 
 	// SoftLayer changes the device ID after completion of provisioning. It is necessary to refresh device ID.
-	blockStorage, err = findStorageByOrderId(sess, *receipt.OrderId)
+	blockStorage, err = findStorageByOrderId(sess, *receipt.OrderId, d.Timeout(schema.TimeoutCreate))
 
 	if err != nil {
 		return fmt.Errorf("Error during creation of storage: %s", err)
@@ -448,6 +453,31 @@ func resourceIBMStorageBlockUpdate(d *schema.ResourceData, meta interface{}) err
 		err := updateNotes(d, sess, storage)
 		if err != nil {
 			return fmt.Errorf("Error updating storage information: %s", err)
+		}
+	}
+
+	if (d.HasChange("capacity") || d.HasChange("iops")) && !d.IsNewResource() {
+		size := d.Get("capacity").(int)
+		iops := d.Get("iops").(float64)
+
+		modifyOrder, err := prepareModifyOrder(sess, storage, iops, size)
+		if err != nil {
+			return fmt.Errorf("Error updating storage: %s", err)
+		}
+
+		_, err = services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(
+			&datatypes.Container_Product_Order_Network_Storage_AsAService_Upgrade{
+				Container_Product_Order_Network_Storage_AsAService: modifyOrder,
+				Volume: &datatypes.Network_Storage{
+					Id: sl.Int(id),
+				},
+			}, sl.Bool(false))
+		// Wait for storage availability
+		_, err = WaitForStorageUpdate(d, meta)
+
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for storage (%s) to update: %s", d.Id(), err)
 		}
 	}
 
