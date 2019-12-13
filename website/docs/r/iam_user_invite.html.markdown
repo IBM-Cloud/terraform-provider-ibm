@@ -22,6 +22,7 @@ resource "ibm_iam_user_invite" "invite_user" {
 ```
 
 ### Inviting batch of Users with access groups
+
 ```hcl
 resource "ibm_iam_user_invite" "invite_user" {
     users = ["test@in.ibm.com"]
@@ -30,9 +31,37 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 ```
 
+### Inviting batch of Users with Classic Infrastructure roles
+
+#### Inviting batch of Users with Classic Infrastructure permissions
+
+```hcl
+resource "ibm_iam_user_invite" "invite_user" {
+    users = ["test@in.ibm.com"]
+    classic_infra_roles = {
+      permissions = ["PORT_CONTROL", "DATACENTER_ACCESS"]
+    }
+}
+
+```
+
+#### Inviting batch of Users with Classic Infrastructure permission set
+
+```hcl
+resource "ibm_iam_user_invite" "invite_user" {
+    users = ["test@in.ibm.com"]
+    classic_infra_roles = {
+      permission_set = "superuser"
+    }
+}
+
+```
+
+
 ### User invite with access IAM policies
 
 #### Inviting batch of Users with User Policy for All Identity and Access enabled services
+
 ```hcl
 resource "ibm_iam_user_invite" "invite_user" {
     users = ["test@in.ibm.com"]
@@ -44,6 +73,7 @@ resource "ibm_iam_user_invite" "invite_user" {
 ```
 
 #### Inviting batch of Users with User Policy using service with region
+
 ```hcl
 resource "ibm_iam_user_invite" "invite_user" {
     users = ["test@in.ibm.com"]
@@ -58,6 +88,7 @@ resource "ibm_iam_user_invite" "invite_user" {
 ```
 
 #### Inviting batch of Users with User Policy using resource instance
+
 ```hcl
 resource "ibm_resource_instance" "instance" {
   name     = "test"
@@ -80,6 +111,7 @@ resource "ibm_iam_user_invite" "invite_user" {
 ```
 
 #### Inviting batch of Users with User Policy using resource group
+
 ```hcl
 data "ibm_resource_group" "group" {
   name = "default"
@@ -99,6 +131,7 @@ resource "ibm_iam_user_invite" "invite_user" {
 ```
 
 #### Inviting batch of Users with User Policy using resource and resource type
+
 ```hcl
 data "ibm_resource_group" "group" {
   name = "default"
@@ -118,6 +151,7 @@ resource "ibm_iam_user_invite" "invite_user" {
 ```
 
 #### Inviting batch of Users with User Policy using attributes
+
 ```hcl
 data "ibm_resource_group" "group" {
   name = "default"
@@ -143,17 +177,20 @@ The following arguments are supported:
 
 * `users` - (Required, list) comma separated list of users email-id. 
 * `access_groups` - (Optional, list) comma seperated list of access group ids.
-* `iam_policy` - (Optional, list) comma seperated list of IAM user policies
-* `roles` - (Required, list) comma separated list of roles. Valid roles are Writer, Reader, Manager, Administrator, Operator, Viewer, Editor.
-* `resources` - (Optional, list) A nested block describing the resource of this policy.
+* `classic_infra_roles` - (Optional, map) A nested block describing the classic infrastrucre roles for the inviting users. The nested classic_infra_roles block have the following structure:
+  * `permissions` - (Optional, list) comma seperated list of classic infrastructure permissions. You can obtain the supported permissions from [Permissions List](https://sldn.softlayer.com/article/permission-enforcement-softlayer-api)
+  * `permission_set` - (Optional, string) Permission set to be applied. The valid permission sets are noacess, viewonly, basicuser, superuser
+* `iam_policy` - (Optional, list) A nested block describing the IAM Polocies for inviting users. The nested iam_policy block have the following structure:
+  * `roles` - (Required, list) comma separated list of roles. Valid roles are Writer, Reader, Manager, Administrator, Operator, Viewer, Editor.
+  * `resources` - (Optional, list) A nested block describing the resource of this policy.
 Nested `resources` blocks have the following structure:
-  * `service` - (Optional, string) Service name of the policy definition.  You can retrieve the value by running the `ibmcloud catalog service-marketplace` or `ibmcloud catalog search` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
-  * `resource_instance_id` - (Optional, string) ID of resource instance of the policy definition.
-  * `region` - (Optional, string) Region of the policy definition.
-  * `resource_type` - (Optional, string) Resource type of the policy definition.
-  * `resource` - (Optional, string) Resource of the policy definition.
-  * `resource_group_id` - (Optional, string) The ID of the resource group. You can retrieve the value from data source `ibm_resource_group`. 
-  * `attributes` - (Optional, map) Set resource attributes in the form of `'name=value,name=value...`.
+    * `service` - (Optional, string) Service name of the policy definition.  You can retrieve the value by running the `ibmcloud catalog service-marketplace` or `ibmcloud catalog search` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
+    * `resource_instance_id` - (Optional, string) ID of resource instance of the policy definition.
+    * `region` - (Optional, string) Region of the policy definition.
+    * `resource_type` - (Optional, string) Resource type of the policy definition.
+    * `resource` - (Optional, string) Resource of the policy definition.
+    * `resource_group_id` - (Optional, string) The ID of the resource group. You can retrieve the value from data source `ibm_resource_group`. 
+    * `attributes` - (Optional, map) Set resource attributes in the form of `'name=value,name=value...`.
 
 ## Import
 

@@ -16,8 +16,109 @@ const (
 	// MEMBER ...
 	MEMBER = "MEMEBER"
 	// ACCESS ...
-	ACCESS = "access"
+	ACCESS    = "access"
+	NOACCESS  = "noacess"
+	VIEWONLY  = "viewonly"
+	BASICUSER = "basicuser"
+	SUPERUSER = "superuser"
 )
+
+var viewOnly = []string{
+	"HARDWARE_VIEW",
+	"BANDWIDTH_MANAGE",
+	"LICENSE_VIEW",
+	"CDN_BANDWIDTH_VIEW",
+	"VIRTUAL_GUEST_VIEW",
+	"DEDICATED_HOST_VIEW",
+}
+
+var noAccess = make([]string, 0)
+
+var basicUser = []string{"HARDWARE_VIEW",
+	"USER_MANAGE",
+	"BANDWIDTH_MANAGE",
+	"DNS_MANAGE",
+	"REMOTE_MANAGEMENT",
+	"MONITORING_MANAGE",
+	"LICENSE_VIEW",
+	"IP_ADD",
+	"PORT_CONTROL",
+	"LOADBALANCER_MANAGE",
+	"FIREWALL_MANAGE",
+	"SOFTWARE_FIREWALL_MANAGE",
+	"ANTI_MALWARE_MANAGE",
+	"HOST_ID_MANAGE",
+	"VULN_SCAN_MANAGE",
+	"NTF_SUBSCRIBER_MANAGE",
+	"CDN_BANDWIDTH_VIEW",
+	"VIRTUAL_GUEST_VIEW",
+	"NETWORK_MESSAGE_DELIVERY_MANAGE",
+	"FIREWALL_RULE_MANAGE",
+	"DEDICATED_HOST_VIEW",
+}
+
+var superUser = []string{"HARDWARE_VIEW",
+	"VIEW_CUSTOMER_SOFTWARE_PASSWORD",
+	"NETWORK_TUNNEL_MANAGE",
+	"CUSTOMER_POST_PROVISION_SCRIPT_MANAGEMENT",
+	"VIEW_CPANEL",
+	"VIEW_PLESK",
+	"VIEW_HELM",
+	"VIEW_URCHIN",
+	"ADD_SERVICE_STORAGE",
+	"USER_MANAGE",
+	"SERVER_ADD",
+	"SERVER_UPGRADE",
+	"SERVER_CANCEL",
+	"SERVICE_ADD",
+	"SERVICE_UPGRADE",
+	"SERVICE_CANCEL",
+	"BANDWIDTH_MANAGE",
+	"DNS_MANAGE",
+	"REMOTE_MANAGEMENT",
+	"MONITORING_MANAGE",
+	"SERVER_RELOAD",
+	"LICENSE_VIEW",
+	"IP_ADD",
+	"LOCKBOX_MANAGE",
+	"NAS_MANAGE",
+	"PORT_CONTROL",
+	"LOADBALANCER_MANAGE",
+	"FIREWALL_MANAGE",
+	"SOFTWARE_FIREWALL_MANAGE",
+	"ANTI_MALWARE_MANAGE",
+	"HOST_ID_MANAGE",
+	"VULN_SCAN_MANAGE",
+	"NTF_SUBSCRIBER_MANAGE",
+	"NETWORK_VLAN_SPANNING",
+	"CDN_ACCOUNT_MANAGE",
+	"CDN_FILE_MANAGE",
+	"CDN_BANDWIDTH_VIEW",
+	"NETWORK_ROUTE_MANAGE",
+	"VIRTUAL_GUEST_VIEW",
+	"INSTANCE_UPGRADE",
+	"HOSTNAME_EDIT",
+	"NETWORK_MESSAGE_DELIVERY_MANAGE",
+	"USER_EVENT_LOG_VIEW",
+	"VPN_MANAGE",
+	"VIEW_QUANTASTOR",
+	"DATACENTER_ACCESS",
+	"DATACENTER_ROOM_ACCESS",
+	"CUSTOMER_SSH_KEY_MANAGEMENT",
+	"FIREWALL_RULE_MANAGE",
+	"PUBLIC_IMAGE_MANAGE",
+	"SECURITY_CERTIFICATE_VIEW",
+	"SECURITY_CERTIFICATE_MANAGE",
+	"GATEWAY_MANAGE",
+	"SCALE_GROUP_MANAGE",
+	"SAML_AUTHENTICATION_MANAGE",
+	"MANAGE_SECURITY_GROUPS",
+	"PUBLIC_NETWORK_COMPUTE",
+	"DEDICATED_HOST_VIEW",
+}
+
+var permissionSets = map[string][]string{NOACCESS: noAccess, VIEWONLY: viewOnly,
+	BASICUSER: basicUser, SUPERUSER: superUser}
 
 func resourceIBMUserInvite() *schema.Resource {
 	return &schema.Resource{
@@ -108,6 +209,27 @@ func resourceIBMUserInvite() *schema.Resource {
 					},
 				},
 			},
+			"classic_infra_roles": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"permission_set": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Description:  "permission set for claasic infrastructure",
+							ValidateFunc: validateAllowedStringValue([]string{NOACCESS, VIEWONLY, BASICUSER, SUPERUSER}),
+						},
+
+						"permissions": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "List of permissions for claasic infrastructure",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -144,7 +266,15 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	inviteUserPayload := v2.UserInvite{Users: users, AccessGroup: accessGroups, IAMPolicy: accessPolicies}
+	infraPermissions := getInfraPermissions(d, meta)
+
+	inviteUserPayload := v2.UserInvite{
+		Users:               users,
+		AccessGroup:         accessGroups,
+		IAMPolicy:           accessPolicies,
+		InfrastructureRoles: v2.InfraPermissions{Permissions: infraPermissions},
+	}
+
 	accountID, err := getAccountID(d, meta)
 	if err != nil {
 		return err
@@ -232,9 +362,16 @@ func resourceIBMIAMUpdateUserProfile(d *schema.ResourceData, meta interface{}) e
 				}
 			}
 
-			InviteUserPayload := v2.UserInvite{Users: users, AccessGroup: accessGroups, IAMPolicy: accessPolicies}
+			infraPermissions := getInfraPermissions(d, meta)
 
-			_, InviteUserError := Client.InviteUsers(accountID, InviteUserPayload)
+			inviteUserPayload := v2.UserInvite{
+				Users:               users,
+				AccessGroup:         accessGroups,
+				IAMPolicy:           accessPolicies,
+				InfrastructureRoles: v2.InfraPermissions{Permissions: infraPermissions},
+			}
+
+			_, InviteUserError := Client.InviteUsers(accountID, inviteUserPayload)
 			if InviteUserError != nil {
 				return InviteUserError
 			}
@@ -355,6 +492,29 @@ func getUserIAMID(d *schema.ResourceData, meta interface{}, user string) (string
 	}
 	return "", nil
 
+}
+
+func getInfraPermissions(d *schema.ResourceData, meta interface{}) []string {
+	var infraPermissions = make([]string, 0)
+	if data, ok := d.GetOk("classic_infra_roles"); ok {
+		for _, resource := range data.([]interface{}) {
+			d := resource.(map[string]interface{})
+			if permissions, ok := d["permissions"]; ok && permissions != nil {
+				for _, value := range permissions.([]interface{}) {
+					infraPermissions = append(infraPermissions, fmt.Sprintf("%v", value))
+				}
+			}
+			if permissionSet, ok := d["permission_set"]; ok && permissionSet != nil {
+				if permissions, ok := permissionSets[permissionSet.(string)]; ok {
+					for _, permission := range permissions {
+						infraPermissions = append(infraPermissions, permission)
+					}
+				}
+			}
+		}
+		return infraPermissions
+	}
+	return infraPermissions
 }
 
 // getPolicies ...
