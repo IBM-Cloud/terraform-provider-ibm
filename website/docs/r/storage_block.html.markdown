@@ -50,14 +50,22 @@ resource "ibm_storage_block" "test2" {
 }
 ```
 
+## Timeouts
+
+ibm_storage_block provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+
+* `create` - (Default 45 minutes) Used for creating Instance.
+* `delete` - (Default 45 minutes) Used for deleting Instance.
+* `update` - (Default 45 minutes) Used for updating Instance.
+
 ## Argument Reference
 
 The following arguments are supported:
 
 * `type` - (Required, Forces new resource, string) The type of the storage. Accepted values are `Endurance` and `Performance`.
 * `datacenter` - (Required, Forces new resource, string) The data center where you want to provision the block storage instance.
-* `capacity` - (Required, Forces new resource, integer) The amount of storage capacity you want to allocate, specified in gigabytes.
-* `iops` - (Required, Forces new resource, float) The IOPS value for the storage. You can find available values for Endurance storage in the [IBM Cloud Classic Infrastructure (SoftLayer) docs](https://knowledgelayer.softlayer.com/learning/introduction-endurance-storage).
+* `capacity` - (Required, integer) The amount of storage capacity you want to allocate, specified in gigabytes.
+* `iops` - (Required, float) The IOPS value for the storage. You can find available values for Endurance storage in the [IBM Cloud Classic Infrastructure (SoftLayer) docs](https://knowledgelayer.softlayer.com/learning/introduction-endurance-storage).
 * `os_format_type` - (Required, Forces new resource, string) The OS type used to format the storage space. This OS type must match the OS type that connects to the LUN. [Log in to the IBM Cloud Classic Infrastructure (SoftLayer) API to see available OS format types](https://api.softlayer.com/rest/v3/SoftLayer_Network_Storage_Iscsi_OS_Type/getAllObjects/). Use your API as the password to log in. Log in and find the key called `name`.
 * `snapshot_capacity` - (Optional, Forces new resource, integer) The amount of snapshot capacity to allocate, specified in gigabytes.
 * `allowed_virtual_guest_ids` - (Optional, array of integers) The virtual guests that you want to give access to this instance. Virtual guests must be in the same data center as the block storage. You can also use this field to import the list of virtual guests that have access to this storage from the `block_storage_ids` argument in the `ibm_compute_vm_instance` resource.
