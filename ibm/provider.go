@@ -268,6 +268,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_iam_access_group_members":                       resourceIBMIAMAccessGroupMembers(),
 			"ibm_iam_access_group_policy":                        resourceIBMIAMAccessGroupPolicy(),
 			"ibm_iam_authorization_policy":                       resourceIBMIAMAuthorizationPolicy(),
+			"ibm_iam_authorization_policy_detach":                resourceIBMIAMAuthorizationPolicyDetach(),
 			"ibm_iam_user_policy":                                resourceIBMIAMUserPolicy(),
 			"ibm_iam_service_id":                                 resourceIBMIAMServiceID(),
 			"ibm_iam_service_policy":                             resourceIBMIAMServicePolicy(),

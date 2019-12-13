@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/models"
@@ -216,7 +217,8 @@ func resourceIBMIAMAuthorizationPolicyDelete(d *schema.ResourceData, meta interf
 
 	err = iampapClient.V1Policy().Delete(authorizationPolicyID)
 	if err != nil {
-		return fmt.Errorf("Error deleting authorization policy: %s", err)
+		log.Printf(
+			"Error deleting authorization policy: %s", err)
 	}
 
 	d.SetId("")
