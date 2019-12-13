@@ -54,6 +54,7 @@ type ClusterInfo struct {
 	PrivateServiceEndpointURL     string   `json:"privateServiceEndpointURL"`
 	PublicServiceEndpointEnabled  bool     `json:"publicServiceEndpointEnabled"`
 	PublicServiceEndpointURL      string   `json:"publicServiceEndpointURL"`
+	Type                          string   `json:"type"`
 }
 
 type ClusterUpdateParam struct {
@@ -209,6 +210,7 @@ type Clusters interface {
 	ListServicesBoundToCluster(clusterNameOrID, namespace string, target ClusterTargetHeader) (BoundServices, error)
 	FindServiceBoundToCluster(clusterNameOrID, serviceName, namespace string, target ClusterTargetHeader) (BoundService, error)
 	RefreshAPIServers(clusterNameOrID string, target ClusterTargetHeader) error
+	FetchOCTokenForKubeConfig(kubeConfig []byte, clusterInfo *ClusterInfo) ([]byte, error)
 }
 
 type clusters struct {
@@ -357,6 +359,31 @@ func (r *clusters) GetClusterConfig(name, dir string, admin bool, target Cluster
 	if kubedir == "" {
 		return "", errors.New("Unable to locate kube config in zip archive")
 	}
+
+	// Block to add token for openshift clusters (This can be temporary until iks team handles openshift clusters)
+	clusterInfo, err := r.FindWithOutShowResources(name, target)
+	if err != nil {
+		// Assuming an error means that this is a vpc cluster, and we're returning existing kubeconfig
+		// When we add support for vpcs on openshift clusters, we may want revisit this
+		return filepath.Abs(kubeyml)
+	}
+
+	if clusterInfo.Type == "openshift" {
+		trace.Logger.Println("Debug: type is openshift trying login to get token")
+		var yamlConfig []byte
+		if yamlConfig, err = ioutil.ReadFile(kubeyml); err != nil {
+			return "", err
+		}
+		yamlConfig, err = r.FetchOCTokenForKubeConfig(yamlConfig, &clusterInfo)
+		if err != nil {
+			return "", err
+		}
+		err = ioutil.WriteFile(kubeyml, yamlConfig, 0644) // 0644 is irrelevant here, since file already exists.
+		if err != nil {
+			return "", err
+		}
+	}
+
 	return filepath.Abs(kubeyml)
 }
 
@@ -428,14 +455,41 @@ func (r *clusters) StoreConfig(name, dir string, admin, createCalicoConfig bool,
 			return "", "", err
 		}
 	}
-
+	var kubeconfigFileName string
 	for _, baseDirFile := range baseDirFiles {
 		if strings.Contains(baseDirFile.Name(), ".yml") {
-			return fmt.Sprintf("%s/%s", resultDir, baseDirFile.Name()), calicoConfig, nil
+			kubeconfigFileName = fmt.Sprintf("%s/%s", resultDir, baseDirFile.Name())
+			break
 		}
 	}
+	if kubeconfigFileName == "" {
+		return "", "", errors.New("Unable to locate kube config in zip archive")
+	}
 
-	return "", "", errors.New("Unable to locate kube config in zip archive")
+	// Block to add token for openshift clusters (This can be temporary until iks team handles openshift clusters)
+	clusterInfo, err := r.FindWithOutShowResources(name, target)
+	if err != nil {
+		// Assuming an error means that this is a vpc cluster, and we're returning existing kubeconfig
+		// When we add support for vpcs on openshift clusters, we may want revisit this
+		return kubeconfigFileName, calicoConfig, nil
+	}
+
+	if clusterInfo.Type == "openshift" {
+		trace.Logger.Println("Cluster Type is openshift trying login to get token")
+		var yamlConfig []byte
+		if yamlConfig, err = ioutil.ReadFile(kubeconfigFileName); err != nil {
+			return "", "", err
+		}
+		yamlConfig, err = r.FetchOCTokenForKubeConfig(yamlConfig, &clusterInfo)
+		if err != nil {
+			return "", "", err
+		}
+		err = ioutil.WriteFile(kubeconfigFileName, yamlConfig, 0644) // check about permissions and truncate
+		if err != nil {
+			return "", "", err
+		}
+	}
+	return kubeconfigFileName, calicoConfig, nil
 }
 
 func kubeConfigDir(baseDir string) (string, error) {

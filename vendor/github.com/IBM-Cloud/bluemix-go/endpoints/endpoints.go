@@ -10,6 +10,7 @@ import (
 //EndpointLocator ...
 type EndpointLocator interface {
 	AccountManagementEndpoint() (string, error)
+	CertificateManagerEndpoint() (string, error)
 	CFAPIEndpoint() (string, error)
 	ContainerEndpoint() (string, error)
 	ContainerRegistryEndpoint() (string, error)
@@ -37,6 +38,14 @@ const (
 var regionToEndpoint = map[string]map[string]string{
 	"account": {
 		"global": "https://accounts.cloud.ibm.com",
+	},
+	"certificate-manager": {
+		"us-south": "https://us-south.certificate-manager.cloud.ibm.com",
+		"us-east":  "https://us-east.certificate-manager.cloud.ibm.com",
+		"eu-gb":    "https://eu-gb.certificate-manager.cloud.ibm.com",
+		"au-syd":   "https://au-syd.certificate-manager.cloud.ibm.com",
+		"eu-de":    "https://eu-de.certificate-manager.cloud.ibm.com",
+		"jp-tok":   "https://jp-tok.certificate-manager.cloud.ibm.com",
 	},
 	"cf": {
 		"us-south": "https://api.ng.bluemix.net",
@@ -136,6 +145,14 @@ func (e *endpointLocator) AccountManagementEndpoint() (string, error) {
 
 	}
 	return "", bmxerror.New(ErrCodeServiceEndpoint, fmt.Sprintf("Account Management endpoint doesn't exist for region: %q", e.region))
+}
+
+func (e *endpointLocator) CertificateManagerEndpoint() (string, error) {
+	if ep, ok := regionToEndpoint["certificate-manager"][e.region]; ok {
+		//As the current list of regionToEndpoint above is not exhaustive we allow to read endpoints from the env
+		return helpers.EnvFallBack([]string{"IBMCLOUD_CERTIFICATE_MANAGER_API_ENDPOINT"}, ep), nil
+	}
+	return "", bmxerror.New(ErrCodeServiceEndpoint, fmt.Sprintf("Certificate Manager Service endpoint doesn't exist for region: %q", e.region))
 }
 
 func (e *endpointLocator) CFAPIEndpoint() (string, error) {

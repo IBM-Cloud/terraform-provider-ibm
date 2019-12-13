@@ -84,6 +84,11 @@ func (auth *UAARepository) RefreshToken() (string, error) {
 	return auth.config.UAAAccessToken, nil
 }
 
+//GetPasscode ...
+func (auth *UAARepository) GetPasscode() (string, error) {
+	return "", nil
+}
+
 func (auth *UAARepository) getToken(data map[string]string) error {
 	request := rest.PostRequest(auth.endpoint+"/oauth/token").
 		Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte("cf:"))).
