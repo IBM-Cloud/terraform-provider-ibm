@@ -290,7 +290,7 @@ func resourceIBMISVPNGatewayExists(d *schema.ResourceData, meta interface{}) (bo
 		iserror, ok := err.(iserrors.RiaasError)
 		if ok {
 			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "not_found" {
+				iserror.Payload.Errors[0].Code == "vpn_gateway_not_found" {
 				return false, nil
 			}
 		}
