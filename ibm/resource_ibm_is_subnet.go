@@ -23,6 +23,7 @@ const (
 	isSubnetVPC                       = "vpc"
 	isSubnetZone                      = "zone"
 	isSubnetAvailableIpv4AddressCount = "available_ipv4_address_count"
+	isSubnetResourceGroup             = "resource_group"
 
 	isSubnetProvisioning     = "provisioning"
 	isSubnetProvisioningDone = "done"
@@ -116,6 +117,13 @@ func resourceIBMISSubnet() *schema.Resource {
 				Required: true,
 			},
 
+			isSubnetResourceGroup: {
+				Type:     schema.TypeString,
+				ForceNew: true,
+				Optional: true,
+				Computed: true,
+			},
+
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -174,8 +182,15 @@ func resourceIBMISSubnetCreate(d *schema.ResourceData, meta interface{}) error {
 	acl := d.Get(isSubnetNetworkACL).(string)
 	gw := d.Get(isSubnetPublicGateway).(string)
 
+	var rg string
+	rg = ""
+	if sess.Generation == 2 {
+		if grp, ok := d.GetOk(isSubnetResourceGroup); ok {
+			rg = grp.(string)
+		}
+	}
 	subnetC := network.NewSubnetClient(sess)
-	subnet, err := subnetC.Create(name, zone, vpc, acl, gw, "", ipv4cidr, ipv4addrcount)
+	subnet, err := subnetC.Create(name, zone, vpc, acl, gw, rg, ipv4cidr, ipv4addrcount)
 	if err != nil {
 		return err
 	}
@@ -251,6 +266,9 @@ func resourceIBMISSubnetRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(isSubnetStatus, subnet.Status)
 	d.Set(isSubnetZone, subnet.Zone.Name)
 	d.Set(isSubnetVPC, subnet.Vpc.ID.String())
+	if sess.Generation == 2 {
+		d.Set(isSubnetResourceGroup, subnet.ResourceGroup.ID)
+	}
 
 	controller, err := getBaseController(meta)
 	if err != nil {

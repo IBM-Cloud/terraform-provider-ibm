@@ -53,6 +53,7 @@ The following arguments are supported:
 * `public_gateway` - (Optional, string) The ID of the public-gateway for the subnet.
 * `vpc` - (Required, Forces new resource, string) The vpc id.
 * `zone` - (Required, Forces new resource, string) The subnet zone name.
+* `resource_group` - (Optional, Forces new resource, string) The resource group ID where the Subnet to be created (This argument is supported only for Generation `2` infrastructure)
 
 ## Attribute Reference
 
