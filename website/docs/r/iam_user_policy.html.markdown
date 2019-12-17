@@ -123,7 +123,7 @@ resource "ibm_iam_user_policy" "policy" {
 
 The following arguments are supported:
 
-* `ibm_id` - (Required, string) The ibm id or email of user.
+* `ibm_id` - (Required, Forces new resource, string) The ibm id or email of user.
 * `roles` - (Required, list) comma separated list of roles. Valid roles are Writer, Reader, Manager, Administrator, Operator, Viewer, Editor.
 * `resources` - (Optional, list) A nested block describing the resource of this policy.
 Nested `resources` blocks have the following structure:

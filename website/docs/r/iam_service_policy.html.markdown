@@ -146,7 +146,7 @@ resource "ibm_iam_service_policy" "policy" {
 
 The following arguments are supported:
 
-* `iam_service_id` - (Required, string) UUID of the serviceID.
+* `iam_service_id` - (Required, Forces new resource, string) UUID of the serviceID.
 * `roles` - (Required, list) comma separated list of roles. Valid roles are Writer, Reader, Manager, Administrator, Operator, Viewer, Editor.
 * `resources` - (Optional, list) A nested block describing the resource of this policy.
 Nested `resources` blocks have the following structure:

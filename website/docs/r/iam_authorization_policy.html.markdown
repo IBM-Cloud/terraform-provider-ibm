@@ -64,14 +64,14 @@ resource "ibm_iam_authorization_policy" "policy" {
 
 The following arguments are supported:
 
-* `source_service_name` - (Required, string) The source service name.
-* `target_service_name` - (Required, string) The target service name.
+* `source_service_name` - (Required, Forces new resource, string) The source service name.
+* `target_service_name` - (Required, Forces new resource, string) The target service name.
 * `roles` - (Required, list) comma separated list of roles.
-* `source_resource_instance_id` - (Optional, string) The Source resource instance id.
-* `target_resource_instance_id` - (Optional, string) The target resource instance id.
-* `source_resource_type` - (Optional, string) Resource type of source service.
-* `target_resource_type` - (Optional, string) Resource type of target service.
-* `source_service_account` - (Optional, string) Account GUID of source service.
+* `source_resource_instance_id` - (Optional, Forces new resource, string) The Source resource instance id.
+* `target_resource_instance_id` - (Optional, Forces new resource, string) The target resource instance id.
+* `source_resource_type` - (Optional, Forces new resource, string) Resource type of source service.
+* `target_resource_type` - (Optional, Forces new resource, string) Resource type of target service.
+* `source_service_account` - (Optional, Forces new resource, string) Account GUID of source service.
 
 ## Attribute Reference
 
