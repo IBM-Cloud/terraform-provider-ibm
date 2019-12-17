@@ -25,4 +25,4 @@ resource "ibm_iam_authorization_policy_detach" "policy" {
 
 The following arguments are supported:
 
-* `authorization_policy_id` - (Required, string) The valid authorization policy ID.
+* `authorization_policy_id` - (Required, Forces new resource, string) The valid authorization policy ID.

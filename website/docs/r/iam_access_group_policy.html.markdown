@@ -168,7 +168,7 @@ resource "ibm_iam_access_group_policy" "policy" {
 
 The following arguments are supported:
 
-* `access_group_id` - (Required, string) ID of the access group.
+* `access_group_id` - (Required, Forces new resource, string) ID of the access group.
 * `roles` - (Required, list) comma separated list of roles. Valid roles are Writer, Reader, Manager, Administrator, Operator, Viewer, Editor.
 * `resources` - (Optional, list) A nested block describing the resource of this policy.
 Nested `resources` blocks have the following structure:
