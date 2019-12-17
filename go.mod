@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/Bowery/prompt v0.0.0-20190916142128-fa8279994f75 // indirect
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20191202113314-db478c6f1fa5
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20191213080231-c744a47c5ca8
 	github.com/IBM-Cloud/power-go-client v0.0.0-00010101000000-000000000000
 	github.com/IBM/ibm-cos-sdk-go v1.2.0
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
@@ -29,7 +29,7 @@ require (
 	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf // indirect
 	github.com/hashicorp/go-uuid v1.0.1
 	github.com/hashicorp/go-version v1.2.0
-	github.com/hashicorp/terraform v0.12.16 // indirect
+	github.com/hashicorp/terraform v0.12.16
 	github.com/hashicorp/terraform-plugin-sdk v1.0.0
 	github.com/hashicorp/tf-sdk-migrator v1.0.0 // indirect
 	github.com/hokaccha/go-prettyjson v0.0.0-20170213120834-e6b9231a2b1c // indirect

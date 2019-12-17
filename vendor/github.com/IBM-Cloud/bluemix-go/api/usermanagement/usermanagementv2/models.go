@@ -26,10 +26,11 @@ type UserInfo struct {
 
 // UserInvite ...
 type UserInvite struct {
-	Users             []User       `json:"users"`
-	IAMPolicy         []UserPolicy `json:"iam_policy,omitempty"`
-	AccessGroup       []string     `json:"access_groups,omitempty"`
-	OrganizationRoles []string     `json:"organization_roles,omitempty"`
+	Users               []User           `json:"users"`
+	IAMPolicy           []UserPolicy     `json:"iam_policy,omitempty"`
+	AccessGroup         []string         `json:"access_groups,omitempty"`
+	InfrastructureRoles InfraPermissions `json:"infrastructure_roles,omitempty"`
+	OrganizationRoles   []string         `json:"organization_roles,omitempty"`
 }
 
 // UsersList to get list of users
@@ -45,4 +46,9 @@ type UserPolicy struct {
 	Type      string              `json:"type"`
 	Roles     []iampapv1.Role     `json:"roles"`
 	Resources []iampapv1.Resource `json:"resources"`
+}
+
+//InfraPermissions ...
+type InfraPermissions struct {
+	Permissions []string `json:"permissions"`
 }
