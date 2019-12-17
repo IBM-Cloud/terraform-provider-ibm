@@ -471,7 +471,9 @@ func (m *ImageFile) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ImageOperatingSystem The operating system included in this image
+// ImageOperatingSystem OperatingSystem
+//
+// The operating system included in this image
 // swagger:model ImageOperatingSystem
 type ImageOperatingSystem struct {
 
@@ -500,10 +502,8 @@ type ImageOperatingSystem struct {
 	// The vendor of the operating system
 	Vendor string `json:"vendor,omitempty"`
 
-	// OperatingSystem
-	//
 	// The major release version of this operating system
-	Version interface{} `json:"version,omitempty"`
+	Version string `json:"version,omitempty"`
 }
 
 // Validate validates this image operating system

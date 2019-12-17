@@ -17,6 +17,7 @@ import (
 	"github.com/IBM-Cloud/power-go-client/power/client/hardware_platforms"
 	"github.com/IBM-Cloud/power-go-client/power/client/iaas_service_broker"
 	"github.com/IBM-Cloud/power-go-client/power/client/open_stacks"
+	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_events"
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_images"
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_instances"
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_networks"
@@ -27,6 +28,7 @@ import (
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_volumes"
 	"github.com/IBM-Cloud/power-go-client/power/client/service_bindings"
 	"github.com/IBM-Cloud/power-go-client/power/client/service_instances"
+	"github.com/IBM-Cloud/power-go-client/power/client/storage_types"
 	"github.com/IBM-Cloud/power-go-client/power/client/swagger_spec"
 )
 
@@ -85,6 +87,8 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *PowerIaas 
 
 	cli.OpenStacks = open_stacks.New(transport, formats)
 
+	cli.PCloudEvents = p_cloud_events.New(transport, formats)
+
 	cli.PCloudImages = p_cloud_images.New(transport, formats)
 
 	cli.PCloudInstances = p_cloud_instances.New(transport, formats)
@@ -104,6 +108,8 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *PowerIaas 
 	cli.ServiceBindings = service_bindings.New(transport, formats)
 
 	cli.ServiceInstances = service_instances.New(transport, formats)
+
+	cli.StorageTypes = storage_types.New(transport, formats)
 
 	cli.SwaggerSpec = swagger_spec.New(transport, formats)
 
@@ -163,6 +169,8 @@ type PowerIaas struct {
 
 	OpenStacks *open_stacks.Client
 
+	PCloudEvents *p_cloud_events.Client
+
 	PCloudImages *p_cloud_images.Client
 
 	PCloudInstances *p_cloud_instances.Client
@@ -182,6 +190,8 @@ type PowerIaas struct {
 	ServiceBindings *service_bindings.Client
 
 	ServiceInstances *service_instances.Client
+
+	StorageTypes *storage_types.Client
 
 	SwaggerSpec *swagger_spec.Client
 
@@ -204,6 +214,8 @@ func (c *PowerIaas) SetTransport(transport runtime.ClientTransport) {
 
 	c.OpenStacks.SetTransport(transport)
 
+	c.PCloudEvents.SetTransport(transport)
+
 	c.PCloudImages.SetTransport(transport)
 
 	c.PCloudInstances.SetTransport(transport)
@@ -223,6 +235,8 @@ func (c *PowerIaas) SetTransport(transport runtime.ClientTransport) {
 	c.ServiceBindings.SetTransport(transport)
 
 	c.ServiceInstances.SetTransport(transport)
+
+	c.StorageTypes.SetTransport(transport)
 
 	c.SwaggerSpec.SetTransport(transport)
 

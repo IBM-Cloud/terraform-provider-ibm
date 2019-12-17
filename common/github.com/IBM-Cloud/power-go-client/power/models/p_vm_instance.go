@@ -9,7 +9,7 @@ import (
 	"encoding/json"
 	"strconv"
 
-	"github.com/go-openapi/strfmt"
+	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
@@ -60,11 +60,11 @@ type PVMInstance struct {
 	// Minimum number of processors that can be allocated (for resize)
 	Minproc float64 `json:"minproc,omitempty"`
 
-	// List of Network IDs
+	// (deprecated - replaced by networks) List of Network IDs
 	// Required: true
 	NetworkIds []string `json:"networkIDs"`
 
-	// (deprecated - replaced with networks) The pvm instance networks information
+	// The pvm instance networks information
 	Networks []*PVMInstanceNetwork `json:"networks"`
 
 	// Processor type (dedicated or shared)

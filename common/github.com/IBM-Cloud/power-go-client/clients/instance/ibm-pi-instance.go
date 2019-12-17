@@ -43,14 +43,20 @@ func (f *IBMPIInstanceClient) Create(powerdef *p_cloud_p_vm_instances.PcloudPvmi
 
 	log.Printf("Printing the params to be passed %+v", params)
 
-	_, _, resp, err := f.session.Power.PCloudPVMInstances.PcloudPvminstancesPost(params, ibmpisession.NewAuth(f.session, powerinstanceid))
+	postok, _, _, err := f.session.Power.PCloudPVMInstances.PcloudPvminstancesPost(params, ibmpisession.NewAuth(f.session, powerinstanceid))
 
 	if err != nil {
 		log.Printf("failed to process the request..")
 		return nil, nil, nil, errors.ToError(err)
 	}
 
-	return &resp.Payload, nil, nil, nil
+	if len(postok.Payload) > 0 {
+		log.Printf("Looks like we have an instance created....")
+		log.Printf("Checking if the instance name is right ")
+		log.Printf("Printing the instanceid %s", postok.Payload[0].PvmInstanceID)
+	}
+
+	return &postok.Payload, nil, nil, nil
 }
 
 // PVM Instances Delete

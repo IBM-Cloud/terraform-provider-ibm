@@ -8,7 +8,7 @@ package p_cloud_tenants_ssh_keys
 import (
 	"github.com/go-openapi/runtime"
 
-	"github.com/go-openapi/strfmt"
+	strfmt "github.com/go-openapi/strfmt"
 )
 
 // New creates a new p cloud tenants ssh keys API client.

@@ -15,11 +15,17 @@ import (
 // swagger:model Error
 type Error struct {
 
+	// code
+	Code int64 `json:"code,omitempty"`
+
 	// description
 	Description string `json:"description,omitempty"`
 
 	// error
 	Error string `json:"error,omitempty"`
+
+	// message
+	Message string `json:"message,omitempty"`
 }
 
 // Validate validates this error
