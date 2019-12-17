@@ -8,7 +8,7 @@ package open_stacks
 import (
 	"github.com/go-openapi/runtime"
 
-	"github.com/go-openapi/strfmt"
+	strfmt "github.com/go-openapi/strfmt"
 )
 
 // New creates a new open stacks API client.
@@ -54,6 +54,64 @@ func (a *Client) ServiceBrokerOpenstacksGet(params *ServiceBrokerOpenstacksGetPa
 }
 
 /*
+ServiceBrokerOpenstacksHostsGet lists account information for all pvm instances on hostname
+*/
+func (a *Client) ServiceBrokerOpenstacksHostsGet(params *ServiceBrokerOpenstacksHostsGetParams, authInfo runtime.ClientAuthInfoWriter) (*ServiceBrokerOpenstacksHostsGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewServiceBrokerOpenstacksHostsGetParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "serviceBroker.openstacks.hosts.get",
+		Method:             "GET",
+		PathPattern:        "/broker/v1/openstacks/{openstack_id}/hosts/{hostname}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &ServiceBrokerOpenstacksHostsGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*ServiceBrokerOpenstacksHostsGetOK), nil
+
+}
+
+/*
+ServiceBrokerOpenstacksOpenstackGet lists account information for all pvm instances on hostname
+*/
+func (a *Client) ServiceBrokerOpenstacksOpenstackGet(params *ServiceBrokerOpenstacksOpenstackGetParams, authInfo runtime.ClientAuthInfoWriter) (*ServiceBrokerOpenstacksOpenstackGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewServiceBrokerOpenstacksOpenstackGetParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "serviceBroker.openstacks.openstack.get",
+		Method:             "GET",
+		PathPattern:        "/broker/v1/openstacks/{openstack_id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &ServiceBrokerOpenstacksOpenstackGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*ServiceBrokerOpenstacksOpenstackGetOK), nil
+
+}
+
+/*
 ServiceBrokerOpenstacksPost creates a new open stack instance to be managed
 */
 func (a *Client) ServiceBrokerOpenstacksPost(params *ServiceBrokerOpenstacksPostParams, authInfo runtime.ClientAuthInfoWriter) (*ServiceBrokerOpenstacksPostOK, *ServiceBrokerOpenstacksPostCreated, error) {
@@ -85,6 +143,35 @@ func (a *Client) ServiceBrokerOpenstacksPost(params *ServiceBrokerOpenstacksPost
 		return nil, value, nil
 	}
 	return nil, nil, nil
+
+}
+
+/*
+ServiceBrokerOpenstacksServersGet lists account information for a pvm instance
+*/
+func (a *Client) ServiceBrokerOpenstacksServersGet(params *ServiceBrokerOpenstacksServersGetParams, authInfo runtime.ClientAuthInfoWriter) (*ServiceBrokerOpenstacksServersGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewServiceBrokerOpenstacksServersGetParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "serviceBroker.openstacks.servers.get",
+		Method:             "GET",
+		PathPattern:        "/broker/v1/openstacks/{openstack_id}/servers/{pvm_instance_id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &ServiceBrokerOpenstacksServersGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*ServiceBrokerOpenstacksServersGetOK), nil
 
 }
 

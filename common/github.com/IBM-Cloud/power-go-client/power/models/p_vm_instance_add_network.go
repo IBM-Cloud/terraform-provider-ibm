@@ -17,6 +17,9 @@ import (
 // swagger:model PVMInstanceAddNetwork
 type PVMInstanceAddNetwork struct {
 
+	// The requested ip address of this network interface
+	IPAddress string `json:"ipAddress,omitempty"`
+
 	// ID of the network
 	// Required: true
 	NetworkID *string `json:"networkID"`

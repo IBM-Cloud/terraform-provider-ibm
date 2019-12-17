@@ -39,6 +39,20 @@ func (o *ServiceBrokerOpenstacksGetReader) ReadResponse(response runtime.ClientR
 		}
 		return nil, result
 
+	case 403:
+		result := NewServiceBrokerOpenstacksGetForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+
+	case 500:
+		result := NewServiceBrokerOpenstacksGetInternalServerError()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
 	}
@@ -91,6 +105,64 @@ func (o *ServiceBrokerOpenstacksGetBadRequest) Error() string {
 }
 
 func (o *ServiceBrokerOpenstacksGetBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.Error)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewServiceBrokerOpenstacksGetForbidden creates a ServiceBrokerOpenstacksGetForbidden with default headers values
+func NewServiceBrokerOpenstacksGetForbidden() *ServiceBrokerOpenstacksGetForbidden {
+	return &ServiceBrokerOpenstacksGetForbidden{}
+}
+
+/*ServiceBrokerOpenstacksGetForbidden handles this case with default header values.
+
+Unauthorized
+*/
+type ServiceBrokerOpenstacksGetForbidden struct {
+	Payload *models.Error
+}
+
+func (o *ServiceBrokerOpenstacksGetForbidden) Error() string {
+	return fmt.Sprintf("[GET /broker/v1/openstacks][%d] serviceBrokerOpenstacksGetForbidden  %+v", 403, o.Payload)
+}
+
+func (o *ServiceBrokerOpenstacksGetForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.Error)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewServiceBrokerOpenstacksGetInternalServerError creates a ServiceBrokerOpenstacksGetInternalServerError with default headers values
+func NewServiceBrokerOpenstacksGetInternalServerError() *ServiceBrokerOpenstacksGetInternalServerError {
+	return &ServiceBrokerOpenstacksGetInternalServerError{}
+}
+
+/*ServiceBrokerOpenstacksGetInternalServerError handles this case with default header values.
+
+Internal Server Error
+*/
+type ServiceBrokerOpenstacksGetInternalServerError struct {
+	Payload *models.Error
+}
+
+func (o *ServiceBrokerOpenstacksGetInternalServerError) Error() string {
+	return fmt.Sprintf("[GET /broker/v1/openstacks][%d] serviceBrokerOpenstacksGetInternalServerError  %+v", 500, o.Payload)
+}
+
+func (o *ServiceBrokerOpenstacksGetInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.Error)
 

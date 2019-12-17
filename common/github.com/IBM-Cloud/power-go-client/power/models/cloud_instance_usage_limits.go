@@ -34,7 +34,7 @@ type CloudInstanceUsageLimits struct {
 	// Maximum network bandwidth to GCP Mbps
 	PeeringBandwidth *int64 `json:"peeringBandwidth,omitempty"`
 
-	// Amount of storage allowed (TB)
+	// Amount of peering networks allowed
 	PeeringNetworks *int64 `json:"peeringNetworks,omitempty"`
 
 	// Number of processor units allowed
@@ -49,8 +49,11 @@ type CloudInstanceUsageLimits struct {
 	// Required: true
 	Storage *float64 `json:"storage"`
 
-	// Maximum Flash storage for data LUNs (TB)
-	StorageFlash *int64 `json:"storageFlash,omitempty"`
+	// Amount of SSD storage allowed (TB)
+	StorageSSD *float64 `json:"storageSSD,omitempty"`
+
+	// Amount of standard (HDD) storage allowed (TB)
+	StorageStandard *float64 `json:"storageStandard,omitempty"`
 }
 
 // Validate validates this cloud instance usage limits

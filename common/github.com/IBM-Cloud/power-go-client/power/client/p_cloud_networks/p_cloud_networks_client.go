@@ -8,7 +8,7 @@ package p_cloud_networks
 import (
 	"github.com/go-openapi/runtime"
 
-	"github.com/go-openapi/strfmt"
+	strfmt "github.com/go-openapi/strfmt"
 )
 
 // New creates a new p cloud networks API client.

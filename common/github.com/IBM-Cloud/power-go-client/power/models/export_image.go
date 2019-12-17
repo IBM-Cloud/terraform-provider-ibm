@@ -6,8 +6,6 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"encoding/json"
-
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
@@ -28,8 +26,7 @@ type ExportImage struct {
 	BucketName *string `json:"bucketName"`
 
 	// Cloud Object Storage Region; required for IBM COS
-	// Enum: [us-east us-south]
-	Region *string `json:"region,omitempty"`
+	Region string `json:"region,omitempty"`
 
 	// Cloud Object Storage Secret key
 	SecretKey string `json:"secretKey,omitempty"`
@@ -44,10 +41,6 @@ func (m *ExportImage) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateBucketName(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateRegion(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -69,49 +62,6 @@ func (m *ExportImage) validateAccessKey(formats strfmt.Registry) error {
 func (m *ExportImage) validateBucketName(formats strfmt.Registry) error {
 
 	if err := validate.Required("bucketName", "body", m.BucketName); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-var exportImageTypeRegionPropEnum []interface{}
-
-func init() {
-	var res []string
-	if err := json.Unmarshal([]byte(`["us-east","us-south"]`), &res); err != nil {
-		panic(err)
-	}
-	for _, v := range res {
-		exportImageTypeRegionPropEnum = append(exportImageTypeRegionPropEnum, v)
-	}
-}
-
-const (
-
-	// ExportImageRegionUsEast captures enum value "us-east"
-	ExportImageRegionUsEast string = "us-east"
-
-	// ExportImageRegionUsSouth captures enum value "us-south"
-	ExportImageRegionUsSouth string = "us-south"
-)
-
-// prop value enum
-func (m *ExportImage) validateRegionEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, exportImageTypeRegionPropEnum); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *ExportImage) validateRegion(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Region) { // not required
-		return nil
-	}
-
-	// value enum
-	if err := m.validateRegionEnum("region", "body", *m.Region); err != nil {
 		return err
 	}
 

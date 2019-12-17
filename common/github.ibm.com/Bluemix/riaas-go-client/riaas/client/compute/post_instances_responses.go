@@ -804,7 +804,7 @@ swagger:model PostInstancesParamsBodyBootVolumeAttachment
 type PostInstancesParamsBodyBootVolumeAttachment struct {
 
 	// delete volume on instance delete
-	DeleteVolumeOnInstanceDelete bool `json:"delete_volume_on_instance_delete,omitempty"`
+	DeleteVolumeOnInstanceDelete bool `json:"delete_volume_on_instance_delete"`
 
 	// The user-defined name for this volume interface
 	// Pattern: ^[A-Za-z][-A-Za-z0-9_]*$
