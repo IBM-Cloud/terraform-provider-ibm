@@ -29,7 +29,7 @@ require (
 	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf // indirect
 	github.com/hashicorp/go-uuid v1.0.1
 	github.com/hashicorp/go-version v1.2.0
-	github.com/hashicorp/terraform v0.12.16
+	github.com/hashicorp/terraform v0.12.16 // indirect
 	github.com/hashicorp/terraform-plugin-sdk v1.0.0
 	github.com/hashicorp/tf-sdk-migrator v1.0.0 // indirect
 	github.com/hokaccha/go-prettyjson v0.0.0-20170213120834-e6b9231a2b1c // indirect
