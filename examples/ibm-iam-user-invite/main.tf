@@ -1,5 +1,14 @@
 provider "ibm" {}
 
+data "ibm_org" "org" {
+  org = "${var.org}"
+}
+
+data "ibm_space" "space" {
+  org   = "${var.org}"
+  space = "${var.space}"
+}
+
 resource "ibm_iam_access_group" "accgrp" {
   name        = "test"
   description = "New access group"
@@ -40,4 +49,13 @@ resource "ibm_iam_access_group_policy" "policy" {
       ]
       permission_set = "basicuser"
     }
+    cloud_foundry_roles = [{
+      organization_guid = "${data.ibm_org.org.id}"
+      region = "${var.region}"
+      org_roles = ["Manager", "Auditor"]
+      spaces = [{
+          space_guid = "${data.ibm_space.space.id}"
+          space_roles = ["Manager", "Developer"]
+      }]
+   }]
 }
