@@ -4,30 +4,27 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	gohttp "net/http"
 	"os"
 	"strings"
 	"time"
-
-	"github.com/IBM-Cloud/bluemix-go/api/iam/iamv1"
-	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
-
-	gohttp "net/http"
+	// Added code for the Power Colo Offering
 
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
-
 	jwt "github.com/dgrijalva/jwt-go"
-
-	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 	slsession "github.com/softlayer/softlayer-go/session"
+	issession "github.ibm.com/Bluemix/riaas-go-client/session"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv2"
+	"github.com/IBM-Cloud/bluemix-go/api/certificatemanager"
 	"github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	"github.com/IBM-Cloud/bluemix-go/api/globalsearch/globalsearchv2"
 	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
+	"github.com/IBM-Cloud/bluemix-go/api/iam/iamv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
@@ -36,14 +33,13 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
 	"github.com/IBM-Cloud/bluemix-go/api/schematics"
+	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM-Cloud/bluemix-go/authentication"
 	"github.com/IBM-Cloud/bluemix-go/http"
 	"github.com/IBM-Cloud/bluemix-go/rest"
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
-	issession "github.ibm.com/Bluemix/riaas-go-client/session"
-
-	// Added code for the Power Colo Offering
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
+	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 )
 
 //RetryDelay
@@ -150,6 +146,7 @@ type ClientSession interface {
 	IBMPISession() (*ibmpisession.IBMPISession, error)
 	SchematicsAPI() (schematics.SchematicsServiceAPI, error)
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
+	CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error)
 }
 
 type clientSession struct {
@@ -172,6 +169,9 @@ type clientSession struct {
 
 	stxConfigErr  error
 	stxServiceAPI schematics.SchematicsServiceAPI
+
+	certManagementErr error
+	certManagementAPI certificatemanager.CertificateManagerServiceAPI
 
 	cfConfigErr  error
 	cfServiceAPI mccpv2.MccpServiceAPI
@@ -332,6 +332,11 @@ func (sess clientSession) SoftLayerSession() *slsession.Session {
 	return sess.session.SoftLayerSession
 }
 
+// CertManagementAPI provides Certificate  management APIs ...
+func (sess clientSession) CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error) {
+	return sess.certManagementAPI, sess.certManagementErr
+}
+
 // Session to the Power Colo Service
 
 func (sess clientSession) IBMPISession() (*ibmpisession.IBMPISession, error) {
@@ -373,6 +378,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.powerConfigErr = errEmptyBluemixCredentials
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
 		session.userManagementErr = errEmptyBluemixCredentials
+		session.certManagementErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -522,6 +528,11 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.userManagementErr = fmt.Errorf("Error occured while configuring user management service: %q", err)
 	}
 	session.userManagementAPI = userManagementAPI
+	certManagementAPI, err := certificatemanager.New(sess.BluemixSession)
+	if err != nil {
+		session.certManagementErr = fmt.Errorf("Error occured while configuring Certificate manager service: %q", err)
+	}
+	session.certManagementAPI = certManagementAPI
 
 	ibmpisession, err := ibmpisession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, true, c.BluemixTimeout, session.bmxUserDetails.userAccount)
 	if err != nil {
