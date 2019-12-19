@@ -1,0 +1,2 @@
+variable "certfile_path" {
+}

@@ -230,6 +230,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_function_trigger":                               resourceIBMFunctionTrigger(),
 			"ibm_cis":                                            resourceIBMCISInstance(),
 			"ibm_database":                                       resourceIBMDatabaseInstance(),
+			"ibm_certificate_manager_import":                     resourceIBMCertificateManagerImport(),
 			"ibm_cis_domain":                                     resourceIBMCISDomain(),
 			"ibm_cis_domain_settings":                            resourceIBMCISSettings(),
 			"ibm_cis_healthcheck":                                resourceIBMCISHealthCheck(),
