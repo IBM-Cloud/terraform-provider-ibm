@@ -16,11 +16,15 @@ const (
 	// MEMBER ...
 	MEMBER = "MEMEBER"
 	// ACCESS ...
-	ACCESS    = "access"
-	NOACCESS  = "noacess"
-	VIEWONLY  = "viewonly"
-	BASICUSER = "basicuser"
-	SUPERUSER = "superuser"
+	ACCESS          = "access"
+	NOACCESS        = "noacess"
+	VIEWONLY        = "viewonly"
+	BASICUSER       = "basicuser"
+	SUPERUSER       = "superuser"
+	MANAGER         = "manager"
+	AUDITOR         = "auditor"
+	BILLINGMANANGER = "billingmanager"
+	DEVELOPER       = "developer"
 )
 
 var viewOnly = []string{
@@ -230,6 +234,48 @@ func resourceIBMUserInvite() *schema.Resource {
 					},
 				},
 			},
+			"cloud_foundry_roles": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+
+						"organization_guid": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "GUID of Organization",
+						},
+
+						"org_roles": {
+							Type:        schema.TypeList,
+							Required:    true,
+							Description: "roles to be assigned to user in given space",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+
+						"spaces": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"space_guid": {
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "GUID of space",
+									},
+
+									"space_roles": {
+										Type:        schema.TypeList,
+										Required:    true,
+										Description: "roles to be assigned to user in given space",
+										Elem:        &schema.Schema{Type: schema.TypeString},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -267,12 +313,16 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	infraPermissions := getInfraPermissions(d, meta)
-
+	orgRoles, err := getCloudFoundryRoles(d, meta)
+	if err != nil {
+		return err
+	}
 	inviteUserPayload := v2.UserInvite{
 		Users:               users,
 		AccessGroup:         accessGroups,
 		IAMPolicy:           accessPolicies,
 		InfrastructureRoles: v2.InfraPermissions{Permissions: infraPermissions},
+		OrganizationRoles:   orgRoles,
 	}
 
 	accountID, err := getAccountID(d, meta)
@@ -363,12 +413,17 @@ func resourceIBMIAMUpdateUserProfile(d *schema.ResourceData, meta interface{}) e
 			}
 
 			infraPermissions := getInfraPermissions(d, meta)
+			orgRoles, err := getCloudFoundryRoles(d, meta)
+			if err != nil {
+				return err
+			}
 
 			inviteUserPayload := v2.UserInvite{
 				Users:               users,
 				AccessGroup:         accessGroups,
 				IAMPolicy:           accessPolicies,
 				InfrastructureRoles: v2.InfraPermissions{Permissions: infraPermissions},
+				OrganizationRoles:   orgRoles,
 			}
 
 			_, InviteUserError := Client.InviteUsers(accountID, inviteUserPayload)
@@ -612,4 +667,61 @@ func getPolicies(d *schema.ResourceData, meta interface{}, policies []interface{
 		policyList = append(policyList, v2.UserPolicy{Roles: iampapv1.ConvertRoleModels(policyRoles), Resources: []iampapv1.Resource{policyResource}, Type: ACCESS})
 	}
 	return policyList, nil
+}
+
+// getCloudFoundryRoles ...
+func getCloudFoundryRoles(d *schema.ResourceData, meta interface{}) ([]v2.OrgRole, error) {
+	cloudFoundryRoles := make([]v2.OrgRole, 0)
+	if data, ok := d.GetOk("cloud_foundry_roles"); ok {
+		sess, err := meta.(ClientSession).BluemixSession()
+		if err != nil {
+			return nil, err
+		}
+		usersSet := d.Get("users").(*schema.Set)
+		usersList := flattenUsersSet(usersSet)
+		for _, d := range data.([]interface{}) {
+			orgRole := v2.OrgRole{}
+			role := d.(map[string]interface{})
+			orgRole.ID = role["organization_guid"].(string)
+			orgRole.Region = sess.Config.Region
+			orgRole.Users = usersList
+			for _, r := range role["org_roles"].([]interface{}) {
+				switch strings.ToLower(r.(string)) {
+				case AUDITOR:
+					orgRole.Auditors = usersList
+				case BILLINGMANANGER:
+					orgRole.BillingManagers = usersList
+				case MANAGER:
+					orgRole.Managers = usersList
+				}
+			}
+			if spaces, ok := role["spaces"]; ok {
+				for _, s := range spaces.([]interface{}) {
+					spaceInfo := v2.Space{}
+					space := s.(map[string]interface{})
+					if spaceroles, ok := space["space_roles"]; ok {
+						for _, r := range spaceroles.([]interface{}) {
+							role := r.(string)
+							switch strings.ToLower(role) {
+							case AUDITOR:
+								spaceInfo.Auditors = usersList
+							case DEVELOPER:
+								spaceInfo.Developers = usersList
+							case MANAGER:
+								spaceInfo.Managers = usersList
+							}
+
+						}
+					}
+					if spaceName, ok := space["space_guid"]; ok {
+						spaceInfo.ID = spaceName.(string)
+					}
+					orgRole.Spaces = append(orgRole.Spaces, spaceInfo)
+				}
+			}
+			cloudFoundryRoles = append(cloudFoundryRoles, orgRole)
+
+		}
+	}
+	return cloudFoundryRoles, nil
 }
