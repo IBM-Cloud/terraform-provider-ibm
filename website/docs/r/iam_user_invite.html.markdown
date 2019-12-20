@@ -171,6 +171,36 @@ resource "ibm_iam_user_invite" "invite_user" {
 }
 
 ```
+
+### User invite with access cloud foundry roles
+
+```
+provider "ibm" {}
+
+data "ibm_org" "org" {
+  org = "${var.org}"
+}
+
+data "ibm_space" "space" {
+  org   = "${var.org}"
+  space = "${var.space}"
+}
+
+resource "ibm_iam_user_invite" "invite_user" {
+    users = ["test@in.ibm.com"]
+    cloud_foundry_roles = [{
+      organization_guid = "${data.ibm_org.org.id}"
+      org_roles = ["Manager", "Auditor"]
+      spaces = [{
+          space_guid = "${data.ibm_space.space.id}"
+          space_roles = ["Manager", "Developer"]
+      }]
+    }]
+}
+
+```
+
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -191,6 +221,12 @@ Nested `resources` blocks have the following structure:
     * `resource` - (Optional, string) Resource of the policy definition.
     * `resource_group_id` - (Optional, string) The ID of the resource group. You can retrieve the value from data source `ibm_resource_group`. 
     * `attributes` - (Optional, map) Set resource attributes in the form of `'name=value,name=value...`.
+* `cloud_foundry_roles` - (Optional, list) A nested block describing the cloud foundry roles of inviting user. The nested cloud_foundry_roles block have the following structure:
+  * `organization_guid` - (Required, string) ID of the cloud foundry organization.
+  * `org_roles` - (Required, list) The orgnization roles assigned for the inviting user. The supported org_roles are Manager, Auditor, BillingManager.
+  * `spaces` - (Optional, list) A nested block describing the cloud foundry space roles and space details. The nested spaces block have the following structure:
+    * `space_guid` - (Required, string) ID of the cloud foundry space.
+    * `space_roles` - (Required, list) The space roles assigned for the inviting user. The supported space roles are Manager, Developer, Auditor.
 
 ## Import
 
