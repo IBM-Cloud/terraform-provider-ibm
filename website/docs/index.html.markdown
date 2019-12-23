@@ -18,22 +18,22 @@ Use the navigation menu on the left to read about the available data sources and
 ```hcl
 # Configure the IBM Cloud Provider
 provider "ibm" {
-  ibmcloud_api_key    = "${var.ibm_bmx_api_key}"
-  iaas_classic_username = "${var.ibm_sl_username}"
-  iaas_classic_api_key  = "${var.ibm_sl_api_key}"
+  ibmcloud_api_key      = var.ibm_bmx_api_key
+  iaas_classic_username = var.ibm_sl_username
+  iaas_classic_api_key  = var.ibm_sl_api_key
 }
 
 # Create an IBM Cloud infrastructure SSH key. You can find the SSH key surfaces in the infrastructure console under Devices > Manage > SSH Keys
 resource "ibm_compute_ssh_key" "test_key_1" {
   label      = "test_key_1"
-  public_key = "${var.ssh_public_key}"
+  public_key = var.ssh_public_key
 }
 
 # Create a virtual server with the SSH key
 resource "ibm_compute_vm_instance" "my_server_2" {
   hostname          = "host-b.example.com"
   domain            = "example.com"
-  ssh_key_ids       = [123456, "${ibm_compute_ssh_key.test_key_1.id}"]
+  ssh_key_ids       = [123456, ibm_compute_ssh_key.test_key_1.id]
   os_reference_code = "CENTOS_6_64"
   datacenter        = "ams01"
   network_speed     = 10
@@ -43,14 +43,14 @@ resource "ibm_compute_vm_instance" "my_server_2" {
 
 # Reference details of the IBM Cloud space
 data "ibm_space" "space" {
-  space = "${var.space}"
-  org   = "${var.org}"
+  space = var.space
+  org   = var.org
 }
 
 # Create an instance of an IBM service
 resource "ibm_service_instance" "service" {
-  name       = "${var.instance_name}"
-  space_guid = "${data.ibm_space.space.id}"
+  name       = var.instance_name
+  space_guid = data.ibm_space.space.id
   service    = "speech_to_text"
   plan       = "lite"
   tags       = ["cluster-service", "cluster-bind"]
@@ -59,9 +59,9 @@ resource "ibm_service_instance" "service" {
 # Create a Cloud Functions action
 resource "ibm_function_action" "nodehello" {
   name = "action-name"
-  exec = {
+  exec {
     kind = "nodejs:6"
-    code = "${file("hellonode.js")}"
+    code = file("hellonode.js")
   }
 }
 
@@ -72,7 +72,7 @@ resource "ibm_is_vpc" "testacc_vpc" {
 
 resource "ibm_is_subnet" "testacc_subnet" {
   name            = "testsubnet1"
-  vpc             = "${ibm_is_vpc.testacc_vpc.id}"
+  vpc             = ibm_is_vpc.testacc_vpc.id
   zone            = "us-south-1"
   ipv4_cidr_block = "10.240.0.0/24"
 }
@@ -87,19 +87,19 @@ resource "ibm_is_instance" "testacc_instance" {
   image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
   profile = "b-2x8"
 
-  primary_network_interface = {
-    subnet     = "${ibm_is_subnet.testacc_subnet.id}"
+  primary_network_interface {
+    subnet = ibm_is_subnet.testacc_subnet.id
   }
 
-  vpc  = "${ibm_is_vpc.testacc_vpc.id}"
-  zone = "us-south-1"
-  keys = ["${ibm_is_ssh_key.testacc_sshkey.id}"]
-  user_data = "${file("nginx.sh")}"
+  vpc       = ibm_is_vpc.testacc_vpc.id
+  zone      = "us-south-1"
+  keys      = [ibm_is_ssh_key.testacc_sshkey.id]
+  user_data = file("nginx.sh")
 }
 
 resource "ibm_is_floating_ip" "testacc_floatingip" {
   name   = "testfip"
-  target = "${ibm_is_instance.testacc_instance.primary_network_interface.0.id}"
+  target = ibm_is_instance.testacc_instance.primary_network_interface[0].id
 }
 
 ```

@@ -20,22 +20,22 @@ In the following example, you can create a VM instance using a Debian image:
 
 ```hcl
 resource "ibm_compute_vm_instance" "twc_terraform_sample" {
-    hostname = "twc-terraform-sample-name"
-    domain = "bar.example.com"
-    os_reference_code = "DEBIAN_8_64"
-    datacenter = "wdc01"
-    network_speed = 10
-    hourly_billing = true
-    private_network_only = false
-    cores = 1
-    memory = 1024
-    disks = [25, 10, 20]
-    user_metadata = "{\"value\":\"newvalue\"}"
-    dedicated_acct_host_only = true
-    local_disk = false
-    public_vlan_id = 1391277
-    private_vlan_id = 7721931
-    private_security_group_ids = [576973]
+  hostname                   = "twc-terraform-sample-name"
+  domain                     = "bar.example.com"
+  os_reference_code          = "DEBIAN_8_64"
+  datacenter                 = "wdc01"
+  network_speed              = 10
+  hourly_billing             = true
+  private_network_only       = false
+  cores                      = 1
+  memory                     = 1024
+  disks                      = [25, 10, 20]
+  user_metadata              = "{\"value\":\"newvalue\"}"
+  dedicated_acct_host_only   = true
+  local_disk                 = false
+  public_vlan_id             = 1391277
+  private_vlan_id            = 7721931
+  private_security_group_ids = [576973]
 }
 ```
 
@@ -43,21 +43,22 @@ In the following example, you can create a VM instance using a block device temp
 
 ```hcl
 resource "ibm_compute_vm_instance" "terraform-sample-BDTGroup" {
-   hostname = "terraform-sample-blockDeviceTemplateGroup"
-   domain = "bar.example.com"
-   datacenter = "ams01"
-   public_network_speed = 10
-   hourly_billing = false
-   cores = 1
-   memory = 1024
-   local_disk = false
-   image_id = 12345
-   tags = [
-     "collectd",
-     "mesos-master"
-   ]
-   public_subnet = "50.97.46.160/28"
-   private_subnet = "10.56.109.128/26"
+  hostname   = "terraform-sample-blockDeviceTemplateGroup"
+  domain     = "bar.example.com"
+  datacenter = "ams01"
+
+  //public_network_speed = 10
+  hourly_billing = false
+  cores          = 1
+  memory         = 1024
+  local_disk     = false
+  image_id       = 12345
+  tags = [
+    "collectd",
+    "mesos-master",
+  ]
+  public_subnet  = "50.97.46.160/28"
+  private_subnet = "10.56.109.128/26"
 }
 ```
 
@@ -65,41 +66,42 @@ In the following example, you can create a VM instance using a flavor:
 
 ```hcl
 resource "ibm_compute_vm_instance" "terraform-sample-flavor" {
-    hostname = "terraform-sample-flavor"
-    domain = "bar.example.com"
-    os_reference_code = "DEBIAN_8_64"
-    datacenter = "dal06"
-    network_speed = 10
-    hourly_billing = true
-    local_disk = false
-    private_network_only = false
-    flavor_key_name = "B1_2X8X25"
-    user_metadata = "{\\\"value\\\":\\\"newvalue\\\"}"
-    // provide disk 3, 4, 5 and so on
-    disks = [10, 20, 30]
-    tags = ["collectd"]
-    // It should be false
-    dedicated_acct_host_only = false
-    ipv6_enabled = true
-    secondary_ip_count = 4
-    notes = "VM notes"
+  hostname             = "terraform-sample-flavor"
+  domain               = "bar.example.com"
+  os_reference_code    = "DEBIAN_8_64"
+  datacenter           = "dal06"
+  network_speed        = 10
+  hourly_billing       = true
+  local_disk           = false
+  private_network_only = false
+  flavor_key_name      = "B1_2X8X25"
+  user_metadata        = "{\\\"value\\\":\\\"newvalue\\\"}"
+
+  // provide disk 3, 4, 5 and so on
+  disks = [10, 20, 30]
+  tags  = ["collectd"]
+
+  // It should be false
+  dedicated_acct_host_only = false
+  ipv6_enabled             = true
+  secondary_ip_count       = 4
+  notes                    = "VM notes"
 }
 ```
 In the following example, you can create multiple vm's
 
 ```hcl
 resource "ibm_compute_vm_instance" "terraform-bulk-vms" {
-  bulk_vms = [{
+  bulk_vms {
     hostname = "vm1"
 
     domain = "bar.example.com"
-  },
-    {
-      hostname = "vm2"
+  }
+  bulk_vms {
+    hostname = "vm2"
 
-      domain = "bar.example.com"
-    },
-  ]
+    domain = "bar.example.com"
+  }
 
   os_reference_code    = "CENTOS_7_64"
   datacenter           = "dal09"
@@ -111,6 +113,7 @@ resource "ibm_compute_vm_instance" "terraform-bulk-vms" {
   disks                = [25]
   local_disk           = false
 }
+
 ```
 
 In the following example, you can retry to create a VM instance using a datacenter_choice. If VM fails to place order on first datacenter or vlans it retries to place order on subsequent datacenters and vlans untill place order is successfull:

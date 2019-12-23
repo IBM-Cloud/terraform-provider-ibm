@@ -22,14 +22,14 @@ In the following example, you can create a VLAN:
 
 ```hcl
 resource "ibm_network_vlan" "test_vlan" {
-   name = "test_vlan"
-   datacenter = "dal06"
-   type = "PUBLIC"
-   router_hostname = "fcr01a.dal06"
-   tags = [
-     "collectd",
-     "mesos-master"
-   ]
+  name            = "test_vlan"
+  datacenter      = "dal06"
+  type            = "PUBLIC"
+  router_hostname = "fcr01a.dal06"
+  tags = [
+    "collectd",
+    "mesos-master",
+  ]
 }
 
 ```

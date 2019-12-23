@@ -17,8 +17,8 @@ This resource is typically used in conjunction with IBM Cloud Internet Services 
 
 ```hcl
 resource "ibm_dns_domain_registration_nameservers" "dnstestdomain" {
-    dns_registration_id = "${data.ibm_dns_domain_registration.dnstestdomain.id}"
-    name_servers = "${ibm_cis_domain.dnstestdomain.name_servers}" 
+    dns_registration_id = data.ibm_dns_domain_registration.dnstestdomain.id
+    name_servers = ibm_cis_domain.dnstestdomain.name_servers 
 }
 data "ibm_dns_domain_registration" "dnstestdomain" {
     name = "dnstestdomain.com"
@@ -32,11 +32,12 @@ Or
 
 ```hcl
 resource "ibm_dns_domain_registration_nameservers" "dns-domain-test" {
-    dns_registration_id = "${data.ibm_dns_domain_registration.dns-domain-test.id}"
-    name_servers = ["ns006.name.ibm.cloud.com", "ns017.name.ibm.cloud.com"] 
+  dns_registration_id = data.ibm_dns_domain_registration.dns-domain-test.id
+  name_servers        = ["ns006.name.ibm.cloud.com", "ns017.name.ibm.cloud.com"]
 }
+
 data "ibm_dns_domain_registration" "dns-domain-test" {
-    name = "test-domain.com"
+  name = "test-domain.com"
 }
 ```
 

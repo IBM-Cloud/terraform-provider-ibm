@@ -17,6 +17,8 @@ For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) AP
 In the following example, you can create an auto scaling policy:
 
 ```hcl
+/* Deprecated in terraform v0.12 hence not updated */
+
 resource "ibm_compute_autoscale_policy" "test_scale_policy" {
     name = "test_scale_policy_name"
     scale_type = "RELATIVE"

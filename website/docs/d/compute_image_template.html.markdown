@@ -22,9 +22,7 @@ The following example shows how you can use this data source to reference the im
 
 ```hcl
 resource "ibm_compute_vm_instance" "vm1" {
-    ...
-    image_id = "${data.ibm_compute_image_template.img_tpl.id}"
-    ...
+    image_id = data.ibm_compute_image_template.img_tpl.id
 }
 ```
 

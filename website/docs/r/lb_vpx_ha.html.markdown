@@ -33,16 +33,16 @@ resource "ibm_lb_vpx" "test_sec" {
     version = "10.5"
     plan = "Standard"
     ip_count = 2
-    public_vlan_id = "${ibm_lb_vpx.test_pri.public_vlan_id}"
-    private_vlan_id = "${ibm_lb_vpx.test_pri.private_vlan_id}"
-    public_subnet = "${ibm_lb_vpx.test_pri.public_subnet}"
-    private_subnet = "${ibm_lb_vpx.test_pri.private_subnet}"
+    public_vlan_id = ibm_lb_vpx.test_pri.public_vlan_id
+    private_vlan_id = ibm_lb_vpx.test_pri.private_vlan_id
+    public_subnet = ibm_lb_vpx.test_pri.public_subnet
+    private_subnet = ibm_lb_vpx.test_pri.private_subnet
 }
 
 # Configure high availability with the primary and secondary NetScaler VPXs
 resource "ibm_lb_vpx_ha" "test_ha" {
-    primary_id = "${ibm_lb_vpx.test_pri.id}"
-    secondary_id = "${ibm_lb_vpx.test_sec.id}"
+    primary_id = ibm_lb_vpx.test_pri.id
+    secondary_id = ibm_lb_vpx.test_sec.id
     stay_secondary = false
 }
 ```

@@ -25,9 +25,7 @@ The following example shows how you can use this data source to reference a VLAN
 
 ```hcl
 resource "ibm_compute_bare_metal" "bm1" {
-    ...
-    public_vlan_id = "${data.ibm_network_vlan.vlan_foo.id}"
-    ...
+    public_vlan_id = data.ibm_network_vlan.vlan_foo.id
 }
 ```
 

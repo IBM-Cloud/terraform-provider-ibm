@@ -25,27 +25,28 @@ The following example shows how to use this resource with SoftLayer accounts:
 
 ```hcl
 resource "ibm_compute_user" "joe" {
-    address1     = "12345 Any Street"
-    address2     = "Suite #99"
-    city         = "Atlanta"
-    company_name = "Comp Inc"
-    country      = "US"
-    email        = "joe@doe.com"
-    first_name   = "Joe"
-    has_api_key  = false
-    last_name    = "Doe"
-    username     = "testuser"
-    password     = "Change3Me!"
-    permissions  = [
-        "ACCESS_ALL_GUEST",
-        "ACCESS_ALL_HARDWARE",
-        "SERVER_ADD",
-        "SERVER_CANCEL",
-        "RESET_PORTAL_PASSWORD"
-    ]
-    state        = "GA"
-    timezone     = "EST"
+  address1     = "12345 Any Street"
+  address2     = "Suite #99"
+  city         = "Atlanta"
+  company_name = "Comp Inc"
+  country      = "US"
+  email        = "joe@doe.com"
+  first_name   = "Joe"
+  has_api_key  = false
+  last_name    = "Doe"
+  username     = "testuser"
+  password     = "Change3Me!"
+  permissions = [
+    "ACCESS_ALL_GUEST",
+    "ACCESS_ALL_HARDWARE",
+    "SERVER_ADD",
+    "SERVER_CANCEL",
+    "RESET_PORTAL_PASSWORD",
+  ]
+  state    = "GA"
+  timezone = "EST"
 }
+
 ```
 
 ## IBMid Account
@@ -66,24 +67,24 @@ The following example shows how to use this resource with IBMid accounts:
 
 ```hcl
 resource "ibm_compute_user" "joe" {
-    address1     = "12345 Any Street"
-    address2     = "Suite #99"
-    city         = "Atlanta"
-    company_name = "Comp Inc"
-    country      = "US"
-    email        = "joe@doe.com"
-    first_name   = "Joe"
-    has_api_key  = false
-    last_name    = "Doe"
-    permissions  = [
-        "ACCESS_ALL_GUEST",
-        "ACCESS_ALL_HARDWARE",
-        "SERVER_ADD",
-        "SERVER_CANCEL",
-        "RESET_PORTAL_PASSWORD"
-    ]
-    state        = "GA"
-    timezone     = "EST"
+  address1     = "12345 Any Street"
+  address2     = "Suite #99"
+  city         = "Atlanta"
+  company_name = "Comp Inc"
+  country      = "US"
+  email        = "joe@doe.com"
+  first_name   = "Joe"
+  has_api_key  = false
+  last_name    = "Doe"
+  permissions = [
+    "ACCESS_ALL_GUEST",
+    "ACCESS_ALL_HARDWARE",
+    "SERVER_ADD",
+    "SERVER_CANCEL",
+    "RESET_PORTAL_PASSWORD",
+  ]
+  state    = "GA"
+  timezone = "EST"
 }
 ```
 

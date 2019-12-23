@@ -55,19 +55,19 @@ resource "ibm_lb_vpx" "test" {
 
 resource "ibm_lb_vpx_vip" "test_vip1" {
     name = "test_vip1"
-    nad_controller_id = "${ibm_lb_vpx.test.id}"
+    nad_controller_id = ibm_lb_vpx.test.id
     load_balancing_method = "rr"
     source_port = 443
 # SSL type provides SSL offload
     type = "SSL"
-    virtual_ip_address = "${ibm_lb_vpx.test.vip_pool[0]}"
+    virtual_ip_address = ibm_lb_vpx.test.vip_pool[0]
 # Use a security certificate in the SoftLayer portal
     security_certificate_id = 80347
 }
 
 resource "ibm_lb_vpx_service" "testacc_service1" {
   name = "test_load_balancer_service1"
-  vip_id = "${ibm_lb_vpx_vip.test_vip1.id}"
+  vip_id = ibm_lb_vpx_vip.test_vip1.id
 # 10.6.218.166 should provides HTTP service with port 80
   destination_ip_address = "10.66.218.166"
   destination_port = 80
