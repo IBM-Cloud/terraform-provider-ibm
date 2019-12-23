@@ -3620,6 +3620,13 @@ paths:
               format: name, pattern: '^[A-Za-z][-A-Za-z0-9_]*$', type: string}
             resource_group:
               properties:
+                id: {description: The unique identifier for this resource,
+                  example: 349a61d8-7ab1-420f-a690-5fed76ef9d4f, format: uuid,
+                  pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+                  type: string}
+              title: idreference
+              type: object
+              properties:
                 id: {description: The unique identifier for this resource, example: 349a61d8-7ab1-420f-a690-5fed76ef9d4f,
                   format: uuid, pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
                   type: string}
@@ -4058,6 +4065,13 @@ paths:
               example: AAAAB3NzaC1yc2EAAAADAQABAAABAQDDGe50Bxa5T5NDddrrtbx2Y4/VGbiCgXqnBsYToIUKoFSHTQl5IX3PasGnneKanhcLwWz5M5MoCRvhxTp66NKzIfAz7r+FX9rxgR+ZgcM253YAqOVeIpOU408simDZKriTlN8kYsXL7P34tsWuAJf4MgZtJAQxous/2byetpdCv8ddnT4X3ltOg9w+LqSCPYfNivqH00Eh7S1Ldz7I8aw5WOp5a+sQFP/RbwfpwHp+ny7DfeIOokcuI42tJkoBn7UsLTVpCSmXr2EDRlSWe/1M/iHNRBzaT3CK0+SwZWd2AEjePxSnWKNGIEUJDlUYp7hKhiQcgT5ZAnWU121oc5En,
               type: string}
             resource_group:
+              properties:
+                id: {description: The unique identifier for this resource,
+                  example: 349a61d8-7ab1-420f-a690-5fed76ef9d4f, format: uuid,
+                  pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+                  type: string}
+              title: idreference
+              type: object
               properties:
                 id: {description: The unique identifier for this resource, example: 349a61d8-7ab1-420f-a690-5fed76ef9d4f,
                   format: uuid, pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',

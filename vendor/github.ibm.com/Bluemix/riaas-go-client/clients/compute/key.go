@@ -1,6 +1,7 @@
 package compute
 
 import (
+	"github.com/go-openapi/strfmt"
 	"github.ibm.com/Bluemix/riaas-go-client/riaas/client/compute"
 	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 
@@ -62,12 +63,19 @@ func (f *KeyClient) Get(id string) (*models.Key, error) {
 }
 
 // Create ...
-func (f *KeyClient) Create(name, keystring string) (*models.Key, error) {
+func (f *KeyClient) Create(name, keystring, resourcegroupID string) (*models.Key, error) {
 	keytype := compute.PostKeysBodyTypeRsa
 	var body = compute.PostKeysBody{
 		Name:      name,
 		PublicKey: &keystring,
 		Type:      &keytype,
+	}
+	if resourcegroupID != "" {
+		resourcegroupuuid := strfmt.UUID(resourcegroupID)
+		var resourcegroup = compute.PostKeysParamsBodyResourceGroup{
+			ID: resourcegroupuuid,
+		}
+		body.ResourceGroup = &resourcegroup
 	}
 	params := compute.NewPostKeysParamsWithTimeout(f.session.Timeout).WithBody(body)
 	params.Version = "2019-10-08"
