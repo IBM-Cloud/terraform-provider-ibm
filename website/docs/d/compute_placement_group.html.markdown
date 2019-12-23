@@ -22,9 +22,7 @@ The following example shows how you can use this data source to reference the pl
 
 ```hcl
 resource "ibm_compute_vm_instance" "vm1" {
-    ...
-    placement_group_id = "${data.ibm_compute_placement_group.group.id}"
-    ...
+    placement_group_id = data.ibm_compute_placement_group.group.id
 }
 ```
 

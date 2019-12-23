@@ -20,7 +20,7 @@ data "ibm_space" "space" {
 
 data "ibm_service_instance" "serviceInstance" {
   name = "mycloudantdb"
-  space_guid   = "${data.ibm_space.space.id}"
+  space_guid   = data.ibm_space.space.id
 }
 ```
 

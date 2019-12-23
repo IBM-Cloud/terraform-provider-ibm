@@ -22,9 +22,7 @@ The following example shows how you can use this data source to reference the do
 
 ```hcl
 resource "ibm_dns_domain_registration_nameservers" "dnstestdomain" {
-    ...
-    dns_registration_id = "${data.ibm_dns_domain_registration.dnstestdomain.id}"
-    ...
+  dns_registration_id = data.ibm_dns_domain_registration.dnstestdomain.id
 }
 ```
 

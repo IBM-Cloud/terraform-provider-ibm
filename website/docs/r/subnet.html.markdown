@@ -23,13 +23,14 @@ The following example creates a private portable subnet which has one available 
 
 ```hcl
 resource "ibm_subnet" "portable_subnet" {
-  type = "Portable"
-  private = true
+  type       = "Portable"
+  private    = true
   ip_version = 4
-  capacity = 4
-  vlan_id = 1234567
-  notes = "portable_subnet"
-  //User can increase timeouts 
+  capacity   = 4
+  vlan_id    = 1234567
+  notes      = "portable_subnet"
+
+  //User can increase timeouts
   timeouts {
     create = "45m"
   }
@@ -49,7 +50,7 @@ resource "ibm_subnet" "test" {
 
 # Use a built-in function cidrhost with index 1.
 output "first_ip_address" {
-  value = "${cidrhost(ibm_subnet.test.subnet_cidr,1)}"
+  value = cidrhost(ibm_subnet.test.subnet_cidr,1)
 }
 
 ```
@@ -72,17 +73,18 @@ Users can use Terraform built-in functions to get IP addresses from `subnet`. Th
 
 ```hcl
 resource "ibm_subnet" "test" {
-  type = "Static"
-  private = false
-  ip_version = 4
-  capacity = 4
-  endpoint_ip="159.8.181.82"
+  type        = "Static"
+  private     = false
+  ip_version  = 4
+  capacity    = 4
+  endpoint_ip = "159.8.181.82"
 }
 
 # Use a built-in function cidrhost with index 0.
 output "first_ip_address" {
-  value = "${cidrhost(ibm_subnet.test.subnet_cidr,0)}"
+  value = cidrhost(ibm_subnet.test.subnet_cidr, 0)
 }
+
 
 ```
 

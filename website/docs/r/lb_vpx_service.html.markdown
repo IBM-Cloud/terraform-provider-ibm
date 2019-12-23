@@ -19,8 +19,8 @@ In the following example, you can create a VPX load balancer:
 ```hcl
 resource "ibm_lb_vpx_service" "test_service" {
   name = "test_load_balancer_service"
-  vip_id = "${ibm_lb_vpx_vip.testacc_vip.id}"
-  destination_ip_address = "${ibm_compute_vm_instance.test_server.ipv4_address}"
+  vip_id = ibm_lb_vpx_vip.testacc_vip.id
+  destination_ip_address = ibm_compute_vm_instance.test_server.ipv4_address
   destination_port = 80
   weight = 55
   connection_limit = 5000

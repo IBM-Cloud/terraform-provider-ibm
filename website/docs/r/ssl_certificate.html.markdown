@@ -18,83 +18,84 @@ In the following example, you can use a certificate on file:
 
 ```hcl
 resource "ibm_ssl_certificate" "my_ssllllll" {
-  	certificate_signing_request= "-----BEGIN CERTIFICATE REQUEST-----\nCERTIFICATE CONTENT\n-----END CERTIFICATE REQUEST-----"
-	organization_information = {
-		org_address = {
-			org_address_line1= "abc"
-			org_address_line2= "xyz"
-			org_city="pune"
-			org_country_code= "IN"
-			org_state="MH"
-			org_postal_code= "411045"
-		}
-		org_organization_name= "GSLAB"
-		org_phone_number= "8657072955"
-		org_fax_number = ""
-	}	
-	technical_contact_same_as_org_address_flag = "false"
-	technical_contact = {
-		tech_address = {
-			tech_address_line1= "fcb"
-			tech_address_line2= "pqr"
-			tech_city="pune"
-			tech_country_code= "IN"
-			tech_state="MH"
-			tech_postal_code= "411045"
-		}
-		tech_organization_name= "IBM"
-		tech_phone_number= "8657072955"
-		tech_fax_number = ""
-		tech_first_name = "qwerty"
-		tech_last_name = "ytrewq"
-		tech_email_address = "abc@gmail.com"
-		tech_title= "SSL CERT"
-	}
-	billing_contact = {
-		billing_address = {
-			billing_address_line1= "plk"
-			billing_address_line2= "PLO"
-			billing_city="PUNE"
-			billing_country_code= "IN"
-			billing_state="MH"
-			billing_postal_code= "411045"
-		}
-		billing_organization_name= "IBM"
-		billing_phone_number= "8657072955"
-		billing_fax_number = ""
-		billing_first_name = "ERTYU"
-		billing_last_name = "SDFGHJK"
-		billing_email_address = "kjjj@gsd.com"
-		billing_title= "PFGHJK"
-	}
-	administrative_contact = {
-		admin_address = {
-			admin_address_line1= "fghds"
-			admin_address_line2= "twyu"
-			admin_city="pune"
-			admin_country_code= "IN"
-			admin_state="MH"
-			admin_postal_code= "411045"
-		}
-		admin_organization_name = "GSLAB"
-		admin_phone_number = "8657072955"
-		admin_fax_number = ""
-		admin_first_name = "DFGHJ"
-		admin_last_name = "dfghjkl"
-		admin_email_address = "fghjk@gshhds.com"
-		admin_title= "POIUYGHJK"
-	}	
-	administrative_contact_same_as_technical_flag = "false"
-	billing_contact_same_as_technical_flag = "false"	
-	billing_address_same_as_organization_flag = "false"
-	administrative_address_same_as_organization_flag = "false"
-	ssl_type="SSL_CERTIFICATE_QUICKSSL_PREMIUM_2_YEAR"
-	renewal_flag= true
-	server_count= 1
-	server_type= "apache2"
-	validity_months= 24
-	order_approver_email_address= "admin@pune.in"	
+  certificate_signing_request = "-----BEGIN CERTIFICATE REQUEST-----\nCERTIFICATE CONTENT\n-----END CERTIFICATE REQUEST-----"
+  organization_information {
+    org_address {
+      org_address_line1 = "abc"
+      org_address_line2 = "xyz"
+      org_city          = "pune"
+      org_country_code  = "IN"
+      org_state         = "MH"
+      org_postal_code   = "411045"
+    }
+    org_organization_name = "GSLAB"
+    org_phone_number      = "8657072955"
+    org_fax_number        = ""
+  }
+  technical_contact_same_as_org_address_flag = "false"
+  technical_contact {
+    tech_address {
+      tech_address_line1 = "fcb"
+      tech_address_line2 = "pqr"
+      tech_city          = "pune"
+      tech_country_code  = "IN"
+      tech_state         = "MH"
+      tech_postal_code   = "411045"
+    }
+    tech_organization_name = "IBM"
+    tech_phone_number      = "8657072955"
+    tech_fax_number        = ""
+    tech_first_name        = "qwerty"
+    tech_last_name         = "ytrewq"
+    tech_email_address     = "abc@gmail.com"
+    tech_title             = "SSL CERT"
+  }
+  billing_contact {
+    billing_address {
+      billing_address_line1 = "plk"
+      billing_address_line2 = "PLO"
+      billing_city          = "PUNE"
+      billing_country_code  = "IN"
+      billing_state         = "MH"
+      billing_postal_code   = "411045"
+    }
+    billing_organization_name = "IBM"
+    billing_phone_number      = "8657072955"
+    billing_fax_number        = ""
+    billing_first_name        = "ERTYU"
+    billing_last_name         = "SDFGHJK"
+    billing_email_address     = "kjjj@gsd.com"
+    billing_title             = "PFGHJK"
+  }
+  administrative_contact {
+    admin_address {
+      admin_address_line1 = "fghds"
+      admin_address_line2 = "twyu"
+      admin_city          = "pune"
+      admin_country_code  = "IN"
+      admin_state         = "MH"
+      admin_postal_code   = "411045"
+    }
+    admin_organization_name = "GSLAB"
+    admin_phone_number      = "8657072955"
+    admin_fax_number        = ""
+    admin_first_name        = "DFGHJ"
+    admin_last_name         = "dfghjkl"
+    admin_email_address     = "fghjk@gshhds.com"
+    admin_title             = "POIUYGHJK"
+  }
+  administrative_contact_same_as_technical_flag    = "false"
+  billing_contact_same_as_technical_flag           = "false"
+  billing_address_same_as_organization_flag        = "false"
+  administrative_address_same_as_organization_flag = "false"
+  ssl_type                                         = "SSL_CERTIFICATE_QUICKSSL_PREMIUM_2_YEAR"
+  renewal_flag                                     = true
+  server_count                                     = 1
+  server_type                                      = "apache2"
+  validity_months                                  = 24
+  order_approver_email_address                     = "admin@pune.in"
 }
+
 ```
 
 
