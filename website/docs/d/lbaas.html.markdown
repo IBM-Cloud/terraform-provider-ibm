@@ -19,21 +19,21 @@ resource "ibm_lbaas" "lbaas" {
   subnets     = [1878778]
   datacenter  = "dal09"
 
-  protocols = [{
-    "frontend_protocol" = "HTTP"
-    "frontend_port" = 80
-    "backend_protocol" = "HTTP"
-    "backend_port" = 80
-    "load_balancing_method" = "round_robin"
-  }]
+  protocols {
+    frontend_protocol     = "HTTP"
+    frontend_port         = 80
+    backend_protocol      = "HTTP"
+    backend_port          = 80
+    load_balancing_method = "round_robin"
+  }
 
-  server_instances = [{
-    "private_ip_address" = "10.1.19.26",
-  },
-  ]
+  server_instances {
+    private_ip_address = "10.1.19.26"
+  }
 }
-    data "ibm_lbaas" "tfacc_lbaas" {
-    name = "test"
+
+data "ibm_lbaas" "tfacc_lbaas" {
+  name = "test"
 }
 
 ```

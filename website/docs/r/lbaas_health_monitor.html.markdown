@@ -19,33 +19,32 @@ resource "ibm_lbaas" "lbaas" {
   description = "delete this"
   subnets     = [1511875]
 
-  protocols = [{
+  protocols {
     frontend_protocol     = "HTTPS"
     frontend_port         = 443
     backend_protocol      = "HTTP"
     backend_port          = 80
     load_balancing_method = "round_robin"
     tls_certificate_id    = 11670
-  },
-    {
-      frontend_protocol     = "HTTP"
-      frontend_port         = 80
-      backend_protocol      = "HTTP"
-      backend_port          = 80
-      load_balancing_method = "round_robin"
-    },
-  ]
+  }
+  protocols {
+    frontend_protocol     = "HTTP"
+    frontend_port         = 80
+    backend_protocol      = "HTTP"
+    backend_port          = 80
+    load_balancing_method = "round_robin"
+  }
 }
 
 resource "ibm_lbaas_health_monitor" "lbaas_hm" {
-  protocol = "${ibm_lbaas.lbaas.health_monitors.0.protocol}"
-  port = "${ibm_lbaas.lbaas.health_monitors.0.port}"
-  timeout = 3
-  interval = 5
+  protocol    = ibm_lbaas.lbaas.health_monitors[0].protocol
+  port        = ibm_lbaas.lbaas.health_monitors[0].port
+  timeout     = 3
+  interval    = 5
   max_retries = 6
-  url_path = "/"
-  lbaas_id = "${ibm_lbaas.lbaas.id}"
-  monitor_id = "${ibm_lbaas.lbaas.health_monitors.0.monitor_id}"
+  url_path    = "/"
+  lbaas_id    = ibm_lbaas.lbaas.id
+  monitor_id  = ibm_lbaas.lbaas.health_monitors[0].monitor_id
 }
 
 ```

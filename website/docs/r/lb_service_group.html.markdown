@@ -21,7 +21,7 @@ resource "ibm_lb_service_group" "test_service_group" {
     port = 82
     routing_method = "CONSISTENT_HASH_IP"
     routing_type = "HTTP"
-    load_balancer_id = "${ibm_lb.test_lb_local.id}"
+    load_balancer_id = ibm_lb.test_lb_local.id
     allocation = 100
 }
 ```

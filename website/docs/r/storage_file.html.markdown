@@ -33,23 +33,23 @@ resource "ibm_storage_file" "fs_endurance" {
   hourly_billing            = true
 
   # Optional fields for snapshot
-  snapshot_schedule = [
-    {
-      schedule_type   = "WEEKLY"
-      retention_count = 20
-      minute          = 2
-      hour            = 13
-      day_of_week     = "SUNDAY"
-      enable          = true
-    },
-    {
-      schedule_type   = "HOURLY"
-      retention_count = 20
-      minute          = 2
-      enable          = true
-    }
-  ]
+  snapshot_schedule {
+    schedule_type   = "WEEKLY"
+    retention_count = 20
+    minute          = 2
+    hour            = 13
+    day_of_week     = "SUNDAY"
+    enable          = true
+  }
+  snapshot_schedule {
+    schedule_type   = "HOURLY"
+    retention_count = 20
+    minute          = 2
+    enable          = true
+  }
+
 }
+
 
 ```
 
@@ -57,15 +57,16 @@ In the following example, you can create 20G of Performance file storage with 10
 
 ```hcl
 resource "ibm_storage_file" "fs_performance" {
-        type = "Performance"
-        datacenter = "dal06"
-        capacity = 20
-        iops = 100
-        # Optional fields
-        allowed_virtual_guest_ids = [ "28961689" ]
-        allowed_subnets = [ "10.146.139.64/26" ]
-        allowed_ip_addresses = [ "10.146.139.84" ]
-        hourly_billing = true
+  type       = "Performance"
+  datacenter = "dal06"
+  capacity   = 20
+  iops       = 100
+
+  # Optional fields
+  allowed_virtual_guest_ids = ["28961689"]
+  allowed_subnets           = ["10.146.139.64/26"]
+  allowed_ip_addresses      = ["10.146.139.84"]
+  hourly_billing            = true
 }
 ```
 

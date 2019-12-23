@@ -19,8 +19,8 @@ In the following example, you can create a monitor:
 
 ```hcl
 resource "ibm_compute_monitor" "test_monitor" {
-    guest_id = ${ibm_compute_vm_instance.test_server.id}
-    ip_address = ${ibm_compute_vm_instance.test_server.id.ipv4_address}
+    guest_id = ibm_compute_vm_instance.test_server.id
+    ip_address = ibm_compute_vm_instance.test_server.id.ipv4_address
     query_type_id = 1
     response_action_id = 1
     wait_cycles = 5

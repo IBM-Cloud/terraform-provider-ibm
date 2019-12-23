@@ -18,14 +18,15 @@ For more information about how to configure a firewall, see the [docs](https://k
 
 ```hcl
 resource "ibm_firewall" "testfw" {
-  firewall_type = "HARDWARE_FIREWALL_DEDICATED"
-  ha_enabled = false
+  firewall_type  = "HARDWARE_FIREWALL_DEDICATED"
+  ha_enabled     = false
   public_vlan_id = 12345678
   tags = [
-     "collectd",
-     "mesos-master"
-   ]
+    "collectd",
+    "mesos-master",
+  ]
 }
+
 ```
 
 ## Argument Reference

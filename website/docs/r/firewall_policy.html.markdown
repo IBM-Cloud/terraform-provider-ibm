@@ -22,35 +22,37 @@ Firewalls should have at least one rule. If Terraform destroys the rules resourc
 
 ```hcl
 resource "ibm_firewall" "demofw" {
-  ha_enabled = false
+  ha_enabled     = false
   public_vlan_id = 1234567
 }
 
+
 resource "ibm_firewall_policy" "rules" {
- firewall_id = "${ibm_firewall.demofw.id}"
- rules = {
-      "action" = "permit"
-      "src_ip_address"= "10.1.1.0"
-      "src_ip_cidr"= 24
-      "dst_ip_address"= "any"
-      "dst_ip_cidr"= 32
-      "dst_port_range_start"= 80
-      "dst_port_range_end"= 80
-      "notes"= "Permit from 10.1.1.0"
-      "protocol"= "udp"
- }
-  rules = {
-       "action" = "deny"
-       "src_ip_address"= "10.1.1.0"
-       "src_ip_cidr"= 24
-       "dst_ip_address"= "any"
-       "dst_ip_cidr"= 32
-       "dst_port_range_start"= 81
-       "dst_port_range_end"= 81
-       "notes"= "Permit from 10.1.1.0"
-       "protocol"= "udp"
+  firewall_id = ibm_firewall.demofw.id
+  rules {
+    action               = "permit"
+    src_ip_address       = "10.1.1.0"
+    src_ip_cidr          = 24
+    dst_ip_address       = "any"
+    dst_ip_cidr          = 32
+    dst_port_range_start = 80
+    dst_port_range_end   = 80
+    notes                = "Permit from 10.1.1.0"
+    protocol             = "udp"
+  }
+  rules {
+    action               = "deny"
+    src_ip_address       = "10.1.1.0"
+    src_ip_cidr          = 24
+    dst_ip_address       = "any"
+    dst_ip_cidr          = 32
+    dst_port_range_start = 81
+    dst_port_range_end   = 81
+    notes                = "Permit from 10.1.1.0"
+    protocol             = "udp"
   }
 }
+
 ```
 
 ## Argument Reference

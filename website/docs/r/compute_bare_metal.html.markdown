@@ -17,21 +17,21 @@ When the `ibm_compute_bare_metal` resource definition has a `fixed_config_preset
 ### Example of an hourly bare metal server
 ```hcl
 resource "ibm_compute_bare_metal" "hourly-bm1" {
-    hostname = "hourly-bm1"
-    domain = "example.com"
-    os_reference_code = "UBUNTU_16_64"
-    datacenter = "dal01"
-    network_speed = 100 # Optional
-    hourly_billing = true # Optional
-    private_network_only = false # Optional
-    fixed_config_preset = "S1270_8GB_2X1TBSATA_NORAID"
+  hostname             = "hourly-bm1"
+  domain               = "example.com"
+  os_reference_code    = "UBUNTU_16_64"
+  datacenter           = "dal01"
+  network_speed        = 100   # Optional
+  hourly_billing       = true  # Optional
+  private_network_only = false # Optional
+  fixed_config_preset  = "S1270_8GB_2X1TBSATA_NORAID"
 
-    user_metadata = "{\"value\":\"newvalue\"}" # Optional
-    tags = [
-      "collectd",
-      "mesos-master"
-    ]
-    notes = "note test"
+  user_metadata = "{\"value\":\"newvalue\"}" # Optional
+  tags = [
+    "collectd",
+    "mesos-master",
+  ]
+  notes = "note test"
 }
 ```
 
@@ -41,43 +41,45 @@ When the `fixed_config_preset` attribute is not configured, Terraform creates a 
 ### Example of a monthly bare metal server
 ```hcl
 resource "ibm_compute_bare_metal" "monthly_bm1" {
+  # Mandatory fields
+  package_key_name = "DUAL_E52600_V4_12_DRIVES"
+  process_key_name = "INTEL_INTEL_XEON_E52620_V4_2_10"
+  memory           = 64
+  os_key_name      = "OS_WINDOWS_2012_R2_FULL_DC_64_BIT_2"
+  hostname         = "cust-bm"
+  domain           = "ms.com"
+  datacenter       = "wdc04"
+  network_speed    = 100
+  public_bandwidth = 500
+  disk_key_names   = ["HARD_DRIVE_800GB_SSD", "HARD_DRIVE_800GB_SSD", "HARD_DRIVE_800GB_SSD"]
+  hourly_billing   = false
 
-# Mandatory fields
-    package_key_name = "DUAL_E52600_V4_12_DRIVES"
-    process_key_name = "INTEL_INTEL_XEON_E52620_V4_2_10"
-    memory = 64
-    os_key_name = "OS_WINDOWS_2012_R2_FULL_DC_64_BIT_2"
-    hostname = "cust-bm"
-    domain = "ms.com"
-    datacenter = "wdc04"
-    network_speed = 100
-    public_bandwidth = 500
-    disk_key_names = [ "HARD_DRIVE_800GB_SSD", "HARD_DRIVE_800GB_SSD", "HARD_DRIVE_800GB_SSD" ]
-    hourly_billing = false
+  # Optional fields
+  private_network_only = false
+  unbonded_network     = true
+  user_metadata        = "{\"value\":\"newvalue\"}"
+  public_vlan_id       = 12345678
+  private_vlan_id      = 87654321
+  public_subnet        = "50.97.46.160/28"
+  private_subnet       = "10.56.109.128/26"
+  tags = [
+    "collectd",
+    "mesos-master",
+  ]
+  redundant_power_supply = true
+  storage_groups {
+    # RAID 5
+    array_type_id = 3
 
-# Optional fields
-    private_network_only = false
-    unbonded_network = true
-    user_metadata = "{\"value\":\"newvalue\"}"
-    public_vlan_id = 12345678
-    private_vlan_id = 87654321
-    public_subnet = "50.97.46.160/28"
-    private_subnet = "10.56.109.128/26"
-    tags = [
-      "collectd",
-      "mesos-master"
-    ]
-    redundant_power_supply = true
-    storage_groups = {
-       # RAID 5
-       array_type_id = 3
-       # Use three disks
-       hard_drives = [ 0, 1, 2]
-       array_size = 1600
-       # Basic partition template for Windows
-       partition_template_id = 17
-    }
+    # Use three disks
+    hard_drives = [0, 1, 2]
+    array_size  = 1600
+
+    # Basic partition template for Windows
+    partition_template_id = 17
+  }
 }
+
 ```
 
 **Note**: Monthly bare metal servers do not support `immediate cancellation`. When Terraform deletes the monthly bare metal server, the `anniversary date cancellation` option is used.
@@ -88,23 +90,23 @@ If you already have a quote ID for the bare metal server, you can create a new b
 ### Example of a quote based ordering
 ```hcl
 resource "ibm_compute_bare_metal" "quote_test" {
+  # Mandatory fields
+  hostname = "quote-bm-test"
+  domain   = "example.com"
+  quote_id = 2209349
 
-# Mandatory fields
-    hostname = "quote-bm-test"
-    domain = "example.com"
-    quote_id = 2209349
-
-# Optional fields
-    user_metadata = "{\"value\":\"newvalue\"}"
-    public_vlan_id = 12345678
-    private_vlan_id = 87654321
-    public_subnet = "50.97.46.160/28"
-    private_subnet = "10.56.109.128/26"
-    tags = [
-      "collectd",
-      "mesos-master"
-    ]  
+  # Optional fields
+  user_metadata   = "{\"value\":\"newvalue\"}"
+  public_vlan_id  = 12345678
+  private_vlan_id = 87654321
+  public_subnet   = "50.97.46.160/28"
+  private_subnet  = "10.56.109.128/26"
+  tags = [
+    "collectd",
+    "mesos-master",
+  ]
 }
+
 ```
 
 ## Argument Reference
