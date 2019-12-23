@@ -13,11 +13,12 @@ import (
 )
 
 const (
-	isFloatingIPAddress = "address"
-	isFloatingIPName    = "name"
-	isFloatingIPStatus  = "status"
-	isFloatingIPZone    = "zone"
-	isFloatingIPTarget  = "target"
+	isFloatingIPAddress       = "address"
+	isFloatingIPName          = "name"
+	isFloatingIPStatus        = "status"
+	isFloatingIPZone          = "zone"
+	isFloatingIPTarget        = "target"
+	isFloatingIPResourceGroup = "resource_group"
 
 	isFloatingIPPending   = "pending"
 	isFloatingIPAvailable = "available"
@@ -70,6 +71,12 @@ func resourceIBMISFloatingIP() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{isFloatingIPZone},
+			},
+
+			isFloatingIPResourceGroup: {
+				Type:     schema.TypeString,
+				ForceNew: true,
+				Optional: true,
 			},
 
 			ResourceControllerURL: {
@@ -126,9 +133,13 @@ func resourceIBMISFloatingIPCreate(d *schema.ResourceData, meta interface{}) err
 	if zone == "" && target == "" {
 		return fmt.Errorf("%s or %s need to be provided", isFloatingIPZone, isFloatingIPTarget)
 	}
-
+	var rg string
+	rg = ""
+	if grp, ok := d.GetOk(isFloatingIPResourceGroup); ok {
+		rg = grp.(string)
+	}
 	floatingipC := network.NewFloatingIPClient(sess)
-	floatingip, err := floatingipC.Create(name, zone, "", target)
+	floatingip, err := floatingipC.Create(name, zone, rg, target)
 	if err != nil {
 		log.Printf("[DEBUG] floating ip err %s", isErrorToString(err))
 		return err
@@ -177,6 +188,8 @@ func resourceIBMISFloatingIPRead(d *schema.ResourceData, meta interface{}) error
 	d.Set(ResourceStatus, floatingip.Status)
 	if floatingip.ResourceGroup != nil {
 		d.Set(ResourceGroupName, floatingip.ResourceGroup.Name)
+		d.Set(isFloatingIPResourceGroup, floatingip.ResourceGroup.ID)
+
 	}
 	return nil
 }
