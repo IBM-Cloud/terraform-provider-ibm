@@ -13,6 +13,7 @@ Import the details of an existing service plan from IBM Cloud as a read-only dat
 ## Example Usage
 
 ```hcl
+
 data "ibm_service_plan" "service_plan" {
   service = "cloudantNoSQLDB"
   plan    = "Lite"

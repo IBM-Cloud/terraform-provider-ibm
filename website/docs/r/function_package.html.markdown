@@ -42,6 +42,7 @@ resource "ibm_function_package" "package" {
     }
 ]
 EOF
+
 }
 ```
 
@@ -72,6 +73,7 @@ resource "ibm_function_package" "bindpackage" {
     }
 ]
 EOF
+
 }
 
 ```

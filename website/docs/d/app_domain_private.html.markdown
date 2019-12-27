@@ -16,6 +16,7 @@ Import the details of an existing IBM Cloud private domain as a read-only data s
 data "ibm_app_domain_private" "private_domain" {
   name = "foo.com"
 }
+
 ```
 
 ## Argument Reference

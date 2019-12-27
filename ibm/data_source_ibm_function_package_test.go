@@ -38,7 +38,7 @@ resource "ibm_function_package" "package" {
 }
 
 data "ibm_function_package" "package" {
-    name = "${ibm_function_package.package.name}"
+    name = ibm_function_package.package.name
 }`, name)
 
 }

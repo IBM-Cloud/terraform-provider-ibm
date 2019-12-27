@@ -35,48 +35,52 @@ func TestAccFunctionRuleDataSourceBasic(t *testing.T) {
 func testAccCheckFunctionRuleDataSource(actionName, triggerName, name string) string {
 	return fmt.Sprintf(`
 	
-resource "ibm_function_action" "action" {
-	name = "%s"		  
-	exec = {
-	  kind = "nodejs:6"
-	  code = "${file("test-fixtures/hellonode.js")}"
-	}
-  }
-  resource "ibm_function_trigger" "trigger" {
-	name = "%s"
-	feed = [
-		{
-			  name = "/whisk.system/alarms/alarm"
-			  parameters = <<EOF
-			[
-				{
-					"key":"cron",
-					"value":"0 */2 * * *"
-				}
-			]
-		EOF
-	 },
- ]
-
- user_defined_annotations = <<EOF
- [
-{
- "key":"sample trigger",
- "value":"Trigger for hello action"
-}
- ]
- EOF
-}
-resource "ibm_function_rule" "rule" {
-name = "%s"
-trigger_name = "${ibm_function_trigger.trigger.name}"
-action_name = "${ibm_function_action.action.name}"
-
-}
-data "ibm_function_rule" "datarule" {
-	name = "${ibm_function_rule.rule.name}"
-
-}
+	resource "ibm_function_action" "action" {
+		name = "%s"
+		exec {
+		  kind = "nodejs:6"
+		  code = file("test-fixtures/hellonode.js")
+		}
+	  }
+	  
+	  resource "ibm_function_trigger" "trigger" {
+		name = "%s"
+		feed {
+		  name       = "/whisk.system/alarms/alarm"
+		  parameters = <<EOF
+							  [
+									  {
+											  "key":"cron",
+											  "value":"0 */2 * * *"
+									  }
+							  ]
+	  
+	  EOF
+	  
+		}
+	  
+		user_defined_annotations = <<EOF
+	   [
+	  {
+	   "key":"sample trigger",
+	   "value":"Trigger for hello action"
+	  }
+	   ]
+	  
+	  EOF
+	  
+	  }
+	  
+	  resource "ibm_function_rule" "rule" {
+		name         = "%s"
+		trigger_name = ibm_function_trigger.trigger.name
+		action_name  = ibm_function_action.action.name
+	  }
+	  
+	  data "ibm_function_rule" "datarule" {
+		name = ibm_function_rule.rule.name
+	  }
+	  
 `, actionName, triggerName, name)
 
 }

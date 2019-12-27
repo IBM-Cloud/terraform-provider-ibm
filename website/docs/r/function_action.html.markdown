@@ -19,9 +19,9 @@ Create, update, or delete [IBM Cloud Functions actions](https://cloud.ibm.com/do
 resource "ibm_function_action" "nodehello" {
   name = "action-name"
 
-  exec = {
+  exec {
     kind = "nodejs:6"
-    code = "${file("hellonode.js")}"
+    code = file("hellonode.js")
   }
 }
 
@@ -32,9 +32,9 @@ resource "ibm_function_action" "nodehello" {
 resource "ibm_function_action" "nodehellowithparameter" {
   name = "hellonodeparam"
 
-  exec = {
+  exec {
     kind = "nodejs:6"
-    code = "${file("hellonodewithparameter.js")}"
+    code = file("hellonodewithparameter.js")
   }
 
   user_defined_parameters = <<EOF
@@ -44,7 +44,9 @@ resource "ibm_function_action" "nodehellowithparameter" {
         "value":"India"
     }
         ]
-        EOF
+
+EOF
+
 }
 
 ```
@@ -55,9 +57,9 @@ resource "ibm_function_action" "nodehellowithparameter" {
 resource "ibm_function_action" "nodezip" {
   name = "nodezip"
 
-  exec = {
+  exec {
     kind = "nodejs:6"
-    code = "${base64encode("${file("nodeaction.zip")}")}"
+    code = base64encode(file("nodeaction.zip"))
   }
 }
 
@@ -69,9 +71,9 @@ resource "ibm_function_action" "nodezip" {
 resource "ibm_function_action" "swifthello" {
   name = "actionsequence"
 
-  exec = {
-    kind = "sequence"
-    components = ["/whisk.system/utils/split","/whisk.system/utils/sort"]
+  exec {
+    kind       = "sequence"
+    components = ["/whisk.system/utils/split", "/whisk.system/utils/sort"]
   }
 }
 
@@ -83,9 +85,9 @@ resource "ibm_function_action" "swifthello" {
 resource "ibm_function_action" "swifthello" {
   name = "dockeraction"
 
-  exec = {
-    kind = "janesmith/blackboxdemo"
-    image = "${file("helloSwift.swift")}"
+  exec {
+    kind  = "janesmith/blackboxdemo"
+    image = file("helloSwift.swift")
   }
 }
 

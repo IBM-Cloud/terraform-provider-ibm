@@ -146,69 +146,69 @@ func testAccCheckIBMServiceInstanceExists(n string, obj *mccpv2.ServiceInstanceF
 
 func testAccCheckIBMServiceInstance_basic(serviceName string) string {
 	return fmt.Sprintf(`
-		data "ibm_space" "spacedata" {
-			space  = "%s"
-			org    = "%s"
-		}
-		
-		resource "ibm_service_instance" "service" {
-			name              = "%s"
-			space_guid        = "${data.ibm_space.spacedata.id}"
-			service           = "speech_to_text"
-			plan              = "lite"
-			tags               = ["cluster-service","cluster-bind"]
-		}
+	data "ibm_space" "spacedata" {
+		space = "%s"
+		org   = "%s"
+	  }
+	  
+	  resource "ibm_service_instance" "service" {
+		name       = "%s"
+		space_guid = data.ibm_space.spacedata.id
+		service    = "speech_to_text"
+		plan       = "lite"
+		tags       = ["cluster-service", "cluster-bind"]
+	  }
 	`, cfSpace, cfOrganization, serviceName)
 }
 
 func testAccCheckIBMServiceInstance_updateWithSameName(serviceName string) string {
 	return fmt.Sprintf(`
-		data "ibm_space" "spacedata" {
-			space  = "%s"
-			org    = "%s"
-		}
-		
-		resource "ibm_service_instance" "service" {
-			name              = "%s"
-			space_guid        = "${data.ibm_space.spacedata.id}"
-			service           = "speech_to_text"
-			plan              = "lite"
-			tags               = ["cluster-service","cluster-bind","db"]
-		}
+	data "ibm_space" "spacedata" {
+		space = "%s"
+		org   = "%s"
+	  }
+	  
+	  resource "ibm_service_instance" "service" {
+		name       = "%s"
+		space_guid = data.ibm_space.spacedata.id
+		service    = "speech_to_text"
+		plan       = "lite"
+		tags       = ["cluster-service", "cluster-bind", "db"]
+	  }
 	`, cfSpace, cfOrganization, serviceName)
 }
 
 func testAccCheckIBMServiceInstance_update(updateName string) string {
 	return fmt.Sprintf(`
-		data "ibm_space" "spacedata" {
-			space  = "%s"
-			org    = "%s"
-		}
-
-		resource "ibm_service_instance" "service" {
-			name              = "%s"
-			space_guid        = "${data.ibm_space.spacedata.id}"
-			service           = "speech_to_text"
-			plan              = "lite"
-			tags               = ["cluster-service"]
-		}
+	data "ibm_space" "spacedata" {
+		space = "%s"
+		org   = "%s"
+	  }
+	  
+	  resource "ibm_service_instance" "service" {
+		name       = "%s"
+		space_guid = data.ibm_space.spacedata.id
+		service    = "speech_to_text"
+		plan       = "lite"
+		tags       = ["cluster-service"]
+	  }
 	`, cfSpace, cfOrganization, updateName)
 }
 
 func testAccCheckIBMServiceInstance_newServiceType(updateName string) string {
 	return fmt.Sprintf(`
-		data "ibm_space" "spacedata" {
-			space  = "%s"
-			org    = "%s"
-		}
-
-		resource "ibm_service_instance" "service" {
-			name              = "%s"
-			space_guid        = "${data.ibm_space.spacedata.id}"
-			service           = "speech_to_text"
-			plan              = "lite"
-			tags               = ["cluster-service"]
-		}
+	data "ibm_space" "spacedata" {
+		space = "%s"
+		org   = "%s"
+	  }
+	  
+	  resource "ibm_service_instance" "service" {
+		name       = "%s"
+		space_guid = data.ibm_space.spacedata.id
+		service    = "speech_to_text"
+		plan       = "lite"
+		tags       = ["cluster-service"]
+	  }
 	`, cfSpace, cfOrganization, updateName)
 }
 
@@ -247,34 +247,34 @@ func TestAccIBMServiceInstance_Discovery_Basic(t *testing.T) {
 
 func testAccCheckIBMServiceInstance_discovery_basic(serviceName string) string {
 	return fmt.Sprintf(`
-		data "ibm_space" "spacedata" {
-			space  = "%s"
-			org    = "%s"
-		}
-		
-		resource "ibm_service_instance" "service" {
-			name              = "%s"
-			space_guid        = "${data.ibm_space.spacedata.id}"
-			service           = "discovery"
-			plan              = "lite"
-			tags               = ["cluster-service","cluster-bind"]
-		}
+	data "ibm_space" "spacedata" {
+		space = "%s"
+		org   = "%s"
+	  }
+	  
+	  resource "ibm_service_instance" "service" {
+		name       = "%s"
+		space_guid = data.ibm_space.spacedata.id
+		service    = "discovery"
+		plan       = "lite"
+		tags       = ["cluster-service", "cluster-bind"]
+	  }
 	`, cfSpace, cfOrganization, serviceName)
 }
 
 func testAccCheckIBMServiceInstance_discovery_update(serviceName string) string {
 	return fmt.Sprintf(`
-		data "ibm_space" "spacedata" {
-			space  = "%s"
-			org    = "%s"
-		}
-		
-		resource "ibm_service_instance" "service" {
-			name              = "%s"
-			space_guid        = "${data.ibm_space.spacedata.id}"
-			service           = "discovery"
-			plan              = "lite"
-			tags               = ["cluster-service","cluster-bind","db"]
-		}
+	data "ibm_space" "spacedata" {
+		space = "%s"
+		org   = "%s"
+	  }
+	  
+	  resource "ibm_service_instance" "service" {
+		name       = "%s"
+		space_guid = data.ibm_space.spacedata.id
+		service    = "discovery"
+		plan       = "lite"
+		tags       = ["cluster-service", "cluster-bind", "db"]
+	  }
 	`, cfSpace, cfOrganization, serviceName)
 }

@@ -15,7 +15,7 @@ Import the details of an existing IBM Cloud app as a read-only data source. You 
 ```hcl
 data "ibm_app" "testacc_ds_app" {
   name       = "my-app"
-  space_guid = "${ibm_app.app.space_guid}"
+  space_guid = ibm_app.app.space_guid
 }
 ```
 

@@ -23,8 +23,8 @@ data "ibm_app_domain_shared" "domain" {
 }
 
 resource "ibm_app_route" "route" {
-  domain_guid = "${data.ibm_app_domain_shared.domain.id}"
-  space_guid  = "${data.ibm_space.spacedata.id}"
+  domain_guid = data.ibm_app_domain_shared.domain.id
+  space_guid  = data.ibm_space.spacedata.id
   host        = "somehost172"
   path        = "/app"
 }

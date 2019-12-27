@@ -33,7 +33,7 @@ data "ibm_org" "testacc_ds_org" {
 }
 
 data "ibm_account" "testacc_acc" {
-    org_guid = "${data.ibm_org.testacc_ds_org.id}"
+    org_guid = data.ibm_org.testacc_ds_org.id
 }`, cfOrganization)
 
 }

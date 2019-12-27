@@ -117,57 +117,58 @@ func testAccCheckIBMAppDomainPrivateDestroy(s *terraform.State) error {
 func testAccCheckIBMAppDomainPrivate_basic(name string) string {
 	return fmt.Sprintf(`
 		
-		data "ibm_org" "orgdata" {
-			org    = "%s"
-		}
-
-		resource "ibm_app_domain_private" "domain" {
-			name = "%s"
-			org_guid = "${data.ibm_org.orgdata.id}"
-		}
+	data "ibm_org" "orgdata" {
+		org = "%s"
+	  }
+	  
+	  resource "ibm_app_domain_private" "domain" {
+		name     = "%s"
+		org_guid = data.ibm_org.orgdata.id
+	  }
 	`, cfOrganization, name)
 }
 
 func testAccCheckIBMAppDomainPrivate_updateName(updateName string) string {
 	return fmt.Sprintf(`
 		
-		data "ibm_org" "orgdata" {
-			org    = "%s"
-		}
-
-		resource "ibm_app_domain_private" "domain" {
-			name = "%s"
-			org_guid = "${data.ibm_org.orgdata.id}"
-		}
+	data "ibm_org" "orgdata" {
+		org = "%s"
+	  }
+	  
+	  resource "ibm_app_domain_private" "domain" {
+		name     = "%s"
+		org_guid = data.ibm_org.orgdata.id
+	  }
 	`, cfOrganization, updateName)
 }
 
 func testAccCheckIBMAppDomainPrivate_with_tags(name string) string {
 	return fmt.Sprintf(`
 		
-		data "ibm_org" "orgdata" {
-			org    = "%s"
-		}
-
-		resource "ibm_app_domain_private" "domain" {
-			name = "%s"
-			org_guid = "${data.ibm_org.orgdata.id}"
-			tags = ["one", "two"]
-		}
+	data "ibm_org" "orgdata" {
+		org = "%s"
+	  }
+	  
+	  resource "ibm_app_domain_private" "domain" {
+		name     = "%s"
+		org_guid = data.ibm_org.orgdata.id
+		tags     = ["one", "two"]
+	  }
+	  
 	`, cfOrganization, name)
 }
 
 func testAccCheckIBMAppDomainPrivate_with_updated_tags(name string) string {
 	return fmt.Sprintf(`
 		
-		data "ibm_org" "orgdata" {
-			org    = "%s"
-		}
-
-		resource "ibm_app_domain_private" "domain" {
-			name = "%s"
-			org_guid = "${data.ibm_org.orgdata.id}"
-			tags = ["one", "two", "three"]
-		}
+	data "ibm_org" "orgdata" {
+		org = "%s"
+	  }
+	  
+	  resource "ibm_app_domain_private" "domain" {
+		name     = "%s"
+		org_guid = data.ibm_org.orgdata.id
+		tags     = ["one", "two", "three"]
+	  }
 	`, cfOrganization, name)
 }

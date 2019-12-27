@@ -25,6 +25,7 @@ resource "ibm_service_instance" "service_instance" {
   plan       = "lite"
   tags       = ["cluster-service", "cluster-bind"]
 }
+
 ```
 
 ## Argument Reference

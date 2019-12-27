@@ -35,11 +35,11 @@ func testAccCheckIBMAppDomainPrivateDataSourceConfig(name string) string {
 
 		resource "ibm_app_domain_private" "domain" {
 			name = "%s"
-			org_guid = "${data.ibm_org.orgdata.id}"
+			org_guid = data.ibm_org.orgdata.id
 		}
 	
 		data "ibm_app_domain_private" "testacc_domain" {
-			name = "${ibm_app_domain_private.domain.name}"
+			name = ibm_app_domain_private.domain.name
 		}`, cfOrganization, name)
 
 }
