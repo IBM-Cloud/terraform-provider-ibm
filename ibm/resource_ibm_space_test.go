@@ -215,7 +215,8 @@ resource "ibm_space" "space" {
 	auditors = ["%s"]
 	managers = ["%s"]
 	developers = ["%s"]
-}`, cfOrganization, name, ibmid1, ibmid1, ibmid1)
+}
+`, cfOrganization, name, ibmid1, ibmid1, ibmid1)
 
 }
 

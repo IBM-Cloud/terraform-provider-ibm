@@ -36,7 +36,7 @@ resource "ibm_function_trigger" "trigger" {
 	name = "%s"		  
 }
 data "ibm_function_trigger" "datatrigger" {
-	name = "${ibm_function_trigger.trigger.name}"
+	name = ibm_function_trigger.trigger.name
 
 }
 `, name)

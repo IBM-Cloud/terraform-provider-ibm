@@ -138,94 +138,97 @@ func testAccCheckIBMServiceKeyDestroy(s *terraform.State) error {
 func testAccCheckIBMServiceKey_basic(serviceName, serviceKey string) string {
 	return fmt.Sprintf(`
 		
-		data "ibm_space" "spacedata" {
-			space  = "%s"
-			org    = "%s"
-		}
-		
-		resource "ibm_service_instance" "service" {
-			name              = "%s"
-			space_guid        = "${data.ibm_space.spacedata.id}"
-			service           = "speech_to_text"
-			plan              = "lite"
-			tags               = ["cluster-service","cluster-bind"]
-		}
-
-		resource "ibm_service_key" "serviceKey" {
-			name = "%s"
-			service_instance_guid = "${ibm_service_instance.service.id}"
-		}
+	data "ibm_space" "spacedata" {
+		space = "%s"
+		org   = "%s"
+	  }
+	  
+	  resource "ibm_service_instance" "service" {
+		name       = "%s"
+		space_guid = data.ibm_space.spacedata.id
+		service    = "speech_to_text"
+		plan       = "lite"
+		tags       = ["cluster-service", "cluster-bind"]
+	  }
+	  
+	  resource "ibm_service_key" "serviceKey" {
+		name                  = "%s"
+		service_instance_guid = ibm_service_instance.service.id
+	  }
 	`, cfSpace, cfOrganization, serviceName, serviceKey)
 }
 
 func testAccCheckIBMServiceKey_with_tags(serviceName, serviceKey string) string {
 	return fmt.Sprintf(`
 		
-		data "ibm_space" "spacedata" {
-			space  = "%s"
-			org    = "%s"
-		}
-		
-		resource "ibm_service_instance" "service" {
-			name              = "%s"
-			space_guid        = "${data.ibm_space.spacedata.id}"
-			service           = "speech_to_text"
-			plan              = "lite"
-			tags               = ["cluster-service","cluster-bind"]
-		}
-
-		resource "ibm_service_key" "serviceKey" {
-			name = "%s"
-			service_instance_guid = "${ibm_service_instance.service.id}"
-			tags				  = ["one"]	
-		}
+	data "ibm_space" "spacedata" {
+		space = "%s"
+		org   = "%s"
+	  }
+	  
+	  resource "ibm_service_instance" "service" {
+		name       = "%s"
+		space_guid = data.ibm_space.spacedata.id
+		service    = "speech_to_text"
+		plan       = "lite"
+		tags       = ["cluster-service", "cluster-bind"]
+	  }
+	  
+	  resource "ibm_service_key" "serviceKey" {
+		name                  = "%s"
+		service_instance_guid = ibm_service_instance.service.id
+		tags                  = ["one"]
+	  }
+	  
 	`, cfSpace, cfOrganization, serviceName, serviceKey)
 }
 
 func testAccCheckIBMServiceKey_with_updated_tags(serviceName, serviceKey string) string {
 	return fmt.Sprintf(`
 		
-		data "ibm_space" "spacedata" {
-			space  = "%s"
-			org    = "%s"
-		}
-		
-		resource "ibm_service_instance" "service" {
-			name              = "%s"
-			space_guid        = "${data.ibm_space.spacedata.id}"
-			service           = "speech_to_text"
-			plan              = "lite"
-			tags               = ["cluster-service","cluster-bind"]
-		}
-
-		resource "ibm_service_key" "serviceKey" {
-			name = "%s"
-			service_instance_guid = "${ibm_service_instance.service.id}"
-			tags				  = ["one", "two"]	
-		}
+	data "ibm_space" "spacedata" {
+		space = "%s"
+		org   = "%s"
+	  }
+	  
+	  resource "ibm_service_instance" "service" {
+		name       = "%s"
+		space_guid = data.ibm_space.spacedata.id
+		service    = "speech_to_text"
+		plan       = "lite"
+		tags       = ["cluster-service", "cluster-bind"]
+	  }
+	  
+	  resource "ibm_service_key" "serviceKey" {
+		name                  = "%s"
+		service_instance_guid = ibm_service_instance.service.id
+		tags                  = ["one", "two"]
+	  }	  
 	`, cfSpace, cfOrganization, serviceName, serviceKey)
 }
 
 func testAccCheckIBMServiceKey_parameters(serviceName, serviceKey string) string {
 	return fmt.Sprintf(`
 		
-		data "ibm_space" "spacedata" {
-			space  = "%s"
-			org    = "%s"
+	data "ibm_space" "spacedata" {
+		space = "%s"
+		org   = "%s"
+	  }
+	  
+	  resource "ibm_service_instance" "service" {
+		name       = "%s"
+		space_guid = data.ibm_space.spacedata.id
+		service    = "cloud-object-storage"
+		plan       = "Lite"
+		tags       = ["cluster-service", "cluster-bind"]
+	  }
+	  
+	  resource "ibm_service_key" "serviceKey" {
+		name                  = "%s"
+		service_instance_guid = ibm_service_instance.service.id
+		parameters = {
+		  "HMAC" = true
 		}
-		
-		resource "ibm_service_instance" "service" {
-			name              = "%s"
-			space_guid        = "${data.ibm_space.spacedata.id}"
-			service           = "cloud-object-storage"
-			plan              = "Lite"
-			tags              = ["cluster-service","cluster-bind"]
-		}
-
-		resource "ibm_service_key" "serviceKey" {
-			name = "%s"
-			service_instance_guid = "${ibm_service_instance.service.id}"
-			parameters        = {"HMAC" = true}
-		}
+	  }
 	`, cfSpace, cfOrganization, serviceName, serviceKey)
 }

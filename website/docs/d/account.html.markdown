@@ -18,7 +18,7 @@ data "ibm_org" "orgData" {
 }
 
 data "ibm_account" "accountData" {
-  org_guid = "${data.ibm_org.orgData.id}"
+  org_guid = data.ibm_org.orgData.id
 }
 ```
 

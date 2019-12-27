@@ -20,7 +20,7 @@ data "ibm_space" "space" {
 
 resource "ibm_app" "app" {
   name                 = "my-app"
-  space_guid           = "${data.ibm_space.space.id}"
+  space_guid           = data.ibm_space.space.id
   app_path             = "hello.zip"
   wait_timeout_minutes = 90
   buildpack            = "sdk-for-nodejs"

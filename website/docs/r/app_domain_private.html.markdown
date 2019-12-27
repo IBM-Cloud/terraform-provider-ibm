@@ -19,7 +19,7 @@ data "ibm_org" "orgdata" {
 
 resource "ibm_app_domain_private" "domain" {
   name     = "foo.com"
-  org_guid = "${data.ibm_org.orgdata.id}"
+  org_guid = data.ibm_org.orgdata.id
   tags     = ["tag1", "tag2"]
 }
 ```

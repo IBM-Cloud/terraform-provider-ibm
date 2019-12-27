@@ -25,7 +25,9 @@ resource "ibm_function_trigger" "trigger" {
                                         "value":"India"
                            }
                    ]
-           EOF
+
+EOF
+
 
   user_defined_annotations = <<EOF
            [
@@ -34,8 +36,11 @@ resource "ibm_function_trigger" "trigger" {
                            "value":"Sample code to display hello"
                   }
           ]
-  EOF
+
+EOF
+
 }
+
 ```
 
 ### Creating a trigger feed
@@ -43,20 +48,20 @@ resource "ibm_function_trigger" "trigger" {
 resource "ibm_function_trigger" "feedtrigger" {
   name = "alarmFeed"
 
-  feed = [
-    {
-      name = "/whisk.system/alarms/alarm"
+  feed {
+    name = "/whisk.system/alarms/alarm"
 
-      parameters = <<EOF
+    parameters = <<EOF
                 [
                         {
                                 "key":"cron",
                                 "value":"0 */2 * * *"
                         }
                 ]
-                EOF
-    },
-  ]
+
+EOF
+
+  }
 
   user_defined_annotations = <<EOF
                  [
@@ -65,8 +70,11 @@ resource "ibm_function_trigger" "feedtrigger" {
                  "value":"Trigger for hello action"
          }
                  ]
-                 EOF
+
+EOF
+
 }
+
 ```
 
 

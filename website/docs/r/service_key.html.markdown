@@ -19,7 +19,7 @@ data "ibm_service_instance" "service_instance" {
 
 resource "ibm_service_key" "serviceKey" {
   name                  = "mycloudantkey"
-  service_instance_guid = "${data.ibm_service_instance.service_instance.id}"
+  service_instance_guid = data.ibm_service_instance.service_instance.id
 }
 ```
 

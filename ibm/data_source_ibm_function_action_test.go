@@ -31,16 +31,18 @@ func TestAccFunctionActionDataSourceBasic(t *testing.T) {
 func testAccCheckFunctionActionDataSource(name string) string {
 	return fmt.Sprintf(`
 	
-resource "ibm_function_action" "pythonzip" {
-	name = "%s"		  
-	exec = {
-		kind = "python"
-		code = "${base64encode("${file("test-fixtures/pythonaction.zip")}")}"
-	}
-}
-data "ibm_function_action" "action" {
-    name = "${ibm_function_action.pythonzip.name}"
-}
+	resource "ibm_function_action" "pythonzip" {
+		name = "%s"
+		exec {
+		  kind = "python"
+		  code = base64encode(file("test-fixtures/pythonaction.zip"))
+		}
+	  }
+	  
+	  data "ibm_function_action" "action" {
+		name = ibm_function_action.pythonzip.name
+	  }
+	  
 `, name)
 
 }

@@ -16,6 +16,7 @@ Import the details of an existing quota for an IBM Cloud org as a read-only data
 data "ibm_org_quota" "orgquotadata" {
   name = "quotaname"
 }
+
 ```
 
 ## Argument Reference

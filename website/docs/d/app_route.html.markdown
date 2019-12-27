@@ -14,8 +14,8 @@ Import the details of an existing IBM Cloud route as a read-only data source. Yo
 
 ```hcl
 data "ibm_app_route" "route" {
-  domain_guid = "${data.ibm_app_domain_shared.domain.id}"
-  space_guid  = "${data.ibm_space.spacedata.id}"
+  domain_guid = data.ibm_app_domain_shared.domain.id
+  space_guid  = data.ibm_space.spacedata.id
   host        = "somehost"
   path        = "/app"
 }
