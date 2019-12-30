@@ -210,6 +210,12 @@ func resourceIBMUserInvite() *schema.Resource {
 								},
 							},
 						},
+						"account_management": {
+							Type:        schema.TypeBool,
+							Default:     false,
+							Optional:    true,
+							Description: "Give access to all account management services",
+						},
 					},
 				},
 			},
@@ -627,6 +633,10 @@ func getPolicies(d *schema.ResourceData, meta interface{}, policies []interface{
 				}
 
 			}
+		}
+
+		if accountManagement, ok := p["account_management"]; ok && accountManagement.(bool) {
+			policyResource.SetServiceType("platform_service")
 		}
 
 		if len(policyResource.Attributes) == 0 {

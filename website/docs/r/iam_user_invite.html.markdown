@@ -221,6 +221,7 @@ Nested `resources` blocks have the following structure:
     * `resource` - (Optional, string) Resource of the policy definition.
     * `resource_group_id` - (Optional, string) The ID of the resource group. You can retrieve the value from data source `ibm_resource_group`. 
     * `attributes` - (Optional, map) Set resource attributes in the form of `'name=value,name=value...`.
+  * `account_management` - (Optional, bool) Gives access to all account management services if set to `true`. Default value `false`.
 * `cloud_foundry_roles` - (Optional, list) A nested block describing the cloud foundry roles of inviting user. The nested cloud_foundry_roles block have the following structure:
   * `organization_guid` - (Required, string) ID of the cloud foundry organization.
   * `org_roles` - (Required, list) The orgnization roles assigned for the inviting user. The supported org_roles are Manager, Auditor, BillingManager.
