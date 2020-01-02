@@ -400,9 +400,14 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 				Crn: enc.(string),
 			}
 		}
-		body.BootVolumeAttachment = &computec.PostInstancesParamsBodyBootVolumeAttachment{
+		template.Capacity = 100
+		template.Profile = &computec.PostInstancesParamsBodyBootVolumeAttachmentVolumeProfile{
+			Name: "general-purpose",
+		}
 
-			Volume: template,
+		body.BootVolumeAttachment = &computec.PostInstancesParamsBodyBootVolumeAttachment{
+			DeleteVolumeOnInstanceDelete: true,
+			Volume:                       template,
 		}
 	}
 
