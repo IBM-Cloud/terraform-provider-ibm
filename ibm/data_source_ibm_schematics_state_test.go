@@ -31,7 +31,7 @@ func testAccCheckIBMSchematicsStateDataSourceConfig(WorkspaceID, templateID stri
 	  }
 	  
 	  output "state_store_values" {
-		value = "${data.ibm_schematics_state.test.state_store}"
+		value = data.ibm_schematics_state.test.state_store
 	  }
 `, WorkspaceID, templateID)
 }

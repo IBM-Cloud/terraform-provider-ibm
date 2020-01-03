@@ -30,7 +30,7 @@ func testAccCheckIBMSchematicsWorkspaceDataSourceConfig(workspaceID string) stri
 	  }
 	  
 	  output "WorkSpaceValues" {
-		value = "${data.ibm_schematics_workspace.test.template_id.0}"
+		value = data.ibm_schematics_workspace.test.template_id.0
 	  }
 `, workspaceID)
 }
