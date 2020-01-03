@@ -31,7 +31,7 @@ func testAccCheckIBMSchematicsOutputDataSourceConfig(WorkspaceID, templateID str
 	  }
 	  
 	  output "output_values" {
-		value = "${data.ibm_schematics_output.test.output_values}"
+		value = data.ibm_schematics_output.test.output_values
 	  }
 `, WorkspaceID, templateID)
 }

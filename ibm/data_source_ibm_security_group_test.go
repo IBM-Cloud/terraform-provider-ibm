@@ -41,7 +41,7 @@ func TestAccIBMSecurityGroupDataSource_basic(t *testing.T) {
 func testAccCheckIBMSecurityGroupDataSourceConfig(name, description string) string {
 	return fmt.Sprintf(`
 data "ibm_security_group" "tfsg"{
-	name = "${ibm_security_group.testacc_security_group.name}"
+	name = ibm_security_group.testacc_security_group.name
 }
 resource "ibm_security_group" "testacc_security_group" {
     name = "%s"
