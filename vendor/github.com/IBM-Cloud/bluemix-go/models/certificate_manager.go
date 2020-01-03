@@ -73,7 +73,7 @@ type CertificateGetData struct {
 	Imported     bool                    `json:"imported"`
 	HasPrevious  bool                    `json:"has_previous"`
 	IssuanceInfo CertificateIssuanceInfo `json:"issuance_info"`
-	Data         *Data                   `json:"data"`
+	Data         Data                    `json:"data"`
 	DataKeyID    string                  `json:"data_key_id"`
 }
 

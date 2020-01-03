@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
 	"github.com/IBM-Cloud/bluemix-go/models"
 )
@@ -133,7 +133,7 @@ func resourceIBMCertificateManagerGet(d *schema.ResourceData, meta interface{}) 
 	d.Set("certificate_manager_instance_id", cminstanceid[0]+"::")
 	d.Set("name", certificatedata.Name)
 	d.Set("description", certificatedata.Description)
-	if certificatedata.Data != nil {
+	if certificatedata.Data != (models.Data{}) {
 		data := map[string]interface{}{
 			"content": certificatedata.Data.Content,
 		}

@@ -21,7 +21,6 @@ import (
 
 	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"
-
 	//"github.com/IBM-Cloud/bluemix-go/crn"
 	"github.com/go-openapi/strfmt"
 )
@@ -103,7 +102,9 @@ func New(iamtoken, region string, debug bool, timeout time.Duration, useraccount
 	apiEndpointURL := utils.GetPowerEndPoint(region)
 	log.Printf("the apiendpoint url for power is %s", apiEndpointURL)
 	transport := httptransport.New(apiEndpointURL, "/", []string{"https"})
-	//transport.Debug = debug
+	if debug {
+		transport.Debug = debug
+	}
 	transport.Consumers[runtime.JSONMime] = powerJSONConsumer()
 	session.Power = client.New(transport, nil)
 	session.Timeout = timeout

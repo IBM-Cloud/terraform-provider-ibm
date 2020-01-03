@@ -84,7 +84,9 @@ func New(iamtoken, region string, generation int, debug bool, timeout time.Durat
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: false}
 	apiEndpointURL := utils.GetEndpoint(generation, region)
 	transport := httptransport.New(apiEndpointURL, "/v1", []string{"https"})
-	//transport.Debug = debug
+	if debug {
+		transport.Debug = debug
+	}
 	transport.Consumers[runtime.JSONMime] = riaasJSONConsumer()
 	session.Riaas = client.New(transport, nil)
 	session.Timeout = timeout
