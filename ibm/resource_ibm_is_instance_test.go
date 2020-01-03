@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/compute"
 	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
@@ -135,119 +135,113 @@ func testAccCheckIBMISInstanceConfig(vpcname, subnetname, sshname, publicKey, na
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
-	}
-	
-	resource "ibm_is_subnet" "testacc_subnet" {
-		name = "%s"
-		vpc = "${ibm_is_vpc.testacc_vpc.id}"
-		zone = "%s"
+	  }
+	  
+	  resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
 		ipv4_cidr_block = "%s"
-	}
-	
-	resource "ibm_is_ssh_key" "testacc_sshkey" {
-		name = "%s"
+	  }
+	  
+	  resource "ibm_is_ssh_key" "testacc_sshkey" {
+		name       = "%s"
 		public_key = "%s"
-	}
-
-	resource "ibm_is_instance" "testacc_instance" {
-		name        = "%s"
-		image       = "%s"
-		profile     = "%s"
-		primary_network_interface = {
-			port_speed  = "100"
-			subnet      = "${ibm_is_subnet.testacc_subnet.id}"
+	  }
+	  
+	  resource "ibm_is_instance" "testacc_instance" {
+		name    = "%s"
+		image   = "%s"
+		profile = "%s"
+		primary_network_interface {
+		  port_speed = "100"
+		  subnet     = ibm_is_subnet.testacc_subnet.id
 		}
-		vpc = "${ibm_is_vpc.testacc_vpc.id}"
+		vpc  = ibm_is_vpc.testacc_vpc.id
 		zone = "%s"
-		keys = ["${ibm_is_ssh_key.testacc_sshkey.id}"]
-		network_interfaces = [
-			{
-				subnet      = "${ibm_is_subnet.testacc_subnet.id}"
-				name  = "eth1"
-			}
-		]
-	}
-	
-`, vpcname, subnetname, ISZoneName, ISCIDR, sshname, publicKey, name, isImage, instanceProfileName, ISZoneName)
+		keys = [ibm_is_ssh_key.testacc_sshkey.id]
+		network_interfaces {
+		  subnet = ibm_is_subnet.testacc_subnet.id
+		  name   = "eth1"
+		}
+	  }`, vpcname, subnetname, ISZoneName, ISCIDR, sshname, publicKey, name, isImage, instanceProfileName, ISZoneName)
 }
 
 func testAccCheckIBMISInstanceVolume(vpcname, subnetname, sshname, publicKey, volName, name string) string {
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
-	}
-	
-	resource "ibm_is_subnet" "testacc_subnet" {
-		name = "%s"
-		vpc = "${ibm_is_vpc.testacc_vpc.id}"
-		zone = "%s"
+	  }
+	  
+	  resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
 		ipv4_cidr_block = "%s"
-	}
-	
-	resource "ibm_is_ssh_key" "testacc_sshkey" {
-		name = "%s"
+	  }
+	  
+	  resource "ibm_is_ssh_key" "testacc_sshkey" {
+		name       = "%s"
 		public_key = "%s"
-	}
-
-	resource "ibm_is_volume" "storage"{
-		name = "%s"
+	  }
+	  
+	  resource "ibm_is_volume" "storage" {
+		name    = "%s"
 		profile = "10iops-tier"
-		zone = "%s"
+		zone    = "%s"
 		# capacity= 200
-	}
-
-	resource "ibm_is_instance" "testacc_instance" {
-		name        = "%s"
-		image       = "%s"
-		profile     = "%s"
-		primary_network_interface = {
-			subnet      = "${ibm_is_subnet.testacc_subnet.id}"
+	  }
+	  
+	  resource "ibm_is_instance" "testacc_instance" {
+		name    = "%s"
+		image   = "%s"
+		profile = "%s"
+		primary_network_interface {
+		  subnet = ibm_is_subnet.testacc_subnet.id
 		}
-		vpc = "${ibm_is_vpc.testacc_vpc.id}"
-		zone = "%s"
-		keys = ["${ibm_is_ssh_key.testacc_sshkey.id}"]
-		volumes = ["${ibm_is_volume.storage.id}"]
-	}
-	
-`, vpcname, subnetname, ISZoneName, ISCIDR, sshname, publicKey, volName, ISZoneName, name, isImage, instanceProfileName, ISZoneName)
+		vpc     = ibm_is_vpc.testacc_vpc.id
+		zone    = "%s"
+		keys    = [ibm_is_ssh_key.testacc_sshkey.id]
+		volumes = [ibm_is_volume.storage.id]
+	  }`, vpcname, subnetname, ISZoneName, ISCIDR, sshname, publicKey, volName, ISZoneName, name, isImage, instanceProfileName, ISZoneName)
 }
 
 func testAccCheckIBMISInstanceVolumeUpdate(vpcname, subnetname, sshname, publicKey, volName, name string) string {
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
-	}
-	
-	resource "ibm_is_subnet" "testacc_subnet" {
-		name = "%s"
-		vpc = "${ibm_is_vpc.testacc_vpc.id}"
-		zone = "%s"
+	  }
+	  
+	  resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
 		ipv4_cidr_block = "%s"
-	}
-	
-	resource "ibm_is_ssh_key" "testacc_sshkey" {
-		name = "%s"
+	  }
+	  
+	  resource "ibm_is_ssh_key" "testacc_sshkey" {
+		name       = "%s"
 		public_key = "%s"
-	}
-
-	resource "ibm_is_volume" "storage"{
-		name = "%s"
+	  }
+	  
+	  resource "ibm_is_volume" "storage" {
+		name    = "%s"
 		profile = "10iops-tier"
-		zone = "%s"
+		zone    = "%s"
 		# capacity= 200
-	}
-
-	resource "ibm_is_instance" "testacc_instance" {
-		name        = "%s"
-		image       = "%s"
-		profile     = "%s"
-		primary_network_interface = {
-			subnet      = "${ibm_is_subnet.testacc_subnet.id}"
+	  }
+	  
+	  resource "ibm_is_instance" "testacc_instance" {
+		name    = "%s"
+		image   = "%s"
+		profile = "%s"
+		primary_network_interface {
+		  subnet = ibm_is_subnet.testacc_subnet.id
 		}
-		vpc = "${ibm_is_vpc.testacc_vpc.id}"
+		vpc  = ibm_is_vpc.testacc_vpc.id
 		zone = "%s"
-		keys = ["${ibm_is_ssh_key.testacc_sshkey.id}"]
-	}
+		keys = [ibm_is_ssh_key.testacc_sshkey.id]
+	  }	  
 	
 `, vpcname, subnetname, ISZoneName, ISCIDR, sshname, publicKey, volName, ISZoneName, name, isImage, instanceProfileName, ISZoneName)
 }

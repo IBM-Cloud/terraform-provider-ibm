@@ -1,7 +1,7 @@
 resource "null_resource" "prepare_app_zip" {
   triggers = {
-    app_version = "${var.app_version}"
-    git_repo = "${var.git_repo}"
+    app_version = var.app_version
+    git_repo    = var.git_repo
   }
   provisioner "local-exec" {
     command = <<EOF
@@ -12,13 +12,15 @@ resource "null_resource" "prepare_app_zip" {
         git fetch
         git checkout -t origin/master
         zip -r ${var.app_zip} *
-        EOF
+        
+EOF
+
   }
 }
 
 data "ibm_space" "space" {
-  org   = "${var.org}"
-  space = "${var.space}"
+  org   = var.org
+  space = var.space
 }
 
 data "ibm_app_domain_shared" "domain" {
@@ -26,44 +28,48 @@ data "ibm_app_domain_shared" "domain" {
 }
 
 resource "ibm_app_route" "route" {
-  domain_guid = "${data.ibm_app_domain_shared.domain.id}"
-  space_guid  = "${data.ibm_space.space.id}"
-  host        = "${var.route}"
+  domain_guid = data.ibm_app_domain_shared.domain.id
+  space_guid  = data.ibm_space.space.id
+  host        = var.route
 }
 
 resource "ibm_service_instance" "service" {
-  name       = "${var.service_instance_name}"
-  space_guid = "${data.ibm_space.space.id}"
-  service    = "${var.service_offering}"
-  plan       = "${var.plan}"
+  name       = var.service_instance_name
+  space_guid = data.ibm_space.space.id
+  service    = var.service_offering
+  plan       = var.plan
   tags       = ["my-service"]
 }
 
 resource "ibm_service_key" "key" {
-  name = "%s"
-  service_instance_guid = "${ibm_service_instance.service.id}"
+  name                  = "%s"
+  service_instance_guid = ibm_service_instance.service.id
 }
 
 resource "ibm_app" "app" {
-  depends_on = ["ibm_service_key.key", "null_resource.prepare_app_zip"]
-  name              = "${var.app_name}"
-  space_guid        = "${data.ibm_space.space.id}"
-  app_path          = "${var.app_zip}"
+  depends_on = [
+    ibm_service_key.key,
+    null_resource.prepare_app_zip,
+  ]
+  name              = var.app_name
+  space_guid        = data.ibm_space.space.id
+  app_path          = var.app_zip
   wait_time_minutes = 10
 
-  buildpack  = "${var.buildpack}"
+  buildpack  = var.buildpack
   disk_quota = 512
 
-  command               = "${var.command}"
+  command               = var.command
   memory                = 256
   instances             = 2
   disk_quota            = 512
-  route_guid            = ["${ibm_app_route.route.id}"]
-  service_instance_guid = ["${ibm_service_instance.service.id}"]
+  route_guid            = [ibm_app_route.route.id]
+  service_instance_guid = [ibm_service_instance.service.id]
 
   environment_json = {
     "somejson" = "somevalue"
   }
 
-  app_version = "${var.app_version}"
+  app_version = var.app_version
 }
+

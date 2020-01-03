@@ -22,11 +22,11 @@ data "ibm_resource_group" "group" {
 resource "ibm_cis" "cis_instance" {
   name              = "test"
   plan              = "standard"
-  resource_group_id = "${data.ibm_resource_group.group.id}"
+  resource_group_id = data.ibm_resource_group.group.id
   tags              = ["tag1", "tag2"]
   location          = "global"
 
-  //User can increase timeouts 
+  //User can increase timeouts
   timeouts {
     create = "15m"
     update = "15m"

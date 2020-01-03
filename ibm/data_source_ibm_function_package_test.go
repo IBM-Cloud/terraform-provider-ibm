@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccFunctionPackageDataSourceBasic(t *testing.T) {
@@ -38,7 +38,7 @@ resource "ibm_function_package" "package" {
 }
 
 data "ibm_function_package" "package" {
-    name = "${ibm_function_package.package.name}"
+    name = ibm_function_package.package.name
 }`, name)
 
 }

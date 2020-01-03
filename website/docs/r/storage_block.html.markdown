@@ -47,6 +47,7 @@ resource "ibm_storage_block" "test2" {
         allowed_virtual_guest_ids = [ 27699397 ]
         allowed_ip_addresses = ["10.40.98.193", "10.40.98.200"]
         hourly_billing = true
+        
 }
 ```
 

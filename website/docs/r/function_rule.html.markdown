@@ -16,35 +16,35 @@ Create, update, or delete [IBM Cloud Functions triggers](https://cloud.ibm.com/d
 resource "ibm_function_action" "action" {
   name = "hello"
 
-  exec = {
+  exec {
     kind = "nodejs:6"
-    code = "${file("test-fixtures/hellonode.js")}"
+    code = file("test-fixtures/hellonode.js")
   }
 }
 
 resource "ibm_function_trigger" "trigger" {
   name = "alarmtrigger"
 
-  feed = [
-    {
-      name = "/whisk.system/alarms/alarm"
+  feed {
+    name = "/whisk.system/alarms/alarm"
 
-      parameters = <<EOF
-					[
-						{
-							"key":"cron",
-							"value":"0 */2 * * *"
-						}
-					]
-                EOF
-    },
-  ]
+    parameters = <<EOF
+                                        [
+                                                {
+                                                        "key":"cron",
+                                                        "value":"0 */2 * * *"
+                                                }
+                                        ]
+
+EOF
+
+  }
 }
 
 resource "ibm_function_rule" "rule" {
   name         = "alarmrule"
-  trigger_name = "${ibm_function_trigger.trigger.name}"
-  action_name  = "${ibm_function_action.action.name}"
+  trigger_name = ibm_function_trigger.trigger.name
+  action_name  = ibm_function_action.action.name
 }
 
 ```

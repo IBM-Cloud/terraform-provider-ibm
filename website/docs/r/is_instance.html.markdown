@@ -20,7 +20,7 @@ resource "ibm_is_vpc" "testacc_vpc" {
 
 resource "ibm_is_subnet" "testacc_subnet" {
   name            = "testsubnet"
-  vpc             = "${ibm_is_vpc.testacc_vpc.id}"
+  vpc             = ibm_is_vpc.testacc_vpc.id
   zone            = "us-south-1"
   ipv4_cidr_block = "10.240.0.0/24"
 }
@@ -35,25 +35,24 @@ resource "ibm_is_instance" "testacc_instance" {
   image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
   profile = "b-2x8"
 
-  primary_network_interface = {
-    subnet     = "${ibm_is_subnet.testacc_subnet.id}"
+  primary_network_interface {
+    subnet = ibm_is_subnet.testacc_subnet.id
   }
 
-  network_interfaces = {
-    name       = "eth1"
-    subnet     = "${ibm_is_subnet.testacc_subnet.id}"
+  network_interfaces {
+    name   = "eth1"
+    subnet = ibm_is_subnet.testacc_subnet.id
   }
 
-
-  vpc  = "${ibm_is_vpc.testacc_vpc.id}"
+  vpc  = ibm_is_vpc.testacc_vpc.id
   zone = "us-south-1"
-  keys = ["${ibm_is_ssh_key.testacc_sshkey.id}"]
+  keys = [ibm_is_ssh_key.testacc_sshkey.id]
 
   //User can configure timeouts
-  	timeouts {
-      	create = "90m"
-      	delete = "30m"
-    }
+  timeouts {
+    create = "90m"
+    delete = "30m"
+  }
 }
 
 ```

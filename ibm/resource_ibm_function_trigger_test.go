@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
@@ -162,123 +162,139 @@ func testAccCheckFunctionTriggerCreate(name string) string {
 
 func testAccCheckFunctionTriggerUpdate(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_function_trigger" "trigger" {
-			name = "%s"		  
-			user_defined_parameters = <<EOF
-			[
-				{
-				   "key":"place",
-					"value":"India"
-			   }
-		   ]
-	   EOF
-	   user_defined_annotations = <<EOF
-	   [
-		   {
-			  "key":"Description",
-			   "value":"Sample code to display hello"
-		  }
-	  ]
-  EOF
-			}
+	resource "ibm_function_trigger" "trigger" {
+		name                    = "%s"
+		user_defined_parameters = <<EOF
+							  [
+									  {
+										 "key":"place",
+											  "value":"India"
+								 }
+						 ]
+	  
+	  EOF
+	  
+	  
+		user_defined_annotations = <<EOF
+				 [
+						 {
+								"key":"Description",
+								 "value":"Sample code to display hello"
+						}
+				]
+	  
+	  EOF
+	  
+	  }
 `, name)
 
 }
 
 func testAccCheckFunctionTriggerFeedCreate(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_function_trigger" "feedtrigger" {
-			name = "%s"
-			feed = [
-				{
-					  name = "/whisk.system/alarms/alarm"
-					  parameters = <<EOF
-					[
-						{
-							"key":"cron",
-							"value":"0 */2 * * *"
-						}
-					]
-                EOF
-			 },
-		 ]
-
-		 user_defined_annotations = <<EOF
-		 [
-	 {
-		 "key":"sample trigger",
-		 "value":"Trigger for hello action"
-	 }
-		 ]
-		 EOF
-	}
-	
+	resource "ibm_function_trigger" "feedtrigger" {
+		name = "%s"
+		feed {
+		  name       = "/whisk.system/alarms/alarm"
+		  parameters = <<EOF
+											  [
+													  {
+															  "key":"cron",
+															  "value":"0 */2 * * *"
+													  }
+											  ]
+	  
+	  EOF
+	  
+		}
+	  
+		user_defined_annotations = <<EOF
+					   [
+			   {
+					   "key":"sample trigger",
+					   "value":"Trigger for hello action"
+			   }
+					   ]
+	  
+	  EOF
+	  
+	  }
 `, name)
 
 }
 
 func testAccCheckFunctionTriggerFeedUpdate(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_function_trigger" "feedtrigger" {
-			name = "%s"	
-			feed = [
-    {
-      name = "/whisk.system/alarms/alarm"
-
-      parameters = <<EOF
-					[
-						{
-							"key":"cron",
-							"value":"0 */2 * * *"
-						}
-					]
-                EOF
-    },
-  ]
-
-  user_defined_annotations = <<EOF
-        [
-    {
-        "key":"sample trigger",
-        "value":"Trigger for hello action"
-    }
-        ]
-        EOF
-
-  user_defined_parameters = <<EOF
-        [
-    {
-        "key":"place",
-        "value":"India"
-    }
-        ]
-        EOF
-}
+	resource "ibm_function_trigger" "feedtrigger" {
+		name = "%s"
+		feed {
+		  name = "/whisk.system/alarms/alarm"
+	  
+		  parameters = <<EOF
+											  [
+													  {
+															  "key":"cron",
+															  "value":"0 */2 * * *"
+													  }
+											  ]
+	  
+	  EOF
+	  
+		}
+	  
+		user_defined_annotations = <<EOF
+			  [
+		  {
+			  "key":"sample trigger",
+			  "value":"Trigger for hello action"
+		  }
+			  ]
+	  
+	  EOF
+	  
+	  
+		user_defined_parameters = <<EOF
+			  [
+		  {
+			  "key":"place",
+			  "value":"India"
+		  }
+			  ]
+	  
+	  EOF
+	  
+	  }
+	  
 `, name)
 
 }
 
 func testAccCheckFunctionTriggerImport(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_function_trigger" "import" {
-			name = "%s"	
-			user_defined_parameters = <<EOF
-			[
-				{
-				   "key":"place",
-					"value":"India"
-			   }
-		   ]
-	   EOF
-	   user_defined_annotations = <<EOF
-	   [
-		   {
-			  "key":"Description",
-			   "value":"Sample code to display hello"
-		  }
-	  ]
-  EOF
-}
+	resource "ibm_function_trigger" "import" {
+		name                    = "%s"
+		user_defined_parameters = <<EOF
+							  [
+									  {
+										 "key":"place",
+											  "value":"India"
+								 }
+						 ]
+	  
+	  EOF
+	  
+	  
+		user_defined_annotations = <<EOF
+				 [
+						 {
+								"key":"Description",
+								 "value":"Sample code to display hello"
+						}
+				]
+	  
+	  EOF
+	  
+	  }
 `, name)
 
 }

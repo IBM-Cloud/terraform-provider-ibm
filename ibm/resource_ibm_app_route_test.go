@@ -6,9 +6,9 @@ import (
 
 	"strings"
 
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 )
@@ -128,105 +128,105 @@ func testAccCheckIBMAppRouteExists(n string, obj *mccpv2.RouteFields) resource.T
 func testAccCheckIBMAppRoute_basic(host string) string {
 	return fmt.Sprintf(`
 	
-		data "ibm_space" "spacedata" {
-			org    = "%s"
-			space  = "%s"
-		}
-		
-		data "ibm_app_domain_shared" "domain" {
-			name        = "mybluemix.net"
-		}
-		
-		resource "ibm_app_route" "route" {
-			domain_guid       = "${data.ibm_app_domain_shared.domain.id}"
-			space_guid        = "${data.ibm_space.spacedata.id}"
-			host              = "%s"
-			path              = "/app"
-		}
+	data "ibm_space" "spacedata" {
+		org   = "%s"
+		space = "%s"
+	  }
+	  
+	  data "ibm_app_domain_shared" "domain" {
+		name = "mybluemix.net"
+	  }
+	  
+	  resource "ibm_app_route" "route" {
+		domain_guid = data.ibm_app_domain_shared.domain.id
+		space_guid  = data.ibm_space.spacedata.id
+		host        = "%s"
+		path        = "/app"
+	  }
 	`, cfOrganization, cfSpace, host)
 }
 
 func testAccCheckIBMAppRoute_updatePath(host string) string {
 	return fmt.Sprintf(`
 	
-		data "ibm_space" "spacedata" {
-			org    = "%s"
-			space  = "%s"
-		}
-		
-		data "ibm_app_domain_shared" "domain" {
-			name        = "mybluemix.net"
-		}
-		
-		resource "ibm_app_route" "route" {
-			domain_guid       = "${data.ibm_app_domain_shared.domain.id}"
-			space_guid        = "${data.ibm_space.spacedata.id}"
-			host              = "%s"
-			path              = "/app1"
-		}
+	data "ibm_space" "spacedata" {
+		org   = "%s"
+		space = "%s"
+	  }
+	  
+	  data "ibm_app_domain_shared" "domain" {
+		name = "mybluemix.net"
+	  }
+	  
+	  resource "ibm_app_route" "route" {
+		domain_guid = data.ibm_app_domain_shared.domain.id
+		space_guid  = data.ibm_space.spacedata.id
+		host        = "%s"
+		path        = "/app1"
+	  }
 	`, cfOrganization, cfSpace, host)
 }
 
 func testAccCheckIBMAppRoute_updateHost(updateHost string) string {
 	return fmt.Sprintf(`
 		
-		data "ibm_space" "spacedata" {
-			org    = "%s"
-			space  = "%s"
-		}
-		
-		data "ibm_app_domain_shared" "domain" {
-			name        = "mybluemix.net"
-		}
-		
-		resource "ibm_app_route" "route" {
-			domain_guid       = "${data.ibm_app_domain_shared.domain.id}"
-			space_guid        = "${data.ibm_space.spacedata.id}"
-			host              = "%s"
-		}
+	data "ibm_space" "spacedata" {
+		org   = "%s"
+		space = "%s"
+	  }
+	  
+	  data "ibm_app_domain_shared" "domain" {
+		name = "mybluemix.net"
+	  }
+	  
+	  resource "ibm_app_route" "route" {
+		domain_guid = data.ibm_app_domain_shared.domain.id
+		space_guid  = data.ibm_space.spacedata.id
+		host        = "%s"
+	  }
 	`, cfOrganization, cfSpace, updateHost)
 }
 
 func testAccCheckIBMAppRoute_with_tags(host string) string {
 	return fmt.Sprintf(`
 	
-		data "ibm_space" "spacedata" {
-			org    = "%s"
-			space  = "%s"
-		}
-		
-		data "ibm_app_domain_shared" "domain" {
-			name        = "mybluemix.net"
-		}
-		
-		resource "ibm_app_route" "route" {
-			domain_guid       = "${data.ibm_app_domain_shared.domain.id}"
-			space_guid        = "${data.ibm_space.spacedata.id}"
-			host              = "%s"
-			path              = "/app"
-			tags              = ["one"]
-		}
+	data "ibm_space" "spacedata" {
+		org   = "%s"
+		space = "%s"
+	  }
+	  
+	  data "ibm_app_domain_shared" "domain" {
+		name = "mybluemix.net"
+	  }
+	  
+	  resource "ibm_app_route" "route" {
+		domain_guid = data.ibm_app_domain_shared.domain.id
+		space_guid  = data.ibm_space.spacedata.id
+		host        = "%s"
+		path        = "/app"
+		tags        = ["one"]
+	  }
 	`, cfOrganization, cfSpace, host)
 }
 
 func testAccCheckIBMAppRoute_with_updated_tags(host string) string {
 	return fmt.Sprintf(`
 	
-		data "ibm_space" "spacedata" {
-			org    = "%s"
-			space  = "%s"
-		}
-		
-		data "ibm_app_domain_shared" "domain" {
-			name        = "mybluemix.net"
-		}
-		
-		resource "ibm_app_route" "route" {
-			domain_guid       = "${data.ibm_app_domain_shared.domain.id}"
-			space_guid        = "${data.ibm_space.spacedata.id}"
-			host              = "%s"
-			path              = "/app"
-			tags              = ["one", "two"]
-		}
+	data "ibm_space" "spacedata" {
+		org   = "%s"
+		space = "%s"
+	  }
+	  
+	  data "ibm_app_domain_shared" "domain" {
+		name = "mybluemix.net"
+	  }
+	  
+	  resource "ibm_app_route" "route" {
+		domain_guid = data.ibm_app_domain_shared.domain.id
+		space_guid  = data.ibm_space.spacedata.id
+		host        = "%s"
+		path        = "/app"
+		tags        = ["one", "two"]
+	  }
 	`, cfOrganization, cfSpace, host)
 }

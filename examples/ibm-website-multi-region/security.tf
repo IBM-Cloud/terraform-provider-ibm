@@ -29,7 +29,7 @@ resource "ibm_security_group_rule" "https-pub" {
   port_range_min    = 443
   port_range_max    = 443
   protocol          = "tcp"
-  security_group_id = "${ibm_security_group.sg_public_lamp.id}"
+  security_group_id = ibm_security_group.sg_public_lamp.id
 }
 
 resource "ibm_security_group_rule" "http-pub" {
@@ -38,7 +38,7 @@ resource "ibm_security_group_rule" "http-pub" {
   port_range_min    = 80
   port_range_max    = 80
   protocol          = "tcp"
-  security_group_id = "${ibm_security_group.sg_public_lamp.id}"
+  security_group_id = ibm_security_group.sg_public_lamp.id
 }
 
 ####################################################################################
@@ -69,7 +69,7 @@ resource "ibm_security_group_rule" "ssh" {
   port_range_max    = 22
   protocol          = "tcp"
   remote_ip         = "10.0.0.0/8"
-  security_group_id = "${ibm_security_group.sg_private_lamp.id}"
+  security_group_id = ibm_security_group.sg_private_lamp.id
 }
 
 resource "ibm_security_group_rule" "http-in" {
@@ -79,7 +79,7 @@ resource "ibm_security_group_rule" "http-in" {
   port_range_max    = 80
   protocol          = "tcp"
   remote_ip         = "10.0.0.0/8"
-  security_group_id = "${ibm_security_group.sg_private_lamp.id}"
+  security_group_id = ibm_security_group.sg_private_lamp.id
 }
 
 resource "ibm_security_group_rule" "mysql-out" {
@@ -88,8 +88,8 @@ resource "ibm_security_group_rule" "mysql-out" {
   port_range_min    = 3306
   port_range_max    = 3306
   protocol          = "tcp"
-  remote_group_id   = "${ibm_security_group.sg_private_lampdb.id}"
-  security_group_id = "${ibm_security_group.sg_private_lamp.id}"
+  remote_group_id   = ibm_security_group.sg_private_lampdb.id
+  security_group_id = ibm_security_group.sg_private_lamp.id
 }
 
 #icmp_type specified via port_range_min 
@@ -101,7 +101,7 @@ resource "ibm_security_group_rule" "icmp" {
   port_range_min    = 8
   port_range_max    = 0
   remote_ip         = "10.0.0.0/8"
-  security_group_id = "${ibm_security_group.sg_private_lamp.id}"
+  security_group_id = ibm_security_group.sg_private_lamp.id
 }
 
 # Access to repos
@@ -112,7 +112,7 @@ resource "ibm_security_group_rule" "http" {
   port_range_max    = 80
   protocol          = "tcp"
   remote_ip         = "10.0.0.0/8"
-  security_group_id = "${ibm_security_group.sg_private_lamp.id}"
+  security_group_id = ibm_security_group.sg_private_lamp.id
 }
 
 # Access to repos
@@ -123,7 +123,7 @@ resource "ibm_security_group_rule" "https" {
   port_range_max    = 443
   protocol          = "tcp"
   remote_ip         = "10.0.0.0/8"
-  security_group_id = "${ibm_security_group.sg_private_lamp.id}"
+  security_group_id = ibm_security_group.sg_private_lamp.id
 }
 
 # Allow access to IBM DNS name servers
@@ -134,7 +134,7 @@ resource "ibm_security_group_rule" "dns" {
   port_range_max    = 53
   protocol          = "udp"
   remote_ip         = "10.0.0.0/8"
-  security_group_id = "${ibm_security_group.sg_private_lamp.id}"
+  security_group_id = ibm_security_group.sg_private_lamp.id
 }
 
 # for testing
@@ -189,7 +189,7 @@ resource "ibm_security_group_rule" "ssh-db" {
   port_range_max    = 22
   protocol          = "tcp"
   remote_ip         = "10.0.0.0/8"
-  security_group_id = "${ibm_security_group.sg_private_lampdb.id}"
+  security_group_id = ibm_security_group.sg_private_lampdb.id
 }
 
 resource "ibm_security_group_rule" "http-db-in" {
@@ -199,7 +199,7 @@ resource "ibm_security_group_rule" "http-db-in" {
   port_range_max    = 80
   protocol          = "tcp"
   remote_ip         = "10.0.0.0/8"
-  security_group_id = "${ibm_security_group.sg_private_lampdb.id}"
+  security_group_id = ibm_security_group.sg_private_lampdb.id
 }
 
 # In-bound for DB access from web/app servers
@@ -209,8 +209,8 @@ resource "ibm_security_group_rule" "mysql-db-in" {
   port_range_min    = 3306
   port_range_max    = 3306
   protocol          = "tcp"
-  remote_group_id   = "${ibm_security_group.sg_private_lamp.id}"
-  security_group_id = "${ibm_security_group.sg_private_lampdb.id}"
+  remote_group_id   = ibm_security_group.sg_private_lamp.id
+  security_group_id = ibm_security_group.sg_private_lampdb.id
 }
 
 # In-bound for DB replication between Marisdb VSIs
@@ -220,8 +220,8 @@ resource "ibm_security_group_rule" "mysql-db-repl-in" {
   port_range_min    = 3306
   port_range_max    = 3306
   protocol          = "tcp"
-  remote_group_id   = "${ibm_security_group.sg_private_lampdb.id}"
-  security_group_id = "${ibm_security_group.sg_private_lampdb.id}"
+  remote_group_id   = ibm_security_group.sg_private_lampdb.id
+  security_group_id = ibm_security_group.sg_private_lampdb.id
 }
 
 # Out-bound for DB replication between Marisdb VSIs
@@ -231,8 +231,8 @@ resource "ibm_security_group_rule" "mysql-db-repl-out" {
   port_range_min    = 3306
   port_range_max    = 3306
   protocol          = "tcp"
-  remote_group_id   = "${ibm_security_group.sg_private_lampdb.id}"
-  security_group_id = "${ibm_security_group.sg_private_lampdb.id}"
+  remote_group_id   = ibm_security_group.sg_private_lampdb.id
+  security_group_id = ibm_security_group.sg_private_lampdb.id
 }
 
 #icmp_type specified via port_range_min 
@@ -244,7 +244,7 @@ resource "ibm_security_group_rule" "icmp-db" {
   port_range_min    = 8
   port_range_max    = 0
   remote_ip         = "10.0.0.0/8"
-  security_group_id = "${ibm_security_group.sg_private_lampdb.id}"
+  security_group_id = ibm_security_group.sg_private_lampdb.id
 }
 
 resource "ibm_security_group_rule" "http-db" {
@@ -254,7 +254,7 @@ resource "ibm_security_group_rule" "http-db" {
   port_range_max    = 80
   protocol          = "tcp"
   remote_ip         = "10.0.0.0/8"
-  security_group_id = "${ibm_security_group.sg_private_lampdb.id}"
+  security_group_id = ibm_security_group.sg_private_lampdb.id
 }
 
 resource "ibm_security_group_rule" "https-db" {
@@ -264,7 +264,7 @@ resource "ibm_security_group_rule" "https-db" {
   port_range_max    = 443
   protocol          = "tcp"
   remote_ip         = "10.0.0.0/8"
-  security_group_id = "${ibm_security_group.sg_private_lampdb.id}"
+  security_group_id = ibm_security_group.sg_private_lampdb.id
 }
 
 # Allow access to IBM DNS name servers
@@ -275,7 +275,7 @@ resource "ibm_security_group_rule" "dns-db" {
   port_range_max    = 53
   protocol          = "udp"
   remote_ip         = "10.0.0.0/8"
-  security_group_id = "${ibm_security_group.sg_private_lampdb.id}"
+  security_group_id = ibm_security_group.sg_private_lampdb.id
 }
 
 # for testing
@@ -288,7 +288,6 @@ resource "ibm_security_group_rule" "dns-db" {
 #   remote_ip         = "10.0.0.0/8"
 #   security_group_id = "${ibm_security_group.sg_private_lampdb.id}"
 # }
-
 # for testing
 # resource "ibm_security_group_rule" "ssh-db-out" {
 #   direction         = "egress"

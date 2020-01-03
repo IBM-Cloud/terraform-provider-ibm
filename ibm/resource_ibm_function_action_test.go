@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
@@ -343,13 +343,13 @@ func testAccCheckFunctionActionDestroy(s *terraform.State) error {
 
 func testAccCheckFunctionActionNodeJS(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_function_action" "nodehello" {
-			name = "%s"		  
-			exec = {
-			  kind = "nodejs:6"
-			  code = "${file("test-fixtures/hellonode.js")}"
-			}
-		  }
+	resource "ibm_function_action" "nodehello" {
+		name = "%s"
+		exec {
+		  kind = "nodejs:6"
+		  code = file("test-fixtures/hellonode.js")
+		}
+	  }
 	
 `, name)
 
@@ -357,104 +357,102 @@ func testAccCheckFunctionActionNodeJS(name string) string {
 
 func testAccCheckFunctionActionNodeJSWithParams(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_function_action" "nodehellowithparameter" {
-			name = "%s"		  
-			exec = {
-			  kind = "nodejs:6"
-			  code = "${file("test-fixtures/hellonodewithparameter.js")}"
-			}
-			user_defined_parameters = <<EOF
-			 [
-				 {
-					"key":"place",
-					 "value":"India"
-				}
-			]
-		EOF
-			}
+	resource "ibm_function_action" "nodehellowithparameter" {
+		name = "%s"
+		exec {
+		  kind = "nodejs:6"
+		  code = file("test-fixtures/hellonodewithparameter.js")
+		}
+		user_defined_parameters = <<EOF
+							   [
+									   {
+											  "key":"place",
+											   "value":"India"
+									  }
+							  ]
+	  
+	  EOF
+	  
+	  }
+	  
 `, name)
 
 }
 
 func testAccCheckFunctionActionNodeJSZip(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_function_action" "nodezip" {
-			name = "%s"		  
-			exec = {
-			  kind = "nodejs:6"
-			  code = "${base64encode("${file("test-fixtures/nodeaction.zip")}")}"
-			}
-		  }
-	
+	resource "ibm_function_action" "nodezip" {
+		name = "%s"
+		exec {
+		  kind = "nodejs:6"
+		  code = base64encode(file("test-fixtures/nodeaction.zip"))
+		}
+	  }
 `, name)
 
 }
 
 func testAccCheckFunctionActionPython(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_function_action" "pythonhello" {
-			name = "%s"		  
-			exec = {
-			  kind = "python"
-			  code = "${file("test-fixtures/helloPython.py")}"
-			}
-		  }
-	
+	resource "ibm_function_action" "pythonhello" {
+		name = "%s"
+		exec {
+		  kind = "python"
+		  code = file("test-fixtures/helloPython.py")
+		}
+	  }
 `, name)
 
 }
 
 func testAccCheckFunctionActionPythonZip(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_function_action" "pythonzip" {
-			name = "%s"		  
-			exec = {
-			  kind = "python"
-			  code = "${base64encode("${file("test-fixtures/pythonaction.zip")}")}"
-			}
-		  }
-	
+	resource "ibm_function_action" "pythonzip" {
+		name = "%s"
+		exec {
+		  kind = "python"
+		  code = base64encode(file("test-fixtures/pythonaction.zip"))
+		}
+	  }
 `, name)
 
 }
 
 func testAccCheckFunctionActionPHP(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_function_action" "phphello" {
-			name = "%s"		  
-			exec = {
-			  kind = "php:7.1"
-			  code = "${file("test-fixtures/hellophp.php")}"
-			}
-		  }
-	
+	resource "ibm_function_action" "phphello" {
+		name = "%s"
+		exec {
+		  kind = "php:7.1"
+		  code = file("test-fixtures/hellophp.php")
+		}
+	  }
 `, name)
 
 }
 
 func testAccCheckFunctionActionPHPZip(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_function_action" "phpzip" {
-			name = "%s"		  
-			exec = {
-			  kind = "php:7.1"
-			  code = "${base64encode("${file("test-fixtures/phpaction.zip")}")}"
-			}
-		  }
-	
+	resource "ibm_function_action" "phpzip" {
+		name = "%s"
+		exec {
+		  kind = "php:7.1"
+		  code = base64encode(file("test-fixtures/phpaction.zip"))
+		}
+	  }
 `, name)
 
 }
 
 func testAccCheckFunctionActionSwift(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_function_action" "swifthello" {
-			name = "%s"		  
-			exec = {
-			  kind = "swift:3.1.1"
-			  code = "${file("test-fixtures/helloSwift.swift")}"
-			}
-		  }
+	resource "ibm_function_action" "swifthello" {
+		name = "%s"
+		exec {
+		  kind = "swift:3.1.1"
+		  code = file("test-fixtures/helloSwift.swift")
+		}
+	  }
 	
 `, name)
 
@@ -462,93 +460,102 @@ func testAccCheckFunctionActionSwift(name string) string {
 
 func testAccCheckFunctionActionSequence(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_function_action" "sequence" {
-			name = "%s"		  
-			exec = {
-			  kind = "sequence"
-			  components = ["/whisk.system/utils/split","/whisk.system/utils/sort"]
-			}
-		  }
-	
+	resource "ibm_function_action" "sequence" {
+		name = "%s"
+		exec {
+		  kind       = "sequence"
+		  components = ["/whisk.system/utils/split", "/whisk.system/utils/sort"]
+		}
+	  }
 `, name)
 
 }
 
 func testAccCheckFunctionActionCreate(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_function_action" "action" {
-			name = "%s"		  
-			exec = {
-			  kind = "nodejs:6"
-			  code = "${file("test-fixtures/hellonode.js")}"
-			}
-			limits = {
-
-			}
-			}
+	resource "ibm_function_action" "action" {
+		name = "%s"
+		exec {
+		  kind = "nodejs:6"
+		  code = file("test-fixtures/hellonode.js")
+		}
+		limits {
+		}
+	  }
 `, name)
 
 }
 
 func testAccCheckFunctionActionUpdate(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_function_action" "action" {
-			name = "%s"	
-			publish = "true"
-			limits = {
-				log_size = 5
-				timeout = 50000
-				}	  
-			exec = {
-			  kind = "nodejs:6"
-			  code = "${file("test-fixtures/hellonodewithparameter.js")}"
-			}
-			user_defined_parameters = <<EOF
-			[
-				{
-				   "key":"place",
-					"value":"India"
-			   }
-		   ]
-	   EOF
-	   user_defined_annotations = <<EOF
-	   [
-		   {
-			  "key":"Description",
-			   "value":"Sample code to display hello"
-		  }
-	  ]
-  EOF
-			}
+	resource "ibm_function_action" "action" {
+		name    = "%s"
+		publish = "true"
+		limits {
+		  log_size = 5
+		  timeout  = 50000
+		}
+		exec {
+		  kind = "nodejs:6"
+		  code = file("test-fixtures/hellonodewithparameter.js")
+		}
+		user_defined_parameters = <<EOF
+							  [
+									  {
+										 "key":"place",
+											  "value":"India"
+								 }
+						 ]
+	  
+	  EOF
+	  
+	  
+		user_defined_annotations = <<EOF
+				 [
+						 {
+								"key":"Description",
+								 "value":"Sample code to display hello"
+						}
+				]
+	  
+	  EOF
+	  
+	  }
+	  
 `, name)
 
 }
 
 func testAccCheckFunctionActionImport(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_function_action" "import" {
-			name = "%s"	
-			exec = {
-			  kind = "nodejs:6"
-			  code = "${file("test-fixtures/hellonodewithparameter.js")}"
-			}
-			user_defined_parameters = <<EOF
-			[
-				{
-				   "key":"place",
-					"value":"India"
-			   }
-		   ]
-	   EOF
-	   user_defined_annotations = <<EOF
-	   [
-		   {
-			  "key":"Description",
-			   "value":"Sample code to display hello"
-		  }
-	  ]
-  EOF
-			}
+	resource "ibm_function_action" "import" {
+		name = "%s"
+		exec {
+		  kind = "nodejs:6"
+		  code = file("test-fixtures/hellonodewithparameter.js")
+		}
+		user_defined_parameters = <<EOF
+							  [
+									  {
+										 "key":"place",
+											  "value":"India"
+								 }
+						 ]
+	  
+	  EOF
+	  
+	  
+		user_defined_annotations = <<EOF
+				 [
+						 {
+								"key":"Description",
+								 "value":"Sample code to display hello"
+						}
+				]
+	  
+	  EOF
+	  
+	  }
 `, name)
 
 }

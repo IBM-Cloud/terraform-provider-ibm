@@ -20,8 +20,8 @@ resource "ibm_iam_service_id" "serviceID" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = "${ibm_iam_service_id.serviceID.id}"
-  roles        = ["Viewer"]
+  iam_service_id = ibm_iam_service_id.serviceID.id
+  roles          = ["Viewer"]
 }
 
 ```
@@ -34,12 +34,12 @@ resource "ibm_iam_service_id" "serviceID" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = "${ibm_iam_service_id.serviceID.id}"
-  roles        = ["Viewer"]
+  iam_service_id = ibm_iam_service_id.serviceID.id
+  roles          = ["Viewer"]
 
-  resources = [{
+  resources {
     service = "cloud-object-storage"
-  }]
+  }
 }
 
 ```
@@ -58,14 +58,15 @@ resource "ibm_resource_instance" "instance" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = "${ibm_iam_service_id.serviceID.id}"
-  roles        = ["Manager", "Viewer", "Administrator"]
+  iam_service_id = ibm_iam_service_id.serviceID.id
+  roles          = ["Manager", "Viewer", "Administrator"]
 
-  resources = [{
+  resources {
     service              = "kms"
-    resource_instance_id = "${element(split(":",ibm_resource_instance.instance.id),7)}"
-  }]
+    resource_instance_id = element(split(":", ibm_resource_instance.instance.id), 7)
+  }
 }
+
 
 ```
 
@@ -81,13 +82,13 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = "${ibm_iam_service_id.serviceID.id}"
-  roles        = ["Viewer"]
+  iam_service_id = ibm_iam_service_id.serviceID.id
+  roles          = ["Viewer"]
 
-  resources = [{
+  resources {
     service           = "containers-kubernetes"
-    resource_group_id = "${data.ibm_resource_group.group.id}"
-  }]
+    resource_group_id = data.ibm_resource_group.group.id
+  }
 }
 
 ```
@@ -104,13 +105,13 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = "${ibm_iam_service_id.serviceID.id}"
-  roles        = ["Administrator"]
+  iam_service_id = ibm_iam_service_id.serviceID.id
+  roles          = ["Administrator"]
 
-  resources = [{
+  resources {
     resource_type = "resource-group"
-    resource      = "${data.ibm_resource_group.group.id}"
-  }]
+    resource      = data.ibm_resource_group.group.id
+  }
 }
 
 ```
@@ -127,17 +128,16 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = "${ibm_iam_service_id.serviceID.id}"
-  roles        = ["Administrator"]
+  iam_service_id = ibm_iam_service_id.serviceID.id
+  roles          = ["Administrator"]
 
-  resources = [{
+  resources {
     service = "is"
 
     attributes = {
       "vpcId" = "*"
     }
-    
-  }]
+  }
 }
 
 ```

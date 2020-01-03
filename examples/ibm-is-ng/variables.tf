@@ -2,8 +2,11 @@ variable "zone1" {
   default = "us-south-1"
 }
 
+variable "zone2" {
+  default = "us-south-2"
+}
+
 variable "ssh_public_key" {
-  default = ""
 }
 
 variable "image" {
@@ -13,3 +16,4 @@ variable "image" {
 variable "profile" {
   default = "cx2-2x4"
 }
+

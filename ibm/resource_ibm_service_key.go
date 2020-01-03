@@ -2,11 +2,10 @@ package ibm
 
 import (
 	"fmt"
-
-	"github.com/hashicorp/terraform/flatmap"
+	"strconv"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceIBMServiceKey() *schema.Resource {
@@ -61,10 +60,20 @@ func resourceIBMServiceKeyCreate(d *schema.ResourceData, meta interface{}) error
 	}
 	name := d.Get("name").(string)
 	serviceInstanceGUID := d.Get("service_instance_guid").(string)
+
 	var keyParams map[string]interface{}
 
 	if parameters, ok := d.GetOk("parameters"); ok {
-		keyParams = parameters.(map[string]interface{})
+		temp := parameters.(map[string]interface{})
+		for k, v := range temp {
+			if v == "true" || v == "false" {
+				b, _ := strconv.ParseBool(v.(string))
+				keyParams[k] = b
+
+			} else {
+				keyParams[k] = v
+			}
+		}
 	}
 
 	serviceKey, err := cfClient.ServiceKeys().Create(serviceInstanceGUID, name, keyParams)
@@ -93,7 +102,7 @@ func resourceIBMServiceKeyRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf("Error retrieving service key: %s", err)
 	}
-	d.Set("credentials", flatmap.Flatten(serviceKey.Entity.Credentials))
+	d.Set("credentials", Flatten(serviceKey.Entity.Credentials))
 	d.Set("service_instance_guid", serviceKey.Entity.ServiceInstanceGUID)
 	d.Set("name", serviceKey.Entity.Name)
 

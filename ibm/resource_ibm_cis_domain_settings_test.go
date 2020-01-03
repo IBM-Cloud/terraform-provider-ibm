@@ -2,8 +2,9 @@ package ibm
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform/helper/resource"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccIBMCisSettings_Basic(t *testing.T) {
@@ -38,22 +39,24 @@ func TestAccIBMCisSettings_Basic(t *testing.T) {
 
 func testAccCheckCisSettingsConfigBasic1(id string, cisDomainStatic string) string {
 	return testAccCheckIBMCisDomainDataSourceConfig_basic1("test", cisDomainStatic) + fmt.Sprintf(`
-resource "ibm_cis_domain_settings" "%[1]s" {
-  cis_id = "${data.ibm_cis.%[2]s.id}"
-  domain_id = "${data.ibm_cis_domain.%[1]s.id}"
-  waf = "on"
-  ssl = "full"	
-  min_tls_version = "1.2"
-}`, id, cisInstance)
+	resource "ibm_cis_domain_settings" "%[1]s" {
+		cis_id          = data.ibm_cis.cis.id
+		domain_id       = data.ibm_cis_domain.cis_domain.id
+		waf             = "on"
+		ssl             = "full"
+		min_tls_version = "1.2"
+	  }
+`, id)
 }
 
 func testAccCheckCisSettingsConfigBasic2(id string, cisDomainStatic string) string {
 	return testAccCheckIBMCisDomainDataSourceConfig_basic1("test", cisDomainStatic) + fmt.Sprintf(`
-resource "ibm_cis_domain_settings" "%[1]s" {
-  cis_id = "${data.ibm_cis.%[2]s.id}"
-  domain_id = "${data.ibm_cis_domain.%[1]s.id}"
-  waf = "off"
-  ssl = "flexible"	
-  min_tls_version = "1.3"
-}`, id, cisInstance)
+	resource "ibm_cis_domain_settings" "%[1]s" {
+		cis_id          = data.ibm_cis.cis.id
+		domain_id       = data.ibm_cis_domain.cis_domain.id
+		waf             = "off"
+		ssl             = "flexible"
+		min_tls_version = "1.3"
+	  }
+`, id)
 }

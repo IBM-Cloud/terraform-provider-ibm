@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/services"
 	"github.com/softlayer/softlayer-go/session"
@@ -152,6 +152,7 @@ func getModifiedVirtualGuestResource() *schema.Resource {
 
 	for _, elem := range r.Schema {
 		elem.ForceNew = false
+		elem.ConflictsWith = []string{}
 	}
 
 	return r

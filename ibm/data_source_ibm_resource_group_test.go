@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccIBMResourceGroupDataSource_Basic(t *testing.T) {
@@ -52,8 +52,9 @@ data "ibm_resource_group" "testacc_ds_resource_group" {
 
 func testAccCheckIBMResourceGroupDataSourceConfigWithName() string {
 	return fmt.Sprintf(`
+
 data "ibm_resource_group" "testacc_ds_resource_group_name" {
-    name = "default"
+	name = "default"
 }`)
 
 }

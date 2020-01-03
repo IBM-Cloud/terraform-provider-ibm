@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccIBMContainerALB_Basic(t *testing.T) {
@@ -20,14 +20,14 @@ func TestAccIBMContainerALB_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMContainerALBDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMContainerALB_basic(clusterName, true),
+				Config: testAccCheckIBMContainerALBBasic(clusterName, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"ibm_container_alb.alb", "enable", "true"),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMContainerALB_basic(clusterName, false),
+				Config: testAccCheckIBMContainerALBBasic(clusterName, false),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"ibm_container_alb.alb", "enable", "false"),
@@ -62,7 +62,7 @@ func testAccCheckIBMContainerALBDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMContainerALB_basic(clusterName string, enable bool) string {
+func testAccCheckIBMContainerALBBasic(clusterName string, enable bool) string {
 	return fmt.Sprintf(`
 resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
@@ -71,12 +71,13 @@ resource "ibm_container_cluster" "testacc_cluster" {
   default_pool_size = 1
 
   machine_type    = "%s"
-  hardware       = "shared"
+  hardware        = "shared"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
 }
-resource ibm_container_alb alb {
-  alb_id = "${ibm_container_cluster.testacc_cluster.albs.0.id}"
+
+resource "ibm_container_alb" "alb" {
+  alb_id = ibm_container_cluster.testacc_cluster.albs[0].id
   enable = "%t"
 }`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, enable)
 }

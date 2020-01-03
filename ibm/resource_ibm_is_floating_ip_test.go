@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
 	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
@@ -92,37 +92,36 @@ func testAccCheckIBMISFloatingIPConfig(vpcname, subnetname, sshname, publicKey, 
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
-	}
-	
-	resource "ibm_is_subnet" "testacc_subnet" {
-		name = "%s"
-		vpc = "${ibm_is_vpc.testacc_vpc.id}"
-		zone = "%s"
+	  }
+	  
+	  resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
 		ipv4_cidr_block = "%s"
-	}
-	
-	resource "ibm_is_ssh_key" "testacc_sshkey" {
-		name = "%s"
+	  }
+	  
+	  resource "ibm_is_ssh_key" "testacc_sshkey" {
+		name       = "%s"
 		public_key = "%s"
-	}
-
-	resource "ibm_is_instance" "testacc_instance" {
-		name        = "%s"
-		image       = "%s"
-		profile     = "%s"
-		primary_network_interface = {
-			port_speed  = "100"
-			subnet      = "${ibm_is_subnet.testacc_subnet.id}"
+	  }
+	  
+	  resource "ibm_is_instance" "testacc_instance" {
+		name    = "%s"
+		image   = "%s"
+		profile = "%s"
+		primary_network_interface {
+		  port_speed = "100"
+		  subnet     = ibm_is_subnet.testacc_subnet.id
 		}
-		vpc = "${ibm_is_vpc.testacc_vpc.id}"
+		vpc  = ibm_is_vpc.testacc_vpc.id
 		zone = "%s"
-		keys = ["${ibm_is_ssh_key.testacc_sshkey.id}"]
-	}
-
-	resource "ibm_is_floating_ip" "testacc_floatingip" {
-		name        = "%s"
-		target = "${ibm_is_instance.testacc_instance.primary_network_interface.0.id}"
-	}
-	
+		keys = [ibm_is_ssh_key.testacc_sshkey.id]
+	  }
+	  
+	  resource "ibm_is_floating_ip" "testacc_floatingip" {
+		name   = "%s"
+		target = ibm_is_instance.testacc_instance.primary_network_interface[0].id
+	  }
 `, vpcname, subnetname, ISZoneName, ISCIDR, sshname, publicKey, instancename, isImage, instanceProfileName, ISZoneName, name)
 }

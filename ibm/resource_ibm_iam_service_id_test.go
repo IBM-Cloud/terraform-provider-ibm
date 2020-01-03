@@ -8,9 +8,9 @@ import (
 
 	"strings"
 
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccIBMIAMServiceID_Basic(t *testing.T) {
@@ -24,7 +24,7 @@ func TestAccIBMIAMServiceID_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMServiceIDDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMServiceID_basic(name),
+				Config: testAccCheckIBMIAMServiceIDBasic(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServiceIDExists("ibm_iam_service_id.serviceID", conf),
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
@@ -32,7 +32,7 @@ func TestAccIBMIAMServiceID_Basic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIAMServiceID_updateWithSameName(name),
+				Config: testAccCheckIBMIAMServiceIDUpdateWithSameName(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServiceIDExists("ibm_iam_service_id.serviceID", conf),
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
@@ -41,7 +41,7 @@ func TestAccIBMIAMServiceID_Basic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIAMServiceID_update(updateName),
+				Config: testAccCheckIBMIAMServiceIDUpdate(updateName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", updateName),
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "description", "ServiceID for test scenario2"),
@@ -63,7 +63,7 @@ func TestAccIBMIAMServiceID_import(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMServiceIDDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMServiceID_tag(name),
+				Config: testAccCheckIBMIAMServiceIDTag(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServiceIDExists(resourceName, conf),
 					resource.TestCheckResourceAttr(resourceName, "name", name),
@@ -127,28 +127,28 @@ func testAccCheckIBMIAMServiceIDExists(n string, obj models.ServiceID) resource.
 	}
 }
 
-func testAccCheckIBMIAMServiceID_basic(name string) string {
+func testAccCheckIBMIAMServiceIDBasic(name string) string {
 	return fmt.Sprintf(`
 		
 		resource "ibm_iam_service_id" "serviceID" {
-			name              = "%s"		
-			tags              = ["tag1","tag2"]
-		}
+			name = "%s"
+			tags = ["tag1", "tag2"]
+	  	}
 	`, name)
 }
 
-func testAccCheckIBMIAMServiceID_updateWithSameName(name string) string {
+func testAccCheckIBMIAMServiceIDUpdateWithSameName(name string) string {
 	return fmt.Sprintf(`
 		
 		resource "ibm_iam_service_id" "serviceID" {
-			name              = "%s"
-			description       = "ServiceID for test scenario1"
-			tags              = ["tag1","tag2","db"]
-		}
+			name        = "%s"
+			description = "ServiceID for test scenario1"
+			tags        = ["tag1", "tag2", "db"]
+	  	}
 	`, name)
 }
 
-func testAccCheckIBMIAMServiceID_update(updateName string) string {
+func testAccCheckIBMIAMServiceIDUpdate(updateName string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_service_id" "serviceID" {
@@ -159,7 +159,7 @@ func testAccCheckIBMIAMServiceID_update(updateName string) string {
 	`, updateName)
 }
 
-func testAccCheckIBMIAMServiceID_tag(name string) string {
+func testAccCheckIBMIAMServiceIDTag(name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_service_id" "serviceID" {

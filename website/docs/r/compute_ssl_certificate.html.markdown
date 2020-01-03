@@ -18,8 +18,8 @@ In the following example, you can use a certificate on file:
 
 ```hcl
 resource "ibm_compute_ssl_certificate" "test_cert" {
-  certificate = "${file("cert.pem")}"
-  private_key = "${file("key.pem")}"
+  certificate = file("cert.pem")
+  private_key = file("key.pem")
 }
 ```
 
@@ -27,17 +27,22 @@ You can also use an in-line certificate:
 
 ```hcl
 resource "ibm_compute_ssl_certificate" "test_cert" {
-    certificate = <<EOF
+  certificate = <<EOF
 [......] # cert contents
 -----END CERTIFICATE-----
-    EOF
 
-    private_key = <<EOF
+EOF
+
+
+  private_key = <<EOF
 -----BEGIN RSA PRIVATE KEY-----
 [......] # cert contents
 -----END RSA PRIVATE KEY-----
-    EOF
+
+EOF
+
 }
+
 ```
 
 ## Argument Reference

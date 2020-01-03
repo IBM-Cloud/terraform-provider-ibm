@@ -14,5 +14,7 @@ runcmd:
 - 'systemctl start httpd'
 final_message: "The system is finally up, after $UPTIME seconds"
 EOF
+
   }
 }
+

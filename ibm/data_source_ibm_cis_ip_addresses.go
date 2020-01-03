@@ -1,7 +1,7 @@
 package ibm
 
 import (
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"log"
 	"math/rand"
 	"strconv"

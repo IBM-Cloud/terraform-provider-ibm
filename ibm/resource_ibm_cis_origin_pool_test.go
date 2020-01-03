@@ -2,18 +2,19 @@ package ibm
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
 	"log"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccIBMCisPool_Basic(t *testing.T) {
 	//t.Parallel()
 	var pool string
 	rnd := acctest.RandString(10)
-	name := "ibm_cis_origin_pool." + rnd
+	name := "ibm_cis_origin_pool.origin_pool"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheckCis(t) },
@@ -34,7 +35,7 @@ func TestAccIBMCisPool_Basic(t *testing.T) {
 }
 
 func TestAccIBMCisPool_import(t *testing.T) {
-	name := "ibm_cis_origin_pool.test"
+	name := "ibm_cis_origin_pool.origin_pool"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -62,7 +63,7 @@ func TestAccIBMCisPool_FullySpecified(t *testing.T) {
 	//t.Parallel()
 	var pool string
 	rnd := acctest.RandString(10)
-	name := "ibm_cis_origin_pool." + rnd
+	name := "ibm_cis_origin_pool.origin_pool"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -88,7 +89,7 @@ func TestAccIBMCisPool_CreateAfterManualDestroy(t *testing.T) {
 	//t.Parallel()
 	var poolOne, poolTwo string
 	testName := "test_acc"
-	name := "ibm_cis_origin_pool." + testName
+	name := "ibm_cis_origin_pool.origin_pool"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -124,7 +125,7 @@ func TestAccIBMCisPool_CreateAfterCisRIManualDestroy(t *testing.T) {
 	//t.Parallel()
 	var poolOne, poolTwo string
 	testName := "test"
-	name := "ibm_cis_origin_pool." + testName
+	name := "ibm_cis_origin_pool.origin_pool"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -245,58 +246,61 @@ func testAccCisPoolManuallyDelete(tfPoolId *string) resource.TestCheckFunc {
 
 func testAccCheckCisPoolConfigCisDS_Basic(resourceId string, cisDomainStatic string) string {
 	return testAccCheckIBMCisDomainDataSourceConfig_basic1(resourceId, cisDomainStatic) + fmt.Sprintf(`
-resource "ibm_cis_origin_pool" "%[1]s" {
-  cis_id = "${data.ibm_cis.%[2]s.id}"
-  name = "my-tf-pool-basic-%[1]s"
-  check_regions = ["WEU"]
-  description = "tfacc-fully-specified"
-  origins {
-    name = "example-1"
-    address = "www.google.com"
-    enabled = true
-    weight = 1
-  }
-}
-`, resourceId, cisInstance)
+	resource "ibm_cis_origin_pool" "origin_pool" {
+		cis_id        = data.ibm_cis.cis.id
+		name          = "my-tf-pool-basic-%[1]s"
+		check_regions = ["WEU"]
+		description   = "tfacc-fully-specified"
+		origins {
+		  name    = "example-1"
+		  address = "www.google.com"
+		  enabled = true
+		  weight  = 1
+		}
+		enabled = false
+	  }
+	  `, resourceId)
 }
 
 func testAccCheckCisPoolConfigCisRI_Basic(resourceId string, cisDomain string) string {
 	return testAccCheckCisDomainConfigCisRI_basic(resourceId, cisDomain) + fmt.Sprintf(`
-resource "ibm_cis_origin_pool" "%[1]s" {
-  cis_id = "${ibm_cis.%[2]s.id}"
-  name = "my-tf-pool-basic-%[1]s"
-  check_regions = ["WEU"]
-  description = "tfacc-fully-specified"
-  origins {
-    name = "example-1"
-    address = "www.google.com"
-    enabled = true
-    weight = 1
-  }
-}
-`, resourceId, "testacc_ds_cis")
+	resource "ibm_cis_origin_pool" "origin_pool" {
+		cis_id        = ibm_cis.cis.id
+		name          = "my-tf-pool-basic-%[1]s"
+		check_regions = ["WEU"]
+		description   = "tfacc-fully-specified"
+		origins {
+		  name    = "example-1"
+		  address = "www.google.com"
+		  enabled = true
+		  weight  = 1
+		}
+		enabled = false
+	  }
+	`, resourceId)
 }
 
 func testAccCheckCisPoolConfigFullySpecified(resourceId string, cisDomainStatic string) string {
 	return testAccCheckCisHealthcheckConfigCisDS_Basic(resourceId, cisDomainStatic) + fmt.Sprintf(`
-resource "ibm_cis_origin_pool" "%[1]s" {
-  cis_id = "${data.ibm_cis.%[2]s.id}"
-  name = "my-tf-pool-basic-%[1]s"
-  notification_email = "admin@outlook.com"
-  origins {
-    name = "example-1"
-    address = "192.0.2.1"
-    enabled = false
-  }
-  origins {
-    name = "example-2"
-    address = "192.0.2.2"
-    enabled = true
-  }
-  check_regions = ["WEU"]
-  description = "tfacc-fully-specified"
-  enabled = false
-  minimum_origins = 2
-  monitor = "${ibm_cis_healthcheck.%[1]s.id}"
-}`, resourceId, cisInstance)
+	resource "ibm_cis_origin_pool" "origin_pool" {
+		cis_id             = data.ibm_cis.cis.id
+		name               = "my-tf-pool-basic-%[1]s"
+		notification_email = "admin@outlook.com"
+		origins {
+		  name    = "example-1"
+		  address = "192.0.2.1"
+		  enabled = true
+		}
+		origins {
+		  name    = "example-2"
+		  address = "192.0.2.2"
+		  enabled = true
+		}
+		check_regions   = ["WEU"]
+		description     = "tfacc-fully-specified"
+		enabled         = true
+		minimum_origins = 2
+		monitor         = ibm_cis_healthcheck.health_check.id
+	  }
+	`, resourceId)
 }

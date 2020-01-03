@@ -18,12 +18,13 @@ In the following example, you can create a multi-vlan firewall:
 
 ```hcl
 resource "ibm_multi_vlan_firewall" "firewall_first" {
-	datacenter = "dal13"
-	pod = "pod01"
-	name = "Checkdelete1"
-	firewall_type = "FortiGate Security Appliance"
-	addon_configuration = ["FortiGate Security Appliance - Web Filtering Add-on (High Availability)","FortiGate Security Appliance - NGFW Add-on (High Availability)","FortiGate Security Appliance - AV Add-on (High Availability)"]
-	}
+  datacenter          = "dal13"
+  pod                 = "pod01"
+  name                = "Checkdelete1"
+  firewall_type       = "FortiGate Security Appliance"
+  addon_configuration = ["FortiGate Security Appliance - Web Filtering Add-on (High Availability)", "FortiGate Security Appliance - NGFW Add-on (High Availability)", "FortiGate Security Appliance - AV Add-on (High Availability)"]
+}
+
 ```
 
 

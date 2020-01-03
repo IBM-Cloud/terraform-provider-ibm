@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccIBMAccountDataSource_basic(t *testing.T) {
@@ -33,7 +33,7 @@ data "ibm_org" "testacc_ds_org" {
 }
 
 data "ibm_account" "testacc_acc" {
-    org_guid = "${data.ibm_org.testacc_ds_org.id}"
+    org_guid = data.ibm_org.testacc_ds_org.id
 }`, cfOrganization)
 
 }

@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccIBMContainerWorkerPool_basic(t *testing.T) {
@@ -23,7 +23,7 @@ func TestAccIBMContainerWorkerPool_basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMContainerWorkerPoolDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMContainerWorkerPool_basic(clusterName, workerPoolName),
+				Config: testAccCheckIBMContainerWorkerPoolBasic(clusterName, workerPoolName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"ibm_container_worker_pool.test_pool", "worker_pool_name", workerPoolName),
@@ -40,7 +40,7 @@ func TestAccIBMContainerWorkerPool_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMContainerWorkerPool_update(clusterName, workerPoolName),
+				Config: testAccCheckIBMContainerWorkerPoolUpdate(clusterName, workerPoolName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"ibm_container_worker_pool.test_pool", "worker_pool_name", workerPoolName),
@@ -70,7 +70,7 @@ func TestAccIBMContainerWorkerPool_importBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMContainerWorkerPoolDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMContainerWorkerPool_basic(clusterName, workerPoolName),
+				Config: testAccCheckIBMContainerWorkerPoolBasic(clusterName, workerPoolName),
 			},
 
 			resource.TestStep{
@@ -91,7 +91,7 @@ func TestAccIBMContainerWorkerPool_InvalidSizePerZone(t *testing.T) {
 		CheckDestroy: testAccCheckIBMContainerWorkerPoolDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config:      testAccCheckIBMContainerWorkerPool_InvalidSizePerZone(clusterName, workerPoolName),
+				Config:      testAccCheckIBMContainerWorkerPoolInvalidSizePerZone(clusterName, workerPoolName),
 				ExpectError: regexp.MustCompile("must be greater than 0"),
 			},
 		},
@@ -132,80 +132,38 @@ func testAccCheckIBMContainerWorkerPoolDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMContainerWorkerPool_basic(clusterName, workerPoolName string) string {
+func testAccCheckIBMContainerWorkerPoolBasic(clusterName, workerPoolName string) string {
 	return fmt.Sprintf(`
 data "ibm_org" "org" {
   org = "%s"
 }
 
 data "ibm_account" "acc" {
-  org_guid = "${data.ibm_org.org.id}"
+  org_guid = data.ibm_org.org.id
 }
 
 resource "ibm_container_cluster" "testacc_cluster" {
-  name       = "%s"
-  datacenter = "%s"
-  account_guid = "${data.ibm_account.acc.id}"
-  machine_type    = "%s"
-  hardware       = "shared"
-  public_vlan_id  = "%s"
-  private_vlan_id = "%s"
-  kube_version    = "%s"
-  region = "%s"
-}
-
-resource "ibm_container_worker_pool" "test_pool" {
-  worker_pool_name = "%s"
-  machine_type     = "%s"
-  cluster          = "${ibm_container_cluster.testacc_cluster.id}"
-  size_per_zone    = 1
-  hardware         = "shared"
-  disk_encryption  = true
-  region = "%s"
-  labels = {
-    "test" = "test-pool"
-
-    "test1" = "test-pool1"
-  }
-}
-
-		
-		`, cfOrganization, clusterName, datacenter, machineType, publicVlanID, privateVlanID, kubeVersion, csRegion, workerPoolName, machineType, csRegion)
-}
-
-func testAccCheckIBMContainerWorkerPool_update(clusterName, workerPoolName string) string {
-	return fmt.Sprintf(`
-data "ibm_org" "org" {
-  org = "%s"
-}
-
-data "ibm_account" "acc" {
-  org_guid = "${data.ibm_org.org.id}"
-}
-
-resource "ibm_container_cluster" "testacc_cluster" {
-  name       = "%s"
-  datacenter = "%s"
-  account_guid = "${data.ibm_account.acc.id}"
+  name            = "%s"
+  datacenter      = "%s"
+  account_guid    = data.ibm_account.acc.id
   machine_type    = "%s"
   hardware        = "shared"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   kube_version    = "%s"
-  region = "%s"
+  region          = "%s"
 }
 
 resource "ibm_container_worker_pool" "test_pool" {
   worker_pool_name = "%s"
   machine_type     = "%s"
-  cluster          = "${ibm_container_cluster.testacc_cluster.id}"
-  size_per_zone    = 2
+  cluster          = ibm_container_cluster.testacc_cluster.id
+  size_per_zone    = 1
   hardware         = "shared"
   disk_encryption  = true
-  region = "%s"
+  region           = "%s"
   labels = {
-    "test" = "test-pool"
-
+    "test"  = "test-pool"
     "test1" = "test-pool1"
   }
 }
@@ -214,7 +172,47 @@ resource "ibm_container_worker_pool" "test_pool" {
 		`, cfOrganization, clusterName, datacenter, machineType, publicVlanID, privateVlanID, kubeVersion, csRegion, workerPoolName, machineType, csRegion)
 }
 
-func testAccCheckIBMContainerWorkerPool_InvalidSizePerZone(clusterName, workerPoolName string) string {
+func testAccCheckIBMContainerWorkerPoolUpdate(clusterName, workerPoolName string) string {
+	return fmt.Sprintf(`
+data "ibm_org" "org" {
+  org = "%s"
+}
+
+data "ibm_account" "acc" {
+  org_guid = data.ibm_org.org.id
+}
+
+resource "ibm_container_cluster" "testacc_cluster" {
+  name            = "%s"
+  datacenter      = "%s"
+  account_guid    = data.ibm_account.acc.id
+  machine_type    = "%s"
+  hardware        = "shared"
+  public_vlan_id  = "%s"
+  private_vlan_id = "%s"
+  kube_version    = "%s"
+  region          = "%s"
+}
+
+resource "ibm_container_worker_pool" "test_pool" {
+  worker_pool_name = "%s"
+  machine_type     = "%s"
+  cluster          = ibm_container_cluster.testacc_cluster.id
+  size_per_zone    = 2
+  hardware         = "shared"
+  disk_encryption  = true
+  region           = "%s"
+  labels = {
+    "test"  = "test-pool"
+    "test1" = "test-pool1"
+  }
+}
+
+		
+		`, cfOrganization, clusterName, datacenter, machineType, publicVlanID, privateVlanID, kubeVersion, csRegion, workerPoolName, machineType, csRegion)
+}
+
+func testAccCheckIBMContainerWorkerPoolInvalidSizePerZone(clusterName, workerPoolName string) string {
 	return fmt.Sprintf(`
 
 
@@ -227,8 +225,7 @@ resource "ibm_container_worker_pool" "test_pool" {
   disk_encryption  = true
 
   labels = {
-    "test" = "test-pool"
-
+    "test"  = "test-pool"
     "test1" = "test-pool1"
   }
 }

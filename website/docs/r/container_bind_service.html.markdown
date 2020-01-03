@@ -16,9 +16,9 @@ In the following example, you can bind a service to a cluster:
 
 ```hcl
 resource "ibm_container_bind_service" "bind_service" {
-  cluster_name_id             = "cluster_name"
-  service_instance_name       = "service_name"
-  namespace_id                = "default"
+  cluster_name_id       = "cluster_name"
+  service_instance_name = "service_name"
+  namespace_id          = "default"
 }
 ```
 

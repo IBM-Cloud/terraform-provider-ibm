@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccFunctionTriggerDataSourceBasic(t *testing.T) {
@@ -36,7 +36,7 @@ resource "ibm_function_trigger" "trigger" {
 	name = "%s"		  
 }
 data "ibm_function_trigger" "datatrigger" {
-	name = "${ibm_function_trigger.trigger.name}"
+	name = ibm_function_trigger.trigger.name
 
 }
 `, name)

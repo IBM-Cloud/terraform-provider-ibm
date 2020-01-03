@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccIBMDatabaseDataSource_basic(t *testing.T) {
@@ -14,7 +14,7 @@ func TestAccIBMDatabaseDataSource_basic(t *testing.T) {
 	var databaseInstanceOne string
 	testName := fmt.Sprintf("tf_test_acc_%s", acctest.RandString(16))
 	dataName := "data.ibm_database." + testName
-	resourceName := "ibm_database." + testName
+	resourceName := "ibm_database.db"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -47,24 +47,23 @@ func TestAccIBMDatabaseDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMDatabaseDataSourceConfig(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
-				data "ibm_resource_group" "test_acc" {
-				  is_default = true
-				  # name = "%[1]s"
-				}
-
-				data "ibm_database" "%[2]s" {
-				  resource_group_id = "${data.ibm_resource_group.test_acc.id}"	
-				  name = "${ibm_database.%[2]s.name}"	
-				}
-
-				resource "ibm_database" "%[2]s" {
-				  resource_group_id = "${data.ibm_resource_group.test_acc.id}"	
-				  name = "%[2]s"	
-				  service 			= "databases-for-postgresql"
-				  plan              = "standard"
-				  location          = "us-south"
-				  tags = ["one:two"]
-				}
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+	}
+	  
+	data "ibm_database" "%[2]s" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name              = ibm_database.db.name
+	}
+	  
+	resource "ibm_database" "db" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name              = "%[2]s"
+		service           = "databases-for-postgresql"
+		plan              = "standard"
+		location          = "us-south"
+		tags              = ["one:two"]
+	}
 
 				`, databaseResourceGroup, name)
 }

@@ -1,26 +1,53 @@
-provider "ibm" {}
+provider "ibm" {
+}
 
 # Create a new ssh key
 resource "ibm_compute_ssh_key" "ssh_key_performance" {
-  label      = "${var.ssh-label}"
+  label      = var.ssh-label
   notes      = "for scale group"
-  public_key = "${var.ssh_public_key}"
+  public_key = var.ssh_public_key
 }
+resource "ibm_lb" "test_lb_local" {
+  connections = 1500
+  datacenter  = "tok02"
+  ha_enabled  = false
+  dedicated   = false
+
+  //User can increase timeouts
+  timeouts {
+    create = "45m"
+  }
+}
+
 
 resource "ibm_lb" "local_lb" {
-  connections = "${var.lb-connections}"
-  datacenter  = "${var.datacenter}"
+  connections = var.lb-connections
+  datacenter  = var.datacenter
   ha_enabled  = false
-  dedicated   = "${var.lb-dedicated}"
+  dedicated   = var.lb-dedicated
 }
 
-resource "ibm_lb_service_group" "lb_service_group" {
-  port             = "${var.lb-servvice-group-port}"
-  routing_method   = "${var.lb-servvice-group-routing-method}"
-  routing_type     = "${var.lb-servvice-group-routing-type}"
-  load_balancer_id = "${ibm_lb.local_lb.id}"
-  allocation       = "${var.lb-servvice-group-routing-allocation}"
+
+resource "ibm_lb_service_group" "test_service_group" {
+    port = 82
+    routing_method = "CONSISTENT_HASH_IP"
+    routing_type = "HTTP"
+    load_balancer_id = "${ibm_lb.local_lb.id}"
+    allocation = 100
 }
+
+
+resource "ibm_lb_service_group" "lb_service_group" {
+  port             = var.lb-servvice-group-port
+  routing_method   = var.lb-servvice-group-routing-method
+  routing_type     = var.lb-servvice-group-routing-type
+  load_balancer_id = ibm_lb.local_lb.id
+  allocation       = var.lb-servvice-group-routing-allocation
+}
+
+/*
+
+Deprecated in v0.12
 
 resource "ibm_compute_autoscale_group" "sample-http-cluster" {
   name                 = "${var.auto-scale-name}"
@@ -65,4 +92,4 @@ resource "ibm_compute_autoscale_policy" "sample-http-cluster-policy" {
       period   = 130
     }
   }
-}
+}*/

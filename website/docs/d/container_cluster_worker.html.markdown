@@ -16,7 +16,7 @@ Import details of a worker node of a Kubernetes cluster as a read-only data sour
 
 ```hcl
 data "ibm_container_cluster_worker" "cluster_foo" {
-  worker_id    = "dev-mex10-pa70c4414695c041518603bfd0cd6e333a-w1"
+  worker_id = "dev-mex10-pa70c4414695c041518603bfd0cd6e333a-w1"
 }
 ```
 

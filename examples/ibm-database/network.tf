@@ -29,7 +29,7 @@ resource "ibm_security_group_rule" "https-pub" {
   port_range_min    = 443
   port_range_max    = 443
   protocol          = "tcp"
-  security_group_id = "${ibm_security_group.sg_public_lamp.id}"
+  security_group_id = ibm_security_group.sg_public_lamp.id
 }
 
 resource "ibm_security_group_rule" "http-pub" {
@@ -38,17 +38,17 @@ resource "ibm_security_group_rule" "http-pub" {
   port_range_min    = 80
   port_range_max    = 80
   protocol          = "tcp"
-  security_group_id = "${ibm_security_group.sg_public_lamp.id}"
+  security_group_id = ibm_security_group.sg_public_lamp.id
 }
 
 # Open ICD dynamically defined port for DB access 
 resource "ibm_security_group_rule" "icd-pub" {
   direction         = "egress"
   ether_type        = "IPv4"
-  port_range_min    = "${ibm_database.test_acc.connectionstrings.0.hosts.0.port}"
-  port_range_max    = "${ibm_database.test_acc.connectionstrings.0.hosts.0.port}"
+  port_range_min    = ibm_database.test_acc.connectionstrings[0].hosts[0].port
+  port_range_max    = ibm_database.test_acc.connectionstrings[0].hosts[0].port
   protocol          = "tcp"
-  security_group_id = "${ibm_security_group.sg_public_lamp.id}"
+  security_group_id = ibm_security_group.sg_public_lamp.id
 }
 
 #########################################################
@@ -81,7 +81,7 @@ resource "ibm_security_group_rule" "ssh" {
   port_range_max    = 22
   protocol          = "tcp"
   remote_ip         = "10.0.0.0/8"
-  security_group_id = "${ibm_security_group.sg_private_lamp.id}"
+  security_group_id = ibm_security_group.sg_private_lamp.id
 }
 
 resource "ibm_security_group_rule" "http-in" {
@@ -91,7 +91,7 @@ resource "ibm_security_group_rule" "http-in" {
   port_range_max    = 80
   protocol          = "tcp"
   remote_ip         = "10.0.0.0/8"
-  security_group_id = "${ibm_security_group.sg_private_lamp.id}"
+  security_group_id = ibm_security_group.sg_private_lamp.id
 }
 
 #icmp_type specified via port_range_min 
@@ -103,7 +103,7 @@ resource "ibm_security_group_rule" "icmp" {
   port_range_min    = 8
   port_range_max    = 0
   remote_ip         = "10.0.0.0/8"
-  security_group_id = "${ibm_security_group.sg_private_lamp.id}"
+  security_group_id = ibm_security_group.sg_private_lamp.id
 }
 
 resource "ibm_security_group_rule" "http" {
@@ -113,7 +113,7 @@ resource "ibm_security_group_rule" "http" {
   port_range_max    = 80
   protocol          = "tcp"
   remote_ip         = "10.0.0.0/8"
-  security_group_id = "${ibm_security_group.sg_private_lamp.id}"
+  security_group_id = ibm_security_group.sg_private_lamp.id
 }
 
 resource "ibm_security_group_rule" "https" {
@@ -123,7 +123,7 @@ resource "ibm_security_group_rule" "https" {
   port_range_max    = 443
   protocol          = "tcp"
   remote_ip         = "10.0.0.0/8"
-  security_group_id = "${ibm_security_group.sg_private_lamp.id}"
+  security_group_id = ibm_security_group.sg_private_lamp.id
 }
 
 # Allow access to IBM DNS name servers
@@ -134,5 +134,6 @@ resource "ibm_security_group_rule" "dns" {
   port_range_max    = 53
   protocol          = "udp"
   remote_ip         = "10.0.0.0/8"
-  security_group_id = "${ibm_security_group.sg_private_lamp.id}"
+  security_group_id = ibm_security_group.sg_private_lamp.id
 }
+

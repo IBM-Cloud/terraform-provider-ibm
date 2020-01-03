@@ -6,7 +6,7 @@ variable "ssh-label" {
 }
 
 variable "lb-connections" {
-  default = 250
+  default = 1500
 }
 
 variable "datacenter" {
@@ -33,7 +33,7 @@ variable "lb-servvice-group-routing-allocation" {
   default = 100
 }
 
-variable "auto-scale-name" {
+/* variable "auto-scale-name" {
   default = "sample-http-cluster"
 }
 
@@ -64,6 +64,7 @@ variable "auto-scale-lb-service-port" {
 variable "auto-scale-lb-service-health-check-type" {
   default = "HTTP"
 }
+*/
 
 variable "vm-hostname" {
   default = "virtual-guest"
@@ -104,3 +105,4 @@ variable "scale-policy-scale-amount" {
 variable "scale-policy-cooldown" {
   default = 35
 }
+

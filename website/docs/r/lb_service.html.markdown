@@ -20,10 +20,10 @@ In the following example, you can create a local load balancer service:
 resource "ibm_lb_service" "test_lb_local_service" {
     port = 80
     enabled = true
-    service_group_id = "${ibm_lb_service_group.test_service_group.service_group_id}"
+    service_group_id = ibm_lb_service_group.test_service_group.service_group_id
     weight = 1
     health_check_type = "DNS"
-    ip_address_id = "${ibm_compute_vm_instance.test_server.ip_address_id}"
+    ip_address_id = ibm_compute_vm_instance.test_server.ip_address_id
 }
 
 ```

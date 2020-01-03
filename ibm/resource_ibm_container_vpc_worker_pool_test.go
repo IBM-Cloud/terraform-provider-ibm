@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccIBMVpcContainerWorkerPool_basic(t *testing.T) {

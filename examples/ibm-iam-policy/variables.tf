@@ -1,22 +1,40 @@
 variable "org" {}
 
-variable "space" {}
+variable "space" {
+  
+}
 
-variable "region" {}
+variable "region" {
+  
+}
 
-variable "iam_region" {}
+variable "iam_region" {
+  
+}
 
-variable "ibm_id1" {}
+variable "ibm_id1" {
+  
+}
 
-variable "datacenter" {}
+variable "datacenter" {
+  
+}
 
-variable "machine_type" {}
+variable "machine_type" {
+  
+}
 
-variable "isolation" {}
+variable "isolation" {
+  
+}
 
-variable "private_vlan_id" {}
+variable "private_vlan_id" {
+  
+}
 
-variable "public_vlan_id" {}
+variable "public_vlan_id" {
+  
+}
 
 variable "cluster_name" {
   default = "cluster"
@@ -25,3 +43,4 @@ variable "cluster_name" {
 variable "service_name" {
   default = "IBM Bluemix Container Service"
 }
+

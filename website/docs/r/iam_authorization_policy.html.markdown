@@ -52,9 +52,9 @@ resource "ibm_resource_instance" "instance2" {
 
 resource "ibm_iam_authorization_policy" "policy" {
   source_service_name         = "cloud-object-storage"
-  source_resource_instance_id = "${ibm_resource_instance.instance1.id}"
+  source_resource_instance_id = ibm_resource_instance.instance1.id
   target_service_name         = "kms"
-  target_resource_instance_id = "${ibm_resource_instance.instance2.id}"
+  target_resource_instance_id = ibm_resource_instance.instance2.id
   roles                       = ["Reader"]
 }
 

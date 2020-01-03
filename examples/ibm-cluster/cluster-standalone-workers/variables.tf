@@ -1,27 +1,45 @@
-variable "org" {}
+variable "org" {
+	
+} 
 
-variable "space" {}
+variable "space" {
+  
+}
 
-variable "region" {}
+variable "region" {
+  
+}
 
-variable "datacenter" {}
+variable "datacenter" {
+  
+}
 
-variable "machine_type" {}
+variable "machine_type" {
+  
+}
 
-variable "hardware" {}
+/*variable "isolation" {
+  default="public"
+}*/
 
-variable "private_vlan_id" {}
+variable "private_vlan_id" {
+  
+}
 
-variable "public_vlan_id" {}
+variable "public_vlan_id" {
+  
+}
 
-variable "subnet_id" {}
+variable "subnet_id" {
+  
+}
 
 variable "service_instance_name" {
-  default = "myservice"
+  default = "myservice3"
 }
 
 variable "service_key" {
-  default = "myservicekey"
+  default = "myservicekey3"
 }
 
 variable "service_offering" {
@@ -33,5 +51,5 @@ variable "plan" {
 }
 
 variable "cluster_name" {
-  default = "mycluster"
+  default = "mycluster3"
 }

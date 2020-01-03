@@ -1,5 +1,5 @@
 variable "flavor" {
-  default =  "c2.2x4"
+  default = "c2.2x4"
 }
 
 variable "worker_count" {
@@ -11,7 +11,7 @@ variable "region" {
 }
 
 variable "resource_group" {
-  default = "default"
+  default = "Default"
 }
 
 variable "cluster_name" {
@@ -33,3 +33,4 @@ variable "service_offering" {
 variable "plan" {
   default = "lite"
 }
+

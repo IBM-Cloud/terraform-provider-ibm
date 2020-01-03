@@ -19,16 +19,17 @@ data "ibm_security_group" "allowssh" {
   name = "allow_ssh"
 }
 
-resource "ibm_compute_vm_instance" "vsi"{
-   ....
+resource "ibm_compute_vm_instance" "vsi" {
 }
+
 resource "ibm_network_interface_sg_attachment" "sg1" {
-    security_group_id = "${data.ibm_security_group.allowssh.id}"
-    network_interface_id = "${ibm_compute_vm_instance.vsi.public_interface_id}"
-    //User can increase timeouts 
-    timeouts {
-      create = "15m"
-    }
+  security_group_id    = data.ibm_security_group.allowssh.id
+  network_interface_id = ibm_compute_vm_instance.vsi.public_interface_id
+
+  //User can increase timeouts
+  timeouts {
+    create = "15m"
+  }
 }
 ```
 

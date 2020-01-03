@@ -6,9 +6,9 @@ import (
 
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccIBMOrg_Basic(t *testing.T) {
@@ -185,23 +185,27 @@ resource "ibm_org" "testacc_org" {
 func testAccCheckIBMOrgCreateWithRoles(name string) string {
 	return fmt.Sprintf(`
 	resource "ibm_org" "testacc_org" {
-			name = "%s"
-			auditors = ["%s"]
-			managers = ["%s"]
-			billing_managers = ["%s"]
-			users = ["%s"]		
-}`, name, ibmid1, ibmid1, ibmid1, ibmid1)
+		name             = "%s"
+		auditors         = ["%s"]
+		managers         = ["%s"]
+		billing_managers = ["%s"]
+		users            = ["%s"]
+	  }
+	  
+`, name, ibmid1, ibmid1, ibmid1, ibmid1)
 }
 
 func testAccCheckIBMOrgUpdateWithRoles(updatedName string) string {
 	return fmt.Sprintf(`
-resource "ibm_org" "testacc_org" {
-			name = "%s"
-			auditors = ["%s"]
-			managers = ["%s", "%s"]
-			billing_managers = ["%s"]
-			users = ["%s"]
-}`, updatedName, ibmid2, ibmid2, ibmid1, ibmid2, ibmid2)
+	resource "ibm_org" "testacc_org" {
+		name             = "%s"
+		auditors         = ["%s"]
+		managers         = ["%s", "%s"]
+		billing_managers = ["%s"]
+		users            = ["%s"]
+	  }
+	  
+`, updatedName, ibmid2, ibmid2, ibmid1, ibmid2, ibmid2)
 }
 
 func testAccCheckIBMOrgWithTags(name string) string {
@@ -209,7 +213,8 @@ func testAccCheckIBMOrgWithTags(name string) string {
 resource "ibm_org" "testacc_org" {
 	name = "%s"
 	tags = ["one"]
-}`, name)
+}
+`, name)
 }
 
 func testAccCheckIBMOrgWithUpdatedTags(name string) string {
@@ -217,5 +222,6 @@ func testAccCheckIBMOrgWithUpdatedTags(name string) string {
 resource "ibm_org" "testacc_org" {
 	name = "%s"
 	tags = ["one", "two"]
-}`, name)
+}
+`, name)
 }

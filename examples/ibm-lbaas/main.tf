@@ -1,6 +1,6 @@
 # Configure the IBM Cloud Provider
 
-resource "ibm_compute_ssl_certificate" "lbaas-ssl-certificate" {
+resource "ibm_compute_ssl_certificate" "lbaas-ssl-certificate2" {
   certificate = <<EOF
 -----BEGIN CERTIFICATE-----
 MIIEujCCA6KgAwIBAgIJAKMRot3rBodEMA0GCSqGSIb3DQEBBQUAMIGZMQswCQYD
@@ -30,7 +30,9 @@ Q2xmxuSPiI9MNEAh8IfYVBH4qi51SlSRiDJoGXmmbkwa+YZyfpEiZeisHVNNdVrm
 DDtf0yuw5VRx2wnTWhv+ezUkhRGCL80fnqkWB94IS66UHlO5WyHw1cgQEVW1ie2y
 baU37Sk90FDVrroBgNY=
 -----END CERTIFICATE-----
-    EOF
+    
+EOF
+
 
   private_key = <<EOF
 -----BEGIN RSA PRIVATE KEY-----
@@ -60,22 +62,24 @@ DUPkawKBgGlwzHX3dr7jYldmB9/g94jWeNkX6KPtSDNaKZ9WzIuywCB6wua7AVXa
 NXMjAHErbX2J+8k85TccHR1ps3MgBbFHdiuJwx2vUPLfVj53GWUXmg4Gw4zUs5mq
 ykXbeuyhK6AL6V3NsJyP454bM8dmZnxBrZvRo5FnqQInGgwGSjgc
 -----END RSA PRIVATE KEY-----
-    EOF
+    
+EOF
+
 }
 
 resource "ibm_compute_ssh_key" "ssh_public_key_for_app-vms" {
-  label      = "${var.ssh_label}"
-  notes      = "${var.notes}"
-  public_key = "${var.public_key}"
+  label      = var.ssh_label
+  notes      = var.notes
+  public_key = var.public_key
 }
 
 # Create a new virtual guest using image "UBUNTU_16_64"
 resource "ibm_compute_vm_instance" "vm_instances" {
   count                    = "2"
-  hostname                 = "${format("var.hostname-%02d", count.index + 1)}"
-  os_reference_code        = "${var.osref}"
-  domain                   = "${var.domain}"
-  datacenter               = "${var.datacenter}"
+  hostname                 = format("var.hostname-%02d", count.index + 1)
+  os_reference_code        = var.osref
+  domain                   = var.domain
+  datacenter               = var.datacenter
   network_speed            = "10"
   hourly_billing           = true
   private_network_only     = false
@@ -84,45 +88,46 @@ resource "ibm_compute_vm_instance" "vm_instances" {
   disks                    = ["25"]
   user_metadata            = "{\"value\":\"newvalue\"}"
   dedicated_acct_host_only = true
-  post_install_script_uri  = "${var.vm-post-install-script-uri}"
+  post_install_script_uri  = var.vm-post-install-script-uri
   local_disk               = false
-  ssh_key_ids              = ["${ibm_compute_ssh_key.ssh_public_key_for_app-vms.id}"]
+  ssh_key_ids              = [ibm_compute_ssh_key.ssh_public_key_for_app-vms.id]
 }
-
 resource "ibm_lbaas" "lbaas" {
-  name        = "${var.name}"
+  name        = var.name
   description = "lbaas example"
-  subnets     = ["${var.subnet_id}"]
+  subnets     = [var.subnet_id]
 
-  protocols = [{
+  protocols {
     frontend_protocol     = "HTTPS"
     frontend_port         = 443
     backend_protocol      = "HTTP"
     backend_port          = 80
-    load_balancing_method = "${var.lb_method}"
-    tls_certificate_id    = "${ibm_compute_ssl_certificate.lbaas-ssl-certificate.id}"
-  },
-    {
-      frontend_protocol     = "HTTP"
-      frontend_port         = 80
-      backend_protocol      = "HTTP"
-      backend_port          = 80
-      load_balancing_method = "${var.lb_method}"
-    },
-  ]
+    load_balancing_method = var.lb_method
+    tls_certificate_id    = ibm_compute_ssl_certificate.lbaas-ssl-certificate2.id
+  }
+  protocols {
+    frontend_protocol     = "HTTP"
+    frontend_port         = 80
+    backend_protocol      = "HTTP"
+    backend_port          = 80
+    load_balancing_method = var.lb_method
+  }
 }
 
 resource "ibm_lbaas_server_instance_attachment" "lbaas_member" {
   count = 2
-  private_ip_address = "${element(ibm_compute_vm_instance.vm_instances.*.ipv4_address_private,count.index)}"
-  weight             = 40
-  lbaas_id           = "${ibm_lbaas.lbaas.id}"
+  private_ip_address = element(
+    ibm_compute_vm_instance.vm_instances.*.ipv4_address_private,
+    count.index,
+  )
+  weight   = 40
+  lbaas_id = ibm_lbaas.lbaas.id
+}
+resource "ibm_lbaas_health_monitor" "lbaas_hm" {
+  protocol   = ibm_lbaas.lbaas.health_monitors[0].protocol
+  port       = ibm_lbaas.lbaas.health_monitors[0].port
+  timeout    = 3
+  lbaas_id   = ibm_lbaas.lbaas.id
+  monitor_id = ibm_lbaas.lbaas.health_monitors[0].monitor_id
 }
 
-resource "ibm_lbaas_health_monitor" "lbaas_hm" {
-  protocol = "${ibm_lbaas.lbaas.health_monitors.0.protocol}"
-  port = "${ibm_lbaas.lbaas.health_monitors.0.port}"
-  timeout = 3
-  lbaas_id = "${ibm_lbaas.lbaas.id}"
-  monitor_id = "${ibm_lbaas.lbaas.health_monitors.0.monitor_id}"
-}

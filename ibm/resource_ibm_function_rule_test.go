@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
@@ -129,66 +129,72 @@ func testAccCheckFunctionRuleDestroy(s *terraform.State) error {
 
 func testAccCheckFunctionRuleCreate(actionName, triggerName, name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_function_action" "action" {
-			name = "%s"		  
-			exec = {
-			  kind = "nodejs:6"
-			  code = "${file("test-fixtures/hellonode.js")}"
-			}
-		  }
-		  resource "ibm_function_trigger" "trigger" {
-			name = "%s"
-			feed = [
-				{
-					  name = "/whisk.system/alarms/alarm"
-					  parameters = <<EOF
-					[
-						{
-							"key":"cron",
-							"value":"0 */2 * * *"
-						}
-					]
-                EOF
-			 },
-		 ]
-
-		 user_defined_annotations = <<EOF
-		 [
-	 {
-		 "key":"sample trigger",
-		 "value":"Trigger for hello action"
-	 }
-		 ]
-		 EOF
-	}
-	resource "ibm_function_rule" "rule" {
+	resource "ibm_function_action" "action" {
 		name = "%s"
-		trigger_name = "${ibm_function_trigger.trigger.name}"
-		action_name = "${ibm_function_action.action.name}"
+		exec {
+		  kind = "nodejs:6"
+		  code = file("test-fixtures/hellonode.js")
+		}
+	  }
+	  
+	  resource "ibm_function_trigger" "trigger" {
+		name = "%s"
+		feed {
+		  name       = "/whisk.system/alarms/alarm"
+		  parameters = <<EOF
+											  [
+													  {
+															  "key":"cron",
+															  "value":"0 */2 * * *"
+													  }
+											  ]
+	  
+	  EOF
+	  
+		}
+	  
+		user_defined_annotations = <<EOF
+					   [
+			   {
+					   "key":"sample trigger",
+					   "value":"Trigger for hello action"
+			   }
+					   ]
+	  
+	  EOF
 	  
 	  }
+	  
+	  resource "ibm_function_rule" "rule" {
+		name         = "%s"
+		trigger_name = ibm_function_trigger.trigger.name
+		action_name  = ibm_function_action.action.name
+	  }
+	  
 `, actionName, triggerName, name)
 
 }
 
 func testAccCheckFunctionRuleUpdate(updatedTriggerName, name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_function_trigger" "triggerUpdated" {
-			name = "%s"
-		 user_defined_annotations = <<EOF
-		 [
-	 {
-		 "key":"sample trigger",
-		 "value":"Trigger for hello action"
-	 }
-		 ]
-		 EOF
-	}
-	resource "ibm_function_rule" "rule" {
-		name = "%s"
-		trigger_name = "${ibm_function_trigger.triggerUpdated.name}"
-		action_name = "/whisk.system/cloudant/delete-attachment"
+	resource "ibm_function_trigger" "triggerUpdated" {
+		name                     = "%s"
+		user_defined_annotations = <<EOF
+					   [
+			   {
+					   "key":"sample trigger",
+					   "value":"Trigger for hello action"
+			   }
+					   ]
 	  
+	  EOF
+	  
+	  }
+	  
+	  resource "ibm_function_rule" "rule" {
+		name         = "%s"
+		trigger_name = ibm_function_trigger.triggerUpdated.name
+		action_name  = "/whisk.system/cloudant/delete-attachment"
 	  }
 `, updatedTriggerName, name)
 
@@ -196,23 +202,25 @@ func testAccCheckFunctionRuleUpdate(updatedTriggerName, name string) string {
 
 func testAccCheckFunctionRuleImport(triggerName, name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_function_trigger" "trigger" {
-			name = "%s"
-		 user_defined_annotations = <<EOF
-		 [
-	 {
-		 "key":"sample trigger",
-		 "value":"Trigger for hello action"
-	 }
-		 ]
-		 EOF
-	}
-	resource "ibm_function_rule" "import" {
-		name = "%s"
-		trigger_name = "${ibm_function_trigger.trigger.name}"
-		action_name = "/whisk.system/cloudant/delete-attachment"
+	resource "ibm_function_trigger" "trigger" {
+		name                     = "%s"
+		user_defined_annotations = <<EOF
+					   [
+			   {
+					   "key":"sample trigger",
+					   "value":"Trigger for hello action"
+			   }
+					   ]
 	  
-}
+	  EOF
+	  
+	  }
+	  
+	  resource "ibm_function_rule" "import" {
+		name         = "%s"
+		trigger_name = ibm_function_trigger.trigger.name
+		action_name  = "/whisk.system/cloudant/delete-attachment"
+	  }
 `, triggerName, name)
 
 }

@@ -15,11 +15,11 @@ Provides a IBM DNS Record resource. This resource is associated with an IBM Clou
 ```hcl
 # Add a DNS record to the domain
 resource "ibm_cis_dns_record" "example" {
-  cis_id = "${ibm_cis.instance.id}"  
-  domain_id = "${ibm_cis_domain.example.id}"
-  name   = "terraform"
-  content  = "192.168.0.11"
-  type   = "A"
+  cis_id    = ibm_cis.instance.id
+  domain_id = ibm_cis_domain.example.id
+  name      = "terraform"
+  content   = "192.168.0.11"
+  type      = "A"
 }
 ```
 

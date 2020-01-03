@@ -13,6 +13,7 @@ Import the details of an existing IBM Cloud org as a read-only data source. You 
 ## Example Usage
 
 ```hcl
+
 data "ibm_org" "orgdata" {
   org = "example.com"
 }

@@ -15,11 +15,13 @@ Imports a read only copy of an existing Internet Services domain resource. This 
 ```hcl
 data "ibm_cis_domain" "cis_instance_domain" {
   domain = "example.com"
-  cis_id = "${ibm_cis.instance.id}"
+  cis_id = ibm_cis.instance.id
 }
+
 data "ibm_cis" "cis_instance" {
-  name              = "test"
+  name = "test"
 }
+
 ```
 
 ## Argument Reference

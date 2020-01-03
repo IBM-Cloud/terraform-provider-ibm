@@ -2,3 +2,4 @@
 output "vip" {
   value = "http://${ibm_lbaas.lbaas.vip}"
 }
+

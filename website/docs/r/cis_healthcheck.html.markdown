@@ -14,15 +14,15 @@ If you're using IBM's Cloud Internet Services Global Load Balancing to load-bala
 
 ```hcl
 resource "ibm_cis_healthcheck" "test" {
-  cis_id = "${ibm_cis.instance.id}"
-  expected_body = "alive"
+  cis_id         = ibm_cis.instance.id
+  expected_body  = "alive"
   expected_codes = "2xx"
-  method = "GET"
-  timeout = 7
-  path = "/health"
-  interval = 60
-  retries = 5
-  description = "example load balancer"
+  method         = "GET"
+  timeout        = 7
+  path           = "/health"
+  interval       = 60
+  retries        = 5
+  description    = "example load balancer"
 }
 ```
 

@@ -25,4 +25,3 @@
 #   ttl       = 900
 #   type      = "cname"
 # }
-

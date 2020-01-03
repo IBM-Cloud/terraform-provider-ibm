@@ -18,7 +18,7 @@ Provides a resource for attaching the server instance to IBM cloud load balancer
 
 resource "ibm_compute_vm_instance" "vm_instances" {
   count = "2"
-  ....
+  
 }
 
 resource "ibm_lbaas" "lbaas" {
@@ -26,30 +26,32 @@ resource "ibm_lbaas" "lbaas" {
   description = "delete this"
   subnets     = [1511875]
 
-  protocols = [{
+  protocols {
     frontend_protocol     = "HTTPS"
     frontend_port         = 443
     backend_protocol      = "HTTP"
     backend_port          = 80
     load_balancing_method = "round_robin"
     tls_certificate_id    = 11670
-  },
-    {
-      frontend_protocol     = "HTTP"
-      frontend_port         = 80
-      backend_protocol      = "HTTP"
-      backend_port          = 80
-      load_balancing_method = "round_robin"
-    },
-  ]
+  }
+  protocols {
+    frontend_protocol     = "HTTP"
+    frontend_port         = 80
+    backend_protocol      = "HTTP"
+    backend_port          = 80
+    load_balancing_method = "round_robin"
+  }
 }
 
 resource "ibm_lbaas_server_instance_attachment" "lbaas_member" {
-  count				 = 2
-  private_ip_address = "${element(ibm_compute_vm_instance.vm_instances.*.ipv4_address_private,count.index)}"
-  weight             = 40
-  lbaas_id           = "${ibm_lbaas.lbaas.id}"
-  depends_on         = ["ibm_lbaas.lbaas.id"]
+  count = 2
+  private_ip_address = element(
+    ibm_compute_vm_instance.vm_instances.*.ipv4_address_private,
+    count.index,
+  )
+  weight     = 40
+  lbaas_id   = ibm_lbaas.lbaas.id
+  depends_on = [ibm_lbaas.lbaas]
 }
 
 ```

@@ -14,7 +14,7 @@ Get the list of supported kubernetes versions on IBM Cloud. Please refer to http
 
 ```hcl
 data "ibm_container_cluster_versions" "cluster_versions" {
-  region          = "eu-de"
+  region = "eu-de"
 }
 ```
 

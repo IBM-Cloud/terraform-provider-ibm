@@ -1,15 +1,12 @@
 # Create single VSI in dal09. Hourly billed with private network connection only. 
-
 resource "ibm_compute_vm_instance" "vm" {
-   bulk_vms = [{
-	    hostname = "vm1"
-	
-	    domain = "example.com"
-	  }, {
-	    hostname = "vm2"
-	
-	    domain = "example.com"
-	  }]
+    hostname = "vm1"
+    domain = "example.com"
+  bulk_vms {
+    hostname = "vm2"
+
+    domain = "example.com"
+  }
   os_reference_code    = "CENTOS_7_64"
   datacenter           = "dal09"
   network_speed        = 100
@@ -22,9 +19,10 @@ resource "ibm_compute_vm_instance" "vm" {
 }
 
 data "ibm_compute_vm_instance" "tf-vg-ds-acc-test" {
-    depends_on = ["ibm_compute_vm_instance.vm"]
-    count = 2
-    hostname="${lookup(ibm_compute_vm_instance.vm.bulk_vms[count.index],"hostname")}"
-    domain="${lookup(ibm_compute_vm_instance.vm.bulk_vms[count.index],"domain")}"
-    most_recent=true
+  depends_on  = [ibm_compute_vm_instance.vm]
+  count       = 2
+  hostname    = ibm_compute_vm_instance.vm.hostname
+  domain      = ibm_compute_vm_instance.vm.domain
+  most_recent = true
 }
+

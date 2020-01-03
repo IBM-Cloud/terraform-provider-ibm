@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
@@ -215,7 +215,8 @@ resource "ibm_space" "space" {
 	auditors = ["%s"]
 	managers = ["%s"]
 	developers = ["%s"]
-}`, cfOrganization, name, ibmid1, ibmid1, ibmid1)
+}
+`, cfOrganization, name, ibmid1, ibmid1, ibmid1)
 
 }
 

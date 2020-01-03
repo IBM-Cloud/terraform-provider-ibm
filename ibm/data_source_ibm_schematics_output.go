@@ -3,8 +3,7 @@ package ibm
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform/flatmap"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func dataSourceSchematicsOut() *schema.Resource {
@@ -77,7 +76,7 @@ func resourceIBMSchematicsOutRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", workspaceID, templateID))
-	d.Set("output_values", flatmap.Flatten(items))
+	d.Set("output_values", Flatten(items))
 
 	controller, err := getBaseController(meta)
 	if err != nil {

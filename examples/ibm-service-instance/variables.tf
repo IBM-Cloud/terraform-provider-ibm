@@ -21,3 +21,4 @@ variable "service_instance_name" {
 variable "service_key_name" {
   default = "mycloudantdbkey"
 }
+

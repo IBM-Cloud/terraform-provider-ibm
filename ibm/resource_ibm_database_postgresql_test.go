@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccIBMDatabaseInstance_Postgres_Basic(t *testing.T) {
@@ -239,101 +239,105 @@ func testAccCheckIBMDatabaseInstanceExists(n string, tfDatabaseId *string) resou
 
 func testAccCheckIBMDatabaseInstance_Postgres_basic(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
-				data "ibm_resource_group" "test_acc" {
-				  name = "%[1]s"
-				}
-
-				resource "ibm_database" "%[2]s" {
-				  resource_group_id = "${data.ibm_resource_group.test_acc.id}"	
-				  name = "%[2]s"	
-				  service 			= "databases-for-postgresql"
-				  plan              = "standard"
-				  location          = "us-south"
-				  adminpassword     = "password12"
-				  members_memory_allocation_mb = 2048
-				  members_disk_allocation_mb   = 10240
-  				  tags = ["one:two"]
-				  users = {
-  				   		name     = "user123"
-  					   	password = "password12"
-  				  		}
-  				  whitelist = {
-  						address     = "172.168.1.2/32"
-  						description = "desc1"
-  						}
-				}`, databaseResourceGroup, name)
+	data "ibm_resource_group" "test_acc" {
+		name = "%[1]s"
+	}
+	  
+	resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-postgresql"
+		plan                         = "standard"
+		location                     = "us-south"
+		adminpassword                = "password12"
+		members_memory_allocation_mb = 2048
+		members_disk_allocation_mb   = 10240
+		tags                         = ["one:two"]
+		users {
+		  name     = "user123"
+		  password = "password12"
+		}
+		whitelist {
+		  address     = "172.168.1.2/32"
+		  description = "desc1"
+		}
+	}
+				`, databaseResourceGroup, name)
 }
 
 func testAccCheckIBMDatabaseInstance_Postgres_fullyspecified(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
-				data "ibm_resource_group" "test_acc" {
-				  name = "%[1]s"
-				}
-
-				resource "ibm_database" "%[2]s" {
-				  resource_group_id = "${data.ibm_resource_group.test_acc.id}"	
-				  name = "%[2]s"	
-				  service 			= "databases-for-postgresql"
-				  plan              = "standard"
-				  location          = "us-south"
-				  adminpassword     = "password12"
-				  members_memory_allocation_mb = 4096
-				  members_disk_allocation_mb   = 14336
-				  members_cpu_allocation_count   = 6
-				  service_endpoints = "public-and-private"
-  				  tags = ["one:two"]
-				  users = {
-  				   		name     = "user123"
-  					   	password = "password12"
-  				  		}
-  				  users = {
-  				   		name     = "user124"
-  					   	password = "password12"
-  				  		}		
-  					whitelist = {
-  						address     = "172.168.1.2/32"
-  						description = "desc1"
-  						}
-  					whitelist = {
-  						address     = "172.168.1.1/32"
-  						description = "desc"
-  						}	
-				}`, databaseResourceGroup, name)
+	data "ibm_resource_group" "test_acc" {
+		name = "%[1]s"
+	}
+	  
+	resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-postgresql"
+		plan                         = "standard"
+		location                     = "us-south"
+		adminpassword                = "password12"
+		members_memory_allocation_mb = 4096
+		members_disk_allocation_mb   = 14336
+		members_cpu_allocation_count = 6
+		service_endpoints            = "public-and-private"
+		tags                         = ["one:two"]
+		users {
+		  name     = "user123"
+		  password = "password12"
+		}
+		users {
+		  name     = "user124"
+		  password = "password12"
+		}
+		whitelist {
+		  address     = "172.168.1.2/32"
+		  description = "desc1"
+		}
+		whitelist {
+		  address     = "172.168.1.1/32"
+		  description = "desc"
+		}
+	}
+				`, databaseResourceGroup, name)
 }
 
 func testAccCheckIBMDatabaseInstance_Postgres_reduced(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
-				data "ibm_resource_group" "test_acc" {
-				  name = "%[1]s"
-				}
-
-				resource "ibm_database" "%[2]s" {
-				  resource_group_id = "${data.ibm_resource_group.test_acc.id}"	
-				  name = "%[2]s"	
-				  service 			= "databases-for-postgresql"
-				  plan              = "standard"
-				  location          = "us-south"
-				  adminpassword     = "password12"
-				  members_memory_allocation_mb = 2048
-				  members_disk_allocation_mb   = 14336
-				  members_cpu_allocation_count   = 3
-				  service_endpoints = "public"
-  				  tags = ["one:two"]
-				}`, databaseResourceGroup, name)
+	data "ibm_resource_group" "test_acc" {
+		name = "%[1]s"
+	  }
+	  
+	  resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-postgresql"
+		plan                         = "standard"
+		location                     = "us-south"
+		adminpassword                = "password12"
+		members_memory_allocation_mb = 2048
+		members_disk_allocation_mb   = 14336
+		members_cpu_allocation_count = 3
+		service_endpoints            = "public"
+		tags                         = ["one:two"]
+	  }
+				`, databaseResourceGroup, name)
 }
 
 func testAccCheckIBMDatabaseInstance_Postgres_import(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
-				data "ibm_resource_group" "test_acc" {
-				  is_default = true
-				  # name = "%[1]s"
-				}
-
-				resource "ibm_database" "%[2]s" {
-				  resource_group_id = "${data.ibm_resource_group.test_acc.id}"	
-				  name = "%[2]s"	
-				  service 			= "databases-for-postgresql"
-				  plan              = "standard"
-				  location          = "us-south"
-				}`, databaseResourceGroup, name)
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+		# name = "%[1]s"
+	  }
+	  
+	  resource "ibm_database" "%[2]s" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name              = "%[2]s"
+		service           = "databases-for-postgresql"
+		plan              = "standard"
+		location          = "us-south"
+	  }
+				`, databaseResourceGroup, name)
 }

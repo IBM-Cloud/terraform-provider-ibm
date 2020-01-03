@@ -2,17 +2,16 @@ package ibm
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/IBM-Cloud/bluemix-go/models"
 
-	"github.com/hashicorp/terraform/flatmap"
-
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/crn"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceIBMResourceKey() *schema.Resource {
@@ -123,7 +122,17 @@ func resourceIBMResourceKeyCreate(d *schema.ResourceData, meta interface{}) erro
 	var keyParams map[string]interface{}
 
 	if parameters, ok := d.GetOk("parameters"); ok {
-		keyParams = parameters.(map[string]interface{})
+		temp := parameters.(map[string]interface{})
+		keyParams = make(map[string]interface{})
+		for k, v := range temp {
+			if v == "true" || v == "false" {
+				b, _ := strconv.ParseBool(v.(string))
+				keyParams[k] = b
+
+			} else {
+				keyParams[k] = v
+			}
+		}
 	} else {
 		keyParams = make(map[string]interface{})
 	}
@@ -182,7 +191,7 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 	if err != nil {
 		return fmt.Errorf("Error retrieving resource key: %s", err)
 	}
-	d.Set("credentials", flatmap.Flatten(resourceKey.Credentials))
+	d.Set("credentials", Flatten(resourceKey.Credentials))
 	d.Set("name", resourceKey.Name)
 	d.Set("status", resourceKey.State)
 
@@ -192,7 +201,7 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 		d.Set("role", roleCrn[strings.LastIndex(roleCrn, ":")+1:])
 	}
 
-	d.Set("parameters", flatmap.Flatten(filterResourceKeyParameters(resourceKey.Parameters)))
+	d.Set("parameters", filterResourceKeyParameters(resourceKey.Parameters))
 	d.Set("crn", (resourceKey.Crn).String())
 
 	return nil

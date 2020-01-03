@@ -39,3 +39,4 @@ resource "ibm_compute_vm_instance" "terraform-retry" {
     },
   ]
 }
+

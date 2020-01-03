@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccIBMAppDataSource_Basic(t *testing.T) {
@@ -47,53 +47,54 @@ func TestAccIBMAppDataSource_Basic(t *testing.T) {
 
 func testAccCheckIBMAppDataSourceBasic(routeHost, serviceInstanceName, appName string) (config string) {
 	config = fmt.Sprintf(`
-data "ibm_space" "space" {
-  org   = "%s"
-  space = "%s"
-}
-
-data "ibm_app_domain_shared" "domain" {
-  name = "mybluemix.net"
-}
-
-resource "ibm_app_route" "route" {
-  domain_guid = "${data.ibm_app_domain_shared.domain.id}"
-  space_guid  = "${data.ibm_space.space.id}"
-  host        = "%s"
-}
-
-resource "ibm_service_instance" "service" {
-  name       = "%s"
-  space_guid = "${data.ibm_space.space.id}"
-  service    = "speech_to_text"
-  plan       = "lite"
-  tags       = ["cluster-service"]
-}
-
-resource "ibm_app" "app" {
-  name                  = "%s"
-  space_guid            = "${data.ibm_space.space.id}"
-  app_path              = "test-fixtures/app1.zip"
-  wait_time_minutes     = 20
-  buildpack             = "sdk-for-nodejs"
-  instances             = 1
-  route_guid            = ["${ibm_app_route.route.id}"]
-  service_instance_guid = ["${ibm_service_instance.service.id}"]
-  disk_quota            = 512
-  memory                = 128
-  instances             = 1
-  disk_quota            = 512
-
-  environment_json = {
-    "test" = "test1"
-    "mockport" = 443
-  }
-}
-
-data  "ibm_app" "ds" {
-  name       = "${ibm_app.app.name}"
-  space_guid = "${data.ibm_space.space.id}"
-}
+	data "ibm_space" "space" {
+		org   = "%s"
+		space = "%s"
+	  }
+	  
+	  data "ibm_app_domain_shared" "domain" {
+		name = "mybluemix.net"
+	  }
+	  
+	  resource "ibm_app_route" "route" {
+		domain_guid = data.ibm_app_domain_shared.domain.id
+		space_guid  = data.ibm_space.space.id
+		host        = "%s"
+	  }
+	  
+	  resource "ibm_service_instance" "service" {
+		name       = "%s"
+		space_guid = data.ibm_space.space.id
+		service    = "speech_to_text"
+		plan       = "lite"
+		tags       = ["cluster-service"]
+	  }
+	  
+	  resource "ibm_app" "app" {
+		name                  = "%s"
+		space_guid            = data.ibm_space.space.id
+		app_path              = "test-fixtures/app1.zip"
+		wait_time_minutes     = 20
+		buildpack             = "sdk-for-nodejs"
+		instances             = 1
+		route_guid            = [ibm_app_route.route.id]
+		service_instance_guid = [ibm_service_instance.service.id]
+		disk_quota            = 512
+		memory                = 128
+		instances             = 1
+		disk_quota            = 512
+	  
+		environment_json = {
+		  "test"     = "test1"
+		  "mockport" = 443
+		}
+	  }
+	  
+	  data "ibm_app" "ds" {
+		name       = ibm_app.app.name
+		space_guid = data.ibm_space.space.id
+	  }
+	  
 `, cfOrganization, cfSpace, routeHost, serviceInstanceName, appName)
 	return
 }

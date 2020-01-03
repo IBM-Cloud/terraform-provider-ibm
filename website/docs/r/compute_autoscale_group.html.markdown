@@ -17,6 +17,8 @@ For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) AP
 In the following example, you can create an auto scaling group using a Debian image:
 
 ```hcl
+/* Deprecated in terraform v0.12 hence not updated */
+
 resource "ibm_compute_autoscale_group" "test_scale_group" {
     name = "test_scale_group_name"
     regional_group = "as-sgp-central-1"

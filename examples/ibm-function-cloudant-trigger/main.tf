@@ -1,7 +1,7 @@
 resource "null_resource" "prepare_app_zip" {
   triggers = {
-    app_version = "${var.app_version}"
-    git_repo    = "${var.git_repo}"
+    app_version = var.app_version
+    git_repo    = var.git_repo
   }
 
   provisioner "local-exec" {
@@ -13,26 +13,28 @@ resource "null_resource" "prepare_app_zip" {
         git fetch
         git checkout -t origin/master
         zip -r ${var.app_zip} *
-        EOF
+        
+EOF
+
   }
 }
 
 data "ibm_space" "spacedata" {
-  space = "${var.space}"
-  org   = "${var.org}"
+  space = var.space
+  org   = var.org
 }
 
 resource "ibm_service_instance" "service-instance" {
-  name       = "${var.service_instance_name}"
-  space_guid = "${data.ibm_space.spacedata.id}"
-  service    = "${var.service}"
-  plan       = "${var.plan}"
+  name       = var.service_instance_name
+  space_guid = data.ibm_space.spacedata.id
+  service    = var.service
+  plan       = var.plan
   tags       = ["cluster-service", "cluster-bind"]
 }
 
 resource "ibm_service_key" "serviceKey" {
-  name                  = "${var.service_key_name}"
-  service_instance_guid = "${ibm_service_instance.service-instance.id}"
+  name                  = var.service_key_name
+  service_instance_guid = ibm_service_instance.service-instance.id
 }
 
 data "ibm_app_domain_shared" "domain" {
@@ -40,33 +42,36 @@ data "ibm_app_domain_shared" "domain" {
 }
 
 resource "ibm_app_route" "route" {
-  domain_guid = "${data.ibm_app_domain_shared.domain.id}"
-  space_guid  = "${data.ibm_space.spacedata.id}"
-  host        = "${var.route}"
+  domain_guid = data.ibm_app_domain_shared.domain.id
+  space_guid  = data.ibm_space.spacedata.id
+  host        = var.route
 }
 
 resource "ibm_app" "app" {
-  depends_on        = ["ibm_service_key.serviceKey", "null_resource.prepare_app_zip"]
-  name              = "${var.app_name}"
-  space_guid        = "${data.ibm_space.spacedata.id}"
-  app_path          = "${var.app_zip}"
+  depends_on = [
+    ibm_service_key.serviceKey,
+    null_resource.prepare_app_zip,
+  ]
+  name              = var.app_name
+  space_guid        = data.ibm_space.spacedata.id
+  app_path          = var.app_zip
   wait_time_minutes = 10
 
-  buildpack  = "${var.buildpack}"
+  buildpack  = var.buildpack
   disk_quota = 512
 
-  command               = "${var.command}"
+  command               = var.command
   memory                = 256
   instances             = 2
   disk_quota            = 512
-  route_guid            = ["${ibm_app_route.route.id}"]
-  service_instance_guid = ["${ibm_service_instance.service-instance.id}"]
-  app_version           = "${var.app_version}"
-  command               = "${var.app_command}"
+  route_guid            = [ibm_app_route.route.id]
+  service_instance_guid = [ibm_service_instance.service-instance.id]
+  app_version           = var.app_version
+  command               = var.app_command
 }
 
 resource "ibm_function_package" "package" {
-  name = "${var.packageName}"
+  name = var.packageName
 
   user_defined_parameters = <<EOF
         [
@@ -80,19 +85,20 @@ resource "ibm_function_package" "package" {
     }
 ]
 EOF
+
 }
 
 resource "ibm_function_action" "action" {
   name = "${ibm_function_package.package.name}/${var.actionName}"
 
-  exec = {
+  exec {
     kind = "nodejs:6"
-    code = "${file("hello.js")}"
+    code = file("hello.js")
   }
 }
 
 resource "ibm_function_package" "boundpackage" {
-  name              = "${var.boundPackageName}"
+  name              = var.boundPackageName
   bind_package_name = "/whisk.system/cloudant"
 
   user_defined_parameters = <<EOF
@@ -111,13 +117,14 @@ resource "ibm_function_package" "boundpackage" {
     }
     ]
 EOF
+
 }
 
 resource "ibm_function_trigger" "trigger" {
-  depends_on = ["ibm_app.app"]
-  name       = "${var.triggerName}"
+  depends_on = [ibm_app.app]
+  name       = var.triggerName
 
-  feed = [{
+  feed {
     name = "${ibm_function_package.boundpackage.name}/changes"
 
     parameters = <<EOF
@@ -132,11 +139,13 @@ resource "ibm_function_trigger" "trigger" {
     }
 ]
 EOF
-  }]
+
+  }
 }
 
 resource "ibm_function_rule" "rule" {
-  name         = "${var.ruleName}"
-  trigger_name = "${ibm_function_trigger.trigger.name}"
-  action_name  = "${ibm_function_action.action.name}"
+  name         = var.ruleName
+  trigger_name = ibm_function_trigger.trigger.name
+  action_name  = ibm_function_action.action.name
 }
+

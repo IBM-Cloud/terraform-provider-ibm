@@ -17,14 +17,14 @@ resource "ibm_iam_user_policy" "policy" {
   ibm_id = "test@in.ibm.com"
   roles  = ["Viewer"]
 
-  resources = [{
+  resources {
     service = "kms"
     region  = "us-south"
-  }]
+  }
 }
 
 data "ibm_iam_user_policy" "testacc_ds_user_policy" {
-  ibm_id = "${ibm_iam_user_policy.policy.ibm_id}"
+  ibm_id = ibm_iam_user_policy.policy.ibm_id
 }
 
 ```

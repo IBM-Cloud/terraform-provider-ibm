@@ -21,7 +21,7 @@ data "ibm_space" "space" {
 data "ibm_service_key" "serviceKeydata" {
   name                  = "mycloudantdbKey"
   service_instance_name = "mycloudantdb"
-  space_guid            = "${data.ibm_space.space.id}"
+  space_guid            = data.ibm_space.space.id
 }
 ```
 

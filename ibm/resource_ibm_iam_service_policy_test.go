@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccIBMIAMServicePolicy_Basic(t *testing.T) {
@@ -22,7 +22,7 @@ func TestAccIBMIAMServicePolicy_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMServicePolicy_basic(name),
+				Config: testAccCheckIBMIAMServicePolicyBasic(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
@@ -31,7 +31,7 @@ func TestAccIBMIAMServicePolicy_Basic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIAMServicePolicy_updateRole(name),
+				Config: testAccCheckIBMIAMServicePolicyUpdateRole(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "tags.#", "2"),
@@ -52,7 +52,7 @@ func TestAccIBMIAMServicePolicy_With_Service(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMServicePolicy_service(name),
+				Config: testAccCheckIBMIAMServicePolicyService(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
@@ -61,7 +61,7 @@ func TestAccIBMIAMServicePolicy_With_Service(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIAMServicePolicy_updateServiceAndRegion(name),
+				Config: testAccCheckIBMIAMServicePolicyUpdateServiceAndRegion(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "resources.0.service", "kms"),
@@ -83,7 +83,7 @@ func TestAccIBMIAMServicePolicy_With_ResourceInstance(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMServicePolicy_resource_instance(name),
+				Config: testAccCheckIBMIAMServicePolicyResourceInstance(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
@@ -105,7 +105,7 @@ func TestAccIBMIAMServicePolicy_With_Resource_Group(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMServicePolicy_resource_group(name),
+				Config: testAccCheckIBMIAMServicePolicyResourceGroup(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
@@ -127,7 +127,7 @@ func TestAccIBMIAMServicePolicy_With_Resource_Type(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMServicePolicy_resource_type(name),
+				Config: testAccCheckIBMIAMServicePolicyResourceType(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
@@ -149,7 +149,7 @@ func TestAccIBMIAMServicePolicy_import(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMServicePolicy_import(name),
+				Config: testAccCheckIBMIAMServicePolicyImport(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServicePolicyExists(resourceName, conf),
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
@@ -176,7 +176,7 @@ func TestAccIBMIAMServicePolicy_account_management(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMServicePolicy_account_management(name),
+				Config: testAccCheckIBMIAMServicePolicyAccountManagement(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServicePolicyExists(resourceName, conf),
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
@@ -243,178 +243,177 @@ func testAccCheckIBMIAMServicePolicyExists(n string, obj iampapv1.Policy) resour
 	}
 }
 
-func testAccCheckIBMIAMServicePolicy_basic(name string) string {
+func testAccCheckIBMIAMServicePolicyBasic(name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_service_id" "serviceID" {
 			name = "%s"
-		  }
-		  
-		  resource "ibm_iam_service_policy" "policy" {
-			iam_service_id = "${ibm_iam_service_id.serviceID.id}"
-			roles        = ["Viewer"]
-			tags         = ["tag1"]
-		  }
+	  	}
+	  
+	  	resource "ibm_iam_service_policy" "policy" {
+			iam_service_id = ibm_iam_service_id.serviceID.id
+			roles          = ["Viewer"]
+			tags           = ["tag1"]
+	  	}
 
 	`, name)
 }
 
-func testAccCheckIBMIAMServicePolicy_updateRole(name string) string {
+func testAccCheckIBMIAMServicePolicyUpdateRole(name string) string {
 	return fmt.Sprintf(`
 		
 		resource "ibm_iam_service_id" "serviceID" {
 			name = "%s"
-		  }
-		  
-		  resource "ibm_iam_service_policy" "policy" {
-			iam_service_id = "${ibm_iam_service_id.serviceID.id}"
-			roles        = ["Viewer","Manager"]
-			tags         = ["tag1", "tag2"]
-		  }
+	  	}
+	  
+	  	resource "ibm_iam_service_policy" "policy" {
+			iam_service_id = ibm_iam_service_id.serviceID.id
+			roles          = ["Viewer", "Manager"]
+			tags           = ["tag1", "tag2"]
+	  	}
 	`, name)
 }
 
-func testAccCheckIBMIAMServicePolicy_service(name string) string {
+func testAccCheckIBMIAMServicePolicyService(name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_service_id" "serviceID" {
 			name = "%s"
-		  }
-		  
-		resource "ibm_iam_service_policy" "policy" {
-			iam_service_id = "${ibm_iam_service_id.serviceID.id}"
-			roles        = ["Viewer"]
-		  
-			resources = [{
-			  service = "cloud-object-storage"
-			}]
-		  }
-
+	  	}
+	  
+	  	resource "ibm_iam_service_policy" "policy" {
+			iam_service_id = ibm_iam_service_id.serviceID.id
+			roles          = ["Viewer"]
+	  
+			resources {
+		 	 service = "cloud-object-storage"
+			}
+	  	}
 	`, name)
 }
 
-func testAccCheckIBMIAMServicePolicy_updateServiceAndRegion(name string) string {
+func testAccCheckIBMIAMServicePolicyUpdateServiceAndRegion(name string) string {
 	return fmt.Sprintf(`
 		
 		resource "ibm_iam_service_id" "serviceID" {
 			name = "%s"
-		  }
-		  
-		resource "ibm_iam_service_policy" "policy" {
-			iam_service_id = "${ibm_iam_service_id.serviceID.id}"
-			roles        = ["Viewer", "Manager"]
-		  
-			resources = [{
-			  service = "kms"
-			  region  = "us-south"
-			}]
-		  }
+	  	}
+	  
+	  	resource "ibm_iam_service_policy" "policy" {
+			iam_service_id = ibm_iam_service_id.serviceID.id
+			roles          = ["Viewer", "Manager"]
+	  
+			resources {
+		  		service = "kms"
+		  		region  = "us-south"
+			}
+	  	}
 	`, name)
 }
 
-func testAccCheckIBMIAMServicePolicy_resource_instance(name string) string {
+func testAccCheckIBMIAMServicePolicyResourceInstance(name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_service_id" "serviceID" {
 			name = "%s"
-		  }
-		  
-		resource "ibm_resource_instance" "instance" {
+	  	}
+	  
+	  	resource "ibm_resource_instance" "instance" {
 			name     = "%s"
 			service  = "kms"
 			plan     = "tiered-pricing"
 			location = "us-south"
-		  }
-		  
-		resource "ibm_iam_service_policy" "policy" {
-			iam_service_id = "${ibm_iam_service_id.serviceID.id}"
-			roles        = ["Manager", "Viewer", "Administrator"]
-		  
-			resources = [{
-			  service              = "kms"
-			  resource_instance_id = "${element(split(":",ibm_resource_instance.instance.id),7)}"
-			}]
-		  }
+	  	}
+	  
+	  	resource "ibm_iam_service_policy" "policy" {
+			iam_service_id = ibm_iam_service_id.serviceID.id
+			roles          = ["Manager", "Viewer", "Administrator"]
+	  
+			resources {
+		 		 service              = "kms"
+		  		resource_instance_id = element(split(":", ibm_resource_instance.instance.id), 7)
+			}
+	  	}
 		  
 
 	`, name, name)
 }
 
-func testAccCheckIBMIAMServicePolicy_resource_group(name string) string {
+func testAccCheckIBMIAMServicePolicyResourceGroup(name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_service_id" "serviceID" {
 			name = "%s"
-		  }
-		  
-		data "ibm_resource_group" "group" {
-			name = "default"
-		  }
-		  
-		resource "ibm_iam_service_policy" "policy" {
-			iam_service_id = "${ibm_iam_service_id.serviceID.id}"
-			roles        = ["Viewer"]
-		  
-			resources = [{
-			  service           = "containers-kubernetes"
-			  resource_group_id = "${data.ibm_resource_group.group.id}"
-			}]
-		  }
+	  	}
+	  
+	  	data "ibm_resource_group" "group" {
+			name = "Default"
+	  	}
+	  
+	  	resource "ibm_iam_service_policy" "policy" {
+			iam_service_id = ibm_iam_service_id.serviceID.id
+			roles          = ["Viewer"]
+	  
+			resources {
+		 		service           = "containers-kubernetes"
+		  		resource_group_id = data.ibm_resource_group.group.id
+			}
+	  	}
 		  
 
 	`, name)
 }
 
-func testAccCheckIBMIAMServicePolicy_resource_type(name string) string {
+func testAccCheckIBMIAMServicePolicyResourceType(name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_service_id" "serviceID" {
 			name = "%s"
-		  }
-		  
-		data "ibm_resource_group" "group" {
-			name = "default"
-		  }
-		  
-		resource "ibm_iam_service_policy" "policy" {
-			iam_service_id = "${ibm_iam_service_id.serviceID.id}"
-			roles        = ["Administrator"]
-		  
-			resources = [{
-			  resource_type = "resource-group"
-			  resource      = "${data.ibm_resource_group.group.id}"
-			}]
-		  }
+	  	}
+	  
+	  	data "ibm_resource_group" "group" {
+			name = "Default"
+	  	}
+	  
+	  	resource "ibm_iam_service_policy" "policy" {
+			iam_service_id = ibm_iam_service_id.serviceID.id
+			roles          = ["Administrator"]
+	  
+			resources {
+		  		resource_type = "resource-group"
+		  		resource      = data.ibm_resource_group.group.id
+			}
+	  	}
 	`, name)
 }
 
-func testAccCheckIBMIAMServicePolicy_import(name string) string {
+func testAccCheckIBMIAMServicePolicyImport(name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_service_id" "serviceID" {
 			name = "%s"
-		  }
-		  
-		  resource "ibm_iam_service_policy" "policy" {
-			iam_service_id = "${ibm_iam_service_id.serviceID.id}"
-			roles        = ["Viewer"]
-		  }
+	  	}
+	  
+	  	resource "ibm_iam_service_policy" "policy" {
+			iam_service_id = ibm_iam_service_id.serviceID.id
+			roles          = ["Viewer"]
+	  	}
 
 	`, name)
 }
 
-func testAccCheckIBMIAMServicePolicy_account_management(name string) string {
+func testAccCheckIBMIAMServicePolicyAccountManagement(name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_service_id" "serviceID" {
 			name = "%s"
-		  }
-		  
-		  resource "ibm_iam_service_policy" "policy" {
-			iam_service_id = "${ibm_iam_service_id.serviceID.id}"
-			roles        = ["Viewer"]
+	  	}
+	  
+	  	resource "ibm_iam_service_policy" "policy" {
+			iam_service_id     = ibm_iam_service_id.serviceID.id
+			roles              = ["Viewer"]
 			account_management = true
-		  }
+	  	}
 
 	`, name)
 }

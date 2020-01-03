@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccIBMDatabaseInstance_Redis_Basic(t *testing.T) {
@@ -108,86 +108,89 @@ func TestAccIBMDatabaseInstance_Redis_import(t *testing.T) {
 
 func testAccCheckIBMDatabaseInstance_Redis_basic(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
-				data "ibm_resource_group" "test_acc" {
-					is_default = true
-				  # name = "%[1]s"
-				}
-
-				resource "ibm_database" "%[2]s" {
-				  resource_group_id = "${data.ibm_resource_group.test_acc.id}"	
-				  name = "%[2]s"	
-				  service 			= "databases-for-redis"
-				  plan              = "standard"
-				  location          = "us-south"
-				  adminpassword     = "password12"
-				  members_memory_allocation_mb = 2048
-  				  members_disk_allocation_mb   = 2048
-  				  whitelist = {
-  						address     = "172.168.1.2/32"
-  						description = "desc1"
-  						}
-				}`, databaseResourceGroup, name)
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+		# name = "%[1]s"
+	  }
+	  
+	  resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-redis"
+		plan                         = "standard"
+		location                     = "us-south"
+		adminpassword                = "password12"
+		members_memory_allocation_mb = 2048
+		members_disk_allocation_mb   = 2048
+		whitelist {
+		  address     = "172.168.1.2/32"
+		  description = "desc1"
+		}
+	  }
+				`, databaseResourceGroup, name)
 }
 
 func testAccCheckIBMDatabaseInstance_Redis_fullyspecified(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
-				data "ibm_resource_group" "test_acc" {
-				  is_default = true
-				  # name = "%[1]s"
-				}
-
-				resource "ibm_database" "%[2]s" {
-				  resource_group_id = "${data.ibm_resource_group.test_acc.id}"	
-				  name = "%[2]s"	
-				  service 			= "databases-for-redis"
-				  plan              = "standard"
-				  location          = "us-south"
-				  adminpassword     = "password12"
-				  members_memory_allocation_mb = 4096
-  				  members_disk_allocation_mb   = 4096	
-  					whitelist = {
-  						address     = "172.168.1.2/32"
-  						description = "desc1"
-  						}
-  					whitelist = {
-  						address     = "172.168.1.1/32"
-  						description = "desc"
-  						}	
-				}`, databaseResourceGroup, name)
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+		# name = "%[1]s"
+	  }
+	  
+	  resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-redis"
+		plan                         = "standard"
+		location                     = "us-south"
+		adminpassword                = "password12"
+		members_memory_allocation_mb = 4096
+		members_disk_allocation_mb   = 4096
+		whitelist {
+		  address     = "172.168.1.2/32"
+		  description = "desc1"
+		}
+		whitelist {
+		  address     = "172.168.1.1/32"
+		  description = "desc"
+		}
+	  }
+				`, databaseResourceGroup, name)
 }
 
 func testAccCheckIBMDatabaseInstance_Redis_reduced(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
-				data "ibm_resource_group" "test_acc" {
-				  is_default = true
-				  # name = "%[1]s"
-				}
-
-				resource "ibm_database" "%[2]s" {
-				  resource_group_id = "${data.ibm_resource_group.test_acc.id}"	
-				  name = "%[2]s"	
-				  service 			= "databases-for-redis"
-				  plan              = "standard"
-				  location          = "us-south"
-				  adminpassword     = "password12"
-				  members_memory_allocation_mb = 2048
-  				  members_disk_allocation_mb   = 4096
-
-				}`, databaseResourceGroup, name)
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+		# name = "%[1]s"
+	  }
+	  
+	  resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-redis"
+		plan                         = "standard"
+		location                     = "us-south"
+		adminpassword                = "password12"
+		members_memory_allocation_mb = 2048
+		members_disk_allocation_mb   = 4096
+	  }
+				`, databaseResourceGroup, name)
 }
 
 func testAccCheckIBMDatabaseInstance_Redis_import(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
-				data "ibm_resource_group" "test_acc" {
-				  is_default = true
-				  # name = "%[1]s"
-				}
-
-				resource "ibm_database" "%[2]s" {
-				  resource_group_id = "${data.ibm_resource_group.test_acc.id}"	
-				  name = "%[2]s"	
-				  service 			= "databases-for-redis"
-				  plan              = "standard"
-				  location          = "us-south"
-				}`, databaseResourceGroup, name)
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+		# name = "%[1]s"
+	  }
+	  
+	  resource "ibm_database" "%[2]s" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name              = "%[2]s"
+		service           = "databases-for-redis"
+		plan              = "standard"
+		location          = "us-south"
+	  }
+				`, databaseResourceGroup, name)
 }

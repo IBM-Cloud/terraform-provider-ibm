@@ -16,6 +16,7 @@ Import the details of an existing IBM Cloud shared domain as a read-only data so
 data "ibm_app_domain_shared" "shared_domain" {
   name = "foo.com"
 }
+
 ```
 
 ## Argument Reference

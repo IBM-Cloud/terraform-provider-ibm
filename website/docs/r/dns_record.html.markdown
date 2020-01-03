@@ -27,7 +27,7 @@ resource "ibm_dns_domain" "main" {
 
 resource "ibm_dns_record" "www" {
     data = "123.123.123.123"
-    domain_id = "${ibm_dns_domain.main.id}"
+    domain_id = ibm_dns_domain.main.id
     host = "www.example.com"
     responsible_person = "user@softlayer.com"
     ttl = 900
@@ -42,7 +42,7 @@ Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softl
 ```hcl
 resource "ibm_dns_record" "aaaa" {
     data = "fe80:0000:0000:0000:0202:b3ff:fe1e:8329"
-    domain_id = "${ibm_dns_domain.main.id}"
+    domain_id = ibm_dns_domain.main.id
     host = "www.example.com"
     responsible_person = "user@softlayer.com"
     ttl = 1000
@@ -57,7 +57,7 @@ Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs] to properly imple
 ```hcl
 resource "ibm_dns_record" "cname" {
     data = "real-host.example.com."
-    domain_id = "${ibm_dns_domain.main.id}"
+    domain_id = ibm_dns_domain.main.id
     host = "alias.example.com"
     responsible_person = "user@softlayer.com"
     ttl = 900
@@ -72,7 +72,7 @@ Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softl
 ```hcl
 resource "ibm_dns_record" "recordNS" {
     data = "ns.example.com."
-    domain_id = "${ibm_dns_domain.main.id}"
+    domain_id = ibm_dns_domain.main.id
     host = "example.com"
     responsible_person = "user@softlayer.com"
     ttl = 900
@@ -87,7 +87,7 @@ Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softl
 ```hcl
 resource "sibm_dns_record" "recordMX-1" {
     data = "mail-1"
-    domain_id = "${ibm_dns_domain.main.id}"
+    domain_id = ibm_dns_domain.main.id
     host = "@"
     mx_priority = "10"
     responsible_person = "user@softlayer.com"
@@ -103,7 +103,7 @@ Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softl
 ```hcl
 resource "ibm_dns_record" "recordSOA" {
     data = "ns1.example.com. abuse.example.com. 2018101002 7200 600 1728000 43200"
-    domain_id = "${ibm_dns_domain.main.id}"
+    domain_id = ibm_dns_domain.main.id
     host = "example.com"
     responsible_person = "user@softlayer.com"
     ttl = 900
@@ -118,7 +118,7 @@ Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softl
 ```hcl
 resource "ibm_dns_record" "recordSPF" {
     data = "v=spf1 mx:mail.example.org ~all"
-    domain_id = "${ibm_dns_domain.main.id}"
+    domain_id = ibm_dns_domain.main.id
     host = "mail-1"
     responsible_person = "user@softlayer.com"
     ttl = 900
@@ -133,7 +133,7 @@ Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softl
 ```hcl
 resource "ibm_dns_record" "recordTXT" {
     data = "host"
-    domain_id = "${ibm_dns_domain.main.id}"
+    domain_id = ibm_dns_domain.main.id
     host = "A SPF test host"
     responsible_person = "user@softlayer.com"
     ttl = 900
@@ -148,7 +148,7 @@ Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softl
 ```hcl
 resource "ibm_dns_record" "recordSRV" {
     data = "ns1.example.org"
-    domain_id = "${ibm_dns_domain.main.id}"
+    domain_id = ibm_dns_domain.main.id
     host = "hosta-srv.com"
     responsible_person = "user@softlayer.com"
     ttl = 900
@@ -168,7 +168,7 @@ Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softl
 ```hcl
 resource "ibm_dns_record" "recordPTR" {
     data = "ptr.example.com"
-    domain_id = "${ibm_dns_domain.main.id}"
+    domain_id = ibm_dns_domain.main.id
 # The host is the last octet of IP address in the range of the subnet
     host = "45"  
     responsible_person = "user@softlayer.com"
