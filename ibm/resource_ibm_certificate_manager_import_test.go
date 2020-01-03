@@ -88,7 +88,7 @@ func testAccCheckIBMCertificateManager_basicImport(name1, name2 string) string {
 	}
 	
 	resource "ibm_certificate_manager_import" "cert"{
-	certificate_manager_instance_id="${ibm_resource_instance.cm.id}"
+	certificate_manager_instance_id=ibm_resource_instance.cm.id
 	name = "%s"
 	data = {
 		content = <<EOF
