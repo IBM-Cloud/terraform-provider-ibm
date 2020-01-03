@@ -38,7 +38,7 @@ func (f *IBMPIInstanceClient) Get(id, powerinstanceid string) (*models.PVMInstan
 
 func (f *IBMPIInstanceClient) Create(powerdef *p_cloud_p_vm_instances.PcloudPvminstancesPostParams, powerinstanceid string) (*models.PVMInstanceList, *models.PVMInstanceList, *models.PVMInstanceList, error) {
 
-	log.Printf("Calling the Power PVM Create Method %s", powerdef.Body)
+	log.Printf("Calling the Power PVM Create Method")
 	params := p_cloud_p_vm_instances.NewPcloudPvminstancesPostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithBody(powerdef.Body)
 
 	log.Printf("Printing the params to be passed %+v", params)
@@ -53,7 +53,7 @@ func (f *IBMPIInstanceClient) Create(powerdef *p_cloud_p_vm_instances.PcloudPvmi
 	if len(postok.Payload) > 0 {
 		log.Printf("Looks like we have an instance created....")
 		log.Printf("Checking if the instance name is right ")
-		log.Printf("Printing the instanceid %s", postok.Payload[0].PvmInstanceID)
+		log.Printf("Printing the instanceid %s", *postok.Payload[0].PvmInstanceID)
 	}
 
 	return &postok.Payload, nil, nil, nil
@@ -92,8 +92,9 @@ func (f *IBMPIInstanceClient) Action(poweractionparams *p_cloud_p_vm_instances.P
 
 	log.Printf("Calling the Power PVM Action Method")
 	log.Printf("the params are %s - powerinstance id is %s", id, powerinstanceid)
-	log.Printf("printing the poweraction params %s", *poweractionparams.Body)
 	params := p_cloud_p_vm_instances.NewPcloudPvminstancesActionPostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithPvmInstanceID(id).WithBody(poweractionparams.Body)
+
+	log.Printf("printing the poweraction params %+v", params)
 
 	postok, err := f.session.Power.PCloudPVMInstances.PcloudPvminstancesActionPost(params, ibmpisession.NewAuth(f.session, powerinstanceid))
 	if err != nil {
