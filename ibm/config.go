@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 	"time"
+
 	// Added code for the Power Colo Offering
 
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
@@ -492,7 +493,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.iamUUMServiceAPI = iamuum
 
-	issession, err := issession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, c.Generation, true, c.BluemixTimeout)
+	issession, err := issession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, c.Generation, false, c.BluemixTimeout)
 	if err != nil {
 		session.isConfigErr = err
 		return nil, err
@@ -534,7 +535,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.certManagementAPI = certManagementAPI
 
-	ibmpisession, err := ibmpisession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, true, c.BluemixTimeout, session.bmxUserDetails.userAccount)
+	ibmpisession, err := ibmpisession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, false, c.BluemixTimeout, session.bmxUserDetails.userAccount)
 	if err != nil {
 		session.ibmpiConfigErr = err
 		return nil, err
