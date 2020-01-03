@@ -85,7 +85,6 @@ func (f *IBMPIVolumeClient) Update(id, volumename string, volumesize float64, vo
 		return nil, errors.ToError(err)
 	}
 
-	log.Print("Printing the response data .. %+v", resp.Payload)
 	return resp.Payload, nil
 }
 

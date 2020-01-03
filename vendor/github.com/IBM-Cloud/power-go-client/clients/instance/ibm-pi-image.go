@@ -59,7 +59,7 @@ func (f *IBMPIImageClient) Create(name, imageid string, powerinstanceid string) 
 	params := p_cloud_images.NewPcloudCloudinstancesImagesPostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithBody(&body)
 	resp, err, _ := f.session.Power.PCloudImages.PcloudCloudinstancesImagesPost(params, ibmpisession.NewAuth(f.session, powerinstanceid))
 	if err.Payload.State == "queued" {
-		log.Printf("Post is successful %s", err.Payload.ImageID)
+		log.Printf("Post is successful %s", *err.Payload.ImageID)
 
 	}
 
