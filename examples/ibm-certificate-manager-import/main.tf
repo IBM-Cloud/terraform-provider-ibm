@@ -6,11 +6,11 @@ resource "ibm_resource_instance" "cm" {
 }
 
 resource "ibm_certificate_manager_import" "cert" {
-  certificate_manager_instance_id = "${ibm_resource_instance.cm.id}"
+  certificate_manager_instance_id = ibm_resource_instance.cm.id
   name                            = "test"
 
   data = {
-    content = "${file(var.certfile_path)}"
+    content = file(var.certfile_path)
   }
 }
 

@@ -16,16 +16,15 @@ Provides a certificate manager. This allows certificates to be imported, updated
 provider "ibm"
 {
 }
-resource "ibm_certificate_manager_import" "cert"{
-    certificate_manager_instance_id = "crn_based_instance_id"
-     name = "string"
-     description="string"
-     data = [{
-       content = "${file(var.certfile_path)}"
-       priv_key = ""
-       intermediate = ""
-     }],
-
+resource "ibm_certificate_manager_import" "cert" {
+  certificate_manager_instance_id = ibm_resource_instance.cm.id
+  name                            = "test"
+  description="string"
+  data = {
+    content = file(var.certfile_path)
+    priv_key = ""
+    intermediate = ""
+  }
 }
 ```
 
