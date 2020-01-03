@@ -152,6 +152,7 @@ func getModifiedVirtualGuestResource() *schema.Resource {
 
 	for _, elem := range r.Schema {
 		elem.ForceNew = false
+		elem.ConflictsWith = []string{}
 	}
 
 	return r
