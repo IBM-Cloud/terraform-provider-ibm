@@ -89,7 +89,10 @@ func resourceIBMISLBListener() *schema.Resource {
 }
 
 func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) error {
-	sess, _ := meta.(ClientSession).ISSession()
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return err
+	}
 
 	log.Printf("[DEBUG] LB Listener create")
 	lbID := d.Get(isLBListenerLBID).(string)
@@ -136,7 +139,7 @@ func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) err
 		body.ConnectionLimit = connLimit
 	}
 
-	_, err := isWaitForLBAvailable(client, lbID, d.Timeout(schema.TimeoutCreate))
+	_, err = isWaitForLBAvailable(client, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return fmt.Errorf(
 			"Error checking for load balancer (%s) is active: %s", lbID, err)
@@ -169,7 +172,10 @@ func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceIBMISLBListenerRead(d *schema.ResourceData, meta interface{}) error {
-	sess, _ := meta.(ClientSession).ISSession()
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return err
+	}
 	client := lbaas.NewLoadBalancerClient(sess)
 
 	parts, err := idParts(d.Id())
@@ -203,7 +209,10 @@ func resourceIBMISLBListenerRead(d *schema.ResourceData, meta interface{}) error
 
 func resourceIBMISLBListenerUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	sess, _ := meta.(ClientSession).ISSession()
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return err
+	}
 	client := lbaas.NewLoadBalancerClient(sess)
 
 	parts, err := idParts(d.Id())
@@ -276,7 +285,10 @@ func resourceIBMISLBListenerUpdate(d *schema.ResourceData, meta interface{}) err
 
 func resourceIBMISLBListenerDelete(d *schema.ResourceData, meta interface{}) error {
 
-	sess, _ := meta.(ClientSession).ISSession()
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return err
+	}
 	client := lbaas.NewLoadBalancerClient(sess)
 	parts, err := idParts(d.Id())
 	if err != nil {
@@ -351,7 +363,10 @@ func isLBListenerDeleteRefreshFunc(lbc *lbaas.LoadBalancerClient, id string) res
 }
 
 func resourceIBMISLBListenerExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	sess, _ := meta.(ClientSession).ISSession()
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return false, err
+	}
 	client := lbaas.NewLoadBalancerClient(sess)
 
 	parts, err := idParts(d.Id())

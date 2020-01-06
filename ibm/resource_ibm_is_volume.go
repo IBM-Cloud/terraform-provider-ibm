@@ -194,7 +194,10 @@ func resourceIBMISVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceIBMISVolumeRead(d *schema.ResourceData, meta interface{}) error {
-	sess, _ := meta.(ClientSession).ISSession()
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return err
+	}
 	client := storage.NewStorageClient(sess)
 
 	vol, err := client.Get(d.Id())
@@ -234,7 +237,10 @@ func resourceIBMISVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 func resourceIBMISVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	sess, _ := meta.(ClientSession).ISSession()
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return err
+	}
 	client := storage.NewStorageClient(sess)
 
 	// Generating parameters for
@@ -258,9 +264,12 @@ func resourceIBMISVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceIBMISVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 
-	sess, _ := meta.(ClientSession).ISSession()
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return err
+	}
 	client := storage.NewStorageClient(sess)
-	err := client.Delete(d.Id())
+	err = client.Delete(d.Id())
 	if err != nil {
 		return err
 	}
@@ -309,10 +318,13 @@ func isVolumeDeleteRefreshFunc(vol *storage.StorageClient, id string) resource.S
 }
 
 func resourceIBMISVolumeExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	sess, _ := meta.(ClientSession).ISSession()
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return false, err
+	}
 	client := storage.NewStorageClient(sess)
 
-	_, err := client.Get(d.Id())
+	_, err = client.Get(d.Id())
 	if err != nil {
 		iserror, ok := err.(iserrors.RiaasError)
 		if ok {

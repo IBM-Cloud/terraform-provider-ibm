@@ -174,7 +174,10 @@ func resourceIBMISLBCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceIBMISLBRead(d *schema.ResourceData, meta interface{}) error {
-	sess, _ := meta.(ClientSession).ISSession()
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return err
+	}
 	client := lbaas.NewLoadBalancerClient(sess)
 
 	lb, err := client.Get(d.Id())
@@ -215,7 +218,10 @@ func resourceIBMISLBRead(d *schema.ResourceData, meta interface{}) error {
 
 func resourceIBMISLBUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	sess, _ := meta.(ClientSession).ISSession()
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return err
+	}
 	client := lbaas.NewLoadBalancerClient(sess)
 
 	if d.HasChange(isLBName) {
@@ -231,9 +237,12 @@ func resourceIBMISLBUpdate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceIBMISLBDelete(d *schema.ResourceData, meta interface{}) error {
 
-	sess, _ := meta.(ClientSession).ISSession()
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return err
+	}
 	client := lbaas.NewLoadBalancerClient(sess)
-	err := client.Delete(d.Id())
+	err = client.Delete(d.Id())
 	if err != nil {
 		return err
 	}
@@ -282,10 +291,13 @@ func isDeleteRefreshFunc(lbc *lbaas.LoadBalancerClient, id string) resource.Stat
 }
 
 func resourceIBMISLBExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	sess, _ := meta.(ClientSession).ISSession()
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return false, err
+	}
 	client := lbaas.NewLoadBalancerClient(sess)
 
-	_, err := client.Get(d.Id())
+	_, err = client.Get(d.Id())
 	if err != nil {
 		iserror, ok := err.(iserrors.RiaasError)
 		if ok {
