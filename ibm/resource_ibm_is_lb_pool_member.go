@@ -89,7 +89,10 @@ func resourceIBMISLBPoolMember() *schema.Resource {
 }
 
 func resourceIBMISLBPoolMemberCreate(d *schema.ResourceData, meta interface{}) error {
-	sess, _ := meta.(ClientSession).ISSession()
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return err
+	}
 	log.Printf("[DEBUG] LB Pool create")
 	lbPoolID, err := getPoolId(d.Get(isLBPoolID).(string))
 	if err != nil {
@@ -148,7 +151,10 @@ func resourceIBMISLBPoolMemberCreate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceIBMISLBPoolMemberRead(d *schema.ResourceData, meta interface{}) error {
-	sess, _ := meta.(ClientSession).ISSession()
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return err
+	}
 	client := lbaas.NewLoadBalancerClient(sess)
 
 	parts, err := idParts(d.Id())
@@ -184,7 +190,10 @@ func resourceIBMISLBPoolMemberRead(d *schema.ResourceData, meta interface{}) err
 
 func resourceIBMISLBPoolMemberUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	sess, _ := meta.(ClientSession).ISSession()
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return err
+	}
 	client := lbaas.NewLoadBalancerClient(sess)
 
 	parts, err := idParts(d.Id())
@@ -244,7 +253,10 @@ func resourceIBMISLBPoolMemberUpdate(d *schema.ResourceData, meta interface{}) e
 
 func resourceIBMISLBPoolMemberDelete(d *schema.ResourceData, meta interface{}) error {
 
-	sess, _ := meta.(ClientSession).ISSession()
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return err
+	}
 	client := lbaas.NewLoadBalancerClient(sess)
 	parts, err := idParts(d.Id())
 	if err != nil {
@@ -300,7 +312,10 @@ func resourceIBMISLBPoolMemberDelete(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceIBMISLBPoolMemberExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	sess, _ := meta.(ClientSession).ISSession()
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return false, err
+	}
 	client := lbaas.NewLoadBalancerClient(sess)
 
 	parts, err := idParts(d.Id())

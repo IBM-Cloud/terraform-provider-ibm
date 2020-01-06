@@ -129,7 +129,10 @@ func resourceIBMISLBPool() *schema.Resource {
 }
 
 func resourceIBMISLBPoolCreate(d *schema.ResourceData, meta interface{}) error {
-	sess, _ := meta.(ClientSession).ISSession()
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return err
+	}
 
 	log.Printf("[DEBUG] LB Pool create")
 	name := d.Get(isLBPoolName).(string)
@@ -187,7 +190,7 @@ func resourceIBMISLBPoolCreate(d *schema.ResourceData, meta interface{}) error {
 	isLBPoolKey := "load_balancer_pool_key_" + lbID
 	ibmMutexKV.Lock(isLBPoolKey)
 	defer ibmMutexKV.Unlock(isLBPoolKey)
-	_, err := isWaitForLBAvailable(client, lbID, d.Timeout(schema.TimeoutCreate))
+	_, err = isWaitForLBAvailable(client, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return fmt.Errorf(
 			"Error checking for load balancer (%s) is active: %s", lbID, err)
@@ -220,7 +223,10 @@ func resourceIBMISLBPoolCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceIBMISLBPoolRead(d *schema.ResourceData, meta interface{}) error {
-	sess, _ := meta.(ClientSession).ISSession()
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return err
+	}
 	client := lbaas.NewLoadBalancerClient(sess)
 
 	parts, err := idParts(d.Id())
@@ -257,7 +263,10 @@ func resourceIBMISLBPoolRead(d *schema.ResourceData, meta interface{}) error {
 
 func resourceIBMISLBPoolUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	sess, _ := meta.(ClientSession).ISSession()
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return err
+	}
 	client := lbaas.NewLoadBalancerClient(sess)
 
 	parts, err := idParts(d.Id())
@@ -337,7 +346,10 @@ func resourceIBMISLBPoolUpdate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceIBMISLBPoolDelete(d *schema.ResourceData, meta interface{}) error {
 
-	sess, _ := meta.(ClientSession).ISSession()
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return err
+	}
 	client := lbaas.NewLoadBalancerClient(sess)
 	parts, err := idParts(d.Id())
 	if err != nil {
@@ -384,7 +396,10 @@ func resourceIBMISLBPoolDelete(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceIBMISLBPoolExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	sess, _ := meta.(ClientSession).ISSession()
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return false, err
+	}
 	client := lbaas.NewLoadBalancerClient(sess)
 
 	parts, err := idParts(d.Id())
