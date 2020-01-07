@@ -1,7 +1,12 @@
-variable "user1" {}
+variable "user1" {
+}
 
-variable "user2" {}
+variable "user2" {
+}
 
-variable "org" {}
+variable "org" {
+}
 
-variable "space" {}
+variable "space" {
+}
+
