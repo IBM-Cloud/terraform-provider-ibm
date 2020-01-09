@@ -262,3 +262,11 @@ The following attributes are exported:
 * `secondary_ip_addresses` - The public secondary IPv4 addresses of the VM instance.
 * `public_interface_id` - The ID of the primary public interface.
 * `private_interface_id` - The ID of the primary private interface.
+
+## Import
+
+ibm_compute_vm_instance can be imported using instanceID, eg
+
+```
+$ terraform import ibm_compute_vm_instance.example 88205074
+```
