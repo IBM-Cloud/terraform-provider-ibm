@@ -77,6 +77,7 @@ func resourceIBMISFloatingIP() *schema.Resource {
 				Type:     schema.TypeString,
 				ForceNew: true,
 				Optional: true,
+				Computed: true,
 			},
 
 			ResourceControllerURL: {
