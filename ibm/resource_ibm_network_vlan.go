@@ -39,6 +39,7 @@ func resourceIBMNetworkVlan() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
@@ -172,7 +173,7 @@ func resourceIBMNetworkVlanCreate(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("Error during creation of vlan: %s", err)
 	}
 
-	vlan, err := findVlanByOrderId(sess, *receipt.OrderId)
+	vlan, err := findVlanByOrderId(sess, *receipt.OrderId, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return fmt.Errorf("Error finding VLAN order %d: %s", *receipt.OrderId, err)
 	}
@@ -397,7 +398,7 @@ func resourceIBMNetworkVlanExists(d *schema.ResourceData, meta interface{}) (boo
 	return result.Id != nil && *result.Id == vlanID, nil
 }
 
-func findVlanByOrderId(sess *session.Session, orderId int) (datatypes.Network_Vlan, error) {
+func findVlanByOrderId(sess *session.Session, orderId int, timeout time.Duration) (datatypes.Network_Vlan, error) {
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"complete"},
@@ -419,7 +420,7 @@ func findVlanByOrderId(sess *session.Session, orderId int) (datatypes.Network_Vl
 				return nil, "", fmt.Errorf("Expected one vlan: %s", err)
 			}
 		},
-		Timeout:    10 * time.Minute,
+		Timeout:    timeout,
 		Delay:      5 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
