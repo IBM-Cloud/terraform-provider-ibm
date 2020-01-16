@@ -33,9 +33,9 @@ ibm_container_vpc_alb provides the following [Timeouts](https://www.terraform.io
 
 The following arguments are supported:
 
-* `alb_id` - (Required, string) The ID of the Application Load Balancer.
+* `alb_id` - (Required, Forces new resource, string) The ID of the Application Load Balancer.
 * `enable` - (Optional, bool)  Enable an ALB for the cluster.
-* `disable_deployment` - (Optional, bool) Disable the ALB deployment only. If provided, the ALB deployment is deleted but the IBM-provided Ingress subdomain remains. 
+* `disable_deployment` - (Optional, Forces new resource, bool) Disable the ALB deployment only. If provided, the ALB deployment is deleted but the IBM-provided Ingress subdomain remains. 
 **Note** - Must include either 'enable' or 'disable_deployment' in the configuration, but must not include both.
 
 

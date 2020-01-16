@@ -46,15 +46,15 @@ ibm_container_worker_pool provides the following [Timeouts](https://www.terrafor
 
 The following arguments are supported:
 
-* `name` - (Required, string) The name of the worker pool.
-* `cluster` - (Required, string) The name or id of the cluster.
-* `machine_type` - (Required, string) The machine type of the worker node.
+* `name` - (Required, Forces new resource, string) The name of the worker pool.
+* `cluster` - (Required, Forces new resource, string) The name or id of the cluster.
+* `machine_type` - (Required, Forces new resource, string) The machine type of the worker node.
 * `size_per_zone` - (Required, int) Number of workers per zone in this pool.
-* `hardware` - (Optional, string) The level of hardware isolation for your worker node. Use `dedicated` to have available physical resources dedicated to you only, or `shared` to allow physical resources to be shared with other IBM customers. For IBM Cloud Public accounts, the default value is shared. For IBM Cloud Dedicated accounts, dedicated is the only available option.
-* `disk_encryption` - (Optional, boolean) Set to `false` to disable encryption on a worker. Default is true.
-* `labels` - (Optional, map) Labels on all the workers in the worker pool.
-* `region` - (Deprecated, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(IC_REGION/IBMCLOUD_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
-* `resource_group_id` - (Optional, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
+* `hardware` - (Optional, Forces new resource, string) The level of hardware isolation for your worker node. Use `dedicated` to have available physical resources dedicated to you only, or `shared` to allow physical resources to be shared with other IBM customers. For IBM Cloud Public accounts, the default value is shared. For IBM Cloud Dedicated accounts, dedicated is the only available option.
+* `disk_encryption` - (Optional, Forces new resource, boolean) Set to `false` to disable encryption on a worker. Default is true.
+* `labels` - (Optional, Forces new resource, map) Labels on all the workers in the worker pool.
+* `region` - (Deprecated, Forces new resource, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(IC_REGION/IBMCLOUD_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
+* `resource_group_id` - (Optional, Forces new resource, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
  
 ## Attribute Reference
 
