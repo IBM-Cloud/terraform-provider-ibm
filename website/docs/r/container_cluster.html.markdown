@@ -76,14 +76,14 @@ ibm_container_alb provides the following [Timeouts](https://www.terraform.io/doc
 
 The following arguments are supported:
 
-* `name` - (Required, string) The name of the cluster.
-* `datacenter` - (Required, string)  The datacenter of the worker nodes. You can retrieve the value by running the `bluemix cs locations` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
+* `name` - (Required, Forces new resource, string) The name of the cluster.
+* `datacenter` - (Required, Forces new resource, string)  The datacenter of the worker nodes. You can retrieve the value by running the `bluemix cs locations` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
 * `kube_version` - (Optional, string) The desired Kubernetes version of the created cluster. If present, at least major.minor must be specified.
 * `update_all_workers` - (Optional, bool)  Set to `true` if you want to update workers kube version along with the cluster kube_version
-* `org_guid` - (Deprecated, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from data source `ibm_org` or by running the `ibmcloud iam orgs --guid` command in the IBM Cloud CLI.
-* `space_guid` - (Deprecated, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from data source `ibm_space` or by running the `ibmcloud iam space <space-name> --guid` command in the IBM Cloud CLI.
-* `account_guid` - (Deprecated, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from data source `ibm_account` or by running the `ibmcloud iam accounts` command in the IBM Cloud CLI.
-* `region` - (Deprecated, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(IC_REGION/IBMCLOUD_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
+* `org_guid` - (Deprecated, Forces new resource, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from data source `ibm_org` or by running the `ibmcloud iam orgs --guid` command in the IBM Cloud CLI.
+* `space_guid` - (Deprecated, Forces new resource, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from data source `ibm_space` or by running the `ibmcloud iam space <space-name> --guid` command in the IBM Cloud CLI.
+* `account_guid` - (Deprecated, Forces new resource, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from data source `ibm_account` or by running the `ibmcloud iam accounts` command in the IBM Cloud CLI.
+* `region` - (Deprecated, Forces new resource, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(IC_REGION/IBMCLOUD_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
 * `resource_group_id` - (Optional, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
 * `workers` - (Removed) The worker nodes that you want to add to the cluster. Nested `workers` blocks have the following structure:
 	* `action` - valid actions are add, reboot and reload.
@@ -97,28 +97,28 @@ The following arguments are supported:
 	* `id` - ID of the worker.
 	* `version` - worker version. 
 * `default_pool_size` - (Optional,int) The number of workers created under the default worker pool which support Multi-AZ. 
-* `machine_type` - (Optional, string) The machine type of the worker nodes. You can retrieve the value by running the `ibmcloud ks machine-types <data-center>` command in the IBM Cloud CLI.
-* `billing` - (Optional, string) The billing type for the instance. Accepted values are `hourly` or `monthly`.
-* `isolation` - (Removed) Accepted values are `public` or `private`. Use `private` if you want to have available physical resources dedicated to you only or `public` to allow physical resources to be shared with other IBM customers. Use hardware instead.
-* `hardware` - (Optional, string) The level of hardware isolation for your worker node. Use `dedicated` to have available physical resources dedicated to you only, or `shared` to allow physical resources to be shared with other IBM customers. For IBM Cloud Public accounts, it can be shared or dedicated. For IBM Cloud Dedicated accounts, dedicated is the only available option.
-* `public_vlan_id`- (Optional, string) The public VLAN ID for the worker node. You can retrieve the value by running the ibmcloud ks vlans <data-center> command in the IBM Cloud CLI.
+* `machine_type` - (Optional, Forces new resource, string) The machine type of the worker nodes. You can retrieve the value by running the `ibmcloud ks machine-types <data-center>` command in the IBM Cloud CLI.
+* `billing` - (Optional, Forces new resource, string) The billing type for the instance. Accepted values are `hourly` or `monthly`.
+* `isolation` - (Removed, Forces new resource) Accepted values are `public` or `private`. Use `private` if you want to have available physical resources dedicated to you only or `public` to allow physical resources to be shared with other IBM customers. Use hardware instead.
+* `hardware` - (Optional, Forces new resource, string) The level of hardware isolation for your worker node. Use `dedicated` to have available physical resources dedicated to you only, or `shared` to allow physical resources to be shared with other IBM customers. For IBM Cloud Public accounts, it can be shared or dedicated. For IBM Cloud Dedicated accounts, dedicated is the only available option.
+* `public_vlan_id`- (Optional, Forces new resource, string) The public VLAN ID for the worker node. You can retrieve the value by running the ibmcloud ks vlans <data-center> command in the IBM Cloud CLI.
   * Free clusters: You must not specify any public VLAN. Your free cluster is automatically connected to a public VLAN that is owned by IBM.
   * Standard clusters:  
     (a) If you already have a public VLAN set up in your IBM Cloud Classic Infrastructure (SoftLayer) account for that zone, enter the ID of the public VLAN.<br/>
     (b) If you want to connect your worker nodes to a private VLAN only, do not specify this option.
 
-* `private_vlan_id` - (Optional, string) The private VLAN of the worker node. You can retrieve the value by running the ibmcloud ks vlans <data-center> command in the IBM Cloud CLI.
+* `private_vlan_id` - (Optional, Forces new resource, string) The private VLAN of the worker node. You can retrieve the value by running the ibmcloud ks vlans <data-center> command in the IBM Cloud CLI.
   * Free clusters: You must not specify any private VLAN. Your free cluster is automatically connected to a private VLAN that is owned by IBM.
   * Standard clusters:<br/>
     (a) If you already have a private VLAN set up in your IBM Cloud Classic Infrastructure (SoftLayer) account for that zone, enter the ID of the private VLAN.<br/>
     (b) If you do not have a private VLAN in your account, do not specify this option. IBM Cloud Kubernetes Service will automatically create a private VLAN for you.
 * `subnet_id` - (Optional, string) The existing subnet ID that you want to add to the cluster. You can retrieve the value by running the `ibmcloud ks subnets` command in the IBM Cloud CLI.
-* `no_subnet` - (Optional, boolean) Set to `true` if you do not want to automatically create a portable subnet.
-* `is_trusted` - (Optional, boolean) Set to `true` to  enable trusted cluster feature. Default is false.
-* `disk_encryption` - (Optional, boolean) Set to `false` to disable encryption on a worker.
+* `no_subnet` - (Optional, Forces new resource, boolean) Set to `true` if you do not want to automatically create a portable subnet.
+* `is_trusted` - (Optional, Forces new resource, boolean) Set to `true` to  enable trusted cluster feature. Default is false.
+* `disk_encryption` - (Optional, Forces new resource, boolean) Set to `false` to disable encryption on a worker.
 * `webhook` - (Optional, string) The webhook that you want to add to the cluster.
-* `public_service_endpoint` - (Optional,bool) Enable the public service endpoint to make the master publicly accessible.
-* `private_service_endpoint` - (Optional,bool) Enable the private service endpoint to make the master privately accessible. Once enabled this feature cannot be disabled later.
+* `public_service_endpoint` - (Optional, Forces new resource,bool) Enable the public service endpoint to make the master publicly accessible.
+* `private_service_endpoint` - (Optional, Forces new resource,bool) Enable the private service endpoint to make the master privately accessible. Once enabled this feature cannot be disabled later.
   **NOTE**: As a prerequisite for using Service Endpoints, Account must be enabled for Virtual Routing and Forwarding (VRF). Learn more about VRF on IBM Cloud [here](https://cloud.ibm.com/docs/infrastructure/direct-link/vrf-on-ibm-cloud.html#overview-of-virtual-routing-and-forwarding-vrf-on-ibm-cloud). Account must be enabled for connectivity to Service Endpoints. Use the resource `ibm_container_cluster_feature` to update the `public_service_endpoint` and `private_service_endpoint`. 
 * `wait_time_minutes` - (Deprecated, integer) The duration, expressed in minutes, to wait for the cluster to become available before declaring it as created. It is also the same amount of time waited for no active transactions before proceeding with an update or deletion. The default value is `90`.
 * `tags` - (Optional, array of strings) Tags associated with the container cluster instance.  

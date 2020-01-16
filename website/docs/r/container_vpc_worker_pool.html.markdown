@@ -44,16 +44,16 @@ ibm_container_vpc_worker_pool provides the following [Timeouts](https://www.terr
 
 The following arguments are supported:
 
-* `worker_pool_name` - (Required, string) The name of the worker pool.
-* `cluster` - (Required, string) The name or id of the cluster.
-* `vpc_id` - (Required, string) The Id of VPC 
-* `worker_count` - (Required,Int) The number of worker nodes per zone in the worker pool.
-* `flavor` - (Required, string) The flavour of the worker node.
-* `zones` - (Required, list) A nested block describing the zones of this worker_pool. Nested zones blocks have the following structure:
+* `worker_pool_name` - (Required, Forces new resource, string) The name of the worker pool.
+* `cluster` - (Required, Forces new resource, string) The name or id of the cluster.
+* `vpc_id` - (Required, Forces new resource, string) The Id of VPC 
+* `worker_count` - (Required, Forces new resource, Int) The number of worker nodes per zone in the worker pool.
+* `flavor` - (Required, Forces new resource, string) The flavour of the worker node.
+* `zones` - (Required, Forces new resource, list) A nested block describing the zones of this worker_pool. Nested zones blocks have the following structure:
   * `subnet-id` - (Required, string) The worker pool subnet to assign the cluster. 
   * `name` - (Required, string) Name of the zone.
 * `labels` - (Optional, map) Labels on all the workers in the worker pool.
-* `resource_group_id` - (Optional, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
+* `resource_group_id` - (Optional, Forces new resource, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
  
 
 ## Attribute Reference
