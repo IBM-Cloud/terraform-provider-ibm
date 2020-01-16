@@ -23,9 +23,10 @@ func dataSourceIBMPIImages() *schema.Resource {
 
 			helpers.PIImageName: {
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
 				Description:  "Imagename Name to be used for pvminstances",
 				ValidateFunc: validation.NoZeroValues,
+				Deprecated:   "This field is deprectaed.",
 			},
 			helpers.PICloudInstanceId: {
 				Type:         schema.TypeString,
@@ -71,7 +72,6 @@ func dataSourceIBMPIImagesAllRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	imagename := d.Get(helpers.PIImageName).(string)
 
 	imageC := instance.NewIBMPIImageClient(sess, powerinstanceid)
 
@@ -83,26 +83,26 @@ func dataSourceIBMPIImagesAllRead(d *schema.ResourceData, meta interface{}) erro
 
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
-	_ = d.Set("image_info", flattenStockImages(imagename, imagedata.Images))
+	_ = d.Set("image_info", flattenStockImages(imagedata.Images))
 
 	return nil
 
 }
 
-func flattenStockImages(imagename string, list []*models.ImageReference) []map[string]interface{} {
+func flattenStockImages(list []*models.ImageReference) []map[string]interface{} {
 	log.Printf("Calling the flattenstockImages method and the size is %d", len(list))
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
-		if *i.Name == imagename {
-			l := map[string]interface{}{
-				"image_id":    *i.ImageID,
-				"image_state": *i.State,
-				"image_href":  *i.Href,
-				"image_name":  *i.Name,
-			}
 
-			result = append(result, l)
+		l := map[string]interface{}{
+			"image_id":    *i.ImageID,
+			"image_state": *i.State,
+			"image_href":  *i.Href,
+			"image_name":  *i.Name,
 		}
+
+		result = append(result, l)
+
 	}
 	return result
 }
