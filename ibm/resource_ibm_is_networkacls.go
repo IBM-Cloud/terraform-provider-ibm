@@ -7,6 +7,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
@@ -33,6 +34,7 @@ const (
 	isNetworkACLRuleUDP         = "udp"
 	isNetworkACLRulePortMax     = "port_max"
 	isNetworkACLRulePortMin     = "port_min"
+	isNetworkACLVPC             = "vpc"
 )
 
 func resourceIBMISNetworkACL() *schema.Resource {
@@ -49,6 +51,11 @@ func resourceIBMISNetworkACL() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: false,
+			},
+			isNetworkACLVPC: {
+				Type:     schema.TypeString,
+				ForceNew: true,
+				Optional: true,
 			},
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
@@ -189,6 +196,19 @@ func resourceIBMISNetworkACLCreate(d *schema.ResourceData, meta interface{}) err
 
 	var nwaclbody networkc.PostNetworkAclsBody
 	nwaclbody.Name = d.Get(isNetworkACLName).(string)
+	var vpc string
+	if vpcID, ok := d.GetOk(isNetworkACLVPC); ok {
+		vpc = vpcID.(string)
+	}
+	if sess.Generation == 2 {
+		if vpc == "" {
+			return fmt.Errorf("Required parameter vpc is not set for Generation 2")
+		} else {
+			nwaclbody.Vpc = &models.ResourceReference{
+				ID: strfmt.UUID(vpc),
+			}
+		}
+	}
 
 	//validate each rule before attempting to create the ACL
 	rules := d.Get(isNetworkACLRules).([]interface{})
@@ -239,6 +259,9 @@ func resourceIBMISNetworkACLRead(d *schema.ResourceData, meta interface{}) error
 	}
 
 	d.Set(isNetworkACLName, nwacl.Name)
+	if sess.Generation == 2 {
+		d.Set(isNetworkACLVPC, nwacl.Vpc.ID.String())
+	}
 	d.Set(isNetworkACLSubnets, len(nwacl.Subnets))
 
 	log.Printf("[DEBUG] Looking up rules for network ACL with id %s", d.Id())

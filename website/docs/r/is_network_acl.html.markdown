@@ -54,6 +54,7 @@ The following arguments are supported:
 
 
 * `name` - (Required, string) The name of the network ACL.
+* `vpc` - (Optional, Forces new resource, string) The VPC Id. This is a Required field and to be set only when the generation parameter is `2`
 * `rules` - (Optional, array)   The rules for a network ACL
 Nested `rules` blocks have the following structure:
 	* `name` - (Required, string) The user-defined name for this rule.
