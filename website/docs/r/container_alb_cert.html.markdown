@@ -35,8 +35,8 @@ ibm_container_alb_cert provides the following [Timeouts](https://www.terraform.i
 The following arguments are supported:
 
 * `cert_crn` - (Required, string) The certificate CRN.
-* `cluster_id` - (Required, string)  The cluster ID.
-* `secret_name` - (Required, string) The name of the ALB certificate secret. 
+* `cluster_id` - (Required, Forces new resource, string)  The cluster ID.
+* `secret_name` - (Required, Forces new resource, string) The name of the ALB certificate secret. 
 * `region` - (Optional, string) The region of ALB certificate.
 
 ## Attribute Reference

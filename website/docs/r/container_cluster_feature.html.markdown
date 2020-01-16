@@ -33,7 +33,7 @@ ibm_container_cluster_feature provides the following [Timeouts](https://www.terr
 
 The following arguments are supported:
 
-* `cluster` - (Required, string) The cluster name or id.
+* `cluster` - (Required, Forces new resource, string) The cluster name or id.
 * `public_service_endpoint` - (Optional, bool)  Enable or disable the public service endpoint.
 * `private_service_endpoint` - (Optional, bool) Enable the private service endpoint to make the master privately accessible. Once enabled this feature cannot be disabled later.
   **NOTE**: As a prerequisite for using Service Endpoints, Account must be enabled for Virtual Routing and Forwarding (VRF). Learn more about VRF on IBM Cloud [here](https://cloud.ibm.com/docs/infrastructure/direct-link/vrf-on-ibm-cloud.html#overview-of-virtual-routing-and-forwarding-vrf-on-ibm-cloud). Account must be enabled for connectivity to Service Endpoints.

@@ -33,12 +33,12 @@ ibm_container_alb provides the following [Timeouts](https://www.terraform.io/doc
 
 The following arguments are supported:
 
-* `alb_id` - (Required, string) The ALB ID.
+* `alb_id` - (Required, Forces new resource, string) The ALB ID.
 * `enable` - (Optional, bool)  Enable an ALB for the cluster.
-* `disable_deployment` - (Optional, bool) Disable the ALB deployment only. If provided, the ALB deployment is deleted but the IBM-provided Ingress subdomain remains. 
+* `disable_deployment` - (Optional, Forces new resource, bool) Disable the ALB deployment only. If provided, the ALB deployment is deleted but the IBM-provided Ingress subdomain remains. 
 **Note** - Must include either 'enable' or 'disable_deployment' in the configuration, but must not include both.
-* `user_ip` - (Optional,string) For a private ALB only. The private ALB is deployed with an IP address from a user-provided private subnet. If no IP address is provided, the ALB is deployed with a random IP address from a private subnet in the IBM Cloud account.
-* `region` - (Optional, string) The region of ALB.
+* `user_ip` - (Optional, Forces new resource,string) For a private ALB only. The private ALB is deployed with an IP address from a user-provided private subnet. If no IP address is provided, the ALB is deployed with a random IP address from a private subnet in the IBM Cloud account.
+* `region` - (Optional, Forces new resource, string) The region of ALB.
 
 ## Attribute Reference
 
