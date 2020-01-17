@@ -41,6 +41,7 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
+	kp "github.com/IBM/keyprotect-go-client"
 )
 
 //RetryDelay
@@ -148,6 +149,7 @@ type ClientSession interface {
 	SchematicsAPI() (schematics.SchematicsServiceAPI, error)
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
 	CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error)
+	keyProtectAPI() (*kp.Client, error)
 }
 
 type clientSession struct {
@@ -219,6 +221,9 @@ type clientSession struct {
 	powerConfigErr error
 	ibmpiConfigErr error
 	ibmpiSession   *ibmpisession.IBMPISession
+
+	kp1Err error
+	kp1API *kp.API
 
 	bluemixSessionErr error
 }
@@ -338,6 +343,10 @@ func (sess clientSession) CertificateManagerAPI() (certificatemanager.Certificat
 	return sess.certManagementAPI, sess.certManagementErr
 }
 
+func (sess clientSession) keyProtectAPI() (*kp.Client, error) {
+	return sess.kp1API, sess.kp1Err
+}
+
 // Session to the Power Colo Service
 
 func (sess clientSession) IBMPISession() (*ibmpisession.IBMPISession, error) {
@@ -362,6 +371,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.accountV1ConfigErr = errEmptyBluemixCredentials
 		session.csConfigErr = errEmptyBluemixCredentials
 		session.csv2ConfigErr = errEmptyBluemixCredentials
+		session.kp1Err = errEmptyBluemixCredentials
 		session.stxConfigErr = errEmptyBluemixCredentials
 		session.cfConfigErr = errEmptyBluemixCredentials
 		session.cisConfigErr = errEmptyBluemixCredentials
@@ -450,6 +460,18 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.csv2ConfigErr = fmt.Errorf("Error occured while configuring vpc Container Service for K8s cluster: %q", err)
 	}
 	session.csv2ServiceAPI = v2clusterAPI
+
+	options := kp.ClientConfig{
+		BaseURL:       kp.DefaultBaseURL,
+		Authorization: sess.BluemixSession.Config.IAMAccessToken,
+		// InstanceID:    "42fET57nnadurKXzXAedFLOhGqETfIGYxOmQXkFgkJV9",
+		Verbose: kp.VerboseFailOnly,
+	}
+	kpAPIclient, err := kp.New(options, kp.DefaultTransport())
+	if err != nil {
+		session.kp1Err = fmt.Errorf("Error occured while configuring Key Protect Service: %q", err)
+	}
+	session.kp1API = kpAPIclient
 
 	schematicService, err := schematics.New(sess.BluemixSession)
 	if err != nil {
