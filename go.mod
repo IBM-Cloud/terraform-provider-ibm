@@ -7,6 +7,7 @@ require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20191219070205-adffc398d07d
 	github.com/IBM-Cloud/power-go-client v0.0.0-00010101000000-000000000000
 	github.com/IBM/ibm-cos-sdk-go v1.2.0
+	github.com/IBM/keyprotect-go-client v0.3.2
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/apache/incubator-openwhisk-client-go v0.0.0-20171128215515-ad814bc98c32
