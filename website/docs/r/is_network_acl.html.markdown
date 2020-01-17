@@ -41,6 +41,41 @@ resource "ibm_is_network_acl" "isExampleACL" {
 }
 ```
 
+In The following example, you can create NextGen VPC Network ACL
+
+```hcl
+resource "ibm_is_vpc" "testacc_vpc" {
+	name = "vpctest"
+}
+
+resource "ibm_is_network_acl" "isExampleACL" {
+	name = "is-example-acl"
+  vpc  = ibm_is_vpc.testacc_vpc.id
+  rules {
+    name        = "outbound"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "0.0.0.0/0"
+    direction   = "outbound"
+    icmp {
+      code = 1
+      type = 1
+    }
+  }
+  rules {
+    name        = "inbound"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "0.0.0.0/0"
+    direction   = "inbound"
+    icmp {
+      code = 1
+      type = 1
+    }
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
