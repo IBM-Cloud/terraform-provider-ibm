@@ -107,6 +107,10 @@ func dataSourceIBMPIInstance() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"externalip": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						/*"version": {
 							Type:     schema.TypeFloat,
 							Computed: true,
@@ -162,6 +166,7 @@ func dataSourceIBMPIInstancesRead(d *schema.ResourceData, meta interface{}) erro
 			p["networkid"] = pvmip.NetworkID
 			p["macaddress"] = pvmip.MacAddress
 			p["type"] = pvmip.Type
+			p["externalip"] = pvmip.ExternalIP
 			pvmaddress[i] = p
 		}
 		d.Set("addresses", pvmaddress)

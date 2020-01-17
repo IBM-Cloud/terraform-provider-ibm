@@ -68,5 +68,11 @@ The following attributes are exported:
 * `pi_disk_size` - (int) The size (GB) of the root disk.
 * `pi_instance_status` - (string) The status of the VM.
 * `pi_minproc` - (float) The minimum number of processors the VM can have.
-* `pi_addresses` - (Required, list(map[string])) A list of addresses assigned to the VM.
+* `addresses` - The addresses associated with this instance.  Nested `addresses` blocks have the following structure:
+  * `ip` - IP of the instance.
+  * `macaddress` - The macaddress of the instance.
+  * `networkid` - The networkID of the instance.
+  * `networkname` - The network name of the instance.
+  * `type` - The type of the network
+  * `externalip` - The externalIP address of the instance.
 * `pi_instance_progress` - (float) Specifies the overall progress of the VM deployment process.
