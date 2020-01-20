@@ -218,6 +218,7 @@ func resourceIBMLbaas() *schema.Resource {
 					},
 				},
 			},
+
 			"server_instances": {
 				Type:        schema.TypeSet,
 				Description: "The Server instances for this load balancer",
@@ -246,6 +247,21 @@ func resourceIBMLbaas() *schema.Resource {
 					},
 				},
 				Set: resourceIBMLBMemberHash,
+			},
+			ResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
+			ResourceName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the resource",
+			},
+			ResourceStatus: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the resource",
 			},
 		},
 	}
@@ -319,6 +335,9 @@ func resourceIBMLbaasRead(d *schema.ResourceData, meta interface{}) error {
 	} else {
 		d.Set("use_system_public_ip_pool", false)
 	}
+	d.Set(ResourceControllerURL, fmt.Sprintf("https://cloud.ibm.com/classic/network/loadbalancing/cloud/details/%s#Overview", d.Id()))
+	d.Set(ResourceName, *result.Name)
+	d.Set(ResourceStatus, *result.OperatingStatus)
 
 	return nil
 }
