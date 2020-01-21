@@ -222,8 +222,8 @@ type clientSession struct {
 	ibmpiConfigErr error
 	ibmpiSession   *ibmpisession.IBMPISession
 
-	kp1Err error
-	kp1API *kp.API
+	kpErr error
+	kpAPI *kp.API
 
 	bluemixSessionErr error
 }
@@ -344,7 +344,7 @@ func (sess clientSession) CertificateManagerAPI() (certificatemanager.Certificat
 }
 
 func (sess clientSession) keyProtectAPI() (*kp.Client, error) {
-	return sess.kp1API, sess.kp1Err
+	return sess.kpAPI, sess.kpErr
 }
 
 // Session to the Power Colo Service
@@ -371,7 +371,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.accountV1ConfigErr = errEmptyBluemixCredentials
 		session.csConfigErr = errEmptyBluemixCredentials
 		session.csv2ConfigErr = errEmptyBluemixCredentials
-		session.kp1Err = errEmptyBluemixCredentials
+		session.kpErr = errEmptyBluemixCredentials
 		session.stxConfigErr = errEmptyBluemixCredentials
 		session.cfConfigErr = errEmptyBluemixCredentials
 		session.cisConfigErr = errEmptyBluemixCredentials
@@ -469,9 +469,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	kpAPIclient, err := kp.New(options, kp.DefaultTransport())
 	if err != nil {
-		session.kp1Err = fmt.Errorf("Error occured while configuring Key Protect Service: %q", err)
+		session.kpErr = fmt.Errorf("Error occured while configuring Key Protect Service: %q", err)
 	}
-	session.kp1API = kpAPIclient
+	session.kpAPI = kpAPIclient
 
 	schematicService, err := schematics.New(sess.BluemixSession)
 	if err != nil {

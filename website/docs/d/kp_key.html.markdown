@@ -14,14 +14,14 @@ Import the details of existing keyprotect keys as a read-only data source. You c
 
 ```hcl
 data "ibm_kp_key" "test" {
-	instance_id = "id-of-keyprotect-instance" 
+  key_protect_id = "id-of-keyprotect-instance"
 }
 resource "ibm_cos_bucket" "flex-us-south" {
-  bucket_name = "atest-bucket
+  bucket_name          = "atest-bucket"
   resource_instance_id = "cos-instance-id"
-  region_location = "us-south"
-  storage_class = "flex"
-  key_protect = data.ibm_kp_key.test.keys.0.crn
+  region_location      = "us-south"
+  storage_class        = "flex"
+  key_protect          = data.ibm_kp_key.test.keys.0.crn
 }
 ```
 
@@ -29,7 +29,7 @@ resource "ibm_cos_bucket" "flex-us-south" {
 
 The following arguments are supported:
 
-* `instance_id` - (Required, string) The keyprotect instance id.
+* `key_protect_id` - (Required, string) The keyprotect instance id.
 * `key_name` - (Optional, string) The name of the key. Only the keys with matching name will be retreived.
 
 
@@ -37,7 +37,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `images` - List of all Keys in the IBM Keyprotect instance.
+* `keys` - List of all Keys in the IBM Keyprotect instance.
   * `name` - The name for the key.
   * `id` - The unique identifier for this key
   * `crn` - The crn of the key.

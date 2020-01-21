@@ -15,22 +15,22 @@ Provides a key Protect resource. This allows standard as well as root keys to be
 
 ```hcl
 resource "ibm_resource_instance" "kp_instance" {
-    name              = "instance-name"
-	service           = "kms"
-	plan              = "tiered-pricing"
-	location          = "us-south"
+  name     = "instance-name"
+  service  = "kms"
+  plan     = "tiered-pricing"
+  location = "us-south"
 }
-  resource "ibm_kp_key" "test" {
-	instance_id = ibm_resource_instance.kp_instance.guid
-	key_name = "key-name"
-	standard_key =  false
+resource "ibm_kp_key" "test" {
+  key_protect_id  = ibm_resource_instance.kp_instance.guid
+  key_name     = "key-name"
+  standard_key = false
 }
 resource "ibm_cos_bucket" "flex-us-south" {
-  bucket_name = "atest-bucket
+  bucket_name          = "atest-bucket"
   resource_instance_id = "cos-instance-id"
-  region_location = "us-south"
-  storage_class = "flex"
-  key_protect = ibm_kp_key.test.id
+  region_location      = "us-south"
+  storage_class        = "flex"
+  key_protect          = ibm_kp_key.test.id
 }
 ```
 
@@ -38,7 +38,7 @@ resource "ibm_cos_bucket" "flex-us-south" {
 
 The following arguments are supported:
 
-* `instance_id` - (Required, Forces new resource, string) The keyprotect instance id.
+* `key_protect_id` - (Required, Forces new resource, string) The keyprotect instance id.
 * `key_name` - (Required, Forces new resource, string) The name of the key. 
 * `standard_key` - (Optional, Forces new resource, bool) set to true to create a standard key, to create a root key set this flag to false. Default is false 
 * `payload` - (Optional, Forces new resource, string) The base64 encoded key material that you want to store and manage in the service. To import an existing key, provide a 256-bit key. To generate a new key, omit this parameter. 
@@ -52,7 +52,7 @@ The following attributes are exported:
 
 * `id` - The crn of the key. 
 * `crn` - The crn of the key. 
-* `status` - The status of the VPC Route.
+* `status` - The status of the key.
 * `key_id` - The id of the key. 
 
 ## Import
