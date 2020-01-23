@@ -14,14 +14,14 @@ import (
 
 func TestAccIBMISVPNGatewayConnection_basic(t *testing.T) {
 	var VPNGatewayConnection *models.VPNGatewayConnection
-	vpcname1 := fmt.Sprintf("terraformvpnuatConn-vpc-%d", acctest.RandInt())
-	subnetname1 := fmt.Sprintf("terraformvpnuatConn-subnet-%d", acctest.RandInt())
-	vpnname1 := fmt.Sprintf("terraformvpnuatConn-vpn-%d", acctest.RandInt())
+	vpcname1 := fmt.Sprintf("terraformvpnuatconn-vpc-%d", acctest.RandInt())
+	subnetname1 := fmt.Sprintf("terraformvpnuatconn-subnet-%d", acctest.RandInt())
+	vpnname1 := fmt.Sprintf("terraformvpnuatconn-vpn-%d", acctest.RandInt())
 	name1 := fmt.Sprintf("terraformvpnconnuat-create-step-name-%d", acctest.RandInt())
 
-	vpcname2 := fmt.Sprintf("terraformvpnuatConn-vpc-%d", acctest.RandInt())
-	subnetname2 := fmt.Sprintf("terraformvpnuatConn-subnet-%d", acctest.RandInt())
-	vpnname2 := fmt.Sprintf("terraformvpnuatConn-vpn-%d", acctest.RandInt())
+	vpcname2 := fmt.Sprintf("terraformvpnuatconn-vpc-%d", acctest.RandInt())
+	subnetname2 := fmt.Sprintf("terraformvpnuatconn-subnet-%d", acctest.RandInt())
+	vpnname2 := fmt.Sprintf("terraformvpnuatconn-vpn-%d", acctest.RandInt())
 	name2 := fmt.Sprintf("terraformvpnconnuat-create-step-name-%d", acctest.RandInt())
 
 	updname2 := fmt.Sprintf("terraformvpnconnuat-update-step-name-%d", acctest.RandInt())
@@ -34,17 +34,17 @@ func TestAccIBMISVPNGatewayConnection_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMISVPNGatewayConnectionConfig(vpcname1, subnetname1, vpnname1, name1, vpcname2, subnetname2, vpnname2, name2),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVPNGatewayConnectionExists("ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection", &VPNGatewayConnection),
+					testAccCheckIBMISVPNGatewayConnectionExists("ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", &VPNGatewayConnection),
 					resource.TestCheckResourceAttr(
-						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection", "name", name1),
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "name", name1),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIBMISVPNGatewayConnectionUpdate(vpcname1, subnetname1, vpnname1, name1, vpcname2, subnetname2, vpnname2, updname2),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVPNGatewayConnectionExists("ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection", &VPNGatewayConnection),
+					testAccCheckIBMISVPNGatewayConnectionExists("ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", &VPNGatewayConnection),
 					resource.TestCheckResourceAttr(
-						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection", "name", updname2),
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "name", updname2),
 				),
 			},
 		},

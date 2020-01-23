@@ -25,8 +25,8 @@ type DeleteVpnGatewaysVpnGatewayIDConnectionsIDReader struct {
 func (o *DeleteVpnGatewaysVpnGatewayIDConnectionsIDReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
 
-	case 204:
-		result := NewDeleteVpnGatewaysVpnGatewayIDConnectionsIDNoContent()
+	case 202:
+		result := NewDeleteVpnGatewaysVpnGatewayIDConnectionsIDAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -44,23 +44,23 @@ func (o *DeleteVpnGatewaysVpnGatewayIDConnectionsIDReader) ReadResponse(response
 	}
 }
 
-// NewDeleteVpnGatewaysVpnGatewayIDConnectionsIDNoContent creates a DeleteVpnGatewaysVpnGatewayIDConnectionsIDNoContent with default headers values
-func NewDeleteVpnGatewaysVpnGatewayIDConnectionsIDNoContent() *DeleteVpnGatewaysVpnGatewayIDConnectionsIDNoContent {
-	return &DeleteVpnGatewaysVpnGatewayIDConnectionsIDNoContent{}
+// NewDeleteVpnGatewaysVpnGatewayIDConnectionsIDAccepted creates a DeleteVpnGatewaysVpnGatewayIDConnectionsIDAccepted with default headers values
+func NewDeleteVpnGatewaysVpnGatewayIDConnectionsIDAccepted() *DeleteVpnGatewaysVpnGatewayIDConnectionsIDAccepted {
+	return &DeleteVpnGatewaysVpnGatewayIDConnectionsIDAccepted{}
 }
 
-/*DeleteVpnGatewaysVpnGatewayIDConnectionsIDNoContent handles this case with default header values.
+/*DeleteVpnGatewaysVpnGatewayIDConnectionsIDAccepted handles this case with default header values.
 
 The VPN connection was deleted successfully.
 */
-type DeleteVpnGatewaysVpnGatewayIDConnectionsIDNoContent struct {
+type DeleteVpnGatewaysVpnGatewayIDConnectionsIDAccepted struct {
 }
 
-func (o *DeleteVpnGatewaysVpnGatewayIDConnectionsIDNoContent) Error() string {
-	return fmt.Sprintf("[DELETE /vpn_gateways/{vpn_gateway_id}/connections/{id}][%d] deleteVpnGatewaysVpnGatewayIdConnectionsIdNoContent ", 204)
+func (o *DeleteVpnGatewaysVpnGatewayIDConnectionsIDAccepted) Error() string {
+	return fmt.Sprintf("[DELETE /vpn_gateways/{vpn_gateway_id}/connections/{id}][%d] deleteVpnGatewaysVpnGatewayIdConnectionsIdAccepted ", 202)
 }
 
-func (o *DeleteVpnGatewaysVpnGatewayIDConnectionsIDNoContent) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+func (o *DeleteVpnGatewaysVpnGatewayIDConnectionsIDAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	return nil
 }

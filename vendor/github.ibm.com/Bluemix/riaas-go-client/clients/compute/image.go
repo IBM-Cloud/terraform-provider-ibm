@@ -72,8 +72,8 @@ func (f *ImageClient) Create(href, name, operatingSystem string) (*models.Image,
 		Href: &href,
 	}
 	var imageTemplate = models.ImageTemplate{
-		File:            &imageFileTemplate,
-		Name:            name,
+		File: 	   &imageFileTemplate,
+		Name:      name,
 		OperatingSystem: &operatingSystemIdentity,
 	}
 
@@ -90,20 +90,20 @@ func (f *ImageClient) Create(href, name, operatingSystem string) (*models.Image,
 
 // Delete ...
 func (f *ImageClient) Delete(id string) error {
-	params := compute.NewDeleteImagesIDParamsWithTimeout(f.session.Timeout).WithID(id)
-	params.Version = "2019-11-22"
-	params.Generation = f.session.Generation
-	_, err := f.session.Riaas.Compute.DeleteImagesID(params, session.Auth(f.session))
-	if err != nil {
-		return errors.ToError(err)
-	}
-	return nil
+    params := compute.NewDeleteImagesIDParamsWithTimeout(f.session.Timeout).WithID(id)
+    params.Version = "2019-11-22"
+    params.Generation = f.session.Generation
+    _, err := f.session.Riaas.Compute.DeleteImagesID(params, session.Auth(f.session))
+    if err != nil {
+        return errors.ToError(err)
+    }
+    return nil
 }
 
 // Update ...
 func (f *ImageClient) Update(id, name string) (*models.Image, error) {
 	var imagePatch = models.ImagePatch{
-		Name: name,
+		Name:      name,
 	}
 	params := compute.NewPatchImagesIDParamsWithTimeout(f.session.Timeout).WithID(id).WithRequestBody(&imagePatch)
 	params.Version = "2019-11-22"

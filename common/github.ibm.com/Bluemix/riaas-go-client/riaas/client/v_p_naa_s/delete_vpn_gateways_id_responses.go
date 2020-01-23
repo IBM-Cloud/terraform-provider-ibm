@@ -25,8 +25,8 @@ type DeleteVpnGatewaysIDReader struct {
 func (o *DeleteVpnGatewaysIDReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
 
-	case 204:
-		result := NewDeleteVpnGatewaysIDNoContent()
+	case 202:
+		result := NewDeleteVpnGatewaysIDAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -44,23 +44,23 @@ func (o *DeleteVpnGatewaysIDReader) ReadResponse(response runtime.ClientResponse
 	}
 }
 
-// NewDeleteVpnGatewaysIDNoContent creates a DeleteVpnGatewaysIDNoContent with default headers values
-func NewDeleteVpnGatewaysIDNoContent() *DeleteVpnGatewaysIDNoContent {
-	return &DeleteVpnGatewaysIDNoContent{}
+// NewDeleteVpnGatewaysIDAccepted creates a DeleteVpnGatewaysIDAccepted with default headers values
+func NewDeleteVpnGatewaysIDAccepted() *DeleteVpnGatewaysIDAccepted {
+	return &DeleteVpnGatewaysIDAccepted{}
 }
 
-/*DeleteVpnGatewaysIDNoContent handles this case with default header values.
+/*DeleteVpnGatewaysIDAccepted handles this case with default header values.
 
 The VPN gateway was deleted successfully.
 */
-type DeleteVpnGatewaysIDNoContent struct {
+type DeleteVpnGatewaysIDAccepted struct {
 }
 
-func (o *DeleteVpnGatewaysIDNoContent) Error() string {
-	return fmt.Sprintf("[DELETE /vpn_gateways/{id}][%d] deleteVpnGatewaysIdNoContent ", 204)
+func (o *DeleteVpnGatewaysIDAccepted) Error() string {
+	return fmt.Sprintf("[DELETE /vpn_gateways/{id}][%d] deleteVpnGatewaysIdAccepted ", 202)
 }
 
-func (o *DeleteVpnGatewaysIDNoContent) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+func (o *DeleteVpnGatewaysIDAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	return nil
 }

@@ -91,7 +91,7 @@ DeleteVpnGatewaysID deletes a v p n gateway
 
 Deletes a VPN gateway. This operation deletes all the VPN connections associated to this VPN gateway. This operation cannot be reversed.
 */
-func (a *Client) DeleteVpnGatewaysID(params *DeleteVpnGatewaysIDParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteVpnGatewaysIDNoContent, error) {
+func (a *Client) DeleteVpnGatewaysID(params *DeleteVpnGatewaysIDParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteVpnGatewaysIDAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewDeleteVpnGatewaysIDParams()
@@ -113,7 +113,7 @@ func (a *Client) DeleteVpnGatewaysID(params *DeleteVpnGatewaysIDParams, authInfo
 	if err != nil {
 		return nil, err
 	}
-	return result.(*DeleteVpnGatewaysIDNoContent), nil
+	return result.(*DeleteVpnGatewaysIDAccepted), nil
 
 }
 
@@ -122,7 +122,7 @@ DeleteVpnGatewaysVpnGatewayIDConnectionsID deletes a v p n connection
 
 Deletes a VPN connection. This operation cannot be reversed.
 */
-func (a *Client) DeleteVpnGatewaysVpnGatewayIDConnectionsID(params *DeleteVpnGatewaysVpnGatewayIDConnectionsIDParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteVpnGatewaysVpnGatewayIDConnectionsIDNoContent, error) {
+func (a *Client) DeleteVpnGatewaysVpnGatewayIDConnectionsID(params *DeleteVpnGatewaysVpnGatewayIDConnectionsIDParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteVpnGatewaysVpnGatewayIDConnectionsIDAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewDeleteVpnGatewaysVpnGatewayIDConnectionsIDParams()
@@ -144,7 +144,7 @@ func (a *Client) DeleteVpnGatewaysVpnGatewayIDConnectionsID(params *DeleteVpnGat
 	if err != nil {
 		return nil, err
 	}
-	return result.(*DeleteVpnGatewaysVpnGatewayIDConnectionsIDNoContent), nil
+	return result.(*DeleteVpnGatewaysVpnGatewayIDConnectionsIDAccepted), nil
 
 }
 
