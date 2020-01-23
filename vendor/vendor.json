@@ -700,6 +700,18 @@
 			"revisionTime": "2019-09-06T19:48:10Z"
 		},
 		{
+			"checksumSHA1": "wr80OQaI4jgxSC6OXFqaX84ZIeY=",
+			"path": "github.com/IBM/keyprotect-go-client",
+			"revision": "e74bb5e1c7e3e4d47a1c2148f4722062ca474ddf",
+			"revisionTime": "2020-01-22T20:42:50Z"
+		},
+		{
+			"checksumSHA1": "E+y4lu3Z/DXb7e878uqIdth0Z34=",
+			"path": "github.com/IBM/keyprotect-go-client/iam",
+			"revision": "e74bb5e1c7e3e4d47a1c2148f4722062ca474ddf",
+			"revisionTime": "2020-01-22T20:42:50Z"
+		},
+		{
 			"checksumSHA1": "fHWG411HBcfUlBEU8SJo2fQ8+ZE=",
 			"path": "github.com/PuerkitoBio/purell",
 			"revision": "44968752391892e1b0d0b821ee79e9a85fa13049",
@@ -1108,6 +1120,12 @@
 			"revisionTime": "2017-01-11T10:11:55Z"
 		},
 		{
+			"checksumSHA1": "s5tdcjh84+tiKS3oSq77mzjB970=",
+			"path": "github.com/google/uuid",
+			"revision": "c2e93f3ae59f2904160ceaab466009f965df46d6",
+			"revisionTime": "2019-04-16T17:24:45Z"
+		},
+		{
 			"checksumSHA1": "cdOCt0Yb+hdErz8NAQqayxPmRsY=",
 			"path": "github.com/hashicorp/errwrap",
 			"revision": "7554cd9344cec97297fa6649b055a8c98c2a1e55"
@@ -1146,6 +1164,12 @@
 			"path": "github.com/hashicorp/go-plugin",
 			"revision": "e8d22c780116115ae5624720c9af0c97afe4f551",
 			"revisionTime": "2018-03-31T00:25:53Z"
+		},
+		{
+			"checksumSHA1": "NEjfUwSS5tWvGz1MYR4LvK3M9KY=",
+			"path": "github.com/hashicorp/go-retryablehttp",
+			"revision": "eaff869a704e190d92996f23c23a4037cf2b0770",
+			"revisionTime": "2019-11-25T18:00:11Z"
 		},
 		{
 			"checksumSHA1": "CduvzBFfTv77nhjtXPGdIjQQLMI=",
@@ -1437,20 +1461,20 @@
 			"revisionTime": "2018-05-24T22:32:19Z"
 		},
 		{
-			"checksumSHA1": "6AA7ZAzswfl7SOzleP6e6he0lq4=",
-			"path": "github.com/hashicorp/terraform/plugin",
-			"revision": "8d560482c34e865458fd884cb0790b4f73f09ad1",
-			"revisionTime": "2017-06-08T00:14:54Z",
-			"version": "v0.9.8",
-			"versionExact": "v0.9.8"
-		},
-		{
 			"checksumSHA1": "DqaoG++NXRCfvH/OloneLWrM+3k=",
 			"path": "github.com/hashicorp/terraform/plugin",
 			"revision": "dbce85d85ff0beebc660b3d1805b4ef15361af00",
 			"revisionTime": "2018-04-05T19:25:37Z",
 			"version": "=v0.11.6",
 			"versionExact": "v0.11.6"
+		},
+		{
+			"checksumSHA1": "6AA7ZAzswfl7SOzleP6e6he0lq4=",
+			"path": "github.com/hashicorp/terraform/plugin",
+			"revision": "8d560482c34e865458fd884cb0790b4f73f09ad1",
+			"revisionTime": "2017-06-08T00:14:54Z",
+			"version": "v0.9.8",
+			"versionExact": "v0.9.8"
 		},
 		{
 			"checksumSHA1": "tx5xrdiUWdAHqoRV5aEfALgT1aU=",
