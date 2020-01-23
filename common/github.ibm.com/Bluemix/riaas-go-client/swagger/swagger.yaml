@@ -8721,7 +8721,7 @@ paths:
         required: true,
           type: "string"}
       responses:
-        204:
+        202:
           description: "The VPN gateway was deleted successfully."
         404:
           description: "A VPN gateway with the specified identifier could not be found."
@@ -8861,7 +8861,7 @@ paths:
         required: true,
           type: "string"}
       responses:
-        204:
+        202:
           description: "The VPN connection was deleted successfully."
         404:
           description: "A VPN connection with the specified identifier could not be found."

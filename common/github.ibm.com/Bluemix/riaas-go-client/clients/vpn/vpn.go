@@ -342,7 +342,7 @@ func (f *VpnClient) Update(id, name string) (*models.VPNGateway, error) {
 		body.Name = name
 	}
 
-	params := v_p_naa_s.NewPatchVpnGatewaysIDParamsWithTimeout(f.session.Timeout).WithBody(&body)
+	params := v_p_naa_s.NewPatchVpnGatewaysIDParamsWithTimeout(f.session.Timeout).WithID(id).WithBody(&body)
 	params.Version = "2019-10-08"
 	params.Generation = f.session.Generation
 	resp, err := f.session.Riaas.VPNaaS.PatchVpnGatewaysID(params, session.Auth(f.session))
