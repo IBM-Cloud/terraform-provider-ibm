@@ -78,10 +78,11 @@ const (
 	isInstanceBootEncryption = "encryption"
 	isInstanceBootProfile    = "profile"
 
-	isInstanceVolumeAttaching = "attaching"
-	isInstanceVolumeAttached  = "attached"
-	isInstanceVolumeDetaching = "detaching"
-	isInstanceResourceGroup   = "resource_group"
+	isInstanceVolumeAttachments = "volume_attachments"
+	isInstanceVolumeAttaching   = "attaching"
+	isInstanceVolumeAttached    = "attached"
+	isInstanceVolumeDetaching   = "detaching"
+	isInstanceResourceGroup     = "resource_group"
 )
 
 func resourceIBMISInstance() *schema.Resource {
@@ -129,6 +130,35 @@ func resourceIBMISInstance() *schema.Resource {
 				Elem:             &schema.Schema{Type: schema.TypeString},
 				Set:              schema.HashString,
 				DiffSuppressFunc: applyOnce,
+			},
+
+			isInstanceVolumeAttachments: {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"volume_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"volume_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"volume_crn": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
 			},
 
 			isInstancePrimaryNetworkInterface: {
@@ -656,7 +686,21 @@ func resourceIBMisInstanceRead(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 	d.Set(isInstanceVolumes, newStringSet(schema.HashString, volumes))
-
+	if instance.VolumeAttachments != nil {
+		volList := make([]map[string]interface{}, 0)
+		vol := map[string]interface{}{}
+		for _, volume := range instance.VolumeAttachments {
+			if volume != nil {
+				vol["id"] = volume.ID
+				vol["volume_id"] = volume.Volume.ID
+				vol["name"] = volume.Name
+				vol["volume_name"] = volume.Volume.Name
+				vol["volume_crn"] = volume.Volume.Crn
+				volList = append(volList, vol)
+			}
+		}
+		d.Set(isInstanceVolumeAttachments, volList)
+	}
 	if instance.BootVolumeAttachment != nil {
 		bootVolList := make([]map[string]interface{}, 0)
 		bootVol := map[string]interface{}{}
