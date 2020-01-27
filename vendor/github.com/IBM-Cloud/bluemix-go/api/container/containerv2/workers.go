@@ -49,11 +49,18 @@ type Network struct {
 	SubnetID  string `json:"subnetID"`
 }
 
+type ReplaceWorker struct {
+	ClusterIDOrName string `json:"cluster"`
+	Update          bool   `json:"update"`
+	WorkerID        string `json:"workerID"`
+}
+
 //Workers ...
 type Workers interface {
 	ListByWorkerPool(clusterIDOrName, workerPoolIDOrName string, showDeleted bool, target ClusterTargetHeader) ([]Worker, error)
 	ListWorkers(clusterIDOrName string, showDeleted bool, target ClusterTargetHeader) ([]Worker, error)
 	Get(clusterIDOrName, workerID string, target ClusterTargetHeader) (Worker, error)
+	ReplaceWokerNode(clusterIDOrName, workerID string, target ClusterTargetHeader) (string, error)
 }
 
 type worker struct {
@@ -100,4 +107,18 @@ func (r *worker) Get(clusterIDOrName, workerID string, target ClusterTargetHeade
 		return worker, err
 	}
 	return worker, err
+}
+
+func (r *worker) ReplaceWokerNode(clusterIDOrName, workerID string, target ClusterTargetHeader) (string, error) {
+	payload := ReplaceWorker{
+		ClusterIDOrName: clusterIDOrName,
+		WorkerID:        workerID,
+		Update:          true,
+	}
+	var response string
+	_, err := r.client.Post("/v2/vpc/replaceWorker", payload, &response, target.ToMap())
+	if err != nil {
+		return response, err
+	}
+	return response, err
 }

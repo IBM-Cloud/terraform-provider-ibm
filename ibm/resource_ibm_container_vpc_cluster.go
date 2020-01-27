@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
@@ -113,7 +114,6 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 				Default:  1,
-				ForceNew: true,
 			},
 
 			"disable_public_service_endpoint": {
@@ -341,6 +341,65 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		if err != nil {
 			log.Printf(
 				"An error occured during update of instance (%s) tags: %s", clusterID, err)
+		}
+	}
+
+	if d.HasChange("kube_version") {
+		ClusterClient, err := meta.(ClientSession).ContainerAPI()
+		if err != nil {
+			return err
+		}
+		var masterVersion string
+		if v, ok := d.GetOk("kube_version"); ok {
+			masterVersion = v.(string)
+		}
+		params := v1.ClusterUpdateParam{
+			Action:  "update",
+			Force:   true,
+			Version: masterVersion,
+		}
+
+		Env, err := getClusterTargetHeader(d, meta)
+
+		if err != nil {
+			return err
+		}
+		Error := ClusterClient.Clusters().Update(clusterID, params, Env)
+		if Error != nil {
+			return Error
+		}
+		_, err = WaitForVpcClusterVersionUpdate(d, meta, targetEnv)
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for cluster (%s) version to be updated: %s", d.Id(), err)
+		}
+		// Update the worker nodes after master node kube-version is updated.
+
+		workers, err := csClient.Workers().ListWorkers(clusterID, false, targetEnv)
+		if err != nil {
+			return fmt.Errorf("Error retrieving workers for cluster: %s", err)
+		}
+		for _, worker := range workers {
+			_, err := csClient.Workers().ReplaceWokerNode(clusterID, worker.ID, targetEnv)
+			// As API returns http response 204 NO CONTENT, error raised will be exempted.
+			if err != nil && !strings.Contains(err.Error(), "EmptyResponseBody") {
+				return fmt.Errorf("Error replacing the worker node from the cluster: %s", err)
+			}
+		}
+	}
+
+	if d.HasChange("worker_count") {
+		count := d.Get("worker_count").(int)
+		ClusterClient, err := meta.(ClientSession).ContainerAPI()
+		if err != nil {
+			return err
+		}
+		Env := v1.ClusterTargetHeader{ResourceGroup: targetEnv.ResourceGroup}
+
+		err = ClusterClient.WorkerPools().ResizeWorkerPool(clusterID, "default", count, Env)
+		if err != nil {
+			return fmt.Errorf(
+				"Error updating the worker_count %d: %s", count, err)
 		}
 	}
 
@@ -599,4 +658,41 @@ func resourceIBMContainerVpcClusterExists(d *schema.ResourceData, meta interface
 		return false, fmt.Errorf("Error communicating with the API: %s", err)
 	}
 	return cls.ID == clusterID, nil
+}
+
+// WaitForVpcClusterVersionUpdate Waits for cluster creation
+func WaitForVpcClusterVersionUpdate(d *schema.ResourceData, meta interface{}, target v2.ClusterTargetHeader) (interface{}, error) {
+	csClient, err := meta.(ClientSession).VpcContainerAPI()
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("Waiting for cluster (%s) version to be updated.", d.Id())
+	id := d.Id()
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", versionUpdating},
+		Target:     []string{clusterNormal},
+		Refresh:    vpcClusterVersionRefreshFunc(csClient.Clusters(), id, d, target),
+		Timeout:    d.Timeout(schema.TimeoutUpdate),
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func vpcClusterVersionRefreshFunc(client v2.Clusters, instanceID string, d *schema.ResourceData, target v2.ClusterTargetHeader) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		cls, err := client.GetCluster(instanceID, target)
+		if err != nil {
+			return nil, "retry", fmt.Errorf("Error retrieving conatiner vpc cluster: %s", err)
+		}
+
+		// Check active transactions
+		log.Println("Checking cluster version", cls.MasterKubeVersion, d.Get("kube_version").(string))
+		if strings.Contains(cls.MasterKubeVersion, "pending") {
+			return cls, versionUpdating, nil
+		}
+		return cls, clusterNormal, nil
+	}
 }
