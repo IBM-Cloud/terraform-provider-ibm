@@ -104,8 +104,8 @@ resource "ibm_is_public_gateway" "gateway1" {
 }
 
 resource "ibm_is_lb" "lb" {
-    name = "loadbalancer1"
-    subnets = ["${ibm_is_subnet.subnet1.id}"]
+  name    = "loadbalancer1"
+  subnets = ["${ibm_is_subnet.subnet1.id}"]
 }
 resource "ibm_is_lb_listener" "testacc_lb_listener" {
   lb       = "${ibm_is_lb.lb.id}"
@@ -122,15 +122,15 @@ resource "ibm_is_lb_pool" "webapptier-lb-pool" {
   health_timeout     = "2"
   health_type        = "http"
   health_monitor_url = "/"
-  depends_on = ["ibm_is_lb_listener.testacc_lb_listener"]
+  depends_on         = ["ibm_is_lb_listener.testacc_lb_listener"]
 }
 resource "ibm_is_lb_pool_member" "webapptier-lb-pool-member-zone1" {
-  count = "2"
-  lb    = "${ibm_is_lb.lb.id}"
-  pool  = "${element(split("/",ibm_is_lb_pool.webapptier-lb-pool.id),1)}"
-  port  = "86"
+  count          = "2"
+  lb             = "${ibm_is_lb.lb.id}"
+  pool           = "${element(split("/", ibm_is_lb_pool.webapptier-lb-pool.id), 1)}"
+  port           = "86"
   target_address = "192.168.0.1"
-  depends_on = ["ibm_is_lb_listener.testacc_lb_listener"]
+  depends_on     = ["ibm_is_lb_listener.testacc_lb_listener"]
 }
 
 resource "ibm_is_vpn_gateway" "VPNGateway1" {
@@ -146,4 +146,13 @@ resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection1" {
   local_cidrs   = ["${ibm_is_subnet.subnet1.ipv4_cidr_block}"]
   peer_cidrs    = ["${ibm_is_subnet.subnet2.ipv4_cidr_block}"]
   ipsec_policy  = "${ibm_is_ipsec_policy.example.id}"
+}
+
+resource "ibm_is_vpc_route" "route" {
+  name        = "route1"
+  vpc         = "${ibm_is_vpc.vpc1.id}"
+  zone        = "${var.zone1}"
+  destination = "192.168.4.0/24"
+  next_hop    = "10.240.0.4"
+  depends_on  = ["${ibm_is_subnet.subnet1}"]
 }
