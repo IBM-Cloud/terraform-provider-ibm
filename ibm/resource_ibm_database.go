@@ -160,6 +160,11 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"remote_leader_id": {
+				Description: "The CRN of leader database",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 			"key_protect_instance": {
 				Description: "The CRN of Key protect instance",
 				Type:        schema.TypeString,
@@ -461,6 +466,7 @@ type Params struct {
 	KeyProtectInstance string `json:"key_protect_instance,omitempty"`
 	ServiceEndpoints   string `json:"service-endpoints,omitempty"`
 	BackupID           string `json:"backup-id,omitempty"`
+	RemoteLeaderID     string `json:"remote_leader_id,omitempty"`
 }
 
 // Replace with func wrapper for resourceIBMResourceInstanceCreate specifying serviceName := "database......."
@@ -553,6 +559,9 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 	}
 	if backupID, ok := d.GetOk("backup_id"); ok {
 		params.BackupID = backupID.(string)
+	}
+	if remoteLeader, ok := d.GetOk("remote_leader_id"); ok {
+		params.RemoteLeaderID = remoteLeader.(string)
 	}
 	serviceEndpoint := d.Get("service_endpoints").(string)
 	params.ServiceEndpoints = serviceEndpoint
