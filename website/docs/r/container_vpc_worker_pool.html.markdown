@@ -47,7 +47,7 @@ The following arguments are supported:
 * `worker_pool_name` - (Required, Forces new resource, string) The name of the worker pool.
 * `cluster` - (Required, Forces new resource, string) The name or id of the cluster.
 * `vpc_id` - (Required, Forces new resource, string) The Id of VPC 
-* `worker_count` - (Required, Forces new resource, Int) The number of worker nodes per zone in the worker pool.
+* `worker_count` - (Required, Int) The number of worker nodes per zone in the worker pool.
 * `flavor` - (Required, Forces new resource, string) The flavour of the worker node.
 * `zones` - (Required, Forces new resource, list) A nested block describing the zones of this worker_pool. Nested zones blocks have the following structure:
   * `subnet-id` - (Required, string) The worker pool subnet to assign the cluster. 

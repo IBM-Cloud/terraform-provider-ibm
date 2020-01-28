@@ -6,7 +6,9 @@ import (
 	"strings"
 	"time"
 
+	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
+
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -20,6 +22,7 @@ func resourceIBMContainerVpcWorkerPool() *schema.Resource {
 
 	return &schema.Resource{
 		Create:   resourceIBMContainerVpcWorkerPoolCreate,
+		Update:   resourceIBMContainerVpcWorkerPoolUpdate,
 		Read:     resourceIBMContainerVpcWorkerPoolRead,
 		Delete:   resourceIBMContainerVpcWorkerPoolDelete,
 		Exists:   resourceIBMContainerVpcWorkerPoolExists,
@@ -169,6 +172,31 @@ func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interf
 			"Error waiting for workerpool (%s) to become ready: %s", d.Id(), err)
 	}
 
+	return resourceIBMContainerVpcWorkerPoolUpdate(d, meta)
+}
+
+func resourceIBMContainerVpcWorkerPoolUpdate(d *schema.ResourceData, meta interface{}) error {
+
+	if d.HasChange("worker_count") {
+		clusterNameOrID := d.Get("cluster").(string)
+		workerPoolName := d.Get("worker_pool_name").(string)
+		count := d.Get("worker_count").(int)
+		targetEnv, err := getVpcClusterTargetHeader(d, meta)
+		if err != nil {
+			return err
+		}
+		ClusterClient, err := meta.(ClientSession).ContainerAPI()
+		if err != nil {
+			return err
+		}
+		Env := v1.ClusterTargetHeader{ResourceGroup: targetEnv.ResourceGroup}
+
+		err = ClusterClient.WorkerPools().ResizeWorkerPool(clusterNameOrID, workerPoolName, count, Env)
+		if err != nil {
+			return fmt.Errorf(
+				"Error updating the worker_count %d: %s", count, err)
+		}
+	}
 	return resourceIBMContainerVpcWorkerPoolRead(d, meta)
 }
 
