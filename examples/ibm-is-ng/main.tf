@@ -149,3 +149,12 @@ resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection1" {
   peer_cidrs    = [ibm_is_subnet.subnet2.ipv4_cidr_block]
   ipsec_policy  = ibm_is_ipsec_policy.example.id
 }
+
+resource "ibm_is_vpc_route" "route" {
+  name        = "route1"
+  vpc         = ibm_is_vpc.vpc1.id
+  zone        = var.zone1
+  destination = "192.168.4.0/24"
+  next_hop    = "10.240.0.4"
+  depends_on  = ["ibm_is_subnet.subnet1"]
+}
