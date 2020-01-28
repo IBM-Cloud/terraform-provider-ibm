@@ -73,7 +73,7 @@ The following arguments are supported:
 * `vpc` - (Required, Forces new resource, string) The vpc id. 
 * `zone` - (Required, Forces new resource, string) Name of the zone. 
 * `profile` - (Required, string) The profile name. 
-* `image` - (Required, string) ID of the image. 
+* `image` - (Required, string) ID of the image.
 * `boot_volume` - (Optional, list) A block describing the boot volume of this instance.  
 `boot_volume` block have the following structure:
   * `name` - (Optional, string) The name of the boot volume.
@@ -134,6 +134,13 @@ Nested `boot_volume` blocks have the following structure:
   * `iops` -  Input/Output Operations Per Second for the volume.
   * `profile` - The profile of the volume.
   * `encryption` - The encryption of the boot volume.
+* `volume_attachments` - A nested block describing the volume attachments.
+Nested `volume_attachments` block have the following structure:
+  * `id` - The id of the volume attachment
+  * `name` -  The name of the volume attachment
+  * `volume_id` - The id of the volume attachment's volume
+  * `volume_name` -  The name of the volume attachment's volume
+  * `volume_crn` -  The CRN of the volume attachment's volume
 * `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
 
 
