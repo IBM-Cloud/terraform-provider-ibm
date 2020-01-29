@@ -275,7 +275,7 @@ func resourceIBMNetworkVlanRead(d *schema.ResourceData, meta interface{}) error 
 		d.Set("tags", tags)
 	}
 	d.Set(ResourceControllerURL, fmt.Sprintf("https://cloud.ibm.com/classic/network/vlans/%s", d.Id()))
-	d.Set(ResourceName, *vlan.Name)
+	d.Set(ResourceName, sl.Get(vlan.Name, ""))
 
 	return nil
 }
