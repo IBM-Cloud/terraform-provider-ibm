@@ -70,4 +70,4 @@ resource "ibm_compute_vm_instance" "fwvm1" {
 resource "ibm_hardware_firewall_shared" "test_firewall" {
 	firewall_type = "100MBPS_HARDWARE_FIREWALL"
 	virtual_instance_id = "${ibm_compute_vm_instance.fwvm1.id}"
-	guest_type="virtual machine"}`
+	}`
