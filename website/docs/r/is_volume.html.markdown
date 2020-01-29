@@ -46,7 +46,7 @@ The following arguments are supported:
 * `encryption_key` - (Optional, Forces new resource, string) The key to use for encrypting this volume.
 * `resource_group` - (Optional, Forces new resource, string) The resource group ID for this volume.
 * `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
-
+* `tags` - (Optional, array of strings) Tags associated with the volume.
 
 ## Attribute Reference
 
