@@ -395,8 +395,6 @@ func resourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{})
 	}
 
 	if d.HasChange("tags") {
-		tags := getServiceTags(d)
-		updateReq.Tags = tags
 		oldList, newList := d.GetChange(isVPCTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, instance.Crn.String())
 		if err != nil {

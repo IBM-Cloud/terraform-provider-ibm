@@ -30,6 +30,7 @@ The following arguments are supported:
 * `name` - (Required, string) Name of the VPN gateway.
 * `subnet` - (Required, Forces new resource, string) The unique identifier for this subnet.
 * `resource_group` - (Optional, Forces new resource, string) The resource group where the VPN gateway to be created.
+* `tags` - (Optional, array of strings) Tags associated with the VPN Gateway.
 
 ## Attribute Reference
 

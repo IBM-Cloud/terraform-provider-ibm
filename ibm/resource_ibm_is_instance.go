@@ -3,9 +3,11 @@ package ibm
 import (
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/go-openapi/strfmt"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/compute"
@@ -18,6 +20,7 @@ import (
 const (
 	isInstanceName                    = "name"
 	isInstanceKeys                    = "keys"
+	isInstanceTags                    = "tags"
 	isInstanceNetworkInterfaces       = "network_interfaces"
 	isInstancePrimaryNetworkInterface = "primary_network_interface"
 	isInstanceNicName                 = "name"
@@ -99,6 +102,12 @@ func resourceIBMISInstance() *schema.Resource {
 			Delete: schema.DefaultTimeout(60 * time.Minute),
 		},
 
+		CustomizeDiff: customdiff.Sequence(
+			func(diff *schema.ResourceDiff, v interface{}) error {
+				return resourceTagsCustomizeDiff(diff)
+			},
+		),
+
 		Schema: map[string]*schema.Schema{
 			isInstanceName: {
 				Type:     schema.TypeString,
@@ -130,6 +139,14 @@ func resourceIBMISInstance() *schema.Resource {
 				Elem:             &schema.Schema{Type: schema.TypeString},
 				Set:              schema.HashString,
 				DiffSuppressFunc: applyOnce,
+			},
+
+			isInstanceTags: {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      resourceIBMVPCHash,
 			},
 
 			isInstanceVolumeAttachments: {
@@ -543,6 +560,16 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isInstanceTags); ok || v != "" {
+		oldList, newList := d.GetChange(isInstanceTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, instance.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource vpc instance (%s) tags: %s", d.Id(), err)
+		}
+	}
+
 	return resourceIBMisInstanceUpdate(d, meta)
 }
 
@@ -721,6 +748,12 @@ func resourceIBMisInstanceRead(d *schema.ResourceData, meta interface{}) error {
 
 		d.Set(isInstanceBootVolume, bootVolList)
 	}
+	tags, err := GetTagsUsingCRN(meta, instance.Crn)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource vpc Instance (%s) tags: %s", d.Id(), err)
+	}
+	d.Set(isInstanceTags, tags)
 	d.Set(isInstanceResourceGroup, instance.ResourceGroup.ID)
 
 	controller, err := getBaseController(meta)
@@ -748,6 +781,11 @@ func resourceIBMisInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 	instanceC := compute.NewInstanceClient(sess)
+
+	instance, err := instanceC.Get(d.Id())
+	if err != nil {
+		return err
+	}
 
 	if d.HasChange(isInstanceVolumes) {
 		ovs, nvs := d.GetChange(isInstanceVolumes)
@@ -808,6 +846,14 @@ func resourceIBMisInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 	_, err = instanceC.Update(d.Id(), name, profile)
 	if err != nil {
 		return err
+	}
+	if d.HasChange(isInstanceTags) {
+		oldList, newList := d.GetChange(isInstanceTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, instance.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource vpc Instance (%s) tags: %s", d.Id(), err)
+		}
 	}
 
 	return resourceIBMisInstanceRead(d, meta)
