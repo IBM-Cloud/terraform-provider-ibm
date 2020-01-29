@@ -1,6 +1,7 @@
 package compute
 
 import (
+	"github.com/go-openapi/strfmt"
 	"github.ibm.com/Bluemix/riaas-go-client/riaas/client/compute"
 	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 
@@ -64,7 +65,7 @@ func (f *ImageClient) Get(id string) (*models.Image, error) {
 }
 
 // Create ...
-func (f *ImageClient) Create(href, name, operatingSystem string) (*models.Image, error) {
+func (f *ImageClient) Create(href, name, operatingSystem, resourcegroupID string) (*models.Image, error) {
 	var operatingSystemIdentity = models.OperatingSystemIdentity{
 		Name: &operatingSystem,
 	}
@@ -72,11 +73,15 @@ func (f *ImageClient) Create(href, name, operatingSystem string) (*models.Image,
 		Href: &href,
 	}
 	var imageTemplate = models.ImageTemplate{
-		File: 	   &imageFileTemplate,
-		Name:      name,
+		File:            &imageFileTemplate,
+		Name:            name,
 		OperatingSystem: &operatingSystemIdentity,
 	}
-
+	if resourcegroupID != "" {
+		imageTemplate.ResourceGroup = &models.ResourceReference{
+			ID: strfmt.UUID(resourcegroupID),
+		}
+	}
 	params := compute.NewPostImagesParamsWithTimeout(f.session.Timeout).WithBody(&imageTemplate)
 	params.Version = "2019-11-22"
 	params.Generation = f.session.Generation
@@ -90,20 +95,20 @@ func (f *ImageClient) Create(href, name, operatingSystem string) (*models.Image,
 
 // Delete ...
 func (f *ImageClient) Delete(id string) error {
-    params := compute.NewDeleteImagesIDParamsWithTimeout(f.session.Timeout).WithID(id)
-    params.Version = "2019-11-22"
-    params.Generation = f.session.Generation
-    _, err := f.session.Riaas.Compute.DeleteImagesID(params, session.Auth(f.session))
-    if err != nil {
-        return errors.ToError(err)
-    }
-    return nil
+	params := compute.NewDeleteImagesIDParamsWithTimeout(f.session.Timeout).WithID(id)
+	params.Version = "2019-11-22"
+	params.Generation = f.session.Generation
+	_, err := f.session.Riaas.Compute.DeleteImagesID(params, session.Auth(f.session))
+	if err != nil {
+		return errors.ToError(err)
+	}
+	return nil
 }
 
 // Update ...
 func (f *ImageClient) Update(id, name string) (*models.Image, error) {
 	var imagePatch = models.ImagePatch{
-		Name:      name,
+		Name: name,
 	}
 	params := compute.NewPatchImagesIDParamsWithTimeout(f.session.Timeout).WithID(id).WithRequestBody(&imagePatch)
 	params.Version = "2019-11-22"

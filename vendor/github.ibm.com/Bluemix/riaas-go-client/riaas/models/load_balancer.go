@@ -24,6 +24,9 @@ type LoadBalancer struct {
 	// Format: date-time
 	CreatedAt strfmt.DateTime `json:"created_at,omitempty"`
 
+	// The CRN for this load balancer
+	Crn string `json:"crn,omitempty"`
+
 	// Fully qualified domain name assigned to this load balancer
 	Hostname string `json:"hostname,omitempty"`
 
