@@ -94,6 +94,7 @@ Nested `network_interfaces` block have the following structure:
 * `volumes` - (Optional, list) Comma separated IDs of volumes. 
 * `user_data` - (Optional, string) User data to transfer to the server instance.
 * `resource_group` - (Optional, Forces new resource, string) The resource group ID for this instance.
+* `tags` - (Optional, array of strings) Tags associated with the instance.
 
 ## Attribute Reference
 

@@ -2,8 +2,10 @@ package ibm
 
 import (
 	"log"
+	"os"
 	"time"
 
+	"github.com/hashicorp/terraform/helper/customdiff"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/compute"
@@ -13,12 +15,14 @@ import (
 const (
 	isImageHref            = "href"
 	isImageName            = "name"
+	isImageTags            = "tags"
 	isImageOperatingSystem = "operating_system"
 	isImageStatus          = "status"
 	isImageVisibility      = "visibility"
 	isImageFile            = "file"
 	isImageFormat          = "format"
 	isImageArchitecure     = "architecture"
+	isImageResourceGroup   = "resource_group"
 
 	isImageProvisioning     = "provisioning"
 	isImageProvisioningDone = "done"
@@ -41,6 +45,12 @@ func resourceIBMISImage() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
+		CustomizeDiff: customdiff.Sequence(
+			func(diff *schema.ResourceDiff, v interface{}) error {
+				return resourceTagsCustomizeDiff(diff)
+			},
+		),
+
 		Schema: map[string]*schema.Schema{
 			isImageHref: {
 				Type:             schema.TypeString,
@@ -52,6 +62,15 @@ func resourceIBMISImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: false,
+			},
+
+			isImageTags: {
+				Type:             schema.TypeSet,
+				Optional:         true,
+				Computed:         true,
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				Set:              resourceIBMVPCHash,
+				DiffSuppressFunc: applyOnce,
 			},
 
 			isImageOperatingSystem: {
@@ -82,6 +101,13 @@ func resourceIBMISImage() *schema.Resource {
 
 			isImageFormat: {
 				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			isImageResourceGroup: {
+				Type:     schema.TypeString,
+				ForceNew: true,
+				Optional: true,
 				Computed: true,
 			},
 
@@ -129,8 +155,12 @@ func resourceIBMISImageCreate(d *schema.ResourceData, meta interface{}) error {
 	name := d.Get(isImageName).(string)
 	operatingSystem := d.Get(isImageOperatingSystem).(string)
 
+	var rg string
+	if grp, ok := d.GetOk(isImageResourceGroup); ok {
+		rg = grp.(string)
+	}
 	imageC := compute.NewImageClient(sess)
-	image, err := imageC.Create(href, name, operatingSystem)
+	image, err := imageC.Create(href, name, operatingSystem, rg)
 	if err != nil {
 		log.Printf("[DEBUG] Image err %s", err)
 		return err
@@ -144,6 +174,15 @@ func resourceIBMISImageCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isImageTags); ok || v != "" {
+		oldList, newList := d.GetChange(isImageTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, image.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource vpc image (%s) tags: %s", d.Id(), err)
+		}
+	}
 	return resourceIBMISImageRead(d, meta)
 }
 
@@ -185,11 +224,24 @@ func resourceIBMISImageUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 	imageC := compute.NewImageClient(sess)
 
+	image, err := imageC.Get(d.Id())
+	if err != nil {
+		return err
+	}
+
 	if d.HasChange(isImageName) {
 		name := d.Get(isImageName).(string)
 		_, err := imageC.Update(d.Id(), name)
 		if err != nil {
 			return err
+		}
+	}
+	if d.HasChange(isImageTags) {
+		oldList, newList := d.GetChange(isImageTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, image.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource vpc Image (%s) tags: %s", d.Id(), err)
 		}
 	}
 
@@ -217,6 +269,12 @@ func resourceIBMISImageRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(isImageHref, image.Href)
 	d.Set(isImageStatus, image.Status)
 	d.Set(isImageVisibility, image.Visibility)
+	tags, err := GetTagsUsingCRN(meta, image.Crn)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource vpc Image (%s) tags: %s", d.Id(), err)
+	}
+	d.Set(isImageTags, tags)
 	controller, err := getBaseController(meta)
 	if err != nil {
 		return err

@@ -17,8 +17,8 @@ For additional details, see the [IBM Cloud Docs: Virtual Private Cloud - IBM Clo
 ```
 resource "ibm_is_image" "test_is_images" {
  name                   = "test_image"
- href                   = "test_image_path"
- operating_system       = "test_os_info"
+ href                   = "cos://us-south/buckettesttest/livecd.ubuntu-cpc.azure.vhd"
+ operating_system       = "ubuntu-16-04-amd64"
 }
 ```
 
@@ -27,8 +27,10 @@ resource "ibm_is_image" "test_is_images" {
 The following arguments are supported:
 
 * `name` - (Required, string) The descriptive name used to identify an image.
-* `href` - (Required, string) The path of an image to be uploaded.
+* `href` - (Required, string) The path(SQL URL of COS Bucket Object) of an image to be uploaded.
 * `operating_system` - (Required, string) Description of underlying OS of an image.
+* `resource_group` - (Optional, Forces new resource, string) The resource group ID for this image.
+* `tags` - (Optional, array of strings) Tags associated with the image.
 
 ## Attribute Reference
 

@@ -2,9 +2,11 @@ package ibm
 
 import (
 	"log"
+	"os"
 	"time"
 
 	"github.com/go-openapi/strfmt"
+	"github.com/hashicorp/terraform/helper/customdiff"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/lbaas"
@@ -16,6 +18,7 @@ import (
 const (
 	isLBName             = "name"
 	isLBStatus           = "status"
+	isLBTags             = "tags"
 	isLBType             = "type"
 	isLBSubnets          = "subnets"
 	isLBHostName         = "hostname"
@@ -42,6 +45,12 @@ func resourceIBMISLB() *schema.Resource {
 			Create: schema.DefaultTimeout(60 * time.Minute),
 			Delete: schema.DefaultTimeout(60 * time.Minute),
 		},
+
+		CustomizeDiff: customdiff.Sequence(
+			func(diff *schema.ResourceDiff, v interface{}) error {
+				return resourceTagsCustomizeDiff(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 
@@ -86,6 +95,14 @@ func resourceIBMISLB() *schema.Resource {
 				Required: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
+			},
+
+			isLBTags: {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      resourceIBMVPCHash,
 			},
 
 			isVPNGatewayResourceGroup: {
@@ -170,6 +187,15 @@ func resourceIBMISLBCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isLBTags); ok || v != "" {
+		oldList, newList := d.GetChange(isLBTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, lb.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
+		}
+	}
 	return resourceIBMISLBRead(d, meta)
 }
 
@@ -200,6 +226,12 @@ func resourceIBMISLBRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(isLBSubnets, flattenISLBSubnets(lb.Subnets))
 	d.Set(isLBResourceGroup, lb.ResourceGroup.ID)
 	d.Set(isLBHostName, lb.Hostname)
+	tags, err := GetTagsUsingCRN(meta, lb.Crn)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
+	}
+	d.Set(isLBTags, tags)
 	controller, err := getBaseController(meta)
 	if err != nil {
 		return err
@@ -224,11 +256,24 @@ func resourceIBMISLBUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 	client := lbaas.NewLoadBalancerClient(sess)
 
+	lb, err := client.Get(d.Id())
+	if err != nil {
+		return err
+	}
+
 	if d.HasChange(isLBName) {
 		name := d.Get(isLBName).(string)
 		_, err := client.Update(d.Id(), name)
 		if err != nil {
 			return err
+		}
+	}
+	if d.HasChange(isLBTags) {
+		oldList, newList := d.GetChange(isLBTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, lb.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
 		}
 	}
 
