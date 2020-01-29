@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/helpers/product"
@@ -25,6 +26,11 @@ func resourceIBMFirewallShared() *schema.Resource {
 		Exists:   resourceIBMFirewallSharedExists,
 		Importer: &schema.ResourceImporter{},
 
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
+
 		Schema: map[string]*schema.Schema{
 			"billing_item_id": {
 				Type:     schema.TypeInt,
@@ -34,7 +40,7 @@ func resourceIBMFirewallShared() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"10MBPS_HARDWARE_FIREWALL", "20MBPS_HARDWARE_FIREWALL", "100MBPS_HARDWARE_FIREWALL", "1000MBPS_HARDWARE_FIREWALL"}),
+				ValidateFunc: validateAllowedStringValue([]string{"10MBPS_HARDWARE_FIREWALL", "20MBPS_HARDWARE_FIREWALL", "100MBPS_HARDWARE_FIREWALL", "1000MBPS_HARDWARE_FIREWALL", "200MBPS_HARDWARE_FIREWALL", "2000MBPS_HARDWARE_FIREWALL"}),
 			},
 			"virtual_instance_id": {
 				Type:          schema.TypeInt,
@@ -96,7 +102,7 @@ func resourceIBMFirewallSharedCreate(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("No product items matching %s could be found", keyName)
 	}
 
-	masked := "firewallServiceComponent.id"
+	masked := "id,firewallServiceComponent[id,status]"
 	if virtualId > 0 {
 		productOrderContainer := datatypes.Container_Product_Order_Network_Protection_Firewall{
 			Container_Product_Order: datatypes.Container_Product_Order{
@@ -114,11 +120,38 @@ func resourceIBMFirewallSharedCreate(d *schema.ResourceData, meta interface{}) e
 			},
 		}
 		_, err := services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(&productOrderContainer, sl.Bool(false))
+		if err != nil {
+			return nil
+		}
 
 		log.Printf("[INFO] Wait one minute before fetching the firewall/device.")
 		time.Sleep(time.Second * 30)
-
 		service := services.GetVirtualGuestService(sess)
+		stateConf := &resource.StateChangeConf{
+			Target:  []string{"completed"},
+			Pending: []string{"pending"},
+			Refresh: func() (interface{}, string, error) {
+				result, err := service.Id(virtualId).Mask(masked).GetObject()
+				if err != nil {
+					return nil, "", err
+				}
+				status, ok := sl.GrabOk(result, "FirewallServiceComponent.Status")
+				if ok && status == "bypass" {
+					return result, "completed", nil
+				}
+				return result, "pending", nil
+			},
+			Timeout:        d.Timeout(schema.TimeoutCreate),
+			Delay:          10 * time.Second,
+			MinTimeout:     10 * time.Second,
+			NotFoundChecks: 24 * 60,
+		}
+
+		_, err = stateConf.WaitForState()
+		if err != nil {
+			return err
+		}
+
 		result, err := service.Id(virtualId).Mask(masked).GetObject()
 		idd := *result.FirewallServiceComponent.Id
 		log.Print(idd)
@@ -146,11 +179,39 @@ func resourceIBMFirewallSharedCreate(d *schema.ResourceData, meta interface{}) e
 			},
 		}
 		_, err := services.GetProductOrderService(sess.SetRetries(0)).PlaceOrder(&productOrderContainer, sl.Bool(false))
+		if err != nil {
+			return nil
+		}
 
 		log.Printf("[INFO] Wait one minute before fetching the firewall/device.")
 		time.Sleep(time.Second * 30)
 
 		service := services.GetHardwareService(sess)
+		stateConf := &resource.StateChangeConf{
+			Target:  []string{"completed"},
+			Pending: []string{"pending"},
+			Refresh: func() (interface{}, string, error) {
+				result, err := service.Id(hardwareId).Mask(masked).GetObject()
+				if err != nil {
+					return nil, "", err
+				}
+				status, ok := sl.GrabOk(result, "FirewallServiceComponent.Status")
+				if ok && status == "bypass" {
+					return result, "completed", nil
+				}
+				return result, "pending", nil
+			},
+			Timeout:        d.Timeout(schema.TimeoutCreate),
+			Delay:          10 * time.Second,
+			MinTimeout:     10 * time.Second,
+			NotFoundChecks: 24 * 60,
+		}
+
+		_, err = stateConf.WaitForState()
+		if err != nil {
+			return err
+		}
+
 		resultNew, err := service.Id(hardwareId).Mask(masked).GetObject()
 		idd2 := *resultNew.FirewallServiceComponent.Id
 
