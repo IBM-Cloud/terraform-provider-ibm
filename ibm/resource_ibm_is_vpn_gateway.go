@@ -2,8 +2,10 @@ package ibm
 
 import (
 	"log"
+	"os"
 	"time"
 
+	"github.com/hashicorp/terraform/helper/customdiff"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/vpn"
@@ -13,6 +15,7 @@ import (
 const (
 	isVPNGatewayName             = "name"
 	isVPNGatewayResourceGroup    = "resource_group"
+	isVPNGatewayTags             = "tags"
 	isVPNGatewaySubnet           = "subnet"
 	isVPNGatewayStatus           = "status"
 	isVPNGatewayDeleting         = "deleting"
@@ -35,6 +38,12 @@ func resourceIBMISVPNGateway() *schema.Resource {
 			Create: schema.DefaultTimeout(60 * time.Minute),
 			Delete: schema.DefaultTimeout(60 * time.Minute),
 		},
+
+		CustomizeDiff: customdiff.Sequence(
+			func(diff *schema.ResourceDiff, v interface{}) error {
+				return resourceTagsCustomizeDiff(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 
@@ -65,6 +74,14 @@ func resourceIBMISVPNGateway() *schema.Resource {
 			isVPNGatewayPublicIPAddress: {
 				Type:     schema.TypeString,
 				Computed: true,
+			},
+
+			isVPNGatewayTags: {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      resourceIBMVPCHash,
 			},
 
 			ResourceControllerURL: {
@@ -130,6 +147,16 @@ func resourceIBMISVPNGatewayCreate(d *schema.ResourceData, meta interface{}) err
 
 	d.SetId(VPNGateway.ID.String())
 	log.Printf("[INFO] VPNGateway : %s", VPNGateway.ID.String())
+
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isVPNGatewayTags); ok || v != "" {
+		oldList, newList := d.GetChange(isVPNGatewayTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, VPNGateway.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource vpc VPN Gateway (%s) tags: %s", d.Id(), err)
+		}
+	}
 	return resourceIBMISVPNGatewayRead(d, meta)
 }
 
@@ -150,6 +177,12 @@ func resourceIBMISVPNGatewayRead(d *schema.ResourceData, meta interface{}) error
 	d.Set(isVPNGatewayResourceGroup, VPNGateway.ResourceGroup.ID)
 	d.Set(isVPNGatewayStatus, VPNGateway.Status)
 	d.Set(isVPNGatewayPublicIPAddress, VPNGateway.PublicIP.Address)
+	tags, err := GetTagsUsingCRN(meta, VPNGateway.Crn)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource vpc VPN Gateway (%s) tags: %s", d.Id(), err)
+	}
+	d.Set(isVPNGatewayTags, tags)
 	controller, err := getBaseController(meta)
 	if err != nil {
 		return err
@@ -182,11 +215,24 @@ func resourceIBMISVPNGatewayUpdate(d *schema.ResourceData, meta interface{}) err
 	}
 	VPNGatewayC := vpn.NewVpnClient(sess)
 
+	VPNGateway, err := VPNGatewayC.Get(d.Id())
+	if err != nil {
+		return err
+	}
+
 	if d.HasChange(isVPNGatewayName) {
 		name := d.Get(isVPNGatewayName).(string)
 		_, err := VPNGatewayC.Update(d.Id(), name)
 		if err != nil {
 			return err
+		}
+	}
+	if d.HasChange(isVPNGatewayTags) {
+		oldList, newList := d.GetChange(isVPNGatewayTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, VPNGateway.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource vpc Instance(%s) tags: %s", d.Id(), err)
 		}
 	}
 

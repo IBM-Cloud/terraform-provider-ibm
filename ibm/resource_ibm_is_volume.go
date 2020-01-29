@@ -2,9 +2,11 @@ package ibm
 
 import (
 	"log"
+	"os"
 	"time"
 
 	"github.com/go-openapi/strfmt"
+	"github.com/hashicorp/terraform/helper/customdiff"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/storage"
@@ -20,6 +22,7 @@ const (
 	isVolumeCapacity         = "capacity"
 	isVolumeIops             = "iops"
 	isVolumeCrn              = "crn"
+	isVolumeTags             = "tags"
 	isVolumeStatus           = "status"
 	isVolumeDeleting         = "deleting"
 	isVolumeDeleted          = "done"
@@ -41,6 +44,12 @@ func resourceIBMISVolume() *schema.Resource {
 			Create: schema.DefaultTimeout(60 * time.Minute),
 			Delete: schema.DefaultTimeout(60 * time.Minute),
 		},
+
+		CustomizeDiff: customdiff.Sequence(
+			func(diff *schema.ResourceDiff, v interface{}) error {
+				return resourceTagsCustomizeDiff(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 
@@ -93,6 +102,14 @@ func resourceIBMISVolume() *schema.Resource {
 			isVolumeStatus: {
 				Type:     schema.TypeString,
 				Computed: true,
+			},
+
+			isVolumeTags: {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      resourceIBMVPCHash,
 			},
 
 			ResourceControllerURL: {
@@ -190,6 +207,16 @@ func resourceIBMISVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isVolumeTags); ok || v != "" {
+		oldList, newList := d.GetChange(isVolumeTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, vol.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource vpc volume (%s) tags: %s", d.Id(), err)
+		}
+	}
 	return resourceIBMISVolumeRead(d, meta)
 }
 
@@ -217,6 +244,12 @@ func resourceIBMISVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(isVolumeCrn, vol.Crn)
 	d.Set(isVolumeResourceGroup, vol.ResourceGroup.ID)
 	d.Set(isVolumeStatus, vol.Status)
+	tags, err := GetTagsUsingCRN(meta, vol.Crn)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource vpc volume (%s) tags: %s", d.Id(), err)
+	}
+	d.Set(isVolumeTags, tags)
 	controller, err := getBaseController(meta)
 	if err != nil {
 		return err
@@ -243,6 +276,11 @@ func resourceIBMISVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 	client := storage.NewStorageClient(sess)
 
+	vol, err := client.Get(d.Id())
+	if err != nil {
+		return err
+	}
+
 	// Generating parameters for
 
 	if d.HasChange(isVolumeName) {
@@ -256,6 +294,14 @@ func resourceIBMISVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 		_, err := client.Update(d.Id(), patchVolParms)
 		if err != nil {
 			return err
+		}
+	}
+	if d.HasChange(isVolumeTags) {
+		oldList, newList := d.GetChange(isVolumeTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, vol.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource vpc volume (%s) tags: %s", d.Id(), err)
 		}
 	}
 
