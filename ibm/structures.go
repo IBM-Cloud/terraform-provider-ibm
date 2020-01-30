@@ -1384,7 +1384,6 @@ func EscapeUrlParm(urlParm string) string {
 }
 
 func GetTags(d *schema.ResourceData, meta interface{}) error {
-	log.Println("[INFO] ###########  Tagging Called GetTags ###################")
 	resourceID := d.Id()
 	gtClient, err := meta.(ClientSession).GlobalTaggingAPI()
 	if err != nil {
@@ -1403,7 +1402,6 @@ func GetTags(d *schema.ResourceData, meta interface{}) error {
 }
 
 func UpdateTags(d *schema.ResourceData, meta interface{}) error {
-	log.Println("[INFO] ###########  Tagging Called UpdateTags ###################")
 	resourceID := d.Id()
 	gtClient, err := meta.(ClientSession).GlobalTaggingAPI()
 	if err != nil {
