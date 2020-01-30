@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform/helper/customdiff"
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -44,6 +46,12 @@ func resourceIBMISVPC() *schema.Resource {
 			Create: schema.DefaultTimeout(60 * time.Minute),
 			Delete: schema.DefaultTimeout(60 * time.Minute),
 		},
+
+		CustomizeDiff: customdiff.Sequence(
+			func(diff *schema.ResourceDiff, v interface{}) error {
+				return resourceTagsCustomizeDiff(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 			isVPCAddressPrefixManagement: {
@@ -100,6 +108,7 @@ func resourceIBMISVPC() *schema.Resource {
 			isVPCTags: {
 				Type:     schema.TypeSet,
 				Optional: true,
+				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      resourceIBMVPCHash,
 			},
@@ -166,7 +175,9 @@ func resourceIBMISVPCCreate(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	if _, ok := d.GetOk(isVPCTags); ok {
+
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isVPCTags); ok || v != "" {
 		oldList, newList := d.GetChange(isVPCTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, vpc.Crn)
 		if err != nil {
@@ -210,6 +221,7 @@ func resourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
 		log.Printf(
 			"Error on get of resource vpc (%s) tags: %s", d.Id(), err)
 	}
+
 	d.Set(isVPCTags, tags)
 	d.Set(isVPCResourceGroup, vpc.ResourceGroup.ID)
 	controller, err := getBaseController(meta)

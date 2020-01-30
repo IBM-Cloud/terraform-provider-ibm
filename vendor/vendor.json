@@ -1183,10 +1183,10 @@
 			"revision": "36289988d83ca270bc07c234c36f364b0dd9c9a7"
 		},
 		{
-			"checksumSHA1": "tUGxc7rfX0cmhOOUDhMuAZ9rWsA=",
+			"checksumSHA1": "inspsPJbucf/YfSpC1Zo/cwAh2A=",
 			"path": "github.com/hashicorp/go-version",
-			"revision": "03c5bf6be031b6dd45afec16b1cf94fc8938bc77",
-			"revisionTime": "2017-02-02T08:07:59Z"
+			"revision": "2b13044f5cdd3833370d41ce57d8bf3cec5e62b8",
+			"revisionTime": "2020-01-10T16:48:07Z"
 		},
 		{
 			"checksumSHA1": "o3XZZdOnSnwQSpYw215QV75ZDeI=",
@@ -1371,6 +1371,12 @@
 			"revisionTime": "2018-04-05T19:25:37Z",
 			"version": "=v0.11.6",
 			"versionExact": "v0.11.6"
+		},
+		{
+			"checksumSHA1": "qVmQPoZmJ2w2OnaxIheWfuwun6g=",
+			"path": "github.com/hashicorp/terraform/helper/customdiff",
+			"revision": "b1313eaf7d9d15767df247707c0d15eb423ec289",
+			"revisionTime": "2020-01-23T18:34:53Z"
 		},
 		{
 			"checksumSHA1": "Vbo55GDzPgG/L/+W2pcvDhxrPZc=",
@@ -1619,51 +1625,52 @@
 			"revisionTime": "2016-11-09T04:20:57Z"
 		},
 		{
-			"checksumSHA1": "FpWlypAjr+w5Q6uQybVbNfwmlp8=",
+			"checksumSHA1": "fgd40uACm+f6nmSUC+R9A9NtwGY=",
 			"path": "github.com/mitchellh/cli",
-			"revision": "c48282d14eba4b0817ddef3f832ff8d13851aefd",
-			"revisionTime": "2018-04-14T17:04:47Z"
+			"revision": "3d22a244be8aa6fb16ac24af0e195c08b7d973aa",
+			"revisionTime": "2018-08-24T00:41:14Z"
 		},
 		{
-			"checksumSHA1": "guxbLo8KHHBeM0rzou4OTzzpDNs=",
+			"checksumSHA1": "gpgfDOKGUOP/h+j1cM7T36NZFTQ=",
 			"path": "github.com/mitchellh/copystructure",
-			"revision": "5af94aef99f597e6a9e1f6ac6be6ce0f3c96b49d",
-			"revisionTime": "2016-10-13T19:53:42Z"
+			"revision": "9a1b6f44e8da0e0e374624fb0a825a231b00c537",
+			"revisionTime": "2018-08-24T00:35:38Z"
 		},
 		{
-			"checksumSHA1": "V/quM7+em2ByJbWBLOsEwnY3j/Q=",
+			"checksumSHA1": "7zLQC+jG19ndjH24FVh/+ZliHac=",
 			"path": "github.com/mitchellh/go-homedir",
-			"revision": "b8bc1bf767474819792c23f32d8286a45736f1c6",
-			"revisionTime": "2016-12-03T19:45:07Z"
+			"revision": "af06845cf3004701891bf4fdb884bfe4920b3727",
+			"revisionTime": "2019-01-27T04:21:35Z"
 		},
 		{
-			"checksumSHA1": "bDdhmDk8q6utWrccBhEOa6IoGkE=",
+			"checksumSHA1": "sOKKo6gC91+8G8bEsg4Kob0k61g=",
 			"path": "github.com/mitchellh/go-testing-interface",
-			"revision": "a61a99592b77c9ba629d254a693acffaeb4b7e28",
-			"revisionTime": "2017-10-04T22:19:16Z"
+			"revision": "6d0b8010fcc857872e42fc6c931227569016843c",
+			"revisionTime": "2018-08-26T20:35:19Z"
 		},
 		{
-			"checksumSHA1": "L3leymg2RT8hFl5uL+5KP/LpBkg=",
+			"checksumSHA1": "2gW/SeTAbHsmAdoDes4DksvqTj4=",
 			"path": "github.com/mitchellh/go-wordwrap",
-			"revision": "ad45545899c7b13c020ea92b2072220eefad42b8",
-			"revisionTime": "2015-03-14T17:03:34Z"
+			"revision": "9e67c67572bc5dd02aef930e2b0ae3c02a4b5a5c",
+			"revisionTime": "2018-08-28T14:53:44Z"
 		},
 		{
-			"checksumSHA1": "xyoJKalfQwTUN1qzZGQKWYAwl0A=",
+			"checksumSHA1": "gOIe6F97Mcq/PwZjG38FkxervzE=",
 			"path": "github.com/mitchellh/hashstructure",
-			"revision": "6b17d669fac5e2f71c16658d781ec3fdd3802b69"
+			"revision": "a38c50148365edc8df43c1580c48fb2b3a1e9cd7",
+			"revisionTime": "2018-08-28T14:53:49Z"
 		},
 		{
-			"checksumSHA1": "MlX15lJuV8DYARX5RJY8rqrSEWQ=",
+			"checksumSHA1": "J+g0oZePWp2zSIISD2dZZKTxmgg=",
 			"path": "github.com/mitchellh/mapstructure",
-			"revision": "53818660ed4955e899c0bcafa97299a388bd7c8e",
-			"revisionTime": "2017-03-07T20:11:23Z"
+			"revision": "3536a929edddb9a5b34bd6861dc4a9647cb459fe",
+			"revisionTime": "2018-10-05T04:51:35Z"
 		},
 		{
-			"checksumSHA1": "vBpuqNfSTZcAR/0tP8tNYacySGs=",
+			"checksumSHA1": "3GoWH/9S8qEa6qZLPaZD5ZjrorM=",
 			"path": "github.com/mitchellh/reflectwalk",
-			"revision": "92573fe8d000a145bfebc03a16bc22b34945867f",
-			"revisionTime": "2016-10-03T17:45:16Z"
+			"revision": "3e2c75dfad4fbf904b58782a80fd595c760ad185",
+			"revisionTime": "2019-05-02T16:13:28Z"
 		},
 		{
 			"checksumSHA1": "uEc9/1HbYGeK7wPStF6FmUlfzGE=",
@@ -2352,6 +2359,10 @@
 		},
 		{
 			"path": "govendor",
+			"revision": ""
+		},
+		{
+			"path": "vendor/github.com/hashicorp/terraform-plugin-sdk/helper/customdiff",
 			"revision": ""
 		}
 	],
