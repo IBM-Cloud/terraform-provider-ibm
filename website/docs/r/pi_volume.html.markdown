@@ -38,12 +38,21 @@ The following arguments are supported:
 * `pi_volume_size` - (Required, int) The size for this volume.
 * `pi_volume_name` - (Required, string) The name of this volume.
 * `pi_volume_type` - (Required, string) The volume type - Only two values are supported (ssd/standard).
-* `pi_volume_shareable` - (Required, boolean) If the volume can be shared or not (true/false).
+* `pi_volume_shareable` - (Optional, boolean) If the volume can be shared or not (true/false).
 * `pi_cloud_instance_id` - (Required, string) The cloud_instance_id for this account.
 
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - The unique identifier of the volume.
+* `id` - The unique identifier of the network.The id is composed of \<power_instance_id\>/\<volume_id\>.
+* `volume_id` - The unique identifier of the volume.
 * `status` - The status of the volume.
+
+## Import
+
+ibm_pi_volume can be imported using `power_instance_id` and `volume_id`, eg
+
+```
+$ terraform import ibm_pi_volume.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
+```

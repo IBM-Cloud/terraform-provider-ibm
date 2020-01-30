@@ -36,9 +36,19 @@ The following arguments are supported:
 * `pi_key_name` - (Required, int) The key name.
 * `pi_ssh_key` - (Required, string) The value of the ssh key.
 * `pi_cloud_instance_id` - (Required, string) The cloud_instance_id for this account.
+* `pi_creation_date` - (Optional, string) Date of sshkey creation.
 
 ## Attribute Reference
 
 The following attributes are exported:
 
-None
+* `id` - The unique identifier of the key.The id is composed of \<power_instance_id\>/\<key_name\>.
+* `key_id` -  The unique identifier of the key.
+
+## Import
+
+ibm_pi_key can be imported using `power_instance_id` and `ssh_key_name`, eg
+
+```
+$ terraform import ibm_pi_key.example d7bec597-4726-451f-8a63-e62e6f19c32c/mykey
+```

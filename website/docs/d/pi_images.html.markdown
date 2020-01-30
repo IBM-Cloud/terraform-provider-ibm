@@ -26,7 +26,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `images` - List of all images in the IBM Power Virtual Server Cloud.
+* `image_info` - List of all images in the IBM Power Virtual Server Cloud.
   * `name` - The name for this image.
   * `id` - The unique identifier for this image
   * `state` - The state of the operating system.

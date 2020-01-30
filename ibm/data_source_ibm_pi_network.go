@@ -1,7 +1,6 @@
 package ibm
 
 import (
-	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	//"fmt"
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -30,16 +29,7 @@ func dataSourceIBMPINetwork() *schema.Resource {
 
 			// Computed Attributes
 
-			"networkid": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
 			"cidr": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"name": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -49,7 +39,7 @@ func dataSourceIBMPINetwork() *schema.Resource {
 				Computed: true,
 			},
 
-			"vlanid": {
+			"vlan_id": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
@@ -88,17 +78,14 @@ func dataSourceIBMPINetworksRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	var clientgenU, _ = uuid.GenerateUUID()
-	d.SetId(clientgenU)
-	d.Set("networkid", networkdata.NetworkID)
+	d.SetId(*networkdata.NetworkID)
 	d.Set("cidr", networkdata.Cidr)
 	d.Set("type", networkdata.Type)
 	d.Set("gateway", networkdata.Gateway)
-	d.Set("vlanid", networkdata.VlanID)
+	d.Set("vlan_id", networkdata.VlanID)
 	d.Set("available_ip_count", networkdata.IPAddressMetrics.Available)
 	d.Set("used_ip_count", networkdata.IPAddressMetrics.Used)
 	d.Set("used_ip_percent", networkdata.IPAddressMetrics.Utilization)
-	d.Set("name", networkdata.Name)
 
 	return nil
 

@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
@@ -104,8 +105,8 @@ func dataSourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
 			}
 			tags, err := GetTagsUsingCRN(meta, vpc.Crn)
 			if err != nil {
-				return fmt.Errorf(
-					"Error on get of resource vpc (%s) tags: %s", d.Id(), err)
+				log.Printf(
+					"An error occured during reading of vpc (%s) tags : %s", d.Id(), err)
 			}
 			d.Set(isVPCTags, tags)
 

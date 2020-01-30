@@ -19,6 +19,9 @@ resource "ibm_pi_network" "power_networks" {
   count                = 1
   pi_network_name      = "power-network"
   pi_cloud_instance_id = "<value of the cloud_instance_id>"
+  pi_network_type      = "vlan"
+  pi_cidr              = "<Network in CIDR notation (192.168.0.0/24)>"
+  pi_dns               = [<"DNS Servers">]
 }
 ```
 
@@ -34,18 +37,24 @@ ibm_pi_network provides the following [timeout](https://www.terraform.io/docs/co
 The following arguments are supported:
 
 * `pi_network_name` - (Required, string) The name of the network.
-* `pi_network_dns` - (Required, list(strings)) List of DNS entries for the network.
-* `pi_network_cidr` - (Required, string) The network CIDR.
 * `pi_network_type` - (Required, string) The type of network (e.g., pub-vlan, vlan).
-* `pi_network_gateway` - (Optional, string) The network gateway address.
-* `pi_network_available_ip_count` - (Optional, float) The number of available IP addresses.
-* `pi_network_used_ip_count` - (Optional, float) The number of used IP addresses.
-* `pi_network_used_ip_percent` - (Optional, float) The percentage of IP addresses used.
 * `pi_cloud_instance_id` - (Required, string) The cloud_instance_id for this account.
+* `pi_dns` - (Optional, list(strings)) List of DNS entries for the network. Required for `vlan` network type.
+* `pi_cidr` - (Optional, string) The network CIDR. Required for `vlan` network type.
+
 
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `networkid` - The unique identifier (string) of the network.
-* `vlanid` - The unique identifier (int) of the network VLAN.
+* `id` - The unique identifier of the network.The id is composed of \<power_instance_id\>/\<network_id\>.
+* `network_id` - The unique identifier (string) of the network.
+* `vlan_id` - The unique identifier (int) of the network VLAN.
+
+## Import
+
+ibm_pi_network can be imported using `power_instance_id` and `network_id`, eg
+
+```
+$ terraform import ibm_pi_network.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
+```

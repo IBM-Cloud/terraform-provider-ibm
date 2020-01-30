@@ -35,17 +35,20 @@ func (f *IBMPINetworkClient) Get(id, powerinstanceid string) (*models.Network, e
 
 func (f *IBMPINetworkClient) Create(name string, networktype string, cidr string, dnsservers []string, gateway string, startip string, endip string, powerinstanceid string) (*models.Network, *models.Network, error) {
 
-	var ipbody = []*models.IPAddressRange{
-		{&endip, &startip},
-	}
-
 	var body = models.NetworkCreate{}
-	body.Cidr = cidr
-	body.Gateway = gateway
-	body.IPAddressRanges = ipbody
+
 	body.Name = name
-	body.DNSServers = dnsservers
 	body.Type = &networktype
+
+	if networktype == "vlan" {
+		var ipbody = []*models.IPAddressRange{
+			{&endip, &startip},
+		}
+		body.IPAddressRanges = ipbody
+		body.Gateway = gateway
+		body.Cidr = cidr
+	}
+	body.DNSServers = dnsservers
 
 	log.Printf("Printing the body %+v", body)
 	params := p_cloud_networks.NewPcloudNetworksPostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithBody(&body)
@@ -79,4 +82,14 @@ func (f *IBMPINetworkClient) GetPublic(cloud_instance_id string) (*models.Networ
 	}
 
 	return resp.Payload, nil
+}
+
+// Delete ...
+func (f *IBMPINetworkClient) Delete(id string, powerinstanceid string) error {
+	params := p_cloud_networks.NewPcloudNetworksDeleteParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithNetworkID(id)
+	_, err := f.session.Power.PCloudNetworks.PcloudNetworksDelete(params, ibmpisession.NewAuth(f.session, powerinstanceid))
+	if err != nil {
+		return errors.ToError(err)
+	}
+	return nil
 }
