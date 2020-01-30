@@ -31,9 +31,10 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - The unique identifier for this network.
-* `gateway_ip` - The gateway for this network.
-* `available_ip_count` - The available IPs for this network.
-* `used_ip_count` - The IPs that are in use for this network.
-* `used_ip_percent` - The used ip in percent.
-* `vlan_type` - The type of vlan for this network.
-* `name` - The name of the network
+* `cidr` - The cidr for this network.
+* `type` - The type of the network.
+* `gateway` - The gateway of the network.
+* `vlan_id` - The vlan ID of the network.
+* `available_ip_count` - The available IP count for this network.
+* `used_ip_count` - The used IP count for this network.
+* `used_ip_percent` - The used IP percent for this network.

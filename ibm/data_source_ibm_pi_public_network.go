@@ -1,7 +1,6 @@
 package ibm
 
 import (
-	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	//"fmt"
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -17,9 +16,10 @@ func dataSourceIBMPIPublicNetwork() *schema.Resource {
 
 			helpers.PINetworkName: {
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
 				Description:  "Network Name to be used for pvminstances",
 				ValidateFunc: validation.NoZeroValues,
+				Deprecated:   "This field is deprectaed.",
 			},
 
 			helpers.PICloudInstanceId: {
@@ -30,15 +30,11 @@ func dataSourceIBMPIPublicNetwork() *schema.Resource {
 
 			// Computed Attributes
 
-			"networkid": {
+			"network_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 
-			"cidr": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"name": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -49,24 +45,8 @@ func dataSourceIBMPIPublicNetwork() *schema.Resource {
 				Computed: true,
 			},
 
-			"vlanid": {
+			"vlan_id": {
 				Type:     schema.TypeInt,
-				Computed: true,
-			},
-			"gateway": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"available_ip_count": {
-				Type:     schema.TypeFloat,
-				Computed: true,
-			},
-			"used_ip_count": {
-				Type:     schema.TypeFloat,
-				Computed: true,
-			},
-			"used_ip_percent": {
-				Type:     schema.TypeFloat,
 				Computed: true,
 			},
 		},
@@ -88,12 +68,10 @@ func dataSourceIBMPIPublicNetworksRead(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	var clientgenU, _ = uuid.GenerateUUID()
-	d.SetId(clientgenU)
-	d.Set("networkid", networkdata.Networks[0].NetworkID)
+	d.SetId(*networkdata.Networks[0].NetworkID)
 	d.Set("type", networkdata.Networks[0].Type)
 	d.Set("name", networkdata.Networks[0].Name)
-	d.Set("vlanid", networkdata.Networks[0].VlanID)
+	d.Set("vlan_id", networkdata.Networks[0].VlanID)
 
 	return nil
 

@@ -5,9 +5,7 @@ import (
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"log"
 
-	//"fmt"
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
@@ -33,12 +31,7 @@ func dataSourceIBMPIVolumes() *schema.Resource {
 
 			//Computed Attributes
 
-			"bootvolumeid": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
-			"instance_volume": {
+			"boot_volume_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -48,35 +41,35 @@ func dataSourceIBMPIVolumes() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"volume_id": {
+						"id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"volume_size": {
+						"size": {
 							Type:     schema.TypeFloat,
 							Computed: true,
 						},
-						"volume_href": {
+						"href": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"volume_name": {
+						"name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"volume_state": {
+						"state": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"volume_type": {
+						"type": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"volume_shareable": {
+						"shareable": {
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
-						"volume_bootable": {
+						"bootable": {
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
@@ -104,7 +97,7 @@ func dataSourceIBMPIVolumesRead(d *schema.ResourceData, meta interface{}) error 
 
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
-	d.Set("bootvolumeid", *volumedata.Volumes[0].VolumeID)
+	d.Set("boot_volume_id", *volumedata.Volumes[0].VolumeID)
 	d.Set("instance_volumes", flattenVolumesInstances(volumedata.Volumes))
 
 	return nil
@@ -112,18 +105,17 @@ func dataSourceIBMPIVolumesRead(d *schema.ResourceData, meta interface{}) error 
 }
 
 func flattenVolumesInstances(list []*models.VolumeReference) []map[string]interface{} {
-	log.Printf("Calling the instance volumes method and the size is %d", len(list))
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
 		l := map[string]interface{}{
-			"volume_id":        *i.VolumeID,
-			"volume_state":     *i.State,
-			"volume_href":      *i.Href,
-			"volume_name":      *i.Name,
-			"volume_size":      *i.Size,
-			"volume_type":      *i.DiskType,
-			"volume_shareable": *i.Shareable,
-			"volume_bootable":  *i.Bootable,
+			"id":        *i.VolumeID,
+			"state":     *i.State,
+			"href":      *i.Href,
+			"name":      *i.Name,
+			"size":      *i.Size,
+			"type":      *i.DiskType,
+			"shareable": *i.Shareable,
+			"bootable":  *i.Bootable,
 		}
 
 		result = append(result, l)
