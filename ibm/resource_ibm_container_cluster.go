@@ -3,11 +3,13 @@ package ibm
 import (
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"time"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/hashicorp/terraform/helper/customdiff"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -50,6 +52,12 @@ func resourceIBMContainerCluster() *schema.Resource {
 			Delete: schema.DefaultTimeout(45 * time.Minute),
 			Update: schema.DefaultTimeout(45 * time.Minute),
 		},
+
+		CustomizeDiff: customdiff.Sequence(
+			func(diff *schema.ResourceDiff, v interface{}) error {
+				return resourceTagsCustomizeDiff(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -325,6 +333,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 			"tags": {
 				Type:     schema.TypeSet,
 				Optional: true,
+				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      resourceIBMVPCHash,
 			},
@@ -1079,7 +1088,8 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		}
 	}
 
-	if d.HasChange("tags") {
+	v := os.Getenv("IC_ENV_TAGS")
+	if d.HasChange("tags") || v != "" {
 		oldList, newList := d.GetChange("tags")
 		cluster, err := clusterAPI.Find(clusterID, targetEnv)
 		if err != nil {

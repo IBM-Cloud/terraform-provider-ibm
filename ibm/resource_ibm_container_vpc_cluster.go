@@ -3,12 +3,14 @@ package ibm
 import (
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"time"
 
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/hashicorp/terraform/helper/customdiff"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -28,6 +30,12 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 		Delete:   resourceIBMContainerVpcClusterDelete,
 		Exists:   resourceIBMContainerVpcClusterExists,
 		Importer: &schema.ResourceImporter{},
+
+		CustomizeDiff: customdiff.Sequence(
+			func(diff *schema.ResourceDiff, v interface{}) error {
+				return resourceTagsCustomizeDiff(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 
@@ -125,6 +133,7 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 			"tags": {
 				Type:     schema.TypeSet,
 				Optional: true,
+				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      resourceIBMVPCHash,
 			},
@@ -331,7 +340,9 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 	}
 
 	clusterID := d.Id()
-	if d.HasChange("tags") {
+
+	v := os.Getenv("IC_ENV_TAGS")
+	if d.HasChange("tags") || v != "" {
 		oldList, newList := d.GetChange("tags")
 		cluster, err := csClient.Clusters().GetCluster(clusterID, targetEnv)
 		if err != nil {
