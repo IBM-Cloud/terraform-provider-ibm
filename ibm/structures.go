@@ -1569,7 +1569,6 @@ func resourceTagsCustomizeDiff(diff *schema.ResourceDiff) error {
 		if v := os.Getenv("IC_ENV_TAGS"); v != "" {
 			s := strings.Split(v, ",")
 			if len(removeInt) == len(s) && len(addInt) == 0 {
-				fmt.Println("Suppresing the TAG diff ")
 				return diff.Clear("tags")
 			}
 		}
