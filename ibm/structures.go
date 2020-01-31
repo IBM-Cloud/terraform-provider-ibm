@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/url"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -1410,14 +1412,15 @@ func UpdateTags(d *schema.ResourceData, meta interface{}) error {
 	if newList == nil {
 		newList = new(schema.Set)
 	}
-	os := oldList.(*schema.Set)
-	ns := newList.(*schema.Set)
-	removeInt := os.Difference(ns).List()
-	addInt := ns.Difference(os).List()
+	olds := oldList.(*schema.Set)
+	news := newList.(*schema.Set)
+	removeInt := olds.Difference(news).List()
+	addInt := news.Difference(olds).List()
 	add := make([]string, len(addInt))
 	for i, v := range addInt {
 		add[i] = fmt.Sprint(v)
 	}
+	add = append(add, "mytag")
 	remove := make([]string, len(removeInt))
 	for i, v := range removeInt {
 		remove[i] = fmt.Sprint(v)
@@ -1460,7 +1463,8 @@ func flattenISLBSubnets(subnets []*vpc.LoadBalancerSubnetsItems0) interface{} {
 	return out
 }
 
-func GetTagsUsingCRN(meta interface{}, resourceCRN string) ([]interface{}, error) {
+func GetTagsUsingCRN(meta interface{}, resourceCRN string) (*schema.Set, error) {
+
 	gtClient, err := meta.(ClientSession).GlobalTaggingAPI()
 	if err != nil {
 		return nil, fmt.Errorf("Error getting global tagging client settings: %s", err)
@@ -1473,7 +1477,8 @@ func GetTagsUsingCRN(meta interface{}, resourceCRN string) ([]interface{}, error
 	for _, item := range taggingResult.Items {
 		taglist = append(taglist, item.Name)
 	}
-	return flattenStringList(taglist), nil
+	log.Println("tagList: ", taglist)
+	return newStringSet(resourceIBMVPCHash, taglist), nil
 }
 
 func UpdateTagsUsingCRN(oldList, newList interface{}, meta interface{}, resourceCRN string) error {
@@ -1487,10 +1492,10 @@ func UpdateTagsUsingCRN(oldList, newList interface{}, meta interface{}, resource
 	if newList == nil {
 		newList = new(schema.Set)
 	}
-	os := oldList.(*schema.Set)
-	ns := newList.(*schema.Set)
-	removeInt := os.Difference(ns).List()
-	addInt := ns.Difference(os).List()
+	olds := oldList.(*schema.Set)
+	news := newList.(*schema.Set)
+	removeInt := olds.Difference(news).List()
+	addInt := news.Difference(olds).List()
 	add := make([]string, len(addInt))
 	for i, v := range addInt {
 		add[i] = fmt.Sprint(v)
@@ -1500,12 +1505,13 @@ func UpdateTagsUsingCRN(oldList, newList interface{}, meta interface{}, resource
 		remove[i] = fmt.Sprint(v)
 	}
 
-	if len(add) > 0 {
-		_, err := gtClient.Tags().AttachTags(resourceCRN, add)
-		if err != nil {
-			return fmt.Errorf("Error updating database tags %v : %s", add, err)
-		}
+	schematicTags := os.Getenv("IC_ENV_TAGS")
+	var envTags []string
+	if schematicTags != "" {
+		envTags = strings.Split(schematicTags, ",")
+		add = append(add, envTags...)
 	}
+
 	if len(remove) > 0 {
 		_, err := gtClient.Tags().DetachTags(resourceCRN, remove)
 		if err != nil {
@@ -1518,6 +1524,14 @@ func UpdateTagsUsingCRN(oldList, newList interface{}, meta interface{}, resource
 			}
 		}
 	}
+
+	if len(add) > 0 {
+		_, err := gtClient.Tags().AttachTags(resourceCRN, add)
+		if err != nil {
+			return fmt.Errorf("Error updating database tags %v : %s", add, err)
+		}
+	}
+
 	return nil
 }
 
@@ -1538,4 +1552,23 @@ func flattenSSLCiphers(ciphers []datatypes.Network_LBaaS_SSLCipher) *schema.Set 
 		c[i] = *v.Name
 	}
 	return newStringSet(schema.HashString, c)
+}
+
+func resourceTagsCustomizeDiff(diff *schema.ResourceDiff) error {
+
+	if diff.Id() != "" && diff.HasChange("tags") {
+		o, n := diff.GetChange("tags")
+		oldSet := o.(*schema.Set)
+		newSet := n.(*schema.Set)
+		removeInt := oldSet.Difference(newSet).List()
+		addInt := newSet.Difference(oldSet).List()
+		if v := os.Getenv("IC_ENV_TAGS"); v != "" {
+			s := strings.Split(v, ",")
+			if len(removeInt) == len(s) && len(addInt) == 0 {
+				fmt.Println("Suppresing the TAG diff ")
+				return diff.Clear("tags")
+			}
+		}
+	}
+	return nil
 }

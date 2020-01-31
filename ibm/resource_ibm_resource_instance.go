@@ -2,6 +2,8 @@ package ibm
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"strconv"
 	"time"
 
@@ -9,6 +11,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/models"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -35,6 +38,12 @@ func resourceIBMResourceInstance() *schema.Resource {
 			Update: schema.DefaultTimeout(10 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
+
+		CustomizeDiff: customdiff.Sequence(
+			func(diff *schema.ResourceDiff, v interface{}) error {
+				return resourceTagsCustomizeDiff(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -81,6 +90,7 @@ func resourceIBMResourceInstance() *schema.Resource {
 			"tags": {
 				Type:     schema.TypeSet,
 				Optional: true,
+				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      resourceIBMVPCHash,
 			},
@@ -250,7 +260,8 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 			"Error waiting for create resource instance (%s) to be succeeded: %s", d.Id(), err)
 	}
 
-	if _, ok := d.GetOk("tags"); ok {
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk("tags"); ok || v != "" {
 		oldList, newList := d.GetChange("tags")
 		err = UpdateTagsUsingCRN(oldList, newList, meta, instance.Crn.String())
 		if err != nil {
@@ -378,9 +389,20 @@ func resourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{})
 		updateReq.Parameters = params
 	}
 
+	instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
+	if err != nil {
+		return fmt.Errorf("Error Getting resource instance: %s", err)
+	}
+
 	if d.HasChange("tags") {
 		tags := getServiceTags(d)
 		updateReq.Tags = tags
+		oldList, newList := d.GetChange(isVPCTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, instance.Crn.String())
+		if err != nil {
+			log.Printf(
+				"Error on update of resource vpc (%s) tags: %s", d.Id(), err)
+		}
 	}
 
 	_, err = rsConClient.ResourceServiceInstance().UpdateInstance(instanceID, updateReq)
