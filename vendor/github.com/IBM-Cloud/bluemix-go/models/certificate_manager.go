@@ -2,20 +2,20 @@ package models
 
 // CertificateInfo struct for cert-import & cert-reimport success response.
 type CertificateInfo struct {
-	ID           string                  `json:"_id"`
-	Name         string                  `json:"name"`
-	Description  string                  `json:"description"`
-	Domains      []string                `json:"domains"`
-	Status       string                  `json:"status"`
-	Issuer       string                  `json:"issuer"`
-	BeginsOn     int64                   `json:"begins_on"`
-	ExpiresOn    int64                   `json:"expires_on"`
-	Algorithm    string                  `json:"algorithm"`
-	KeyAlgorithm string                  `json:"key_algorithm"`
-	Imported     bool                    `json:"imported"`
-	HasPrevious  bool                    `json:"has_previous"`
-	LastModified string                  `json:"last_modified"`
-	IssuanceInfo CertificateIssuanceInfo `json:"issuance_info"`
+	ID           string                   `json:"_id"`
+	Name         string                   `json:"name"`
+	Description  string                   `json:"description"`
+	Domains      []string                 `json:"domains"`
+	RotateKeys   bool                     `json:"rotate_keys"`
+	Status       string                   `json:"status"`
+	Issuer       string                   `json:"issuer"`
+	BeginsOn     int64                    `json:"begins_on"`
+	ExpiresOn    int64                    `json:"expires_on"`
+	Algorithm    string                   `json:"algorithm"`
+	KeyAlgorithm string                   `json:"key_algorithm"`
+	Imported     bool                     `json:"imported"`
+	HasPrevious  bool                     `json:"has_previous"`
+	IssuanceInfo *CertificateIssuanceInfo `json:"issuance_info"`
 }
 
 //CertificateIssuanceInfo struct
@@ -24,6 +24,7 @@ type CertificateIssuanceInfo struct {
 	Code           string `json:"code"`
 	AdditionalInfo string `json:"additional_info"`
 	Auto           bool   `json:"auto"`
+	OrderedOn      int64  `json:"ordered_on"`
 }
 
 // CertificateImportData struct for holding user-provided certificates and keys for cert-import.
