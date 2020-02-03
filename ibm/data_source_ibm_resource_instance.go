@@ -6,7 +6,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/models"
 
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
+	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -107,11 +107,11 @@ func dataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
 		rsInstQuery.ResourceGroupID = rsGrpID.(string)
 	} else {
-		rsMangClient, err := meta.(ClientSession).ResourceManagementAPI()
+		rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
 		if err != nil {
 			return err
 		}
-		resourceGroupQuery := management.ResourceGroupQuery{
+		resourceGroupQuery := managementv2.ResourceGroupQuery{
 			Default: true,
 		}
 		grpList, err := rsMangClient.ResourceGroup().List(&resourceGroupQuery)

@@ -14,7 +14,7 @@ import (
 )
 
 func TestAccIBMResourceGroup_Basic(t *testing.T) {
-	var conf models.ResourceGroup
+	var conf models.ResourceGroupv2
 	resourceGroupName := fmt.Sprintf("terraform_%d", acctest.RandInt())
 	resourceGroupUpdateName := fmt.Sprintf("terraform_%d", acctest.RandInt())
 
@@ -50,7 +50,7 @@ func TestAccIBMResourceGroup_Basic(t *testing.T) {
 }
 
 func TestAccIBMResourceGroup_With_Tags(t *testing.T) {
-	var conf models.ResourceGroup
+	var conf models.ResourceGroupv2
 	resourceGroupName := fmt.Sprintf("terraform_%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
@@ -78,7 +78,7 @@ func TestAccIBMResourceGroup_With_Tags(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMResourceGroupExists(n string, obj *models.ResourceGroup) resource.TestCheckFunc {
+func testAccCheckIBMResourceGroupExists(n string, obj *models.ResourceGroupv2) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -86,7 +86,7 @@ func testAccCheckIBMResourceGroupExists(n string, obj *models.ResourceGroup) res
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceManagementAPI()
+		rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceManagementAPIv2()
 		if err != nil {
 			return err
 		}
@@ -103,7 +103,7 @@ func testAccCheckIBMResourceGroupExists(n string, obj *models.ResourceGroup) res
 }
 
 func testAccCheckIBMResourceGroupDestroy(s *terraform.State) error {
-	rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceManagementAPI()
+	rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceManagementAPIv2()
 	if err != nil {
 		return err
 	}

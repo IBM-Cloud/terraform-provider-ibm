@@ -203,7 +203,7 @@ func resourceIBMISIKEPolicyRead(d *schema.ResourceData, meta interface{}) error 
 	}
 	d.Set(ResourceName, ike.Name)
 	if ike.ResourceGroup != nil {
-		rsMangClient, err := meta.(ClientSession).ResourceManagementAPI()
+		rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
 		if err != nil {
 			return err
 		}
