@@ -65,13 +65,18 @@ func newDnsAPI(c *client.Client) Dns {
 }
 
 func (r *dns) ListDns(cisId string, zoneId string) ([]DnsRecord, error) {
-	dnsResults := DnsResults{}
-	rawURL := fmt.Sprintf("/v1/%s/zones/%s/dns_records", cisId, zoneId)
-	_, err := r.client.Get(rawURL, &dnsResults)
-	if err != nil {
-		return nil, err
+	var records []DnsRecord
+	rawURL := fmt.Sprintf("/v1/%s/zones/%s/dns_records?page=1", cisId, zoneId)
+	if _, err := r.client.GetPaginated(rawURL, NewDNSPaginatedResources(DnsRecord{}), func(resource interface{}) bool {
+		if dns, ok := resource.(DnsRecord); ok {
+			records = append(records, dns)
+			return true
+		}
+		return false
+	}); err != nil {
+		return nil, fmt.Errorf("failed to list paginated dns records: %s", err)
 	}
-	return dnsResults.DnsList, err
+	return records, nil
 }
 
 func (r *dns) GetDns(cisId string, zoneId string, dnsId string) (*DnsRecord, error) {

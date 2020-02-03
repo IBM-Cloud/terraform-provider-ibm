@@ -23,3 +23,11 @@ type Linkage struct {
 	ResourceID     string         `json:"resource_id"`
 	ResourceOrigin ResourceOrigin `json:"resource_origin"`
 }
+
+type ResourceGroupv2 struct {
+	ResourceGroup
+	CRN               string `json:"crn,omitempty"`
+	QuotaURL          string `json:"quota_url,omitempty"`
+	PaymentMethodsUrl string `json:"payment_methods_url,omitempty"`
+	TeamsURL          string `json:"teams_url,omitempty"`
+}
