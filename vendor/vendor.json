@@ -474,10 +474,10 @@
 			"revisionTime": "2019-12-11T04:38:12Z"
 		},
 		{
-			"checksumSHA1": "2Dmw/kpGh/arLKcoyRkxHsLAF90=",
+			"checksumSHA1": "Qs6abck7Ee2xnBxt5COlEaQ38Ig=",
 			"path": "github.com/IBM-Cloud/bluemix-go/models",
-			"revision": "92235ce9c5c640e9b4a99c309f86d9c71d1ea854",
-			"revisionTime": "2019-12-09T06:30:58Z"
+			"revision": "825d126550e49e42b61adb9ed73b0f6ee8cc8556",
+			"revisionTime": "2020-01-31T10:06:06Z"
 		},
 		{
 			"path": "github.com/IBM-Cloud/bluemix-go/models/certificate_manager.go",
