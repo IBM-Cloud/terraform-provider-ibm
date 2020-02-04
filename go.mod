@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/Bowery/prompt v0.0.0-20190916142128-fa8279994f75 // indirect
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20200131055858-778531c8c923
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20200131101958-825d126550e4
 	github.com/IBM-Cloud/power-go-client v0.0.0-00010101000000-000000000000
 	github.com/IBM/ibm-cos-sdk-go v1.2.0
 	github.com/IBM/keyprotect-go-client v0.3.2
@@ -16,7 +16,6 @@ require (
 	github.com/cloudfoundry/jibber_jabber v0.0.0-20151120183258-bcc4c8345a21 // indirect
 	github.com/dchest/safefile v0.0.0-20151022103144-855e8d98f185 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-openapi/analysis v0.0.0-20180825180245-b006789cd277 // indirect
 	github.com/go-openapi/errors v0.0.0-20180827163446-87bb65328877 // indirect
 	github.com/go-openapi/jsonpointer v0.0.0-20180825180259-52eb3d4b47c6 // indirect
@@ -28,11 +27,11 @@ require (
 	github.com/go-openapi/swag v0.0.0-20180825180336-0dc164b7900e // indirect
 	github.com/go-openapi/validate v0.0.0-20180825180342-e0648ff40507 // indirect
 	github.com/go-test/deep v1.0.4 // indirect
-	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf // indirect
 	github.com/hashicorp/go-uuid v1.0.1
 	github.com/hashicorp/go-version v1.2.0
-	github.com/hashicorp/terraform-plugin-sdk v1.0.0
+	github.com/hashicorp/terraform v0.12.20
+	github.com/hashicorp/terraform-plugin-sdk v1.6.0
 	github.com/hashicorp/tf-sdk-migrator v1.0.0 // indirect
 	github.com/hokaccha/go-prettyjson v0.0.0-20170213120834-e6b9231a2b1c // indirect
 	github.com/kardianos/govendor v1.0.9 // indirect
@@ -51,7 +50,7 @@ require (
 	github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22
 	github.com/stretchr/testify v1.4.0 // indirect
 	github.ibm.com/Bluemix/riaas-go-client v0.0.0-20191018070922-afd27ac04d4f
-	golang.org/x/tools v0.0.0-20200128002243-345141a36859 // indirect
+	golang.org/x/tools v0.0.0-20200204005449-35ac94b00d9e // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce // indirect
 )
