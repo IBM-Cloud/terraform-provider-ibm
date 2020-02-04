@@ -420,6 +420,8 @@ definitions:
         type: string}
       name: {description: The load balancer's user-defined name. Load balancer names must be unique. within the scope of a user account. Load balancer names are part of FQDN auto-assigned to the load balancer., example:  my-load-balancer,
         format: name, pattern: '^[A-Za-z][-A-Za-z0-9_]*$', type: string}
+      crn: {description: The CRN for this load balancer, example: 'crn:v1:bluemix:public:gt:us-south-1:a/123456::load-balancer:1e09281b-f177-46fb-baf1-bc152b2e391a',
+        format: crn, type: string}
       created_at:
         type: "string"
         format: "date-time"
