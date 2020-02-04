@@ -1,6 +1,7 @@
 package compute
 
 import (
+	"github.com/go-openapi/strfmt"
 	"github.ibm.com/Bluemix/riaas-go-client/riaas/client/compute"
 	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 
@@ -64,7 +65,7 @@ func (f *ImageClient) Get(id string) (*models.Image, error) {
 }
 
 // Create ...
-func (f *ImageClient) Create(href, name, operatingSystem string) (*models.Image, error) {
+func (f *ImageClient) Create(href, name, operatingSystem, resourcegroupID string) (*models.Image, error) {
 	var operatingSystemIdentity = models.OperatingSystemIdentity{
 		Name: &operatingSystem,
 	}
@@ -76,7 +77,11 @@ func (f *ImageClient) Create(href, name, operatingSystem string) (*models.Image,
 		Name:            name,
 		OperatingSystem: &operatingSystemIdentity,
 	}
-
+	if resourcegroupID != "" {
+		imageTemplate.ResourceGroup = &models.ResourceReference{
+			ID: strfmt.UUID(resourcegroupID),
+		}
+	}
 	params := compute.NewPostImagesParamsWithTimeout(f.session.Timeout).WithBody(&imageTemplate)
 	params.Version = "2019-11-22"
 	params.Generation = f.session.Generation
