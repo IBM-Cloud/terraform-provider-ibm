@@ -33,6 +33,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/catalog"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
+	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
 	"github.com/IBM-Cloud/bluemix-go/api/schematics"
 	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM-Cloud/bluemix-go/authentication"
@@ -143,6 +144,7 @@ type ClientSession interface {
 	MccpAPI() (mccpv2.MccpServiceAPI, error)
 	ResourceCatalogAPI() (catalog.ResourceCatalogAPI, error)
 	ResourceManagementAPI() (management.ResourceManagementAPI, error)
+	ResourceManagementAPIv2() (managementv2.ResourceManagementAPIv2, error)
 	ResourceControllerAPI() (controller.ResourceControllerAPI, error)
 	SoftLayerSession() *slsession.Session
 	IBMPISession() (*ibmpisession.IBMPISession, error)
@@ -214,6 +216,9 @@ type clientSession struct {
 
 	resourceManagementConfigErr  error
 	resourceManagementServiceAPI management.ResourceManagementAPI
+
+	resourceManagementConfigErrv2  error
+	resourceManagementServiceAPIv2 managementv2.ResourceManagementAPIv2
 
 	resourceCatalogConfigErr  error
 	resourceCatalogServiceAPI catalog.ResourceCatalogAPI
@@ -328,6 +333,11 @@ func (sess clientSession) ResourceManagementAPI() (management.ResourceManagement
 	return sess.resourceManagementServiceAPI, sess.resourceManagementConfigErr
 }
 
+// ResourceManagementAPIv2 ...
+func (sess clientSession) ResourceManagementAPIv2() (managementv2.ResourceManagementAPIv2, error) {
+	return sess.resourceManagementServiceAPIv2, sess.resourceManagementConfigErrv2
+}
+
 // ResourceControllerAPI ...
 func (sess clientSession) ResourceControllerAPI() (controller.ResourceControllerAPI, error) {
 	return sess.resourceControllerServiceAPI, sess.resourceControllerConfigErr
@@ -384,6 +394,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.icdConfigErr = errEmptyBluemixCredentials
 		session.resourceCatalogConfigErr = errEmptyBluemixCredentials
 		session.resourceManagementConfigErr = errEmptyBluemixCredentials
+		session.resourceManagementConfigErrv2 = errEmptyBluemixCredentials
 		session.resourceControllerConfigErr = errEmptyBluemixCredentials
 		session.isConfigErr = errEmptyBluemixCredentials
 		session.powerConfigErr = errEmptyBluemixCredentials
@@ -539,6 +550,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.resourceManagementConfigErr = fmt.Errorf("Error occured while configuring Resource Management service: %q", err)
 	}
 	session.resourceManagementServiceAPI = resourceManagementAPI
+
+	resourceManagementAPIv2, err := managementv2.New(sess.BluemixSession)
+	if err != nil {
+		session.resourceManagementConfigErrv2 = fmt.Errorf("Error occured while configuring Resource Management service: %q", err)
+	}
+	session.resourceManagementServiceAPIv2 = resourceManagementAPIv2
 
 	resourceControllerAPI, err := controller.New(sess.BluemixSession)
 	if err != nil {

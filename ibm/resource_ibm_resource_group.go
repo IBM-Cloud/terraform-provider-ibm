@@ -2,8 +2,9 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
+	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -55,7 +56,7 @@ func resourceIBMResourceGroup() *schema.Resource {
 }
 
 func resourceIBMResourceGroupCreate(d *schema.ResourceData, meta interface{}) error {
-	rMgtClient, err := meta.(ClientSession).ResourceManagementAPI()
+	rMgtClient, err := meta.(ClientSession).ResourceManagementAPIv2()
 	if err != nil {
 		return err
 	}
@@ -68,9 +69,11 @@ func resourceIBMResourceGroupCreate(d *schema.ResourceData, meta interface{}) er
 
 	accountID := userDetails.userAccount
 
-	resourceGroupCreate := models.ResourceGroup{
-		Name:      name,
-		AccountID: accountID,
+	resourceGroupCreate := models.ResourceGroupv2{
+		ResourceGroup: models.ResourceGroup{
+			Name:      name,
+			AccountID: accountID,
+		},
 	}
 
 	resourceGroup, err := rMgtClient.ResourceGroup().Create(resourceGroupCreate)
@@ -84,7 +87,7 @@ func resourceIBMResourceGroupCreate(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceIBMResourceGroupRead(d *schema.ResourceData, meta interface{}) error {
-	rMgtClient, err := meta.(ClientSession).ResourceManagementAPI()
+	rMgtClient, err := meta.(ClientSession).ResourceManagementAPIv2()
 	if err != nil {
 		return err
 	}
@@ -103,14 +106,14 @@ func resourceIBMResourceGroupRead(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceIBMResourceGroupUpdate(d *schema.ResourceData, meta interface{}) error {
-	rMgtClient, err := meta.(ClientSession).ResourceManagementAPI()
+	rMgtClient, err := meta.(ClientSession).ResourceManagementAPIv2()
 	if err != nil {
 		return err
 	}
 
 	resourceGroupID := d.Id()
 
-	updateReq := management.ResourceGroupUpdateRequest{}
+	updateReq := managementv2.ResourceGroupUpdateRequest{}
 	hasChange := false
 	if d.HasChange("name") {
 		updateReq.Name = d.Get("name").(string)
@@ -128,15 +131,25 @@ func resourceIBMResourceGroupUpdate(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceIBMResourceGroupDelete(d *schema.ResourceData, meta interface{}) error {
-	// We don't have any API to delete resource group
 
+	rMgtClient, err := meta.(ClientSession).ResourceManagementAPIv2()
+	if err != nil {
+		return err
+	}
+
+	resourceGroupID := d.Id()
+
+	err = rMgtClient.ResourceGroup().Delete(resourceGroupID)
+	if err != nil {
+		log.Fatal(err)
+	}
 	d.SetId("")
 
 	return nil
 }
 
 func resourceIBMResourceGroupExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	rMgtClient, err := meta.(ClientSession).ResourceManagementAPI()
+	rMgtClient, err := meta.(ClientSession).ResourceManagementAPIv2()
 	if err != nil {
 		return false, err
 	}

@@ -203,7 +203,7 @@ func resourceIBMISIPSecPolicyRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set(ResourceName, ipSec.Name)
 	d.Set(ResourceCRN, ipSec.Crn)
 	if ipSec.ResourceGroup != nil {
-		rsMangClient, err := meta.(ClientSession).ResourceManagementAPI()
+		rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
 		if err != nil {
 			return err
 		}

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
+	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -140,11 +140,11 @@ func getClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v1.Cluste
 		resourceGroup = sess.Config.ResourceGroup
 
 		if resourceGroup == "" {
-			rsMangClient, err := meta.(ClientSession).ResourceManagementAPI()
+			rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
 			if err != nil {
 				return v1.ClusterTargetHeader{}, err
 			}
-			resourceGroupQuery := management.ResourceGroupQuery{
+			resourceGroupQuery := managementv2.ResourceGroupQuery{
 				Default:   true,
 				AccountID: accountID,
 			}

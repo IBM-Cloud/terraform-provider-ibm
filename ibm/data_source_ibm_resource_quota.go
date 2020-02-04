@@ -56,7 +56,7 @@ func dataSourceIBMResourceQuota() *schema.Resource {
 }
 
 func dataSourceIBMResourceQuotaRead(d *schema.ResourceData, meta interface{}) error {
-	rsManagementAPI, err := meta.(ClientSession).ResourceManagementAPI()
+	rsManagementAPI, err := meta.(ClientSession).ResourceManagementAPIv2()
 	if err != nil {
 		return err
 	}

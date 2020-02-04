@@ -3,7 +3,7 @@ package ibm
 import (
 	"fmt"
 
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
+	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -31,7 +31,7 @@ func dataSourceIBMResourceGroup() *schema.Resource {
 }
 
 func dataSourceIBMResourceGroupRead(d *schema.ResourceData, meta interface{}) error {
-	rsManagementAPI, err := meta.(ClientSession).ResourceManagementAPI()
+	rsManagementAPI, err := meta.(ClientSession).ResourceManagementAPIv2()
 	if err != nil {
 		return err
 	}
@@ -46,9 +46,9 @@ func dataSourceIBMResourceGroupRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 	accountID := userDetails.userAccount
-	var grp []models.ResourceGroup
+	var grp []models.ResourceGroupv2
 	if defaultGrp {
-		resourceGroupQuery := management.ResourceGroupQuery{
+		resourceGroupQuery := managementv2.ResourceGroupQuery{
 			Default:   true,
 			AccountID: accountID,
 		}
@@ -61,7 +61,7 @@ func dataSourceIBMResourceGroupRead(d *schema.ResourceData, meta interface{}) er
 		d.SetId(grp[0].ID)
 
 	} else if name != "" {
-		resourceGroupQuery := &management.ResourceGroupQuery{
+		resourceGroupQuery := &managementv2.ResourceGroupQuery{
 			AccountID: accountID,
 		}
 		grp, err := rsGroup.FindByName(resourceGroupQuery, name)
