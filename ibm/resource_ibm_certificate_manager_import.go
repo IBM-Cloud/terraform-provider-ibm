@@ -133,7 +133,7 @@ func resourceIBMCertificateManagerGet(d *schema.ResourceData, meta interface{}) 
 	d.Set("certificate_manager_instance_id", cminstanceid[0]+"::")
 	d.Set("name", certificatedata.Name)
 	d.Set("description", certificatedata.Description)
-	if certificatedata.Data != (models.Data{}) {
+	if certificatedata.Data != nil {
 		data := map[string]interface{}{
 			"content": certificatedata.Data.Content,
 		}
