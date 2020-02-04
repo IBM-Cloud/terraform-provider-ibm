@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_resource_group
 
-Provides a resource group resource. This allows resource groups to be created, and updated. Resource group cannot be deleted by a user. When user perform `terraform destroy` it removes the terraform state information.
+Provides a resource group resource. This allows resource groups to be created, and updated and deleted.
 
 ## Example Usage
 

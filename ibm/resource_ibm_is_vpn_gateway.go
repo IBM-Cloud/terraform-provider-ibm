@@ -162,7 +162,7 @@ func resourceIBMISVPNGatewayRead(d *schema.ResourceData, meta interface{}) error
 	d.Set(ResourceName, VPNGateway.Name)
 	d.Set(ResourceCRN, VPNGateway.Crn)
 	d.Set(ResourceStatus, VPNGateway.Status)
-	rsMangClient, err := meta.(ClientSession).ResourceManagementAPI()
+	rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
 	if err != nil {
 		return err
 	}

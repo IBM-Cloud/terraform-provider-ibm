@@ -12,10 +12,10 @@
 			"revision": ""
 		},
 		{
-			"checksumSHA1": "aWZJvoIkqWeBHVbXMG6MLEweScQ=",
+			"checksumSHA1": "cKHLRcTeAloanWn4RzP4Ph9LM1k=",
 			"path": "github.com/IBM-Cloud/bluemix-go",
-			"revision": "92235ce9c5c640e9b4a99c309f86d9c71d1ea854",
-			"revisionTime": "2019-12-09T06:30:58Z"
+			"revision": "825d126550e49e42b61adb9ed73b0f6ee8cc8556",
+			"revisionTime": "2020-01-31T10:06:06Z"
 		},
 		{
 			"checksumSHA1": "sWarTa3lecAaW/8lQgE7c0R0B6o=",
@@ -118,6 +118,12 @@
 			"path": "github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management",
 			"revision": "ac9b271eaf42942cb8c2c2e68b8343466ae6b3cc",
 			"revisionTime": "2019-12-11T04:38:12Z"
+		},
+		{
+			"checksumSHA1": "uHpBkbP0uinGDSFs2YHIksR69uU=",
+			"path": "github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2",
+			"revision": "825d126550e49e42b61adb9ed73b0f6ee8cc8556",
+			"revisionTime": "2020-01-31T10:06:06Z"
 		},
 		{
 			"checksumSHA1": "YAcDYQKUljsBq0UJbkvemnS7JBs=",

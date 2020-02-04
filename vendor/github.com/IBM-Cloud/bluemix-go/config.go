@@ -42,6 +42,8 @@ const (
 	MccpService ServiceName = ServiceName("mccp")
 	//resourceManagementService
 	ResourceManagementService ServiceName = ServiceName("resource-management")
+	//resourceManagementService
+	ResourceManagementServicev2 ServiceName = ServiceName("resource-managementv2")
 	//resourceControllerService
 	ResourceControllerService ServiceName = ServiceName("resource-controller")
 	//resourceCatalogService

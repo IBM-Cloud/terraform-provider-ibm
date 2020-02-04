@@ -379,7 +379,7 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	d.Set(ResourceName, clusterFields.Name)
 	d.Set(ResourceCRN, clusterFields.CRN)
 	d.Set(ResourceStatus, clusterFields.State)
-	rsMangClient, err := meta.(ClientSession).ResourceManagementAPI()
+	rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
 	if err != nil {
 		return err
 	}

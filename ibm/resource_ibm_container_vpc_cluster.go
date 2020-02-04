@@ -9,7 +9,7 @@ import (
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
+	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform/helper/customdiff"
 	"github.com/hashicorp/terraform/helper/resource"
@@ -499,7 +499,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	d.Set(ResourceName, cls.Name)
 	d.Set(ResourceCRN, cls.CRN)
 	d.Set(ResourceStatus, cls.State)
-	rsMangClient, err := meta.(ClientSession).ResourceManagementAPI()
+	rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
 	if err != nil {
 		return err
 	}
@@ -624,11 +624,11 @@ func getVpcClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v2.Clu
 		resourceGroup = sess.Config.ResourceGroup
 
 		if resourceGroup == "" {
-			rsMangClient, err := meta.(ClientSession).ResourceManagementAPI()
+			rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
 			if err != nil {
 				return v2.ClusterTargetHeader{}, err
 			}
-			resourceGroupQuery := management.ResourceGroupQuery{
+			resourceGroupQuery := managementv2.ResourceGroupQuery{
 				Default:   true,
 				AccountID: accountID,
 			}

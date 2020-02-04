@@ -701,7 +701,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	d.Set(ResourceName, cls.Name)
 	d.Set(ResourceCRN, cls.CRN)
 	d.Set(ResourceStatus, cls.State)
-	rsMangClient, err := meta.(ClientSession).ResourceManagementAPI()
+	rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
 	if err != nil {
 		return err
 	}
