@@ -52,12 +52,12 @@ ibm_resource_instance provides the following [Timeouts](https://www.terraform.io
 The following arguments are supported:
 
 * `name` - (Required, string) A descriptive name used to identify the resource instance.
-* `service` - (Required, string) The name of the service offering. You can retrieve the value by running the `ibmcloud catalog service-marketplace` or `ibmcloud catalog search` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
+* `service` - (Required,Forces new resource, string) The name of the service offering. You can retrieve the value by running the `ibmcloud catalog service-marketplace` or `ibmcloud catalog search` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
 * `plan` - (Required, string) The name of the plan type supported by service. You can retrieve the value by running the `ibmcloud catalog service <servicename>` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
-* `location` - (Required, string) Target location or environment to create the resource instance.
-* `resource_group_id` - (Optional, string) The ID of the resource group where you want to create the service. You can retrieve the value from data source `ibm_resource_group`. If not provided creates the service in default resource group.
+* `location` - (Required,Forces new resource, string) Target location or environment to create the resource instance.
+* `resource_group_id` - (Optional,Forces new resource,string) The ID of the resource group where you want to create the service. You can retrieve the value from data source `ibm_resource_group`. If not provided creates the service in default resource group.
 * `tags` - (Optional, array of strings) Tags associated with the instance.
-* `parameters` - (Optional, map) Arbitrary parameters to create instance. The value must be a JSON object.
+* `parameters` - (Optional,Forces new resource,map) Arbitrary parameters to create instance. The value must be a JSON object.
 * `service_endpoints` - (Optional, string) Types of the service endpoints that can be set to a resource instance. Possible values are 'public', 'private', 'public-and-private'.
 
 ## Attribute Reference
