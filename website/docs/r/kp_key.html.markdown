@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_kp_key
 
-Provides a key Protect resource. This allows standard as well as root keys to be created, and deleted.
+Provides a key Protect resource. This allows standard as well as root keys to be created, and deleted. Configuration of an key protect key resource requires that the region parameter is set for the IBM provider in the provider.tf to be the same as the target key protect instance location/region. If not specified it will default to us-south. A terraform apply will fail if the key protect instance location is set differently.
 
 
 ## Example Usage
