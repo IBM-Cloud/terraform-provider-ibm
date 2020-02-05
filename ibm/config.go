@@ -472,8 +472,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.csv2ServiceAPI = v2clusterAPI
 
+	kpurl := fmt.Sprintf("https://%s.kms.cloud.ibm.com", c.Region)
 	options := kp.ClientConfig{
-		BaseURL:       kp.DefaultBaseURL,
+		BaseURL:       envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kpurl),
 		Authorization: sess.BluemixSession.Config.IAMAccessToken,
 		// InstanceID:    "42fET57nnadurKXzXAedFLOhGqETfIGYxOmQXkFgkJV9",
 		Verbose: kp.VerboseFailOnly,
@@ -731,4 +732,13 @@ func refreshToken(sess *bxsession.Session) error {
 	}
 	_, err = tokenRefresher.RefreshToken()
 	return err
+}
+
+func envFallBack(envs []string, defaultValue string) string {
+	for _, k := range envs {
+		if v := os.Getenv(k); v != "" {
+			return v
+		}
+	}
+	return defaultValue
 }
