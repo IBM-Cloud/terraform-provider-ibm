@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_kp_key
 
-Import the details of existing keyprotect keys as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax. Retreives a list of keys from the keyprotect instance.
+Import the details of existing keyprotect keys as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax. Retreives a list of keys from the keyprotect instance. Configuration of an key protect key datasource requires that the region parameter is set for the IBM provider in the provider.tf to be the same as the target key protect instance location/region. If not specified it will default to us-south. A terraform apply will fail if the key protect instance location is set differently.
 
 ## Example Usage
 
