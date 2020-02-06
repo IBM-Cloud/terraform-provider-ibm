@@ -129,7 +129,7 @@ func resourceIBMISInstance() *schema.Resource {
 
 			isInstanceProfile: {
 				Type:     schema.TypeString,
-				ForceNew: false,
+				ForceNew: true,
 				Required: true,
 			},
 
@@ -834,18 +834,12 @@ func resourceIBMisInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 		}
 	}
 
-	name := ""
-	profile := ""
 	if d.HasChange(isInstanceName) {
-		name = d.Get(isInstanceName).(string)
-	}
-	if d.HasChange(isInstanceProfile) {
-		profile = d.Get(isInstanceProfile).(string)
-	}
-
-	_, err = instanceC.Update(d.Id(), name, profile)
-	if err != nil {
-		return err
+		name := d.Get(isInstanceName).(string)
+		_, err = instanceC.Update(d.Id(), name, "")
+		if err != nil {
+			return err
+		}
 	}
 	if d.HasChange(isInstanceTags) {
 		oldList, newList := d.GetChange(isInstanceTags)
