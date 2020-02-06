@@ -72,7 +72,7 @@ The following arguments are supported:
 * `name` - (Optional, string) The instance name.
 * `vpc` - (Required, Forces new resource, string) The vpc id. 
 * `zone` - (Required, Forces new resource, string) Name of the zone. 
-* `profile` - (Required, string) The profile name. 
+* `profile` - (Required, Forces new resource, string) The profile name. 
 * `image` - (Required, string) ID of the image.
 * `boot_volume` - (Optional, list) A block describing the boot volume of this instance.  
 `boot_volume` block have the following structure:
