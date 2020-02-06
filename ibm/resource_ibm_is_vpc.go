@@ -59,7 +59,8 @@ func resourceIBMISVPC() *schema.Resource {
 				Optional:         true,
 				Default:          "auto",
 				DiffSuppressFunc: applyOnce,
-				ValidateFunc:     validateAllowedStringValue([]string{"auto", "manual"}),
+				//ValidateFunc:     validateAllowedStringValue([]string{"auto", "manual"}),
+				ValidateFunc: InvokeValidator("ibm_is_vpc", isVPCAddressPrefixManagement),
 			},
 
 			isVPCDefaultNetworkACL: {
@@ -142,6 +143,15 @@ func resourceIBMISVPC() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISVPCValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	address_prefix_management := "auto, manual"
+	validateSchema = append(validateSchema, ValidateSchema{Identifier: isVPCAddressPrefixManagement, ValidateFunctionIdentifier: ValidateAllowedStringValue, Type: TypeList, AllowedValues: address_prefix_management})
+	ibmISVPCResourceValidator := ResourceValidator{ResourceName: "ibm_is_vpc", Schema: validateSchema}
+	return &ibmISVPCResourceValidator
 }
 
 func resourceIBMISVPCCreate(d *schema.ResourceData, meta interface{}) error {
