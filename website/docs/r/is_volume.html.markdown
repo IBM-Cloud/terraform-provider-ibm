@@ -13,15 +13,25 @@ Provides a volume resource. This allows volume to be created, updated, and cance
 
 ## Example Usage
 
-In the following example, you can create a volume:
+In the following example, you can create a `10iops-tier` volume:
 
 ```hcl
 resource "ibm_is_volume" "testacc_volume" {
   name     = "test_volume"
   profile  = "10iops-tier"
   zone     = "us-south-1"
-  iops     = 10000
-  capacity = 100
+}
+
+```
+In the following example, you can create a `custom` volume:
+
+```hcl
+resource "ibm_is_volume" "testacc_volume" {
+  name     = "test_volume"
+  profile  = "custom"
+  zone     = "us-south-1"
+  iops     = 1000
+  capacity = 200
 }
 
 ```
@@ -41,7 +51,7 @@ The following arguments are supported:
 * `name` - (Required, string) The user-defined name for this volume.
 * `profile` - (Required, Forces new resource, string) The profile to use for this volume.
 * `zone` - (Required, Forces new resource, string) The location of the volume.
-* `iops` - (Optional, Forces new resource, int) The bandwidth for the volume.
+* `iops` - (Optional, Forces new resource, int) The bandwidth for the volume. This is required only for the `custom` profile volume.
 * `capacity` - (Optional, Forces new resource, int) The capacity of the volume in gigabytes. This defaults to `100`.
 * `encryption_key` - (Optional, Forces new resource, string) The key to use for encrypting this volume.
 * `resource_group` - (Optional, Forces new resource, string) The resource group ID for this volume.
