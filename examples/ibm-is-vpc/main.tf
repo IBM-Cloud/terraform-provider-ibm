@@ -202,3 +202,48 @@ resource "ibm_is_security_group_rule" "sg2_app_tcp_rule" {
     port_max = 80
   }
 }
+
+resource "ibm_is_volume" "vol1" {
+  name    = "vol1"
+  profile = "10iops-tier"
+  zone    = "${var.zone1}"
+}
+
+resource "ibm_is_volume" "vol2" {
+  name     = "vol2"
+  profile  = "custom"
+  zone     = "${var.zone1}"
+  iops     = 1000
+  capacity = 200
+}
+
+
+resource "ibm_is_network_acl" "isExampleACL" {
+  name = "is-example-acl"
+  rules {
+    name        = "outbound"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "0.0.0.0/0"
+    direction   = "outbound"
+    tcp {
+      port_max        = 65535
+      port_min        = 1
+      source_port_max = 60000
+      source_port_min = 22
+    }
+  }
+  rules {
+    name        = "inbound"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "0.0.0.0/0"
+    direction   = "inbound"
+    tcp {
+      port_max        = 65535
+      port_min        = 1
+      source_port_max = 60000
+      source_port_min = 22
+    }
+  }
+}
