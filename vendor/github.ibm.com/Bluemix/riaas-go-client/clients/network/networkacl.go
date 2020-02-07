@@ -121,7 +121,7 @@ func (f *NetworkAclClient) ListRules(aclID, start string) ([]*models.NetworkACLR
 
 // AddRule ...
 func (f *NetworkAclClient) AddRule(aclID, name, source, destination, direction, action, protocol string,
-	icmpType, icmpCode, portMin, portMax int64,
+	icmpType, icmpCode, portMin, portMax, sourcePortMin, sourcePortMax int64,
 	before string) (*models.NetworkACLRule, error) {
 
 	rule := network.PostNetworkAclsNetworkACLIDRulesBody{
@@ -148,12 +148,23 @@ func (f *NetworkAclClient) AddRule(aclID, name, source, destination, direction, 
 			rule.Type = &icmpType
 		}
 	} else if protocol == ProtocolTCP || protocol == ProtocolUDP {
-		if portMax >= 0 {
-			rule.PortMax = portMax
+		if f.session.Generation == 1 {
+			if portMax >= 0 {
+				rule.PortMax = portMax
+			}
+			if portMin > 0 {
+				rule.PortMin = portMin
+			}
+		} else {
+			if portMax >= 0 {
+				rule.DestinationPortMax = portMax
+			}
+			if portMin > 0 {
+				rule.DestinationPortMin = portMin
+			}
 		}
-		if portMin > 0 {
-			rule.PortMin = portMin
-		}
+		rule.SourcePortMax = sourcePortMax
+		rule.SourcePortMin = sourcePortMin
 	} else {
 		return nil, errors.New("Unknown protocol " + protocol)
 	}
