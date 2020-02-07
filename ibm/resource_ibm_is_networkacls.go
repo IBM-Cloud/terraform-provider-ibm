@@ -1,6 +1,7 @@
 package ibm
 
 import (
+	"bytes"
 	"container/list"
 	"encoding/json"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/go-openapi/strfmt"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
@@ -16,25 +18,27 @@ import (
 )
 
 const (
-	isNetworkACLName            = "name"
-	isNetworkACLRules           = "rules"
-	isNetworkACLSubnets         = "subnets"
-	isNetworkACLRuleID          = "id"
-	isNetworkACLRuleName        = "name"
-	isNetworkACLRuleAction      = "action"
-	isNetworkACLRuleIPVersion   = "ip_version"
-	isNetworkACLRuleSource      = "source"
-	isNetworkACLRuleDestination = "destination"
-	isNetworkACLRuleDirection   = "direction"
-	isNetworkACLRuleProtocol    = "protocol"
-	isNetworkACLRuleICMP        = "icmp"
-	isNetworkACLRuleICMPCode    = "code"
-	isNetworkACLRuleICMPType    = "type"
-	isNetworkACLRuleTCP         = "tcp"
-	isNetworkACLRuleUDP         = "udp"
-	isNetworkACLRulePortMax     = "port_max"
-	isNetworkACLRulePortMin     = "port_min"
-	isNetworkACLVPC             = "vpc"
+	isNetworkACLName              = "name"
+	isNetworkACLRules             = "rules"
+	isNetworkACLSubnets           = "subnets"
+	isNetworkACLRuleID            = "id"
+	isNetworkACLRuleName          = "name"
+	isNetworkACLRuleAction        = "action"
+	isNetworkACLRuleIPVersion     = "ip_version"
+	isNetworkACLRuleSource        = "source"
+	isNetworkACLRuleDestination   = "destination"
+	isNetworkACLRuleDirection     = "direction"
+	isNetworkACLRuleProtocol      = "protocol"
+	isNetworkACLRuleICMP          = "icmp"
+	isNetworkACLRuleICMPCode      = "code"
+	isNetworkACLRuleICMPType      = "type"
+	isNetworkACLRuleTCP           = "tcp"
+	isNetworkACLRuleUDP           = "udp"
+	isNetworkACLRulePortMax       = "port_max"
+	isNetworkACLRulePortMin       = "port_min"
+	isNetworkACLRuleSourcePortMax = "source_port_max"
+	isNetworkACLRuleSourcePortMin = "source_port_min"
+	isNetworkACLVPC               = "vpc"
 )
 
 func resourceIBMISNetworkACL() *schema.Resource {
@@ -80,9 +84,10 @@ func resourceIBMISNetworkACL() *schema.Resource {
 				Description: "The resource group name in which resource is provisioned",
 			},
 			isNetworkACLRules: {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
+				Set:      resourceIBMISNetworkACLHash,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isNetworkACLRuleID: {
@@ -153,10 +158,22 @@ func resourceIBMISNetworkACL() *schema.Resource {
 									isNetworkACLRulePortMax: {
 										Type:     schema.TypeInt,
 										Optional: true,
+										Default:  65535,
 									},
 									isNetworkACLRulePortMin: {
 										Type:     schema.TypeInt,
 										Optional: true,
+										Default:  1,
+									},
+									isNetworkACLRuleSourcePortMax: {
+										Type:     schema.TypeInt,
+										Optional: true,
+										Default:  65535,
+									},
+									isNetworkACLRuleSourcePortMin: {
+										Type:     schema.TypeInt,
+										Optional: true,
+										Default:  1,
 									},
 								},
 							},
@@ -172,10 +189,22 @@ func resourceIBMISNetworkACL() *schema.Resource {
 									isNetworkACLRulePortMax: {
 										Type:     schema.TypeInt,
 										Optional: true,
+										Default:  65535,
 									},
 									isNetworkACLRulePortMin: {
 										Type:     schema.TypeInt,
 										Optional: true,
+										Default:  1,
+									},
+									isNetworkACLRuleSourcePortMax: {
+										Type:     schema.TypeInt,
+										Optional: true,
+										Default:  65535,
+									},
+									isNetworkACLRuleSourcePortMin: {
+										Type:     schema.TypeInt,
+										Optional: true,
+										Default:  1,
 									},
 								},
 							},
@@ -211,7 +240,7 @@ func resourceIBMISNetworkACLCreate(d *schema.ResourceData, meta interface{}) err
 	}
 
 	//validate each rule before attempting to create the ACL
-	rules := d.Get(isNetworkACLRules).([]interface{})
+	rules := d.Get(isNetworkACLRules).(*schema.Set).List()
 	err = validateInlineRules(rules)
 	if err != nil {
 		return err
@@ -297,8 +326,15 @@ func resourceIBMISNetworkACLRead(d *schema.ResourceData, meta interface{}) error
 			rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
 			tcp := make([]map[string]int, 1, 1)
 			tcp[0] = map[string]int{
-				isNetworkACLRulePortMax: checkNetworkACLNil(&rulex.PortMax),
-				isNetworkACLRulePortMin: checkNetworkACLNil(&rulex.PortMin),
+				isNetworkACLRuleSourcePortMax: checkNetworkACLNil(&rulex.SourcePortMax),
+				isNetworkACLRuleSourcePortMin: checkNetworkACLNil(&rulex.SourcePortMin),
+			}
+			if sess.Generation == 2 {
+				tcp[0][isNetworkACLRulePortMax] = checkNetworkACLNil(&rulex.DestinationPortMax)
+				tcp[0][isNetworkACLRulePortMin] = checkNetworkACLNil(&rulex.DestinationPortMin)
+			} else {
+				tcp[0][isNetworkACLRulePortMax] = checkNetworkACLNil(&rulex.PortMax)
+				tcp[0][isNetworkACLRulePortMin] = checkNetworkACLNil(&rulex.PortMin)
 			}
 			rule[isNetworkACLRuleTCP] = tcp
 		} else if rulex.Protocol == "udp" {
@@ -306,8 +342,15 @@ func resourceIBMISNetworkACLRead(d *schema.ResourceData, meta interface{}) error
 			rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
 			udp := make([]map[string]int, 1, 1)
 			udp[0] = map[string]int{
-				isNetworkACLRulePortMax: checkNetworkACLNil(&rulex.PortMax),
-				isNetworkACLRulePortMin: checkNetworkACLNil(&rulex.PortMin),
+				isNetworkACLRuleSourcePortMax: checkNetworkACLNil(&rulex.SourcePortMax),
+				isNetworkACLRuleSourcePortMin: checkNetworkACLNil(&rulex.SourcePortMin),
+			}
+			if sess.Generation == 2 {
+				udp[0][isNetworkACLRulePortMax] = checkNetworkACLNil(&rulex.DestinationPortMax)
+				udp[0][isNetworkACLRulePortMin] = checkNetworkACLNil(&rulex.DestinationPortMin)
+			} else {
+				udp[0][isNetworkACLRulePortMax] = checkNetworkACLNil(&rulex.PortMax)
+				udp[0][isNetworkACLRulePortMin] = checkNetworkACLNil(&rulex.PortMin)
 			}
 			rule[isNetworkACLRuleUDP] = udp
 		}
@@ -493,16 +536,20 @@ func createInlineRules(nwaclC *network.NetworkAclClient, nwaclid string, rules [
 		icmpcode := -1
 		minport := -1
 		maxport := -1
+		sourceminport := -1
+		sourcemaxport := -1
 		protocol := "all"
 
 		if len(icmp) > 0 {
 			protocol = "icmp"
-			icmpval := icmp[0].(map[string]interface{})
-			if val, ok := icmpval[isNetworkACLRuleICMPType]; ok {
-				icmptype = val.(int)
-			}
-			if val, ok := icmpval[isNetworkACLRuleICMPCode]; ok {
-				icmpcode = val.(int)
+			if icmp[0] != nil {
+				icmpval := icmp[0].(map[string]interface{})
+				if val, ok := icmpval[isNetworkACLRuleICMPType]; ok {
+					icmptype = val.(int)
+				}
+				if val, ok := icmpval[isNetworkACLRuleICMPCode]; ok {
+					icmpcode = val.(int)
+				}
 			}
 		} else if len(tcp) > 0 {
 			protocol = "tcp"
@@ -513,6 +560,12 @@ func createInlineRules(nwaclC *network.NetworkAclClient, nwaclid string, rules [
 			if val, ok := tcpval[isNetworkACLRulePortMax]; ok {
 				maxport = val.(int)
 			}
+			if val, ok := tcpval[isNetworkACLRuleSourcePortMin]; ok {
+				sourceminport = val.(int)
+			}
+			if val, ok := tcpval[isNetworkACLRuleSourcePortMax]; ok {
+				sourcemaxport = val.(int)
+			}
 		} else if len(udp) > 0 {
 			protocol = "udp"
 			udpval := udp[0].(map[string]interface{})
@@ -522,10 +575,16 @@ func createInlineRules(nwaclC *network.NetworkAclClient, nwaclid string, rules [
 			if val, ok := udpval[isNetworkACLRulePortMax]; ok {
 				maxport = val.(int)
 			}
+			if val, ok := udpval[isNetworkACLRuleSourcePortMin]; ok {
+				sourceminport = val.(int)
+			}
+			if val, ok := udpval[isNetworkACLRuleSourcePortMax]; ok {
+				sourcemaxport = val.(int)
+			}
 		}
 
 		rule, err := nwaclC.AddRule(nwaclid, name, source, destination, direction, action, protocol,
-			int64(icmptype), int64(icmpcode), int64(minport), int64(maxport), before)
+			int64(icmptype), int64(icmpcode), int64(minport), int64(maxport), int64(sourceminport), int64(sourcemaxport), before)
 		if err != nil {
 			return err
 		}
@@ -533,4 +592,18 @@ func createInlineRules(nwaclC *network.NetworkAclClient, nwaclid string, rules [
 		before = rule.ID.String()
 	}
 	return nil
+}
+
+func resourceIBMISNetworkACLHash(v interface{}) int {
+	var buf bytes.Buffer
+	m := v.(map[string]interface{})
+	buf.WriteString(fmt.Sprintf("%s-",
+		m[isNetworkACLRuleName].(string)))
+	buf.WriteString(fmt.Sprintf("%s-", m[isNetworkACLRuleDestination].(string)))
+	buf.WriteString(fmt.Sprintf("%s-",
+		m[isNetworkACLRuleSource].(string)))
+	buf.WriteString(fmt.Sprintf("%s-", m[isNetworkACLRuleAction].(string)))
+	buf.WriteString(fmt.Sprintf("%s-", m[isNetworkACLRuleDirection].(string)))
+
+	return hashcode.String(buf.String())
 }
