@@ -8,7 +8,7 @@ resource "ibm_is_vpc_route" "route" {
   zone        = var.zone1
   destination = "192.168.4.0/24"
   next_hop    = "10.240.0.4"
-  depends_on = ["ibm_is_subnet.subnet1"]
+  depends_on  = ["ibm_is_subnet.subnet1"]
 }
 
 resource "ibm_is_subnet" "subnet1" {
@@ -44,7 +44,7 @@ resource "ibm_is_instance" "instance1" {
   profile = var.profile
 
   primary_network_interface {
-    subnet     = ibm_is_subnet.subnet1.id
+    subnet = ibm_is_subnet.subnet1.id
   }
 
   vpc       = ibm_is_vpc.vpc1.id
@@ -142,7 +142,7 @@ resource "ibm_is_instance" "instance2" {
   profile = var.profile
 
   primary_network_interface {
-    subnet     = ibm_is_subnet.subnet2.id
+    subnet = ibm_is_subnet.subnet2.id
   }
 
   vpc       = ibm_is_vpc.vpc2.id
@@ -192,3 +192,46 @@ resource "ibm_is_security_group_rule" "sg2_app_tcp_rule" {
   }
 }
 
+resource "ibm_is_volume" "vol1" {
+  name    = "vol1"
+  profile = "10iops-tier"
+  zone    = var.zone1
+}
+
+resource "ibm_is_volume" "vol2" {
+  name     = "vol2"
+  profile  = "custom"
+  zone     = var.zone1
+  iops     = 1000
+  capacity = 200
+}
+
+resource "ibm_is_network_acl" "isExampleACL" {
+  name = "is-example-acl"
+  rules {
+    name        = "outbound"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "0.0.0.0/0"
+    direction   = "outbound"
+    tcp {
+      port_max        = 65535
+      port_min        = 1
+      source_port_max = 60000
+      source_port_min = 22
+    }
+  }
+  rules {
+    name        = "inbound"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "0.0.0.0/0"
+    direction   = "inbound"
+    tcp {
+      port_max        = 65535
+      port_min        = 1
+      source_port_max = 60000
+      source_port_min = 22
+    }
+  }
+}
