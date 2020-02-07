@@ -1901,10 +1901,10 @@
 			"revisionTime": "2018-05-24T00:26:36Z"
 		},
 		{
-			"checksumSHA1": "/xOGZs3ecb0qLhhLsR7nPz940Kk=",
+			"checksumSHA1": "YzFuV7mxbTPAcMJ6U6nW6acaFJo=",
 			"path": "github.ibm.com/Bluemix/riaas-go-client",
-			"revision": "a1320c77b1edd40fe2401b6149a7f15b7b4b5402",
-			"revisionTime": "2020-01-29T12:05:37Z",
+			"revision": "44af28b491d11609c5708520ef64c69b25cbf11a",
+			"revisionTime": "2020-02-07T09:17:59Z",
 			"tree": true
 		},
 		{
