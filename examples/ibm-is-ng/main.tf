@@ -37,6 +37,45 @@ resource "ibm_is_volume" "vol1" {
   zone    = var.zone1
 }
 
+resource "ibm_is_volume" "vol2" {
+  name     = "vol2"
+  profile  = "custom"
+  zone     = var.zone1
+  iops     = 1000
+  capacity = 200
+}
+
+resource "ibm_is_network_acl" "isExampleACL" {
+  name = "is-example-acl"
+  vpc  = ibm_is_vpc.vpc1.id
+  rules {
+    name        = "outbound"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "0.0.0.0/0"
+    direction   = "outbound"
+    tcp {
+      port_max        = 65535
+      port_min        = 1
+      source_port_max = 60000
+      source_port_min = 22
+    }
+  }
+  rules {
+    name        = "inbound"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "0.0.0.0/0"
+    direction   = "inbound"
+    tcp {
+      port_max        = 65535
+      port_min        = 1
+      source_port_max = 60000
+      source_port_min = 22
+    }
+  }
+}
+
 resource "ibm_is_subnet" "subnet1" {
   name            = "subnet1"
   vpc             = ibm_is_vpc.vpc1.id
