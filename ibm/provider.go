@@ -364,7 +364,7 @@ func Validator() ValidatorDict {
 			},
 		}
 	})
-
+	//fmt.Println("in Validator: globalValidatorDict ", globalValidatorDict.ResourceValidatorDictionary["ibm_is_vpc"])
 	return globalValidatorDict
 }
 

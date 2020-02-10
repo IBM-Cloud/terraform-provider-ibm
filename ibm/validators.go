@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"log"
 	"net"
 	"regexp"
 	"strconv"
@@ -43,8 +44,11 @@ func validateServiceTags(v interface{}, k string) (ws []string, errors []error) 
 }
 
 func validateAllowedStringValue(validValues []string) schema.SchemaValidateFunc {
+	log.Printf("[DEBUG] validateAllowedStringValue here....")
 	return func(v interface{}, k string) (ws []string, errors []error) {
 		input := v.(string)
+		log.Printf("[DEBUG] validateAllowedStringValue begin: input is %#v",
+			input)
 		existed := false
 		for _, s := range validValues {
 			if s == input {
@@ -52,6 +56,8 @@ func validateAllowedStringValue(validValues []string) schema.SchemaValidateFunc 
 				break
 			}
 		}
+		log.Printf("[DEBUG] validateAllowedStringValue: input is %#v, validValues is %#v, existed is %#v",
+			input, validValues, existed)
 		if !existed {
 			errors = append(errors, fmt.Errorf(
 				"%q must contain a value from %#v, got %q",
@@ -1025,7 +1031,6 @@ var validatorDict = Validator()
 // This is the main validation function. This function will be used in all the provider code.
 func InvokeValidator(resourceName, identifier string) schema.SchemaValidateFunc {
 	// Loop through dictionary and identify the resource and then the parameter configuration.
-
 	var schemaToInvoke ValidateSchema
 	found := false
 	//resourceValidatorDictionary := prepareTestData()
@@ -1056,8 +1061,6 @@ func InvokeValidator(resourceName, identifier string) schema.SchemaValidateFunc 
 
 // the function is currently modified to invoke SchemaValidateFunc directly.
 // But in terraform, we will just return SchemaValidateFunc as shown below.. So terraform will invoke this func
-// func invokeValidatorInternal(schema Schema) validators.SchemaValidateFunc {
-//func invokeValidatorInternal(schema ValidateSchema) (s []string, es []error) {
 func invokeValidatorInternal(schema ValidateSchema) schema.SchemaValidateFunc {
 
 	funcIdentifier := schema.ValidateFunctionIdentifier
@@ -1074,6 +1077,8 @@ func invokeValidatorInternal(schema ValidateSchema) schema.SchemaValidateFunc {
 		return validation.IntAtMost(maxValue.(int))
 	case ValidateAllowedStringValue:
 		allowedValues := schema.GetValue(AllowedValues)
+		log.Printf("[DEBUG] invokeValidatorInternal: passing values %#v", allowedValues.([]string))
+		//fmt.Println("invokeValidatorInternal: passing values ", allowedValues.([]string))
 		return validateAllowedStringValue(allowedValues.([]string))
 	case StringLenBetween:
 		return validation.StringLenBetween(schema.MinValueLength, schema.MaxValueLength)
