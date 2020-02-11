@@ -16,6 +16,8 @@ _Users must read these docs carefully before updating the version via terraform_
 
 Note: The previous cluster setup of stand-alone worker nodes is supported, but deprecated. Clusters now have a feature called a worker pool, which is a collection of worker nodes with the same flavor, such as machine type, CPU, and memory. Use ibm_container_worker_pool and ibm_container_worker_pool_zone attachment resources to make changes to your cluster, such as adding zones, adding worker nodes, or updating worker nodes.
 
+Note: The Cluster doesnt support ALB's for kube_version-4.3.0_openshift.
+
 ## Example Usage
 
 In the following example, you can create a Kubernetes cluster with a default worker pool with one worker:
