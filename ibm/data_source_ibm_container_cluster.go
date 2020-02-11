@@ -206,6 +206,15 @@ func dataSourceIBMContainerCluster() *schema.Resource {
 					},
 				},
 			},
+			"ingress_hostname": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"ingress_secret": {
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
+			},
 			"org_guid": {
 				Description: "The bluemix organization guid this cluster belongs to",
 				Type:        schema.TypeString,
@@ -363,6 +372,8 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	d.Set("is_trusted", clusterFields.IsTrusted)
 	d.Set("worker_pools", flattenWorkerPools(workerPools))
 	d.Set("albs", filteredAlbs)
+	d.Set("ingress_hostname", clusterFields.IngressHostname)
+	d.Set("ingress_secret", clusterFields.IngressSecretName)
 	d.Set("resource_group_id", clusterFields.ResourceGroupID)
 	d.Set("public_service_endpoint", clusterFields.PublicServiceEndpointEnabled)
 	d.Set("private_service_endpoint", clusterFields.PrivateServiceEndpointEnabled)
