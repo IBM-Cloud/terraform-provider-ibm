@@ -39,6 +39,8 @@ The following attributes are exported:
 * `id` - The unique identifier of the cluster.
 * `worker_count` - The number of workers that are attached to the cluster.
 * `workers` - The IDs of the workers that are attached to the cluster.
+* `ingress_hostname` - The Ingress hostname.
+* `ingress_secret` - The Ingress secret.
 * `bounded_services` - The services that are bounded to the cluster.
 * `is_trusted` - Is trusted cluster feature enabled.
 * `vlans` - The VLAN'S that are attached to the cluster. Nested `vlans` blocks have the following structure:
