@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/go-openapi/strfmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
+	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
