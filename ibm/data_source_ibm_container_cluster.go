@@ -206,6 +206,15 @@ func dataSourceIBMContainerCluster() *schema.Resource {
 					},
 				},
 			},
+			"ingress_hostname": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"ingress_secret": {
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
+			},
 			"org_guid": {
 				Description: "The bluemix organization guid this cluster belongs to",
 				Type:        schema.TypeString,
@@ -370,6 +379,8 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	d.Set("private_service_endpoint_url", clusterFields.PrivateServiceEndpointURL)
 	d.Set("crn", clusterFields.CRN)
 	d.Set("server_url", clusterFields.ServerURL)
+	d.Set("ingress_hostname", clusterFields.IngressHostname)
+	d.Set("ingress_secret", clusterFields.IngressSecretName)
 
 	controller, err := getBaseController(meta)
 	if err != nil {
