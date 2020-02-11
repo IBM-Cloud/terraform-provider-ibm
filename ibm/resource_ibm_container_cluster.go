@@ -7,11 +7,12 @@ import (
 	"strings"
 	"time"
 
-	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
+	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
 
 const (
@@ -662,7 +663,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	albs, err := albsAPI.ListClusterALBs(clusterID, targetEnv)
-	if err != nil && !strings.Contains(err.Error(), "The specified cluster is a lite cluster.") {
+	if err != nil && !strings.Contains(err.Error(), "The specified cluster is a lite cluster.") && !strings.Contains(err.Error(), "This operation is not supported for your cluster's version.") {
 		return fmt.Errorf("Error retrieving alb's of the cluster %s: %s", clusterID, err)
 	}
 
