@@ -1,59 +1,54 @@
-data "ibm_pi_tenant" "ds_tenant" {
+resource "ibm_pi_key" "key" {
+  pi_cloud_instance_id = var.powerinstanceid
+  pi_key_name          = var.sshkeyname
+  pi_ssh_key           = var.sshkey
+}
+
+data "ibm_pi_key" "dskey" {
+  depends_on           = ["ibm_pi_key.key"]
+  pi_cloud_instance_id = var.powerinstanceid
+  pi_key_name          = var.sshkeyname
+}
+
+resource "ibm_pi_network" "power_networks" {
+  count                = 1
+  pi_network_name      = var.networkname
+  pi_cloud_instance_id = var.powerinstanceid
+  pi_network_type      = "pub-vlan"
+}
+
+data "ibm_pi_public_network" "dsnetwork" {
+  depends_on           = ["ibm_pi_network.power_networks"]
   pi_cloud_instance_id = var.powerinstanceid
 }
 
-data "ibm_pi_volume" "ds_volume" {
-  pi_volume_name       = "myvol"
-  pi_cloud_instance_id = var.powerinstanceid
-}
-
-data "ibm_pi_instance_volumes" "ds_volumes" {
-  pi_instance_name     = "mypi"
-  pi_cloud_instance_id = var.powerinstanceid
-}
-
-data "ibm_pi_key" "ds_instance" {
-  pi_key_name          = "mykey"
-  pi_cloud_instance_id = var.powerinstanceid
-}
-
-data "ibm_pi_instance" "ds_instance" {
-  pi_instance_name     = "mypi"
-  pi_cloud_instance_id = var.powerinstanceid
-}
-
-data "ibm_pi_images" "ds_images" {
-	pi_image_name        = "my_pi_images"  
-	pi_cloud_instance_id = var.powerinstanceid
-}
-
-resource "ibm_pi_volume" "testacc_volume"{
+resource "ibm_pi_volume" "volume"{
   pi_volume_size       = 20
-  pi_volume_name       = "test-volume22"
+  pi_volume_name       = var.volname
   pi_volume_type       = "ssd"
   pi_volume_shareable  = true
-  pi_cloud_instance_id = var.powerinstanceid    // Get ot by running cmd "ic resource service-instances --long"
+  pi_cloud_instance_id = var.powerinstanceid   // Get ot by running cmd "ic resource service-instances --long"
+}
+data "ibm_pi_volume" "dsvolume" {
+  depends_on           = ["ibm_pi_volume.volume"]
+  pi_cloud_instance_id = var.powerinstanceid
+  pi_volume_name      = var.volname
 }
 
-
-data "ibm_pi_image" "ds_image" {
-  pi_image_name        = "7200-03-03"
+data "ibm_pi_image" "powerimages" {
+  pi_image_name        = var.imagename
   pi_cloud_instance_id = var.powerinstanceid
 }
 
-
-/*resource "ibm_pi_image" "testacc_image" {
-  pi_image_name       = "7200-03-02"
-  pi_image_id         = data.ibm_pi_image.ds_image.id
-  pi_cloud_instance_id = var.powerinstanceid
-}*/
-
-resource "ibm_pi_key" "testacc_sshkey2" {
-  pi_key_name          =  "mykey22"
-  pi_ssh_key           =  var.sshkeyname
-  pi_cloud_instance_id =  var.powerinstanceid 
+resource "ibm_pi_instance" "test-instance" {
+    pi_memory             = "4"
+    pi_processors         = "2"
+    pi_instance_name      = var.instancename
+    pi_proc_type          = "shared"
+    pi_image_id           = "${data.ibm_pi_image.powerimages.id}"
+    pi_network_ids        = [data.ibm_pi_public_network.dsnetwork.id]
+    pi_key_pair_name      = ibm_pi_key.key.key_id
+    pi_sys_type           = "s922"
+    pi_cloud_instance_id  = var.powerinstanceid
+    pi_volume_ids         = ["${ibm_pi_volume.volume.volume_id}"]
 }
-
-
-
-
