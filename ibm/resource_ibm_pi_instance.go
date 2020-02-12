@@ -27,6 +27,7 @@ func resourceIBMPIInstance() *schema.Resource {
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
+			Update: schema.DefaultTimeout(60 * time.Minute),
 			Delete: schema.DefaultTimeout(60 * time.Minute),
 		},
 
@@ -37,42 +38,34 @@ func resourceIBMPIInstance() *schema.Resource {
 				Required:    true,
 				Description: "This is the Power Instance id that is assigned to the account",
 			},
-			helpers.PIInstanceDiskSize: {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
-			helpers.PIInstanceStatus: {
+			"status": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			helpers.PIInstanceMigratable: {
+			"migratable": {
 				Type:     schema.TypeBool,
-				Required: true,
+				Computed: true,
 			},
-			helpers.PIInstanceMinProc: {
+			"min_processors": {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
 			helpers.PIInstanceNetworkIds: {
-				Type:        schema.TypeSet,
-				Required:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Set:         schema.HashString,
-				Description: "Set of Networks that have been configured for the account",
-			},
-
-			helpers.PIInstancePublicNetwork: {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Public Network to be attached to the vm",
-				Default:     false,
+				Type:             schema.TypeSet,
+				Required:         true,
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				Set:              schema.HashString,
+				Description:      "Set of Networks that have been configured for the account",
+				DiffSuppressFunc: applyOnce,
 			},
 
 			helpers.PIInstanceVolumeIds: {
-				Type:     schema.TypeSet,
-				Required: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:             schema.TypeSet,
+				Optional:         true,
+				Computed:         true,
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				Set:              schema.HashString,
+				DiffSuppressFunc: applyOnce,
 			},
 
 			helpers.PIInstanceUserData: {
@@ -94,11 +87,11 @@ func resourceIBMPIInstance() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"networkid": {
+						"network_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"networkname": {
+						"network_name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -106,7 +99,7 @@ func resourceIBMPIInstance() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"externalip": {
+						"external_ip": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -118,22 +111,11 @@ func resourceIBMPIInstance() *schema.Resource {
 				},
 			},
 
-			"instance_volumes": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     &schema.Resource{},
-			},
-
-			helpers.PIInstanceHealthStatus: {
+			"health_status": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			helpers.PIInstanceId: {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
-			},
-			helpers.PIInstanceDate: {
+			"instance_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -170,15 +152,19 @@ func resourceIBMPIInstance() *schema.Resource {
 			helpers.PIInstanceReplicants: {
 				Type:     schema.TypeFloat,
 				Optional: true,
+				Default:  "1",
 			},
 			helpers.PIInstanceReplicationPolicy: {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"affinity", "anti-affinity", "none"}),
+				Default:      "none",
 			},
 			helpers.PIInstanceReplicationScheme: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"prefix", "suffix"}),
+				Default:      "suffix",
 			},
 			helpers.PIInstanceProgress: {
 				Type:        schema.TypeFloat,
@@ -202,18 +188,11 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	sshkey := d.Get(helpers.PIInstanceSSHKeyName).(string)
 	mem := d.Get(helpers.PIInstanceMemory).(float64)
 	procs := d.Get(helpers.PIInstanceProcessors).(float64)
-	migrateable := d.Get(helpers.PIInstanceMigratable).(bool)
 	systype := d.Get(helpers.PIInstanceSystemType).(string)
 	networks := expandStringList((d.Get(helpers.PIInstanceNetworkIds).(*schema.Set)).List())
 	volids := expandStringList((d.Get(helpers.PIInstanceVolumeIds).(*schema.Set)).List())
 	replicants := d.Get(helpers.PIInstanceReplicants).(float64)
-	if d.Get(helpers.PIInstanceReplicants) == "" {
-		replicants = 1
-	}
 	replicationpolicy := d.Get(helpers.PIInstanceReplicationPolicy).(string)
-	if d.Get(helpers.PIInstanceReplicationPolicy) == "" {
-		replicationpolicy = "none"
-	}
 
 	replicationNamingScheme := d.Get(helpers.PIInstanceReplicationScheme).(string)
 
@@ -234,9 +213,7 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 
 	//publicinterface := d.Get(helpers.PIInstancePublicNetwork).(bool)
 	body := &models.PVMInstanceCreate{
-
-		VolumeIds: volids, NetworkIds: networks, Processors: &procs, Memory: &mem, ServerName: ptrToString(name),
-		Migratable:              &migrateable,
+		NetworkIds: networks, Processors: &procs, Memory: &mem, ServerName: ptrToString(name),
 		SysType:                 systype,
 		KeyPairName:             sshkey,
 		ImageID:                 ptrToString(imageid),
@@ -245,6 +222,9 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		UserData:                user_data,
 		ReplicantNamingScheme:   ptrToString(replicationNamingScheme),
 		ReplicantAffinityPolicy: ptrToString(replicationpolicy),
+	}
+	if len(volids) > 0 {
+		body.VolumeIds = volids
 	}
 
 	client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
@@ -262,7 +242,7 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	log.Printf("Printing the instance info %+v", &pvm)
 
 	truepvmid := (*pvm)[0].PvmInstanceID
-	d.SetId(*truepvmid)
+	d.SetId(fmt.Sprintf("%s/%s", powerinstanceid, *truepvmid))
 	//d.Set("addresses",(*pvm)[0].Addresses)
 
 	log.Printf("Printing the instance id .. after the create ... %s", *truepvmid)
@@ -286,26 +266,42 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return err
+	}
+	powerinstanceid := parts[0]
 	powerC := st.NewIBMPIInstanceClient(sess, powerinstanceid)
-	powervmdata, err := powerC.Get(d.Id(), powerinstanceid)
+	powervmdata, err := powerC.Get(parts[1], powerinstanceid)
 
 	if err != nil {
 		return err
 	}
 
-	pvminstanceid := *powervmdata.PvmInstanceID
-
-	log.Printf("The Power pvm instance id is %s", pvminstanceid)
-
-	d.SetId(pvminstanceid)
-	d.Set("memory", powervmdata.Memory)
-	d.Set("processors", powervmdata.Processors)
-	d.Set(helpers.PIInstanceStatus, powervmdata.Status)
-	d.Set("proctype", powervmdata.ProcType)
+	d.Set(helpers.PIInstanceMemory, powervmdata.Memory)
+	d.Set(helpers.PIInstanceProcessors, powervmdata.Processors)
+	d.Set("status", powervmdata.Status)
+	d.Set(helpers.PIInstanceProcType, powervmdata.ProcType)
 	d.Set("migratable", powervmdata.Migratable)
-	d.Set(helpers.PIInstanceMinProc, powervmdata.Minproc)
+	d.Set("min_processors", powervmdata.Minproc)
 	d.Set(helpers.PIInstanceProgress, powervmdata.Progress)
+	d.Set(helpers.PICloudInstanceId, powerinstanceid)
+	d.Set("instance_id", powervmdata.PvmInstanceID)
+	d.Set(helpers.PIInstanceName, powervmdata.ServerName)
+	d.Set(helpers.PIInstanceImageName, powervmdata.ImageID)
+	var networks []string
+	networks = make([]string, 0)
+	if powervmdata.Networks != nil {
+		for _, n := range powervmdata.Networks {
+			if n != nil {
+				networks = append(networks, n.NetworkID)
+			}
+
+		}
+	}
+	d.Set(helpers.PIInstanceNetworkIds, newStringSet(schema.HashString, networks))
+	d.Set(helpers.PIInstanceVolumeIds, powervmdata.VolumeIds)
+	d.Set(helpers.PIInstanceSystemType, powervmdata.SysType)
 
 	if powervmdata.Addresses != nil {
 		pvmaddress := make([]map[string]interface{}, len(powervmdata.Addresses))
@@ -314,11 +310,11 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 
 			p := make(map[string]interface{})
 			p["ip"] = pvmip.IP
-			p["networkname"] = pvmip.NetworkName
-			p["networkid"] = pvmip.NetworkID
+			p["network_name"] = pvmip.NetworkName
+			p["network_id"] = pvmip.NetworkID
 			p["macaddress"] = pvmip.MacAddress
 			p["type"] = pvmip.Type
-			p["externalip"] = pvmip.ExternalIP
+			p["external_ip"] = pvmip.ExternalIP
 			pvmaddress[i] = p
 		}
 		d.Set("addresses", pvmaddress)
@@ -328,7 +324,7 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if powervmdata.Health != nil {
-		d.Set(helpers.PIInstanceHealthStatus, powervmdata.Health.Status)
+		d.Set("health_status", powervmdata.Health.Status)
 
 	}
 
@@ -339,34 +335,39 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	sess, _ := meta.(ClientSession).IBMPISession()
+	if d.HasChange(helpers.PIInstanceName) || d.HasChange(helpers.PIInstanceMemory) || d.HasChange(helpers.PIInstanceProcessors) || d.HasChange(helpers.PIInstanceProcType) {
+		name := d.Get(helpers.PIInstanceName).(string)
+		mem := d.Get(helpers.PIInstanceMemory).(float64)
+		procs := d.Get(helpers.PIInstanceProcessors).(float64)
+		processortype := d.Get(helpers.PIInstanceProcType).(string)
 
-	name := d.Get(helpers.PIInstanceName).(string)
-	mem := d.Get(helpers.PIInstanceMemory).(float64)
-	procs := d.Get(helpers.PIInstanceProcessors).(float64)
-	migrateable := d.Get(helpers.PIInstanceMigratable).(bool)
-	processortype := d.Get(helpers.PIInstanceProcType).(string)
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+		parts, err := idParts(d.Id())
+		if err != nil {
+			return err
+		}
+		powerinstanceid := parts[0]
 
-	client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
+		client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
 
-	body := &models.PVMInstanceUpdate{
-		Memory:     mem,
-		Migratable: &migrateable,
-		ProcType:   processortype,
-		Processors: procs,
-		ServerName: name,
-	}
+		body := &models.PVMInstanceUpdate{
+			Memory:     mem,
+			ProcType:   processortype,
+			Processors: procs,
+			ServerName: name,
+		}
 
-	resp, err := client.Update(d.Id(), powerinstanceid, &p_cloud_p_vm_instances.PcloudPvminstancesPutParams{Body: body})
-	if err != nil {
-		return err
-	}
+		resp, err := client.Update(parts[1], powerinstanceid, &p_cloud_p_vm_instances.PcloudPvminstancesPutParams{Body: body})
+		if err != nil {
+			return err
+		}
 
-	log.Printf("Getting the response %s", resp.StatusURL)
+		log.Printf("Getting the response %s", resp.StatusURL)
 
-	_, err = isWaitForPIInstanceAvailable(client, d.Id(), d.Timeout(schema.TimeoutCreate), powerinstanceid)
-	if err != nil {
-		return err
+		_, err = isWaitForPIInstanceAvailable(client, parts[1], d.Timeout(schema.TimeoutUpdate), powerinstanceid)
+		if err != nil {
+			return err
+		}
+
 	}
 
 	return resourceIBMPIInstanceRead(d, meta)
@@ -377,16 +378,20 @@ func resourceIBMPIInstanceDelete(d *schema.ResourceData, meta interface{}) error
 
 	log.Printf("Calling the Instance Delete method")
 	sess, _ := meta.(ClientSession).IBMPISession()
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return err
+	}
+	powerinstanceid := parts[0]
 	client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
 
-	log.Printf("Deleting the instance with name/id %s and cloud_instance_id %s", d.Id(), powerinstanceid)
-	err := client.Delete(d.Id(), powerinstanceid)
+	log.Printf("Deleting the instance with name/id %s and cloud_instance_id %s", parts[1], powerinstanceid)
+	err = client.Delete(parts[1], powerinstanceid)
 	if err != nil {
 		return err
 	}
 
-	_, err = isWaitForPIInstanceDeleted(client, d.Id(), d.Timeout(schema.TimeoutDelete), powerinstanceid)
+	_, err = isWaitForPIInstanceDeleted(client, parts[1], d.Timeout(schema.TimeoutDelete), powerinstanceid)
 	if err != nil {
 		return err
 	}
@@ -403,11 +408,14 @@ func resourceIBMPIInstanceExists(d *schema.ResourceData, meta interface{}) (bool
 	if err != nil {
 		return false, err
 	}
-	id := d.Id()
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return false, err
+	}
+	powerinstanceid := parts[0]
 	client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
 
-	instance, err := client.Get(d.Id(), powerinstanceid)
+	instance, err := client.Get(parts[1], powerinstanceid)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
 			if apiErr.StatusCode() == 404 {
@@ -418,7 +426,7 @@ func resourceIBMPIInstanceExists(d *schema.ResourceData, meta interface{}) (bool
 	}
 
 	truepvmid := *instance.PvmInstanceID
-	return truepvmid == id, nil
+	return truepvmid == parts[1], nil
 }
 
 func isWaitForPIInstanceDeleted(client *st.IBMPIInstanceClient, id string, timeout time.Duration, powerinstanceid string) (interface{}, error) {

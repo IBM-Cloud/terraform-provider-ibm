@@ -2,7 +2,6 @@ package ibm
 
 import (
 	"github.com/IBM-Cloud/power-go-client/helpers"
-	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform/helper/schema"
 
 	//"fmt"
@@ -30,10 +29,6 @@ func dataSourceIBMPIVolume() *schema.Resource {
 			},
 
 			// Computed Attributes
-			"volumeid": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"state": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -55,12 +50,12 @@ func dataSourceIBMPIVolume() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"creationdate": {
+			"creation_date": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 
-			"disktype": {
+			"disk_type": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -83,11 +78,9 @@ func dataSourceIBMPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	var clientgenU, _ = uuid.GenerateUUID()
-	d.SetId(clientgenU)
-	d.Set("volumeid", volumedata.VolumeID)
+	d.SetId(*volumedata.VolumeID)
 	d.Set("size", volumedata.Size)
-	d.Set("disktype", volumedata.DiskType)
+	d.Set("disk_type", volumedata.DiskType)
 	d.Set("bootable", volumedata.Bootable)
 	d.Set("state", volumedata.State)
 

@@ -29,12 +29,13 @@ The following arguments are supported:
 ## Attribute Reference
 
 The following attributes are exported:
-
-* `id` - The unique identifier for this volume.
-* `type` - The disk type for this volume.
-* `state` - The state of the volume.
-* `bootable` - If this volume is bootable or not.
-* `size` - The size of this volume.
-* `shareable` - If this volume is shareable or not.
-* `href` - The href of this volume.
-* `name` - The name of this volume.
+* `boot_volume_id` - The unique identifier of the boot volume.
+* `instance_volumes` - List of volumes attached to instance.
+  * `id` - The ID of this volume.
+  * `type` - The disk type for this volume.
+  * `state` - The state of the volume.
+  * `bootable` - If this volume is bootable or not.
+  * `size` - The size of this volume.
+  * `shareable` - If this volume is shareable or not.
+  * `href` - The href of this volume.
+  * `name` - The name of this volume.

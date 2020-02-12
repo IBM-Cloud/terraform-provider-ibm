@@ -28,8 +28,10 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `tenantid` - The unique identifier for this tenant.
-* `creationdate` - The date on which the tenant was created.
+* `id` - The unique identifier for this tenant.
+* `creation_date` - The date on which the tenant was created.
 * `enabled` - Indicates whether the tenant is enabled.
-* `tenantname` - The name of the tenant.
+* `tenant_name` - The name of the tenant.
 * `cloudinstances` - Lists the regions and instance IDs this tenant owns.
+  * `cloud_instance_id` - The unique identifier of the cloud instance.
+  * `region` - The region of the cloud instance.

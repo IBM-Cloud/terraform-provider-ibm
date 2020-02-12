@@ -35,8 +35,8 @@ func (f *IBMPIImageClient) Get(id, powerinstanceid string) (*models.Image, error
 
 func (f *IBMPIImageClient) GetAll(powerinstanceid string) (*models.Images, error) {
 
-	params := p_cloud_images.NewPcloudImagesGetallParams()
-	resp, err := f.session.Power.PCloudImages.PcloudImagesGetall(params, ibmpisession.NewAuth(f.session, powerinstanceid))
+	params := p_cloud_images.NewPcloudCloudinstancesImagesGetallParams().WithCloudInstanceID(powerinstanceid)
+	resp, err := f.session.Power.PCloudImages.PcloudCloudinstancesImagesGetall(params, ibmpisession.NewAuth(f.session, powerinstanceid))
 	if err != nil || resp.Payload == nil {
 		log.Printf("Failed to perform the operation... %v", err)
 		return nil, errors.ToError(err)
@@ -59,7 +59,7 @@ func (f *IBMPIImageClient) Create(name, imageid string, powerinstanceid string) 
 	params := p_cloud_images.NewPcloudCloudinstancesImagesPostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithBody(&body)
 	resp, err, _ := f.session.Power.PCloudImages.PcloudCloudinstancesImagesPost(params, ibmpisession.NewAuth(f.session, powerinstanceid))
 	if err.Payload.State == "queued" {
-		log.Printf("Post is successful %s", err.Payload.ImageID)
+		log.Printf("Post is successful %s", *err.Payload.ImageID)
 
 	}
 
@@ -69,4 +69,14 @@ func (f *IBMPIImageClient) Create(name, imageid string, powerinstanceid string) 
 
 	return err.Payload, nil
 
+}
+
+// Delete ...
+func (f *IBMPIImageClient) Delete(id string, powerinstanceid string) error {
+	params := p_cloud_images.NewPcloudCloudinstancesImagesDeleteParams().WithCloudInstanceID(powerinstanceid).WithImageID(id)
+	_, err := f.session.Power.PCloudImages.PcloudCloudinstancesImagesDelete(params, ibmpisession.NewAuth(f.session, powerinstanceid))
+	if err != nil {
+		return errors.ToError(err)
+	}
+	return nil
 }

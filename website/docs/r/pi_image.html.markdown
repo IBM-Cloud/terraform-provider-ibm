@@ -41,4 +41,13 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - The unique identifier of the image.
+* `id` - The unique identifier of the image.The id is composed of \<power_instance_id\>/\<image_id\>.
+* `image_id` - The unique identifier of the image.
+
+## Import
+
+ibm_pi_image can be imported using `power_instance_id` and `image_id`, eg
+
+```
+$ terraform import ibm_pi_image.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
+```

@@ -30,6 +30,6 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - The unique identifier for this instance.
-* `creationdate` - The creation date.
+* `id` - The unique identifier for the key.
+* `creation_date` - The creation date.
 * `sshkey` - The SSH RSA key.

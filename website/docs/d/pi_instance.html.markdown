@@ -31,11 +31,18 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - The unique identifier for this instance.
-* `addresses` - The addresses associated with this instance.  Nested `addresses` blocks have the following structure:
-  * `ip` - IP of the instance.
-  * `macaddress` - The macaddress of the instance.
-  * `networkid` - The networkID of the instance.
-  * `networkname` - The network name of the instance.
-  * `type` - The type of the network
-  * `externalip` - The externalIP address of the instance.
+* `memory` - The memory of the instance.
+* `processors` - The processors of the instance.
+* `status` - The status of the instance.
+* `proctype` - The proctype of the instance.
+* `volumes` - The list of the volumes attached to the instance.
+* `health_status` - The health status of the instance.
 * `state` - The state of the instance.
+* `addresses` - The addresses associated with this instance.  Nested `addresses` blocks have the following structure:
+	* `ip` - IP of the instance.
+  * `macaddress` - The macaddress of the instance.
+  * `network_id` - The networkID of the instance.
+  * `network_name` - The network name of the instance.
+  * `type` - The type of the network
+  * `external_ip` - The externalIP address of the instance.
+

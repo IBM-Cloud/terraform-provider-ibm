@@ -22,12 +22,14 @@ The following arguments are supported:
 
 * `pi_cloud_instance_id` - (Required, string) The service instance associated with the account
 
+
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `images` - List of all images in the IBM Power Virtual Server Cloud.
+* `image_info` - List of all images in the IBM Power Virtual Server Cloud.
   * `name` - The name for this image.
   * `id` - The unique identifier for this image
   * `state` - The state of the operating system.
   * `href` - The href  of this image.
+

@@ -35,3 +35,4 @@ The following attributes are exported:
 * `size` - The size of the image.
 * `architecture` - The architecture for this image.
 * `operatingsystem` - The operating system for this image.
+
