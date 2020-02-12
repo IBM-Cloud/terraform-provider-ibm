@@ -2,7 +2,9 @@ package ibm
 
 import (
 	"log"
+	"os"
 
+	"github.com/hashicorp/terraform/helper/customdiff"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/compute"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
@@ -14,6 +16,7 @@ const (
 	isKeyType          = "type"
 	isKeyFingerprint   = "fingerprint"
 	isKeyLength        = "length"
+	isKeyTags          = "tags"
 	isKeyResourceGroup = "resource_group"
 )
 
@@ -25,6 +28,11 @@ func resourceIBMISSSHKey() *schema.Resource {
 		Delete:   resourceIBMISSSHKeyDelete,
 		Exists:   resourceIBMISSSHKeyExists,
 		Importer: &schema.ResourceImporter{},
+		CustomizeDiff: customdiff.Sequence(
+			func(diff *schema.ResourceDiff, v interface{}) error {
+				return resourceTagsCustomizeDiff(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 			isKeyName: {
@@ -52,6 +60,13 @@ func resourceIBMISSSHKey() *schema.Resource {
 			isKeyLength: {
 				Type:     schema.TypeInt,
 				Computed: true,
+			},
+			isKeyTags: {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      resourceIBMVPCHash,
 			},
 
 			isKeyResourceGroup: {
@@ -112,6 +127,15 @@ func resourceIBMISSSHKeyCreate(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(key.ID.String())
 	log.Printf("[INFO] Key : %s", key.ID.String())
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isKeyTags); ok || v != "" {
+		oldList, newList := d.GetChange(isKeyTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, key.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on create of SSH Key vpc (%s) tags: %s", d.Id(), err)
+		}
+	}
 	return resourceIBMISSSHKeyRead(d, meta)
 }
 
@@ -132,6 +156,12 @@ func resourceIBMISSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(isKeyType, key.Type)
 	d.Set(isKeyFingerprint, key.Fingerprint)
 	d.Set(isKeyLength, key.Length)
+	tags, err := GetTagsUsingCRN(meta, key.Crn)
+	if err != nil {
+		log.Printf(
+			"Error on get of SSH Key vpc (%s) tags: %s", d.Id(), err)
+	}
+	d.Set(isKeyTags, tags)
 	d.Set(isKeyResourceGroup, key.ResourceGroup.ID)
 	controller, err := getBaseController(meta)
 	if err != nil {
@@ -157,13 +187,25 @@ func resourceIBMISSSHKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	keyC := compute.NewKeyClient(sess)
-
 	if d.HasChange(isKeyName) {
 		name := d.Get(isKeyName).(string)
 		_, err := keyC.Update(d.Id(), name)
 		if err != nil {
 			return err
 		}
+	}
+	if d.HasChange(isKeyTags) {
+		key, err := keyC.Get(d.Id())
+		if err != nil {
+			return err
+		}
+		oldList, newList := d.GetChange(isKeyTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, key.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on update of SSH Key vpc (%s) tags: %s", d.Id(), err)
+		}
+
 	}
 
 	return resourceIBMISSSHKeyRead(d, meta)
