@@ -23,14 +23,14 @@ data "ibm_pi_public_network" "ds_public_network" {
 
 The following arguments are supported:
 
-* `pi_network_name` - (Required, string) The name of the network.
+* `pi_network_name` - (Deprecated, string) The name of the network.
 * `pi_cloud_instance_id` - (Required, string) The service instance associated with the account
 
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `networkid` - The unique identifier for this network.
+* `id` - The unique identifier for this network.
 * `type` - The network type for this network.
 * `name` - The name of the network.
-* `vlanid` - The VLAN id for the network.
+* `vlan_id` - The VLAN id for the network.

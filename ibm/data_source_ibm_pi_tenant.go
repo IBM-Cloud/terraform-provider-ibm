@@ -1,9 +1,7 @@
 package ibm
 
 import (
-	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform/helper/schema"
-	"log"
 
 	//"fmt"
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -23,12 +21,7 @@ func dataSourceIBMPITenant() *schema.Resource {
 			},
 
 			// Computed Attributes
-
-			"tenantid": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"creationdate": {
+			"creation_date": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -38,34 +31,22 @@ func dataSourceIBMPITenant() *schema.Resource {
 				Computed: true,
 			},
 
-			"tenantname": {
+			"tenant_name": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"cloudinstances": {
+			"cloud_instances": {
 
 				Type:     schema.TypeSet,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"cloudinstanceid": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"name": {
+						"cloud_instance_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"region": {
 							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"href": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"initialize": {
-							Type:     schema.TypeBool,
 							Computed: true,
 						},
 						//"limits": {
@@ -97,17 +78,13 @@ func dataSourceIBMPITenantRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	var clientgenU, _ = uuid.GenerateUUID()
-	d.SetId(clientgenU)
-
-	log.Printf("The creation date is %s", tenantData.CreationDate.String())
-	d.Set("tenantid", tenantData.TenantID)
-	d.Set("creationdate", tenantData.CreationDate)
+	d.SetId(*tenantData.TenantID)
+	d.Set("creation_date", tenantData.CreationDate)
 	d.Set("enabled", tenantData.Enabled)
 
 	if tenantData.CloudInstances != nil {
 
-		d.Set("tenantname", tenantData.CloudInstances[0].Name)
+		d.Set("tenant_name", tenantData.CloudInstances[0].Name)
 	}
 
 	if tenantData.CloudInstances != nil {
@@ -115,11 +92,11 @@ func dataSourceIBMPITenantRead(d *schema.ResourceData, meta interface{}) error {
 		for i, cloudinstance := range tenantData.CloudInstances {
 			j := make(map[string]interface{})
 			j["region"] = cloudinstance.Region
-			j["cloudinstanceid"] = cloudinstance.CloudInstanceID
+			j["cloud_instance_id"] = cloudinstance.CloudInstanceID
 			tenants[i] = j
 		}
 
-		d.Set("cloudinstances", tenants)
+		d.Set("cloud_instances", tenants)
 	}
 
 	return nil

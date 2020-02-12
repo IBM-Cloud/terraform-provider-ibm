@@ -1,14 +1,14 @@
 package ibm
 
 import (
-	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
-	"github.com/hashicorp/go-uuid"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/helper/validation"
 	"log"
 	"net"
 	"strconv"
+
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/power-go-client/helpers"
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 )
 
 func dataSourceIBMPIInstanceIP() *schema.Resource {
@@ -35,24 +35,30 @@ func dataSourceIBMPIInstanceIP() *schema.Resource {
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
-
-			// Computed Attributes
-
-			"name": {
+			"ip": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 
-			"requestip": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
-			"status": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"ipoctet": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"macaddress": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"network_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"type": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"external_ip": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -79,30 +85,20 @@ func dataSourceIBMPIInstancesIPRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	pvminstanceid := *powervmdata.PvmInstanceID
-	d.SetId(pvminstanceid)
-	d.Set("memory", powervmdata.Memory)
-	d.Set("processors", powervmdata.Processors)
-	d.Set("status", powervmdata.Status)
-	d.Set("proctype", powervmdata.ProcType)
-	d.Set("volumeid", powervmdata.VolumeIds)
-
 	for i, _ := range powervmdata.Addresses {
 		if powervmdata.Addresses[i].NetworkName == powerinstancesubnet {
-			log.Printf("Found the  zone")
 			log.Printf("Printing the ip %s", powervmdata.Addresses[i].IP)
-			d.Set("requestip", powervmdata.Addresses[i].IP)
+			d.Set("ip", powervmdata.Addresses[i].IP)
+			d.Set("network_id", powervmdata.Addresses[i].NetworkID)
+			d.Set("macaddress", powervmdata.Addresses[i].MacAddress)
+			d.Set("external_ip", powervmdata.Addresses[i].ExternalIP)
+			d.Set("type", powervmdata.Addresses[i].Type)
 
 			IPObject := net.ParseIP(powervmdata.Addresses[i].IP).To4()
 
-			//log.Printf("Printing the value %s", IPObject.String())
-			//log.Printf("Printing %s", strconv.Itoa(int(IPObject[3])))
 			d.Set("ipoctet", strconv.Itoa(int(IPObject[3])))
 
-			//log.Printf("Printing the value %s",ipoctet)
 		}
-
-		log.Printf("Got the  subnet.. %s", powerinstancesubnet)
 
 	}
 
@@ -121,8 +117,6 @@ func checkValidSubnet(d *schema.ResourceData, meta interface{}) error {
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	powerinstancesubnet := d.Get(helpers.PINetworkName).(string)
 
-	log.Printf("The subnet name is %s", powerinstancesubnet)
-
 	networkC := instance.NewIBMPINetworkClient(sess, powerinstanceid)
 	networkdata, err := networkC.Get(powerinstancesubnet, powerinstanceid)
 
@@ -130,15 +124,7 @@ func checkValidSubnet(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	var clientgenU, _ = uuid.GenerateUUID()
-	d.SetId(clientgenU)
-	d.Set("networkid", networkdata.NetworkID)
-	d.Set("cidr", networkdata.Cidr)
-	d.Set("type", networkdata.Type)
-	d.Set("gateway", networkdata.Gateway)
-	d.Set("vlanid", networkdata.VlanID)
-	d.Set("pi_network_id", networkdata.NetworkID)
-	d.Set("pi_vlan_id", networkdata.VlanID)
+	d.SetId(*networkdata.NetworkID)
 
 	return nil
 }

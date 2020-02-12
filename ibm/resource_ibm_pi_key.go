@@ -2,13 +2,13 @@ package ibm
 
 import (
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
-	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform/helper/schema"
-	"log"
-	"time"
 )
 
 func resourceIBMPIKey() *schema.Resource {
@@ -26,13 +26,6 @@ func resourceIBMPIKey() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-
-			helpers.PIKeyId: {
-				Type:     schema.TypeString,
-				Computed: true,
-				ForceNew: true,
-				Optional: true,
-			},
 
 			helpers.PIKeyName: {
 				Type:     schema.TypeString,
@@ -52,6 +45,11 @@ func resourceIBMPIKey() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+
+			"key_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -68,21 +66,14 @@ func resourceIBMPIKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	client := st.NewIBMPIKeyClient(sess, powerinstanceid)
 
 	sshResponse, _, err := client.Create(name, sshkey, powerinstanceid)
-
-	if err != nil {
-		return err
-	}
-
-	log.Printf("Printing the sshkey %+v", &sshResponse)
-
-	var clientgenU, _ = uuid.GenerateUUID()
-	d.SetId(clientgenU)
-
 	if err != nil {
 		log.Printf("[DEBUG]  err %s", isErrorToString(err))
 		return err
 	}
 
+	log.Printf("Printing the sshkey %+v", &sshResponse)
+
+	d.SetId(fmt.Sprintf("%s/%s", powerinstanceid, name))
 	return resourceIBMPIKeyRead(d, meta)
 }
 
@@ -92,17 +83,24 @@ func resourceIBMPIKeyRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return err
+	}
+
+	powerinstanceid := parts[0]
 	sshkeyC := st.NewIBMPIKeyClient(sess, powerinstanceid)
-	sshkeydata, err := sshkeyC.Get(d.Get("pi_key_name").(string), powerinstanceid)
+	sshkeydata, err := sshkeyC.Get(parts[1], powerinstanceid)
 
 	if err != nil {
 		return err
 	}
 
-	d.Set("name", sshkeydata.Name)
-	d.Set("sshkey", sshkeydata.SSHKey)
-	d.Set("creationdate", sshkeydata.CreationDate)
+	d.Set(helpers.PIKeyName, sshkeydata.Name)
+	d.Set(helpers.PIKey, sshkeydata.SSHKey)
+	d.Set(helpers.PIKeyDate, sshkeydata.CreationDate)
+	d.Set("key_id", sshkeydata.Name)
+	d.Set(helpers.PICloudInstanceId, powerinstanceid)
 
 	return nil
 
@@ -112,7 +110,24 @@ func resourceIBMPIKeyUpdate(data *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceIBMPIKeyDelete(data *schema.ResourceData, meta interface{}) error {
+func resourceIBMPIKeyDelete(d *schema.ResourceData, meta interface{}) error {
+	sess, err := meta.(ClientSession).IBMPISession()
+	if err != nil {
+		return err
+	}
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return err
+	}
+
+	powerinstanceid := parts[0]
+	sshkeyC := st.NewIBMPIKeyClient(sess, powerinstanceid)
+	err = sshkeyC.Delete(parts[1], powerinstanceid)
+
+	if err != nil {
+		return err
+	}
+	d.SetId("")
 	return nil
 }
 
@@ -122,12 +137,15 @@ func resourceIBMPIKeyExists(d *schema.ResourceData, meta interface{}) (bool, err
 	if err != nil {
 		return false, err
 	}
-	//id := d.Id()
-	name := d.Get("name")
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return false, err
+	}
+	name := parts[1]
+	powerinstanceid := parts[0]
 	client := st.NewIBMPIKeyClient(sess, powerinstanceid)
 
-	key, err := client.Get(d.Get("pi_key_name").(string), powerinstanceid)
+	key, err := client.Get(parts[1], powerinstanceid)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
 			if apiErr.StatusCode() == 404 {
@@ -136,5 +154,5 @@ func resourceIBMPIKeyExists(d *schema.ResourceData, meta interface{}) (bool, err
 		}
 		return false, fmt.Errorf("Error communicating with the API: %s", err)
 	}
-	return key.Name == name, nil
+	return *key.Name == name, nil
 }
