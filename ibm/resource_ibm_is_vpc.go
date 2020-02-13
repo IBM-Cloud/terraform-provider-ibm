@@ -167,7 +167,7 @@ func resourceIBMISVPCCreate(d *schema.ResourceData, meta interface{}) error {
 	vpc, err := vpcC.Create(name, isVPCAddressPrefixManagement, isClassic, nwacl, rg)
 	if err != nil {
 		log.Printf("[DEBUG] VPC err %s", isErrorToString(err))
-		return err
+		return fmt.Errorf("Error while creating VPC %s: %v", name, err)
 	}
 
 	d.SetId(vpc.ID.String())
