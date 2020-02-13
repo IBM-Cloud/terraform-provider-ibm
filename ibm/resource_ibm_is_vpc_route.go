@@ -40,9 +40,10 @@ func resourceIBMISVpcRoute() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			isVPCRouteName: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: false,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     false,
+				ValidateFunc: validateISName,
 			},
 			isVPCRouteLocation: {
 				Type:     schema.TypeString,

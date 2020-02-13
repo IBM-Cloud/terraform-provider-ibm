@@ -110,9 +110,10 @@ func resourceIBMISInstance() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			isInstanceName: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: false,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     false,
+				ValidateFunc: validateISName,
 			},
 
 			isInstanceVPC: {
