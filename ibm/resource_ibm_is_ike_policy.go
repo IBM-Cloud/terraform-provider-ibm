@@ -35,8 +35,9 @@ func resourceIBMISIKEPolicy() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			isIKEName: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validateISName,
 			},
 
 			isIKEAuthenticationAlg: {

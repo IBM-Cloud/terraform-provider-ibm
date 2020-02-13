@@ -40,9 +40,10 @@ func resourceIBMISPublicGateway() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			isPublicGatewayName: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: false,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     false,
+				ValidateFunc: validateISName,
 			},
 
 			isPublicGatewayFloatingIP: {

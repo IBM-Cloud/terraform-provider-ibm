@@ -52,9 +52,10 @@ func resourceIBMISNetworkACL() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			isNetworkACLName: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: false,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     false,
+				ValidateFunc: validateISName,
 			},
 			isNetworkACLVPC: {
 				Type:     schema.TypeString,

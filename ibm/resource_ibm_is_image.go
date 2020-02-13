@@ -59,9 +59,10 @@ func resourceIBMISImage() *schema.Resource {
 			},
 
 			isImageName: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: false,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     false,
+				ValidateFunc: validateISName,
 			},
 
 			isImageTags: {

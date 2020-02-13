@@ -36,9 +36,10 @@ func resourceIBMISSSHKey() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			isKeyName: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: false,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     false,
+				ValidateFunc: validateISName,
 			},
 
 			isKeyPublicKey: {

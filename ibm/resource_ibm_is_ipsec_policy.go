@@ -34,8 +34,9 @@ func resourceIBMISIPSecPolicy() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			isIpSecName: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validateISName,
 			},
 
 			isIpSecAuthenticationAlg: {
