@@ -82,9 +82,10 @@ func resourceIBMISSubnet() *schema.Resource {
 			},
 
 			isSubnetName: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: false,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     false,
+				ValidateFunc: validateISName,
 			},
 
 			isSubnetNetworkACL: {

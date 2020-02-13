@@ -54,8 +54,9 @@ func resourceIBMISVolume() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			isVolumeName: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validateISName,
 			},
 
 			isVolumeProfileName: {

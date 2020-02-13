@@ -28,9 +28,10 @@ func resourceIBMISVpcAddressPrefix() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			isVPCAddressPrefixPrefixName: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: false,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     false,
+				ValidateFunc: validateISName,
 			},
 			isVPCAddressPrefixZoneName: {
 				Type:     schema.TypeString,
