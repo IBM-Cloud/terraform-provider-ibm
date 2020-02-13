@@ -1,6 +1,7 @@
 package ibm
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -124,7 +125,7 @@ func resourceIBMISSSHKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	key, err := keyC.Create(name, publickey, rg)
 	if err != nil {
 		log.Printf("[DEBUG] Key err %s", err)
-		return err
+		return fmt.Errorf("Error while creating key %s: %v", name, err)
 	}
 
 	d.SetId(key.ID.String())
