@@ -49,8 +49,9 @@ func resourceIBMISVPNGatewayConnection() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			isVPNGatewayConnectionName: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validateISName,
 			},
 
 			isVPNGatewayConnectionVPNGateway: {

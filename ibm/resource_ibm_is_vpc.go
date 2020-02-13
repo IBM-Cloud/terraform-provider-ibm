@@ -85,9 +85,10 @@ func resourceIBMISVPC() *schema.Resource {
 			},
 
 			isVPCName: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: false,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     false,
+				ValidateFunc: validateISName,
 			},
 
 			isVPCResourceGroup: {

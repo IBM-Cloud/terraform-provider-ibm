@@ -54,8 +54,9 @@ func resourceIBMISLBPool() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			isLBPoolName: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validateISName,
 			},
 
 			isLBID: {
