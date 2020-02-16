@@ -2,7 +2,6 @@ package ibm
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
@@ -140,7 +139,7 @@ func resourceIBMResourceGroupDelete(d *schema.ResourceData, meta interface{}) er
 
 	err = rMgtClient.ResourceGroup().Delete(resourceGroupID)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("Error Deleting resource group: %s", err)
 	}
 
 	d.SetId("")
