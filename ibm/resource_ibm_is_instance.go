@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/compute"
+	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/storage"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
 	computec "github.ibm.com/Bluemix/riaas-go-client/riaas/client/compute"
@@ -184,7 +185,6 @@ func resourceIBMISInstance() *schema.Resource {
 				MinItems: 1,
 				MaxItems: 1,
 				Required: true,
-				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -216,6 +216,7 @@ func resourceIBMISInstance() *schema.Resource {
 						isInstanceNicSubnet: {
 							Type:     schema.TypeString,
 							Required: true,
+							ForceNew: true,
 						},
 					},
 				},
@@ -224,7 +225,6 @@ func resourceIBMISInstance() *schema.Resource {
 			isInstanceNetworkInterfaces: {
 				Type:     schema.TypeList,
 				Optional: true,
-				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -250,6 +250,7 @@ func resourceIBMISInstance() *schema.Resource {
 						isInstanceNicSubnet: {
 							Type:     schema.TypeString,
 							Required: true,
+							ForceNew: true,
 						},
 					},
 				},
@@ -833,6 +834,120 @@ func resourceIBMisInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 			}
 
 		}
+	}
+
+	if d.HasChange("primary_network_interface.0.security_groups") && !d.IsNewResource() {
+		ovs, nvs := d.GetChange("primary_network_interface.0.security_groups")
+		ov := ovs.(*schema.Set)
+		nv := nvs.(*schema.Set)
+		remove := expandStringList(ov.Difference(nv).List())
+		add := expandStringList(nv.Difference(ov).List())
+		if len(add) > 0 {
+			sgC := network.NewSecurityGroupClient(sess)
+			networkID := d.Get("primary_network_interface.0.id").(string)
+			for i := range add {
+				_, err := sgC.AddNetworkInterface(add[i], networkID)
+				if err != nil {
+					return fmt.Errorf("Error while attaching security group %q for primary network interface of instance %s: %q", add[i], d.Id(), err)
+				}
+				_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d)
+				if err != nil {
+					return err
+				}
+			}
+
+		}
+		if len(remove) > 0 {
+			sgC := network.NewSecurityGroupClient(sess)
+			networkID := d.Get("primary_network_interface.0.id").(string)
+			for i := range remove {
+				err := sgC.DeleteNetworkInterface(remove[i], networkID)
+				if err != nil {
+					return fmt.Errorf("Error while removing security group %q for primary network interface of instance %s: %q", remove[i], d.Id(), err)
+				}
+				_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d)
+				if err != nil {
+					return err
+				}
+			}
+
+		}
+
+	}
+
+	if d.HasChange("primary_network_interface.0.name") && !d.IsNewResource() {
+		newName := d.Get("primary_network_interface.0.name").(string)
+		networkID := d.Get("primary_network_interface.0.id").(string)
+		_, err := instanceC.UpdateInterface(d.Id(), networkID, newName, 0)
+		if err != nil {
+			return fmt.Errorf("Error while updating name %s for primary network interface of instance %s: %q", newName, d.Id(), err)
+		}
+		_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d)
+		if err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange(isInstanceNetworkInterfaces) && !d.IsNewResource() {
+		nics := d.Get(isInstanceNetworkInterfaces).([]interface{})
+		for i, _ := range nics {
+			securitygrpKey := fmt.Sprintf("network_interfaces.%d.security_groups", i)
+			networkNameKey := fmt.Sprintf("network_interfaces.%d.name", i)
+			if d.HasChange(securitygrpKey) {
+				ovs, nvs := d.GetChange(securitygrpKey)
+				ov := ovs.(*schema.Set)
+				nv := nvs.(*schema.Set)
+				remove := expandStringList(ov.Difference(nv).List())
+				add := expandStringList(nv.Difference(ov).List())
+				if len(add) > 0 {
+					sgC := network.NewSecurityGroupClient(sess)
+					networkIDKey := fmt.Sprintf("network_interfaces.%d.id", i)
+					networkID := d.Get(networkIDKey).(string)
+					for i := range add {
+						_, err := sgC.AddNetworkInterface(add[i], networkID)
+						if err != nil {
+							return fmt.Errorf("Error while attaching security group %q for network interface %s of instance %s: %q", add[i], networkID, d.Id(), err)
+						}
+						_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d)
+						if err != nil {
+							return err
+						}
+					}
+
+				}
+				if len(remove) > 0 {
+					sgC := network.NewSecurityGroupClient(sess)
+					networkIDKey := fmt.Sprintf("network_interfaces.%d.id", i)
+					networkID := d.Get(networkIDKey).(string)
+					for i := range remove {
+						err := sgC.DeleteNetworkInterface(remove[i], networkID)
+						if err != nil {
+							return fmt.Errorf("Error while removing security group %q for network interface %s of instance %s: %q", remove[i], networkID, d.Id(), err)
+						}
+						_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d)
+						if err != nil {
+							return err
+						}
+					}
+				}
+
+			}
+
+			if d.HasChange(networkNameKey) {
+				newName := d.Get(networkNameKey).(string)
+				networkIDKey := fmt.Sprintf("network_interfaces.%d.id", i)
+				networkID := d.Get(networkIDKey).(string)
+				_, err := instanceC.UpdateInterface(d.Id(), networkID, newName, 0)
+				if err != nil {
+					return fmt.Errorf("Error while updating name %s for network interface %s of instance %s: %q", newName, networkID, d.Id(), err)
+				}
+				_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d)
+				if err != nil {
+					return err
+				}
+			}
+		}
+
 	}
 
 	if d.HasChange(isInstanceName) {
