@@ -30,6 +30,36 @@ resource "ibm_resource_key" "resourceKey" {
 }
 ```
 
+**Note** The current `ibm_resource_key` resource doesn't have support for service_id argument but the service_id can be passesd as one of the parameter.
+
+## Example Usage with serviceID 
+
+```hcl
+data "ibm_resource_instance" "resource_instance" {
+  name = "myobjectsotrage"
+}
+
+resource "ibm_iam_service_id" "serviceID" {
+  name        = "test"
+  description = "New ServiceID"
+}
+
+resource "ibm_resource_key" "resourceKey" {
+  name                 = "myobjectkey"
+  role                 = "Viewer"
+  resource_instance_id = data.ibm_resource_instance.resource_instance.id
+  parameters = {
+    "serviceid_crn" = ibm_iam_service_id.serviceID.crn
+  }
+
+  //User can increase timeouts
+  timeouts {
+    create = "15m"
+    delete = "15m"
+  }
+}
+```
+
 ## Timeouts
 
 ibm_resource_key provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
