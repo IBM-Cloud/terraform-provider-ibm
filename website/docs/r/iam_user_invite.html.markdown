@@ -229,6 +229,8 @@ Nested `resources` blocks have the following structure:
     * `space_guid` - (Required, string) ID of the cloud foundry space.
     * `space_roles` - (Required, list) The space roles assigned for the inviting user. The supported space roles are Manager, Developer, Auditor.
 
+**NOTE**: ibmcloud `Lite account` does not support classic infrastructure roles. For more info refer [whats available in lite account?](https://cloud.ibm.com/docs/account?topic=account-accounts#lite-account-features).
+
 ## Import
 
 Import functionality not supported for this resource.
