@@ -4863,7 +4863,7 @@ paths:
               title: FloatingIPTemplateBasic
               type: object
             resource_group:
-              description: The resource group for this network ACL
+              description: The resource group for this public gateway
               properties:
                 id: {description: The unique identifier for this resource group, example: 56969d60-43e9-465c-883c-b9f7363e78e8,
                   format: uuid, pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
