@@ -60,7 +60,7 @@ func (f *PublicGatewayClient) Get(id string) (*models.PublicGateway, error) {
 }
 
 /// Create ...
-func (f *PublicGatewayClient) Create(name, zoneName, vpcID, FloatingIPID, FloatingIPaddr string) (*models.PublicGateway, error) {
+func (f *PublicGatewayClient) Create(name, zoneName, vpcID, FloatingIPID, FloatingIPaddr, resourcegroupID string) (*models.PublicGateway, error) {
 
 	var body = network.PostPublicGatewaysBody{
 		Name: name,
@@ -88,6 +88,14 @@ func (f *PublicGatewayClient) Create(name, zoneName, vpcID, FloatingIPID, Floati
 		}
 		body.FloatingIP = &floatingip
 	}
+
+	if resourcegroupID != "" {
+		var resourcegroup = network.PostPublicGatewaysParamsBodyResourceGroup{
+			ID: strfmt.UUID(resourcegroupID),
+		}
+		body.ResourceGroup = &resourcegroup
+	}
+
 	params := network.NewPostPublicGatewaysParamsWithTimeout(f.session.Timeout).WithBody(body)
 	params.Version = "2019-10-08"
 	params.Generation = f.session.Generation

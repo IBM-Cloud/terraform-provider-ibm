@@ -19,7 +19,7 @@ resource "ibm_is_vpc" "testacc_vpc" {
 }
 
 resource "ibm_is_public_gateway" "testacc_gateway" {
-  name = "test_gateway"
+  name = "test-gateway"
   vpc  = ibm_is_vpc.testacc_vpc.id
   zone = "us-south-1"
 
@@ -45,6 +45,7 @@ The following arguments are supported:
 * `name` - (Required, string) The name of the gateway.
 * `vpc` - (Required, Forces new resource, string) The vpc id.
 * `zone` - (Required, Forces new resource, string) The gateway zone name.
+* `resource_group` - (Optional, Forces new resource, string) The resource group ID where the Public gateway is to be created.
 * `floating_ip` - (Optional, string) A nested block describing the floating IP of this gateway.
 Nested `floating_ip` blocks have the following structure:
   * `id` - (Optional, string) ID of the floating ip bound to the public gateway.
