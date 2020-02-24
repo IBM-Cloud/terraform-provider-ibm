@@ -22,6 +22,8 @@ const (
 	isPublicGatewayProvisioningDone = "available"
 	isPublicGatewayDeleting         = "deleting"
 	isPublicGatewayDeleted          = "done"
+
+	isPublicGatewayResourceGroup = "resource_group"
 )
 
 func resourceIBMISPublicGateway() *schema.Resource {
@@ -68,6 +70,13 @@ func resourceIBMISPublicGateway() *schema.Resource {
 
 			isPublicGatewayStatus: {
 				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			isPublicGatewayResourceGroup: {
+				Type:     schema.TypeString,
+				ForceNew: true,
+				Optional: true,
 				Computed: true,
 			},
 
@@ -139,8 +148,13 @@ func resourceIBMISPublicGatewayCreate(d *schema.ResourceData, meta interface{}) 
 		}
 	}
 
+	var rg string
+	if grp, ok := d.GetOk(isPublicGatewayResourceGroup); ok {
+		rg = grp.(string)
+	}
+
 	publicgwC := network.NewPublicGatewayClient(sess)
-	publicgw, err := publicgwC.Create(name, zone, vpc, floatingipID, floatingipadd)
+	publicgw, err := publicgwC.Create(name, zone, vpc, floatingipID, floatingipadd, rg)
 	if err != nil {
 		return err
 	}
@@ -217,6 +231,9 @@ func resourceIBMISPublicGatewayRead(d *schema.ResourceData, meta interface{}) er
 	d.Set(isPublicGatewayStatus, publicgw.Status)
 	d.Set(isPublicGatewayZone, publicgw.Zone.Name)
 	d.Set(isPublicGatewayVPC, publicgw.Vpc.ID.String())
+	if publicgw.ResourceGroup != nil {
+		d.Set(isPublicGatewayResourceGroup, publicgw.ResourceGroup.ID)
+	}
 
 	controller, err := getBaseController(meta)
 	if err != nil {

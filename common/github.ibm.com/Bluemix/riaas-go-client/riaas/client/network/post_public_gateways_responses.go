@@ -361,7 +361,7 @@ func (o *PostPublicGatewaysParamsBodyFloatingIP) UnmarshalBinary(b []byte) error
 
 /*PostPublicGatewaysParamsBodyResourceGroup ResourceGroupIdentity
 //
-// The resource group for this network ACL
+// The resource group for this public gateway
 swagger:model PostPublicGatewaysParamsBodyResourceGroup
 */
 type PostPublicGatewaysParamsBodyResourceGroup struct {

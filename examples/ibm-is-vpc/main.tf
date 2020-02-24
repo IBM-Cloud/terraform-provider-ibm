@@ -235,3 +235,9 @@ resource "ibm_is_network_acl" "isExampleACL" {
     }
   }
 }
+
+resource "ibm_is_public_gateway" "publicgateway1" {
+  name = "gateway1"
+  vpc  = ibm_is_vpc.testacc_vpc.id
+  zone = var.zone1
+}

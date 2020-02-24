@@ -384,7 +384,7 @@ func resourceIBMISNetworkACLUpdate(d *schema.ResourceData, meta interface{}) err
 	}
 	nwaclC := network.NewNetworkAclClient(sess)
 	nwaclid := d.Id()
-	rules := d.Get(isNetworkACLRules).([]interface{})
+	rules := d.Get(isNetworkACLRules).(*schema.Set).List()
 
 	if d.HasChange(isNetworkACLName) {
 		name := d.Get(isNetworkACLName).(string)
@@ -584,13 +584,11 @@ func createInlineRules(nwaclC *network.NetworkAclClient, nwaclid string, rules [
 			}
 		}
 
-		rule, err := nwaclC.AddRule(nwaclid, name, source, destination, direction, action, protocol,
+		_, err := nwaclC.AddRule(nwaclid, name, source, destination, direction, action, protocol,
 			int64(icmptype), int64(icmpcode), int64(minport), int64(maxport), int64(sourceminport), int64(sourcemaxport), before)
 		if err != nil {
 			return err
 		}
-
-		before = rule.ID.String()
 	}
 	return nil
 }
