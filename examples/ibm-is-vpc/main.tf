@@ -2,7 +2,7 @@ resource "ibm_is_vpc" "vpc1" {
   name = "vpc1"
 }
 
-resource "ibm_is_vpc_route" {
+resource "ibm_is_vpc_route" "route1" {
   name        = "route1"
   vpc         = "${ibm_is_vpc.vpc1.id}"
   zone        = "${var.zone1}"
@@ -47,7 +47,7 @@ resource "ibm_is_instance" "instance1" {
   image   = "${var.image}"
   profile = "${var.profile}"
 
-  primary_network_interface = {
+  primary_network_interface {
     port_speed = "1000"
     subnet     = "${ibm_is_subnet.subnet1.id}"
   }
@@ -151,7 +151,7 @@ resource "ibm_is_instance" "instance2" {
   image   = "${var.image}"
   profile = "${var.profile}"
 
-  primary_network_interface = {
+  primary_network_interface {
     port_speed = "1000"
     subnet     = "${ibm_is_subnet.subnet2.id}"
   }
@@ -217,15 +217,16 @@ resource "ibm_is_volume" "vol2" {
   capacity = 200
 }
 
-
 resource "ibm_is_network_acl" "isExampleACL" {
   name = "is-example-acl"
+
   rules {
     name        = "outbound"
     action      = "allow"
     source      = "0.0.0.0/0"
     destination = "0.0.0.0/0"
     direction   = "outbound"
+
     tcp {
       port_max        = 65535
       port_min        = 1
@@ -233,12 +234,14 @@ resource "ibm_is_network_acl" "isExampleACL" {
       source_port_min = 22
     }
   }
+
   rules {
     name        = "inbound"
     action      = "allow"
     source      = "0.0.0.0/0"
     destination = "0.0.0.0/0"
     direction   = "inbound"
+
     tcp {
       port_max        = 65535
       port_min        = 1
@@ -246,4 +249,10 @@ resource "ibm_is_network_acl" "isExampleACL" {
       source_port_min = 22
     }
   }
+}
+
+resource "ibm_is_public_gateway" "publicgateway1" {
+  name = "pg1"
+  vpc  = "${ibm_is_vpc.vpc1.id}"
+  zone = "${var.zone1}"
 }
