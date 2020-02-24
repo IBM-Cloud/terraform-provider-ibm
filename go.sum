@@ -37,8 +37,8 @@ github.com/IBM-Cloud/bluemix-go v0.0.0-20200131055858-778531c8c923 h1:ZVA8uE2ca3
 github.com/IBM-Cloud/bluemix-go v0.0.0-20200131055858-778531c8c923/go.mod h1:gPJbH1etcDj7qS/hBRiLuYW9CY0bRcostSKusa51xR0=
 github.com/IBM-Cloud/bluemix-go v0.0.0-20200131101958-825d126550e4 h1:SvzuJKIreVsYR7aYhj1LAmigp8CK/XgxCLVI+bB+nAM=
 github.com/IBM-Cloud/bluemix-go v0.0.0-20200131101958-825d126550e4/go.mod h1:gPJbH1etcDj7qS/hBRiLuYW9CY0bRcostSKusa51xR0=
-github.com/IBM-Cloud/bluemix-go v0.0.0-20200221095222-69e3682d6f5b h1:nqvojaTNFdlpNxI9UnKP1GAkcaLgLCx2E59c1UkYOck=
-github.com/IBM-Cloud/bluemix-go v0.0.0-20200221095222-69e3682d6f5b/go.mod h1:gPJbH1etcDj7qS/hBRiLuYW9CY0bRcostSKusa51xR0=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20200225052022-0d5220c9f2ba h1:w203mfjLYpOrXP9A+uVncqx/fTnErv+pL9DxhSwkM2U=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20200225052022-0d5220c9f2ba/go.mod h1:gPJbH1etcDj7qS/hBRiLuYW9CY0bRcostSKusa51xR0=
 github.com/IBM/ibm-cos-sdk-go v1.2.0 h1:oJG2eWmAhmz3XAkQLsmQweT7hmxoM3jKQkwLBZz6b5o=
 github.com/IBM/ibm-cos-sdk-go v1.2.0/go.mod h1:YLBAYobEA8bD27P7xpMwSQeNQu6W3DNBtBComXrRzRY=
 github.com/IBM/keyprotect-go-client v0.3.2 h1:JmGkHQEAJ9VWsKglc474Ahg/f0FZaRZ0X+3clDdTX6A=
@@ -539,6 +539,10 @@ golang.org/x/tools v0.0.0-20200128002243-345141a36859 h1:xIszjAtlVeHg9hhv6Zhntvw
 golang.org/x/tools v0.0.0-20200128002243-345141a36859/go.mod h1:TB2adYChydJhpapKDTa4BR/hXlZSLoq2Wpct/0txZ28=
 golang.org/x/tools v0.0.0-20200204005449-35ac94b00d9e h1:o1E/dn6ydYwYuZkF+6kaoS6ON5TokWgL24pxcgxd5MM=
 golang.org/x/tools v0.0.0-20200204005449-35ac94b00d9e/go.mod h1:TB2adYChydJhpapKDTa4BR/hXlZSLoq2Wpct/0txZ28=
+golang.org/x/tools v0.0.0-20200221224223-e1da425f72fd h1:hHkvGJK23seRCflePJnVa9IMv8fsuavSCWKd11kDQFs=
+golang.org/x/tools v0.0.0-20200221224223-e1da425f72fd/go.mod h1:TB2adYChydJhpapKDTa4BR/hXlZSLoq2Wpct/0txZ28=
+golang.org/x/tools v0.0.0-20200225022059-a0ec867d517c h1:cmkqWf0jTLsPn3dn28dkzCF+MoDvuZS7pTwHwGmkqiU=
+golang.org/x/tools v0.0.0-20200225022059-a0ec867d517c/go.mod h1:TB2adYChydJhpapKDTa4BR/hXlZSLoq2Wpct/0txZ28=
 golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 google.golang.org/api v0.4.0/go.mod h1:8k5glujaEP+g9n7WNsDg8QP6cUVNI86fCNMcbazEtwE=
