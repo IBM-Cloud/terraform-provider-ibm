@@ -5,10 +5,11 @@ import (
 	"log"
 	"path/filepath"
 
-	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
-	"github.com/IBM-Cloud/bluemix-go/helpers"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	homedir "github.com/mitchellh/go-homedir"
+
+	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Cloud/bluemix-go/helpers"
 )
 
 func dataSourceIBMContainerClusterConfig() *schema.Resource {
@@ -85,6 +86,27 @@ func dataSourceIBMContainerClusterConfig() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"admin_key": {
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
+			},
+			"admin_certificate": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"ca_certificate": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"host": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"token": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -109,7 +131,7 @@ func dataSourceIBMContainerClusterConfigRead(d *schema.ResourceData, meta interf
 	}
 	configDir, _ = filepath.Abs(configDir)
 
-	var configPath, calicoConfigPath string
+	var configPath string
 	if !download {
 		log.Println("Skipping download of the cluster config", "Going to check if it already exists")
 		expectedDir := v1.ComputeClusterConfigDir(configDir, name, admin)
@@ -117,6 +139,7 @@ func dataSourceIBMContainerClusterConfigRead(d *schema.ResourceData, meta interf
 		if !helpers.FileExists(configPath) {
 			return fmt.Errorf(`Couldn't  find the cluster config at expected path %s. Please set "download" to true to download the new config`, configPath)
 		}
+		d.Set("config_file_path", configPath)
 
 	} else {
 		targetEnv, err := getClusterTargetHeader(d, meta)
@@ -125,21 +148,33 @@ func dataSourceIBMContainerClusterConfigRead(d *schema.ResourceData, meta interf
 		}
 		if network {
 			// For the Network config we need to gather the certs so we must override the admin value
-			configPath, calicoConfigPath, err = csAPI.StoreConfig(name, configDir, admin || true, network, targetEnv)
+			calicoConfigFilePath, clusterKeyDetails, err := csAPI.StoreConfigDetail(name, configDir, admin || true, network, targetEnv)
 			if err != nil {
 				return fmt.Errorf("Error downloading the cluster config [%s]: %s", name, err)
 			}
+			d.Set("calico_config_file_path", calicoConfigFilePath)
+			d.Set("admin_key", clusterKeyDetails.AdminKey)
+			d.Set("admin_certificate", clusterKeyDetails.Admin)
+			d.Set("ca_certificate", clusterKeyDetails.ClusterCACertificate)
+			d.Set("host", clusterKeyDetails.Host)
+			d.Set("token", clusterKeyDetails.Token)
+			d.Set("config_file_path", clusterKeyDetails.FilePath)
+
 		} else {
-			configPath, err = csAPI.GetClusterConfig(name, configDir, admin, targetEnv)
+			clusterKeyDetails, err := csAPI.GetClusterConfigDetail(name, configDir, admin, targetEnv)
 			if err != nil {
 				return fmt.Errorf("Error downloading the cluster config [%s]: %s", name, err)
 			}
+			d.Set("admin_key", clusterKeyDetails.AdminKey)
+			d.Set("admin_certificate", clusterKeyDetails.Admin)
+			d.Set("ca_certificate", clusterKeyDetails.ClusterCACertificate)
+			d.Set("host", clusterKeyDetails.Host)
+			d.Set("token", clusterKeyDetails.Token)
+			d.Set("config_file_path", clusterKeyDetails.FilePath)
 		}
 	}
 
 	d.SetId(name)
 	d.Set("config_dir", configDir)
-	d.Set("config_file_path", configPath)
-	d.Set("calico_config_file_path", calicoConfigPath)
 	return nil
 }

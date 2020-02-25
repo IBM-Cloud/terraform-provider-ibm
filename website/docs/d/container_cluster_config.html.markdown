@@ -20,6 +20,84 @@ data "ibm_container_cluster_config" "cluster_foo" {
   config_dir      = "/home/foo_config"
 }
 ```
+## Example Usage for connecting to kubernetes provider for classic or vpc kubernetes cluster with admin certificates
+```hcl
+data "ibm_container_cluster_config" "cluster_foo" {
+  cluster_name_id = "FOO"
+  admin           = true
+}
+
+provider "kubernetes" {
+  load_config_file       = "false"
+  host                   = data.ibm_container_cluster_config.cluster_foo.host
+  client_certificate     = data.ibm_container_cluster_config.cluster_foo.admin_certificate
+  client_key             = data.ibm_container_cluster_config.cluster_foo.admin_key
+  cluster_ca_certificate = data.ibm_container_cluster_config.cluster_foo.ca_certificate
+}
+
+resource "kubernetes_namespace" "example" {
+  metadata {
+    name = "terraform-example-namespace"
+  }
+}
+```
+## Example Usage for connecting to kubernetes provider for classic or vpc kubernetes cluster with host and token
+```hcl
+data "ibm_container_cluster_config" "cluster_foo" {
+  cluster_name_id = "FOO"
+}
+
+provider "kubernetes" {
+  load_config_file       = "false"
+  host                   = data.ibm_container_cluster_config.cluster_foo.host
+  token                  = data.ibm_container_cluster_config.cluster_foo.token
+  cluster_ca_certificate = data.ibm_container_cluster_config.cluster_foo.ca_certificate
+}
+
+resource "kubernetes_namespace" "example" {
+  metadata {
+    name = "terraform-example-namespace"
+  }
+}
+```
+## Example Usage for connecting to kubernetes provider for classic openshift cluster with admin certificates
+```hcl
+data "ibm_container_cluster_config" "cluster_foo" {
+  cluster_name_id = "FOO"
+  admin           = true
+}
+
+provider "kubernetes" {
+  load_config_file       = "false"
+  host                   = data.ibm_container_cluster_config.cluster_foo.host
+  client_certificate     = data.ibm_container_cluster_config.cluster_foo.admin_certificate
+  client_key             = data.ibm_container_cluster_config.cluster_foo.admin_key
+}
+
+resource "kubernetes_namespace" "example" {
+  metadata {
+    name = "terraform-example-namespace"
+  }
+}
+```
+## Example Usage for connecting to kubernetes provider for classic openshift cluster with host and token
+```hcl
+data "ibm_container_cluster_config" "cluster_foo" {
+  cluster_name_id = "FOO"
+}
+
+provider "kubernetes" {
+  load_config_file       = "false"
+  host                   = data.ibm_container_cluster_config.cluster_foo.host
+  token                  = data.ibm_container_cluster_config.cluster_foo.token
+}
+
+resource "kubernetes_namespace" "example" {
+  metadata {
+    name = "terraform-example-namespace"
+  }
+}
+```
 
 ## Argument Reference
 
@@ -41,5 +119,10 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - The unique identifier of the cluster configuration.
+* `admin_key`- (Sensitive) The admin key of the cluster configuration.
+* `admin_certificate`- The admin certificate of the cluster configuration.
+* `ca_certificate`- The cluster ca certificate of the cluster configuration.
+* `host`- The Host of the cluster configuration.
+* `token`- The token of the cluster configuration.
 * `config_file_path` - The path to the cluster configuration file. This is typically the Kubernetes YAML configuration file.
 * `calico_config_file_path` - The path to the cluster calico configuration file.
