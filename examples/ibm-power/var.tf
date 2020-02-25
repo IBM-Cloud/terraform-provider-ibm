@@ -21,6 +21,7 @@ variable "volname" {
   default = "myvol"
   description = "Name of the volume"
 }
+
 variable "networkname" {
   default = "mypublicnw"
   description = "Name of the network"
@@ -29,4 +30,3 @@ variable "networkname" {
 variable "sshkey" {
   description = "Public ssh key"
 }
-

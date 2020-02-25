@@ -29,6 +29,7 @@ resource "ibm_pi_volume" "volume"{
   pi_volume_shareable  = true
   pi_cloud_instance_id = var.powerinstanceid   // Get ot by running cmd "ic resource service-instances --long"
 }
+
 data "ibm_pi_volume" "dsvolume" {
   depends_on           = [ibm_pi_volume.volume]
   pi_cloud_instance_id = var.powerinstanceid
