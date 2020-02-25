@@ -62,7 +62,21 @@ resource "ibm_container_cluster" "testacc_cluster" {
     type = "slack"
     url = "https://hooks.slack.com/services/yt7rebjhgh2r4rd44fjk"
   }]
+}
+```
 
+Create a Gateway Enabled Kubernetes cluster:
+
+```hcl
+resource "ibm_container_cluster" "testacc_cluster" {
+  name            = "testgate"
+  gateway_enabled = true 
+  datacenter      = "dal10"
+  machine_type    = "b3c.4x16"
+  hardware        = "shared"
+  private_vlan_id = "2709721"
+  private_service_endpoint = true
+  no_subnet = false
 }
 ```
 
@@ -100,7 +114,7 @@ The following arguments are supported:
 	* `version` - worker version. 
 * `default_pool_size` - (Optional,int) The number of workers created under the default worker pool which support Multi-AZ. 
 * `machine_type` - (Optional, Forces new resource, string) The machine type of the worker nodes. You can retrieve the value by running the `ibmcloud ks machine-types <data-center>` command in the IBM Cloud CLI.
-* `billing` - (Optional, Forces new resource, string) The billing type for the instance. Accepted values are `hourly` or `monthly`.
+* `billing` - (Deprecated, Optional, Forces new resource, string) The billing type for the instance. Accepted values are `hourly` or `monthly`.
 * `isolation` - (Removed, Forces new resource) Accepted values are `public` or `private`. Use `private` if you want to have available physical resources dedicated to you only or `public` to allow physical resources to be shared with other IBM customers. Use hardware instead.
 * `hardware` - (Optional, Forces new resource, string) The level of hardware isolation for your worker node. Use `dedicated` to have available physical resources dedicated to you only, or `shared` to allow physical resources to be shared with other IBM customers. For IBM Cloud Public accounts, it can be shared or dedicated. For IBM Cloud Dedicated accounts, dedicated is the only available option.
 * `public_vlan_id`- (Optional, Forces new resource, string) The public VLAN ID for the worker node. You can retrieve the value by running the ibmcloud ks vlans <data-center> command in the IBM Cloud CLI.
@@ -116,7 +130,8 @@ The following arguments are supported:
     (b) If you do not have a private VLAN in your account, do not specify this option. IBM Cloud Kubernetes Service will automatically create a private VLAN for you.
 * `subnet_id` - (Optional, string) The existing subnet ID that you want to add to the cluster. You can retrieve the value by running the `ibmcloud ks subnets` command in the IBM Cloud CLI.
 * `no_subnet` - (Optional, Forces new resource, boolean) Set to `true` if you do not want to automatically create a portable subnet.
-* `is_trusted` - (Optional, Forces new resource, boolean) Set to `true` to  enable trusted cluster feature. Default is false.
+* `is_trusted` - (Deprecated, Optional, Forces new resource, boolean) Set to `true` to  enable trusted cluster feature. Default is false.
+* `gateway_enabled` - (Optional, boolean) Set to `true` if you want to automatically create a gateway enabled cluster. If gateway_enabled is true then private_service_endpoint is also required to be set as true.
 * `disk_encryption` - (Optional, Forces new resource, boolean) Set to `false` to disable encryption on a worker.
 * `webhook` - (Optional, string) The webhook that you want to add to the cluster.
 * `public_service_endpoint` - (Optional, Forces new resource,bool) Enable the public service endpoint to make the master publicly accessible.
