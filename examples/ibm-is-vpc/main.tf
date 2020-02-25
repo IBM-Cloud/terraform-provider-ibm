@@ -2,7 +2,7 @@ resource "ibm_is_vpc" "vpc1" {
   name = "vpc1"
 }
 
-resource "ibm_is_vpc_route" "route" {
+resource "ibm_is_vpc_route" "route1" {
   name        = "route1"
   vpc         = ibm_is_vpc.vpc1.id
   zone        = var.zone1
@@ -238,6 +238,6 @@ resource "ibm_is_network_acl" "isExampleACL" {
 
 resource "ibm_is_public_gateway" "publicgateway1" {
   name = "gateway1"
-  vpc  = ibm_is_vpc.testacc_vpc.id
+  vpc  = ibm_is_vpc.vpc1.id
   zone = var.zone1
 }
