@@ -5,7 +5,7 @@ resource "ibm_pi_key" "key" {
 }
 
 data "ibm_pi_key" "dskey" {
-  depends_on           = ["ibm_pi_key.key"]
+  depends_on           = [ibm_pi_key.key]
   pi_cloud_instance_id = var.powerinstanceid
   pi_key_name          = var.sshkeyname
 }
@@ -18,7 +18,7 @@ resource "ibm_pi_network" "power_networks" {
 }
 
 data "ibm_pi_public_network" "dsnetwork" {
-  depends_on           = ["ibm_pi_network.power_networks"]
+  depends_on           = [ibm_pi_network.power_networks]
   pi_cloud_instance_id = var.powerinstanceid
 }
 
@@ -30,7 +30,7 @@ resource "ibm_pi_volume" "volume"{
   pi_cloud_instance_id = var.powerinstanceid   // Get ot by running cmd "ic resource service-instances --long"
 }
 data "ibm_pi_volume" "dsvolume" {
-  depends_on           = ["ibm_pi_volume.volume"]
+  depends_on           = [ibm_pi_volume.volume]
   pi_cloud_instance_id = var.powerinstanceid
   pi_volume_name      = var.volname
 }
