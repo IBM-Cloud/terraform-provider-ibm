@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/Bowery/prompt v0.0.0-20190916142128-fa8279994f75 // indirect
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20200225052022-0d5220c9f2ba
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20200225110712-7223a2221a8d
 	github.com/IBM-Cloud/power-go-client v0.0.0-00010101000000-000000000000
 	github.com/IBM/ibm-cos-sdk-go v1.2.0
 	github.com/IBM/keyprotect-go-client v0.3.2

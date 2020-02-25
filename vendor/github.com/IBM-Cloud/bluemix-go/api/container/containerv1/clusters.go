@@ -773,8 +773,8 @@ func (r *clusters) StoreConfigDetail(name, dir string, admin, createCalicoConfig
 	if err != nil {
 		// Assuming an error means that this is a vpc cluster, and we're returning existing kubeconfig
 		// When we add support for vpcs on openshift clusters, we may want revisit this
-		clusterkey.FilePath = calicoConfig
-		return kubeconfigFileName, clusterkey, nil
+		clusterkey.FilePath = kubeconfigFileName
+		return calicoConfig, clusterkey, nil
 	}
 
 	if clusterInfo.Type == "openshift" {
@@ -809,8 +809,8 @@ func (r *clusters) StoreConfigDetail(name, dir string, admin, createCalicoConfig
 		clusterkey.ClusterCACertificate = ""
 
 	}
-	clusterkey.FilePath = calicoConfig
-	return kubeconfigFileName, clusterkey, nil
+	clusterkey.FilePath = kubeconfigFileName
+	return calicoConfig, clusterkey, nil
 }
 
 func kubeConfigDir(baseDir string) (string, error) {
