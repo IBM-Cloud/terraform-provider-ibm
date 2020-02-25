@@ -45,10 +45,10 @@ resource "ibm_pi_instance" "test-instance" {
     pi_processors         = "2"
     pi_instance_name      = var.instancename
     pi_proc_type          = "shared"
-    pi_image_id           = "${data.ibm_pi_image.powerimages.id}"
+    pi_image_id           = data.ibm_pi_image.powerimages.id
     pi_network_ids        = [data.ibm_pi_public_network.dsnetwork.id]
     pi_key_pair_name      = ibm_pi_key.key.key_id
     pi_sys_type           = "s922"
     pi_cloud_instance_id  = var.powerinstanceid
-    pi_volume_ids         = ["${ibm_pi_volume.volume.volume_id}"]
+    pi_volume_ids         = [ibm_pi_volume.volume.volume_id]
 }
