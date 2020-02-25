@@ -2,8 +2,10 @@ package ibm
 
 import (
 	"log"
+	"os"
 	"time"
 
+	"github.com/hashicorp/terraform/helper/customdiff"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
@@ -18,6 +20,7 @@ const (
 	isPublicGatewayZone              = "zone"
 	isPublicGatewayFloatingIPAddress = "address"
 	isPublicGatewayResourceGroup     = "resource_group"
+	isPublicGatewayTags              = "tags"
 
 	isPublicGatewayProvisioning     = "provisioning"
 	isPublicGatewayProvisioningDone = "available"
@@ -38,6 +41,12 @@ func resourceIBMISPublicGateway() *schema.Resource {
 			Create: schema.DefaultTimeout(60 * time.Minute),
 			Delete: schema.DefaultTimeout(60 * time.Minute),
 		},
+
+		CustomizeDiff: customdiff.Sequence(
+			func(diff *schema.ResourceDiff, v interface{}) error {
+				return resourceTagsCustomizeDiff(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 			isPublicGatewayName: {
@@ -91,6 +100,14 @@ func resourceIBMISPublicGateway() *schema.Resource {
 				Required: true,
 			},
 
+			isPublicGatewayTags: {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      resourceIBMVPCHash,
+			},
+
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -133,10 +150,6 @@ func resourceIBMISPublicGatewayCreate(d *schema.ResourceData, meta interface{}) 
 	name := d.Get(isPublicGatewayName).(string)
 	vpc := d.Get(isPublicGatewayVPC).(string)
 	zone := d.Get(isPublicGatewayZone).(string)
-	var rg string
-	if grp, ok := d.GetOk(isPublicGatewayResourceGroup); ok {
-		rg = grp.(string)
-	}
 	floatingipID := ""
 	floatingipadd := ""
 	if floatingipdataIntf, ok := d.GetOk(isPublicGatewayFloatingIP); ok {
@@ -151,6 +164,11 @@ func resourceIBMISPublicGatewayCreate(d *schema.ResourceData, meta interface{}) 
 		}
 	}
 
+	var rg string
+	if grp, ok := d.GetOk(isPublicGatewayResourceGroup); ok {
+		rg = grp.(string)
+	}
+
 	publicgwC := network.NewPublicGatewayClient(sess)
 	publicgw, err := publicgwC.Create(name, zone, vpc, floatingipID, floatingipadd, rg)
 	if err != nil {
@@ -163,6 +181,16 @@ func resourceIBMISPublicGatewayCreate(d *schema.ResourceData, meta interface{}) 
 	_, err = isWaitForPublicGatewayAvailable(publicgwC, d.Id(), d)
 	if err != nil {
 		return err
+	}
+
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isPublicGatewayTags); ok || v != "" {
+		oldList, newList := d.GetChange(isPublicGatewayTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, publicgw.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on create of vpc public gateway (%s) tags: %s", d.Id(), err)
+		}
 	}
 
 	return resourceIBMISPublicGatewayRead(d, meta)
@@ -232,6 +260,12 @@ func resourceIBMISPublicGatewayRead(d *schema.ResourceData, meta interface{}) er
 	if publicgw.ResourceGroup != nil {
 		d.Set(isPublicGatewayResourceGroup, publicgw.ResourceGroup.ID)
 	}
+	tags, err := GetTagsUsingCRN(meta, publicgw.Crn)
+	if err != nil {
+		log.Printf(
+			"Error on get of vpc public gateway (%s) tags: %s", d.Id(), err)
+	}
+	d.Set(isPublicGatewayTags, tags)
 
 	controller, err := getBaseController(meta)
 	if err != nil {
@@ -264,6 +298,18 @@ func resourceIBMISPublicGatewayUpdate(d *schema.ResourceData, meta interface{}) 
 		name = d.Get(isPublicGatewayName).(string)
 	}
 
+	if d.HasChange(isPublicGatewayTags) {
+		pg, err := publicgwC.Get(d.Id())
+		if err != nil {
+			return err
+		}
+		oldList, newList := d.GetChange(isPublicGatewayTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, pg.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on update of vpc public gateway (%s) tags: %s", d.Id(), err)
+		}
+	}
 	_, err = publicgwC.Update(d.Id(), name)
 	if err != nil {
 		return err

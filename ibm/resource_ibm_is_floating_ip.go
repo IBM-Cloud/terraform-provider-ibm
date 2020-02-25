@@ -3,8 +3,10 @@ package ibm
 import (
 	"fmt"
 	"log"
+	"os"
 	"time"
 
+	"github.com/hashicorp/terraform/helper/customdiff"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
@@ -18,6 +20,7 @@ const (
 	isFloatingIPZone          = "zone"
 	isFloatingIPTarget        = "target"
 	isFloatingIPResourceGroup = "resource_group"
+	isFloatingIPTags          = "tags"
 
 	isFloatingIPPending   = "pending"
 	isFloatingIPAvailable = "available"
@@ -38,6 +41,12 @@ func resourceIBMISFloatingIP() *schema.Resource {
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
+
+		CustomizeDiff: customdiff.Sequence(
+			func(diff *schema.ResourceDiff, v interface{}) error {
+				return resourceTagsCustomizeDiff(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 			isFloatingIPAddress: {
@@ -78,6 +87,14 @@ func resourceIBMISFloatingIP() *schema.Resource {
 				ForceNew: true,
 				Optional: true,
 				Computed: true,
+			},
+
+			isFloatingIPTags: {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      resourceIBMVPCHash,
 			},
 
 			ResourceControllerURL: {
@@ -153,6 +170,16 @@ func resourceIBMISFloatingIPCreate(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isFloatingIPTags); ok || v != "" {
+		oldList, newList := d.GetChange(isFloatingIPTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, floatingip.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on create of vpc Floating IP (%s) tags: %s", d.Id(), err)
+		}
+	}
+
 	return resourceIBMISFloatingIPRead(d, meta)
 }
 
@@ -175,6 +202,12 @@ func resourceIBMISFloatingIPRead(d *schema.ResourceData, meta interface{}) error
 	if floatingip.Target != nil && &floatingip.Target.ID != nil {
 		d.Set(isFloatingIPTarget, floatingip.Target.ID.String())
 	}
+	tags, err := GetTagsUsingCRN(meta, floatingip.Crn)
+	if err != nil {
+		log.Printf(
+			"Error on get of vpc Floating IP (%s) tags: %s", d.Id(), err)
+	}
+	d.Set(isFloatingIPTags, tags)
 	controller, err := getBaseController(meta)
 	if err != nil {
 		return err
@@ -216,13 +249,24 @@ func resourceIBMISFloatingIPUpdate(d *schema.ResourceData, meta interface{}) err
 		hasChange = true
 	}
 
-	if hasChange {
+	if d.HasChange(isFloatingIPTags) {
+		fip, err := floatingipC.Get(d.Id())
+		if err != nil {
+			return err
+		}
+		oldList, newList := d.GetChange(isFloatingIPTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, fip.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on update of vpc Floating IP (%s) tags: %s", d.Id(), err)
+		}
+	}
 
+	if hasChange {
 		_, err := floatingipC.Update(d.Id(), name, target)
 		if err != nil {
 			return err
 		}
-
 	}
 
 	return resourceIBMISFloatingIPRead(d, meta)
