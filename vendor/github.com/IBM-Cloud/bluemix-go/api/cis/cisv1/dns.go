@@ -112,7 +112,7 @@ func (r *dns) CreateDns(cisId string, zoneId string, dnsBody DnsBody) (*DnsRecor
 func (r *dns) UpdateDns(cisId string, zoneId string, dnsId string, dnsBody DnsBody) (*DnsRecord, error) {
 	dnsResult := DnsResult{}
 	rawURL := fmt.Sprintf("/v1/%s/zones/%s/dns_records/%s", cisId, zoneId, dnsId)
-	_, err := r.client.Post(rawURL, &dnsBody, &dnsResult)
+	_, err := r.client.Put(rawURL, &dnsBody, &dnsResult)
 	if err != nil {
 		return nil, err
 	}
