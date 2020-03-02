@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"log"
 	"net/url"
 	"os"
 	"reflect"
@@ -46,6 +47,22 @@ func getGCEndpoint(regionName string) string {
 }
 
 // For Power-IAAS
+func regiontoZone() func(string) string {
+	log.Printf("Printing the regiontozone function")
+	innerzoneMap := map[string]string{
+
+		"eu-de-1":    "eu-de",
+		"eu-de-2":    "eu-de",
+		"us-south-1": "us-south",
+		"us-south-2": "us-south",
+		"us-east":    "us-east",
+	}
+	return func(key string) string {
+
+		return innerzoneMap[key]
+	}
+
+}
 func getNGEndpoint(regionName string) string {
 	if url := os.Getenv("IBMCLOUD_IS_NG_API_ENDPOINT"); url != "" {
 		return url
@@ -57,6 +74,9 @@ func GetPowerEndPoint(regionName string) string {
 	if url := os.Getenv("IBMCLOUD_IS_NG_API_ENDPOINT"); url != "" {
 		return url
 	}
-	return regionName + ".power-iaas.cloud.ibm.com"
+	zone := regiontoZone()
+	region_name := zone(regionName)
+	log.Print("The url to call is %s ", region_name)
+	return region_name + ".power-iaas.cloud.ibm.com"
 
 }
