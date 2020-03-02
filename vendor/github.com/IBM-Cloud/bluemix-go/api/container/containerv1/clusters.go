@@ -59,11 +59,14 @@ type ClusterInfo struct {
 	Type                          string   `json:"type"`
 }
 
+// ClusterUpdateParam ...
 type ClusterUpdateParam struct {
 	Action  string `json:"action"`
 	Force   bool   `json:"force"`
 	Version string `json:"version"`
 }
+
+//ClusterKeyInfo ...
 type ClusterKeyInfo struct {
 	AdminKey             string `json:"admin-key"`
 	Admin                string `json:"admin"`
@@ -73,7 +76,7 @@ type ClusterKeyInfo struct {
 	FilePath             string `json:"filepath"`
 }
 
-//Openshift .yml Structure
+//ConfigFileOpenshift Openshift .yml Structure
 type ConfigFileOpenshift struct {
 	Clusters []struct {
 		Name    string `yaml:"name"`
@@ -89,6 +92,7 @@ type ConfigFileOpenshift struct {
 	}
 }
 
+// ConfigFile ...
 type ConfigFile struct {
 	Clusters []struct {
 		Name    string `yaml:"name"`
@@ -108,6 +112,7 @@ type ConfigFile struct {
 	} `yaml:"users"`
 }
 
+//Vlan ...
 type Vlan struct {
 	ID      string `json:"id"`
 	Subnets []struct {
@@ -121,6 +126,7 @@ type Vlan struct {
 	Region string `json:"region"`
 }
 
+//Addon ...
 type Addon struct {
 	Name    string `json:"name"`
 	Enabled bool   `json:"enabled"`
@@ -237,6 +243,7 @@ type UpdateWorkerCommand struct {
 	Force bool `json:"force,omitempty"`
 }
 
+//BoundServices ..
 type BoundServices []BoundService
 
 //Clusters interface
@@ -249,6 +256,7 @@ type Clusters interface {
 	Delete(name string, target ClusterTargetHeader) error
 	Find(name string, target ClusterTargetHeader) (ClusterInfo, error)
 	FindWithOutShowResources(name string, target ClusterTargetHeader) (ClusterInfo, error)
+	FindWithOutShowResourcesCompatible(name string, target ClusterTargetHeader) (ClusterInfo, error)
 	GetClusterConfig(name, homeDir string, admin bool, target ClusterTargetHeader) (string, error)
 	GetClusterConfigDetail(name, homeDir string, admin bool, target ClusterTargetHeader) (ClusterKeyInfo, error)
 	StoreConfig(name, baseDir string, admin bool, createCalicoConfig bool, target ClusterTargetHeader) (string, string, error)
@@ -352,6 +360,17 @@ func (r *clusters) FindWithOutShowResources(name string, target ClusterTargetHea
 	return cluster, err
 }
 
+//FindWithOutShowResourcesCompatible ...
+func (r *clusters) FindWithOutShowResourcesCompatible(name string, target ClusterTargetHeader) (ClusterInfo, error) {
+	rawURL := fmt.Sprintf("/v2/getCluster?v1-compatible&cluster=%s", name)
+	cluster := ClusterInfo{}
+	_, err := r.client.Get(rawURL, &cluster, target.ToMap())
+	if err != nil {
+		return cluster, err
+	}
+	return cluster, err
+}
+
 //GetClusterConfig ...
 func (r *clusters) GetClusterConfig(name, dir string, admin bool, target ClusterTargetHeader) (string, error) {
 	if !helpers.FileExists(dir) {
@@ -411,7 +430,7 @@ func (r *clusters) GetClusterConfig(name, dir string, admin bool, target Cluster
 	}
 
 	// Block to add token for openshift clusters (This can be temporary until iks team handles openshift clusters)
-	clusterInfo, err := r.FindWithOutShowResources(name, target)
+	clusterInfo, err := r.FindWithOutShowResourcesCompatible(name, target)
 	if err != nil {
 		// Assuming an error means that this is a vpc cluster, and we're returning existing kubeconfig
 		// When we add support for vpcs on openshift clusters, we may want revisit this
@@ -436,6 +455,8 @@ func (r *clusters) GetClusterConfig(name, dir string, admin bool, target Cluster
 
 	return filepath.Abs(kubeyml)
 }
+
+//GetClusterConfigDetail ...
 func (r *clusters) GetClusterConfigDetail(name, dir string, admin bool, target ClusterTargetHeader) (ClusterKeyInfo, error) {
 	clusterkey := ClusterKeyInfo{}
 	if !helpers.FileExists(dir) {
@@ -518,7 +539,7 @@ func (r *clusters) GetClusterConfigDetail(name, dir string, admin bool, target C
 	}
 
 	// Block to add token for openshift clusters (This can be temporary until iks team handles openshift clusters)
-	clusterInfo, err := r.FindWithOutShowResources(name, target)
+	clusterInfo, err := r.FindWithOutShowResourcesCompatible(name, target)
 	if err != nil {
 		// Assuming an error means that this is a vpc cluster, and we're returning existing kubeconfig
 		// When we add support for vpcs on openshift clusters, we may want revisit this
@@ -643,7 +664,7 @@ func (r *clusters) StoreConfig(name, dir string, admin, createCalicoConfig bool,
 	}
 
 	// Block to add token for openshift clusters (This can be temporary until iks team handles openshift clusters)
-	clusterInfo, err := r.FindWithOutShowResources(name, target)
+	clusterInfo, err := r.FindWithOutShowResourcesCompatible(name, target)
 	if err != nil {
 		// Assuming an error means that this is a vpc cluster, and we're returning existing kubeconfig
 		// When we add support for vpcs on openshift clusters, we may want revisit this
@@ -667,6 +688,8 @@ func (r *clusters) StoreConfig(name, dir string, admin, createCalicoConfig bool,
 	}
 	return kubeconfigFileName, calicoConfig, nil
 }
+
+//StoreConfigDetail ...
 func (r *clusters) StoreConfigDetail(name, dir string, admin, createCalicoConfig bool, target ClusterTargetHeader) (string, ClusterKeyInfo, error) {
 	clusterkey := ClusterKeyInfo{}
 	var calicoConfig string
@@ -769,7 +792,7 @@ func (r *clusters) StoreConfigDetail(name, dir string, admin, createCalicoConfig
 	}
 
 	// Block to add token for openshift clusters (This can be temporary until iks team handles openshift clusters)
-	clusterInfo, err := r.FindWithOutShowResources(name, target)
+	clusterInfo, err := r.FindWithOutShowResourcesCompatible(name, target)
 	if err != nil {
 		// Assuming an error means that this is a vpc cluster, and we're returning existing kubeconfig
 		// When we add support for vpcs on openshift clusters, we may want revisit this
@@ -813,6 +836,7 @@ func (r *clusters) StoreConfigDetail(name, dir string, admin, createCalicoConfig
 	return calicoConfig, clusterkey, nil
 }
 
+//kubeConfigDir ...
 func kubeConfigDir(baseDir string) (string, error) {
 	baseDirFiles, err := ioutil.ReadDir(baseDir)
 	if err != nil {
@@ -829,6 +853,7 @@ func kubeConfigDir(baseDir string) (string, error) {
 	return "", errors.New("Unable to locate extracted configuration directory")
 }
 
+//generateCalicoConfig ...
 func generateCalicoConfig(desiredConfigPath string) (string, error) {
 	// Proccess calico golang template file if it exists
 	calicoConfigFile := fmt.Sprintf("%s/%s", desiredConfigPath, "calicoctl.cfg.template")
