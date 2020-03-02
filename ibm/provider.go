@@ -360,7 +360,8 @@ func Validator() ValidatorDict {
 	initOnce.Do(func() {
 		globalValidatorDict = ValidatorDict{
 			ResourceValidatorDictionary: map[string]*ResourceValidator{
-				"ibm_is_vpc": resourceIBMISVPCValidator(),
+				"ibm_is_vpc":        resourceIBMISVPCValidator(),
+				"ibm_is_ike_policy": resourceIBMISIKEValidator(),
 			},
 		}
 	})

@@ -40,21 +40,24 @@ func resourceIBMISIKEPolicy() *schema.Resource {
 			},
 
 			isIKEAuthenticationAlg: {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"md5", "sha1", "sha256"}),
+				Type:     schema.TypeString,
+				Required: true,
+				//ValidateFunc: validateAllowedStringValue([]string{"md5", "sha1", "sha256"}),
+				ValidateFunc: InvokeValidator("ibm_is_ike_policy", isIKEAuthenticationAlg),
 			},
 
 			isIKEEncryptionAlg: {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"3des", "aes128", "aes256"}),
+				Type:     schema.TypeString,
+				Required: true,
+				//ValidateFunc: validateAllowedStringValue([]string{"3des", "aes128", "aes256"}),
+				ValidateFunc: InvokeValidator("ibm_is_ike_policy", isIKEEncryptionAlg),
 			},
 
 			isIKEDhGroup: {
-				Type:         schema.TypeInt,
-				Required:     true,
-				ValidateFunc: validateAllowedIntValue([]int{2, 5, 14}),
+				Type:     schema.TypeInt,
+				Required: true,
+				//ValidateFunc: validateAllowedIntValue([]int{2, 5, 14}),
+				ValidateFunc: InvokeValidator("ibm_is_ike_policy", isIKEDhGroup),
 			},
 
 			isIKEResourceGroup: {
@@ -72,9 +75,10 @@ func resourceIBMISIKEPolicy() *schema.Resource {
 			},
 
 			isIKEVERSION: {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				ValidateFunc: validateAllowedIntValue([]int{1, 2}),
+				Type:     schema.TypeInt,
+				Optional: true,
+				//ValidateFunc: validateAllowedIntValue([]int{1, 2}),
+				ValidateFunc: InvokeValidator("ibm_is_ike_policy", isIKEVERSION),
 			},
 
 			isIKENegotiationMode: {
@@ -125,6 +129,22 @@ func resourceIBMISIKEPolicy() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISIKEValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	authentication_algorithm := "md5, sha1, sha256"
+	encryption_algorithm := "3des, aes128, aes256"
+	dh_group := "2, 5, 14"
+	ike_version := "1, 2"
+	validateSchema = append(validateSchema, ValidateSchema{Identifier: isIKEAuthenticationAlg, ValidateFunctionIdentifier: ValidateAllowedStringValue, Type: TypeList, AllowedValues: authentication_algorithm})
+	validateSchema = append(validateSchema, ValidateSchema{Identifier: isIKEEncryptionAlg, ValidateFunctionIdentifier: ValidateAllowedStringValue, Type: TypeList, AllowedValues: encryption_algorithm})
+	validateSchema = append(validateSchema, ValidateSchema{Identifier: isIKEDhGroup, ValidateFunctionIdentifier: ValidateAllowedIntValue, Type: TypeIntList, AllowedValues: dh_group})
+	validateSchema = append(validateSchema, ValidateSchema{Identifier: isIKEVERSION, ValidateFunctionIdentifier: ValidateAllowedIntValue, Type: TypeIntList, AllowedValues: ike_version})
+	ibmISIKEResourceValidator := ResourceValidator{ResourceName: "ibm_is_ike_policy", Schema: validateSchema}
+	log.Printf("[DEBUG] ibmISVPCResourceValidator: %#v", ibmISIKEResourceValidator)
+	return &ibmISIKEResourceValidator
 }
 
 func resourceIBMISIKEPolicyCreate(d *schema.ResourceData, meta interface{}) error {

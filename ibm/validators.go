@@ -44,7 +44,7 @@ func validateServiceTags(v interface{}, k string) (ws []string, errors []error) 
 }
 
 func validateAllowedStringValue(validValues []string) schema.SchemaValidateFunc {
-	log.Printf("[DEBUG] validateAllowedStringValue here....")
+	//log.Printf("[DEBUG] validateAllowedStringValue here....")
 	return func(v interface{}, k string) (ws []string, errors []error) {
 		input := v.(string)
 		log.Printf("[DEBUG] validateAllowedStringValue begin: input is %#v",
@@ -69,8 +69,11 @@ func validateAllowedStringValue(validValues []string) schema.SchemaValidateFunc 
 }
 
 func validateAllowedIntValue(is []int) schema.SchemaValidateFunc {
+	log.Printf("[DEBUG] validateAllowedIntValue here....")
 	return func(v interface{}, k string) (ws []string, errors []error) {
 		value := v.(int)
+		log.Printf("[DEBUG] validateAllowedIntValue begin: value is %#v",
+			value)
 		existed := false
 		for _, i := range is {
 			if i == value {
@@ -78,6 +81,8 @@ func validateAllowedIntValue(is []int) schema.SchemaValidateFunc {
 				break
 			}
 		}
+		log.Printf("[DEBUG] validateAllowedIntValue: value is %#v, is %#v, existed is %#v",
+			value, is, existed)
 		if !existed {
 			errors = append(errors, fmt.Errorf(
 				"%q must contain a valid int value should in array %#v, got %q",
@@ -956,6 +961,7 @@ const (
 	ValidateAllowedStringValue
 	StringLenBetween
 	ValidateCIDR
+	ValidateAllowedIntValue
 )
 
 // ValueType -- Copied from Terraform for now. You can refer to Terraform ValueType directly.
@@ -969,6 +975,7 @@ const (
 	TypeFloat
 	TypeString
 	TypeList
+	TypeIntList
 )
 
 // Type of constraints required for validation
@@ -1077,7 +1084,7 @@ func invokeValidatorInternal(schema ValidateSchema) schema.SchemaValidateFunc {
 		return validation.IntAtMost(maxValue.(int))
 	case ValidateAllowedStringValue:
 		allowedValues := schema.GetValue(AllowedValues)
-		log.Printf("[DEBUG] invokeValidatorInternal: passing values %#v", allowedValues.([]string))
+		log.Printf("[DEBUG] invokeValidatorInternal: ValidateAllowedStringValue passing values %#v", allowedValues.([]string))
 		//fmt.Println("invokeValidatorInternal: passing values ", allowedValues.([]string))
 		return validateAllowedStringValue(allowedValues.([]string))
 	case StringLenBetween:
@@ -1085,6 +1092,11 @@ func invokeValidatorInternal(schema ValidateSchema) schema.SchemaValidateFunc {
 	case ValidateCIDR:
 		//fmt.Println("this is not yet implemented")
 		return nil
+	case ValidateAllowedIntValue:
+		allowedValues := schema.GetValue(AllowedValues)
+		log.Printf("[DEBUG] invokeValidatorInternal:ValidateAllowedIntValue passing values %#v", allowedValues)
+		//log.Printf("[DEBUG] invokeValidatorInternal:ValidateAllowedIntValue passing values %#v", allowedValues.([]int))
+		return validateAllowedIntValue(allowedValues.([]int))
 	default:
 		//fmt.Println("Validator function not defined for identifer", funcIdentifier)
 		return nil
@@ -1095,6 +1107,8 @@ func invokeValidatorInternal(schema ValidateSchema) schema.SchemaValidateFunc {
 func (vs ValidateSchema) GetValue(valueConstraint ValueConstraintType) interface{} {
 
 	var valueToConvert string
+	log.Printf("DEBUG valueConstraint is %s", valueConstraint)
+	//log.Printf("DEBUG vs.Type is %s", vs.Type)
 	switch valueConstraint {
 	case MinValue:
 		valueToConvert = vs.MinValue
@@ -1102,6 +1116,7 @@ func (vs ValidateSchema) GetValue(valueConstraint ValueConstraintType) interface
 		valueToConvert = vs.MaxValue
 	case AllowedValues:
 		valueToConvert = vs.AllowedValues
+		log.Printf("[DEBUG] GetValue:valueToConvert  %#v", valueToConvert)
 	case MatchesValue:
 		valueToConvert = vs.Matches
 	}
@@ -1116,12 +1131,14 @@ func (vs ValidateSchema) GetValue(valueConstraint ValueConstraintType) interface
 		if err != nil {
 			return vs.Zero()
 		}
+		log.Printf("[DEBUG] TypeBool converted values is %#v", b)
 		return b
 	case TypeInt:
 		i, err := strconv.Atoi(valueToConvert)
 		if err != nil {
 			return vs.Zero()
 		}
+		log.Printf("[DEBUG] TypeInt converted values is %#v", i)
 		return i
 	case TypeFloat:
 		f, err := strconv.ParseFloat(valueToConvert, 32)
@@ -1133,12 +1150,26 @@ func (vs ValidateSchema) GetValue(valueConstraint ValueConstraintType) interface
 		return valueToConvert
 	case TypeList:
 		// Convert comma separated string to array
-		// TODO - Do trim space later..
 		arr := strings.Split(valueToConvert, ",")
 		for i, ele := range arr {
 			arr[i] = strings.TrimSpace(ele)
 		}
+		log.Printf("[DEBUG] TypeList converted values is %#v", arr)
 		return arr
+	case TypeIntList:
+		// Convert comma separated string to array
+		var arr2 []int
+		arr1 := strings.Split(valueToConvert, ",")
+		for _, ele := range arr1 {
+			//arr[i] = strings.TrimSpace(ele)
+			e, err := strconv.Atoi(strings.TrimSpace(ele))
+			if err != nil {
+				e = 0
+			}
+			arr2 = append(arr2, e)
+		}
+		log.Printf("[DEBUG] TypeIntList converted values is %#v", arr2)
+		return arr2
 	default:
 		panic(fmt.Sprintf("unknown type %s", vs.Type))
 	}
@@ -1174,6 +1205,8 @@ func (vs ValidateSchema) Zero() interface{} {
 		return ""
 	case TypeList:
 		return make([]string, 0)
+	case TypeIntList:
+		return make([]int, 0)
 	default:
 		panic(fmt.Sprintf("unknown type %s", vs.Type))
 	}
