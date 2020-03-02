@@ -41,6 +41,8 @@ github.com/IBM-Cloud/bluemix-go v0.0.0-20200225052022-0d5220c9f2ba h1:w203mfjLYp
 github.com/IBM-Cloud/bluemix-go v0.0.0-20200225052022-0d5220c9f2ba/go.mod h1:gPJbH1etcDj7qS/hBRiLuYW9CY0bRcostSKusa51xR0=
 github.com/IBM-Cloud/bluemix-go v0.0.0-20200225110712-7223a2221a8d h1:Wvwna9yU/+TtvaYpTskDzDcRe16su6oWMFoP//3Grkk=
 github.com/IBM-Cloud/bluemix-go v0.0.0-20200225110712-7223a2221a8d/go.mod h1:gPJbH1etcDj7qS/hBRiLuYW9CY0bRcostSKusa51xR0=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20200302110522-b3b74cded184 h1:q+jVpNJm/yQrJNf7h9dTChrT/Wtps4m/GzrdWkoCAls=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20200302110522-b3b74cded184/go.mod h1:gPJbH1etcDj7qS/hBRiLuYW9CY0bRcostSKusa51xR0=
 github.com/IBM/ibm-cos-sdk-go v1.2.0 h1:oJG2eWmAhmz3XAkQLsmQweT7hmxoM3jKQkwLBZz6b5o=
 github.com/IBM/ibm-cos-sdk-go v1.2.0/go.mod h1:YLBAYobEA8bD27P7xpMwSQeNQu6W3DNBtBComXrRzRY=
 github.com/IBM/keyprotect-go-client v0.3.2 h1:JmGkHQEAJ9VWsKglc474Ahg/f0FZaRZ0X+3clDdTX6A=

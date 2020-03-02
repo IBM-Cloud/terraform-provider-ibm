@@ -37,9 +37,10 @@ type MonitorResult struct {
 }
 
 type MonitorBody struct {
-	ExpCodes string `json:"expected_codes"`
-	ExpBody  string `json:"expected_body"`
-	Path     string `json:"path"`
+	Description string `json:"description"`
+	ExpCodes    string `json:"expected_codes"`
+	ExpBody     string `json:"expected_body"`
+	Path        string `json:"path"`
 	// Headers ommited TBC
 	MonType         string `json:"type,omitempty"`
 	Method          string `json:"method,omitempty"`
