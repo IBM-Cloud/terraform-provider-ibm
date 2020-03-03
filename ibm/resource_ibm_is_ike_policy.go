@@ -143,7 +143,6 @@ func resourceIBMISIKEValidator() *ResourceValidator {
 	validateSchema = append(validateSchema, ValidateSchema{Identifier: isIKEDhGroup, ValidateFunctionIdentifier: ValidateAllowedIntValue, Type: TypeIntList, AllowedValues: dh_group})
 	validateSchema = append(validateSchema, ValidateSchema{Identifier: isIKEVERSION, ValidateFunctionIdentifier: ValidateAllowedIntValue, Type: TypeIntList, AllowedValues: ike_version})
 	ibmISIKEResourceValidator := ResourceValidator{ResourceName: "ibm_is_ike_policy", Schema: validateSchema}
-	log.Printf("[DEBUG] ibmISVPCResourceValidator: %#v", ibmISIKEResourceValidator)
 	return &ibmISIKEResourceValidator
 }
 

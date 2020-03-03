@@ -44,7 +44,6 @@ func validateServiceTags(v interface{}, k string) (ws []string, errors []error) 
 }
 
 func validateAllowedStringValue(validValues []string) schema.SchemaValidateFunc {
-	//log.Printf("[DEBUG] validateAllowedStringValue here....")
 	return func(v interface{}, k string) (ws []string, errors []error) {
 		input := v.(string)
 		log.Printf("[DEBUG] validateAllowedStringValue begin: input is %#v",
@@ -1040,8 +1039,6 @@ func InvokeValidator(resourceName, identifier string) schema.SchemaValidateFunc 
 	// Loop through dictionary and identify the resource and then the parameter configuration.
 	var schemaToInvoke ValidateSchema
 	found := false
-	//resourceValidatorDictionary := prepareTestData()
-	//resourceValidatorDictionary := prepareTestData()
 	resourceItem := validatorDict.ResourceValidatorDictionary[resourceName]
 	if resourceItem.ResourceName == resourceName {
 		parameterValidateSchema := resourceItem.Schema
@@ -1055,15 +1052,11 @@ func InvokeValidator(resourceName, identifier string) schema.SchemaValidateFunc 
 	}
 
 	if found {
-		invokeValidatorInternal(schemaToInvoke)
-		//s, e := invokeValidatorInternal(schemaToInvoke)
-		//fmt.Println("warnings", s)
-		//fmt.Println("Errors", e)
+		return invokeValidatorInternal(schemaToInvoke)
 	} else {
 		// Add error code later. TODO
 		return nil
 	}
-	return nil
 }
 
 // the function is currently modified to invoke SchemaValidateFunc directly.
@@ -1085,20 +1078,16 @@ func invokeValidatorInternal(schema ValidateSchema) schema.SchemaValidateFunc {
 	case ValidateAllowedStringValue:
 		allowedValues := schema.GetValue(AllowedValues)
 		log.Printf("[DEBUG] invokeValidatorInternal: ValidateAllowedStringValue passing values %#v", allowedValues.([]string))
-		//fmt.Println("invokeValidatorInternal: passing values ", allowedValues.([]string))
 		return validateAllowedStringValue(allowedValues.([]string))
 	case StringLenBetween:
 		return validation.StringLenBetween(schema.MinValueLength, schema.MaxValueLength)
 	case ValidateCIDR:
-		//fmt.Println("this is not yet implemented")
 		return nil
 	case ValidateAllowedIntValue:
 		allowedValues := schema.GetValue(AllowedValues)
 		log.Printf("[DEBUG] invokeValidatorInternal:ValidateAllowedIntValue passing values %#v", allowedValues)
-		//log.Printf("[DEBUG] invokeValidatorInternal:ValidateAllowedIntValue passing values %#v", allowedValues.([]int))
 		return validateAllowedIntValue(allowedValues.([]int))
 	default:
-		//fmt.Println("Validator function not defined for identifer", funcIdentifier)
 		return nil
 	}
 }
@@ -1107,8 +1096,6 @@ func invokeValidatorInternal(schema ValidateSchema) schema.SchemaValidateFunc {
 func (vs ValidateSchema) GetValue(valueConstraint ValueConstraintType) interface{} {
 
 	var valueToConvert string
-	log.Printf("DEBUG valueConstraint is %s", valueConstraint)
-	//log.Printf("DEBUG vs.Type is %s", vs.Type)
 	switch valueConstraint {
 	case MinValue:
 		valueToConvert = vs.MinValue
@@ -1116,12 +1103,9 @@ func (vs ValidateSchema) GetValue(valueConstraint ValueConstraintType) interface
 		valueToConvert = vs.MaxValue
 	case AllowedValues:
 		valueToConvert = vs.AllowedValues
-		log.Printf("[DEBUG] GetValue:valueToConvert  %#v", valueToConvert)
 	case MatchesValue:
 		valueToConvert = vs.Matches
 	}
-
-	//fmt.Println("Value to convert", valueToConvert)
 
 	switch vs.Type {
 	case TypeInvalid:
@@ -1131,14 +1115,12 @@ func (vs ValidateSchema) GetValue(valueConstraint ValueConstraintType) interface
 		if err != nil {
 			return vs.Zero()
 		}
-		log.Printf("[DEBUG] TypeBool converted values is %#v", b)
 		return b
 	case TypeInt:
 		i, err := strconv.Atoi(valueToConvert)
 		if err != nil {
 			return vs.Zero()
 		}
-		log.Printf("[DEBUG] TypeInt converted values is %#v", i)
 		return i
 	case TypeFloat:
 		f, err := strconv.ParseFloat(valueToConvert, 32)
@@ -1161,7 +1143,6 @@ func (vs ValidateSchema) GetValue(valueConstraint ValueConstraintType) interface
 		var arr2 []int
 		arr1 := strings.Split(valueToConvert, ",")
 		for _, ele := range arr1 {
-			//arr[i] = strings.TrimSpace(ele)
 			e, err := strconv.Atoi(strings.TrimSpace(ele))
 			if err != nil {
 				e = 0

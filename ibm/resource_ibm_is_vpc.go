@@ -151,7 +151,6 @@ func resourceIBMISVPCValidator() *ResourceValidator {
 	address_prefix_management := "auto, manual"
 	validateSchema = append(validateSchema, ValidateSchema{Identifier: isVPCAddressPrefixManagement, ValidateFunctionIdentifier: ValidateAllowedStringValue, Type: TypeList, AllowedValues: address_prefix_management})
 	ibmISVPCResourceValidator := ResourceValidator{ResourceName: "ibm_is_vpc", Schema: validateSchema}
-	log.Printf("[DEBUG] ibmISVPCResourceValidator: %#v", ibmISVPCResourceValidator)
 	return &ibmISVPCResourceValidator
 }
 
