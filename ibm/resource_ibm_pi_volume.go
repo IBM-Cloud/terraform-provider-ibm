@@ -2,13 +2,14 @@ package ibm
 
 import (
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"log"
-	"time"
 )
 
 func resourceIBMPIVolume() *schema.Resource {
@@ -52,7 +53,7 @@ func resourceIBMPIVolume() *schema.Resource {
 			helpers.PIVolumeType: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"ssd", "standard"}),
+				ValidateFunc: validateAllowedStringValue([]string{"ssd", "standard", "tier1", "tier3"}),
 			},
 
 			helpers.PICloudInstanceId: {
