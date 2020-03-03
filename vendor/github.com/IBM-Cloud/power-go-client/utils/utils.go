@@ -54,7 +54,7 @@ func getNGEndpoint(regionName string) string {
 }
 
 func GetPowerEndPoint(regionName string) string {
-	if url := os.Getenv("IBMCLOUD_IS_NG_API_ENDPOINT"); url != "" {
+	if url := os.Getenv("IBMCLOUD_POWER_API_ENDPOINT"); url != "" {
 		return url
 	}
 	return regionName + ".power-iaas.cloud.ibm.com"
