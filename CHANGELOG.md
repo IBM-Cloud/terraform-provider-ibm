@@ -1,3 +1,9 @@
+## 1.2.3 (March 03, 2020)
+
+BUG FIXES:
+
+* data/ibm_container_cluster_config : Fix the error to download the cluster config for VPC clusters ([#1150](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1150))
+
 ## 1.2.2 (February 26, 2020)
 
 ENHANCEMENTS:
