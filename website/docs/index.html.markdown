@@ -183,6 +183,8 @@ The following arguments are supported in the `provider` block:
 
 * `generation` - (Optional) The generation of Virtual Private Cloud. It can also be sourced from the `IC_GENERATION` (higher precedence) or `IBMCLOUD_GENERATION` environment variable. Default value: `2`. `1` for VPC Classic and `2` for VPC NextGen.
 
+* `zone` - (optional) The IBM Cloud zone for a region. You can also source it from the `IC_ZONE` (higher precedence) or `IBMCLOUD_ZONE` environment variable. This value is required for power resources if the region supports multi-zone. For region `eu-de` it supports two zones `eu-de-1` and `eu-de-2`. Set the region and zone for the Power Virtual Server.
+
 
 ***Note***
 The CloudFoundry endpoint has been updated in this release of IBM Cloud Terraform provider v0.17.4.  If you are using an earlier version of IBM Cloud Terraform provider, export the `IBMCLOUD_UAA_ENDPOINT` to the new authentication endpoint, as illustrated below
