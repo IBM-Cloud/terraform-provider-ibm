@@ -113,6 +113,9 @@ type Config struct {
 
 	// PowerService Instance
 	PowerServiceInstance string
+
+	// Zone
+	Zone string
 }
 
 //Session stores the information required for communication with the SoftLayer and Bluemix API
@@ -575,7 +578,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.certManagementAPI = certManagementAPI
 
-	ibmpisession, err := ibmpisession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, true, c.BluemixTimeout, session.bmxUserDetails.userAccount)
+	ibmpisession, err := ibmpisession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, true, c.BluemixTimeout, session.bmxUserDetails.userAccount, c.Zone)
 	if err != nil {
 		session.ibmpiConfigErr = err
 		return nil, err

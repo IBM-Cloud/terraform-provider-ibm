@@ -54,6 +54,12 @@ func Provider() terraform.ResourceProvider {
 				Description: "The Resource group id.",
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_RESOURCE_GROUP", "IBMCLOUD_RESOURCE_GROUP", "BM_RESOURCE_GROUP", "BLUEMIX_RESOURCE_GROUP"}, ""),
 			},
+			"zone": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The IBM cloud Region zone (for example 'us-south-1') for power resources.",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_ZONE", "IBMCLOUD_ZONE"}, ""),
+			},
 			"softlayer_api_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -404,6 +410,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 
 	resourceGrp := d.Get("resource_group").(string)
 	region := d.Get("region").(string)
+	zone := d.Get("zone").(string)
 	retryCount := d.Get("max_retries").(int)
 	wskNameSpace := d.Get("function_namespace").(string)
 	riaasEndPoint := d.Get("riaas_endpoint").(string)
@@ -434,6 +441,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		Generation:           generation,
 		IAMToken:             iamToken,
 		IAMRefreshToken:      iamRefreshToken,
+		Zone:                 zone,
 		//PowerServiceInstance: powerServiceInstance,
 	}
 
