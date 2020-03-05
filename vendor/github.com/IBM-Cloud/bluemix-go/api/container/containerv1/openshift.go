@@ -116,65 +116,60 @@ func (r *clusters) FetchOCTokenForKubeConfig(kubecfg []byte, cMeta *ClusterInfo)
 		return kubecfg, err
 	}
 
-	users0 := cfg["users"].([]interface{})[0].(map[string]interface{})
-	user := users0["user"].(map[string]interface{})
-	if token, exist := user["token"]; exist {
-		if token == "" {
-			trace.Logger.Println("Creating user passcode to login for getting oc token")
-			passcode, err := r.client.TokenRefresher.GetPasscode()
+	var token string
+	trace.Logger.Println("Creating user passcode to login for getting oc token")
+	passcode, err := r.client.TokenRefresher.GetPasscode()
 
-			authEP, err := func(meta *ClusterInfo) (*authEndpoints, error) {
-				request := rest.GetRequest(meta.ServerURL + "/.well-known/oauth-authorization-server")
-				var auth authEndpoints
-				tempVar := r.client.ServiceName
-				r.client.ServiceName = ""
-				defer func() {
-					r.client.ServiceName = tempVar
-				}()
-				resp, err := r.client.SendRequest(request, &auth)
-				if err != nil {
-					return &auth, err
-				}
-				defer resp.Body.Close()
-				if resp.StatusCode > 299 {
-					msg, _ := ioutil.ReadAll(resp.Body)
-					return nil, fmt.Errorf("Bad status code [%d] returned when fetching Cluster authentication endpoints: %s", resp.StatusCode, msg)
-				}
-				auth.ServerURL = meta.ServerURL
-				return &auth, nil
-			}(cMeta)
-
-			trace.Logger.Println("Got authentication end points for getting oc token")
-			token, uname, err := r.openShiftAuthorizePasscode(authEP, passcode)
-			trace.Logger.Println("Got the token and user ", uname)
-			clusterName, _ := NormalizeName(authEP.ServerURL[len("https://"):len(authEP.ServerURL)]) //TODO deal with http
-			ccontext := "default/" + clusterName + "/" + uname
-			uname = uname + "/" + clusterName
-
-			clusters := cfg["clusters"].([]interface{})
-			newCluster := map[string]interface{}{"name": clusterName, "cluster": map[string]interface{}{"server": authEP.ServerURL}}
-			clusters = append(clusters, newCluster)
-			cfg["clusters"] = clusters
-
-			contexts := cfg["contexts"].([]interface{})
-			newContext := map[string]interface{}{"name": ccontext, "context": map[string]interface{}{"cluster": clusterName, "namespace": "default", "user": uname}}
-			contexts = append(contexts, newContext)
-			cfg["contexts"] = contexts
-
-			users := cfg["users"].([]interface{})
-			newUser := map[string]interface{}{"name": uname, "user": map[string]interface{}{"token": token}}
-			users = append(users, newUser)
-			cfg["users"] = users
-
-			cfg["current-context"] = ccontext
-
-			bytes, err := yaml.Marshal(cfg)
-			if err != nil {
-				return kubecfg, err
-			}
-			kubecfg = bytes
+	authEP, err := func(meta *ClusterInfo) (*authEndpoints, error) {
+		request := rest.GetRequest(meta.ServerURL + "/.well-known/oauth-authorization-server")
+		var auth authEndpoints
+		tempVar := r.client.ServiceName
+		r.client.ServiceName = ""
+		defer func() {
+			r.client.ServiceName = tempVar
+		}()
+		resp, err := r.client.SendRequest(request, &auth)
+		if err != nil {
+			return &auth, err
 		}
+		defer resp.Body.Close()
+		if resp.StatusCode > 299 {
+			msg, _ := ioutil.ReadAll(resp.Body)
+			return nil, fmt.Errorf("Bad status code [%d] returned when fetching Cluster authentication endpoints: %s", resp.StatusCode, msg)
+		}
+		auth.ServerURL = meta.ServerURL
+		return &auth, nil
+	}(cMeta)
+
+	trace.Logger.Println("Got authentication end points for getting oc token")
+	token, uname, err := r.openShiftAuthorizePasscode(authEP, passcode)
+	trace.Logger.Println("Got the token and user ", uname)
+	clusterName, _ := NormalizeName(authEP.ServerURL[len("https://"):len(authEP.ServerURL)]) //TODO deal with http
+	ccontext := "default/" + clusterName + "/" + uname
+	uname = uname + "/" + clusterName
+
+	clusters := cfg["clusters"].([]interface{})
+	newCluster := map[string]interface{}{"name": clusterName, "cluster": map[string]interface{}{"server": authEP.ServerURL}}
+	clusters = append(clusters, newCluster)
+	cfg["clusters"] = clusters
+
+	contexts := cfg["contexts"].([]interface{})
+	newContext := map[string]interface{}{"name": ccontext, "context": map[string]interface{}{"cluster": clusterName, "namespace": "default", "user": uname}}
+	contexts = append(contexts, newContext)
+	cfg["contexts"] = contexts
+
+	users := cfg["users"].([]interface{})
+	newUser := map[string]interface{}{"name": uname, "user": map[string]interface{}{"token": token}}
+	users = append(users, newUser)
+	cfg["users"] = users
+
+	cfg["current-context"] = ccontext
+
+	bytes, err := yaml.Marshal(cfg)
+	if err != nil {
+		return kubecfg, err
 	}
+	kubecfg = bytes
 	return kubecfg, nil
 }
 
