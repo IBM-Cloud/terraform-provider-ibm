@@ -528,7 +528,7 @@ func resourceIBMIAMGetUserProfileExists(d *schema.ResourceData, meta interface{}
 			}
 		}
 		if !isFound {
-			return false, fmt.Errorf("Didn't find the user : %s", user)
+			return false, nil
 		}
 	}
 	return true, nil
