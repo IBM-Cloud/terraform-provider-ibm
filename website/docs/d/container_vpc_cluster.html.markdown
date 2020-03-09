@@ -55,6 +55,8 @@ The following attributes are exported:
     * `load_balancer_hostname` - Host name of Load Balancer
     * `resize` - Resize of ALB
     * `disable_deployment` - Disable the ALB Deployment
+* `ingress_hostname` - The Ingress hostname.
+* `ingress_secret` - The Ingress secret.
 * `public_service_endpoint` -  Is public service endpoint enabled to make the master publicly accessible.
 * `private_service_endpoint` -  Is private service endpoint enabled to make the master privately accessible.
 * `public_service_endpoint_url` - Url of the public_service_endpoint
