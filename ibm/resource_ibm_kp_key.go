@@ -18,6 +18,7 @@ func resourceIBMkey() *schema.Resource {
 		Read:   resourceIBMKeyRead,
 		// Update:   resourceIBMContainerVpcALBUpdate,
 		Delete:   resourceIBMKeyDelete,
+		Exists:   resourceIBMKeyExists,
 		Importer: &schema.ResourceImporter{},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
@@ -218,4 +219,28 @@ func resourceIBMKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.SetId("")
 	return nil
+}
+
+func resourceIBMKeyExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	api, err := meta.(ClientSession).keyProtectAPI()
+	if err != nil {
+		return false, err
+	}
+	crn := d.Id()
+	crnData := strings.Split(crn, ":")
+
+	instanceID := crnData[len(crnData)-3]
+	keyid := crnData[len(crnData)-1]
+	api.Config.InstanceID = instanceID
+	// keyid := d.Id()
+	_, err = api.GetKey(context.Background(), keyid)
+	if err != nil {
+		kpError := err.(*kp.Error)
+		if kpError.StatusCode == 404 {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+
 }

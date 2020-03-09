@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/schema"
 
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
@@ -221,7 +222,12 @@ func resourceIBMCertificateManagerExists(d *schema.ResourceData, meta interface{
 
 	_, err = client.GetCertData(certID)
 	if err != nil {
-		return false, err
+		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
+			if apiErr.StatusCode() == 404 {
+				return false, nil
+			}
+		}
+		return false, fmt.Errorf("Error communicating with the API: %s", err)
 	}
 	return true, nil
 }
