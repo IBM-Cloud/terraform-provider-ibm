@@ -234,9 +234,6 @@ func resourceIBMIAMAuthorizationPolicyExists(d *schema.ResourceData, meta interf
 
 	authorizationPolicy, err := iampapClient.V1Policy().Get(d.Id())
 	if err != nil {
-		return false, fmt.Errorf("Error retrieving authorizationPolicy: %s", err)
-	}
-	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
 			if apiErr.StatusCode() == 404 {
 				return false, nil

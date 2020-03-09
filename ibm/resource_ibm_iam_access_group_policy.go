@@ -289,9 +289,6 @@ func resourceIBMIAMAccessGroupPolicyExists(d *schema.ResourceData, meta interfac
 
 	accgrpPolicy, err := iampapClient.V1Policy().Get(accgrpPolicyID)
 	if err != nil {
-		return false, fmt.Errorf("Error retrieving access group policy: %s", err)
-	}
-	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
 			if apiErr.StatusCode() == 404 {
 				return false, nil
