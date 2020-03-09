@@ -1,7 +1,6 @@
 package ibm
 
 import (
-	"bytes"
 	"container/list"
 	"encoding/json"
 	"fmt"
@@ -9,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/go-openapi/strfmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
@@ -85,10 +83,9 @@ func resourceIBMISNetworkACL() *schema.Resource {
 				Description: "The resource group name in which resource is provisioned",
 			},
 			isNetworkACLRules: {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Optional: true,
 				Computed: true,
-				Set:      resourceIBMISNetworkACLHash,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isNetworkACLRuleID: {
@@ -241,7 +238,7 @@ func resourceIBMISNetworkACLCreate(d *schema.ResourceData, meta interface{}) err
 	}
 
 	//validate each rule before attempting to create the ACL
-	rules := d.Get(isNetworkACLRules).(*schema.Set).List()
+	rules := d.Get(isNetworkACLRules).([]interface{})
 	err = validateInlineRules(rules)
 	if err != nil {
 		return err
@@ -300,10 +297,8 @@ func resourceIBMISNetworkACLRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	sortedrules := sortrules(rawrules)
 	rules := make([]interface{}, 0)
-	for rawrule := sortedrules.Front(); rawrule != nil; rawrule = rawrule.Next() {
-		rulex := rawrule.Value.(*models.NetworkACLRule)
+	for _, rulex := range rawrules {
 		rule := make(map[string]interface{})
 		rule[isNetworkACLRuleID] = rulex.ID.String()
 		rule[isNetworkACLRuleName] = rulex.Name
@@ -384,7 +379,7 @@ func resourceIBMISNetworkACLUpdate(d *schema.ResourceData, meta interface{}) err
 	}
 	nwaclC := network.NewNetworkAclClient(sess)
 	nwaclid := d.Id()
-	rules := d.Get(isNetworkACLRules).(*schema.Set).List()
+	rules := d.Get(isNetworkACLRules).([]interface{})
 
 	if d.HasChange(isNetworkACLName) {
 		name := d.Get(isNetworkACLName).(string)
@@ -522,7 +517,7 @@ func validateInlineRules(rules []interface{}) error {
 func createInlineRules(nwaclC *network.NetworkAclClient, nwaclid string, rules []interface{}) error {
 	before := ""
 
-	for i := len(rules) - 1; i >= 0; i-- {
+	for i := 0; i <= len(rules)-1; i++ {
 		rulex := rules[i].(map[string]interface{})
 
 		name := rulex[isNetworkACLRuleName].(string)
@@ -591,18 +586,4 @@ func createInlineRules(nwaclC *network.NetworkAclClient, nwaclid string, rules [
 		}
 	}
 	return nil
-}
-
-func resourceIBMISNetworkACLHash(v interface{}) int {
-	var buf bytes.Buffer
-	m := v.(map[string]interface{})
-	buf.WriteString(fmt.Sprintf("%s-",
-		m[isNetworkACLRuleName].(string)))
-	buf.WriteString(fmt.Sprintf("%s-", m[isNetworkACLRuleDestination].(string)))
-	buf.WriteString(fmt.Sprintf("%s-",
-		m[isNetworkACLRuleSource].(string)))
-	buf.WriteString(fmt.Sprintf("%s-", m[isNetworkACLRuleAction].(string)))
-	buf.WriteString(fmt.Sprintf("%s-", m[isNetworkACLRuleDirection].(string)))
-
-	return hashcode.String(buf.String())
 }
