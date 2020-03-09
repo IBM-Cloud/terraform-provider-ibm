@@ -142,12 +142,24 @@ func dataSourceIBMContainerVPCCluster() *schema.Resource {
 					},
 				},
 			},
+
+			"ingress_hostname": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"ingress_secret": {
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
+			},
+
 			"resource_group_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "ID of the resource group.",
 				Computed:    true,
 			},
+
 			"public_service_endpoint": {
 				Type:     schema.TypeBool,
 				Computed: true,
@@ -269,6 +281,8 @@ func dataSourceIBMContainerClusterVPCRead(d *schema.ResourceData, meta interface
 	d.Set("private_service_endpoint_url", cls.ServiceEndpoints.PrivateServiceEndpointURL)
 	d.Set("public_service_endpoint", cls.ServiceEndpoints.PublicServiceEndpointEnabled)
 	d.Set("private_service_endpoint", cls.ServiceEndpoints.PrivateServiceEndpointEnabled)
+	d.Set("ingress_hostname", cls.Ingress.HostName)
+	d.Set("ingress_secret", cls.Ingress.SecretName)
 
 	workerFields, err := csClient.Workers().ListWorkers(clusterID, false, targetEnv)
 	if err != nil {
