@@ -14,13 +14,17 @@ import (
 	"github.com/hashicorp/terraform/helper/customdiff"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 )
 
 const (
-	deployRequested  = "Deploy requested"
-	deployInProgress = "Deploy in progress"
-	ready            = "Ready"
-	normal           = "normal"
+	deployRequested    = "Deploy requested"
+	deployInProgress   = "Deploy in progress"
+	ready              = "Ready"
+	normal             = "normal"
+	masterNodeReady    = "MasterNodeReady"
+	oneWorkerNodeReady = "OneWorkerNodeReady"
+	ingressReady       = "IngressReady"
 )
 
 func resourceIBMContainerVpcCluster() *schema.Resource {
@@ -138,6 +142,15 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				Set:      resourceIBMVPCHash,
 			},
 
+			"wait_till": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          ingressReady,
+				DiffSuppressFunc: applyOnce,
+				ValidateFunc:     validation.StringInSlice([]string{masterNodeReady, oneWorkerNodeReady, ingressReady}, true),
+				Description:      "wait_till can be configured for Master Ready, One worker Ready or Ingress Ready",
+			},
+
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -224,6 +237,16 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				Description: "CRN of resource instance",
 			},
 
+			"ingress_hostname": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"ingress_secret": {
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
+			},
+
 			ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -275,6 +298,12 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	flavor := d.Get("flavor").(string)
 	workerCount := d.Get("worker_count").(int)
 
+	// timeoutStage will define the timeout stage
+	var timeoutStage string
+	if v, ok := d.GetOk("wait_till"); ok {
+		timeoutStage = v.(string)
+	}
+
 	var zonesList = make([]v2.Zone, 0)
 
 	if res, ok := d.GetOk("zones"); ok {
@@ -318,9 +347,26 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		return err
 	}
 	d.SetId(cls.ID)
-	_, err = waitForVpcClusterCreate(d, meta)
-	if err != nil {
-		return err
+	switch strings.ToLower(timeoutStage) {
+
+	case strings.ToLower(masterNodeReady):
+		_, err = waitForVpcClusterMasterAvailable(d, meta)
+		if err != nil {
+			return err
+		}
+
+	case strings.ToLower(oneWorkerNodeReady):
+		_, err = waitForVpcClusterOneWorkerAvailable(d, meta)
+		if err != nil {
+			return err
+		}
+
+	case strings.ToLower(ingressReady):
+		_, err = waitForVpcClusterIngressAvailable(d, meta)
+		if err != nil {
+			return err
+		}
+
 	}
 
 	return resourceIBMContainerVpcClusterUpdate(d, meta)
@@ -355,7 +401,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		}
 	}
 
-	if d.HasChange("kube_version") {
+	if d.HasChange("kube_version") && !d.IsNewResource() {
 		ClusterClient, err := meta.(ClientSession).ContainerAPI()
 		if err != nil {
 			return err
@@ -399,7 +445,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		}
 	}
 
-	if d.HasChange("worker_count") {
+	if d.HasChange("worker_count") && !d.IsNewResource() {
 		count := d.Get("worker_count").(int)
 		ClusterClient, err := meta.(ClientSession).ContainerAPI()
 		if err != nil {
@@ -475,6 +521,8 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	d.Set("pod_subnet", cls.PodSubnet)
 	d.Set("state", cls.State)
 	d.Set("region", cls.Region)
+	d.Set("ingress_hostname", cls.Ingress.HostName)
+	d.Set("ingress_secret", cls.Ingress.SecretName)
 	d.Set("albs", flattenVpcAlbs(albs, "all"))
 	d.Set("resource_group_id", cls.ResourceGroupID)
 	d.Set("public_service_endpoint_url", cls.ServiceEndpoints.PublicServiceEndpointURL)
@@ -565,7 +613,7 @@ func waitForVpcClusterDelete(d *schema.ResourceData, meta interface{}) (interfac
 	return deleteStateConf.WaitForState()
 }
 
-func waitForVpcClusterCreate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+func waitForVpcClusterOneWorkerAvailable(d *schema.ResourceData, meta interface{}) (interface{}, error) {
 	targetEnv, err := getVpcClusterTargetHeader(d, meta)
 	if err != nil {
 		return nil, err
@@ -577,7 +625,7 @@ func waitForVpcClusterCreate(d *schema.ResourceData, meta interface{}) (interfac
 	clusterID := d.Id()
 	createStateConf := &resource.StateChangeConf{
 		Pending: []string{deployRequested, deployInProgress},
-		Target:  []string{ready},
+		Target:  []string{normal},
 		Refresh: func() (interface{}, string, error) {
 			workers, err := csClient.Workers().ListByWorkerPool(clusterID, "default", false, targetEnv)
 			if err != nil {
@@ -592,10 +640,78 @@ func waitForVpcClusterCreate(d *schema.ResourceData, meta interface{}) (interfac
 				log.Println("worker health state:  ", worker.Health.State)
 
 				if worker.Health.State == normal {
-					return workers, ready, nil
+					return workers, normal, nil
 				}
 			}
 			return workers, deployInProgress, nil
+
+		},
+		Timeout:                   d.Timeout(schema.TimeoutCreate),
+		Delay:                     10 * time.Second,
+		MinTimeout:                5 * time.Second,
+		ContinuousTargetOccurence: 5,
+	}
+	return createStateConf.WaitForState()
+}
+
+func waitForVpcClusterMasterAvailable(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	if err != nil {
+		return nil, err
+	}
+	csClient, err := meta.(ClientSession).VpcContainerAPI()
+	if err != nil {
+		return nil, err
+	}
+	clusterID := d.Id()
+	createStateConf := &resource.StateChangeConf{
+		Pending: []string{deployRequested, deployInProgress},
+		Target:  []string{ready},
+		Refresh: func() (interface{}, string, error) {
+			clusterInfo, clusterInfoErr := csClient.Clusters().GetCluster(clusterID, targetEnv)
+
+			if err != nil || clusterInfoErr != nil {
+				return clusterInfo, deployInProgress, err
+			}
+
+			if clusterInfo.Lifecycle.MasterStatus == ready {
+				return clusterInfo, ready, nil
+			}
+			return clusterInfo, deployInProgress, nil
+
+		},
+		Timeout:                   d.Timeout(schema.TimeoutCreate),
+		Delay:                     10 * time.Second,
+		MinTimeout:                5 * time.Second,
+		ContinuousTargetOccurence: 5,
+	}
+	return createStateConf.WaitForState()
+}
+
+func waitForVpcClusterIngressAvailable(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	if err != nil {
+		return nil, err
+	}
+	csClient, err := meta.(ClientSession).VpcContainerAPI()
+	if err != nil {
+		return nil, err
+	}
+	clusterID := d.Id()
+	createStateConf := &resource.StateChangeConf{
+		Pending: []string{deployRequested, deployInProgress},
+		Target:  []string{ready},
+		Refresh: func() (interface{}, string, error) {
+			clusterInfo, clusterInfoErr := csClient.Clusters().GetCluster(clusterID, targetEnv)
+
+			if err != nil || clusterInfoErr != nil {
+				return clusterInfo, deployInProgress, err
+			}
+
+			if clusterInfo.Ingress.HostName != "" {
+				return clusterInfo, ready, nil
+			}
+			return clusterInfo, deployInProgress, nil
 
 		},
 		Timeout:                   d.Timeout(schema.TimeoutCreate),
