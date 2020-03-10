@@ -48,7 +48,17 @@ The following arguments are supported:
 * `worker_count` - (Optional, Int) The number of worker nodes per zone in the default worker pool. Default value '1'.
 * `resource_group_id` - (Optional, Forces new resource, string) The ID of the resource group. You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
 * `tags` - (Optional, array of strings) Tags associated with the container cluster instance.  
-  **NOTE**: For users on account to add tags to a resource, they must be assigned the appropriate access. Learn more about tags permission [here](https://cloud.ibm.com/docs/resources?topic=resources-access)
+* `wait_till` - (Optional, String) The cluster creation happens in multi-stages. To avoid the longer wait times for resource execution, this field is introduced.
+Resource will wait for only the specified stage and complete execution. The supported stages are
+  - *MasterNodeReady*: resource will wait till the master node is ready
+  - *OneWorkerNodeReady*: resource will wait till atleast one worker node becomes to ready state
+  - *IngressReady*: resource will wait till the ingress-host and ingress-secret are available.
+
+  Default value: IngressReady
+
+**NOTE**: 
+1. For users on account to add tags to a resource, they must be assigned the appropriate access. Learn more about tags permission [here](https://cloud.ibm.com/docs/resources?topic=resources-access) 
+2. `wait_till` is set only for the first time creation of the resource, modification in the further runs will not any impacts.
 
 
 ## Attribute Reference
@@ -57,6 +67,8 @@ The following attributes are exported:
 
 * `id` - Id of the cluster
 * `crn` - CRN of the cluster.
+* `ingress_hostname` - The Ingress hostname.
+* `ingress_secret` - The Ingress secret.
 * `master_status` - Status of kubernetes master.
 * `master_url` - The Master server URL.
 * `private_service_endpoint_url` - Private service endpoint url.
