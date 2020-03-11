@@ -467,7 +467,7 @@ func isWaitForPIInstanceAvailable(client *st.IBMPIInstanceClient, id string, tim
 		Refresh:    isPIInstanceRefreshFunc(client, id, powerinstanceid),
 		Delay:      3 * time.Minute,
 		MinTimeout: 30 * time.Second,
-		Timeout:    30 * time.Minute,
+		Timeout:    timeout,
 	}
 
 	return stateConf.WaitForState()
