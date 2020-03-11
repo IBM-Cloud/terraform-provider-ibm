@@ -281,7 +281,14 @@ func resourceIBMISFloatingIPDelete(d *schema.ResourceData, meta interface{}) err
 
 	err = floatingipC.Delete(d.Id())
 	if err != nil {
-		return err
+		iserror, ok := err.(iserrors.RiaasError)
+		if ok {
+			if len(iserror.Payload.Errors) == 1 &&
+				iserror.Payload.Errors[0].Code == "service_error" {
+				d.SetId("")
+				return nil
+			}
+		}
 	}
 
 	_, err = isWaitForFloatingIPDeleted(floatingipC, d.Id(), d.Timeout(schema.TimeoutDelete))
