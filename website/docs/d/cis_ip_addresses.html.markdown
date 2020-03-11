@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_cis_ip_addresses
 
-Import the IP addresses used for name servers by Cloud Internet Services. You can then reference the IP addresses by interpolation to configure firewalls, network ACLs and Security Groups to white list these addresses. 
+Import the lists of all IP addresses used by the CIS proxy. The CIS proxy uses only addresses from this list, for both client-to-proxy and proxy-to-origin communication. You can then reference the IP addresses by interpolation to configure firewalls, network ACLs and Security Groups to white list these addresses. 
 
 ## Example Usage
 
