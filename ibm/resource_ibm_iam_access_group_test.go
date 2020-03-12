@@ -14,7 +14,7 @@ import (
 )
 
 func TestAccIBMIAMAccessGroup_Basic(t *testing.T) {
-	var conf models.AccessGroup
+	var conf models.AccessGroupV2
 	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
 	updateName := fmt.Sprintf("terraform_%d", acctest.RandInt())
 
@@ -53,7 +53,7 @@ func TestAccIBMIAMAccessGroup_Basic(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroup_import(t *testing.T) {
-	var conf models.AccessGroup
+	var conf models.AccessGroupV2
 	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
 	resourceName := "ibm_iam_access_group.accgroup"
 
@@ -80,7 +80,7 @@ func TestAccIBMIAMAccessGroup_import(t *testing.T) {
 }
 
 func testAccCheckIBMIAMAccessGroupDestroy(s *terraform.State) error {
-	accClient, err := testAccProvider.Meta().(ClientSession).IAMUUMAPI()
+	accClient, err := testAccProvider.Meta().(ClientSession).IAMUUMAPIV2()
 	if err != nil {
 		return err
 	}
@@ -102,7 +102,7 @@ func testAccCheckIBMIAMAccessGroupDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMIAMAccessGroupExists(n string, obj models.AccessGroup) resource.TestCheckFunc {
+func testAccCheckIBMIAMAccessGroupExists(n string, obj models.AccessGroupV2) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -110,7 +110,7 @@ func testAccCheckIBMIAMAccessGroupExists(n string, obj models.AccessGroup) resou
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		accClient, err := testAccProvider.Meta().(ClientSession).IAMUUMAPI()
+		accClient, err := testAccProvider.Meta().(ClientSession).IAMUUMAPIV2()
 		if err != nil {
 			return err
 		}

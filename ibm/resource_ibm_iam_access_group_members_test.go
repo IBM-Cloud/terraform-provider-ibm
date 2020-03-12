@@ -84,7 +84,7 @@ func TestAccIBMIAMAccessGroupMember_import(t *testing.T) {
 }
 
 func testAccCheckIBMIAMAccessGroupMemberDestroy(s *terraform.State) error {
-	accClient, err := testAccProvider.Meta().(ClientSession).IAMUUMAPI()
+	accClient, err := testAccProvider.Meta().(ClientSession).IAMUUMAPIV2()
 	if err != nil {
 		return err
 	}

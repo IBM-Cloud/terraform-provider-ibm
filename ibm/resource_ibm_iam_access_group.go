@@ -3,7 +3,7 @@ package ibm
 import (
 	"fmt"
 
-	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
+	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
 	"github.com/IBM-Cloud/bluemix-go/models"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
@@ -48,13 +48,15 @@ func resourceIBMIAMAccessGroup() *schema.Resource {
 }
 
 func resourceIBMIAMAccessGroupCreate(d *schema.ResourceData, meta interface{}) error {
-	iamuumClient, err := meta.(ClientSession).IAMUUMAPI()
+	iamuumClient, err := meta.(ClientSession).IAMUUMAPIV2()
 	if err != nil {
 		return err
 	}
 
-	request := models.AccessGroup{
-		Name: d.Get("name").(string),
+	request := models.AccessGroupV2{
+		AccessGroup: models.AccessGroup{
+			Name: d.Get("name").(string),
+		},
 	}
 
 	if des, ok := d.GetOk("description"); ok {
@@ -77,7 +79,7 @@ func resourceIBMIAMAccessGroupCreate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceIBMIAMAccessGroupRead(d *schema.ResourceData, meta interface{}) error {
-	iamuumClient, err := meta.(ClientSession).IAMUUMAPI()
+	iamuumClient, err := meta.(ClientSession).IAMUUMAPIV2()
 	if err != nil {
 		return err
 	}
@@ -97,14 +99,14 @@ func resourceIBMIAMAccessGroupRead(d *schema.ResourceData, meta interface{}) err
 
 func resourceIBMIAMAccessGroupUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	iamuumClient, err := meta.(ClientSession).IAMUUMAPI()
+	iamuumClient, err := meta.(ClientSession).IAMUUMAPIV2()
 	if err != nil {
 		return err
 	}
 	agrpID := d.Id()
 
 	hasChange := false
-	updateReq := iamuumv1.AccessGroupUpdateRequest{}
+	updateReq := iamuumv2.AccessGroupUpdateRequest{}
 
 	if d.HasChange("name") {
 		updateReq.Name = d.Get("name").(string)
@@ -128,7 +130,7 @@ func resourceIBMIAMAccessGroupUpdate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceIBMIAMAccessGroupDelete(d *schema.ResourceData, meta interface{}) error {
-	iamuumClient, err := meta.(ClientSession).IAMUUMAPI()
+	iamuumClient, err := meta.(ClientSession).IAMUUMAPIV2()
 	if err != nil {
 		return err
 	}
@@ -146,7 +148,7 @@ func resourceIBMIAMAccessGroupDelete(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceIBMIAMAccessGroupExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	iamuumClient, err := meta.(ClientSession).IAMUUMAPI()
+	iamuumClient, err := meta.(ClientSession).IAMUUMAPIV2()
 	if err != nil {
 		return false, err
 	}
