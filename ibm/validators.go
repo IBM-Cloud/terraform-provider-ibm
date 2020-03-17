@@ -973,7 +973,7 @@ const (
 	TypeInt
 	TypeFloat
 	TypeString
-	TypeList
+	TypeStringList
 	TypeIntList
 )
 
@@ -1012,6 +1012,11 @@ type ValidateSchema struct {
 
 	// Is this nullable
 	Nullable bool
+
+	Optional bool
+	Required bool
+	Default  interface{}
+	ForceNew bool
 }
 
 type ResourceValidator struct {
@@ -1130,7 +1135,7 @@ func (vs ValidateSchema) GetValue(valueConstraint ValueConstraintType) interface
 		return f
 	case TypeString:
 		return valueToConvert
-	case TypeList:
+	case TypeStringList:
 		// Convert comma separated string to array
 		arr := strings.Split(valueToConvert, ",")
 		for i, ele := range arr {
@@ -1184,7 +1189,7 @@ func (vs ValidateSchema) Zero() interface{} {
 		return 0.0
 	case TypeString:
 		return ""
-	case TypeList:
+	case TypeStringList:
 		return make([]string, 0)
 	case TypeIntList:
 		return make([]int, 0)
