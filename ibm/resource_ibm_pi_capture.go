@@ -110,7 +110,7 @@ func resourceIBMPICaptureCreate(d *schema.ResourceData, meta interface{}) error 
 		CaptureVolumeIds:      nil,
 		CloudStorageAccessKey: "",
 		CloudStorageImagePath: "",
-		CloudStorageRegion:    nil,
+		CloudStorageRegion:    "",
 		CloudStorageSecretKey: "",
 	}
 

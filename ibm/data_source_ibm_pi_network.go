@@ -59,6 +59,10 @@ func dataSourceIBMPINetwork() *schema.Resource {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
+			"name": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }

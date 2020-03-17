@@ -134,7 +134,7 @@ func resourceIBMPIInstance() *schema.Resource {
 			helpers.PIInstanceProcType: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"dedicated", "shared"}),
+				ValidateFunc: validateAllowedStringValue([]string{"dedicated", "shared", "capped"}),
 			},
 			helpers.PIInstanceSSHKeyName: {
 				Type:     schema.TypeString,
@@ -147,7 +147,7 @@ func resourceIBMPIInstance() *schema.Resource {
 			helpers.PIInstanceSystemType: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"any", "s922", "e880"}),
+				ValidateFunc: validateAllowedStringValue([]string{"any", "s922", "e880", "e980"}),
 			},
 			helpers.PIInstanceReplicants: {
 				Type:     schema.TypeFloat,
