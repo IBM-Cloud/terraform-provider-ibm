@@ -22,7 +22,7 @@ import (
 
 const (
 	databaseInstanceSuccessStatus  = "active"
-	databaseInstanceProgressStatus = "in progress"
+	databaseInstanceProgressStatus = "provisioning"
 	databaseInstanceInactiveStatus = "inactive"
 	databaseInstanceFailStatus     = "failed"
 	databaseInstanceRemovedStatus  = "removed"
