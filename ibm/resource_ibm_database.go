@@ -21,11 +21,12 @@ import (
 )
 
 const (
-	databaseInstanceSuccessStatus  = "active"
-	databaseInstanceProgressStatus = "provisioning"
-	databaseInstanceInactiveStatus = "inactive"
-	databaseInstanceFailStatus     = "failed"
-	databaseInstanceRemovedStatus  = "removed"
+	databaseInstanceSuccessStatus      = "active"
+	databaseInstanceProvisioningStatus = "provisioning"
+	databaseInstanceProgressStatus     = "in progress"
+	databaseInstanceInactiveStatus     = "inactive"
+	databaseInstanceFailStatus         = "failed"
+	databaseInstanceRemovedStatus      = "removed"
 )
 
 const (
@@ -1155,7 +1156,7 @@ func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, ins
 	}
 
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{databaseInstanceProgressStatus, databaseInstanceInactiveStatus},
+		Pending: []string{databaseInstanceProgressStatus, databaseInstanceInactiveStatus, databaseInstanceProvisioningStatus},
 		Target:  []string{databaseInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
 			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
