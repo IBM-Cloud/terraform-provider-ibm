@@ -28,7 +28,13 @@ The following attributes are exported:
   * `name` - The name for this subnet.
   * `id` - The unique identifier for this subnet.
   * `ipv4_cidr_block` - The IPv4 CIDR block for this subnet.
+  * `ipv6_cidr_block` - The IPv6 CIDR block for this subnet when used.
   * `status` - The status of this subnet.
-
-
-
+  * `crn` - The CRN for this image.
+  * `available_ipv4_address_count` - Amount of addresses available within this subnet.
+  * `total_ipv4_address_count` - Amount of addresses used within this subnet.
+  * `network_acl` - Security group attached to this subnet.
+  * `public_gateway` - Public gateway attached to this subnet.
+  * `resource_group` - Resource group where this subnet is created.
+  * `vpc` - VPC where this subnet is created.
+  * `zone` - Zone where this subnet is created.
