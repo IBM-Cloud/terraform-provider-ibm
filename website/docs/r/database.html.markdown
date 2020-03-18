@@ -101,6 +101,7 @@ The following arguments are supported:
 * `whitelist` - (Optional) - Multiple blocks allowed             
   * `address` - IP address or range of db client addresses to be whitelisted in CIDR format, `172.168.1.2/32`
   * `description` -  Unique description for white list range
+* `guid` - Unique identifier of resource instance.
 
 
 

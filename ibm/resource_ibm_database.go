@@ -104,6 +104,13 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+
+			"guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Unique identifier of resource instance",
+			},
+
 			"adminuser": {
 				Description: "The admin user id for the instance",
 				Type:        schema.TypeString,
@@ -706,6 +713,8 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("resource_group_id", instance.ResourceGroupID)
 	d.Set("parameters", Flatten(instance.Parameters))
 	d.Set("location", instance.RegionID)
+	d.Set("guid", instance.Guid)
+
 	if instance.Parameters != nil {
 		if endpoint, ok := instance.Parameters["service-endpoints"]; ok {
 			if endpoint == "private" {
