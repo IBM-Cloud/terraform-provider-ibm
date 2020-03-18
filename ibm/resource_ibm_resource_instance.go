@@ -17,11 +17,12 @@ import (
 )
 
 const (
-	rsInstanceSuccessStatus  = "active"
-	rsInstanceProgressStatus = "in progress"
-	rsInstanceInactiveStatus = "inactive"
-	rsInstanceFailStatus     = "failed"
-	rsInstanceRemovedStatus  = "removed"
+	rsInstanceSuccessStatus      = "active"
+	rsInstanceProgressStatus     = "in progress"
+	rsInstanceProvisioningStatus = "provisioning"
+	rsInstanceInactiveStatus     = "inactive"
+	rsInstanceFailStatus         = "failed"
+	rsInstanceRemovedStatus      = "removed"
 )
 
 func resourceIBMResourceInstance() *schema.Resource {
@@ -458,7 +459,7 @@ func waitForResourceInstanceCreate(d *schema.ResourceData, meta interface{}) (in
 	instanceID := d.Id()
 
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{rsInstanceProgressStatus, rsInstanceInactiveStatus},
+		Pending: []string{rsInstanceProgressStatus, rsInstanceInactiveStatus, rsInstanceProvisioningStatus},
 		Target:  []string{rsInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
 			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
