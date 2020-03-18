@@ -977,7 +977,7 @@ func getItemPriceId(items []datatypes.Product_Item, categoryCode string, keyName
 						capacityMax := -1
 						var err error
 
-						if price.CapacityRestrictionMinimum != nil && price.CapacityRestrictionMaximum != nil && *price.CapacityRestrictionType == "CORE" {
+						if price.CapacityRestrictionMinimum != nil && price.CapacityRestrictionMaximum != nil && (*price.CapacityRestrictionType == "CORE" || *price.CapacityRestrictionType == "PROCESSOR") {
 							capacityMin, err = strconv.Atoi(*price.CapacityRestrictionMinimum)
 							if err != nil {
 								return datatypes.Product_Item_Price{}, err
@@ -999,7 +999,6 @@ func getItemPriceId(items []datatypes.Product_Item, categoryCode string, keyName
 
 								} else {
 									return datatypes.Product_Item_Price{Id: price.Id}, nil
-
 								}
 
 							}
@@ -1063,7 +1062,9 @@ func getMonthlyBareMetalOrder(d *schema.ResourceData, meta interface{}) (datatyp
 
 	coreCapacity := -1
 
-	coreCapacity = getCoreCapacity(items, "server", d.Get("process_key_name").(string))
+	restrictionType := getCapacityRestrictionType(items, "os", osKeyName.(string))
+
+	coreCapacity = getCoreCapacity(items, "server", d.Get("process_key_name").(string), restrictionType)
 	if err != nil {
 		return datatypes.Container_Product_Order{}, err
 	}
@@ -1499,6 +1500,11 @@ func addCommomDefaultPrices(d *schema.ResourceData, meta interface{}, order data
 		order.Prices = append(order.Prices, vulnerabilityScanner)
 	}
 
+	sapExists, sapCertified := getCommonItemPriceID(items, "sap_certified_server", "SAP_HANA_NETWEAVER_CERTIFIED_SERVERS")
+	if sapExists {
+		order.Prices = append(order.Prices, sapCertified)
+	}
+
 	if _, ok := d.GetOk("storage_groups"); !ok {
 		diskExists, diskController := getCommonItemPriceID(items, "disk_controller", "DISK_CONTROLLER_NONRAID")
 		if diskExists {
@@ -1533,18 +1539,41 @@ func getCommonItemPriceID(items []datatypes.Product_Item, categoryCode string, k
 	return false, datatypes.Product_Item_Price{}
 }
 
-func getCoreCapacity(items []datatypes.Product_Item, categoryCode string, keyName string) int {
+func getCoreCapacity(items []datatypes.Product_Item, categoryCode string, keyName string, restrictionType string) int {
 	availableItems := ""
 	for _, item := range items {
 		for _, itemCategory := range item.Categories {
 			if *itemCategory.CategoryCode == categoryCode {
 				availableItems = availableItems + *item.KeyName + " ( " + *item.Description + " ) , "
-				if *item.KeyName == keyName && item.TotalPhysicalCoreCapacity != nil {
-					return *item.TotalPhysicalCoreCapacity
+				if *item.KeyName == keyName {
+					if restrictionType == "PROCESSOR" && item.TotalProcessorCapacity != nil {
+						return *item.TotalProcessorCapacity
+					}
+					if restrictionType == "CORE" && item.TotalPhysicalCoreCapacity != nil {
+						return *item.TotalPhysicalCoreCapacity
+					}
 
 				}
 			}
 		}
 	}
 	return -1
+}
+
+func getCapacityRestrictionType(items []datatypes.Product_Item, categoryCode string, keyName string) string {
+	for _, item := range items {
+		for _, itemCategory := range item.Categories {
+			if *itemCategory.CategoryCode == categoryCode {
+				if *item.KeyName == keyName {
+					for _, price := range item.Prices {
+						if price.CapacityRestrictionType != nil {
+							return *price.CapacityRestrictionType
+						}
+
+					}
+				}
+			}
+		}
+	}
+	return ""
 }
