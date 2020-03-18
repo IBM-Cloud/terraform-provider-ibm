@@ -19,11 +19,12 @@ import (
 )
 
 const (
-	cisInstanceSuccessStatus  = "active"
-	cisInstanceProgressStatus = "in progress"
-	cisInstanceInactiveStatus = "inactive"
-	cisInstanceFailStatus     = "failed"
-	cisInstanceRemovedStatus  = "removed"
+	cisInstanceSuccessStatus      = "active"
+	cisInstanceProgressStatus     = "in progress"
+	cisInstanceProvisioningStatus = "provisioning"
+	cisInstanceInactiveStatus     = "inactive"
+	cisInstanceFailStatus         = "failed"
+	cisInstanceRemovedStatus      = "removed"
 )
 
 func resourceIBMCISInstance() *schema.Resource {
@@ -396,7 +397,7 @@ func waitForCISInstanceCreate(d *schema.ResourceData, meta interface{}, instance
 	//instanceID := d.Id()
 
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{cisInstanceProgressStatus, cisInstanceInactiveStatus},
+		Pending: []string{cisInstanceProgressStatus, cisInstanceInactiveStatus, cisInstanceProvisioningStatus},
 		Target:  []string{cisInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
 			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
