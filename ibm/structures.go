@@ -357,6 +357,19 @@ func flattenVpcZones(list []containerv2.ZoneResp) []map[string]interface{} {
 	}
 	return zones
 }
+func flattenConditions(list []iamuumv2.Condition) []map[string]interface{} {
+	conditions := make([]map[string]interface{}, len(list))
+	for i, cond := range list {
+		l := map[string]interface{}{
+			"claim":    cond.Claim,
+			"operator": cond.Operator,
+			"value":    strings.ReplaceAll(cond.Value, "\"", ""),
+		}
+		log.Println("val=", strings.ReplaceAll(cond.Value, "\"", ""))
+		conditions[i] = l
+	}
+	return conditions
+}
 func flattenSubnets(list []containerv2.Subnet) []map[string]interface{} {
 	subs := make([]map[string]interface{}, len(list))
 	for i, sub := range list {
