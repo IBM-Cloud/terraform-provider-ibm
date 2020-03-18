@@ -49,6 +49,7 @@ The following attributes are exported:
   `connectionstrings.1.name = admin`
   `connectionstrings.1.string = postgres://admin:$PASSWORD@79226bd4-4076-4873-b5ce-b1dba48ff8c4.b8a5e798d2d04f2e860e54e5d042c915.databases.appdomain.cloud:32554/ibmclouddb?sslmode=verify-full`
 * `whitelist` - List of whitelisted IP addresses or ranges.
+* `guid` - Unique identifier of resource instance.
 
 Note that the provider only exports the admin userid and associated connectionstring. It does not export any userids additionally configured for the instance. This is due to a lack of ICD function. 
 

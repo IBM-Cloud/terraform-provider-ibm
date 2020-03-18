@@ -36,6 +36,12 @@ func dataSourceIBMDatabaseInstance() *schema.Resource {
 				Optional:    true,
 			},
 
+			"guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Unique identifier of resource instance",
+			},
+
 			"service": {
 				Description: "The name of the Cloud Internet database service",
 				Type:        schema.TypeString,
@@ -446,6 +452,7 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set("resource_group_id", instance.ResourceGroupID)
 	d.Set("parameters", Flatten(instance.Parameters))
 	d.Set("location", instance.RegionID)
+	d.Set("guid", instance.Guid)
 
 	serviceOff, err := rsCatRepo.GetServiceName(instance.ServiceID)
 	if err != nil {
