@@ -177,8 +177,11 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("Error retrieving service offering: %s", err)
 	}
 
-	metadata := serviceOff[0].GetMetadata()
-	if _, ok := metadata.(*models.ServiceResourceMetadata); !ok {
+	if metadata, ok := serviceOff[0].Metadata.(*models.ServiceResourceMetadata); ok {
+		if !metadata.Service.RCProvisionable {
+			return fmt.Errorf("%s cannot be provisioned by resource controller", serviceName)
+		}
+	} else {
 		return fmt.Errorf("Cannot create instance of resource %s\nUse 'ibm_service_instance' if the resource is a Cloud Foundry service", serviceName)
 	}
 
