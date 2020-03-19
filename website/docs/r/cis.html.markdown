@@ -60,6 +60,7 @@ The following attributes are exported:
 
 * `id` - The unique identifier of the new CIS instance.
 * `status` - Status of resource instance.
+* `guid` - Unique identifier of resource instance
 
 
 ## Import

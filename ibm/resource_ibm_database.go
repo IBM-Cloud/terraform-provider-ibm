@@ -89,6 +89,12 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Required:    true,
 			},
 
+			"guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Unique identifier of resource instance",
+			},
+
 			"service": {
 				Description:  "The name of the Cloud Internet database service",
 				Type:         schema.TypeString,
@@ -709,6 +715,7 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("resource_group_id", instance.ResourceGroupID)
 	d.Set("parameters", flatmap.Flatten(instance.Parameters))
 	d.Set("location", instance.RegionID)
+	d.Set("guid", instance.Guid)
 	if instance.Parameters != nil {
 		if endpoint, ok := instance.Parameters["service-endpoints"]; ok {
 			if endpoint == "private" {

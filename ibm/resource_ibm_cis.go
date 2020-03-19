@@ -55,6 +55,12 @@ func resourceIBMCISInstance() *schema.Resource {
 				Description: "The name of the Cloud Internet Services offering",
 			},
 
+			"guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Unique identifier of resource instance",
+			},
+
 			"plan": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -251,6 +257,7 @@ func resourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("resource_group_id", instance.ResourceGroupID)
 	d.Set("parameters", flatmap.Flatten(instance.Parameters))
 	d.Set("location", instance.RegionID)
+	d.Set("guid", instance.Guid)
 
 	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
 	if err != nil {
