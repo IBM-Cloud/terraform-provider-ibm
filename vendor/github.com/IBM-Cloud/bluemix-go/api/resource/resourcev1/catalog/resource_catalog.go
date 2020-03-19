@@ -284,7 +284,7 @@ func (r *resourceCatalog) GetDeploymentAlias(servicePlanID string, instanceTarge
 
 func visitServiceTree(rootService models.Service, name string) []models.Service {
 	services := []models.Service{}
-	if rootService.Name == name {
+	if rootService.Name == name && isService(rootService) {
 		services = append(services, rootService)
 	}
 	for _, child := range rootService.Children {
@@ -347,4 +347,12 @@ func (r *resourceCatalog) GetServicePlans(service models.Service) ([]models.Serv
 	}
 
 	return servicePlans, nil
+}
+
+func isService(e models.Service) bool {
+	// TODO: COS is 'iaas' kind, but considered to be a service
+	if e.Kind == "service" || e.Kind == "iaas" {
+		return true
+	}
+	return false
 }
