@@ -67,7 +67,6 @@ func resourceIBMContainerALB() *schema.Resource {
 			"region": {
 				Type:       schema.TypeString,
 				Optional:   true,
-				ForceNew:   true,
 				Deprecated: "This field is deprecated",
 			},
 		},
