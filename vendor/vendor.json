@@ -14,8 +14,8 @@
 		{
 			"checksumSHA1": "pyf+/o97FMKnK1vwp+hEPmlbEXQ=",
 			"path": "github.com/IBM-Cloud/bluemix-go",
-			"revision": "b3b74cded184bf920d98040f7b113711b3d072cc",
-			"revisionTime": "2020-03-02T09:33:11Z"
+			"revision": "42bf472738fd2fbf88cad3964d8c82f75fadeb47",
+			"revisionTime": "2020-03-19T04:58:47Z"
 		},
 		{
 			"checksumSHA1": "sWarTa3lecAaW/8lQgE7c0R0B6o=",
@@ -102,10 +102,10 @@
 			"revisionTime": "2019-12-11T04:38:12Z"
 		},
 		{
-			"checksumSHA1": "TfmZTEouFcflF+TbxUM84Ke1oas=",
+			"checksumSHA1": "59tlepdohfoAaGX5VvYpetftqbA=",
 			"path": "github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/catalog",
-			"revision": "ac9b271eaf42942cb8c2c2e68b8343466ae6b3cc",
-			"revisionTime": "2019-12-11T04:38:12Z"
+			"revision": "42bf472738fd2fbf88cad3964d8c82f75fadeb47",
+			"revisionTime": "2020-03-19T04:58:47Z"
 		},
 		{
 			"checksumSHA1": "qvMOpCDua2zH+crydf3w/cFXLCE=",
@@ -480,10 +480,10 @@
 			"revisionTime": "2019-12-11T04:38:12Z"
 		},
 		{
-			"checksumSHA1": "McdkjTnJDkbGDlWsgN9GmCw+5TQ=",
+			"checksumSHA1": "u+SeaP7tYKkf8jdCtkvIpt/WSQk=",
 			"path": "github.com/IBM-Cloud/bluemix-go/models",
-			"revision": "0d5220c9f2ba8b4753fd4529d98348f782ae4b80",
-			"revisionTime": "2020-02-24T15:05:57Z"
+			"revision": "42bf472738fd2fbf88cad3964d8c82f75fadeb47",
+			"revisionTime": "2020-03-19T04:58:47Z"
 		},
 		{
 			"path": "github.com/IBM-Cloud/bluemix-go/models/certificate_manager.go",

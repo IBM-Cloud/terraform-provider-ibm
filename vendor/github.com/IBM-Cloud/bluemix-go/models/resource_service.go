@@ -13,34 +13,9 @@ type Service struct {
 	URL        string `json:"url"`
 	Kind       string `json:"kind"`
 
-	Metadata json.RawMessage `json:"metadata"`
+	Metadata ServiceMetadata `json:"-"`
 	Children []Service       `json:"children"`
 	Active   bool            `json:"active"`
-}
-
-func (c Service) GetMetadata() ServiceMetadata {
-	if len(c.Metadata) == 0 {
-		return nil
-	}
-
-	var metadata ServiceMetadata
-	switch c.Kind {
-	case "runtime":
-		metadata = &RuntimeResourceMetadata{}
-	case "service", "iaas":
-		metadata = &ServiceResourceMetadata{}
-	case "platform_service":
-		metadata = &PlatformServiceResourceMetadata{}
-	case "template":
-		metadata = &TemplateResourceMetadata{}
-	default:
-		return nil
-	}
-	err := json.Unmarshal(c.Metadata, metadata)
-	if err != nil {
-		return nil
-	}
-	return metadata
 }
 
 type ServicePlan struct {
@@ -103,4 +78,45 @@ type TemplateResourceMetadata struct {
 }
 
 type RuntimeResourceMetadata struct {
+}
+
+// UnmarshalJSON provide custom JSON unmarshal behavior to support multiple types
+// of `metadata`
+func (s *Service) UnmarshalJSON(data []byte) error {
+	type Copy Service
+
+	trial := &struct {
+		*Copy
+		Metadata json.RawMessage `json:"metadata"`
+	}{
+		Copy: (*Copy)(s),
+	}
+
+	if err := json.Unmarshal(data, trial); err != nil {
+		return err
+	}
+
+	if len(trial.Metadata) == 0 {
+		s.Metadata = nil
+		return nil
+	}
+
+	switch s.Kind {
+	case "runtime":
+		s.Metadata = &RuntimeResourceMetadata{}
+	case "service", "iaas":
+		s.Metadata = &ServiceResourceMetadata{}
+	case "platform_service":
+		s.Metadata = &PlatformServiceResourceMetadata{}
+	case "template":
+		s.Metadata = &TemplateResourceMetadata{}
+	default:
+		s.Metadata = nil
+		return nil
+	}
+
+	if err := json.Unmarshal(trial.Metadata, s.Metadata); err != nil {
+		return err
+	}
+	return nil
 }
