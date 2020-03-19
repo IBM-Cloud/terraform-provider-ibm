@@ -42,6 +42,13 @@ func dataSourceIBMDatabaseInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+
+			"guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Unique identifier of resource instance",
+			},
+
 			"plan": {
 				Description: "The plan type of the Database instance",
 				Type:        schema.TypeString,
@@ -447,6 +454,7 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set("resource_group_id", instance.ResourceGroupID)
 	d.Set("parameters", flatmap.Flatten(instance.Parameters))
 	d.Set("location", instance.RegionID)
+	d.Set("guid", instance.Guid)
 
 	serviceOff, err := rsCatRepo.GetServiceName(instance.ServiceID)
 	if err != nil {

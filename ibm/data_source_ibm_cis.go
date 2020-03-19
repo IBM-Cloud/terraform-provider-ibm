@@ -35,6 +35,12 @@ func dataSourceIBMCISInstance() *schema.Resource {
 				Computed:    true,
 			},
 
+			"guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Unique identifier of resource instance",
+			},
+
 			"service": {
 				Description: "The name of the Cloud Internet Services offering, 'internet-svcs'",
 				Type:        schema.TypeString,
@@ -165,6 +171,7 @@ func dataSourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set("status", instance.State)
 	d.Set("resource_group_id", instance.ResourceGroupID)
 	d.Set("location", instance.RegionID)
+	d.Set("guid", instance.Guid)
 	serviceOff, err := rsCatRepo.GetServiceName(instance.ServiceID)
 	if err != nil {
 		return fmt.Errorf("Error retrieving service offering: %s", err)
