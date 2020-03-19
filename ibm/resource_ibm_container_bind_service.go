@@ -64,21 +64,18 @@ func resourceIBMContainerBindService() *schema.Resource {
 				Description: "The bluemix organization guid this cluster belongs to",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Deprecated:  "This field is deprecated",
 			},
 			"space_guid": {
 				Description: "The bluemix space guid this cluster belongs to",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Deprecated:  "This field is deprecated",
 			},
 			"account_guid": {
 				Description: "The bluemix account guid this cluster belongs to",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Deprecated:  "This field is deprecated",
 			},
 			"key": {
@@ -94,7 +91,6 @@ func resourceIBMContainerBindService() *schema.Resource {
 			"region": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "The cluster region",
 				Deprecated:  "This field is deprecated",
 			},

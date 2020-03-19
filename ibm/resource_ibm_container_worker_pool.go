@@ -111,7 +111,6 @@ func resourceIBMContainerWorkerPool() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
 				Description: "The worker pool region",
 				Deprecated:  "This field is deprecated",
 			},

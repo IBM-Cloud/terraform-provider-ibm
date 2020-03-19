@@ -80,7 +80,6 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Optional:    true,
 				Deprecated:  "This field is deprecated",
 				Computed:    true,
-				ForceNew:    true,
 				Description: "The cluster region",
 			},
 			"workers": {
@@ -208,7 +207,6 @@ func resourceIBMContainerCluster() *schema.Resource {
 
 			"billing": {
 				Type:       schema.TypeString,
-				ForceNew:   true,
 				Optional:   true,
 				Deprecated: "This field is deprecated",
 			},
@@ -261,7 +259,6 @@ func resourceIBMContainerCluster() *schema.Resource {
 			"is_trusted": {
 				Type:       schema.TypeBool,
 				Optional:   true,
-				ForceNew:   true,
 				Deprecated: "This field is deprecated",
 			},
 			"server_url": {
@@ -309,21 +306,18 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Description: "The bluemix organization guid this cluster belongs to",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Deprecated:  "This field is deprecated",
 			},
 			"space_guid": {
 				Description: "The bluemix space guid this cluster belongs to",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Deprecated:  "This field is deprecated",
 			},
 			"account_guid": {
 				Description: "The bluemix account guid this cluster belongs to",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Deprecated:  "This field is deprecated",
 			},
 			"wait_time_minutes": {
