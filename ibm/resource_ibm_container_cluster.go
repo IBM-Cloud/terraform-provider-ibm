@@ -206,9 +206,10 @@ func resourceIBMContainerCluster() *schema.Resource {
 			},
 
 			"billing": {
-				Type:       schema.TypeString,
-				Optional:   true,
-				Deprecated: "This field is deprecated",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Deprecated:       "This field is deprecated",
+				DiffSuppressFunc: applyOnce,
 			},
 			"public_vlan_id": {
 				Type:     schema.TypeString,
@@ -257,9 +258,10 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Default:  false,
 			},
 			"is_trusted": {
-				Type:       schema.TypeBool,
-				Optional:   true,
-				Deprecated: "This field is deprecated",
+				Type:             schema.TypeBool,
+				Optional:         true,
+				Deprecated:       "This field is deprecated",
+				DiffSuppressFunc: applyOnce,
 			},
 			"server_url": {
 				Type:     schema.TypeString,
