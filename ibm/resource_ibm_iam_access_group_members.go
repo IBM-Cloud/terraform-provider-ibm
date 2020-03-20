@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
+	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
 	"github.com/IBM-Cloud/bluemix-go/crn"
 	"github.com/IBM-Cloud/bluemix-go/models"
 
@@ -59,7 +59,7 @@ func resourceIBMIAMAccessGroupMembers() *schema.Resource {
 }
 
 func resourceIBMIAMAccessGroupMembersCreate(d *schema.ResourceData, meta interface{}) error {
-	iamuumClient, err := meta.(ClientSession).IAMUUMAPI()
+	iamuumClient, err := meta.(ClientSession).IAMUUMAPIV2()
 	if err != nil {
 		return err
 	}
@@ -106,7 +106,7 @@ func resourceIBMIAMAccessGroupMembersCreate(d *schema.ResourceData, meta interfa
 }
 
 func resourceIBMIAMAccessGroupMembersRead(d *schema.ResourceData, meta interface{}) error {
-	iamuumClient, err := meta.(ClientSession).IAMUUMAPI()
+	iamuumClient, err := meta.(ClientSession).IAMUUMAPIV2()
 	if err != nil {
 		return err
 	}
@@ -163,7 +163,7 @@ func resourceIBMIAMAccessGroupMembersRead(d *schema.ResourceData, meta interface
 
 func resourceIBMIAMAccessGroupMembersUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	iamuumClient, err := meta.(ClientSession).IAMUUMAPI()
+	iamuumClient, err := meta.(ClientSession).IAMUUMAPIV2()
 	if err != nil {
 		return err
 	}
@@ -251,7 +251,7 @@ func resourceIBMIAMAccessGroupMembersUpdate(d *schema.ResourceData, meta interfa
 }
 
 func resourceIBMIAMAccessGroupMembersDelete(d *schema.ResourceData, meta interface{}) error {
-	iamuumClient, err := meta.(ClientSession).IAMUUMAPI()
+	iamuumClient, err := meta.(ClientSession).IAMUUMAPIV2()
 	if err != nil {
 		return err
 	}
@@ -300,21 +300,21 @@ func resourceIBMIAMAccessGroupMembersDelete(d *schema.ResourceData, meta interfa
 	return nil
 }
 
-func prepareMemberAddRequest(userIds, serviceIds []string) (req iamuumv1.AddGroupMemberRequest) {
-	req.Members = make([]models.AccessGroupMember, len(userIds)+len(serviceIds))
+func prepareMemberAddRequest(userIds, serviceIds []string) (req iamuumv2.AddGroupMemberRequestV2) {
+	req.Members = make([]models.AccessGroupMemberV2, len(userIds)+len(serviceIds))
 	var i = 0
 	for _, id := range userIds {
-		req.Members[i] = models.AccessGroupMember{
+		req.Members[i] = models.AccessGroupMemberV2{
 			ID:   id,
-			Type: iamuumv1.AccessGroupMemberUser,
+			Type: iamuumv2.AccessGroupMemberUser,
 		}
 		i++
 	}
 
 	for _, id := range serviceIds {
-		req.Members[i] = models.AccessGroupMember{
+		req.Members[i] = models.AccessGroupMemberV2{
 			ID:   id,
-			Type: iamuumv1.AccessGroupMemberService,
+			Type: iamuumv2.AccessGroupMemberService,
 		}
 		i++
 	}

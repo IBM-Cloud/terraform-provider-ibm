@@ -14,7 +14,7 @@ import (
 )
 
 func TestAccIBMIAMAccessGroup_Basic(t *testing.T) {
-	var conf models.AccessGroup
+	var conf models.AccessGroupV2
 	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
 	updateName := fmt.Sprintf("terraform_%d", acctest.RandInt())
 
@@ -24,7 +24,7 @@ func TestAccIBMIAMAccessGroup_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMAccessGroupDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMAccessGroup_basic(name),
+				Config: testAccCheckIBMIAMAccessGroupBasic(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMAccessGroupExists("ibm_iam_access_group.accgroup", conf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgroup", "name", name),
@@ -32,7 +32,7 @@ func TestAccIBMIAMAccessGroup_Basic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIAMAccessGroup_updateWithSameName(name),
+				Config: testAccCheckIBMIAMAccessGroupUpdateWithSameName(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMAccessGroupExists("ibm_iam_access_group.accgroup", conf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgroup", "name", name),
@@ -41,7 +41,7 @@ func TestAccIBMIAMAccessGroup_Basic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIAMAccessGroup_update(updateName),
+				Config: testAccCheckIBMIAMAccessGroupUpdate(updateName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgroup", "name", updateName),
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgroup", "description", "AccessGroup for test scenario2"),
@@ -53,7 +53,7 @@ func TestAccIBMIAMAccessGroup_Basic(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroup_import(t *testing.T) {
-	var conf models.AccessGroup
+	var conf models.AccessGroupV2
 	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
 	resourceName := "ibm_iam_access_group.accgroup"
 
@@ -63,7 +63,7 @@ func TestAccIBMIAMAccessGroup_import(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMAccessGroupDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMAccessGroup_tag(name),
+				Config: testAccCheckIBMIAMAccessGroupTag(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMAccessGroupExists(resourceName, conf),
 					resource.TestCheckResourceAttr(resourceName, "name", name),
@@ -80,7 +80,7 @@ func TestAccIBMIAMAccessGroup_import(t *testing.T) {
 }
 
 func testAccCheckIBMIAMAccessGroupDestroy(s *terraform.State) error {
-	accClient, err := testAccProvider.Meta().(ClientSession).IAMUUMAPI()
+	accClient, err := testAccProvider.Meta().(ClientSession).IAMUUMAPIV2()
 	if err != nil {
 		return err
 	}
@@ -102,7 +102,7 @@ func testAccCheckIBMIAMAccessGroupDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMIAMAccessGroupExists(n string, obj models.AccessGroup) resource.TestCheckFunc {
+func testAccCheckIBMIAMAccessGroupExists(n string, obj models.AccessGroupV2) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -110,7 +110,7 @@ func testAccCheckIBMIAMAccessGroupExists(n string, obj models.AccessGroup) resou
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		accClient, err := testAccProvider.Meta().(ClientSession).IAMUUMAPI()
+		accClient, err := testAccProvider.Meta().(ClientSession).IAMUUMAPIV2()
 		if err != nil {
 			return err
 		}
@@ -127,41 +127,39 @@ func testAccCheckIBMIAMAccessGroupExists(n string, obj models.AccessGroup) resou
 	}
 }
 
-func testAccCheckIBMIAMAccessGroup_basic(name string) string {
+func testAccCheckIBMIAMAccessGroupBasic(name string) string {
 	return fmt.Sprintf(`
 		
 		resource "ibm_iam_access_group" "accgroup" {
-			name              = "%s"		
-			tags              = ["tag1","tag2"]
-		}
+			name = "%s"
+			tags = ["tag1", "tag2"]
+	  	}
 	`, name)
 }
 
-func testAccCheckIBMIAMAccessGroup_updateWithSameName(name string) string {
+func testAccCheckIBMIAMAccessGroupUpdateWithSameName(name string) string {
 	return fmt.Sprintf(`
 		
 		resource "ibm_iam_access_group" "accgroup" {
-			name              = "%s"
-			description       = "AccessGroup for test scenario1"
-			tags              = ["tag1","tag2","db"]
-		}
+			name        = "%s"
+			description = "AccessGroup for test scenario1"
+			tags        = ["tag1", "tag2", "db"]
+	  	}
 	`, name)
 }
 
-func testAccCheckIBMIAMAccessGroup_update(updateName string) string {
+func testAccCheckIBMIAMAccessGroupUpdate(updateName string) string {
 	return fmt.Sprintf(`
-
 		resource "ibm_iam_access_group" "accgroup" {
-			name              = "%s"		
-			description       = "AccessGroup for test scenario2"
-			tags              = ["tag1"]
-		}
+			name        = "%s"
+			description = "AccessGroup for test scenario2"
+			tags        = ["tag1"]
+	 	}
 	`, updateName)
 }
 
-func testAccCheckIBMIAMAccessGroup_tag(name string) string {
+func testAccCheckIBMIAMAccessGroupTag(name string) string {
 	return fmt.Sprintf(`
-
 		resource "ibm_iam_access_group" "accgroup" {
 			name              = "%s"		
 			description       = "AccessGroup for test scenario2"

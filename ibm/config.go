@@ -28,6 +28,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/iam/iamv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
+	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/catalog"
@@ -143,6 +144,7 @@ type ClientSession interface {
 	IAMAPI() (iamv1.IAMServiceAPI, error)
 	IAMPAPAPI() (iampapv1.IAMPAPAPI, error)
 	IAMUUMAPI() (iamuumv1.IAMUUMServiceAPI, error)
+	IAMUUMAPIV2() (iamuumv2.IAMUUMServiceAPIv2, error)
 	ISSession() (*issession.Session, error)
 	MccpAPI() (mccpv2.MccpServiceAPI, error)
 	ResourceCatalogAPI() (catalog.ResourceCatalogAPI, error)
@@ -201,6 +203,9 @@ type clientSession struct {
 
 	iamUUMConfigErr  error
 	iamUUMServiceAPI iamuumv1.IAMUUMServiceAPI
+
+	iamUUMConfigErrV2  error
+	iamUUMServiceAPIV2 iamuumv2.IAMUUMServiceAPIv2
 
 	iamConfigErr  error
 	iamServiceAPI iamv1.IAMServiceAPI
@@ -311,6 +316,11 @@ func (sess clientSession) IAMUUMAPI() (iamuumv1.IAMUUMServiceAPI, error) {
 	return sess.iamUUMServiceAPI, sess.iamUUMConfigErr
 }
 
+// IAMUUMAPIV2 provides IAM UUM APIs ...
+func (sess clientSession) IAMUUMAPIV2() (iamuumv2.IAMUUMServiceAPIv2, error) {
+	return sess.iamUUMServiceAPIV2, sess.iamUUMConfigErrV2
+}
+
 // IcdAPI provides IBM Cloud Databases APIs ...
 func (sess clientSession) ICDAPI() (icdv4.ICDServiceAPI, error) {
 	return sess.icdServiceAPI, sess.icdConfigErr
@@ -394,6 +404,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.iamConfigErr = errEmptyBluemixCredentials
 		session.iamPAPConfigErr = errEmptyBluemixCredentials
 		session.iamUUMConfigErr = errEmptyBluemixCredentials
+		session.iamUUMConfigErrV2 = errEmptyBluemixCredentials
 		session.icdConfigErr = errEmptyBluemixCredentials
 		session.resourceCatalogConfigErr = errEmptyBluemixCredentials
 		session.resourceManagementConfigErr = errEmptyBluemixCredentials
@@ -529,6 +540,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.iamUUMConfigErr = fmt.Errorf("Error occured while configuring Bluemix IAMUUM Service: %q", err)
 	}
 	session.iamUUMServiceAPI = iamuum
+
+	iamuumv2, err := iamuumv2.New(sess.BluemixSession)
+	if err != nil {
+		session.iamUUMConfigErrV2 = fmt.Errorf("Error occured while configuring Bluemix IAMUUM Service: %q", err)
+	}
+	session.iamUUMServiceAPIV2 = iamuumv2
 
 	issession, err := issession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, c.Generation, true, c.BluemixTimeout)
 	if err != nil {
