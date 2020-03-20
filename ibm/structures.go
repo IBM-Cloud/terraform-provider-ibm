@@ -21,6 +21,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
+	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
@@ -991,12 +992,12 @@ func contains(s []int, e int) bool {
 	return false
 }
 
-func flattenAccessGroupMembers(list []models.AccessGroupMember, users []accountv1.AccountUser, serviceids []models.ServiceID) []map[string]interface{} {
+func flattenAccessGroupMembers(list []models.AccessGroupMemberV2, users []accountv1.AccountUser, serviceids []models.ServiceID) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, m := range list {
 		var value, vtype string
-		if m.Type == iamuumv1.AccessGroupMemberUser {
-			vtype = iamuumv1.AccessGroupMemberUser
+		if m.Type == iamuumv2.AccessGroupMemberUser {
+			vtype = iamuumv2.AccessGroupMemberUser
 			for _, user := range users {
 				if user.IbmUniqueId == m.ID {
 					value = user.UserId

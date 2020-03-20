@@ -23,28 +23,28 @@ func TestAccIBMIAMAccessGroupMember_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMAccessGroupMemberDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMAccessGroupMember_basic(name),
+				Config: testAccCheckIBMIAMAccessGroupMemberBasic(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgroup", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_members.accgroupmem", "members.#", "1"),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIAMAccessGroupMember_Add_ServiceID(name, sname),
+				Config: testAccCheckIBMIAMAccessGroupMemberAddServiceID(name, sname),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgroup", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_members.accgroupmem", "members.#", "2"),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIAMAccessGroupMember_Add_Another_ServiceID(name, sname, sname1),
+				Config: testAccCheckIBMIAMAccessGroupMemberAddAnotherServiceID(name, sname, sname1),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgroup", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_members.accgroupmem", "members.#", "3"),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIAMAccessGroupMember_Remove_User_And_SID(name, sname, sname1),
+				Config: testAccCheckIBMIAMAccessGroupMemberRemoveUserAndSID(name, sname, sname1),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgroup", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_members.accgroupmem", "members.#", "1"),
@@ -65,7 +65,7 @@ func TestAccIBMIAMAccessGroupMember_import(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMAccessGroupMemberDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMAccessGroupMember_Import(name, sname),
+				Config: testAccCheckIBMIAMAccessGroupMemberImport(name, sname),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", name),
 				),
@@ -84,7 +84,7 @@ func TestAccIBMIAMAccessGroupMember_import(t *testing.T) {
 }
 
 func testAccCheckIBMIAMAccessGroupMemberDestroy(s *terraform.State) error {
-	accClient, err := testAccProvider.Meta().(ClientSession).IAMUUMAPI()
+	accClient, err := testAccProvider.Meta().(ClientSession).IAMUUMAPIV2()
 	if err != nil {
 		return err
 	}
@@ -111,100 +111,84 @@ func testAccCheckIBMIAMAccessGroupMemberDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMIAMAccessGroupMember_basic(name string) string {
+func testAccCheckIBMIAMAccessGroupMemberBasic(name string) string {
 	return fmt.Sprintf(`
 		
-		resource "ibm_iam_access_group" "accgroup" {
-			name              = "%s"		
-		}
-
-		resource "ibm_iam_access_group_members" "accgroupmem" {
-			access_group_id   = "${ibm_iam_access_group.accgroup.id}"		
-			ibm_ids           = ["%s"]
-		}
-	`, name, IAMUser)
+	resource "ibm_iam_access_group" "accgroup" {
+  		name = "%s"
+	}
+	resource "ibm_iam_access_group_members" "accgroupmem" {
+  		access_group_id = "${ibm_iam_access_group.accgroup.id}"
+  		ibm_ids         = ["%s"]
+	}`, name, IAMUser)
 }
 
-func testAccCheckIBMIAMAccessGroupMember_Add_ServiceID(name, sname string) string {
+func testAccCheckIBMIAMAccessGroupMemberAddServiceID(name, sname string) string {
 	return fmt.Sprintf(`
-
 	resource "ibm_iam_access_group" "accgroup" {
-		name              = "%s"
+  		name = "%s"
 	}
-
 	resource "ibm_iam_service_id" "serviceID" {
-		name              = "%s"
+  		name = "%s"
 	}
-
 	resource "ibm_iam_access_group_members" "accgroupmem" {
-		access_group_id   = "${ibm_iam_access_group.accgroup.id}"
-		ibm_ids           = ["%s"]
-		iam_service_ids   = ["${ibm_iam_service_id.serviceID.id}"]
-	}
-	`, name, sname, IAMUser)
+  		access_group_id = "${ibm_iam_access_group.accgroup.id}"
+  		ibm_ids         = ["%s"]
+  		iam_service_ids = ["${ibm_iam_service_id.serviceID.id}"]
+	}`, name, sname, IAMUser)
 }
 
-func testAccCheckIBMIAMAccessGroupMember_Add_Another_ServiceID(name, sname, sname1 string) string {
+func testAccCheckIBMIAMAccessGroupMemberAddAnotherServiceID(name, sname, sname1 string) string {
 	return fmt.Sprintf(`
-
 	resource "ibm_iam_access_group" "accgroup" {
-		name              = "%s"
-	}
-
-	resource "ibm_iam_service_id" "serviceID" {
-		name              = "%s"
-	}
-
-	resource "ibm_iam_service_id" "serviceID2" {
-		name              = "%s"
-	}
-
-
-	resource "ibm_iam_access_group_members" "accgroupmem" {
+		name = "%s"
+	  }
+	  
+	  resource "ibm_iam_service_id" "serviceID" {
+		name = "%s"
+	  }
+	  
+	  resource "ibm_iam_service_id" "serviceID2" {
+		name = "%s"
+	  }
+	  
+	  resource "ibm_iam_access_group_members" "accgroupmem" {
 		access_group_id   = "${ibm_iam_access_group.accgroup.id}"
-		ibm_ids           = ["%s"]
+		ibm_ids         = ["%s"]
 		iam_service_ids   = ["${ibm_iam_service_id.serviceID.id}","${ibm_iam_service_id.serviceID2.id}"]
-	}
-	`, name, sname, sname1, IAMUser)
+	  }`, name, sname, sname1, IAMUser)
 }
 
-func testAccCheckIBMIAMAccessGroupMember_Remove_User_And_SID(name, sname, sname1 string) string {
+func testAccCheckIBMIAMAccessGroupMemberRemoveUserAndSID(name, sname, sname1 string) string {
 	return fmt.Sprintf(`
-
 	resource "ibm_iam_access_group" "accgroup" {
-		name              = "%s"
+  		name = "%s"
 	}
-
 	resource "ibm_iam_service_id" "serviceID" {
-		name              = "%s"
+  		name = "%s"
 	}
-
 	resource "ibm_iam_service_id" "serviceID2" {
-		name              = "%s"
+ 		name = "%s"
 	}
-
 	resource "ibm_iam_access_group_members" "accgroupmem" {
 		access_group_id   = "${ibm_iam_access_group.accgroup.id}"
 		iam_service_ids   = ["${ibm_iam_service_id.serviceID.id}"]
-	}
-	`, name, sname, sname1)
+	}`, name, sname, sname1)
 }
 
-func testAccCheckIBMIAMAccessGroupMember_Import(name, sname string) string {
+func testAccCheckIBMIAMAccessGroupMemberImport(name, sname string) string {
 	return fmt.Sprintf(`
-
 	resource "ibm_iam_access_group" "accgroup" {
-		name              = "%s"		
+		name = "%s"
 	}
-
+	  
 	resource "ibm_iam_service_id" "serviceID" {
-		name              = "%s"		
+		name = "%s"
 	}
-
+	  
 	resource "ibm_iam_access_group_members" "accgroupmem" {
 		access_group_id   = "${ibm_iam_access_group.accgroup.id}"	
-		ibm_ids           = ["%s"]	
+		ibm_ids         = ["%s"]
 		iam_service_ids   = ["${ibm_iam_service_id.serviceID.id}"]
-	}
-	`, name, sname, IAMUser)
+	}`, name, sname, IAMUser)
 }
