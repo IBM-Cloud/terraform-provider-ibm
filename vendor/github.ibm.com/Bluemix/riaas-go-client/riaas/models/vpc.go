@@ -33,6 +33,9 @@ type Vpc struct {
 	// The CRN for this VPC
 	Crn string `json:"crn,omitempty"`
 
+	// Array of CSE ([Cloud Service Endpoint](https://cloud.ibm.com/docs/resources?topic=resources-service-endpoints)) source IP addresses for the VPC. The VPC will have one CSE source IP address per zone.
+	CseSourceIps []VPCCSESourceIP `json:"cse_source_ips"`
+
 	// default network acl
 	DefaultNetworkACL *ResourceReference `json:"default_network_acl,omitempty"`
 
