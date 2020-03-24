@@ -42,6 +42,8 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
+	dns "github.com/IBM/dns-svcs-go-sdk/dnssvcsv1"
+	"github.com/IBM/go-sdk-core/v3/core"
 	kp "github.com/IBM/keyprotect-go-client"
 )
 
@@ -155,6 +157,7 @@ type ClientSession interface {
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
 	CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error)
 	keyProtectAPI() (*kp.Client, error)
+	PrivateDnsClientSession() (*dns.DnsSvcsV1, error)
 }
 
 type clientSession struct {
@@ -234,6 +237,9 @@ type clientSession struct {
 	kpAPI *kp.API
 
 	bluemixSessionErr error
+
+	pDnsClient *dns.DnsSvcsV1
+	pDnsErr    error
 }
 
 // BluemixAcccountAPI ...
@@ -366,6 +372,10 @@ func (sess clientSession) IBMPISession() (*ibmpisession.IBMPISession, error) {
 	return sess.ibmpiSession, sess.powerConfigErr
 }
 
+func (sess clientSession) PrivateDnsClientSession() (*dns.DnsSvcsV1, error) {
+	return sess.pDnsClient, sess.pDnsErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -404,6 +414,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
 		session.userManagementErr = errEmptyBluemixCredentials
 		session.certManagementErr = errEmptyBluemixCredentials
+		session.pDnsErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -487,6 +498,19 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.kpErr = fmt.Errorf("Error occured while configuring Key Protect Service: %q", err)
 	}
 	session.kpAPI = kpAPIclient
+
+	authenticator := &core.IamAuthenticator{
+		ApiKey: c.BluemixAPIKey,
+	}
+
+	session.pDnsClient, session.pDnsErr = dns.NewDnsSvcsV1(
+		&dns.DnsSvcsV1Options{
+			Authenticator: authenticator,
+		})
+
+	if session.pDnsErr != nil {
+		session.pDnsErr = fmt.Errorf("Error occured while configuring PrivateDNS Service: ", err)
+	}
 
 	schematicService, err := schematics.New(sess.BluemixSession)
 	if err != nil {

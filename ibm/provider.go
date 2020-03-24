@@ -352,6 +352,9 @@ func Provider() terraform.ResourceProvider {
 			"ibm_pi_volume_attach": resourceIBMPIVolumeAttach(),
 			"ibm_pi_capture":       resourceIBMPICapture(),
 			"ibm_pi_image":         resourceIBMPIImage(),
+
+			//Private DNS related resources
+			"ibm_dns_zone": resourceIBMPrivateDNS(),
 		},
 
 		ConfigureFunc: providerConfigure,
