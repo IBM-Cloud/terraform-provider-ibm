@@ -14,9 +14,9 @@ import (
 
 func resourceIBMkey() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceIBMKeyCreate,
-		Read:   resourceIBMKeyRead,
-		// Update:   resourceIBMContainerVpcALBUpdate,
+		Create:   resourceIBMKeyCreate,
+		Read:     resourceIBMKeyRead,
+		Update:   resourceIBMKeyUpdate,
 		Delete:   resourceIBMKeyDelete,
 		Exists:   resourceIBMKeyExists,
 		Importer: &schema.ResourceImporter{},
@@ -50,7 +50,13 @@ func resourceIBMkey() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 				Optional: true,
-				// ForceNew: true,
+			},
+			"force_delete": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "set to true to force delete the key",
+				ForceNew:    false,
+				Default:     false,
 			},
 			"encrypted_nonce": {
 				Type:        schema.TypeString,
@@ -110,6 +116,7 @@ func resourceIBMKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	api.Config.InstanceID = instanceID
 	name := d.Get("key_name").(string)
 	standardKey := d.Get("standard_key").(bool)
+
 	var keyCRN string
 	if standardKey {
 		if v, ok := d.GetOk("payload"); ok {
@@ -158,6 +165,8 @@ func resourceIBMKeyCreate(d *schema.ResourceData, meta interface{}) error {
 		d.SetId(keyCRN)
 
 	}
+	d.Set("force_delete", d.Get("force_delete").(bool))
+
 	return resourceIBMKeyRead(d, meta)
 }
 
@@ -201,6 +210,16 @@ func resourceIBMKeyRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 
 }
+
+func resourceIBMKeyUpdate(d *schema.ResourceData, meta interface{}) error {
+
+	if d.HasChange("force_delete") {
+		d.Set("force_delete", d.Get("force_delete").(bool))
+	}
+	return resourceIBMKeyRead(d, meta)
+
+}
+
 func resourceIBMKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	api, err := meta.(ClientSession).keyProtectAPI()
 	if err != nil {
@@ -212,13 +231,18 @@ func resourceIBMKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	instanceID := crnData[len(crnData)-3]
 	keyid := crnData[len(crnData)-1]
 	api.Config.InstanceID = instanceID
-	_, err1 := api.DeleteKey(context.Background(), keyid, kp.ReturnRepresentation)
+	force := d.Get("force_delete").(bool)
+	f := kp.ForceOpt{
+		Force: force,
+	}
+	_, err1 := api.DeleteKey(context.Background(), keyid, kp.ReturnRepresentation, f)
 	if err1 != nil {
 		return fmt.Errorf(
 			"Error while deleting: %s", err1)
 	}
 	d.SetId("")
 	return nil
+
 }
 
 func resourceIBMKeyExists(d *schema.ResourceData, meta interface{}) (bool, error) {
