@@ -29,7 +29,7 @@ func TestAccIBMCosBucket_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCosBucketDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCosBucket_basic(serviceName, bucketName, bucketRegionType, bucketRegion),
+				Config: testAccCheckIBMCosBucket_basic(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
@@ -38,7 +38,41 @@ func TestAccIBMCosBucket_Basic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMCosBucket_updateWithSameName(serviceName, bucketName, bucketRegionType, bucketRegion),
+				Config: testAccCheckIBMCosBucket_updateWithSameName(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "cross_region_location", bucketRegion),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Smart_Type(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandInt())
+	bucketRegion := "eu"
+	bucketClass := "smart"
+	bucketRegionType := "cross_region_location"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMCosBucket_basic(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "cross_region_location", bucketRegion),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMCosBucket_updateWithSameName(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
@@ -63,7 +97,7 @@ func TestAccIBMCosBucket_import(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCosBucketDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCosBucket_basic(serviceName, bucketName, bucketRegionType, bucketRegion),
+				Config: testAccCheckIBMCosBucket_basic(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
@@ -204,10 +238,10 @@ func testAccCheckIBMCosBucketExists(resource string, bucket string, regiontype s
 	}
 }
 
-func testAccCheckIBMCosBucket_basic(serviceName string, bucketName string, regiontype string, region string) string {
+func testAccCheckIBMCosBucket_basic(serviceName string, bucketName string, regiontype string, region, bucketclass string) string {
 	return fmt.Sprintf(`
 		data "ibm_resource_group" "group" {
-			name = "default"
+			name = "Default"
 		}
 	  
 	  
@@ -223,16 +257,16 @@ func testAccCheckIBMCosBucket_basic(serviceName string, bucketName string, regio
 			bucket_name = "%s"
 			resource_instance_id = "${ibm_resource_instance.instance.id}"
 			%s = "%s"
-			storage_class = "standard"
+			storage_class = "%s"
 		}
 		  
-	`, serviceName, bucketName, regiontype, region)
+	`, serviceName, bucketName, regiontype, region, bucketclass)
 }
 
-func testAccCheckIBMCosBucket_updateWithSameName(serviceName string, bucketName string, regiontype string, region string) string {
+func testAccCheckIBMCosBucket_updateWithSameName(serviceName string, bucketName string, regiontype string, region, bucketclass string) string {
 	return fmt.Sprintf(`	
 		data "ibm_resource_group" "group" {
-			name = "default"
+			name = "Default"
 		}
 	
 	
@@ -248,7 +282,7 @@ func testAccCheckIBMCosBucket_updateWithSameName(serviceName string, bucketName 
 			bucket_name = "%s"
 			resource_instance_id = "${ibm_resource_instance.instance.id}"
 			%s = "%s"
-			storage_class = "standard"
+			storage_class = "%s"
 		}
-	`, serviceName, bucketName, regiontype, region)
+	`, serviceName, bucketName, regiontype, region, bucketclass)
 }
