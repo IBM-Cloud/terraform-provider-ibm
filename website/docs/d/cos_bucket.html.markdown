@@ -43,6 +43,7 @@ The following arguments are supported:
 * `bucket_type` - (Required, string) The type of the bucket. Accepted values: single_site_location region_location cross_region_location
 * `resource_instance_id` - (Required, string) The id of Cloud Object Storage instance.
 * `bucket_region` - (Required, string) The region of the bucket.
+* `storage_class` - (Required, string) Storage class of the bucket. Accepted values: 'standard', 'vault', 'cold', 'flex', 'smart'
 
 ## Attribute Reference
 
