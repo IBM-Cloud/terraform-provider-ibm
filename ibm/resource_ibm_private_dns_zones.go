@@ -1,8 +1,12 @@
 package ibm
 
 import (
+	"fmt"
 	"log"
+	"strings"
 	"time"
+
+	//"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -52,7 +56,6 @@ func resourceIBMPrivateDNS() *schema.Resource {
 }
 
 func resourceIBMPrivateDnsZoneCreate(d *schema.ResourceData, meta interface{}) error {
-	log.Printf("[DEBUG] TEST1")
 	sess, err := meta.(ClientSession).PrivateDnsClientSession()
 	if err != nil {
 		return err
@@ -60,22 +63,21 @@ func resourceIBMPrivateDnsZoneCreate(d *schema.ResourceData, meta interface{}) e
 
 	instanceID := d.Get(pdnsInstanceID).(string)
 	zoneName := d.Get(pdnsZoneName).(string)
-	log.Printf("[DEBUG] TEST2")
 	createZoneOptions := sess.NewCreateDnszoneOptions(instanceID, zoneName)
 	createZoneOptions.SetDescription("zone description")
 	createZoneOptions.SetLabel("zone_label")
 	response, _, err := sess.CreateDnszone(createZoneOptions)
-	log.Printf("[DEBUG] TEST3")
 	if err != nil {
-		log.Printf("[DEBUG] P-DNS Zone err %s", err)
 		return err
 	}
 
-	log.Printf("[DEBUG] TEST4", *response)
-	// populate id
+	d.SetId(fmt.Sprintf("%s/%s", *response.InstanceID, *response.ID))
+	if err != nil {
+		log.Printf("[DEBUG]  err %s", isErrorToString(err))
+		return err
+	}
 
-	//d.SetId(*response..String())
-    log.Printf("[DEBUG] TEST5")
+	log.Printf("[DEBUG] TEST5")
 
 	return resourceIBMPrivateDnsZoneRead(d, meta)
 }
@@ -86,9 +88,8 @@ func resourceIBMPrivateDnsZoneRead(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 
-	instanceID := d.Get(pdnsInstanceID).(string)
-	zoneID := d.Id()
-	getZoneOptions := sess.NewGetDnszoneOptions(instanceID, zoneID)
+	id_set := strings.Split(d.Id(), "/")
+	getZoneOptions := sess.NewGetDnszoneOptions(id_set[0], id_set[1])
 	response, _, reqErr := sess.GetDnszone(getZoneOptions)
 	if reqErr == nil {
 		return err
@@ -110,10 +111,9 @@ func resourceIBMPrivateDnsZoneDelete(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 
-	instanceID := d.Get(pdnsInstanceID).(string)
-	zoneID := d.Id()
+	id_set := strings.Split(d.Id(), "/")
 
-	deleteZoneOptions := sess.NewDeleteDnszoneOptions(instanceID, zoneID)
+	deleteZoneOptions := sess.NewDeleteDnszoneOptions(id_set[0], id_set[1])
 	_, reqErr := sess.DeleteDnszone(deleteZoneOptions)
 	if reqErr == nil {
 		return reqErr
@@ -130,10 +130,8 @@ func resourceIBMPrivateDnsZoneExists(d *schema.ResourceData, meta interface{}) (
 		return false, err
 	}
 
-	instanceID := d.Get(pdnsInstanceID).(string)
-	//zoneID := d.Get(pdnsZoneID).(string)
-	zoneID := d.Id()
-	getZoneOptions := sess.NewGetDnszoneOptions(instanceID, zoneID)
+	id_set := strings.Split(d.Id(), "/")
+	getZoneOptions := sess.NewGetDnszoneOptions(id_set[0], id_set[1])
 	_, _, err = sess.GetDnszone(getZoneOptions)
 	if err != nil {
 		iserror, ok := err.(iserrors.RiaasError)
