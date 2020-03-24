@@ -3194,6 +3194,15 @@ definitions:
         format: date-time, type: string}
       crn: {description: The CRN for this VPC, example: 'crn:v1:bluemix:public:gt::a/123456::vpc:4727d842-f94f-4a2d-824a-9bc9b02c523b',
         format: crn, type: string}
+      cse_source_ips:
+        description: >-
+          Array of CSE ([Cloud Service
+          Endpoint](https://cloud.ibm.com/docs/resources?topic=resources-service-endpoints))
+          source IP addresses for the VPC. The VPC will have one CSE source IP
+          address per zone.
+        items:
+          $ref: '#/definitions/VPCCSESourceIP'
+        type: array
       default_network_acl:
         $ref: "#/definitions/resource_reference"
       default_security_group:
@@ -3213,6 +3222,22 @@ definitions:
         $ref: "#/definitions/resource_reference"
     title: VPC
     type: object
+  VPCCSESourceIP:
+    type: object
+    # As the staging and production are in different payload structure for source ip, comment here, and NG does not return the expected structure
+    #properties:
+    #  ip:
+    #    allOf:
+    #      - $ref: '#/definitions/IP'
+    #      - description: The Cloud Service Endpoint source IP address for this zone
+    #  zone:
+    #    allOf:
+    #      - $ref: '#/definitions/ZoneReference'
+    #      - description: The zone this Cloud Service Endpoint source IP belongs to
+    #required:
+    #  - zone
+    #  - ip
+    title: VPCCSESourceIP
   riaaserror:
     properties:
       errors:
