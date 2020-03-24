@@ -42,6 +42,9 @@ The following attributes are exported:
 * `default_security_group` - The unique identifier of the VPC default security group.
 * `status` - The status of VPC.
 * `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
+* `cse_source_addresses` - A list describing the cloud service endpoint source ip adresses and zones. The nested cse_source_addresses block have the following structure:
+   * `address` - Ip Address of the cloud service endpoint.
+   * `zone_name` - Zone associated with the IP Address. 
 
 
 ## Import

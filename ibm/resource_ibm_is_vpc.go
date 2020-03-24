@@ -31,6 +31,7 @@ const (
 	isVPCFailed                  = "failed"
 	isVPCPending                 = "pending"
 	isVPCAddressPrefixManagement = "address_prefix_management"
+	cseSourceAddresses           = "cse_source_addresses"
 )
 
 func resourceIBMISVPC() *schema.Resource {
@@ -142,6 +143,26 @@ func resourceIBMISVPC() *schema.Resource {
 				Computed:    true,
 				Description: "The resource group name in which resource is provisioned",
 			},
+
+			cseSourceAddresses: {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Cloud service endpoint IP Address",
+						},
+
+						"zone_name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Location info of CSE Address",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -242,6 +263,25 @@ func resourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set(ResourceGroupName, vpc.ResourceGroup.Name)
 	}
 
+	// set the cse ip addresses info
+	if vpc.CseSourceIps != nil {
+		displaySourceIps := []VPCCSESourceIP{}
+		sourceIPs := vpc.CseSourceIps
+
+		for _, sourceIP := range sourceIPs {
+			// work around to parse the cse_source_ip data structure from map[string]interface{} type as we define it as any type in swagger.yaml file
+			ip, zone := safeGetIPZone(sourceIP)
+			if ip == "" {
+				continue
+			}
+			displaySourceIps = append(displaySourceIps, VPCCSESourceIP{
+				Address:  ip,
+				ZoneName: zone,
+			})
+		}
+		info := flattenCseIPs(displaySourceIps)
+		d.Set(cseSourceAddresses, info)
+	}
 	return nil
 }
 
