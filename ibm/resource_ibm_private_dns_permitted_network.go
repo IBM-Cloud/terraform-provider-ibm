@@ -1,9 +1,7 @@
 package ibm
 
 import (
-	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	//"fmt"
@@ -18,7 +16,7 @@ const (
 	pdnsZoneName   = "zone_name"
 )
 
-func resourceIBMPrivateDNSZone() *schema.Resource {
+func resourceIBMPrivateDNSPermittedNetwork() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMPrivateDnsZoneCreate,
 		Read:     resourceIBMPrivateDnsZoneRead,
@@ -66,16 +64,16 @@ func resourceIBMPrivateDnsZoneCreate(d *schema.ResourceData, meta interface{}) e
 	createZoneOptions := sess.NewCreateDnszoneOptions(instanceID, zoneName)
 	createZoneOptions.SetDescription("zone description")
 	createZoneOptions.SetLabel("zone_label")
-	response, _, err := sess.CreateDnszone(createZoneOptions)
+	_, _, err = sess.CreateDnszone(createZoneOptions)
 	if err != nil {
 		return err
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *response.InstanceID, *response.ID))
-	if err != nil {
-		log.Printf("[DEBUG]  err %s", isErrorToString(err))
-		return err
-	}
+	//zoneId := *response.ID
+	//d.SetId(fmt.Sprintf("%s/%s", instanceID, zoneId))
+	//if err != nil {
+	//	return err
+	//}
 
 	log.Printf("[DEBUG] TEST5")
 
@@ -88,8 +86,9 @@ func resourceIBMPrivateDnsZoneRead(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 
-	id_set := strings.Split(d.Id(), "/")
-	getZoneOptions := sess.NewGetDnszoneOptions(id_set[0], id_set[1])
+	instanceID := d.Get(pdnsInstanceID).(string)
+	zoneID := d.Id()
+	getZoneOptions := sess.NewGetDnszoneOptions(instanceID, zoneID)
 	response, _, reqErr := sess.GetDnszone(getZoneOptions)
 	if reqErr == nil {
 		return err
@@ -111,9 +110,10 @@ func resourceIBMPrivateDnsZoneDelete(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 
-	id_set := strings.Split(d.Id(), "/")
+	instanceID := d.Get(pdnsInstanceID).(string)
+	zoneID := d.Id()
 
-	deleteZoneOptions := sess.NewDeleteDnszoneOptions(id_set[0], id_set[1])
+	deleteZoneOptions := sess.NewDeleteDnszoneOptions(instanceID, zoneID)
 	_, reqErr := sess.DeleteDnszone(deleteZoneOptions)
 	if reqErr == nil {
 		return reqErr
@@ -130,8 +130,10 @@ func resourceIBMPrivateDnsZoneExists(d *schema.ResourceData, meta interface{}) (
 		return false, err
 	}
 
-	id_set := strings.Split(d.Id(), "/")
-	getZoneOptions := sess.NewGetDnszoneOptions(id_set[0], id_set[1])
+	instanceID := d.Get(pdnsInstanceID).(string)
+	//zoneID := d.Get(pdnsZoneID).(string)
+	zoneID := d.Id()
+	getZoneOptions := sess.NewGetDnszoneOptions(instanceID, zoneID)
 	_, _, err = sess.GetDnszone(getZoneOptions)
 	if err != nil {
 		iserror, ok := err.(iserrors.RiaasError)
