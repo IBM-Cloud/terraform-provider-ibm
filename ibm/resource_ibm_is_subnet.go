@@ -344,6 +344,13 @@ func resourceIBMISSubnetDelete(d *schema.ResourceData, meta interface{}) error {
 
 	subnet, err := subnetC.Get(d.Id())
 	if err != nil {
+		iserror, ok := err.(iserrors.RiaasError)
+		if ok {
+			if len(iserror.Payload.Errors) == 1 &&
+				iserror.Payload.Errors[0].Code == "not_found" {
+				return nil
+			}
+		}
 		return err
 	}
 
