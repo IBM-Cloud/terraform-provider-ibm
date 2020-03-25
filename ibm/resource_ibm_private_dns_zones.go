@@ -115,7 +115,7 @@ func resourceIBMPrivateDnsZoneDelete(d *schema.ResourceData, meta interface{}) e
 
 	deleteZoneOptions := sess.NewDeleteDnszoneOptions(id_set[0], id_set[1])
 	_, reqErr := sess.DeleteDnszone(deleteZoneOptions)
-	if reqErr == nil {
+	if reqErr != nil {
 		return reqErr
 	}
 

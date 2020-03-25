@@ -1,28 +1,31 @@
 package ibm
 
 import (
+	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	//"fmt"
 
+	"github.com/IBM/dns-svcs-go-sdk/dnssvcsv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
 )
 
 const (
-	pdnsInstanceID = "instance_id"
-	pdnsZoneName   = "zone_name"
+	pdnsZoneID = "zone_id"
+	pdnsVpcCRN = "vpc_crn"
 )
 
 func resourceIBMPrivateDNSPermittedNetwork() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMPrivateDnsZoneCreate,
-		Read:     resourceIBMPrivateDnsZoneRead,
-		Update:   resourceIBMPrivateDnsZoneUpdate,
-		Delete:   resourceIBMPrivateDnsZoneDelete,
-		Exists:   resourceIBMPrivateDnsZoneExists,
+		Create:   resourceIBMPrivateDnsPermittedNetworkCreate,
+		Read:     resourceIBMPrivateDnsPermittedNetworkRead,
+		Update:   resourceIBMPrivateDnsPermittedNetworkUpdate,
+		Delete:   resourceIBMPrivateDnsPermittedNetworkDelete,
+		Exists:   resourceIBMPrivateDnsPermittedNetworkExists,
 		Importer: &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
@@ -44,7 +47,13 @@ func resourceIBMPrivateDNSPermittedNetwork() *schema.Resource {
 				ForceNew: false,
 			},
 
-			pdnsZoneName: {
+			pdnsZoneID: {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: false,
+			},
+
+			pdnsVpcCRN: {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: false,
@@ -52,70 +61,70 @@ func resourceIBMPrivateDNSPermittedNetwork() *schema.Resource {
 		},
 	}
 }
-
-func resourceIBMPrivateDnsZoneCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMPrivateDnsPermittedNetworkCreate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(ClientSession).PrivateDnsClientSession()
 	if err != nil {
 		return err
 	}
 
 	instanceID := d.Get(pdnsInstanceID).(string)
-	zoneName := d.Get(pdnsZoneName).(string)
-	createZoneOptions := sess.NewCreateDnszoneOptions(instanceID, zoneName)
-	createZoneOptions.SetDescription("zone description")
-	createZoneOptions.SetLabel("zone_label")
-	_, _, err = sess.CreateDnszone(createZoneOptions)
+	zoneID := d.Get(pdnsZoneID).(string)
+	vpcCRN := d.Get(pdnsVpcCRN).(string)
+
+	createPermittedNetworkOptions := sess.NewCreatePermittedNetworkOptions(instanceID, zoneID)
+	permittedNetworkCrn, err := sess.NewPermittedNetworkVpc(vpcCRN)
+
+	createPermittedNetworkOptions.SetPermittedNetwork(permittedNetworkCrn)
+	createPermittedNetworkOptions.SetType(dnssvcsv1.CreatePermittedNetworkOptions_Type_Vpc)
+	response, _, err := sess.CreatePermittedNetwork(createPermittedNetworkOptions)
 	if err != nil {
 		return err
 	}
 
-	//zoneId := *response.ID
-	//d.SetId(fmt.Sprintf("%s/%s", instanceID, zoneId))
-	//if err != nil {
-	//	return err
-	//}
+	d.SetId(fmt.Sprintf("%s/%s/%s", instanceID, zoneID, *response.ID))
+	if err != nil {
+		log.Printf("[DEBUG]  err %s", isErrorToString(err))
+		return err
+	}
 
 	log.Printf("[DEBUG] TEST5")
 
-	return resourceIBMPrivateDnsZoneRead(d, meta)
+	return resourceIBMPrivateDnsPermittedNetworkRead(d, meta)
 }
 
-func resourceIBMPrivateDnsZoneRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMPrivateDnsPermittedNetworkRead(d *schema.ResourceData, meta interface{}) error {
+
 	sess, err := meta.(ClientSession).PrivateDnsClientSession()
 	if err != nil {
 		return err
 	}
 
-	instanceID := d.Get(pdnsInstanceID).(string)
-	zoneID := d.Id()
-	getZoneOptions := sess.NewGetDnszoneOptions(instanceID, zoneID)
-	response, _, reqErr := sess.GetDnszone(getZoneOptions)
-	if reqErr == nil {
+	id_set := strings.Split(d.Id(), "/")
+	getPermittedNetworkOptions := sess.NewGetPermittedNetworkOptions(id_set[0], id_set[1], id_set[2])
+	_, _, err = sess.GetPermittedNetwork(getPermittedNetworkOptions)
+
+	if err != nil {
 		return err
 	}
-
-	d.Set("id", response.ID)
-	d.Set("instance_id", response.InstanceID)
 
 	return nil
 }
 
-func resourceIBMPrivateDnsZoneUpdate(d *schema.ResourceData, meta interface{}) error {
-	return resourceIBMPrivateDnsZoneRead(d, meta)
+func resourceIBMPrivateDnsPermittedNetworkUpdate(d *schema.ResourceData, meta interface{}) error {
+	return resourceIBMPrivateDnsPermittedNetworkRead(d, meta)
 }
 
-func resourceIBMPrivateDnsZoneDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMPrivateDnsPermittedNetworkDelete(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(ClientSession).PrivateDnsClientSession()
 	if err != nil {
 		return err
 	}
 
-	instanceID := d.Get(pdnsInstanceID).(string)
-	zoneID := d.Id()
+	id_set := strings.Split(d.Id(), "/")
+	deletePermittedNetworkOptions := sess.NewDeletePermittedNetworkOptions(id_set[0], id_set[1], id_set[2])
+	_, _, reqErr := sess.DeletePermittedNetwork(deletePermittedNetworkOptions)
 
-	deleteZoneOptions := sess.NewDeleteDnszoneOptions(instanceID, zoneID)
-	_, reqErr := sess.DeleteDnszone(deleteZoneOptions)
-	if reqErr == nil {
+	if reqErr != nil {
 		return reqErr
 	}
 
@@ -123,18 +132,16 @@ func resourceIBMPrivateDnsZoneDelete(d *schema.ResourceData, meta interface{}) e
 	return nil
 }
 
-func resourceIBMPrivateDnsZoneExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+func resourceIBMPrivateDnsPermittedNetworkExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 
 	sess, err := meta.(ClientSession).PrivateDnsClientSession()
 	if err != nil {
 		return false, err
 	}
 
-	instanceID := d.Get(pdnsInstanceID).(string)
-	//zoneID := d.Get(pdnsZoneID).(string)
-	zoneID := d.Id()
-	getZoneOptions := sess.NewGetDnszoneOptions(instanceID, zoneID)
-	_, _, err = sess.GetDnszone(getZoneOptions)
+	id_set := strings.Split(d.Id(), "/")
+	getPermittedNetworkOptions := sess.NewGetPermittedNetworkOptions(id_set[0], id_set[1], id_set[2])
+	_, _, err = sess.GetPermittedNetwork(getPermittedNetworkOptions)
 	if err != nil {
 		iserror, ok := err.(iserrors.RiaasError)
 		if ok {
