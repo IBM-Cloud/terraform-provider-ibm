@@ -179,6 +179,13 @@ func resourceIBMISVpcAddressPrefixDelete(d *schema.ResourceData, meta interface{
 	defer ibmMutexKV.Unlock(isVPCAddressPrefixKey)
 	err = vpcClient.DeleteAddressPrefix(vpcID, addrPrefixID)
 	if err != nil {
+		iserror, ok := err.(iserrors.RiaasError)
+		if ok {
+			if len(iserror.Payload.Errors) == 1 &&
+				iserror.Payload.Errors[0].Code == "not_found" {
+				return nil
+			}
+		}
 		return err
 	}
 	d.SetId("")
