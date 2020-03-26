@@ -718,10 +718,10 @@
 			"revisionTime": "2019-09-06T19:48:10Z"
 		},
 		{
-			"checksumSHA1": "wr80OQaI4jgxSC6OXFqaX84ZIeY=",
+			"checksumSHA1": "ZMLVupgpRDsGZ5c9GirdIeGbFSc=",
 			"path": "github.com/IBM/keyprotect-go-client",
-			"revision": "e74bb5e1c7e3e4d47a1c2148f4722062ca474ddf",
-			"revisionTime": "2020-01-22T20:42:50Z"
+			"revision": "b63163832e2668931497475c395bacfb4f1659b0",
+			"revisionTime": "2020-03-23T21:30:19Z"
 		},
 		{
 			"checksumSHA1": "E+y4lu3Z/DXb7e878uqIdth0Z34=",

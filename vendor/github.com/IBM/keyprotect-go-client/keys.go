@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"log"
 	"net/url"
 	"strconv"
 	"time"
@@ -192,12 +193,29 @@ func (c *Client) GetKey(ctx context.Context, id string) (*Key, error) {
 	return &keys.Keys[0], nil
 }
 
-// Delete deletes a key resource by specifying the ID of the key.
-func (c *Client) DeleteKey(ctx context.Context, id string, prefer PreferReturn) (*Key, error) {
+type CallOpt interface{}
+
+type ForceOpt struct {
+	Force bool
+}
+
+// DeleteKey deletes a key resource by specifying the ID of the key.
+func (c *Client) DeleteKey(ctx context.Context, id string, prefer PreferReturn, callOpts ...CallOpt) (*Key, error) {
 
 	req, err := c.newRequest("DELETE", fmt.Sprintf("keys/%s", id), nil)
 	if err != nil {
 		return nil, err
+	}
+
+	for _, opt := range callOpts {
+		switch v := opt.(type) {
+		case ForceOpt:
+			params := url.Values{}
+			params.Set("force", strconv.FormatBool(v.Force))
+			req.URL.RawQuery = params.Encode()
+		default:
+			log.Printf("WARNING: Ignoring invalid CallOpt passed to DeleteKey: %v\n", v)
+		}
 	}
 
 	req.Header.Set("Prefer", preferHeaders[prefer])
