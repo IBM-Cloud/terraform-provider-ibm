@@ -973,8 +973,8 @@ const (
 	TypeInt
 	TypeFloat
 	TypeString
-	TypeStringList
-	TypeIntList
+	//TypeStringList
+	//TypeIntList
 )
 
 // Type of constraints required for validation
@@ -1122,11 +1122,23 @@ func (vs ValidateSchema) GetValue(valueConstraint ValueConstraintType) interface
 		}
 		return b
 	case TypeInt:
-		i, err := strconv.Atoi(valueToConvert)
+		/*i, err := strconv.Atoi(valueToConvert)
 		if err != nil {
 			return vs.Zero()
 		}
-		return i
+		return i*/
+		// Convert comma separated string to array
+		var arr2 []int
+		arr1 := strings.Split(valueToConvert, ",")
+		for _, ele := range arr1 {
+			e, err := strconv.Atoi(strings.TrimSpace(ele))
+			if err != nil {
+				return vs.Zero()
+			}
+			arr2 = append(arr2, e)
+		}
+		log.Printf("[DEBUG] TypeInt converted values is %#v", arr2)
+		return arr2
 	case TypeFloat:
 		f, err := strconv.ParseFloat(valueToConvert, 32)
 		if err != nil {
@@ -1134,8 +1146,15 @@ func (vs ValidateSchema) GetValue(valueConstraint ValueConstraintType) interface
 		}
 		return f
 	case TypeString:
-		return valueToConvert
-	case TypeStringList:
+		//return valueToConvert
+		// Convert comma separated string to array
+		arr := strings.Split(valueToConvert, ",")
+		for i, ele := range arr {
+			arr[i] = strings.TrimSpace(ele)
+		}
+		log.Printf("[DEBUG] TypeString converted values is %#v", arr)
+		return arr
+	/*case TypeStringList:
 		// Convert comma separated string to array
 		arr := strings.Split(valueToConvert, ",")
 		for i, ele := range arr {
@@ -1155,7 +1174,7 @@ func (vs ValidateSchema) GetValue(valueConstraint ValueConstraintType) interface
 			arr2 = append(arr2, e)
 		}
 		log.Printf("[DEBUG] TypeIntList converted values is %#v", arr2)
-		return arr2
+		return arr2*/
 	default:
 		panic(fmt.Sprintf("unknown type %s", vs.Type))
 	}
@@ -1184,15 +1203,15 @@ func (vs ValidateSchema) Zero() interface{} {
 	case TypeBool:
 		return false
 	case TypeInt:
-		return 0
+		return make([]string, 0)
 	case TypeFloat:
 		return 0.0
 	case TypeString:
-		return ""
-	case TypeStringList:
+		return make([]int, 0)
+	/*case TypeStringList:
 		return make([]string, 0)
 	case TypeIntList:
-		return make([]int, 0)
+		return make([]int, 0)*/
 	default:
 		panic(fmt.Sprintf("unknown type %s", vs.Type))
 	}
