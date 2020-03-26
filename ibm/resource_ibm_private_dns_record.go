@@ -49,12 +49,6 @@ func resourceIBMPrivateDNSRecords() *schema.Resource {
 				Required: true,
 				ForceNew: false,
 			},
-
-			pdnsVpcCRN: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: false,
-			},
 		},
 	}
 }
