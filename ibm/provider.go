@@ -356,6 +356,7 @@ func Provider() terraform.ResourceProvider {
 			//Private DNS related resources
 			"ibm_dns_zone":              resourceIBMPrivateDNSZone(),
 			"ibm_dns_permitted_network": resourceIBMPrivateDNSPermittedNetwork(),
+			"ibm_private_dns_record":    resourceIBMPrivateDNSRecords(),
 		},
 
 		ConfigureFunc: providerConfigure,
