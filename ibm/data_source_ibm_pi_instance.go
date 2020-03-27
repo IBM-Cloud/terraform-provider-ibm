@@ -89,6 +89,23 @@ func dataSourceIBMPIInstance() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+
+			"minproc": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"minmem": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"maxproc": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"maxmem": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -117,6 +134,10 @@ func dataSourceIBMPIInstancesRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set("status", powervmdata.Status)
 	d.Set("proctype", powervmdata.ProcType)
 	d.Set("volumes", powervmdata.VolumeIds)
+	d.Set("minproc", powervmdata.Minproc)
+	d.Set("minmem", powervmdata.Minmem)
+	d.Set("maxproc", powervmdata.Maxproc)
+	d.Set("maxmem", powervmdata.Maxmem)
 
 	if powervmdata.Addresses != nil {
 		pvmaddress := make([]map[string]interface{}, len(powervmdata.Addresses))
