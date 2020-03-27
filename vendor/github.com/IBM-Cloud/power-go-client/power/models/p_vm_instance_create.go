@@ -40,9 +40,9 @@ type PVMInstanceCreate struct {
 	// The pvm instance networks information
 	Networks []*PVMInstanceAddNetwork `json:"networks"`
 
-	// Processor type (dedicated or shared)
+	// Processor type (dedicated, shared, capped)
 	// Required: true
-	// Enum: [dedicated shared]
+	// Enum: [dedicated shared capped]
 	ProcType *string `json:"procType"`
 
 	// Number of processors allocated
@@ -63,6 +63,12 @@ type PVMInstanceCreate struct {
 	// Name of the server to create
 	// Required: true
 	ServerName *string `json:"serverName"`
+
+	// The pvm instance Software Licenses
+	SoftwareLicenses *SoftwareLicenses `json:"softwareLicenses,omitempty"`
+
+	// Storage type for server deployment
+	StorageType string `json:"storageType,omitempty"`
 
 	// System type used to host the instance
 	SysType string `json:"sysType,omitempty"`
@@ -107,6 +113,10 @@ func (m *PVMInstanceCreate) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateServerName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSoftwareLicenses(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -163,7 +173,7 @@ var pVmInstanceCreateTypeProcTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["dedicated","shared"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["dedicated","shared","capped"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -178,6 +188,9 @@ const (
 
 	// PVMInstanceCreateProcTypeShared captures enum value "shared"
 	PVMInstanceCreateProcTypeShared string = "shared"
+
+	// PVMInstanceCreateProcTypeCapped captures enum value "capped"
+	PVMInstanceCreateProcTypeCapped string = "capped"
 )
 
 // prop value enum
@@ -304,6 +317,24 @@ func (m *PVMInstanceCreate) validateServerName(formats strfmt.Registry) error {
 
 	if err := validate.Required("serverName", "body", m.ServerName); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *PVMInstanceCreate) validateSoftwareLicenses(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.SoftwareLicenses) { // not required
+		return nil
+	}
+
+	if m.SoftwareLicenses != nil {
+		if err := m.SoftwareLicenses.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("softwareLicenses")
+			}
+			return err
+		}
 	}
 
 	return nil

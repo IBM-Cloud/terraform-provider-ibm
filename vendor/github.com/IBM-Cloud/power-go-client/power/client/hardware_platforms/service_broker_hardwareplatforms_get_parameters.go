@@ -20,7 +20,7 @@ import (
 // NewServiceBrokerHardwareplatformsGetParams creates a new ServiceBrokerHardwareplatformsGetParams object
 // with the default values initialized.
 func NewServiceBrokerHardwareplatformsGetParams() *ServiceBrokerHardwareplatformsGetParams {
-
+	var ()
 	return &ServiceBrokerHardwareplatformsGetParams{
 
 		timeout: cr.DefaultTimeout,
@@ -30,7 +30,7 @@ func NewServiceBrokerHardwareplatformsGetParams() *ServiceBrokerHardwareplatform
 // NewServiceBrokerHardwareplatformsGetParamsWithTimeout creates a new ServiceBrokerHardwareplatformsGetParams object
 // with the default values initialized, and the ability to set a timeout on a request
 func NewServiceBrokerHardwareplatformsGetParamsWithTimeout(timeout time.Duration) *ServiceBrokerHardwareplatformsGetParams {
-
+	var ()
 	return &ServiceBrokerHardwareplatformsGetParams{
 
 		timeout: timeout,
@@ -40,7 +40,7 @@ func NewServiceBrokerHardwareplatformsGetParamsWithTimeout(timeout time.Duration
 // NewServiceBrokerHardwareplatformsGetParamsWithContext creates a new ServiceBrokerHardwareplatformsGetParams object
 // with the default values initialized, and the ability to set a context for a request
 func NewServiceBrokerHardwareplatformsGetParamsWithContext(ctx context.Context) *ServiceBrokerHardwareplatformsGetParams {
-
+	var ()
 	return &ServiceBrokerHardwareplatformsGetParams{
 
 		Context: ctx,
@@ -50,7 +50,7 @@ func NewServiceBrokerHardwareplatformsGetParamsWithContext(ctx context.Context) 
 // NewServiceBrokerHardwareplatformsGetParamsWithHTTPClient creates a new ServiceBrokerHardwareplatformsGetParams object
 // with the default values initialized, and the ability to set a custom HTTPClient for a request
 func NewServiceBrokerHardwareplatformsGetParamsWithHTTPClient(client *http.Client) *ServiceBrokerHardwareplatformsGetParams {
-
+	var ()
 	return &ServiceBrokerHardwareplatformsGetParams{
 		HTTPClient: client,
 	}
@@ -60,6 +60,13 @@ func NewServiceBrokerHardwareplatformsGetParamsWithHTTPClient(client *http.Clien
 for the service broker hardwareplatforms get operation typically these are written to a http.Request
 */
 type ServiceBrokerHardwareplatformsGetParams struct {
+
+	/*RegionZone
+	  The region zone of the cloud instance
+
+	*/
+	RegionZone *string
+
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -98,6 +105,17 @@ func (o *ServiceBrokerHardwareplatformsGetParams) SetHTTPClient(client *http.Cli
 	o.HTTPClient = client
 }
 
+// WithRegionZone adds the regionZone to the service broker hardwareplatforms get params
+func (o *ServiceBrokerHardwareplatformsGetParams) WithRegionZone(regionZone *string) *ServiceBrokerHardwareplatformsGetParams {
+	o.SetRegionZone(regionZone)
+	return o
+}
+
+// SetRegionZone adds the regionZone to the service broker hardwareplatforms get params
+func (o *ServiceBrokerHardwareplatformsGetParams) SetRegionZone(regionZone *string) {
+	o.RegionZone = regionZone
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *ServiceBrokerHardwareplatformsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -105,6 +123,22 @@ func (o *ServiceBrokerHardwareplatformsGetParams) WriteToRequest(r runtime.Clien
 		return err
 	}
 	var res []error
+
+	if o.RegionZone != nil {
+
+		// query param regionZone
+		var qrRegionZone string
+		if o.RegionZone != nil {
+			qrRegionZone = *o.RegionZone
+		}
+		qRegionZone := qrRegionZone
+		if qRegionZone != "" {
+			if err := r.SetQueryParam("regionZone", qRegionZone); err != nil {
+				return err
+			}
+		}
+
+	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)

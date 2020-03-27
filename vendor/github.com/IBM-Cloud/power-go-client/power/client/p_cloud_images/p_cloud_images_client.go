@@ -176,7 +176,7 @@ func (a *Client) PcloudCloudinstancesImagesPost(params *PcloudCloudinstancesImag
 }
 
 /*
-PcloudImagesGet detaileds info of an available image
+PcloudImagesGet detaileds info of an available stock image
 */
 func (a *Client) PcloudImagesGet(params *PcloudImagesGetParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudImagesGetOK, error) {
 	// TODO: Validate the params before sending
@@ -205,7 +205,7 @@ func (a *Client) PcloudImagesGet(params *PcloudImagesGetParams, authInfo runtime
 }
 
 /*
-PcloudImagesGetall lists all images available for copying into cloud instances
+PcloudImagesGetall lists all available stock images
 */
 func (a *Client) PcloudImagesGetall(params *PcloudImagesGetallParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudImagesGetallOK, error) {
 	// TODO: Validate the params before sending

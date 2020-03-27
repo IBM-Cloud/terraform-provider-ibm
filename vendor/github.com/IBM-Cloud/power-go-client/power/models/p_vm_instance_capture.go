@@ -38,8 +38,7 @@ type PVMInstanceCapture struct {
 	CloudStorageImagePath string `json:"cloudStorageImagePath,omitempty"`
 
 	// Cloud Storage Region
-	// Enum: [us-east us-south]
-	CloudStorageRegion *string `json:"cloudStorageRegion,omitempty"`
+	CloudStorageRegion string `json:"cloudStorageRegion,omitempty"`
 
 	// Cloud Storage Secret key
 	CloudStorageSecretKey string `json:"cloudStorageSecretKey,omitempty"`
@@ -54,10 +53,6 @@ func (m *PVMInstanceCapture) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateCaptureName(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateCloudStorageRegion(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -116,49 +111,6 @@ func (m *PVMInstanceCapture) validateCaptureDestination(formats strfmt.Registry)
 func (m *PVMInstanceCapture) validateCaptureName(formats strfmt.Registry) error {
 
 	if err := validate.Required("captureName", "body", m.CaptureName); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-var pVmInstanceCaptureTypeCloudStorageRegionPropEnum []interface{}
-
-func init() {
-	var res []string
-	if err := json.Unmarshal([]byte(`["us-east","us-south"]`), &res); err != nil {
-		panic(err)
-	}
-	for _, v := range res {
-		pVmInstanceCaptureTypeCloudStorageRegionPropEnum = append(pVmInstanceCaptureTypeCloudStorageRegionPropEnum, v)
-	}
-}
-
-const (
-
-	// PVMInstanceCaptureCloudStorageRegionUsEast captures enum value "us-east"
-	PVMInstanceCaptureCloudStorageRegionUsEast string = "us-east"
-
-	// PVMInstanceCaptureCloudStorageRegionUsSouth captures enum value "us-south"
-	PVMInstanceCaptureCloudStorageRegionUsSouth string = "us-south"
-)
-
-// prop value enum
-func (m *PVMInstanceCapture) validateCloudStorageRegionEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, pVmInstanceCaptureTypeCloudStorageRegionPropEnum); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *PVMInstanceCapture) validateCloudStorageRegion(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.CloudStorageRegion) { // not required
-		return nil
-	}
-
-	// value enum
-	if err := m.validateCloudStorageRegionEnum("cloudStorageRegion", "body", *m.CloudStorageRegion); err != nil {
 		return err
 	}
 

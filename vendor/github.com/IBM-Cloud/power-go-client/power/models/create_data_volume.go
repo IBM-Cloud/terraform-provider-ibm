@@ -26,9 +26,8 @@ type CreateDataVolume struct {
 	// Volume (ID or Name)to base volume affinity policy against; required if affinityPolicy provided
 	AffinityVolume *string `json:"affinityVolume,omitempty"`
 
-	// Type of Disk
-	// Required: true
-	DiskType *string `json:"diskType"`
+	// Type of Disk, required if affinityPolicy not used
+	DiskType string `json:"diskType,omitempty"`
 
 	// Volume Name
 	// Required: true
@@ -40,6 +39,9 @@ type CreateDataVolume struct {
 	// Volume Size (GB)
 	// Required: true
 	Size *float64 `json:"size"`
+
+	// Volume pool where the volume will be located
+	VolumePool string `json:"volumePool,omitempty"`
 }
 
 // Validate validates this create data volume
@@ -47,10 +49,6 @@ func (m *CreateDataVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAffinityPolicy(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateDiskType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -105,15 +103,6 @@ func (m *CreateDataVolume) validateAffinityPolicy(formats strfmt.Registry) error
 
 	// value enum
 	if err := m.validateAffinityPolicyEnum("affinityPolicy", "body", *m.AffinityPolicy); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *CreateDataVolume) validateDiskType(formats strfmt.Registry) error {
-
-	if err := validate.Required("diskType", "body", m.DiskType); err != nil {
 		return err
 	}
 

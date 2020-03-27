@@ -61,6 +61,11 @@ for the pcloud cloudinstances volumes getall operation typically these are writt
 */
 type PcloudCloudinstancesVolumesGetallParams struct {
 
+	/*Affinity
+	  A pvmInstance (id or name), limits a volumes list response to only volumes that have affinity to the pvmInstance
+
+	*/
+	Affinity *string
 	/*CloudInstanceID
 	  Cloud Instance ID of a PCloud Instance
 
@@ -105,6 +110,17 @@ func (o *PcloudCloudinstancesVolumesGetallParams) SetHTTPClient(client *http.Cli
 	o.HTTPClient = client
 }
 
+// WithAffinity adds the affinity to the pcloud cloudinstances volumes getall params
+func (o *PcloudCloudinstancesVolumesGetallParams) WithAffinity(affinity *string) *PcloudCloudinstancesVolumesGetallParams {
+	o.SetAffinity(affinity)
+	return o
+}
+
+// SetAffinity adds the affinity to the pcloud cloudinstances volumes getall params
+func (o *PcloudCloudinstancesVolumesGetallParams) SetAffinity(affinity *string) {
+	o.Affinity = affinity
+}
+
 // WithCloudInstanceID adds the cloudInstanceID to the pcloud cloudinstances volumes getall params
 func (o *PcloudCloudinstancesVolumesGetallParams) WithCloudInstanceID(cloudInstanceID string) *PcloudCloudinstancesVolumesGetallParams {
 	o.SetCloudInstanceID(cloudInstanceID)
@@ -123,6 +139,22 @@ func (o *PcloudCloudinstancesVolumesGetallParams) WriteToRequest(r runtime.Clien
 		return err
 	}
 	var res []error
+
+	if o.Affinity != nil {
+
+		// query param affinity
+		var qrAffinity string
+		if o.Affinity != nil {
+			qrAffinity = *o.Affinity
+		}
+		qAffinity := qrAffinity
+		if qAffinity != "" {
+			if err := r.SetQueryParam("affinity", qAffinity); err != nil {
+				return err
+			}
+		}
+
+	}
 
 	// path param cloud_instance_id
 	if err := r.SetPathParam("cloud_instance_id", o.CloudInstanceID); err != nil {

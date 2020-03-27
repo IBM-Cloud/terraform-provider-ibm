@@ -50,6 +50,10 @@ type ImageReference struct {
 	// Image State
 	// Required: true
 	State *string `json:"state"`
+
+	// Storage type for image
+	// Required: true
+	StorageType *string `json:"storageType"`
 }
 
 // Validate validates this image reference
@@ -85,6 +89,10 @@ func (m *ImageReference) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -177,6 +185,15 @@ func (m *ImageReference) validateSpecifications(formats strfmt.Registry) error {
 func (m *ImageReference) validateState(formats strfmt.Registry) error {
 
 	if err := validate.Required("state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ImageReference) validateStorageType(formats strfmt.Registry) error {
+
+	if err := validate.Required("storageType", "body", m.StorageType); err != nil {
 		return err
 	}
 

@@ -22,6 +22,8 @@ import (
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_instances"
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_networks"
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_p_vm_instances"
+	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_snapshots"
+	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_system_pools"
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_tasks"
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_tenants"
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_tenants_ssh_keys"
@@ -96,6 +98,10 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *PowerIaas 
 	cli.PCloudNetworks = p_cloud_networks.New(transport, formats)
 
 	cli.PCloudPVMInstances = p_cloud_p_vm_instances.New(transport, formats)
+
+	cli.PCloudSnapshots = p_cloud_snapshots.New(transport, formats)
+
+	cli.PCloudSystemPools = p_cloud_system_pools.New(transport, formats)
 
 	cli.PCloudTasks = p_cloud_tasks.New(transport, formats)
 
@@ -179,6 +185,10 @@ type PowerIaas struct {
 
 	PCloudPVMInstances *p_cloud_p_vm_instances.Client
 
+	PCloudSnapshots *p_cloud_snapshots.Client
+
+	PCloudSystemPools *p_cloud_system_pools.Client
+
 	PCloudTasks *p_cloud_tasks.Client
 
 	PCloudTenants *p_cloud_tenants.Client
@@ -223,6 +233,10 @@ func (c *PowerIaas) SetTransport(transport runtime.ClientTransport) {
 	c.PCloudNetworks.SetTransport(transport)
 
 	c.PCloudPVMInstances.SetTransport(transport)
+
+	c.PCloudSnapshots.SetTransport(transport)
+
+	c.PCloudSystemPools.SetTransport(transport)
 
 	c.PCloudTasks.SetTransport(transport)
 

@@ -182,16 +182,34 @@ func (c *Client) newRequest(method, path string, body interface{}) (*http.Reques
 	return request, nil
 }
 
-type Error struct {
-	URL           string // URL of request that resulted in this error
-	StatusCode    int    // HTTP error code from KeyProtect service
-	Message       string // error message from KeyProtect service
-	BodyContent   []byte // raw body content if more inspection is needed
-	CorrelationID string // string value of a UUID that uniquely identifies the request to KeyProtect
+type reason struct {
+	Code     string
+	Message  string
+	Status   int
+	MoreInfo string
 }
 
+func (r reason) String() string {
+	return fmt.Sprintf("%s: %s", r.Code, r.Message)
+}
+
+type Error struct {
+	URL           string   // URL of request that resulted in this error
+	StatusCode    int      // HTTP error code from KeyProtect service
+	Message       string   // error message from KeyProtect service
+	BodyContent   []byte   // raw body content if more inspection is needed
+	CorrelationID string   // string value of a UUID that uniquely identifies the request to KeyProtect
+	Reasons       []reason // collection of reason types containing detailed error messages
+}
+
+// Error returns correlation id and error message string
 func (e Error) Error() string {
-	return fmt.Sprintf("kp.Error: correlation_id='%v', msg='%v'", e.CorrelationID, e.Message)
+	var extraVars string
+	if e.Reasons != nil && len(e.Reasons) > 0 {
+		extraVars = fmt.Sprintf(", reasons='%s'", e.Reasons)
+	}
+
+	return fmt.Sprintf("kp.Error: correlation_id='%v', msg='%s'%s", e.CorrelationID, e.Message, extraVars)
 }
 
 // URLError wraps an error from client.do() calls with a correlation ID from KeyProtect
@@ -246,7 +264,9 @@ func (c *Client) do(ctx context.Context, req *http.Request, res interface{}) (*h
 
 	type KPErrorMsg struct {
 		Message string `json:"errorMsg,omitempty"`
+		Reasons []reason
 	}
+
 	type KPError struct {
 		Resources []KPErrorMsg `json:"resources,omitempty"`
 	}
@@ -259,12 +279,14 @@ func (c *Client) do(ctx context.Context, req *http.Request, res interface{}) (*h
 	case http.StatusNoContent:
 	default:
 		errMessage := string(resBody)
+		var reasons []reason
 
 		if strings.Contains(string(resBody), "errorMsg") {
 			kperr := KPError{}
 			json.Unmarshal(resBody, &kperr)
 			if len(kperr.Resources) > 0 && len(kperr.Resources[0].Message) > 0 {
 				errMessage = kperr.Resources[0].Message
+				reasons = kperr.Resources[0].Reasons
 			}
 		}
 
@@ -274,6 +296,7 @@ func (c *Client) do(ctx context.Context, req *http.Request, res interface{}) (*h
 			Message:       errMessage,
 			BodyContent:   resBody,
 			CorrelationID: corrId,
+			Reasons:       reasons,
 		}
 	}
 
