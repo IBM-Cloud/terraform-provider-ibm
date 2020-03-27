@@ -43,9 +43,9 @@ The following arguments are supported:
 * `pi_key_pair_name` - (Required, string) The name of the Power Virtual Server Cloud SSH key to used to login to the VM.
 * `pi_image_id` - (Required, string) The name of the image to deploy (e.g., 7200-03-03).
 * `pi_processors` - (Required, float) The number of vCPUs to assign to the VM (as visibile within the guest operating system).
-* `pi_proc_type` - (Required, string) The type of processor mode in which the VM will run (shared/dedicated).
+* `pi_proc_type` - (Required, string) The type of processor mode in which the VM will run (shared/dedicated/capped).
 * `pi_memory` - (Required, float) The amount of memory (GB) to assign to the VM.
-* `pi_sys_type` - (Required, string) The type of system on which to create the VM (s922/e880/any).
+* `pi_sys_type` - (Required, string) The type of system on which to create the VM (s922/e880/e980/any).
 * `pi_volume_ids` - (Optional, list(string)) The list of volume IDs to attach to the VM at creation time.
 * `pi_network_ids` - (Required, list(string)) The list of network IDs assigned to the VM.
 * `pi_cloud_instance_id` - (Required, string) The cloud_instance_id for this account.
@@ -63,7 +63,10 @@ The following attributes are exported:
 * `status` - The status of the VM.
 * `health_status` - The health status of the VM.
 * `migratable` - The state of instance migratable.
-* `min_processors` - Minimum number of processors that can be allocated (for resize)
+* `min_processors` - Minimum number of processors that were allocated (for resize)
+* `min_memory` - Minimum Memory that was  allocated (for resize)
+* `max_processors` - Maximumx number of processors that can be allocated (for resize) without a shutdown/reboot of the lpar
+* `max_memory` - Maximum amount of memory that can be allocated (for resize) without a shutdown/reboot of the lpar
 * `progress` - The progress of the instance.
 * `addresses` - A list of addresses assigned to the VM. Nested `addresses` blocks have the following structure:
 	* `ip` - IP of the instance.

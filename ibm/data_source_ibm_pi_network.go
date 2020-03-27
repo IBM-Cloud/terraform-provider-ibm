@@ -59,6 +59,10 @@ func dataSourceIBMPINetwork() *schema.Resource {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
+			"name": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -86,6 +90,7 @@ func dataSourceIBMPINetworksRead(d *schema.ResourceData, meta interface{}) error
 	d.Set("available_ip_count", networkdata.IPAddressMetrics.Available)
 	d.Set("used_ip_count", networkdata.IPAddressMetrics.Used)
 	d.Set("used_ip_percent", networkdata.IPAddressMetrics.Utilization)
+	d.Set("name", networkdata.Name)
 
 	return nil
 

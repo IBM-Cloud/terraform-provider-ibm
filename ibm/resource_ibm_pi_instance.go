@@ -50,6 +50,18 @@ func resourceIBMPIInstance() *schema.Resource {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
+			"min_memory": {
+				Type:     schema.TypeFloat,
+				Computed: true,
+			},
+			"max_processors": {
+				Type:     schema.TypeFloat,
+				Computed: true,
+			},
+			"max_memory": {
+				Type:     schema.TypeFloat,
+				Computed: true,
+			},
 			helpers.PIInstanceNetworkIds: {
 				Type:             schema.TypeSet,
 				Required:         true,
@@ -134,7 +146,7 @@ func resourceIBMPIInstance() *schema.Resource {
 			helpers.PIInstanceProcType: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"dedicated", "shared"}),
+				ValidateFunc: validateAllowedStringValue([]string{"dedicated", "shared", "capped"}),
 			},
 			helpers.PIInstanceSSHKeyName: {
 				Type:     schema.TypeString,
@@ -147,7 +159,7 @@ func resourceIBMPIInstance() *schema.Resource {
 			helpers.PIInstanceSystemType: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"any", "s922", "e880"}),
+				ValidateFunc: validateAllowedStringValue([]string{"any", "s922", "e880", "e980"}),
 			},
 			helpers.PIInstanceReplicants: {
 				Type:     schema.TypeFloat,
@@ -302,6 +314,9 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(helpers.PIInstanceNetworkIds, newStringSet(schema.HashString, networks))
 	d.Set(helpers.PIInstanceVolumeIds, powervmdata.VolumeIds)
 	d.Set(helpers.PIInstanceSystemType, powervmdata.SysType)
+	d.Set("min_memory", powervmdata.Minmem)
+	d.Set("max_processors", powervmdata.Maxproc)
+	d.Set("max_memory", powervmdata.Maxmem)
 
 	if powervmdata.Addresses != nil {
 		pvmaddress := make([]map[string]interface{}, len(powervmdata.Addresses))
@@ -466,7 +481,7 @@ func isWaitForPIInstanceAvailable(client *st.IBMPIInstanceClient, id string, tim
 		Target:     []string{"OK", "ACTIVE", helpers.PIInstanceHealthOk},
 		Refresh:    isPIInstanceRefreshFunc(client, id, powerinstanceid),
 		Delay:      3 * time.Minute,
-		MinTimeout: 30 * time.Second,
+		MinTimeout: 60 * time.Second,
 		Timeout:    timeout,
 	}
 
@@ -520,28 +535,3 @@ func checkBase64(input string) error {
 	return err
 
 }
-
-/*func getBootVolumeData(d *schema.ResourceData, meta interface{}) error{
-	sess, err := meta.(ClientSession).IBMPISession()
-	if err != nil {
-		return err
-	}
-
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	volumeC := instance.NewIBMPIVolumeClient(sess, powerinstanceid)
-	volumedata, err := volumeC.GetAll(d.Get(helpers.PIInstanceName).(string), powerinstanceid)
-
-	if err != nil {
-		return err
-	}
-
-	var clientgenU, _ = uuid.GenerateUUID()
-	d.SetId(clientgenU)
-
-	//log.Printf("Printing the data %s", *volumedata.Volumes[0].VolumeID)
-	d.Set("bootvolumeid",
-	d.Set("instance_volumes", flattenVolumesInInstances(volumedata.Volumes))
-
-	return nil
-
-}*/
