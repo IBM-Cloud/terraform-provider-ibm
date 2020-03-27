@@ -61,7 +61,7 @@ The following arguments are supported:
 * `cross_region_location` - (Optional,string) Location if cross regional bucket is desired. Accepted values: 'us', 'eu', 'ap' Conflicts with: `single_site_location`, `region_location`
 
 * **Note** - One of the location option must be present.
-* `storage_class` - (Required, string) Storage class of the bucket. Accepted values: 'standard', 'vault', 'cold', 'flex'
+* `storage_class` - (Required, string) Storage class of the bucket. Accepted values: 'standard', 'vault', 'cold', 'flex', 'smart'
 
 ## Attribute Reference
 
