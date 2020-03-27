@@ -274,6 +274,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_firewall":                                       resourceIBMFirewall(),
 			"ibm_firewall_policy":                                resourceIBMFirewallPolicy(),
 			"ibm_iam_access_group":                               resourceIBMIAMAccessGroup(),
+			"ibm_iam_access_group_dynamic_rule":                  resourceIBMIAMDynamicRule(),
 			"ibm_iam_access_group_members":                       resourceIBMIAMAccessGroupMembers(),
 			"ibm_iam_access_group_policy":                        resourceIBMIAMAccessGroupPolicy(),
 			"ibm_iam_authorization_policy":                       resourceIBMIAMAuthorizationPolicy(),
