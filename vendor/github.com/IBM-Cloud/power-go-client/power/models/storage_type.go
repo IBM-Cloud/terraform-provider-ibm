@@ -6,9 +6,13 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
+
 	strfmt "github.com/go-openapi/strfmt"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // StorageType Storage type detail
@@ -21,12 +25,68 @@ type StorageType struct {
 	// Description, storage type label
 	Description string `json:"description,omitempty"`
 
+	// State of the storage type (active or inactive)
+	// Enum: [active inactive]
+	State *string `json:"state,omitempty"`
+
 	// Storage type
 	Type string `json:"type,omitempty"`
 }
 
 // Validate validates this storage type
 func (m *StorageType) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var storageTypeTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["active","inactive"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		storageTypeTypeStatePropEnum = append(storageTypeTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// StorageTypeStateActive captures enum value "active"
+	StorageTypeStateActive string = "active"
+
+	// StorageTypeStateInactive captures enum value "inactive"
+	StorageTypeStateInactive string = "inactive"
+)
+
+// prop value enum
+func (m *StorageType) validateStateEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, storageTypeTypeStatePropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *StorageType) validateState(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -25,8 +25,8 @@ type PVMInstanceUpdate struct {
 	// Indicates if the server is allowed to migrate between hosts
 	Migratable *bool `json:"migratable,omitempty"`
 
-	// Processor type (dedicated or shared)
-	// Enum: [dedicated shared]
+	// Processor type (dedicated, shared, capped)
+	// Enum: [dedicated shared capped]
 	ProcType string `json:"procType,omitempty"`
 
 	// Number of processors allocated
@@ -34,6 +34,9 @@ type PVMInstanceUpdate struct {
 
 	// Name of the server to create
 	ServerName string `json:"serverName,omitempty"`
+
+	// The pvm instance Software Licenses
+	SoftwareLicenses *SoftwareLicenses `json:"softwareLicenses,omitempty"`
 }
 
 // Validate validates this p VM instance update
@@ -41,6 +44,10 @@ func (m *PVMInstanceUpdate) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateProcType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSoftwareLicenses(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -54,7 +61,7 @@ var pVmInstanceUpdateTypeProcTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["dedicated","shared"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["dedicated","shared","capped"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -69,6 +76,9 @@ const (
 
 	// PVMInstanceUpdateProcTypeShared captures enum value "shared"
 	PVMInstanceUpdateProcTypeShared string = "shared"
+
+	// PVMInstanceUpdateProcTypeCapped captures enum value "capped"
+	PVMInstanceUpdateProcTypeCapped string = "capped"
 )
 
 // prop value enum
@@ -88,6 +98,24 @@ func (m *PVMInstanceUpdate) validateProcType(formats strfmt.Registry) error {
 	// value enum
 	if err := m.validateProcTypeEnum("procType", "body", m.ProcType); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *PVMInstanceUpdate) validateSoftwareLicenses(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.SoftwareLicenses) { // not required
+		return nil
+	}
+
+	if m.SoftwareLicenses != nil {
+		if err := m.SoftwareLicenses.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("softwareLicenses")
+			}
+			return err
+		}
 	}
 
 	return nil

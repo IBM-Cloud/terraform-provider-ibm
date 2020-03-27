@@ -139,7 +139,7 @@ func BearerTokenAndCRN(session *IBMPISession, crn string) runtime.ClientAuthInfo
 
 func crnBuilder(powerinstance, useraccount, region string, zone string) string {
 	log.Printf("Calling the crn constructor that is to be passed back to the caller  %s", useraccount)
-	log.Printf("the region is %s", region)
+	log.Printf("the region is %s and the zone is  %s", region, zone)
 	var crnData string
 	//var crnData = crnString + separator + version + separator + service + separator + serviceType + separator + offering + separator + "us-south" + separator + "a" + serviceInstanceSeparator + useraccount + separator + powerinstance + separator + separator
 	if zone == "" {

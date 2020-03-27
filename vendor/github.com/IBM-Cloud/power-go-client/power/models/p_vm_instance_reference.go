@@ -54,12 +54,15 @@ type PVMInstanceReference struct {
 	// Required: true
 	ServerName *string `json:"serverName"`
 
+	// The pvm instance Software Licenses
+	SoftwareLicenses *SoftwareLicenses `json:"softwareLicenses,omitempty"`
+
 	// The status of the instance
 	// Required: true
 	Status *string `json:"status"`
 
-	// sys type
-	SysType PVMInstanceSysType `json:"sysType,omitempty"`
+	// System type used to host the instance
+	SysType string `json:"sysType,omitempty"`
 
 	// Date/Time of PVM last update
 	// Format: date-time
@@ -106,11 +109,11 @@ func (m *PVMInstanceReference) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateStatus(formats); err != nil {
+	if err := m.validateSoftwareLicenses(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateSysType(formats); err != nil {
+	if err := m.validateStatus(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -259,25 +262,27 @@ func (m *PVMInstanceReference) validateServerName(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *PVMInstanceReference) validateStatus(formats strfmt.Registry) error {
+func (m *PVMInstanceReference) validateSoftwareLicenses(formats strfmt.Registry) error {
 
-	if err := validate.Required("status", "body", m.Status); err != nil {
-		return err
+	if swag.IsZero(m.SoftwareLicenses) { // not required
+		return nil
+	}
+
+	if m.SoftwareLicenses != nil {
+		if err := m.SoftwareLicenses.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("softwareLicenses")
+			}
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (m *PVMInstanceReference) validateSysType(formats strfmt.Registry) error {
+func (m *PVMInstanceReference) validateStatus(formats strfmt.Registry) error {
 
-	if swag.IsZero(m.SysType) { // not required
-		return nil
-	}
-
-	if err := m.SysType.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("sysType")
-		}
+	if err := validate.Required("status", "body", m.Status); err != nil {
 		return err
 	}
 

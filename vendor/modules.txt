@@ -40,7 +40,7 @@ github.com/IBM-Cloud/bluemix-go/rest
 github.com/IBM-Cloud/bluemix-go/session
 github.com/IBM-Cloud/bluemix-go/trace
 github.com/IBM-Cloud/bluemix-go/utils
-# github.com/IBM-Cloud/power-go-client v0.0.0-00010101000000-000000000000 => ./common/github.com/IBM-Cloud/power-go-client
+# github.com/IBM-Cloud/power-go-client v1.0.0
 github.com/IBM-Cloud/power-go-client/clients/instance
 github.com/IBM-Cloud/power-go-client/errors
 github.com/IBM-Cloud/power-go-client/helpers
@@ -57,6 +57,8 @@ github.com/IBM-Cloud/power-go-client/power/client/p_cloud_images
 github.com/IBM-Cloud/power-go-client/power/client/p_cloud_instances
 github.com/IBM-Cloud/power-go-client/power/client/p_cloud_networks
 github.com/IBM-Cloud/power-go-client/power/client/p_cloud_p_vm_instances
+github.com/IBM-Cloud/power-go-client/power/client/p_cloud_snapshots
+github.com/IBM-Cloud/power-go-client/power/client/p_cloud_system_pools
 github.com/IBM-Cloud/power-go-client/power/client/p_cloud_tasks
 github.com/IBM-Cloud/power-go-client/power/client/p_cloud_tenants
 github.com/IBM-Cloud/power-go-client/power/client/p_cloud_tenants_ssh_keys
@@ -100,7 +102,7 @@ github.com/IBM/ibm-cos-sdk-go/private/protocol/rest
 github.com/IBM/ibm-cos-sdk-go/private/protocol/restxml
 github.com/IBM/ibm-cos-sdk-go/private/protocol/xml/xmlutil
 github.com/IBM/ibm-cos-sdk-go/service/s3
-# github.com/IBM/keyprotect-go-client v0.3.2
+# github.com/IBM/keyprotect-go-client v0.3.5-0.20200325142150-b63163832e26
 github.com/IBM/keyprotect-go-client
 github.com/IBM/keyprotect-go-client/iam
 # github.com/PuerkitoBio/purell v1.1.1
@@ -118,7 +120,7 @@ github.com/apparentlymart/go-cidr/cidr
 github.com/apparentlymart/go-textseg/textseg
 # github.com/armon/go-radix v1.0.0
 github.com/armon/go-radix
-# github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf
+# github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
 github.com/asaskevich/govalidator
 # github.com/aws/aws-sdk-go v1.25.3
 github.com/aws/aws-sdk-go/aws
@@ -172,18 +174,18 @@ github.com/dgrijalva/jwt-go
 github.com/fatih/color
 # github.com/ghodss/yaml v1.0.0
 github.com/ghodss/yaml
-# github.com/go-openapi/analysis v0.0.0-20180825180245-b006789cd277
+# github.com/go-openapi/analysis v0.19.5
 github.com/go-openapi/analysis
 github.com/go-openapi/analysis/internal
-# github.com/go-openapi/errors v0.0.0-20180827163446-87bb65328877
+# github.com/go-openapi/errors v0.19.3
 github.com/go-openapi/errors
-# github.com/go-openapi/jsonpointer v0.0.0-20180825180259-52eb3d4b47c6
+# github.com/go-openapi/jsonpointer v0.19.3
 github.com/go-openapi/jsonpointer
-# github.com/go-openapi/jsonreference v0.0.0-20180825180305-1c6a3fa339f2
+# github.com/go-openapi/jsonreference v0.19.3
 github.com/go-openapi/jsonreference
-# github.com/go-openapi/loads v0.0.0-20180825180312-fd899182a268
+# github.com/go-openapi/loads v0.19.4
 github.com/go-openapi/loads
-# github.com/go-openapi/runtime v0.0.0-20180825180317-95364c1e5610
+# github.com/go-openapi/runtime v0.19.11
 github.com/go-openapi/runtime
 github.com/go-openapi/runtime/client
 github.com/go-openapi/runtime/logger
@@ -192,14 +194,16 @@ github.com/go-openapi/runtime/middleware/denco
 github.com/go-openapi/runtime/middleware/header
 github.com/go-openapi/runtime/middleware/untyped
 github.com/go-openapi/runtime/security
-# github.com/go-openapi/spec v0.0.0-20180825180323-f1468acb3b29
+# github.com/go-openapi/spec v0.19.3
 github.com/go-openapi/spec
-# github.com/go-openapi/strfmt v0.0.0-20180825180330-6292e8b5de3b
+# github.com/go-openapi/strfmt v0.19.4
 github.com/go-openapi/strfmt
-# github.com/go-openapi/swag v0.0.0-20180825180336-0dc164b7900e
+# github.com/go-openapi/swag v0.19.7
 github.com/go-openapi/swag
-# github.com/go-openapi/validate v0.0.0-20180825180342-e0648ff40507
+# github.com/go-openapi/validate v0.19.6
 github.com/go-openapi/validate
+# github.com/go-stack/stack v1.8.0
+github.com/go-stack/stack
 # github.com/golang/protobuf v1.3.2
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/protoc-gen-go/descriptor
@@ -326,7 +330,7 @@ github.com/hashicorp/yamux
 github.com/hokaccha/go-prettyjson
 # github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
 github.com/jmespath/go-jmespath
-# github.com/mailru/easyjson v0.0.0-20180823135443-60711f1a8329
+# github.com/mailru/easyjson v0.7.0
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
@@ -427,6 +431,13 @@ github.ibm.com/Bluemix/riaas-go-client/riaas/client/v_p_naa_s
 github.ibm.com/Bluemix/riaas-go-client/riaas/models
 github.ibm.com/Bluemix/riaas-go-client/session
 github.ibm.com/Bluemix/riaas-go-client/utils
+# go.mongodb.org/mongo-driver v1.1.2
+go.mongodb.org/mongo-driver/bson
+go.mongodb.org/mongo-driver/bson/bsoncodec
+go.mongodb.org/mongo-driver/bson/bsonrw
+go.mongodb.org/mongo-driver/bson/bsontype
+go.mongodb.org/mongo-driver/bson/primitive
+go.mongodb.org/mongo-driver/x/bsonx/bsoncore
 # go.opencensus.io v0.22.0
 go.opencensus.io
 go.opencensus.io/internal
@@ -558,8 +569,5 @@ google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
 google.golang.org/grpc/test/bufconn
-# gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce
-gopkg.in/mgo.v2/bson
-gopkg.in/mgo.v2/internal/json
 # gopkg.in/yaml.v2 v2.2.4
 gopkg.in/yaml.v2

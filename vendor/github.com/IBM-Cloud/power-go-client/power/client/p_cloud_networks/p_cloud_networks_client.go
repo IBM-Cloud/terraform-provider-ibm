@@ -112,6 +112,151 @@ func (a *Client) PcloudNetworksGetall(params *PcloudNetworksGetallParams, authIn
 }
 
 /*
+PcloudNetworksPortsDelete deletes a network port
+*/
+func (a *Client) PcloudNetworksPortsDelete(params *PcloudNetworksPortsDeleteParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudNetworksPortsDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPcloudNetworksPortsDeleteParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "pcloud.networks.ports.delete",
+		Method:             "DELETE",
+		PathPattern:        "/pcloud/v1/cloud-instances/{cloud_instance_id}/networks/{network_id}/ports/{port_id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PcloudNetworksPortsDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PcloudNetworksPortsDeleteOK), nil
+
+}
+
+/*
+PcloudNetworksPortsGet gets a port s information
+*/
+func (a *Client) PcloudNetworksPortsGet(params *PcloudNetworksPortsGetParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudNetworksPortsGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPcloudNetworksPortsGetParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "pcloud.networks.ports.get",
+		Method:             "GET",
+		PathPattern:        "/pcloud/v1/cloud-instances/{cloud_instance_id}/networks/{network_id}/ports/{port_id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PcloudNetworksPortsGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PcloudNetworksPortsGetOK), nil
+
+}
+
+/*
+PcloudNetworksPortsGetall gets all ports for this network
+*/
+func (a *Client) PcloudNetworksPortsGetall(params *PcloudNetworksPortsGetallParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudNetworksPortsGetallOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPcloudNetworksPortsGetallParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "pcloud.networks.ports.getall",
+		Method:             "GET",
+		PathPattern:        "/pcloud/v1/cloud-instances/{cloud_instance_id}/networks/{network_id}/ports",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PcloudNetworksPortsGetallReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PcloudNetworksPortsGetallOK), nil
+
+}
+
+/*
+PcloudNetworksPortsPost performs port addition deletion and listing
+*/
+func (a *Client) PcloudNetworksPortsPost(params *PcloudNetworksPortsPostParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudNetworksPortsPostCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPcloudNetworksPortsPostParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "pcloud.networks.ports.post",
+		Method:             "POST",
+		PathPattern:        "/pcloud/v1/cloud-instances/{cloud_instance_id}/networks/{network_id}/ports",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PcloudNetworksPortsPostReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PcloudNetworksPortsPostCreated), nil
+
+}
+
+/*
+PcloudNetworksPortsPut updates a port s information
+*/
+func (a *Client) PcloudNetworksPortsPut(params *PcloudNetworksPortsPutParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudNetworksPortsPutOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPcloudNetworksPortsPutParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "pcloud.networks.ports.put",
+		Method:             "PUT",
+		PathPattern:        "/pcloud/v1/cloud-instances/{cloud_instance_id}/networks/{network_id}/ports/{port_id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PcloudNetworksPortsPutReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PcloudNetworksPortsPutOK), nil
+
+}
+
+/*
 PcloudNetworksPost creates a new network
 */
 func (a *Client) PcloudNetworksPost(params *PcloudNetworksPostParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudNetworksPostOK, *PcloudNetworksPostCreated, error) {

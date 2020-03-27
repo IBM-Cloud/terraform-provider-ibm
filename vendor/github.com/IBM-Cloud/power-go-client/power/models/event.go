@@ -27,6 +27,11 @@ type Event struct {
 	// Required: true
 	EventID *string `json:"eventID"`
 
+	// Level of the event (notice, info, warning, error)
+	// Required: true
+	// Enum: [notice info warning error]
+	Level *string `json:"level"`
+
 	// The (translated) message of the event
 	// Required: true
 	Message *string `json:"message"`
@@ -47,11 +52,6 @@ type Event struct {
 	// Required: true
 	Timestamp *int64 `json:"timestamp"`
 
-	// Type of the event (notice, info, warning, error)
-	// Required: true
-	// Enum: [notice info warning error]
-	Type *string `json:"type"`
-
 	// user
 	User *EventUser `json:"user,omitempty"`
 }
@@ -68,6 +68,10 @@ func (m *Event) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateLevel(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateMessage(formats); err != nil {
 		res = append(res, err)
 	}
@@ -81,10 +85,6 @@ func (m *Event) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateTimestamp(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -110,6 +110,55 @@ func (m *Event) validateAction(formats strfmt.Registry) error {
 func (m *Event) validateEventID(formats strfmt.Registry) error {
 
 	if err := validate.Required("eventID", "body", m.EventID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var eventTypeLevelPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["notice","info","warning","error"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		eventTypeLevelPropEnum = append(eventTypeLevelPropEnum, v)
+	}
+}
+
+const (
+
+	// EventLevelNotice captures enum value "notice"
+	EventLevelNotice string = "notice"
+
+	// EventLevelInfo captures enum value "info"
+	EventLevelInfo string = "info"
+
+	// EventLevelWarning captures enum value "warning"
+	EventLevelWarning string = "warning"
+
+	// EventLevelError captures enum value "error"
+	EventLevelError string = "error"
+)
+
+// prop value enum
+func (m *Event) validateLevelEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, eventTypeLevelPropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Event) validateLevel(formats strfmt.Registry) error {
+
+	if err := validate.Required("level", "body", m.Level); err != nil {
+		return err
+	}
+
+	// value enum
+	if err := m.validateLevelEnum("level", "body", *m.Level); err != nil {
 		return err
 	}
 
@@ -150,55 +199,6 @@ func (m *Event) validateTime(formats strfmt.Registry) error {
 func (m *Event) validateTimestamp(formats strfmt.Registry) error {
 
 	if err := validate.Required("timestamp", "body", m.Timestamp); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-var eventTypeTypePropEnum []interface{}
-
-func init() {
-	var res []string
-	if err := json.Unmarshal([]byte(`["notice","info","warning","error"]`), &res); err != nil {
-		panic(err)
-	}
-	for _, v := range res {
-		eventTypeTypePropEnum = append(eventTypeTypePropEnum, v)
-	}
-}
-
-const (
-
-	// EventTypeNotice captures enum value "notice"
-	EventTypeNotice string = "notice"
-
-	// EventTypeInfo captures enum value "info"
-	EventTypeInfo string = "info"
-
-	// EventTypeWarning captures enum value "warning"
-	EventTypeWarning string = "warning"
-
-	// EventTypeError captures enum value "error"
-	EventTypeError string = "error"
-)
-
-// prop value enum
-func (m *Event) validateTypeEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, eventTypeTypePropEnum); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *Event) validateType(formats strfmt.Registry) error {
-
-	if err := validate.Required("type", "body", m.Type); err != nil {
-		return err
-	}
-
-	// value enum
-	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
