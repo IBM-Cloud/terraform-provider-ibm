@@ -93,6 +93,44 @@ func dataSourceIBMISVPC() *schema.Resource {
 					},
 				},
 			},
+
+			subnetsList: {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "subent name",
+						},
+
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "subnet ID",
+						},
+
+						"status": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "subnet status",
+						},
+
+						totalIPV4AddressCount: {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Total IPv4 address count in the subnet",
+						},
+
+						availableIPV4AddressCount: {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Available IPv4 address count in the subnet",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -103,6 +141,7 @@ func dataSourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	vpcC := network.NewVPCClient(sess)
+	vpcNetworkClient := network.NewSubnetClient(sess)
 
 	name := d.Get(isVPCName).(string)
 
@@ -166,6 +205,27 @@ func dataSourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
 				d.Set(cseSourceAddresses, info)
 			}
 
+			// set the subnets list
+			s, _, err := vpcNetworkClient.List("")
+			if err != nil {
+				log.Println("Error Fetching subnets")
+			} else {
+				subnetsInfo := make([]map[string]interface{}, 0)
+				for _, subnet := range s {
+					if subnet.Vpc.ID.String() == d.Id() {
+						l := map[string]interface{}{
+							"name":                    subnet.Name,
+							"id":                      subnet.ID,
+							"status":                  subnet.Status,
+							totalIPV4AddressCount:     subnet.TotalIPV4AddressCount,
+							availableIPV4AddressCount: subnet.AvailableIPV4AddressCount,
+						}
+						subnetsInfo = append(subnetsInfo, l)
+					}
+				}
+				d.Set(subnetsList, subnetsInfo)
+			}
+
 			return nil
 		}
 	}
@@ -173,7 +233,7 @@ func dataSourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func getIPZone(cseSourceIP interface{}) (string, string) {
-	fmt.Println("The raw cse_source_ip is", cseSourceIP)
+	log.Println("The raw cse_source_ip is", cseSourceIP)
 	cseSourceIPType := reflect.TypeOf(cseSourceIP)
 	ip := ""
 	zone := ""
@@ -185,19 +245,19 @@ func getIPZone(cseSourceIP interface{}) (string, string) {
 		for iter.Next() {
 			iterKey := iter.Key()
 			if iterKey.Kind() != reflect.String {
-				fmt.Println("cse_source_ip map key is not string, ignore handling")
+				log.Println("cse_source_ip map key is not string, ignore handling")
 				continue
 			}
 			iterVal := iter.Value()
 			if iterKey.Interface().(string) == "zone" {
 				zoneValEle := iterVal.Elem()
-				fmt.Println("zone element kind is:", zoneValEle.Kind())
+				log.Println("zone element kind is:", zoneValEle.Kind())
 				if zoneValEle.Kind() == reflect.Map {
 					iterZone := zoneValEle.MapRange()
 					for iterZone.Next() {
 						zoneIterKey := iterZone.Key()
 						if zoneIterKey.Kind() != reflect.String {
-							fmt.Println("cse_source_ip zone map key is not string, ignore handling")
+							log.Println("cse_source_ip zone map key is not string, ignore handling")
 							continue
 						}
 						zoneIterVal := iterZone.Value()
@@ -209,13 +269,13 @@ func getIPZone(cseSourceIP interface{}) (string, string) {
 			}
 			if iterKey.Interface().(string) == "ip" {
 				ipValEle := iterVal.Elem()
-				fmt.Println("ip element type is:", ipValEle.Kind())
+				log.Println("ip element type is:", ipValEle.Kind())
 				if ipValEle.Kind() == reflect.Map {
 					iterIP := ipValEle.MapRange()
 					for iterIP.Next() {
 						ipIterKey := iterIP.Key()
 						if ipIterKey.Kind() != reflect.String {
-							fmt.Println("cse_source_ip ip map key is not string, ignore handling")
+							log.Println("cse_source_ip ip map key is not string, ignore handling")
 							continue
 						}
 						ipIterVal := iterIP.Value()
@@ -231,7 +291,7 @@ func getIPZone(cseSourceIP interface{}) (string, string) {
 			}
 		}
 	default:
-		fmt.Println("unhandled type while parseing CSE source ip field")
+		log.Println("unhandled type while parseing CSE source ip field")
 	}
 	return ip, zone
 }
