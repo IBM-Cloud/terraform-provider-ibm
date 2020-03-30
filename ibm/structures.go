@@ -365,7 +365,6 @@ func flattenConditions(list []iamuumv2.Condition) []map[string]interface{} {
 			"operator": cond.Operator,
 			"value":    strings.ReplaceAll(cond.Value, "\"", ""),
 		}
-		log.Println("val=", strings.ReplaceAll(cond.Value, "\"", ""))
 		conditions[i] = l
 	}
 	return conditions
