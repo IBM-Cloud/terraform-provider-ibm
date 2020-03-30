@@ -32,6 +32,9 @@ const (
 	isVPCPending                 = "pending"
 	isVPCAddressPrefixManagement = "address_prefix_management"
 	cseSourceAddresses           = "cse_source_addresses"
+	subnetsList                  = "subnets"
+	totalIPV4AddressCount        = "total_ipv4_address_count"
+	availableIPV4AddressCount    = "available_ipv4_address_count"
 )
 
 func resourceIBMISVPC() *schema.Resource {
@@ -163,6 +166,43 @@ func resourceIBMISVPC() *schema.Resource {
 					},
 				},
 			},
+			subnetsList: {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "subent name",
+						},
+
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "subnet ID",
+						},
+
+						"status": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "subnet status",
+						},
+
+						totalIPV4AddressCount: {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Total IPv4 address count in the subnet",
+						},
+
+						availableIPV4AddressCount: {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Available IPv4 address count in the subnet",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -217,6 +257,7 @@ func resourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	vpcC := network.NewVPCClient(sess)
+	vpcNetworkClient := network.NewSubnetClient(sess)
 
 	vpc, err := vpcC.Get(d.Id())
 	if err != nil {
@@ -281,6 +322,26 @@ func resourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
 		}
 		info := flattenCseIPs(displaySourceIps)
 		d.Set(cseSourceAddresses, info)
+	}
+	// set the subnets list
+	s, _, err := vpcNetworkClient.List("")
+	if err != nil {
+		log.Println("Error Fetching subnets")
+	} else {
+		subnetsInfo := make([]map[string]interface{}, 0)
+		for _, subnet := range s {
+			if subnet.Vpc.ID.String() == d.Id() {
+				l := map[string]interface{}{
+					"name":                    subnet.Name,
+					"id":                      subnet.ID,
+					"status":                  subnet.Status,
+					totalIPV4AddressCount:     subnet.TotalIPV4AddressCount,
+					availableIPV4AddressCount: subnet.AvailableIPV4AddressCount,
+				}
+				subnetsInfo = append(subnetsInfo, l)
+			}
+		}
+		d.Set(subnetsList, subnetsInfo)
 	}
 	return nil
 }
