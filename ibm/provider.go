@@ -152,6 +152,7 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
+			"ibm_api_gateway":                  dataSourceIBMApiGateway(),
 			"ibm_account":                      dataSourceIBMAccount(),
 			"ibm_app":                          dataSourceIBMApp(),
 			"ibm_app_domain_private":           dataSourceIBMAppDomainPrivate(),
@@ -227,6 +228,8 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
+			"ibm_api_gateway_endpoint":                           resourceIBMApiGatewayEndPoint(),
+			"ibm_api_gateway_endpoint_subscription":              resourceIBMApiGatewayEndpointSubscription(),
 			"ibm_app":                                            resourceIBMApp(),
 			"ibm_app_domain_private":                             resourceIBMAppDomainPrivate(),
 			"ibm_app_domain_shared":                              resourceIBMAppDomainShared(),

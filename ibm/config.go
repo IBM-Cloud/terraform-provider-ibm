@@ -11,6 +11,9 @@ import (
 
 	// Added code for the Power Colo Offering
 
+	apigateway "github.com/IBM/apigateway-go-sdk"
+	"github.com/IBM/go-sdk-core/core"
+	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
 	jwt "github.com/dgrijalva/jwt-go"
 	slsession "github.com/softlayer/softlayer-go/session"
@@ -43,10 +46,9 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
-	kp "github.com/IBM/keyprotect-go-client"
 )
 
-//RetryDelay
+//RetryAPIDelay ...
 const RetryAPIDelay = 5 * time.Second
 
 //BluemixRegion ...
@@ -157,10 +159,14 @@ type ClientSession interface {
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
 	CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error)
 	keyProtectAPI() (*kp.Client, error)
+	APIGateway() (*apigateway.ApiGatewayControllerApiV1, error)
 }
 
 type clientSession struct {
 	session *Session
+
+	apigatewayErr error
+	apigatewayAPI *apigateway.ApiGatewayControllerApiV1
 
 	accountConfigErr     error
 	bmxAccountServiceAPI accountv2.AccountServiceAPI
@@ -366,6 +372,11 @@ func (sess clientSession) CertificateManagerAPI() (certificatemanager.Certificat
 	return sess.certManagementAPI, sess.certManagementErr
 }
 
+//apigatewayAPI provides API Gateway APIs
+func (sess clientSession) APIGateway() (*apigateway.ApiGatewayControllerApiV1, error) {
+	return sess.apigatewayAPI, sess.apigatewayErr
+}
+
 func (sess clientSession) keyProtectAPI() (*kp.Client, error) {
 	return sess.kpAPI, sess.kpErr
 }
@@ -415,6 +426,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
 		session.userManagementErr = errEmptyBluemixCredentials
 		session.certManagementErr = errEmptyBluemixCredentials
+		session.apigatewayErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -594,6 +606,17 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.certManagementErr = fmt.Errorf("Error occured while configuring Certificate manager service: %q", err)
 	}
 	session.certManagementAPI = certManagementAPI
+
+	apicurl := fmt.Sprintf("https://api.%s.apigw.cloud.ibm.com/controller", c.Region)
+	APIGatewayControllerAPIV1Options := &apigateway.ApiGatewayControllerApiV1Options{
+		URL:           envFallBack([]string{"IBMCLOUD_API_GATEWAY_ENDPOINT"}, apicurl),
+		Authenticator: &core.NoAuthAuthenticator{},
+	}
+	apigatewayAPI, err := apigateway.NewApiGatewayControllerApiV1(APIGatewayControllerAPIV1Options)
+	if err != nil {
+		session.apigatewayErr = fmt.Errorf("Error occured while configuring  APIGateway service: %q", err)
+	}
+	session.apigatewayAPI = apigatewayAPI
 
 	ibmpisession, err := ibmpisession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, true, c.BluemixTimeout, session.bmxUserDetails.userAccount, c.Zone)
 	if err != nil {

@@ -3,6 +3,10 @@
 	"ignore": "test",
 	"package": [
 		{
+			"path": "-tree",
+			"revision": ""
+		},
+		{
 			"path": "fetch",
 			"revision": ""
 		},
@@ -524,6 +528,34 @@
 			"path": "github.com/IBM-Cloud/bluemix-go/utils",
 			"revision": "ac9b271eaf42942cb8c2c2e68b8343466ae6b3cc",
 			"revisionTime": "2019-12-11T04:38:12Z"
+		},
+		{
+			"checksumSHA1": "upRQOfEqbKGGfQupesXugTw2WtA=",
+			"path": "github.com/IBM/apigateway-go-sdk",
+			"revision": "a4e4a3b46d9e7e42b74ef279bd80a512b340adb5",
+			"revisionTime": "2020-03-19T17:42:28Z"
+		},
+		{
+			"checksumSHA1": "jt2qDbHHoBxOFfJ1eVWLLPDjJ+g=",
+			"path": "github.com/IBM/apigateway-go-sdk/common",
+			"revision": "a4e4a3b46d9e7e42b74ef279bd80a512b340adb5",
+			"revisionTime": "2020-03-19T17:42:28Z"
+		},
+		{
+			"checksumSHA1": "+Tj8hMZSUjK6UnbjADmXLQXlfKQ=",
+			"path": "github.com/IBM/go-sdk-core",
+			"revision": "2050cbfeb7bceffbde475fa32ceeb44660687843",
+			"revisionTime": "2020-03-29T20:23:51Z"
+		},
+		{
+			"checksumSHA1": "uhx4vydkhaBSVJ1Bq+oRkErxlIM=",
+			"path": "github.com/IBM/go-sdk-core/core",
+			"revision": "2050cbfeb7bceffbde475fa32ceeb44660687843",
+			"revisionTime": "2020-03-29T20:23:51Z"
+		},
+		{
+			"path": "github.com/IBM/go-sdk-core/v3/core",
+			"revision": ""
 		},
 		{
 			"checksumSHA1": "/MvaToh2ZEhrCpTNXblbVWRxpfg=",
@@ -1102,6 +1134,24 @@
 			"revisionTime": "2018-08-25T18:03:42Z"
 		},
 		{
+			"checksumSHA1": "aqu3vMmJGJBQUjMve/zd0TlbG14=",
+			"path": "github.com/go-playground/locales",
+			"revision": "9f105231d3a5f6877a2bf8321dfa15ea6f844b1b",
+			"revisionTime": "2019-10-18T04:58:51Z"
+		},
+		{
+			"checksumSHA1": "JgF260rC9YpWyY5WEljjimWLUXs=",
+			"path": "github.com/go-playground/locales/currency",
+			"revision": "9f105231d3a5f6877a2bf8321dfa15ea6f844b1b",
+			"revisionTime": "2019-10-18T04:58:51Z"
+		},
+		{
+			"checksumSHA1": "HVChkE8LKMhgaqaSOu4unWPYAXY=",
+			"path": "github.com/go-playground/universal-translator",
+			"revision": "f87b1403479a348651dbf5f07f5cc6e5fcf07008",
+			"revisionTime": "2019-11-11T20:22:24Z"
+		},
+		{
 			"checksumSHA1": "8e94vVGc8ssfxcpgDSGLmp1hRJM=",
 			"path": "github.com/golang/protobuf/proto",
 			"revision": "3a3da3a4e26776cc22a79ef46d5d58477532dede",
@@ -1593,6 +1643,12 @@
 			"path": "github.com/jmespath/go-jmespath",
 			"revision": "bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d",
 			"revisionTime": "2016-08-03T19:07:31Z"
+		},
+		{
+			"checksumSHA1": "534F4hxmCUmJYO0u8Kr8tEqKboA=",
+			"path": "github.com/leodido/go-urn",
+			"revision": "a0f5013415294bb94553821ace21a1a74c0298cc",
+			"revisionTime": "2019-10-15T22:21:48Z"
 		},
 		{
 			"checksumSHA1": "T8soMJArSZrYnhmdpAnq1bVxQ6Q=",
@@ -2356,6 +2412,12 @@
 			"path": "google.golang.org/grpc/transport",
 			"revision": "1fa3750c9a209f5efbdc2722d40f2657885af5e5",
 			"revisionTime": "2018-05-24T17:21:01Z"
+		},
+		{
+			"checksumSHA1": "hnOwxCQqk+35llUJrCgcaS1DDxU=",
+			"path": "gopkg.in/go-playground/validator.v9",
+			"revision": "21c910fc6d9c3556c28252b04beb17de0c2d40ec",
+			"revisionTime": "2019-12-25T05:24:06Z"
 		},
 		{
 			"checksumSHA1": "/xRHTpN8WOK4nmZjJ1f96ER1b/o=",
