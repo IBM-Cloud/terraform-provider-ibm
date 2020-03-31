@@ -8,6 +8,14 @@
         <li<%= sidebar_current("docs-ibm-index") %>>
           <a href="/docs/providers/ibm/index.html">IBM Provider</a>
         </li>
+        <li<%= sidebar_current("docs-ibm-datasource-api-gateway") %>>
+          <a href="#">API Gateway Data Source</a>
+          <ul class="nav nav-visible">
+            <li<%= sidebar_current("docs-ibm-datasource-api-gateway") %>>
+              <a href="/docs/providers/ibm/d/api_gateway.html">apigateway</a>
+            </li>
+          </ul>
+        </li>
         <li<%= sidebar_current("docs-ibm-datasource-cf") %>>
           <a href="#">Cloud Foundry Data Sources</a>
           <ul class="nav nav-visible">
@@ -315,6 +323,19 @@
             </li>
           </ul>
         </li>
+        <li<%= sidebar_current("docs-ibm-resource-api-gateway") %>>
+          <a href="#">API Gateway Resources</a>
+          <ul class="nav nav-visible">
+            <li<%= sidebar_current("docs-ibm-resource-api-gateway-endpoint") %>>
+              <a href="/docs/providers/ibm/r/api_gateway_endpoint.html">api_gateway_endpoint</a>
+            </li>
+          </ul>
+          <ul class="nav nav-visible">
+            <li<%= sidebar_current("docs-ibm-resource-api-gateway-endpoint-subscription") %>>
+              <a href="/docs/providers/ibm/r/api_gateway_endpoint_subscription.html">api_gateway_endpoint_subscription</a>
+            </li>
+          </ul>
+        </li>
         <li<%= sidebar_current("docs-ibm-resource-cf") %>>
           <a href="#">Cloud Foundry Resources</a>
           <ul class="nav nav-visible">
@@ -437,7 +458,7 @@
               <a href="/docs/providers/ibm/r/iam_access_group.html">iam_access_group</a>
             </li>
             <li<%= sidebar_current("docs-ibm-resource-iam-access-group-dynamic-rule") %>>
-            <a href="/docs/providers/ibm/r/iam_access_group_dynamic_rule.html.html">iam_access_group_dynamic_rule</a>
+              <a href="/docs/providers/ibm/r/iam_access_group_dynamic_rule.html.html">iam_access_group_dynamic_rule</a>
             </li>
             <li<%= sidebar_current("docs-ibm-resource-iam-access-group-members") %>>
               <a href="/docs/providers/ibm/r/iam_access_group_members.html">iam_access_group_members</a>
