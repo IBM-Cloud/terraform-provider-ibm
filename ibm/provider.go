@@ -181,6 +181,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dns_domain":                   dataSourceIBMDNSDomain(),
 			"ibm_dns_secondary":                dataSourceIBMDNSSecondary(),
 			"ibm_iam_auth_token":               dataSourceIBMIAMAuthToken(),
+			"ibm_iam_access_group":             dataSourceIBMIAMAccessGroup(),
 			"ibm_iam_user_policy":              dataSourceIBMIAMUserPolicy(),
 			"ibm_iam_service_id":               dataSourceIBMIAMServiceID(),
 			"ibm_iam_service_policy":           dataSourceIBMIAMServicePolicy(),
