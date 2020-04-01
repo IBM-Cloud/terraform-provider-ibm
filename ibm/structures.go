@@ -369,6 +369,20 @@ func flattenConditions(list []iamuumv2.Condition) []map[string]interface{} {
 	}
 	return conditions
 }
+func flattenAccessGroupRules(list []iamuumv2.CreateRuleResponse) []map[string]interface{} {
+	rules := make([]map[string]interface{}, len(list))
+	for i, item := range list {
+		l := map[string]interface{}{
+			"name":              item.Name,
+			"expiration":        item.Expiration,
+			"identity_provider": item.RealmName,
+			"conditions":        flattenConditions(item.Conditions),
+		}
+		rules[i] = l
+	}
+	return rules
+}
+
 func flattenSubnets(list []containerv2.Subnet) []map[string]interface{} {
 	subs := make([]map[string]interface{}, len(list))
 	for i, sub := range list {
@@ -1000,6 +1014,32 @@ func contains(s []int, e int) bool {
 		}
 	}
 	return false
+}
+
+func flattenMembersData(list []models.AccessGroupMemberV2, users []accountv1.AccountUser, serviceids []models.ServiceID) ([]string, []string) {
+	var ibmid []string
+	var serviceid []string
+	for _, m := range list {
+		if m.Type == iamuumv2.AccessGroupMemberUser {
+			for _, user := range users {
+				if user.IbmUniqueId == m.ID {
+					ibmid = append(ibmid, user.UserId)
+					break
+				}
+			}
+		} else {
+
+			for _, srid := range serviceids {
+				if srid.IAMID == m.ID {
+					serviceid = append(serviceid, srid.UUID)
+					break
+				}
+			}
+
+		}
+
+	}
+	return ibmid, serviceid
 }
 
 func flattenAccessGroupMembers(list []models.AccessGroupMemberV2, users []accountv1.AccountUser, serviceids []models.ServiceID) []map[string]interface{} {
