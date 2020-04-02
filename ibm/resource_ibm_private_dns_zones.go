@@ -6,16 +6,17 @@ import (
 	"strings"
 	"time"
 
-	//"fmt"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
 )
 
 const (
-	pdnsInstanceID = "instance_id"
-	pdnsZoneName   = "zone_name"
+	pdnsInstanceID      = "instance_id"
+	pdnsZoneName        = "name"
+	pdnsZoneDescription = "description"
+	pdnsZoneLabel       = "label"
+	pdnsZoneTags        = "tags"
 )
 
 func resourceIBMPrivateDNSZone() *schema.Resource {
@@ -51,6 +52,27 @@ func resourceIBMPrivateDNSZone() *schema.Resource {
 				Required: true,
 				ForceNew: false,
 			},
+
+			pdnsZoneTags: {
+				Type:             schema.TypeSet,
+				Optional:         true,
+				Computed:         true,
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				Set:              resourceIBMVPCHash,
+				DiffSuppressFunc: applyOnce,
+			},
+
+			pdnsZoneDescription: {
+				Type:     schema.TypeString,
+				Required: false,
+				Optional: true,
+			},
+
+			pdnsZoneLabel: {
+				Type:     schema.TypeString,
+				Required: false,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -63,9 +85,11 @@ func resourceIBMPrivateDnsZoneCreate(d *schema.ResourceData, meta interface{}) e
 
 	instanceID := d.Get(pdnsInstanceID).(string)
 	zoneName := d.Get(pdnsZoneName).(string)
+	zoneDescription := d.Get(pdnsZoneDescription).(string)
+	zoneLabel := d.Get(pdnsZoneLabel).(string)
 	createZoneOptions := sess.NewCreateDnszoneOptions(instanceID, zoneName)
-	createZoneOptions.SetDescription("zone description")
-	createZoneOptions.SetLabel("zone_label")
+	createZoneOptions.SetDescription(zoneDescription)
+	createZoneOptions.SetLabel(zoneLabel)
 	response, _, err := sess.CreateDnszone(createZoneOptions)
 	if err != nil {
 		return err
@@ -76,8 +100,6 @@ func resourceIBMPrivateDnsZoneCreate(d *schema.ResourceData, meta interface{}) e
 		log.Printf("[DEBUG]  err %s", isErrorToString(err))
 		return err
 	}
-
-	log.Printf("[DEBUG] TEST5")
 
 	return resourceIBMPrivateDnsZoneRead(d, meta)
 }
@@ -90,8 +112,8 @@ func resourceIBMPrivateDnsZoneRead(d *schema.ResourceData, meta interface{}) err
 
 	id_set := strings.Split(d.Id(), "/")
 	getZoneOptions := sess.NewGetDnszoneOptions(id_set[0], id_set[1])
-	response, _, reqErr := sess.GetDnszone(getZoneOptions)
-	if reqErr == nil {
+	response, _, err := sess.GetDnszone(getZoneOptions)
+	if err != nil {
 		return err
 	}
 
