@@ -87,8 +87,6 @@ func resourceIBMPrivateDnsPermittedNetworkCreate(d *schema.ResourceData, meta in
 		return err
 	}
 
-	log.Printf("[DEBUG] TEST5")
-
 	return resourceIBMPrivateDnsPermittedNetworkRead(d, meta)
 }
 

@@ -2,19 +2,26 @@ package ibm
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
 	//"fmt"
 
-	"github.com/IBM/dns-svcs-go-sdk/dnssvcsv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
 )
 
-const ()
+var allowedPrivateDomainRecordTypes = []string{
+	"A", "AAAA", "CNAME", "MX", "PTR", "SRV", "TXT",
+}
+
+const (
+	pdnsRecordType  = "type"
+	pdnsRecordTTL   = "ttl"
+	pdnsIPv4Address = "ipv4_address"
+	pdnsRecordName  = "name"
+)
 
 func resourceIBMPrivateDNSRecords() *schema.Resource {
 	return &schema.Resource{
@@ -49,6 +56,48 @@ func resourceIBMPrivateDNSRecords() *schema.Resource {
 				Required: true,
 				ForceNew: false,
 			},
+
+			pdnsRecordTTL: {
+				Type:     schema.TypeInt,
+				Required: true,
+				DefaultFunc: func() (interface{}, error) {
+					return 900, nil
+				},
+			},
+
+			pdnsRecordName: {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+			},
+
+			pdnsIPv4Address: {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+			},
+
+			pdnsRecordType: {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+				ValidateFunc: func(val interface{}, field string) (warnings []string, errors []error) {
+					value := val.(string)
+					for _, rtype := range allowedPrivateDomainRecordTypes {
+						if value == rtype {
+							return
+						}
+					}
+
+					errors = append(
+						errors,
+						fmt.Errorf("%s is not one of the valid domain record types: %s",
+							value, strings.Join(allowedPrivateDomainRecordTypes, ", "),
+						),
+					)
+					return
+				},
+			},
 		},
 	}
 }
@@ -60,11 +109,16 @@ func resourceIBMPrivateDnsRecordCreate(d *schema.ResourceData, meta interface{})
 
 	instanceID := d.Get(pdnsInstanceID).(string)
 	zoneID := d.Get(pdnsZoneID).(string)
+	recordType := d.Get(pdnsRecordType).(string)
+	ttl := d.Get(pdnsRecordTTL).(int)
+	ipv4 := d.Get(pdnsIPv4Address).(string)
+	name := d.Get(pdnsRecordName).(string)
 
 	createResourceRecordOptions := sess.NewCreateResourceRecordOptions(instanceID, zoneID)
-	createResourceRecordOptions.SetName("exmaple")
-	createResourceRecordOptions.SetType(dnssvcsv1.CreateResourceRecordOptions_Type_A)
-	resourceRecordAData, _ := sess.NewResourceRecordInputRdataRdataARecord("1.1.1.1")
+	createResourceRecordOptions.SetName(name)
+	createResourceRecordOptions.SetType(recordType)
+	createResourceRecordOptions.SetTTL(int64(ttl))
+	resourceRecordAData, _ := sess.NewResourceRecordInputRdataRdataARecord(ipv4)
 	createResourceRecordOptions.SetRdata(resourceRecordAData)
 	response, _, err := sess.CreateResourceRecord(createResourceRecordOptions)
 	if err != nil {
@@ -72,8 +126,6 @@ func resourceIBMPrivateDnsRecordCreate(d *schema.ResourceData, meta interface{})
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", instanceID, zoneID, *response.ID))
-
-	log.Printf("[DEBUG] TEST5")
 
 	return resourceIBMPrivateDnsRecordRead(d, meta)
 }
