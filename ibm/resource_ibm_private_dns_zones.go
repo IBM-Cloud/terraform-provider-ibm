@@ -16,7 +16,6 @@ const (
 	pdnsZoneName        = "name"
 	pdnsZoneDescription = "description"
 	pdnsZoneLabel       = "label"
-	pdnsZoneTags        = "tags"
 )
 
 func resourceIBMPrivateDNSZone() *schema.Resource {
@@ -51,15 +50,6 @@ func resourceIBMPrivateDNSZone() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: false,
-			},
-
-			pdnsZoneTags: {
-				Type:             schema.TypeSet,
-				Optional:         true,
-				Computed:         true,
-				Elem:             &schema.Schema{Type: schema.TypeString},
-				Set:              resourceIBMVPCHash,
-				DiffSuppressFunc: applyOnce,
 			},
 
 			pdnsZoneDescription: {
