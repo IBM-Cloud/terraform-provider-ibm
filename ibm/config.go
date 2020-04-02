@@ -509,7 +509,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 
 	if session.pDnsErr != nil {
-		session.pDnsErr = fmt.Errorf("Error occured while configuring PrivateDNS Service: ", err)
+		session.pDnsErr = fmt.Errorf("Error occured while configuring PrivateDNS Service: %s", err)
 	}
 
 	schematicService, err := schematics.New(sess.BluemixSession)
