@@ -6,7 +6,7 @@ cloud.google.com/go/internal/optional
 cloud.google.com/go/internal/trace
 cloud.google.com/go/internal/version
 cloud.google.com/go/storage
-# github.com/IBM-Cloud/bluemix-go v0.0.0-20200319053306-42bf472738fd
+# github.com/IBM-Cloud/bluemix-go v0.0.0-20200402064807-59fd892a9ea7
 github.com/IBM-Cloud/bluemix-go
 github.com/IBM-Cloud/bluemix-go/api/account/accountv1
 github.com/IBM-Cloud/bluemix-go/api/account/accountv2
@@ -69,6 +69,11 @@ github.com/IBM-Cloud/power-go-client/power/client/storage_types
 github.com/IBM-Cloud/power-go-client/power/client/swagger_spec
 github.com/IBM-Cloud/power-go-client/power/models
 github.com/IBM-Cloud/power-go-client/utils
+# github.com/IBM/apigateway-go-sdk v0.0.0-20200319174228-a4e4a3b46d9e
+github.com/IBM/apigateway-go-sdk
+github.com/IBM/apigateway-go-sdk/common
+# github.com/IBM/go-sdk-core/v3 v3.2.4
+github.com/IBM/go-sdk-core/v3/core
 # github.com/IBM/ibm-cos-sdk-go v1.2.0
 github.com/IBM/ibm-cos-sdk-go/aws
 github.com/IBM/ibm-cos-sdk-go/aws/awserr
@@ -170,7 +175,7 @@ github.com/cloudfoundry/jibber_jabber
 github.com/davecgh/go-spew/spew
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
 github.com/dgrijalva/jwt-go
-# github.com/fatih/color v1.7.0
+# github.com/fatih/color v1.9.0
 github.com/fatih/color
 # github.com/ghodss/yaml v1.0.0
 github.com/ghodss/yaml
@@ -202,6 +207,11 @@ github.com/go-openapi/strfmt
 github.com/go-openapi/swag
 # github.com/go-openapi/validate v0.19.6
 github.com/go-openapi/validate
+# github.com/go-playground/locales v0.13.0
+github.com/go-playground/locales
+github.com/go-playground/locales/currency
+# github.com/go-playground/universal-translator v0.17.0
+github.com/go-playground/universal-translator
 # github.com/go-stack/stack v1.8.0
 github.com/go-stack/stack
 # github.com/golang/protobuf v1.3.2
@@ -330,13 +340,15 @@ github.com/hashicorp/yamux
 github.com/hokaccha/go-prettyjson
 # github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
 github.com/jmespath/go-jmespath
+# github.com/leodido/go-urn v1.2.0
+github.com/leodido/go-urn
 # github.com/mailru/easyjson v0.7.0
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
-# github.com/mattn/go-colorable v0.1.1
+# github.com/mattn/go-colorable v0.1.4
 github.com/mattn/go-colorable
-# github.com/mattn/go-isatty v0.0.5
+# github.com/mattn/go-isatty v0.0.11
 github.com/mattn/go-isatty
 # github.com/minsikl/netscaler-nitro-go v0.0.0-20170827154432-5b14ce3643e3
 github.com/minsikl/netscaler-nitro-go/client
@@ -358,14 +370,14 @@ github.com/mitchellh/go-wordwrap
 github.com/mitchellh/mapstructure
 # github.com/mitchellh/reflectwalk v1.0.1
 github.com/mitchellh/reflectwalk
-# github.com/nicksnyder/go-i18n v0.0.0-20171206142411-aa0ce51472e0
+# github.com/nicksnyder/go-i18n v1.10.0
 github.com/nicksnyder/go-i18n/i18n
 github.com/nicksnyder/go-i18n/i18n/bundle
 github.com/nicksnyder/go-i18n/i18n/language
 github.com/nicksnyder/go-i18n/i18n/translation
 # github.com/oklog/run v1.0.0
 github.com/oklog/run
-# github.com/pelletier/go-toml v0.0.0-20171024211038-4e9e0ee19b60
+# github.com/pelletier/go-toml v1.6.0
 github.com/pelletier/go-toml
 # github.com/posener/complete v1.2.1
 github.com/posener/complete
@@ -455,14 +467,14 @@ go.opencensus.io/trace
 go.opencensus.io/trace/internal
 go.opencensus.io/trace/propagation
 go.opencensus.io/trace/tracestate
-# golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
+# golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/cast5
+golang.org/x/crypto/chacha20
 golang.org/x/crypto/curve25519
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/ed25519/internal/edwards25519
-golang.org/x/crypto/internal/chacha20
 golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/openpgp
 golang.org/x/crypto/openpgp/armor
@@ -472,6 +484,7 @@ golang.org/x/crypto/openpgp/packet
 golang.org/x/crypto/openpgp/s2k
 golang.org/x/crypto/poly1305
 golang.org/x/crypto/ssh
+golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 # golang.org/x/net v0.0.0-20191009170851-d66e71096ffb
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
@@ -488,7 +501,7 @@ golang.org/x/oauth2/google
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
-# golang.org/x/sys v0.0.0-20190804053845-51ab0e2deafa
+# golang.org/x/sys v0.0.0-20191120155948-bd437916bb0e
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
 # golang.org/x/text v0.3.2
@@ -569,5 +582,7 @@ google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
 google.golang.org/grpc/test/bufconn
+# gopkg.in/go-playground/validator.v9 v9.31.0
+gopkg.in/go-playground/validator.v9
 # gopkg.in/yaml.v2 v2.2.4
 gopkg.in/yaml.v2
