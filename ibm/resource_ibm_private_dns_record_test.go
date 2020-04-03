@@ -55,7 +55,7 @@ func testAccCheckIBMPrivateDNSRecordBasic(name string) string {
 		depends_on = ["ibm_dns_zone.pdns-1-zone"]
 		instance_id = ibm_resource_instance.pdns-1.guid
 		zone_id = element(split("/", ibm_dns_zone.pdns-1-zone.id),1)
-		vpc_crn = "crn:v1:bluemix:public:is:us-south:a/ddb341a840bc42a2aee2e7a15152dbd6::vpc:r006-8b232360-7ad1-4aed-92aa-08a272f6d949"
+		vpc_crn = ibm_is_vpc.test_vpc.resource_crn
 	}
 	resource "ibm_private_dns_record" "pdns-1-records" {
     depends_on = ["ibm_dns_permitted_network.pdns-1-permitted-network"]
