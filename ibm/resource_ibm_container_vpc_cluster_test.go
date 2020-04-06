@@ -23,6 +23,7 @@ func TestAccIBMContainerVpcCluster_basic(t *testing.T) {
 	flavor := "c2.2x4"
 	zone := "us-south"
 	workerCount := "1"
+	var conf *v2.ClusterInfo
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -32,18 +33,13 @@ func TestAccIBMContainerVpcCluster_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMContainerVpcCluster_basic(zone, vpc, subnet, clusterName, flavor, workerCount),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
 					resource.TestCheckResourceAttr(
-						"ibm_container_vpc_cluster.testacc_cluster", "name", clusterName),
+						"ibm_container_vpc_cluster.cluster", "name", clusterName),
 					resource.TestCheckResourceAttr(
-						"ibm_container_vpc_cluster.testacc_cluster", "vpc_id", "1"),
+						"ibm_container_vpc_cluster.cluster", "worker_count", workerCount),
 					resource.TestCheckResourceAttr(
-						"ibm_container_vpc_cluster.testacc_cluster", "flavor", "1"),
-					resource.TestCheckResourceAttr(
-						"ibm_container_vpc_cluster.testacc_cluster.zones.0.id", "id", "1"),
-					resource.TestCheckResourceAttr(
-						"ibm_container_vpc_cluster.testacc_cluster.zones.0.subnet_id", "subnet_id", "1"),
-					resource.TestCheckResourceAttrSet(
-						"ibm_container_vpc_cluster.testacc_cluster", "resource_group_id"),
+						"ibm_container_vpc_cluster.cluster", "flavor", flavor),
 				),
 			},
 		},
@@ -67,7 +63,7 @@ func TestAccIBMVpcContainerVpcCluster_importBasic(t *testing.T) {
 				Config: testAccCheckIBMContainerVpcCluster_basic(zone, vpc, subnet, clusterName, flavor, workerCount),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_container_vpc_cluster.testacc_cluster",
+				ResourceName:      "ibm_container_vpc_cluster.cluster",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -82,7 +78,7 @@ func testAccCheckIBMContainerVpcClusterDestroy(s *terraform.State) error {
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_container_cluster" {
+		if rs.Type != "ibm_container_vpc_cluster" {
 			continue
 		}
 
@@ -96,6 +92,37 @@ func testAccCheckIBMContainerVpcClusterDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func testAccCheckIBMContainerVpcExists(n string, conf *v2.ClusterInfo) resource.TestCheckFunc {
+
+	return func(s *terraform.State) error {
+
+		csClient, err := testAccProvider.Meta().(ClientSession).VpcContainerAPI()
+		if err != nil {
+			return err
+		}
+
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_container_vpc_cluster" {
+				continue
+			}
+
+			targetEnv := getVpcClusterTargetHeaderTestACC()
+
+			cls, err := csClient.Clusters().GetCluster(rs.Primary.ID, targetEnv)
+
+			if err != nil && !strings.Contains(err.Error(), "404") {
+				return err
+			}
+
+			conf = cls
+
+		}
+		return nil
+
+	}
+
 }
 
 func getVpcClusterTargetHeaderTestACC() v2.ClusterTargetHeader {
@@ -113,7 +140,9 @@ func getVpcClusterTargetHeaderTestACC() v2.ClusterTargetHeader {
 
 func testAccCheckIBMContainerVpcCluster_basic(zone, vpc, subnet, clusterName, flavor, workerCount string) string {
 	return fmt.Sprintf(`
-	
+provider "ibm" {
+	generation =1
+}	
 data "ibm_resource_group" "resource_group" {
 	is_default = "true"
 }
@@ -138,12 +167,12 @@ resource "ibm_container_vpc_cluster" "cluster" {
 	vpc_id            = "${ibm_is_vpc.vpc1.id}"
 	flavor            = "%s"
 	worker_count      = "%s"
+	wait_till         = "OneWorkerNodeReady"
 	resource_group_id = "${data.ibm_resource_group.resource_group.id}"
-	zones = [{
+	zones {
 		 subnet_id = "${ibm_is_subnet.subnet1.id}"
 		 name      = "${local.ZONE1}"
 	  }
-	]
   }`, zone, vpc, subnet, clusterName, flavor, workerCount)
 
 }
