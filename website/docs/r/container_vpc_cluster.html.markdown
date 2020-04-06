@@ -10,11 +10,17 @@ description: |-
 
 Create or delete a Kubernetes VPC cluster. 
 
+**NOTE**: 
+1. Configuration of an ibm_container_vpc_cluster resource requires that the `generation` parameter is set for the IBM provider either in the `provider.tf or export as an environment variable IC_GENERATION. If not set the default value for generation will be 2.
+
 ## Example Usage
 
-In the following example, you can create a VPC cluster with a default worker pool with one worker:
+In the following example, you can create a Gen-1 VPC cluster with a default worker pool with one worker:
 
 ```
+provider "ibm" {
+  generation = 1
+}
 resource "ibm_container_vpc_cluster" "cluster" {
   name              = "my_vpc_cluster" 
   vpc_id            = "6015365a-9d93-4bb4-8248-79ae0db2dc21"
@@ -24,6 +30,29 @@ resource "ibm_container_vpc_cluster" "cluster" {
   zones = [
       {
          subnet_id = "015ffb8b-efb1-4c03-8757-29335a07493h"
+         name = "us-south-1"
+      }
+  ]
+}
+
+```
+
+In the following example, you can create a Gen-2 VPC cluster with a default worker pool with one worker:
+
+```
+provider "ibm" {
+  generation = 2
+}
+resource "ibm_container_vpc_cluster" "cluster" {
+  name              = "my_vpc_cluster" 
+  vpc_id            = "r006-abb7c7ea-aadf-41bd-94c5-b8521736fadf"
+  kube_version 	    = "1.17.4"
+	flavor            = "bx1.2x8"
+  worker_count      = "1"
+  resource_group_id = "${data.ibm_resource_group.resource_group.id}"
+  zones = [
+      {
+         subnet_id = "0717-0c0899ce-48ac-4eb6-892d-4e2e1ff8c9478"
          name = "us-south-1"
       }
   ]
@@ -43,8 +72,8 @@ The following arguments are supported:
   * `name` - (Required, Forces new resource, string) Name of the zone.
 * `disable_public_service_endpoint` - (Optional,Bool) Disable the public service endpoint to prevent public access to the master. Default Value 'true'.
 * `kube_version` - (Optional,String) Specify the Kubernetes version, including at least the major.minor version. If you do not include this flag, the default version is used. To see available versions, run 'ibmcloud ks versions'.
-* `pod_subnet` - (Optional, Forces new resource,String) Specify a custom subnet CIDR to provide private IP addresses for pods. The subnet must be at least '/23' or larger. For more info, refer [here](https://cloud.ibm.com/docs/containers?topic=containers-cli-plugin-kubernetes-service-cli#pod-subnet) Default value: '172.30.0.0/16'
-* `service_subnet` - (Optional, Forces new resource,String) Specify a custom subnet CIDR to provide private IP addresses for services. The subnet must be at least '/24' or larger. For more info, refer [here](https://cloud.ibm.com/docs/containers?topic=containers-cli-plugin-kubernetes-service-cli#service-subnet) Default value: '172.21.0.0/16'.
+* `pod_subnet` - (Optional, Forces new resource,String) Specify a custom subnet CIDR to provide private IP addresses for pods. The subnet must be at least '/23' or larger. For more info, refer [here](https://cloud.ibm.com/docs/containers?topic=containers-cli-plugin-kubernetes-service-cli#pod-subnet).
+* `service_subnet` - (Optional, Forces new resource,String) Specify a custom subnet CIDR to provide private IP addresses for services. The subnet must be at least '/24' or larger. For more info, refer [here](https://cloud.ibm.com/docs/containers?topic=containers-cli-plugin-kubernetes-service-cli#service-subnet).
 * `worker_count` - (Optional, Int) The number of worker nodes per zone in the default worker pool. Default value '1'.
 * `resource_group_id` - (Optional, Forces new resource, string) The ID of the resource group. You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
 * `tags` - (Optional, array of strings) Tags associated with the container cluster instance.  
