@@ -42,7 +42,7 @@ The following attributes are exported:
 
 ## Import
 
-ibm_dns_zone can be imported using resource id, eg
+ibm_dns_zone can be imported using zone id, eg
 
 ```
 $ terraform import ibm_dns_zone.example 5ffda12064634723b079acdb018ef308
