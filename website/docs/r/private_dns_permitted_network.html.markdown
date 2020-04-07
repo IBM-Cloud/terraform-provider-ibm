@@ -26,7 +26,7 @@ resource "ibm_dns_permitted_network" "pdns-1-permitted-network" {
 
 The following arguments are supported:
 
-* `instance_id` - (Required, string) The id of the private dns instance on which zone has to be created. 
+* `instance_id` - (Required, string) The id of the private dns instance. 
 * `zone_id` - (Required, string) The id of the private dns zone in which network needs to be associated.
 * `vpc_crn` -  (Required, string) The crn number of the network that needs to be associated.
 
