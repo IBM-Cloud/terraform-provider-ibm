@@ -1,4 +1,4 @@
-# Key Protect Key example
+# Private DNS resource example
 
 This example shows how to private dns zone, permitted network and records.
 
