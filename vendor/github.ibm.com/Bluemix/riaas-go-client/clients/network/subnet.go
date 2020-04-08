@@ -98,17 +98,15 @@ func (f *SubnetClient) Create(name, zoneName, vpcID, networkaclID, publicgwID,
 	}
 
 	if publicgwID != "" {
-		publicgwUUID := strfmt.UUID(publicgwID)
 		var pubgw = network.PostSubnetsParamsBodyPublicGateway{
-			ID: publicgwUUID,
+			ID: strfmt.UUID(publicgwID),
 		}
 		body.PublicGateway = &pubgw
 	}
 
 	if resourcegroupID != "" {
-		resourcegroupuuid := strfmt.UUID(resourcegroupID)
 		var resourcegroup = network.PostSubnetsParamsBodyResourceGroup{
-			ID: resourcegroupuuid,
+			ID: strfmt.UUID(resourcegroupID),
 		}
 		body.ResourceGroup = &resourcegroup
 	}

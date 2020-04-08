@@ -103,3 +103,52 @@ You will also need to export the following environment variables for running the
 * `IAAS_CLASSIC_USERNAME` - The IBM Cloud Classic Infrastructure username associated with the Classic InfrastAPI Key.
 
 Additional environment variables may be required depending on the tests being run. Check console log for warning messages about required variables. 
+
+
+# IBM Cloud Ansible Modules
+
+An implementation of generated Ansible modules using the
+[IBM Cloud Terraform Provider].
+
+## Prerequisites
+
+1. Install [Python3]
+
+2. [RedHat Ansible] 2.8+
+
+    ```
+    pip install "ansible>=2.8.0"
+    ```
+
+
+## Install
+
+1. Download IBM Cloud Ansible modules from [release page]
+
+2. Extract module archive.
+
+    ```
+    unzip ibmcloud_ansible_modules.zip
+    ```
+
+3. Add modules and module_utils to the [Ansible search path]. E.g.:
+
+    ```
+    cp build/modules/* $HOME/.ansible/plugins/modules/.
+    cp build/module_utils/* $HOME/.ansible/plugins/module_utils/.
+
+    ```
+
+### Example Projects
+
+1. [VPC Virtual Server Instance](examples/ansible/examples/simple-vm-ssh/)
+
+2. [Power Virtual Server Instance](examples/ansible/examples/simple-vm-power-vs/)
+
+
+[IBM Cloud Terraform Provider]: https://github.com/IBM-Cloud/terraform-provider-ibm
+[Python3]: https://www.python.org/downloads/
+[RedHat Ansible]: https://www.ansible.com/
+[Ansible search path]: https://docs.ansible.com/ansible/latest/dev_guide/overview_architecture.html#ansible-search-path
+[release page]:https://github.com/IBM-Cloud/terraform-provider-ibm/releases
+

@@ -39,8 +39,8 @@ The following arguments are supported:
 * `name` - (Required,string) The display name for the ordered certificate.
 * `description` - (Optional),string The optional description for the ordered certificate.
 * `domains` - (Required,ForeceNew,List) An array of valid domains for the issued certificate. The first domain is the primary domain. Additional domains are secondary domains.
-* `rotate_keys` - (Optional,string) Default: False.
-* `domain_validation_method` - (Optional,Default,string) Allowable values dns-01]
+* `rotate_keys` - (Optional,bool) Default: False.
+* `domain_validation_method` - (Optional,Default,string) Allowable values [dns-01]
 * `dns_provider_instance_crn` - (Optional,string) The CRN-based instance ID of the IBM Cloud Internet Services instance that manages the domains. If not present, Certificate Manager assumes a v4 or above Callback URL notifications channel with domain validation exists.
 
 

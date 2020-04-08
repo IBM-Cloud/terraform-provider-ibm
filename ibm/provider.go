@@ -49,6 +49,12 @@ func Provider() terraform.ResourceProvider {
 				Description: "The IBM cloud Region (for example 'us-south').",
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_REGION", "IBMCLOUD_REGION", "BM_REGION", "BLUEMIX_REGION"}, "us-south"),
 			},
+			"zone": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The IBM cloud Region zone (for example 'us-south-1') for power resources.",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_ZONE", "IBMCLOUD_ZONE"}, ""),
+			},
 			"resource_group": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -147,6 +153,7 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
+			"ibm_api_gateway":                  dataSourceIBMApiGateway(),
 			"ibm_account":                      dataSourceIBMAccount(),
 			"ibm_app":                          dataSourceIBMApp(),
 			"ibm_app_domain_private":           dataSourceIBMAppDomainPrivate(),
@@ -175,6 +182,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dns_domain_registration":      dataSourceIBMDNSDomainRegistration(),
 			"ibm_dns_domain":                   dataSourceIBMDNSDomain(),
 			"ibm_dns_secondary":                dataSourceIBMDNSSecondary(),
+			"ibm_iam_access_group":             dataSourceIBMIAMAccessGroup(),
 			"ibm_iam_auth_token":               dataSourceIBMIAMAuthToken(),
 			"ibm_iam_user_policy":              dataSourceIBMIAMUserPolicy(),
 			"ibm_iam_service_id":               dataSourceIBMIAMServiceID(),
@@ -186,6 +194,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_is_region":                    dataSourceIBMISRegion(),
 			"ibm_is_ssh_key":                   dataSourceIBMISSSHKey(),
 			"ibm_is_subnet":                    dataSourceIBMISSubnet(),
+			"ibm_is_subnets":                   dataSourceIBMISSubnets(),
 			"ibm_is_vpc":                       dataSourceIBMISVPC(),
 			"ibm_is_zone":                      dataSourceIBMISZone(),
 			"ibm_is_zones":                     dataSourceIBMISZones(),
@@ -222,6 +231,8 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
+			"ibm_api_gateway_endpoint":                           resourceIBMApiGatewayEndPoint(),
+			"ibm_api_gateway_endpoint_subscription":              resourceIBMApiGatewayEndpointSubscription(),
 			"ibm_app":                                            resourceIBMApp(),
 			"ibm_app_domain_private":                             resourceIBMAppDomainPrivate(),
 			"ibm_app_domain_shared":                              resourceIBMAppDomainShared(),
@@ -269,6 +280,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_firewall":                                       resourceIBMFirewall(),
 			"ibm_firewall_policy":                                resourceIBMFirewallPolicy(),
 			"ibm_iam_access_group":                               resourceIBMIAMAccessGroup(),
+			"ibm_iam_access_group_dynamic_rule":                  resourceIBMIAMDynamicRule(),
 			"ibm_iam_access_group_members":                       resourceIBMIAMAccessGroupMembers(),
 			"ibm_iam_access_group_policy":                        resourceIBMIAMAccessGroupPolicy(),
 			"ibm_iam_authorization_policy":                       resourceIBMIAMAuthorizationPolicy(),
@@ -420,6 +432,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 
 	resourceGrp := d.Get("resource_group").(string)
 	region := d.Get("region").(string)
+	zone := d.Get("zone").(string)
 	retryCount := d.Get("max_retries").(int)
 	wskNameSpace := d.Get("function_namespace").(string)
 	riaasEndPoint := d.Get("riaas_endpoint").(string)
@@ -450,6 +463,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		Generation:           generation,
 		IAMToken:             iamToken,
 		IAMRefreshToken:      iamRefreshToken,
+		Zone:                 zone,
 		//PowerServiceInstance: powerServiceInstance,
 	}
 

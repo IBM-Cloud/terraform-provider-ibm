@@ -54,6 +54,7 @@ The following arguments are supported:
 * `zone` - (Optional, Forces new resource, string) Name of the target zone. 
     **NOTE**: Conflicts with `target`.
 * `resource_group` - (Optional, Forces new resource, string) The resource group ID where the floating ip to be created
+* `tags` - (Optional, array of strings) Tags associated with the Floating IP.
 
 ## Attribute Reference
 

@@ -7,11 +7,12 @@ import (
 	"strings"
 	"time"
 
-	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
+	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
 
 const (
@@ -34,6 +35,8 @@ const (
 	isolationPrivate  = "private"
 
 	defaultWorkerPool = "default"
+	computeWorkerPool = "compute"
+	gatewayWorkerpool = "gateway"
 )
 
 const PUBLIC_SUBNET_TYPE = "public"
@@ -77,7 +80,6 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Optional:    true,
 				Deprecated:  "This field is deprecated",
 				Computed:    true,
-				ForceNew:    true,
 				Description: "The cluster region",
 			},
 			"workers": {
@@ -204,12 +206,11 @@ func resourceIBMContainerCluster() *schema.Resource {
 			},
 
 			"billing": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
-				Default:  "hourly",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Deprecated:       "This field is deprecated",
+				DiffSuppressFunc: applyOnce,
 			},
-
 			"public_vlan_id": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -257,10 +258,10 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Default:  false,
 			},
 			"is_trusted": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				ForceNew: true,
-				Default:  false,
+				Type:             schema.TypeBool,
+				Optional:         true,
+				Deprecated:       "This field is deprecated",
+				DiffSuppressFunc: applyOnce,
 			},
 			"server_url": {
 				Type:     schema.TypeString,
@@ -307,21 +308,18 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Description: "The bluemix organization guid this cluster belongs to",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Deprecated:  "This field is deprecated",
 			},
 			"space_guid": {
 				Description: "The bluemix space guid this cluster belongs to",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Deprecated:  "This field is deprecated",
 			},
 			"account_guid": {
 				Description: "The bluemix account guid this cluster belongs to",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Deprecated:  "This field is deprecated",
 			},
 			"wait_time_minutes": {
@@ -464,7 +462,13 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
+			"gateway_enabled": {
+				Type:             schema.TypeBool,
+				Optional:         true,
+				DiffSuppressFunc: applyOnce,
+				Default:          false,
+				Description:      "Set true for gateway enabled clusters",
+			},
 			"crn": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -512,14 +516,13 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 
 	name := d.Get("name").(string)
 	datacenter := d.Get("datacenter").(string)
-	billing := d.Get("billing").(string)
 	machineType := d.Get("machine_type").(string)
 	publicVlanID := d.Get("public_vlan_id").(string)
 	privateVlanID := d.Get("private_vlan_id").(string)
 	noSubnet := d.Get("no_subnet").(bool)
-	enableTrusted := d.Get("is_trusted").(bool)
 	diskEncryption := d.Get("disk_encryption").(bool)
 	defaultPoolSize := d.Get("default_pool_size").(int)
+	gatewayEnabled := d.Get("gateway_enabled").(bool)
 
 	hardware := d.Get("hardware").(string)
 	switch strings.ToLower(hardware) {
@@ -533,16 +536,26 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 		Name:           name,
 		Datacenter:     datacenter,
 		WorkerNum:      defaultPoolSize,
-		Billing:        billing,
 		MachineType:    machineType,
 		PublicVlan:     publicVlanID,
 		PrivateVlan:    privateVlanID,
 		NoSubnet:       noSubnet,
 		Isolation:      hardware,
 		DiskEncryption: diskEncryption,
-		EnableTrusted:  enableTrusted,
 	}
 
+	if gatewayEnabled {
+		if v, ok := d.GetOkExists("private_service_endpoint"); ok {
+			if v.(bool) {
+				params.PrivateEndpointEnabled = v.(bool)
+				params.GatewayEnabled = gatewayEnabled
+			} else {
+				return fmt.Errorf("set private_service_endpoint to true for gateway_enabled clusters")
+			}
+		} else {
+			return fmt.Errorf("set private_service_endpoint to true for gateway_enabled clusters")
+		}
+	}
 	if v, ok := d.GetOk("kube_version"); ok {
 		params.MasterVersion = v.(string)
 	}
@@ -617,8 +630,18 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return err
 	}
+	var poolName string
+	var poolContains bool
+
 	if len(workerPools) > 0 && workerPoolContains(workerPools, defaultWorkerPool) {
-		workersByPool, err := wrkAPI.ListByWorkerPool(clusterID, defaultWorkerPool, false, targetEnv)
+		poolName = defaultWorkerPool
+		poolContains = true
+	} else if len(workerPools) > 0 && workerPoolContains(workerPools, computeWorkerPool) && workerPoolContains(workerPools, gatewayWorkerpool) {
+		poolName = computeWorkerPool
+		poolContains = true
+	}
+	if poolContains {
+		workersByPool, err := wrkAPI.ListByWorkerPool(clusterID, poolName, false, targetEnv)
 		if err != nil {
 			return fmt.Errorf("Error retrieving workers of default worker pool for cluster: %s", err)
 		}
@@ -647,7 +670,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 			d.Set("hardware", hardware)
 		}
 
-		defaultWorkerPool, err := workerPoolsAPI.GetWorkerPool(clusterID, defaultWorkerPool, targetEnv)
+		defaultWorkerPool, err := workerPoolsAPI.GetWorkerPool(clusterID, poolName, targetEnv)
 		if err != nil {
 			return err
 		}
@@ -662,7 +685,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	albs, err := albsAPI.ListClusterALBs(clusterID, targetEnv)
-	if err != nil && !strings.Contains(err.Error(), "The specified cluster is a lite cluster.") {
+	if err != nil && !strings.Contains(err.Error(), "The specified cluster is a lite cluster.") && !strings.Contains(err.Error(), "This operation is not supported for your cluster's version.") {
 		return fmt.Errorf("Error retrieving alb's of the cluster %s: %s", clusterID, err)
 	}
 
@@ -679,7 +702,6 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 		d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0])
 
 	}
-	d.Set("is_trusted", cls.IsTrusted)
 	d.Set("albs", flattenAlbs(albs, "all"))
 	d.Set("resource_group_id", cls.ResourceGroupID)
 	d.Set("public_service_endpoint", cls.PublicServiceEndpointEnabled)
@@ -787,9 +809,20 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		if err != nil {
 			return err
 		}
+		var poolName string
+		var poolContains bool
+
 		if len(workerPools) > 0 && workerPoolContains(workerPools, defaultWorkerPool) {
+			poolName = defaultWorkerPool
+
+			poolContains = true
+		} else if len(workerPools) > 0 && workerPoolContains(workerPools, computeWorkerPool) && workerPoolContains(workerPools, gatewayWorkerpool) {
+			poolName = computeWorkerPool
+			poolContains = true
+		}
+		if poolContains {
 			poolSize := d.Get("default_pool_size").(int)
-			err = workerPoolsAPI.ResizeWorkerPool(clusterID, defaultWorkerPool, poolSize, targetEnv)
+			err = workerPoolsAPI.ResizeWorkerPool(clusterID, poolName, poolSize, targetEnv)
 			if err != nil {
 				return fmt.Errorf(
 					"Error updating the default_pool_size %d: %s", poolSize, err)

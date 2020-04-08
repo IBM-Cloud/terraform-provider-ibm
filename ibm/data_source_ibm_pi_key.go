@@ -3,10 +3,8 @@ package ibm
 import (
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
-	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"log"
 )
 
 func dataSourceIBMPIKey() *schema.Resource {
@@ -27,7 +25,7 @@ func dataSourceIBMPIKey() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 			},
 			//Computed Attributes
-			"creationdate": {
+			"creation_date": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -48,7 +46,6 @@ func dataSourceIBMPIKeysRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	log.Printf("Calling the ibm-pi-key datasource with the %s instanceid ", powerinstanceid)
 	sshkeyC := instance.NewIBMPIKeyClient(sess, powerinstanceid)
 	sshkeydata, err := sshkeyC.Get(d.Get(helpers.PIKeyName).(string), powerinstanceid)
 
@@ -56,13 +53,9 @@ func dataSourceIBMPIKeysRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	var clientgenU, _ = uuid.GenerateUUID()
-	d.SetId(clientgenU)
-	d.Set("name", sshkeydata.Name)
+	d.SetId(*sshkeydata.Name)
 	d.Set("sshkey", sshkeydata.SSHKey)
-	d.Set("creationdate", sshkeydata.CreationDate)
 
 	return nil
-	//return fmt.Errorf("No Image found with name %s", imagedata.)
 
 }

@@ -64,3 +64,14 @@ func (f *IBMPIKeyClient) Create(name string, sshkey, powerinstanceid string) (*m
 	return nil, nil, nil
 
 }
+
+// Delete ...
+func (f *IBMPIKeyClient) Delete(id string, powerinstanceid string) error {
+	var tenantid = f.session.UserAccount
+	params := p_cloud_tenants_ssh_keys.NewPcloudTenantsSshkeysDeleteParamsWithTimeout(f.session.Timeout).WithTenantID(tenantid).WithSshkeyName(id)
+	_, err := f.session.Power.PCloudTenantsSSHKeys.PcloudTenantsSshkeysDelete(params, ibmpisession.NewAuth(f.session, powerinstanceid))
+	if err != nil {
+		return errors.ToError(err)
+	}
+	return nil
+}

@@ -11,6 +11,9 @@ import (
 
 	// Added code for the Power Colo Offering
 
+	apigateway "github.com/IBM/apigateway-go-sdk"
+	"github.com/IBM/go-sdk-core/v3/core"
+	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
 	jwt "github.com/dgrijalva/jwt-go"
 	slsession "github.com/softlayer/softlayer-go/session"
@@ -28,6 +31,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/iam/iamv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
+	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/catalog"
@@ -42,10 +46,9 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
-	kp "github.com/IBM/keyprotect-go-client"
 )
 
-//RetryDelay
+//RetryAPIDelay ...
 const RetryAPIDelay = 5 * time.Second
 
 //BluemixRegion ...
@@ -113,6 +116,9 @@ type Config struct {
 
 	// PowerService Instance
 	PowerServiceInstance string
+
+	// Zone
+	Zone string
 }
 
 //Session stores the information required for communication with the SoftLayer and Bluemix API
@@ -140,6 +146,7 @@ type ClientSession interface {
 	IAMAPI() (iamv1.IAMServiceAPI, error)
 	IAMPAPAPI() (iampapv1.IAMPAPAPI, error)
 	IAMUUMAPI() (iamuumv1.IAMUUMServiceAPI, error)
+	IAMUUMAPIV2() (iamuumv2.IAMUUMServiceAPIv2, error)
 	ISSession() (*issession.Session, error)
 	MccpAPI() (mccpv2.MccpServiceAPI, error)
 	ResourceCatalogAPI() (catalog.ResourceCatalogAPI, error)
@@ -152,10 +159,14 @@ type ClientSession interface {
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
 	CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error)
 	keyProtectAPI() (*kp.Client, error)
+	APIGateway() (*apigateway.ApiGatewayControllerApiV1, error)
 }
 
 type clientSession struct {
 	session *Session
+
+	apigatewayErr error
+	apigatewayAPI *apigateway.ApiGatewayControllerApiV1
 
 	accountConfigErr     error
 	bmxAccountServiceAPI accountv2.AccountServiceAPI
@@ -198,6 +209,9 @@ type clientSession struct {
 
 	iamUUMConfigErr  error
 	iamUUMServiceAPI iamuumv1.IAMUUMServiceAPI
+
+	iamUUMConfigErrV2  error
+	iamUUMServiceAPIV2 iamuumv2.IAMUUMServiceAPIv2
 
 	iamConfigErr  error
 	iamServiceAPI iamv1.IAMServiceAPI
@@ -308,6 +322,11 @@ func (sess clientSession) IAMUUMAPI() (iamuumv1.IAMUUMServiceAPI, error) {
 	return sess.iamUUMServiceAPI, sess.iamUUMConfigErr
 }
 
+// IAMUUMAPIV2 provides IAM UUM APIs ...
+func (sess clientSession) IAMUUMAPIV2() (iamuumv2.IAMUUMServiceAPIv2, error) {
+	return sess.iamUUMServiceAPIV2, sess.iamUUMConfigErrV2
+}
+
 // IcdAPI provides IBM Cloud Databases APIs ...
 func (sess clientSession) ICDAPI() (icdv4.ICDServiceAPI, error) {
 	return sess.icdServiceAPI, sess.icdConfigErr
@@ -353,6 +372,11 @@ func (sess clientSession) CertificateManagerAPI() (certificatemanager.Certificat
 	return sess.certManagementAPI, sess.certManagementErr
 }
 
+//apigatewayAPI provides API Gateway APIs
+func (sess clientSession) APIGateway() (*apigateway.ApiGatewayControllerApiV1, error) {
+	return sess.apigatewayAPI, sess.apigatewayErr
+}
+
 func (sess clientSession) keyProtectAPI() (*kp.Client, error) {
 	return sess.kpAPI, sess.kpErr
 }
@@ -391,6 +415,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.iamConfigErr = errEmptyBluemixCredentials
 		session.iamPAPConfigErr = errEmptyBluemixCredentials
 		session.iamUUMConfigErr = errEmptyBluemixCredentials
+		session.iamUUMConfigErrV2 = errEmptyBluemixCredentials
 		session.icdConfigErr = errEmptyBluemixCredentials
 		session.resourceCatalogConfigErr = errEmptyBluemixCredentials
 		session.resourceManagementConfigErr = errEmptyBluemixCredentials
@@ -401,6 +426,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
 		session.userManagementErr = errEmptyBluemixCredentials
 		session.certManagementErr = errEmptyBluemixCredentials
+		session.apigatewayErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -472,8 +498,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.csv2ServiceAPI = v2clusterAPI
 
+	kpurl := fmt.Sprintf("https://%s.kms.cloud.ibm.com", c.Region)
 	options := kp.ClientConfig{
-		BaseURL:       kp.DefaultBaseURL,
+		BaseURL:       envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kpurl),
 		Authorization: sess.BluemixSession.Config.IAMAccessToken,
 		// InstanceID:    "42fET57nnadurKXzXAedFLOhGqETfIGYxOmQXkFgkJV9",
 		Verbose: kp.VerboseFailOnly,
@@ -526,6 +553,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.iamUUMServiceAPI = iamuum
 
+	iamuumv2, err := iamuumv2.New(sess.BluemixSession)
+	if err != nil {
+		session.iamUUMConfigErrV2 = fmt.Errorf("Error occured while configuring Bluemix IAMUUM Service: %q", err)
+	}
+	session.iamUUMServiceAPIV2 = iamuumv2
+
 	issession, err := issession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, c.Generation, false, c.BluemixTimeout)
 	if err != nil {
 		session.isConfigErr = err
@@ -574,7 +607,18 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.certManagementAPI = certManagementAPI
 
-	ibmpisession, err := ibmpisession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, false, c.BluemixTimeout, session.bmxUserDetails.userAccount)
+	apicurl := fmt.Sprintf("https://api.%s.apigw.cloud.ibm.com/controller", c.Region)
+	APIGatewayControllerAPIV1Options := &apigateway.ApiGatewayControllerApiV1Options{
+		URL:           envFallBack([]string{"IBMCLOUD_API_GATEWAY_ENDPOINT"}, apicurl),
+		Authenticator: &core.NoAuthAuthenticator{},
+	}
+	apigatewayAPI, err := apigateway.NewApiGatewayControllerApiV1(APIGatewayControllerAPIV1Options)
+	if err != nil {
+		session.apigatewayErr = fmt.Errorf("Error occured while configuring  APIGateway service: %q", err)
+	}
+	session.apigatewayAPI = apigatewayAPI
+
+	ibmpisession, err := ibmpisession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, false, c.BluemixTimeout, session.bmxUserDetails.userAccount, c.Zone)
 	if err != nil {
 		session.ibmpiConfigErr = err
 		return nil, err
@@ -733,4 +777,13 @@ func refreshToken(sess *bxsession.Session) error {
 	}
 	_, err = tokenRefresher.RefreshToken()
 	return err
+}
+
+func envFallBack(envs []string, defaultValue string) string {
+	for _, k := range envs {
+		if v := os.Getenv(k); v != "" {
+			return v
+		}
+	}
+	return defaultValue
 }

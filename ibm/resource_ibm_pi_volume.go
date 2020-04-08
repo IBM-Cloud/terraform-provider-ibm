@@ -2,13 +2,14 @@ package ibm
 
 import (
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"log"
-	"time"
 )
 
 func resourceIBMPIVolume() *schema.Resource {
@@ -22,16 +23,15 @@ func resourceIBMPIVolume() *schema.Resource {
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
+			Update: schema.DefaultTimeout(60 * time.Minute),
 			Delete: schema.DefaultTimeout(60 * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
 
-			helpers.PIVolumeId: {
+			"volume_id": {
 				Type:     schema.TypeString,
 				Computed: true,
-				ForceNew: true,
-				Optional: true,
 			},
 
 			helpers.PIVolumeName: {
@@ -42,7 +42,7 @@ func resourceIBMPIVolume() *schema.Resource {
 
 			helpers.PIVolumeShareable: {
 				Type:        schema.TypeBool,
-				Required:    true,
+				Optional:    true,
 				Description: "Flag to indicate if the volume can be shared across multiple instances?",
 			},
 			helpers.PIVolumeSize: {
@@ -53,7 +53,7 @@ func resourceIBMPIVolume() *schema.Resource {
 			helpers.PIVolumeType: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"ssd", "standard"}),
+				ValidateFunc: validateAllowedStringValue([]string{"ssd", "standard", "tier1", "tier3"}),
 			},
 
 			helpers.PICloudInstanceId: {
@@ -64,10 +64,9 @@ func resourceIBMPIVolume() *schema.Resource {
 
 			// Computed Attributes
 
-			helpers.PIVolumeStatus: {
+			"volume_status": {
 				Type:     schema.TypeString,
 				Computed: true,
-				Optional: true,
 			},
 		},
 	}
@@ -94,13 +93,12 @@ func resourceIBMPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	volumeid := *vol.VolumeID
-	d.SetId(volumeid)
-
+	d.SetId(fmt.Sprintf("%s/%s", powerinstanceid, volumeid))
 	if err != nil {
 		log.Printf("[DEBUG]  err %s", isErrorToString(err))
 		return err
 	}
-	_, err = isWaitForIBMPIVolumeAvailable(client, d.Id(), powerinstanceid, d.Timeout(schema.TimeoutCreate))
+	_, err = isWaitForIBMPIVolumeAvailable(client, volumeid, powerinstanceid, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
 	}
@@ -110,10 +108,14 @@ func resourceIBMPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceIBMPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	sess, _ := meta.(ClientSession).IBMPISession()
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return err
+	}
+	powerinstanceid := parts[0]
 	client := st.NewIBMPIVolumeClient(sess, powerinstanceid)
 
-	vol, err := client.Get(d.Id(), powerinstanceid)
+	vol, err := client.Get(parts[1], powerinstanceid)
 	if err != nil {
 		return err
 	}
@@ -121,7 +123,10 @@ func resourceIBMPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(helpers.PIVolumeName, vol.Name)
 	d.Set(helpers.PIVolumeSize, vol.Size)
 	d.Set(helpers.PIVolumeShareable, vol.Shareable)
-	d.Set(helpers.PIVolumeStatus, vol.State)
+	d.Set(helpers.PIVolumeType, vol.DiskType)
+	d.Set("volume_status", vol.State)
+	d.Set("volume_id", vol.VolumeID)
+	d.Set(helpers.PICloudInstanceId, powerinstanceid)
 
 	return nil
 }
@@ -130,7 +135,11 @@ func resourceIBMPIVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("Calling the IBM Power Volume update call")
 	sess, _ := meta.(ClientSession).IBMPISession()
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return err
+	}
+	powerinstanceid := parts[0]
 	client := st.NewIBMPIVolumeClient(sess, powerinstanceid)
 
 	//name := ""
@@ -141,12 +150,12 @@ func resourceIBMPIVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	size := float64(d.Get(helpers.PIVolumeSize).(float64))
 	shareable := bool(d.Get(helpers.PIVolumeShareable).(bool))
 
-	volrequest, err := client.Update(d.Id(), name, size, shareable, powerinstanceid)
+	volrequest, err := client.Update(parts[1], name, size, shareable, powerinstanceid)
 	if err != nil {
 		return err
 	}
 
-	_, err = isWaitForIBMPIVolumeAvailable(client, *volrequest.VolumeID, powerinstanceid, d.Timeout(schema.TimeoutCreate))
+	_, err = isWaitForIBMPIVolumeAvailable(client, *volrequest.VolumeID, powerinstanceid, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return err
 	}
@@ -157,21 +166,25 @@ func resourceIBMPIVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 func resourceIBMPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 
 	sess, _ := meta.(ClientSession).IBMPISession()
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return err
+	}
+	powerinstanceid := parts[0]
 
 	client := st.NewIBMPIVolumeClient(sess, powerinstanceid)
 
-	vol, err := client.Get(d.Id(), powerinstanceid)
+	vol, err := client.Get(parts[1], powerinstanceid)
 	if err != nil {
 		return err
 	}
 
 	log.Printf("The volume to be deleted is in the following state .. %s", vol.State)
-	_, err = isWaitForIBMPIVolumeAvailable(client, d.Id(), powerinstanceid, d.Timeout(schema.TimeoutCreate))
+	_, err = isWaitForIBMPIVolumeAvailable(client, parts[1], powerinstanceid, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return err
 	}
-	voldelete_err := client.Delete(d.Id(), powerinstanceid)
+	voldelete_err := client.Delete(parts[1], powerinstanceid)
 	if voldelete_err != nil {
 		return voldelete_err
 	}
@@ -185,13 +198,15 @@ func resourceIBMPIVolumeExists(d *schema.ResourceData, meta interface{}) (bool, 
 	if err != nil {
 		return false, err
 	}
-	id := d.Id()
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return false, err
+	}
 
-	log.Printf("the value of id is %s", id)
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	powerinstanceid := parts[0]
 	client := st.NewIBMPIVolumeClient(sess, powerinstanceid)
 
-	vol, err := client.Get(id, powerinstanceid)
+	vol, err := client.Get(parts[1], powerinstanceid)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
 			if apiErr.StatusCode() == 404 {
@@ -204,7 +219,7 @@ func resourceIBMPIVolumeExists(d *schema.ResourceData, meta interface{}) (bool, 
 	log.Printf("Calling the existing function.. %s", *(vol.VolumeID))
 
 	volumeid := *vol.VolumeID
-	return volumeid == id, nil
+	return volumeid == parts[1], nil
 }
 
 /*

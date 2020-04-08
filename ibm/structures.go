@@ -19,6 +19,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
+	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
@@ -356,6 +357,32 @@ func flattenVpcZones(list []containerv2.ZoneResp) []map[string]interface{} {
 	}
 	return zones
 }
+func flattenConditions(list []iamuumv2.Condition) []map[string]interface{} {
+	conditions := make([]map[string]interface{}, len(list))
+	for i, cond := range list {
+		l := map[string]interface{}{
+			"claim":    cond.Claim,
+			"operator": cond.Operator,
+			"value":    strings.ReplaceAll(cond.Value, "\"", ""),
+		}
+		conditions[i] = l
+	}
+	return conditions
+}
+func flattenAccessGroupRules(list []iamuumv2.CreateRuleResponse) []map[string]interface{} {
+	rules := make([]map[string]interface{}, len(list))
+	for i, item := range list {
+		l := map[string]interface{}{
+			"name":              item.Name,
+			"expiration":        item.Expiration,
+			"identity_provider": item.RealmName,
+			"conditions":        flattenConditions(item.Conditions),
+		}
+		rules[i] = l
+	}
+	return rules
+}
+
 func flattenSubnets(list []containerv2.Subnet) []map[string]interface{} {
 	subs := make([]map[string]interface{}, len(list))
 	for i, sub := range list {
@@ -858,7 +885,8 @@ func flattenDisks(result datatypes.Virtual_Guest) []int {
 
 	for _, v := range result.BlockDevices {
 		// skip 1,7 which is reserved for the swap disk and metadata
-		if result.BillingItem.OrderItem.Preset != nil {
+		_, ok := sl.GrabOk(result, "BillingItem.OrderItem.Preset")
+		if ok {
 			if *v.Device != "1" && *v.Device != "7" && *v.Device != "0" {
 				capacity, ok := sl.GrabOk(v, "DiskImage.Capacity")
 
@@ -886,7 +914,8 @@ func flattenDisksForWindows(result datatypes.Virtual_Guest) []int {
 
 	for _, v := range result.BlockDevices {
 		// skip 1,7 which is reserved for the swap disk and metadata
-		if result.BillingItem.OrderItem.Preset != nil {
+		_, ok := sl.GrabOk(result, "BillingItem.OrderItem.Preset")
+		if ok {
 			if *v.Device != "1" && *v.Device != "7" && *v.Device != "0" && *v.Device != "3" {
 				capacity, ok := sl.GrabOk(v, "DiskImage.Capacity")
 
@@ -987,12 +1016,38 @@ func contains(s []int, e int) bool {
 	return false
 }
 
-func flattenAccessGroupMembers(list []models.AccessGroupMember, users []accountv1.AccountUser, serviceids []models.ServiceID) []map[string]interface{} {
+func flattenMembersData(list []models.AccessGroupMemberV2, users []accountv1.AccountUser, serviceids []models.ServiceID) ([]string, []string) {
+	var ibmid []string
+	var serviceid []string
+	for _, m := range list {
+		if m.Type == iamuumv2.AccessGroupMemberUser {
+			for _, user := range users {
+				if user.IbmUniqueId == m.ID {
+					ibmid = append(ibmid, user.UserId)
+					break
+				}
+			}
+		} else {
+
+			for _, srid := range serviceids {
+				if srid.IAMID == m.ID {
+					serviceid = append(serviceid, srid.UUID)
+					break
+				}
+			}
+
+		}
+
+	}
+	return ibmid, serviceid
+}
+
+func flattenAccessGroupMembers(list []models.AccessGroupMemberV2, users []accountv1.AccountUser, serviceids []models.ServiceID) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, m := range list {
 		var value, vtype string
-		if m.Type == iamuumv1.AccessGroupMemberUser {
-			vtype = iamuumv1.AccessGroupMemberUser
+		if m.Type == iamuumv2.AccessGroupMemberUser {
+			vtype = iamuumv2.AccessGroupMemberUser
 			for _, user := range users {
 				if user.IbmUniqueId == m.ID {
 					value = user.UserId
@@ -1571,4 +1626,16 @@ func resourceTagsCustomizeDiff(diff *schema.ResourceDiff) error {
 		}
 	}
 	return nil
+}
+
+func flattenCseIPs(list []VPCCSESourceIP) []map[string]interface{} {
+	cseIPsInfo := make([]map[string]interface{}, 0)
+	for _, object := range list {
+		l := map[string]interface{}{
+			"address":   object.Address,
+			"zone_name": object.ZoneName,
+		}
+		cseIPsInfo = append(cseIPsInfo, l)
+	}
+	return cseIPsInfo
 }

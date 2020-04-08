@@ -2,7 +2,6 @@ package ibm
 
 import (
 	"github.com/go-openapi/strfmt"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	gouuid "github.com/satori/go.uuid"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
@@ -30,10 +29,11 @@ func resourceIBMISSecurityGroup() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			isSecurityGroupName: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Security group name",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				Description:  "Security group name",
+				ValidateFunc: validateISName,
 			},
 			isSecurityGroupVPC: {
 				Type:        schema.TypeString,

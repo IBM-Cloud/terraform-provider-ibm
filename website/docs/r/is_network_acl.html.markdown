@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_is_network_acl
 
-Provides a network ACL resource. This allows network ACL to be created, updated, and cancelled.
+Provides a network ACL resourcewith icmp protocol. This allows network ACL to be created, updated, and cancelled.
 
 
 ## Example Usage
@@ -40,39 +40,78 @@ resource "ibm_is_network_acl" "isExampleACL" {
   }
 }
 ```
+Provides a network ACL resource with tcp/udp protocol. This allows network ACL to be created, updated, and cancelled.
 
-In The following example, you can create NextGen VPC Network ACL
+
+## Example Usage
+
+```hcl
+resource "ibm_is_network_acl" "isExampleACL" {
+  name = "is-example-acl"
+  rules {
+    name        = "outbound"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "0.0.0.0/0"
+    direction   = "outbound"
+    tcp {
+      port_max        = 65535
+      port_min        = 1
+      source_port_max = 60000
+      source_port_min = 22
+    }
+  }
+  rules {
+    name        = "inbound"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "0.0.0.0/0"
+    direction   = "inbound"
+    tcp {
+      port_max        = 65535
+      port_min        = 1
+      source_port_max = 60000
+      source_port_min = 22
+    }
+  }
+}
+```
+
+Provides a NextGen VPC Network ACL resource with icmp protocol. This allows network ACL to be created, updated, and cancelled.
+
+
+## Example Usage
 
 ```hcl
 resource "ibm_is_vpc" "testacc_vpc" {
-	name = "vpctest"
+  name = "vpctest"
 }
 
 resource "ibm_is_network_acl" "isExampleACL" {
-	name = "is-example-acl"
-	vpc  = ibm_is_vpc.testacc_vpc.id
-	rules {
-		name        = "outbound"
-		action      = "allow"
-		source      = "0.0.0.0/0"
-		destination = "0.0.0.0/0"
-		direction   = "outbound"
-		icmp {
-		code = 1
-		type = 1
-		}
-	}
-	rules {
-		name        = "inbound"
-		action      = "allow"
-		source      = "0.0.0.0/0"
-		destination = "0.0.0.0/0"
-		direction   = "inbound"
-		icmp {
-		code = 1
-		type = 1
-		}
-	}
+  name = "is-example-acl"
+  vpc  = ibm_is_vpc.testacc_vpc.id
+  rules {
+    name        = "outbound"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "0.0.0.0/0"
+    direction   = "outbound"
+    icmp {
+      code = 1
+      type = 1
+    }
+  }
+  rules {
+    name        = "inbound"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "0.0.0.0/0"
+    direction   = "inbound"
+    icmp {
+      code = 1
+      type = 1
+    }
+  }
 }
 ```
 
@@ -84,7 +123,7 @@ The following arguments are supported:
 
 * `name` - (Required, string) The name of the network ACL.
 * `vpc` - (Optional, Forces new resource, string) The VPC Id. This is a Required field and to be set only when the generation parameter is `2`
-* `rules` - (Optional, array)   The rules for a network ACL
+* `rules` - (Optional, array)   The rules for a network ACL. The order of rules priority depends on the order of rules specified in the template.
 Nested `rules` blocks have the following structure:
 	* `name` - (Required, string) The user-defined name for this rule.
 	* `action` - (Required, string) Whether to allow or deny matching traffic.
@@ -97,9 +136,13 @@ Nested `rules` blocks have the following structure:
 	* `tcp` - (Optional, array) TCP protocol.
 		* `port_max` - (Optional, int) The highest port in the range of ports to be matched; if unspecified, 65535 is used.
 		* `port_min` - (Optional, int) The lowest port in the range of ports to be matched; if unspecified, 1 is used.
+		* `source_port_max` - (Optional, int) The highest port in the range of ports to be matched; if unspecified, 65535 is used.
+		* `source_port_min` - (Optional, int) The lowest port in the range of ports to be matched; if unspecified, 1 is used.
 	* `udp` - (Optional, array) UDP protocol
 		* `port_max` - (Optional, int) The highest port in the range of ports to be matched; if unspecified, 65535 is used.
 		* `port_min` - (Optional, int) The lowest port in the range of ports to be matched; if unspecified, 1 is used.
+		* `source_port_max` - (Optional, int) The highest port in the range of ports to be matched; if unspecified, 65535 is used.
+		* `source_port_min` - (Optional, int) The lowest port in the range of ports to be matched; if unspecified, 1 is used.
 		
 
 ## Attribute Reference

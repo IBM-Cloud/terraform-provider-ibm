@@ -304,9 +304,6 @@ func resourceIBMIAMServicePolicyExists(d *schema.ResourceData, meta interface{})
 
 	servicePolicy, err := iampapClient.V1Policy().Get(servicePolicyID)
 	if err != nil {
-		return false, fmt.Errorf("Error retrieving servicePolicy: %s", err)
-	}
-	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
 			if apiErr.StatusCode() == 404 {
 				return false, nil

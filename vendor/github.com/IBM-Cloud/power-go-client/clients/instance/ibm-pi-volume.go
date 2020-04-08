@@ -45,7 +45,7 @@ func (f *IBMPIVolumeClient) Create(volumename string, volumesize float64, volume
 	var body = models.CreateDataVolume{
 		Name:      &volumename,
 		Size:      &volumesize,
-		DiskType:  &volumetype,
+		DiskType:  volumetype,
 		Shareable: &volumeshareable,
 	}
 
@@ -132,4 +132,16 @@ func (f *IBMPIVolumeClient) GetAll(id, cloud_instance_id string) (*models.Volume
 	}
 	return resp.Payload, nil
 
+}
+
+// Set a volume as the boot volume - PUT Operation
+
+func (f *IBMPIVolumeClient) SetBootVolume(id, volumename, cloud_instance_id string) (models.Object, error) {
+	log.Printf("Setting the Boot Volume for this %s instance as ", cloud_instance_id)
+	params := p_cloud_volumes.NewPcloudPvminstancesVolumesSetbootPutParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(cloud_instance_id).WithPvmInstanceID(id).WithVolumeID(volumename)
+	resp, err := f.session.Power.PCloudVolumes.PcloudPvminstancesVolumesSetbootPut(params, ibmpisession.NewAuth(f.session, cloud_instance_id))
+	if err != nil {
+		return nil, errors.ToError(err)
+	}
+	return resp.Payload, nil
 }

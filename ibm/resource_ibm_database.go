@@ -21,11 +21,12 @@ import (
 )
 
 const (
-	databaseInstanceSuccessStatus  = "active"
-	databaseInstanceProgressStatus = "in progress"
-	databaseInstanceInactiveStatus = "inactive"
-	databaseInstanceFailStatus     = "failed"
-	databaseInstanceRemovedStatus  = "removed"
+	databaseInstanceSuccessStatus      = "active"
+	databaseInstanceProvisioningStatus = "provisioning"
+	databaseInstanceProgressStatus     = "in progress"
+	databaseInstanceInactiveStatus     = "inactive"
+	databaseInstanceFailStatus         = "failed"
+	databaseInstanceRemovedStatus      = "removed"
 )
 
 const (
@@ -104,6 +105,13 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+
+			"guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Unique identifier of resource instance",
+			},
+
 			"adminuser": {
 				Description: "The admin user id for the instance",
 				Type:        schema.TypeString,
@@ -159,19 +167,22 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Optional:    true,
 			},
 			"remote_leader_id": {
-				Description: "The CRN of leader database",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Description:      "The CRN of leader database",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: applyOnce,
 			},
 			"key_protect_instance": {
-				Description: "The CRN of Key protect instance",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Description:      "The CRN of Key protect instance",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: applyOnce,
 			},
 			"key_protect_key": {
-				Description: "The CRN of Key protect key",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Description:      "The CRN of Key protect key",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: applyOnce,
 			},
 			"tags": {
 				Type:     schema.TypeSet,
@@ -703,6 +714,8 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("resource_group_id", instance.ResourceGroupID)
 	d.Set("parameters", Flatten(instance.Parameters))
 	d.Set("location", instance.RegionID)
+	d.Set("guid", instance.Guid)
+
 	if instance.Parameters != nil {
 		if endpoint, ok := instance.Parameters["service-endpoints"]; ok {
 			if endpoint == "private" {
@@ -803,8 +816,10 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 
 	instanceID := d.Id()
 	updateReq := controller.UpdateServiceInstanceRequest{}
+	update := false
 	if d.HasChange("name") {
 		updateReq.Name = d.Get("name").(string)
+		update = true
 	}
 	if d.HasChange("service_endpoints") {
 		params := Params{}
@@ -813,17 +828,21 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 		var raw map[string]interface{}
 		json.Unmarshal(parameters, &raw)
 		updateReq.Parameters = raw
+		update = true
 	}
 
-	_, err = rsConClient.ResourceServiceInstance().UpdateInstance(instanceID, updateReq)
-	if err != nil {
-		return fmt.Errorf("Error updating resource instance: %s", err)
-	}
+	if update {
+		_, err = rsConClient.ResourceServiceInstance().UpdateInstance(instanceID, updateReq)
+		if err != nil {
+			return fmt.Errorf("Error updating resource instance: %s", err)
+		}
 
-	_, err = waitForDatabaseInstanceUpdate(d, meta)
-	if err != nil {
-		return fmt.Errorf(
-			"Error waiting for update of resource instance (%s) to complete: %s", d.Id(), err)
+		_, err = waitForDatabaseInstanceUpdate(d, meta)
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for update of resource instance (%s) to complete: %s", d.Id(), err)
+		}
+
 	}
 
 	if d.HasChange("tags") {
@@ -1146,7 +1165,7 @@ func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, ins
 	}
 
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{databaseInstanceProgressStatus, databaseInstanceInactiveStatus},
+		Pending: []string{databaseInstanceProgressStatus, databaseInstanceInactiveStatus, databaseInstanceProvisioningStatus},
 		Target:  []string{databaseInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
 			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)

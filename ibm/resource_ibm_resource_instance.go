@@ -17,11 +17,13 @@ import (
 )
 
 const (
-	rsInstanceSuccessStatus  = "active"
-	rsInstanceProgressStatus = "in progress"
-	rsInstanceInactiveStatus = "inactive"
-	rsInstanceFailStatus     = "failed"
-	rsInstanceRemovedStatus  = "removed"
+	rsInstanceSuccessStatus      = "active"
+	rsInstanceProgressStatus     = "in progress"
+	rsInstanceProvisioningStatus = "provisioning"
+	rsInstanceInactiveStatus     = "inactive"
+	rsInstanceFailStatus         = "failed"
+	rsInstanceRemovedStatus      = "removed"
+	rsInstanceReclamation        = "pending_reclamation"
 )
 
 func resourceIBMResourceInstance() *schema.Resource {
@@ -176,8 +178,11 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("Error retrieving service offering: %s", err)
 	}
 
-	metadata := serviceOff[0].GetMetadata()
-	if _, ok := metadata.(*models.ServiceResourceMetadata); !ok {
+	if metadata, ok := serviceOff[0].Metadata.(*models.ServiceResourceMetadata); ok {
+		if !metadata.Service.RCProvisionable {
+			return fmt.Errorf("%s cannot be provisioned by resource controller", serviceName)
+		}
+	} else {
 		return fmt.Errorf("Cannot create instance of resource %s\nUse 'ibm_service_instance' if the resource is a Cloud Foundry service", serviceName)
 	}
 
@@ -467,7 +472,7 @@ func waitForResourceInstanceCreate(d *schema.ResourceData, meta interface{}) (in
 	instanceID := d.Id()
 
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{rsInstanceProgressStatus, rsInstanceInactiveStatus},
+		Pending: []string{rsInstanceProgressStatus, rsInstanceInactiveStatus, rsInstanceProvisioningStatus},
 		Target:  []string{rsInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
 			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
@@ -529,7 +534,7 @@ func waitForResourceInstanceDelete(d *schema.ResourceData, meta interface{}) (in
 	instanceID := d.Id()
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{rsInstanceProgressStatus, rsInstanceInactiveStatus, rsInstanceSuccessStatus},
-		Target:  []string{rsInstanceRemovedStatus},
+		Target:  []string{rsInstanceRemovedStatus, rsInstanceReclamation},
 		Refresh: func() (interface{}, string, error) {
 			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
 			if err != nil {

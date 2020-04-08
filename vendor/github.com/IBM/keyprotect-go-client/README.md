@@ -1,5 +1,8 @@
 # keyprotect-go-client
 
+[![Build Status](https://travis-ci.com/IBM/keyprotect-go-client.svg?branch=master)](https://travis-ci.com/IBM/keyprotect-go-client)
+[![GoDoc](https://godoc.org/github.com/keyprotect-go-client?status.svg)](https://godoc.org/github.com/IBM/keyprotect-go-client)
+
 keyprotect-go-client is a Go client library for interacting with the IBM KeyProtect service.
 
 This client expects that you have an existing IBM Cloud Key Protect Service Instance, for more information see:
@@ -27,7 +30,7 @@ keys, err := client.GetKeys(context.Background(), 0, 0)
 
 ### Migrating
 
-For users of the original `key-protect-client` that is now deprecated, this library is a drop in replacement. Updating the package reference to `github.com/IBM/keyprotect-go-client` should be the only change needed. If you are worried about new incompatible changes, version `v0.3.1` of `key-protect-client` is equivalent to version `v0.3.2` of `keyprotect-go-client`, so pinning `v0.3.2` of the new library should be sufficient to pull from the new repo with no new functional changes.
+For users of the original `key-protect-client` that is now deprecated, this library is a drop in replacement. Updating the package reference to `github.com/IBM/keyprotect-go-client` should be the only change needed. If you are worried about new incompatible changes, version `v0.3.1` of `key-protect-client` is equivalent to version `v0.3.3` of `keyprotect-go-client`, so pinning `v0.3.3` of the new library should be sufficient to pull from the new repo with no new functional changes.
 
 ## Authentication
 

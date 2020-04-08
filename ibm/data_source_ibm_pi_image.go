@@ -2,7 +2,6 @@ package ibm
 
 import (
 	"github.com/IBM-Cloud/power-go-client/helpers"
-	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
 	//"fmt"
@@ -28,17 +27,6 @@ func dataSourceIBMPIImage() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 			},
 
-			// Computed Attributes
-
-			"id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
-			"imageid": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"state": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -80,9 +68,7 @@ func dataSourceIBMPIImagesRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	var clientgenU, _ = uuid.GenerateUUID()
-	d.SetId(clientgenU)
-	d.Set("imageid", imagedata.ImageID)
+	d.SetId(*imagedata.ImageID)
 	d.Set("state", imagedata.State)
 	d.Set("size", imagedata.Size)
 	d.Set("architecture", imagedata.Specifications.Architecture)

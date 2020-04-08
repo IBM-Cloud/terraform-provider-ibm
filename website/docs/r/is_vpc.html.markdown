@@ -26,7 +26,7 @@ resource "ibm_is_vpc" "testacc_vpc" {
 
 The following arguments are supported:
 
-* `default_network_acl` - (Optional, string) ID of the default network ACL.
+* `default_network_acl` - (Deprecated, string) ID of the default network ACL.
 * `is_default` - (Removed, bool) This field is removed.
 * `address_prefix_management` - (Optional, string) Indicates whether a default address prefix should be automatically created for each zone in this VPC. Default value `auto`
 * `classic_access` -(Optional, bool) Indicates whether this VPC should be connected to Classic Infrastructure. If true, This VPC's resources will have private network connectivity to the account's Classic Infrastructure resources. Only one VPC on an account may be connected in this way. 
@@ -42,6 +42,15 @@ The following attributes are exported:
 * `default_security_group` - The unique identifier of the VPC default security group.
 * `status` - The status of VPC.
 * `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
+* `cse_source_addresses` - A list describing the cloud service endpoint source ip adresses and zones. The nested cse_source_addresses block have the following structure:
+  * `address` - Ip Address of the cloud service endpoint.
+  * `zone_name` - Zone associated with the IP Address.
+* `subnets` - A list of subnets attached to VPC. The nested subnets block have the following structure:
+  * `name` - Name of the subnet.
+  * `id` - ID of the subnet.
+  * `status` -  Status of the subnet.
+  * `total_ipv4_address_count` - Total IPv4 addresses under the subnet.
+  * `available_ipv4_address_count` - Available IPv4 addresses available for the usage in the subnet.  
 
 
 ## Import

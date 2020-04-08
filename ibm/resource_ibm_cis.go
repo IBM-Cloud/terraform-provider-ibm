@@ -17,11 +17,12 @@ import (
 )
 
 const (
-	cisInstanceSuccessStatus  = "active"
-	cisInstanceProgressStatus = "in progress"
-	cisInstanceInactiveStatus = "inactive"
-	cisInstanceFailStatus     = "failed"
-	cisInstanceRemovedStatus  = "removed"
+	cisInstanceSuccessStatus      = "active"
+	cisInstanceProgressStatus     = "in progress"
+	cisInstanceProvisioningStatus = "provisioning"
+	cisInstanceInactiveStatus     = "inactive"
+	cisInstanceFailStatus         = "failed"
+	cisInstanceRemovedStatus      = "removed"
 )
 
 func resourceIBMCISInstance() *schema.Resource {
@@ -56,6 +57,12 @@ func resourceIBMCISInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The plan type of the service",
+			},
+
+			"guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Unique identifier of resource instance",
 			},
 
 			"location": {
@@ -248,6 +255,7 @@ func resourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("resource_group_id", instance.ResourceGroupID)
 	d.Set("parameters", Flatten(instance.Parameters))
 	d.Set("location", instance.RegionID)
+	d.Set("guid", instance.Guid)
 
 	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
 	if err != nil {
@@ -394,7 +402,7 @@ func waitForCISInstanceCreate(d *schema.ResourceData, meta interface{}, instance
 	//instanceID := d.Id()
 
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{cisInstanceProgressStatus, cisInstanceInactiveStatus},
+		Pending: []string{cisInstanceProgressStatus, cisInstanceInactiveStatus, cisInstanceProvisioningStatus},
 		Target:  []string{cisInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
 			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)

@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
 	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
 )
@@ -31,6 +32,10 @@ const (
 	isVPCFailed                  = "failed"
 	isVPCPending                 = "pending"
 	isVPCAddressPrefixManagement = "address_prefix_management"
+	cseSourceAddresses           = "cse_source_addresses"
+	subnetsList                  = "subnets"
+	totalIPV4AddressCount        = "total_ipv4_address_count"
+	availableIPV4AddressCount    = "available_ipv4_address_count"
 )
 
 func resourceIBMISVPC() *schema.Resource {
@@ -63,10 +68,11 @@ func resourceIBMISVPC() *schema.Resource {
 			},
 
 			isVPCDefaultNetworkACL: {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  nil,
-				Computed: true,
+				Type:       schema.TypeString,
+				Optional:   true,
+				Default:    nil,
+				Computed:   true,
+				Deprecated: "This field is deprecated",
 			},
 
 			isVPCIsDefault: {
@@ -84,9 +90,10 @@ func resourceIBMISVPC() *schema.Resource {
 			},
 
 			isVPCName: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: false,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     false,
+				ValidateFunc: validateISName,
 			},
 
 			isVPCResourceGroup: {
@@ -140,6 +147,64 @@ func resourceIBMISVPC() *schema.Resource {
 				Computed:    true,
 				Description: "The resource group name in which resource is provisioned",
 			},
+
+			cseSourceAddresses: {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Cloud service endpoint IP Address",
+						},
+
+						"zone_name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Location info of CSE Address",
+						},
+					},
+				},
+			},
+
+			subnetsList: {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "subent name",
+						},
+
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "subnet ID",
+						},
+
+						"status": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "subnet status",
+						},
+
+						totalIPV4AddressCount: {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Total IPv4 address count in the subnet",
+						},
+
+						availableIPV4AddressCount: {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Available IPv4 address count in the subnet",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -174,7 +239,7 @@ func resourceIBMISVPCCreate(d *schema.ResourceData, meta interface{}) error {
 	vpc, err := vpcC.Create(name, isVPCAddressPrefixManagement, isClassic, nwacl, rg)
 	if err != nil {
 		log.Printf("[DEBUG] VPC err %s", isErrorToString(err))
-		return err
+		return fmt.Errorf("Error while creating VPC %s: %v", name, err)
 	}
 
 	d.SetId(vpc.ID.String())
@@ -203,6 +268,7 @@ func resourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	vpcC := network.NewVPCClient(sess)
+	vpcNetworkClient := network.NewSubnetClient(sess)
 
 	vpc, err := vpcC.Get(d.Id())
 	if err != nil {
@@ -247,7 +313,45 @@ func resourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
 	if vpc.ResourceGroup != nil {
 		d.Set(ResourceGroupName, vpc.ResourceGroup.Name)
 	}
+	// set the cse ip addresses info
+	if vpc.CseSourceIps != nil {
+		displaySourceIps := []VPCCSESourceIP{}
+		sourceIPs := vpc.CseSourceIps
 
+		for _, sourceIP := range sourceIPs {
+			// work around to parse the cse_source_ip data structure from map[string]interface{} type as we define it as any type in swagger.yaml file
+			ip, zone := safeGetIPZone(sourceIP)
+			if ip == "" {
+				continue
+			}
+			displaySourceIps = append(displaySourceIps, VPCCSESourceIP{
+				Address:  ip,
+				ZoneName: zone,
+			})
+		}
+		info := flattenCseIPs(displaySourceIps)
+		d.Set(cseSourceAddresses, info)
+	}
+	// set the subnets list
+	s, _, err := vpcNetworkClient.List("")
+	if err != nil {
+		log.Println("Error Fetching subnets")
+	} else {
+		subnetsInfo := make([]map[string]interface{}, 0)
+		for _, subnet := range s {
+			if subnet.Vpc.ID.String() == d.Id() {
+				l := map[string]interface{}{
+					"name":                    subnet.Name,
+					"id":                      subnet.ID,
+					"status":                  subnet.Status,
+					totalIPV4AddressCount:     subnet.TotalIPV4AddressCount,
+					availableIPV4AddressCount: subnet.AvailableIPV4AddressCount,
+				}
+				subnetsInfo = append(subnetsInfo, l)
+			}
+		}
+		d.Set(subnetsList, subnetsInfo)
+	}
 	return nil
 }
 
@@ -294,6 +398,13 @@ func resourceIBMISVPCDelete(d *schema.ResourceData, meta interface{}) error {
 	vpcC := network.NewVPCClient(sess)
 	err = vpcC.Delete(d.Id())
 	if err != nil {
+		iserror, ok := err.(iserrors.RiaasError)
+		if ok {
+			if len(iserror.Payload.Errors) == 1 &&
+				iserror.Payload.Errors[0].Code == "not_found" {
+				return nil
+			}
+		}
 		return err
 	}
 

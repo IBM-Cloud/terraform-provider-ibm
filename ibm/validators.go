@@ -11,10 +11,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/IBM-Cloud/bluemix-go/helpers"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	homedir "github.com/mitchellh/go-homedir"
 	gouuid "github.com/satori/go.uuid"
+
+	"github.com/IBM-Cloud/bluemix-go/helpers"
 )
 
 var (
@@ -947,6 +948,38 @@ func validateLBListenerConnectionLimit(v interface{}, k string) (ws []string, er
 	}
 	return
 }
+
+
+func validateISName(v interface{}, k string) (ws []string, errors []error) {
+	name := v.(string)
+	acceptedcharacters, _ := regexp.MatchString(`^[a-z][-a-z0-9]*$`, name)
+	endwithalphanumeric, _ := regexp.MatchString(`.*[a-z0-9]$`, name)
+	length := len(name)
+	if acceptedcharacters == true {
+		if length <= 40 {
+			if endwithalphanumeric == true {
+				if strings.Contains(name, "--") != true {
+					return
+				} else {
+					errors = append(errors, fmt.Errorf(
+						"%q (%q) should not contain consecutive dash(-)", k, v))
+				}
+			} else {
+				errors = append(errors, fmt.Errorf(
+					"%q (%q) should not end with dash(-) ", k, v))
+			}
+		} else {
+			errors = append(errors, fmt.Errorf(
+				"%q (%q) should not exceed 40 characters", k, v))
+		}
+
+	} else {
+		errors = append(errors, fmt.Errorf(
+			"%q (%q) should contain only lowercase alphanumeric,dash and should begin with lowercase character", k, v))
+	}
+	return
+}
+
 
 // ValidateFunc is honored only when the schema's Type is set to TypeInt,
 // TypeFloat, TypeString, TypeBool, or TypeMap. It is ignored for all other types.

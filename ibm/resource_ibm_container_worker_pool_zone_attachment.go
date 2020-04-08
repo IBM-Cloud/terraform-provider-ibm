@@ -69,7 +69,6 @@ func resourceIBMContainerWorkerPoolZoneAttachment() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
 				Description: "The zone region",
 				Deprecated:  "This field is deprecated",
 			},

@@ -16,25 +16,27 @@ import (
 )
 
 const (
-	isNetworkACLName            = "name"
-	isNetworkACLRules           = "rules"
-	isNetworkACLSubnets         = "subnets"
-	isNetworkACLRuleID          = "id"
-	isNetworkACLRuleName        = "name"
-	isNetworkACLRuleAction      = "action"
-	isNetworkACLRuleIPVersion   = "ip_version"
-	isNetworkACLRuleSource      = "source"
-	isNetworkACLRuleDestination = "destination"
-	isNetworkACLRuleDirection   = "direction"
-	isNetworkACLRuleProtocol    = "protocol"
-	isNetworkACLRuleICMP        = "icmp"
-	isNetworkACLRuleICMPCode    = "code"
-	isNetworkACLRuleICMPType    = "type"
-	isNetworkACLRuleTCP         = "tcp"
-	isNetworkACLRuleUDP         = "udp"
-	isNetworkACLRulePortMax     = "port_max"
-	isNetworkACLRulePortMin     = "port_min"
-	isNetworkACLVPC             = "vpc"
+	isNetworkACLName              = "name"
+	isNetworkACLRules             = "rules"
+	isNetworkACLSubnets           = "subnets"
+	isNetworkACLRuleID            = "id"
+	isNetworkACLRuleName          = "name"
+	isNetworkACLRuleAction        = "action"
+	isNetworkACLRuleIPVersion     = "ip_version"
+	isNetworkACLRuleSource        = "source"
+	isNetworkACLRuleDestination   = "destination"
+	isNetworkACLRuleDirection     = "direction"
+	isNetworkACLRuleProtocol      = "protocol"
+	isNetworkACLRuleICMP          = "icmp"
+	isNetworkACLRuleICMPCode      = "code"
+	isNetworkACLRuleICMPType      = "type"
+	isNetworkACLRuleTCP           = "tcp"
+	isNetworkACLRuleUDP           = "udp"
+	isNetworkACLRulePortMax       = "port_max"
+	isNetworkACLRulePortMin       = "port_min"
+	isNetworkACLRuleSourcePortMax = "source_port_max"
+	isNetworkACLRuleSourcePortMin = "source_port_min"
+	isNetworkACLVPC               = "vpc"
 )
 
 func resourceIBMISNetworkACL() *schema.Resource {
@@ -48,9 +50,10 @@ func resourceIBMISNetworkACL() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			isNetworkACLName: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: false,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     false,
+				ValidateFunc: validateISName,
 			},
 			isNetworkACLVPC: {
 				Type:     schema.TypeString,
@@ -153,10 +156,22 @@ func resourceIBMISNetworkACL() *schema.Resource {
 									isNetworkACLRulePortMax: {
 										Type:     schema.TypeInt,
 										Optional: true,
+										Default:  65535,
 									},
 									isNetworkACLRulePortMin: {
 										Type:     schema.TypeInt,
 										Optional: true,
+										Default:  1,
+									},
+									isNetworkACLRuleSourcePortMax: {
+										Type:     schema.TypeInt,
+										Optional: true,
+										Default:  65535,
+									},
+									isNetworkACLRuleSourcePortMin: {
+										Type:     schema.TypeInt,
+										Optional: true,
+										Default:  1,
 									},
 								},
 							},
@@ -172,10 +187,22 @@ func resourceIBMISNetworkACL() *schema.Resource {
 									isNetworkACLRulePortMax: {
 										Type:     schema.TypeInt,
 										Optional: true,
+										Default:  65535,
 									},
 									isNetworkACLRulePortMin: {
 										Type:     schema.TypeInt,
 										Optional: true,
+										Default:  1,
+									},
+									isNetworkACLRuleSourcePortMax: {
+										Type:     schema.TypeInt,
+										Optional: true,
+										Default:  65535,
+									},
+									isNetworkACLRuleSourcePortMin: {
+										Type:     schema.TypeInt,
+										Optional: true,
+										Default:  1,
 									},
 								},
 							},
@@ -270,10 +297,8 @@ func resourceIBMISNetworkACLRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	sortedrules := sortrules(rawrules)
 	rules := make([]interface{}, 0)
-	for rawrule := sortedrules.Front(); rawrule != nil; rawrule = rawrule.Next() {
-		rulex := rawrule.Value.(*models.NetworkACLRule)
+	for _, rulex := range rawrules {
 		rule := make(map[string]interface{})
 		rule[isNetworkACLRuleID] = rulex.ID.String()
 		rule[isNetworkACLRuleName] = rulex.Name
@@ -297,8 +322,15 @@ func resourceIBMISNetworkACLRead(d *schema.ResourceData, meta interface{}) error
 			rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
 			tcp := make([]map[string]int, 1, 1)
 			tcp[0] = map[string]int{
-				isNetworkACLRulePortMax: checkNetworkACLNil(&rulex.PortMax),
-				isNetworkACLRulePortMin: checkNetworkACLNil(&rulex.PortMin),
+				isNetworkACLRuleSourcePortMax: checkNetworkACLNil(&rulex.SourcePortMax),
+				isNetworkACLRuleSourcePortMin: checkNetworkACLNil(&rulex.SourcePortMin),
+			}
+			if sess.Generation == 2 {
+				tcp[0][isNetworkACLRulePortMax] = checkNetworkACLNil(&rulex.DestinationPortMax)
+				tcp[0][isNetworkACLRulePortMin] = checkNetworkACLNil(&rulex.DestinationPortMin)
+			} else {
+				tcp[0][isNetworkACLRulePortMax] = checkNetworkACLNil(&rulex.PortMax)
+				tcp[0][isNetworkACLRulePortMin] = checkNetworkACLNil(&rulex.PortMin)
 			}
 			rule[isNetworkACLRuleTCP] = tcp
 		} else if rulex.Protocol == "udp" {
@@ -306,8 +338,15 @@ func resourceIBMISNetworkACLRead(d *schema.ResourceData, meta interface{}) error
 			rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
 			udp := make([]map[string]int, 1, 1)
 			udp[0] = map[string]int{
-				isNetworkACLRulePortMax: checkNetworkACLNil(&rulex.PortMax),
-				isNetworkACLRulePortMin: checkNetworkACLNil(&rulex.PortMin),
+				isNetworkACLRuleSourcePortMax: checkNetworkACLNil(&rulex.SourcePortMax),
+				isNetworkACLRuleSourcePortMin: checkNetworkACLNil(&rulex.SourcePortMin),
+			}
+			if sess.Generation == 2 {
+				udp[0][isNetworkACLRulePortMax] = checkNetworkACLNil(&rulex.DestinationPortMax)
+				udp[0][isNetworkACLRulePortMin] = checkNetworkACLNil(&rulex.DestinationPortMin)
+			} else {
+				udp[0][isNetworkACLRulePortMax] = checkNetworkACLNil(&rulex.PortMax)
+				udp[0][isNetworkACLRulePortMin] = checkNetworkACLNil(&rulex.PortMin)
 			}
 			rule[isNetworkACLRuleUDP] = udp
 		}
@@ -478,7 +517,7 @@ func validateInlineRules(rules []interface{}) error {
 func createInlineRules(nwaclC *network.NetworkAclClient, nwaclid string, rules []interface{}) error {
 	before := ""
 
-	for i := len(rules) - 1; i >= 0; i-- {
+	for i := 0; i <= len(rules)-1; i++ {
 		rulex := rules[i].(map[string]interface{})
 
 		name := rulex[isNetworkACLRuleName].(string)
@@ -493,16 +532,20 @@ func createInlineRules(nwaclC *network.NetworkAclClient, nwaclid string, rules [
 		icmpcode := -1
 		minport := -1
 		maxport := -1
+		sourceminport := -1
+		sourcemaxport := -1
 		protocol := "all"
 
 		if len(icmp) > 0 {
 			protocol = "icmp"
-			icmpval := icmp[0].(map[string]interface{})
-			if val, ok := icmpval[isNetworkACLRuleICMPType]; ok {
-				icmptype = val.(int)
-			}
-			if val, ok := icmpval[isNetworkACLRuleICMPCode]; ok {
-				icmpcode = val.(int)
+			if icmp[0] != nil {
+				icmpval := icmp[0].(map[string]interface{})
+				if val, ok := icmpval[isNetworkACLRuleICMPType]; ok {
+					icmptype = val.(int)
+				}
+				if val, ok := icmpval[isNetworkACLRuleICMPCode]; ok {
+					icmpcode = val.(int)
+				}
 			}
 		} else if len(tcp) > 0 {
 			protocol = "tcp"
@@ -513,6 +556,12 @@ func createInlineRules(nwaclC *network.NetworkAclClient, nwaclid string, rules [
 			if val, ok := tcpval[isNetworkACLRulePortMax]; ok {
 				maxport = val.(int)
 			}
+			if val, ok := tcpval[isNetworkACLRuleSourcePortMin]; ok {
+				sourceminport = val.(int)
+			}
+			if val, ok := tcpval[isNetworkACLRuleSourcePortMax]; ok {
+				sourcemaxport = val.(int)
+			}
 		} else if len(udp) > 0 {
 			protocol = "udp"
 			udpval := udp[0].(map[string]interface{})
@@ -522,15 +571,19 @@ func createInlineRules(nwaclC *network.NetworkAclClient, nwaclid string, rules [
 			if val, ok := udpval[isNetworkACLRulePortMax]; ok {
 				maxport = val.(int)
 			}
+			if val, ok := udpval[isNetworkACLRuleSourcePortMin]; ok {
+				sourceminport = val.(int)
+			}
+			if val, ok := udpval[isNetworkACLRuleSourcePortMax]; ok {
+				sourcemaxport = val.(int)
+			}
 		}
 
-		rule, err := nwaclC.AddRule(nwaclid, name, source, destination, direction, action, protocol,
-			int64(icmptype), int64(icmpcode), int64(minport), int64(maxport), before)
+		_, err := nwaclC.AddRule(nwaclid, name, source, destination, direction, action, protocol,
+			int64(icmptype), int64(icmpcode), int64(minport), int64(maxport), int64(sourceminport), int64(sourcemaxport), before)
 		if err != nil {
 			return err
 		}
-
-		before = rule.ID.String()
 	}
 	return nil
 }

@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"log"
 	"net/url"
 	"strconv"
 	"time"
@@ -81,7 +82,7 @@ type KeysActionRequest struct {
 	Payload    string   `json:"payload,omitempty"`
 }
 
-// Create creates a new KP key.
+// CreateKey creates a new KP key.
 func (c *Client) CreateKey(ctx context.Context, name string, expiration *time.Time, extractable bool) (*Key, error) {
 	return c.CreateImportedKey(ctx, name, expiration, "", "", "", extractable)
 }
@@ -192,12 +193,29 @@ func (c *Client) GetKey(ctx context.Context, id string) (*Key, error) {
 	return &keys.Keys[0], nil
 }
 
-// Delete deletes a key resource by specifying the ID of the key.
-func (c *Client) DeleteKey(ctx context.Context, id string, prefer PreferReturn) (*Key, error) {
+type CallOpt interface{}
+
+type ForceOpt struct {
+	Force bool
+}
+
+// DeleteKey deletes a key resource by specifying the ID of the key.
+func (c *Client) DeleteKey(ctx context.Context, id string, prefer PreferReturn, callOpts ...CallOpt) (*Key, error) {
 
 	req, err := c.newRequest("DELETE", fmt.Sprintf("keys/%s", id), nil)
 	if err != nil {
 		return nil, err
+	}
+
+	for _, opt := range callOpts {
+		switch v := opt.(type) {
+		case ForceOpt:
+			params := url.Values{}
+			params.Set("force", strconv.FormatBool(v.Force))
+			req.URL.RawQuery = params.Encode()
+		default:
+			log.Printf("WARNING: Ignoring invalid CallOpt passed to DeleteKey: %v\n", v)
+		}
 	}
 
 	req.Header.Set("Prefer", preferHeaders[prefer])
@@ -217,8 +235,8 @@ func (c *Client) DeleteKey(ctx context.Context, id string, prefer PreferReturn) 
 
 // Wrap calls the wrap action with the given plain text.
 func (c *Client) Wrap(ctx context.Context, id string, plainText []byte, additionalAuthData *[]string) ([]byte, error) {
-	pt, _, err := c.wrap(ctx, id, plainText, additionalAuthData)
-	return pt, err
+	_, ct, err := c.wrap(ctx, id, plainText, additionalAuthData)
+	return ct, err
 }
 
 // WrapCreateDEK calls the wrap action without plain text.
@@ -327,7 +345,7 @@ type Policies struct {
 func (c *Client) GetPolicy(ctx context.Context, id string) (*Policy, error) {
 	policyresponse := Policies{}
 
-	req, err := c.newRequest("GET", fmt.Sprintf("keys/%s/policy", id), nil)
+	req, err := c.newRequest("GET", fmt.Sprintf("keys/%s/policies", id), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -358,7 +376,7 @@ func (c *Client) SetPolicy(ctx context.Context, id string, prefer PreferReturn, 
 
 	policyresponse := Policies{}
 
-	req, err := c.newRequest("PUT", fmt.Sprintf("keys/%s/policy", id), &policyRequest)
+	req, err := c.newRequest("PUT", fmt.Sprintf("keys/%s/policies", id), &policyRequest)
 	if err != nil {
 		return nil, err
 	}

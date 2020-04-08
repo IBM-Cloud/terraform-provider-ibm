@@ -53,6 +53,10 @@ type Image struct {
 	// Image State
 	State string `json:"state,omitempty"`
 
+	// Storage type for image
+	// Required: true
+	StorageType *string `json:"storageType"`
+
 	// taskref
 	Taskref *TaskReference `json:"taskref,omitempty"`
 
@@ -85,6 +89,10 @@ func (m *Image) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSpecifications(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -168,6 +176,15 @@ func (m *Image) validateSpecifications(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Image) validateStorageType(formats strfmt.Registry) error {
+
+	if err := validate.Required("storageType", "body", m.StorageType); err != nil {
+		return err
 	}
 
 	return nil

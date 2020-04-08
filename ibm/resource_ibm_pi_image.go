@@ -27,13 +27,6 @@ func resourceIBMPIImage() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 
-			helpers.PIKeyId: {
-				Type:     schema.TypeString,
-				Computed: true,
-				ForceNew: true,
-				Optional: true,
-			},
-
 			helpers.PIImageName: {
 				Type:     schema.TypeString,
 				Required: true,
@@ -51,7 +44,7 @@ func resourceIBMPIImage() *schema.Resource {
 
 			// Computed Attribute
 
-			"imageid": {
+			"image_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -83,14 +76,13 @@ func resourceIBMPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 	IBMPIImageID := imageResponse.ImageID
 	log.Printf("the imageid from the post call is..%s", *IBMPIImageID)
 
-	d.SetId(*IBMPIImageID)
-
+	d.SetId(fmt.Sprintf("%s/%s", powerinstanceid, *IBMPIImageID))
 	log.Printf("the Image id from the post is %s", *IBMPIImageID)
 	if err != nil {
 		log.Printf("[DEBUG]  err %s", isErrorToString(err))
 		return err
 	}
-	_, err = isWaitForIBMPIImageAvailable(client, d.Id(), d.Timeout(schema.TimeoutCreate), powerinstanceid)
+	_, err = isWaitForIBMPIImageAvailable(client, *IBMPIImageID, d.Timeout(schema.TimeoutCreate), powerinstanceid)
 	if err != nil {
 		return err
 	}
@@ -109,16 +101,21 @@ func resourceIBMPIImageRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return err
+	}
+	powerinstanceid := parts[0]
 	imageC := st.NewIBMPIImageClient(sess, powerinstanceid)
-	imagedata, err := imageC.Get(d.Get(helpers.PIImageName).(string), powerinstanceid)
+	imagedata, err := imageC.Get(parts[1], powerinstanceid)
 
 	if err != nil {
 		return err
 	}
 
 	imageid := *imagedata.ImageID
-	d.SetId(imageid)
+	d.Set("image_id", imageid)
+	d.Set(helpers.PICloudInstanceId, powerinstanceid)
 
 	return nil
 
@@ -128,8 +125,25 @@ func resourceIBMPIImageUpdate(data *schema.ResourceData, meta interface{}) error
 	return nil
 }
 
-func resourceIBMPIImageDelete(data *schema.ResourceData, meta interface{}) error {
+func resourceIBMPIImageDelete(d *schema.ResourceData, meta interface{}) error {
+	sess, err := meta.(ClientSession).IBMPISession()
+	if err != nil {
+		return err
+	}
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return err
+	}
+	powerinstanceid := parts[0]
+	imageC := st.NewIBMPIImageClient(sess, powerinstanceid)
+	err = imageC.Delete(parts[1], powerinstanceid)
+
+	if err != nil {
+		return err
+	}
+	d.SetId("")
 	return nil
+
 }
 
 func resourceIBMPIImageExists(d *schema.ResourceData, meta interface{}) (bool, error) {
@@ -138,12 +152,15 @@ func resourceIBMPIImageExists(d *schema.ResourceData, meta interface{}) (bool, e
 	if err != nil {
 		return false, err
 	}
-	//id := d.Id()
-	name := d.Get(helpers.PIImageName)
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return false, err
+	}
+	name := parts[1]
+	powerinstanceid := parts[0]
 	client := st.NewIBMPIImageClient(sess, powerinstanceid)
 
-	image, err := client.Get(d.Get(helpers.PIImageName).(string), powerinstanceid)
+	image, err := client.Get(parts[1], powerinstanceid)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
 			if apiErr.StatusCode() == 404 {
@@ -152,7 +169,7 @@ func resourceIBMPIImageExists(d *schema.ResourceData, meta interface{}) (bool, e
 		}
 		return false, fmt.Errorf("Error communicating with the API: %s", err)
 	}
-	return image.Name == name, nil
+	return *image.Name == name, nil
 }
 
 func isWaitForIBMPIImageAvailable(client *st.IBMPIImageClient, id string, timeout time.Duration, powerinstanceid string) (interface{}, error) {

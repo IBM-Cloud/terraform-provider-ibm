@@ -29,7 +29,7 @@ var crossRegionLocation = []string{
 }
 
 var storageClass = []string{
-	"standard", "vault", "cold", "flex",
+	"standard", "vault", "cold", "flex", "smart",
 }
 
 const (

@@ -32,4 +32,9 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `assignedip` - The IP Address that is attached to this instance from that specific subnet. 
+* `id` - The unique identifier of the network.
+* `ip` - The IP Address that is attached to this instance from that specific subnet. 
+* `macaddress` - The macaddress of the network that is attached to this instance.
+* `external_ip` - The external ip of the network that is attached to this instance. 
+* `type` - The type of the network that is attached to this instance.
+* `ipoctet` - The ipoctet of the network that is attached to this instance.

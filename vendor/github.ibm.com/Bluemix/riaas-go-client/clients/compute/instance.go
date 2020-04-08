@@ -103,15 +103,6 @@ func (f *InstanceClient) Create(instancedef compute.PostInstancesBody) (*models.
 	return resp.Payload, nil
 }
 
-// CreateEasy ...
-func (f *InstanceClient) CreateEasy(name string) (*models.Instance, error) {
-
-	var body = compute.PostInstancesBody{
-		Name: name,
-	}
-	return f.Create(body)
-}
-
 // Update ...
 func (f *InstanceClient) Update(id, name, profileName string) (*models.Instance, error) {
 	var body = compute.PatchInstancesIDBody{}

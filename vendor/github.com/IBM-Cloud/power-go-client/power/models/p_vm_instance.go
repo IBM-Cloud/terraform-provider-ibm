@@ -67,9 +67,9 @@ type PVMInstance struct {
 	// The pvm instance networks information
 	Networks []*PVMInstanceNetwork `json:"networks"`
 
-	// Processor type (dedicated or shared)
+	// Processor type (dedicated, shared, capped)
 	// Required: true
-	// Enum: [dedicated shared]
+	// Enum: [dedicated shared capped]
 	ProcType *string `json:"procType"`
 
 	// Number of processors allocated
@@ -87,12 +87,19 @@ type PVMInstance struct {
 	// Required: true
 	ServerName *string `json:"serverName"`
 
+	// The pvm instance Software Licenses
+	SoftwareLicenses *SoftwareLicenses `json:"softwareLicenses,omitempty"`
+
 	// The status of the instance
 	// Required: true
 	Status *string `json:"status"`
 
-	// sys type
-	SysType PVMInstanceSysType `json:"sysType,omitempty"`
+	// Storage type where server is deployed
+	// Required: true
+	StorageType *string `json:"storageType"`
+
+	// System type used to host the instance
+	SysType string `json:"sysType,omitempty"`
 
 	// Date/Time of PVM last update
 	// Format: date-time
@@ -159,11 +166,15 @@ func (m *PVMInstance) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateSoftwareLicenses(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateStatus(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateSysType(formats); err != nil {
+	if err := m.validateStorageType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -320,7 +331,7 @@ var pVmInstanceTypeProcTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["dedicated","shared"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["dedicated","shared","capped"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -335,6 +346,9 @@ const (
 
 	// PVMInstanceProcTypeShared captures enum value "shared"
 	PVMInstanceProcTypeShared string = "shared"
+
+	// PVMInstanceProcTypeCapped captures enum value "capped"
+	PVMInstanceProcTypeCapped string = "capped"
 )
 
 // prop value enum
@@ -386,6 +400,24 @@ func (m *PVMInstance) validateServerName(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *PVMInstance) validateSoftwareLicenses(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.SoftwareLicenses) { // not required
+		return nil
+	}
+
+	if m.SoftwareLicenses != nil {
+		if err := m.SoftwareLicenses.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("softwareLicenses")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *PVMInstance) validateStatus(formats strfmt.Registry) error {
 
 	if err := validate.Required("status", "body", m.Status); err != nil {
@@ -395,16 +427,9 @@ func (m *PVMInstance) validateStatus(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PVMInstance) validateSysType(formats strfmt.Registry) error {
+func (m *PVMInstance) validateStorageType(formats strfmt.Registry) error {
 
-	if swag.IsZero(m.SysType) { // not required
-		return nil
-	}
-
-	if err := m.SysType.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("sysType")
-		}
+	if err := validate.Required("storageType", "body", m.StorageType); err != nil {
 		return err
 	}
 

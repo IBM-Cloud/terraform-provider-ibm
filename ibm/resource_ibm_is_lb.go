@@ -55,9 +55,10 @@ func resourceIBMISLB() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			isLBName: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: false,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     false,
+				ValidateFunc: validateISName,
 			},
 
 			isLBType: {

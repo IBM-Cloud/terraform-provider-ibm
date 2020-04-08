@@ -31,11 +31,22 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - The unique identifier for this instance.
+* `memory` - The memory of the instance.
+* `processors` - The processors of the instance.
+* `status` - The status of the instance.
+* `proctype` - The proctype of the instance.
+* `volumes` - The list of the volumes attached to the instance.
+* `health_status` - The health status of the instance.
+* `state` - The state of the instance.
+* `min_processors` - Minimum number of processors that were  allocated (for resize)
+* `min_memory` - Minimum memory  that was allocated (for resize)
+* `max_processors` - Maximumx number of processors that can be allocated (for resize) without a shutdown/reboot of the lpar
+* `max_memory` - Maximum amount of memory that can be allocated (for resize) without a shutdown/reboot of the lpar
 * `addresses` - The addresses associated with this instance.  Nested `addresses` blocks have the following structure:
 	* `ip` - IP of the instance.
   * `macaddress` - The macaddress of the instance.
-  * `networkid` - The networkID of the instance.
-  * `networkname` - The network name of the instance.
+  * `network_id` - The networkID of the instance.
+  * `network_name` - The network name of the instance.
   * `type` - The type of the network
-  * `externalip` - The externalIP address of the instance.
-* `state` - The state of the instance.
+  * `external_ip` - The externalIP address of the instance.
+

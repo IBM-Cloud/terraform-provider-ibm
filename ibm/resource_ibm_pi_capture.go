@@ -63,7 +63,7 @@ func resourceIBMPICapture() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "List of Regions to use",
-				ValidateFunc: validateAllowedStringValue([]string{"us-south", "us-east"}),
+				ValidateFunc: validateAllowedStringValue([]string{"us-south", "us-east", "us-de"}),
 			},
 
 			helpers.PIInstanceCaptureCloudStorageAccessKey: {
@@ -102,6 +102,11 @@ func resourceIBMPICaptureCreate(d *schema.ResourceData, meta interface{}) error 
 
 	}
 
+	cloudstorageregion := d.Get(helpers.PIInstanceCaptureCloudStorageRegion).(string)
+	if cloudstorageregion == "" {
+		log.Printf("CloudStorageRegion is not provided")
+	}
+
 	client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
 
 	body := &models.PVMInstanceCapture{
@@ -109,8 +114,8 @@ func resourceIBMPICaptureCreate(d *schema.ResourceData, meta interface{}) error 
 		CaptureName:           ptrToString(capturename),
 		CaptureVolumeIds:      nil,
 		CloudStorageAccessKey: "",
-		CloudStorageImagePath: "",
-		CloudStorageRegion:    nil,
+		CloudStorageImagePath: cloudstorageImagePath,
+		//CloudStorageRegion:   ptrToString(cloudstorageregion),
 		CloudStorageSecretKey: "",
 	}
 

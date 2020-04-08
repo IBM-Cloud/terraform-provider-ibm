@@ -27,6 +27,7 @@ The following arguments are supported:
 * `name` - (Required, string) The user-defined name for this key.
 * `public_key` - (Required, Forces new resource, string) The public SSH key.
 * `resource_group` - (Optional, Forces new resource, string) The resource group ID where the SSH key to be created.
+* `tags` - (Optional, array of strings) Tags associated with the SSH Key.
 
 ## Attribute Reference
 

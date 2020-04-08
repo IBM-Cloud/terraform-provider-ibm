@@ -318,17 +318,25 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	infraPermissions := getInfraPermissions(d, meta)
+	inviteUserPayload := v2.UserInvite{}
+	log.Println(inviteUserPayload)
+	inviteUserPayload.Users = users
+	if len(accessGroups) != 0 {
+		inviteUserPayload.AccessGroup = accessGroups
+	}
+	if len(accessPolicies) != 0 {
+		inviteUserPayload.IAMPolicy = accessPolicies
+	}
+
+	if infraPermissions := getInfraPermissions(d, meta); len(infraPermissions) != 0 {
+		inviteUserPayload.InfrastructureRoles = &v2.InfraPermissions{Permissions: infraPermissions}
+	}
 	orgRoles, err := getCloudFoundryRoles(d, meta)
 	if err != nil {
 		return err
 	}
-	inviteUserPayload := v2.UserInvite{
-		Users:               users,
-		AccessGroup:         accessGroups,
-		IAMPolicy:           accessPolicies,
-		InfrastructureRoles: v2.InfraPermissions{Permissions: infraPermissions},
-		OrganizationRoles:   orgRoles,
+	if len(orgRoles) != 0 {
+		inviteUserPayload.OrganizationRoles = orgRoles
 	}
 
 	accountID, err := getAccountID(d, meta)
@@ -424,14 +432,21 @@ func resourceIBMIAMUpdateUserProfile(d *schema.ResourceData, meta interface{}) e
 				return err
 			}
 
-			inviteUserPayload := v2.UserInvite{
-				Users:               users,
-				AccessGroup:         accessGroups,
-				IAMPolicy:           accessPolicies,
-				InfrastructureRoles: v2.InfraPermissions{Permissions: infraPermissions},
-				OrganizationRoles:   orgRoles,
-			}
+			inviteUserPayload := v2.UserInvite{}
 
+			inviteUserPayload.Users = users
+			if len(accessGroups) != 0 {
+				inviteUserPayload.AccessGroup = accessGroups
+			}
+			if len(accessPolicies) != 0 {
+				inviteUserPayload.IAMPolicy = accessPolicies
+			}
+			if len(infraPermissions) != 0 {
+				inviteUserPayload.InfrastructureRoles = &v2.InfraPermissions{Permissions: infraPermissions}
+			}
+			if len(orgRoles) != 0 {
+				inviteUserPayload.OrganizationRoles = orgRoles
+			}
 			_, InviteUserError := Client.InviteUsers(accountID, inviteUserPayload)
 			if InviteUserError != nil {
 				return InviteUserError
@@ -513,7 +528,7 @@ func resourceIBMIAMGetUserProfileExists(d *schema.ResourceData, meta interface{}
 			}
 		}
 		if !isFound {
-			return false, fmt.Errorf("Didn't find the user : %s", user)
+			return false, nil
 		}
 	}
 	return true, nil

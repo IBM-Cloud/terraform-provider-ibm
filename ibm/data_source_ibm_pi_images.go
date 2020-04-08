@@ -5,7 +5,7 @@ import (
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"log"
+
 	//"fmt"
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -41,19 +41,19 @@ func dataSourceIBMPIImages() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"image_id": {
+						"id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"image_name": {
+						"name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"image_href": {
+						"href": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"image_state": {
+						"state": {
 							Type:     schema.TypeString,
 							Computed: true},
 					},
@@ -90,15 +90,14 @@ func dataSourceIBMPIImagesAllRead(d *schema.ResourceData, meta interface{}) erro
 }
 
 func flattenStockImages(list []*models.ImageReference) []map[string]interface{} {
-	log.Printf("Calling the flattenstockImages method and the size is %d", len(list))
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
 
 		l := map[string]interface{}{
-			"image_id":    *i.ImageID,
-			"image_state": *i.State,
-			"image_href":  *i.Href,
-			"image_name":  *i.Name,
+			"id":    *i.ImageID,
+			"state": *i.State,
+			"href":  *i.Href,
+			"name":  *i.Name,
 		}
 
 		result = append(result, l)

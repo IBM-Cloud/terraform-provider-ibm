@@ -21,6 +21,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"
+
 	//"github.com/IBM-Cloud/bluemix-go/crn"
 	"github.com/go-openapi/strfmt"
 )
@@ -45,6 +46,7 @@ type IBMPISession struct {
 	Timeout     time.Duration
 	UserAccount string
 	Region      string
+	Zone        string
 }
 
 func powerJSONConsumer() runtime.Consumer {
@@ -91,11 +93,12 @@ region : Obtained from the terraform template. Every template /resource will be 
 timeout:
 useraccount:
 */
-func New(iamtoken, region string, debug bool, timeout time.Duration, useraccount string) (*IBMPISession, error) {
+func New(iamtoken, region string, debug bool, timeout time.Duration, useraccount string, zone string) (*IBMPISession, error) {
 	session := &IBMPISession{
 		IAMToken:    iamtoken,
 		UserAccount: useraccount,
 		Region:      region,
+		Zone:        zone,
 	}
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: false}
@@ -115,7 +118,7 @@ func NewAuth(sess *IBMPISession, PowerInstanceId string) runtime.ClientAuthInfoW
 	log.Printf("Calling the New Auth Method in the IBMPower Session Code")
 	//var generatedCRN := crn.New(
 	//var region :=
-	var crndata = crnBuilder(PowerInstanceId, sess.UserAccount, sess.Region)
+	var crndata = crnBuilder(PowerInstanceId, sess.UserAccount, sess.Region, sess.Zone)
 	return runtime.ClientAuthInfoWriterFunc(func(r runtime.ClientRequest, _ strfmt.Registry) error {
 		if err := r.SetHeaderParam("Authorization", sess.IAMToken); err != nil {
 			return err
@@ -134,11 +137,17 @@ func BearerTokenAndCRN(session *IBMPISession, crn string) runtime.ClientAuthInfo
 	})
 }
 
-func crnBuilder(powerinstance, useraccount, region string) string {
+func crnBuilder(powerinstance, useraccount, region string, zone string) string {
 	log.Printf("Calling the crn constructor that is to be passed back to the caller  %s", useraccount)
-	log.Printf("the region is %s", region)
+	log.Printf("the region is %s and the zone is  %s", region, zone)
+	var crnData string
 	//var crnData = crnString + separator + version + separator + service + separator + serviceType + separator + offering + separator + "us-south" + separator + "a" + serviceInstanceSeparator + useraccount + separator + powerinstance + separator + separator
-	var crnData = crnString + separator + version + separator + service + separator + serviceType + separator + offering + separator + region + separator + "a" + serviceInstanceSeparator + useraccount + separator + powerinstance + separator + separator
+	if zone == "" {
+		crnData = crnString + separator + version + separator + service + separator + serviceType + separator + offering + separator + region + separator + "a" + serviceInstanceSeparator + useraccount + separator + powerinstance + separator + separator
+	} else {
+		crnData = crnString + separator + version + separator + service + separator + serviceType + separator + offering + separator + zone + separator + "a" + serviceInstanceSeparator + useraccount + separator + powerinstance + separator + separator
+	}
+
 	log.Printf("the crndata is ... %s ", crnData)
 	return crnData
 }

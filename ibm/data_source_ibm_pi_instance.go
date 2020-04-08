@@ -1,8 +1,6 @@
 package ibm
 
 import (
-	_ "fmt"
-
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -29,59 +27,23 @@ func dataSourceIBMPIInstance() *schema.Resource {
 			},
 
 			// Computed Attributes
-			"volumeid": {
-				Type:     schema.TypeString,
+			"volumes": {
+				Type:     schema.TypeList,
 				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"state": {
 				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"replicationpolicy": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"replicants": {
-				Type:     schema.TypeInt,
 				Computed: true,
 			},
 			"processors": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"shareable": {
-				Type:     schema.TypeBool,
-				Computed: true,
-			},
-			"name": {
+			"health_status": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"healthstatus": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"health": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"lastupdate": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"status": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"reason": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-			},
-
 			"addresses": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -95,11 +57,11 @@ func dataSourceIBMPIInstance() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"networkid": {
+						"network_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"networkname": {
+						"network_name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -107,7 +69,7 @@ func dataSourceIBMPIInstance() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"externalip": {
+						"external_ip": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -125,6 +87,23 @@ func dataSourceIBMPIInstance() *schema.Resource {
 
 			"status": {
 				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"minproc": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"minmem": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"maxproc": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"maxmem": {
+				Type:     schema.TypeInt,
 				Computed: true,
 			},
 		},
@@ -154,7 +133,11 @@ func dataSourceIBMPIInstancesRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set("processors", powervmdata.Processors)
 	d.Set("status", powervmdata.Status)
 	d.Set("proctype", powervmdata.ProcType)
-	d.Set("volumeid", powervmdata.VolumeIds)
+	d.Set("volumes", powervmdata.VolumeIds)
+	d.Set("minproc", powervmdata.Minproc)
+	d.Set("minmem", powervmdata.Minmem)
+	d.Set("maxproc", powervmdata.Maxproc)
+	d.Set("maxmem", powervmdata.Maxmem)
 
 	if powervmdata.Addresses != nil {
 		pvmaddress := make([]map[string]interface{}, len(powervmdata.Addresses))
@@ -162,11 +145,11 @@ func dataSourceIBMPIInstancesRead(d *schema.ResourceData, meta interface{}) erro
 
 			p := make(map[string]interface{})
 			p["ip"] = pvmip.IP
-			p["networkname"] = pvmip.NetworkName
-			p["networkid"] = pvmip.NetworkID
+			p["network_name"] = pvmip.NetworkName
+			p["network_id"] = pvmip.NetworkID
 			p["macaddress"] = pvmip.MacAddress
 			p["type"] = pvmip.Type
-			p["externalip"] = pvmip.ExternalIP
+			p["external_ip"] = pvmip.ExternalIP
 			pvmaddress[i] = p
 		}
 		d.Set("addresses", pvmaddress)
@@ -175,7 +158,7 @@ func dataSourceIBMPIInstancesRead(d *schema.ResourceData, meta interface{}) erro
 
 	if powervmdata.Health != nil {
 
-		d.Set("healthstatus", powervmdata.Health.Status)
+		d.Set("health_status", powervmdata.Health.Status)
 
 	}
 

@@ -22,8 +22,8 @@ type PVMInstanceUpdateResponse struct {
 	// Amount of memory allocated (in GB)
 	Memory float64 `json:"memory,omitempty"`
 
-	// Processor type (dedicated or shared)
-	// Enum: [dedicated shared]
+	// Processor type (dedicated, shared, capped)
+	// Enum: [dedicated shared capped]
 	ProcType string `json:"procType,omitempty"`
 
 	// Number of processors allocated
@@ -54,7 +54,7 @@ var pVmInstanceUpdateResponseTypeProcTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["dedicated","shared"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["dedicated","shared","capped"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -69,6 +69,9 @@ const (
 
 	// PVMInstanceUpdateResponseProcTypeShared captures enum value "shared"
 	PVMInstanceUpdateResponseProcTypeShared string = "shared"
+
+	// PVMInstanceUpdateResponseProcTypeCapped captures enum value "capped"
+	PVMInstanceUpdateResponseProcTypeCapped string = "capped"
 )
 
 // prop value enum
