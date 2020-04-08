@@ -40,23 +40,20 @@ func resourceIBMISIKEPolicy() *schema.Resource {
 			},
 
 			isIKEAuthenticationAlg: {
-				Type:     schema.TypeString,
-				Required: true,
-				//ValidateFunc: validateAllowedStringValue([]string{"md5", "sha1", "sha256"}),
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: InvokeValidator("ibm_is_ike_policy", isIKEAuthenticationAlg),
 			},
 
 			isIKEEncryptionAlg: {
-				Type:     schema.TypeString,
-				Required: true,
-				//ValidateFunc: validateAllowedStringValue([]string{"3des", "aes128", "aes256"}),
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: InvokeValidator("ibm_is_ike_policy", isIKEEncryptionAlg),
 			},
 
 			isIKEDhGroup: {
-				Type:     schema.TypeInt,
-				Required: true,
-				//ValidateFunc: validateAllowedIntValue([]int{2, 5, 14}),
+				Type:         schema.TypeInt,
+				Required:     true,
 				ValidateFunc: InvokeValidator("ibm_is_ike_policy", isIKEDhGroup),
 			},
 
@@ -75,9 +72,8 @@ func resourceIBMISIKEPolicy() *schema.Resource {
 			},
 
 			isIKEVERSION: {
-				Type:     schema.TypeInt,
-				Optional: true,
-				//ValidateFunc: validateAllowedIntValue([]int{1, 2}),
+				Type:         schema.TypeInt,
+				Optional:     true,
 				ValidateFunc: InvokeValidator("ibm_is_ike_policy", isIKEVERSION),
 			},
 

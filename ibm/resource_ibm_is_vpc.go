@@ -59,8 +59,7 @@ func resourceIBMISVPC() *schema.Resource {
 				Optional:         true,
 				Default:          "auto",
 				DiffSuppressFunc: applyOnce,
-				//ValidateFunc:     validateAllowedStringValue([]string{"auto", "manual"}),
-				ValidateFunc: InvokeValidator("ibm_is_vpc", isVPCAddressPrefixManagement),
+				ValidateFunc:     InvokeValidator("ibm_is_vpc", isVPCAddressPrefixManagement),
 			},
 
 			isVPCDefaultNetworkACL: {

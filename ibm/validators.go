@@ -973,8 +973,6 @@ const (
 	TypeInt
 	TypeFloat
 	TypeString
-	//TypeStringList
-	//TypeIntList
 )
 
 // Type of constraints required for validation
@@ -1082,7 +1080,6 @@ func invokeValidatorInternal(schema ValidateSchema) schema.SchemaValidateFunc {
 		return validation.IntAtMost(maxValue.(int))
 	case ValidateAllowedStringValue:
 		allowedValues := schema.GetValue(AllowedValues)
-		log.Printf("[DEBUG] invokeValidatorInternal: ValidateAllowedStringValue passing values %#v", allowedValues.([]string))
 		return validateAllowedStringValue(allowedValues.([]string))
 	case StringLenBetween:
 		return validation.StringLenBetween(schema.MinValueLength, schema.MaxValueLength)
@@ -1090,7 +1087,6 @@ func invokeValidatorInternal(schema ValidateSchema) schema.SchemaValidateFunc {
 		return nil
 	case ValidateAllowedIntValue:
 		allowedValues := schema.GetValue(AllowedValues)
-		log.Printf("[DEBUG] invokeValidatorInternal:ValidateAllowedIntValue passing values %#v", allowedValues)
 		return validateAllowedIntValue(allowedValues.([]int))
 	default:
 		return nil
@@ -1122,11 +1118,6 @@ func (vs ValidateSchema) GetValue(valueConstraint ValueConstraintType) interface
 		}
 		return b
 	case TypeInt:
-		/*i, err := strconv.Atoi(valueToConvert)
-		if err != nil {
-			return vs.Zero()
-		}
-		return i*/
 		// Convert comma separated string to array
 		var arr2 []int
 		arr1 := strings.Split(valueToConvert, ",")
@@ -1137,7 +1128,6 @@ func (vs ValidateSchema) GetValue(valueConstraint ValueConstraintType) interface
 			}
 			arr2 = append(arr2, e)
 		}
-		log.Printf("[DEBUG] TypeInt converted values is %#v", arr2)
 		return arr2
 	case TypeFloat:
 		f, err := strconv.ParseFloat(valueToConvert, 32)
@@ -1152,29 +1142,7 @@ func (vs ValidateSchema) GetValue(valueConstraint ValueConstraintType) interface
 		for i, ele := range arr {
 			arr[i] = strings.TrimSpace(ele)
 		}
-		log.Printf("[DEBUG] TypeString converted values is %#v", arr)
 		return arr
-	/*case TypeStringList:
-		// Convert comma separated string to array
-		arr := strings.Split(valueToConvert, ",")
-		for i, ele := range arr {
-			arr[i] = strings.TrimSpace(ele)
-		}
-		log.Printf("[DEBUG] TypeList converted values is %#v", arr)
-		return arr
-	case TypeIntList:
-		// Convert comma separated string to array
-		var arr2 []int
-		arr1 := strings.Split(valueToConvert, ",")
-		for _, ele := range arr1 {
-			e, err := strconv.Atoi(strings.TrimSpace(ele))
-			if err != nil {
-				e = 0
-			}
-			arr2 = append(arr2, e)
-		}
-		log.Printf("[DEBUG] TypeIntList converted values is %#v", arr2)
-		return arr2*/
 	default:
 		panic(fmt.Sprintf("unknown type %s", vs.Type))
 	}
