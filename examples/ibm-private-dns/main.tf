@@ -3,7 +3,7 @@ variable "ibmcloud_api_key" {
 }
 
 data "ibm_resource_group" "rg" {
-  name = "VNF VPC Development"
+  name = "default"
 }
 
 provider "ibm" {
