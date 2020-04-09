@@ -360,7 +360,8 @@ func Provider() terraform.ResourceProvider {
 			"ibm_pi_image":         resourceIBMPIImage(),
 
 			//Private DNS related resources
-			"ibm_dns_zone": resourceIBMPrivateDNSZone(),
+			"ibm_dns_zone":              resourceIBMPrivateDNSZone(),
+			"ibm_dns_permitted_network": resourceIBMPrivateDNSPermittedNetwork(),
 		},
 
 		ConfigureFunc: providerConfigure,

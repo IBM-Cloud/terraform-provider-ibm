@@ -10,87 +10,97 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccIBMPrivateDNSZone_Basic(t *testing.T) {
+func TestAccIBMPrivateDNSPermittedNetwork_Basic(t *testing.T) {
 	var resultprivatedns string
-	name := fmt.Sprintf("testpdnszone%s.com", acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
+	name := fmt.Sprintf("testpdnspn%s.com", acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckIBMPrivateDNSZoneDestroy,
+		CheckDestroy: testAccCheckIBMPrivateDNSPermittedNetworkDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPrivateDNSZoneBasic(name),
+				Config: testAccCheckIBMPrivateDNSPermittedNetworkBasic(name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPrivateDNSZoneExists("ibm_dns_zone.test-pdns-zone-zone", resultprivatedns),
-					resource.TestCheckResourceAttr("ibm_dns_zone.test-pdns-zone-zone", "name", name),
+					testAccCheckIBMPrivateDNSPermittedNetworkExists("ibm_dns_permitted_network.test-pdns-permitted-network-nw", resultprivatedns),
 				),
 			},
 		},
 	})
 }
 
-func TestAccIBMPrivateDNSZoneImport(t *testing.T) {
+func TestAccIBMPrivateDNSPermittedNetworkImport(t *testing.T) {
 	var resultprivatedns string
 	name := fmt.Sprintf("testpdnszone%s.com", acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckIBMPrivateDNSZoneDestroy,
+		CheckDestroy: testAccCheckIBMPrivateDNSPermittedNetworkDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPrivateDNSZoneBasic(name),
+				Config: testAccCheckIBMPrivateDNSPermittedNetworkBasic(name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPrivateDNSZoneExists("ibm_dns_zone.test-pdns-zone-zone", resultprivatedns),
-					resource.TestCheckResourceAttr("ibm_dns_zone.test-pdns-zone-zone", "name", name),
+					testAccCheckIBMPrivateDNSPermittedNetworkExists("ibm_dns_permitted_network.test-pdns-permitted-network-nw", resultprivatedns),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_dns_zone.test-pdns-zone-zone",
+				ResourceName:      "ibm_dns_permitted_network.test-pdns-permitted-network-nw",
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"type"},
+					"vpc_crn"},
 			},
 		},
 	})
 }
 
-func testAccCheckIBMPrivateDNSZoneBasic(name string) string {
+func testAccCheckIBMPrivateDNSPermittedNetworkBasic(name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "rg" {
-		name = "default"
+		name = "VNF VPC Development"
 	}
-	resource "ibm_resource_instance" "test-pdns-zone-instance" {
-		name = "test-pdns-zone-instance"
+	resource "ibm_is_vpc" "test-pdns-permitted-network" {
+		name = "test-pdns-permitted-network"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_resource_instance" "test-pdns-permitted-network-instance" {
+		name = "test-pdns-permitted-network-instance"
 		resource_group_id = data.ibm_resource_group.rg.id
 		location = "global"
 		service = "dns-svcs"
 		plan = "free-plan"
 	}
-	resource "ibm_dns_zone" "test-pdns-zone-zone" {
-		depends_on = ["ibm_resource_instance.test-pdns-zone-instance"]
+	resource "ibm_dns_zone" "test-pdns-permitted-network-zone" {
 		name = "%s"
-		instance_id = ibm_resource_instance.test-pdns-zone-instance.guid
+		instance_id = ibm_resource_instance.test-pdns-permitted-network-instance.guid
 		description = "testdescription"
 		label = "testlabel"
+	}
+	resource "ibm_dns_permitted_network" "test-pdns-permitted-network-nw" {
+		instance_id = ibm_resource_instance.test-pdns-permitted-network-instance.guid
+		zone_id = ibm_dns_zone.test-pdns-permitted-network-zone.zone_id
+		vpc_crn = ibm_is_vpc.test-pdns-permitted-network.resource_crn
+		type = "vpc"
 	}
 	  `, name)
 }
 
-func testAccCheckIBMPrivateDNSZoneDestroy(s *terraform.State) error {
+func testAccCheckIBMPrivateDNSPermittedNetworkDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_dns_zone" {
+		if rs.Type != "ibm_permitted_network" {
 			continue
 		}
+
 		pdnsClient, err := testAccProvider.Meta().(ClientSession).PrivateDnsClientSession()
 		if err != nil {
 			return err
 		}
+
 		parts := rs.Primary.ID
 		partslist := strings.Split(parts, "/")
 
-		getZoneOptions := pdnsClient.NewGetDnszoneOptions(partslist[0], partslist[1])
-		_, res, err := pdnsClient.GetDnszone(getZoneOptions)
+		getPermittedNetworkOptions := pdnsClient.NewGetPermittedNetworkOptions(partslist[0], partslist[1], partslist[2])
+		_, res, err := pdnsClient.GetPermittedNetwork(getPermittedNetworkOptions)
+
 		if err != nil &&
 			res.StatusCode != 403 &&
 			!strings.Contains(err.Error(), "The service instance was disabled, any access is not allowed.") {
@@ -101,22 +111,24 @@ func testAccCheckIBMPrivateDNSZoneDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMPrivateDNSZoneExists(n string, result string) resource.TestCheckFunc {
+func testAccCheckIBMPrivateDNSPermittedNetworkExists(n string, result string) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
 		}
+
 		pdnsClient, err := testAccProvider.Meta().(ClientSession).PrivateDnsClientSession()
 		if err != nil {
 			return err
 		}
+
 		parts := rs.Primary.ID
 		partslist := strings.Split(parts, "/")
 
-		getZoneOptions := pdnsClient.NewGetDnszoneOptions(partslist[0], partslist[1])
-		r, res, err := pdnsClient.GetDnszone(getZoneOptions)
+		getPermittedNetworkOptions := pdnsClient.NewGetPermittedNetworkOptions(partslist[0], partslist[1], partslist[2])
+		r, res, err := pdnsClient.GetPermittedNetwork(getPermittedNetworkOptions)
 
 		if err != nil &&
 			res.StatusCode != 403 &&
