@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM: ibm_cis_firewall"
 sidebar_current: "docs-ibm-cis-firewall"
 description: |-
-  Provides a IBM Firewall resource.
+  Provides a IBM CIS Firewall resource.
 ---
 
 # ibm_cis_firewall
