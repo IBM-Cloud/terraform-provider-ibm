@@ -60,7 +60,7 @@ func TestAccIBMPrivateDNSZoneImport(t *testing.T) {
 func testAccCheckIBMPrivateDNSZoneBasic(name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "rg" {
-		name = "VNF VPC Development"
+		name = "default"
 	}
 	resource "ibm_resource_instance" "test-pdns-zone-instance" {
 		name = "test-pdns-zone-instance"
