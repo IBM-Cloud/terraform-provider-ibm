@@ -37,6 +37,8 @@ github.com/IBM-Cloud/power-go-client v1.0.0 h1:iy7ElG6CmCYOeRal07JMGtIvby0qOKBPP
 github.com/IBM-Cloud/power-go-client v1.0.0/go.mod h1:+mOxjyLeLIloR4EMHTpiDbN+FilZpiVHTwu5eqi+cbI=
 github.com/IBM/apigateway-go-sdk v0.0.0-20200319174228-a4e4a3b46d9e h1:LiWEe8x+iAktPSEiJ4HNhOqrvLZvpicgGnGIi8QuEfI=
 github.com/IBM/apigateway-go-sdk v0.0.0-20200319174228-a4e4a3b46d9e/go.mod h1:sNVpGpUv3jvA2dQbRPFjVrRFNdmnQrf2QTtKa/c2XrI=
+github.com/IBM/dns-svcs-go-sdk v0.0.1 h1:EjyRT0x2E44VurkopovedB5elycKcJ7mxDX8SCgvduc=
+github.com/IBM/dns-svcs-go-sdk v0.0.1/go.mod h1:Oh8Xtdezmvp6Tfc0u7t8mQMP/kHmf1SvCDr3WExKsNc=
 github.com/IBM/go-sdk-core/v3 v3.2.4 h1:WKYJYYKlZnw1y/gM+Qbf5EQVAL9xaoD54+ooJZz/iBQ=
 github.com/IBM/go-sdk-core/v3 v3.2.4/go.mod h1:lk9eOzNbNltPf3CBpcg1Ewkhw4qC3u2QCCKDRsUA2M0=
 github.com/IBM/ibm-cos-sdk-go v1.2.0 h1:oJG2eWmAhmz3XAkQLsmQweT7hmxoM3jKQkwLBZz6b5o=
@@ -306,6 +308,7 @@ github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpO
 github.com/jmespath/go-jmespath v0.0.0-20160202185014-0b12d6b521d8/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af h1:pmfjZENx5imkbgOkpRUYLnmbU7UEFbjtDA2hxJ1ichM=
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=
+github.com/joho/godotenv v1.3.0/go.mod h1:7hK45KPybAkOC6peb+G5yklZfMxEjkZhHbwpqxOKXbg=
 github.com/jonboulle/clockwork v0.1.0/go.mod h1:Ii8DK3G1RaLaWxj9trq07+26W01tbo22gdxWY5EU2bo=
 github.com/joyent/triton-go v0.0.0-20180313100802-d8f9c0314926/go.mod h1:U+RSyWxWd04xTqnuOQxnai7XGS2PrPY2cfGoDKtMHjA=
 github.com/json-iterator/go v1.1.5/go.mod h1:+SdeFBvtyEkXs7REEP0seUULqWtbJapLOCVDaaPEHmU=
@@ -389,6 +392,7 @@ github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d/go.mod h1:YUTz3bUH
 github.com/oklog/run v1.0.0 h1:Ru7dDtJNOyC66gQ5dQmaCa0qIsAUFY3sFpK1Xk8igrw=
 github.com/oklog/run v1.0.0/go.mod h1:dlhp/R75TPv97u0XWUtDeV/lRKWPKSdTuV0TZvrmrQA=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
+github.com/onsi/ginkgo v1.10.3/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.12.0/go.mod h1:oUhWkIvk5aDxtKvDDuw8gItl8pKl42LzjC9KZE0HfGg=
 github.com/onsi/gomega v1.7.1/go.mod h1:XdKZgCCFLUoM/7CFJVPcG8C1xQ1AJ0vpAezJrB7JYyY=
 github.com/onsi/gomega v1.9.0/go.mod h1:Ho0h+IUsWyvy1OpqCwxlQ/21gkhVunqlU8fDGcoTdcA=

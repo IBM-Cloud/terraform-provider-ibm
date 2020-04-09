@@ -46,6 +46,7 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
+	dns "github.com/IBM/dns-svcs-go-sdk/dnssvcsv1"
 )
 
 //RetryAPIDelay ...
@@ -160,6 +161,7 @@ type ClientSession interface {
 	CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error)
 	keyProtectAPI() (*kp.Client, error)
 	APIGateway() (*apigateway.ApiGatewayControllerApiV1, error)
+	PrivateDnsClientSession() (*dns.DnsSvcsV1, error)
 }
 
 type clientSession struct {
@@ -243,6 +245,9 @@ type clientSession struct {
 
 	kpErr error
 	kpAPI *kp.API
+
+	pDnsClient *dns.DnsSvcsV1
+	pDnsErr    error
 
 	bluemixSessionErr error
 }
@@ -387,6 +392,12 @@ func (sess clientSession) IBMPISession() (*ibmpisession.IBMPISession, error) {
 	return sess.ibmpiSession, sess.powerConfigErr
 }
 
+// Private DNS Service
+
+func (sess clientSession) PrivateDnsClientSession() (*dns.DnsSvcsV1, error) {
+	return sess.pDnsClient, sess.pDnsErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -427,6 +438,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.userManagementErr = errEmptyBluemixCredentials
 		session.certManagementErr = errEmptyBluemixCredentials
 		session.apigatewayErr = errEmptyBluemixCredentials
+		session.pDnsErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -625,6 +637,18 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	session.ibmpiSession = ibmpisession
+
+	dnsOptions := &dns.DnsSvcsV1Options{
+		URL: envFallBack([]string{"IBMCLOUD_PRIVATE_DNS_API_ENDPOINT"}, "https://api.dns-svcs.cloud.ibm.com/v1"),
+		Authenticator: &core.BearerTokenAuthenticator{
+			BearerToken: sess.BluemixSession.Config.IAMAccessToken,
+		},
+	}
+
+	session.pDnsClient, session.pDnsErr = dns.NewDnsSvcsV1(dnsOptions)
+	if session.pDnsErr != nil {
+		session.pDnsErr = fmt.Errorf("Error occured while configuring PrivateDNS Service: %s", err)
+	}
 
 	return session, nil
 }
