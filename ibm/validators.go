@@ -5,14 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"log"
 	"net"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	homedir "github.com/mitchellh/go-homedir"
+	"github.com/mitchellh/go-homedir"
 	gouuid "github.com/satori/go.uuid"
 
 	"github.com/IBM-Cloud/bluemix-go/helpers"
@@ -47,8 +46,6 @@ func validateServiceTags(v interface{}, k string) (ws []string, errors []error) 
 func validateAllowedStringValue(validValues []string) schema.SchemaValidateFunc {
 	return func(v interface{}, k string) (ws []string, errors []error) {
 		input := v.(string)
-		log.Printf("[DEBUG] validateAllowedStringValue begin: input is %#v",
-			input)
 		existed := false
 		for _, s := range validValues {
 			if s == input {
@@ -56,8 +53,6 @@ func validateAllowedStringValue(validValues []string) schema.SchemaValidateFunc 
 				break
 			}
 		}
-		log.Printf("[DEBUG] validateAllowedStringValue: input is %#v, validValues is %#v, existed is %#v",
-			input, validValues, existed)
 		if !existed {
 			errors = append(errors, fmt.Errorf(
 				"%q must contain a value from %#v, got %q",
@@ -69,11 +64,8 @@ func validateAllowedStringValue(validValues []string) schema.SchemaValidateFunc 
 }
 
 func validateAllowedIntValue(is []int) schema.SchemaValidateFunc {
-	log.Printf("[DEBUG] validateAllowedIntValue here....")
 	return func(v interface{}, k string) (ws []string, errors []error) {
 		value := v.(int)
-		log.Printf("[DEBUG] validateAllowedIntValue begin: value is %#v",
-			value)
 		existed := false
 		for _, i := range is {
 			if i == value {
@@ -81,8 +73,6 @@ func validateAllowedIntValue(is []int) schema.SchemaValidateFunc {
 				break
 			}
 		}
-		log.Printf("[DEBUG] validateAllowedIntValue: value is %#v, is %#v, existed is %#v",
-			value, is, existed)
 		if !existed {
 			errors = append(errors, fmt.Errorf(
 				"%q must contain a valid int value should in array %#v, got %q",
@@ -949,7 +939,6 @@ func validateLBListenerConnectionLimit(v interface{}, k string) (ws []string, er
 	return
 }
 
-
 func validateISName(v interface{}, k string) (ws []string, errors []error) {
 	name := v.(string)
 	acceptedcharacters, _ := regexp.MatchString(`^[a-z][-a-z0-9]*$`, name)
@@ -979,7 +968,6 @@ func validateISName(v interface{}, k string) (ws []string, errors []error) {
 	}
 	return
 }
-
 
 // ValidateFunc is honored only when the schema's Type is set to TypeInt,
 // TypeFloat, TypeString, TypeBool, or TypeMap. It is ignored for all other types.
@@ -1209,10 +1197,6 @@ func (vs ValidateSchema) Zero() interface{} {
 		return 0.0
 	case TypeString:
 		return make([]int, 0)
-	/*case TypeStringList:
-		return make([]string, 0)
-	case TypeIntList:
-		return make([]int, 0)*/
 	default:
 		panic(fmt.Sprintf("unknown type %s", vs.Type))
 	}
