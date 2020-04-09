@@ -37,19 +37,16 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - The unique identifier of the private DNS zone.
+* `id` - The unique identifier of the private DNS zone. The id is composed of <instance_id>/<zone_id>.
+* `zone_id` - The unique identifier of the private DNS zone.
 * `created_on` - The time (Created On) of the DNS zone. 
 * `modified_on` - The time (Modified On) of the DNS zone.
-* `instance_id` - The instance id of the DNS instance on which zone created. 
-* `name` - The name of the DNS zone created.
-* `description` - The text describing the purpose of a DNS zone.
 * `state` - The state of the DNS zone.
-* `label` - The label of a DNS zone.
 
 ## Import
 
-ibm_dns_zone can be imported using zone id, eg
+ibm_dns_zone can be imported using private DNS instance ID and zone ID, eg
 
 ```
-$ terraform import ibm_dns_zone.example 5ffda12064634723b079acdb018ef308
+$ terraform import ibm_dns_zone.example 6ffda12064634723b079acdb018ef308/5ffda12064634723b079acdb018ef308
 ```
