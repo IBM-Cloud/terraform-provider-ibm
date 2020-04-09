@@ -123,6 +123,7 @@ The following arguments are supported:
 
 * `name` - (Required, string) The name of the network ACL.
 * `vpc` - (Optional, Forces new resource, string) The VPC Id. This is a Required field and to be set only when the generation parameter is `2`
+`resource_group` - (Optional, Forces new resource, string) The resource group ID where the Network ACL is to be created. Should be set only when the generation parameter is `2`
 * `rules` - (Optional, array)   The rules for a network ACL. The order of rules priority depends on the order of rules specified in the template.
 Nested `rules` blocks have the following structure:
 	* `name` - (Required, string) The user-defined name for this rule.
