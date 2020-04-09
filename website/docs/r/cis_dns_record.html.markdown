@@ -3,12 +3,12 @@ layout: "ibm"
 page_title: "IBM: ibm_cis_dns_record"
 sidebar_current: "docs-ibm-cis-dns-record"
 description: |-
-  Provides a IBM DNS Record resource.
+  Provides a IBM CIS DNS Record resource.
 ---
 
 # ibm_cis_dns_record
 
-Provides a IBM DNS Record resource. This resource is associated with an IBM Cloud Internet Services instance and a CIS Domain resource. 
+Provides a IBM CIS DNS Record resource. This resource is associated with an IBM Cloud Internet Services instance and a CIS Domain resource. 
 
 ## Example Usage
 
@@ -27,20 +27,22 @@ resource "ibm_cis_dns_record" "example" {
 
 The following arguments are supported:
 
-* `cis_id` - (Required) The ID of the CIS service instance
-* `domain_id` - (Required) The ID of the domain to add the DNS record to.
-* `name` - (Required) The name of the record, e.g. "www".
-* `type` - (Required) The type of the record. A,AAAA,CNAME,NS,MX,TXT,LOC,SRV,SPF,CAA. 
-* `content` - (Optional) The (string) value of the record, e.g. "192.168.127.127". Either this or `data` must be specified
-* `data` - (Optional) Map of attributes that constitute the record value. Only for LOC, CCA and SRV record types. Either this or `content` must be specified
-* `priority` - (Optional) The priority of the record
-* `proxied` - (Optional) Whether the record gets CIS's origin protection; defaults to `false`.
+* `cis_id` - (Required,string) The ID of the CIS service instance
+* `domain_id` - (Required,string) The ID of the domain to add the DNS record to.
+* `name` - (Optional,string) The name of the record, e.g. "www".
+* `type` - (Required,string) The type of the record. A,AAAA,CNAME,NS,MX,TXT,LOC,SRV,SPF,CAA. 
+* `content` - (Optional,string) The (string) value of the record, e.g. "192.168.127.127". Either this or `data` must be specified
+* `data` - (Optional,map) Map of attributes that constitute the record value. Only for LOC, CCA and SRV record types. Either this or `content` must be specified
+* `priority` - (Optional,int) The priority of the record
+* `proxied` - (Optional,bool) Whether the record gets CIS's origin protection; defaults to `false`.
+* `ttl`-(Optional,int) TTL of the record. It should be automatic(i.e ttl=1) if the record is proxied. Terraform provider takes ttl in unit seconds.Therefore, it starts with value 120.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-* `id` - The record ID
+* `id` - The ID of CIS DNS record resource
+* `record_id` - The CIS DNS record ID.
 * `name` - The FQDN of the record
 * `proxiable` - Shows whether this record can be proxied, must be true if setting `proxied=true`
 * `created_on` - The RFC3339 timestamp of when the record was created
