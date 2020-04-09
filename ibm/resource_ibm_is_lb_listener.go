@@ -26,6 +26,7 @@ const (
 	isLBListenerDeleted             = "done"
 	isLBListenerProvisioning        = "provisioning"
 	isLBListenerProvisioningDone    = "done"
+	isLBListenerID                  = "listener_id"
 )
 
 func resourceIBMISLBListener() *schema.Resource {
@@ -81,6 +82,10 @@ func resourceIBMISLBListener() *schema.Resource {
 			},
 
 			isLBListenerStatus: {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			isLBListenerID: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -194,6 +199,7 @@ func resourceIBMISLBListenerRead(d *schema.ResourceData, meta interface{}) error
 	d.Set(isLBListenerLBID, lbID)
 	d.Set(isLBListenerPort, lbListener.Port)
 	d.Set(isLBListenerProtocol, lbListener.Protocol)
+	d.Set(isLBListenerID, lbListenerID)
 
 	if lbListener.DefaultPool != nil {
 		d.Set(isLBListenerDefaultPool, lbListener.DefaultPool.ID)
