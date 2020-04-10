@@ -8,11 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
-	//"github.ibm.com/Bluemix/riaas-go-client/clients/lbaas"
-	//iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
-	//"github.ibm.com/Bluemix/riaas-go-client/riaas/client/l_baas"
-	//"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
-
 	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
 	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
 	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
@@ -177,8 +172,6 @@ func resourceIBMISLBListenerPolicyCreate(d *schema.ResourceData, meta interface{
 		return err
 	}
 
-	log.Printf("**** LB-LP: [DEBUG] LB Listener policy create ****")
-
 	//Get the Load balancer ID
 	lbID := d.Get(isLBListenerPolicyLBID).(string)
 	listenerID := d.Get(isLBListenerPolicyListenerID).(string)
@@ -230,14 +223,22 @@ func classicLbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbI
 		target = &vpcclassicv1.LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity{
 			ID: &id,
 		}
-	} else if actionChk.(string) == "redirect" && statusSet && urlSet {
-		status := statusCode.(int)
-		sc := int64(status)
-		link := url.(string)
-		target = &vpcclassicv1.LoadBalancerListenerPolicyPrototypeTargetLoadBalancerListenerPolicyRedirectURLPrototype{
-			HttpStatusCode: &sc,
-			URL:            &link,
+	} else if actionChk.(string) == "redirect" {
+
+		urlPrototype := vpcclassicv1.LoadBalancerListenerPolicyPrototypeTargetLoadBalancerListenerPolicyRedirectURLPrototype{}
+
+		if statusSet {
+			status := statusCode.(int)
+			sc := int64(status)
+			urlPrototype.HttpStatusCode = &sc
 		}
+
+		if urlSet {
+			link := url.(string)
+			urlPrototype.URL = &link
+		}
+
+		target = &urlPrototype
 	}
 
 	rulesInfo := make([]vpcclassicv1.LoadBalancerListenerPolicyRulePrototype, 0)
@@ -301,19 +302,15 @@ func classicLbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbI
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", lbID, listenerID, *(policy.ID)))
-	log.Printf(" LB-LP: Setting Load balancer Listener Policy Id to : %s", d.Id())
 
 	_, err = isWaitForClassicLbListenerPolicyAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
 	}
-
-	log.Printf("LB-LP: [INFO] Load balancer Listener : %s", d.Id())
 	return nil
 }
 
 func isWaitForClassicLbAvailable(vpc *vpcclassicv1.VpcClassicV1, id string, timeout time.Duration) (interface{}, error) {
-	log.Printf("LB-LP: Waiting for LB (%s) to be available.", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", isLBListenerProvisioning, "create_pending", "update_pending", "maintenance_pending"},
@@ -348,7 +345,6 @@ func isLbClassicRefreshFunc(vpc *vpcclassicv1.VpcClassicV1, id string) resource.
 }
 
 func isWaitForClassicLbListenerPolicyAvailable(vpc *vpcclassicv1.VpcClassicV1, id string, timeout time.Duration) (interface{}, error) {
-	log.Printf("LB-LP: Waiting for LB-LP (%s) to be available.", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", isLBListenerProvisioning, "create_pending", "update_pending", "maintenance_pending"},
@@ -399,7 +395,7 @@ func vpcClient(meta interface{}) (*vpcv1.VpcV1, error) {
 }
 
 func lbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbID, listenerID, action, name string, priority int64) error {
-	log.Printf("**** LB-LP: lbListenerPolicyCreate ****")
+
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -421,14 +417,22 @@ func lbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbID, list
 		target = &vpcv1.LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity{
 			ID: &id,
 		}
-	} else if actionChk.(string) == "redirect" && statusSet && urlSet {
-		status := statusCode.(int)
-		sc := int64(status)
-		link := url.(string)
-		target = &vpcv1.LoadBalancerListenerPolicyPrototypeTargetLoadBalancerListenerPolicyRedirectURLPrototype{
-			HttpStatusCode: &sc,
-			URL:            &link,
+	} else if actionChk.(string) == "redirect" {
+
+		urlPrototype := vpcv1.LoadBalancerListenerPolicyPrototypeTargetLoadBalancerListenerPolicyRedirectURLPrototype{}
+
+		if statusSet {
+			status := statusCode.(int)
+			sc := int64(status)
+			urlPrototype.HttpStatusCode = &sc
 		}
+
+		if urlSet {
+			link := url.(string)
+			urlPrototype.URL = &link
+		}
+
+		target = &urlPrototype
 	}
 
 	//Read Rules
@@ -493,19 +497,15 @@ func lbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbID, list
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", lbID, listenerID, *(policy.ID)))
-	log.Printf(" ***** LB-LP: Setting Load balancer Listener Policy Id to : %s", d.Id())
 
 	_, err = isWaitForLbListenerPolicyAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
 	}
-
-	log.Printf(" LB-LP: [INFO] Load balancer Listener Policy : %s", d.Id())
 	return nil
 }
 
 func isWaitForLbAvailable(vpc *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
-	log.Printf("LB-LP: Waiting for LB (%s) to be available.", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{isLBListenerPolicyPending},
@@ -531,7 +531,6 @@ func isLbRefreshFunc(vpc *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 			return nil, "", err
 		}
 
-		log.Printf("LB-LP: STtaus (%s) to be available.", *(lb.ProvisioningStatus))
 		if *(lb.ProvisioningStatus) == isLBListenerPolicyAvailable {
 			return lb, isLBProvisioningDone, nil
 		}
@@ -541,7 +540,6 @@ func isLbRefreshFunc(vpc *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 }
 
 func isWaitForLbListenerPolicyAvailable(vpc *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
-	log.Printf("LB-LP: Waiting for Load balancer Listener Policy (%s) to be available.", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", isLBListenerProvisioning, "create_pending", "update_pending", "maintenance_pending"},
@@ -566,7 +564,6 @@ func isLbListenerPolicyRefreshFunc(vpc *vpcv1.VpcV1, id string) resource.StateRe
 		lbID := parts[0]
 		listenerID := parts[1]
 		policyID := parts[2]
-		log.Printf("**** isLbListenerPolicyRefreshFunc lbID: %v listernerID: %v policyID: %v  ****", lbID, listenerID, policyID)
 
 		getLbListenerPolicyOptions := &vpcv1.GetLoadBalancerListenerPolicyOptions{
 			LoadBalancerID: &lbID,
@@ -589,7 +586,7 @@ func isLbListenerPolicyRefreshFunc(vpc *vpcv1.VpcV1, id string) resource.StateRe
 }
 
 func resourceIBMISLBListenerPolicyRead(d *schema.ResourceData, meta interface{}) error {
-	log.Printf("****** LB-LP: LB Listener policy READ")
+
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
@@ -604,8 +601,6 @@ func resourceIBMISLBListenerPolicyRead(d *schema.ResourceData, meta interface{})
 	lbID := parts[0]
 	listenerID := parts[1]
 	policyID := parts[2]
-
-	log.Printf("LB-LP: [DEBUG] LB-LP ID: %v,  LBID:%v, ListenerID:%v policyID: %v", ID, lbID, listenerID, policyID)
 
 	if userDetails.generation == 1 {
 		err := classicLbListenerPolicyGet(d, meta, lbID, listenerID, policyID)
@@ -829,37 +824,11 @@ func classicLbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbI
 			return err
 		}
 
-		/*isLBListenerPolicyKey1 := "load_balancer_listener_policy_key_" + lbID + listenerID
-		ibmMutexKV.Lock(isLBListenerPolicyKey1)
-		defer ibmMutexKV.Unlock(isLBListenerPolicyKey1)*/
-
-		/*_, err = isWaitForClassicLbAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
-		if err != nil {
-			return fmt.Errorf(
-				"LB-LP Error checking for load balancer (%s) is active: %s", lbID, err)
-		}*/
-
 		_, err = isWaitForClassicLbListenerPolicyAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return err
 		}
-
-		//Getting policy optins
-		/*getLbListenerPolicyOptions := &vpcclassicv1.GetLoadBalancerListenerPolicyOptions{
-			LoadBalancerID: &lbID,
-			ListenerID:     &listenerID,
-			ID:             &ID,
-		}
-
-		//Getting lb listener policy
-		policy, _, err := sess.GetLoadBalancerListenerPolicy(getLbListenerPolicyOptions)
-		if err != nil {
-			return err
-		}*/
 	}
-
-	//log.Printf("LB-LP: [DEBUG] Updated policy %v", policy)
-
 	return nil
 }
 
@@ -875,14 +844,12 @@ func lbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbID, list
 	updatePolicyOptions.ID = &ID
 
 	if d.HasChange(isLBListenerPolicyName) {
-		log.Printf("**** Name changed ")
 		policy := d.Get(isLBListenerPolicyName).(string)
 		updatePolicyOptions.Name = &policy
 		hasChanged = true
 	}
 
 	if d.HasChange(isLBListenerPolicyPriority) {
-		log.Printf("**** Priority changed ")
 		prio := d.Get(isLBListenerPolicyPriority).(int)
 		priority := int64(prio)
 		updatePolicyOptions.Priority = &priority
@@ -930,7 +897,6 @@ func lbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbID, list
 	}
 
 	if hasChanged {
-		log.Printf("**** Updating ")
 		isLBListenerPolicyKey := "load_balancer_listener_policy_key_" + lbID + listenerID
 		ibmMutexKV.Lock(isLBListenerPolicyKey)
 		defer ibmMutexKV.Unlock(isLBListenerPolicyKey)
@@ -950,25 +916,11 @@ func lbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbID, list
 			return err
 		}
 	}
-	//Getting policy optins
-	/*getLbListenerPolicyOptions := &vpcv1.GetLoadBalancerListenerPolicyOptions{
-		LoadBalancerID: &lbID,
-		ListenerID:     &listenerID,
-		ID:             &ID,
-	}
-
-	//Getting lb listener policy
-	policy, _, err := sess.GetLoadBalancerListenerPolicy(getLbListenerPolicyOptions)
-	if err != nil {
-		return err
-	}
-	log.Printf("LB-LP: [DEBUG] Updated policy %v", policy)*/
-
 	return nil
 }
 
 func resourceIBMISLBListenerPolicyDelete(d *schema.ResourceData, meta interface{}) error {
-	log.Printf("******** Inside resourceIBMISLBListenerPolicyDelete")
+
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
@@ -1011,7 +963,7 @@ func classicLbListenerPolicycDelete(d *schema.ResourceData, meta interface{}, lb
 		ListenerID:     &listenerID,
 		ID:             &ID,
 	}
-	log.Printf("***** LB-LP: [DEBUG] classicLbListenerPolicycDelete lbID: %v listenerID: %v policyID: %v", lbID, listenerID, ID)
+
 	_, err = sess.DeleteLoadBalancerListenerPolicy(deleteLbListenerPolicyOptions)
 	if err != nil {
 		return err
@@ -1045,7 +997,6 @@ func lbListenerPolicyDelete(d *schema.ResourceData, meta interface{}, lbID, list
 	return nil
 }
 func isWaitForLbListnerPolicyDeleted(vpc *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
-	log.Printf("LB-LP: Waiting for LB-LP (%s) to be deleted.", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{isLBListenerPolicyRetry, isLBListenerPolicyDeleting},
@@ -1061,7 +1012,6 @@ func isWaitForLbListnerPolicyDeleted(vpc *vpcv1.VpcV1, id string, timeout time.D
 
 func isLbListenerPolicyDeleteRefreshFunc(vpc *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		log.Printf("LB-LP : [DEBUG] delete function ")
 
 		//Retrieve lbId, listenerId and policyID
 		parts, err := idParts(id)
@@ -1109,67 +1059,6 @@ func isLbListenerPolicyDeleteRefreshFunc(vpc *vpcv1.VpcV1, id string) resource.S
 	}
 }
 
-func isWaitForLbListenerPolicyClassicDeleted(vpc *vpcclassicv1.VpcClassicV1, id string, timeout time.Duration) (interface{}, error) {
-	log.Printf("**** LB-LP : Waiting for LB_LP (%s) to be deleted.", id)
-
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{isLBListenerPolicyRetry, isLBListenerPolicyDeleting, "delete_pending"},
-		Target:     []string{},
-		Refresh:    isLbListenerPolicyClassicDeleteRefreshFunc(vpc, id),
-		Timeout:    timeout,
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-
-	return stateConf.WaitForState()
-}
-func isLbListenerPolicyClassicDeleteRefreshFunc(vpc *vpcclassicv1.VpcClassicV1, id string) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-		log.Printf("***** LB-LP: [DEBUG] delete function ")
-
-		//Retrieve lbId and listenerId
-		parts, err := idParts(id)
-		if err != nil {
-			return nil, isLBListenerPolicyFailed, nil
-		}
-
-		lbID := parts[0]
-		listenerID := parts[1]
-		policyID := parts[2]
-		log.Printf("***** LB-LP: [DEBUG] delete function lbID: %v listenerID: %v policyID: %v", lbID, listenerID, policyID)
-		//policyID := id
-
-		getLbListenerPolicyOptions := &vpcclassicv1.GetLoadBalancerListenerPolicyOptions{
-			LoadBalancerID: &lbID,
-			ListenerID:     &listenerID,
-			ID:             &policyID,
-		}
-
-		//Getting lb listener policy
-		policy, _, err := vpc.GetLoadBalancerListenerPolicy(getLbListenerPolicyOptions)
-
-		failed := isLBListenerPolicyFailed
-		if err != nil {
-			if policy.ProvisioningStatus == &failed {
-				return policy, isLBListenerPolicyFailed, fmt.Errorf("The LB-LP %s failed to delete: %v", *policy.ID, err)
-			}
-			return nil, isLBListenerPolicyFailed, nil
-		}
-
-		iserror, ok := err.(iserrors.RiaasError)
-		if ok {
-			log.Printf("LB-LP : [DEBUG] %s", iserror.Error())
-			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "not_found" {
-				log.Printf("LB-LP: [DEBUG] returning deleted")
-				return nil, isLBListenerPolicyDeleted, nil
-			}
-		}
-		log.Printf("LB-LP : [DEBUG] returning x")
-		return nil, isLBListenerPolicyDeleting, err
-	}
-}
-
 func classicVpcClient(meta interface{}) (*vpcclassicv1.VpcClassicV1, error) {
 	sess, err := meta.(ClientSession).VpcClassicV1API()
 	return sess, err
@@ -1205,7 +1094,6 @@ func classicLbListenerPolicyGet(d *schema.ResourceData, meta interface{}, lbID, 
 	if policy.Rules != nil {
 		rulesSet := make([]interface{}, 0)
 		for _, rule := range policy.Rules {
-			log.Printf("Rule ID %v", *rule.ID)
 			getLbListenerPolicyRulesOptions := &vpcclassicv1.GetLoadBalancerListenerPolicyRuleOptions{
 				LoadBalancerID: &lbID,
 				ListenerID:     &listenerID,
@@ -1231,11 +1119,8 @@ func classicLbListenerPolicyGet(d *schema.ResourceData, meta interface{}, lbID, 
 
 	// `LoadBalancerPoolReference` is in the response if `action` is `forward`.
 	// `LoadBalancerListenerPolicyRedirectURL` is in the response if `action` is `redirect`.
-	log.Printf("****** classicLbListenerPolicyGet Target %v", policy.Target)
+
 	if *(policy.Action) == "forward" {
-		//target := (policy.Target).(vpcclassicv1.LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity)
-		//target := vpcclassicv1.LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity(policy.Target)
-		//UnmarshalLoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity()
 		d.Set(isLBListenerPolicyTargetID, policy.Target)
 	} else if *(policy.Action) == "redirect" {
 		d.Set(isLBListenerPolicyTargetURL, policy.Target)
@@ -1272,7 +1157,6 @@ func lbListenerPolicyGet(d *schema.ResourceData, meta interface{}, lbID, listene
 	d.Set(isLBListenerPolicyPriority, policy.Priority)
 	d.Set(isLBListenerPolicyName, policy.Name)
 	d.Set(isLBListenerPolicyStatus, policy.ProvisioningStatus)
-	log.Printf("LB-LP: lbListenerPolicyGet LID: %v LisID: %v id: %v policyID: %v, Target %s", lbID, listenerID, id, policy.ID, policy.Target)
 
 	//set rules - Doubt (Rules has condition, type, value, field and id where as SDK has only Href and id, so setting only id)
 	if policy.Rules != nil {
@@ -1298,4 +1182,59 @@ func lbListenerPolicyGet(d *schema.ResourceData, meta interface{}, lbID, listene
 	}
 
 	return nil
+}
+
+func isWaitForLbListenerPolicyClassicDeleted(vpc *vpcclassicv1.VpcClassicV1, id string, timeout time.Duration) (interface{}, error) {
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{isLBListenerPolicyRetry, isLBListenerPolicyDeleting, "delete_pending"},
+		Target:     []string{},
+		Refresh:    isLbListenerPolicyClassicDeleteRefreshFunc(vpc, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isLbListenerPolicyClassicDeleteRefreshFunc(vpc *vpcclassicv1.VpcClassicV1, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+
+		//Retrieve lbId and listenerId
+		parts, err := idParts(id)
+		if err != nil {
+			return nil, isLBListenerPolicyFailed, nil
+		}
+
+		lbID := parts[0]
+		listenerID := parts[1]
+		policyID := parts[2]
+
+		getLbListenerPolicyOptions := &vpcclassicv1.GetLoadBalancerListenerPolicyOptions{
+			LoadBalancerID: &lbID,
+			ListenerID:     &listenerID,
+			ID:             &policyID,
+		}
+
+		//Getting lb listener policy
+		policy, _, err := vpc.GetLoadBalancerListenerPolicy(getLbListenerPolicyOptions)
+
+		failed := isLBListenerPolicyFailed
+		if err != nil {
+			if policy.ProvisioningStatus == &failed {
+				return policy, isLBListenerPolicyFailed, fmt.Errorf("The LB-LP %s failed to delete: %v", *policy.ID, err)
+			}
+			return nil, isLBListenerPolicyFailed, nil
+		}
+
+		iserror, ok := err.(iserrors.RiaasError)
+		if ok {
+			if len(iserror.Payload.Errors) == 1 &&
+				iserror.Payload.Errors[0].Code == "not_found" {
+				return nil, isLBListenerPolicyDeleted, nil
+			}
+		}
+		return nil, isLBListenerPolicyDeleting, err
+	}
 }
