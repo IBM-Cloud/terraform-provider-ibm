@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_api_gateway_endpoint
 
-Provides an Endpoint. This allows endpoint to be created, updated managed and deleted.
+Provides an Endpoint. This allows endpoint to be created, updated managed and deleted.Configuration of an api gateway Endpoint resource requires the region parameter to be set for the IBM provider in the provider.tf.  If not specified, endpoint will default to us-south.
 
 ## Example Usage for a single Api doc as input
 
