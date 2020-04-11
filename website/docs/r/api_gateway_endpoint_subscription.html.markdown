@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_api_gateway_endpoint_subscription
 
-Provides Subscription for an Endpoint. This allows Subscription to be created, updated managed and deleted.
+Provides Subscription for an Endpoint. This allows Subscription to be created, updated managed and deleted.Configuration of an api gateway data resource requires the region parameter to be set for the IBM provider in the provider.tf.  If not specified, endpoint to which subscription is being created will default to us-south. 
 
 ## Example Usage
 

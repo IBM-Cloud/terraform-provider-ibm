@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_api_gateway
 
-Import the details of an existing IBM Cloud API Gateway instance as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Import the details of an existing IBM Cloud API Gateway instance as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.Configuration of an api gateway data source requires the region parameter to be set for the IBM provider in the provider.tf.  If not specified, endpoint will default to us-south.
 
 ## Example Usage for a single Api doc as input
 
