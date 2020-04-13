@@ -3,7 +3,7 @@ variable "ibmcloud_api_key" {
 }
 
 data "ibm_resource_group" "rg" {
-  name = "VNF VPC Development"
+  name = "default"
 }
 
 provider "ibm" {
@@ -30,4 +30,11 @@ resource "ibm_dns_zone" "test-pdns-zone" {
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   description = "testdescription"
   label       = "testlabel"
+}
+
+resource "ibm_dns_permitted_network" "test-pdns-permitted-network-nw" {
+  instance_id = ibm_resource_instance.test-pdns-instance.guid
+  zone_id     = ibm_dns_zone.test-pdns-zone.zone_id
+  vpc_crn     = ibm_is_vpc.test_pdns_vpc.resource_crn
+  type        = "vpc"
 }
