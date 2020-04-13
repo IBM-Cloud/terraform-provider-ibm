@@ -11,9 +11,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/IBM-Cloud/bluemix-go/models"
-
+	"github.com/apache/incubator-openwhisk-client-go/whisk"
 	"github.com/hashicorp/terraform/flatmap"
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/softlayer/softlayer-go/datatypes"
+	"github.com/softlayer/softlayer-go/sl"
+	vpc "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
 	"github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
@@ -24,11 +27,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
-	"github.com/apache/incubator-openwhisk-client-go/whisk"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/softlayer/softlayer-go/datatypes"
-	"github.com/softlayer/softlayer-go/sl"
-	vpc "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
 const (
@@ -1285,6 +1284,27 @@ func convertTfToCisThreeVar(glbTfId string) (glbId string, zoneId string, cisId 
 		cisId = g[2]
 	} else {
 		err = errors.New("cis_id or zone_id not passed")
+		return
+	}
+	return
+}
+func convertCisToTfFourVar(firewallType string, ID string, ID2 string, cisID string) (buildID string) {
+	if ID != "" {
+		buildID = firewallType + ":" + ID + ":" + ID2 + ":" + cisID
+	} else {
+		buildID = ""
+	}
+	return
+}
+func convertTfToCisFourVar(TfID string) (firewallType string, ID string, zoneID string, cisID string, err error) {
+	g := strings.SplitN(TfID, ":", 4)
+	firewallType = g[0]
+	if len(g) > 3 {
+		ID = g[1]
+		zoneID = g[2]
+		cisID = g[3]
+	} else {
+		err = errors.New("Id or cis_id or zone_id not passed")
 		return
 	}
 	return
