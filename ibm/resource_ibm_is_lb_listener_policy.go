@@ -100,6 +100,7 @@ func resourceIBMISLBListenerPolicy() *schema.Resource {
 			isLBListenerPolicyRules: {
 				Type:     schema.TypeList,
 				Optional: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isLBListenerPolicyRuleCondition: {
@@ -218,10 +219,14 @@ func classicLbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbI
 
 	var target vpcclassicv1.LoadBalancerListenerPolicyPrototypeTargetIntf
 
-	if actionChk.(string) == "forward" && targetIDSet {
-		id := tID.(string)
-		target = &vpcclassicv1.LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity{
-			ID: &id,
+	if actionChk.(string) == "forward" {
+		if targetIDSet {
+			id := tID.(string)
+			target = &vpcclassicv1.LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity{
+				ID: &id,
+			}
+		} else {
+			return fmt.Errorf("When action is forward please specify target_id")
 		}
 	} else if actionChk.(string) == "redirect" {
 
@@ -231,11 +236,15 @@ func classicLbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbI
 			status := statusCode.(int)
 			sc := int64(status)
 			urlPrototype.HttpStatusCode = &sc
+		} else {
+			return fmt.Errorf("When action is redirect please specify target_StatusCode")
 		}
 
 		if urlSet {
 			link := url.(string)
 			urlPrototype.URL = &link
+		} else {
+			return fmt.Errorf("When action is redirect please specify Target URL")
 		}
 
 		target = &urlPrototype
