@@ -30,16 +30,21 @@ resource "ibm_cis_healthcheck" "test" {
 
 The following arguments are supported:
 
-* `cis_id` - (Required) The ID of the CIS service instance
-* `expected_body` - (Required) A case-insensitive sub-string to look for in the response body. If this string is not found, the origin will be marked as unhealthy. A null value of "" is allowed to match on any content. 
-* `expected_codes` - (Required) The expected HTTP response code or code range of the health check. Eg `2xx`
-* `method` - (Optional) The HTTP method to use for the health check. Default: "GET".
-* `timeout` - (Optional) The timeout (in seconds) before marking the health check as failed. Default: 5.
-* `path` - (Optional) The endpoint path to health check against. Default: "/".
-* `interval` - (Optional) The interval between each health check. Shorter intervals may improve failover time, but will increase load on the origins as we check from multiple locations. Default: 60.
-* `retries` - (Optional) The number of retries to attempt in case of a timeout before marking the origin as unhealthy. Retries are attempted immediately. Default: 2.
-* `type` - (Optional) The protocol to use for the healthcheck. Currently supported protocols are 'HTTP' and 'HTTPS'. Default: "http".
-* `description` - (Optional) Free text description.
+* `cis_id` - (Required,string) The ID of the CIS service instance
+* `expected_body` - (Optional,string) A case-insensitive sub-string to look for in the response body. If this string is not found, the origin will be marked as unhealthy. A null value of "" is allowed to match on any content. 
+* `expected_codes` - (Optional,string) The expected HTTP response code or code range of the health check. Eg `2xx`
+* `method` - (Optional,string) The HTTP method to use for the health check.
+* `timeout` - (Optional,int) The timeout (in seconds) before marking the health check as failed.
+* `path` - (Optional,string) The endpoint path to health check against.
+* `interval` - (Optional,int) The interval between each health check. Shorter intervals may improve failover time, but will increase load on the origins as we check from multiple locations.
+* `retries` - (Optional,int) The number of retries to attempt in case of a timeout before marking the origin as unhealthy. Retries are attempted immediately.
+* `type` - (Optional,string) The protocol to use for the healthcheck. Currently supported protocols are 'HTTP', 'HTTPS' and 'TCP'. 
+* `follow_redirects`-(Optional,bool) Follow redirects if returned by the origin.
+* `allow_insecure`-(Optional,bool) Do not validate the certificate when healthcheck use HTTPS.
+* `description` - (Optional,string) Free text description.
+* `port` - (Optional,int) The TCP port to use for the health check.
+
+[`expected_body`],[`expected_codes`] are required aruguments when the type is HTTP or HTTPS.
 
 Header is not currently supported in this version of the provider. 
 
