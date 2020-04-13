@@ -7,6 +7,14 @@
 			"revision": ""
 		},
 		{
+			"path": "bluemix-go/api/cis/cisv1",
+			"revision": ""
+		},
+		{
+			"path": "bluemix-go/api/cis/cisv1/api_service.go",
+			"revision": ""
+		},
+		{
 			"path": "fetch",
 			"revision": ""
 		},
@@ -18,8 +26,8 @@
 		{
 			"checksumSHA1": "pyf+/o97FMKnK1vwp+hEPmlbEXQ=",
 			"path": "github.com/IBM-Cloud/bluemix-go",
-			"revision": "59fd892a9ea78a1b9a6b940cb745679bec335ea1",
-			"revisionTime": "2020-04-02T06:01:39Z"
+			"revision": "ecf9e335e227bac40d85177a8ed6d924e2dba261",
+			"revisionTime": "2020-04-09T12:35:31Z"
 		},
 		{
 			"checksumSHA1": "sWarTa3lecAaW/8lQgE7c0R0B6o=",
@@ -40,10 +48,10 @@
 			"revisionTime": "2019-12-09T06:30:58Z"
 		},
 		{
-			"checksumSHA1": "jesWIZPbU4T8ZJ3/jwlLuzCZT9c=",
+			"checksumSHA1": "Cv5UehD2DsVPOaK2jP/PYuqcDqs=",
 			"path": "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1",
-			"revision": "ac9b271eaf42942cb8c2c2e68b8343466ae6b3cc",
-			"revisionTime": "2019-12-11T04:38:12Z"
+			"revision": "ecf9e335e227bac40d85177a8ed6d924e2dba261",
+			"revisionTime": "2020-04-09T12:35:31Z"
 		},
 		{
 			"checksumSHA1": "tsZBLkII/TOFUrVZL1TTre3DO78=",
@@ -988,6 +996,10 @@
 			"path": "github.com/blang/semver",
 			"revision": "c5e971dbed7850a93c23aa6ff69db5771d8e23b3",
 			"revisionTime": "2018-03-05T13:03:54Z"
+		},
+		{
+			"path": "github.com/bluemix-go/api/cis/cisv1",
+			"revision": ""
 		},
 		{
 			"checksumSHA1": "A/DjlgGYOKIkKC8qckZB1shNTFk=",

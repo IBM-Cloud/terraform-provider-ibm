@@ -10,7 +10,7 @@ import (
 
 type DnsRecord struct {
 	Id         string      `json:"id"`
-	Name       string      `json:"name"`
+	Name       string      `json:"name,omitempty"`
 	DnsType    string      `json:"type"`
 	Content    string      `json:"content"`
 	ZoneId     string      `json:"zone_id"`
@@ -20,7 +20,7 @@ type DnsRecord struct {
 	Proxiable  bool        `json:"proxiable"`
 	Proxied    bool        `json:"proxied"`
 	Ttl        int         `json:"ttl"`
-	Priority   int         `json:"priority"`
+	Priority   int         `json:"priority,omitempty"`
 	Data       interface{} `json:"data,omitempty"`
 }
 
@@ -39,11 +39,13 @@ type DnsResult struct {
 }
 
 type DnsBody struct {
-	Name     string      `json:"name"`
+	Name     string      `json:"name,omitempty"`
 	DnsType  string      `json:"type"`
 	Content  string      `json:"content,omitempty"`
 	Priority int         `json:"priority,omitempty"`
 	Data     interface{} `json:"data,omitempty"`
+	Proxied  bool        `json:"proxied,omitempty"`
+	Ttl      int         `json:"ttl,omitempty"`
 }
 
 type Dns interface {
@@ -65,13 +67,18 @@ func newDnsAPI(c *client.Client) Dns {
 }
 
 func (r *dns) ListDns(cisId string, zoneId string) ([]DnsRecord, error) {
-	dnsResults := DnsResults{}
-	rawURL := fmt.Sprintf("/v1/%s/zones/%s/dns_records", cisId, zoneId)
-	_, err := r.client.Get(rawURL, &dnsResults)
-	if err != nil {
-		return nil, err
+	var records []DnsRecord
+	rawURL := fmt.Sprintf("/v1/%s/zones/%s/dns_records?page=1", cisId, zoneId)
+	if _, err := r.client.GetPaginated(rawURL, NewDNSPaginatedResources(DnsRecord{}), func(resource interface{}) bool {
+		if dns, ok := resource.(DnsRecord); ok {
+			records = append(records, dns)
+			return true
+		}
+		return false
+	}); err != nil {
+		return nil, fmt.Errorf("failed to list paginated dns records: %s", err)
 	}
-	return dnsResults.DnsList, err
+	return records, nil
 }
 
 func (r *dns) GetDns(cisId string, zoneId string, dnsId string) (*DnsRecord, error) {
@@ -107,7 +114,7 @@ func (r *dns) CreateDns(cisId string, zoneId string, dnsBody DnsBody) (*DnsRecor
 func (r *dns) UpdateDns(cisId string, zoneId string, dnsId string, dnsBody DnsBody) (*DnsRecord, error) {
 	dnsResult := DnsResult{}
 	rawURL := fmt.Sprintf("/v1/%s/zones/%s/dns_records/%s", cisId, zoneId, dnsId)
-	_, err := r.client.Post(rawURL, &dnsBody, &dnsResult)
+	_, err := r.client.Put(rawURL, &dnsBody, &dnsResult)
 	if err != nil {
 		return nil, err
 	}

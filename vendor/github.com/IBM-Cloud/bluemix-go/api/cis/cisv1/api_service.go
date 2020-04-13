@@ -24,6 +24,7 @@ type CisServiceAPI interface {
 	Settings() Settings
 	Ips() Ips
 	Dns() Dns
+	Firewall() Firewall
 }
 
 //CisService holds the client
@@ -104,6 +105,9 @@ func (c *cisService) Dns() Dns {
 	return newDnsAPI(c.Client)
 }
 
+func (c *cisService) Firewall() Firewall {
+	return newFirewallAPI(c.Client)
+}
 func errorsToString(e []Error) string {
 
 	var errMsg string

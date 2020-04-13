@@ -126,7 +126,7 @@ func (r *pools) CreatePool(cisId string, poolBody PoolBody) (*Pool, error) {
 func (r *pools) UpdatePool(cisId string, poolId string, poolBody PoolBody) (*Pool, error) {
 	poolResult := PoolResult{}
 	rawURL := fmt.Sprintf("/v1/%s/load_balancers/pools/%s", cisId, poolId)
-	_, err := r.client.Post(rawURL, &poolBody, &poolResult)
+	_, err := r.client.Put(rawURL, &poolBody, &poolResult)
 	if err != nil {
 		return nil, err
 	}
