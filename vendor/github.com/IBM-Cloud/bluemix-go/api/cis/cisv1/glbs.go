@@ -115,7 +115,7 @@ func (r *glbs) CreateGlb(cisId string, zoneId string, glbBody GlbBody) (*Glb, er
 func (r *glbs) UpdateGlb(cisId string, zoneId string, glbId string, glbBody GlbBody) (*Glb, error) {
 	glbResult := GlbResult{}
 	rawURL := fmt.Sprintf("/v1/%s/zones/%s/load_balancers/%s", cisId, zoneId, glbId)
-	_, err := r.client.Post(rawURL, &glbBody, &glbResult)
+	_, err := r.client.Put(rawURL, &glbBody, &glbResult)
 	if err != nil {
 		return nil, err
 	}
