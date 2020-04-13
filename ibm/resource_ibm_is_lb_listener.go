@@ -115,7 +115,7 @@ func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) err
 	var connLimit int64
 
 	if limit, ok := d.GetOk(isLBListenerConnectionLimit); ok {
-		connLimit = limit.(int64)
+		connLimit = int64(limit.(int))
 	}
 
 	client := lbaas.NewLoadBalancerClient(sess)
