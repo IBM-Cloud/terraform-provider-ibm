@@ -14,8 +14,8 @@ import (
 
 func TestAccIBMISLBListener_basic(t *testing.T) {
 	var lb *models.Listener
-	vpcname := fmt.Sprintf("terraformLBLisuat-vpc-%d", acctest.RandInt())
-	subnetname := fmt.Sprintf("terraformLBLisuat-subnet-%d", acctest.RandInt())
+	vpcname := fmt.Sprintf("tflblisuat-vpc-%d", acctest.RandInt())
+	subnetname := fmt.Sprintf("tflblisuat-subnet-%d", acctest.RandInt())
 	lbname := fmt.Sprintf("tflblisuat%d", acctest.RandInt())
 
 	protocol1 := "http"
