@@ -31,7 +31,6 @@ func resourceIBMPrivateDNSPermittedNetwork() *schema.Resource {
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
-			Update: schema.DefaultTimeout(10 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
@@ -54,25 +53,11 @@ func resourceIBMPrivateDNSPermittedNetwork() *schema.Resource {
 			},
 
 			pdnsNetworkType: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-				ValidateFunc: func(val interface{}, field string) (warnings []string, errors []error) {
-					value := val.(string)
-					for _, rtype := range allowedNetworkTypes {
-						if value == rtype {
-							return
-						}
-					}
-
-					errors = append(
-						errors,
-						fmt.Errorf("%s is not one of the valid domain record types: %s",
-							value, strings.Join(allowedNetworkTypes, ", "),
-						),
-					)
-					return
-				},
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				Default:      "vpc",
+				ValidateFunc: validateAllowedStringValue([]string{"vpc"}),
 			},
 
 			pdnsVpcCRN: {
@@ -164,9 +149,9 @@ func resourceIBMPrivateDnsPermittedNetworkDelete(d *schema.ResourceData, meta in
 
 	id_set := strings.Split(d.Id(), "/")
 	deletePermittedNetworkOptions := sess.NewDeletePermittedNetworkOptions(id_set[0], id_set[1], id_set[2])
-	_, _, err = sess.DeletePermittedNetwork(deletePermittedNetworkOptions)
+	_, response, err := sess.DeletePermittedNetwork(deletePermittedNetworkOptions)
 
-	if err != nil {
+	if err != nil && response.StatusCode != 404 {
 		return err
 	}
 
