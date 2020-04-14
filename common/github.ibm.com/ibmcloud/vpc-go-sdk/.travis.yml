@@ -1,0 +1,13 @@
+language: go
+node_js: '8.3'
+dist: xenial
+go:
+- 1.12.x
+env:
+  global:
+  - GO111MODULE=on
+script:
+- go test `go list ./... | grep -v integration`
+- cd integration
+- cd vpc_classic_integration_tests && go test `go list ./...` -v -tags=integration -skipForMockTesting -testCount && cd ..
+- cd vpc_gen2_integration_tests && go test `go list ./...` -v -tags=integration -skipForMockTesting -testCount
