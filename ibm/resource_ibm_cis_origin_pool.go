@@ -5,8 +5,9 @@ import (
 	"reflect"
 	"strings"
 
-	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
+	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 )
 
 func resourceIBMCISPool() *schema.Resource {
@@ -72,10 +73,14 @@ func resourceIBMCISPool() *schema.Resource {
 							Type:     schema.TypeInt,
 							Optional: true,
 						},
+						"healthy": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
 					},
 				},
 			},
-			"healthy": {
+			"health": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -178,11 +183,58 @@ func resourceCISpoolRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("minimum_origins", poolObj.MinOrigins)
 	d.Set("monitor", convertCisToTfTwoVar(poolObj.Monitor, cisId))
 	d.Set("notification_email", poolObj.NotEmail)
+	d.Set("health", poolObj.Health)
+	d.Set("created_on", poolObj.CreatedOn)
+	d.Set("modified_on", poolObj.ModifiedOn)
 
 	return nil
 }
 
 func resourceCISpoolUpdate(d *schema.ResourceData, meta interface{}) error {
+	cisClient, err := meta.(ClientSession).CisAPI()
+	if err != nil {
+		return err
+	}
+	poolID, cisID, err := convertTftoCisTwoVar(d.Id())
+	if err != nil {
+		return err
+	}
+	poolUpdate := v1.PoolBody{}
+	if d.HasChange("name") || d.HasChange("origins") || d.HasChange("check_regions") || d.HasChange("notification_email") || d.HasChange("monitor") || d.HasChange("enabled") || d.HasChange("minimum_origins") || d.HasChange("description") {
+		if name, ok := d.GetOk("name"); ok {
+			poolUpdate.Name = name.(string)
+		}
+		if origin, ok := d.GetOk("origins"); ok {
+			origins := origin.(*schema.Set)
+			poolUpdate.Origins = expandOrigins(origins)
+		}
+		if checkregions, ok := d.GetOk("check_regions"); ok {
+			checkRegions := checkregions.(*schema.Set).List()
+			poolUpdate.CheckRegions = expandStringList(checkRegions)
+		}
+		if notEmail, ok := d.GetOk("notification_email"); ok {
+			poolUpdate.NotEmail = notEmail.(string)
+		}
+		if monitor, ok := d.GetOk("monitor"); ok {
+			monitorID, _, _ := convertTftoCisTwoVar(monitor.(string))
+			poolUpdate.Monitor = monitorID
+		}
+		if enabled, ok := d.GetOk("enabled"); ok {
+			poolUpdate.Enabled = enabled.(bool)
+		}
+		if minOrigins, ok := d.GetOk("minimum_origins"); ok {
+			poolUpdate.MinOrigins = minOrigins.(int)
+		}
+		if description, ok := d.GetOk("description"); ok {
+			poolUpdate.Description = description.(string)
+		}
+		_, err = cisClient.Pools().UpdatePool(cisID, poolID, poolUpdate)
+		if err != nil {
+			log.Printf("[WARN] Error getting zone during PoolUpdate %v\n", err)
+			return err
+		}
+	}
+
 	return resourceCISpoolRead(d, meta)
 }
 

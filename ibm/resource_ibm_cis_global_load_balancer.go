@@ -5,8 +5,9 @@ import (
 	"reflect"
 	"strings"
 
-	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
+	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 )
 
 func resourceIBMCISGlb() *schema.Resource {
@@ -48,7 +49,6 @@ func resourceIBMCISGlb() *schema.Resource {
 			"ttl": {
 				Type:          schema.TypeInt,
 				Optional:      true,
-				Computed:      true,
 				ConflictsWith: []string{"proxied"}, // this is set to zero regardless of config when proxied=true
 
 			},
@@ -64,6 +64,11 @@ func resourceIBMCISGlb() *schema.Resource {
 				Default:  "none",
 				// Set to cookie when proxy=true
 				ValidateFunc: validateAllowedStringValue([]string{"none", "cookie"}),
+			},
+			"enabled": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  true,
 			},
 			// "region_pools": &schema.Schema{
 			// 	Type:     schema.TypeMap,
@@ -128,6 +133,9 @@ func resourceCISGlbCreate(d *schema.ResourceData, meta interface{}) error {
 	if description, ok := d.GetOk("description"); ok {
 		glbNew.Desc = description.(string)
 	}
+	if ttl, ok := d.GetOk("ttl"); ok {
+		glbNew.Ttl = ttl.(int)
+	}
 	glb, err = cisClient.Glbs().CreateGlb(cisId, zoneId, glbNew)
 	if err != nil {
 		log.Printf("CreateGlbs Failed %s\n", err)
@@ -136,7 +144,7 @@ func resourceCISGlbCreate(d *schema.ResourceData, meta interface{}) error {
 	glbObj = *glb
 	d.SetId(convertCisToTfThreeVar(glbObj.Id, zoneId, cisId))
 
-	return resourceCISGlbRead(d, meta)
+	return resourceCISGlbUpdate(d, meta)
 }
 
 func resourceCISGlbRead(d *schema.ResourceData, meta interface{}) error {
@@ -169,12 +177,52 @@ func resourceCISGlbRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("fallback_pool_id", convertCisToTfTwoVar(glbObj.FallbackPool, cisId))
 	d.Set("ttl", glbObj.Ttl)
 	d.Set("proxied", glbObj.Proxied)
+	d.Set("enabled", glbObj.Enabled)
 	d.Set("session_affinity", glbObj.SessionAffinity)
 
 	return nil
 }
 
 func resourceCISGlbUpdate(d *schema.ResourceData, meta interface{}) error {
+	cisClient, err := meta.(ClientSession).CisAPI()
+	if err != nil {
+		return err
+	}
+	// Extract CIS Ids from TF Id
+	glbId, zoneId, cisId, err := convertTfToCisThreeVar(d.Id())
+	if err != nil {
+		return err
+	}
+	glbUpdate := v1.GlbBody{}
+
+	if d.HasChange("name") || d.HasChange("default_pool_ids") || d.HasChange("fallback_pool_id") || d.HasChange("proxied") || d.HasChange("session_affinity") || d.HasChange("description") || d.HasChange("ttl") || d.HasChange("enabled") {
+
+		name := d.Get("name").(string)
+		glbUpdate.Name = name
+		tfDefaultPools := expandStringList(d.Get("default_pool_ids").(*schema.Set).List())
+		defaultPoolIds, _, err := convertTfToCisTwoVarSlice(tfDefaultPools)
+		glbUpdate.DefaultPools = defaultPoolIds
+		fbPoolId := d.Get("fallback_pool_id").(string)
+		glbUpdate.FallbackPool, _, err = convertTftoCisTwoVar(fbPoolId)
+		glbUpdate.Proxied = d.Get("proxied").(bool)
+		glbUpdate.SessionAffinity = d.Get("session_affinity").(string)
+
+		if description, ok := d.GetOk("description"); ok {
+			glbUpdate.Desc = description.(string)
+		}
+		if ttl, ok := d.GetOk("ttl"); ok {
+			glbUpdate.Ttl = ttl.(int)
+		}
+		if enabled, ok := d.GetOk("enabled"); ok {
+			glbUpdate.Enabled = enabled.(bool)
+		}
+		_, err = cisClient.Glbs().UpdateGlb(cisId, zoneId, glbId, glbUpdate)
+		if err != nil {
+			log.Printf("[WARN] Error getting zone during GlbUpdate %v\n", err)
+			return err
+		}
+	}
+
 	return resourceCISGlbRead(d, meta)
 }
 
