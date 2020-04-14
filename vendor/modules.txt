@@ -6,7 +6,7 @@ cloud.google.com/go/internal/optional
 cloud.google.com/go/internal/trace
 cloud.google.com/go/internal/version
 cloud.google.com/go/storage
-# github.com/IBM-Cloud/bluemix-go v0.0.0-20200402064807-59fd892a9ea7
+# github.com/IBM-Cloud/bluemix-go v0.0.0-20200414105249-d884072eb6f5
 github.com/IBM-Cloud/bluemix-go
 github.com/IBM-Cloud/bluemix-go/api/account/accountv1
 github.com/IBM-Cloud/bluemix-go/api/account/accountv2
@@ -72,6 +72,9 @@ github.com/IBM-Cloud/power-go-client/utils
 # github.com/IBM/apigateway-go-sdk v0.0.0-20200319174228-a4e4a3b46d9e
 github.com/IBM/apigateway-go-sdk
 github.com/IBM/apigateway-go-sdk/common
+# github.com/IBM/dns-svcs-go-sdk v0.0.1
+github.com/IBM/dns-svcs-go-sdk/common
+github.com/IBM/dns-svcs-go-sdk/dnssvcsv1
 # github.com/IBM/go-sdk-core/v3 v3.2.4
 github.com/IBM/go-sdk-core/v3/core
 # github.com/IBM/ibm-cos-sdk-go v1.2.0
