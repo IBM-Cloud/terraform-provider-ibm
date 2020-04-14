@@ -18,6 +18,7 @@ type Glb struct {
 	CreatedOn       *time.Time `json:"created_on,omitempty"`
 	ModifiedOn      *time.Time `json:"modified_on,omitempty"`
 	SessionAffinity string     `json:"session_affinity"`
+	Enabled         bool       `json:"enabled,omitempty"`
 	// Future support
 	// RegionPools  map[string][]string `json:"region_pools"`
 	// PopPools     map[string][]string `json:"pop_pools"`
@@ -44,6 +45,8 @@ type GlbBody struct {
 	FallbackPool    string   `json:"fallback_pool"`
 	DefaultPools    []string `json:"default_pools"`
 	SessionAffinity string   `json:"session_affinity,omitempty"`
+	Ttl             int      `json:"ttl,omitempty"`
+	Enabled         bool     `json:"enabled,omitempty"`
 }
 
 type GlbDelete struct {
