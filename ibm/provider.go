@@ -297,6 +297,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_is_ipsec_policy":                                resourceIBMISIPSecPolicy(),
 			"ibm_is_lb":                                          resourceIBMISLB(),
 			"ibm_is_lb_listener":                                 resourceIBMISLBListener(),
+			"ibm_is_lb_listener_policy":                          resourceIBMISLBListenerPolicy(),
 			"ibm_is_lb_pool":                                     resourceIBMISLBPool(),
 			"ibm_is_lb_pool_member":                              resourceIBMISLBPoolMember(),
 			"ibm_is_network_acl":                                 resourceIBMISNetworkACL(),
@@ -364,7 +365,6 @@ func Provider() terraform.ResourceProvider {
 			//Private DNS related resources
 			"ibm_dns_zone":              resourceIBMPrivateDNSZone(),
 			"ibm_dns_permitted_network": resourceIBMPrivateDNSPermittedNetwork(),
-			"ibm_dns_resource_record":   resourceIBMPrivateDNSResourceRecord(),
 		},
 
 		ConfigureFunc: providerConfigure,
