@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -268,8 +269,9 @@ func resourceIBMPrivateDNSResourceRecordCreate(d *schema.ResourceData, meta inte
 		createResourceRecordOptions.SetProtocol(protocol)
 	}
 
-	response, _, err := sess.CreateResourceRecord(createResourceRecordOptions)
+	response, detail, err := sess.CreateResourceRecord(createResourceRecordOptions)
 	if err != nil {
+		log.Printf("Error creating dns record:%s", detail)
 		return err
 	}
 
@@ -288,8 +290,9 @@ func resourceIBMPrivateDNSResourceRecordRead(d *schema.ResourceData, meta interf
 
 	id_set := strings.Split(d.Id(), "/")
 	getResourceRecordOptions := sess.NewGetResourceRecordOptions(id_set[0], id_set[1], id_set[2])
-	response, _, err := sess.GetResourceRecord(getResourceRecordOptions)
+	response, detail, err := sess.GetResourceRecord(getResourceRecordOptions)
 	if err != nil {
+		log.Printf("Error reading dns record:%s", detail)
 		return err
 	}
 
@@ -344,8 +347,9 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 
 	id_set := strings.Split(d.Id(), "/")
 	getResourceRecordOptions := sess.NewGetResourceRecordOptions(id_set[0], id_set[1], id_set[2])
-	response, _, err := sess.GetResourceRecord(getResourceRecordOptions)
+	response, detail, err := sess.GetResourceRecord(getResourceRecordOptions)
 	if err != nil {
+		log.Printf("Error updating dns record:%s", detail)
 		return err
 	}
 
@@ -451,8 +455,9 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 	}
 
 	//
-	_, _, err = sess.UpdateResourceRecord(updateResourceRecordOptions)
+	_, detail, err = sess.UpdateResourceRecord(updateResourceRecordOptions)
 	if err != nil {
+		log.Printf("Error updating dns record:%s", detail)
 		return err
 	}
 
@@ -469,6 +474,7 @@ func resourceIBMPrivateDNSResourceRecordDelete(d *schema.ResourceData, meta inte
 	deleteResourceRecordOptions := sess.NewDeleteResourceRecordOptions(id_set[0], id_set[1], id_set[2])
 	response, err := sess.DeleteResourceRecord(deleteResourceRecordOptions)
 	if err != nil && response.StatusCode != 404 {
+		log.Printf("Error deleting dns record:%s", response)
 		return err
 	}
 

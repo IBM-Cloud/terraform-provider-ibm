@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -106,8 +107,9 @@ func resourceIBMPrivateDnsZoneCreate(d *schema.ResourceData, meta interface{}) e
 	createZoneOptions := sess.NewCreateDnszoneOptions(instanceID, zoneName)
 	createZoneOptions.SetDescription(zoneDescription)
 	createZoneOptions.SetLabel(zoneLabel)
-	response, _, err := sess.CreateDnszone(createZoneOptions)
+	response, detail, err := sess.CreateDnszone(createZoneOptions)
 	if err != nil {
+		log.Printf("Error creating dns zone:%s", detail)
 		return err
 	}
 
@@ -125,8 +127,9 @@ func resourceIBMPrivateDnsZoneRead(d *schema.ResourceData, meta interface{}) err
 
 	id_set := strings.Split(d.Id(), "/")
 	getZoneOptions := sess.NewGetDnszoneOptions(id_set[0], id_set[1])
-	response, _, err := sess.GetDnszone(getZoneOptions)
+	response, detail, err := sess.GetDnszone(getZoneOptions)
 	if err != nil {
+		log.Printf("Error reading dns zone:%s", detail)
 		return err
 	}
 
@@ -167,9 +170,10 @@ func resourceIBMPrivateDnsZoneUpdate(d *schema.ResourceData, meta interface{}) e
 		updateZoneOptions.SetDescription(description)
 		updateZoneOptions.SetLabel(label)
 
-		_, _, err := sess.UpdateDnszone(updateZoneOptions)
+		_, detail, err := sess.UpdateDnszone(updateZoneOptions)
 
 		if err != nil {
+			log.Printf("Error updating dns zone:%s", detail)
 			return err
 		}
 	}
@@ -188,6 +192,7 @@ func resourceIBMPrivateDnsZoneDelete(d *schema.ResourceData, meta interface{}) e
 	deleteZoneOptions := sess.NewDeleteDnszoneOptions(id_set[0], id_set[1])
 	response, err := sess.DeleteDnszone(deleteZoneOptions)
 	if err != nil && response.StatusCode != 404 {
+		log.Printf("Error deleting dns zone:%s", response)
 		return err
 	}
 
