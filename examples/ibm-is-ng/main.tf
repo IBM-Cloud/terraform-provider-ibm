@@ -83,6 +83,32 @@ resource "ibm_is_subnet" "subnet1" {
   ipv4_cidr_block = "10.240.0.0/24"
 }
 
+resource "ibm_is_lb" "lb2" {
+  name    = "mylb"
+  subnets = "${ibm_is_subnet.subnet1.id}"
+}
+
+resource "ibm_is_lb_listener" "lb_listener2" {
+  lb       = "${ibm_is_lb.lb2.id}"
+  port     = "9086"
+  protocol = "http"
+}
+resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
+  lb                      = "${ibm_is_lb.lb2.id}"
+  listener                = "${ibm_is_lb_listener.lb_listener2.listener_id}"
+  action                  = "redirect"
+  priority                = 2
+  name                    = "mylistenerpolicy"
+  target_http_status_code = 302
+  target_url              = "https://www.google.com"
+  rules {
+    condition = "contains"
+    type      = "header"
+    field     = "1"
+    value     = "2"
+  }
+}
+
 resource "ibm_is_vpc" "vpc2" {
   name = "vpc2"
 }

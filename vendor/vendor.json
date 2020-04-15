@@ -562,8 +562,8 @@
 			"revisionTime": "2020-03-29T20:23:51Z"
 		},
 		{
-			"path": "github.com/IBM/go-sdk-core/v3/core",
-			"revision": ""
+			"path": "github.com/IBM/go-sdk-core/core",
+			"revision": "2050cbfeb7bceffbde475fa32ceeb44660687843"
 		},
 		{
 			"checksumSHA1": "/MvaToh2ZEhrCpTNXblbVWRxpfg=",
@@ -1986,6 +1986,36 @@
 			"revision": "db11b721e4c632196c603c4288eaca95896fcc37",
 			"revisionTime": "2020-03-18T14:01:31Z",
 			"tree": true
+		},
+		{
+			"checksumSHA1": "EBCS4SsefqBwz+JL/FuF2nNXHfA=",
+			"path": "github.ibm.com/ibmcloud/vpc-go-sdk",
+			"revision": "76da5bcaaae06724e34e450741f0c2331927f725",
+			"revisionTime": "2020-04-07T14:13:29Z"
+		},
+		{
+			"checksumSHA1": "9ITbolW+Pi7oab0X7H1uPwJHs10=",
+			"path": "github.ibm.com/ibmcloud/vpc-go-sdk/common",
+			"revision": "76da5bcaaae06724e34e450741f0c2331927f725",
+			"revisionTime": "2020-04-07T14:13:29Z"
+		},
+		{
+			"checksumSHA1": "XKJ3+QnkxbffWaMbSARi7WI7bK8=",
+			"path": "github.ibm.com/ibmcloud/vpc-go-sdk/integration",
+			"revision": "76da5bcaaae06724e34e450741f0c2331927f725",
+			"revisionTime": "2020-04-07T14:13:29Z"
+		},
+		{
+			"checksumSHA1": "fSdYGTNS11oA/z4MnF/rCp9NkvU=",
+			"path": "github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1",
+			"revision": "76da5bcaaae06724e34e450741f0c2331927f725",
+			"revisionTime": "2020-04-07T14:13:29Z"
+		},
+		{
+			"checksumSHA1": "BPr0PiUoBSeY5WnxMjny6+ugeBQ=",
+			"path": "github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1",
+			"revision": "76da5bcaaae06724e34e450741f0c2331927f725",
+			"revisionTime": "2020-04-07T14:13:29Z"
 		},
 		{
 			"checksumSHA1": "vE43s37+4CJ2CDU6TlOUOYE0K9c=",
