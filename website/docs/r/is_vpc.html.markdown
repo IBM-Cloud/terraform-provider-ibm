@@ -39,6 +39,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - The unique identifier of the VPC.
+* `crn` - The CRN of VPC.
 * `default_security_group` - The unique identifier of the VPC default security group.
 * `status` - The status of VPC.
 * `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
