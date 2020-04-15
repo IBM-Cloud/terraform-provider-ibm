@@ -135,10 +135,36 @@ func resourceIBMISIKEValidator() *ResourceValidator {
 	encryption_algorithm := "3des, aes128, aes256"
 	dh_group := "2, 5, 14"
 	ike_version := "1, 2"
-	validateSchema = append(validateSchema, ValidateSchema{Identifier: isIKEAuthenticationAlg, ValidateFunctionIdentifier: ValidateAllowedStringValue, Type: TypeString, Required: true, AllowedValues: authentication_algorithm})
-	validateSchema = append(validateSchema, ValidateSchema{Identifier: isIKEEncryptionAlg, ValidateFunctionIdentifier: ValidateAllowedStringValue, Type: TypeString, Required: true, AllowedValues: encryption_algorithm})
-	validateSchema = append(validateSchema, ValidateSchema{Identifier: isIKEDhGroup, ValidateFunctionIdentifier: ValidateAllowedIntValue, Type: TypeInt, Required: true, AllowedValues: dh_group})
-	validateSchema = append(validateSchema, ValidateSchema{Identifier: isIKEVERSION, ValidateFunctionIdentifier: ValidateAllowedIntValue, Type: TypeInt, Optional: true, AllowedValues: ike_version})
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isIKEAuthenticationAlg,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              authentication_algorithm})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isIKEEncryptionAlg,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              encryption_algorithm})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isIKEDhGroup,
+			ValidateFunctionIdentifier: ValidateAllowedIntValue,
+			Type:                       TypeInt,
+			Required:                   true,
+			AllowedValues:              dh_group})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isIKEVERSION,
+			ValidateFunctionIdentifier: ValidateAllowedIntValue,
+			Type:                       TypeInt,
+			Optional:                   true,
+			AllowedValues:              ike_version})
+
 	ibmISIKEResourceValidator := ResourceValidator{ResourceName: "ibm_is_ike_policy", Schema: validateSchema}
 	return &ibmISIKEResourceValidator
 }

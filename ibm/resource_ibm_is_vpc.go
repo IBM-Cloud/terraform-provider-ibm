@@ -213,7 +213,16 @@ func resourceIBMISVPCValidator() *ResourceValidator {
 
 	validateSchema := make([]ValidateSchema, 1)
 	address_prefix_management := "auto, manual"
-	validateSchema = append(validateSchema, ValidateSchema{Identifier: isVPCAddressPrefixManagement, ValidateFunctionIdentifier: ValidateAllowedStringValue, Type: TypeString, Optional: true, Default: "auto", AllowedValues: address_prefix_management})
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPCAddressPrefixManagement,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Optional:                   true,
+			Default:                    "auto",
+			AllowedValues:              address_prefix_management})
+
 	ibmISVPCResourceValidator := ResourceValidator{ResourceName: "ibm_is_vpc", Schema: validateSchema}
 	return &ibmISVPCResourceValidator
 }
