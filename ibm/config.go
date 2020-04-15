@@ -12,8 +12,7 @@ import (
 	// Added code for the Power Colo Offering
 
 	apigateway "github.com/IBM/apigateway-go-sdk"
-	"github.com/IBM/go-sdk-core/v3/core"
-	kp "github.com/IBM/keyprotect-go-client"
+
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
 	jwt "github.com/dgrijalva/jwt-go"
 	slsession "github.com/softlayer/softlayer-go/session"
@@ -47,13 +46,20 @@ import (
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 	dns "github.com/IBM/dns-svcs-go-sdk/dnssvcsv1"
+	"github.com/IBM/go-sdk-core/v3/core"
+	kp "github.com/IBM/keyprotect-go-client"
+	vpcclassic "github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	vpc "github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
-//RetryAPIDelay ...
+//RetryDelay
 const RetryAPIDelay = 5 * time.Second
 
 //BluemixRegion ...
 var BluemixRegion string
+
+//VPCAPIVersion ...
+var VPCAPIVersion = "2020-03-24"
 
 var (
 	errEmptySoftLayerCredentials = errors.New("iaas_classic_username and iaas_classic_api_key must be provided. Please see the documentation on how to configure them")
@@ -67,6 +73,7 @@ type UserConfig struct {
 	userAccount string
 	cloudName   string `default:"bluemix"`
 	cloudType   string `default:"public"`
+	generation  int    `default:"2"`
 }
 
 //Config stores user provider input
@@ -160,6 +167,8 @@ type ClientSession interface {
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
 	CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error)
 	keyProtectAPI() (*kp.Client, error)
+	VpcClassicV1API() (*vpcclassic.VpcClassicV1, error)
+	VpcV1API() (*vpc.VpcV1, error)
 	APIGateway() (*apigateway.ApiGatewayControllerApiV1, error)
 	PrivateDnsClientSession() (*dns.DnsSvcsV1, error)
 }
@@ -250,6 +259,12 @@ type clientSession struct {
 	pDnsErr    error
 
 	bluemixSessionErr error
+
+	vpcClassicErr error
+	vpcClassicAPI *vpcclassic.VpcClassicV1
+
+	vpcErr error
+	vpcAPI *vpc.VpcV1
 }
 
 // BluemixAcccountAPI ...
@@ -386,6 +401,14 @@ func (sess clientSession) keyProtectAPI() (*kp.Client, error) {
 	return sess.kpAPI, sess.kpErr
 }
 
+func (sess clientSession) VpcClassicV1API() (*vpcclassic.VpcClassicV1, error) {
+	return sess.vpcClassicAPI, sess.vpcClassicErr
+}
+
+func (sess clientSession) VpcV1API() (*vpc.VpcV1, error) {
+	return sess.vpcAPI, sess.vpcErr
+}
+
 // Session to the Power Colo Service
 
 func (sess clientSession) IBMPISession() (*ibmpisession.IBMPISession, error) {
@@ -437,6 +460,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
 		session.userManagementErr = errEmptyBluemixCredentials
 		session.certManagementErr = errEmptyBluemixCredentials
+		session.vpcClassicErr = errEmptyBluemixCredentials
+		session.vpcErr = errEmptyBluemixCredentials
 		session.apigatewayErr = errEmptyBluemixCredentials
 		session.pDnsErr = errEmptyBluemixCredentials
 
@@ -465,7 +490,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		}
 
 	}
-	userConfig, err := fetchUserDetails(sess.BluemixSession)
+	userConfig, err := fetchUserDetails(sess.BluemixSession, c.Generation)
 	if err != nil {
 		session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
 	}
@@ -522,6 +547,41 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.kpErr = fmt.Errorf("Error occured while configuring Key Protect Service: %q", err)
 	}
 	session.kpAPI = kpAPIclient
+
+	var authenticator *core.BearerTokenAuthenticator
+	if strings.HasPrefix(sess.BluemixSession.Config.IAMAccessToken, "Bearer") {
+		authenticator = &core.BearerTokenAuthenticator{
+			BearerToken: sess.BluemixSession.Config.IAMAccessToken[7:],
+		}
+	} else {
+		authenticator = &core.BearerTokenAuthenticator{
+			BearerToken: sess.BluemixSession.Config.IAMAccessToken,
+		}
+	}
+
+	vpcclassicurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", c.Region)
+	vpcclassicoptions := &vpcclassic.VpcClassicV1Options{
+		URL:           envFallBack([]string{"IBMCLOUD_IS_API_ENDPOINT"}, vpcclassicurl),
+		Version:       &VPCAPIVersion,
+		Authenticator: authenticator,
+	}
+	vpcclassicclient, err := vpcclassic.NewVpcClassicV1(vpcclassicoptions)
+	if err != nil {
+		session.vpcErr = fmt.Errorf("Error occured while configuring vpc classic service: %q", err)
+	}
+	session.vpcClassicAPI = vpcclassicclient
+
+	vpcurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", c.Region)
+	vpcoptions := &vpc.VpcV1Options{
+		URL:           envFallBack([]string{"IBMCLOUD_IS_NG_API_ENDPOINT"}, vpcurl),
+		Version:       &VPCAPIVersion,
+		Authenticator: authenticator,
+	}
+	vpcclient, err := vpc.NewVpcV1(vpcoptions)
+	if err != nil {
+		session.vpcErr = fmt.Errorf("Error occured while configuring vpc classic service: %q", err)
+	}
+	session.vpcAPI = vpcclient
 
 	schematicService, err := schematics.New(sess.BluemixSession)
 	if err != nil {
@@ -754,7 +814,7 @@ func authenticateCF(sess *bxsession.Session) error {
 	return tokenRefresher.AuthenticateAPIKey(config.BluemixAPIKey)
 }
 
-func fetchUserDetails(sess *bxsession.Session) (*UserConfig, error) {
+func fetchUserDetails(sess *bxsession.Session, generation int) (*UserConfig, error) {
 	config := sess.Config
 	user := UserConfig{}
 
@@ -786,6 +846,8 @@ func fetchUserDetails(sess *bxsession.Session) (*UserConfig, error) {
 		user.cloudName = "staging"
 	}
 	user.cloudType = "public"
+
+	user.generation = generation
 	return &user, nil
 }
 

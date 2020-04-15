@@ -10,7 +10,7 @@ import (
 
 type DnsRecord struct {
 	Id         string      `json:"id"`
-	Name       string      `json:"name"`
+	Name       string      `json:"name,omitempty"`
 	DnsType    string      `json:"type"`
 	Content    string      `json:"content"`
 	ZoneId     string      `json:"zone_id"`
@@ -20,7 +20,7 @@ type DnsRecord struct {
 	Proxiable  bool        `json:"proxiable"`
 	Proxied    bool        `json:"proxied"`
 	Ttl        int         `json:"ttl"`
-	Priority   int         `json:"priority"`
+	Priority   int         `json:"priority,omitempty"`
 	Data       interface{} `json:"data,omitempty"`
 }
 
@@ -39,11 +39,13 @@ type DnsResult struct {
 }
 
 type DnsBody struct {
-	Name     string      `json:"name"`
+	Name     string      `json:"name,omitempty"`
 	DnsType  string      `json:"type"`
 	Content  string      `json:"content,omitempty"`
 	Priority int         `json:"priority,omitempty"`
 	Data     interface{} `json:"data,omitempty"`
+	Proxied  bool        `json:"proxied,omitempty"`
+	Ttl      int         `json:"ttl,omitempty"`
 }
 
 type Dns interface {
