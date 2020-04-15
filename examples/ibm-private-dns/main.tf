@@ -13,13 +13,11 @@ provider "ibm" {
 }
 
 resource "ibm_is_vpc" "test_pdns_vpc" {
-  depends_on     = [data.ibm_resource_group.rg]
   name           = "test-pdns-vpc"
   resource_group = data.ibm_resource_group.rg.id
 }
 
 resource "ibm_resource_instance" "test-pdns-instance" {
-  depends_on        = [ibm_is_vpc.test_pdns_vpc]
   name              = "test-pdns"
   resource_group_id = data.ibm_resource_group.rg.id
   location          = "global"
@@ -28,7 +26,6 @@ resource "ibm_resource_instance" "test-pdns-instance" {
 }
 
 resource "ibm_dns_zone" "test-pdns-zone" {
-  depends_on  = [ibm_resource_instance.test-pdns-instance]
   name        = "test.com"
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   description = "testdescription"
@@ -36,14 +33,12 @@ resource "ibm_dns_zone" "test-pdns-zone" {
 }
 
 resource "ibm_dns_permitted_network" "test-pdns-permitted-network-nw" {
-  depends_on  = [ibm_dns_zone.test-pdns-zone]
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   zone_id     = ibm_dns_zone.test-pdns-zone.zone_id
-  vpc_crn     = ibm_is_vpc.test_pdns_vpc.resource_crn
+  vpc_crn     = ibm_is_vpc.test_pdns_vpc.crn
 }
 
 resource "ibm_dns_resource_record" "test-pdns-resource-record-a" {
-  depends_on  = [ibm_dns_permitted_network.test-pdns-permitted-network-nw]
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   zone_id     = ibm_dns_zone.test-pdns-zone.zone_id
   type        = "A"
@@ -52,7 +47,6 @@ resource "ibm_dns_resource_record" "test-pdns-resource-record-a" {
 }
 
 resource "ibm_dns_resource_record" "test-pdns-resource-record-aaaa" {
-  depends_on  = [ibm_dns_resource_record.test-pdns-resource-record-a]
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   zone_id     = ibm_dns_zone.test-pdns-zone.zone_id
   type        = "AAAA"
@@ -61,7 +55,6 @@ resource "ibm_dns_resource_record" "test-pdns-resource-record-aaaa" {
 }
 
 resource "ibm_dns_resource_record" "test-pdns-resource-record-cname" {
-  depends_on  = [ibm_dns_resource_record.test-pdns-resource-record-aaaa]
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   zone_id     = ibm_dns_zone.test-pdns-zone.zone_id
   type        = "CNAME"
@@ -70,7 +63,7 @@ resource "ibm_dns_resource_record" "test-pdns-resource-record-cname" {
 }
 
 resource "ibm_dns_resource_record" "test-pdns-resource-record-ptr" {
-  depends_on  = [ibm_dns_resource_record.test-pdns-resource-record-cname]
+  depends_on = [ibm_dns_resource_record.test-pdns-resource-record-a]
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   zone_id     = ibm_dns_zone.test-pdns-zone.zone_id
   type        = "PTR"
@@ -79,7 +72,6 @@ resource "ibm_dns_resource_record" "test-pdns-resource-record-ptr" {
 }
 
 resource "ibm_dns_resource_record" "test-pdns-resource-record-mx" {
-  depends_on  = [ibm_dns_resource_record.test-pdns-resource-record-ptr]
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   zone_id     = ibm_dns_zone.test-pdns-zone.zone_id
   type        = "MX"
@@ -89,7 +81,6 @@ resource "ibm_dns_resource_record" "test-pdns-resource-record-mx" {
 }
 
 resource "ibm_dns_resource_record" "test-pdns-resource-record-srv" {
-  depends_on  = [ibm_dns_resource_record.test-pdns-resource-record-mx]
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   zone_id     = ibm_dns_zone.test-pdns-zone.zone_id
   type        = "SRV"
@@ -103,7 +94,6 @@ resource "ibm_dns_resource_record" "test-pdns-resource-record-srv" {
 }
 
 resource "ibm_dns_resource_record" "test-pdns-resource-record-txt" {
-  depends_on  = [ibm_dns_resource_record.test-pdns-resource-record-srv]
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   zone_id     = ibm_dns_zone.test-pdns-zone.zone_id
   type        = "TXT"

@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -103,8 +104,9 @@ func resourceIBMPrivateDnsPermittedNetworkCreate(d *schema.ResourceData, meta in
 
 	createPermittedNetworkOptions.SetPermittedNetwork(permittedNetworkCrn)
 	createPermittedNetworkOptions.SetType(nwType)
-	response, _, err := sess.CreatePermittedNetwork(createPermittedNetworkOptions)
+	response, detail, err := sess.CreatePermittedNetwork(createPermittedNetworkOptions)
 	if err != nil {
+		log.Printf("Error creating dns zone:%s", detail)
 		return err
 	}
 
@@ -122,9 +124,10 @@ func resourceIBMPrivateDnsPermittedNetworkRead(d *schema.ResourceData, meta inte
 
 	id_set := strings.Split(d.Id(), "/")
 	getPermittedNetworkOptions := sess.NewGetPermittedNetworkOptions(id_set[0], id_set[1], id_set[2])
-	response, _, err := sess.GetPermittedNetwork(getPermittedNetworkOptions)
+	response, detail, err := sess.GetPermittedNetwork(getPermittedNetworkOptions)
 
 	if err != nil {
+		log.Printf("Error reading dns zone:%s", detail)
 		return err
 	}
 
@@ -152,6 +155,7 @@ func resourceIBMPrivateDnsPermittedNetworkDelete(d *schema.ResourceData, meta in
 	_, response, err := sess.DeletePermittedNetwork(deletePermittedNetworkOptions)
 
 	if err != nil && response.StatusCode != 404 {
+		log.Printf("Error deleting dns zone:%s", response)
 		return err
 	}
 
