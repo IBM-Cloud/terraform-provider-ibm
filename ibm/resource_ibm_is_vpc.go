@@ -36,6 +36,7 @@ const (
 	subnetsList                  = "subnets"
 	totalIPV4AddressCount        = "total_ipv4_address_count"
 	availableIPV4AddressCount    = "available_ipv4_address_count"
+	isVPCCRN                     = "crn"
 )
 
 func resourceIBMISVPC() *schema.Resource {
@@ -119,6 +120,13 @@ func resourceIBMISVPC() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      resourceIBMVPCHash,
 			},
+
+			isVPCCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -289,6 +297,7 @@ func resourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.Set(isVPCTags, tags)
 	d.Set(isVPCResourceGroup, vpc.ResourceGroup.ID)
+	d.Set(isVPCCRN, vpc.Crn)
 	controller, err := getBaseController(meta)
 	if err != nil {
 		return err
