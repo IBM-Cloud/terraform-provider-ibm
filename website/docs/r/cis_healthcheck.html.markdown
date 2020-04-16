@@ -34,14 +34,14 @@ The following arguments are supported:
 * `expected_body` - (Optional,string) A case-insensitive sub-string to look for in the response body. If this string is not found, the origin will be marked as unhealthy. A null value of "" is allowed to match on any content. 
 * `expected_codes` - (Optional,string) The expected HTTP response code or code range of the health check. Eg `2xx`
 * `method` - (Optional,string) The HTTP method to use for the health check.
-* `timeout` - (Optional,int) The timeout (in seconds) before marking the health check as failed.
+* `timeout` - (Optional,int) The timeout (in seconds) before marking the health check as failed.The Default value is 5.
 * `path` - (Optional,string) The endpoint path to health check against.
-* `interval` - (Optional,int) The interval between each health check. Shorter intervals may improve failover time, but will increase load on the origins as we check from multiple locations.
-* `retries` - (Optional,int) The number of retries to attempt in case of a timeout before marking the origin as unhealthy. Retries are attempted immediately.
-* `type` - (Optional,string) The protocol to use for the healthcheck. Currently supported protocols are 'HTTP', 'HTTPS' and 'TCP'. 
+* `interval` - (Optional,int) The interval between each health check. Shorter intervals may improve failover time, but will increase load on the origins as we check from multiple locations.The Default value is 60.
+* `retries` - (Optional,int) The number of retries to attempt in case of a timeout before marking the origin as unhealthy. Retries are attempted immediately.The Default value is 2.
+* `type` - (Optional,string) The protocol to use for the healthcheck. Currently supported protocols are 'HTTP', 'HTTPS' and 'TCP'. The Default value is 'HTTP'.
 * `follow_redirects`-(Optional,bool) Follow redirects if returned by the origin.
 * `allow_insecure`-(Optional,bool) Do not validate the certificate when healthcheck use HTTPS.
-* `description` - (Optional,string) Free text description.
+* `description` - (Optional,string) Free text description.The Default value is false.
 * `port` - (Optional,int) The TCP port to use for the health check.
 
 [`expected_body`],[`expected_codes`] are required aruguments when the type is HTTP or HTTPS.
