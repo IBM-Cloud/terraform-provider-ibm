@@ -12,8 +12,7 @@ import (
 	// Added code for the Power Colo Offering
 
 	apigateway "github.com/IBM/apigateway-go-sdk"
-	"github.com/IBM/go-sdk-core/core"
-	kp "github.com/IBM/keyprotect-go-client"
+
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
 	jwt "github.com/dgrijalva/jwt-go"
 	slsession "github.com/softlayer/softlayer-go/session"
@@ -46,12 +45,14 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
-	//"github.com/IBM/go-sdk-core/core"
+	dns "github.com/IBM/dns-svcs-go-sdk/dnssvcsv1"
+	"github.com/IBM/go-sdk-core/core"
+	kp "github.com/IBM/keyprotect-go-client"
 	vpcclassic "github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
 	vpc "github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
-//RetryAPIDelay ...
+//RetryDelay
 const RetryAPIDelay = 5 * time.Second
 
 //BluemixRegion ...
@@ -166,9 +167,10 @@ type ClientSession interface {
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
 	CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error)
 	keyProtectAPI() (*kp.Client, error)
-	APIGateway() (*apigateway.ApiGatewayControllerApiV1, error)
 	VpcClassicV1API() (*vpcclassic.VpcClassicV1, error)
 	VpcV1API() (*vpc.VpcV1, error)
+	APIGateway() (*apigateway.ApiGatewayControllerApiV1, error)
+	PrivateDnsClientSession() (*dns.DnsSvcsV1, error)
 }
 
 type clientSession struct {
@@ -252,6 +254,9 @@ type clientSession struct {
 
 	kpErr error
 	kpAPI *kp.API
+
+	pDnsClient *dns.DnsSvcsV1
+	pDnsErr    error
 
 	bluemixSessionErr error
 
@@ -410,6 +415,12 @@ func (sess clientSession) IBMPISession() (*ibmpisession.IBMPISession, error) {
 	return sess.ibmpiSession, sess.powerConfigErr
 }
 
+// Private DNS Service
+
+func (sess clientSession) PrivateDnsClientSession() (*dns.DnsSvcsV1, error) {
+	return sess.pDnsClient, sess.pDnsErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -449,9 +460,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
 		session.userManagementErr = errEmptyBluemixCredentials
 		session.certManagementErr = errEmptyBluemixCredentials
-		session.apigatewayErr = errEmptyBluemixCredentials
 		session.vpcClassicErr = errEmptyBluemixCredentials
 		session.vpcErr = errEmptyBluemixCredentials
+		session.apigatewayErr = errEmptyBluemixCredentials
+		session.pDnsErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -536,8 +548,15 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.kpAPI = kpAPIclient
 
-	authenticator := &core.BearerTokenAuthenticator{
-		BearerToken: sess.BluemixSession.Config.IAMAccessToken[7:],
+	var authenticator *core.BearerTokenAuthenticator
+	if strings.HasPrefix(sess.BluemixSession.Config.IAMAccessToken, "Bearer") {
+		authenticator = &core.BearerTokenAuthenticator{
+			BearerToken: sess.BluemixSession.Config.IAMAccessToken[7:],
+		}
+	} else {
+		authenticator = &core.BearerTokenAuthenticator{
+			BearerToken: sess.BluemixSession.Config.IAMAccessToken,
+		}
 	}
 
 	vpcclassicurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", c.Region)
@@ -679,6 +698,18 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	session.ibmpiSession = ibmpisession
 
+	dnsOptions := &dns.DnsSvcsV1Options{
+		URL: envFallBack([]string{"IBMCLOUD_PRIVATE_DNS_API_ENDPOINT"}, "https://api.dns-svcs.cloud.ibm.com/v1"),
+		Authenticator: &core.BearerTokenAuthenticator{
+			BearerToken: sess.BluemixSession.Config.IAMAccessToken,
+		},
+	}
+
+	session.pDnsClient, session.pDnsErr = dns.NewDnsSvcsV1(dnsOptions)
+	if session.pDnsErr != nil {
+		session.pDnsErr = fmt.Errorf("Error occured while configuring PrivateDNS Service: %s", err)
+	}
+
 	return session, nil
 }
 
@@ -718,12 +749,13 @@ func newSession(c *Config) (*Session, error) {
 		bmxConfig := &bluemix.Config{
 			IAMAccessToken:  c.IAMToken,
 			IAMRefreshToken: c.IAMRefreshToken,
-			Debug:           os.Getenv("TF_LOG") != "",
-			HTTPTimeout:     c.BluemixTimeout,
-			Region:          c.Region,
-			ResourceGroup:   c.ResourceGroup,
-			RetryDelay:      &c.RetryDelay,
-			MaxRetries:      &c.RetryCount,
+			//Comment out debug mode for v0.12
+			//Debug:           os.Getenv("TF_LOG") != "",
+			HTTPTimeout:   c.BluemixTimeout,
+			Region:        c.Region,
+			ResourceGroup: c.ResourceGroup,
+			RetryDelay:    &c.RetryDelay,
+			MaxRetries:    &c.RetryCount,
 		}
 		sess, err := bxsession.New(bmxConfig)
 		if err != nil {
@@ -737,7 +769,8 @@ func newSession(c *Config) (*Session, error) {
 		var sess *bxsession.Session
 		bmxConfig := &bluemix.Config{
 			BluemixAPIKey: c.BluemixAPIKey,
-			Debug:         os.Getenv("TF_LOG") != "",
+			//Comment out debug mode for v0.12
+			//Debug:         os.Getenv("TF_LOG") != "",
 			HTTPTimeout:   c.BluemixTimeout,
 			Region:        c.Region,
 			ResourceGroup: c.ResourceGroup,
