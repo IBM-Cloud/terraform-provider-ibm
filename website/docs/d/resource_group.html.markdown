@@ -35,7 +35,7 @@ The following arguments are supported:
 * `name` - (Optional, string) The name of the IBM Cloud resource group. You can retrieve the value by running the `ibmcloud resource groups` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).  
   **NOTE**: Conflicts with `is_default`.
 
-* `is_default` - (Optional, boolean) Specifies whether you want to import default resource group. The default value is `false`.  
+* `is_default` - (Optional, boolean) Specifies whether you want to import default resource group.  
   **NOTE**: Conflicts with `name`.
 
 ## Attribute Reference
