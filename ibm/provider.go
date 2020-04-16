@@ -194,6 +194,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_is_region":                    dataSourceIBMISRegion(),
 			"ibm_is_ssh_key":                   dataSourceIBMISSSHKey(),
 			"ibm_is_subnet":                    dataSourceIBMISSubnet(),
+			"ibm_is_subnets":                   dataSourceIBMISSubnets(),
 			"ibm_is_vpc":                       dataSourceIBMISVPC(),
 			"ibm_is_zone":                      dataSourceIBMISZone(),
 			"ibm_is_zones":                     dataSourceIBMISZones(),
