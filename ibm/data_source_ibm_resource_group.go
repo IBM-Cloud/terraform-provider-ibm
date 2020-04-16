@@ -23,7 +23,6 @@ func dataSourceIBMResourceGroup() *schema.Resource {
 				Description:   "Default Resource group",
 				Type:          schema.TypeBool,
 				Optional:      true,
-				Default:       false,
 				ConflictsWith: []string{"name"},
 			},
 		},
@@ -36,7 +35,11 @@ func dataSourceIBMResourceGroupRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 	rsGroup := rsManagementAPI.ResourceGroup()
-	defaultGrp := d.Get("is_default").(bool)
+
+	var defaultGrp bool
+	if group, ok := d.GetOk("is_default"); ok {
+		defaultGrp = group.(bool)
+	}
 	var name string
 	if n, ok := d.GetOk("name"); ok {
 		name = n.(string)
