@@ -45,6 +45,12 @@ func dataSourceIBMISVPC() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 
+			isVPCCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -169,6 +175,7 @@ func dataSourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
 					"An error occured during reading of vpc (%s) tags : %s", d.Id(), err)
 			}
 			d.Set(isVPCTags, tags)
+			d.Set(isVPCCRN, vpc.Crn)
 
 			controller, err := getBaseController(meta)
 			if err != nil {
