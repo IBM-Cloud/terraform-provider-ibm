@@ -49,6 +49,7 @@ func resourceIBMCISHealthCheck() *schema.Resource {
 				Type:         schema.TypeString,
 				Description:  "type",
 				Optional:     true,
+				Default:      "http",
 				ValidateFunc: validateAllowedStringValue([]string{"http", "https", "tcp"}),
 			},
 			"method": {
@@ -61,18 +62,21 @@ func resourceIBMCISHealthCheck() *schema.Resource {
 				Type:        schema.TypeInt,
 				Description: "timeout",
 				Optional:    true,
+				Default:     5,
 				//ValidateFunc: validation.IntBetween(1, 10),
 			},
 			"retries": {
 				Type:        schema.TypeInt,
 				Description: "retries",
 				Optional:    true,
+				Default:     2,
 				//ValidateFunc: validation.IntBetween(1, 5),
 			},
 			"interval": {
 				Type:        schema.TypeInt,
 				Description: "interval",
 				Optional:    true,
+				Default:     60,
 			},
 			"follow_redirects": {
 				Type:        schema.TypeBool,
@@ -83,6 +87,7 @@ func resourceIBMCISHealthCheck() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "allow_insecure",
 				Optional:    true,
+				Default:     false,
 			},
 			"created_on": {
 				Type:     schema.TypeString,
