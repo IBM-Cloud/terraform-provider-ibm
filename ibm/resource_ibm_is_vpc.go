@@ -35,6 +35,7 @@ const (
 	subnetsList                  = "subnets"
 	totalIPV4AddressCount        = "total_ipv4_address_count"
 	availableIPV4AddressCount    = "available_ipv4_address_count"
+	isVPCCRN                     = "crn"
 )
 
 func resourceIBMISVPC() *schema.Resource {
@@ -117,6 +118,11 @@ func resourceIBMISVPC() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      resourceIBMVPCHash,
+			},
+			isVPCCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
 			},
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
@@ -268,6 +274,7 @@ func resourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(isVPCName, vpc.Name)
 	d.Set(isVPCClassicAccess, vpc.ClassicAccess)
 	d.Set(isVPCStatus, vpc.Status)
+	d.Set(isVPCCRN, vpc.Crn)
 	if vpc.DefaultNetworkACL != nil {
 		log.Printf("[DEBUG] vpc default network acl is not null :%s", vpc.DefaultNetworkACL.ID)
 		d.Set(isVPCDefaultNetworkACL, vpc.DefaultNetworkACL.ID)

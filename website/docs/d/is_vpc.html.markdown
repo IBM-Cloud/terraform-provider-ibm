@@ -34,6 +34,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
+* `crn` - The CRN of VPC.
 * `status` - The status of VPC.
 * `default_network_acl` - ID of the default network ACL.
 * `classic_access` - Indicates whether this VPC is connected to Classic Infrastructure.
