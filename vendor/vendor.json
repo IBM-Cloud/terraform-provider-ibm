@@ -550,10 +550,38 @@
 			"revisionTime": "2020-03-19T17:42:28Z"
 		},
 		{
+			"checksumSHA1": "kfODNoDS/2LsNmaaP30SwCZRo10=",
+			"path": "github.com/IBM/dns-svcs-go-sdk",
+			"revision": "b029344b8a784d1ac5b62d4ac68a35f3d93b06e9",
+			"revisionTime": "2020-03-09T05:55:39Z",
+			"version": "v0.0.1",
+			"versionExact": "v0.0.1"
+		},
+		{
+			"checksumSHA1": "QbiTwBYi58+hZAqYGurUSQRs+FE=",
+			"path": "github.com/IBM/dns-svcs-go-sdk/common",
+			"revision": "b029344b8a784d1ac5b62d4ac68a35f3d93b06e9",
+			"revisionTime": "2020-03-09T05:55:39Z",
+			"version": "v0.0.1",
+			"versionExact": "v0.0.1"
+		},
+		{
+			"checksumSHA1": "688UU63hU7ap4l78UJLFUgHtDhA=",
+			"path": "github.com/IBM/dns-svcs-go-sdk/dnssvcsv1",
+			"revision": "b029344b8a784d1ac5b62d4ac68a35f3d93b06e9",
+			"revisionTime": "2020-03-09T05:55:39Z",
+			"version": "v0.0.1",
+			"versionExact": "v0.0.1"
+		},
+		{
 			"checksumSHA1": "+Tj8hMZSUjK6UnbjADmXLQXlfKQ=",
 			"path": "github.com/IBM/go-sdk-core",
 			"revision": "2050cbfeb7bceffbde475fa32ceeb44660687843",
 			"revisionTime": "2020-03-29T20:23:51Z"
+		},
+		{
+			"path": "github.com/IBM/go-sdk-core/core",
+			"revision": "2050cbfeb7bceffbde475fa32ceeb44660687843"
 		},
 		{
 			"checksumSHA1": "uhx4vydkhaBSVJ1Bq+oRkErxlIM=",
@@ -1547,20 +1575,20 @@
 			"revisionTime": "2018-05-24T22:32:19Z"
 		},
 		{
-			"checksumSHA1": "DqaoG++NXRCfvH/OloneLWrM+3k=",
-			"path": "github.com/hashicorp/terraform/plugin",
-			"revision": "dbce85d85ff0beebc660b3d1805b4ef15361af00",
-			"revisionTime": "2018-04-05T19:25:37Z",
-			"version": "=v0.11.6",
-			"versionExact": "v0.11.6"
-		},
-		{
 			"checksumSHA1": "6AA7ZAzswfl7SOzleP6e6he0lq4=",
 			"path": "github.com/hashicorp/terraform/plugin",
 			"revision": "8d560482c34e865458fd884cb0790b4f73f09ad1",
 			"revisionTime": "2017-06-08T00:14:54Z",
 			"version": "v0.9.8",
 			"versionExact": "v0.9.8"
+		},
+		{
+			"checksumSHA1": "DqaoG++NXRCfvH/OloneLWrM+3k=",
+			"path": "github.com/hashicorp/terraform/plugin",
+			"revision": "dbce85d85ff0beebc660b3d1805b4ef15361af00",
+			"revisionTime": "2018-04-05T19:25:37Z",
+			"version": "=v0.11.6",
+			"versionExact": "v0.11.6"
 		},
 		{
 			"checksumSHA1": "tx5xrdiUWdAHqoRV5aEfALgT1aU=",
@@ -2484,7 +2512,7 @@
 			"revision": ""
 		},
 		{
-			"path": "vendor/github.com/hashicorp/terraform-plugin-sdk/helper/customdiff",
+			"path": "vendor/github.com/hashicorp/terraform/helper/customdiff",
 			"revision": ""
 		}
 	],
