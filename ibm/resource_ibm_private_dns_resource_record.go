@@ -354,7 +354,9 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 	}
 
 	updateResourceRecordOptions := sess.NewUpdateResourceRecordOptions(id_set[0], id_set[1], id_set[2])
-	updateResourceRecordOptions.SetName(*response.Type)
+	if *response.Type != "PTR" {
+		updateResourceRecordOptions.SetName(*response.Name)
+	}
 
 	//
 	var ttl int64
@@ -396,14 +398,8 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 			updateResourceRecordOptions.SetRdata(resourceRecordCnameData)
 		}
 	case "PTR":
-		if d.HasChange(pdnsRecordTTL) || d.HasChange(pdnsRdata) {
+		if d.HasChange(pdnsRecordTTL) {
 			updateResourceRecordOptions.SetTTL(ttl)
-			rdata = d.Get(pdnsRdata).(string)
-			resourceRecordPtrData, err := sess.NewResourceRecordUpdateInputRdataRdataPtrRecord(rdata)
-			if err != nil {
-				return err
-			}
-			updateResourceRecordOptions.SetRdata(resourceRecordPtrData)
 		}
 	case "TXT":
 		if d.HasChange(pdnsRecordTTL) || d.HasChange(pdnsRdata) {
@@ -421,9 +417,9 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 
 			updateResourceRecordOptions.SetTTL(ttl)
 			rdata = d.Get(pdnsRdata).(string)
-			preference := d.Get(pdnsMxPreference).(int64)
+			preference := d.Get(pdnsMxPreference).(int)
 
-			resourceRecordMxData, err := sess.NewResourceRecordUpdateInputRdataRdataMxRecord(rdata, preference)
+			resourceRecordMxData, err := sess.NewResourceRecordUpdateInputRdataRdataMxRecord(rdata, int64(preference))
 			if err != nil {
 				return err
 			}
@@ -437,11 +433,11 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 
 			updateResourceRecordOptions.SetTTL(ttl)
 			rdata = d.Get(pdnsRdata).(string)
-			port := d.Get(pdnsSrvPort).(int64)
-			priority := d.Get(pdnsSrvPriority).(int64)
-			weight := d.Get(pdnsSrvWeight).(int64)
+			port := d.Get(pdnsSrvPort).(int)
+			priority := d.Get(pdnsSrvPriority).(int)
+			weight := d.Get(pdnsSrvWeight).(int)
 
-			resourceRecordSrvData, err := sess.NewResourceRecordUpdateInputRdataRdataSrvRecord(port, priority, rdata, weight)
+			resourceRecordSrvData, err := sess.NewResourceRecordUpdateInputRdataRdataSrvRecord(int64(port), int64(priority), rdata, int64(weight))
 			if err != nil {
 				return err
 			}
