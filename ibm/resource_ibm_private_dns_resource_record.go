@@ -354,8 +354,9 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 	}
 
 	updateResourceRecordOptions := sess.NewUpdateResourceRecordOptions(id_set[0], id_set[1], id_set[2])
+	recordName := d.Get(pdnsRecordName).(string)
 	if *response.Type != "PTR" {
-		updateResourceRecordOptions.SetName(*response.Name)
+		updateResourceRecordOptions.SetName(recordName)
 	}
 
 	//
