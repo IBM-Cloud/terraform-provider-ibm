@@ -47,6 +47,23 @@ output "ICD Etcd database connection string" {
 }
 
 ```
+## Example Usage using point_in_time_recovery time
+
+```hcl
+data "ibm_resource_group" "group" {
+  name = "<your_group>"
+}
+
+resource "ibm_database" "test_acc" {
+  resource_group_id                    = data.ibm_resource_group.group.id
+  name                                 = "<your_database_name>"
+  service                              = "databases-for-postgresql"
+  plan                                 = "standard"
+  location                             = "eu-gb"
+  point_in_time_recovery_time          = "2020-04-20T05:27:36Z"
+  point_in_time_recovery_deployment_id = "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/4448261269a14562b839e0a3019ed980:0b8c37b0-0f01-421a-bb32-056c6565b461::"
+}
+```
 
 provider.tf
 
@@ -92,6 +109,8 @@ The following arguments are supported:
 * `remote_leader_id` - (Optional, string) A CRN of the leader database to make the replica(read-only) deployment. The leader database must have been created by a database deployment with the same service ID. A read-only replica is set up to replicate all of your data from the leader deployment to the replica deployment using asynchronous replication. See the documentation related to Read-only Replicas here. https://cloud.ibm.com/docs/services/databases-for-postgresql?topic=databases-for-postgresql-read-only-replicas
 * `key_protect_key` - (Optional, string) The CRN of a Key Protect key, which is then used for disk encryption. A key protect CRN is in the format crn:v1:<...>:key:<id>.
 * `key_protect_instance` - (Optional, string) The CRN of a Key Protect instance, which is then used for disk encryption. A key protect CRN is in the format crn:v1:<...>::.
+* `point_in_time_recovery_deployment_id` - (Optional, string) The source deployment's ID.
+* `point_in_time_recovery_time` - (Optional, string) The timestamp in UTC you want to restore to. PITR time stamp can be retrieved using [`ibmcloud cdb postgresql earliest-pitr-timestamp <deployment name or CRN>`] For more info on how to get PITR time refer [point-in-time-recovery-docs](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-pitr)
 * `service_endpoints` - (Optional, string) Selects the types Service Endpoints supported on your deployment. Options are public, private, or public-and-private. The default is `public`.
 
 * `users` - (Optional) - Multiple blocks allowed       
