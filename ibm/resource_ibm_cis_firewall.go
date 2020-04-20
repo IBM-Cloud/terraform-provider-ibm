@@ -94,7 +94,10 @@ func resourceIBMCISFirewallRecordCreate(d *schema.ResourceData, meta interface{}
 		return err
 	}
 	cisID := d.Get("cis_id").(string)
-	zoneID := d.Get("domain_id").(string)
+	zoneID, _, err := convertTftoCisTwoVar(d.Get("domain_id").(string))
+	if err != nil {
+		return err
+	}
 	firewallType := d.Get("firewall_type").(string)
 
 	newRecord := v1.FirewallBody{}
@@ -180,7 +183,7 @@ func resourceIBMCISFirewallRecordRead(d *schema.ResourceData, meta interface{}) 
 	record := *recordPtr
 	d.Set("cis_id", cisID)
 	d.Set("firewall_type", firewallType)
-	d.Set("domain_id", zoneID)
+	d.Set("domain_id", convertCisToTfTwoVar(zoneID, cisID))
 
 	if &record.Paused != nil || record.Urls != nil || record.Configurations != nil {
 		configuration := make([]map[string]interface{}, 0, len(record.Configurations))
