@@ -221,12 +221,23 @@ func resourceIBMContainerVpcWorkerPoolRead(d *schema.ResourceData, meta interfac
 		return err
 	}
 
+	var zones = make([]map[string]interface{}, 0)
+	for _, zone := range workerPool.Zones {
+		for _, subnet := range zone.Subnets {
+			zoneInfo := map[string]interface{}{
+				"name":      zone.ID,
+				"subnet_id": subnet.ID,
+			}
+			zones = append(zones, zoneInfo)
+		}
+	}
+
 	d.Set("worker_pool_name", workerPool.PoolName)
 	d.Set("flavor", workerPool.Flavor)
 	d.Set("worker_count", workerPool.WorkerCount)
 	d.Set("provider", workerPool.Provider)
 	d.Set("labels", workerPool.Labels)
-	d.Set("zones", flattenVpcZones(workerPool.Zones))
+	d.Set("zones", zones)
 	d.Set("cluster", cluster)
 	d.Set("vpc_id", workerPool.VpcID)
 
