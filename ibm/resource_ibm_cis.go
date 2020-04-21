@@ -23,6 +23,7 @@ const (
 	cisInstanceInactiveStatus     = "inactive"
 	cisInstanceFailStatus         = "failed"
 	cisInstanceRemovedStatus      = "removed"
+	cisInstanceReclamation        = "pending_reclamation"
 )
 
 func resourceIBMCISInstance() *schema.Resource {
@@ -464,7 +465,7 @@ func waitForCISInstanceDelete(d *schema.ResourceData, meta interface{}) (interfa
 	instanceID := d.Id()
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{cisInstanceProgressStatus, cisInstanceInactiveStatus, cisInstanceSuccessStatus},
-		Target:  []string{cisInstanceRemovedStatus},
+		Target:  []string{cisInstanceRemovedStatus, cisInstanceReclamation},
 		Refresh: func() (interface{}, string, error) {
 			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
 			if err != nil {
