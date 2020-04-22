@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -66,6 +67,27 @@ func resourceIBMISLBListenerPolicy() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
+				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
+					if o == "" {
+						return false
+					}
+					// if state file entry and tf file entry matches
+					if strings.Compare(n, o) == 0 {
+						return true
+					}
+
+					if strings.Contains(n, "/") {
+
+						//Split lbID/listenerID and fetch listenerID
+						new := strings.Split(n, "/")
+
+						if strings.Compare(new[1], o) == 0 {
+							return true
+						}
+					}
+
+					return false
+				},
 			},
 
 			isLBListenerPolicyAction: {
@@ -142,6 +164,26 @@ func resourceIBMISLBListenerPolicy() *schema.Resource {
 				Type:     schema.TypeString,
 				ForceNew: false,
 				Optional: true,
+				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
+					if o == "" {
+						return false
+					}
+					// if state file entry and tf file entry matches
+					if strings.Compare(n, o) == 0 {
+						return true
+					}
+
+					if strings.Contains(n, "/") {
+						//Split lbID/listenerID and fetch listenerID
+						new := strings.Split(n, "/")
+
+						if strings.Compare(new[1], o) == 0 {
+							return true
+						}
+					}
+
+					return false
+				},
 			},
 
 			isLBListenerPolicyTargetHTTPStatusCode: {
@@ -172,7 +214,13 @@ func resourceIBMISLBListenerPolicyCreate(d *schema.ResourceData, meta interface{
 
 	//Get the Load balancer ID
 	lbID := d.Get(isLBListenerPolicyLBID).(string)
-	listenerID := d.Get(isLBListenerPolicyListenerID).(string)
+
+	//User can set listener id as combination of lbID/listenerID, parse and get the listenerID
+	listenerID, err := getListenerID(d.Get(isLBListenerPolicyListenerID).(string))
+	if err != nil {
+		return err
+	}
+
 	action := d.Get(isLBListenerPolicyAction).(string)
 	priority := int64(d.Get(isLBListenerPolicyPriority).(int))
 
@@ -197,6 +245,19 @@ func resourceIBMISLBListenerPolicyCreate(d *schema.ResourceData, meta interface{
 	return resourceIBMISLBListenerPolicyRead(d, meta)
 }
 
+func getListenerID(id string) (string, error) {
+	if strings.Contains(id, "/") {
+		parts, err := idParts(id)
+		if err != nil {
+			return "", err
+		}
+
+		return parts[1], nil
+	} else {
+		return id, nil
+	}
+}
+
 func classicLbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbID, listenerID, action, name string, priority int64) error {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
@@ -217,7 +278,14 @@ func classicLbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbI
 
 	if actionChk.(string) == "forward" {
 		if targetIDSet {
-			id := tID.(string)
+
+			//User can set the poolId as combination of lbID/poolID, if so parse the string & get the poolID
+			id, err := getPoolID(tID.(string))
+			if err != nil {
+				return err
+			}
+
+			//id := lbPoolID.(string)
 			target = &vpcclassicv1.LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity{
 				ID: &id,
 			}
@@ -312,6 +380,19 @@ func classicLbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbI
 		return err
 	}
 	return nil
+}
+
+func getPoolID(id string) (string, error) {
+	if strings.Contains(id, "/") {
+		parts, err := idParts(id)
+		if err != nil {
+			return "", err
+		}
+
+		return parts[1], nil
+	}
+	return id, nil
+
 }
 
 func isWaitForClassicLbAvailable(vpc *vpcclassicv1.VpcClassicV1, id string, timeout time.Duration) (interface{}, error) {
@@ -418,7 +499,13 @@ func lbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbID, list
 
 	if actionChk.(string) == "forward" {
 		if targetIDSet {
-			id := tID.(string)
+
+			//User can set the poolId as combination of lbID/poolID, if so parse the string & get the poolID
+			id, err := getPoolID(tID.(string))
+			if err != nil {
+				return err
+			}
+
 			target = &vpcv1.LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity{
 				ID: &id,
 			}
@@ -776,7 +863,12 @@ func classicLbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbI
 
 	//If Action is forward and TargetID is changed, set the target to pool ID
 	if d.Get(isLBListenerPolicyAction).(string) == "forward" && d.HasChange(isLBListenerPolicyTargetID) {
-		id := d.Get(isLBListenerPolicyTargetID).(string)
+
+		//User can set the poolId as combination of lbID/poolID, if so parse the string & get the poolID
+		id, err := getPoolID(d.Get(isLBListenerPolicyTargetID).(string))
+		if err != nil {
+			return err
+		}
 
 		target = &vpcclassicv1.LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentity{
 			ID: &id,
@@ -864,8 +956,12 @@ func lbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbID, list
 	var target vpcv1.LoadBalancerListenerPolicyPatchTargetIntf
 	//If Action is forward and TargetID is changed, set the target to pool ID
 	if d.Get(isLBListenerPolicyAction).(string) == "forward" && d.HasChange(isLBListenerPolicyTargetID) {
-		id := d.Get(isLBListenerPolicyTargetID).(string)
 
+		//User can set the poolId as combination of lbID/poolID, if so parse the string & get the poolID
+		id, err := getPoolID(d.Get(isLBListenerPolicyTargetID).(string))
+		if err != nil {
+			return err
+		}
 		target = &vpcv1.LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentity{
 			ID: &id,
 		}
@@ -969,12 +1065,22 @@ func classicLbListenerPolicycDelete(d *schema.ResourceData, meta interface{}, lb
 		ID:             &ID,
 	}
 
+	isLBListenerPolicyKey := "load_balancer_listener_policy_key_" + lbID + listenerID
+	ibmMutexKV.Lock(isLBListenerPolicyKey)
+	defer ibmMutexKV.Unlock(isLBListenerPolicyKey)
+
+	_, err = isWaitForClassicLbAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return fmt.Errorf(
+			"LB-LP Error checking for load balancer (%s) is active: %s", lbID, err)
+	}
+
 	response, err := sess.DeleteLoadBalancerListenerPolicy(deleteLbListenerPolicyOptions)
 
 	if err != nil && response.StatusCode != 404 {
 		return fmt.Errorf("Error in classicLbListenerPolicycDelete: %s\n%s", err, response)
 	}
-	if response.StatusCode != 404 {
+	if response.StatusCode == 404 {
 		return nil
 	}
 	_, err = isWaitForLbListenerPolicyClassicDeleted(sess, d.Id(), d.Timeout(schema.TimeoutDelete))
@@ -995,11 +1101,22 @@ func lbListenerPolicyDelete(d *schema.ResourceData, meta interface{}, lbID, list
 		ListenerID:     &listenerID,
 		ID:             &ID,
 	}
+
+	isLBListenerPolicyKey := "load_balancer_listener_policy_key_" + lbID + listenerID
+	ibmMutexKV.Lock(isLBListenerPolicyKey)
+	defer ibmMutexKV.Unlock(isLBListenerPolicyKey)
+
+	_, err = isWaitForLbAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return fmt.Errorf(
+			"LB-LP Error checking for load balancer (%s) is active: %s", lbID, err)
+	}
+
 	response, err := sess.DeleteLoadBalancerListenerPolicy(deleteLbListenerPolicyOptions)
 	if err != nil && response.StatusCode != 404 {
 		return fmt.Errorf("Error in lbListenerPolicyDelete: %s\n%s", err, response)
 	}
-	if response.StatusCode != 404 {
+	if response.StatusCode == 404 {
 		return nil
 	}
 	_, err = isWaitForLbListnerPolicyDeleted(sess, d.Id(), d.Timeout(schema.TimeoutDelete))
@@ -1033,8 +1150,7 @@ func isLbListenerPolicyDeleteRefreshFunc(vpc *vpcv1.VpcV1, id string) resource.S
 
 		lbID := parts[0]
 		listenerID := parts[1]
-		//policyID := parts[2]
-		policyID := id
+		policyID := parts[2]
 
 		getLbListenerPolicyOptions := &vpcv1.GetLoadBalancerListenerPolicyOptions{
 			LoadBalancerID: &lbID,
@@ -1234,9 +1350,8 @@ func isLbListenerPolicyClassicDeleteRefreshFunc(vpc *vpcclassicv1.VpcClassicV1, 
 		//Getting lb listener policy
 		policy, response, err := vpc.GetLoadBalancerListenerPolicy(getLbListenerPolicyOptions)
 
-		failed := isLBListenerPolicyFailed
 		if err != nil {
-			if policy.ProvisioningStatus == &failed {
+			if *(*policy).ProvisioningStatus == isLBListenerPolicyFailed {
 				return policy, isLBListenerPolicyFailed, fmt.Errorf("The LB-LP %s failed to delete: %v", *policy.ID, err)
 			}
 			return nil, isLBListenerPolicyFailed, nil
