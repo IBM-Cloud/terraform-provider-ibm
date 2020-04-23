@@ -109,6 +109,16 @@ resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
   }
 }
 
+resource "ibm_is_lb_listener_policy_rule" "lb_listener_policy_rule" {
+  lb        = "${ibm_is_lb.lb2.id}"
+  listener  = "${ibm_is_lb_listener.lb_listener2.listener_id}"
+  policy    = "${ibm_is_lb_listener_policy.lb_listener_policy.policy_id}"
+  condition = "equals"
+  type      = "header"
+  field     = "MY-APP-HEADER"
+  value     = "updateVal"
+}
+
 resource "ibm_is_vpc" "vpc2" {
   name = "vpc2"
 }
