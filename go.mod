@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/Bowery/prompt v0.0.0-20190916142128-fa8279994f75 // indirect
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20200414105249-d884072eb6f5
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20200423115010-befac795f3cd
 	github.com/IBM-Cloud/power-go-client v1.0.0
 	github.com/IBM/apigateway-go-sdk v0.0.0-20200319174228-a4e4a3b46d9e
 	github.com/IBM/dns-svcs-go-sdk v0.0.1
