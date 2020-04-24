@@ -370,9 +370,9 @@ func waitForWorkerZoneALB(clusterNameOrID, zone string, meta interface{}, timeou
 	}
 
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{"pending"},
-		Target:  []string{"ready"},
-		Refresh: workerZoneALBStateRefreshFunc(csClient.Albs(), clusterNameOrID, zone, target),
+		Pending:    []string{"pending"},
+		Target:     []string{"ready"},
+		Refresh:    workerZoneALBStateRefreshFunc(csClient.Albs(), clusterNameOrID, zone, target),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
