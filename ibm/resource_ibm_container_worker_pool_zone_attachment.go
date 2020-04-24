@@ -133,6 +133,12 @@ func resourceIBMContainerWorkerPoolZoneAttachmentCreate(d *schema.ResourceData, 
 			"Error waiting for workers of worker pool (%s) of cluster (%s) to become ready: %s", workerPool, cluster, err)
 	}
 
+	_, err = waitForWorkerZoneALB(cluster, zone, meta, d.Timeout(schema.TimeoutUpdate), targetEnv)
+	if err != nil {
+		return fmt.Errorf(
+			"Error waiting for ALBs in zone (%s) of cluster (%s) to become ready: %s", zone, cluster, err)
+	}
+
 	return resourceIBMContainerWorkerPoolZoneAttachmentRead(d, meta)
 
 }
@@ -354,5 +360,55 @@ func workerPoolZoneDeleteStateRefreshFunc(client v1.Workers, instanceID, workerP
 			}
 		}
 		return workerFields, workerDeleteState, nil
+	}
+}
+
+func waitForWorkerZoneALB(clusterNameOrID, zone string, meta interface{}, timeout time.Duration, target v1.ClusterTargetHeader) (interface{}, error) {
+	csClient, err := meta.(ClientSession).ContainerAPI()
+	if err != nil {
+		return nil, err
+	}
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"pending"},
+		Target:  []string{"ready"},
+		Refresh: workerZoneALBStateRefreshFunc(csClient.Albs(), clusterNameOrID, zone, target),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func workerZoneALBStateRefreshFunc(client v1.Albs, instanceID, zone string, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		// Get all ALBs associated with cluster
+		albs, err := client.ListClusterALBs(instanceID, target)
+		if err != nil {
+			return nil, "", fmt.Errorf("Error retrieving ALBs for cluster: %s", err)
+		}
+
+		privateALBsByZone := []v1.ALBConfig{}
+		publicALBsByZone := []v1.ALBConfig{}
+
+		// Find ALBs by zone and type
+		for _, alb := range albs {
+			if alb.Zone == zone {
+				if alb.ALBType == "private" {
+					privateALBsByZone = append(privateALBsByZone, alb)
+				}
+				if alb.ALBType == "public" {
+					publicALBsByZone = append(publicALBsByZone, alb)
+				}
+			}
+		}
+
+		// Ready if both private and public ALBs are present
+		if len(privateALBsByZone) > 0 && len(publicALBsByZone) > 0 {
+			return albs, "ready", nil
+		}
+
+		return albs, "pending", nil
 	}
 }
