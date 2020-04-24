@@ -6,12 +6,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 )
 
 func TestAccIBMISVPCDatasource_basic(t *testing.T) {
-	var vpc *models.Vpc
-	name1 := fmt.Sprintf("terraformvpcuat-create-step-name-%d", acctest.RandInt())
+	var vpc string
+	name1 := fmt.Sprintf("tfc-vpc-name-%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -21,7 +20,7 @@ func TestAccIBMISVPCDatasource_basic(t *testing.T) {
 			{
 				Config: testDSCheckIBMISVPCConfig(name1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVPCExists("ibm_is_vpc.testacc_vpc", &vpc),
+					testAccCheckIBMISVPCExists("ibm_is_vpc.testacc_vpc", vpc),
 					resource.TestCheckResourceAttr(
 						"data.ibm_is_vpc.ds_vpc", "name", name1),
 					resource.TestCheckResourceAttr(

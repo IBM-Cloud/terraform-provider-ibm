@@ -2,7 +2,6 @@ package ibm
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
 )
 
 func dataSourceIBMISSubnet() *schema.Resource {
@@ -104,51 +103,23 @@ func dataSourceIBMISSubnet() *schema.Resource {
 }
 
 func dataSourceIBMISSubnetRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	subnetC := network.NewSubnetClient(sess)
-
-	subnet, err := subnetC.Get(d.Get("identifier").(string))
-	if err != nil {
-		return err
-	}
-	d.SetId(subnet.ID.String())
-	d.Set("id", subnet.ID.String())
-	d.Set(isSubnetName, subnet.Name)
-	d.Set(isSubnetIPVersion, subnet.IPVersion)
-	d.Set(isSubnetIpv4CidrBlock, subnet.IPV4CidrBlock)
-	d.Set(isSubnetIpv6CidrBlock, subnet.IPV6CidrBlock)
-	d.Set(isSubnetAvailableIpv4AddressCount, subnet.AvailableIPV4AddressCount)
-	d.Set(isSubnetTotalIpv4AddressCount, subnet.TotalIPV4AddressCount)
-	if subnet.NetworkACL != nil {
-		d.Set(isSubnetNetworkACL, subnet.NetworkACL.ID.String())
+	id := d.Get("identifier").(string)
+	if userDetails.generation == 1 {
+		err := classicSubnetGet(d, meta, id)
+		d.SetId(id)
+		if err != nil {
+			return err
+		}
 	} else {
-		d.Set(isSubnetNetworkACL, nil)
-	}
-	if subnet.PublicGateway != nil {
-		d.Set(isSubnetPublicGateway, subnet.PublicGateway.ID.String())
-	} else {
-		d.Set(isSubnetPublicGateway, nil)
-	}
-	d.Set(isSubnetStatus, subnet.Status)
-	d.Set(isSubnetZone, subnet.Zone.Name)
-	d.Set(isSubnetVPC, subnet.Vpc.ID.String())
-	controller, err := getBaseController(meta)
-	if err != nil {
-		return err
-	}
-	if sess.Generation == 1 {
-		d.Set(ResourceControllerURL, controller+"/vpc/network/subnets")
-	} else {
-		d.Set(ResourceControllerURL, controller+"/vpc-ext/network/subnets")
-	}
-	d.Set(ResourceName, subnet.Name)
-	d.Set(ResourceCRN, subnet.Crn)
-	d.Set(ResourceStatus, subnet.Status)
-	if subnet.ResourceGroup != nil {
-		d.Set(ResourceGroupName, subnet.ResourceGroup.Name)
+		err := subnetGet(d, meta, id)
+		d.SetId(id)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

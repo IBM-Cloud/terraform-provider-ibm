@@ -6,7 +6,8 @@ import (
 	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func dataSourceIBMISVPC() *schema.Resource {
@@ -40,9 +41,10 @@ func dataSourceIBMISVPC() *schema.Resource {
 			},
 
 			isVPCTags: {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      resourceIBMVPCHash,
 			},
 
 			isVPCCRN: {
@@ -142,55 +144,70 @@ func dataSourceIBMISVPC() *schema.Resource {
 }
 
 func dataSourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	vpcC := network.NewVPCClient(sess)
-	vpcNetworkClient := network.NewSubnetClient(sess)
 
 	name := d.Get(isVPCName).(string)
+	if userDetails.generation == 1 {
+		err := classicVpcList(d, meta, name)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := vpcList(d, meta, name)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
-	vpcs, _, err := vpcC.List("")
+func classicVpcList(d *schema.ResourceData, meta interface{}, name string) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
-
-	for _, vpc := range vpcs {
-		if vpc.Name == name {
-			d.SetId(vpc.ID.String())
-			d.Set("id", vpc.ID.String())
-			d.Set(isVPCName, vpc.Name)
-			d.Set(isVPCClassicAccess, vpc.ClassicAccess)
-			d.Set(isVPCStatus, vpc.Status)
-			d.Set(isVPCResourceGroup, vpc.ResourceGroup.ID)
-			if vpc.DefaultNetworkACL != nil {
-				d.Set(isVPCDefaultNetworkACL, vpc.DefaultNetworkACL.ID)
+	listVpcsOptions := &vpcclassicv1.ListVpcsOptions{}
+	vpcs, response, err := sess.ListVpcs(listVpcsOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Listing VPCs : %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+	for _, vpc := range vpcs.Vpcs {
+		if *vpc.Name == name {
+			d.SetId(*vpc.ID)
+			d.Set("id", *vpc.ID)
+			d.Set(isVPCName, *vpc.Name)
+			d.Set(isVPCClassicAccess, *vpc.ClassicAccess)
+			d.Set(isVPCStatus, *vpc.Status)
+			d.Set(isVPCResourceGroup, *vpc.ResourceGroup.ID)
+			if vpc.DefaultNetworkAcl != nil {
+				d.Set(isVPCDefaultNetworkACL, *vpc.DefaultNetworkAcl.ID)
 			} else {
 				d.Set(isVPCDefaultNetworkACL, nil)
 			}
-			tags, err := GetTagsUsingCRN(meta, vpc.Crn)
+			tags, err := GetTagsUsingCRN(meta, *vpc.Crn)
 			if err != nil {
 				log.Printf(
 					"An error occured during reading of vpc (%s) tags : %s", d.Id(), err)
 			}
 			d.Set(isVPCTags, tags)
-			d.Set(isVPCCRN, vpc.Crn)
+			d.Set(isVPCCRN, *vpc.Crn)
 
 			controller, err := getBaseController(meta)
 			if err != nil {
 				return err
 			}
-			if sess.Generation == 1 {
-				d.Set(ResourceControllerURL, controller+"/vpc/network/vpcs")
-			} else {
-				d.Set(ResourceControllerURL, controller+"/vpc-ext/network/vpcs")
-			}
-			d.Set(ResourceName, vpc.Name)
-			d.Set(ResourceCRN, vpc.Crn)
-			d.Set(ResourceStatus, vpc.Status)
+			d.Set(ResourceControllerURL, controller+"/vpc/network/vpcs")
+			d.Set(ResourceName, *vpc.Name)
+			d.Set(ResourceCRN, *vpc.Crn)
+			d.Set(ResourceStatus, *vpc.Status)
 			if vpc.ResourceGroup != nil {
-				d.Set(ResourceGroupName, vpc.ResourceGroup.Name)
+				d.Set(ResourceGroupName, *vpc.ResourceGroup.ID)
 			}
 			// set the cse ip addresses info
 			if vpc.CseSourceIps != nil {
@@ -211,28 +228,115 @@ func dataSourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
 				info := flattenCseIPs(displaySourceIps)
 				d.Set(cseSourceAddresses, info)
 			}
-
-			// set the subnets list
-			s, _, err := vpcNetworkClient.List("")
+			options := &vpcclassicv1.ListSubnetsOptions{}
+			s, response, err := sess.ListSubnets(options)
 			if err != nil {
-				log.Println("Error Fetching subnets")
+				log.Printf("Error Fetching subnets %s\n%s", err, response)
 			} else {
 				subnetsInfo := make([]map[string]interface{}, 0)
-				for _, subnet := range s {
-					if subnet.Vpc.ID.String() == d.Id() {
+				for _, subnet := range s.Subnets {
+					if *subnet.Vpc.ID == d.Id() {
 						l := map[string]interface{}{
-							"name":                    subnet.Name,
-							"id":                      subnet.ID,
-							"status":                  subnet.Status,
-							totalIPV4AddressCount:     subnet.TotalIPV4AddressCount,
-							availableIPV4AddressCount: subnet.AvailableIPV4AddressCount,
+							"name":                    *subnet.Name,
+							"id":                      *subnet.ID,
+							"status":                  *subnet.Status,
+							totalIPV4AddressCount:     *subnet.TotalIpv4AddressCount,
+							availableIPV4AddressCount: *subnet.AvailableIpv4AddressCount,
 						}
 						subnetsInfo = append(subnetsInfo, l)
 					}
 				}
 				d.Set(subnetsList, subnetsInfo)
 			}
+			return nil
+		}
+	}
+	return fmt.Errorf("No VPC found with name %s", name)
+}
+func vpcList(d *schema.ResourceData, meta interface{}, name string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	listVpcsOptions := &vpcv1.ListVpcsOptions{}
+	vpcs, response, err := sess.ListVpcs(listVpcsOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Listing VPCs : %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+	for _, vpc := range vpcs.Vpcs {
+		if *vpc.Name == name {
+			d.SetId(*vpc.ID)
+			d.Set("id", *vpc.ID)
+			d.Set(isVPCName, *vpc.Name)
+			d.Set(isVPCClassicAccess, *vpc.ClassicAccess)
+			d.Set(isVPCStatus, *vpc.Status)
+			d.Set(isVPCResourceGroup, *vpc.ResourceGroup.ID)
+			if vpc.DefaultNetworkAcl != nil {
+				d.Set(isVPCDefaultNetworkACL, *vpc.DefaultNetworkAcl.ID)
+			} else {
+				d.Set(isVPCDefaultNetworkACL, nil)
+			}
+			tags, err := GetTagsUsingCRN(meta, *vpc.Crn)
+			if err != nil {
+				log.Printf(
+					"An error occured during reading of vpc (%s) tags : %s", d.Id(), err)
+			}
+			d.Set(isVPCTags, tags)
+			d.Set(isVPCCRN, *vpc.Crn)
 
+			controller, err := getBaseController(meta)
+			if err != nil {
+				return err
+			}
+			d.Set(ResourceControllerURL, controller+"/vpc-ext/network/vpcs")
+			d.Set(ResourceName, *vpc.Name)
+			d.Set(ResourceCRN, *vpc.Crn)
+			d.Set(ResourceStatus, *vpc.Status)
+			if vpc.ResourceGroup != nil {
+				d.Set(ResourceGroupName, *vpc.ResourceGroup.Name)
+			}
+			// set the cse ip addresses info
+			if vpc.CseSourceIps != nil {
+				displaySourceIps := []VPCCSESourceIP{}
+				sourceIPs := vpc.CseSourceIps
+
+				for _, sourceIP := range sourceIPs {
+					// work around to parse the cse_source_ip data structure from map[string]interface{} type as we define it as any type in swagger.yaml file
+					ip, zone := safeGetIPZone(sourceIP)
+					if ip == "" {
+						continue
+					}
+					displaySourceIps = append(displaySourceIps, VPCCSESourceIP{
+						Address:  ip,
+						ZoneName: zone,
+					})
+				}
+				info := flattenCseIPs(displaySourceIps)
+				d.Set(cseSourceAddresses, info)
+			}
+			options := &vpcv1.ListSubnetsOptions{}
+			s, response, err := sess.ListSubnets(options)
+			if err != nil {
+				log.Printf("Error Fetching subnets %s\n%s", err, response)
+			} else {
+				subnetsInfo := make([]map[string]interface{}, 0)
+				for _, subnet := range s.Subnets {
+					if *subnet.Vpc.ID == d.Id() {
+						l := map[string]interface{}{
+							"name":                    *subnet.Name,
+							"id":                      *subnet.ID,
+							"status":                  *subnet.Status,
+							totalIPV4AddressCount:     *subnet.TotalIpv4AddressCount,
+							availableIPV4AddressCount: *subnet.AvailableIpv4AddressCount,
+						}
+						subnetsInfo = append(subnetsInfo, l)
+					}
+				}
+				d.Set(subnetsList, subnetsInfo)
+			}
 			return nil
 		}
 	}
