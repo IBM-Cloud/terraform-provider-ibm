@@ -1,6 +1,7 @@
 package ibm
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -66,7 +67,7 @@ func dataSourceIBMApiGateway() *schema.Resource {
 							Description: "Alias Url for an endpoint",
 						},
 						"open_api_doc": {
-							Type:        schema.TypeMap,
+							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "API document that represents endpoint",
 						},
@@ -139,12 +140,20 @@ func dataSourceIBMApiGatewayRead(d *schema.ResourceData, meta interface{}) error
 		if err != nil {
 			return fmt.Errorf("Error Getting All Endpoint: %s,%s", err, swagger)
 		}
-
+		doc := swagger.Result
+		str, err := json.Marshal(doc)
+		if err != nil {
+			fmt.Printf("error while json Marshal: %v", err)
+		}
+		swagger_document := string(str)
 		SubscriptionPayload := &apigatewaysdk.GetAllSubscriptionsOptions{}
 		SubscriptionPayload.ArtifactID = ArtifactID
 		SubscriptionPayload.Authorization = &oauthtoken
 		if v, ok := d.GetOk("type"); ok && v != nil {
 			Type := v.(string)
+			if Type == "internal" {
+				Type = "bluemix"
+			}
 			SubscriptionPayload.Type = &Type
 		}
 		allsubscriptions, response, err := endpointservice.GetAllSubscriptions(SubscriptionPayload)
@@ -156,6 +165,9 @@ func dataSourceIBMApiGatewayRead(d *schema.ResourceData, meta interface{}) error
 			allsubscription := make(map[string]interface{})
 			allsubscription["name"] = *subscription.Name
 			allsubscription["client_id"] = subscription.ClientID
+			if *subscription.Type == "bluemix" {
+				*subscription.Type = "internal"
+			}
 			allsubscription["type"] = subscription.Type
 			allsubscription["secret_provided"] = subscription.SecretProvided
 			subscriptionMap = append(subscriptionMap, allsubscription)
@@ -169,7 +181,7 @@ func dataSourceIBMApiGatewayRead(d *schema.ResourceData, meta interface{}) error
 		result["managed_url"] = *endpoint.ManagedURL
 		result["base_path"] = endpoint.BasePath
 		result["alias_url"] = endpoint.AliasURL
-		//result["open_api_doc"] = swagger
+		result["open_api_doc"] = swagger_document
 		result["subscriptions"] = subscriptionMap
 		endpointsMap = append(endpointsMap, result)
 	}

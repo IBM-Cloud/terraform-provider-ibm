@@ -538,10 +538,10 @@
 			"revisionTime": "2019-12-11T04:38:12Z"
 		},
 		{
-			"checksumSHA1": "upRQOfEqbKGGfQupesXugTw2WtA=",
+			"checksumSHA1": "gel7mC/hrl8t0QM3AYmFitB4KwA=",
 			"path": "github.com/IBM/apigateway-go-sdk",
-			"revision": "a4e4a3b46d9e7e42b74ef279bd80a512b340adb5",
-			"revisionTime": "2020-03-19T17:42:28Z"
+			"revision": "416e5948678a6a49f4a4b2a14d63ac75d07f5eef",
+			"revisionTime": "2020-04-14T21:22:46Z"
 		},
 		{
 			"checksumSHA1": "jt2qDbHHoBxOFfJ1eVWLLPDjJ+g=",
@@ -584,13 +584,17 @@
 			"revision": "2050cbfeb7bceffbde475fa32ceeb44660687843"
 		},
 		{
+			"path": "github.com/IBM/go-sdk-core/core",
+			"revision": "2050cbfeb7bceffbde475fa32ceeb44660687843"
+		},
+		{
 			"checksumSHA1": "uhx4vydkhaBSVJ1Bq+oRkErxlIM=",
 			"path": "github.com/IBM/go-sdk-core/core",
 			"revision": "2050cbfeb7bceffbde475fa32ceeb44660687843",
 			"revisionTime": "2020-03-29T20:23:51Z"
 		},
 		{
-			"path": "github.com/IBM/go-sdk-core/core",
+			"path": "github.com/IBM/go-sdk-core/v3/core",
 			"revision": "2050cbfeb7bceffbde475fa32ceeb44660687843"
 		},
 		{
@@ -1575,20 +1579,20 @@
 			"revisionTime": "2018-05-24T22:32:19Z"
 		},
 		{
-			"checksumSHA1": "6AA7ZAzswfl7SOzleP6e6he0lq4=",
-			"path": "github.com/hashicorp/terraform/plugin",
-			"revision": "8d560482c34e865458fd884cb0790b4f73f09ad1",
-			"revisionTime": "2017-06-08T00:14:54Z",
-			"version": "v0.9.8",
-			"versionExact": "v0.9.8"
-		},
-		{
 			"checksumSHA1": "DqaoG++NXRCfvH/OloneLWrM+3k=",
 			"path": "github.com/hashicorp/terraform/plugin",
 			"revision": "dbce85d85ff0beebc660b3d1805b4ef15361af00",
 			"revisionTime": "2018-04-05T19:25:37Z",
 			"version": "=v0.11.6",
 			"versionExact": "v0.11.6"
+		},
+		{
+			"checksumSHA1": "6AA7ZAzswfl7SOzleP6e6he0lq4=",
+			"path": "github.com/hashicorp/terraform/plugin",
+			"revision": "8d560482c34e865458fd884cb0790b4f73f09ad1",
+			"revisionTime": "2017-06-08T00:14:54Z",
+			"version": "v0.9.8",
+			"versionExact": "v0.9.8"
 		},
 		{
 			"checksumSHA1": "tx5xrdiUWdAHqoRV5aEfALgT1aU=",
