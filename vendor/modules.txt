@@ -6,7 +6,7 @@ cloud.google.com/go/internal/optional
 cloud.google.com/go/internal/trace
 cloud.google.com/go/internal/version
 cloud.google.com/go/storage
-# github.com/IBM-Cloud/bluemix-go v0.0.0-20200414105249-d884072eb6f5
+# github.com/IBM-Cloud/bluemix-go v0.0.0-20200423115010-befac795f3cd
 github.com/IBM-Cloud/bluemix-go
 github.com/IBM-Cloud/bluemix-go/api/account/accountv1
 github.com/IBM-Cloud/bluemix-go/api/account/accountv2
