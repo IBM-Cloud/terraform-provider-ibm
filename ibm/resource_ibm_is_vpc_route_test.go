@@ -8,15 +8,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISVPCRoute_basic(t *testing.T) {
-	var vpcRoute *models.Route
-	name1 := fmt.Sprintf("terraformvpcuat-create-step-name-%d", acctest.RandInt())
-	routeName := fmt.Sprintf("terraformvpcuat-create-prefix-name-%d", acctest.RandInt())
-	routeName1 := fmt.Sprintf("terraformvpcuat-create-prefix-name-%d", acctest.RandInt())
+	var vpcRoute string
+	name1 := fmt.Sprintf("tfvpcuat-create-%d", acctest.RandInt())
+	routeName := fmt.Sprintf("tfvpcuat-create-%d", acctest.RandInt())
+	routeName1 := fmt.Sprintf("tfvpcuat-create-%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -26,7 +26,7 @@ func TestAccIBMISVPCRoute_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMISVPCRouteConfig(name1, routeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVPCRouteExists("ibm_is_vpc_route.testacc_vpc_route", &vpcRoute),
+					testAccCheckIBMISVPCRouteExists("ibm_is_vpc_route.testacc_vpc_route", vpcRoute),
 					resource.TestCheckResourceAttr(
 						"ibm_is_vpc_route.testacc_vpc_route", "name", routeName),
 				),
@@ -34,7 +34,7 @@ func TestAccIBMISVPCRoute_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMISVPCRouteConfig(name1, routeName1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVPCRouteExists("ibm_is_vpc_route.testacc_vpc_route", &vpcRoute),
+					testAccCheckIBMISVPCRouteExists("ibm_is_vpc_route.testacc_vpc_route", vpcRoute),
 					resource.TestCheckResourceAttr(
 						"ibm_is_vpc_route.testacc_vpc_route", "name", routeName1),
 				),
@@ -44,33 +44,59 @@ func TestAccIBMISVPCRoute_basic(t *testing.T) {
 }
 
 func testAccCheckIBMISVPCRouteDestroy(s *terraform.State) error {
-	sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
+	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	vpcC := network.NewVPCClient(sess)
+	if userDetails.generation == 1 {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_vpc_route" {
+				continue
+			}
+			parts, err := idParts(rs.Primary.ID)
+			if err != nil {
+				return err
+			}
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_is_vpc_route" {
-			continue
+			vpcID := parts[0]
+			routeID := parts[1]
+			getVpcRouteOptions := &vpcclassicv1.GetVpcRouteOptions{
+				VpcID: &vpcID,
+				ID:    &routeID,
+			}
+			_, _, err1 := sess.GetVpcRoute(getVpcRouteOptions)
+
+			if err1 == nil {
+				return fmt.Errorf("vpc route still exists: %s", rs.Primary.ID)
+			}
 		}
+	} else {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_vpc_route" {
+				continue
+			}
+			parts, err := idParts(rs.Primary.ID)
+			if err != nil {
+				return err
+			}
 
-		parts, err := idParts(rs.Primary.ID)
-		if err != nil {
-			return err
-		}
+			vpcID := parts[0]
+			routeID := parts[1]
+			getVpcRouteOptions := &vpcv1.GetVpcRouteOptions{
+				VpcID: &vpcID,
+				ID:    &routeID,
+			}
+			_, _, err1 := sess.GetVpcRoute(getVpcRouteOptions)
 
-		vpcID := parts[0]
-		routeID := parts[1]
-		_, err = vpcC.GetRoute(vpcID, routeID)
-
-		if err == nil {
-			return fmt.Errorf("vpc route still exists: %s", rs.Primary.ID)
+			if err1 == nil {
+				return fmt.Errorf("vpc route still exists: %s", rs.Primary.ID)
+			}
 		}
 	}
-
 	return nil
 }
 
-func testAccCheckIBMISVPCRouteExists(n string, vpcRoute **models.Route) resource.TestCheckFunc {
+func testAccCheckIBMISVPCRouteExists(n, vpcrouteID string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -82,9 +108,6 @@ func testAccCheckIBMISVPCRouteExists(n string, vpcRoute **models.Route) resource
 			return errors.New("No Record ID is set")
 		}
 
-		sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
-		vpcC := network.NewVPCClient(sess)
-
 		parts, err := idParts(rs.Primary.ID)
 		if err != nil {
 			return err
@@ -92,13 +115,31 @@ func testAccCheckIBMISVPCRouteExists(n string, vpcRoute **models.Route) resource
 
 		vpcID := parts[0]
 		routeID := parts[1]
-		route, err := vpcC.GetRoute(vpcID, routeID)
+		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-		if err != nil {
-			return err
+		if userDetails.generation == 1 {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+			getVpcRouteOptions := &vpcclassicv1.GetVpcRouteOptions{
+				VpcID: &vpcID,
+				ID:    &routeID,
+			}
+			foundroute, _, err := sess.GetVpcRoute(getVpcRouteOptions)
+			if err != nil {
+				return err
+			}
+			vpcrouteID = *foundroute.ID
+		} else {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+			getVpcRouteOptions := &vpcv1.GetVpcRouteOptions{
+				VpcID: &vpcID,
+				ID:    &routeID,
+			}
+			foundroute, _, err := sess.GetVpcRoute(getVpcRouteOptions)
+			if err != nil {
+				return err
+			}
+			vpcrouteID = *foundroute.ID
 		}
-
-		*vpcRoute = route
 		return nil
 	}
 }

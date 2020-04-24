@@ -1,17 +1,16 @@
 package ibm
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
 
-	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/storage"
-	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
-	st "github.ibm.com/Bluemix/riaas-go-client/riaas/client/storage"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -147,7 +146,7 @@ func resourceIBMISVolume() *schema.Resource {
 }
 
 func resourceIBMISVolumeCreate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
@@ -156,96 +155,190 @@ func resourceIBMISVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	profile := d.Get(isVolumeProfileName).(string)
 	zone := d.Get(isVolumeZone).(string)
 	volCapacity := int64(d.Get(isVolumeCapacity).(int))
-	client := storage.NewStorageClient(sess)
 
-	volZone := &st.PostVolumesParamsBodyZone{
-		Name: &zone,
-	}
-	volProfile := &st.PostVolumesParamsBodyProfile{
-		Name: profile,
-	}
-
-	body := st.PostVolumesBody{
-		Name:     volName,
-		Zone:     volZone,
-		Profile:  volProfile,
-		Capacity: &volCapacity,
-	}
-
-	var encryptionKey string
-	if key, ok := d.GetOk(isVolumeEncryptionKey); ok {
-		encryptionKey = key.(string)
-		volEncryptionKey := st.PostVolumesParamsBodyEncryptionKey{
-			Crn: encryptionKey,
-		}
-		body.EncryptionKey = &volEncryptionKey
-	}
-
-	if rg, ok := d.GetOk(isVolumeResourceGroup); ok {
-		rgref := st.PostVolumesParamsBodyResourceGroup{
-			ID: strfmt.UUID(rg.(string)),
-		}
-		body.ResourceGroup = &rgref
-	}
-
-	if iops, ok := d.GetOk(isVolumeIops); ok {
-		i := int64(iops.(int))
-		body.Iops = &i
-	}
-
-	vol, err := client.Create(&st.PostVolumesParams{
-		Body: body,
-	})
-	if err != nil {
-		log.Printf("[DEBUG]  err %s", isErrorToString(err))
-		return err
-	}
-
-	d.SetId(vol.ID.String())
-	log.Printf("[INFO]  : %s", vol.ID.String())
-
-	_, err = isWaitForVolumeAvailable(client, d.Id(), d.Timeout(schema.TimeoutCreate))
-	if err != nil {
-		return err
-	}
-
-	v := os.Getenv("IC_ENV_TAGS")
-	if _, ok := d.GetOk(isVolumeTags); ok || v != "" {
-		oldList, newList := d.GetChange(isVolumeTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, vol.Crn)
+	if userDetails.generation == 1 {
+		err := classicVolCreate(d, meta, volName, profile, zone, volCapacity)
 		if err != nil {
-			log.Printf(
-				"Error on create of resource vpc volume (%s) tags: %s", d.Id(), err)
+			return err
+		}
+	} else {
+		err := volCreate(d, meta, volName, profile, zone, volCapacity)
+		if err != nil {
+			return err
 		}
 	}
 	return resourceIBMISVolumeRead(d, meta)
 }
 
+func classicVolCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone string, volCapacity int64) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	options := &vpcclassicv1.CreateVolumeOptions{
+		VolumePrototype: &vpcclassicv1.VolumePrototype{
+			Name:     &volName,
+			Capacity: &volCapacity,
+			Zone: &vpcclassicv1.ZoneIdentity{
+				Name: &zone,
+			},
+			Profile: &vpcclassicv1.VolumeProfileIdentity{
+				Name: &profile,
+			},
+		},
+	}
+	volTemplate := options.VolumePrototype.(*vpcclassicv1.VolumePrototype)
+
+	if key, ok := d.GetOk(isVolumeEncryptionKey); ok {
+		encryptionKey := key.(string)
+		volTemplate.EncryptionKey = &vpcclassicv1.EncryptionKeyIdentity{
+			Crn: &encryptionKey,
+		}
+	}
+
+	if rgrp, ok := d.GetOk(isVolumeResourceGroup); ok {
+		rg := rgrp.(string)
+		volTemplate.ResourceGroup = &vpcclassicv1.ResourceGroupIdentity{
+			ID: &rg,
+		}
+	}
+
+	if i, ok := d.GetOk(isVolumeIops); ok {
+		iops := int64(i.(int))
+		volTemplate.Iops = &iops
+	}
+
+	vol, response, err := sess.CreateVolume(options)
+	if err != nil {
+		log.Printf("[DEBUG] Create volume err %s\n%s", err, response)
+	}
+	d.SetId(*vol.ID)
+	log.Printf("[INFO] Volume : %s", *vol.ID)
+	_, err = isWaitForClassicVolumeAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return err
+	}
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isVolumeTags); ok || v != "" {
+		oldList, newList := d.GetChange(isVolumeTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *vol.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource vpc volume (%s) tags: %s", d.Id(), err)
+		}
+	}
+	return nil
+}
+
+func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone string, volCapacity int64) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	options := &vpcv1.CreateVolumeOptions{
+		VolumePrototype: &vpcv1.VolumePrototype{
+			Name:     &volName,
+			Capacity: &volCapacity,
+			Zone: &vpcv1.ZoneIdentity{
+				Name: &zone,
+			},
+			Profile: &vpcv1.VolumeProfileIdentity{
+				Name: &profile,
+			},
+		},
+	}
+	volTemplate := options.VolumePrototype.(*vpcv1.VolumePrototype)
+
+	// if key, ok := d.GetOk(isVolumeEncryptionKey); ok {
+	// 	encryptionKey := key.(string)
+	// 	volTemplate.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
+	// 		Crn: &encryptionKey,
+	// 	}
+	// }
+
+	if rgrp, ok := d.GetOk(isVolumeResourceGroup); ok {
+		rg := rgrp.(string)
+		volTemplate.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+			ID: &rg,
+		}
+	}
+
+	if i, ok := d.GetOk(isVolumeIops); ok {
+		iops := int64(i.(int))
+		volTemplate.Iops = &iops
+	}
+
+	vol, response, err := sess.CreateVolume(options)
+	if err != nil {
+		return fmt.Errorf("[DEBUG] Create volume err %s\n%s", err, response)
+	}
+	d.SetId(*vol.ID)
+	log.Printf("[INFO] Volume : %s", *vol.ID)
+	_, err = isWaitForVolumeAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return err
+	}
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isVolumeTags); ok || v != "" {
+		oldList, newList := d.GetChange(isVolumeTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *vol.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource vpc volume (%s) tags: %s", d.Id(), err)
+		}
+	}
+	return nil
+}
+
 func resourceIBMISVolumeRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
-	if err != nil {
-		return err
-	}
-	client := storage.NewStorageClient(sess)
-
-	vol, err := client.Get(d.Id())
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
 
-	d.SetId(vol.ID.String())
-	d.Set(isVolumeName, vol.Name)
-	d.Set(isVolumeProfileName, vol.Profile.Name)
-	d.Set(isVolumeZone, vol.Zone.Name)
+	id := d.Id()
+	if userDetails.generation == 1 {
+		err := classicVolGet(d, meta, id)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := volGet(d, meta, id)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func classicVolGet(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	options := &vpcclassicv1.GetVolumeOptions{
+		ID: &id,
+	}
+	vol, response, err := sess.GetVolume(options)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting Volume (%s): %s\n%s", id, err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	d.SetId(*vol.ID)
+	d.Set(isVolumeName, *vol.Name)
+	d.Set(isVolumeProfileName, *vol.Profile.Name)
+	d.Set(isVolumeZone, *vol.Zone.Name)
 	if vol.EncryptionKey != nil {
-		d.Set(isVolumeEncryptionKey, vol.EncryptionKey.Crn)
+		d.Set(isVolumeEncryptionKey, *vol.EncryptionKey.Crn)
 	}
-	d.Set(isVolumeIops, vol.Iops)
-	d.Set(isVolumeCapacity, vol.Capacity)
-	d.Set(isVolumeCrn, vol.Crn)
-	d.Set(isVolumeResourceGroup, vol.ResourceGroup.ID)
-	d.Set(isVolumeStatus, vol.Status)
-	tags, err := GetTagsUsingCRN(meta, vol.Crn)
+	d.Set(isVolumeIops, *vol.Iops)
+	d.Set(isVolumeCapacity, *vol.Capacity)
+	d.Set(isVolumeCrn, *vol.Crn)
+	d.Set(isVolumeStatus, *vol.Status)
+	tags, err := GetTagsUsingCRN(meta, *vol.Crn)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc volume (%s) tags: %s", d.Id(), err)
@@ -255,87 +348,283 @@ func resourceIBMISVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	if sess.Generation == 1 {
-		d.Set(ResourceControllerURL, controller+"/vpc/storage/storageVolumes")
-	} else {
-		d.Set(ResourceControllerURL, controller+"/vpc-ext/storage/storageVolumes")
-	}
-	d.Set(ResourceName, vol.Name)
-	d.Set(ResourceCRN, vol.Crn)
-	d.Set(ResourceStatus, vol.Status)
+	d.Set(ResourceControllerURL, controller+"/vpc/storage/storageVolumes")
+	d.Set(ResourceName, *vol.Name)
+	d.Set(ResourceCRN, *vol.Crn)
+	d.Set(ResourceStatus, *vol.Status)
 	if vol.ResourceGroup != nil {
-		d.Set(ResourceGroupName, vol.ResourceGroup.Name)
+		d.Set(ResourceGroupName, *vol.ResourceGroup.ID)
+		d.Set(isVolumeResourceGroup, *vol.ResourceGroup.ID)
+	}
+	return nil
+}
+
+func volGet(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	options := &vpcv1.GetVolumeOptions{
+		ID: &id,
+	}
+	vol, response, err := sess.GetVolume(options)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting Volume (%s): %s\n%s", id, err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	d.SetId(*vol.ID)
+	d.Set(isVolumeName, *vol.Name)
+	d.Set(isVolumeProfileName, *vol.Profile.Name)
+	d.Set(isVolumeZone, *vol.Zone.Name)
+	// if vol.EncryptionKey != nil {
+	// 	d.Set(isVolumeEncryptionKey, vol.EncryptionKey.Crn)
+	// }
+	d.Set(isVolumeIops, *vol.Iops)
+	d.Set(isVolumeCapacity, *vol.Capacity)
+	d.Set(isVolumeCrn, *vol.Crn)
+	d.Set(isVolumeStatus, *vol.Status)
+	tags, err := GetTagsUsingCRN(meta, *vol.Crn)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource vpc volume (%s) tags: %s", d.Id(), err)
+	}
+	d.Set(isVolumeTags, tags)
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return err
+	}
+	d.Set(ResourceControllerURL, controller+"/vpc-ext/storage/storageVolumes")
+	d.Set(ResourceName, *vol.Name)
+	d.Set(ResourceCRN, *vol.Crn)
+	d.Set(ResourceStatus, *vol.Status)
+	if vol.ResourceGroup != nil {
+		d.Set(ResourceGroupName, *vol.ResourceGroup.Name)
+		d.Set(isVolumeResourceGroup, *vol.ResourceGroup.ID)
 	}
 	return nil
 }
 
 func resourceIBMISVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	sess, err := meta.(ClientSession).ISSession()
-	if err != nil {
-		return err
-	}
-	client := storage.NewStorageClient(sess)
-
-	vol, err := client.Get(d.Id())
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
 
-	// Generating parameters for
+	id := d.Id()
+	name := ""
+	hasChange := false
 
 	if d.HasChange(isVolumeName) {
-		body := st.PatchVolumesIDBody{
-			Name: d.Get(isVolumeName).(string),
-		}
+		name = d.Get(isVolumeName).(string)
+		hasChange = true
+	}
 
-		patchVolParms := &st.PatchVolumesIDParams{
-			Body: body,
+	if userDetails.generation == 1 {
+		err := classicVolUpdate(d, meta, id, name, hasChange)
+		if err != nil {
+			return err
 		}
-		_, err := client.Update(d.Id(), patchVolParms)
+	} else {
+		err := volUpdate(d, meta, id, name, hasChange)
 		if err != nil {
 			return err
 		}
 	}
+	return resourceIBMISVolumeRead(d, meta)
+}
+
+func classicVolUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChange bool) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
 	if d.HasChange(isVolumeTags) {
+		options := &vpcclassicv1.GetVolumeOptions{
+			ID: &id,
+		}
+		vol, response, err := sess.GetVolume(options)
+		if err != nil {
+			return fmt.Errorf("Error getting Volume : %s\n%s", err, response)
+		}
 		oldList, newList := d.GetChange(isVolumeTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, vol.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *vol.Crn)
 		if err != nil {
 			log.Printf(
-				"Error on update of resource vpc volume (%s) tags: %s", d.Id(), err)
+				"Error on update of resource vpc volume (%s) tags: %s", id, err)
 		}
 	}
+	if hasChange {
+		options := &vpcclassicv1.UpdateVolumeOptions{
+			ID:   &id,
+			Name: &name,
+		}
+		_, response, err := sess.UpdateVolume(options)
+		if err != nil {
+			return fmt.Errorf("Error updating vpc volume: %s\n%s", err, response)
+		}
+	}
+	return nil
+}
 
-	return resourceIBMISVolumeRead(d, meta)
+func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChange bool) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	if d.HasChange(isVolumeTags) {
+		options := &vpcv1.GetVolumeOptions{
+			ID: &id,
+		}
+		vol, response, err := sess.GetVolume(options)
+		if err != nil {
+			return fmt.Errorf("Error getting Volume : %s\n%s", err, response)
+		}
+		oldList, newList := d.GetChange(isVolumeTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *vol.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource vpc volume (%s) tags: %s", id, err)
+		}
+	}
+	if hasChange {
+		options := &vpcv1.UpdateVolumeOptions{
+			ID:   &id,
+			Name: &name,
+		}
+		_, response, err := sess.UpdateVolume(options)
+		if err != nil {
+			return fmt.Errorf("Error updating vpc volume: %s\n%s", err, response)
+		}
+	}
+	return nil
 }
 
 func resourceIBMISVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	client := storage.NewStorageClient(sess)
-	err = client.Delete(d.Id())
+	id := d.Id()
+	if userDetails.generation == 1 {
+		err := classicVolDelete(d, meta, id)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := volDelete(d, meta, id)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func classicVolDelete(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
 
-	_, err = isWaitForVolumeDeleted(client, d.Id(), d.Timeout(schema.TimeoutDelete))
+	getvoloptions := &vpcclassicv1.GetVolumeOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetVolume(getvoloptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting Volume (%s): %s\n%s", id, err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+
+	options := &vpcclassicv1.DeleteVolumeOptions{
+		ID: &id,
+	}
+	response, err = sess.DeleteVolume(options)
+	if err != nil {
+		return fmt.Errorf("Error Deleting Volume : %s\n%s", err, response)
+	}
+	_, err = isWaitForClassicVolumeDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return err
 	}
-
 	d.SetId("")
 	return nil
 }
 
-func isWaitForVolumeDeleted(vol *storage.StorageClient, id string, timeout time.Duration) (interface{}, error) {
+func volDelete(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+
+	getvoloptions := &vpcv1.GetVolumeOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetVolume(getvoloptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting Volume (%s): %s\n%s", id, err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+
+	options := &vpcv1.DeleteVolumeOptions{
+		ID: &id,
+	}
+	response, err = sess.DeleteVolume(options)
+	if err != nil {
+		return fmt.Errorf("Error Deleting Volume : %s\n%s", err, response)
+	}
+	_, err = isWaitForVolumeDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return err
+	}
+	d.SetId("")
+	return nil
+}
+
+func isWaitForClassicVolumeDeleted(vol *vpcclassicv1.VpcClassicV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for  (%s) to be deleted.", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", isVolumeDeleting},
-		Target:     []string{},
+		Target:     []string{"done", ""},
+		Refresh:    isClassicVolumeDeleteRefreshFunc(vol, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isClassicVolumeDeleteRefreshFunc(vol *vpcclassicv1.VpcClassicV1, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		volgetoptions := &vpcclassicv1.GetVolumeOptions{
+			ID: &id,
+		}
+		vol, response, err := vol.GetVolume(volgetoptions)
+		if err != nil && response.StatusCode != 404 {
+			return vol, "", fmt.Errorf("Error Getting Volume: %s\n%s", err, response)
+		}
+		if response.StatusCode == 404 {
+			return vol, isVolumeDeleted, nil
+		}
+		return vol, isVolumeDeleting, err
+	}
+}
+
+func isWaitForVolumeDeleted(vol *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for  (%s) to be deleted.", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", isVolumeDeleting},
+		Target:     []string{"done", ""},
 		Refresh:    isVolumeDeleteRefreshFunc(vol, id),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
@@ -345,52 +634,118 @@ func isWaitForVolumeDeleted(vol *storage.StorageClient, id string, timeout time.
 	return stateConf.WaitForState()
 }
 
-func isVolumeDeleteRefreshFunc(vol *storage.StorageClient, id string) resource.StateRefreshFunc {
+func isVolumeDeleteRefreshFunc(vol *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		vol, err := vol.Get(id)
-		if err == nil {
-			return vol, isVolumeDeleting, nil
+		volgetoptions := &vpcv1.GetVolumeOptions{
+			ID: &id,
 		}
-
-		iserror, ok := err.(iserrors.RiaasError)
-		if ok {
-			log.Printf("[DEBUG] %s", iserror.Error())
-			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "volume_id_not_found" {
-				return nil, isVolumeDeleted, nil
-			}
+		vol, response, err := vol.GetVolume(volgetoptions)
+		if err != nil && response.StatusCode != 404 {
+			return vol, "", fmt.Errorf("Error Getting Volume: %s\n%s", err, response)
 		}
-		return nil, isVolumeDeleting, err
+		if response.StatusCode == 404 {
+			return vol, isVolumeDeleted, nil
+		}
+		return vol, isVolumeDeleting, err
 	}
 }
 
 func resourceIBMISVolumeExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return false, err
 	}
-	client := storage.NewStorageClient(sess)
+	id := d.Id()
 
-	_, err = client.Get(d.Id())
-	if err != nil {
-		iserror, ok := err.(iserrors.RiaasError)
-		if ok {
-			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "volume_id_not_found" {
-				return false, nil
-			}
+	if userDetails.generation == 1 {
+		err := classicVolExists(d, meta, id)
+		if err != nil {
+			return false, err
 		}
-		return false, err
+	} else {
+		err := volExists(d, meta, id)
+		if err != nil {
+			return false, err
+		}
 	}
 	return true, nil
 }
 
-func isWaitForVolumeAvailable(client *storage.StorageClient, id string, timeout time.Duration) (interface{}, error) {
+func classicVolExists(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	options := &vpcclassicv1.GetVolumeOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetVolume(options)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting Volume: %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+	return nil
+}
+
+func volExists(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	options := &vpcv1.GetVolumeOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetVolume(options)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting Volume: %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+	return nil
+}
+
+func isWaitForClassicVolumeAvailable(client *vpcclassicv1.VpcClassicV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for Volume (%s) to be available.", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", isVolumeProvisioning},
-		Target:     []string{isVolumeProvisioningDone},
+		Target:     []string{isVolumeProvisioningDone, ""},
+		Refresh:    isClassicVolumeRefreshFunc(client, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isClassicVolumeRefreshFunc(client *vpcclassicv1.VpcClassicV1, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		volgetoptions := &vpcclassicv1.GetVolumeOptions{
+			ID: &id,
+		}
+		vol, response, err := client.GetVolume(volgetoptions)
+		if err != nil {
+			return nil, "", fmt.Errorf("Error Getting volume: %s\n%s", err, response)
+		}
+
+		if *vol.Status == "available" {
+			return vol, isVolumeProvisioningDone, nil
+		}
+
+		return vol, isVolumeProvisioning, nil
+	}
+}
+
+func isWaitForVolumeAvailable(client *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for Volume (%s) to be available.", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", isVolumeProvisioning},
+		Target:     []string{isVolumeProvisioningDone, ""},
 		Refresh:    isVolumeRefreshFunc(client, id),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
@@ -400,14 +755,17 @@ func isWaitForVolumeAvailable(client *storage.StorageClient, id string, timeout 
 	return stateConf.WaitForState()
 }
 
-func isVolumeRefreshFunc(client *storage.StorageClient, id string) resource.StateRefreshFunc {
+func isVolumeRefreshFunc(client *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		vol, err := client.Get(id)
+		volgetoptions := &vpcv1.GetVolumeOptions{
+			ID: &id,
+		}
+		vol, response, err := client.GetVolume(volgetoptions)
 		if err != nil {
-			return nil, "", err
+			return nil, "", fmt.Errorf("Error Getting volume: %s\n%s", err, response)
 		}
 
-		if vol.Status == "available" {
+		if *vol.Status == "available" {
 			return vol, isVolumeProvisioningDone, nil
 		}
 
