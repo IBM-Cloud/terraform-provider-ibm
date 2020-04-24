@@ -94,7 +94,7 @@ type OutputResponse struct {
 type OutputValues struct {
 	Sensitive bool        `json:"sensitive"`
 	Value     interface{} `json:"value"`
-	Type      string      `json:"type"`
+	Type      interface{} `json:"type"`
 }
 
 type CreateWorkspaceConfig struct {
