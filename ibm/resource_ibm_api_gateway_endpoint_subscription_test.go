@@ -105,6 +105,7 @@ func testAccCheckIBMAPIGatewaySubscriptionBasic(name string) string {
 		client_id   = "test1234"
 		name        = "%s"
 		type        = "external"
+		generate_secret = true
 	}
 	  `, name)
 }
