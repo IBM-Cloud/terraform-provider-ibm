@@ -47,25 +47,30 @@ func resourceIBMComputeAutoScalePolicy() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name",
 			},
 			"scale_type": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "scale type",
 			},
 			"scale_amount": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Scale amount",
 			},
 			"cooldown": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "cooldown value",
 			},
 			"scale_group_id": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+				Description: "scale group ID",
 			},
 			"triggers": {
 				Type:     schema.TypeSet,
@@ -127,10 +132,11 @@ func resourceIBMComputeAutoScalePolicy() *schema.Resource {
 			},
 
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "List of tags",
 			},
 		},
 	}

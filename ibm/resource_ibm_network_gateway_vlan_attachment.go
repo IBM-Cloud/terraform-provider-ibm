@@ -24,9 +24,10 @@ func resourceIBMNetworkGatewayVlanAttachment() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"gateway_id": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Gateway instance ID",
 			},
 			"network_vlan_id": {
 				Type:        schema.TypeInt,

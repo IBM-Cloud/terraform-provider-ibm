@@ -111,24 +111,28 @@ func resourceIBMISInstance() *schema.Resource {
 				Required:     true,
 				ForceNew:     false,
 				ValidateFunc: validateISName,
+				Description:  "Instance name",
 			},
 
 			isInstanceVPC: {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Required:    true,
+				Description: "VPC id",
 			},
 
 			isInstanceZone: {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Required:    true,
+				Description: "Zone name",
 			},
 
 			isInstanceProfile: {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Required:    true,
+				Description: "Profile info",
 			},
 
 			isInstanceKeys: {
@@ -137,14 +141,16 @@ func resourceIBMISInstance() *schema.Resource {
 				Elem:             &schema.Schema{Type: schema.TypeString},
 				Set:              schema.HashString,
 				DiffSuppressFunc: applyOnce,
+				Description:      "SSH key Ids for the instance",
 			},
 
 			isInstanceTags: {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      resourceIBMVPCHash,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "list of tags for the instance",
 			},
 
 			isInstanceVolumeAttachments: {
@@ -177,10 +183,11 @@ func resourceIBMISInstance() *schema.Resource {
 			},
 
 			isInstancePrimaryNetworkInterface: {
-				Type:     schema.TypeList,
-				MinItems: 1,
-				MaxItems: 1,
-				Required: true,
+				Type:        schema.TypeList,
+				MinItems:    1,
+				MaxItems:    1,
+				Required:    true,
+				Description: "Primary Network interface info",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -261,15 +268,17 @@ func resourceIBMISInstance() *schema.Resource {
 			},
 
 			isInstanceUserData: {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "User data given for the instance",
 			},
 
 			isInstanceImage: {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Required:    true,
+				Description: "image name",
 			},
 
 			isInstanceBootVolume: {
@@ -307,17 +316,19 @@ func resourceIBMISInstance() *schema.Resource {
 			},
 
 			isInstanceVolumes: {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "List of volumes",
 			},
 
 			isInstanceResourceGroup: {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Computed:    true,
+				Description: "Instance resource group",
 			},
 
 			isInstanceCPU: {
@@ -368,13 +379,15 @@ func resourceIBMISInstance() *schema.Resource {
 			},
 
 			isInstanceMemory: {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Instance memory",
 			},
 
 			isInstanceStatus: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "instance status",
 			},
 
 			ResourceControllerURL: {

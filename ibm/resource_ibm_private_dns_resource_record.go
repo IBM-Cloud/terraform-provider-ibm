@@ -50,20 +50,23 @@ func resourceIBMPrivateDNSResourceRecord() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			pdnsResourceRecordID: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Resource record ID",
 			},
 
 			pdnsInstanceID: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Instance ID",
 			},
 
 			pdnsZoneID: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Zone ID",
 			},
 
 			pdnsRecordName: {
@@ -71,6 +74,7 @@ func resourceIBMPrivateDNSResourceRecord() *schema.Resource {
 				Required:         true,
 				ForceNew:         true,
 				DiffSuppressFunc: caseDiffSuppress,
+				Description:      "DNS record name",
 			},
 
 			pdnsRecordType: {
@@ -93,6 +97,7 @@ func resourceIBMPrivateDNSResourceRecord() *schema.Resource {
 					)
 					return
 				},
+				Description: "DNS record Type",
 			},
 
 			pdnsRdata: {
@@ -111,6 +116,7 @@ func resourceIBMPrivateDNSResourceRecord() *schema.Resource {
 					}
 					return
 				},
+				Description: "DNS record Data",
 			},
 
 			pdnsRecordTTL: {
@@ -120,49 +126,58 @@ func resourceIBMPrivateDNSResourceRecord() *schema.Resource {
 				DefaultFunc: func() (interface{}, error) {
 					return 900, nil
 				},
+				Description: "DNS record TTL",
 			},
 
 			pdnsMxPreference: {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  0,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     0,
+				Description: "DNS maximum preference",
 			},
 
 			pdnsSrvPort: {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "DNS server Port",
 			},
 
 			pdnsSrvPriority: {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  0,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     0,
+				Description: "DNS server Priority",
 			},
 
 			pdnsSrvWeight: {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  0,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     0,
+				Description: "DNS server weight",
 			},
 
 			pdnsSrvService: {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Service info",
 			},
 
 			pdnsSrvProtocol: {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Protocol",
 			},
 
 			pdnsRecordCreatedOn: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Creation Data",
 			},
 
 			pdnsRecordModifiedOn: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Modification date",
 			},
 		},
 	}

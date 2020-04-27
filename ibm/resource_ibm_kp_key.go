@@ -27,24 +27,28 @@ func resourceIBMkey() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"key_protect_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Key protect instance ID",
 			},
 			"key_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Key ID",
 			},
 			"key_name": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Key name",
 			},
 			"standard_key": {
-				Type:     schema.TypeBool,
-				Default:  false,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeBool,
+				Default:     false,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Satandard key type",
 			},
 			"payload": {
 				Type:     schema.TypeString,

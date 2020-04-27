@@ -58,9 +58,10 @@ func resourceIBMISLBListenerPolicy() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			isLBListenerPolicyLBID: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Load Balancer Listener Policy",
 			},
 
 			isLBListenerPolicyListenerID: {
@@ -88,6 +89,7 @@ func resourceIBMISLBListenerPolicy() *schema.Resource {
 
 					return false
 				},
+				Description: "Listener ID",
 			},
 
 			isLBListenerPolicyAction: {
@@ -95,6 +97,7 @@ func resourceIBMISLBListenerPolicy() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"forward", "redirect", "reject"}),
+				Description:  "Policy Action",
 			},
 
 			isLBListenerPolicyPriority: {
@@ -102,6 +105,7 @@ func resourceIBMISLBListenerPolicy() *schema.Resource {
 				Required:     true,
 				ForceNew:     false,
 				ValidateFunc: validateLBListenerPolicyPriority,
+				Description:  "Listener Policy Priority",
 			},
 
 			isLBListenerPolicyName: {
@@ -110,17 +114,20 @@ func resourceIBMISLBListenerPolicy() *schema.Resource {
 				ForceNew:     false,
 				Computed:     true,
 				ValidateFunc: validateISName,
+				Description:  "Policy name",
 			},
 
 			isLBListenerPolicyID: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Listener Policy ID",
 			},
 
 			isLBListenerPolicyRules: {
-				Type:     schema.TypeList,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				Description: "Policy Rules",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isLBListenerPolicyRuleCondition: {
@@ -184,23 +191,27 @@ func resourceIBMISLBListenerPolicy() *schema.Resource {
 
 					return false
 				},
+				Description: "Listener Policy Target ID",
 			},
 
 			isLBListenerPolicyTargetHTTPStatusCode: {
-				Type:     schema.TypeInt,
-				ForceNew: false,
-				Optional: true,
+				Type:        schema.TypeInt,
+				ForceNew:    false,
+				Optional:    true,
+				Description: "Listener Policy target HTTPS Status code.",
 			},
 
 			isLBListenerPolicyTargetURL: {
-				Type:     schema.TypeString,
-				ForceNew: false,
-				Optional: true,
+				Type:        schema.TypeString,
+				ForceNew:    false,
+				Optional:    true,
+				Description: "Policy Target URL",
 			},
 
 			isLBListenerPolicyStatus: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Listner Policy status",
 			},
 		},
 	}

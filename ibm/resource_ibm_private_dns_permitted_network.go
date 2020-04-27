@@ -37,20 +37,23 @@ func resourceIBMPrivateDNSPermittedNetwork() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			pdnsPermittedNetworkID: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Network Id",
 			},
 
 			pdnsInstanceID: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Instance Id",
 			},
 
 			pdnsZoneID: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Zone Id",
 			},
 
 			pdnsNetworkType: {
@@ -59,27 +62,32 @@ func resourceIBMPrivateDNSPermittedNetwork() *schema.Resource {
 				ForceNew:     true,
 				Default:      "vpc",
 				ValidateFunc: validateAllowedStringValue([]string{"vpc"}),
+				Description:  "Network Type",
 			},
 
 			pdnsVpcCRN: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "VPC CRN id",
 			},
 
 			pdnsPermittedNetworkCreatedOn: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Network creation date",
 			},
 
 			pdnsPermittedNetworkModifiedOn: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Network Modification date",
 			},
 
 			pdnsPermittedNetworkState: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Network status",
 			},
 		},
 	}

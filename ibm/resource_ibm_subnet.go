@@ -46,10 +46,11 @@ func resourceIBMSubnet() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"private": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
-				ForceNew: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
+				Description: "private subnet",
 			},
 
 			"type": {
@@ -64,6 +65,7 @@ func resourceIBMSubnet() *schema.Resource {
 					}
 					return
 				},
+				Description: "subnet type",
 			},
 
 			// IP version 4 or IP version 6
@@ -80,12 +82,14 @@ func resourceIBMSubnet() *schema.Resource {
 					}
 					return
 				},
+				Description: "ip version",
 			},
 
 			"capacity": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+				Description: "number of ip addresses in the subnet",
 			},
 
 			// vlan_id should be configured when type is "Portable"
@@ -95,6 +99,7 @@ func resourceIBMSubnet() *schema.Resource {
 				Computed:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"endpoint_ip"},
+				Description:   "VLAN ID for the subnet",
 			},
 
 			// endpoint_ip should be configured when type is "Static"
@@ -103,24 +108,28 @@ func resourceIBMSubnet() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"vlan_id"},
+				Description:   "endpoint IP",
 			},
 
 			// Provides IP address/cidr format (ex. 10.10.10.10/28)
 			"subnet_cidr": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "CIDR notation for the subnet",
 			},
 
 			"notes": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Notes",
 			},
 
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "tags set for the resource",
 			},
 		},
 	}

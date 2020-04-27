@@ -41,30 +41,36 @@ func resourceIBMISSecurityGroupNetworkInterfaceAttachment() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			isSGNICAGroupId: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "security group network interface attachment group ID",
 			},
 			isSGNICANicId: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "security group network interface attachment NIC ID",
 			},
 			isSGNICAName: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "security group network interface attachment name",
 			},
 			isSGNICAInstanceNwInterfaceID: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "security group network interface attachment network interface ID",
 			},
 			isSGNICAPortSpeed: {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "security group network interface attachment port speed",
 			},
 			isSGNICAPrimaryIPV4Address: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "security group network interface attachment Primary IPV4 address",
 			},
 			isSGNICAPrimaryIPV6Address: {
 				Type:     schema.TypeString,
@@ -72,22 +78,26 @@ func resourceIBMISSecurityGroupNetworkInterfaceAttachment() *schema.Resource {
 				Removed:  "This field is removed",
 			},
 			isSGNICASecondaryAddresses: {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "security group network interface attachment secondary address",
 			},
 			isSGNICAStatus: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "security group network interface attachment status",
 			},
 			isSGNICASubnet: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "security group network interface attachment subnet",
 			},
 			isSGNICAType: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "security group network interface attachment type",
 			},
 			isSGNICAFloatingIps: {
 				Type:     schema.TypeList,
@@ -95,8 +105,9 @@ func resourceIBMISSecurityGroupNetworkInterfaceAttachment() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isSGNICAFloatingIpID: {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "security group network interface attachment floating IP ID",
 						},
 						isSGNICAFloatingIpAddress: {
 							Type:     schema.TypeString,
@@ -104,12 +115,14 @@ func resourceIBMISSecurityGroupNetworkInterfaceAttachment() *schema.Resource {
 							Removed:  "This field is removed",
 						},
 						isSGNICAFloatingIpName: {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "security group network interface attachment floating IP name",
 						},
 						isSGNICAFloatingIpCRN: {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "security group network interface attachment floating IP CRN",
 						},
 					},
 				},
@@ -120,16 +133,19 @@ func resourceIBMISSecurityGroupNetworkInterfaceAttachment() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isSGNICASecurityGroupID: {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "security group network interface attachment security group ID",
 						},
 						isSGNICASecurityGroupCRN: {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "security group network interface attachment security group CRN",
 						},
 						isSGNICASecurityGroupName: {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "security group network interface attachment security group name",
 						},
 					},
 				},

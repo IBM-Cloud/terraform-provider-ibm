@@ -48,32 +48,37 @@ func resourceIBMISLBListener() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			isLBListenerLBID: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Loadbalancer listener ID",
 			},
 
 			isLBListenerPort: {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validateLBListenerPort,
+				Description:  "Loadbalancer listener port",
 			},
 
 			isLBListenerProtocol: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"https", "http", "tcp"}),
+				Description:  "Loadbalancer protocol",
 			},
 
 			isLBListenerCertificateInstance: {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "certificate instance for the Loadbalancer",
 			},
 
 			isLBListenerConnectionLimit: {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				ValidateFunc: validateLBListenerConnectionLimit,
+				Description:  "Connection limit for Loadbalancer",
 			},
 
 			isLBListenerDefaultPool: {
@@ -98,11 +103,13 @@ func resourceIBMISLBListener() *schema.Resource {
 
 					return false
 				},
+				Description: "Loadbalancer default pool info",
 			},
 
 			isLBListenerStatus: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Loadbalancer listener status",
 			},
 
 			isLBListenerID: {

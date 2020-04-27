@@ -50,8 +50,9 @@ func resourceIBMISFloatingIP() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			isFloatingIPAddress: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Floating IP address",
 			},
 
 			isFloatingIPName: {
@@ -59,11 +60,13 @@ func resourceIBMISFloatingIP() *schema.Resource {
 				Required:     true,
 				ForceNew:     false,
 				ValidateFunc: validateISName,
+				Description:  "Name of the floating IP",
 			},
 
 			isFloatingIPStatus: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Floating IP status",
 			},
 
 			isFloatingIPZone: {
@@ -72,6 +75,7 @@ func resourceIBMISFloatingIP() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{isFloatingIPTarget},
+				Description:   "Zone name",
 			},
 
 			isFloatingIPTarget: {
@@ -80,21 +84,24 @@ func resourceIBMISFloatingIP() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{isFloatingIPZone},
+				Description:   "Target info",
 			},
 
 			isFloatingIPResourceGroup: {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Computed:    true,
+				Description: "Resource group info",
 			},
 
 			isFloatingIPTags: {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      resourceIBMVPCHash,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "Floating IP tags",
 			},
 
 			ResourceControllerURL: {

@@ -37,64 +37,74 @@ func resourceIBMLbVpx() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Name",
 			},
 
 			"type": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Type of the VPX",
 			},
 
 			"datacenter": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Datacenter name",
 			},
 
 			"speed": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Speed value",
 			},
 
 			"version": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "version info",
 			},
 
 			"plan": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Plan info",
 			},
 
 			"ip_count": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+				Description: "IP address count",
 			},
 
 			"public_vlan_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "Piblic VLAN id",
 			},
 
 			"front_end_vlan": {
-				Type:     schema.TypeMap,
-				Optional: true,
-				Removed:  "Please use 'public_vlan_id'",
-				ForceNew: true,
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Removed:     "Please use 'public_vlan_id'",
+				ForceNew:    true,
+				Description: "Front end VLAN id",
 			},
 
 			"public_subnet": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Description: "Public subnet",
 			},
 
 			"front_end_subnet": {
@@ -106,10 +116,11 @@ func resourceIBMLbVpx() *schema.Resource {
 			},
 
 			"private_vlan_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "Private VLAN id",
 			},
 
 			"back_end_vlan": {
@@ -120,10 +131,11 @@ func resourceIBMLbVpx() *schema.Resource {
 			},
 
 			"private_subnet": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Description: "Private subnet",
 			},
 
 			"back_end_subnet": {
@@ -134,21 +146,24 @@ func resourceIBMLbVpx() *schema.Resource {
 			},
 
 			"vip_pool": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "List of VIP ids",
 			},
 
 			"management_ip_address": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "management IP address",
 			},
 
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "List of the tags",
 			},
 		},
 	}

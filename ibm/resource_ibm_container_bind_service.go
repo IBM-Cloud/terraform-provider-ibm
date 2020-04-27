@@ -18,9 +18,10 @@ func resourceIBMContainerBindService() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"cluster_name_id": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Required:    true,
+				Description: "Cluster name or ID",
 			},
 			"service_instance_space_guid": {
 				Type:        schema.TypeString,
@@ -41,6 +42,7 @@ func resourceIBMContainerBindService() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"service_instance_id"},
+				Description:   "serivice instance name",
 			},
 			"service_instance_id": {
 				Type:          schema.TypeString,
@@ -48,11 +50,13 @@ func resourceIBMContainerBindService() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"service_instance_name"},
+				Description:   "Service instance ID",
 			},
 			"namespace_id": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Required:    true,
+				Description: "namespace ID",
 			},
 			"secret_name": {
 				Type:      schema.TypeString,
@@ -79,14 +83,16 @@ func resourceIBMContainerBindService() *schema.Resource {
 				Deprecated:  "This field is deprecated",
 			},
 			"key": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Key info",
 			},
 			"role": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Role info",
 			},
 			"region": {
 				Type:        schema.TypeString,
@@ -102,10 +108,11 @@ func resourceIBMContainerBindService() *schema.Resource {
 				DiffSuppressFunc: applyOnce,
 			},
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "List of tags for the resource",
 			},
 		},
 	}

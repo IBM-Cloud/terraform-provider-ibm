@@ -24,28 +24,33 @@ func resourceIBMComputeMonitor() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"guest_id": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Guest ID",
 			},
 
 			"ip_address": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "IP Address",
 			},
 
 			"query_type_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Query Type ID",
 			},
 
 			"response_action_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Response action ID",
 			},
 			"wait_cycles": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "wait cycles count",
 			},
 			"notified_users": {
 				Type:     schema.TypeSet,
@@ -55,12 +60,14 @@ func resourceIBMComputeMonitor() *schema.Resource {
 				Set: func(v interface{}) int {
 					return v.(int)
 				},
+				Description: "List of users notified",
 			},
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "List of tags",
 			},
 		},
 	}

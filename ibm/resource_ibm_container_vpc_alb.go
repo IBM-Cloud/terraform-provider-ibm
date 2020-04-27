@@ -26,22 +26,26 @@ func resourceIBMContainerVpcALB() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"alb_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "ALB ID",
 			},
 			"alb_type": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Type of the ALB",
 			},
 			"cluster": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "cluster id",
 			},
 			"enable": {
 				Type:          schema.TypeBool,
 				Optional:      true,
 				ConflictsWith: []string{"disable_deployment"},
+				Description:   "Enable the ALB instance in the cluster",
 			},
 			"disable_deployment": {
 				Type:          schema.TypeBool,
@@ -49,30 +53,37 @@ func resourceIBMContainerVpcALB() *schema.Resource {
 				Computed:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"enable"},
+				Description:   "Disable the ALB instance in the cluster",
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ALB name",
 			},
 			"load_balancer_hostname": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Load balancer host name",
 			},
 			"resize": {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "boolean value to resize the albs",
 			},
 			"state": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ALB state",
 			},
 			"status": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Status of the ALB",
 			},
 			"zone": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Zone info.",
 			},
 		},
 	}

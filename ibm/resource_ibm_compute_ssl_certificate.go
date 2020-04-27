@@ -25,72 +25,84 @@ func resourceIBMComputeSSLCertificate() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"certificate": &schema.Schema{
-				Type:      schema.TypeString,
-				Required:  true,
-				ForceNew:  true,
-				StateFunc: normalizeCert,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				StateFunc:   normalizeCert,
+				Description: "SSL Certifcate",
 			},
 
 			"intermediate_certificate": &schema.Schema{
-				Type:      schema.TypeString,
-				Optional:  true,
-				ForceNew:  true,
-				StateFunc: normalizeCert,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				StateFunc:   normalizeCert,
+				Description: "Intermediate certificate value",
 			},
 
 			"private_key": &schema.Schema{
-				Type:      schema.TypeString,
-				Required:  true,
-				ForceNew:  true,
-				Sensitive: true,
-				StateFunc: normalizeCert,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Sensitive:   true,
+				StateFunc:   normalizeCert,
+				Description: "SSL Private Key",
 			},
 
 			"common_name": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Common name",
 			},
 
 			"organization_name": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Organization name",
 			},
 
 			"validity_begin": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Validity begins from",
 			},
 
 			"validity_days": &schema.Schema{
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Validity days",
 			},
 
 			"validity_end": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Validity ends before",
 			},
 
 			"key_size": &schema.Schema{
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "SSL key size",
 			},
 
 			"create_date": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "certificate creation date",
 			},
 
 			"modify_date": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "certificate modificatiob date",
 			},
 
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "Tags set for resource",
 			},
 		},
 	}

@@ -31,28 +31,33 @@ func resourceIBMISVpcAddressPrefix() *schema.Resource {
 				Required:     true,
 				ForceNew:     false,
 				ValidateFunc: validateISName,
+				Description:  "Name",
 			},
 			isVPCAddressPrefixZoneName: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Zone name",
 			},
 
 			isVPCAddressPrefixCIDR: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    false,
+				Description: "CIDIR address prefix",
 			},
 
 			isVPCAddressPrefixVPCID: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "VPC id",
 			},
 
 			isVPCAddressPrefixHasSubnets: {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Boolean value, set to true if VPC instance have subnets",
 			},
 		},
 	}

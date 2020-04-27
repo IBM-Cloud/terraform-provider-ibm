@@ -23,14 +23,15 @@ func resourceIBMSecurityGroup() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    false,
+				Description: "Security group name",
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Security group description",
 			},
 		},
 	}
@@ -41,7 +42,12 @@ func resourceIBMSecurityGroupCreate(d *schema.ResourceData, meta interface{}) er
 	service := services.GetNetworkSecurityGroupService(sess.SetRetries(0))
 
 	name := d.Get("name").(string)
-	description := d.Get("description").(string)
+	var description string
+	if v, ok := d.GetOk("description"); ok {
+		description = v.(string)
+	} else {
+		description = ""
+	}
 
 	groups, err := services.GetAccountService(sess).
 		Filter(filter.Path("securityGroups.name").Eq(name).Build()).

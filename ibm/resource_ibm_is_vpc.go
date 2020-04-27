@@ -66,14 +66,16 @@ func resourceIBMISVPC() *schema.Resource {
 				Default:          "auto",
 				DiffSuppressFunc: applyOnce,
 				ValidateFunc:     validateAllowedStringValue([]string{"auto", "manual"}),
+				Description:      "Address Prefix management value",
 			},
 
 			isVPCDefaultNetworkACL: {
-				Type:       schema.TypeString,
-				Optional:   true,
-				Default:    nil,
-				Computed:   true,
-				Deprecated: "This field is deprecated",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     nil,
+				Computed:    true,
+				Deprecated:  "This field is deprecated",
+				Description: "Default network ACL",
 			},
 
 			isVPCIsDefault: {
@@ -84,10 +86,11 @@ func resourceIBMISVPC() *schema.Resource {
 			},
 
 			isVPCClassicAccess: {
-				Type:     schema.TypeBool,
-				ForceNew: true,
-				Default:  false,
-				Optional: true,
+				Type:        schema.TypeBool,
+				ForceNew:    true,
+				Default:     false,
+				Optional:    true,
+				Description: "Set to true if classic access needs to enabled to VPC",
 			},
 
 			isVPCName: {
@@ -95,30 +98,35 @@ func resourceIBMISVPC() *schema.Resource {
 				Required:     true,
 				ForceNew:     false,
 				ValidateFunc: validateISName,
+				Description:  "VPC name",
 			},
 
 			isVPCResourceGroup: {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Computed:    true,
+				Description: "Resource group info",
 			},
 
 			isVPCStatus: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "VPC status",
 			},
 
 			isVPCIDefaultSecurityGroup: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Security group associated with VPC",
 			},
 			isVPCTags: {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      resourceIBMVPCHash,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "List of tags",
 			},
 
 			isVPCCRN: {

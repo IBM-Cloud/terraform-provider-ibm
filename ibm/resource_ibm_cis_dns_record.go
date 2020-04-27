@@ -37,15 +37,18 @@ func resourceIBMCISDnsRecord() *schema.Resource {
 					return strings.ToLower(i.(string))
 				},
 				DiffSuppressFunc: suppressNameDiff,
+				Description:      "DNS record name",
 			},
 			"type": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Record type",
 			},
 			"content": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				ConflictsWith: []string{"data"},
+				Description:   "DNS record content",
 			},
 			"data": {
 				Type:          schema.TypeMap,
@@ -218,14 +221,16 @@ func resourceIBMCISDnsRecord() *schema.Resource {
 
 						// SSHFP record properties
 						"fingerprint": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "SSH fingerprint properties",
 						},
 
 						// URI record properties
 						"content": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Content info",
 						},
 					},
 				},
@@ -235,18 +240,21 @@ func resourceIBMCISDnsRecord() *schema.Resource {
 				Type:             schema.TypeInt,
 				Optional:         true,
 				DiffSuppressFunc: suppressPriority,
+				Description:      "Priority Value",
 			},
 
 			"proxied": {
-				Default:  false,
-				Optional: true,
-				Type:     schema.TypeBool,
+				Default:     false,
+				Optional:    true,
+				Type:        schema.TypeBool,
+				Description: "Boolean value true if proxied else flase",
 			},
 
 			"ttl": {
-				Optional: true,
-				Type:     schema.TypeInt,
-				Default:  1,
+				Optional:    true,
+				Type:        schema.TypeInt,
+				Default:     1,
+				Description: "TTL value",
 			},
 			"created_on": {
 				Type:     schema.TypeString,

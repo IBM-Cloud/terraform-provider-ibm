@@ -41,23 +41,27 @@ func resourceIBMLb() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"connections": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Connections value",
 			},
 			"datacenter": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Datacenter name info",
 			},
 			"ha_enabled": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				ForceNew: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+				Default:     false,
+				Description: "true if High availability is enabled",
 			},
 			"security_certificate_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Security certificate ID",
 			},
 			"ip_address": {
 				Type:     schema.TypeString,
@@ -68,25 +72,28 @@ func resourceIBMLb() *schema.Resource {
 				Computed: true,
 			},
 			"dedicated": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
-				ForceNew: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
+				Description: "Boolena value true if Load balncer is dedicated type",
 			},
 			"ssl_enabled": {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
 			"ssl_offload": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "boolean value true if SSL offload is enabled",
 			},
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "Tags associated with resource",
 			},
 
 			"hostname": {

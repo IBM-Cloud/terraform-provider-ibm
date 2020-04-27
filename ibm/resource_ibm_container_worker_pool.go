@@ -27,27 +27,31 @@ func resourceIBMContainerWorkerPool() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"cluster": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Cluster name",
 			},
 
 			"machine_type": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "worker nodes machine type",
 			},
 
 			"worker_pool_name": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "worker pool name",
 			},
 
 			"size_per_zone": {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validateSizePerZone,
+				Description:  "Number of nodes per zone",
 			},
 
 			"hardware": {
@@ -56,18 +60,21 @@ func resourceIBMContainerWorkerPool() *schema.Resource {
 				ForceNew:     true,
 				Default:      hardwareShared,
 				ValidateFunc: validateAllowedStringValue([]string{hardwareShared, hardwareDedicated}),
+				Description:  "Hardware type",
 			},
 
 			"disk_encryption": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  true,
-				ForceNew: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				ForceNew:    true,
+				Description: "worker node disk encrypted if set to true",
 			},
 
 			"state": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "worker pool state",
 			},
 
 			"zones": {
@@ -99,12 +106,13 @@ func resourceIBMContainerWorkerPool() *schema.Resource {
 			},
 
 			"labels": {
-				Type:             schema.TypeMap,
+				Type:             schema.TypeSet,
 				Optional:         true,
 				Computed:         true,
 				ForceNew:         true,
 				DiffSuppressFunc: applyOnce,
-				Elem:             schema.TypeString,
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				Description:      "list of labels to worker pool",
 			},
 
 			"region": {

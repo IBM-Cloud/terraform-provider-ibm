@@ -45,44 +45,52 @@ func resourceIBMComputeAutoScaleGroup() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name",
 			},
 
 			"regional_group": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "regional group",
 			},
 
 			"minimum_member_count": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Minimum member count",
 			},
 
 			"maximum_member_count": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Maximum member count",
 			},
 
 			"cooldown": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Cooldown value",
 			},
 
 			"termination_policy": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Termination policy",
 			},
 
 			"virtual_server_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "virtual server ID",
 			},
 
 			"port": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Port number",
 			},
 
 			"health_check": {
@@ -118,9 +126,10 @@ func resourceIBMComputeAutoScaleGroup() *schema.Resource {
 			// This has to be a TypeList, because TypeMap does not handle non-primitive
 			// members properly.
 			"virtual_guest_member_template": {
-				Type:     schema.TypeList,
-				Required: true,
-				Elem:     getModifiedVirtualGuestResource(),
+				Type:        schema.TypeList,
+				Required:    true,
+				Elem:        getModifiedVirtualGuestResource(),
+				Description: "Virtual guest member template",
 			},
 
 			"network_vlan_ids": {
@@ -130,13 +139,15 @@ func resourceIBMComputeAutoScaleGroup() *schema.Resource {
 				Set: func(v interface{}) int {
 					return v.(int)
 				},
+				Description: "List of network VLAN ids",
 			},
 
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "List of tags",
 			},
 		},
 	}
