@@ -35,81 +35,95 @@ func resourceIBMSSLCertificate() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"server_count": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Server count",
 			},
 
 			"server_type": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "server type",
 			},
 
 			"validity_months": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "vslidity of the ssl certificate in month",
 			},
 
 			"ssl_type": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "ssl type",
 			},
 
 			"certificate_signing_request": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "certificate signing request info",
 			},
 
 			"renewal_flag": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Renewal flag",
 			},
 
 			"order_approver_email_address": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Email address of the approver",
 			},
 
 			"technical_contact_same_as_org_address_flag": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Technical contact same as org address flag",
 			},
 
 			"administrative_contact_same_as_technical_flag": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Administrative contact same as technical flag",
 			},
 
 			"billing_contact_same_as_technical_flag": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "billing contact",
 			},
 
 			"administrative_address_same_as_organization_flag": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "administrative address same as organization flag",
 			},
 
 			"billing_address_same_as_organization_flag": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "billing address same as organization flag",
 			},
 
 			"organization_information": {
-				Type:     schema.TypeSet,
-				Required: true,
-				MaxItems: 1,
+				Type:        schema.TypeSet,
+				Required:    true,
+				MaxItems:    1,
+				Description: "Organization information",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 
 						"org_address": {
-							Type:     schema.TypeSet,
-							Required: true,
+							Type:        schema.TypeSet,
+							Required:    true,
+							Description: "Organization address",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 
@@ -146,13 +160,15 @@ func resourceIBMSSLCertificate() *schema.Resource {
 							},
 						},
 						"org_organization_name": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Organization name",
 						},
 
 						"org_phone_number": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Organization phone number",
 						},
 
 						"org_fax_number": &schema.Schema{
@@ -164,9 +180,10 @@ func resourceIBMSSLCertificate() *schema.Resource {
 			},
 
 			"technical_contact": {
-				Type:     schema.TypeSet,
-				Required: true,
-				MaxItems: 1,
+				Type:        schema.TypeSet,
+				Required:    true,
+				MaxItems:    1,
+				Description: "Technical contact info",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 

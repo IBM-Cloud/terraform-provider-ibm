@@ -53,6 +53,7 @@ func resourceIBMISSubnet() *schema.Resource {
 				Computed:      true,
 				ConflictsWith: []string{isSubnetTotalIpv4AddressCount},
 				ValidateFunc:  validateCIDR,
+				Description:   "IPV4 subnet - CIDR block",
 			},
 
 			isSubnetIpv6CidrBlock: {
@@ -79,6 +80,7 @@ func resourceIBMISSubnet() *schema.Resource {
 				Default:      "ipv4",
 				Optional:     true,
 				ValidateFunc: validateIPVersion,
+				Description:  "Subnet IP version",
 			},
 
 			isSubnetName: {
@@ -86,6 +88,7 @@ func resourceIBMISSubnet() *schema.Resource {
 				Required:     true,
 				ForceNew:     false,
 				ValidateFunc: validateISName,
+				Description:  "Subnet name",
 			},
 
 			isSubnetNetworkACL: {
@@ -96,9 +99,10 @@ func resourceIBMISSubnet() *schema.Resource {
 			},
 
 			isSubnetPublicGateway: {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "Public Gateway of the subnet",
 			},
 
 			isSubnetStatus: {
@@ -107,15 +111,17 @@ func resourceIBMISSubnet() *schema.Resource {
 			},
 
 			isSubnetVPC: {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Required:    true,
+				Description: "VPC instance ID",
 			},
 
 			isSubnetZone: {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Required:    true,
+				Description: "Subnet zone info",
 			},
 
 			isSubnetResourceGroup: {

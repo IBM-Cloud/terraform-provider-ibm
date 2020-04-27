@@ -84,38 +84,45 @@ func resourceIBMStorageFile() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validateStorageType,
+				Description:  "Storage type",
 			},
 
 			"datacenter": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Datacenter name",
 			},
 
 			"capacity": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Storage capacity",
 			},
 
 			"iops": {
-				Type:     schema.TypeFloat,
-				Required: true,
+				Type:        schema.TypeFloat,
+				Required:    true,
+				Description: "iops rate",
 			},
 
 			"volumename": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Storage volume name",
 			},
 
 			"hostname": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Hostname",
 			},
 
 			"snapshot_capacity": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Snapshot capacity",
 			},
 
 			"allowed_virtual_guest_ids": {
@@ -126,6 +133,7 @@ func resourceIBMStorageFile() *schema.Resource {
 				Set: func(v interface{}) int {
 					return v.(int)
 				},
+				Description: "Virtual guest ID",
 			},
 
 			"allowed_hardware_ids": {
@@ -136,23 +144,27 @@ func resourceIBMStorageFile() *schema.Resource {
 				Set: func(v interface{}) int {
 					return v.(int)
 				},
+				Description: "Hardaware ID",
 			},
 
 			"allowed_subnets": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "Allowed network subnets",
 			},
 
 			"allowed_ip_addresses": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "Allowed range of IP addresses",
 			},
 
 			"notes": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Notes",
 			},
 
 			"snapshot_schedule": {
@@ -165,29 +177,34 @@ func resourceIBMStorageFile() *schema.Resource {
 							Type:         schema.TypeString,
 							Required:     true,
 							ValidateFunc: validateScheduleType,
+							Description:  "schedule type",
 						},
 
 						"retention_count": {
-							Type:     schema.TypeInt,
-							Required: true,
+							Type:        schema.TypeInt,
+							Required:    true,
+							Description: "Retention count",
 						},
 
 						"minute": {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							ValidateFunc: validateMinute(0, 59),
+							Description:  "Time duration in minutes",
 						},
 
 						"hour": {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							ValidateFunc: validateHour(0, 23),
+							Description:  "Time duration in hour",
 						},
 
 						"day_of_week": {
 							Type:         schema.TypeString,
 							Optional:     true,
 							ValidateFunc: validateDayOfWeek,
+							Description:  "Day of the week",
 						},
 
 						"enable": {
@@ -199,20 +216,23 @@ func resourceIBMStorageFile() *schema.Resource {
 				Set: resourceIBMFilSnapshotHash,
 			},
 			"mountpoint": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Storage mount point",
 			},
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "Tags set for the storage volume",
 			},
 			"hourly_billing": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
-				ForceNew: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
+				Description: "Hourly based billing type",
 			},
 			ResourceControllerURL: {
 				Type:        schema.TypeString,

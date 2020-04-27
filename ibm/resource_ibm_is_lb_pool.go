@@ -57,45 +57,53 @@ func resourceIBMISLBPool() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateISName,
+				Description:  "Load Balancer Pool name",
 			},
 
 			isLBID: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Load Balancer ID",
 			},
 
 			isLBPoolAlgorithm: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"round_robin", "weighted_round_robin", "least_connections"}),
+				Description:  "Load Balancer Pool algorithm",
 			},
 
 			isLBPoolProtocol: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"http", "tcp"}),
+				Description:  "Load Balancer Protocol",
 			},
 
 			isLBPoolHealthDelay: {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Load Blancer health delay time period",
 			},
 
 			isLBPoolHealthRetries: {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Load Balancer health retry count",
 			},
 
 			isLBPoolHealthTimeout: {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Load Balancer health timeout interval",
 			},
 
 			isLBPoolHealthType: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"http", "tcp"}),
+				Description:  "Load Balancer health type",
 			},
 
 			isLBPoolHealthMonitorURL: {
@@ -114,11 +122,13 @@ func resourceIBMISLBPool() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"source_ip", "http_cookie", "app_cookie"}),
+				Description:  "Load Balancer Pool session persisence type.",
 			},
 
 			isLBPoolSessPersistenceCookieName: {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Load Balancer Pool session persisence cookie name",
 			},
 
 			isLBPoolProvisioningStatus: {

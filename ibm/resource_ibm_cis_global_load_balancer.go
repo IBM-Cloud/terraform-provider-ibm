@@ -30,7 +30,7 @@ func resourceIBMCISGlb() *schema.Resource {
 			},
 			"fallback_pool_id": {
 				Type:        schema.TypeString,
-				Description: "name",
+				Description: "fallback pool ID",
 				Required:    true,
 			},
 			"default_pool_ids": {
@@ -39,17 +39,20 @@ func resourceIBMCISGlb() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+				Description: "List of default Pool IDs",
 				//ValidateFunc: validation.StringLenBetween(1, 32),
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Description for the load balancer instance",
 				//ValidateFunc: validation.StringLenBetween(0, 1024),
 			},
 			"ttl": {
 				Type:          schema.TypeInt,
 				Optional:      true,
-				ConflictsWith: []string{"proxied"}, // this is set to zero regardless of config when proxied=true
+				ConflictsWith: []string{"proxied"},
+				Description:   "TTL value", // this is set to zero regardless of config when proxied=true
 
 			},
 			"proxied": {
@@ -57,6 +60,7 @@ func resourceIBMCISGlb() *schema.Resource {
 				Optional:      true,
 				Default:       false,
 				ConflictsWith: []string{"ttl"},
+				Description:   "set to true if proxy needs to be enabled",
 			},
 			"session_affinity": {
 				Type:     schema.TypeString,
@@ -64,11 +68,13 @@ func resourceIBMCISGlb() *schema.Resource {
 				Default:  "none",
 				// Set to cookie when proxy=true
 				ValidateFunc: validateAllowedStringValue([]string{"none", "cookie"}),
+				Description:  "Session affinity info",
 			},
 			"enabled": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "set to true of LB needs to enabled",
 			},
 			// "region_pools": &schema.Schema{
 			// 	Type:     schema.TypeMap,
@@ -83,12 +89,14 @@ func resourceIBMCISGlb() *schema.Resource {
 			// 	Elem:     &schema.Schema{Type: schema.TypeString},
 			// },
 			"created_on": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Load balancer creation date",
 			},
 			"modified_on": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Load balancer modified date",
 			},
 		},
 

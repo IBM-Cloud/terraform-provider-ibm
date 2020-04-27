@@ -91,7 +91,7 @@ func resourceIBMApp() *schema.Resource {
 				Optional:    true,
 			},
 			"wait_time_minutes": {
-				Description: "Define timeout to wait for the app instances to start/update/restage etc. For example, if memory is updated then instances are automatically destroyed and new one spun up by the Cloud controller.",
+				Description: "Define timeout to wait for the app instances to start/update/restage etc.",
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Default:     20,

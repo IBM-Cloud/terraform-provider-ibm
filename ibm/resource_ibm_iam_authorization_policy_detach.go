@@ -16,9 +16,10 @@ func resourceIBMIAMAuthorizationPolicyDetach() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"authorization_policy_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Authorization policy ID",
 			},
 		},
 	}

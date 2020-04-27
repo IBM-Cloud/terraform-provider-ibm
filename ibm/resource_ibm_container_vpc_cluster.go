@@ -47,9 +47,10 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"flavor": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Cluster nodes flavour",
 			},
 
 			"name": {
@@ -67,9 +68,10 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 			},
 
 			"zones": {
-				Type:     schema.TypeList,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeList,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Zone info",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -106,6 +108,7 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 					}
 					return false
 				},
+				Description: "Kubernetes version",
 			},
 
 			"service_subnet": {
@@ -125,23 +128,26 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 			},
 
 			"worker_count": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  1,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     1,
+				Description: "Number of worker nodes in the cluster",
 			},
 
 			"disable_public_service_endpoint": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Boolean value true if Public service endpoint to be disabled",
 			},
 
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      resourceIBMVPCHash,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "List of tags for the resources",
 			},
 
 			"wait_till": {

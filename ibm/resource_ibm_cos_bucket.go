@@ -51,14 +51,16 @@ func resourceIBMCOS() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"bucket_name": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "COS Bucket name",
 			},
 			"resource_instance_id": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "resource instance ID",
 			},
 			"crn": {
 				Type:        schema.TypeString,
@@ -77,6 +79,7 @@ func resourceIBMCOS() *schema.Resource {
 				ValidateFunc:  validateAllowedStringValue(singleSiteLocation),
 				ForceNew:      true,
 				ConflictsWith: []string{"region_location", "cross_region_location"},
+				Description:   "single site location info",
 			},
 			"region_location": &schema.Schema{
 				Type:          schema.TypeString,
@@ -84,6 +87,7 @@ func resourceIBMCOS() *schema.Resource {
 				ValidateFunc:  validateAllowedStringValue(regionLocation),
 				ForceNew:      true,
 				ConflictsWith: []string{"cross_region_location", "single_site_location"},
+				Description:   "Region Location info.",
 			},
 			"cross_region_location": &schema.Schema{
 				Type:          schema.TypeString,
@@ -91,12 +95,14 @@ func resourceIBMCOS() *schema.Resource {
 				ValidateFunc:  validateAllowedStringValue(crossRegionLocation),
 				ForceNew:      true,
 				ConflictsWith: []string{"region_location", "single_site_location"},
+				Description:   "Cros region location info",
 			},
 			"storage_class": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue(storageClass),
 				ForceNew:     true,
+				Description:  "Storage class info",
 			},
 			"s3_endpoint_public": {
 				Type:        schema.TypeString,

@@ -28,27 +28,32 @@ func resourceIBMPIKey() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			helpers.PIKeyName: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Key name in the PI instance",
 			},
 
 			helpers.PIKey: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "PI instance key info",
 			},
 			helpers.PIKeyDate: {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Date info",
 			},
 
 			helpers.PICloudInstanceId: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "PI cloud instance ID",
 			},
 
 			"key_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Key ID in the PI instance",
 			},
 		},
 	}

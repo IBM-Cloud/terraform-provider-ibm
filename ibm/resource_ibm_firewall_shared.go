@@ -33,26 +33,30 @@ func resourceIBMFirewallShared() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"billing_item_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Billing Item ID",
 			},
 			"firewall_type": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"10MBPS_HARDWARE_FIREWALL", "20MBPS_HARDWARE_FIREWALL", "100MBPS_HARDWARE_FIREWALL", "1000MBPS_HARDWARE_FIREWALL", "200MBPS_HARDWARE_FIREWALL", "2000MBPS_HARDWARE_FIREWALL"}),
+				Description:  "Firewall type",
 			},
 			"virtual_instance_id": {
 				Type:          schema.TypeInt,
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"hardware_instance_id"},
+				Description:   "Virtual instance ID",
 			},
 			"hardware_instance_id": {
 				Type:          schema.TypeInt,
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"virtual_instance_id"},
+				Description:   "Hardware instance ID",
 			},
 		},
 	}

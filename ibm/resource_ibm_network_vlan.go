@@ -46,9 +46,10 @@ func resourceIBMNetworkVlan() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"datacenter": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Datacenter name",
 			},
 			"type": {
 				Type:     schema.TypeString,
@@ -62,6 +63,7 @@ func resourceIBMNetworkVlan() *schema.Resource {
 					}
 					return
 				},
+				Description: "VLAN type",
 			},
 			"subnet_size": {
 				Type:     schema.TypeInt,
@@ -74,26 +76,31 @@ func resourceIBMNetworkVlan() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validateVLANName,
+				Description:  "VLAN name",
 			},
 
 			"router_hostname": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "router host name",
 			},
 
 			"vlan_number": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "VLAN number",
 			},
 			"softlayer_managed": {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Zzset to true if VLAN is managed by softlayer",
 			},
 			"child_resource_count": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Child resource count",
 			},
 			"subnets": {
 				Type:     schema.TypeSet,
@@ -124,10 +131,11 @@ func resourceIBMNetworkVlan() *schema.Resource {
 				},
 			},
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "List of tags",
 			},
 			ResourceControllerURL: {
 				Type:        schema.TypeString,

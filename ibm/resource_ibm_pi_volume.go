@@ -30,8 +30,9 @@ func resourceIBMPIVolume() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"volume_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Volume ID",
 			},
 
 			helpers.PIVolumeName: {
@@ -54,6 +55,7 @@ func resourceIBMPIVolume() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"ssd", "standard", "tier1", "tier3"}),
+				Description:  "Volume type",
 			},
 
 			helpers.PICloudInstanceId: {
@@ -65,8 +67,9 @@ func resourceIBMPIVolume() *schema.Resource {
 			// Computed Attributes
 
 			"volume_status": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Volume status",
 			},
 		},
 	}

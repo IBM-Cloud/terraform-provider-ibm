@@ -20,13 +20,15 @@ func resourceIBMDNSReverseRecord() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{
 			"ipaddress": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "IP Address",
 			},
 			"hostname": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Host name",
 			},
 			"ttl": {
 				Type:     schema.TypeInt,
@@ -34,6 +36,7 @@ func resourceIBMDNSReverseRecord() *schema.Resource {
 				DefaultFunc: func() (interface{}, error) {
 					return 604800, nil
 				},
+				Description: "TTL value",
 			},
 		},
 	}

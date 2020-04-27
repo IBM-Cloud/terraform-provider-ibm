@@ -32,9 +32,10 @@ func resourceIBMContainerClusterFeature() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"cluster": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Cluster name of ID",
 			},
 
 			"public_service_endpoint": {
@@ -55,15 +56,17 @@ func resourceIBMContainerClusterFeature() *schema.Resource {
 			},
 
 			"refresh_api_servers": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Boolean value true of API server to be refreshed in K8S cluster",
 			},
 
 			"reload_workers": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Boolean value set true if worker nodes to be reloaded",
 			},
 
 			"private_service_endpoint_url": {

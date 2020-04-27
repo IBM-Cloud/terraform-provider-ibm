@@ -48,17 +48,20 @@ func resourceIBMISVpcRoute() *schema.Resource {
 				Required:     true,
 				ForceNew:     false,
 				ValidateFunc: validateISName,
+				Description:  "VPC route name",
 			},
 			isVPCRouteLocation: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "VPC route location",
 			},
 
 			isVPCRouteDestinationCIDR: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "VPC route destination CIDR value",
 			},
 
 			isVPCRouteState: {
@@ -67,15 +70,17 @@ func resourceIBMISVpcRoute() *schema.Resource {
 			},
 
 			isVPCRouteVPCID: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "VPC instance ID",
 			},
 
 			isVPCRouteNextHop: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "VPC route next hop value",
 			},
 		},
 	}

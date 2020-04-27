@@ -25,20 +25,23 @@ func resourceIBMNetworkInterfaceSGAttachment() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"security_group_id": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Security group ID",
 			},
 			"network_interface_id": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Network interface ID",
 			},
 			"soft_reboot": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  true,
-				ForceNew: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				ForceNew:    true,
+				Description: "Boolean value set to true, if soft reboot needs to be done.",
 			},
 		},
 	}

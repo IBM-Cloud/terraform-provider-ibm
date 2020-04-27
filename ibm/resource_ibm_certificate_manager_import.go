@@ -20,48 +20,58 @@ func resourceIBMCertificateManagerImport() *schema.Resource {
 		Exists:   resourceIBMCertificateManagerExists,
 		Schema: map[string]*schema.Schema{
 			"certificate_manager_instance_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Instance ID of the certificate manager resource",
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name of the instance",
 			},
 			"data": {
-				Type:     schema.TypeMap,
-				Required: true,
+				Type:        schema.TypeMap,
+				Required:    true,
+				Description: "certificate data",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"content": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Certificate Content",
 						},
 						"priv_key": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Private Key for the certificate",
 						},
 						"intermediate": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Intermidiate Value for the certificate",
 						},
 					},
 				},
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Description of the certificate instance",
 			},
 			"issuer": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "certificate issuer info",
 			},
 			"begins_on": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Certificate validity start date",
 			},
 			"expires_on": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "certificate expiry date",
 			},
 			"imported": {
 				Type:     schema.TypeBool,

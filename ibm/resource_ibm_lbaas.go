@@ -104,7 +104,7 @@ func resourceIBMLbaas() *schema.Resource {
 				Optional:         true,
 				Computed:         true,
 				DiffSuppressFunc: applyOnce,
-				Description:      "Applicable for public load balancer only. It specifies whether the public IP addresses are allocated from system public IP pool or public subnet from the account ordering the load balancer.",
+				Description:      `"in public loadbalancer - Public IP address allocation done by system public IP pool or public subnet."`,
 			},
 			"protocols": {
 				Type:        schema.TypeSet,

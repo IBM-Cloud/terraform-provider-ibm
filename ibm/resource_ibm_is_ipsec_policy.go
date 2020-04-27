@@ -37,31 +37,36 @@ func resourceIBMISIPSecPolicy() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateISName,
+				Description:  "IPSEC name",
 			},
 
 			isIpSecAuthenticationAlg: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"md5", "sha1", "sha256"}),
+				Description:  "Authentication alorothm",
 			},
 
 			isIpSecEncryptionAlg: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"3des", "aes128", "aes256"}),
+				Description:  "Encryption algorithm",
 			},
 
 			isIpSecPFS: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"disabled", "group_2", "group_5", "group_14"}),
+				Description:  "PFS info",
 			},
 
 			isIPSecResourceGroup: {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Computed:    true,
+				Description: "Resource group info",
 			},
 
 			isIpSecKeyLifeTime: {
@@ -69,16 +74,19 @@ func resourceIBMISIPSecPolicy() *schema.Resource {
 				Optional:     true,
 				Default:      3600,
 				ValidateFunc: validateKeyLifeTime,
+				Description:  "IPSEC key lifetime",
 			},
 
 			isIPSecEncapsulationMode: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "IPSEC encapsulation mode",
 			},
 
 			isIPSecTransformProtocol: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "IPSEC transform protocol",
 			},
 
 			isIPSecVPNConnections: {

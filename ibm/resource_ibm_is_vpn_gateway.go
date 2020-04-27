@@ -52,12 +52,14 @@ func resourceIBMISVPNGateway() *schema.Resource {
 				Required:     true,
 				ForceNew:     false,
 				ValidateFunc: validateISName,
+				Description:  "VPN Gateway instance name",
 			},
 
 			isVPNGatewaySubnet: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "VPNGateway subnet info",
 			},
 
 			isVPNGatewayResourceGroup: {
@@ -78,11 +80,12 @@ func resourceIBMISVPNGateway() *schema.Resource {
 			},
 
 			isVPNGatewayTags: {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      resourceIBMVPCHash,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "VPN Gateway tags list",
 			},
 
 			ResourceControllerURL: {
