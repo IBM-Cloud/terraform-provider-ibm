@@ -14,7 +14,7 @@ import (
 )
 
 func TestAccIBMIPSec_Basic(t *testing.T) {
-	name := fmt.Sprintf("terraform-%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

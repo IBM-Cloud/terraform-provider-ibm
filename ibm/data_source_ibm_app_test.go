@@ -11,9 +11,9 @@ import (
 
 func TestAccIBMAppDataSource_Basic(t *testing.T) {
 	var conf mccpv2.AppFields
-	appName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	routeHostName := fmt.Sprintf("terraform-route-host-%d", acctest.RandInt())
-	svcName := fmt.Sprintf("tfsvc-%d", acctest.RandInt())
+	appName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	routeHostName := fmt.Sprintf("terraform-route-host-%d", acctest.RandIntRange(10, 100))
+	svcName := fmt.Sprintf("tfsvc-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

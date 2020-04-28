@@ -15,8 +15,8 @@ func TestAccIBMVpcContainerWorkerPool_basic(t *testing.T) {
 
 	flavor := "c2.2x4"
 	worker_count := 1
-	name1 := acctest.RandInt()
-	name2 := acctest.RandInt()
+	name1 := acctest.RandIntRange(10, 100)
+	name2 := acctest.RandIntRange(10, 100)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -36,8 +36,8 @@ func TestAccIBMVpcContainerWorkerPool_basic(t *testing.T) {
 func TestAccIBMVpcContainerWorkerPool_importBasic(t *testing.T) {
 	flavor := "c2.2x4"
 	worker_count := 1
-	name1 := acctest.RandInt()
-	name2 := acctest.RandInt()
+	name1 := acctest.RandIntRange(10, 100)
+	name2 := acctest.RandIntRange(10, 100)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

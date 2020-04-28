@@ -73,7 +73,7 @@ func TestAccIBMCisInstance_CreateAfterManualDestroy(t *testing.T) {
 
 func TestAccIBMCisInstance_import(t *testing.T) {
 	var cisInstanceOne string
-	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_cis." + serviceName
 
 	resource.Test(t, resource.TestCase{

@@ -12,7 +12,7 @@ import (
 )
 
 func TestAccIBMApp_Invalid_Application_Path(t *testing.T) {
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -29,8 +29,8 @@ func TestAccIBMApp_Invalid_Application_Path(t *testing.T) {
 
 func TestAccIBMApp_Basic(t *testing.T) {
 	var conf mccpv2.AppFields
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	updatedName := fmt.Sprintf("terraform_updated_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	updatedName := fmt.Sprintf("terraform_updated_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -61,9 +61,9 @@ func TestAccIBMApp_Basic(t *testing.T) {
 
 func TestAccIBMApp_with_routes(t *testing.T) {
 	var conf mccpv2.AppFields
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	route1 := fmt.Sprintf("terraform-%d", acctest.RandInt())
-	route2 := fmt.Sprintf("terraform-%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	route1 := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
+	route2 := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -114,10 +114,10 @@ func TestAccIBMApp_with_routes(t *testing.T) {
 
 func TestAccIBMApp_with_service_instances(t *testing.T) {
 	var conf mccpv2.AppFields
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	route := fmt.Sprintf("terraform-%d", acctest.RandInt())
-	serviceName1 := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	serviceName2 := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	route := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
+	serviceName1 := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	serviceName2 := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -173,7 +173,7 @@ func TestAccIBMApp_with_service_instances(t *testing.T) {
 
 func TestAccIBMApp_With_Tags(t *testing.T) {
 	var conf mccpv2.AppFields
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -202,7 +202,7 @@ func TestAccIBMApp_With_Tags(t *testing.T) {
 
 func TestAccIBMApp_With_Health_Check(t *testing.T) {
 	var conf mccpv2.AppFields
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

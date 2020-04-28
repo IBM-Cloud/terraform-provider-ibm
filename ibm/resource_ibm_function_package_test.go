@@ -14,8 +14,8 @@ import (
 
 func TestAccFunctionPackage_Basic(t *testing.T) {
 	var conf whisk.Package
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	updatedName := fmt.Sprintf("terraform_updated_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	updatedName := fmt.Sprintf("terraform_updated_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -99,8 +99,8 @@ func TestAccFunctionPackage_Basic(t *testing.T) {
 
 func TestAccFunctionPackage_Bind_Basic(t *testing.T) {
 	var conf whisk.Package
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	updatedName := fmt.Sprintf("terraform_updated_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	updatedName := fmt.Sprintf("terraform_updated_%d", acctest.RandIntRange(10, 100))
 	bindName := "/whisk.system/alarms"
 
 	resource.Test(t, resource.TestCase{
@@ -182,7 +182,7 @@ func TestAccFunctionPackage_Bind_Basic(t *testing.T) {
 
 func TestAccFunctionPackage_Import(t *testing.T) {
 	var conf whisk.Package
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

@@ -14,8 +14,8 @@ import (
 
 func TestAccIBMResourceInstance_Basic(t *testing.T) {
 	var conf models.ServiceInstance
-	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	updateName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	updateName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -66,7 +66,7 @@ func TestAccIBMResourceInstance_Basic(t *testing.T) {
 
 func TestAccIBMResourceInstance_import(t *testing.T) {
 	var conf models.ServiceInstance
-	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_resource_instance.instance"
 
 	resource.Test(t, resource.TestCase{
@@ -97,7 +97,7 @@ func TestAccIBMResourceInstance_import(t *testing.T) {
 
 func TestAccIBMResourceInstance_with_serviceendpoints(t *testing.T) {
 	var conf models.ServiceInstance
-	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_resource_instance.instance"
 
 	resource.Test(t, resource.TestCase{
@@ -122,7 +122,7 @@ func TestAccIBMResourceInstance_with_serviceendpoints(t *testing.T) {
 
 func TestAccIBMResourceInstance_with_resource_group(t *testing.T) {
 	var conf models.ServiceInstance
-	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_resource_instance.instance"
 
 	resource.Test(t, resource.TestCase{

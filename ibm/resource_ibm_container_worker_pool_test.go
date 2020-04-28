@@ -14,8 +14,8 @@ import (
 
 func TestAccIBMContainerWorkerPool_basic(t *testing.T) {
 
-	workerPoolName := fmt.Sprintf("terraform-%d", acctest.RandInt())
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	workerPoolName := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -61,8 +61,8 @@ func TestAccIBMContainerWorkerPool_basic(t *testing.T) {
 }
 
 func TestAccIBMContainerWorkerPool_importBasic(t *testing.T) {
-	workerPoolName := fmt.Sprintf("terraform-%d", acctest.RandInt())
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	workerPoolName := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -83,8 +83,8 @@ func TestAccIBMContainerWorkerPool_importBasic(t *testing.T) {
 }
 
 func TestAccIBMContainerWorkerPool_InvalidSizePerZone(t *testing.T) {
-	workerPoolName := fmt.Sprintf("terraform-%d", acctest.RandInt())
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	workerPoolName := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

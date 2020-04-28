@@ -19,7 +19,7 @@ import (
 )
 
 func TestAccIBMContainerCluster_basic(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -72,7 +72,7 @@ func TestAccIBMContainerCluster_basic(t *testing.T) {
 }
 
 func TestAccIBMContainerCluster_trusted(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -100,7 +100,7 @@ func TestAccIBMContainerCluster_trusted(t *testing.T) {
 }
 
 func TestAccIBMContainerCluster_nosubnet_false(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -126,7 +126,7 @@ func TestAccIBMContainerCluster_nosubnet_false(t *testing.T) {
 }
 
 func TestAccIBMContainerCluster_worker_count(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -163,7 +163,7 @@ func TestAccIBMContainerCluster_worker_count(t *testing.T) {
 }
 
 func TestAccIBMContainerCluster_with_worker_num_zero(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -178,7 +178,7 @@ func TestAccIBMContainerCluster_with_worker_num_zero(t *testing.T) {
 }
 
 func TestAccIBMContainerCluster_diskEnc(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -199,7 +199,7 @@ func TestAccIBMContainerCluster_diskEnc(t *testing.T) {
 
 //testAccCheckIBMContainerClusterOptionalOrgSpace_basic
 func TestAccIBMContainerClusterOptionalOrgSpace_basic(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -221,7 +221,7 @@ func TestAccIBMContainerClusterOptionalOrgSpace_basic(t *testing.T) {
 }
 
 func TestAccIBMContainerCluster_private_subnet(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -245,7 +245,7 @@ func TestAccIBMContainerCluster_private_subnet(t *testing.T) {
 }
 
 func TestAccIBMContainerCluster_private_and_public_subnet(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -269,7 +269,7 @@ func TestAccIBMContainerCluster_private_and_public_subnet(t *testing.T) {
 }
 
 func TestAccIBMContainerCluster_Tag(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

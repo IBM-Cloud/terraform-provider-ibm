@@ -9,9 +9,9 @@ import (
 )
 
 func TestAccFunctionRuleDataSourceBasic(t *testing.T) {
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	actionName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	triggerName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	actionName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	triggerName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

@@ -14,8 +14,8 @@ import (
 
 func TestAccIBMISSubnet_basic(t *testing.T) {
 	var subnet *models.Subnet
-	vpcname := fmt.Sprintf("terraformsubnetuat-vpc-%d", acctest.RandInt())
-	name1 := fmt.Sprintf("terraformsubnetuat-create-step-name-%d", acctest.RandInt())
+	vpcname := fmt.Sprintf("terraformsubnetuat-vpc-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("terraformsubnetuat-create-step-name-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

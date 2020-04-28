@@ -13,8 +13,8 @@ import (
 func TestAccIBMSecurityGroupDataSource_basic(t *testing.T) {
 	var sg datatypes.Network_SecurityGroup
 
-	name1 := fmt.Sprintf("terraformsguat_create_step_name_%d", acctest.RandInt())
-	desc1 := fmt.Sprintf("terraformsguat_create_step_desc_%d", acctest.RandInt())
+	name1 := fmt.Sprintf("terraformsguat_create_step_name_%d", acctest.RandIntRange(10, 100))
+	desc1 := fmt.Sprintf("terraformsguat_create_step_desc_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

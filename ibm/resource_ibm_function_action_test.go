@@ -14,7 +14,7 @@ import (
 
 func TestAccFunctionAction_NodeJS(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -38,7 +38,7 @@ func TestAccFunctionAction_NodeJS(t *testing.T) {
 
 func TestAccFunctionAction_NodeJSWithParams(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -62,7 +62,7 @@ func TestAccFunctionAction_NodeJSWithParams(t *testing.T) {
 
 func TestAccFunctionAction_NodeJSZip(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -86,7 +86,7 @@ func TestAccFunctionAction_NodeJSZip(t *testing.T) {
 
 func TestAccFunctionAction_Python(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -110,7 +110,7 @@ func TestAccFunctionAction_Python(t *testing.T) {
 
 func TestAccFunctionAction_PythonZip(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -134,7 +134,7 @@ func TestAccFunctionAction_PythonZip(t *testing.T) {
 
 func TestAccFunctionAction_PHP(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -158,7 +158,7 @@ func TestAccFunctionAction_PHP(t *testing.T) {
 
 func TestAccFunctionAction_PHPZip(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -182,7 +182,7 @@ func TestAccFunctionAction_PHPZip(t *testing.T) {
 
 func TestAccFunctionAction_Swift(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -206,7 +206,7 @@ func TestAccFunctionAction_Swift(t *testing.T) {
 
 func TestAccFunctionAction_Sequence(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -230,7 +230,7 @@ func TestAccFunctionAction_Sequence(t *testing.T) {
 
 func TestAccFunctionAction_Basic(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -268,7 +268,7 @@ func TestAccFunctionAction_Basic(t *testing.T) {
 
 func TestAccFunctionAction_Import(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

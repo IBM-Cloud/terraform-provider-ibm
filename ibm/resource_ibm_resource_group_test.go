@@ -15,8 +15,8 @@ import (
 
 func TestAccIBMResourceGroup_Basic(t *testing.T) {
 	var conf models.ResourceGroupv2
-	resourceGroupName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	resourceGroupUpdateName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	resourceGroupName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	resourceGroupUpdateName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -51,7 +51,7 @@ func TestAccIBMResourceGroup_Basic(t *testing.T) {
 
 func TestAccIBMResourceGroup_With_Tags(t *testing.T) {
 	var conf models.ResourceGroupv2
-	resourceGroupName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	resourceGroupName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

@@ -11,9 +11,9 @@ import (
 )
 
 func TestAccIBMContainerClusterDataSource_basic(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	serviceName := fmt.Sprintf("terraform-%d", acctest.RandInt())
-	serviceKeyName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	serviceName := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
+	serviceKeyName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -36,7 +36,7 @@ func TestAccIBMContainerClusterDataSource_basic(t *testing.T) {
 }
 
 func TestAccIBMContainerClusterDataSourceWithOutOrgSpaceAccount(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,

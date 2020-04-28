@@ -14,7 +14,7 @@ import (
 
 func TestAccIBMIAMServicePolicy_Basic(t *testing.T) {
 	var conf iampapv1.Policy
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -44,7 +44,7 @@ func TestAccIBMIAMServicePolicy_Basic(t *testing.T) {
 
 func TestAccIBMIAMServicePolicy_With_Service(t *testing.T) {
 	var conf iampapv1.Policy
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -75,7 +75,7 @@ func TestAccIBMIAMServicePolicy_With_Service(t *testing.T) {
 
 func TestAccIBMIAMServicePolicy_With_ResourceInstance(t *testing.T) {
 	var conf iampapv1.Policy
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -97,7 +97,7 @@ func TestAccIBMIAMServicePolicy_With_ResourceInstance(t *testing.T) {
 
 func TestAccIBMIAMServicePolicy_With_Resource_Group(t *testing.T) {
 	var conf iampapv1.Policy
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -119,7 +119,7 @@ func TestAccIBMIAMServicePolicy_With_Resource_Group(t *testing.T) {
 
 func TestAccIBMIAMServicePolicy_With_Resource_Type(t *testing.T) {
 	var conf iampapv1.Policy
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -140,7 +140,7 @@ func TestAccIBMIAMServicePolicy_With_Resource_Type(t *testing.T) {
 
 func TestAccIBMIAMServicePolicy_import(t *testing.T) {
 	var conf iampapv1.Policy
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_service_policy.policy"
 
 	resource.Test(t, resource.TestCase{
@@ -167,7 +167,7 @@ func TestAccIBMIAMServicePolicy_import(t *testing.T) {
 
 func TestAccIBMIAMServicePolicy_account_management(t *testing.T) {
 	var conf iampapv1.Policy
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_service_policy.policy"
 
 	resource.Test(t, resource.TestCase{

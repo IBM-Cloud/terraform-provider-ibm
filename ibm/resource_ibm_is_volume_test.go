@@ -14,8 +14,8 @@ import (
 
 func TestAccIBMISVolume_basic(t *testing.T) {
 	var vol *models.Volume
-	name := fmt.Sprintf("tfcreatestepname-%d", acctest.RandInt())
-	name1 := fmt.Sprintf("tf-update-step-name-%d", acctest.RandInt())
+	name := fmt.Sprintf("tfcreatestepname-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tf-update-step-name-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

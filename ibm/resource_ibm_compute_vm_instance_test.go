@@ -324,8 +324,8 @@ func TestAccIBMComputeVmInstance_With_SSH_Keys(t *testing.T) {
 
 	hostname := acctest.RandString(16)
 	domain := "tfsshkeyvmuat.ibm.com"
-	label := fmt.Sprintf("terraformsshuat_create_step_label_%d", acctest.RandInt())
-	notes := fmt.Sprintf("terraformsshuat_update_step_notes_%d", acctest.RandInt())
+	label := fmt.Sprintf("terraformsshuat_create_step_label_%d", acctest.RandIntRange(10, 100))
+	notes := fmt.Sprintf("terraformsshuat_update_step_notes_%d", acctest.RandIntRange(10, 100))
 	publicKey := strings.TrimSpace(`
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
 `)
@@ -356,8 +356,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 func TestAccIBMComputeVmInstance_basic_import(t *testing.T) {
 	hostname := acctest.RandString(16)
 	domain := "tfsshkeyvmuat.ibm.com"
-	label := fmt.Sprintf("terraformsshuat_create_step_label_%d", acctest.RandInt())
-	notes := fmt.Sprintf("terraformsshuat_update_step_notes_%d", acctest.RandInt())
+	label := fmt.Sprintf("terraformsshuat_create_step_label_%d", acctest.RandIntRange(10, 100))
+	notes := fmt.Sprintf("terraformsshuat_update_step_notes_%d", acctest.RandIntRange(10, 100))
 	publicKey := strings.TrimSpace(`
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
 `)
@@ -700,10 +700,10 @@ func TestAccIBMComputeVmInstance_With_Security_Groups(t *testing.T) {
 	var guest datatypes.Virtual_Guest
 	var pubsg datatypes.Network_SecurityGroup
 	var pvtsg datatypes.Network_SecurityGroup
-	sgName1 := fmt.Sprintf("terraformsguat_create_step_name_%d", acctest.RandInt())
-	sgDesc1 := fmt.Sprintf("terraformsguat_create_step_desc_%d", acctest.RandInt())
-	sgName2 := fmt.Sprintf("terraformsguat_create_step_name_%d", acctest.RandInt())
-	sgDesc2 := fmt.Sprintf("terraformsguat_create_step_desc_%d", acctest.RandInt())
+	sgName1 := fmt.Sprintf("terraformsguat_create_step_name_%d", acctest.RandIntRange(10, 100))
+	sgDesc1 := fmt.Sprintf("terraformsguat_create_step_desc_%d", acctest.RandIntRange(10, 100))
+	sgName2 := fmt.Sprintf("terraformsguat_create_step_name_%d", acctest.RandIntRange(10, 100))
+	sgDesc2 := fmt.Sprintf("terraformsguat_create_step_desc_%d", acctest.RandIntRange(10, 100))
 
 	hostname := acctest.RandString(16)
 
