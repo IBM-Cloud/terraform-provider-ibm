@@ -10,7 +10,7 @@ import (
 
 func TestAccIBMISVPCDatasource_basic(t *testing.T) {
 	var vpc string
-	name1 := fmt.Sprintf("tfc-vpc-name-%d", acctest.RandInt())
+	name1 := fmt.Sprintf("tfc-vpc-name-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

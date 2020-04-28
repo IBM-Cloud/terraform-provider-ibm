@@ -12,7 +12,7 @@ import (
 )
 
 func TestAccIBMContainerALB_Basic(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

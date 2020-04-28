@@ -15,8 +15,8 @@ import (
 
 func TestAccIBMServiceInstance_Basic(t *testing.T) {
 	var conf mccpv2.ServiceInstanceFields
-	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	updateName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	updateName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -67,7 +67,7 @@ func TestAccIBMServiceInstance_Basic(t *testing.T) {
 
 func TestAccIBMServiceInstance_import(t *testing.T) {
 	var conf mccpv2.ServiceInstanceFields
-	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_service_instance.service"
 
 	resource.Test(t, resource.TestCase{
@@ -214,7 +214,7 @@ func testAccCheckIBMServiceInstance_newServiceType(updateName string) string {
 
 func TestAccIBMServiceInstance_Discovery_Basic(t *testing.T) {
 	var conf mccpv2.ServiceInstanceFields
-	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

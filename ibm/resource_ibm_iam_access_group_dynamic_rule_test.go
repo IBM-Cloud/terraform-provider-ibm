@@ -12,8 +12,8 @@ import (
 )
 
 func TestAccIBMIAMDynamicRule_Basic(t *testing.T) {
-	agname := fmt.Sprintf("ag_%d", acctest.RandInt())
-	name := fmt.Sprintf("rule_%d", acctest.RandInt())
+	agname := fmt.Sprintf("ag_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("rule_%d", acctest.RandIntRange(10, 100))
 	expiration := 10
 	identityProvider := "test-idp.com"
 	claim := "blueGroups"
@@ -36,8 +36,8 @@ func TestAccIBMIAMDynamicRule_Basic(t *testing.T) {
 }
 
 func TestAccIBMIAMDynamicRuleimport(t *testing.T) {
-	agname := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	agname := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	expiration := 10
 	identityProvider := "test-idp.com"
 	claim := "blueGroups"

@@ -12,8 +12,8 @@ import (
 )
 
 func TestAccIBMContainerALBCert_Basic(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	secretName := fmt.Sprintf("terraform-secret%d", acctest.RandInt())
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	secretName := fmt.Sprintf("terraform-secret%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

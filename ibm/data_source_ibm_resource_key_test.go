@@ -9,8 +9,8 @@ import (
 )
 
 func TestAccIBMResourceKeyDataSource_basic(t *testing.T) {
-	resourceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	resourceKey := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	resourceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	resourceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -32,8 +32,8 @@ func TestAccIBMResourceKeyDataSource_basic(t *testing.T) {
 }
 
 func TestAccIBMResourceKeyDataSource_mostrecent(t *testing.T) {
-	resourceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	resourceKey := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	resourceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	resourceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

@@ -15,7 +15,7 @@ import (
 
 func TestAccIBMAppDomainShared_Basic(t *testing.T) {
 	var conf mccpv2.SharedDomainFields
-	name := fmt.Sprintf("terraform%d.com", acctest.RandInt())
+	name := fmt.Sprintf("terraform%d.com", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -34,7 +34,7 @@ func TestAccIBMAppDomainShared_Basic(t *testing.T) {
 
 func TestAccIBMAppDomainShared_With_Tags(t *testing.T) {
 	var conf mccpv2.SharedDomainFields
-	name := fmt.Sprintf("terraform%d.com", acctest.RandInt())
+	name := fmt.Sprintf("terraform%d.com", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

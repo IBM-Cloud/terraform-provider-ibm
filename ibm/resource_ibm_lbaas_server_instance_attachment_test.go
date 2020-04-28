@@ -13,7 +13,7 @@ import (
 )
 
 func TestAccIBMLbaasServerInstanceAttachment_Basic(t *testing.T) {
-	name := fmt.Sprintf("terraform-%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -44,7 +44,7 @@ func TestAccIBMLbaasServerInstanceAttachment_Basic(t *testing.T) {
 }
 
 func TestAccIBMLbaasServerInstanceAttachment_Dynamic_SI_Attachment(t *testing.T) {
-	name := fmt.Sprintf("terraform-%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

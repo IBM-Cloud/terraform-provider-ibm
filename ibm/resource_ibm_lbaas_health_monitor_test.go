@@ -10,7 +10,7 @@ import (
 )
 
 func TestAccIBMLbaasHealthMonitor_Basic(t *testing.T) {
-	name := fmt.Sprintf("terraform-%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -45,7 +45,7 @@ func TestAccIBMLbaasHealthMonitor_Basic(t *testing.T) {
 }
 
 func TestAccIBMLbaasHealthMonitor_tcp(t *testing.T) {
-	name := fmt.Sprintf("terraform-%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,

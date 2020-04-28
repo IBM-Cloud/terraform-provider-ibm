@@ -14,9 +14,9 @@ import (
 
 func TestAccIBMISVPCAddressPrefix_basic(t *testing.T) {
 	var vpcAddressPrefix string
-	name1 := fmt.Sprintf("tfvpcuat-%d", acctest.RandInt())
-	prefixName := fmt.Sprintf("tfaddprename-%d", acctest.RandInt())
-	prefixName1 := fmt.Sprintf("tfaddprenamename-%d", acctest.RandInt())
+	name1 := fmt.Sprintf("tfvpcuat-%d", acctest.RandIntRange(10, 100))
+	prefixName := fmt.Sprintf("tfaddprename-%d", acctest.RandIntRange(10, 100))
+	prefixName1 := fmt.Sprintf("tfaddprenamename-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

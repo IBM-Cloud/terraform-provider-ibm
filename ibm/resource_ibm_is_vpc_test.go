@@ -14,8 +14,8 @@ import (
 
 func TestAccIBMISVPC_basic(t *testing.T) {
 	var vpc string
-	name1 := fmt.Sprintf("terraformvpcuat-%d", acctest.RandInt())
-	name2 := fmt.Sprintf("terraformvpcuat-%d", acctest.RandInt())
+	name1 := fmt.Sprintf("terraformvpcuat-%d", acctest.RandIntRange(10, 100))
+	name2 := fmt.Sprintf("terraformvpcuat-%d", acctest.RandIntRange(10, 100))
 	apm := "manual"
 
 	resource.Test(t, resource.TestCase{

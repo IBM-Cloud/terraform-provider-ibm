@@ -15,7 +15,7 @@ import (
 func TestAccIBMISImage_basic(t *testing.T) {
 	var image *models.Image
 
-	name := fmt.Sprintf("terraformimageuat-create-step-name-%d", acctest.RandInt())
+	name := fmt.Sprintf("terraformimageuat-create-step-name-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckImage(t) },
 		Providers:    testAccProviders,

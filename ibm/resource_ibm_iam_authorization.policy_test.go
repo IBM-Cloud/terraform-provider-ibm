@@ -35,7 +35,7 @@ func TestAccIBMIAMAuthorizationPolicy_Basic(t *testing.T) {
 
 func TestAccIBMIAMAuthorizationPolicy_Resource_Instance(t *testing.T) {
 	var conf iampapv1.Policy
-	instanceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	instanceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_authorization_policy.policy"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

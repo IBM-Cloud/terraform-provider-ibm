@@ -14,15 +14,15 @@ import (
 
 func TestAccIBMISLBListenerPolicyRule_basic(t *testing.T) {
 	var ruleID string
-	vpcname := fmt.Sprintf("terraformLBLisuat-vpc-%d", acctest.RandInt())
-	subnetname := fmt.Sprintf("terraformLBLisuat-subnet-%d", acctest.RandInt())
-	lbname := fmt.Sprintf("tflblisuat%d", acctest.RandInt())
-	lblistenerpolicyname1 := fmt.Sprintf("tflblisuat-listener-policy-%d", acctest.RandInt())
-	lblistenerpolicyname2 := fmt.Sprintf("tflblisuat-listener-policy-%d", acctest.RandInt())
-	lblistenerpolicyRuleField1 := fmt.Sprintf("tflblipolicy-rule-field-%d", acctest.RandInt())
-	lblistenerpolicyRuleField2 := fmt.Sprintf("tflblipolicy-rule-field-%d", acctest.RandInt())
-	lblistenerpolicyRuleValue1 := fmt.Sprintf("tflblipolicy-rule-value-%d", acctest.RandInt())
-	lblistenerpolicyRuleValue2 := fmt.Sprintf("tflblipolicy-rule-value-%d", acctest.RandInt())
+	vpcname := fmt.Sprintf("terraformLBLisuat-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("terraformLBLisuat-subnet-%d", acctest.RandIntRange(10, 100))
+	lbname := fmt.Sprintf("tflblisuat%d", acctest.RandIntRange(10, 100))
+	lblistenerpolicyname1 := fmt.Sprintf("tflblisuat-listener-policy-%d", acctest.RandIntRange(10, 100))
+	lblistenerpolicyname2 := fmt.Sprintf("tflblisuat-listener-policy-%d", acctest.RandIntRange(10, 100))
+	lblistenerpolicyRuleField1 := fmt.Sprintf("tflblipolicy-rule-field-%d", acctest.RandIntRange(10, 100))
+	lblistenerpolicyRuleField2 := fmt.Sprintf("tflblipolicy-rule-field-%d", acctest.RandIntRange(10, 100))
+	lblistenerpolicyRuleValue1 := fmt.Sprintf("tflblipolicy-rule-value-%d", acctest.RandIntRange(10, 100))
+	lblistenerpolicyRuleValue2 := fmt.Sprintf("tflblipolicy-rule-value-%d", acctest.RandIntRange(10, 100))
 
 	priority1 := "1"
 	protocol := "http"

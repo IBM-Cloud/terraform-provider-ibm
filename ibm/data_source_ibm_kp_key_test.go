@@ -9,9 +9,9 @@ import (
 )
 
 func TestAccIBMKpDataSource_basic(t *testing.T) {
-	instanceName := fmt.Sprintf("cos_%d", acctest.RandInt())
-	// bucketName := fmt.Sprintf("bucket", acctest.RandInt())
-	keyName := fmt.Sprintf("key_%d", acctest.RandInt())
+	instanceName := fmt.Sprintf("cos_%d", acctest.RandIntRange(10, 100))
+	// bucketName := fmt.Sprintf("bucket", acctest.RandIntRange(10, 100))
+	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
