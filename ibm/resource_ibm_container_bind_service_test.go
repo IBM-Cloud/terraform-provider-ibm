@@ -10,9 +10,9 @@ import (
 
 func TestAccIBMContainerBindService_basic(t *testing.T) {
 
-	serviceName := fmt.Sprintf("terraform-%d", acctest.RandInt())
-	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	serviceName := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
+	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -31,9 +31,9 @@ func TestAccIBMContainerBindService_basic(t *testing.T) {
 
 func TestAccIBMContainerBindService_withTag(t *testing.T) {
 
-	serviceName := fmt.Sprintf("terraform-%d", acctest.RandInt())
-	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	serviceName := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
+	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -52,9 +52,9 @@ func TestAccIBMContainerBindService_withTag(t *testing.T) {
 
 func TestAccIBMContainerBindService_WithoutOptionalFields(t *testing.T) {
 
-	serviceName := fmt.Sprintf("terraform-%d", acctest.RandInt())
-	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	serviceName := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
+	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

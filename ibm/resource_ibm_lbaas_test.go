@@ -13,7 +13,7 @@ import (
 )
 
 func TestAccIBMLbaas_Basic(t *testing.T) {
-	name := fmt.Sprintf("terraform-%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -90,7 +90,7 @@ func TestAccIBMLbaas_Basic(t *testing.T) {
 }
 
 func TestAccIBMLbaas_Private(t *testing.T) {
-	name := fmt.Sprintf("terraform-%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -154,7 +154,7 @@ func TestAccIBMLbaas_Private(t *testing.T) {
 }
 
 func TestAccIBMLbaas_with_more_protocols(t *testing.T) {
-	name := fmt.Sprintf("terraform-%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -182,7 +182,7 @@ func TestAccIBMLbaas_with_more_protocols(t *testing.T) {
 }
 
 func TestAccIBMLbaas_importBasic(t *testing.T) {
-	name := fmt.Sprintf("terraform-%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -260,7 +260,7 @@ func TestAccIBMLbaas_InvalidMaxConn(t *testing.T) {
 }
 
 func TestAccIBMLbaas_certificate_with_http_invalid_config(t *testing.T) {
-	name := fmt.Sprintf("terraform-%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

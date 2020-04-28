@@ -9,7 +9,7 @@ import (
 )
 
 func TestAccIBMResourceInstanceDataSource_basic(t *testing.T) {
-	instanceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	instanceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

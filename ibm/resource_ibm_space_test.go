@@ -14,8 +14,8 @@ import (
 
 func TestAccIBMSpace_Basic(t *testing.T) {
 	var conf mccpv2.SpaceFields
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	updatedName := fmt.Sprintf("terraform_updated_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	updatedName := fmt.Sprintf("terraform_updated_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -45,7 +45,7 @@ func TestAccIBMSpace_Basic(t *testing.T) {
 
 func TestAccIBMSpace_Basic_Import(t *testing.T) {
 	var conf mccpv2.SpaceFields
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_space.space"
 
 	resource.Test(t, resource.TestCase{
@@ -73,8 +73,8 @@ func TestAccIBMSpace_Basic_Import(t *testing.T) {
 
 func TestAccIBMSpace_with_roles(t *testing.T) {
 	var conf mccpv2.SpaceFields
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	updatedName := fmt.Sprintf("terraform_updated_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	updatedName := fmt.Sprintf("terraform_updated_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -110,7 +110,7 @@ func TestAccIBMSpace_with_roles(t *testing.T) {
 
 func TestAccIBMSpace_With_Tags(t *testing.T) {
 	var conf mccpv2.SpaceFields
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

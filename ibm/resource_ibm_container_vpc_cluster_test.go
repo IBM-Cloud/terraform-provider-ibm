@@ -16,7 +16,7 @@ import (
 )
 
 func TestAccIBMContainerVpcCluster_basic(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	randint := acctest.RandIntRange(10, 100)
 	vpc := fmt.Sprintf("vpc-%d", randint)
 	subnet := fmt.Sprintf("subnet-%d", randint)
@@ -47,7 +47,7 @@ func TestAccIBMContainerVpcCluster_basic(t *testing.T) {
 }
 
 func TestAccIBMVpcContainerVpcCluster_importBasic(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	randint := acctest.RandIntRange(10, 100)
 	vpc := fmt.Sprintf("vpc-%d", randint)
 	subnet := fmt.Sprintf("subnet-%d", randint)

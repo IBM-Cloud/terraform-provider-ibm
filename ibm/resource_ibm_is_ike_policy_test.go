@@ -13,7 +13,7 @@ import (
 )
 
 func TestAccIBMISIKEPolicy_basic(t *testing.T) {
-	name := fmt.Sprintf("terraformIkeuat-create-step-name-%d", acctest.RandInt())
+	name := fmt.Sprintf("terraformIkeuat-create-step-name-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

@@ -11,7 +11,7 @@ import (
 
 func TestAccIBMISVPCDatasource_basic(t *testing.T) {
 	var vpc *models.Vpc
-	name1 := fmt.Sprintf("terraformvpcuat-create-step-name-%d", acctest.RandInt())
+	name1 := fmt.Sprintf("terraformvpcuat-create-step-name-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

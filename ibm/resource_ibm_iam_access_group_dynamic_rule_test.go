@@ -12,9 +12,9 @@ import (
 )
 
 func TestAccIBMIAMDynamicRule_Basic(t *testing.T) {
-	agname := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	name1 := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	agname := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	expiration := 10
 	identityProvider := "test-idp.com"
 	claim := "blueGroups"
@@ -44,8 +44,8 @@ func TestAccIBMIAMDynamicRule_Basic(t *testing.T) {
 }
 
 func TestAccIBMIAMDynamicRuleimport(t *testing.T) {
-	agname := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	agname := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	expiration := 10
 	identityProvider := "test-idp.com"
 	claim := "blueGroups"

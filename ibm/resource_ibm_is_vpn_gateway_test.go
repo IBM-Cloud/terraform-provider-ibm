@@ -14,9 +14,9 @@ import (
 
 func TestAccIBMISVPNGateway_basic(t *testing.T) {
 	var vpnGateway *models.VPNGateway
-	vpcname := fmt.Sprintf("terraformvpnuat-vpc-%d", acctest.RandInt())
-	subnetname := fmt.Sprintf("terraformvpnuat-subnet-%d", acctest.RandInt())
-	name1 := fmt.Sprintf("terraformvpngatewayuat-create-step-name-%d", acctest.RandInt())
+	vpcname := fmt.Sprintf("terraformvpnuat-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("terraformvpnuat-subnet-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("terraformvpngatewayuat-create-step-name-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

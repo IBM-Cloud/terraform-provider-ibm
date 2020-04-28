@@ -14,9 +14,9 @@ import (
 
 func TestAccIBMISLBListener_basic(t *testing.T) {
 	var lb *models.Listener
-	vpcname := fmt.Sprintf("tflblisuat-vpc-%d", acctest.RandInt())
-	subnetname := fmt.Sprintf("tflblisuat-subnet-%d", acctest.RandInt())
-	lbname := fmt.Sprintf("tflblisuat%d", acctest.RandInt())
+	vpcname := fmt.Sprintf("tflblisuat-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflblisuat-subnet-%d", acctest.RandIntRange(10, 100))
+	lbname := fmt.Sprintf("tflblisuat%d", acctest.RandIntRange(10, 100))
 
 	protocol1 := "http"
 	port1 := "8080"

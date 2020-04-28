@@ -14,10 +14,10 @@ import (
 
 func TestAccFunctionRule_Basic(t *testing.T) {
 	var conf whisk.Rule
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	actionName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	triggerName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	updatedTriggerName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	actionName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	triggerName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	updatedTriggerName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -53,8 +53,8 @@ func TestAccFunctionRule_Basic(t *testing.T) {
 
 func TestAccFunctionRule_Import(t *testing.T) {
 	var conf whisk.Rule
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	triggeName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	triggeName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

@@ -17,7 +17,7 @@ func TestAccIBMDatabaseInstance_Postgres_Basic(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
-	rnd := fmt.Sprintf("tf_test_acc_%d", acctest.RandInt())
+	rnd := fmt.Sprintf("tf_test_acc_%d", acctest.RandIntRange(10, 100))
 	testName := rnd
 	name := "ibm_database." + testName
 
@@ -102,7 +102,7 @@ func TestAccIBMDatabaseInstance_Postgres_import(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
-	serviceName := fmt.Sprintf("tf_test_acc_%d", acctest.RandInt())
+	serviceName := fmt.Sprintf("tf_test_acc_%d", acctest.RandIntRange(10, 100))
 	//serviceName := "test_acc"
 	resourceName := "ibm_database." + serviceName
 

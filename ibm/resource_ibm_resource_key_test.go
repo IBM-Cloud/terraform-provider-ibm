@@ -15,8 +15,8 @@ import (
 
 func TestAccIBMResourceKey_Basic(t *testing.T) {
 	var conf models.ServiceKey
-	resourceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	resourceKey := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	resourceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	resourceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -45,8 +45,8 @@ func TestAccIBMResourceKey_Basic(t *testing.T) {
 
 func TestAccIBMResourceKey_With_Tags(t *testing.T) {
 	var conf models.ServiceKey
-	resourceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	resourceKey := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	resourceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	resourceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -75,8 +75,8 @@ func TestAccIBMResourceKey_With_Tags(t *testing.T) {
 
 func TestAccIBMResourceKey_Parameters(t *testing.T) {
 	var conf models.ServiceKey
-	resourceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	resourceKey := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	resourceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	resourceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

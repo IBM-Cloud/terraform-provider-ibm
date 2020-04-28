@@ -9,7 +9,7 @@ import (
 )
 
 func TestAccIBMAppDomainPrivateDataSource_basic(t *testing.T) {
-	name := fmt.Sprintf("terraform%d.com", acctest.RandInt())
+	name := fmt.Sprintf("terraform%d.com", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

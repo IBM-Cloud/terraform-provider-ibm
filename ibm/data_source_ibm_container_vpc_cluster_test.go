@@ -9,11 +9,11 @@ import (
 )
 
 func TestAccIBMContainerVPCClusterDataSource_basic(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	vpcID := fmt.Sprintf("vpc_%d", acctest.RandInt())
-	flavor := fmt.Sprintf("c.%d", acctest.RandInt())
-	zoneID := fmt.Sprintf("zone.%d", acctest.RandInt())
-	subnetID := fmt.Sprintf("subnet.%d", acctest.RandInt())
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	vpcID := fmt.Sprintf("vpc_%d", acctest.RandIntRange(10, 100))
+	flavor := fmt.Sprintf("c.%d", acctest.RandIntRange(10, 100))
+	zoneID := fmt.Sprintf("zone.%d", acctest.RandIntRange(10, 100))
+	subnetID := fmt.Sprintf("subnet.%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,

@@ -15,8 +15,8 @@ import (
 
 func TestAccIBMAppRoute_Basic(t *testing.T) {
 	var conf mccpv2.RouteFields
-	host := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	updateHost := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	host := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	updateHost := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -52,7 +52,7 @@ func TestAccIBMAppRoute_Basic(t *testing.T) {
 
 func TestAccIBMAppRoute_With_Tags(t *testing.T) {
 	var conf mccpv2.RouteFields
-	host := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	host := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

@@ -14,9 +14,9 @@ import (
 
 func TestAccIBMISVPCRoute_basic(t *testing.T) {
 	var vpcRoute *models.Route
-	name1 := fmt.Sprintf("terraformvpcuat-create-step-name-%d", acctest.RandInt())
-	routeName := fmt.Sprintf("terraformvpcuat-create-prefix-name-%d", acctest.RandInt())
-	routeName1 := fmt.Sprintf("terraformvpcuat-create-prefix-name-%d", acctest.RandInt())
+	name1 := fmt.Sprintf("terraformvpcuat-create-step-name-%d", acctest.RandIntRange(10, 100))
+	routeName := fmt.Sprintf("terraformvpcuat-create-prefix-name-%d", acctest.RandIntRange(10, 100))
+	routeName1 := fmt.Sprintf("terraformvpcuat-create-prefix-name-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
