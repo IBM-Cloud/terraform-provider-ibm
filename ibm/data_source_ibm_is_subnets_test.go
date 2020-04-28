@@ -25,8 +25,6 @@ func TestAccIBMISSubnetsDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "subnets.0.ipv4_cidr_block"),
 					resource.TestCheckResourceAttrSet(resName, "subnets.0.available_ipv4_address_count"),
 					resource.TestCheckResourceAttrSet(resName, "subnets.0.network_acl"),
-					resource.TestCheckResourceAttrSet(resName, "subnets.0.public_gateway"),
-					resource.TestCheckResourceAttrSet(resName, "subnets.0.resource_group"),
 					resource.TestCheckResourceAttrSet(resName, "subnets.0.total_ipv4_address_count"),
 					resource.TestCheckResourceAttrSet(resName, "subnets.0.vpc"),
 				),
