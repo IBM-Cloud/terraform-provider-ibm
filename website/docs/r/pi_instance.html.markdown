@@ -53,6 +53,7 @@ The following arguments are supported:
 * `pi_replicants` - (Optional, float) Specifies the number of VMs to deploy; default is 1.
 * `pi_replication_policy` - (Optional, string) Specifies the replication policy (e.g., none).
 * `pi_replication_scheme` - (Optional, string) Specifies the replicate scheme (prefix/suffix).
+* `pi_pinpolicy` - (Optional, string) Specifies the pinpolicy of the lpar (none,soft,hard) (Default is none)
 
 ## Attribute Reference
 
@@ -75,7 +76,7 @@ The following attributes are exported:
   * `network_name` - The network name of the instance.
   * `type` - The type of the network
   * `external_ip` - The externalIP address of the instance.
-
+* `pin_policy` - The pinpolicy of the LPAR. 
 ## Import
 
 ibm_pi_instance can be imported using `power_instance_id` and `instance_id`, eg

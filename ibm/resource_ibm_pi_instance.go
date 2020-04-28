@@ -183,6 +183,17 @@ func resourceIBMPIInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Progress of the operation",
 			},
+			helpers.PIInstancePinPolicy: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"none", "soft", "hard"}),
+				Description:  "Pin Policy that is attached to a PVMInstance",
+				Default:      "none",
+			},
+			"pin_policy": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -205,12 +216,10 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	volids := expandStringList((d.Get(helpers.PIInstanceVolumeIds).(*schema.Set)).List())
 	replicants := d.Get(helpers.PIInstanceReplicants).(float64)
 	replicationpolicy := d.Get(helpers.PIInstanceReplicationPolicy).(string)
-
 	replicationNamingScheme := d.Get(helpers.PIInstanceReplicationScheme).(string)
-
 	imageid := d.Get(helpers.PIInstanceImageName).(string)
 	processortype := d.Get(helpers.PIInstanceProcType).(string)
-
+	pinpolicy := string(helpers.PIInstancePinPolicy)
 	//var userdata = ""
 	user_data := d.Get(helpers.PIInstanceUserData).(string)
 
@@ -224,6 +233,12 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	}
 
 	//publicinterface := d.Get(helpers.PIInstancePublicNetwork).(bool)
+	if d.Get(helpers.PIInstancePinPolicy) == "" {
+		pinpolicy = "none"
+	}
+
+	pinpolicy = d.Get(helpers.PIInstancePinPolicy).(string)
+
 	body := &models.PVMInstanceCreate{
 		NetworkIds: networks, Processors: &procs, Memory: &mem, ServerName: ptrToString(name),
 		SysType:                 systype,
@@ -234,6 +249,7 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		UserData:                user_data,
 		ReplicantNamingScheme:   ptrToString(replicationNamingScheme),
 		ReplicantAffinityPolicy: ptrToString(replicationpolicy),
+		PinPolicy:               models.PinPolicy(pinpolicy),
 	}
 	if len(volids) > 0 {
 		body.VolumeIds = volids
@@ -244,7 +260,6 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	pvm, _, _, err := client.Create(&p_cloud_p_vm_instances.PcloudPvminstancesPostParams{
 		Body: body,
 	}, powerinstanceid)
-	//log.Printf("the number of instances is %d", len(*pvm))
 
 	if err != nil {
 		log.Printf("[DEBUG]  err %s", isErrorToString(err))
@@ -255,7 +270,6 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 
 	truepvmid := (*pvm)[0].PvmInstanceID
 	d.SetId(fmt.Sprintf("%s/%s", powerinstanceid, *truepvmid))
-	//d.Set("addresses",(*pvm)[0].Addresses)
 
 	log.Printf("Printing the instance id .. after the create ... %s", *truepvmid)
 
@@ -265,8 +279,6 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	}
 
 	return resourceIBMPIInstanceRead(d, meta)
-
-	//return dataSourceIBMPIVolumesRead(d,meta)
 
 }
 
@@ -317,6 +329,7 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("min_memory", powervmdata.Minmem)
 	d.Set("max_processors", powervmdata.Maxproc)
 	d.Set("max_memory", powervmdata.Maxmem)
+	d.Set("pin_policy", powervmdata.PinPolicy)
 
 	if powervmdata.Addresses != nil {
 		pvmaddress := make([]map[string]interface{}, len(powervmdata.Addresses))
@@ -350,11 +363,13 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	sess, _ := meta.(ClientSession).IBMPISession()
-	if d.HasChange(helpers.PIInstanceName) || d.HasChange(helpers.PIInstanceMemory) || d.HasChange(helpers.PIInstanceProcessors) || d.HasChange(helpers.PIInstanceProcType) {
+	if d.HasChange(helpers.PIInstanceName) || d.HasChange(helpers.PIInstanceMemory) || d.HasChange(helpers.PIInstanceProcessors) || d.HasChange(helpers.PIInstanceProcType) || d.HasChange(
+		helpers.PIInstancePinPolicy) {
 		name := d.Get(helpers.PIInstanceName).(string)
 		mem := d.Get(helpers.PIInstanceMemory).(float64)
 		procs := d.Get(helpers.PIInstanceProcessors).(float64)
 		processortype := d.Get(helpers.PIInstanceProcType).(string)
+		pinpolicy := d.Get(helpers.PIInstancePinPolicy).(string)
 
 		parts, err := idParts(d.Id())
 		if err != nil {
@@ -369,6 +384,7 @@ func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 			ProcType:   processortype,
 			Processors: procs,
 			ServerName: name,
+			PinPolicy:  models.PinPolicy(pinpolicy),
 		}
 
 		resp, err := client.Update(parts[1], powerinstanceid, &p_cloud_p_vm_instances.PcloudPvminstancesPutParams{Body: body})
@@ -505,7 +521,6 @@ func isPIInstanceRefreshFunc(client *st.IBMPIInstanceClient, id, powerinstanceid
 			//}
 		}
 
-		//return pvm, helpers.PIInstanceHealthWarning, nil
 		return pvm, helpers.PIInstanceBuilding, nil
 	}
 }

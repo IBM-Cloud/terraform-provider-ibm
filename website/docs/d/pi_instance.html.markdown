@@ -42,6 +42,7 @@ The following attributes are exported:
 * `min_memory` - Minimum memory  that was allocated (for resize)
 * `max_processors` - Maximumx number of processors that can be allocated (for resize) without a shutdown/reboot of the lpar
 * `max_memory` - Maximum amount of memory that can be allocated (for resize) without a shutdown/reboot of the lpar
+* `pin_policy` - The Pin Policy associated with the lpar.
 * `addresses` - The addresses associated with this instance.  Nested `addresses` blocks have the following structure:
 	* `ip` - IP of the instance.
   * `macaddress` - The macaddress of the instance.

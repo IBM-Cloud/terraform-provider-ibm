@@ -106,6 +106,10 @@ func dataSourceIBMPIInstance() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
+			"pin_policy": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -138,6 +142,7 @@ func dataSourceIBMPIInstancesRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set("minmem", powervmdata.Minmem)
 	d.Set("maxproc", powervmdata.Maxproc)
 	d.Set("maxmem", powervmdata.Maxmem)
+	d.Set("pin_policy", powervmdata.PinPolicy)
 
 	if powervmdata.Addresses != nil {
 		pvmaddress := make([]map[string]interface{}, len(powervmdata.Addresses))
