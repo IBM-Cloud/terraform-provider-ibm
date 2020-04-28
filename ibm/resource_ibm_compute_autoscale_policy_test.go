@@ -16,7 +16,7 @@ import (
 
 func TestAccIBMComputeAutoScalePolicy_Basic(t *testing.T) {
 	var scalepolicy datatypes.Scale_Policy
-	groupname := fmt.Sprintf("terraformuat_%d", acctest.RandInt())
+	groupname := fmt.Sprintf("terraformuat_%d", acctest.RandIntRange(10, 100))
 	hostname := acctest.RandString(16)
 	policyname := acctest.RandString(16)
 	updatedpolicyname := acctest.RandString(16)
@@ -72,7 +72,7 @@ func TestAccIBMComputeAutoScalePolicy_Basic(t *testing.T) {
 
 func TestAccIBMComputeAutoScaleWithTag(t *testing.T) {
 	var scalepolicy datatypes.Scale_Policy
-	groupname := fmt.Sprintf("terraformuat_%d", acctest.RandInt())
+	groupname := fmt.Sprintf("terraformuat_%d", acctest.RandIntRange(10, 100))
 	hostname := acctest.RandString(16)
 	policyname := acctest.RandString(16)
 

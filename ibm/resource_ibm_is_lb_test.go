@@ -14,10 +14,10 @@ import (
 
 func TestAccIBMISLB_basic(t *testing.T) {
 	var lb *models.LoadBalancer
-	vpcname := fmt.Sprintf("terraformLBuat-vpc-%d", acctest.RandInt())
-	subnetname := fmt.Sprintf("terraformLBuat-create-step-name-%d", acctest.RandInt())
-	name := fmt.Sprintf("tfcreate%d", acctest.RandInt())
-	name1 := fmt.Sprintf("tfupdate%d", acctest.RandInt())
+	vpcname := fmt.Sprintf("terraformLBuat-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("terraformLBuat-create-step-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfupdate%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -49,10 +49,10 @@ func TestAccIBMISLB_basic(t *testing.T) {
 
 func TestAccIBMISLB_basic_private(t *testing.T) {
 	var lb *models.LoadBalancer
-	vpcname := fmt.Sprintf("terraformLBuat-vpc-%d", acctest.RandInt())
-	subnetname := fmt.Sprintf("terraformLBuat-create-step-name-%d", acctest.RandInt())
-	name := fmt.Sprintf("tfcreate%d", acctest.RandInt())
-	name1 := fmt.Sprintf("tfupdate%d", acctest.RandInt())
+	vpcname := fmt.Sprintf("terraformLBuat-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("terraformLBuat-create-step-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfupdate%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

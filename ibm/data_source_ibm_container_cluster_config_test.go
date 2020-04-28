@@ -11,7 +11,7 @@ import (
 
 func TestAccIBMContainerClusterConfigDataSource_basic(t *testing.T) {
 	homeDir, err := homedir.Dir()
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	if err != nil {
 		t.Fatalf("Error fetching homedir: %s", err)
 	}
@@ -33,7 +33,7 @@ func TestAccIBMContainerClusterConfigDataSource_basic(t *testing.T) {
 
 func TestAccIBMContainerClusterCalicoConfigDataSource_basic(t *testing.T) {
 	homeDir, err := homedir.Dir()
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	if err != nil {
 		t.Fatalf("Error fetching homedir: %s", err)
 	}
@@ -57,7 +57,7 @@ func TestAccIBMContainerClusterCalicoConfigDataSource_basic(t *testing.T) {
 
 func TestAccIBMContainerClusterConfigDataSource_WithoutOptionalFields(t *testing.T) {
 	homeDir, err := homedir.Dir()
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	if err != nil {
 		t.Fatalf("Error fetching homedir: %s", err)
 	}

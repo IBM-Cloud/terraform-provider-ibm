@@ -15,8 +15,8 @@ import (
 
 func TestAccIBMIAMAccessGroup_Basic(t *testing.T) {
 	var conf models.AccessGroupV2
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	updateName := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	updateName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -54,7 +54,7 @@ func TestAccIBMIAMAccessGroup_Basic(t *testing.T) {
 
 func TestAccIBMIAMAccessGroup_import(t *testing.T) {
 	var conf models.AccessGroupV2
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_access_group.accgroup"
 
 	resource.Test(t, resource.TestCase{

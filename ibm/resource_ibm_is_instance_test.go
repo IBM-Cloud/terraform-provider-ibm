@@ -15,13 +15,13 @@ import (
 
 func TestAccIBMISInstance_basic(t *testing.T) {
 	var instance string
-	vpcname := fmt.Sprintf("terins-%d", acctest.RandInt())
-	name := fmt.Sprintf("terins-%d", acctest.RandInt())
-	subnetname := fmt.Sprintf("terins-subnet-%d", acctest.RandInt())
+	vpcname := fmt.Sprintf("terins-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terins-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("terins-subnet-%d", acctest.RandIntRange(10, 100))
 	publicKey := strings.TrimSpace(`
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
 `)
-	sshname := fmt.Sprintf("terins-ssh-%d", acctest.RandInt())
+	sshname := fmt.Sprintf("terins-ssh-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -44,14 +44,14 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 
 func TestAccIBMISInstance_Volume(t *testing.T) {
 	var instance string
-	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandInt())
-	name := fmt.Sprintf("tf-instnace-%d", acctest.RandInt())
-	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandInt())
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
 	publicKey := strings.TrimSpace(`
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
 `)
-	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandInt())
-	volname := fmt.Sprintf("tf-vol-%d", acctest.RandInt())
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	volname := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

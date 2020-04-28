@@ -15,7 +15,7 @@ import (
 
 func TestAccIBMIAMAccessGroupPolicy_Basic(t *testing.T) {
 	var conf iampapv1.Policy
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -45,7 +45,7 @@ func TestAccIBMIAMAccessGroupPolicy_Basic(t *testing.T) {
 
 func TestAccIBMIAMAccessGroupPolicy_With_Service(t *testing.T) {
 	var conf iampapv1.Policy
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -75,7 +75,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Service(t *testing.T) {
 
 func TestAccIBMIAMAccessGroupPolicy_With_ResourceInstance(t *testing.T) {
 	var conf iampapv1.Policy
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -97,7 +97,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_ResourceInstance(t *testing.T) {
 
 func TestAccIBMIAMAccessGroupPolicy_With_Resource_Group(t *testing.T) {
 	var conf iampapv1.Policy
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -119,7 +119,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Resource_Group(t *testing.T) {
 
 func TestAccIBMIAMAccessGroupPolicy_With_Resource_Type(t *testing.T) {
 	var conf iampapv1.Policy
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -140,7 +140,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Resource_Type(t *testing.T) {
 
 func TestAccIBMIAMAccessGroupPolicy_import(t *testing.T) {
 	var conf iampapv1.Policy
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_access_group_policy.policy"
 
 	resource.Test(t, resource.TestCase{
@@ -167,7 +167,7 @@ func TestAccIBMIAMAccessGroupPolicy_import(t *testing.T) {
 
 func TestAccIBMIAMAccessGroupPolicy_account_management(t *testing.T) {
 	var conf iampapv1.Policy
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_access_group_policy.policy"
 
 	resource.Test(t, resource.TestCase{
@@ -190,7 +190,7 @@ func TestAccIBMIAMAccessGroupPolicy_account_management(t *testing.T) {
 
 func TestAccIBMIAMAccessGroupPolicy_With_Attributese(t *testing.T) {
 	var conf iampapv1.Policy
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

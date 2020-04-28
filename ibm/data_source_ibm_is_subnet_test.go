@@ -9,8 +9,8 @@ import (
 )
 
 func TestAccIBMISSubnetDatasource_basic(t *testing.T) {
-	vpcname := fmt.Sprintf("tfsubnet-vpc-%d", acctest.RandInt())
-	name := fmt.Sprintf("tfsubnet-name-%d", acctest.RandInt())
+	vpcname := fmt.Sprintf("tfsubnet-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfsubnet-name-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

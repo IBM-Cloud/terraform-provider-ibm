@@ -14,8 +14,8 @@ import (
 
 func TestAccIBMISSubnet_basic(t *testing.T) {
 	var subnet string
-	vpcname := fmt.Sprintf("tfsubnet-vpc-%d", acctest.RandInt())
-	name1 := fmt.Sprintf("tfsubnet-%d", acctest.RandInt())
+	vpcname := fmt.Sprintf("tfsubnet-vpc-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfsubnet-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

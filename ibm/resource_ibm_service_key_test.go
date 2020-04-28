@@ -15,8 +15,8 @@ import (
 
 func TestAccIBMServiceKey_Basic(t *testing.T) {
 	var conf mccpv2.ServiceKeyFields
-	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -37,8 +37,8 @@ func TestAccIBMServiceKey_Basic(t *testing.T) {
 
 func TestAccIBMServiceKey_With_Tags(t *testing.T) {
 	var conf mccpv2.ServiceKeyFields
-	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -66,8 +66,8 @@ func TestAccIBMServiceKey_With_Tags(t *testing.T) {
 
 func TestAccIBMServiceKey_Parameters(t *testing.T) {
 	var conf mccpv2.ServiceKeyFields
-	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

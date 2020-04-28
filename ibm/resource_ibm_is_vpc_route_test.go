@@ -14,9 +14,9 @@ import (
 
 func TestAccIBMISVPCRoute_basic(t *testing.T) {
 	var vpcRoute string
-	name1 := fmt.Sprintf("tfvpcuat-create-%d", acctest.RandInt())
-	routeName := fmt.Sprintf("tfvpcuat-create-%d", acctest.RandInt())
-	routeName1 := fmt.Sprintf("tfvpcuat-create-%d", acctest.RandInt())
+	name1 := fmt.Sprintf("tfvpcuat-create-%d", acctest.RandIntRange(10, 100))
+	routeName := fmt.Sprintf("tfvpcuat-create-%d", acctest.RandIntRange(10, 100))
+	routeName1 := fmt.Sprintf("tfvpcuat-create-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
