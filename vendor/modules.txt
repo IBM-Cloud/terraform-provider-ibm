@@ -69,7 +69,7 @@ github.com/IBM-Cloud/power-go-client/power/client/storage_types
 github.com/IBM-Cloud/power-go-client/power/client/swagger_spec
 github.com/IBM-Cloud/power-go-client/power/models
 github.com/IBM-Cloud/power-go-client/utils
-# github.com/IBM/apigateway-go-sdk v0.0.0-20200319174228-a4e4a3b46d9e
+# github.com/IBM/apigateway-go-sdk v0.0.0-20200414212859-416e5948678a
 github.com/IBM/apigateway-go-sdk
 github.com/IBM/apigateway-go-sdk/common
 # github.com/IBM/dns-svcs-go-sdk v0.0.1
@@ -431,7 +431,6 @@ github.ibm.com/Bluemix/riaas-go-client/clients/compute
 github.ibm.com/Bluemix/riaas-go-client/clients/geography
 github.ibm.com/Bluemix/riaas-go-client/clients/lbaas
 github.ibm.com/Bluemix/riaas-go-client/clients/network
-github.ibm.com/Bluemix/riaas-go-client/clients/storage
 github.ibm.com/Bluemix/riaas-go-client/clients/vpn
 github.ibm.com/Bluemix/riaas-go-client/errors
 github.ibm.com/Bluemix/riaas-go-client/helpers
