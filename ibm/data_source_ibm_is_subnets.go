@@ -112,7 +112,9 @@ func dataSourceIBMISSubnetsRead(d *schema.ResourceData, meta interface{}) error 
 		if subnet.PublicGateway != nil {
 			subn["public_gateway"] = string(subnet.PublicGateway.ID)
 		}
-		subn["resource_group"] = string(subnet.ResourceGroup.ID)
+		if subnet.ResourceGroup != nil {
+			subn["resource_group"] = string(subnet.ResourceGroup.ID)
+		}
 		subn["total_ipv4_address_count"] = tac
 		subn["vpc"] = string(subnet.Vpc.ID)
 		subn["zone"] = subnet.Zone.Name
