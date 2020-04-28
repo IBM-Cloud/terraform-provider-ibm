@@ -1,8 +1,8 @@
 provider "ibm" {
 }
 resource "ibm_resource_instance" "cm" {
-  name     = "testname"
-  location = "us-south"
+  name     = var.cms_name
+  location = var.region
   service  = "cloudcerts"
   plan     = "free"
 }
@@ -10,10 +10,9 @@ resource "ibm_resource_instance" "cm" {
 // template to import existing certificate...
 resource "ibm_certificate_manager_import" "cert" {
   certificate_manager_instance_id = ibm_resource_instance.cm.id
-  name                            = "test"
-
+  name                            = var.import_name
   data = {
-    content = file(var.certfile_path)
+    content = file(var.cert_file_path)
   }
 }
 
@@ -24,31 +23,29 @@ resource "null_resource" "import" {
     command = <<EOT
 openssl req -x509  \
           -newkey rsa:1024 \
-          -keyout "${var.key}" \
-          -out "${var.cert}" \
+          -keyout "${var.ssl_key}" \
+          -out "${var.ssl_cert}" \
           -days 1 -nodes \
-          -subj "/C=us/ST="${var.region}"/L=Dal-10/O=IBM/OU=CloudCerts/CN="${var.host}"" 
+          -subj "/C=us/ST="${var.ssl_region}"/L=Dal-10/O=IBM/OU=CloudCerts/CN="${var.host}"" 
       EOT
   }
 }
 #datasource to read local certificate file...
 data "local_file" "cert" {
-  filename   = "${path.module}/${var.cert}"
+  filename   = "${path.module}/${var.ssl_cert}"
   depends_on = [null_resource.import]
 }
 #datasource to read local priv_key file...
 data "local_file" "key" {
-  filename   = "${path.module}/${var.key}"
+  filename   = "${path.module}/${var.ssl_key}"
   depends_on = [null_resource.import]
 }
 resource "ibm_certificate_manager_import" "cert" {
 
   certificate_manager_instance_id = ibm_resource_instance.cm.id
-  name                            = "test"
+  name                            = var.import_name
   data = {
     content  = data.local_file.cert.content
     priv_key = data.local_file.key.content
   }
 }
-
-

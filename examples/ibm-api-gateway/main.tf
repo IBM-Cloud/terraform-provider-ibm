@@ -2,7 +2,7 @@ provider "ibm" {
   region = var.region
 }
 // provision apigateway resource instance
-resouce "ibm_resource_instance" "apigateway" {
+resource "ibm_resource_instance" "apigateway" {
   name     = var.service_name
   location = "global"
   service  = "api-gateway"
