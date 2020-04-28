@@ -158,7 +158,7 @@ func resourceIBMPINetworkPortDelete(d *schema.ResourceData, meta interface{}) er
 	log.Printf("Calling the delete with the following params delete with cloudinstance -> (%s) and networkid -->  (%s) and portid --> (%s) ", powerinstanceid, powernetworkname, parts[1])
 	networkdata, err := client.DeletePort(powernetworkname, powerinstanceid, parts[1])
 
-	log.Printf("Response from the deleteport call %s", networkdata)
+	log.Printf("Response from the deleteport call %v", networkdata)
 
 	if err != nil {
 		return err
@@ -214,7 +214,7 @@ func isIBMPINetworkPortRefreshFunc(client *st.IBMPINetworkClient, id, powerinsta
 
 		if &network.PortID != nil {
 			//if network.State == "available" {
-			log.Printf(" The port has been created with the following ip address %s", &network.IPAddress)
+			log.Printf(" The port has been created with the following ip address")
 			return network, "DOWN", nil
 		}
 

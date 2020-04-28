@@ -96,7 +96,6 @@ func dataSourceIBMPINetworkPortsRead(d *schema.ResourceData, meta interface{}) e
 	log.Printf(dataSourcePrint, powerinstanceid, network_id)
 	powerC := instance.NewIBMPINetworkClient(sess, powerinstanceid)
 	networkportdata, err := powerC.GetAllPort(network_id, powerinstanceid)
-	log.Printf("Printing the network data %s", len(networkportdata.Ports))
 
 	if err != nil {
 		return err
