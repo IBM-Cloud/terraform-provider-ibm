@@ -249,10 +249,12 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		UserData:                user_data,
 		ReplicantNamingScheme:   ptrToString(replicationNamingScheme),
 		ReplicantAffinityPolicy: ptrToString(replicationpolicy),
-		PinPolicy:               models.PinPolicy(pinpolicy),
 	}
 	if len(volids) > 0 {
 		body.VolumeIds = volids
+	}
+	if d.Get(helpers.PIInstancePinPolicy) == "soft" || d.Get(helpers.PIInstancePinPolicy) == "hard" {
+		body.PinPolicy = models.PinPolicy(pinpolicy)
 	}
 
 	client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
