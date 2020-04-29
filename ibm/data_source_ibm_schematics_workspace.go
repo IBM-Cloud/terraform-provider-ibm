@@ -55,6 +55,46 @@ func dataSourceSchematicsWorkspace() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
+			"location": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The location of workspace",
+			},
+			"description": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The description of workspace",
+			},
+			"crn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "cloud resource name of the workspace",
+			},
+			"catalog_ref": {
+				Type:        schema.TypeMap,
+				Computed:    true,
+				Description: "Catalog references",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"item_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"item_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"offering_version": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"item_url": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -90,10 +130,16 @@ func resourceIBMSchematicsWorkspaceRead(d *schema.ResourceData, meta interface{}
 	d.Set("status", WorkspaceInfo.Status)
 	d.Set("is_frozen", WorkspaceInfo.WorkspaceStatus.Frozen)
 	d.Set("is_locked", WorkspaceInfo.WorkspaceStatus.Locked)
+	d.Set("location", WorkspaceInfo.Location)
+	d.Set("description", WorkspaceInfo.Description)
+	d.Set("crn", WorkspaceInfo.CRN)
 	d.Set("template_id", templateID)
 
 	types := WorkspaceInfo.Type
 	d.Set("types", types)
+
+	//Update content catalog info of the workspace
+	d.Set("catalog_ref", flattenCatalogRef(WorkspaceInfo.CatalogRef))
 
 	tags := WorkspaceInfo.Tags
 	d.Set("tags", tags)
