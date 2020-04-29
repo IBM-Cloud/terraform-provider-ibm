@@ -72,7 +72,7 @@ github.com/IBM-Cloud/power-go-client/utils
 # github.com/IBM/apigateway-go-sdk v0.0.0-20200414212859-416e5948678a
 github.com/IBM/apigateway-go-sdk
 github.com/IBM/apigateway-go-sdk/common
-# github.com/IBM/dns-svcs-go-sdk v0.0.1
+# github.com/IBM/dns-svcs-go-sdk v0.0.3
 github.com/IBM/dns-svcs-go-sdk/common
 github.com/IBM/dns-svcs-go-sdk/dnssvcsv1
 # github.com/IBM/go-sdk-core/v3 v3.2.4

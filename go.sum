@@ -52,6 +52,8 @@ github.com/IBM/apigateway-go-sdk v0.0.0-20200414212859-416e5948678a h1:lX3vP+9Y5
 github.com/IBM/apigateway-go-sdk v0.0.0-20200414212859-416e5948678a/go.mod h1:sNVpGpUv3jvA2dQbRPFjVrRFNdmnQrf2QTtKa/c2XrI=
 github.com/IBM/dns-svcs-go-sdk v0.0.1 h1:EjyRT0x2E44VurkopovedB5elycKcJ7mxDX8SCgvduc=
 github.com/IBM/dns-svcs-go-sdk v0.0.1/go.mod h1:Oh8Xtdezmvp6Tfc0u7t8mQMP/kHmf1SvCDr3WExKsNc=
+github.com/IBM/dns-svcs-go-sdk v0.0.3 h1:oz7OsM2DqhuDnkjmRu2qmgIaIypbTpJFq9y/p+GJMLI=
+github.com/IBM/dns-svcs-go-sdk v0.0.3/go.mod h1:Oh8Xtdezmvp6Tfc0u7t8mQMP/kHmf1SvCDr3WExKsNc=
 github.com/IBM/go-sdk-core/v3 v3.2.4 h1:WKYJYYKlZnw1y/gM+Qbf5EQVAL9xaoD54+ooJZz/iBQ=
 github.com/IBM/go-sdk-core/v3 v3.2.4/go.mod h1:lk9eOzNbNltPf3CBpcg1Ewkhw4qC3u2QCCKDRsUA2M0=
 github.com/IBM/ibm-cos-sdk-go v1.2.0 h1:oJG2eWmAhmz3XAkQLsmQweT7hmxoM3jKQkwLBZz6b5o=
