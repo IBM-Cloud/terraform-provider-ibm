@@ -15,9 +15,9 @@ func TestAccIBMISImageDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMISImageDataSourceConfig("ubuntu-18.04-amd64"),
+				Config: testAccCheckIBMISImageDataSourceConfig(imageName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resName, "name", "ubuntu-18.04-amd64"),
+					resource.TestCheckResourceAttr(resName, "name", imageName),
 					resource.TestCheckResourceAttrSet(resName, "os"),
 					resource.TestCheckResourceAttrSet(resName, "architecture"),
 					resource.TestCheckResourceAttrSet(resName, "visibility"),
@@ -36,9 +36,9 @@ func TestAccIBMISImageDataSource_With_Visibilty(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMISImageDataSourceWithVisibility("centos-7.x-amd64", "public"),
+				Config: testAccCheckIBMISImageDataSourceWithVisibility(imageName, "public"),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resName, "name", "centos-7.x-amd64"),
+					resource.TestCheckResourceAttr(resName, "name", imageName),
 					resource.TestCheckResourceAttrSet(resName, "os"),
 					resource.TestCheckResourceAttrSet(resName, "architecture"),
 					resource.TestCheckResourceAttrSet(resName, "visibility"),
@@ -49,19 +49,19 @@ func TestAccIBMISImageDataSource_With_Visibilty(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMISImageDataSourceConfig(image string) string {
+func testAccCheckIBMISImageDataSourceConfig(imageName string) string {
 	return fmt.Sprintf(`
 
 data "ibm_is_image" "test1" {
-	name = "%s",
-}`, image)
+	name = "%s"
+}`, imageName)
 }
 
-func testAccCheckIBMISImageDataSourceWithVisibility(image, visibility string) string {
+func testAccCheckIBMISImageDataSourceWithVisibility(imageName, visibility string) string {
 	return fmt.Sprintf(`
 
 data "ibm_is_image" "test1" {
 	name = "%s"
 	visibility = "%s"
-}`, image, visibility)
+}`, imageName, visibility)
 }

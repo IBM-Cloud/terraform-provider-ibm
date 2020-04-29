@@ -57,6 +57,7 @@ var ISRouteDestination string
 var ISRouteNextHop string
 var workspaceID string
 var templateID string
+var imageName string
 
 // For Power Colo
 
@@ -329,6 +330,14 @@ func init() {
 		ISRouteNextHop = "10.0.0.4"
 		fmt.Println("[INFO] Set the environment variable SL_ROUTE_NEXTHOP for testing ibm_is_vpc_route else it is set to default value '10.0.0.4'")
 	}
+
+	imageName = os.Getenv("SL_IMAGE_NAME")
+	if imageName == "" {
+		imageName = "ubuntu-18.04-amd64" // for classic infrastructure
+		// imageName = "ibm-ubuntu-18-04-1-minimal-amd64-1" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable SL_IMAGE_NAME for testing data source ibm_is_image else it is set to default value `ubuntu-18.04-amd64`")
+	}
+
 	// Added for Power Colo Testing
 	pi_image = os.Getenv("PI_IMAGE")
 	if pi_image == "" {

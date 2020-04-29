@@ -170,12 +170,9 @@ func classicVpcList(d *schema.ResourceData, meta interface{}, name string) error
 		return err
 	}
 	listVpcsOptions := &vpcclassicv1.ListVpcsOptions{}
-	vpcs, response, err := sess.ListVpcs(listVpcsOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error Listing VPCs : %s\n%s", err, response)
-	}
-	if response.StatusCode == 404 {
-		return nil
+	vpcs, _, err := sess.ListVpcs(listVpcsOptions)
+	if err != nil {
+		return err
 	}
 	for _, vpc := range vpcs.Vpcs {
 		if *vpc.Name == name {
@@ -259,12 +256,9 @@ func vpcList(d *schema.ResourceData, meta interface{}, name string) error {
 		return err
 	}
 	listVpcsOptions := &vpcv1.ListVpcsOptions{}
-	vpcs, response, err := sess.ListVpcs(listVpcsOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error Listing VPCs : %s\n%s", err, response)
-	}
-	if response.StatusCode == 404 {
-		return nil
+	vpcs, _, err := sess.ListVpcs(listVpcsOptions)
+	if err != nil {
+		return err
 	}
 	for _, vpc := range vpcs.Vpcs {
 		if *vpc.Name == name {

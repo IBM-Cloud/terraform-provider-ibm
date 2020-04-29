@@ -4,7 +4,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/compute"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -39,41 +40,73 @@ func dataSourceIBMISInstanceProfiles() *schema.Resource {
 }
 
 func dataSourceIBMISInstanceProfilesRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	clientC := compute.NewInstanceClient(sess)
-	availableProfiles, _, err := clientC.ListProfiles("")
-	if err != nil {
-		return err
+	if userDetails.generation == 1 {
+		err := classicInstanceProfilesList(d, meta)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := instanceProfilesList(d, meta)
+		if err != nil {
+			return err
+		}
 	}
-
-	profiles := make([]map[string]string, len(availableProfiles))
-	for i, profile := range availableProfiles {
-
-		p := make(map[string]string)
-		p["name"] = profile.Name
-		p["family"] = profile.Family
-		profiles[i] = p
-	}
-	d.SetId(dataSourceIBMISInstanceProfilesID(d))
-	d.Set(isInstanceProfiles, profiles)
 	return nil
 }
 
-// dataSourceIBMISZonesId returns a reasonable ID for a zone list.
+func classicInstanceProfilesList(d *schema.ResourceData, meta interface{}) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	listInstanceProfilesOptions := &vpcclassicv1.ListInstanceProfilesOptions{}
+	availableProfiles, _, err := sess.ListInstanceProfiles(listInstanceProfilesOptions)
+	if err != nil {
+		return err
+	}
+	profilesInfo := make([]map[string]interface{}, 0)
+	for _, profile := range availableProfiles.Profiles {
+
+		l := map[string]interface{}{
+			"name":   *profile.Name,
+			"family": *profile.Family,
+		}
+		profilesInfo = append(profilesInfo, l)
+	}
+	d.SetId(dataSourceIBMISInstanceProfilesID(d))
+	d.Set(isInstanceProfiles, profilesInfo)
+	return nil
+}
+
+func instanceProfilesList(d *schema.ResourceData, meta interface{}) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	listInstanceProfilesOptions := &vpcv1.ListInstanceProfilesOptions{}
+	availableProfiles, _, err := sess.ListInstanceProfiles(listInstanceProfilesOptions)
+	if err != nil {
+		return err
+	}
+	profilesInfo := make([]map[string]interface{}, 0)
+	for _, profile := range availableProfiles.Profiles {
+
+		l := map[string]interface{}{
+			"name":   *profile.Name,
+			"family": *profile.Family,
+		}
+		profilesInfo = append(profilesInfo, l)
+	}
+	d.SetId(dataSourceIBMISInstanceProfilesID(d))
+	d.Set(isInstanceProfiles, profilesInfo)
+	return nil
+}
+
+// dataSourceIBMISInstanceProfilesID returns a reasonable ID for a Instance Profile list.
 func dataSourceIBMISInstanceProfilesID(d *schema.ResourceData) string {
-	// Our zone list is not guaranteed to be stable because the content
-	// of the list can vary between two calls if any of the following
-	// events occur between calls:
-	// - a zone is added to our region
-	// - a zone is dropped from our region
-	//
-	// For simplicity we are using a timestamp for the required terraform id.
-	// If we find through usage that this choice is too ephemeral for our users
-	// then we can change this function to use a more stable id, perhaps
-	// composed from a hash of the list contents. But, for now, a timestamp
-	// is good enough.
 	return time.Now().UTC().String()
 }

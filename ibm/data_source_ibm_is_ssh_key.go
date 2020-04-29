@@ -4,7 +4,8 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/compute"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func dataSourceIBMISSSHKey() *schema.Resource {
@@ -57,39 +58,84 @@ func dataSourceIBMISSSHKey() *schema.Resource {
 }
 
 func dataSourceIBMISSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	keyC := compute.NewKeyClient(sess)
-
 	name := d.Get(isKeyName).(string)
+	if userDetails.generation == 1 {
+		err := classicKeyGet(d, meta, name)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := keyGet(d, meta, name)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
-	keys, _, err := keyC.List("")
+func classicKeyGet(d *schema.ResourceData, meta interface{}, name string) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
-
-	for _, key := range keys {
-		if key.Name == name {
-			d.SetId(key.ID.String())
-			d.Set(isKeyName, key.Name)
-			d.Set(isKeyType, key.Type)
-			d.Set(isKeyFingerprint, key.Fingerprint)
-			d.Set(isKeyLength, key.Length)
+	listKeysOptions := &vpcclassicv1.ListKeysOptions{}
+	keys, _, err := sess.ListKeys(listKeysOptions)
+	if err != nil {
+		return err
+	}
+	for _, key := range keys.Keys {
+		if *key.Name == name {
+			d.SetId(*key.ID)
+			d.Set("name", *key.Name)
+			d.Set(isKeyType, *key.Type)
+			d.Set(isKeyFingerprint, *key.Fingerprint)
+			d.Set(isKeyLength, *key.Length)
 			controller, err := getBaseController(meta)
 			if err != nil {
 				return err
 			}
-			if sess.Generation == 1 {
-				d.Set(ResourceControllerURL, controller+"/vpc/compute/sshKeys")
-			} else {
-				d.Set(ResourceControllerURL, controller+"/vpc-ext/compute/sshKeys")
-			}
-			d.Set(ResourceName, key.Name)
-			d.Set(ResourceCRN, key.Crn)
+			d.Set(ResourceControllerURL, controller+"/vpc/compute/sshKeys")
+			d.Set(ResourceName, *key.Name)
+			d.Set(ResourceCRN, *key.Crn)
 			if key.ResourceGroup != nil {
-				d.Set(ResourceGroupName, key.ResourceGroup.Name)
+				d.Set(ResourceGroupName, *key.ResourceGroup.ID)
+			}
+			return nil
+		}
+	}
+	return fmt.Errorf("No SSH Key found with name %s", name)
+}
+
+func keyGet(d *schema.ResourceData, meta interface{}, name string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	listKeysOptions := &vpcv1.ListKeysOptions{}
+	keys, _, err := sess.ListKeys(listKeysOptions)
+	if err != nil {
+		return err
+	}
+	for _, key := range keys.Keys {
+		if *key.Name == name {
+			d.SetId(*key.ID)
+			d.Set("name", *key.Name)
+			d.Set(isKeyType, *key.Type)
+			d.Set(isKeyFingerprint, *key.Fingerprint)
+			d.Set(isKeyLength, *key.Length)
+			controller, err := getBaseController(meta)
+			if err != nil {
+				return err
+			}
+			d.Set(ResourceControllerURL, controller+"/vpc/compute/sshKeys")
+			d.Set(ResourceName, *key.Name)
+			d.Set(ResourceCRN, *key.Crn)
+			if key.ResourceGroup != nil {
+				d.Set(ResourceGroupName, *key.ResourceGroup.ID)
 			}
 			return nil
 		}

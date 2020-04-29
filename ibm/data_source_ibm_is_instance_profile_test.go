@@ -15,7 +15,7 @@ func TestAccIBMISInstanceProfileDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMISInstanceProfileDataSourceConfig(instanceProfileName),
+				Config: testAccCheckIBMISInstanceProfileDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "name", instanceProfileName),
 					resource.TestCheckResourceAttrSet(resName, "family"),
@@ -25,7 +25,7 @@ func TestAccIBMISInstanceProfileDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMISInstanceProfileDataSourceConfig(instanceProfileName string) string {
+func testAccCheckIBMISInstanceProfileDataSourceConfig() string {
 	return fmt.Sprintf(`
 
 data "ibm_is_instance_profile" "test1" {

@@ -28,7 +28,7 @@ func testAccCheckIBMISZoneDataSourceConfig() string {
 	return fmt.Sprintf(`
 
 data "ibm_is_zone" "testacc_ds_zone" {
-	name = "%s",
+	name = "%s"
 	region = "%s"
 }`, ISZoneName, regionName)
 }
