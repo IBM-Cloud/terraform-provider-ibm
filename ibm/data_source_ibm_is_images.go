@@ -4,7 +4,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/compute"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -59,32 +60,79 @@ func dataSourceIBMISImages() *schema.Resource {
 }
 
 func dataSourceIBMISImagesRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	clientC := compute.NewImageClient(sess)
-	availableImages, _, err := clientC.List("")
+	if userDetails.generation == 1 {
+		err := classicImageList(d, meta)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := imageList(d, meta)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func classicImageList(d *schema.ResourceData, meta interface{}) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
-
-	images := make([]map[string]string, len(availableImages))
-	for i, image := range availableImages {
-
-		img := make(map[string]string)
-		img["name"] = image.Name
-		img["id"] = string(image.ID)
-		img["status"] = image.Status
-		img["visibility"] = image.Visibility
-		img["os"] = image.OperatingSystem.Name
-		img["architecture"] = image.OperatingSystem.Architecture
-		img["crn"] = image.Crn
-
-		images[i] = img
+	listImagesOptions := &vpcclassicv1.ListImagesOptions{}
+	availableImages, _, err := sess.ListImages(listImagesOptions)
+	if err != nil {
+		return err
 	}
-	d.SetId(dataSourceIBMISImagesID(d))
-	d.Set(isImages, images)
+	imagesInfo := make([]map[string]interface{}, 0)
+	for _, image := range availableImages.Images {
+
+		l := map[string]interface{}{
+			"name":         *image.Name,
+			"id":           *image.ID,
+			"status":       *image.Status,
+			"crn":          *image.Crn,
+			"visibility":   *image.Visibility,
+			"os":           *image.OperatingSystem.Name,
+			"architecture": *image.OperatingSystem.Architecture,
+		}
+		imagesInfo = append(imagesInfo, l)
+	}
+	d.SetId(dataSourceIBMISSubnetsID(d))
+	d.Set(isImages, imagesInfo)
+	return nil
+}
+
+func imageList(d *schema.ResourceData, meta interface{}) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	listImagesOptions := &vpcv1.ListImagesOptions{}
+	availableImages, _, err := sess.ListImages(listImagesOptions)
+	if err != nil {
+		return err
+	}
+	imagesInfo := make([]map[string]interface{}, 0)
+	for _, image := range availableImages.Images {
+
+		l := map[string]interface{}{
+			"name":         *image.Name,
+			"id":           *image.ID,
+			"status":       *image.Status,
+			"crn":          *image.Crn,
+			"visibility":   *image.Visibility,
+			"os":           *image.OperatingSystem.Name,
+			"architecture": *image.OperatingSystem.Architecture,
+		}
+		imagesInfo = append(imagesInfo, l)
+	}
+	d.SetId(dataSourceIBMISSubnetsID(d))
+	d.Set(isImages, imagesInfo)
 	return nil
 }
 

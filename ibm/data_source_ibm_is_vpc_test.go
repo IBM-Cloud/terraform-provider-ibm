@@ -10,7 +10,7 @@ import (
 
 func TestAccIBMISVPCDatasource_basic(t *testing.T) {
 	var vpc string
-	name1 := fmt.Sprintf("tfc-vpc-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfc-vpc-name-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -18,11 +18,11 @@ func TestAccIBMISVPCDatasource_basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMISVPCDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testDSCheckIBMISVPCConfig(name1),
+				Config: testDSCheckIBMISVPCConfig(name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISVPCExists("ibm_is_vpc.testacc_vpc", vpc),
 					resource.TestCheckResourceAttr(
-						"data.ibm_is_vpc.ds_vpc", "name", name1),
+						"data.ibm_is_vpc.ds_vpc", "name", name),
 					resource.TestCheckResourceAttr(
 						"data.ibm_is_vpc.ds_vpc", "tags.#", "1"),
 				),

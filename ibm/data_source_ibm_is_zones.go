@@ -4,7 +4,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/geography"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -37,20 +38,66 @@ func dataSourceIBMISZones() *schema.Resource {
 }
 
 func dataSourceIBMISZonesRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	zoneC := geography.NewZoneClient(sess)
-	availableZones, err := zoneC.List(d.Get(isZoneRegion).(string))
+	regionName := d.Get(isZoneRegion).(string)
+	if userDetails.generation == 1 {
+		err := classicZonesList(d, meta, regionName)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := zonesList(d, meta, regionName)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func classicZonesList(d *schema.ResourceData, meta interface{}, regionName string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	listZonesOptions := &vpcclassicv1.ListZonesOptions{
+		RegionName: &regionName,
+	}
+	availableZones, _, err := sess.ListZones(listZonesOptions)
 	if err != nil {
 		return err
 	}
 	names := make([]string, 0)
 	status := d.Get(isZoneStatus).(string)
-	for _, zone := range availableZones {
-		if status == "" || zone.Status == status {
-			names = append(names, zone.Name)
+	for _, zone := range availableZones.Zones {
+		if status == "" || *zone.Status == status {
+			names = append(names, *zone.Name)
+		}
+	}
+	d.SetId(dataSourceIBMISZonesId(d))
+	d.Set(isZoneNames, names)
+	return nil
+}
+
+func zonesList(d *schema.ResourceData, meta interface{}, regionName string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	listZonesOptions := &vpcv1.ListZonesOptions{
+		RegionName: &regionName,
+	}
+	availableZones, _, err := sess.ListZones(listZonesOptions)
+	if err != nil {
+		return err
+	}
+	names := make([]string, 0)
+	status := d.Get(isZoneStatus).(string)
+	for _, zone := range availableZones.Zones {
+		if status == "" || *zone.Status == status {
+			names = append(names, *zone.Name)
 		}
 	}
 	d.SetId(dataSourceIBMISZonesId(d))
