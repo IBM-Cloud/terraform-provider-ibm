@@ -34,6 +34,7 @@ const (
 	isLBPoolMaintainancePending       = "maintenance_pending"
 	isLBPoolFailed                    = "failed"
 	isLBPoolDeleteDone                = "deleted"
+	isLBPool                          = "pool_id"
 	//isLBPoolActive,isLBPoolCreatePending,isLBPoolUpdatePending,isLBPoolDeletePending,isLBPoolMaintainancePending,isLBPoolFailed
 )
 
@@ -132,6 +133,11 @@ func resourceIBMISLBPool() *schema.Resource {
 			},
 
 			isLBPoolProvisioningStatus: {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			isLBPool: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -268,6 +274,7 @@ func resourceIBMISLBPoolRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set(isLBPoolSessPersistenceCookieName, lbPool.SessionPersistence.CookieName)
 	}
 	d.Set(isLBPoolProvisioningStatus, lbPool.ProvisioningStatus)
+	d.Set(isLBPool, lbPoolID)
 
 	return nil
 }
