@@ -150,10 +150,10 @@
 			"revisionTime": "2020-01-31T10:06:06Z"
 		},
 		{
-			"checksumSHA1": "C1wxYRQIEjb/Q7EcRdSGqVmLiWg=",
+			"checksumSHA1": "scvPSu74zjNWmEMk0M24L1FO6SI=",
 			"path": "github.com/IBM-Cloud/bluemix-go/api/schematics",
-			"revision": "befac795f3cde094ec4dcff90961ded39c956015",
-			"revisionTime": "2020-04-23T11:29:26Z"
+			"revision": "0ded09b89b3389e35b4045790b58899f12b3e5e8",
+			"revisionTime": "2020-04-24T04:57:57Z"
 		},
 		{
 			"checksumSHA1": "25eQ6TOZSW9llKZsqoPxgLVLetk=",
