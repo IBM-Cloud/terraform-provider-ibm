@@ -27,6 +27,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
+	"github.com/IBM-Cloud/bluemix-go/api/schematics"
 	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
@@ -1663,4 +1664,14 @@ func flattenCseIPs(list []VPCCSESourceIP) []map[string]interface{} {
 		cseIPsInfo = append(cseIPsInfo, l)
 	}
 	return cseIPsInfo
+}
+
+func flattenCatalogRef(object schematics.CatalogInfo) map[string]interface{} {
+	catalogRef := map[string]interface{}{
+		"item_id":          object.ItemID,
+		"item_name":        object.ItemName,
+		"item_url":         object.ItemURL,
+		"offering_version": object.OfferingVersion,
+	}
+	return catalogRef
 }

@@ -39,4 +39,13 @@ The following attributes are exported:
 * `tags` - The tags suppoprted by workspace.
 * `resource_group` - The resource group associated with the workspace.
 * `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about the workspace.
+* `location` - The location of worspace instantiated.
+* `crn` - The cloud resource name of the worspace.
+* `description` - The description provided for the workspace.
+* `catalog_ref` - A nested block describing the catalog template and its properties associated with worksapce. Nested `catalog_ref` blocks have the following structure:
+  * `item_id` - The catalog template Id.
+  * `item_name` - The catalog template name.
+  * `item_url` - The catlog template URL.
+  * `offering_version` - The catalog template offering version.
+
 
