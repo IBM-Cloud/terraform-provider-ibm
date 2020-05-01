@@ -14,8 +14,8 @@ import (
 
 func TestAccIBMISLBListenerPolicy_basic(t *testing.T) {
 	var policyID string
-	vpcname := fmt.Sprintf("terraformLBLisuat-vpc-%d", acctest.RandIntRange(10, 100))
-	subnetname := fmt.Sprintf("terraformLBLisuat-subnet-%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tflblisuat-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflblisuat-subnet-%d", acctest.RandIntRange(10, 100))
 	lbname := fmt.Sprintf("tflblisuat%d", acctest.RandIntRange(10, 100))
 	lblistenerpolicyname1 := fmt.Sprintf("tflblisuat-listener-policy-%d", acctest.RandIntRange(10, 100))
 	lblistenerpolicyname2 := fmt.Sprintf("tflblisuat-listener-policy-%d", acctest.RandIntRange(10, 100))
@@ -45,13 +45,13 @@ func TestAccIBMISLBListenerPolicy_basic(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccCheckIBMISLBListenerPolicyConfigUpdate(vpcname, subnetname, ISZoneName, ISCIDR, lbname, port, protocol, lblistenerpolicyname2, priority2),
+				Config: testAccCheckIBMISLBListenerPolicyConfigUpdate(vpcname, subnetname, ISZoneName, ISCIDR, lbname, port, protocol, lblistenerpolicyname2, priority2, action),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBListenerPolicyExists("ibm_is_lb_listener_policy.testacc_lb_listener_policy", policyID),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_listener_policy.testacc_lb_listener_policy", "name", lblistenerpolicyname2),
 					resource.TestCheckResourceAttr(
-						"ibm_is_lb_listener_policy.testacc_lb_listener_policy", "proprity", priority2),
+						"ibm_is_lb_listener_policy.testacc_lb_listener_policy", "priority", priority2),
 				),
 			},
 		},
@@ -60,8 +60,8 @@ func TestAccIBMISLBListenerPolicy_basic(t *testing.T) {
 
 func TestAccIBMISLBListenerPolicyRedirect_basic(t *testing.T) {
 	var policyID string
-	vpcname := fmt.Sprintf("terraformLBLisuat-vpc-%d", acctest.RandIntRange(10, 100))
-	subnetname := fmt.Sprintf("terraformLBLisuat-subnet-%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tflblisuat-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflblisuat-subnet-%d", acctest.RandIntRange(10, 100))
 	lbname := fmt.Sprintf("tflblisuat%d", acctest.RandIntRange(10, 100))
 	lblistenerpolicyname1 := fmt.Sprintf("tflblisuat-listener-policy-%d", acctest.RandIntRange(10, 100))
 	lblistenerpolicyname2 := fmt.Sprintf("tflblisuat-listener-policy-%d", acctest.RandIntRange(10, 100))
@@ -91,13 +91,13 @@ func TestAccIBMISLBListenerPolicyRedirect_basic(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccCheckIBMISLBListenerPolicyRedirectConfigUpdate(vpcname, subnetname, ISZoneName, ISCIDR, lbname, port, protocol, lblistenerpolicyname2, priority2),
+				Config: testAccCheckIBMISLBListenerPolicyRedirectConfigUpdate(vpcname, subnetname, ISZoneName, ISCIDR, lbname, port, protocol, lblistenerpolicyname2, action, priority2),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBListenerPolicyExists("ibm_is_lb_listener_policy.testacc_lb_listener_policy", policyID),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_listener_policy.testacc_lb_listener_policy", "name", lblistenerpolicyname2),
 					resource.TestCheckResourceAttr(
-						"ibm_is_lb_listener_policy.testacc_lb_listener_policy", "proprity", priority2),
+						"ibm_is_lb_listener_policy.testacc_lb_listener_policy", "priority", priority2),
 				),
 			},
 		},
@@ -106,8 +106,8 @@ func TestAccIBMISLBListenerPolicyRedirect_basic(t *testing.T) {
 
 func TestAccIBMISLBListenerPolicyReject_basic(t *testing.T) {
 	var policyID string
-	vpcname := fmt.Sprintf("terraformLBLisuat-vpc-%d", acctest.RandIntRange(10, 100))
-	subnetname := fmt.Sprintf("terraformLBLisuat-subnet-%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tflblisuat-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflblisuat-subnet-%d", acctest.RandIntRange(10, 100))
 	lbname := fmt.Sprintf("tflblisuat%d", acctest.RandIntRange(10, 100))
 	lblistenerpolicyname1 := fmt.Sprintf("tflblisuat-listener-policy-%d", acctest.RandIntRange(10, 100))
 	lblistenerpolicyname2 := fmt.Sprintf("tflblisuat-listener-policy-%d", acctest.RandIntRange(10, 100))
@@ -137,13 +137,13 @@ func TestAccIBMISLBListenerPolicyReject_basic(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccCheckIBMISLBListenerPolicyRejectConfigUpdate(vpcname, subnetname, ISZoneName, ISCIDR, lbname, port, protocol, lblistenerpolicyname2, priority2),
+				Config: testAccCheckIBMISLBListenerPolicyRejectConfigUpdate(vpcname, subnetname, ISZoneName, ISCIDR, lbname, port, protocol, lblistenerpolicyname2, action, priority2),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBListenerPolicyExists("ibm_is_lb_listener_policy.testacc_lb_listener_policy", policyID),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_listener_policy.testacc_lb_listener_policy", "name", lblistenerpolicyname2),
 					resource.TestCheckResourceAttr(
-						"ibm_is_lb_listener_policy.testacc_lb_listener_policy", "proprity", priority2),
+						"ibm_is_lb_listener_policy.testacc_lb_listener_policy", "priority", priority2),
 				),
 			},
 		},
@@ -284,28 +284,32 @@ func testAccCheckIBMISLBListenerPolicyExists(n string, policyID string) resource
 
 func testAccCheckIBMISLBListenerPolicyConfig(vpcname, subnetname, zone, cidr, lbname, port, protocol, lblistenerpolicyname, action, priority string) string {
 	return fmt.Sprintf(`
-
+	
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
-	}
-
-	resource "ibm_is_subnet" "testacc_subnet" {
-		name = "%s"
-		vpc = "${ibm_is_vpc.testacc_vpc.id}"
-		zone = "%s"
+	  }
+	  
+	  resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = "${ibm_is_vpc.testacc_vpc.id}"
+		zone            = "%s"
 		ipv4_cidr_block = "%s"
-	}
-	resource "ibm_is_lb" "testacc_LB" {
-		name = "%s"
-		subnets = ["ibm_is_subnet.testacc_subnet.id"]
-	}
-	resource "ibm_is_lb_listener" "testacc_lb_listener" {
-		lb = "${ibm_is_lb.testacc_LB.id}"
-		port = %s
-		protocol = "%s"
-	}
-	resource "ibm_is_lb_pool" "testacc_pool" {
-		name           = "test_pool"
+	  }
+	  
+	  resource "ibm_is_lb" "testacc_LB" {
+		name    = "%s"
+		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
+	  }
+	  
+	  resource "ibm_is_lb_listener" "testacc_lb_listener" {
+		lb           = "${ibm_is_lb.testacc_LB.id}"
+		default_pool = "${ibm_is_lb_pool.testacc_pool.pool_id}"
+		port         = %s
+		protocol     = "%s"
+	  }
+	  
+	  resource "ibm_is_lb_pool" "testacc_pool" {
+		name           = "test2"
 		lb             = "${ibm_is_lb.testacc_LB.id}"
 		algorithm      = "round_robin"
 		protocol       = "http"
@@ -313,44 +317,53 @@ func testAccCheckIBMISLBListenerPolicyConfig(vpcname, subnetname, zone, cidr, lb
 		health_retries = 5
 		health_timeout = 30
 		health_type    = "http"
-	}
-
-	resource "ibm_is_lb_listener_policy" "testacc_lb_listener_policy" {
-        lb = "${ibm_is_lb.testacc_LB.id}"
-        listener = "${ibm_is_lb_listener.testacc_lb_listener.listener_id}"
-        action = "%s"
-		priority = %s
-		name = "%s"
-		target_id = "${ibm_is_lb_pool.testacc_pool.id}"
+	  }
+	  
+	  resource "ibm_is_lb_listener_policy" "testacc_lb_listener_policy" {
+		lb        = "${ibm_is_lb.testacc_LB.id}"
+		listener  = "${ibm_is_lb_listener.testacc_lb_listener.listener_id}"
+		action    = "%s"
+		priority  = %s
+		name      = "%s"
+		target_id = "${ibm_is_lb_pool.testacc_pool.pool_id}"
+		rules {
+			condition = "contains"
+			type      = "header"
+			field     = "1"
+			value     = "2"
+		  }	  
 }`, vpcname, subnetname, zone, cidr, lbname, port, protocol, action, priority, lblistenerpolicyname)
 
 }
 
-func testAccCheckIBMISLBListenerPolicyConfigUpdate(vpcname, subnetname, zone, cidr, lbname, port, protocol, lblistenerpolicyname, priority string) string {
+func testAccCheckIBMISLBListenerPolicyConfigUpdate(vpcname, subnetname, zone, cidr, lbname, port, protocol, lblistenerpolicyname, priority, action string) string {
 	return fmt.Sprintf(`
 
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
-	}
-
-	resource "ibm_is_subnet" "testacc_subnet" {
-		name = "%s"
-		vpc = "${ibm_is_vpc.testacc_vpc.id}"
-		zone = "%s"
+	  }
+	  
+	  resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = "${ibm_is_vpc.testacc_vpc.id}"
+		zone            = "%s"
 		ipv4_cidr_block = "%s"
-	}
-	resource "ibm_is_lb" "testacc_LB" {
-		name = "%s"
+	  }
+	  
+	  resource "ibm_is_lb" "testacc_LB" {
+		name    = "%s"
 		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
-	}
-	resource "ibm_is_lb_listener" "testacc_lb_listener" {
-		lb = "${ibm_is_lb.testacc_LB.id}"
-		port = %s
-		protocol = "%s"
-	}
-
-	resource "ibm_is_lb_pool" "testacc_pool" {
-		name           = "test_pool"
+	  }
+	  
+	  resource "ibm_is_lb_listener" "testacc_lb_listener" {
+		lb           = "${ibm_is_lb.testacc_LB.id}"
+		default_pool = "${ibm_is_lb_pool.testacc_pool.pool_id}"
+		port         = %s
+		protocol     = "%s"
+	  }
+	  
+	  resource "ibm_is_lb_pool" "testacc_pool" {
+		name           = "test2"
 		lb             = "${ibm_is_lb.testacc_LB.id}"
 		algorithm      = "round_robin"
 		protocol       = "http"
@@ -358,17 +371,22 @@ func testAccCheckIBMISLBListenerPolicyConfigUpdate(vpcname, subnetname, zone, ci
 		health_retries = 5
 		health_timeout = 30
 		health_type    = "http"
-	}
-
-	resource "ibm_is_lb_listener_policy" "testacc_lb_listener_policy" {
-        lb = "${ibm_is_lb.testacc_LB.id}"
-        listener = "${ibm_is_lb_listener.testacc_lb_listener.listener_id}"
-        action = "forward"
-		priority = %s
-		name = "%s"
-		target_id = "${ibm_is_lb_pool.testacc_pool.id}"
-
-}`, vpcname, subnetname, zone, cidr, lbname, port, protocol, priority, lblistenerpolicyname)
+	  }
+	  
+	  resource "ibm_is_lb_listener_policy" "testacc_lb_listener_policy" {
+		lb        = "${ibm_is_lb.testacc_LB.id}"
+		listener  = "${ibm_is_lb_listener.testacc_lb_listener.listener_id}"
+		action    = "%s"
+		priority  = %s
+		name      = "%s"
+		target_id = "${ibm_is_lb_pool.testacc_pool.pool_id}"
+		rules {
+			condition = "contains"
+			type      = "header"
+			field     = "1"
+			value     = "2"
+		}
+}`, vpcname, subnetname, zone, cidr, lbname, port, protocol, action, priority, lblistenerpolicyname)
 
 }
 
@@ -377,134 +395,215 @@ func testAccCheckIBMISLBListenerPolicyRedirectConfig(vpcname, subnetname, zone, 
 
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
-	}
-
-	resource "ibm_is_subnet" "testacc_subnet" {
-		name = "%s"
-		vpc = "${ibm_is_vpc.testacc_vpc.id}"
-		zone = "%s"
+	  }
+	  
+	  resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = "${ibm_is_vpc.testacc_vpc.id}"
+		zone            = "%s"
 		ipv4_cidr_block = "%s"
-	}
-	resource "ibm_is_lb" "testacc_LB" {
-		name = "%s"
-		subnets = ["ibm_is_subnet.testacc_subnet.id"]
-	}
-	resource "ibm_is_lb_listener" "testacc_lb_listener" {
-		lb = "${ibm_is_lb.testacc_LB.id}"
-		port = %s
-		protocol = "%s"
-	}
-	
-	resource "ibm_is_lb_listener_policy" "testacc_lb_listener_policy" {
-        lb = "${ibm_is_lb.testacc_LB.id}"
-        listener = "${ibm_is_lb_listener.testacc_lb_listener.listener_id}"
-        action = "%s"
-		priority = %s
-		name = "%s"
+	  }
+	  
+	  resource "ibm_is_lb" "testacc_LB" {
+		name    = "%s"
+		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
+	  }
+	  
+	  resource "ibm_is_lb_listener" "testacc_lb_listener" {
+		lb           = "${ibm_is_lb.testacc_LB.id}"
+		default_pool = "${ibm_is_lb_pool.testacc_pool.pool_id}"
+		port         = %s
+		protocol     = "%s"
+	  }
+
+	  resource "ibm_is_lb_pool" "testacc_pool" {
+		name           = "test2"
+		lb             = "${ibm_is_lb.testacc_LB.id}"
+		algorithm      = "round_robin"
+		protocol       = "http"
+		health_delay   = 60
+		health_retries = 5
+		health_timeout = 30
+		health_type    = "http"
+	  }
+	  
+	  resource "ibm_is_lb_listener_policy" "testacc_lb_listener_policy" {
+		lb        = "${ibm_is_lb.testacc_LB.id}"
+		listener  = "${ibm_is_lb_listener.testacc_lb_listener.listener_id}"
+		action    = "%s"
+		priority  = %s
+		name      = "%s"
 		target_http_status_code = 302
   		target_url              = "https://www.redirect.com"
+		rules {
+			condition = "contains"
+			type      = "header"
+			field     = "1"
+			value     = "2"
+		  }
 }`, vpcname, subnetname, zone, cidr, lbname, port, protocol, action, priority, lblistenerpolicyname)
 
 }
 
-func testAccCheckIBMISLBListenerPolicyRedirectConfigUpdate(vpcname, subnetname, zone, cidr, lbname, port, protocol, lblistenerpolicyname, priority string) string {
+func testAccCheckIBMISLBListenerPolicyRedirectConfigUpdate(vpcname, subnetname, zone, cidr, lbname, port, protocol, lblistenerpolicyname, action, priority string) string {
 	return fmt.Sprintf(`
 
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
 	}
-
+	  
 	resource "ibm_is_subnet" "testacc_subnet" {
-		name = "%s"
-		vpc = "${ibm_is_vpc.testacc_vpc.id}"
-		zone = "%s"
+		name            = "%s"
+		vpc             = "${ibm_is_vpc.testacc_vpc.id}"
+		zone            = "%s"
 		ipv4_cidr_block = "%s"
 	}
+	  
 	resource "ibm_is_lb" "testacc_LB" {
-		name = "%s"
+		name    = "%s"
 		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
 	}
-	resource "ibm_is_lb_listener" "testacc_lb_listener" {
-		lb = "${ibm_is_lb.testacc_LB.id}"
-		port = %s
-		protocol = "%s"
-	}
 
+	resource "ibm_is_lb_pool" "testacc_pool" {
+		name           = "test2"
+		lb             = "${ibm_is_lb.testacc_LB.id}"
+		algorithm      = "round_robin"
+		protocol       = "http"
+		health_delay   = 60
+		health_retries = 5
+		health_timeout = 30
+		health_type    = "http"
+	  }
+	  
+	resource "ibm_is_lb_listener" "testacc_lb_listener" {
+		lb           = "${ibm_is_lb.testacc_LB.id}"
+		default_pool = "${ibm_is_lb_pool.testacc_pool.pool_id}"
+		port         = %s
+		protocol     = "%s"
+	}
+	  
 	resource "ibm_is_lb_listener_policy" "testacc_lb_listener_policy" {
-        lb = "${ibm_is_lb.testacc_LB.id}"
-        listener = "${ibm_is_lb_listener.testacc_lb_listener.listener_id}"
-        action = "redirect"
-		priority = %s
-		name = "%s"
+		lb        = "${ibm_is_lb.testacc_LB.id}"
+		listener  = "${ibm_is_lb_listener.testacc_lb_listener.listener_id}"
+		action    = "%s"
+		priority  = %s
+		name      = "%s"
 		target_http_status_code = 302
   		target_url              = "https://www.redirect.com"
-
-}`, vpcname, subnetname, zone, cidr, lbname, port, protocol, priority, lblistenerpolicyname)
+		rules {
+			condition = "contains"
+			type      = "header"
+			field     = "1"
+			value     = "2"
+		}
+}`, vpcname, subnetname, zone, cidr, lbname, port, protocol, action, priority, lblistenerpolicyname)
 
 }
 
 func testAccCheckIBMISLBListenerPolicyRejectConfig(vpcname, subnetname, zone, cidr, lbname, port, protocol, lblistenerpolicyname, action, priority string) string {
 	return fmt.Sprintf(`
 
+	
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
-	}
-
-	resource "ibm_is_subnet" "testacc_subnet" {
-		name = "%s"
-		vpc = "${ibm_is_vpc.testacc_vpc.id}"
-		zone = "%s"
+	  }
+	  
+	  resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = "${ibm_is_vpc.testacc_vpc.id}"
+		zone            = "%s"
 		ipv4_cidr_block = "%s"
-	}
-	resource "ibm_is_lb" "testacc_LB" {
-		name = "%s"
-		subnets = ["ibm_is_subnet.testacc_subnet.id"]
-	}
-	resource "ibm_is_lb_listener" "testacc_lb_listener" {
-		lb = "${ibm_is_lb.testacc_LB.id}"
-		port = %s
-		protocol = "%s"
-	}
-	
-	resource "ibm_is_lb_listener_policy" "testacc_lb_listener_policy" {
-        lb = "${ibm_is_lb.testacc_LB.id}"
-        listener = "${ibm_is_lb_listener.testacc_lb_listener.listener_id}"
-        action = "%s"
-		priority = %s
-		name = "%s"
+	  }
+	  
+	  resource "ibm_is_lb" "testacc_LB" {
+		name    = "%s"
+		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
+	  }
+	  
+	  resource "ibm_is_lb_listener" "testacc_lb_listener" {
+		lb           = "${ibm_is_lb.testacc_LB.id}"
+		default_pool = "${ibm_is_lb_pool.testacc_pool.pool_id}"
+		port         = %s
+		protocol     = "%s"
+	  }
+	  
+	  resource "ibm_is_lb_pool" "testacc_pool" {
+		name           = "test2"
+		lb             = "${ibm_is_lb.testacc_LB.id}"
+		algorithm      = "round_robin"
+		protocol       = "http"
+		health_delay   = 60
+		health_retries = 5
+		health_timeout = 30
+		health_type    = "http"
+	  }
+	  
+	  resource "ibm_is_lb_listener_policy" "testacc_lb_listener_policy" {
+		lb        = "${ibm_is_lb.testacc_LB.id}"
+		listener  = "${ibm_is_lb_listener.testacc_lb_listener.listener_id}"
+		action    = "%s"
+		priority  = %s
+		name      = "%s"
+		rules {
+			condition = "contains"
+			type      = "header"
+			field     = "1"
+			value     = "2"
+		  }
 }`, vpcname, subnetname, zone, cidr, lbname, port, protocol, action, priority, lblistenerpolicyname)
 
 }
 
-func testAccCheckIBMISLBListenerPolicyRejectConfigUpdate(vpcname, subnetname, zone, cidr, lbname, port, protocol, lblistenerpolicyname, priority string) string {
+func testAccCheckIBMISLBListenerPolicyRejectConfigUpdate(vpcname, subnetname, zone, cidr, lbname, port, protocol, lblistenerpolicyname, action, priority string) string {
 	return fmt.Sprintf(`
 
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
-	}
-
-	resource "ibm_is_subnet" "testacc_subnet" {
-		name = "%s"
-		vpc = "${ibm_is_vpc.testacc_vpc.id}"
-		zone = "%s"
+	  }
+	  
+	  resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = "${ibm_is_vpc.testacc_vpc.id}"
+		zone            = "%s"
 		ipv4_cidr_block = "%s"
-	}
-	resource "ibm_is_lb" "testacc_LB" {
-		name = "%s"
+	  }
+	  
+	  resource "ibm_is_lb" "testacc_LB" {
+		name    = "%s"
 		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
-	}
-	resource "ibm_is_lb_listener" "testacc_lb_listener" {
-		lb = "${ibm_is_lb.testacc_LB.id}"
-		port = %s
-		protocol = "%s"
-	}
+	  }
+	  
+	  resource "ibm_is_lb_listener" "testacc_lb_listener" {
+		lb           = "${ibm_is_lb.testacc_LB.id}"
+		default_pool = "${ibm_is_lb_pool.testacc_pool.pool_id}"
+		port         = %s
+		protocol     = "%s"
+	  }
+	  
+	  resource "ibm_is_lb_pool" "testacc_pool" {
+		name           = "test2"
+		lb             = "${ibm_is_lb.testacc_LB.id}"
+		algorithm      = "round_robin"
+		protocol       = "http"
+		health_delay   = 60
+		health_retries = 5
+		health_timeout = 30
+		health_type    = "http"
+	  }
+	  
+	  resource "ibm_is_lb_listener_policy" "testacc_lb_listener_policy" {
+		lb        = "${ibm_is_lb.testacc_LB.id}"
+		listener  = "${ibm_is_lb_listener.testacc_lb_listener.listener_id}"
+		action    = "%s"
+		priority  = %s
+		name      = "%s"
+		rules {
+			condition = "contains"
+			type      = "header"
+			field     = "1"
+			value     = "2"
+		}
 
-	resource "ibm_is_lb_listener_policy" "testacc_lb_listener_policy" {
-        lb = "${ibm_is_lb.testacc_LB.id}"
-        listener = "${ibm_is_lb_listener.testacc_lb_listener.listener_id}"
-        action = "redirect"
-		priority = %s
-		name = "%s"
-}`, vpcname, subnetname, zone, cidr, lbname, port, protocol, priority, lblistenerpolicyname)
+}`, vpcname, subnetname, zone, cidr, lbname, port, protocol, action, priority, lblistenerpolicyname)
 
 }

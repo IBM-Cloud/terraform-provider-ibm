@@ -59,6 +59,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - The unique identifier of the load balancer pool.The id is composed of \<lb_id\>/\<pool_id\>.
+* `pool_id` - The unique identifier of the load balancer pool
 * `provisioning_status` - The status of load balancer pool.
 
 ## Import
