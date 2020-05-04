@@ -1,4 +1,9 @@
-## 1.4.0 (April 29, 2020)
+## 1.5.1 (May 04, 2020)
+BUG FIXES:
+
+* resource : Fix VPC subnets created in incorrect resource group([#1398](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1398))
+
+## 1.5.0 (April 29, 2020)
 FEATURES:
 
 * New Resource: ([ibm_is_lb_listener_policy_rule](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1147) )
