@@ -6,13 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/lbaas"
-	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/client/l_baas"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -121,7 +118,7 @@ func resourceIBMISLBListener() *schema.Resource {
 }
 
 func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
@@ -149,66 +146,193 @@ func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) err
 	if limit, ok := d.GetOk(isLBListenerConnectionLimit); ok {
 		connLimit = int64(limit.(int))
 	}
-
-	client := lbaas.NewLoadBalancerClient(sess)
-	body := &models.ListenerTemplate{
-		Port:     &port,
-		Protocol: &protocol,
-	}
-
-	if certificateCRN != "" {
-		body.CertificateInstance = &models.ListenerTemplateCertificateInstance{
-			Crn: certificateCRN,
+	if userDetails.generation == 1 {
+		err := classicLBListenerCreate(d, meta, lbID, protocol, defPool, certificateCRN, port, connLimit)
+		if err != nil {
+			return err
 		}
+	} else {
+		err := lbListenerCreate(d, meta, lbID, protocol, defPool, certificateCRN, port, connLimit)
+		if err != nil {
+			return err
+		}
+	}
+	return resourceIBMISLBListenerRead(d, meta)
+}
+
+func classicLBListenerCreate(d *schema.ResourceData, meta interface{}, lbID, protocol, defPool, certificateCRN string, port, connLimit int64) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	options := &vpcclassicv1.CreateLoadBalancerListenerOptions{
+		LoadBalancerID: &lbID,
+		Port:           &port,
+		Protocol:       &protocol,
 	}
 	if defPool != "" {
-		body.DefaultPool = &models.ListenerTemplateDefaultPool{
-			ID: strfmt.UUID(defPool),
+		options.DefaultPool = &vpcclassicv1.LoadBalancerPoolIdentity{
+			ID: &defPool,
 		}
 	}
-
-	if connLimit > 0 {
-		body.ConnectionLimit = connLimit
+	if certificateCRN != "" {
+		options.CertificateInstance = &vpcclassicv1.CertificateInstanceIdentity{
+			Crn: &certificateCRN,
+		}
 	}
-
-	_, err = isWaitForLBAvailable(client, lbID, d.Timeout(schema.TimeoutCreate))
+	if connLimit > int64(0) {
+		options.ConnectionLimit = &connLimit
+	}
+	_, err = isWaitForClassicLBAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return fmt.Errorf(
 			"Error checking for load balancer (%s) is active: %s", lbID, err)
 	}
-	lbListener, err := client.CreateListeners(&l_baas.PostLoadBalancersIDListenersParams{
-		Body: body,
-		ID:   lbID,
-	})
+
+	lbListener, response, err := sess.CreateLoadBalancerListener(options)
 	if err != nil {
-		log.Printf("[DEBUG]  err %s", isErrorToString(err))
-		return err
+		return fmt.Errorf("Error while creating Load Balanacer Listener err %s\n%s", err, response)
 	}
-
-	d.SetId(fmt.Sprintf("%s/%s", lbID, lbListener.ID.String()))
-
-	_, err = isWaitForLBListenerAvailable(client, d.Id(), d.Timeout(schema.TimeoutCreate))
+	d.SetId(fmt.Sprintf("%s/%s", lbID, *lbListener.ID))
+	_, err = isWaitForClassicLBListenerAvailable(sess, lbID, *lbListener.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return fmt.Errorf(
 			"Error waiting for load balancer listener(%s) to become ready: %s", d.Id(), err)
 	}
-
-	_, err = isWaitForLBAvailable(client, lbID, d.Timeout(schema.TimeoutCreate))
+	_, err = isWaitForClassicLBAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return fmt.Errorf(
 			"Error waiting for load balancer (%s) to become ready: %s", lbID, err)
 	}
 
-	log.Printf("[INFO] Load balancer Listener : %s", d.Id())
-	return resourceIBMISLBListenerRead(d, meta)
+	log.Printf("[INFO] Load balancer Listener : %s", *lbListener.ID)
+	return nil
 }
 
-func resourceIBMISLBListenerRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+func lbListenerCreate(d *schema.ResourceData, meta interface{}, lbID, protocol, defPool, certificateCRN string, port, connLimit int64) error {
+	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
 	}
-	client := lbaas.NewLoadBalancerClient(sess)
+	options := &vpcv1.CreateLoadBalancerListenerOptions{
+		LoadBalancerID: &lbID,
+		Port:           &port,
+		Protocol:       &protocol,
+	}
+	if defPool != "" {
+		options.DefaultPool = &vpcv1.LoadBalancerPoolIdentity{
+			ID: &defPool,
+		}
+	}
+	if certificateCRN != "" {
+		options.CertificateInstance = &vpcv1.CertificateInstanceIdentity{
+			Crn: &certificateCRN,
+		}
+	}
+	if connLimit > int64(0) {
+		options.ConnectionLimit = &connLimit
+	}
+	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return fmt.Errorf(
+			"Error checking for load balancer (%s) is active: %s", lbID, err)
+	}
+
+	lbListener, response, err := sess.CreateLoadBalancerListener(options)
+	if err != nil {
+		return fmt.Errorf("Error while creating Load Balanacer Listener err %s\n%s", err, response)
+	}
+	d.SetId(fmt.Sprintf("%s/%s", lbID, *lbListener.ID))
+	_, err = isWaitForLBListenerAvailable(sess, lbID, *lbListener.ID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return fmt.Errorf(
+			"Error waiting for load balancer listener(%s) to become ready: %s", d.Id(), err)
+	}
+	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return fmt.Errorf(
+			"Error waiting for load balancer (%s) to become ready: %s", lbID, err)
+	}
+
+	log.Printf("[INFO] Load balancer Listener : %s", *lbListener.ID)
+	return nil
+}
+
+func isWaitForClassicLBListenerAvailable(sess *vpcclassicv1.VpcClassicV1, lbID, lbListenerID string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for load balancer Listener(%s) to be available.", lbListenerID)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", isLBListenerProvisioning, "create_pending", "update_pending", "maintenance_pending"},
+		Target:     []string{isLBListenerProvisioningDone, ""},
+		Refresh:    isClassicLBListenerRefreshFunc(sess, lbID, lbListenerID),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isClassicLBListenerRefreshFunc(sess *vpcclassicv1.VpcClassicV1, lbID, lbListenerID string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+
+		getLoadBalancerListenerOptions := &vpcclassicv1.GetLoadBalancerListenerOptions{
+			LoadBalancerID: &lbID,
+			ID:             &lbListenerID,
+		}
+		lblis, response, err := sess.GetLoadBalancerListener(getLoadBalancerListenerOptions)
+		if err != nil {
+			return nil, "", fmt.Errorf("Error Getting Load Balancer Listener: %s\n%s", err, response)
+		}
+
+		if *lblis.ProvisioningStatus == "active" || *lblis.ProvisioningStatus == "failed" {
+			return lblis, isLBListenerProvisioningDone, nil
+		}
+
+		return lblis, *lblis.ProvisioningStatus, nil
+	}
+}
+
+func isWaitForLBListenerAvailable(sess *vpcv1.VpcV1, lbID, lbListenerID string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for load balancer Listener(%s) to be available.", lbListenerID)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", isLBListenerProvisioning, "create_pending", "update_pending", "maintenance_pending"},
+		Target:     []string{isLBListenerProvisioningDone, ""},
+		Refresh:    isLBListenerRefreshFunc(sess, lbID, lbListenerID),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isLBListenerRefreshFunc(sess *vpcv1.VpcV1, lbID, lbListenerID string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+
+		getLoadBalancerListenerOptions := &vpcv1.GetLoadBalancerListenerOptions{
+			LoadBalancerID: &lbID,
+			ID:             &lbListenerID,
+		}
+		lblis, response, err := sess.GetLoadBalancerListener(getLoadBalancerListenerOptions)
+		if err != nil {
+			return nil, "", fmt.Errorf("Error Getting Load Balancer Listener: %s\n%s", err, response)
+		}
+
+		if *lblis.ProvisioningStatus == "active" || *lblis.ProvisioningStatus == "failed" {
+			return lblis, isLBListenerProvisioningDone, nil
+		}
+
+		return lblis, *lblis.ProvisioningStatus, nil
+	}
+}
+
+func resourceIBMISLBListenerRead(d *schema.ResourceData, meta interface{}) error {
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return err
+	}
 
 	parts, err := idParts(d.Id())
 	if err != nil {
@@ -218,36 +342,95 @@ func resourceIBMISLBListenerRead(d *schema.ResourceData, meta interface{}) error
 	lbID := parts[0]
 	lbListenerID := parts[1]
 
-	lbListener, err := client.GetListener(lbID, lbListenerID)
+	if userDetails.generation == 1 {
+		err := classicLBListenerGet(d, meta, lbID, lbListenerID)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := lbListenerGet(d, meta, lbID, lbListenerID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func classicLBListenerGet(d *schema.ResourceData, meta interface{}, lbID, lbListenerID string) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
-
+	getLoadBalancerListenerOptions := &vpcclassicv1.GetLoadBalancerListenerOptions{
+		LoadBalancerID: &lbID,
+		ID:             &lbListenerID,
+	}
+	lbListener, response, err := sess.GetLoadBalancerListener(getLoadBalancerListenerOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting Load Balancer Listener : %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
 	d.Set(isLBListenerLBID, lbID)
-	d.Set(isLBListenerPort, lbListener.Port)
-	d.Set(isLBListenerProtocol, lbListener.Protocol)
+	d.Set(isLBListenerPort, *lbListener.Port)
+	d.Set(isLBListenerProtocol, *lbListener.Protocol)
 	d.Set(isLBListenerID, lbListenerID)
-
 	if lbListener.DefaultPool != nil {
-		d.Set(isLBListenerDefaultPool, lbListener.DefaultPool.ID)
+		d.Set(isLBListenerDefaultPool, *lbListener.DefaultPool.ID)
 	}
 	if lbListener.CertificateInstance != nil {
-		d.Set(isLBListenerCertificateInstance, lbListener.CertificateInstance.Crn)
+		d.Set(isLBListenerCertificateInstance, *lbListener.CertificateInstance.Crn)
 	}
-	d.Set(isLBListenerConnectionLimit, lbListener.ConnectionLimit)
-	d.Set(isLBListenerStatus, lbListener.ProvisioningStatus)
+	if lbListener.ConnectionLimit != nil {
+		d.Set(isLBListenerConnectionLimit, *lbListener.ConnectionLimit)
+	}
+	d.Set(isLBListenerStatus, *lbListener.ProvisioningStatus)
+	return nil
+}
 
+func lbListenerGet(d *schema.ResourceData, meta interface{}, lbID, lbListenerID string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getLoadBalancerListenerOptions := &vpcv1.GetLoadBalancerListenerOptions{
+		LoadBalancerID: &lbID,
+		ID:             &lbListenerID,
+	}
+	lbListener, response, err := sess.GetLoadBalancerListener(getLoadBalancerListenerOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting Load Balancer Listener : %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	d.Set(isLBListenerLBID, lbID)
+	d.Set(isLBListenerPort, *lbListener.Port)
+	d.Set(isLBListenerProtocol, *lbListener.Protocol)
+	d.Set(isLBListenerID, lbListenerID)
+	if lbListener.DefaultPool != nil {
+		d.Set(isLBListenerDefaultPool, *lbListener.DefaultPool.ID)
+	}
+	if lbListener.CertificateInstance != nil {
+		d.Set(isLBListenerCertificateInstance, *lbListener.CertificateInstance.Crn)
+	}
+	if lbListener.ConnectionLimit != nil {
+		d.Set(isLBListenerConnectionLimit, *lbListener.ConnectionLimit)
+	}
+	d.Set(isLBListenerStatus, *lbListener.ProvisioningStatus)
 	return nil
 }
 
 func resourceIBMISLBListenerUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	client := lbaas.NewLoadBalancerClient(sess)
-
 	parts, err := idParts(d.Id())
 	if err != nil {
 		return err
@@ -256,12 +439,38 @@ func resourceIBMISLBListenerUpdate(d *schema.ResourceData, meta interface{}) err
 	lbID := parts[0]
 	lbListenerID := parts[1]
 
-	hasChanged := false
+	if userDetails.generation == 1 {
+		err := classicLBListenerUpdate(d, meta, lbID, lbListenerID)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := lbListenerUpdate(d, meta, lbID, lbListenerID)
+		if err != nil {
+			return err
+		}
+	}
 
+	return resourceIBMISLBListenerRead(d, meta)
+}
+
+func classicLBListenerUpdate(d *schema.ResourceData, meta interface{}, lbID, lbListenerID string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	hasChanged := false
 	var certificateInstance, defPool, protocol string
-	var connLimit, port int
+	var connLimit, port int64
+	updateLoadBalancerListenerOptions := &vpcclassicv1.UpdateLoadBalancerListenerOptions{
+		LoadBalancerID: &lbID,
+		ID:             &lbListenerID,
+	}
 	if d.HasChange(isLBListenerCertificateInstance) {
 		certificateInstance = d.Get(isLBListenerCertificateInstance).(string)
+		updateLoadBalancerListenerOptions.CertificateInstance = &vpcclassicv1.CertificateInstanceIdentity{
+			Crn: &certificateInstance,
+		}
 		hasChanged = true
 	}
 
@@ -271,58 +480,138 @@ func resourceIBMISLBListenerUpdate(d *schema.ResourceData, meta interface{}) err
 			return err
 		}
 		defPool = lbpool
+		updateLoadBalancerListenerOptions.DefaultPool = &vpcclassicv1.LoadBalancerPoolIdentity{
+			ID: &defPool,
+		}
 		hasChanged = true
 	}
 	if d.HasChange(isLBListenerPort) {
-		port = d.Get(isLBListenerPort).(int)
+		port = int64(d.Get(isLBListenerPort).(int))
+		updateLoadBalancerListenerOptions.Port = &port
 		hasChanged = true
 	}
 
 	if d.HasChange(isLBListenerProtocol) {
 		protocol = d.Get(isLBListenerProtocol).(string)
+		updateLoadBalancerListenerOptions.Protocol = &protocol
 		hasChanged = true
 	}
 
 	if d.HasChange(isLBListenerConnectionLimit) {
-		connLimit = d.Get(isLBListenerConnectionLimit).(int)
+		connLimit = int64(d.Get(isLBListenerConnectionLimit).(int))
+		updateLoadBalancerListenerOptions.ConnectionLimit = &connLimit
 		hasChanged = true
 	}
 
 	if hasChanged {
 
-		_, err := isWaitForLBAvailable(client, lbID, d.Timeout(schema.TimeoutUpdate))
+		_, err := isWaitForClassicLBAvailable(sess, lbID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return fmt.Errorf(
 				"Error checking for load balancer (%s) is active: %s", lbID, err)
 		}
-		_, err = client.UpdateListener(lbID, lbListenerID, certificateInstance, protocol, defPool, port, connLimit)
+		_, response, err := sess.UpdateLoadBalancerListener(updateLoadBalancerListenerOptions)
 		if err != nil {
-			return err
+			return fmt.Errorf("Error Updating Load Balancer Listener : %s\n%s", err, response)
 		}
 
-		_, err = isWaitForLBListenerAvailable(client, d.Id(), d.Timeout(schema.TimeoutUpdate))
+		_, err = isWaitForClassicLBListenerAvailable(sess, lbID, lbListenerID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return fmt.Errorf(
 				"Error waiting for load balancer listener(%s) to become ready: %s", d.Id(), err)
 		}
 
-		_, err = isWaitForLBAvailable(client, lbID, d.Timeout(schema.TimeoutUpdate))
+		_, err = isWaitForClassicLBAvailable(sess, lbID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return fmt.Errorf(
 				"Error waiting for load balancer (%s) to become ready: %s", lbID, err)
 		}
 	}
+	return nil
+}
 
-	return resourceIBMISLBListenerRead(d, meta)
+func lbListenerUpdate(d *schema.ResourceData, meta interface{}, lbID, lbListenerID string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	hasChanged := false
+	var certificateInstance, defPool, protocol string
+	var connLimit, port int64
+	updateLoadBalancerListenerOptions := &vpcv1.UpdateLoadBalancerListenerOptions{
+		LoadBalancerID: &lbID,
+		ID:             &lbListenerID,
+	}
+	if d.HasChange(isLBListenerCertificateInstance) {
+		certificateInstance = d.Get(isLBListenerCertificateInstance).(string)
+		updateLoadBalancerListenerOptions.CertificateInstance = &vpcv1.CertificateInstanceIdentity{
+			Crn: &certificateInstance,
+		}
+		hasChanged = true
+	}
+
+	if d.HasChange(isLBListenerDefaultPool) {
+		lbpool, err := getPoolId(d.Get(isLBListenerDefaultPool).(string))
+		if err != nil {
+			return err
+		}
+		defPool = lbpool
+		updateLoadBalancerListenerOptions.DefaultPool = &vpcv1.LoadBalancerPoolIdentity{
+			ID: &defPool,
+		}
+		hasChanged = true
+	}
+	if d.HasChange(isLBListenerPort) {
+		port = int64(d.Get(isLBListenerPort).(int))
+		updateLoadBalancerListenerOptions.Port = &port
+		hasChanged = true
+	}
+
+	if d.HasChange(isLBListenerProtocol) {
+		protocol = d.Get(isLBListenerProtocol).(string)
+		updateLoadBalancerListenerOptions.Protocol = &protocol
+		hasChanged = true
+	}
+
+	if d.HasChange(isLBListenerConnectionLimit) {
+		connLimit = int64(d.Get(isLBListenerConnectionLimit).(int))
+		updateLoadBalancerListenerOptions.ConnectionLimit = &connLimit
+		hasChanged = true
+	}
+
+	if hasChanged {
+
+		_, err := isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return fmt.Errorf(
+				"Error checking for load balancer (%s) is active: %s", lbID, err)
+		}
+		_, response, err := sess.UpdateLoadBalancerListener(updateLoadBalancerListenerOptions)
+		if err != nil {
+			return fmt.Errorf("Error Updating Load Balancer Listener : %s\n%s", err, response)
+		}
+
+		_, err = isWaitForLBListenerAvailable(sess, lbID, lbListenerID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for load balancer listener(%s) to become ready: %s", d.Id(), err)
+		}
+
+		_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for load balancer (%s) to become ready: %s", lbID, err)
+		}
+	}
+	return nil
 }
 
 func resourceIBMISLBListenerDelete(d *schema.ResourceData, meta interface{}) error {
 
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	client := lbaas.NewLoadBalancerClient(sess)
 	parts, err := idParts(d.Id())
 	if err != nil {
 		return err
@@ -330,20 +619,58 @@ func resourceIBMISLBListenerDelete(d *schema.ResourceData, meta interface{}) err
 
 	lbID := parts[0]
 	lbListenerID := parts[1]
-	_, err = isWaitForLBAvailable(client, lbID, d.Timeout(schema.TimeoutDelete))
+
+	if userDetails.generation == 1 {
+		err := classicLBListenerDelete(d, meta, lbID, lbListenerID)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := lbListenerDelete(d, meta, lbID, lbListenerID)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func classicLBListenerDelete(d *schema.ResourceData, meta interface{}, lbID, lbListenerID string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getLoadBalancerListenerOptions := &vpcclassicv1.GetLoadBalancerListenerOptions{
+		LoadBalancerID: &lbID,
+		ID:             &lbListenerID,
+	}
+	_, response, err := sess.GetLoadBalancerListener(getLoadBalancerListenerOptions)
+
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting vpc load balancer listener(%s): %s\n%s", lbListenerID, err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+
+	_, err = isWaitForClassicLBAvailable(sess, lbID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return fmt.Errorf(
 			"Error checking for load balancer (%s) is active: %s", lbID, err)
 	}
-	err = client.DeleteListener(lbID, lbListenerID)
+	deleteLoadBalancerListenerOptions := &vpcclassicv1.DeleteLoadBalancerListenerOptions{
+		LoadBalancerID: &lbID,
+		ID:             &lbListenerID,
+	}
+	response, err = sess.DeleteLoadBalancerListener(deleteLoadBalancerListenerOptions)
+	if err != nil {
+		return fmt.Errorf("Error Deleting Load Balancer Pool : %s\n%s", err, response)
+	}
+	_, err = isWaitForClassicLBListenerDeleted(sess, lbID, lbListenerID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return err
 	}
-	_, err = isWaitForLBListenerDeleted(client, d.Id(), d.Timeout(schema.TimeoutDelete))
-	if err != nil {
-		return err
-	}
-	_, err = isWaitForLBAvailable(client, lbID, d.Timeout(schema.TimeoutDelete))
+	_, err = isWaitForClassicLBAvailable(sess, lbID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return fmt.Errorf(
 			"Error waiting for load balancer (%s) to be active: %s", lbID, err)
@@ -353,13 +680,59 @@ func resourceIBMISLBListenerDelete(d *schema.ResourceData, meta interface{}) err
 	return nil
 }
 
-func isWaitForLBListenerDeleted(lbc *lbaas.LoadBalancerClient, id string, timeout time.Duration) (interface{}, error) {
-	log.Printf("Waiting for  (%s) to be deleted.", id)
+func lbListenerDelete(d *schema.ResourceData, meta interface{}, lbID, lbListenerID string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getLoadBalancerListenerOptions := &vpcv1.GetLoadBalancerListenerOptions{
+		LoadBalancerID: &lbID,
+		ID:             &lbListenerID,
+	}
+	_, response, err := sess.GetLoadBalancerListener(getLoadBalancerListenerOptions)
+
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting vpc load balancer listener(%s): %s\n%s", lbListenerID, err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+
+	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return fmt.Errorf(
+			"Error checking for load balancer (%s) is active: %s", lbID, err)
+	}
+	deleteLoadBalancerListenerOptions := &vpcv1.DeleteLoadBalancerListenerOptions{
+		LoadBalancerID: &lbID,
+		ID:             &lbListenerID,
+	}
+	response, err = sess.DeleteLoadBalancerListener(deleteLoadBalancerListenerOptions)
+	if err != nil {
+		return fmt.Errorf("Error Deleting Load Balancer Pool : %s\n%s", err, response)
+	}
+	_, err = isWaitForLBListenerDeleted(sess, lbID, lbListenerID, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return err
+	}
+	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return fmt.Errorf(
+			"Error waiting for load balancer (%s) to be active: %s", lbID, err)
+	}
+
+	d.SetId("")
+	return nil
+}
+
+func isWaitForClassicLBListenerDeleted(lbc *vpcclassicv1.VpcClassicV1, lbID, lbListenerID string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for  (%s) to be deleted.", lbListenerID)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", isLBListenerDeleting, "delete_pending"},
-		Target:     []string{},
-		Refresh:    isLBListenerDeleteRefreshFunc(lbc, id),
+		Target:     []string{isLBListenerDeleted, ""},
+		Refresh:    isClassicLBListenerDeleteRefreshFunc(lbc, lbID, lbListenerID),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -368,39 +741,60 @@ func isWaitForLBListenerDeleted(lbc *lbaas.LoadBalancerClient, id string, timeou
 	return stateConf.WaitForState()
 }
 
-func isLBListenerDeleteRefreshFunc(lbc *lbaas.LoadBalancerClient, id string) resource.StateRefreshFunc {
+func isClassicLBListenerDeleteRefreshFunc(lbc *vpcclassicv1.VpcClassicV1, lbID, lbListenerID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		parts, err := idParts(id)
-		if err != nil {
-			return nil, isLBListenerDeleting, err
+		getLoadBalancerListenerOptions := &vpcclassicv1.GetLoadBalancerListenerOptions{
+			LoadBalancerID: &lbID,
+			ID:             &lbListenerID,
 		}
-
-		lbID := parts[0]
-		LBListenerID := parts[1]
-
-		lbLis, err := lbc.GetListener(lbID, LBListenerID)
-		if err == nil {
-			return lbLis, lbLis.ProvisioningStatus, nil
+		lbLis, response, err := lbc.GetLoadBalancerListener(getLoadBalancerListenerOptions)
+		if err != nil && response.StatusCode != 404 {
+			return nil, "", fmt.Errorf("The vpc load balancer listener %s failed to delete: %s\n%s", lbListenerID, err, response)
 		}
-
-		iserror, ok := err.(iserrors.RiaasError)
-		if ok {
-			log.Printf("[DEBUG] %s", iserror.Error())
-			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "listener_not_found" {
-				return nil, isLBListenerDeleted, nil
-			}
+		if response.StatusCode == 404 {
+			return lbLis, isLBListenerDeleted, nil
 		}
-		return nil, isLBListenerDeleting, err
+		return lbLis, isLBListenerDeleting, nil
+	}
+}
+
+func isWaitForLBListenerDeleted(lbc *vpcv1.VpcV1, lbID, lbListenerID string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for  (%s) to be deleted.", lbListenerID)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", isLBListenerDeleting, "delete_pending"},
+		Target:     []string{isLBListenerDeleted, ""},
+		Refresh:    isLBListenerDeleteRefreshFunc(lbc, lbID, lbListenerID),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isLBListenerDeleteRefreshFunc(lbc *vpcv1.VpcV1, lbID, lbListenerID string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		getLoadBalancerListenerOptions := &vpcv1.GetLoadBalancerListenerOptions{
+			LoadBalancerID: &lbID,
+			ID:             &lbListenerID,
+		}
+		lbLis, response, err := lbc.GetLoadBalancerListener(getLoadBalancerListenerOptions)
+		if err != nil && response.StatusCode != 404 {
+			return nil, "", fmt.Errorf("The vpc load balancer listener %s failed to delete: %s\n%s", lbListenerID, err, response)
+		}
+		if response.StatusCode == 404 {
+			return lbLis, isLBListenerDeleted, nil
+		}
+		return lbLis, isLBListenerDeleting, nil
 	}
 }
 
 func resourceIBMISLBListenerExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return false, err
 	}
-	client := lbaas.NewLoadBalancerClient(sess)
 
 	parts, err := idParts(d.Id())
 	if err != nil {
@@ -408,57 +802,58 @@ func resourceIBMISLBListenerExists(d *schema.ResourceData, meta interface{}) (bo
 	}
 
 	lbID := parts[0]
-	LBListenerID := parts[1]
+	lbListenerID := parts[1]
 
-	_, err = client.GetListener(lbID, LBListenerID)
-
-	if err != nil {
-		iserror, ok := err.(iserrors.RiaasError)
-		if ok {
-			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "listener_not_found" {
-				return false, nil
-			}
+	if userDetails.generation == 1 {
+		err := classicLBListenerExists(d, meta, lbID, lbListenerID)
+		if err != nil {
+			return false, err
 		}
-		return false, err
+	} else {
+		err := lbListenerExists(d, meta, lbID, lbListenerID)
+		if err != nil {
+			return false, err
+		}
 	}
 	return true, nil
 }
 
-func isWaitForLBListenerAvailable(client *lbaas.LoadBalancerClient, id string, timeout time.Duration) (interface{}, error) {
-	log.Printf("Waiting for load balancer listener(%s) to be available.", id)
-
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", isLBListenerProvisioning, "create_pending", "update_pending", "maintenance_pending"},
-		Target:     []string{isLBListenerProvisioningDone},
-		Refresh:    isLBListenerRefreshFunc(client, id),
-		Timeout:    timeout,
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
+func classicLBListenerExists(d *schema.ResourceData, meta interface{}, lbID, lbListenerID string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
 	}
 
-	return stateConf.WaitForState()
+	getLoadBalancerListenerOptions := &vpcclassicv1.GetLoadBalancerListenerOptions{
+		LoadBalancerID: &lbID,
+		ID:             &lbListenerID,
+	}
+	_, response, err := sess.GetLoadBalancerListener(getLoadBalancerListenerOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting Load balancer Listener: %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+	return nil
 }
 
-func isLBListenerRefreshFunc(client *lbaas.LoadBalancerClient, id string) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-		parts, err := idParts(id)
-		if err != nil {
-			return nil, "", err
-		}
-
-		lbID := parts[0]
-		LBListenerID := parts[1]
-
-		lblis, err := client.GetListener(lbID, LBListenerID)
-		if err != nil {
-			return nil, "", err
-		}
-
-		if lblis.ProvisioningStatus == "active" || lblis.ProvisioningStatus == "failed" {
-			return lblis, isLBListenerProvisioningDone, nil
-		}
-
-		return lblis, lblis.ProvisioningStatus, nil
+func lbListenerExists(d *schema.ResourceData, meta interface{}, lbID, lbListenerID string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
 	}
+
+	getLoadBalancerListenerOptions := &vpcv1.GetLoadBalancerListenerOptions{
+		LoadBalancerID: &lbID,
+		ID:             &lbListenerID,
+	}
+	_, response, err := sess.GetLoadBalancerListener(getLoadBalancerListenerOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting Load balancer Listener: %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+	return nil
 }

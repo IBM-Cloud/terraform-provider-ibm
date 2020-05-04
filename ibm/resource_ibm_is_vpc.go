@@ -837,10 +837,10 @@ func isClassicVPCDeleteRefreshFunc(vpc *vpcclassicv1.VpcClassicV1, id string) re
 			ID: &id,
 		}
 		vpc, response, err := vpc.GetVpc(getvpcOptions)
-		if err != nil && response.StatusCode != 404 {
+		if err != nil && response != nil && response.StatusCode != 404 {
 			return nil, isVPCFailed, fmt.Errorf("The VPC %s failed to delete: %s\n%s", id, err, response)
 		}
-		if response.StatusCode == 404 {
+		if response != nil && response.StatusCode == 404 {
 			return vpc, isVPCDeleted, nil
 		}
 		return vpc, isVPCDeleting, nil
@@ -884,14 +884,14 @@ func resourceIBMISVPCExists(d *schema.ResourceData, meta interface{}) (bool, err
 	if err != nil {
 		return false, err
 	}
-	ID := d.Id()
+	id := d.Id()
 	if userDetails.generation == 1 {
-		err := classicVpcExists(d, meta, ID)
+		err := classicVpcExists(d, meta, id)
 		if err != nil {
 			return false, err
 		}
 	} else {
-		err := vpcExists(d, meta, ID)
+		err := vpcExists(d, meta, id)
 		if err != nil {
 			return false, err
 		}

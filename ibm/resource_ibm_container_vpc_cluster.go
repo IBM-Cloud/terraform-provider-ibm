@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.ibm.com/Bluemix/riaas-go-client/clients/lbaas"
+	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
 	"github.ibm.com/Bluemix/riaas-go-client/session"
 )
 
@@ -893,5 +894,39 @@ func vpcClusterVersionRefreshFunc(client v2.Clusters, instanceID string, d *sche
 			return cls, versionUpdating, nil
 		}
 		return cls, clusterNormal, nil
+	}
+}
+
+func isWaitForDeleted(lbc *lbaas.LoadBalancerClient, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for  (%s) to be deleted.", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", isLBDeleting},
+		Target:     []string{},
+		Refresh:    isDeleteRefreshFunc(lbc, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isDeleteRefreshFunc(lbc *lbaas.LoadBalancerClient, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		lb, err := lbc.Get(id)
+		if err == nil {
+			return lb, isLBDeleting, nil
+		}
+
+		iserror, ok := err.(iserrors.RiaasError)
+		if ok {
+			log.Printf("[DEBUG] %s", iserror.Error())
+			if len(iserror.Payload.Errors) == 1 &&
+				iserror.Payload.Errors[0].Code == "load_balancer_not_found" {
+				return nil, isLBDeleted, nil
+			}
+		}
+		return nil, isLBDeleting, err
 	}
 }

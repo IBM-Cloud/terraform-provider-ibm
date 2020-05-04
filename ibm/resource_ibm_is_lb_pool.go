@@ -7,10 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/lbaas"
-	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/client/l_baas"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -35,7 +33,6 @@ const (
 	isLBPoolFailed                    = "failed"
 	isLBPoolDeleteDone                = "deleted"
 	isLBPool                          = "pool_id"
-	//isLBPoolActive,isLBPoolCreatePending,isLBPoolUpdatePending,isLBPoolDeletePending,isLBPoolMaintainancePending,isLBPoolFailed
 )
 
 func resourceIBMISLBPool() *schema.Resource {
@@ -146,7 +143,7 @@ func resourceIBMISLBPool() *schema.Resource {
 }
 
 func resourceIBMISLBPoolCreate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
@@ -156,13 +153,13 @@ func resourceIBMISLBPoolCreate(d *schema.ResourceData, meta interface{}) error {
 	lbID := d.Get(isLBID).(string)
 	algorithm := d.Get(isLBPoolAlgorithm).(string)
 	protocol := d.Get(isLBPoolProtocol).(string)
-	healthDelay := d.Get(isLBPoolHealthDelay).(int)
-	maxRetries := d.Get(isLBPoolHealthRetries).(int)
-	healthTimeOut := d.Get(isLBPoolHealthTimeout).(int)
+	healthDelay := int64(d.Get(isLBPoolHealthDelay).(int))
+	maxRetries := int64(d.Get(isLBPoolHealthRetries).(int))
+	healthTimeOut := int64(d.Get(isLBPoolHealthTimeout).(int))
 	healthType := d.Get(isLBPoolHealthType).(string)
 
 	var spType, cName, healthMonitorURL string
-	var healthMonitorPort int
+	var healthMonitorPort int64
 	if pt, ok := d.GetOk(isLBPoolSessPersistenceType); ok {
 		spType = pt.(string)
 	}
@@ -176,75 +173,147 @@ func resourceIBMISLBPoolCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if hmp, ok := d.GetOk(isLBPoolHealthMonitorPort); ok {
-		healthMonitorPort = hmp.(int)
-	}
-
-	client := lbaas.NewLoadBalancerClient(sess)
-	body := &models.PoolTemplate{
-		Algorithm: algorithm,
-		Name:      name,
-		Protocol:  protocol,
-		HealthMonitor: &models.HealthMonitorTemplate{
-			Delay:      int64(healthDelay),
-			MaxRetries: int64(maxRetries),
-			Timeout:    int64(healthTimeOut),
-			Type:       healthType,
-		},
-	}
-
-	if healthMonitorURL != "" {
-		body.HealthMonitor.URLPath = healthMonitorURL
-	}
-	if healthMonitorPort > 0 {
-		body.HealthMonitor.Port = int64(healthMonitorPort)
-	}
-	if spType != "" {
-		body.SessionPersistence = &models.SessionPersistenceTemplate{
-			CookieName: cName,
-			Type:       spType,
-		}
+		healthMonitorPort = int64(hmp.(int))
 	}
 	isLBPoolKey := "load_balancer_pool_key_" + lbID
 	ibmMutexKV.Lock(isLBPoolKey)
 	defer ibmMutexKV.Unlock(isLBPoolKey)
-	_, err = isWaitForLBAvailable(client, lbID, d.Timeout(schema.TimeoutCreate))
-	if err != nil {
-		return fmt.Errorf(
-			"Error checking for load balancer (%s) is active: %s", lbID, err)
-	}
 
-	lbPool, err := client.CreatePool(&l_baas.PostLoadBalancersIDPoolsParams{
-		Body: body,
-		ID:   lbID,
-	})
-	if err != nil {
-		log.Printf("[DEBUG]  err %s", isErrorToString(err))
-		return err
+	if userDetails.generation == 1 {
+		err := classicLBPoolCreate(d, meta, name, lbID, algorithm, protocol, healthType, spType, cName, healthMonitorURL, healthDelay, maxRetries, healthTimeOut, healthMonitorPort)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := lbPoolCreate(d, meta, name, lbID, algorithm, protocol, healthType, spType, cName, healthMonitorURL, healthDelay, maxRetries, healthTimeOut, healthMonitorPort)
+		if err != nil {
+			return err
+		}
 	}
-	d.SetId(fmt.Sprintf("%s/%s", lbID, lbPool.ID.String()))
-	log.Printf("[INFO] Ipsec : %s", lbPool.ID.String())
-
-	_, err = isWaitForLBPoolActive(client, lbID, lbPool.ID.String(), d.Timeout(schema.TimeoutCreate))
-	if err != nil {
-		return fmt.Errorf(
-			"Error checking for load balancer pool (%s) is active: %s", lbPool.ID.String(), err)
-	}
-
-	_, err = isWaitForLBAvailable(client, lbID, d.Timeout(schema.TimeoutCreate))
-	if err != nil {
-		return fmt.Errorf(
-			"Error checking for load balancer (%s) is active: %s", lbID, err)
-	}
-
 	return resourceIBMISLBPoolRead(d, meta)
 }
 
-func resourceIBMISLBPoolRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+func classicLBPoolCreate(d *schema.ResourceData, meta interface{}, name, lbID, algorithm, protocol, healthType, spType, cName, healthMonitorURL string, healthDelay, maxRetries, healthTimeOut, healthMonitorPort int64) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
-	client := lbaas.NewLoadBalancerClient(sess)
+
+	_, err = isWaitForClassicLBAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return fmt.Errorf(
+			"Error checking for load balancer (%s) is active: %s", lbID, err)
+	}
+
+	options := &vpcclassicv1.CreateLoadBalancerPoolOptions{
+		LoadBalancerID: &lbID,
+		Algorithm:      &algorithm,
+		Protocol:       &protocol,
+		Name:           &name,
+		HealthMonitor: &vpcclassicv1.LoadBalancerPoolHealthMonitorPrototype{
+			Delay:      &healthDelay,
+			MaxRetries: &maxRetries,
+			Timeout:    &healthTimeOut,
+			Type:       &healthType,
+		},
+	}
+	if healthMonitorURL != "" {
+		options.HealthMonitor.UrlPath = &healthMonitorURL
+	}
+	if healthMonitorPort > int64(0) {
+		options.HealthMonitor.Port = &healthMonitorPort
+	}
+	if spType != "" {
+		options.SessionPersistence = &vpcclassicv1.LoadBalancerPoolSessionPersistencePrototype{
+			Type: &spType,
+		}
+	}
+	lbPool, response, err := sess.CreateLoadBalancerPool(options)
+	if err != nil {
+		log.Printf("[DEBUG] lbpool create err: %s\n%s", err, response)
+	}
+
+	d.SetId(fmt.Sprintf("%s/%s", lbID, *lbPool.ID))
+	log.Printf("[INFO] lbpool : %s", *lbPool.ID)
+
+	_, err = isWaitForClassicLBPoolActive(sess, lbID, *lbPool.ID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return fmt.Errorf(
+			"Error checking for load balancer pool (%s) is active: %s", *lbPool.ID, err)
+	}
+
+	_, err = isWaitForClassicLBAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return fmt.Errorf(
+			"Error checking for load balancer (%s) is active: %s", lbID, err)
+	}
+
+	return nil
+}
+
+func lbPoolCreate(d *schema.ResourceData, meta interface{}, name, lbID, algorithm, protocol, healthType, spType, cName, healthMonitorURL string, healthDelay, maxRetries, healthTimeOut, healthMonitorPort int64) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+
+	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return fmt.Errorf(
+			"Error checking for load balancer (%s) is active: %s", lbID, err)
+	}
+
+	options := &vpcv1.CreateLoadBalancerPoolOptions{
+		LoadBalancerID: &lbID,
+		Algorithm:      &algorithm,
+		Protocol:       &protocol,
+		Name:           &name,
+		HealthMonitor: &vpcv1.LoadBalancerPoolHealthMonitorPrototype{
+			Delay:      &healthDelay,
+			MaxRetries: &maxRetries,
+			Timeout:    &healthTimeOut,
+			Type:       &healthType,
+		},
+	}
+	if healthMonitorURL != "" {
+		options.HealthMonitor.UrlPath = &healthMonitorURL
+	}
+	if healthMonitorPort > int64(0) {
+		options.HealthMonitor.Port = &healthMonitorPort
+	}
+	if spType != "" {
+		options.SessionPersistence = &vpcv1.LoadBalancerPoolSessionPersistencePrototype{
+			Type: &spType,
+		}
+	}
+	lbPool, response, err := sess.CreateLoadBalancerPool(options)
+	if err != nil {
+		log.Printf("[DEBUG] lbpool create err: %s\n%s", err, response)
+	}
+
+	d.SetId(fmt.Sprintf("%s/%s", lbID, *lbPool.ID))
+	log.Printf("[INFO] lbpool : %s", *lbPool.ID)
+
+	_, err = isWaitForLBPoolActive(sess, lbID, *lbPool.ID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return fmt.Errorf(
+			"Error checking for load balancer pool (%s) is active: %s", *lbPool.ID, err)
+	}
+
+	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return fmt.Errorf(
+			"Error checking for load balancer (%s) is active: %s", lbID, err)
+	}
+
+	return nil
+}
+
+func resourceIBMISLBPoolRead(d *schema.ResourceData, meta interface{}) error {
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return err
+	}
 
 	parts, err := idParts(d.Id())
 	if err != nil {
@@ -254,38 +323,112 @@ func resourceIBMISLBPoolRead(d *schema.ResourceData, meta interface{}) error {
 	lbID := parts[0]
 	lbPoolID := parts[1]
 
-	lbPool, err := client.GetPool(lbID, lbPoolID)
+	if userDetails.generation == 1 {
+		err := classicLBPoolGet(d, meta, lbID, lbPoolID)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := lbPoolGet(d, meta, lbID, lbPoolID)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func classicLBPoolGet(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
-
-	d.Set(isLBPoolName, lbPool.Name)
-	d.Set(isLBID, lbID)
-	d.Set(isLBPoolAlgorithm, lbPool.Algorithm)
-	d.Set(isLBPoolProtocol, lbPool.Protocol)
-	d.Set(isLBPoolHealthDelay, lbPool.HealthMonitor.Delay)
-	d.Set(isLBPoolHealthRetries, lbPool.HealthMonitor.MaxRetries)
-	d.Set(isLBPoolHealthTimeout, lbPool.HealthMonitor.Timeout)
-	d.Set(isLBPoolHealthType, lbPool.HealthMonitor.Type)
-	d.Set(isLBPoolHealthMonitorURL, lbPool.HealthMonitor.URLPath)
-	d.Set(isLBPoolHealthMonitorPort, lbPool.HealthMonitor.Port)
-	if lbPool.SessionPersistence != nil {
-		d.Set(isLBPoolSessPersistenceType, lbPool.SessionPersistence.Type)
-		d.Set(isLBPoolSessPersistenceCookieName, lbPool.SessionPersistence.CookieName)
+	getLoadBalancerPoolOptions := &vpcclassicv1.GetLoadBalancerPoolOptions{
+		LoadBalancerID: &lbID,
+		ID:             &lbPoolID,
 	}
-	d.Set(isLBPoolProvisioningStatus, lbPool.ProvisioningStatus)
-	d.Set(isLBPool, lbPoolID)
+	lbPool, response, err := sess.GetLoadBalancerPool(getLoadBalancerPoolOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting Load Balancer Pool : %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
 
+	d.Set(isLBPoolName, *lbPool.Name)
+	d.Set(isLBPool, lbPoolID)
+	d.Set(isLBID, lbID)
+	d.Set(isLBPoolAlgorithm, *lbPool.Algorithm)
+	d.Set(isLBPoolProtocol, *lbPool.Protocol)
+	d.Set(isLBPoolHealthDelay, *lbPool.HealthMonitor.Delay)
+	d.Set(isLBPoolHealthRetries, *lbPool.HealthMonitor.MaxRetries)
+	d.Set(isLBPoolHealthTimeout, *lbPool.HealthMonitor.Timeout)
+	if lbPool.HealthMonitor.Type != nil {
+		d.Set(isLBPoolHealthType, *lbPool.HealthMonitor.Type)
+	}
+	if lbPool.HealthMonitor.UrlPath != nil {
+		d.Set(isLBPoolHealthMonitorURL, *lbPool.HealthMonitor.UrlPath)
+	}
+	if lbPool.HealthMonitor.Port != nil {
+		d.Set(isLBPoolHealthMonitorPort, *lbPool.HealthMonitor.Port)
+	}
+	if lbPool.SessionPersistence != nil {
+		d.Set(isLBPoolSessPersistenceType, *lbPool.SessionPersistence.Type)
+		// d.Set(isLBPoolSessPersistenceCookieName, *lbPool.SessionPersistence.CookieName)
+	}
+	d.Set(isLBPoolProvisioningStatus, *lbPool.ProvisioningStatus)
+	return nil
+}
+
+func lbPoolGet(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getLoadBalancerPoolOptions := &vpcv1.GetLoadBalancerPoolOptions{
+		LoadBalancerID: &lbID,
+		ID:             &lbPoolID,
+	}
+
+	lbPool, response, err := sess.GetLoadBalancerPool(getLoadBalancerPoolOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting Load Balancer Pool : %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	d.Set(isLBPoolName, *lbPool.Name)
+	d.Set(isLBPool, lbPoolID)
+	d.Set(isLBID, lbID)
+	d.Set(isLBPoolAlgorithm, *lbPool.Algorithm)
+	d.Set(isLBPoolProtocol, *lbPool.Protocol)
+	d.Set(isLBPoolHealthDelay, *lbPool.HealthMonitor.Delay)
+	d.Set(isLBPoolHealthRetries, *lbPool.HealthMonitor.MaxRetries)
+	d.Set(isLBPoolHealthTimeout, *lbPool.HealthMonitor.Timeout)
+	if lbPool.HealthMonitor.Type != nil {
+		d.Set(isLBPoolHealthType, *lbPool.HealthMonitor.Type)
+	}
+	if lbPool.HealthMonitor.UrlPath != nil {
+		d.Set(isLBPoolHealthMonitorURL, *lbPool.HealthMonitor.UrlPath)
+	}
+	if lbPool.HealthMonitor.Port != nil {
+		d.Set(isLBPoolHealthMonitorPort, *lbPool.HealthMonitor.Port)
+	}
+	if lbPool.SessionPersistence != nil {
+		d.Set(isLBPoolSessPersistenceType, *lbPool.SessionPersistence.Type)
+		// d.Set(isLBPoolSessPersistenceCookieName, *lbPool.SessionPersistence.CookieName)
+	}
+	d.Set(isLBPoolProvisioningStatus, *lbPool.ProvisioningStatus)
 	return nil
 }
 
 func resourceIBMISLBPoolUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	client := lbaas.NewLoadBalancerClient(sess)
 
 	parts, err := idParts(d.Id())
 	if err != nil {
@@ -295,80 +438,204 @@ func resourceIBMISLBPoolUpdate(d *schema.ResourceData, meta interface{}) error {
 	lbID := parts[0]
 	lbPoolID := parts[1]
 
+	if userDetails.generation == 1 {
+		err := classicLBPoolUpdate(d, meta, lbID, lbPoolID)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := lbPoolUpdate(d, meta, lbID, lbPoolID)
+		if err != nil {
+			return err
+		}
+	}
+	return resourceIBMISLBPoolRead(d, meta)
+}
+
+func classicLBPoolUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+
 	hasChanged := false
-	var healthMonitorTemplate models.HealthMonitorTemplate
+
+	updateLoadBalancerPoolOptions := &vpcclassicv1.UpdateLoadBalancerPoolOptions{
+		LoadBalancerID: &lbID,
+		ID:             &lbPoolID,
+	}
+
 	if d.HasChange(isLBPoolHealthDelay) || d.HasChange(isLBPoolHealthRetries) ||
 		d.HasChange(isLBPoolHealthTimeout) || d.HasChange(isLBPoolHealthType) || d.HasChange(isLBPoolHealthMonitorURL) || d.HasChange(isLBPoolHealthMonitorPort) {
-		healthMonitorTemplate = models.HealthMonitorTemplate{
-			Delay:      int64(d.Get(isLBPoolHealthDelay).(int)),
-			MaxRetries: int64(d.Get(isLBPoolHealthRetries).(int)),
-			Timeout:    int64(d.Get(isLBPoolHealthTimeout).(int)),
-			Type:       d.Get(isLBPoolHealthType).(string),
-			URLPath:    d.Get(isLBPoolHealthMonitorURL).(string),
-		}
-		port := d.Get(isLBPoolHealthMonitorPort).(int)
-		if port > 0 {
-			healthMonitorTemplate.Port = int64(port)
-		}
-		hasChanged = true
 
-	}
-	var sessionPersistence models.SessionPersistenceTemplate
-	if d.HasChange(isLBPoolSessPersistenceType) || d.HasChange(isLBPoolSessPersistenceCookieName) {
-		sessionPersistence = models.SessionPersistenceTemplate{
-			Type:       d.Get(isLBPoolSessPersistenceType).(string),
-			CookieName: d.Get(isLBPoolSessPersistenceCookieName).(string),
+		delay := int64(d.Get(isLBPoolHealthDelay).(int))
+		maxretries := int64(d.Get(isLBPoolHealthRetries).(int))
+		timeout := int64(d.Get(isLBPoolHealthTimeout).(int))
+		healthtype := d.Get(isLBPoolHealthType).(string)
+		urlpath := d.Get(isLBPoolHealthMonitorURL).(string)
+		healthMonitorTemplate := &vpcclassicv1.LoadBalancerPoolHealthMonitorPatch{
+			Delay:      &delay,
+			MaxRetries: &maxretries,
+			Timeout:    &timeout,
+			Type:       &healthtype,
+			UrlPath:    &urlpath,
 		}
+		port := int64(d.Get(isLBPoolHealthMonitorPort).(int))
+		if port > int64(0) {
+			healthMonitorTemplate.Port = &port
+		}
+		updateLoadBalancerPoolOptions.HealthMonitor = healthMonitorTemplate
 		hasChanged = true
 	}
+
+	if d.HasChange(isLBPoolSessPersistenceType) || d.HasChange(isLBPoolSessPersistenceCookieName) {
+		sesspersistancetype := d.Get(isLBPoolSessPersistenceType).(string)
+		sessionPersistence := &vpcclassicv1.LoadBalancerPoolSessionPersistencePatch{
+			Type: &sesspersistancetype,
+		}
+		updateLoadBalancerPoolOptions.SessionPersistence = sessionPersistence
+		hasChanged = true
+	}
+
 	if d.HasChange(isLBPoolName) || d.HasChange(isLBPoolAlgorithm) || d.HasChange(isLBPoolProtocol) || hasChanged {
 		name := d.Get(isLBPoolName).(string)
 		algorithm := d.Get(isLBPoolAlgorithm).(string)
 		protocol := d.Get(isLBPoolProtocol).(string)
 
+		updateLoadBalancerPoolOptions.Algorithm = &algorithm
+		updateLoadBalancerPoolOptions.Name = &name
+		updateLoadBalancerPoolOptions.Protocol = &protocol
+
 		isLBPoolKey := "load_balancer_pool_key_" + lbID + lbPoolID
 		ibmMutexKV.Lock(isLBPoolKey)
 		defer ibmMutexKV.Unlock(isLBPoolKey)
-		_, err := isWaitForLBAvailable(client, lbID, d.Timeout(schema.TimeoutUpdate))
+		_, err := isWaitForClassicLBAvailable(sess, lbID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return fmt.Errorf(
 				"Error checking for load balancer (%s) is active: %s", lbID, err)
 		}
 
-		_, err = isWaitForLBPoolActive(client, lbID, lbPoolID, d.Timeout(schema.TimeoutUpdate))
+		_, err = isWaitForClassicLBPoolActive(sess, lbID, lbPoolID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return fmt.Errorf(
 				"Error checking for load balancer pool (%s) is active: %s", lbPoolID, err)
 		}
 
-		_, err = client.UpdatePool(lbID, lbPoolID, algorithm, name, protocol, healthMonitorTemplate, sessionPersistence)
+		_, response, err := sess.UpdateLoadBalancerPool(updateLoadBalancerPoolOptions)
 		if err != nil {
-			return err
+			return fmt.Errorf("Error Updating Load Balancer Pool : %s\n%s", err, response)
 		}
 
-		_, err = isWaitForLBPoolActive(client, lbID, lbPoolID, d.Timeout(schema.TimeoutUpdate))
+		_, err = isWaitForClassicLBPoolActive(sess, lbID, lbPoolID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return fmt.Errorf(
 				"Error checking for load balancer pool (%s) is active: %s", lbPoolID, err)
 		}
 
-		_, err = isWaitForLBAvailable(client, lbID, d.Timeout(schema.TimeoutUpdate))
+		_, err = isWaitForClassicLBAvailable(sess, lbID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return fmt.Errorf(
 				"Error checking for load balancer (%s) is active: %s", lbID, err)
 		}
 	}
+	return nil
+}
 
-	return resourceIBMISLBPoolRead(d, meta)
+func lbPoolUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+
+	hasChanged := false
+
+	updateLoadBalancerPoolOptions := &vpcv1.UpdateLoadBalancerPoolOptions{
+		LoadBalancerID: &lbID,
+		ID:             &lbPoolID,
+	}
+
+	if d.HasChange(isLBPoolHealthDelay) || d.HasChange(isLBPoolHealthRetries) ||
+		d.HasChange(isLBPoolHealthTimeout) || d.HasChange(isLBPoolHealthType) || d.HasChange(isLBPoolHealthMonitorURL) || d.HasChange(isLBPoolHealthMonitorPort) {
+
+		delay := int64(d.Get(isLBPoolHealthDelay).(int))
+		maxretries := int64(d.Get(isLBPoolHealthRetries).(int))
+		timeout := int64(d.Get(isLBPoolHealthTimeout).(int))
+		healthtype := d.Get(isLBPoolHealthType).(string)
+		urlpath := d.Get(isLBPoolHealthMonitorURL).(string)
+		healthMonitorTemplate := &vpcv1.LoadBalancerPoolHealthMonitorPatch{
+			Delay:      &delay,
+			MaxRetries: &maxretries,
+			Timeout:    &timeout,
+			Type:       &healthtype,
+			UrlPath:    &urlpath,
+		}
+		port := int64(d.Get(isLBPoolHealthMonitorPort).(int))
+		if port > int64(0) {
+			healthMonitorTemplate.Port = &port
+		}
+		updateLoadBalancerPoolOptions.HealthMonitor = healthMonitorTemplate
+		hasChanged = true
+	}
+
+	if d.HasChange(isLBPoolSessPersistenceType) || d.HasChange(isLBPoolSessPersistenceCookieName) {
+		sesspersistancetype := d.Get(isLBPoolSessPersistenceType).(string)
+		sessionPersistence := &vpcv1.LoadBalancerPoolSessionPersistencePatch{
+			Type: &sesspersistancetype,
+		}
+		updateLoadBalancerPoolOptions.SessionPersistence = sessionPersistence
+		hasChanged = true
+	}
+
+	if d.HasChange(isLBPoolName) || d.HasChange(isLBPoolAlgorithm) || d.HasChange(isLBPoolProtocol) || hasChanged {
+		name := d.Get(isLBPoolName).(string)
+		algorithm := d.Get(isLBPoolAlgorithm).(string)
+		protocol := d.Get(isLBPoolProtocol).(string)
+
+		updateLoadBalancerPoolOptions.Algorithm = &algorithm
+		updateLoadBalancerPoolOptions.Name = &name
+		updateLoadBalancerPoolOptions.Protocol = &protocol
+
+		isLBPoolKey := "load_balancer_pool_key_" + lbID + lbPoolID
+		ibmMutexKV.Lock(isLBPoolKey)
+		defer ibmMutexKV.Unlock(isLBPoolKey)
+		_, err := isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return fmt.Errorf(
+				"Error checking for load balancer (%s) is active: %s", lbID, err)
+		}
+
+		_, err = isWaitForLBPoolActive(sess, lbID, lbPoolID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return fmt.Errorf(
+				"Error checking for load balancer pool (%s) is active: %s", lbPoolID, err)
+		}
+
+		_, response, err := sess.UpdateLoadBalancerPool(updateLoadBalancerPoolOptions)
+		if err != nil {
+			return fmt.Errorf("Error Updating Load Balancer Pool : %s\n%s", err, response)
+		}
+
+		_, err = isWaitForLBPoolActive(sess, lbID, lbPoolID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return fmt.Errorf(
+				"Error checking for load balancer pool (%s) is active: %s", lbPoolID, err)
+		}
+
+		_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return fmt.Errorf(
+				"Error checking for load balancer (%s) is active: %s", lbID, err)
+		}
+	}
+	return nil
 }
 
 func resourceIBMISLBPoolDelete(d *schema.ResourceData, meta interface{}) error {
 
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	client := lbaas.NewLoadBalancerClient(sess)
 	parts, err := idParts(d.Id())
 	if err != nil {
 		return err
@@ -380,45 +647,132 @@ func resourceIBMISLBPoolDelete(d *schema.ResourceData, meta interface{}) error {
 	isLBPoolKey := "load_balancer_pool_key_" + lbID + lbPoolID
 	ibmMutexKV.Lock(isLBPoolKey)
 	defer ibmMutexKV.Unlock(isLBPoolKey)
-	_, err = isWaitForLBAvailable(client, lbID, d.Timeout(schema.TimeoutDelete))
+
+	if userDetails.generation == 1 {
+		err := classicLBPoolDelete(d, meta, lbID, lbPoolID)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := lbPoolDelete(d, meta, lbID, lbPoolID)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func classicLBPoolDelete(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getLoadBalancerPoolOptions := &vpcclassicv1.GetLoadBalancerPoolOptions{
+		LoadBalancerID: &lbID,
+		ID:             &lbPoolID,
+	}
+	_, response, err := sess.GetLoadBalancerPool(getLoadBalancerPoolOptions)
+
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting vpc load balancer pool(%s): %s\n%s", lbPoolID, err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	_, err = isWaitForClassicLBAvailable(sess, lbID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return fmt.Errorf(
 			"Error checking for load balancer (%s) is active: %s", lbID, err)
 	}
 
-	_, err = isWaitForLBPoolActive(client, lbID, lbPoolID, d.Timeout(schema.TimeoutDelete))
+	_, err = isWaitForClassicLBPoolActive(sess, lbID, lbPoolID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return fmt.Errorf(
 			"Error checking for load balancer pool (%s) is active: %s", lbPoolID, err)
 	}
 
-	err = client.DeletePool(lbID, lbPoolID)
-	if err != nil {
-		return err
+	deleteLoadBalancerPoolOptions := &vpcclassicv1.DeleteLoadBalancerPoolOptions{
+		LoadBalancerID: &lbID,
+		ID:             &lbPoolID,
 	}
-
-	_, err = isWaitForLBPoolDeleted(client, lbID, lbPoolID, d.Timeout(schema.TimeoutDelete))
+	response, err = sess.DeleteLoadBalancerPool(deleteLoadBalancerPoolOptions)
+	if err != nil {
+		return fmt.Errorf("Error Deleting Load Balancer Pool : %s\n%s", err, response)
+	}
+	_, err = isWaitForClassicLBPoolDeleted(sess, lbID, lbPoolID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return fmt.Errorf(
 			"Error checking for load balancer pool (%s) is deleted: %s", lbPoolID, err)
 	}
 
-	_, err = isWaitForLBAvailable(client, lbID, d.Timeout(schema.TimeoutDelete))
+	_, err = isWaitForClassicLBAvailable(sess, lbID, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return fmt.Errorf(
+			"Error checking for load balancer (%s) is active: %s", lbID, err)
+	}
+	d.SetId("")
+	return nil
+}
+
+func lbPoolDelete(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getLoadBalancerPoolOptions := &vpcv1.GetLoadBalancerPoolOptions{
+		LoadBalancerID: &lbID,
+		ID:             &lbPoolID,
+	}
+	_, response, err := sess.GetLoadBalancerPool(getLoadBalancerPoolOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting vpc load balancer pool(%s): %s\n%s", lbPoolID, err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+
+	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return fmt.Errorf(
 			"Error checking for load balancer (%s) is active: %s", lbID, err)
 	}
 
+	_, err = isWaitForLBPoolActive(sess, lbID, lbPoolID, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return fmt.Errorf(
+			"Error checking for load balancer pool (%s) is active: %s", lbPoolID, err)
+	}
+
+	deleteLoadBalancerPoolOptions := &vpcv1.DeleteLoadBalancerPoolOptions{
+		LoadBalancerID: &lbID,
+		ID:             &lbPoolID,
+	}
+	response, err = sess.DeleteLoadBalancerPool(deleteLoadBalancerPoolOptions)
+	if err != nil {
+		return fmt.Errorf("Error Deleting Load Balancer Pool : %s\n%s", err, response)
+	}
+	_, err = isWaitForLBPoolDeleted(sess, lbID, lbPoolID, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return fmt.Errorf(
+			"Error checking for load balancer pool (%s) is deleted: %s", lbPoolID, err)
+	}
+
+	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return fmt.Errorf(
+			"Error checking for load balancer (%s) is active: %s", lbID, err)
+	}
 	d.SetId("")
 	return nil
 }
 
 func resourceIBMISLBPoolExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return false, err
 	}
-	client := lbaas.NewLoadBalancerClient(sess)
 
 	parts, err := idParts(d.Id())
 	if err != nil {
@@ -428,28 +782,67 @@ func resourceIBMISLBPoolExists(d *schema.ResourceData, meta interface{}) (bool, 
 	lbID := parts[0]
 	lbPoolID := parts[1]
 
-	_, err = client.GetPool(lbID, lbPoolID)
-
-	if err != nil {
-		iserror, ok := err.(iserrors.RiaasError)
-		if ok {
-			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "pool_not_found" {
-				return false, nil
-			}
+	if userDetails.generation == 1 {
+		err := classicLBPoolExists(d, meta, lbID, lbPoolID)
+		if err != nil {
+			return false, err
 		}
-		return false, err
+	} else {
+		err := lbPoolExists(d, meta, lbID, lbPoolID)
+		if err != nil {
+			return false, err
+		}
 	}
 	return true, nil
 }
 
-func isWaitForLBPoolActive(client *lbaas.LoadBalancerClient, lbId, lbPoolId string, timeout time.Duration) (interface{}, error) {
+func classicLBPoolExists(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+
+	getLoadBalancerPoolOptions := &vpcclassicv1.GetLoadBalancerPoolOptions{
+		LoadBalancerID: &lbID,
+		ID:             &lbPoolID,
+	}
+	_, response, err := sess.GetLoadBalancerPool(getLoadBalancerPoolOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting Load balancer pool: %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+	return nil
+}
+
+func lbPoolExists(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+
+	getLoadBalancerPoolOptions := &vpcv1.GetLoadBalancerPoolOptions{
+		LoadBalancerID: &lbID,
+		ID:             &lbPoolID,
+	}
+	_, response, err := sess.GetLoadBalancerPool(getLoadBalancerPoolOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting Load balancer pool: %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+	return nil
+}
+
+func isWaitForLBPoolActive(sess *vpcv1.VpcV1, lbId, lbPoolId string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for load balancer pool (%s) to be available.", lbPoolId)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{isLBPoolCreatePending, isLBPoolUpdatePending, isLBPoolMaintainancePending},
-		Target:     []string{isLBPoolActive},
-		Refresh:    isLBPoolRefreshFunc(client, lbId, lbPoolId),
+		Target:     []string{isLBPoolActive, ""},
+		Refresh:    isLBPoolRefreshFunc(sess, lbId, lbPoolId),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -458,28 +851,33 @@ func isWaitForLBPoolActive(client *lbaas.LoadBalancerClient, lbId, lbPoolId stri
 	return stateConf.WaitForState()
 }
 
-func isLBPoolRefreshFunc(client *lbaas.LoadBalancerClient, lbId, lbPoolId string) resource.StateRefreshFunc {
+func isLBPoolRefreshFunc(sess *vpcv1.VpcV1, lbId, lbPoolId string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		lbPool, err := client.GetPool(lbId, lbPoolId)
+
+		getlbpOptions := &vpcv1.GetLoadBalancerPoolOptions{
+			LoadBalancerID: &lbId,
+			ID:             &lbPoolId,
+		}
+		lbPool, response, err := sess.GetLoadBalancerPool(getlbpOptions)
 		if err != nil {
-			return nil, "", err
+			return nil, "", fmt.Errorf("Error Getting Load Balancer Pool: %s\n%s", err, response)
 		}
 
-		if lbPool.ProvisioningStatus == isLBPoolActive || lbPool.ProvisioningStatus == isLBPoolFailed {
+		if *lbPool.ProvisioningStatus == isLBPoolActive || *lbPool.ProvisioningStatus == isLBPoolFailed {
 			return lbPool, isLBPoolActive, nil
 		}
 
-		return lbPool, lbPool.ProvisioningStatus, nil
+		return lbPool, *lbPool.ProvisioningStatus, nil
 	}
 }
 
-func isWaitForLBPoolDeleted(client *lbaas.LoadBalancerClient, lbId, lbPoolId string, timeout time.Duration) (interface{}, error) {
-	log.Printf("Waiting for load balancer pool(%s) to be deleted.", lbPoolId)
+func isWaitForClassicLBPoolActive(sess *vpcclassicv1.VpcClassicV1, lbId, lbPoolId string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for load balancer pool (%s) to be available.", lbPoolId)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{isLBPoolUpdatePending, isLBPoolMaintainancePending, isLBPoolDeletePending},
-		Target:     []string{},
-		Refresh:    isLBPoolDeleteRefreshFunc(client, lbId, lbPoolId),
+		Pending:    []string{isLBPoolCreatePending, isLBPoolUpdatePending, isLBPoolMaintainancePending},
+		Target:     []string{isLBPoolActive, ""},
+		Refresh:    isClassicLBPoolRefreshFunc(sess, lbId, lbPoolId),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -488,21 +886,88 @@ func isWaitForLBPoolDeleted(client *lbaas.LoadBalancerClient, lbId, lbPoolId str
 	return stateConf.WaitForState()
 }
 
-func isLBPoolDeleteRefreshFunc(client *lbaas.LoadBalancerClient, lbId, lbPoolId string) resource.StateRefreshFunc {
+func isClassicLBPoolRefreshFunc(sess *vpcclassicv1.VpcClassicV1, lbId, lbPoolId string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		lbPool, err := client.GetPool(lbId, lbPoolId)
-		if err == nil {
-			return lbPool, lbPool.ProvisioningStatus, nil
+
+		getlbpOptions := &vpcclassicv1.GetLoadBalancerPoolOptions{
+			LoadBalancerID: &lbId,
+			ID:             &lbPoolId,
+		}
+		lbPool, response, err := sess.GetLoadBalancerPool(getlbpOptions)
+		if err != nil {
+			return nil, "", fmt.Errorf("Error Getting Load Balancer Pool: %s\n%s", err, response)
 		}
 
-		iserror, ok := err.(iserrors.RiaasError)
-		if ok {
-			log.Printf("[DEBUG] %s %d %s", iserror.Error(), len(iserror.Payload.Errors), iserror.Payload.Errors[0].Code)
-			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "pool_not_found" {
-				return nil, isLBPoolDeleteDone, nil
-			}
+		if *lbPool.ProvisioningStatus == isLBPoolActive || *lbPool.ProvisioningStatus == isLBPoolFailed {
+			return lbPool, isLBPoolActive, nil
 		}
-		return nil, lbPool.ProvisioningStatus, err
+
+		return lbPool, *lbPool.ProvisioningStatus, nil
+	}
+}
+
+func isWaitForClassicLBPoolDeleted(lbc *vpcclassicv1.VpcClassicV1, lbId, lbPoolId string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for  (%s) to be deleted.", lbPoolId)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{isLBPoolUpdatePending, isLBPoolMaintainancePending, isLBPoolDeletePending},
+		Target:     []string{isLBPoolDeleteDone, ""},
+		Refresh:    isClassicLBPoolDeleteRefreshFunc(lbc, lbId, lbPoolId),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isClassicLBPoolDeleteRefreshFunc(lbc *vpcclassicv1.VpcClassicV1, lbId, lbPoolId string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		log.Printf("[DEBUG] delete function here")
+		getlbpOptions := &vpcclassicv1.GetLoadBalancerPoolOptions{
+			LoadBalancerID: &lbId,
+			ID:             &lbPoolId,
+		}
+		lbPool, response, err := lbc.GetLoadBalancerPool(getlbpOptions)
+		if err != nil && response.StatusCode != 404 {
+			return nil, "", fmt.Errorf("The vpc load balancer pool %s failed to delete: %s\n%s", lbPoolId, err, response)
+		}
+		if response.StatusCode == 404 {
+			return lbPool, isLBPoolDeleteDone, nil
+		}
+		return lbPool, isLBPoolDeletePending, nil
+	}
+}
+
+func isWaitForLBPoolDeleted(lbc *vpcv1.VpcV1, lbId, lbPoolId string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for  (%s) to be deleted.", lbPoolId)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{isLBPoolUpdatePending, isLBPoolMaintainancePending, isLBPoolDeletePending},
+		Target:     []string{isLBPoolDeleteDone, ""},
+		Refresh:    isLBPoolDeleteRefreshFunc(lbc, lbId, lbPoolId),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isLBPoolDeleteRefreshFunc(lbc *vpcv1.VpcV1, lbId, lbPoolId string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		log.Printf("[DEBUG] delete function here")
+		getlbpOptions := &vpcv1.GetLoadBalancerPoolOptions{
+			LoadBalancerID: &lbId,
+			ID:             &lbPoolId,
+		}
+		lbPool, response, err := lbc.GetLoadBalancerPool(getlbpOptions)
+		if err != nil && response.StatusCode != 404 {
+			return nil, "", fmt.Errorf("The vpc load balancer pool %s failed to delete: %s\n%s", lbPoolId, err, response)
+		}
+		if response.StatusCode == 404 {
+			return lbPool, isLBPoolDeleteDone, nil
+		}
+		return lbPool, isLBPoolDeletePending, nil
 	}
 }

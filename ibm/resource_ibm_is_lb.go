@@ -1,18 +1,16 @@
 package ibm
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
 
-	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/lbaas"
-	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/client/l_baas"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -143,94 +141,214 @@ func resourceIBMISLB() *schema.Resource {
 }
 
 func resourceIBMISLBCreate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
 
 	name := d.Get(isLBName).(string)
-	lbType := d.Get(isLBType).(string)
-	subnets := expandStringList((d.Get(isLBSubnets).(*schema.Set)).List())
-	var isPublic = true
+	subnets := d.Get(isLBSubnets).(*schema.Set)
+	// subnets := expandStringList((d.Get(isLBSubnets).(*schema.Set)).List())
+	var lbType, rg string
+	isPublic := true
+	if types, ok := d.GetOk(isLBType); ok {
+		lbType = types.(string)
+	}
+
 	if lbType == "private" {
 		isPublic = false
 	}
 
-	client := lbaas.NewLoadBalancerClient(sess)
-
-	var subnetIdentity []*models.SubnetIdentity
-	for _, subnet := range subnets {
-		subnetIdentity = append(subnetIdentity, &models.SubnetIdentity{ID: strfmt.UUID(subnet)})
-	}
-	body := &models.LoadBalancerTemplate{
-		IsPublic: &isPublic,
-		Name:     name,
-		Subnets:  subnetIdentity,
+	if grp, ok := d.GetOk(isLBResourceGroup); ok {
+		rg = grp.(string)
 	}
 
-	if rg, ok := d.GetOk(isLBResourceGroup); ok {
-		rgref := models.LoadBalancerTemplateResourceGroup{
-			ID: strfmt.UUID(rg.(string)),
-		}
-		body.ResourceGroup = &rgref
-	}
-
-	lb, err := client.Create(&l_baas.PostLoadBalancersParams{
-		Body: body,
-	})
-	if err != nil {
-		log.Printf("[DEBUG]  err %s", isErrorToString(err))
-		return err
-	}
-
-	d.SetId(lb.ID.String())
-	log.Printf("[INFO]  : %s", lb.ID.String())
-
-	_, err = isWaitForLBAvailable(client, d.Id(), d.Timeout(schema.TimeoutCreate))
-	if err != nil {
-		return err
-	}
-
-	v := os.Getenv("IC_ENV_TAGS")
-	if _, ok := d.GetOk(isLBTags); ok || v != "" {
-		oldList, newList := d.GetChange(isLBTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, lb.Crn)
+	if userDetails.generation == 1 {
+		err := classicLBCreate(d, meta, name, lbType, rg, subnets, isPublic)
 		if err != nil {
-			log.Printf(
-				"Error on create of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
+			return err
+		}
+	} else {
+		err := lbCreate(d, meta, name, lbType, rg, subnets, isPublic)
+		if err != nil {
+			return err
 		}
 	}
 	return resourceIBMISLBRead(d, meta)
 }
 
+func classicLBCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string, subnets *schema.Set, isPublic bool) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	options := &vpcclassicv1.CreateLoadBalancerOptions{
+		IsPublic: &isPublic,
+		Name:     &name,
+	}
+	if subnets.Len() != 0 {
+		subnetobjs := make([]vpcclassicv1.SubnetIdentityIntf, subnets.Len())
+		for i, subnet := range subnets.List() {
+			subnetstr := subnet.(string)
+			subnetobjs[i] = &vpcclassicv1.SubnetIdentity{
+				ID: &subnetstr,
+			}
+		}
+		options.Subnets = subnetobjs
+	}
+	if rg != "" {
+		options.ResourceGroup = &vpcclassicv1.ResourceGroupIdentity{
+			ID: &rg,
+		}
+	}
+
+	lb, response, err := sess.CreateLoadBalancer(options)
+	if err != nil {
+		return fmt.Errorf("Error while creating Load Balanacer err %s\n%s", err, response)
+	}
+	d.SetId(*lb.ID)
+	log.Printf("[INFO] VPC : %s", *lb.ID)
+	_, err = isWaitForClassicLBAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return err
+	}
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isLBTags); ok || v != "" {
+		oldList, newList := d.GetChange(isLBTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *lb.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
+		}
+	}
+	return nil
+}
+
+func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string, subnets *schema.Set, isPublic bool) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	options := &vpcv1.CreateLoadBalancerOptions{
+		IsPublic: &isPublic,
+		Name:     &name,
+	}
+	if subnets.Len() != 0 {
+		subnetobjs := make([]vpcv1.SubnetIdentityIntf, subnets.Len())
+		for i, subnet := range subnets.List() {
+			subnetstr := subnet.(string)
+			subnetobjs[i] = &vpcv1.SubnetIdentity{
+				ID: &subnetstr,
+			}
+		}
+		options.Subnets = subnetobjs
+	}
+	if rg != "" {
+		options.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+			ID: &rg,
+		}
+	}
+
+	lb, response, err := sess.CreateLoadBalancer(options)
+	if err != nil {
+		return fmt.Errorf("Error while creating Load Balanacer err %s\n%s", err, response)
+	}
+	d.SetId(*lb.ID)
+	log.Printf("[INFO] VPC : %s", *lb.ID)
+	_, err = isWaitForLBAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return err
+	}
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isLBTags); ok || v != "" {
+		oldList, newList := d.GetChange(isLBTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *lb.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
+		}
+	}
+	return nil
+}
+
 func resourceIBMISLBRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	client := lbaas.NewLoadBalancerClient(sess)
+	id := d.Id()
+	if userDetails.generation == 1 {
+		err := classicLBGet(d, meta, id)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := lbGet(d, meta, id)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
-	lb, err := client.Get(d.Id())
+func classicLBGet(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
-
-	d.Set("id", lb.ID.String())
-	d.Set(isLBName, lb.Name)
-	if lb.IsPublic {
+	getLoadBalancerOptions := &vpcclassicv1.GetLoadBalancerOptions{
+		ID: &id,
+	}
+	lb, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting Load Balancer : %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	d.Set("id", *lb.ID)
+	d.Set(isLBName, *lb.Name)
+	if *lb.IsPublic {
 		d.Set(isLBType, "public")
 	} else {
 		d.Set(isLBType, "private")
 	}
-
-	d.Set(isLBStatus, lb.ProvisioningStatus)
-	d.Set(isLBOperatingStatus, lb.OperatingStatus)
-	d.Set(isLBPublicIPs, flattenISLBIPs(lb.PublicIps))
-	d.Set(isLBPrivateIPs, flattenISLBIPs(lb.PrivateIps))
-	d.Set(isLBSubnets, flattenISLBSubnets(lb.Subnets))
-	d.Set(isLBResourceGroup, lb.ResourceGroup.ID)
-	d.Set(isLBHostName, lb.Hostname)
-	tags, err := GetTagsUsingCRN(meta, lb.Crn)
+	d.Set(isLBStatus, *lb.ProvisioningStatus)
+	d.Set(isLBOperatingStatus, *lb.OperatingStatus)
+	publicIpList := make([]string, 0)
+	if lb.PublicIps != nil {
+		for _, ip := range lb.PublicIps {
+			if ip.Address != nil {
+				pubip := *ip.Address
+				publicIpList = append(publicIpList, pubip)
+			}
+		}
+	}
+	d.Set(isLBPublicIPs, publicIpList)
+	privateIpList := make([]string, 0)
+	if lb.PrivateIps != nil {
+		for _, ip := range lb.PrivateIps {
+			if ip.Address != nil {
+				prip := *ip.Address
+				privateIpList = append(privateIpList, prip)
+			}
+		}
+	}
+	d.Set(isLBPrivateIPs, privateIpList)
+	if lb.Subnets != nil {
+		subnetList := make([]string, 0)
+		for _, subnet := range lb.Subnets {
+			if subnet.ID != nil {
+				sub := *subnet.ID
+				subnetList = append(subnetList, sub)
+			}
+		}
+		d.Set(isLBSubnets, subnetList)
+	}
+	d.Set(isLBResourceGroup, *lb.ResourceGroup.ID)
+	d.Set(isLBHostName, *lb.Hostname)
+	tags, err := GetTagsUsingCRN(meta, *lb.Crn)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
@@ -240,78 +358,280 @@ func resourceIBMISLBRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	if sess.Generation == 1 {
-		d.Set(ResourceControllerURL, controller+"/vpc/network/loadBalancers")
-	} else {
-		d.Set(ResourceControllerURL, controller+"/vpc-ext/network/loadBalancers")
-	}
-	d.Set(ResourceName, lb.Name)
+	d.Set(ResourceControllerURL, controller+"/vpc/network/loadBalancers")
+	d.Set(ResourceName, *lb.Name)
 	if lb.ResourceGroup != nil {
-		d.Set(ResourceGroupName, lb.ResourceGroup.Name)
+		d.Set(ResourceGroupName, *lb.ResourceGroup.ID)
+	}
+	return nil
+}
+
+func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getLoadBalancerOptions := &vpcv1.GetLoadBalancerOptions{
+		ID: &id,
+	}
+	lb, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting Load Balancer : %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	d.Set("id", *lb.ID)
+	d.Set(isLBName, *lb.Name)
+	if *lb.IsPublic {
+		d.Set(isLBType, "public")
+	} else {
+		d.Set(isLBType, "private")
+	}
+	d.Set(isLBStatus, *lb.ProvisioningStatus)
+	d.Set(isLBOperatingStatus, *lb.OperatingStatus)
+	publicIpList := make([]string, 0)
+	if lb.PublicIps != nil {
+		for _, ip := range lb.PublicIps {
+			if ip.Address != nil {
+				pubip := *ip.Address
+				publicIpList = append(publicIpList, pubip)
+			}
+		}
+	}
+	d.Set(isLBPublicIPs, publicIpList)
+	privateIpList := make([]string, 0)
+	if lb.PrivateIps != nil {
+		for _, ip := range lb.PrivateIps {
+			if ip.Address != nil {
+				prip := *ip.Address
+				privateIpList = append(privateIpList, prip)
+			}
+		}
+	}
+	d.Set(isLBPrivateIPs, privateIpList)
+	if lb.Subnets != nil {
+		subnetList := make([]string, 0)
+		for _, subnet := range lb.Subnets {
+			if subnet.ID != nil {
+				sub := *subnet.ID
+				subnetList = append(subnetList, sub)
+			}
+		}
+		d.Set(isLBSubnets, subnetList)
+	}
+	d.Set(isLBResourceGroup, *lb.ResourceGroup.ID)
+	d.Set(isLBHostName, *lb.Hostname)
+	tags, err := GetTagsUsingCRN(meta, *lb.Crn)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
+	}
+	d.Set(isLBTags, tags)
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return err
+	}
+	d.Set(ResourceControllerURL, controller+"/vpc-ext/network/loadBalancers")
+	d.Set(ResourceName, *lb.Name)
+	if lb.ResourceGroup != nil {
+		d.Set(ResourceGroupName, *lb.ResourceGroup.ID)
 	}
 	return nil
 }
 
 func resourceIBMISLBUpdate(d *schema.ResourceData, meta interface{}) error {
-
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	client := lbaas.NewLoadBalancerClient(sess)
+	id := d.Id()
 
-	lb, err := client.Get(d.Id())
-	if err != nil {
-		return err
-	}
+	name := ""
+	hasChanged := false
 
 	if d.HasChange(isLBName) {
-		name := d.Get(isLBName).(string)
-		_, err := client.Update(d.Id(), name)
+		name = d.Get(isLBName).(string)
+		hasChanged = true
+	}
+	if userDetails.generation == 1 {
+		err := classicLBUpdate(d, meta, id, name, hasChanged)
 		if err != nil {
 			return err
 		}
-	}
-	if d.HasChange(isLBTags) {
-		oldList, newList := d.GetChange(isLBTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, lb.Crn)
+	} else {
+		err := lbUpdate(d, meta, id, name, hasChanged)
 		if err != nil {
-			log.Printf(
-				"Error on update of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
+			return err
 		}
 	}
 
 	return resourceIBMISLBRead(d, meta)
 }
+func classicLBUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	if d.HasChange(isLBTags) {
+		getLoadBalancerOptions := &vpcclassicv1.GetLoadBalancerOptions{
+			ID: &id,
+		}
+		lb, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
+		if err != nil {
+			return fmt.Errorf("Error getting Load Balancer : %s\n%s", err, response)
+		}
+		oldList, newList := d.GetChange(isLBTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *lb.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
+		}
+	}
+	if hasChanged {
+		updateLoadBalancerOptions := &vpcclassicv1.UpdateLoadBalancerOptions{
+			ID:   &id,
+			Name: &name,
+		}
+		_, response, err := sess.UpdateLoadBalancer(updateLoadBalancerOptions)
+		if err != nil {
+			return fmt.Errorf("Error Updating vpc Load Balancer : %s\n%s", err, response)
+		}
+	}
+	return nil
+}
+
+func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	if d.HasChange(isLBTags) {
+		getLoadBalancerOptions := &vpcv1.GetLoadBalancerOptions{
+			ID: &id,
+		}
+		lb, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
+		if err != nil {
+			return fmt.Errorf("Error getting Load Balancer : %s\n%s", err, response)
+		}
+		oldList, newList := d.GetChange(isLBTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *lb.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
+		}
+	}
+	if hasChanged {
+		updateLoadBalancerOptions := &vpcv1.UpdateLoadBalancerOptions{
+			ID:   &id,
+			Name: &name,
+		}
+		_, response, err := sess.UpdateLoadBalancer(updateLoadBalancerOptions)
+		if err != nil {
+			return fmt.Errorf("Error Updating vpc Load Balancer : %s\n%s", err, response)
+		}
+	}
+	return nil
+}
 
 func resourceIBMISLBDelete(d *schema.ResourceData, meta interface{}) error {
-
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	client := lbaas.NewLoadBalancerClient(sess)
-	err = client.Delete(d.Id())
-	if err != nil {
-		return err
-	}
-
-	_, err = isWaitForDeleted(client, d.Id(), d.Timeout(schema.TimeoutDelete))
-	if err != nil {
-		return err
+	id := d.Id()
+	if userDetails.generation == 1 {
+		err := classicLBDelete(d, meta, id)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := lbDelete(d, meta, id)
+		if err != nil {
+			return err
+		}
 	}
 
 	d.SetId("")
 	return nil
 }
 
-func isWaitForDeleted(lbc *lbaas.LoadBalancerClient, id string, timeout time.Duration) (interface{}, error) {
+func classicLBDelete(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+
+	getLoadBalancerOptions := &vpcclassicv1.GetLoadBalancerOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
+
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting vpc load balancer(%s): %s\n%s", id, err, response)
+	}
+
+	deleteLoadBalancerOptions := &vpcclassicv1.DeleteLoadBalancerOptions{
+		ID: &id,
+	}
+	response, err = sess.DeleteLoadBalancer(deleteLoadBalancerOptions)
+	if err != nil {
+		return fmt.Errorf("Error Deleting vpc load balancer : %s\n%s", err, response)
+	}
+	_, err = isWaitForClassicLBDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return err
+	}
+	d.SetId("")
+	return nil
+}
+
+func lbDelete(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+
+	getLoadBalancerOptions := &vpcv1.GetLoadBalancerOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
+
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting vpc load balancer(%s): %s\n%s", id, err, response)
+	}
+
+	deleteLoadBalancerOptions := &vpcv1.DeleteLoadBalancerOptions{
+		ID: &id,
+	}
+	response, err = sess.DeleteLoadBalancer(deleteLoadBalancerOptions)
+	if err != nil {
+		return fmt.Errorf("Error Deleting vpc load balancer : %s\n%s", err, response)
+	}
+	_, err = isWaitForLBDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return err
+	}
+	d.SetId("")
+	return nil
+}
+
+func isWaitForClassicLBDeleted(lbc *vpcclassicv1.VpcClassicV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for  (%s) to be deleted.", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", isLBDeleting},
-		Target:     []string{},
-		Refresh:    isDeleteRefreshFunc(lbc, id),
+		Target:     []string{isLBDeleted, "failed"},
+		Refresh:    isClassicLBDeleteRefreshFunc(lbc, id),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -320,53 +640,118 @@ func isWaitForDeleted(lbc *lbaas.LoadBalancerClient, id string, timeout time.Dur
 	return stateConf.WaitForState()
 }
 
-func isDeleteRefreshFunc(lbc *lbaas.LoadBalancerClient, id string) resource.StateRefreshFunc {
+func isClassicLBDeleteRefreshFunc(lbc *vpcclassicv1.VpcClassicV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		lb, err := lbc.Get(id)
-		if err == nil {
-			return lb, isLBDeleting, nil
+		log.Printf("[DEBUG] delete function here")
+		getLoadBalancerOptions := &vpcclassicv1.GetLoadBalancerOptions{
+			ID: &id,
 		}
+		lb, response, err := lbc.GetLoadBalancer(getLoadBalancerOptions)
+		if err != nil && response.StatusCode != 404 {
+			return nil, *lb.ProvisioningStatus, fmt.Errorf("The vpc load balancer %s failed to delete: %s\n%s", id, err, response)
+		}
+		if response.StatusCode == 404 {
+			return lb, isLBDeleted, nil
+		}
+		return lb, isLBDeleting, nil
+	}
+}
 
-		iserror, ok := err.(iserrors.RiaasError)
-		if ok {
-			log.Printf("[DEBUG] %s", iserror.Error())
-			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "load_balancer_not_found" {
-				return nil, isLBDeleted, nil
-			}
+func isWaitForLBDeleted(lbc *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for  (%s) to be deleted.", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", isLBDeleting},
+		Target:     []string{isLBDeleted, "failed"},
+		Refresh:    isLBDeleteRefreshFunc(lbc, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isLBDeleteRefreshFunc(lbc *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		log.Printf("[DEBUG] delete function here")
+		getLoadBalancerOptions := &vpcv1.GetLoadBalancerOptions{
+			ID: &id,
 		}
-		return nil, isLBDeleting, err
+		lb, response, err := lbc.GetLoadBalancer(getLoadBalancerOptions)
+		if err != nil && response.StatusCode != 404 {
+			return nil, *lb.ProvisioningStatus, fmt.Errorf("The vpc load balancer %s failed to delete: %s\n%s", id, err, response)
+		}
+		if response.StatusCode == 404 {
+			return lb, isLBDeleted, nil
+		}
+		return lb, isLBDeleting, nil
 	}
 }
 
 func resourceIBMISLBExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return false, err
 	}
-	client := lbaas.NewLoadBalancerClient(sess)
-
-	_, err = client.Get(d.Id())
-	if err != nil {
-		iserror, ok := err.(iserrors.RiaasError)
-		if ok {
-			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "load_balancer_not_found" {
-				return false, nil
-			}
+	id := d.Id()
+	if userDetails.generation == 1 {
+		err := classicLBExists(d, meta, id)
+		if err != nil {
+			return false, err
 		}
-		return false, err
+	} else {
+		err := lbExists(d, meta, id)
+		if err != nil {
+			return false, err
+		}
 	}
 	return true, nil
 }
 
-func isWaitForLBAvailable(client *lbaas.LoadBalancerClient, id string, timeout time.Duration) (interface{}, error) {
-	log.Printf("Waiting for load balancer (%s) to be available.", id)
+func classicLBExists(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getLoadBalancerOptions := &vpcclassicv1.GetLoadBalancerOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting vpc load balancer: %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+	return nil
+}
+
+func lbExists(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getLoadBalancerOptions := &vpcv1.GetLoadBalancerOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting vpc load balancer: %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+	return nil
+}
+
+func isWaitForLBAvailable(sess *vpcv1.VpcV1, lbId string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for load balancer (%s) to be available.", lbId)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", isLBProvisioning},
-		Target:     []string{isLBProvisioningDone},
-		Refresh:    isLBRefreshFunc(client, id),
+		Target:     []string{isLBProvisioningDone, ""},
+		Refresh:    isLBRefreshFunc(sess, lbId),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -375,14 +760,52 @@ func isWaitForLBAvailable(client *lbaas.LoadBalancerClient, id string, timeout t
 	return stateConf.WaitForState()
 }
 
-func isLBRefreshFunc(client *lbaas.LoadBalancerClient, id string) resource.StateRefreshFunc {
+func isLBRefreshFunc(sess *vpcv1.VpcV1, lbId string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		lb, err := client.Get(id)
+
+		getlboptions := &vpcv1.GetLoadBalancerOptions{
+			ID: &lbId,
+		}
+		lb, response, err := sess.GetLoadBalancer(getlboptions)
 		if err != nil {
-			return nil, "", err
+			return nil, "", fmt.Errorf("Error Getting Load Balancer : %s\n%s", err, response)
 		}
 
-		if lb.ProvisioningStatus == "active" || lb.ProvisioningStatus == "failed" {
+		if *lb.ProvisioningStatus == "active" || *lb.ProvisioningStatus == "failed" {
+			return lb, isLBProvisioningDone, nil
+		}
+
+		return lb, isLBProvisioning, nil
+	}
+}
+
+func isWaitForClassicLBAvailable(sess *vpcclassicv1.VpcClassicV1, lbId string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for load balancer (%s) to be available.", lbId)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", isLBProvisioning},
+		Target:     []string{isLBProvisioningDone, ""},
+		Refresh:    isClassicLBRefreshFunc(sess, lbId),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isClassicLBRefreshFunc(sess *vpcclassicv1.VpcClassicV1, lbId string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+
+		getlboptions := &vpcclassicv1.GetLoadBalancerOptions{
+			ID: &lbId,
+		}
+		lb, response, err := sess.GetLoadBalancer(getlboptions)
+		if err != nil {
+			return nil, "", fmt.Errorf("Error Getting Load Balancer : %s\n%s", err, response)
+		}
+
+		if *lb.ProvisioningStatus == "active" || *lb.ProvisioningStatus == "failed" {
 			return lb, isLBProvisioningDone, nil
 		}
 

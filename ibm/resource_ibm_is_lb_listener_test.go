@@ -8,15 +8,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/lbaas"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISLBListener_basic(t *testing.T) {
-	var lb *models.Listener
-	vpcname := fmt.Sprintf("tflblisuat-vpc-%d", acctest.RandIntRange(10, 100))
-	subnetname := fmt.Sprintf("tflblisuat-subnet-%d", acctest.RandIntRange(10, 100))
-	lbname := fmt.Sprintf("tflblisuat%d", acctest.RandIntRange(10, 100))
+	var lb string
+	vpcname := fmt.Sprintf("tflblis-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflblis-subnet-%d", acctest.RandIntRange(10, 100))
+	lbname := fmt.Sprintf("tflblis%d", acctest.RandIntRange(10, 100))
 
 	protocol1 := "http"
 	port1 := "8080"
@@ -34,7 +34,7 @@ func TestAccIBMISLBListener_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMISLBListenerConfig(vpcname, subnetname, ISZoneName, ISCIDR, lbname, port1, protocol1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISLBListenerExists("ibm_is_lb_listener.testacc_lb_listener", &lb),
+					testAccCheckIBMISLBListenerExists("ibm_is_lb_listener.testacc_lb_listener", lb),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb.testacc_LB", "name", lbname),
 					resource.TestCheckResourceAttr(
@@ -47,7 +47,7 @@ func TestAccIBMISLBListener_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMISLBListenerConfigUpdate(vpcname, subnetname, ISZoneName, ISCIDR, lbname, port2, protocol2, connLimit),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISLBListenerExists("ibm_is_lb_listener.testacc_lb_listener", &lb),
+					testAccCheckIBMISLBListenerExists("ibm_is_lb_listener.testacc_lb_listener", lb),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_listener.testacc_lb_listener", "port", port2),
 					resource.TestCheckResourceAttr(
@@ -61,32 +61,60 @@ func TestAccIBMISLBListener_basic(t *testing.T) {
 }
 
 func testAccCheckIBMISLBListenerDestroy(s *terraform.State) error {
-	sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
+	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	lbc := lbaas.NewLoadBalancerClient(sess)
+	if userDetails.generation == 1 {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_lb_listener" {
+				continue
+			}
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_is_lb_listener" {
-			continue
+			parts, err := idParts(rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			lbID := parts[0]
+			lbListenerID := parts[1]
+			getlblptions := &vpcclassicv1.GetLoadBalancerListenerOptions{
+				LoadBalancerID: &lbID,
+				ID:             &lbListenerID,
+			}
+			_, _, err1 := sess.GetLoadBalancerListener(getlblptions)
+			if err1 == nil {
+				return fmt.Errorf("LB Listener still exists: %s", rs.Primary.ID)
+			}
 		}
-		parts, err := idParts(rs.Primary.ID)
-		if err != nil {
-			return err
-		}
+	} else {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_lb_listener" {
+				continue
+			}
 
-		lbID := parts[0]
-		lbListenerID := parts[1]
-		_, err = lbc.GetListener(lbID, lbListenerID)
+			parts, err := idParts(rs.Primary.ID)
+			if err != nil {
+				return err
+			}
 
-		if err == nil {
-			return fmt.Errorf("LB Listener still exists: %s", rs.Primary.ID)
+			lbID := parts[0]
+			lbListenerID := parts[1]
+			getlblptions := &vpcv1.GetLoadBalancerListenerOptions{
+				LoadBalancerID: &lbID,
+				ID:             &lbListenerID,
+			}
+			_, _, err1 := sess.GetLoadBalancerListener(getlblptions)
+			if err1 == nil {
+				return fmt.Errorf("LB Listener still exists: %s", rs.Primary.ID)
+			}
 		}
 	}
 
 	return nil
 }
 
-func testAccCheckIBMISLBListenerExists(n string, LBListener **models.Listener) resource.TestCheckFunc {
+func testAccCheckIBMISLBListenerExists(n, LBListener string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -98,8 +126,6 @@ func testAccCheckIBMISLBListenerExists(n string, LBListener **models.Listener) r
 			return errors.New("No Record ID is set")
 		}
 
-		sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
-		client := lbaas.NewLoadBalancerClient(sess)
 		parts, err := idParts(rs.Primary.ID)
 		if err != nil {
 			return err
@@ -107,13 +133,31 @@ func testAccCheckIBMISLBListenerExists(n string, LBListener **models.Listener) r
 
 		lbID := parts[0]
 		lbListenerID := parts[1]
-		foundLBListener, err := client.GetListener(lbID, lbListenerID)
+		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
+		if userDetails.generation == 1 {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
 
-		if err != nil {
-			return err
+			getlblptions := &vpcclassicv1.GetLoadBalancerListenerOptions{
+				LoadBalancerID: &lbID,
+				ID:             &lbListenerID,
+			}
+			foundLBListener, _, err := sess.GetLoadBalancerListener(getlblptions)
+			if err != nil {
+				return err
+			}
+			LBListener = *foundLBListener.ID
+		} else {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+			getlblptions := &vpcv1.GetLoadBalancerListenerOptions{
+				LoadBalancerID: &lbID,
+				ID:             &lbListenerID,
+			}
+			foundLBListener, _, err := sess.GetLoadBalancerListener(getlblptions)
+			if err != nil {
+				return err
+			}
+			LBListener = *foundLBListener.ID
 		}
-
-		*LBListener = foundLBListener
 		return nil
 	}
 }
