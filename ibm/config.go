@@ -579,7 +579,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	vpcclient, err := vpc.NewVpcV1(vpcoptions)
 	if err != nil {
-		session.vpcErr = fmt.Errorf("Error occured while configuring vpc classic service: %q", err)
+		session.vpcErr = fmt.Errorf("Error occured while configuring vpc service: %q", err)
 	}
 	session.vpcAPI = vpcclient
 
@@ -868,7 +868,11 @@ func refreshToken(sess *bxsession.Session) error {
 func envFallBack(envs []string, defaultValue string) string {
 	for _, k := range envs {
 		if v := os.Getenv(k); v != "" {
-			return v
+			if strings.Contains(v, "https://") {
+				return v
+			} else {
+				return fmt.Sprintf("https://%s/v1", v)
+			}
 		}
 	}
 	return defaultValue
