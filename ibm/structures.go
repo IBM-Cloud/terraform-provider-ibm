@@ -11,7 +11,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/IBM-Cloud/bluemix-go/models"
+	"github.com/apache/incubator-openwhisk-client-go/whisk"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/softlayer/softlayer-go/datatypes"
+	"github.com/softlayer/softlayer-go/sl"
+	vpc "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
 	"github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
@@ -22,11 +26,8 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
-	"github.com/apache/incubator-openwhisk-client-go/whisk"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/softlayer/softlayer-go/datatypes"
-	"github.com/softlayer/softlayer-go/sl"
-	vpc "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.com/IBM-Cloud/bluemix-go/api/schematics"
+	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
 const (
@@ -1285,6 +1286,27 @@ func convertTfToCisThreeVar(glbTfId string) (glbId string, zoneId string, cisId 
 	}
 	return
 }
+func convertCisToTfFourVar(firewallType string, ID string, ID2 string, cisID string) (buildID string) {
+	if ID != "" {
+		buildID = firewallType + ":" + ID + ":" + ID2 + ":" + cisID
+	} else {
+		buildID = ""
+	}
+	return
+}
+func convertTfToCisFourVar(TfID string) (firewallType string, ID string, zoneID string, cisID string, err error) {
+	g := strings.SplitN(TfID, ":", 4)
+	firewallType = g[0]
+	if len(g) > 3 {
+		ID = g[1]
+		zoneID = g[2]
+		cisID = g[3]
+	} else {
+		err = errors.New("Id or cis_id or zone_id not passed")
+		return
+	}
+	return
+}
 
 // Cloud Internet Services
 func convertCisToTfThreeVar(Id string, Id2 string, cisId string) (buildId string) {
@@ -1638,4 +1660,14 @@ func flattenCseIPs(list []VPCCSESourceIP) []map[string]interface{} {
 		cseIPsInfo = append(cseIPsInfo, l)
 	}
 	return cseIPsInfo
+}
+
+func flattenCatalogRef(object schematics.CatalogInfo) map[string]interface{} {
+	catalogRef := map[string]interface{}{
+		"item_id":          object.ItemID,
+		"item_name":        object.ItemName,
+		"item_url":         object.ItemURL,
+		"offering_version": object.OfferingVersion,
+	}
+	return catalogRef
 }

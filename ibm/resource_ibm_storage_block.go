@@ -32,47 +32,55 @@ func resourceIBMStorageBlock() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"type": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Storage block type",
 			},
 
 			"datacenter": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Datacenter name",
 			},
 
 			"capacity": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Storage block size",
 			},
 
 			"iops": {
-				Type:     schema.TypeFloat,
-				Required: true,
+				Type:        schema.TypeFloat,
+				Required:    true,
+				Description: "IOPS value required",
 			},
 
 			"volumename": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Volume name",
 			},
 
 			"hostname": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Hostname",
 			},
 
 			"snapshot_capacity": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Snapshot capacity in GB",
 			},
 
 			"os_format_type": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "OS formatr type",
 			},
 
 			"allowed_virtual_guest_ids": {
@@ -83,11 +91,13 @@ func resourceIBMStorageBlock() *schema.Resource {
 				Set: func(v interface{}) int {
 					return v.(int)
 				},
+				Description: "List of allowed virtual guest IDs",
 			},
 
 			"notes": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Additional note info",
 			},
 			//TODO in v0.9.0
 			"allowed_virtual_guest_info": {
@@ -128,6 +138,7 @@ func resourceIBMStorageBlock() *schema.Resource {
 				Set: func(v interface{}) int {
 					return v.(int)
 				},
+				Description: "List of allowe hardware IDs",
 			},
 
 			//TODO in v0.9.0
@@ -162,21 +173,24 @@ func resourceIBMStorageBlock() *schema.Resource {
 			},
 
 			"allowed_ip_addresses": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "Allowed IP addresses",
 			},
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "List of tags associated with the resource",
 			},
 			"hourly_billing": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
-				ForceNew: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
+				Description: "Billing done hourly, if set to true",
 			},
 			"allowed_host_info": {
 				Type:     schema.TypeList,
@@ -204,9 +218,10 @@ func resourceIBMStorageBlock() *schema.Resource {
 			},
 
 			"target_address": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "List of target Addresses",
 			},
 			ResourceControllerURL: {
 				Type:        schema.TypeString,

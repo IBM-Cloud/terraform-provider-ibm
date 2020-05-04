@@ -2,13 +2,13 @@ package ibm
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/compute"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
-	isInstanceProfileName       = "name"
-	isInstanceProfileFamily     = "family"
-	isInstanceProfileGeneration = "generation"
+	isInstanceProfileName   = "name"
+	isInstanceProfileFamily = "family"
 )
 
 func dataSourceIBMISInstanceProfile() *schema.Resource {
@@ -31,19 +31,59 @@ func dataSourceIBMISInstanceProfile() *schema.Resource {
 }
 
 func dataSourceIBMISInstanceProfileRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	instanceC := compute.NewInstanceClient(sess)
-	profile, err := instanceC.GetProfile(d.Get(isInstanceProfileName).(string))
+	name := d.Get(isInstanceProfileName).(string)
+	if userDetails.generation == 1 {
+		err := classicInstanceProfileGet(d, meta, name)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := instanceProfileGet(d, meta, name)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func classicInstanceProfileGet(d *schema.ResourceData, meta interface{}, name string) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
-	// For lack of anything better, compose our id from region name + zone name.
-	id := profile.Name
-	d.SetId(id)
-	d.Set(isInstanceProfileName, profile.Name)
-	d.Set(isInstanceProfileFamily, profile.Family)
+	getInstanceProfileOptions := &vpcclassicv1.GetInstanceProfileOptions{
+		Name: &name,
+	}
+	profile, _, err := sess.GetInstanceProfile(getInstanceProfileOptions)
+	if err != nil {
+		return err
+	}
+	// For lack of anything better, compose our id from profile name.
+	d.SetId(*profile.Name)
+	d.Set(isInstanceProfileName, *profile.Name)
+	d.Set(isInstanceProfileFamily, *profile.Family)
+	return nil
+}
+
+func instanceProfileGet(d *schema.ResourceData, meta interface{}, name string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getInstanceProfileOptions := &vpcv1.GetInstanceProfileOptions{
+		Name: &name,
+	}
+	profile, _, err := sess.GetInstanceProfile(getInstanceProfileOptions)
+	if err != nil {
+		return err
+	}
+	// For lack of anything better, compose our id from profile name.
+	d.SetId(*profile.Name)
+	d.Set(isInstanceProfileName, *profile.Name)
+	d.Set(isInstanceProfileFamily, *profile.Family)
 	return nil
 }

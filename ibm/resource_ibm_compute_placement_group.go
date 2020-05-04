@@ -33,9 +33,10 @@ func resourceIBMComputePlacementGroup() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"datacenter": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Dataceneter name",
 			},
 
 			"pod": {
@@ -45,11 +46,13 @@ func resourceIBMComputePlacementGroup() *schema.Resource {
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.TrimSpace(old) == strings.TrimSpace(new)
 				},
+				Description: "Pod name",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name",
 			},
 
 			"rule": {
@@ -58,13 +61,15 @@ func resourceIBMComputePlacementGroup() *schema.Resource {
 				Default:      "SPREAD",
 				ForceNew:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"SPREAD"}),
+				Description:  "Rule info",
 			},
 
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "List of tags",
 			},
 		},
 	}

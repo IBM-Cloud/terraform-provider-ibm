@@ -44,17 +44,20 @@ func resourceIBMPIIOperations() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			helpers.PICloudInstanceId: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "PI Cloud instnce id",
 			},
 
 			helpers.PIInstanceOperationStatus: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "PI instance operation status",
 			},
 			helpers.PIInstanceOperationServerName: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "PI instance Operation server name",
 			},
 
 			"addresses": {
@@ -87,14 +90,16 @@ func resourceIBMPIIOperations() *schema.Resource {
 			},
 
 			helpers.PIInstanceHealthStatus: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "PI instance health status",
 			},
 
 			helpers.PIInstanceOperationType: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"start", "stop", "hard-reboot", "soft-reboot"}),
+				Description:  "PI instance operation type",
 			},
 
 			helpers.PIInstanceOperationProgress: {

@@ -18,6 +18,7 @@ type Certificate interface {
 	DeleteCertificate(CertID string) error
 	UpdateCertificateMetaData(CertID string, updateData models.CertificateMetadataUpdate) error
 	ReimportCertificate(CertID string, reimportData models.CertificateReimportData) (models.CertificateInfo, error)
+	ListCertificates(InstanceID string) ([]models.CertificateInfo, error)
 }
 
 //Certificates client struct
@@ -101,4 +102,14 @@ func (r *Certificates) ReimportCertificate(CertID string, reimportData models.Ce
 		return certInfo, err
 	}
 	return certInfo, err
+}
+
+//ListCertificates ...
+func (r *Certificates) ListCertificates(InstanceID string) ([]models.CertificateInfo, error) {
+	certificatesInfo := models.CertificatesInfo{}
+	_, err := r.client.Get(fmt.Sprintf("/api/v3/%s/certificates", url.QueryEscape(InstanceID)), &certificatesInfo)
+	if err != nil {
+		return nil, err
+	}
+	return certificatesInfo.CertificateList, err
 }

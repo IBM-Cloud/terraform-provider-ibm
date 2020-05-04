@@ -17,8 +17,8 @@ import (
 )
 
 func TestAccIBMCosBucket_Basic(t *testing.T) {
-	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	bucketName := fmt.Sprintf("terraform%d", acctest.RandInt())
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
 	bucketRegion := "eu"
 	bucketClass := "standard"
 	bucketRegionType := "cross_region_location"
@@ -51,8 +51,8 @@ func TestAccIBMCosBucket_Basic(t *testing.T) {
 }
 
 func TestAccIBMCosBucket_Smart_Type(t *testing.T) {
-	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	bucketName := fmt.Sprintf("terraform%d", acctest.RandInt())
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
 	bucketRegion := "eu"
 	bucketClass := "smart"
 	bucketRegionType := "cross_region_location"
@@ -85,8 +85,8 @@ func TestAccIBMCosBucket_Smart_Type(t *testing.T) {
 }
 
 func TestAccIBMCosBucket_import(t *testing.T) {
-	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	bucketName := fmt.Sprintf("terraform%d", acctest.RandInt())
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
 	bucketRegion := "eu"
 	bucketClass := "standard"
 	bucketRegionType := "cross_region_location"

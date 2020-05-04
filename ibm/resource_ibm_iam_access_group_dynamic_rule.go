@@ -43,8 +43,9 @@ func resourceIBMIAMDynamicRule() *schema.Resource {
 				Description: "The realm name or identity proivider url",
 			},
 			"conditions": {
-				Type:     schema.TypeList,
-				Required: true,
+				Type:        schema.TypeList,
+				Required:    true,
+				Description: "conditions info",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"claim": {

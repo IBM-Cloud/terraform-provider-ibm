@@ -9,8 +9,8 @@ import (
 )
 
 func TestAccIBMServiceInstanceDataSource_basic(t *testing.T) {
-	serviceName := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

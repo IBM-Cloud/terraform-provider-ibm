@@ -8,15 +8,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISVPCAddressPrefix_basic(t *testing.T) {
-	var vpcAddressPrefix *models.AddressPrefix
-	name1 := fmt.Sprintf("terraformvpcuat-create-step-name-%d", acctest.RandInt())
-	prefixName := fmt.Sprintf("terraformvpcuat-create-prefix-name-%d", acctest.RandInt())
-	prefixName1 := fmt.Sprintf("terraformvpcuat-create-prefix-name-%d", acctest.RandInt())
+	var vpcAddressPrefix string
+	name1 := fmt.Sprintf("tfvpcuat-%d", acctest.RandIntRange(10, 100))
+	prefixName := fmt.Sprintf("tfaddprename-%d", acctest.RandIntRange(10, 100))
+	prefixName1 := fmt.Sprintf("tfaddprenamename-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -26,7 +26,7 @@ func TestAccIBMISVPCAddressPrefix_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMISVPCAddressPrefixConfig(name1, prefixName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVPCAddressPrefixExists("ibm_is_vpc_address_prefix.testacc_vpc_address_prefix", &vpcAddressPrefix),
+					testAccCheckIBMISVPCAddressPrefixExists("ibm_is_vpc_address_prefix.testacc_vpc_address_prefix", vpcAddressPrefix),
 					resource.TestCheckResourceAttr(
 						"ibm_is_vpc_address_prefix.testacc_vpc_address_prefix", "name", prefixName),
 				),
@@ -34,7 +34,7 @@ func TestAccIBMISVPCAddressPrefix_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMISVPCAddressPrefixConfig(name1, prefixName1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVPCAddressPrefixExists("ibm_is_vpc_address_prefix.testacc_vpc_address_prefix", &vpcAddressPrefix),
+					testAccCheckIBMISVPCAddressPrefixExists("ibm_is_vpc_address_prefix.testacc_vpc_address_prefix", vpcAddressPrefix),
 					resource.TestCheckResourceAttr(
 						"ibm_is_vpc_address_prefix.testacc_vpc_address_prefix", "name", prefixName1),
 				),
@@ -44,33 +44,59 @@ func TestAccIBMISVPCAddressPrefix_basic(t *testing.T) {
 }
 
 func testAccCheckIBMISVPCAddressPrefixDestroy(s *terraform.State) error {
-	sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
+	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	vpcC := network.NewVPCClient(sess)
+	if userDetails.generation == 1 {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_vpc_address_prefix" {
+				continue
+			}
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_is_vpc_address_prefix" {
-			continue
+			parts, err := idParts(rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			vpcID := parts[0]
+			addrPrefixID := parts[1]
+			getvpcAddressPrefixOptions := &vpcclassicv1.GetVpcAddressPrefixOptions{
+				VpcID: &vpcID,
+				ID:    &addrPrefixID,
+			}
+			_, _, err1 := sess.GetVpcAddressPrefix(getvpcAddressPrefixOptions)
+			if err1 == nil {
+				return fmt.Errorf("vpc still exists: %s", rs.Primary.ID)
+			}
 		}
+	} else {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_vpc_address_prefix" {
+				continue
+			}
 
-		parts, err := idParts(rs.Primary.ID)
-		if err != nil {
-			return err
-		}
+			parts, err := idParts(rs.Primary.ID)
+			if err != nil {
+				return err
+			}
 
-		vpcID := parts[0]
-		addrPrefixID := parts[1]
-		_, err = vpcC.GetAddressPrefix(vpcID, addrPrefixID)
-
-		if err == nil {
-			return fmt.Errorf("vpc still exists: %s", rs.Primary.ID)
+			vpcID := parts[0]
+			addrPrefixID := parts[1]
+			getvpcAddressPrefixOptions := &vpcv1.GetVpcAddressPrefixOptions{
+				VpcID: &vpcID,
+				ID:    &addrPrefixID,
+			}
+			_, _, err1 := sess.GetVpcAddressPrefix(getvpcAddressPrefixOptions)
+			if err1 == nil {
+				return fmt.Errorf("vpc still exists: %s", rs.Primary.ID)
+			}
 		}
 	}
-
 	return nil
 }
 
-func testAccCheckIBMISVPCAddressPrefixExists(n string, vpcAddressPrefix **models.AddressPrefix) resource.TestCheckFunc {
+func testAccCheckIBMISVPCAddressPrefixExists(n, vpcAddressPrefix string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -81,10 +107,6 @@ func testAccCheckIBMISVPCAddressPrefixExists(n string, vpcAddressPrefix **models
 		if rs.Primary.ID == "" {
 			return errors.New("No Record ID is set")
 		}
-
-		sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
-		vpcC := network.NewVPCClient(sess)
-
 		parts, err := idParts(rs.Primary.ID)
 		if err != nil {
 			return err
@@ -92,13 +114,30 @@ func testAccCheckIBMISVPCAddressPrefixExists(n string, vpcAddressPrefix **models
 
 		vpcID := parts[0]
 		addrPrefixID := parts[1]
-		addrPrefix, err := vpcC.GetAddressPrefix(vpcID, addrPrefixID)
-
-		if err != nil {
-			return err
+		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
+		if userDetails.generation == 1 {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+			getvpcAddressPrefixOptions := &vpcclassicv1.GetVpcAddressPrefixOptions{
+				VpcID: &vpcID,
+				ID:    &addrPrefixID,
+			}
+			addrPrefix, _, err := sess.GetVpcAddressPrefix(getvpcAddressPrefixOptions)
+			if err != nil {
+				return err
+			}
+			vpcAddressPrefix = *addrPrefix.ID
+		} else {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+			getvpcAddressPrefixOptions := &vpcv1.GetVpcAddressPrefixOptions{
+				VpcID: &vpcID,
+				ID:    &addrPrefixID,
+			}
+			addrPrefix, _, err := sess.GetVpcAddressPrefix(getvpcAddressPrefixOptions)
+			if err != nil {
+				return err
+			}
+			vpcAddressPrefix = *addrPrefix.ID
 		}
-
-		*vpcAddressPrefix = addrPrefix
 		return nil
 	}
 }

@@ -56,9 +56,10 @@ func resourceIBMFunctionAction() *schema.Resource {
 				},
 			},
 			"exec": {
-				Type:     schema.TypeList,
-				Required: true,
-				MaxItems: 1,
+				Type:        schema.TypeList,
+				Required:    true,
+				MaxItems:    1,
+				Description: "Execution info",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"image": {

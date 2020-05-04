@@ -46,43 +46,69 @@ func resourceIBMISLBPoolMember() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
+				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
+					if o == "" {
+						return false
+					}
+					// if state file entry and tf file entry matches
+					if strings.Compare(n, o) == 0 {
+						return true
+					}
+
+					if strings.Contains(n, "/") {
+						new := strings.Split(n, "/")
+						if strings.Compare(new[1], o) == 0 {
+							return true
+						}
+					}
+
+					return false
+				},
+				Description: "Loadblancer Poold ID",
 			},
 
 			isLBID: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Load balancer ID",
 			},
 
 			isLBPoolMemberPort: {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Load Balancer Pool port",
 			},
 
 			isLBPoolMemberTargetAddress: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Load balancer pool member target address",
 			},
 
 			isLBPoolMemberWeight: {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "Load balcner pool member weight",
 			},
 
 			isLBPoolMemberProvisioningStatus: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Load balancer Pool member provisioning status",
 			},
 
 			isLBPoolMemberHealth: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "LB Pool member health",
 			},
 
 			isLBPoolMemberHref: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "LB pool member Href value",
 			},
 		},
 	}

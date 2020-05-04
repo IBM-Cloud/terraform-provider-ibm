@@ -8,16 +8,16 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	validation "github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+
 	//	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
-	"github.com/IBM-Cloud/bluemix-go/models"
-
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	validation "github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
 const (
@@ -27,6 +27,7 @@ const (
 	databaseInstanceInactiveStatus     = "inactive"
 	databaseInstanceFailStatus         = "failed"
 	databaseInstanceRemovedStatus      = "removed"
+	databaseInstanceReclamation        = "pending_reclamation"
 )
 
 const (
@@ -189,6 +190,18 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
+			},
+			"point_in_time_recovery_deployment_id": {
+				Description:      "The CRN of source instance",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: applyOnce,
+			},
+			"point_in_time_recovery_time": {
+				Description:      "The point in time recovery time stamp of the deployed instance",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: applyOnce,
 			},
 			"users": {
 				Type:     schema.TypeSet,
@@ -476,6 +489,8 @@ type Params struct {
 	ServiceEndpoints   string `json:"service-endpoints,omitempty"`
 	BackupID           string `json:"backup-id,omitempty"`
 	RemoteLeaderID     string `json:"remote_leader_id,omitempty"`
+	PITRDeploymentID   string `json:"point_in_time_recovery_deployment_id,omitempty"`
+	PITRTimeStamp      string `json:"point_in_time_recovery_time,omitempty"`
 }
 
 // Replace with func wrapper for resourceIBMResourceInstanceCreate specifying serviceName := "database......."
@@ -571,6 +586,12 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 	}
 	if remoteLeader, ok := d.GetOk("remote_leader_id"); ok {
 		params.RemoteLeaderID = remoteLeader.(string)
+	}
+	if pitrID, ok := d.GetOk("point_in_time_recovery_deployment_id"); ok {
+		params.PITRDeploymentID = pitrID.(string)
+	}
+	if pitrTime, ok := d.GetOk("point_in_time_recovery_time"); ok {
+		params.PITRTimeStamp = pitrTime.(string)
 	}
 	serviceEndpoint := d.Get("service_endpoints").(string)
 	params.ServiceEndpoints = serviceEndpoint
@@ -1260,7 +1281,7 @@ func waitForDatabaseInstanceDelete(d *schema.ResourceData, meta interface{}) (in
 	instanceID := d.Id()
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{databaseInstanceProgressStatus, databaseInstanceInactiveStatus, databaseInstanceSuccessStatus},
-		Target:  []string{databaseInstanceRemovedStatus},
+		Target:  []string{databaseInstanceRemovedStatus, databaseInstanceReclamation},
 		Refresh: func() (interface{}, string, error) {
 			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
 			if err != nil {

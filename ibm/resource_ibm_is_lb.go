@@ -59,6 +59,7 @@ func resourceIBMISLB() *schema.Resource {
 				Required:     true,
 				ForceNew:     false,
 				ValidateFunc: validateISName,
+				Description:  "Load Balancer name",
 			},
 
 			isLBType: {
@@ -67,6 +68,7 @@ func resourceIBMISLB() *schema.Resource {
 				Optional:     true,
 				Default:      "public",
 				ValidateFunc: validateAllowedStringValue([]string{"public", "private"}),
+				Description:  "Load Balancer type",
 			},
 
 			isLBStatus: {
@@ -92,10 +94,11 @@ func resourceIBMISLB() *schema.Resource {
 			},
 
 			isLBSubnets: {
-				Type:     schema.TypeSet,
-				Required: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Required:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "Load Balancer subnets list",
 			},
 
 			isLBTags: {

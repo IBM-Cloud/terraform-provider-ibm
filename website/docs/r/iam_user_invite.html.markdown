@@ -16,7 +16,7 @@ Provides a resource for IAM User Invite. This allows batch of users or single us
 
 ```hcl
 resource "ibm_iam_user_invite" "invite_user" {
-    users = ["test@in.ibm.com"]
+  users = ["test@in.ibm.com"]
 }
 
 ```
@@ -25,8 +25,8 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 ```hcl
 resource "ibm_iam_user_invite" "invite_user" {
-    users = ["test@in.ibm.com"]
-    access_groups = ["accessgroup-id-9876543210"]
+  users         = ["test@in.ibm.com"]
+  access_groups = ["accessgroup-id-9876543210"]
 }
 
 ```
@@ -37,10 +37,10 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 ```hcl
 resource "ibm_iam_user_invite" "invite_user" {
-    users = ["test@in.ibm.com"]
-    classic_infra_roles = {
-      permissions = ["PORT_CONTROL", "DATACENTER_ACCESS"]
-    }
+  users = ["test@in.ibm.com"]
+  classic_infra_roles {
+    permissions = ["PORT_CONTROL", "DATACENTER_ACCESS"]
+  }
 }
 
 ```
@@ -49,10 +49,10 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 ```hcl
 resource "ibm_iam_user_invite" "invite_user" {
-    users = ["test@in.ibm.com"]
-    classic_infra_roles = {
-      permission_set = "superuser"
-    }
+  users = ["test@in.ibm.com"]
+  classic_infra_roles {
+    permission_set = "superuser"
+  }
 }
 
 ```
@@ -64,10 +64,10 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 ```hcl
 resource "ibm_iam_user_invite" "invite_user" {
-    users = ["test@in.ibm.com"]
-    iam_policy =[{
-      roles  = ["Viewer"]
-    }]
+  users = ["test@in.ibm.com"]
+  iam_policy {
+    roles = ["Viewer"]
+  }
 }
 
 ```
@@ -76,13 +76,13 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 ```hcl
 resource "ibm_iam_user_invite" "invite_user" {
-    users = ["test@in.ibm.com"]
-    iam_policy =[{
-      roles  = ["Viewer"]
-      resources = [{
-        service = "kms"
-      }]
-    }]
+  users = ["test@in.ibm.com"]
+  iam_policy {
+    roles = ["Viewer"]
+    resources {
+      service = "kms"
+    }
+  }
 }
 
 ```
@@ -98,14 +98,14 @@ resource "ibm_resource_instance" "instance" {
 }
 
 resource "ibm_iam_user_invite" "invite_user" {
-    users = ["test@in.ibm.com"]
-    iam_policy =[{
-      roles  = ["Manager", "Viewer", "Administrator"]
-      resources = [{
-        service              = "kms"
-        resource_instance_id = "${element(split(":",ibm_resource_instance.instance.id),7)}"
-      }]
-    }]
+  users = ["test@in.ibm.com"]
+  iam_policy {
+    roles = ["Manager", "Viewer", "Administrator"]
+    resources {
+      service              = "kms"
+      resource_instance_id = element(split(":", ibm_resource_instance.instance.id), 7)
+    }
+  }
 }
 
 ```
@@ -118,14 +118,14 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_user_invite" "invite_user" {
-    users = ["test@in.ibm.com"]
-    iam_policy =[{
-      roles  = ["Manager", "Viewer", "Administrator"]
-      resources = [{
-        service           = "containers-kubernetes"
-        resource_group_id = "${data.ibm_resource_group.group.id}"
-      }]
-    }]
+  users = ["test@in.ibm.com"]
+  iam_policy {
+    roles = ["Manager", "Viewer", "Administrator"]
+    resources {
+      service           = "containers-kubernetes"
+      resource_group_id = data.ibm_resource_group.group.id
+    }
+  }
 }
 
 ```
@@ -138,14 +138,14 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_user_invite" "invite_user" {
-    users = ["test@in.ibm.com"]
-    iam_policy =[{
-      roles  = ["Manager", "Viewer", "Administrator"]
-      resources = [{
-        resource_type = "resource-group"
-        resource      = "${data.ibm_resource_group.group.id}"
-      }]
-    }]
+  users = ["test@in.ibm.com"]
+  iam_policy {
+    roles = ["Manager", "Viewer", "Administrator"]
+    resources {
+      resource_type = "resource-group"
+      resource      = data.ibm_resource_group.group.id
+    }
+  }
 }
 
 ```
@@ -158,16 +158,16 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_user_invite" "invite_user" {
-    users = ["test@in.ibm.com"]
-    iam_policy =[{
-      roles  = ["Manager", "Viewer", "Administrator"]
-      resources = [{
-        service = "is"
-        attributes = {
-          "vpcId" = "*"
-        }
-      }]
-    }]
+  users = ["test@in.ibm.com"]
+  iam_policy {
+    roles = ["Manager", "Viewer", "Administrator"]
+    resources {
+      service = "is"
+      attributes = {
+        "vpcId" = "*"
+      }
+    }
+  }
 }
 
 ```
@@ -175,27 +175,28 @@ resource "ibm_iam_user_invite" "invite_user" {
 ### User invite with access cloud foundry roles
 
 ```
-provider "ibm" {}
+provider "ibm" {
+}
 
 data "ibm_org" "org" {
-  org = "${var.org}"
+  org = var.org
 }
 
 data "ibm_space" "space" {
-  org   = "${var.org}"
-  space = "${var.space}"
+  org   = var.org
+  space = var.space
 }
 
 resource "ibm_iam_user_invite" "invite_user" {
-    users = ["test@in.ibm.com"]
-    cloud_foundry_roles = [{
-      organization_guid = "${data.ibm_org.org.id}"
-      org_roles = ["Manager", "Auditor"]
-      spaces = [{
-          space_guid = "${data.ibm_space.space.id}"
-          space_roles = ["Manager", "Developer"]
-      }]
-    }]
+  users = ["test@in.ibm.com"]
+  cloud_foundry_roles {
+    organization_guid = data.ibm_org.org.id
+    org_roles         = ["Manager", "Auditor"]
+    spaces {
+      space_guid  = data.ibm_space.space.id
+      space_roles = ["Manager", "Developer"]
+    }
+  }
 }
 
 ```

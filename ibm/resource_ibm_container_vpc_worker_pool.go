@@ -33,48 +33,55 @@ func resourceIBMContainerVpcWorkerPool() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"cluster": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Cluster name",
 			},
 
 			"flavor": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "cluster node falvor",
 			},
 
 			"worker_pool_name": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "worker pool name",
 			},
 
 			"zones": {
-				Type:     schema.TypeList,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeList,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Zones info",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "zone name",
 						},
 
 						"subnet_id": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "subnet ID",
 						},
 					},
 				},
 			},
 
 			"labels": {
-				Type:             schema.TypeMap,
+				Type:             schema.TypeSet,
 				Optional:         true,
 				Computed:         true,
 				DiffSuppressFunc: applyOnce,
-				Elem:             schema.TypeString,
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				Description:      "Labels",
 			},
 
 			"resource_group_id": {
@@ -221,12 +228,23 @@ func resourceIBMContainerVpcWorkerPoolRead(d *schema.ResourceData, meta interfac
 		return err
 	}
 
+	var zones = make([]map[string]interface{}, 0)
+	for _, zone := range workerPool.Zones {
+		for _, subnet := range zone.Subnets {
+			zoneInfo := map[string]interface{}{
+				"name":      zone.ID,
+				"subnet_id": subnet.ID,
+			}
+			zones = append(zones, zoneInfo)
+		}
+	}
+
 	d.Set("worker_pool_name", workerPool.PoolName)
 	d.Set("flavor", workerPool.Flavor)
 	d.Set("worker_count", workerPool.WorkerCount)
 	d.Set("provider", workerPool.Provider)
 	d.Set("labels", workerPool.Labels)
-	d.Set("zones", flattenVpcZones(workerPool.Zones))
+	d.Set("zones", zones)
 	d.Set("cluster", cluster)
 	d.Set("vpc_id", workerPool.VpcID)
 

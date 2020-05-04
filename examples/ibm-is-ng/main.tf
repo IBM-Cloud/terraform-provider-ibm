@@ -2,22 +2,126 @@ resource "ibm_is_vpc" "vpc1" {
   name = "vpc1"
 }
 
-resource "ibm_is_vpc_address_prefix" "vpc-ap1" {
-  name = "vpc-ap1"
-  zone = var.zone1
-  vpc  = ibm_is_vpc.vpc1.id
-  cidr = "10.241.0.0/24"
+resource "ibm_is_vpc_route" "route1" {
+  name        = "route1"
+  vpc         = ibm_is_vpc.vpc1.id
+  zone        = var.zone1
+  destination = "192.168.4.0/24"
+  next_hop    = "10.240.0.4"
+  depends_on  = ["ibm_is_subnet.subnet1"]
 }
 
-resource "ibm_is_security_group" "sg1" {
-  name = "sg1"
-  vpc  = ibm_is_vpc.vpc1.id
+resource "ibm_is_subnet" "subnet1" {
+  name            = "subnet1"
+  vpc             = ibm_is_vpc.vpc1.id
+  zone            = var.zone1
+  ipv4_cidr_block = "10.240.0.0/28"
 }
 
-resource "ibm_is_security_group_rule" "egress_all" {
-  depends_on = [ibm_is_floating_ip.fip1]
+resource "ibm_is_lb" "lb2" {
+  name    = "mylb"
+  subnets = ibm_is_subnet.subnet1.id
+}
+
+resource "ibm_is_lb_listener" "lb_listener2" {
+  lb       = ibm_is_lb.lb2.id
+  port     = "9086"
+  protocol = "http"
+}
+resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
+  lb                      = ibm_is_lb.lb2.id
+  listener                = ibm_is_lb_listener.lb_listener2.listener_id
+  action                  = "redirect"
+  priority                = 2
+  name                    = "mylistenerpolicy"
+  target_http_status_code = 302
+  target_url              = "https://www.google.com"
+  rules {
+    condition = "contains"
+    type      = "header"
+    field     = "1"
+    value     = "2"
+  }
+}
+
+resource "ibm_is_lb_listener_policy_rule" "lb_listener_policy_rule" {
+  lb        = ibm_is_lb.lb2.id
+  listener  = ibm_is_lb_listener.lb_listener2.listener_id
+  policy    = ibm_is_lb_listener_policy.lb_listener_policy.policy_id
+  condition = "equals"
+  type      = "header"
+  field     = "MY-APP-HEADER"
+  value     = "UpdateVal"
+}
+
+resource "ibm_is_vpn_gateway" "VPNGateway1" {
+  name   = "vpn1"
+  subnet = ibm_is_subnet.subnet1.id
+}
+
+resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection1" {
+  name          = "vpnconn1"
+  vpn_gateway   = ibm_is_vpn_gateway.VPNGateway1.id
+  peer_address  = ibm_is_vpn_gateway.VPNGateway1.public_ip_address
+  preshared_key = "VPNDemoPassword"
+  local_cidrs   = [ibm_is_subnet.subnet1.ipv4_cidr_block]
+  peer_cidrs    = [ibm_is_subnet.subnet2.ipv4_cidr_block]
+  ipsec_policy  = ibm_is_ipsec_policy.example.id
+}
+
+resource "ibm_is_ssh_key" "sshkey" {
+  name       = "ssh1"
+  public_key = file(var.ssh_public_key)
+}
+
+resource "ibm_is_instance" "instance1" {
+  name    = "instance1"
+  image   = var.image
+  profile = var.profile
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.subnet1.id
+  }
+
+  vpc       = ibm_is_vpc.vpc1.id
+  zone      = var.zone1
+  keys      = [ibm_is_ssh_key.sshkey.id]
+  user_data = file("nginx.sh")
+}
+
+resource "ibm_is_floating_ip" "floatingip1" {
+  name   = "fip1"
+  target = ibm_is_instance.instance1.primary_network_interface[0].id
+}
+
+resource "ibm_is_security_group_rule" "sg1_tcp_rule" {
+  depends_on = [ibm_is_floating_ip.floatingip1]
   group      = ibm_is_vpc.vpc1.default_security_group
-  direction  = "outbound"
+  direction  = "inbound"
+  remote     = "0.0.0.0/0"
+
+  tcp {
+    port_min = 22
+    port_max = 22
+  }
+}
+
+resource "ibm_is_security_group_rule" "sg1_icmp_rule" {
+  depends_on = [ibm_is_floating_ip.floatingip1]
+  group      = ibm_is_vpc.vpc1.default_security_group
+  direction  = "inbound"
+  remote     = "0.0.0.0/0"
+
+  icmp {
+    code = 0
+    type = 8
+  }
+}
+
+resource "ibm_is_security_group_rule" "sg1_app_tcp_rule" {
+  depends_on = [ibm_is_floating_ip.floatingip1]
+  group      = ibm_is_vpc.vpc1.default_security_group
+  direction  = "inbound"
   remote     = "0.0.0.0/0"
 
   tcp {
@@ -26,9 +130,102 @@ resource "ibm_is_security_group_rule" "egress_all" {
   }
 }
 
-resource "ibm_is_security_group_network_interface_attachment" "sgnic1" {
-  security_group    = ibm_is_security_group.sg1.id
-  network_interface = ibm_is_instance.ins1.primary_network_interface[0].id
+resource "ibm_is_vpc" "vpc2" {
+  name = "vpc2"
+}
+
+resource "ibm_is_subnet" "subnet2" {
+  name            = "subnet2"
+  vpc             = ibm_is_vpc.vpc2.id
+  zone            = var.zone2
+  ipv4_cidr_block = "10.240.64.0/28"
+}
+
+resource "ibm_is_ipsec_policy" "example" {
+  name                     = "test-ipsec"
+  authentication_algorithm = "md5"
+  encryption_algorithm     = "3des"
+  pfs                      = "disabled"
+}
+
+resource "ibm_is_ike_policy" "example" {
+  name                     = "test-ike"
+  authentication_algorithm = "md5"
+  encryption_algorithm     = "3des"
+  dh_group                 = 2
+  ike_version              = 1
+}
+
+resource "ibm_is_vpn_gateway" "VPNGateway2" {
+  name   = "vpn2"
+  subnet = ibm_is_subnet.subnet2.id
+}
+
+resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection2" {
+  name           = "vpnconn2"
+  vpn_gateway    = ibm_is_vpn_gateway.VPNGateway2.id
+  peer_address   = ibm_is_vpn_gateway.VPNGateway2.public_ip_address
+  preshared_key  = "VPNDemoPassword"
+  local_cidrs    = [ibm_is_subnet.subnet2.ipv4_cidr_block]
+  peer_cidrs     = [ibm_is_subnet.subnet1.ipv4_cidr_block]
+  admin_state_up = true
+  ike_policy     = ibm_is_ike_policy.example.id
+}
+
+resource "ibm_is_instance" "instance2" {
+  name    = "instance2"
+  image   = var.image
+  profile = var.profile
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.subnet2.id
+  }
+
+  vpc       = ibm_is_vpc.vpc2.id
+  zone      = var.zone2
+  keys      = [ibm_is_ssh_key.sshkey.id]
+  user_data = file("nginx.sh")
+}
+
+resource "ibm_is_floating_ip" "floatingip2" {
+  name   = "fip2"
+  target = ibm_is_instance.instance2.primary_network_interface[0].id
+}
+
+resource "ibm_is_security_group_rule" "sg2_tcp_rule" {
+  depends_on = [ibm_is_floating_ip.floatingip2]
+  group      = ibm_is_vpc.vpc2.default_security_group
+  direction  = "inbound"
+  remote     = "0.0.0.0/0"
+
+  tcp {
+    port_min = 22
+    port_max = 22
+  }
+}
+
+resource "ibm_is_security_group_rule" "sg2_icmp_rule" {
+  depends_on = [ibm_is_floating_ip.floatingip2]
+  group      = ibm_is_vpc.vpc2.default_security_group
+  direction  = "inbound"
+  remote     = "0.0.0.0/0"
+
+  icmp {
+    code = 0
+    type = 8
+  }
+}
+
+resource "ibm_is_security_group_rule" "sg2_app_tcp_rule" {
+  depends_on = [ibm_is_floating_ip.floatingip2]
+  group      = ibm_is_vpc.vpc2.default_security_group
+  direction  = "inbound"
+  remote     = "0.0.0.0/0"
+
+  tcp {
+    port_min = 80
+    port_max = 80
+  }
 }
 
 resource "ibm_is_volume" "vol1" {
@@ -47,7 +244,6 @@ resource "ibm_is_volume" "vol2" {
 
 resource "ibm_is_network_acl" "isExampleACL" {
   name = "is-example-acl"
-  vpc  = ibm_is_vpc.vpc1.id
   rules {
     name        = "outbound"
     action      = "allow"
@@ -76,124 +272,8 @@ resource "ibm_is_network_acl" "isExampleACL" {
   }
 }
 
-resource "ibm_is_subnet" "subnet1" {
-  name            = "subnet1"
-  vpc             = ibm_is_vpc.vpc1.id
-  zone            = var.zone1
-  ipv4_cidr_block = "10.240.0.0/24"
-}
-
-resource "ibm_is_vpc" "vpc2" {
-  name = "vpc2"
-}
-
-resource "ibm_is_subnet" "subnet2" {
-  name            = "subnet2"
-  vpc             = ibm_is_vpc.vpc2.id
-  zone            = var.zone2
-  ipv4_cidr_block = "10.240.64.0/28"
-}
-
-resource "ibm_is_ipsec_policy" "example" {
-  name                     = "test-ipsec"
-  authentication_algorithm = "md5"
-  encryption_algorithm     = "3des"
-  pfs                      = "disabled"
-}
-
-resource "ibm_is_ssh_key" "ssh1" {
-  name       = "ssh1"
-  public_key = var.ssh_public_key
-}
-
-resource "ibm_is_instance" "ins1" {
-  name    = "ins1"
-  image   = var.image
-  profile = var.profile
-
-  primary_network_interface {
-    subnet = ibm_is_subnet.subnet1.id
-  }
-
-  vpc  = ibm_is_vpc.vpc1.id
-  zone = var.zone1
-  keys = [ibm_is_ssh_key.ssh1.id]
-
-  //User can configure timeouts
-  timeouts {
-    create = "90m"
-    delete = "30m"
-  }
-}
-
-resource "ibm_is_floating_ip" "fip1" {
-  name   = "ip1"
-  target = ibm_is_instance.ins1.primary_network_interface[0].id
-}
-
-resource "ibm_is_public_gateway" "gateway1" {
+resource "ibm_is_public_gateway" "publicgateway1" {
   name = "gateway1"
   vpc  = ibm_is_vpc.vpc1.id
   zone = var.zone1
-
-  //User can configure timeouts
-  timeouts {
-    create = "90m"
-  }
-}
-
-resource "ibm_is_lb" "lb" {
-  name    = "loadbalancer1"
-  subnets = [ibm_is_subnet.subnet1.id]
-}
-
-resource "ibm_is_lb_listener" "testacc_lb_listener" {
-  lb       = ibm_is_lb.lb.id
-  port     = "9080"
-  protocol = "http"
-}
-
-resource "ibm_is_lb_pool" "webapptier-lb-pool" {
-  lb                 = ibm_is_lb.lb.id
-  name               = "a-webapptier-lb-pool"
-  protocol           = "http"
-  algorithm          = "round_robin"
-  health_delay       = "5"
-  health_retries     = "2"
-  health_timeout     = "2"
-  health_type        = "http"
-  health_monitor_url = "/"
-  depends_on         = [ibm_is_lb_listener.testacc_lb_listener]
-}
-
-resource "ibm_is_lb_pool_member" "webapptier-lb-pool-member-zone1" {
-  lb             = ibm_is_lb.lb.id
-  pool           = element(split("/", ibm_is_lb_pool.webapptier-lb-pool.id), 1)
-  port           = "86"
-  target_address = "192.168.0.1"
-  depends_on     = [ibm_is_lb_listener.testacc_lb_listener]
-}
-
-resource "ibm_is_vpn_gateway" "VPNGateway1" {
-  name   = "vpn1"
-  subnet = ibm_is_subnet.subnet1.id
-}
-
-resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection1" {
-  name          = "vpnconn1"
-  vpn_gateway   = ibm_is_vpn_gateway.VPNGateway1.id
-  peer_address  = ibm_is_vpn_gateway.VPNGateway1.public_ip_address
-  preshared_key = "VPNDemoPassword"
-  local_cidrs   = [ibm_is_subnet.subnet1.ipv4_cidr_block]
-  peer_cidrs    = [ibm_is_subnet.subnet2.ipv4_cidr_block]
-  ipsec_policy  = ibm_is_ipsec_policy.example.id
-}
-
-resource "ibm_is_vpc_route" "route" {
-  name        = "route1"
-  vpc         = ibm_is_vpc.vpc1.id
-  zone        = var.zone1
-  destination = "192.168.4.0/24"
-  next_hop    = "10.240.0.4"
-  depends_on  = ["ibm_is_subnet.subnet1"]
 }

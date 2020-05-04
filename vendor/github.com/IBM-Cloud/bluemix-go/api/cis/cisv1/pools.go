@@ -16,7 +16,7 @@ type Pool struct {
 	Monitor      string   `json:"monitor"`
 	NotEmail     string   `json:"notification_email"`
 	Origins      []Origin `json:"origins"`
-	Healthy      bool     `json:"healthy"`
+	Health       string   `json:"health"`
 	CreatedOn    string   `json:"created_on"`
 	ModifiedOn   string   `json:"modified_on"`
 }
@@ -30,6 +30,7 @@ type Origin struct {
 	Address string `json:"address"`
 	Enabled bool   `json:"enabled"`
 	Weight  int    `json:"weight"`
+	Healthy bool   `json:"healthy"`
 }
 
 type PoolResults struct {

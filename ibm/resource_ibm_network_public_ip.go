@@ -38,8 +38,9 @@ func resourceIBMNetworkPublicIp() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"ip_address": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "IP Address",
 			},
 
 			"routes_to": &schema.Schema{
@@ -58,16 +59,19 @@ func resourceIBMNetworkPublicIp() *schema.Resource {
 					// the compressed value of n equals the compressed value of o.
 					return newRoutesTo != nil && (newRoutesTo.String() == net.ParseIP(o).String())
 				},
+				Description: "Route info",
 			},
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "List of tags",
 			},
 			"notes": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Additional notes",
 			},
 		},
 	}

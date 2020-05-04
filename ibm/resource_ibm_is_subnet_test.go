@@ -8,14 +8,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISSubnet_basic(t *testing.T) {
-	var subnet *models.Subnet
-	vpcname := fmt.Sprintf("terraformsubnetuat-vpc-%d", acctest.RandInt())
-	name1 := fmt.Sprintf("terraformsubnetuat-create-step-name-%d", acctest.RandInt())
+	var subnet string
+	vpcname := fmt.Sprintf("tfsubnet-vpc-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfsubnet-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -25,7 +25,7 @@ func TestAccIBMISSubnet_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMISSubnetConfig(vpcname, name1, ISZoneName, ISCIDR),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISSubnetExists("ibm_is_subnet.testacc_subnet", &subnet),
+					testAccCheckIBMISSubnetExists("ibm_is_subnet.testacc_subnet", subnet),
 					resource.TestCheckResourceAttr(
 						"ibm_is_subnet.testacc_subnet", "name", name1),
 					resource.TestCheckResourceAttr(
@@ -39,26 +39,45 @@ func TestAccIBMISSubnet_basic(t *testing.T) {
 }
 
 func testAccCheckIBMISSubnetDestroy(s *terraform.State) error {
-	sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
+	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	subnetC := network.NewSubnetClient(sess)
+	if userDetails.generation == 1 {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_subnet" {
+				continue
+			}
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_is_subnet" {
-			continue
+			getsubnetoptions := &vpcclassicv1.GetSubnetOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetSubnet(getsubnetoptions)
+			if err == nil {
+				return fmt.Errorf("subnet still exists: %s", rs.Primary.ID)
+			}
 		}
+	} else {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_subnet" {
+				continue
+			}
 
-		_, err := subnetC.Get(rs.Primary.ID)
+			getsubnetoptions := &vpcv1.GetSubnetOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetSubnet(getsubnetoptions)
 
-		if err == nil {
-			return fmt.Errorf("subnet still exists: %s", rs.Primary.ID)
+			if err == nil {
+				return fmt.Errorf("subnet still exists: %s", rs.Primary.ID)
+			}
 		}
 	}
 
 	return nil
 }
 
-func testAccCheckIBMISSubnetExists(n string, subnet **models.Subnet) resource.TestCheckFunc {
+func testAccCheckIBMISSubnetExists(n, subnetID string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -70,15 +89,29 @@ func testAccCheckIBMISSubnetExists(n string, subnet **models.Subnet) resource.Te
 			return errors.New("No Record ID is set")
 		}
 
-		sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
-		subnetC := network.NewSubnetClient(sess)
-		foundsubnet, err := subnetC.Get(rs.Primary.ID)
+		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-		if err != nil {
-			return err
+		if userDetails.generation == 1 {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+			getsubnetoptions := &vpcclassicv1.GetSubnetOptions{
+				ID: &rs.Primary.ID,
+			}
+			foundsubnet, _, err := sess.GetSubnet(getsubnetoptions)
+			if err != nil {
+				return err
+			}
+			subnetID = *foundsubnet.ID
+		} else {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+			getsubnetoptions := &vpcv1.GetSubnetOptions{
+				ID: &rs.Primary.ID,
+			}
+			foundsubnet, _, err := sess.GetSubnet(getsubnetoptions)
+			if err != nil {
+				return err
+			}
+			subnetID = *foundsubnet.ID
 		}
-
-		*subnet = foundsubnet
 		return nil
 	}
 }

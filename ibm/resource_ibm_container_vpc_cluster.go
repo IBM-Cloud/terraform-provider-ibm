@@ -15,6 +15,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.ibm.com/Bluemix/riaas-go-client/clients/lbaas"
+	"github.ibm.com/Bluemix/riaas-go-client/session"
 )
 
 const (
@@ -45,9 +47,10 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"flavor": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Cluster nodes flavour",
 			},
 
 			"name": {
@@ -65,9 +68,10 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 			},
 
 			"zones": {
-				Type:     schema.TypeList,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeList,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Zone info",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -104,42 +108,46 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 					}
 					return false
 				},
+				Description: "Kubernetes version",
 			},
 
 			"service_subnet": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "172.21.0.0/16",
 				ForceNew:    true,
 				Description: "Custom subnet CIDR to provide private IP addresses for services",
+				Computed:    true,
 			},
 
 			"pod_subnet": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "172.30.0.0/16",
 				ForceNew:    true,
 				Description: "Custom subnet CIDR to provide private IP addresses for pods",
+				Computed:    true,
 			},
 
 			"worker_count": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  1,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     1,
+				Description: "Number of worker nodes in the cluster",
 			},
 
 			"disable_public_service_endpoint": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Boolean value true if Public service endpoint to be disabled",
 			},
 
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      resourceIBMVPCHash,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "List of tags for the resources",
 			},
 
 			"wait_till": {
@@ -281,6 +289,17 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 
 func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface{}) error {
 
+	sess, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		return err
+	}
+
+	var vpcProvider string
+	vpcProvider = "vpc-classic"
+	if sess.Generation == 2 {
+		vpcProvider = "vpc-gen2"
+	}
+
 	csClient, err := meta.(ClientSession).VpcContainerAPI()
 	if err != nil {
 		return err
@@ -333,6 +352,7 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		PodSubnet:                    podSubnet,
 		ServiceSubnet:                serviceSubnet,
 		WorkerPools:                  workerpool,
+		Provider:                     vpcProvider,
 	}
 
 	targetEnv, err := getVpcClusterTargetHeader(d, meta)
@@ -342,7 +362,6 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 
 	cls, err := csClient.Clusters().Create(params, targetEnv)
 
-	log.Println("Cluster creation response: ", cls)
 	if err != nil {
 		return err
 	}
@@ -569,6 +588,40 @@ func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface
 		return err
 	}
 	clusterID := d.Id()
+
+	var zonesList = make([]v2.Zone, 0)
+
+	if res, ok := d.GetOk("zones"); ok {
+		zones := res.([]interface{})
+		for _, e := range zones {
+			r, _ := e.(map[string]interface{})
+			if ID, subnetID := r["name"], r["subnet_id"]; ID != nil && subnetID != nil {
+				zoneParam := v2.Zone{}
+				zoneParam.ID, zoneParam.SubnetID = ID.(string), subnetID.(string)
+				zonesList = append(zonesList, zoneParam)
+			}
+
+		}
+	}
+	splitZone := strings.Split(zonesList[0].ID, "-")
+	region := splitZone[0] + "-" + splitZone[1]
+
+	sess1, err := meta.(ClientSession).ISSession()
+	if err != nil {
+		log.Println("error creating ISsession", err)
+	}
+
+	newSess, err := session.New(sess1.IAMToken, region, int(sess1.Generation), false, 10*time.Minute)
+	if err != nil {
+		log.Println("error creating new ISsession", err)
+	}
+	client := lbaas.NewLoadBalancerClient(newSess)
+
+	lbs, err := client.List()
+	if err != nil {
+		log.Println("cannot retreive load balancers=", err)
+	}
+
 	err = csClient.Clusters().Delete(clusterID, targetEnv)
 	if err != nil {
 		return fmt.Errorf("Error deleting cluster: %s", err)
@@ -577,6 +630,26 @@ func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface
 	if err != nil {
 		return err
 	}
+
+	if len(lbs) > 0 {
+		for _, lb := range lbs {
+			if strings.Contains(lb.Name, clusterID) {
+				log.Println("Deleting Load Balancer", lb.Name)
+				client := lbaas.NewLoadBalancerClient(newSess)
+				err = client.Delete(string(lb.ID))
+				if err != nil {
+					log.Println("error deleting Load Balancer", err)
+				}
+
+				_, err = isWaitForDeleted(client, string(lb.ID), d.Timeout(schema.TimeoutDelete))
+				if err != nil {
+					log.Println("error waiting for Load Balancer to be deleted", err)
+				}
+			}
+		}
+
+	}
+
 	return nil
 }
 

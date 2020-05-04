@@ -487,7 +487,7 @@ func (apiGatewayControllerApi *ApiGatewayControllerApiV1) GetEndpointSwagger(get
 		return
 	}
 
-	response, err = apiGatewayControllerApi.Service.Request(request, nil)
+	response, err = apiGatewayControllerApi.Service.Request(request, make(map[string]interface{}))
 
 	return
 }
@@ -725,6 +725,9 @@ func (apiGatewayControllerApi *ApiGatewayControllerApiV1) CreateSubscription(cre
 	}
 	if createSubscriptionOptions.ClientSecret != nil {
 		body["client_secret"] = createSubscriptionOptions.ClientSecret
+	}
+	if createSubscriptionOptions.GenerateSecret != nil {
+		body["generate_secret"] = createSubscriptionOptions.GenerateSecret
 	}
 	if createSubscriptionOptions.AccountID != nil {
 		body["account_id"] = createSubscriptionOptions.AccountID
@@ -1228,11 +1231,13 @@ type CreateSubscriptionOptions struct {
 	// User bearer token.
 	Authorization *string `json:"authorization" validate:"required"`
 
-	ClientID *string `json:"client_id" validate:"required"`
+	ClientID *string `json:"client_id",omitempty`
 
 	ArtifactID *string `json:"artifact_id" validate:"required"`
 
 	ClientSecret *string `json:"client_secret,omitempty"`
+
+	GenerateSecret *bool `json:"generate_secret, omitempty"`
 
 	AccountID *string `json:"account_id,omitempty"`
 
@@ -2479,7 +2484,7 @@ func UnmarshalV2EndpointSummarySliceAsProperty(m map[string]interface{}, propert
 
 // V2Subscription : V2Subscription struct
 type V2Subscription struct {
-	ClientID *string `json:"client_id" validate:"required"`
+	ClientID *string `json:"client_id" ,omitempty`
 
 	SecretProvided *bool `json:"secret_provided,omitempty"`
 

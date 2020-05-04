@@ -2,13 +2,14 @@ package ibm
 
 import (
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"log"
-	"time"
 )
 
 func resourceIBMPIImage() *schema.Resource {
@@ -28,25 +29,29 @@ func resourceIBMPIImage() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			helpers.PIImageName: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Image name",
 			},
 
 			helpers.PIInstanceImageName: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Instance image name",
 			},
 
 			helpers.PICloudInstanceId: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "PI cloud instance ID",
 			},
 
 			// Computed Attribute
 
 			"image_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Image ID",
 			},
 		},
 	}

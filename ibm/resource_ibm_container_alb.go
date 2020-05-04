@@ -25,29 +25,34 @@ func resourceIBMContainerALB() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"alb_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "ALB ID",
 			},
 			"alb_type": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ALB type",
 			},
 			"cluster": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Cluster id",
 			},
 			"user_ip": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "IP assigned by the user",
 			},
 			"enable": {
 				Type:          schema.TypeBool,
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"disable_deployment"},
+				Description:   "set to true if ALB needs to be enabled",
 			},
 			"disable_deployment": {
 				Type:          schema.TypeBool,
@@ -55,14 +60,17 @@ func resourceIBMContainerALB() *schema.Resource {
 				Computed:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"enable"},
+				Description:   "Set to true if ALB needs to be disabled",
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ALB name",
 			},
 			"zone": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ALB zone",
 			},
 			"region": {
 				Type:       schema.TypeString,

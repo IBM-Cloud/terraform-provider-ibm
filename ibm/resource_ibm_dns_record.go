@@ -52,53 +52,62 @@ func resourceIBMDNSRecord() *schema.Resource {
 					}
 					return
 				},
+				Description: "DNS record data",
 			},
 
 			"domain_id": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Domain ID of dns record instance",
 			},
 
 			"expire": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "DNS record expiry info",
 			},
 
 			"host": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Hostname",
 			},
 
 			"mx_priority": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  0,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     0,
+				Description: "Maximum priority",
 			},
 
 			"refresh": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "refresh rate",
 			},
 
 			"responsible_person": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Responsible person for DNS record",
 			},
 
 			"retry": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "Retry count",
 			},
 
 			"minimum_ttl": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "Minimun TTL configuration",
 			},
 
 			"ttl": {
@@ -107,6 +116,7 @@ func resourceIBMDNSRecord() *schema.Resource {
 				DefaultFunc: func() (interface{}, error) {
 					return 86400, nil
 				},
+				Description: "TTL configuration",
 			},
 
 			"type": {
@@ -129,40 +139,47 @@ func resourceIBMDNSRecord() *schema.Resource {
 					)
 					return
 				},
+				Description: "DNS record type",
 			},
 
 			"service": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "service info",
 			},
 
 			"protocol": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "protocol info",
 			},
 
 			"port": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "port number",
 			},
 
 			"priority": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  0,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     0,
+				Description: "priority info",
 			},
 
 			"weight": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  0,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     0,
+				Description: "weight info",
 			},
 
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "tags set for the resource",
 			},
 		},
 	}

@@ -29,9 +29,10 @@ func resourceIBMIPSecVPN() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"datacenter": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Datacenter name",
 			},
 			"internal_peer_ip_address": {
 				Type:     schema.TypeString,
@@ -132,21 +133,25 @@ func resourceIBMIPSecVPN() *schema.Resource {
 				},
 			},
 			"preshared_key": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Preshared Key data",
 			},
 			"customer_peer_ip": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Customer Peer IP Address",
 			},
 			"internal_subnet_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Internal subnet ID value",
 			},
 			"remote_subnet_id": { //customer subnet id . need atleast one customer subnet id for applying the configuratons
 				Type:          schema.TypeInt,
 				Optional:      true,
 				ConflictsWith: []string{"remote_subnet"},
+				Description:   "Remote subnet ID value",
 			},
 			"remote_subnet": { //parameters to be populated for creating a customer subnet. Specify only one parameter:- remote subnet/remote subnet id
 				Type:          schema.TypeList,
@@ -173,8 +178,9 @@ func resourceIBMIPSecVPN() *schema.Resource {
 				},
 			},
 			"service_subnet_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Service subnet ID value",
 			},
 		},
 	}

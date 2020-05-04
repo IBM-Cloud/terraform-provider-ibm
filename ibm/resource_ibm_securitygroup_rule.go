@@ -36,23 +36,27 @@ func resourceIBMSecurityGroupRule() *schema.Resource {
 				ValidateFunc: validateSecurityRuleEtherType,
 			},
 			"port_range_min": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Port number minimum range",
 			},
 			"port_range_max": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Port number max range",
 			},
 			"remote_group_id": {
 				Type:          schema.TypeInt,
 				Optional:      true,
 				ConflictsWith: []string{"remote_ip"},
+				Description:   "remote group ID",
 			},
 			"remote_ip": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				ConflictsWith: []string{"remote_group_id"},
 				ValidateFunc:  validateRemoteIP,
+				Description:   "Remote IP Address",
 			},
 			"protocol": {
 				Type:         schema.TypeString,
@@ -61,9 +65,10 @@ func resourceIBMSecurityGroupRule() *schema.Resource {
 				ValidateFunc: validateSecurityRuleProtocol,
 			},
 			"security_group_id": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Security group ID",
 			},
 		},
 	}

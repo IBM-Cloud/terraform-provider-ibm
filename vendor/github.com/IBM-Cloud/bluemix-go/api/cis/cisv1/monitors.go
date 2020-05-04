@@ -7,19 +7,19 @@ import (
 )
 
 type Monitor struct {
-	Id          string `json:"id"`
-	Path        string `json:"path"`
-	Description string `json:"description"`
-	ExpBody     string `json:"expected_body"`
-	ExpCodes    string `json:"expected_codes"`
-	// Headers omitted future enhancement
-	MonType         string `json:"type"`
-	Method          string `json:"method"`
-	Timeout         int    `json:"timeout"`
-	Retries         int    `json:"retries"`
-	Interval        int    `json:"interval"`
-	FollowRedirects bool   `json:"follow_redirects"`
-	AllowInsecure   bool   `json:"allow_insecure"`
+	Id              string `json:"id"`
+	Path            string `json:"path,omitempty"`
+	Description     string `json:"description"`
+	ExpBody         string `json:"expected_body,omitempty"`
+	ExpCodes        string `json:"expected_codes,omitempty"`
+	MonType         string `json:"type,omitempty"`
+	Method          string `json:"method,omitempty"`
+	Timeout         int    `json:"timeout,omitempty"`
+	Retries         int    `json:"retries,omitempty"`
+	Interval        int    `json:"interval,omitempty"`
+	FollowRedirects bool   `json:"follow_redirects,omitempty"`
+	AllowInsecure   bool   `json:"allow_insecure,omitempty"`
+	Port            int    `json:"port,omitempty"`
 }
 
 type MonitorResults struct {
@@ -37,11 +37,10 @@ type MonitorResult struct {
 }
 
 type MonitorBody struct {
-	Description string `json:"description"`
-	ExpCodes    string `json:"expected_codes"`
-	ExpBody     string `json:"expected_body"`
-	Path        string `json:"path"`
-	// Headers ommited TBC
+	Description     string `json:"description"`
+	ExpCodes        string `json:"expected_codes,omitempty"`
+	ExpBody         string `json:"expected_body,omitempty"`
+	Path            string `json:"path,omitempty"`
 	MonType         string `json:"type,omitempty"`
 	Method          string `json:"method,omitempty"`
 	Timeout         int    `json:"timeout,omitempty"`
@@ -49,6 +48,7 @@ type MonitorBody struct {
 	Interval        int    `json:"interval,omitempty"`
 	FollowRedirects bool   `json:"follow_redirects,omitempty"`
 	AllowInsecure   bool   `json:"allow_insecure,omitempty"`
+	Port            int    `json:"port,omitempty"`
 }
 
 type MonitorDelete struct {
@@ -65,6 +65,7 @@ type Monitors interface {
 	GetMonitor(cisId string, monitorId string) (*Monitor, error)
 	CreateMonitor(cisId string, monitorBody MonitorBody) (*Monitor, error)
 	DeleteMonitor(cisId string, monitorId string) error
+	UpdateMonitor(cisId string, monitorId string, monitorBody MonitorBody) (*Monitor, error)
 }
 
 type monitors struct {
@@ -110,6 +111,16 @@ func (r *monitors) CreateMonitor(cisId string, monitorBody MonitorBody) (*Monito
 	monitorResult := MonitorResult{}
 	rawURL := fmt.Sprintf("/v1/%s/load_balancers/monitors/", cisId)
 	_, err := r.client.Post(rawURL, &monitorBody, &monitorResult)
+	if err != nil {
+		return nil, err
+	}
+	return &monitorResult.Monitor, nil
+}
+
+func (r *monitors) UpdateMonitor(cisId string, monitorId string, monitorBody MonitorBody) (*Monitor, error) {
+	monitorResult := MonitorResult{}
+	rawURL := fmt.Sprintf("/v1/%s/load_balancers/monitors/%s", cisId, monitorId)
+	_, err := r.client.Put(rawURL, &monitorBody, &monitorResult)
 	if err != nil {
 		return nil, err
 	}

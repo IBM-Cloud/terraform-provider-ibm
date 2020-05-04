@@ -6,8 +6,9 @@ import (
 	"strings"
 	"time"
 
-	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
+	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 )
 
 func resourceIBMCISDnsRecord() *schema.Resource {
@@ -31,21 +32,23 @@ func resourceIBMCISDnsRecord() *schema.Resource {
 			},
 			"name": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 				StateFunc: func(i interface{}) string {
 					return strings.ToLower(i.(string))
 				},
 				DiffSuppressFunc: suppressNameDiff,
+				Description:      "DNS record name",
 			},
 			"type": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Record type",
 			},
 			"content": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				Computed:      true,
 				ConflictsWith: []string{"data"},
+				Description:   "DNS record content",
 			},
 			"data": {
 				Type:          schema.TypeMap,
@@ -218,14 +221,16 @@ func resourceIBMCISDnsRecord() *schema.Resource {
 
 						// SSHFP record properties
 						"fingerprint": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "SSH fingerprint properties",
 						},
 
 						// URI record properties
 						"content": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Content info",
 						},
 					},
 				},
@@ -235,14 +240,22 @@ func resourceIBMCISDnsRecord() *schema.Resource {
 				Type:             schema.TypeInt,
 				Optional:         true,
 				DiffSuppressFunc: suppressPriority,
+				Description:      "Priority Value",
 			},
 
 			"proxied": {
-				Default:  false,
-				Optional: true,
-				Type:     schema.TypeBool,
+				Default:     false,
+				Optional:    true,
+				Type:        schema.TypeBool,
+				Description: "Boolean value true if proxied else flase",
 			},
 
+			"ttl": {
+				Optional:    true,
+				Type:        schema.TypeInt,
+				Default:     1,
+				Description: "TTL value",
+			},
 			"created_on": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -255,6 +268,10 @@ func resourceIBMCISDnsRecord() *schema.Resource {
 
 			"proxiable": {
 				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"record_id": {
+				Type:     schema.TypeString,
 				Computed: true,
 			},
 		},
@@ -271,9 +288,12 @@ func resourceIBMCISDnsRecordCreate(d *schema.ResourceData, meta interface{}) err
 
 	newRecord := v1.DnsBody{
 		DnsType: d.Get("type").(string),
-		Name:    d.Get("name").(string),
 	}
 
+	name, nameOk := d.GetOk("name")
+	if nameOk {
+		newRecord.Name = name.(string)
+	}
 	content, contentOk := d.GetOk("content")
 	if contentOk {
 		newRecord.Content = content.(string)
@@ -306,6 +326,9 @@ func resourceIBMCISDnsRecordCreate(d *schema.ResourceData, meta interface{}) err
 	if priority, ok := d.GetOk("priority"); ok {
 		newRecord.Priority = priority.(int)
 	}
+	if ttl, ok := d.GetOk("ttl"); ok {
+		newRecord.Ttl = ttl.(int)
+	}
 
 	if err := validateRecordName(newRecord.DnsType, newRecord.Content); err != nil {
 		return fmt.Errorf("Error validating record name %q: %s", newRecord.Name, err)
@@ -328,7 +351,7 @@ func resourceIBMCISDnsRecordCreate(d *schema.ResourceData, meta interface{}) err
 
 	d.SetId(convertCisToTfThreeVar(record.Id, zoneId, cisId))
 
-	return resourceIBMCISDnsRecordRead(d, meta)
+	return resourceIBMCISDnsRecordUpdate(d, meta)
 }
 
 func resourceIBMCISDnsRecordRead(d *schema.ResourceData, meta interface{}) error {
@@ -353,6 +376,7 @@ func resourceIBMCISDnsRecordRead(d *schema.ResourceData, meta interface{}) error
 	}
 
 	record := *recordPtr
+	d.Set("record_id", recordId)
 	d.Set("cis_id", cisId)
 	d.Set("domain_id", convertCisToTfTwoVar(zoneId, cisId))
 	d.Set("name", record.Name)
@@ -370,6 +394,73 @@ func resourceIBMCISDnsRecordRead(d *schema.ResourceData, meta interface{}) error
 }
 
 func resourceIBMCISDnsRecordUpdate(d *schema.ResourceData, meta interface{}) error {
+	cisClient, err := meta.(ClientSession).CisAPI()
+	if err != nil {
+		return err
+	}
+	dnsID, zoneID, cisID, _ := convertTfToCisThreeVar(d.Id())
+	if err != nil {
+		return err
+	}
+	updateRecord := v1.DnsBody{
+		DnsType: d.Get("type").(string),
+	}
+	if d.HasChange("name") || d.HasChange("content") || d.HasChange("proxied") || d.HasChange("ttl") || d.HasChange("priority") || d.HasChange("data") {
+		if name, ok := d.Get("name").(string); ok {
+			updateRecord.Name = name
+		}
+		content, contentOk := d.GetOk("content")
+		if contentOk {
+			updateRecord.Content = content.(string)
+		}
+		proxied, proxiedOk := d.GetOk("proxied")
+		ttl, ttlOK := d.GetOk("ttl")
+		if proxiedOk {
+			updateRecord.Proxied = proxied.(bool)
+		}
+		if ttlOK {
+			updateRecord.Ttl = ttl.(int)
+		}
+		if ttl != 1 && proxied == true {
+			return fmt.Errorf("To enable proxy TTL should be Automatic i.e it should be set to 1. For the the values other than Automatic, proxy should be disabled.")
+		}
+		priority, priorityOk := d.GetOk("priority")
+		if priorityOk {
+			updateRecord.Priority = priority.(int)
+		}
+		if updateRecord.DnsType == "SRV" {
+			updateRecord.Priority = 0
+		}
+		data, dataOk := d.GetOk("data")
+		newDataMap := make(map[string]interface{})
+		if dataOk {
+			for id, content := range data.(map[string]interface{}) {
+				newData, err := transformToIBMCISDnsData(updateRecord.DnsType, id, content)
+				if err != nil {
+					return err
+				} else if newData == nil {
+					continue
+				}
+				newDataMap[id] = newData
+			}
+
+			updateRecord.Data = newDataMap
+		}
+		if contentOk == dataOk {
+			return fmt.Errorf(
+				"either 'content' (present: %t) or 'data' (present: %t) must be provided",
+				contentOk, dataOk)
+		}
+
+		if err := validateRecordName(updateRecord.DnsType, updateRecord.Content); err != nil {
+			return fmt.Errorf("Error validating record name %q: %s", updateRecord.Name, err)
+		}
+
+		_, err = cisClient.Dns().UpdateDns(cisID, zoneID, dnsID, updateRecord)
+		if err != nil {
+			return fmt.Errorf("Failed to updating record: %s", err)
+		}
+	}
 	return resourceIBMCISDnsRecordRead(d, meta)
 }
 

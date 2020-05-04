@@ -13,8 +13,8 @@ import (
 )
 
 func TestAccIBMSecurityGroupRule_basic(t *testing.T) {
-	name1 := fmt.Sprintf("terraformsguat_create_step_name_%d", acctest.RandInt())
-	desc1 := fmt.Sprintf("terraformsguat_create_step_desc_%d", acctest.RandInt())
+	name1 := fmt.Sprintf("terraformsguat_create_step_name_%d", acctest.RandIntRange(10, 100))
+	desc1 := fmt.Sprintf("terraformsguat_create_step_desc_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -61,8 +61,8 @@ func TestAccIBMSecurityGroupRule_basic(t *testing.T) {
 }
 
 func TestAccIBMSecurityGroupRule_with_remote_group(t *testing.T) {
-	name1 := fmt.Sprintf("terraformsguat_create_step_name_%d", acctest.RandInt())
-	desc1 := fmt.Sprintf("terraformsguat_create_step_desc_%d", acctest.RandInt())
+	name1 := fmt.Sprintf("terraformsguat_create_step_name_%d", acctest.RandIntRange(10, 100))
+	desc1 := fmt.Sprintf("terraformsguat_create_step_desc_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -93,8 +93,8 @@ func TestAccIBMSecurityGroupRule_with_remote_group(t *testing.T) {
 }
 
 func TestAccIBMSecurityGroupRule_with_remote_ip(t *testing.T) {
-	name1 := fmt.Sprintf("terraformsguat_create_step_name_%d", acctest.RandInt())
-	desc1 := fmt.Sprintf("terraformsguat_create_step_desc_%d", acctest.RandInt())
+	name1 := fmt.Sprintf("terraformsguat_create_step_name_%d", acctest.RandIntRange(10, 100))
+	desc1 := fmt.Sprintf("terraformsguat_create_step_desc_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -125,10 +125,10 @@ func TestAccIBMSecurityGroupRule_with_remote_ip(t *testing.T) {
 }
 
 func TestAccIBMSecurityGroupRule_with_cross_refernce_another_security_group(t *testing.T) {
-	name1 := fmt.Sprintf("terraformsguat_create_step_name_%d", acctest.RandInt())
-	desc1 := fmt.Sprintf("terraformsguat_create_step_desc_%d", acctest.RandInt())
-	name2 := fmt.Sprintf("terraformsguat_create_step_name_%d", acctest.RandInt())
-	desc2 := fmt.Sprintf("terraformsguat_create_step_desc_%d", acctest.RandInt())
+	name1 := fmt.Sprintf("terraformsguat_create_step_name_%d", acctest.RandIntRange(10, 100))
+	desc1 := fmt.Sprintf("terraformsguat_create_step_desc_%d", acctest.RandIntRange(10, 100))
+	name2 := fmt.Sprintf("terraformsguat_create_step_name_%d", acctest.RandIntRange(10, 100))
+	desc2 := fmt.Sprintf("terraformsguat_create_step_desc_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

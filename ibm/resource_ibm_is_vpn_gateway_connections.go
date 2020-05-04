@@ -52,44 +52,51 @@ func resourceIBMISVPNGatewayConnection() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateISName,
+				Description:  "VPN Gateway connection name",
 			},
 
 			isVPNGatewayConnectionVPNGateway: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "VPN Gateway info",
 			},
 
 			isVPNGatewayConnectionPeerAddress: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "VPN gateway connection peer address",
 			},
 
 			isVPNGatewayConnectionPreSharedKey: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "vpn gateway",
 			},
 
 			isVPNGatewayConnectionAdminStateup: {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "VPN gateway connection admin state",
 			},
 
 			isVPNGatewayConnectionLocalCIDRS: {
-				Type:     schema.TypeSet,
-				Optional: true,
-				ForceNew: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				ForceNew:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "VPN gateway connection local CIDRs",
 			},
 
 			isVPNGatewayConnectionPeerCIDRS: {
-				Type:     schema.TypeSet,
-				Optional: true,
-				ForceNew: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				ForceNew:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "VPN gateway connection peer CIDRs",
 			},
 
 			isVPNGatewayConnectionDeadPeerDetectionAction: {
@@ -97,33 +104,39 @@ func resourceIBMISVPNGatewayConnection() *schema.Resource {
 				Optional:     true,
 				Default:      "none",
 				ValidateFunc: validateAllowedStringValue([]string{"restart", "clear", "hold", "none"}),
+				Description:  "Action detection for dead peer detection action",
 			},
 			isVPNGatewayConnectionDeadPeerDetectionInterval: {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      30,
 				ValidateFunc: validateDeadPeerDetectionInterval,
+				Description:  "Interval for dead peer detection interval",
 			},
 			isVPNGatewayConnectionDeadPeerDetectionTimeout: {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      120,
 				ValidateFunc: validateDeadPeerDetectionInterval,
+				Description:  "Timeout for dead peer detection",
 			},
 
 			isVPNGatewayConnectionIPSECPolicy: {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "IP security policy for vpn gateway connection",
 			},
 
 			isVPNGatewayConnectionIKEPolicy: {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "VPN gateway connection IKE Policy",
 			},
 
 			isVPNGatewayConnectionStatus: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "VPN gateway connection status",
 			},
 		},
 	}

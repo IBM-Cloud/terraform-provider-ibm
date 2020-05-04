@@ -3,6 +3,7 @@ package ibm
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/go-openapi/strfmt"
@@ -26,6 +27,7 @@ const (
 	isLBListenerDeleted             = "done"
 	isLBListenerProvisioning        = "provisioning"
 	isLBListenerProvisioningDone    = "done"
+	isLBListenerID                  = "listener_id"
 )
 
 func resourceIBMISLBListener() *schema.Resource {
@@ -46,41 +48,71 @@ func resourceIBMISLBListener() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			isLBListenerLBID: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Loadbalancer listener ID",
 			},
 
 			isLBListenerPort: {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validateLBListenerPort,
+				Description:  "Loadbalancer listener port",
 			},
 
 			isLBListenerProtocol: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"https", "http", "tcp"}),
+				Description:  "Loadbalancer protocol",
 			},
 
 			isLBListenerCertificateInstance: {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "certificate instance for the Loadbalancer",
 			},
 
 			isLBListenerConnectionLimit: {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				ValidateFunc: validateLBListenerConnectionLimit,
+				Description:  "Connection limit for Loadbalancer",
 			},
 
 			isLBListenerDefaultPool: {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
+				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
+					if o == "" {
+						return false
+					}
+					// if state file entry and tf file entry matches
+					if strings.Compare(n, o) == 0 {
+						return true
+					}
+
+					if strings.Contains(n, "/") {
+						new := strings.Split(n, "/")
+						if strings.Compare(new[1], o) == 0 {
+							return true
+						}
+					}
+
+					return false
+				},
+				Description: "Loadbalancer default pool info",
 			},
 
 			isLBListenerStatus: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Loadbalancer listener status",
+			},
+
+			isLBListenerID: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -115,7 +147,7 @@ func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) err
 	var connLimit int64
 
 	if limit, ok := d.GetOk(isLBListenerConnectionLimit); ok {
-		connLimit = limit.(int64)
+		connLimit = int64(limit.(int))
 	}
 
 	client := lbaas.NewLoadBalancerClient(sess)
@@ -194,6 +226,7 @@ func resourceIBMISLBListenerRead(d *schema.ResourceData, meta interface{}) error
 	d.Set(isLBListenerLBID, lbID)
 	d.Set(isLBListenerPort, lbListener.Port)
 	d.Set(isLBListenerProtocol, lbListener.Protocol)
+	d.Set(isLBListenerID, lbListenerID)
 
 	if lbListener.DefaultPool != nil {
 		d.Set(isLBListenerDefaultPool, lbListener.DefaultPool.ID)

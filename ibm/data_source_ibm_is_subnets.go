@@ -5,7 +5,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -84,41 +85,100 @@ func dataSourceIBMISSubnets() *schema.Resource {
 }
 
 func dataSourceIBMISSubnetsRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	subnetC := network.NewSubnetClient(sess)
-	availableSubnets, _, err := subnetC.List("")
+	if userDetails.generation == 1 {
+		err := classicSubnetList(d, meta)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := subnetList(d, meta)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func classicSubnetList(d *schema.ResourceData, meta interface{}) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
+	listSubnetsOptions := &vpcclassicv1.ListSubnetsOptions{}
+	subnets, _, err := sess.ListSubnets(listSubnetsOptions)
+	if err != nil {
+		return err
+	}
+	subnetsInfo := make([]map[string]interface{}, 0)
+	for _, subnet := range subnets.Subnets {
 
-	subnets := make([]map[string]string, len(availableSubnets))
-	for i, subnet := range availableSubnets {
+		var aac string = strconv.FormatInt(*subnet.AvailableIpv4AddressCount, 10)
+		var tac string = strconv.FormatInt(*subnet.TotalIpv4AddressCount, 10)
 
-		var aac string = strconv.FormatInt(subnet.AvailableIPV4AddressCount, 10)
-		var tac string = strconv.FormatInt(subnet.TotalIPV4AddressCount, 10)
-
-		subn := make(map[string]string)
-		subn["name"] = subnet.Name
-		subn["id"] = string(subnet.ID)
-		subn["status"] = subnet.Status
-		subn["crn"] = subnet.Crn
-		subn["ipv4_cidr_block"] = subnet.IPV4CidrBlock
-		subn["ipv6_cidr_block"] = subnet.IPV6CidrBlock
-		subn["available_ipv4_address_count"] = aac
-		subn["network_acl"] = subnet.NetworkACL.Name
-		subn["public_gateway"] = string(subnet.PublicGateway.ID)
-		subn["resource_group"] = string(subnet.ResourceGroup.ID)
-		subn["total_ipv4_address_count"] = tac
-		subn["vpc"] = string(subnet.Vpc.ID)
-		subn["zone"] = subnet.Zone.Name
-
-		subnets[i] = subn
+		l := map[string]interface{}{
+			"name":                         *subnet.Name,
+			"id":                           *subnet.ID,
+			"status":                       *subnet.Status,
+			"crn":                          *subnet.Crn,
+			"ipv4_cidr_block":              *subnet.Ipv4CidrBlock,
+			"available_ipv4_address_count": aac,
+			"network_acl":                  *subnet.NetworkAcl.Name,
+			"total_ipv4_address_count":     tac,
+			"vpc":                          *subnet.Vpc.ID,
+			"zone":                         *subnet.Zone.Name,
+		}
+		if subnet.PublicGateway != nil {
+			l["public_gateway"] = *subnet.PublicGateway.ID
+		}
+		subnetsInfo = append(subnetsInfo, l)
+		subnetsInfo = append(subnetsInfo, l)
 	}
 	d.SetId(dataSourceIBMISSubnetsID(d))
-	d.Set(isSubnets, subnets)
+	d.Set(isSubnets, subnetsInfo)
+	return nil
+}
+
+func subnetList(d *schema.ResourceData, meta interface{}) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	listSubnetsOptions := &vpcv1.ListSubnetsOptions{}
+	subnets, _, err := sess.ListSubnets(listSubnetsOptions)
+	if err != nil {
+		return err
+	}
+	subnetsInfo := make([]map[string]interface{}, 0)
+	for _, subnet := range subnets.Subnets {
+
+		var aac string = strconv.FormatInt(*subnet.AvailableIpv4AddressCount, 10)
+		var tac string = strconv.FormatInt(*subnet.TotalIpv4AddressCount, 10)
+		l := map[string]interface{}{
+			"name":                         *subnet.Name,
+			"id":                           *subnet.ID,
+			"status":                       *subnet.Status,
+			"crn":                          *subnet.Crn,
+			"ipv4_cidr_block":              *subnet.Ipv4CidrBlock,
+			"available_ipv4_address_count": aac,
+			"network_acl":                  *subnet.NetworkAcl.Name,
+			"total_ipv4_address_count":     tac,
+			"vpc":                          *subnet.Vpc.ID,
+			"zone":                         *subnet.Zone.Name,
+		}
+		if subnet.PublicGateway != nil {
+			l["public_gateway"] = *subnet.PublicGateway.ID
+		}
+		if subnet.ResourceGroup != nil {
+			l["resource_group"] = *subnet.ResourceGroup.ID
+		}
+		subnetsInfo = append(subnetsInfo, l)
+	}
+	d.SetId(dataSourceIBMISSubnetsID(d))
+	d.Set(isSubnets, subnetsInfo)
 	return nil
 }
 

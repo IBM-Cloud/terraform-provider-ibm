@@ -28,10 +28,11 @@ func resourceIBMPIVolumeAttach() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"volumeattachid": {
-				Type:     schema.TypeString,
-				Computed: true,
-				ForceNew: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "Volume attachment ID",
 			},
 
 			helpers.PICloudInstanceId: {
@@ -47,8 +48,9 @@ func resourceIBMPIVolumeAttach() *schema.Resource {
 			},
 
 			helpers.PIInstanceName: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "PI Instance name",
 			},
 
 			helpers.PIVolumeAttachStatus: {

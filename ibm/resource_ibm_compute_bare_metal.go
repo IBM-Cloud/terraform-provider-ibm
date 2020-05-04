@@ -46,30 +46,35 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 
 					return o == n
 				},
+				Description: "Host name",
 			},
 
 			"domain": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Domain name",
 			},
 
 			"ssh_key_ids": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeInt},
-				ForceNew: true,
+				Type:        schema.TypeList,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeInt},
+				ForceNew:    true,
+				Description: "SSH KEY IDS list",
 			},
 
 			"user_metadata": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "User metadata info",
 			},
 
 			"notes": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Optional notes info",
 			},
 
 			"file_storage_ids": {
@@ -113,6 +118,7 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 				Optional:         true,
 				ForceNew:         true,
 				DiffSuppressFunc: applyOnce,
+				Description:      "Fixed config preset value",
 			},
 
 			// Hourly only
@@ -123,6 +129,7 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 				ForceNew:         true,
 				ConflictsWith:    []string{"image_template_id"},
 				DiffSuppressFunc: applyOnce,
+				Description:      "OS refernece code value",
 			},
 
 			"image_template_id": {
@@ -130,6 +137,7 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"os_reference_code"},
+				Description:   "OS image template ID",
 			},
 
 			"datacenter": {
@@ -140,24 +148,27 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 			},
 
 			"network_speed": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  100,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     100,
+				ForceNew:    true,
+				Description: "Network speed in MBPS",
 			},
 
 			"hourly_billing": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  true,
-				ForceNew: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				ForceNew:    true,
+				Description: "Enables hourly billing",
 			},
 
 			"private_network_only": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
-				ForceNew: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
+				Description: "only private network configured if is true",
 			},
 
 			"tcp_monitoring": {
@@ -166,6 +177,7 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 				Default:          false,
 				ForceNew:         true,
 				DiffSuppressFunc: applyOnce,
+				Description:      "TCP monitoring enabled if set as true",
 			},
 
 			"redundant_power_supply": {
@@ -292,21 +304,25 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"array_type_id": {
-							Type:     schema.TypeInt,
-							Required: true,
+							Type:        schema.TypeInt,
+							Required:    true,
+							Description: "Array type ID",
 						},
 						"hard_drives": {
-							Type:     schema.TypeList,
-							Elem:     &schema.Schema{Type: schema.TypeInt},
-							Required: true,
+							Type:        schema.TypeList,
+							Elem:        &schema.Schema{Type: schema.TypeInt},
+							Required:    true,
+							Description: "Hard-drives List",
 						},
 						"array_size": {
-							Type:     schema.TypeInt,
-							Optional: true,
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "Array size of harddrives list",
 						},
 						"partition_template_id": {
-							Type:     schema.TypeInt,
-							Optional: true,
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "Partition template ID",
 						},
 					},
 				},
@@ -319,6 +335,7 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 				Optional:         true,
 				ForceNew:         true,
 				DiffSuppressFunc: applyOnce,
+				Description:      "Quote ID for Quote based provisioning",
 			},
 
 			// Quote based provisioning, Monthly
@@ -385,6 +402,7 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 					}
 					return true
 				},
+				Description: "Secondary IP addresses count",
 			},
 			"secondary_ip_addresses": {
 				Type:     schema.TypeList,
@@ -392,10 +410,11 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"ipv6_enabled": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				ForceNew: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+				Default:     false,
+				Description: "Boolean value true if IPV6 ia enabled or false",
 			},
 			"ipv6_address": {
 				Type:     schema.TypeString,
@@ -406,10 +425,11 @@ func resourceIBMComputeBareMetal() *schema.Resource {
 				Computed: true,
 			},
 			"ipv6_static_enabled": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				ForceNew: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+				Default:     false,
+				Description: "boolean value true if ipv6 static is enabled else false",
 			},
 
 			"global_identifier": &schema.Schema{

@@ -9,19 +9,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/compute"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISInstance_basic(t *testing.T) {
-	var instance *models.Instance
-	vpcname := fmt.Sprintf("terraforminstanceuat-vpc-%d", acctest.RandInt())
-	name := fmt.Sprintf("terraforminstanceuat-%d", acctest.RandInt())
-	subnetname := fmt.Sprintf("terraforminstanceuat-subnet-%d", acctest.RandInt())
+	var instance string
+	vpcname := fmt.Sprintf("terins-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terins-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("terins-subnet-%d", acctest.RandIntRange(10, 100))
 	publicKey := strings.TrimSpace(`
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
 `)
-	sshname := fmt.Sprintf("terraformsecurityuat-create-step-name-%d", acctest.RandInt())
+	sshname := fmt.Sprintf("terins-ssh-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -31,7 +31,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 			{
 				Config: testAccCheckIBMISInstanceConfig(vpcname, subnetname, sshname, publicKey, name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", &instance),
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
 					resource.TestCheckResourceAttr(
 						"ibm_is_instance.testacc_instance", "name", name),
 					resource.TestCheckResourceAttr(
@@ -43,15 +43,15 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 }
 
 func TestAccIBMISInstance_Volume(t *testing.T) {
-	var instance *models.Instance
-	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandInt())
-	name := fmt.Sprintf("tf-instnace-%d", acctest.RandInt())
-	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandInt())
+	var instance string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
 	publicKey := strings.TrimSpace(`
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
 `)
-	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandInt())
-	volname := fmt.Sprintf("tf-vol-%d", acctest.RandInt())
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	volname := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -61,7 +61,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 			{
 				Config: testAccCheckIBMISInstanceVolume(vpcname, subnetname, sshname, publicKey, volname, name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", &instance),
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
 					resource.TestCheckResourceAttr(
 						"ibm_is_instance.testacc_instance", "name", name),
 					resource.TestCheckResourceAttr(
@@ -73,7 +73,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 			{
 				Config: testAccCheckIBMISInstanceVolumeUpdate(vpcname, subnetname, sshname, publicKey, volname, name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", &instance),
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
 					resource.TestCheckResourceAttr(
 						"ibm_is_instance.testacc_instance", "name", name),
 					resource.TestCheckResourceAttr(
@@ -87,26 +87,44 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 }
 
 func testAccCheckIBMISInstanceDestroy(s *terraform.State) error {
-	sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
+	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	instanceC := compute.NewInstanceClient(sess)
+	if userDetails.generation == 1 {
+		instanceC, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_instance" {
+				continue
+			}
+			getinsOptions := &vpcclassicv1.GetInstanceOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := instanceC.GetInstance(getinsOptions)
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_is_instance" {
-			continue
+			if err == nil {
+				return fmt.Errorf("instance still exists: %s", rs.Primary.ID)
+			}
 		}
+	} else {
+		instanceC, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_instance" {
+				continue
+			}
+			getinsOptions := &vpcv1.GetInstanceOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := instanceC.GetInstance(getinsOptions)
 
-		_, err := instanceC.Get(rs.Primary.ID)
-
-		if err == nil {
-			return fmt.Errorf("instance still exists: %s", rs.Primary.ID)
+			if err == nil {
+				return fmt.Errorf("instance still exists: %s", rs.Primary.ID)
+			}
 		}
 	}
 
 	return nil
 }
 
-func testAccCheckIBMISInstanceExists(n string, instance **models.Instance) resource.TestCheckFunc {
+func testAccCheckIBMISInstanceExists(n string, instance string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -117,16 +135,28 @@ func testAccCheckIBMISInstanceExists(n string, instance **models.Instance) resou
 		if rs.Primary.ID == "" {
 			return errors.New("No Record ID is set")
 		}
-
-		sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
-		instanceC := compute.NewInstanceClient(sess)
-		foundinstance, err := instanceC.Get(rs.Primary.ID)
-
-		if err != nil {
-			return err
+		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
+		if userDetails.generation == 1 {
+			instanceC, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+			getinsOptions := &vpcclassicv1.GetInstanceOptions{
+				ID: &rs.Primary.ID,
+			}
+			foundins, _, err := instanceC.GetInstance(getinsOptions)
+			if err != nil {
+				return err
+			}
+			instance = *foundins.ID
+		} else {
+			instanceC, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+			getinsOptions := &vpcv1.GetInstanceOptions{
+				ID: &rs.Primary.ID,
+			}
+			foundins, _, err := instanceC.GetInstance(getinsOptions)
+			if err != nil {
+				return err
+			}
+			instance = *foundins.ID
 		}
-
-		*instance = foundinstance
 		return nil
 	}
 }

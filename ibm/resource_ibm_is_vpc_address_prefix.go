@@ -4,9 +4,8 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
-	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
-	networkc "github.ibm.com/Bluemix/riaas-go-client/riaas/client/network"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -32,40 +31,44 @@ func resourceIBMISVpcAddressPrefix() *schema.Resource {
 				Required:     true,
 				ForceNew:     false,
 				ValidateFunc: validateISName,
+				Description:  "Name",
 			},
 			isVPCAddressPrefixZoneName: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Zone name",
 			},
 
 			isVPCAddressPrefixCIDR: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    false,
+				Description: "CIDIR address prefix",
 			},
 
 			isVPCAddressPrefixVPCID: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "VPC id",
 			},
 
 			isVPCAddressPrefixHasSubnets: {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Boolean value, set to true if VPC instance have subnets",
 			},
 		},
 	}
 }
 
 func resourceIBMISVpcAddressPrefixCreate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	vpcClient := network.NewVPCClient(sess)
-
 	prefixName := d.Get(isVPCAddressPrefixPrefixName).(string)
 	zoneName := d.Get(isVPCAddressPrefixZoneName).(string)
 	cidr := d.Get(isVPCAddressPrefixCIDR).(string)
@@ -75,29 +78,72 @@ func resourceIBMISVpcAddressPrefixCreate(d *schema.ResourceData, meta interface{
 	ibmMutexKV.Lock(isVPCAddressPrefixKey)
 	defer ibmMutexKV.Unlock(isVPCAddressPrefixKey)
 
-	params := networkc.PostVpcsVpcIDAddressPrefixesBody{
-		Cidr: cidr,
-		Name: prefixName,
-		Zone: &networkc.PostVpcsVpcIDAddressPrefixesParamsBodyZone{
-			Name: zoneName,
-		},
+	if userDetails.generation == 1 {
+		err := classicVpcAddressPrefixCreate(d, meta, prefixName, zoneName, cidr, vpcID)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := vpcAddressPrefixCreate(d, meta, prefixName, zoneName, cidr, vpcID)
+		if err != nil {
+			return err
+		}
 	}
+	return resourceIBMISVpcAddressPrefixRead(d, meta)
+}
 
-	addrPrefix, err := vpcClient.CreateAddressPrefix(params, vpcID)
+func classicVpcAddressPrefixCreate(d *schema.ResourceData, meta interface{}, name, zone, cidr, vpcID string) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
-	d.SetId(fmt.Sprintf("%s/%s", vpcID, addrPrefix.ID))
-	return resourceIBMISVpcAddressPrefixRead(d, meta)
+	options := &vpcclassicv1.CreateVpcAddressPrefixOptions{
+		Name:  &name,
+		VpcID: &vpcID,
+		Cidr:  &cidr,
+		Zone: &vpcclassicv1.ZoneIdentity{
+			Name: &zone,
+		},
+	}
+	addrPrefix, response, err := sess.CreateVpcAddressPrefix(options)
+	if err != nil {
+		return fmt.Errorf("Error while creating VPC Address Prefix %s\n%s", err, response)
+	}
 
+	addrPrefixID := *addrPrefix.ID
+
+	d.SetId(fmt.Sprintf("%s/%s", vpcID, addrPrefixID))
+	return nil
+}
+
+func vpcAddressPrefixCreate(d *schema.ResourceData, meta interface{}, name, zone, cidr, vpcID string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	options := &vpcv1.CreateVpcAddressPrefixOptions{
+		Name:  &name,
+		VpcID: &vpcID,
+		Cidr:  &cidr,
+		Zone: &vpcv1.ZoneIdentity{
+			Name: &zone,
+		},
+	}
+	addrPrefix, response, err := sess.CreateVpcAddressPrefix(options)
+	if err != nil {
+		return fmt.Errorf("Error while creating VPC Address Prefix %s\n%s", err, response)
+	}
+
+	addrPrefixID := *addrPrefix.ID
+	d.SetId(fmt.Sprintf("%s/%s", vpcID, addrPrefixID))
+	return nil
 }
 
 func resourceIBMISVpcAddressPrefixRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	vpcClient := network.NewVPCClient(sess)
 	parts, err := idParts(d.Id())
 	if err != nil {
 		return err
@@ -105,54 +151,107 @@ func resourceIBMISVpcAddressPrefixRead(d *schema.ResourceData, meta interface{})
 
 	vpcID := parts[0]
 	addrPrefixID := parts[1]
-	addrPrefix, err := vpcClient.GetAddressPrefix(vpcID, addrPrefixID)
+	if userDetails.generation == 1 {
+		err := classicVpcAddressPrefixGet(d, meta, vpcID, addrPrefixID)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := vpcAddressPrefixGet(d, meta, vpcID, addrPrefixID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func classicVpcAddressPrefixGet(d *schema.ResourceData, meta interface{}, vpcID, addrPrefixID string) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
-
-	d.Set(isVPCAddressPrefixPrefixName, addrPrefix.Name)
-	if addrPrefix.Zone != nil {
-		d.Set(isVPCAddressPrefixZoneName, addrPrefix.Zone.Name)
+	getvpcAddressPrefixOptions := &vpcclassicv1.GetVpcAddressPrefixOptions{
+		VpcID: &vpcID,
+		ID:    &addrPrefixID,
 	}
+	addrPrefix, response, err := sess.GetVpcAddressPrefix(getvpcAddressPrefixOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	d.Set(isVPCAddressPrefixPrefixName, *addrPrefix.Name)
+	if addrPrefix.Zone != nil {
+		d.Set(isVPCAddressPrefixZoneName, *addrPrefix.Zone.Name)
+	}
+	d.Set(isVPCAddressPrefixCIDR, *addrPrefix.Cidr)
+	d.Set(isVPCAddressPrefixHasSubnets, *addrPrefix.HasSubnets)
 
-	d.Set(isVPCAddressPrefixCIDR, addrPrefix.Cidr)
-	d.Set(isVPCAddressPrefixVPCID, vpcID)
-	d.Set(isVPCAddressPrefixHasSubnets, addrPrefix.HasSubnets)
+	return nil
+}
+
+func vpcAddressPrefixGet(d *schema.ResourceData, meta interface{}, vpcID, addrPrefixID string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getvpcAddressPrefixOptions := &vpcv1.GetVpcAddressPrefixOptions{
+		VpcID: &vpcID,
+		ID:    &addrPrefixID,
+	}
+	addrPrefix, response, err := sess.GetVpcAddressPrefix(getvpcAddressPrefixOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	d.Set(isVPCAddressPrefixPrefixName, *addrPrefix.Name)
+	if addrPrefix.Zone != nil {
+		d.Set(isVPCAddressPrefixZoneName, *addrPrefix.Zone.Name)
+	}
+	d.Set(isVPCAddressPrefixCIDR, *addrPrefix.Cidr)
+	d.Set(isVPCAddressPrefixHasSubnets, *addrPrefix.HasSubnets)
 
 	return nil
 }
 
 func resourceIBMISVpcAddressPrefixUpdate(d *schema.ResourceData, meta interface{}) error {
-
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	vpcC := network.NewVPCClient(sess)
+
+	name := ""
 	hasChanged := false
-	params := networkc.PatchVpcsVpcIDAddressPrefixesIDBody{}
-	if d.HasChange(isVPCAddressPrefixCIDR) {
-		params.Cidr = d.Get(isVPCAddressPrefixCIDR).(string)
-		hasChanged = true
+
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return err
 	}
+	vpcID := parts[0]
+	addrPrefixID := parts[1]
+
+	isVPCAddressPrefixKey := "vpc_address_prefix_key_" + vpcID
+	ibmMutexKV.Lock(isVPCAddressPrefixKey)
+	defer ibmMutexKV.Unlock(isVPCAddressPrefixKey)
 
 	if d.HasChange(isVPCAddressPrefixPrefixName) {
-		params.Name = d.Get(isVPCAddressPrefixPrefixName).(string)
+		name = d.Get(isVPCAddressPrefixPrefixName).(string)
 		hasChanged = true
 	}
 
-	if hasChanged {
-		parts, err := idParts(d.Id())
+	if userDetails.generation == 1 {
+		err := classicVpcAddressPrefixUpdate(d, meta, vpcID, addrPrefixID, name, hasChanged)
 		if err != nil {
 			return err
 		}
-
-		vpcID := parts[0]
-		addrPrefixID := parts[1]
-		isVPCAddressPrefixKey := "vpc_address_prefix_key_" + vpcID
-		ibmMutexKV.Lock(isVPCAddressPrefixKey)
-		defer ibmMutexKV.Unlock(isVPCAddressPrefixKey)
-		_, err = vpcC.UpdateAddressPrefix(params, vpcID, addrPrefixID)
+	} else {
+		err := vpcAddressPrefixUpdate(d, meta, vpcID, addrPrefixID, name, hasChanged)
 		if err != nil {
 			return err
 		}
@@ -161,60 +260,203 @@ func resourceIBMISVpcAddressPrefixUpdate(d *schema.ResourceData, meta interface{
 	return resourceIBMISVpcAddressPrefixRead(d, meta)
 }
 
-func resourceIBMISVpcAddressPrefixDelete(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+func classicVpcAddressPrefixUpdate(d *schema.ResourceData, meta interface{}, vpcID, addrPrefixID, name string, hasChanged bool) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
-	vpcClient := network.NewVPCClient(sess)
+	if hasChanged {
+		updatevpcAddressPrefixoptions := &vpcclassicv1.UpdateVpcAddressPrefixOptions{
+			VpcID: &vpcID,
+			ID:    &addrPrefixID,
+			Name:  &name,
+		}
+		_, response, err := sess.UpdateVpcAddressPrefix(updatevpcAddressPrefixoptions)
+		if err != nil {
+			return fmt.Errorf("Error Updating VPC Address Prefix: %s\n%s", err, response)
+		}
+	}
+	return nil
+}
+
+func vpcAddressPrefixUpdate(d *schema.ResourceData, meta interface{}, vpcID, addrPrefixID, name string, hasChanged bool) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	if hasChanged {
+		updatevpcAddressPrefixoptions := &vpcv1.UpdateVpcAddressPrefixOptions{
+			VpcID: &vpcID,
+			ID:    &addrPrefixID,
+			Name:  &name,
+		}
+		_, response, err := sess.UpdateVpcAddressPrefix(updatevpcAddressPrefixoptions)
+		if err != nil {
+			return fmt.Errorf("Error Updating VPC Address Prefix: %s\n%s", err, response)
+		}
+	}
+	return nil
+}
+
+func resourceIBMISVpcAddressPrefixDelete(d *schema.ResourceData, meta interface{}) error {
+
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return err
+	}
 	parts, err := idParts(d.Id())
 	if err != nil {
 		return err
 	}
-
 	vpcID := parts[0]
 	addrPrefixID := parts[1]
+
 	isVPCAddressPrefixKey := "vpc_address_prefix_key_" + vpcID
 	ibmMutexKV.Lock(isVPCAddressPrefixKey)
 	defer ibmMutexKV.Unlock(isVPCAddressPrefixKey)
-	err = vpcClient.DeleteAddressPrefix(vpcID, addrPrefixID)
-	if err != nil {
-		iserror, ok := err.(iserrors.RiaasError)
-		if ok {
-			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "not_found" {
-				return nil
-			}
+
+	if userDetails.generation == 1 {
+		err := classicVpcAddressPrefixDelete(d, meta, vpcID, addrPrefixID)
+		if err != nil {
+			return err
 		}
+	} else {
+		err := vpcAddressPrefixDelete(d, meta, vpcID, addrPrefixID)
+		if err != nil {
+			return err
+		}
+	}
+
+	d.SetId("")
+	return nil
+}
+
+func classicVpcAddressPrefixDelete(d *schema.ResourceData, meta interface{}, vpcID, addrPrefixID string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
 		return err
+	}
+
+	getvpcAddressPrefixOptions := &vpcclassicv1.GetVpcAddressPrefixOptions{
+		VpcID: &vpcID,
+		ID:    &addrPrefixID,
+	}
+	_, response, err := sess.GetVpcAddressPrefix(getvpcAddressPrefixOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+
+	deletevpcAddressPrefixOptions := &vpcclassicv1.DeleteVpcAddressPrefixOptions{
+		VpcID: &vpcID,
+		ID:    &addrPrefixID,
+	}
+	response, err = sess.DeleteVpcAddressPrefix(deletevpcAddressPrefixOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Deleting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+	d.SetId("")
+	return nil
+}
+
+func vpcAddressPrefixDelete(d *schema.ResourceData, meta interface{}, vpcID, addrPrefixID string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+
+	getvpcAddressPrefixOptions := &vpcv1.GetVpcAddressPrefixOptions{
+		VpcID: &vpcID,
+		ID:    &addrPrefixID,
+	}
+	_, response, err := sess.GetVpcAddressPrefix(getvpcAddressPrefixOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+
+	deletevpcAddressPrefixOptions := &vpcv1.DeleteVpcAddressPrefixOptions{
+		VpcID: &vpcID,
+		ID:    &addrPrefixID,
+	}
+	response, err = sess.DeleteVpcAddressPrefix(deletevpcAddressPrefixOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Deleting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
 	}
 	d.SetId("")
 	return nil
 }
 
 func resourceIBMISVpcAddressPrefixExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return false, err
 	}
-	vpcClient := network.NewVPCClient(sess)
 	parts, err := idParts(d.Id())
 	if err != nil {
 		return false, err
 	}
-
 	vpcID := parts[0]
 	addrPrefixID := parts[1]
-	_, err = vpcClient.GetAddressPrefix(vpcID, addrPrefixID)
-	if err != nil {
-		iserror, ok := err.(iserrors.RiaasError)
-		if ok {
-			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "not_found" {
-				return false, nil
-			}
+
+	if userDetails.generation == 1 {
+		err := classicVpcAddressPrefixExists(d, meta, vpcID, addrPrefixID)
+		if err != nil {
+			return false, err
 		}
-		return false, err
+	} else {
+		err := vpcAddressPrefixExists(d, meta, vpcID, addrPrefixID)
+		if err != nil {
+			return false, err
+		}
 	}
 	return true, nil
+}
+
+func classicVpcAddressPrefixExists(d *schema.ResourceData, meta interface{}, vpcID, addrPrefixID string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getvpcAddressPrefixOptions := &vpcclassicv1.GetVpcAddressPrefixOptions{
+		VpcID: &vpcID,
+		ID:    &addrPrefixID,
+	}
+	_, response, err := sess.GetVpcAddressPrefix(getvpcAddressPrefixOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting VPC Address Prefix: %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+	return nil
+}
+
+func vpcAddressPrefixExists(d *schema.ResourceData, meta interface{}, vpcID, addrPrefixID string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getvpcAddressPrefixOptions := &vpcv1.GetVpcAddressPrefixOptions{
+		VpcID: &vpcID,
+		ID:    &addrPrefixID,
+	}
+	_, response, err := sess.GetVpcAddressPrefix(getvpcAddressPrefixOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting VPC Address Prefix: %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+	return nil
 }

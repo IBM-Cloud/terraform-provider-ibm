@@ -13,8 +13,8 @@ import (
 
 func TestAccIBMOrg_Basic(t *testing.T) {
 	var conf mccpv2.OrganizationFields
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	updatedName := fmt.Sprintf("terraform_updated_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	updatedName := fmt.Sprintf("terraform_updated_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -40,7 +40,7 @@ func TestAccIBMOrg_Basic(t *testing.T) {
 
 func TestAccIBMOrg_Basic_Import(t *testing.T) {
 	var conf mccpv2.OrganizationFields
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_org.testacc_org"
 
 	resource.Test(t, resource.TestCase{
@@ -66,8 +66,8 @@ func TestAccIBMOrg_Basic_Import(t *testing.T) {
 
 func TestAccIBMOrg_with_roles(t *testing.T) {
 	var conf mccpv2.OrganizationFields
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
-	updatedName := fmt.Sprintf("terraform_updated_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	updatedName := fmt.Sprintf("terraform_updated_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -102,7 +102,7 @@ func TestAccIBMOrg_with_roles(t *testing.T) {
 
 func TestAccIBMOrg_With_Tags(t *testing.T) {
 	var conf mccpv2.OrganizationFields
-	name := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

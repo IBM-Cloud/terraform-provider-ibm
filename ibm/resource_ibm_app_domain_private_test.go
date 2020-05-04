@@ -15,8 +15,8 @@ import (
 
 func TestAccIBMAppDomainPrivate_Basic(t *testing.T) {
 	var conf mccpv2.PrivateDomainFields
-	name := fmt.Sprintf("terraform%d.com", acctest.RandInt())
-	updateName := fmt.Sprintf("terraformnew%d.com", acctest.RandInt())
+	name := fmt.Sprintf("terraform%d.com", acctest.RandIntRange(10, 100))
+	updateName := fmt.Sprintf("terraformnew%d.com", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -41,7 +41,7 @@ func TestAccIBMAppDomainPrivate_Basic(t *testing.T) {
 
 func TestAccIBMAppDomainPrivate_With_Tags(t *testing.T) {
 	var conf mccpv2.PrivateDomainFields
-	name := fmt.Sprintf("terraform%d.com", acctest.RandInt())
+	name := fmt.Sprintf("terraform%d.com", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

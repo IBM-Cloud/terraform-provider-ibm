@@ -114,6 +114,25 @@ func validateRoutePort(v interface{}, k string) (ws []string, errors []error) {
 func validateAppPort(v interface{}, k string) (ws []string, errors []error) {
 	return validatePortRange(1024, 65535)(v, k)
 }
+func validateLBListenerPolicyPriority(v interface{}, k string) (ws []string, errors []error) {
+	interval := v.(int)
+	if interval < 1 || interval > 10 {
+		errors = append(errors, fmt.Errorf(
+			"%q must be between 1 and 10",
+			k))
+	}
+	return
+}
+
+func validateStringLength(v interface{}, k string) (ws []string, errors []error) {
+	value := v.(string)
+
+	if (len(value) < 1) || (len(value) > 128) {
+		errors = append(errors, fmt.Errorf(
+			"%q (%q) must contain from 1 to 128 characters ", k, value))
+	}
+	return
+}
 
 func validatePortRange(start, end int) func(v interface{}, k string) (ws []string, errors []error) {
 	f := func(v interface{}, k string) (ws []string, errors []error) {

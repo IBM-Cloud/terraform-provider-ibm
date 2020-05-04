@@ -25,15 +25,17 @@ func resourceIBMCDN() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"host_name": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Host name",
 			},
 			"vendor_name": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "akamai",
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "akamai",
+				ForceNew:    true,
+				Description: "Vendor name",
 			},
 
 			"origin_type": &schema.Schema{
@@ -42,14 +44,17 @@ func resourceIBMCDN() *schema.Resource {
 				Default:      "HOST_SERVER",
 				ForceNew:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"HOST_SERVER", "OBJECT_STORAGE"}),
+				Description:  "Origin type info",
 			},
 			"origin_address": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "origin address info",
 			},
 			"bucket_name": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Bucket name",
 			},
 			"protocol": &schema.Schema{
 				Type:         schema.TypeString,
@@ -57,20 +62,24 @@ func resourceIBMCDN() *schema.Resource {
 				Default:      "HTTP",
 				ForceNew:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"HTTP", "HTTPS", "HTTP_AND_HTTPS"}),
+				Description:  "Protocol name",
 			},
 			"http_port": &schema.Schema{
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  80,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     80,
+				Description: "HTTP port number",
 			},
 			"status": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Status info of the CDN instance",
 			},
 			"https_port": &schema.Schema{
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  443,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     443,
+				Description: "HTTPS port number",
 			},
 			"cname": &schema.Schema{
 				Type:     schema.TypeString,
@@ -87,45 +96,52 @@ func resourceIBMCDN() *schema.Resource {
 					}
 					return false
 				},
+				Description: "cname info",
 			},
 			"header": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Header info",
 			},
 			"respect_headers": &schema.Schema{
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "respect headers info",
 			},
 			"file_extension": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "File extension info",
 			},
 			"certificate_type": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"SHARED_SAN_CERT", "WILDCARD_CERT"}),
 				ForceNew:     true,
+				Description:  "Certificate type",
 			},
 			"cache_key_query_rule": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"include-all", "ignore-all", "ignore: space separated query-args", "include: space separated query-args"}),
 				Default:      "include-all",
+				Description:  "query rule info",
 			},
 			"performance_configuration": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "General web delivery",
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "General web delivery",
+				ForceNew:    true,
+				Description: "performance configuration info",
 			},
 			"path": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "/*",
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "/*",
+				ForceNew:    true,
+				Description: "Path details",
 			},
 		},
 	}
@@ -375,7 +391,12 @@ func resourceIBMCDNUpdate(d *schema.ResourceData, meta interface{}) error {
 	cname := d.Get("cname").(string)
 	header := d.Get("header").(string)
 	bucketname := d.Get("bucket_name").(string)
-	fileextension := d.Get("file_extension").(string)
+	var fileextension string
+	if v, ok := d.GetOk("file_extension"); ok {
+		fileextension = v.(string)
+	} else {
+		fileextension = ""
+	}
 	respectheaders := d.Get("respect_headers").(bool)
 	var rHeader = "0"
 	if respectheaders {

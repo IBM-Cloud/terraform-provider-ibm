@@ -17,9 +17,9 @@ import (
 
 func TestAccIBMComputeAutoScaleGroup_Basic(t *testing.T) {
 	var scalegroup datatypes.Scale_Group
-	groupname := fmt.Sprintf("terraformuat_%d", acctest.RandInt())
+	groupname := fmt.Sprintf("terraformuat_%d", acctest.RandIntRange(10, 100))
 	hostname := acctest.RandString(16)
-	updatedgroupname := fmt.Sprintf("terraformuat_%d", acctest.RandInt())
+	updatedgroupname := fmt.Sprintf("terraformuat_%d", acctest.RandIntRange(10, 100))
 	updatedhostname := acctest.RandString(16)
 
 	resource.Test(t, resource.TestCase{
@@ -120,7 +120,7 @@ func TestAccIBMComputeAutoScaleGroup_Basic(t *testing.T) {
 
 func TestAccIBMComputeAutoScaleGroupWithTag(t *testing.T) {
 	var scalegroup datatypes.Scale_Group
-	groupname := fmt.Sprintf("terraformuat_%d", acctest.RandInt())
+	groupname := fmt.Sprintf("terraformuat_%d", acctest.RandIntRange(10, 100))
 	hostname := acctest.RandString(16)
 
 	resource.Test(t, resource.TestCase{

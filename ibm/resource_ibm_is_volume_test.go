@@ -8,14 +8,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/storage"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISVolume_basic(t *testing.T) {
-	var vol *models.Volume
-	name := fmt.Sprintf("tfcreatestepname-%d", acctest.RandInt())
-	name1 := fmt.Sprintf("tf-update-step-name-%d", acctest.RandInt())
+	var vol string
+	name := fmt.Sprintf("tfcreatename-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfupdatename-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -25,7 +25,7 @@ func TestAccIBMISVolume_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMISVolumeConfig(name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVolumeExists("ibm_is_volume.storage", &vol),
+					testAccCheckIBMISVolumeExists("ibm_is_volume.storage", vol),
 					resource.TestCheckResourceAttr(
 						"ibm_is_volume.storage", "name", name),
 				),
@@ -34,7 +34,7 @@ func TestAccIBMISVolume_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMISVolumeConfig(name1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVolumeExists("ibm_is_volume.storage", &vol),
+					testAccCheckIBMISVolumeExists("ibm_is_volume.storage", vol),
 					resource.TestCheckResourceAttr(
 						"ibm_is_volume.storage", "name", name1),
 				),
@@ -44,26 +44,46 @@ func TestAccIBMISVolume_basic(t *testing.T) {
 }
 
 func testAccCheckIBMISVolumeDestroy(s *terraform.State) error {
-	sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
+	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	VOL := storage.NewStorageClient(sess)
+	if userDetails.generation == 1 {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_vol" {
+				continue
+			}
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_is_vol" {
-			continue
+			getvolumeoptions := &vpcclassicv1.GetVolumeOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetVolume(getvolumeoptions)
+
+			if err == nil {
+				return fmt.Errorf("Volume still exists: %s", rs.Primary.ID)
+			}
 		}
+	} else {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_vol" {
+				continue
+			}
 
-		_, err := VOL.Get(rs.Primary.ID)
+			getvolumeoptions := &vpcv1.GetVolumeOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetVolume(getvolumeoptions)
 
-		if err == nil {
-			return fmt.Errorf("Volume still exists: %s", rs.Primary.ID)
+			if err == nil {
+				return fmt.Errorf("Volume still exists: %s", rs.Primary.ID)
+			}
 		}
 	}
 
 	return nil
 }
 
-func testAccCheckIBMISVolumeExists(n string, vol **models.Volume) resource.TestCheckFunc {
+func testAccCheckIBMISVolumeExists(n, volID string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -75,15 +95,29 @@ func testAccCheckIBMISVolumeExists(n string, vol **models.Volume) resource.TestC
 			return errors.New("No Record ID is set")
 		}
 
-		sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
-		client := storage.NewStorageClient(sess)
-		foundVol, err := client.Get(rs.Primary.ID)
+		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-		if err != nil {
-			return err
+		if userDetails.generation == 1 {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+			getvolumeoptions := &vpcclassicv1.GetVolumeOptions{
+				ID: &rs.Primary.ID,
+			}
+			foundvol, _, err := sess.GetVolume(getvolumeoptions)
+			if err != nil {
+				return err
+			}
+			volID = *foundvol.ID
+		} else {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+			getvolumeoptions := &vpcv1.GetVolumeOptions{
+				ID: &rs.Primary.ID,
+			}
+			foundvol, _, err := sess.GetVolume(getvolumeoptions)
+			if err != nil {
+				return err
+			}
+			volID = *foundvol.ID
 		}
-
-		*vol = foundVol
 		return nil
 	}
 }

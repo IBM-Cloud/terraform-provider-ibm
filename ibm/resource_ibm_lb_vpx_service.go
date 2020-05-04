@@ -48,37 +48,43 @@ func resourceIBMLbVpxService() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"vip_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "VIP id",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "name",
 			},
 
 			"destination_ip_address": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Destination IP Address",
 			},
 
 			"destination_port": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Destination Port number",
 			},
 
 			"weight": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Weight value",
 			},
 
 			"connection_limit": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Number of connections limit",
 			},
 
 			"health_check": {
@@ -90,19 +96,22 @@ func resourceIBMLbVpxService() *schema.Resource {
 					}
 					return false
 				},
+				Description: "Health check info",
 			},
 
 			"usip": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "NO",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "NO",
+				Description: "usip info",
 			},
 
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "list of tags associated with the resource",
 			},
 		},
 	}

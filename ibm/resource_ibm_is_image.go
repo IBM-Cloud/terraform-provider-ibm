@@ -56,6 +56,7 @@ func resourceIBMISImage() *schema.Resource {
 				Type:             schema.TypeString,
 				Required:         true,
 				DiffSuppressFunc: applyOnce,
+				Description:      "Image Href value",
 			},
 
 			isImageName: {
@@ -63,6 +64,7 @@ func resourceIBMISImage() *schema.Resource {
 				Required:     true,
 				ForceNew:     false,
 				ValidateFunc: validateISName,
+				Description:  "Image name",
 			},
 
 			isImageTags: {
@@ -72,12 +74,14 @@ func resourceIBMISImage() *schema.Resource {
 				Elem:             &schema.Schema{Type: schema.TypeString},
 				Set:              resourceIBMVPCHash,
 				DiffSuppressFunc: applyOnce,
+				Description:      "Tags for the image",
 			},
 
 			isImageOperatingSystem: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Image Operating system",
 			},
 
 			isImageStatus: {

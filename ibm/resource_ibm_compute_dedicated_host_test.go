@@ -15,8 +15,8 @@ import (
 
 func TestAccIBMComputeDedicatedHost_Basic(t *testing.T) {
 	var dedicatedHost datatypes.Virtual_DedicatedHost
-	hostname := fmt.Sprintf("terraformuat_%d", acctest.RandInt())
-	updatedHostname := fmt.Sprintf("terraformuat_%d", acctest.RandInt())
+	hostname := fmt.Sprintf("terraformuat_%d", acctest.RandIntRange(10, 100))
+	updatedHostname := fmt.Sprintf("terraformuat_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -74,7 +74,7 @@ func TestAccIBMComputeDedicatedHost_Basic(t *testing.T) {
 
 func TestAccIBMComputerDedicatedHostWithTag(t *testing.T) {
 	var dedicatedHost datatypes.Virtual_DedicatedHost
-	hostname := fmt.Sprintf("terraformuat_%d", acctest.RandInt())
+	hostname := fmt.Sprintf("terraformuat_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -136,7 +136,7 @@ func TestAccIBMComputerDedicatedHostWithTag(t *testing.T) {
 
 func TestAccIBMComputeDedicatedHostImport(t *testing.T) {
 	var dedicatedHost datatypes.Virtual_DedicatedHost
-	hostname := fmt.Sprintf("terraformuat_%d", acctest.RandInt())
+	hostname := fmt.Sprintf("terraformuat_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

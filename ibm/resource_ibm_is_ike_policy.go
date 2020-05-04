@@ -38,31 +38,36 @@ func resourceIBMISIKEPolicy() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateISName,
+				Description:  "IKE name",
 			},
 
 			isIKEAuthenticationAlg: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: InvokeValidator("ibm_is_ike_policy", isIKEAuthenticationAlg),
+				Description:  "Authentication algorithm type",
 			},
 
 			isIKEEncryptionAlg: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: InvokeValidator("ibm_is_ike_policy", isIKEEncryptionAlg),
+				Description:  "Encryption alogorithm type",
 			},
 
 			isIKEDhGroup: {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: InvokeValidator("ibm_is_ike_policy", isIKEDhGroup),
+				Description:  "IKE DH group",
 			},
 
 			isIKEResourceGroup: {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Computed:    true,
+				Description: "IKE resource group ID",
 			},
 
 			isIKEKeyLifeTime: {
@@ -70,22 +75,26 @@ func resourceIBMISIKEPolicy() *schema.Resource {
 				Optional:     true,
 				Default:      28800,
 				ValidateFunc: validateKeyLifeTime,
+				Description:  "IKE Key lifetime",
 			},
 
 			isIKEVERSION: {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				ValidateFunc: InvokeValidator("ibm_is_ike_policy", isIKEVERSION),
+				Description:  "IKE version",
 			},
 
 			isIKENegotiationMode: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "IKE negotiation mode",
 			},
 
 			isIKEHref: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "IKE href value",
 			},
 
 			isIKEVPNConnections: {

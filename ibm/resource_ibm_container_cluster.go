@@ -156,10 +156,11 @@ func resourceIBMContainerCluster() *schema.Resource {
 			},
 
 			"disk_encryption": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				ForceNew: true,
-				Default:  true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+				Default:     true,
+				Description: "disc encryption done, if set to true.",
 			},
 
 			"kube_version": {
@@ -178,18 +179,21 @@ func resourceIBMContainerCluster() *schema.Resource {
 					}
 					return false
 				},
+				Description: "Kubernetes version info",
 			},
 
 			"update_all_workers": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Updates all the woker nodes if sets to true",
 			},
 
 			"machine_type": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "Machine type",
 			},
 			"isolation": {
 				Type:     schema.TypeString,
@@ -203,6 +207,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 				ForceNew:     true,
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue([]string{hardwareShared, hardwareDedicated}),
+				Description:  "Hardware type",
 			},
 
 			"billing": {
@@ -225,6 +230,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 					}
 					return false
 				},
+				Description: "Public VLAN ID",
 			},
 
 			"private_vlan_id": {
@@ -241,6 +247,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 					}
 					return false
 				},
+				Description: "Private VLAN ID",
 			},
 			"ingress_hostname": {
 				Type:     schema.TypeString,
@@ -252,10 +259,11 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Sensitive: true,
 			},
 			"no_subnet": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				ForceNew: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+				Default:     false,
+				Description: "Boolean value set to true when subnet creation is not required.",
 			},
 			"is_trusted": {
 				Type:             schema.TypeBool,
@@ -269,10 +277,11 @@ func resourceIBMContainerCluster() *schema.Resource {
 			},
 
 			"subnet_id": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "List of subnet IDs",
 			},
 			"webhook": {
 				Type:     schema.TypeList,
@@ -329,11 +338,12 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Deprecated: "This field is deprecated",
 			},
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      resourceIBMVPCHash,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "Tags for the resource",
 			},
 
 			"worker_pools": {

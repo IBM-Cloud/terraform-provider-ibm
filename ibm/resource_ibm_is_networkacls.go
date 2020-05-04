@@ -37,6 +37,7 @@ const (
 	isNetworkACLRuleSourcePortMax = "source_port_max"
 	isNetworkACLRuleSourcePortMin = "source_port_min"
 	isNetworkACLVPC               = "vpc"
+	isNetworkACLResourceGroup     = "resource_group"
 )
 
 func resourceIBMISNetworkACL() *schema.Resource {
@@ -54,11 +55,20 @@ func resourceIBMISNetworkACL() *schema.Resource {
 				Required:     true,
 				ForceNew:     false,
 				ValidateFunc: validateISName,
+				Description:  "Network ACL name",
 			},
 			isNetworkACLVPC: {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "Network ACL VPC name",
+			},
+			isNetworkACLResourceGroup: {
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Computed:    true,
+				Description: "Resource group ID for the network ACL",
 			},
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
@@ -228,6 +238,11 @@ func resourceIBMISNetworkACLCreate(d *schema.ResourceData, meta interface{}) err
 		vpc = vpcID.(string)
 	}
 	if sess.Generation == 2 {
+		if grp, ok := d.GetOk(isVPCResourceGroup); ok {
+			nwaclbody.ResourceGroup = &networkc.PostNetworkAclsParamsBodyResourceGroup{
+				ID: strfmt.UUID(grp.(string)),
+			}
+		}
 		if vpc == "" {
 			return fmt.Errorf("Required parameter vpc is not set for Generation 2")
 		} else {
@@ -288,6 +303,7 @@ func resourceIBMISNetworkACLRead(d *schema.ResourceData, meta interface{}) error
 	d.Set(isNetworkACLName, nwacl.Name)
 	if sess.Generation == 2 {
 		d.Set(isNetworkACLVPC, nwacl.Vpc.ID.String())
+		d.Set(isNetworkACLResourceGroup, nwacl.ResourceGroup.ID)
 	}
 	d.Set(isNetworkACLSubnets, len(nwacl.Subnets))
 

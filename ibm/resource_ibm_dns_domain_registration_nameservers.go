@@ -18,8 +18,9 @@ func resourceIBMDNSDomainRegistrationNameservers() *schema.Resource {
 		Delete: resourceIBMDNSDomainRegistrationNSDelete,
 		Schema: map[string]*schema.Schema{
 			"dns_registration_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "DNS registration ID",
 			},
 			"name_servers": &schema.Schema{
 				Description: "Custom name servers for the domain registration",

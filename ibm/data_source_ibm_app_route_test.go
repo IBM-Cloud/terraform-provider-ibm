@@ -9,7 +9,7 @@ import (
 )
 
 func TestAccIBMAppRouteDataSource_basic(t *testing.T) {
-	host := fmt.Sprintf("terraform_%d", acctest.RandInt())
+	host := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
