@@ -8,15 +8,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/lbaas"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISLBPoolMember_basic(t *testing.T) {
-	var lb *models.Member
+	var lb string
 
-	vpcname := fmt.Sprintf("terraformLBuat-vpc-%d", acctest.RandIntRange(10, 100))
-	subnetname := fmt.Sprintf("terraformLBuat-create-step-name-%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tflbpm-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflbpmc-name-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
 	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
 	port := "8080"
@@ -32,7 +32,7 @@ func TestAccIBMISLBPoolMember_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMISLBPoolMemberConfig(vpcname, subnetname, ISZoneName, ISCIDR, name, poolName, port, address),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISLBPoolMemberExists("ibm_is_lb_pool_member.testacc_lb_mem", &lb),
+					testAccCheckIBMISLBPoolMemberExists("ibm_is_lb_pool_member.testacc_lb_mem", lb),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_pool_member.testacc_lb_mem", "port", port),
 					resource.TestCheckResourceAttr(
@@ -43,7 +43,7 @@ func TestAccIBMISLBPoolMember_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMISLBPoolMemberConfig(vpcname, subnetname, ISZoneName, ISCIDR, name, poolName, port1, address1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISLBPoolMemberExists("ibm_is_lb_pool_member.testacc_lb_mem", &lb),
+					testAccCheckIBMISLBPoolMemberExists("ibm_is_lb_pool_member.testacc_lb_mem", lb),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_pool_member.testacc_lb_mem", "port", port1),
 					resource.TestCheckResourceAttr(
@@ -55,33 +55,64 @@ func TestAccIBMISLBPoolMember_basic(t *testing.T) {
 }
 
 func testAccCheckIBMISLBPoolMemberDestroy(s *terraform.State) error {
-	sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
+	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	LBC := lbaas.NewLoadBalancerClient(sess)
+	if userDetails.generation == 1 {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_lb_pool_member" {
+				continue
+			}
+			parts, err := idParts(rs.Primary.ID)
+			if err != nil {
+				return err
+			}
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_is_lb_pool_member" {
-			continue
+			lbID := parts[0]
+			lbPoolID := parts[1]
+			lbPoolMemID := parts[2]
+			getlbpmoptions := &vpcclassicv1.GetLoadBalancerPoolMemberOptions{
+				LoadBalancerID: &lbID,
+				PoolID:         &lbPoolID,
+				ID:             &lbPoolMemID,
+			}
+			_, _, err1 := sess.GetLoadBalancerPoolMember(getlbpmoptions)
+
+			if err1 == nil {
+				return fmt.Errorf("LB Pool member still exists: %s", rs.Primary.ID)
+			}
 		}
-		parts, err := idParts(rs.Primary.ID)
-		if err != nil {
-			return err
-		}
+	} else {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_lb_pool_member" {
+				continue
+			}
+			parts, err := idParts(rs.Primary.ID)
+			if err != nil {
+				return err
+			}
 
-		lbID := parts[0]
-		lbPoolID := parts[1]
-		lbPoolMemID := parts[2]
-		_, err = LBC.GetPoolMember(lbID, lbPoolID, lbPoolMemID)
+			lbID := parts[0]
+			lbPoolID := parts[1]
+			lbPoolMemID := parts[2]
+			getlbpmoptions := &vpcv1.GetLoadBalancerPoolMemberOptions{
+				LoadBalancerID: &lbID,
+				PoolID:         &lbPoolID,
+				ID:             &lbPoolMemID,
+			}
+			_, _, err1 := sess.GetLoadBalancerPoolMember(getlbpmoptions)
 
-		if err == nil {
-			return fmt.Errorf("LB Pool member still exists: %s", rs.Primary.ID)
+			if err1 == nil {
+				return fmt.Errorf("LB Pool member still exists: %s", rs.Primary.ID)
+			}
 		}
 	}
 
 	return nil
 }
 
-func testAccCheckIBMISLBPoolMemberExists(n string, lbPoolMember **models.Member) resource.TestCheckFunc {
+func testAccCheckIBMISLBPoolMemberExists(n, lbPoolMember string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -92,9 +123,6 @@ func testAccCheckIBMISLBPoolMemberExists(n string, lbPoolMember **models.Member)
 		if rs.Primary.ID == "" {
 			return errors.New("No Record ID is set")
 		}
-
-		sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
-		client := lbaas.NewLoadBalancerClient(sess)
 		parts, err := idParts(rs.Primary.ID)
 		if err != nil {
 			return err
@@ -103,12 +131,32 @@ func testAccCheckIBMISLBPoolMemberExists(n string, lbPoolMember **models.Member)
 		lbID := parts[0]
 		lbPoolID := parts[1]
 		lbPoolMemID := parts[2]
-		foundLBPoolMember, err := client.GetPoolMember(lbID, lbPoolID, lbPoolMemID)
-		if err != nil {
-			return err
+		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
+		if userDetails.generation == 1 {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+			getlbpmoptions := &vpcclassicv1.GetLoadBalancerPoolMemberOptions{
+				LoadBalancerID: &lbID,
+				PoolID:         &lbPoolID,
+				ID:             &lbPoolMemID,
+			}
+			foundLBPoolMember, _, err := sess.GetLoadBalancerPoolMember(getlbpmoptions)
+			if err != nil {
+				return err
+			}
+			lbPoolMember = *foundLBPoolMember.ID
+		} else {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+			getlbpmoptions := &vpcv1.GetLoadBalancerPoolMemberOptions{
+				LoadBalancerID: &lbID,
+				PoolID:         &lbPoolID,
+				ID:             &lbPoolMemID,
+			}
+			foundLBPoolMember, _, err := sess.GetLoadBalancerPoolMember(getlbpmoptions)
+			if err != nil {
+				return err
+			}
+			lbPoolMember = *foundLBPoolMember.ID
 		}
-
-		*lbPoolMember = foundLBPoolMember
 		return nil
 	}
 }

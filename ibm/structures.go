@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/sl"
-	vpc "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
 
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
 	"github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
@@ -1522,22 +1521,6 @@ func UpdateTags(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 	return nil
-}
-
-func flattenISLBIPs(ips []*vpc.LoadBalancerIP) interface{} {
-	out := make([]interface{}, len(ips))
-	for i, ip := range ips {
-		out[i] = ip.Address
-	}
-	return out
-}
-
-func flattenISLBSubnets(subnets []*vpc.LoadBalancerSubnetsItems0) interface{} {
-	out := make([]interface{}, len(subnets))
-	for s, subnet := range subnets {
-		out[s] = subnet.ID
-	}
-	return out
 }
 
 func GetTagsUsingCRN(meta interface{}, resourceCRN string) (*schema.Set, error) {
