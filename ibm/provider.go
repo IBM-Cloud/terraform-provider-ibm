@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"os"
+	"sync"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/mutexkv"
@@ -372,6 +373,21 @@ func Provider() terraform.ResourceProvider {
 
 		ConfigureFunc: providerConfigure,
 	}
+}
+
+var globalValidatorDict ValidatorDict
+var initOnce sync.Once
+
+func Validator() ValidatorDict {
+	initOnce.Do(func() {
+		globalValidatorDict = ValidatorDict{
+			ResourceValidatorDictionary: map[string]*ResourceValidator{
+				"ibm_is_vpc":        resourceIBMISVPCValidator(),
+				"ibm_is_ike_policy": resourceIBMISIKEValidator(),
+			},
+		}
+	})
+	return globalValidatorDict
 }
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
