@@ -1,4 +1,3 @@
-
 variable "datacenter" {
   default = "wdc04"
 }
@@ -12,11 +11,11 @@ variable "hardware" {
 }
 
 variable "private_vlan_id" {
-  default = "2640745"
+  
 }
 
 variable "public_vlan_id" {
-  default = "2640747"
+  
 }
 
 variable "cluster_name" {
