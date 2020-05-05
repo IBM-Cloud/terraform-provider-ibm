@@ -59,6 +59,33 @@ func TestAccIBMIAMAuthorizationPolicy_Resource_Instance(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMAuthorizationPolicy_Resource_Group(t *testing.T) {
+	var conf iampapv1.Policy
+	sResourceGroup := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	tResourceGroup := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	resourceName := "ibm_iam_authorization_policy.policy"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAuthorizationPolicyDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIAMAuthorizationPolicyResourceGroup(sResourceGroup, tResourceGroup),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", "cloud-object-storage"),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", "kms"),
+				),
+			},
+			resource.TestStep{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMAuthorizationPolicy_ResourceType(t *testing.T) {
 	var conf iampapv1.Policy
 
@@ -172,4 +199,26 @@ func testAccCheckIBMIAMAuthorizationPolicyResourceType() string {
 		roles                = ["Reader"]
 	  }
 	`)
+}
+
+func testAccCheckIBMIAMAuthorizationPolicyResourceGroup(sResourceGroup, tResourceGroup string) string {
+	return fmt.Sprintf(`
+		  
+	resource "ibm_resource_group" "source_resource_group" {
+		name     = "%s"
+	  }
+	  
+	  resource "ibm_resource_group" "target_resource_group" {
+		name     = "%s"
+	  }
+	  
+	  resource "ibm_iam_authorization_policy" "policy" {
+		source_service_name         = "cloud-object-storage"
+		source_resource_group_id = ibm_resource_group.source_resource_group.id
+		target_service_name         = "kms"
+		target_resource_group_id = ibm_resource_group.target_resource_group.id
+		roles                       = ["Reader"]
+	  }
+	  
+	`, sResourceGroup, tResourceGroup)
 }

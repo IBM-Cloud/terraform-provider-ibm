@@ -56,6 +56,20 @@ func resourceIBMIAMAuthorizationPolicy() *schema.Resource {
 				Description: "The target resource instance Id",
 			},
 
+			"source_resource_group_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The source resource group Id",
+			},
+
+			"target_resource_group_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The target resource group Id",
+			},
+
 			"source_resource_type": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -156,6 +170,14 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 		policy.Resources[0].SetResourceType(tType.(string))
 	}
 
+	if sResGrpID, ok := d.GetOk("source_resource_group_id"); ok {
+		policy.Subjects[0].SetResourceGroupID(sResGrpID.(string))
+	}
+
+	if tResGrpID, ok := d.GetOk("target_resource_group_id"); ok {
+		policy.Resources[0].SetResourceGroupID(tResGrpID.(string))
+	}
+
 	roles, err := getAuthorizationRolesByName(expandStringList(d.Get("roles").([]interface{})), sourceServiceName, targetServiceName, meta)
 	if err != nil {
 		return err
@@ -200,6 +222,8 @@ func resourceIBMIAMAuthorizationPolicyRead(d *schema.ResourceData, meta interfac
 	d.Set("source_resource_type", source.ResourceType())
 	d.Set("target_resource_type", target.ResourceType())
 	d.Set("source_service_account", source.AccountID())
+	d.Set("source_resource_group_id", source.ResourceGroupID())
+	d.Set("target_resource_group_id", target.ResourceGroupID())
 	return nil
 }
 
