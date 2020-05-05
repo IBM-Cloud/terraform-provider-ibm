@@ -287,6 +287,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_firewall":                                       resourceIBMFirewall(),
 			"ibm_firewall_policy":                                resourceIBMFirewallPolicy(),
 			"ibm_iam_access_group":                               resourceIBMIAMAccessGroup(),
+			"ibm_iam_custom_role":                                resourceIBMIAMCustomRole(),
 			"ibm_iam_access_group_dynamic_rule":                  resourceIBMIAMDynamicRule(),
 			"ibm_iam_access_group_members":                       resourceIBMIAMAccessGroupMembers(),
 			"ibm_iam_access_group_policy":                        resourceIBMIAMAccessGroupPolicy(),
@@ -386,8 +387,9 @@ func Validator() ValidatorDict {
 	initOnce.Do(func() {
 		globalValidatorDict = ValidatorDict{
 			ResourceValidatorDictionary: map[string]*ResourceValidator{
-				"ibm_is_vpc":        resourceIBMISVPCValidator(),
-				"ibm_is_ike_policy": resourceIBMISIKEValidator(),
+				"ibm_is_vpc":          resourceIBMISVPCValidator(),
+				"ibm_is_ike_policy":   resourceIBMISIKEValidator(),
+				"ibm_iam_custom_role": resourceIBMIAMCustomRoleValidator(),
 			},
 		}
 	})
