@@ -59,6 +59,26 @@ resource "ibm_iam_authorization_policy" "policy" {
 }
 
 ```
+### Authorization policy between two specific resource group
+
+```hcl
+resource "ibm_resource_group" "source_resource_group" {
+  name     = "123123"
+}
+	  
+resource "ibm_resource_group" "target_resource_group" {
+  name     = "456456"
+}
+
+resource "ibm_iam_authorization_policy" "policy" {
+  source_service_name         = "cloud-object-storage"
+  source_resource_group_id    = "${ibm_resource_group.source_resource_group.id}"
+  target_service_name         = "kms"
+  target_resource_group_id    = "${ibm_resource_group.target_resource_group.id}"
+  roles                       = ["Reader"]
+}
+
+```
 
 ## Argument Reference
 
@@ -72,6 +92,8 @@ The following arguments are supported:
 * `source_resource_type` - (Optional, Forces new resource, string) Resource type of source service.
 * `target_resource_type` - (Optional, Forces new resource, string) Resource type of target service.
 * `source_service_account` - (Optional, Forces new resource, string) Account GUID of source service.
+* `source_resource_group_id` - (Optional, Forces new resource, string) The Source resource group id.
+* `target_resource_group_id` - (Optional, Forces new resource, string) The target resource group id.
 
 ## Attribute Reference
 
