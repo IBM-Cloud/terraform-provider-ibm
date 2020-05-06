@@ -6,7 +6,7 @@ cloud.google.com/go/internal/optional
 cloud.google.com/go/internal/trace
 cloud.google.com/go/internal/version
 cloud.google.com/go/storage
-# github.com/IBM-Cloud/bluemix-go v0.0.0-20200429085924-f3425a5eace0
+# github.com/IBM-Cloud/bluemix-go v0.0.0-20200505045710-36abc6bdd8dd
 github.com/IBM-Cloud/bluemix-go
 github.com/IBM-Cloud/bluemix-go/api/account/accountv1
 github.com/IBM-Cloud/bluemix-go/api/account/accountv2
@@ -185,7 +185,7 @@ github.com/ghodss/yaml
 # github.com/go-openapi/analysis v0.19.5
 github.com/go-openapi/analysis
 github.com/go-openapi/analysis/internal
-# github.com/go-openapi/errors v0.19.4
+# github.com/go-openapi/errors v0.19.3
 github.com/go-openapi/errors
 # github.com/go-openapi/jsonpointer v0.19.3
 github.com/go-openapi/jsonpointer
@@ -206,9 +206,9 @@ github.com/go-openapi/runtime/security
 github.com/go-openapi/spec
 # github.com/go-openapi/strfmt v0.19.5
 github.com/go-openapi/strfmt
-# github.com/go-openapi/swag v0.19.8
+# github.com/go-openapi/swag v0.19.7
 github.com/go-openapi/swag
-# github.com/go-openapi/validate v0.19.7
+# github.com/go-openapi/validate v0.19.6
 github.com/go-openapi/validate
 # github.com/go-playground/locales v0.13.0
 github.com/go-playground/locales
@@ -428,7 +428,6 @@ github.com/zclconf/go-cty/cty/set
 github.com/zclconf/go-cty-yaml
 # github.ibm.com/Bluemix/riaas-go-client v0.0.0-20191018070922-afd27ac04d4f => ./common/github.ibm.com/Bluemix/riaas-go-client
 github.ibm.com/Bluemix/riaas-go-client/clients/compute
-github.ibm.com/Bluemix/riaas-go-client/clients/geography
 github.ibm.com/Bluemix/riaas-go-client/clients/lbaas
 github.ibm.com/Bluemix/riaas-go-client/clients/network
 github.ibm.com/Bluemix/riaas-go-client/clients/vpn
