@@ -15,11 +15,13 @@ type ClusterCreateRequest struct {
 	Provider                     string           `json:"provider"`
 	ServiceSubnet                string           `json:"serviceSubnet"`
 	Name                         string           `json:"name" binding:"required" description:"The cluster's name"`
+	DefaultWorkerPoolEntitlement string           `json:"defaultWorkerPoolEntitlement"`
 	WorkerPools                  WorkerPoolConfig `json:"workerPool"`
 }
 
 type WorkerPoolConfig struct {
 	DiskEncryption bool              `json:"diskEncryption,omitempty"`
+	Entitlement    string            `json:"entitlement"`
 	Flavor         string            `json:"flavor"`
 	Isolation      string            `json:"isolation,omitempty"`
 	Labels         map[string]string `json:"labels,omitempty"`
@@ -46,6 +48,7 @@ type ClusterInfo struct {
 	DataCenter        string        `json:"dataCenter"`
 	ID                string        `json:"id"`
 	Location          string        `json:"location"`
+	Entitlement       string        `json:"entitlement"`
 	MasterKubeVersion string        `json:"masterKubeVersion"`
 	Name              string        `json:"name"`
 	Region            string        `json:"region"`
