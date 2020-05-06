@@ -115,6 +115,11 @@ func (s *Subject) ResourceType() string {
 	return s.GetAttribute("resourceType")
 }
 
+// ResourceGroupID returns resource group ID attribute of policy resource if exists
+func (s *Subject) ResourceGroupID() string {
+	return s.GetAttribute(ResourceGroupIDAttribute)
+}
+
 // SetAccessGroupID sets value of access group ID attribute of policy subject
 func (s *Subject) SetAccessGroupID(value string) {
 	s.SetAttribute("access_group_id", value)
@@ -143,6 +148,11 @@ func (s *Subject) SetServiceInstance(value string) {
 // SetResourceType sets value of resource type attribute of policy subject
 func (s *Subject) SetResourceType(value string) {
 	s.SetAttribute("resourceType", value)
+}
+
+// SetResourceGroupID sets value of resource group ID attribute of policy resource
+func (s *Subject) SetResourceGroupID(value string) {
+	s.SetAttribute(ResourceGroupIDAttribute, value)
 }
 
 // Resource is the object controlled by the policy
