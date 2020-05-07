@@ -17,12 +17,14 @@ import (
 
 func TestAccIBMContainerVpcCluster_basic(t *testing.T) {
 	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	clusterNamegen2 := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	randint := acctest.RandIntRange(10, 100)
 	vpc := fmt.Sprintf("vpc-%d", randint)
 	subnet := fmt.Sprintf("subnet-%d", randint)
 	flavor := "c2.2x4"
 	zone := "us-south"
 	workerCount := "1"
+	flavorGen2 := "bx2.2x8"
 	var conf *v2.ClusterInfo
 
 	resource.Test(t, resource.TestCase{
@@ -40,6 +42,18 @@ func TestAccIBMContainerVpcCluster_basic(t *testing.T) {
 						"ibm_container_vpc_cluster.cluster", "worker_count", workerCount),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.cluster", "flavor", flavor),
+				),
+			},
+			{
+				Config: testAccCheckIBMContainerVpcClusterGen2basic(zone, vpc, subnet, clusterNamegen2, flavorGen2, workerCount),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.clustergen2", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.clustergen2", "name", clusterNamegen2),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.clustergen2", "worker_count", workerCount),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.clustergen2", "flavor", flavorGen2),
 				),
 			},
 		},
@@ -167,6 +181,46 @@ resource "ibm_container_vpc_cluster" "cluster" {
 	vpc_id            = "${ibm_is_vpc.vpc1.id}"
 	flavor            = "%s"
 	worker_count      = "%s"
+	wait_till         = "OneWorkerNodeReady"
+	resource_group_id = "${data.ibm_resource_group.resource_group.id}"
+	zones {
+		 subnet_id = "${ibm_is_subnet.subnet1.id}"
+		 name      = "${local.ZONE1}"
+	  }
+  }`, zone, vpc, subnet, clusterName, flavor, workerCount)
+
+}
+
+func testAccCheckIBMContainerVpcClusterGen2basic(zone, vpc, subnet, clusterName, flavor, workerCount string) string {
+	return fmt.Sprintf(`
+provider "ibm" {
+	generation =2
+}	
+data "ibm_resource_group" "resource_group" {
+	is_default = "true"
+}
+
+locals {
+	ZONE1 = "%s-1"
+}
+  
+resource "ibm_is_vpc" "vpc1" {
+	name = "%s"
+}
+  
+resource "ibm_is_subnet" "subnet1" {
+	name                     = "%s"
+	vpc                      = "${ibm_is_vpc.vpc1.id}"
+	zone                     = "${local.ZONE1}"
+	total_ipv4_address_count = 256
+}
+
+resource "ibm_container_vpc_cluster" "clustergen2" {
+	name              = "%s"
+	vpc_id            = "${ibm_is_vpc.vpc1.id}"
+	flavor            = "%s"
+	worker_count      = "%s"
+	kube_version 	  = "1.17.5"
 	wait_till         = "OneWorkerNodeReady"
 	resource_group_id = "${data.ibm_resource_group.resource_group.id}"
 	zones {
