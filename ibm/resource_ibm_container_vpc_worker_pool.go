@@ -76,11 +76,11 @@ func resourceIBMContainerVpcWorkerPool() *schema.Resource {
 			},
 
 			"labels": {
-				Type:             schema.TypeSet,
+				Type:             schema.TypeMap,
 				Optional:         true,
 				Computed:         true,
 				DiffSuppressFunc: applyOnce,
-				Elem:             &schema.Schema{Type: schema.TypeString},
+				Elem:             schema.TypeString,
 				Description:      "Labels",
 			},
 
