@@ -341,7 +341,6 @@ func resourceIBMContainerCluster() *schema.Resource {
 			"wait_time_minutes": {
 				Type:       schema.TypeInt,
 				Optional:   true,
-				Default:    90,
 				Deprecated: "This field is deprecated",
 			},
 			"tags": {
