@@ -2,17 +2,15 @@ package ibm
 
 import (
 	"container/list"
-	"encoding/json"
 	"fmt"
 	"log"
+	"reflect"
 	"strings"
+	"time"
 
-	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
-	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
-	networkc "github.ibm.com/Bluemix/riaas-go-client/riaas/client/network"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -48,6 +46,11 @@ func resourceIBMISNetworkACL() *schema.Resource {
 		Delete:   resourceIBMISNetworkACLDelete,
 		Exists:   resourceIBMISNetworkACLExists,
 		Importer: &schema.ResourceImporter{},
+
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(60 * time.Minute),
+			Delete: schema.DefaultTimeout(60 * time.Minute),
+		},
 
 		Schema: map[string]*schema.Schema{
 			isNetworkACLName: {
@@ -225,243 +228,625 @@ func resourceIBMISNetworkACL() *schema.Resource {
 }
 
 func resourceIBMISNetworkACLCreate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	nwaclC := network.NewNetworkAclClient(sess)
+	name := d.Get(isNetworkACLName).(string)
 
-	var nwaclbody networkc.PostNetworkAclsBody
-	nwaclbody.Name = d.Get(isNetworkACLName).(string)
-	var vpc string
-	if vpcID, ok := d.GetOk(isNetworkACLVPC); ok {
-		vpc = vpcID.(string)
-	}
-	if sess.Generation == 2 {
-		if grp, ok := d.GetOk(isVPCResourceGroup); ok {
-			nwaclbody.ResourceGroup = &networkc.PostNetworkAclsParamsBodyResourceGroup{
-				ID: strfmt.UUID(grp.(string)),
-			}
+	if userDetails.generation == 1 {
+		err := classicNwaclCreate(d, meta, name)
+		if err != nil {
+			return err
 		}
-		if vpc == "" {
-			return fmt.Errorf("Required parameter vpc is not set for Generation 2")
-		} else {
-			nwaclbody.Vpc = &models.ResourceReference{
-				ID: strfmt.UUID(vpc),
-			}
+	} else {
+		err := nwaclCreate(d, meta, name)
+		if err != nil {
+			return err
 		}
 	}
+	return resourceIBMISNetworkACLRead(d, meta)
 
-	//validate each rule before attempting to create the ACL
-	rules := d.Get(isNetworkACLRules).([]interface{})
+}
+
+func classicNwaclCreate(d *schema.ResourceData, meta interface{}, name string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+
+	nwaclTemplate := &vpcclassicv1.NetworkACLPrototype{
+		Name: &name,
+	}
+
+	var rules []interface{}
+	if rls, ok := d.GetOk(isNetworkACLRules); ok {
+		rules = rls.([]interface{})
+	}
 	err = validateInlineRules(rules)
 	if err != nil {
 		return err
 	}
 
-	reqbody, _ := json.Marshal(nwaclbody)
-	log.Printf("[DEBUG] Creating Network ACL : %s", string(reqbody))
-
-	//TODO : Tags
-
-	nwacl, err := nwaclC.Create(nwaclbody)
-	if err != nil {
-		log.Printf("[DEBUG] Network ACL creation failed with error : %s", isErrorToString(err))
-		return err
+	options := &vpcclassicv1.CreateNetworkAclOptions{
+		NetworkACLPrototype: nwaclTemplate,
 	}
 
-	d.SetId(nwacl.ID.String())
-	nwaclid := nwacl.ID.String()
+	nwacl, response, err := sess.CreateNetworkAcl(options)
+	if err != nil {
+		return fmt.Errorf("[DEBUG]Error while creating Network ACL err %s\n%s", err, response)
+	}
+	d.SetId(*nwacl.ID)
+	log.Printf("[INFO] Network ACL : %s", *nwacl.ID)
+	nwaclid := *nwacl.ID
 
 	//Remove default rules
-	err = clearRules(nwaclC, nwaclid)
+	err = classicClearRules(sess, nwaclid)
 	if err != nil {
 		return err
 	}
 
-	err = createInlineRules(nwaclC, nwaclid, rules)
+	err = classicCreateInlineRules(sess, nwaclid, rules)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func nwaclCreate(d *schema.ResourceData, meta interface{}, name string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	var vpc, rg string
+	if vpcID, ok := d.GetOk(isNetworkACLVPC); ok {
+		vpc = vpcID.(string)
+	} else {
+		return fmt.Errorf("Required parameter vpc is not set")
+	}
+
+	nwaclTemplate := &vpcv1.NetworkACLPrototype{
+		Name: &name,
+		Vpc: &vpcv1.VPCIdentity{
+			ID: &vpc,
+		},
+	}
+
+	if grp, ok := d.GetOk(isVPCResourceGroup); ok {
+		rg = grp.(string)
+		nwaclTemplate.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+			ID: &rg,
+		}
+	}
+	// validate each rule before attempting to create the ACL
+	var rules []interface{}
+	if rls, ok := d.GetOk(isNetworkACLRules); ok {
+		rules = rls.([]interface{})
+	}
+	err = validateInlineRules(rules)
 	if err != nil {
 		return err
 	}
 
-	return resourceIBMISNetworkACLRead(d, meta)
+	options := &vpcv1.CreateNetworkAclOptions{
+		NetworkACLPrototype: nwaclTemplate,
+	}
 
+	nwacl, response, err := sess.CreateNetworkAcl(options)
+	if err != nil {
+		return fmt.Errorf("[DEBUG]Error while creating Network ACL err %s\n%s", err, response)
+	}
+	d.SetId(*nwacl.ID)
+	log.Printf("[INFO] Network ACL : %s", *nwacl.ID)
+	nwaclid := *nwacl.ID
+
+	//Remove default rules
+	err = clearRules(sess, nwaclid)
+	if err != nil {
+		return err
+	}
+
+	err = createInlineRules(sess, nwaclid, rules)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func resourceIBMISNetworkACLRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
-	if err != nil {
-		return err
-	}
-	nwaclC := network.NewNetworkAclClient(sess)
-	log.Printf("[DEBUG] Looking up details for network ACL with id %s", d.Id())
-	nwacl, err := nwaclC.Get(d.Id())
-	if err != nil {
-		return err
-	}
 
-	d.Set(isNetworkACLName, nwacl.Name)
-	if sess.Generation == 2 {
-		d.Set(isNetworkACLVPC, nwacl.Vpc.ID.String())
-		d.Set(isNetworkACLResourceGroup, nwacl.ResourceGroup.ID)
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return err
 	}
+	id := d.Id()
+	if userDetails.generation == 1 {
+		err := classicNwaclGet(d, meta, id)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := nwaclGet(d, meta, id)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func classicNwaclGet(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getNetworkAclOptions := &vpcclassicv1.GetNetworkAclOptions{
+		ID: &id,
+	}
+	nwacl, response, err := sess.GetNetworkAcl(getNetworkAclOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting Network ACL(%s) : %s\n%s", id, err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	d.Set(isNetworkACLName, *nwacl.Name)
 	d.Set(isNetworkACLSubnets, len(nwacl.Subnets))
 
-	log.Printf("[DEBUG] Looking up rules for network ACL with id %s", d.Id())
-	rawrules, _, err := nwaclC.ListRules(d.Id(), "")
+	log.Printf("[DEBUG] Looking up rules for network ACL with id %s", id)
+	listNetworkAclRulesOptions := &vpcclassicv1.ListNetworkAclRulesOptions{
+		NetworkAclID: &id,
+	}
+	rawrules, response, err := sess.ListNetworkAclRules(listNetworkAclRulesOptions)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error Listing network ACL rules : %s\n%s", err, response)
 	}
 
 	rules := make([]interface{}, 0)
-	for _, rulex := range rawrules {
+	for _, rulex := range rawrules.Rules {
+		log.Println("[DEBUG] Type of the Rule", reflect.TypeOf(rulex))
 		rule := make(map[string]interface{})
-		rule[isNetworkACLRuleID] = rulex.ID.String()
-		rule[isNetworkACLRuleName] = rulex.Name
-		rule[isNetworkACLRuleAction] = rulex.Action
-		rule[isNetworkACLRuleIPVersion] = rulex.IPVersion
-		rule[isNetworkACLRuleSource] = rulex.Source
-		rule[isNetworkACLRuleDestination] = rulex.Destination
-		rule[isNetworkACLRuleDirection] = rulex.Direction
-
-		if rulex.Protocol == "icmp" {
-			rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
-			rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
-			icmp := make([]map[string]int, 1, 1)
-			icmp[0] = map[string]int{
-				isNetworkACLRuleICMPCode: checkNetworkACLNil(rulex.Code),
-				isNetworkACLRuleICMPType: checkNetworkACLNil(rulex.Type),
+		switch reflect.TypeOf(rulex).String() {
+		case "*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolICMP":
+			{
+				rulex := rulex.(*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolICMP)
+				rule[isNetworkACLRuleID] = *rulex.ID
+				rule[isNetworkACLRuleName] = *rulex.Name
+				rule[isNetworkACLRuleAction] = *rulex.Action
+				rule[isNetworkACLRuleIPVersion] = *rulex.IpVersion
+				rule[isNetworkACLRuleSource] = *rulex.Source
+				rule[isNetworkACLRuleDestination] = *rulex.Destination
+				rule[isNetworkACLRuleDirection] = *rulex.Direction
+				rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
+				rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
+				icmp := make([]map[string]int, 1, 1)
+				icmp[0] = map[string]int{
+					isNetworkACLRuleICMPCode: checkNetworkACLNil(rulex.Code),
+					isNetworkACLRuleICMPType: checkNetworkACLNil(rulex.Type),
+				}
+				rule[isNetworkACLRuleICMP] = icmp
 			}
-			rule[isNetworkACLRuleICMP] = icmp
-		} else if rulex.Protocol == "tcp" {
-			rule[isNetworkACLRuleICMP] = make([]map[string]int, 0, 0)
-			rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
-			tcp := make([]map[string]int, 1, 1)
-			tcp[0] = map[string]int{
-				isNetworkACLRuleSourcePortMax: checkNetworkACLNil(&rulex.SourcePortMax),
-				isNetworkACLRuleSourcePortMin: checkNetworkACLNil(&rulex.SourcePortMin),
+		case "*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolTCPUDP":
+			{
+				rulex := rulex.(*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolTCPUDP)
+				rule[isNetworkACLRuleID] = *rulex.ID
+				rule[isNetworkACLRuleName] = *rulex.Name
+				rule[isNetworkACLRuleAction] = *rulex.Action
+				rule[isNetworkACLRuleIPVersion] = *rulex.IpVersion
+				rule[isNetworkACLRuleSource] = *rulex.Source
+				rule[isNetworkACLRuleDestination] = *rulex.Destination
+				rule[isNetworkACLRuleDirection] = *rulex.Direction
+				if *rulex.Protocol == "tcp" {
+					rule[isNetworkACLRuleICMP] = make([]map[string]int, 0, 0)
+					rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
+					tcp := make([]map[string]int, 1, 1)
+					tcp[0] = map[string]int{
+						isNetworkACLRuleSourcePortMax: checkNetworkACLNil(rulex.SourcePortMax),
+						isNetworkACLRuleSourcePortMin: checkNetworkACLNil(rulex.SourcePortMin),
+					}
+					tcp[0][isNetworkACLRulePortMax] = checkNetworkACLNil(rulex.PortMax)
+					tcp[0][isNetworkACLRulePortMin] = checkNetworkACLNil(rulex.PortMin)
+					rule[isNetworkACLRuleTCP] = tcp
+				} else if *rulex.Protocol == "udp" {
+					rule[isNetworkACLRuleICMP] = make([]map[string]int, 0, 0)
+					rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
+					udp := make([]map[string]int, 1, 1)
+					udp[0] = map[string]int{
+						isNetworkACLRuleSourcePortMax: checkNetworkACLNil(rulex.SourcePortMax),
+						isNetworkACLRuleSourcePortMin: checkNetworkACLNil(rulex.SourcePortMin),
+					}
+					udp[0][isNetworkACLRulePortMax] = checkNetworkACLNil(rulex.PortMax)
+					udp[0][isNetworkACLRulePortMin] = checkNetworkACLNil(rulex.PortMin)
+					rule[isNetworkACLRuleUDP] = udp
+				}
 			}
-			if sess.Generation == 2 {
-				tcp[0][isNetworkACLRulePortMax] = checkNetworkACLNil(&rulex.DestinationPortMax)
-				tcp[0][isNetworkACLRulePortMin] = checkNetworkACLNil(&rulex.DestinationPortMin)
-			} else {
-				tcp[0][isNetworkACLRulePortMax] = checkNetworkACLNil(&rulex.PortMax)
-				tcp[0][isNetworkACLRulePortMin] = checkNetworkACLNil(&rulex.PortMin)
+		case "*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolAll":
+			{
+				rulex := rulex.(*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolAll)
+				rule[isNetworkACLRuleID] = *rulex.ID
+				rule[isNetworkACLRuleName] = *rulex.Name
+				rule[isNetworkACLRuleAction] = *rulex.Action
+				rule[isNetworkACLRuleIPVersion] = *rulex.IpVersion
+				rule[isNetworkACLRuleSource] = *rulex.Source
+				rule[isNetworkACLRuleDestination] = *rulex.Destination
+				rule[isNetworkACLRuleDirection] = *rulex.Direction
+				rule[isNetworkACLRuleICMP] = make([]map[string]int, 0, 0)
+				rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
+				rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
 			}
-			rule[isNetworkACLRuleTCP] = tcp
-		} else if rulex.Protocol == "udp" {
-			rule[isNetworkACLRuleICMP] = make([]map[string]int, 0, 0)
-			rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
-			udp := make([]map[string]int, 1, 1)
-			udp[0] = map[string]int{
-				isNetworkACLRuleSourcePortMax: checkNetworkACLNil(&rulex.SourcePortMax),
-				isNetworkACLRuleSourcePortMin: checkNetworkACLNil(&rulex.SourcePortMin),
-			}
-			if sess.Generation == 2 {
-				udp[0][isNetworkACLRulePortMax] = checkNetworkACLNil(&rulex.DestinationPortMax)
-				udp[0][isNetworkACLRulePortMin] = checkNetworkACLNil(&rulex.DestinationPortMin)
-			} else {
-				udp[0][isNetworkACLRulePortMax] = checkNetworkACLNil(&rulex.PortMax)
-				udp[0][isNetworkACLRulePortMin] = checkNetworkACLNil(&rulex.PortMin)
-			}
-			rule[isNetworkACLRuleUDP] = udp
 		}
 		rules = append(rules, rule)
 	}
 
 	d.Set(isNetworkACLRules, rules)
-
 	controller, err := getBaseController(meta)
 	if err != nil {
 		return err
 	}
-	if sess.Generation == 1 {
-		d.Set(ResourceControllerURL, controller+"/vpc/network/acl")
-	} else {
-		d.Set(ResourceControllerURL, controller+"/vpc-ext/network/acl")
+	d.Set(ResourceControllerURL, controller+"/vpc/network/acl")
+	d.Set(ResourceName, *nwacl.Name)
+	// d.Set(ResourceCRN, *nwacl.Crn)
+	return nil
+}
+
+func nwaclGet(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
 	}
-	d.Set(ResourceName, nwacl.Name)
-	d.Set(ResourceCRN, nwacl.Crn)
+	getNetworkAclOptions := &vpcv1.GetNetworkAclOptions{
+		ID: &id,
+	}
+	nwacl, response, err := sess.GetNetworkAcl(getNetworkAclOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting Network ACL(%s) : %s\n%s", id, err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	d.Set(isNetworkACLName, *nwacl.Name)
+	d.Set(isNetworkACLVPC, *nwacl.Vpc.ID)
 	if nwacl.ResourceGroup != nil {
-		d.Set(ResourceGroupName, nwacl.ResourceGroup.Name)
+		d.Set(isNetworkACLResourceGroup, *nwacl.ResourceGroup.ID)
+		d.Set(ResourceGroupName, *nwacl.ResourceGroup.Name)
 	}
+	d.Set(isNetworkACLSubnets, len(nwacl.Subnets))
+
+	log.Printf("[DEBUG] Looking up rules for network ACL with id %s", id)
+	listNetworkAclRulesOptions := &vpcv1.ListNetworkAclRulesOptions{
+		NetworkAclID: &id,
+	}
+	rawrules, response, err := sess.ListNetworkAclRules(listNetworkAclRulesOptions)
+	if err != nil {
+		return fmt.Errorf("Error Listing network ACL rules : %s\n%s", err, response)
+	}
+
+	rules := make([]interface{}, 0)
+	for _, rulex := range rawrules.Rules {
+		log.Println("[DEBUG] Type of the Rule", reflect.TypeOf(rulex))
+		rule := make(map[string]interface{})
+		switch reflect.TypeOf(rulex).String() {
+		case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolICMP":
+			{
+				rulex := rulex.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolICMP)
+				rule[isNetworkACLRuleID] = *rulex.ID
+				rule[isNetworkACLRuleName] = *rulex.Name
+				rule[isNetworkACLRuleAction] = *rulex.Action
+				rule[isNetworkACLRuleIPVersion] = *rulex.IpVersion
+				rule[isNetworkACLRuleSource] = *rulex.Source
+				rule[isNetworkACLRuleDestination] = *rulex.Destination
+				rule[isNetworkACLRuleDirection] = *rulex.Direction
+				rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
+				rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
+				icmp := make([]map[string]int, 1, 1)
+				icmp[0] = map[string]int{
+					isNetworkACLRuleICMPCode: checkNetworkACLNil(rulex.Code),
+					isNetworkACLRuleICMPType: checkNetworkACLNil(rulex.Type),
+				}
+				rule[isNetworkACLRuleICMP] = icmp
+			}
+		case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolTCPUDP":
+			{
+				rulex := rulex.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolTCPUDP)
+				rule[isNetworkACLRuleID] = *rulex.ID
+				rule[isNetworkACLRuleName] = *rulex.Name
+				rule[isNetworkACLRuleAction] = *rulex.Action
+				rule[isNetworkACLRuleIPVersion] = *rulex.IpVersion
+				rule[isNetworkACLRuleSource] = *rulex.Source
+				rule[isNetworkACLRuleDestination] = *rulex.Destination
+				rule[isNetworkACLRuleDirection] = *rulex.Direction
+				if *rulex.Protocol == "tcp" {
+					rule[isNetworkACLRuleICMP] = make([]map[string]int, 0, 0)
+					rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
+					tcp := make([]map[string]int, 1, 1)
+					tcp[0] = map[string]int{
+						isNetworkACLRuleSourcePortMax: checkNetworkACLNil(rulex.SourcePortMax),
+						isNetworkACLRuleSourcePortMin: checkNetworkACLNil(rulex.SourcePortMin),
+					}
+					tcp[0][isNetworkACLRulePortMax] = checkNetworkACLNil(rulex.DestinationPortMax)
+					tcp[0][isNetworkACLRulePortMin] = checkNetworkACLNil(rulex.DestinationPortMin)
+					rule[isNetworkACLRuleTCP] = tcp
+				} else if *rulex.Protocol == "udp" {
+					rule[isNetworkACLRuleICMP] = make([]map[string]int, 0, 0)
+					rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
+					udp := make([]map[string]int, 1, 1)
+					udp[0] = map[string]int{
+						isNetworkACLRuleSourcePortMax: checkNetworkACLNil(rulex.SourcePortMax),
+						isNetworkACLRuleSourcePortMin: checkNetworkACLNil(rulex.SourcePortMin),
+					}
+					udp[0][isNetworkACLRulePortMax] = checkNetworkACLNil(rulex.DestinationPortMax)
+					udp[0][isNetworkACLRulePortMin] = checkNetworkACLNil(rulex.DestinationPortMin)
+					rule[isNetworkACLRuleUDP] = udp
+				}
+			}
+		case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolAll":
+			{
+				rulex := rulex.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolAll)
+				rule[isNetworkACLRuleID] = *rulex.ID
+				rule[isNetworkACLRuleName] = *rulex.Name
+				rule[isNetworkACLRuleAction] = *rulex.Action
+				rule[isNetworkACLRuleIPVersion] = *rulex.IpVersion
+				rule[isNetworkACLRuleSource] = *rulex.Source
+				rule[isNetworkACLRuleDestination] = *rulex.Destination
+				rule[isNetworkACLRuleDirection] = *rulex.Direction
+				rule[isNetworkACLRuleICMP] = make([]map[string]int, 0, 0)
+				rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
+				rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
+			}
+		}
+		rules = append(rules, rule)
+	}
+
+	d.Set(isNetworkACLRules, rules)
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return err
+	}
+	d.Set(ResourceControllerURL, controller+"/vpc-ext/network/acl")
+	d.Set(ResourceName, *nwacl.Name)
+	// d.Set(ResourceCRN, *nwacl.Crn)
 	return nil
 }
 
 func resourceIBMISNetworkACLUpdate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	nwaclC := network.NewNetworkAclClient(sess)
-	nwaclid := d.Id()
-	rules := d.Get(isNetworkACLRules).([]interface{})
+	id := d.Id()
+
+	name := ""
+	hasChanged := false
 
 	if d.HasChange(isNetworkACLName) {
-		name := d.Get(isNetworkACLName).(string)
-		_, err := nwaclC.Update(nwaclid, name)
+		name = d.Get(isNetworkACLName).(string)
+		hasChanged = true
+	}
+
+	if userDetails.generation == 1 {
+		err := classicNwaclUpdate(d, meta, id, name, hasChanged)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := nwaclUpdate(d, meta, id, name, hasChanged)
 		if err != nil {
 			return err
 		}
 	}
+	return resourceIBMISNetworkACLRead(d, meta)
+}
 
+func classicNwaclUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	rules := d.Get(isNetworkACLRules).([]interface{})
+	if hasChanged {
+		updateNetworkAclOptions := &vpcclassicv1.UpdateNetworkAclOptions{
+			ID:   &id,
+			Name: &name,
+		}
+		_, response, err := sess.UpdateNetworkAcl(updateNetworkAclOptions)
+		if err != nil {
+			return fmt.Errorf("Error Updating Network ACL(%s) : %s\n%s", id, err, response)
+		}
+	}
 	if d.HasChange(isNetworkACLRules) {
-
 		err := validateInlineRules(rules)
 		if err != nil {
 			return err
 		}
-
 		//Delete all existing rules
-		clearRules(nwaclC, nwaclid)
-
+		err = classicClearRules(sess, id)
+		if err != nil {
+			return err
+		}
 		//Create the rules as per the def
-		err = createInlineRules(nwaclC, d.Id(), rules)
+		err = classicCreateInlineRules(sess, id, rules)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func nwaclUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	rules := d.Get(isNetworkACLRules).([]interface{})
+	if hasChanged {
+		updateNetworkAclOptions := &vpcv1.UpdateNetworkAclOptions{
+			ID:   &id,
+			Name: &name,
+		}
+		_, response, err := sess.UpdateNetworkAcl(updateNetworkAclOptions)
+		if err != nil {
+			return fmt.Errorf("Error Updating Network ACL(%s) : %s\n%s", id, err, response)
+		}
+	}
+	if d.HasChange(isNetworkACLRules) {
+		err := validateInlineRules(rules)
+		if err != nil {
+			return err
+		}
+		//Delete all existing rules
+		err = clearRules(sess, id)
+		if err != nil {
+			return err
+		}
+		//Create the rules as per the def
+		err = createInlineRules(sess, id, rules)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func resourceIBMISNetworkACLDelete(d *schema.ResourceData, meta interface{}) error {
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return err
+	}
+	id := d.Id()
+	if userDetails.generation == 1 {
+		err := classicNwaclDelete(d, meta, id)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := nwaclDelete(d, meta, id)
 		if err != nil {
 			return err
 		}
 	}
 
-	return resourceIBMISNetworkACLRead(d, meta)
+	d.SetId("")
+	return nil
 }
 
-func resourceIBMISNetworkACLDelete(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+func classicNwaclDelete(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
-	nwaclC := network.NewNetworkAclClient(sess)
-	log.Printf("Deleting the network ACL with id %s", d.Id())
-	err = nwaclC.Delete(d.Id())
+
+	getNetworkAclOptions := &vpcclassicv1.GetNetworkAclOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetNetworkAcl(getNetworkAclOptions)
+
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting Network ACL (%s): %s\n%s", id, err, response)
+	}
+
+	deleteNetworkAclOptions := &vpcclassicv1.DeleteNetworkAclOptions{
+		ID: &id,
+	}
+	response, err = sess.DeleteNetworkAcl(deleteNetworkAclOptions)
+	if err != nil {
+		return fmt.Errorf("Error Deleting Network ACL : %s\n%s", err, response)
+	}
+	d.SetId("")
+	return nil
+}
+
+func nwaclDelete(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
+	}
+
+	getNetworkAclOptions := &vpcv1.GetNetworkAclOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetNetworkAcl(getNetworkAclOptions)
+
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting Network ACL (%s): %s\n%s", id, err, response)
+	}
+
+	deleteNetworkAclOptions := &vpcv1.DeleteNetworkAclOptions{
+		ID: &id,
+	}
+	response, err = sess.DeleteNetworkAcl(deleteNetworkAclOptions)
+	if err != nil {
+		return fmt.Errorf("Error Deleting Network ACL : %s\n%s", err, response)
 	}
 	d.SetId("")
 	return nil
 }
 
 func resourceIBMISNetworkACLExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return false, err
 	}
-	nwaclC := network.NewNetworkAclClient(sess)
-
-	_, err = nwaclC.Get(d.Id())
-	if err != nil {
-		iserror, ok := err.(iserrors.RiaasError)
-		if ok {
-			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "not_found" {
-				return false, nil
-			}
+	id := d.Id()
+	if userDetails.generation == 1 {
+		err := classicNwaclExists(d, meta, id)
+		if err != nil {
+			return false, err
 		}
-		return false, err
+	} else {
+		err := nwaclExists(d, meta, id)
+		if err != nil {
+			return false, err
+		}
 	}
 	return true, nil
 }
 
-func sortrules(rules []*models.NetworkACLRule) *list.List {
+func classicNwaclExists(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getNetworkAclOptions := &vpcclassicv1.GetNetworkAclOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetNetworkAcl(getNetworkAclOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting Network ACL: %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+	return nil
+}
+
+func nwaclExists(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getNetworkAclOptions := &vpcv1.GetNetworkAclOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetNetworkAcl(getNetworkAclOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting Network ACL: %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+	return nil
+}
+
+func sortclassicrules(rules []*vpcclassicv1.NetworkACLRuleItem) *list.List {
 	sortedrules := list.New()
 	for _, rule := range rules {
 		if rule.Before == nil {
@@ -469,7 +854,7 @@ func sortrules(rules []*models.NetworkACLRule) *list.List {
 		} else {
 			inserted := false
 			for e := sortedrules.Front(); e != nil; e = e.Next() {
-				rulex := e.Value.(*models.NetworkACLRule)
+				rulex := e.Value.(*vpcclassicv1.NetworkACLRuleItem)
 				if rulex.ID == rule.Before.ID {
 					sortedrules.InsertAfter(rule, e)
 					inserted = true
@@ -492,16 +877,67 @@ func checkNetworkACLNil(ptr *int64) int {
 	return int(*ptr)
 }
 
-func clearRules(nwaclC *network.NetworkAclClient, nwaclid string) error {
-	rawrules, _, err := nwaclC.ListRules(nwaclid, "")
+func classicClearRules(nwaclC *vpcclassicv1.VpcClassicV1, nwaclid string) error {
+	listNetworkAclRulesOptions := &vpcclassicv1.ListNetworkAclRulesOptions{
+		NetworkAclID: &nwaclid,
+	}
+	rawrules, response, err := nwaclC.ListNetworkAclRules(listNetworkAclRulesOptions)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error Listing network ACL rules : %s\n%s", err, response)
 	}
 
-	for _, rule := range rawrules {
-		err := nwaclC.DeleteRule(nwaclid, rule.ID.String())
+	for _, rule := range rawrules.Rules {
+		deleteNetworkAclRuleOptions := &vpcclassicv1.DeleteNetworkAclRuleOptions{
+			NetworkAclID: &nwaclid,
+		}
+		switch reflect.TypeOf(rule).String() {
+		case "*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolICMP":
+			rule := rule.(*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolICMP)
+			deleteNetworkAclRuleOptions.ID = rule.ID
+		case "*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolTCPUDP":
+			rule := rule.(*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolTCPUDP)
+			deleteNetworkAclRuleOptions.ID = rule.ID
+		case "*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolAll":
+			rule := rule.(*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolAll)
+			deleteNetworkAclRuleOptions.ID = rule.ID
+		}
+
+		response, err := nwaclC.DeleteNetworkAclRule(deleteNetworkAclRuleOptions)
 		if err != nil {
-			return err
+			return fmt.Errorf("Error Deleting network ACL rule : %s\n%s", err, response)
+		}
+	}
+	return nil
+}
+
+func clearRules(nwaclC *vpcv1.VpcV1, nwaclid string) error {
+	listNetworkAclRulesOptions := &vpcv1.ListNetworkAclRulesOptions{
+		NetworkAclID: &nwaclid,
+	}
+	rawrules, response, err := nwaclC.ListNetworkAclRules(listNetworkAclRulesOptions)
+	if err != nil {
+		return fmt.Errorf("Error Listing network ACL rules : %s\n%s", err, response)
+	}
+
+	for _, rule := range rawrules.Rules {
+		deleteNetworkAclRuleOptions := &vpcv1.DeleteNetworkAclRuleOptions{
+			NetworkAclID: &nwaclid,
+		}
+		switch reflect.TypeOf(rule).String() {
+		case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolICMP":
+			rule := rule.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolICMP)
+			deleteNetworkAclRuleOptions.ID = rule.ID
+		case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolTCPUDP":
+			rule := rule.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolTCPUDP)
+			deleteNetworkAclRuleOptions.ID = rule.ID
+		case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolAll":
+			rule := rule.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolAll)
+			deleteNetworkAclRuleOptions.ID = rule.ID
+		}
+
+		response, err := nwaclC.DeleteNetworkAclRule(deleteNetworkAclRuleOptions)
+		if err != nil {
+			return fmt.Errorf("Error Deleting network ACL rule : %s\n%s", err, response)
 		}
 	}
 	return nil
@@ -530,7 +966,7 @@ func validateInlineRules(rules []interface{}) error {
 	return nil
 }
 
-func createInlineRules(nwaclC *network.NetworkAclClient, nwaclid string, rules []interface{}) error {
+func classicCreateInlineRules(nwaclC *vpcclassicv1.VpcClassicV1, nwaclid string, rules []interface{}) error {
 	before := ""
 
 	for i := 0; i <= len(rules)-1; i++ {
@@ -544,61 +980,201 @@ func createInlineRules(nwaclC *network.NetworkAclClient, nwaclid string, rules [
 		icmp := rulex[isNetworkACLRuleICMP].([]interface{})
 		tcp := rulex[isNetworkACLRuleTCP].([]interface{})
 		udp := rulex[isNetworkACLRuleUDP].([]interface{})
-		icmptype := -1
-		icmpcode := -1
-		minport := -1
-		maxport := -1
-		sourceminport := -1
-		sourcemaxport := -1
+		icmptype := int64(-1)
+		icmpcode := int64(-1)
+		minport := int64(-1)
+		maxport := int64(-1)
+		sourceminport := int64(-1)
+		sourcemaxport := int64(-1)
 		protocol := "all"
+
+		ruleTemplate := &vpcclassicv1.NetworkACLRulePrototype{
+			Action:      &action,
+			Destination: &destination,
+			Direction:   &direction,
+			Source:      &source,
+			Name:        &name,
+		}
+
+		if before != "" {
+			ruleTemplate.Before = &vpcclassicv1.NetworkACLRulePrototypeBefore{
+				ID: &before,
+			}
+		}
 
 		if len(icmp) > 0 {
 			protocol = "icmp"
+			ruleTemplate.Protocol = &protocol
 			if icmp[0] != nil {
 				icmpval := icmp[0].(map[string]interface{})
 				if val, ok := icmpval[isNetworkACLRuleICMPType]; ok {
-					icmptype = val.(int)
+					icmptype = int64(val.(int))
+					ruleTemplate.Type = &icmptype
 				}
 				if val, ok := icmpval[isNetworkACLRuleICMPCode]; ok {
-					icmpcode = val.(int)
+					icmpcode = int64(val.(int))
+					ruleTemplate.Code = &icmpcode
 				}
 			}
 		} else if len(tcp) > 0 {
 			protocol = "tcp"
+			ruleTemplate.Protocol = &protocol
 			tcpval := tcp[0].(map[string]interface{})
 			if val, ok := tcpval[isNetworkACLRulePortMin]; ok {
-				minport = val.(int)
+				minport = int64(val.(int))
+				ruleTemplate.PortMin = &minport
 			}
 			if val, ok := tcpval[isNetworkACLRulePortMax]; ok {
-				maxport = val.(int)
+				maxport = int64(val.(int))
+				ruleTemplate.PortMax = &maxport
 			}
 			if val, ok := tcpval[isNetworkACLRuleSourcePortMin]; ok {
-				sourceminport = val.(int)
+				sourceminport = int64(val.(int))
+				ruleTemplate.SourcePortMin = &sourceminport
 			}
 			if val, ok := tcpval[isNetworkACLRuleSourcePortMax]; ok {
-				sourcemaxport = val.(int)
+				sourcemaxport = int64(val.(int))
+				ruleTemplate.SourcePortMax = &sourcemaxport
 			}
 		} else if len(udp) > 0 {
 			protocol = "udp"
+			ruleTemplate.Protocol = &protocol
 			udpval := udp[0].(map[string]interface{})
 			if val, ok := udpval[isNetworkACLRulePortMin]; ok {
-				minport = val.(int)
+				minport = int64(val.(int))
+				ruleTemplate.PortMin = &minport
 			}
 			if val, ok := udpval[isNetworkACLRulePortMax]; ok {
-				maxport = val.(int)
+				maxport = int64(val.(int))
+				ruleTemplate.PortMax = &maxport
 			}
 			if val, ok := udpval[isNetworkACLRuleSourcePortMin]; ok {
-				sourceminport = val.(int)
+				sourceminport = int64(val.(int))
+				ruleTemplate.SourcePortMin = &sourceminport
 			}
 			if val, ok := udpval[isNetworkACLRuleSourcePortMax]; ok {
-				sourcemaxport = val.(int)
+				sourcemaxport = int64(val.(int))
+				ruleTemplate.SourcePortMax = &sourcemaxport
+			}
+		}
+		if protocol == "all" {
+			ruleTemplate.Protocol = &protocol
+		}
+
+		createNetworkAclRuleOptions := &vpcclassicv1.CreateNetworkAclRuleOptions{
+			NetworkAclID:            &nwaclid,
+			NetworkACLRulePrototype: ruleTemplate,
+		}
+		_, response, err := nwaclC.CreateNetworkAclRule(createNetworkAclRuleOptions)
+		if err != nil {
+			return fmt.Errorf("Error Creating network ACL rule : %s\n%s", err, response)
+		}
+	}
+	return nil
+}
+
+func createInlineRules(nwaclC *vpcv1.VpcV1, nwaclid string, rules []interface{}) error {
+	before := ""
+
+	for i := 0; i <= len(rules)-1; i++ {
+		rulex := rules[i].(map[string]interface{})
+
+		name := rulex[isNetworkACLRuleName].(string)
+		source := rulex[isNetworkACLRuleSource].(string)
+		destination := rulex[isNetworkACLRuleDestination].(string)
+		action := rulex[isNetworkACLRuleAction].(string)
+		direction := rulex[isNetworkACLRuleDirection].(string)
+		icmp := rulex[isNetworkACLRuleICMP].([]interface{})
+		tcp := rulex[isNetworkACLRuleTCP].([]interface{})
+		udp := rulex[isNetworkACLRuleUDP].([]interface{})
+		icmptype := int64(-1)
+		icmpcode := int64(-1)
+		minport := int64(-1)
+		maxport := int64(-1)
+		sourceminport := int64(-1)
+		sourcemaxport := int64(-1)
+		protocol := "all"
+
+		ruleTemplate := &vpcv1.NetworkACLRulePrototype{
+			Action:      &action,
+			Destination: &destination,
+			Direction:   &direction,
+			Source:      &source,
+			Name:        &name,
+		}
+
+		if before != "" {
+			ruleTemplate.Before = &vpcv1.NetworkACLRulePrototypeBefore{
+				ID: &before,
 			}
 		}
 
-		_, err := nwaclC.AddRule(nwaclid, name, source, destination, direction, action, protocol,
-			int64(icmptype), int64(icmpcode), int64(minport), int64(maxport), int64(sourceminport), int64(sourcemaxport), before)
+		if len(icmp) > 0 {
+			protocol = "icmp"
+			ruleTemplate.Protocol = &protocol
+			if icmp[0] != nil {
+				icmpval := icmp[0].(map[string]interface{})
+				if val, ok := icmpval[isNetworkACLRuleICMPType]; ok {
+					icmptype = int64(val.(int))
+					ruleTemplate.Type = &icmptype
+				}
+				if val, ok := icmpval[isNetworkACLRuleICMPCode]; ok {
+					icmpcode = int64(val.(int))
+					ruleTemplate.Code = &icmpcode
+				}
+			}
+		} else if len(tcp) > 0 {
+			protocol = "tcp"
+			ruleTemplate.Protocol = &protocol
+			tcpval := tcp[0].(map[string]interface{})
+			if val, ok := tcpval[isNetworkACLRulePortMin]; ok {
+				minport = int64(val.(int))
+				ruleTemplate.DestinationPortMin = &minport
+			}
+			if val, ok := tcpval[isNetworkACLRulePortMax]; ok {
+				maxport = int64(val.(int))
+				ruleTemplate.DestinationPortMax = &maxport
+			}
+			if val, ok := tcpval[isNetworkACLRuleSourcePortMin]; ok {
+				sourceminport = int64(val.(int))
+				ruleTemplate.SourcePortMin = &sourceminport
+			}
+			if val, ok := tcpval[isNetworkACLRuleSourcePortMax]; ok {
+				sourcemaxport = int64(val.(int))
+				ruleTemplate.SourcePortMax = &sourcemaxport
+			}
+		} else if len(udp) > 0 {
+			protocol = "udp"
+			ruleTemplate.Protocol = &protocol
+			udpval := udp[0].(map[string]interface{})
+			if val, ok := udpval[isNetworkACLRulePortMin]; ok {
+				minport = int64(val.(int))
+				ruleTemplate.DestinationPortMin = &minport
+			}
+			if val, ok := udpval[isNetworkACLRulePortMax]; ok {
+				maxport = int64(val.(int))
+				ruleTemplate.DestinationPortMax = &maxport
+			}
+			if val, ok := udpval[isNetworkACLRuleSourcePortMin]; ok {
+				sourceminport = int64(val.(int))
+				ruleTemplate.SourcePortMin = &sourceminport
+			}
+			if val, ok := udpval[isNetworkACLRuleSourcePortMax]; ok {
+				sourcemaxport = int64(val.(int))
+				ruleTemplate.SourcePortMax = &sourcemaxport
+			}
+		}
+		if protocol == "all" {
+			ruleTemplate.Protocol = &protocol
+		}
+
+		createNetworkAclRuleOptions := &vpcv1.CreateNetworkAclRuleOptions{
+			NetworkAclID:            &nwaclid,
+			NetworkACLRulePrototype: ruleTemplate,
+		}
+		_, response, err := nwaclC.CreateNetworkAclRule(createNetworkAclRuleOptions)
 		if err != nil {
-			return err
+			return fmt.Errorf("Error Creating network ACL rule : %s\n%s", err, response)
 		}
 	}
 	return nil

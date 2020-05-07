@@ -8,15 +8,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISPublicGateway_basic(t *testing.T) {
-	var publicgw *models.PublicGateway
-	vpcname := fmt.Sprintf("terraformpublicgwuat-vpc-%d", acctest.RandIntRange(10, 100))
-	name1 := fmt.Sprintf("terraformpublicgwuat-create-step-name-%d", acctest.RandIntRange(10, 100))
-	//name2 := fmt.Sprintf("terraformpublicgwuat-update-step-name-%d", acctest.RandIntRange(10, 100))
+	var publicgw string
+	vpcname := fmt.Sprintf("tfpgw-vpc-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tf-create-name-%d", acctest.RandIntRange(10, 100))
+	//name2 := fmt.Sprintf("tfpgw-update-name-%d", acctest.RandIntRange(10, 100))
 
 	zone := "us-south-1"
 
@@ -28,7 +28,7 @@ func TestAccIBMISPublicGateway_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMISPublicGatewayConfig(vpcname, name1, zone),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISPublicGatewayExists("ibm_is_public_gateway.testacc_public_gateway", &publicgw),
+					testAccCheckIBMISPublicGatewayExists("ibm_is_public_gateway.testacc_public_gateway", publicgw),
 					resource.TestCheckResourceAttr(
 						"ibm_is_public_gateway.testacc_public_gateway", "name", name1),
 					resource.TestCheckResourceAttr(
@@ -39,7 +39,7 @@ func TestAccIBMISPublicGateway_basic(t *testing.T) {
 			/*			{
 						Config: testAccCheckIBMISPublicGatewayConfig(vpcname, name2, zone, cidr),
 						Check: resource.ComposeTestCheckFunc(
-							testAccCheckIBMISPublicGatewayExists("ibm_is_publicgw.testacc_publicgw", &publicgw),
+							testAccCheckIBMISPublicGatewayExists("ibm_is_publicgw.testacc_publicgw", publicgw),
 							resource.TestCheckResourceAttr(
 								"ibm_is_publicgw.testacc_publicgw", "name", name2),
 							resource.TestCheckResourceAttr(
@@ -53,26 +53,44 @@ func TestAccIBMISPublicGateway_basic(t *testing.T) {
 }
 
 func testAccCheckIBMISPublicGatewayDestroy(s *terraform.State) error {
-	sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
+	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	publicgwC := network.NewPublicGatewayClient(sess)
+	if userDetails.generation == 1 {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_public_gateway" {
+				continue
+			}
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_is_public_gateway" {
-			continue
+			getpgwoptions := &vpcclassicv1.GetPublicGatewayOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetPublicGateway(getpgwoptions)
+			if err == nil {
+				return fmt.Errorf("publicgw still exists: %s", rs.Primary.ID)
+			}
 		}
+	} else {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_public_gateway" {
+				continue
+			}
 
-		_, err := publicgwC.Get(rs.Primary.ID)
-
-		if err == nil {
-			return fmt.Errorf("publicgw still exists: %s", rs.Primary.ID)
+			getpgwoptions := &vpcv1.GetPublicGatewayOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetPublicGateway(getpgwoptions)
+			if err == nil {
+				return fmt.Errorf("publicgw still exists: %s", rs.Primary.ID)
+			}
 		}
 	}
 
 	return nil
 }
 
-func testAccCheckIBMISPublicGatewayExists(n string, publicgw **models.PublicGateway) resource.TestCheckFunc {
+func testAccCheckIBMISPublicGatewayExists(n, publicgw string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		fmt.Println("siv ", s.RootModule().Resources)
 		rs, ok := s.RootModule().Resources[n]
@@ -85,15 +103,29 @@ func testAccCheckIBMISPublicGatewayExists(n string, publicgw **models.PublicGate
 			return errors.New("No Record ID is set")
 		}
 
-		sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
-		publicgwC := network.NewPublicGatewayClient(sess)
-		foundpublicgw, err := publicgwC.Get(rs.Primary.ID)
+		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-		if err != nil {
-			return err
+		if userDetails.generation == 1 {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+			getpgwoptions := &vpcclassicv1.GetPublicGatewayOptions{
+				ID: &rs.Primary.ID,
+			}
+			foundpublicgw, _, err := sess.GetPublicGateway(getpgwoptions)
+			if err != nil {
+				return err
+			}
+			publicgw = *foundpublicgw.ID
+		} else {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+			getpgwoptions := &vpcv1.GetPublicGatewayOptions{
+				ID: &rs.Primary.ID,
+			}
+			foundpublicgw, _, err := sess.GetPublicGateway(getpgwoptions)
+			if err != nil {
+				return err
+			}
+			publicgw = *foundpublicgw.ID
 		}
-
-		*publicgw = foundpublicgw
 		return nil
 	}
 }
