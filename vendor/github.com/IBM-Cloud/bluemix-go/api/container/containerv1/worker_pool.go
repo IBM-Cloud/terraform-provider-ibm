@@ -6,13 +6,14 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/client"
 )
 
-// WorkerPool common worker pool data
+// WorkerPoolConfig common worker pool data
 type WorkerPoolConfig struct {
 	Name        string            `json:"name" binding:"required"`
 	Size        int               `json:"sizePerZone" binding:"required"`
 	MachineType string            `json:"machineType" binding:"required"`
 	Isolation   string            `json:"isolation"`
 	Labels      map[string]string `json:"labels"`
+	Entitlement string            `json:"entitlement"`
 }
 
 // WorkerPoolRequest provides worker pool data
