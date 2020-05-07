@@ -220,7 +220,7 @@ func classicVolCreate(d *schema.ResourceData, meta interface{}, volName, profile
 
 	vol, response, err := sess.CreateVolume(options)
 	if err != nil {
-		log.Printf("[DEBUG] Create volume err %s\n%s", err, response)
+		return fmt.Errorf("[DEBUG] Create volume err %s\n%s", err, response)
 	}
 	d.SetId(*vol.ID)
 	log.Printf("[INFO] Volume : %s", *vol.ID)
