@@ -16,6 +16,7 @@ const (
 	pdnsPermittedNetworkCreatedOn  = "created_on"
 	pdnsPermittedNetworkModifiedOn = "modified_on"
 	pdnsPermittedNetworkState      = "state"
+	pdnsPermittedNetwork           = "permitted_network"
 )
 
 var allowedNetworkTypes = []string{
