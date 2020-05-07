@@ -42,7 +42,7 @@ func resourceIBMISVpcAddressPrefix() *schema.Resource {
 			isVPCAddressPrefixCIDR: {
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: false,
+				ForceNew: true,
 			},
 
 			isVPCAddressPrefixVPCID: {
@@ -131,11 +131,6 @@ func resourceIBMISVpcAddressPrefixUpdate(d *schema.ResourceData, meta interface{
 	vpcC := network.NewVPCClient(sess)
 	hasChanged := false
 	params := networkc.PatchVpcsVpcIDAddressPrefixesIDBody{}
-	if d.HasChange(isVPCAddressPrefixCIDR) {
-		params.Cidr = d.Get(isVPCAddressPrefixCIDR).(string)
-		hasChanged = true
-	}
-
 	if d.HasChange(isVPCAddressPrefixPrefixName) {
 		params.Name = d.Get(isVPCAddressPrefixPrefixName).(string)
 		hasChanged = true
