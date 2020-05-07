@@ -43,7 +43,7 @@ func resourceIBMISVpcAddressPrefix() *schema.Resource {
 			isVPCAddressPrefixCIDR: {
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    false,
+				ForceNew:    true,
 				Description: "CIDIR address prefix",
 			},
 
