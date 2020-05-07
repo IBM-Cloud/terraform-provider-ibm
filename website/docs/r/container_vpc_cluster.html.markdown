@@ -46,8 +46,8 @@ provider "ibm" {
 resource "ibm_container_vpc_cluster" "cluster" {
   name              = "my_vpc_cluster" 
   vpc_id            = "r006-abb7c7ea-aadf-41bd-94c5-b8521736fadf"
-  kube_version 	    = "1.17.4"
-	flavor            = "bx1.2x8"
+  kube_version 	    = "1.17.5"
+	flavor            = "bx2.2x8"
   worker_count      = "1"
   resource_group_id = "${data.ibm_resource_group.resource_group.id}"
   zones = [
