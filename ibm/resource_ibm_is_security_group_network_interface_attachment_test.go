@@ -9,20 +9,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISSecurityGroupNwInterfaceAttachment_basic(t *testing.T) {
-	var instanceNic *models.ServerNetworkInterface
-	vpcname := fmt.Sprintf("terraforminstanceuat-vpc-%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("terraforminstanceuat-%d", acctest.RandIntRange(10, 100))
-	subnetname := fmt.Sprintf("terraforminstanceuat-subnet-%d", acctest.RandIntRange(10, 100))
-	sgName := fmt.Sprintf("terraforminstanceuat-%d", acctest.RandIntRange(10, 100))
+	var instanceNic string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	sgName := fmt.Sprintf("tfsg-%d", acctest.RandIntRange(10, 100))
 	publicKey := strings.TrimSpace(`
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
 `)
-	sshname := fmt.Sprintf("terraformsecurityuat-create-step-name-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tfssh-name-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -32,7 +32,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 			{
 				Config: testAccCheckIBMISSecurityGroupNwInterfaceAttachmentConfig(vpcname, subnetname, sshname, publicKey, name, sgName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISSecurityGroupNwInterfaceAttachmentExists("ibm_is_security_group_network_interface_attachment.sgnic", &instanceNic),
+					testAccCheckIBMISSecurityGroupNwInterfaceAttachmentExists("ibm_is_security_group_network_interface_attachment.sgnic", instanceNic),
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_security_group_network_interface_attachment.sgnic", "security_group"),
 				),
@@ -42,33 +42,60 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 }
 
 func testAccCheckIBMISSecurityGroupNwInterfaceAttachmentDestroy(s *terraform.State) error {
-	sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
+	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	sgClient := network.NewSecurityGroupClient(sess)
+	if userDetails.generation == 1 {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_security_group_network_interface_attachment" {
+				continue
+			}
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_is_security_group_network_interface_attachment" {
-			continue
+			parts, err := idParts(rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			sgID := parts[0]
+			nicID := parts[1]
+			getsgnicptions := &vpcclassicv1.GetSecurityGroupNetworkInterfaceOptions{
+				SecurityGroupID: &sgID,
+				ID:              &nicID,
+			}
+			_, _, err1 := sess.GetSecurityGroupNetworkInterface(getsgnicptions)
+			if err1 == nil {
+				return fmt.Errorf("network interface still exists: %s", rs.Primary.ID)
+			}
 		}
+	} else {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_security_group_network_interface_attachment" {
+				continue
+			}
 
-		parts, err := idParts(rs.Primary.ID)
-		if err != nil {
-			return err
-		}
+			parts, err := idParts(rs.Primary.ID)
+			if err != nil {
+				return err
+			}
 
-		sgID := parts[0]
-		nicID := parts[1]
-		_, err = sgClient.GetNetworkInterface(sgID, nicID)
-
-		if err == nil {
-			return fmt.Errorf("network interface still exists: %s", rs.Primary.ID)
+			sgID := parts[0]
+			nicID := parts[1]
+			getsgnicptions := &vpcv1.GetSecurityGroupNetworkInterfaceOptions{
+				SecurityGroupID: &sgID,
+				ID:              &nicID,
+			}
+			_, _, err1 := sess.GetSecurityGroupNetworkInterface(getsgnicptions)
+			if err1 == nil {
+				return fmt.Errorf("network interface still exists: %s", rs.Primary.ID)
+			}
 		}
 	}
 
 	return nil
 }
 
-func testAccCheckIBMISSecurityGroupNwInterfaceAttachmentExists(n string, instance **models.ServerNetworkInterface) resource.TestCheckFunc {
+func testAccCheckIBMISSecurityGroupNwInterfaceAttachmentExists(n, instance string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -79,9 +106,6 @@ func testAccCheckIBMISSecurityGroupNwInterfaceAttachmentExists(n string, instanc
 		if rs.Primary.ID == "" {
 			return errors.New("No Record ID is set")
 		}
-
-		sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
-		sgClient := network.NewSecurityGroupClient(sess)
 		parts, err := idParts(rs.Primary.ID)
 		if err != nil {
 			return err
@@ -89,13 +113,31 @@ func testAccCheckIBMISSecurityGroupNwInterfaceAttachmentExists(n string, instanc
 
 		sgID := parts[0]
 		nicID := parts[1]
-		found, err := sgClient.GetNetworkInterface(sgID, nicID)
 
-		if err != nil {
-			return err
+		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
+		if userDetails.generation == 1 {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+			getsgnicptions := &vpcclassicv1.GetSecurityGroupNetworkInterfaceOptions{
+				SecurityGroupID: &sgID,
+				ID:              &nicID,
+			}
+			found, _, err := sess.GetSecurityGroupNetworkInterface(getsgnicptions)
+			if err != nil {
+				return err
+			}
+			instance = *found.ID
+		} else {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+			getsgnicptions := &vpcv1.GetSecurityGroupNetworkInterfaceOptions{
+				SecurityGroupID: &sgID,
+				ID:              &nicID,
+			}
+			found, _, err := sess.GetSecurityGroupNetworkInterface(getsgnicptions)
+			if err != nil {
+				return err
+			}
+			instance = *found.ID
 		}
-
-		*instance = found
 		return nil
 	}
 }
