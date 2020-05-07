@@ -6,9 +6,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func dataIBMCISFirewallRecord() *schema.Resource {
+func dataSourceIBMCISFirewallRecord() *schema.Resource {
 	return &schema.Resource{
-		Read: dataIBMCISFirewallRecordRead,
+		Read: dataSourceIBMCISFirewallRecordRead,
 		Schema: map[string]*schema.Schema{
 			"cis_id": {
 				Type:        schema.TypeString,
@@ -74,13 +74,13 @@ func dataIBMCISFirewallRecord() *schema.Resource {
 		},
 	}
 }
-func dataIBMCISFirewallRecordRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMCISFirewallRecordRead(d *schema.ResourceData, meta interface{}) error {
 	cisClient, err := meta.(ClientSession).CisAPI()
 	if err != nil {
 		return err
 	}
 	cisID := d.Get("cis_id").(string)
-	zoneID := d.Get("domain_id").(string)
+	zoneID, _, err := convertTftoCisTwoVar(d.Get("domain_id").(string))
 	firewallType := d.Get("firewall_type").(string)
 
 	recordList, err := cisClient.Firewall().ListFirewall(cisID, zoneID, firewallType)
@@ -111,7 +111,7 @@ func dataIBMCISFirewallRecordRead(d *schema.ResourceData, meta interface{}) erro
 	}
 	d.SetId(firewallType + ":" + cisID)
 	d.Set("cis_id", cisID)
-	d.Set("domain_id", zoneID)
+	d.Set("domain_id", convertCisToTfTwoVar(zoneID, cisID))
 	d.Set("firewall_type", firewallType)
 
 	return nil

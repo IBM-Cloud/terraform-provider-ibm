@@ -14,7 +14,7 @@ func TestAccIBMCertificateManagerCertificatesDataSource_Basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMCertificateManagerCertificatesDataSourceConfig_basic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_certificate_manager_certificates.certs", "certificates.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_certificate_manager_certificates.certs", "certificate_manager_instance_id"),
 				),
 			},
 		},

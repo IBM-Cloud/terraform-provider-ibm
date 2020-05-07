@@ -4,9 +4,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func dataIBMCertificateManagerCertificates() *schema.Resource {
+func dataSourceIBMCertificateManagerCertificates() *schema.Resource {
 	return &schema.Resource{
-		Read: dataIBMCertificateManagerCertificatesRead,
+		Read: dataSourceIBMCertificateManagerCertificatesRead,
 		Schema: map[string]*schema.Schema{
 			"certificate_manager_instance_id": {
 				Type:        schema.TypeString,
@@ -98,7 +98,7 @@ func dataIBMCertificateManagerCertificates() *schema.Resource {
 		},
 	}
 }
-func dataIBMCertificateManagerCertificatesRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMCertificateManagerCertificatesRead(d *schema.ResourceData, meta interface{}) error {
 	cmService, err := meta.(ClientSession).CertificateManagerAPI()
 	if err != nil {
 		return err
