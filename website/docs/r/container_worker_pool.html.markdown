@@ -36,6 +36,24 @@ resource "ibm_container_worker_pool" "testacc_workerpool" {
 }
 ```
 
+Create the Openshift cluster worker Pool with entitlement:
+
+ ```hcl
+ resource "ibm_container_worker_pool" "test_pool" {
+   worker_pool_name = "test_openshift_wpool"
+   machine_type     = "b3c.4x16"
+   cluster          = "openshift_cluster_example"
+   size_per_zone    = 3
+   hardware         = "shared"
+   disk_encryption  = "true"
+   entitlement = "cloud_pak"
+
+   labels = {
+     "test" = "oc-pool"
+   }
+ }
+ ```
+
 ## Timeouts
 
 ibm_container_worker_pool provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
@@ -55,6 +73,11 @@ The following arguments are supported:
 * `labels` - (Optional, Forces new resource, map) Labels on all the workers in the worker pool.
 * `region` - (Deprecated, Forces new resource, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(IC_REGION/IBMCLOUD_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
 * `resource_group_id` - (Optional, Forces new resource, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
+* `entitlement` - (Optional, string) The openshift cluster entitlement avoids the OCP licence charges incurred. Use cloud paks with OCP Licence entitlement to add the Openshift cluster worker pool.
+   **NOTE**:
+   1. It is set only for the first time creation of the worker pool, modification in the further runs will not have any impacts.
+   2. Set this argument to 'cloud_pak' only if you use this cluster with a Cloud Pak that has an OpenShift entitlement
+
  
 ## Attribute Reference
 
