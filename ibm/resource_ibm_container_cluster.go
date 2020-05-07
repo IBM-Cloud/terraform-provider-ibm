@@ -242,6 +242,12 @@ func resourceIBMContainerCluster() *schema.Resource {
 					return false
 				},
 			},
+			"entitlement": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: applyOnce,
+				Description:      "Entitlement option reduces additional OCP Licence cost in Openshift Clusters",
+			},
 			"ingress_hostname": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -252,10 +258,11 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Sensitive: true,
 			},
 			"no_subnet": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				ForceNew: true,
-				Default:  false,
+				Type:             schema.TypeBool,
+				Optional:         true,
+				ForceNew:         true,
+				Default:          false,
+				DiffSuppressFunc: applyOnce,
 			},
 			"is_trusted": {
 				Type:             schema.TypeBool,
@@ -325,7 +332,6 @@ func resourceIBMContainerCluster() *schema.Resource {
 			"wait_time_minutes": {
 				Type:       schema.TypeInt,
 				Optional:   true,
-				Default:    90,
 				Deprecated: "This field is deprecated",
 			},
 			"tags": {
@@ -544,6 +550,11 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 		DiskEncryption: diskEncryption,
 	}
 
+	// Update params with Entitlement option if provided
+	if v, ok := d.GetOk("entitlement"); ok {
+		params.DefaultWorkerPoolEntitlement = v.(string)
+	}
+
 	if gatewayEnabled {
 		if v, ok := d.GetOkExists("private_service_endpoint"); ok {
 			if v.(bool) {
@@ -649,6 +660,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 		d.Set("machine_type", strings.Split(workersByPool[0].MachineType, ".encrypted")[0])
 		d.Set("public_vlan_id", workersByPool[0].PublicVlan)
 		d.Set("private_vlan_id", workersByPool[0].PrivateVlan)
+		d.Set("datacenter", cls.DataCenter)
 		if workersByPool[0].MachineType != "free" {
 			if strings.HasSuffix(workersByPool[0].MachineType, ".encrypted") {
 				d.Set("disk_encryption", true)
