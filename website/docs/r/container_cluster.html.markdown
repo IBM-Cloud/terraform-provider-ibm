@@ -79,6 +79,22 @@ resource "ibm_container_cluster" "testacc_cluster" {
 }
 ```
 
+Create the Openshift Cluster with default worker Pool entitlement:
+
+```hcl
+resource "ibm_container_cluster" "cluster" {
+  name              = "test-openshift-cluster"
+  datacenter        = "dal10"
+  default_pool_size = 3
+  machine_type      = "b3c.4x16"
+  hardware          = "shared"
+  kube_version      = "4.3_openshift"
+  public_vlan_id    = "2863614"
+  private_vlan_id   = "2863616"
+  entitlement = "cloud_pak"
+}
+```
+
 ## Timeouts
 
 ibm_container_alb provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
@@ -139,6 +155,10 @@ The following arguments are supported:
 * `wait_time_minutes` - (Deprecated, integer) The duration, expressed in minutes, to wait for the cluster to become available before declaring it as created. It is also the same amount of time waited for no active transactions before proceeding with an update or deletion. The default value is `90`.
 * `tags` - (Optional, array of strings) Tags associated with the container cluster instance.  
   **NOTE**: For users on account to add tags to a resource, they must be assigned the appropriate access. Learn more about tags permission [here](https://cloud.ibm.com/docs/resources?topic=resources-access)
+* `entitlement` - (Optional, string) The openshift cluster entitlement avoids the OCP licence charges incurred. Use cloud paks with OCP Licence entitlement to create the Openshift cluster.
+  **NOTE**:
+  1. It is set only for the first time creation of the cluster, modification in the further runs will not have any impacts.
+  2. Set this argument to 'cloud_pak' only if you use this cluster with a Cloud Pak that has an OpenShift entitlement
 
 ## Attribute Reference
 
