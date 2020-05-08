@@ -2,10 +2,11 @@ package ibm
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
 	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
 	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
@@ -49,9 +50,10 @@ func resourceIBMISLBListenerPolicyRule() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			isLBListenerPolicyRuleLBID: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Loadbalancer ID",
 			},
 
 			isLBListenerPolicyRuleListenerID: {
@@ -77,6 +79,7 @@ func resourceIBMISLBListenerPolicyRule() *schema.Resource {
 
 					return false
 				},
+				Description: "Listener ID.",
 			},
 
 			isLBListenerPolicyRulePolicyID: {
@@ -102,24 +105,28 @@ func resourceIBMISLBListenerPolicyRule() *schema.Resource {
 
 					return false
 				},
+				Description: "Listener Policy ID",
 			},
 
 			isLBListenerPolicyRulecondition: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"contains", "equals", "matches_regex"}),
+				Description:  "Condition info of the rule.",
 			},
 
 			isLBListenerPolicyRuletype: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"header", "hostname", "path"}),
+				Description:  "Policy rule type.",
 			},
 
 			isLBListenerPolicyRulevalue: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateStringLength,
+				Description:  "policy rule value info",
 			},
 
 			isLBListenerPolicyRulefield: {
