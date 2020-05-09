@@ -33,5 +33,6 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `state_store` - The state store values of the template.
+* `state_store_json` - The JSON representation of the state store data in string format.
 * `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about the workspace.
 

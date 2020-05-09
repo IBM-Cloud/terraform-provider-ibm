@@ -1,6 +1,7 @@
 package ibm
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -22,6 +23,10 @@ func dataSourceSchematicsState() *schema.Resource {
 				Description: "The id of template",
 			},
 			"state_store": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"state_store_json": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -52,6 +57,14 @@ func resourceIBMSchematicsStateRead(d *schema.ResourceData, meta interface{}) er
 	statestr := fmt.Sprintf("%v", stateStore)
 	d.SetId(fmt.Sprintf("%s/%s", workspaceID, templateID))
 	d.Set("state_store", statestr)
+
+	stateByte, err := json.MarshalIndent(stateStore, "", "")
+	if err != nil {
+		return err
+	}
+
+	stateStoreJson := string(stateByte[:])
+	d.Set("state_store_json", stateStoreJson)
 
 	controller, err := getBaseController(meta)
 	if err != nil {
