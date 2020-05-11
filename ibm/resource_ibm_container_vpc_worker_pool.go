@@ -80,7 +80,7 @@ func resourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Optional:         true,
 				Computed:         true,
 				DiffSuppressFunc: applyOnce,
-				Elem:             schema.TypeString,
+				Elem:             &schema.Schema{Type: schema.TypeString},
 				Description:      "Labels",
 			},
 
