@@ -230,6 +230,10 @@ func Provider() terraform.ResourceProvider {
 			"ibm_pi_public_network":   dataSourceIBMPIPublicNetwork(),
 			"ibm_pi_images":           dataSourceIBMPIImages(),
 			"ibm_pi_instance_ip":      dataSourceIBMPIInstanceIP(),
+
+			// Added for private dns zones
+
+			"ibm_dns_zones": dataSourceIBMPrivateDNSZones(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
