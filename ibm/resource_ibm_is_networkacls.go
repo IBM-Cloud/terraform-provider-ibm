@@ -312,7 +312,7 @@ func nwaclCreate(d *schema.ResourceData, meta interface{}, name string) error {
 		},
 	}
 
-	if grp, ok := d.GetOk(isVPCResourceGroup); ok {
+	if grp, ok := d.GetOk(isNetworkACLResourceGroup); ok {
 		rg = grp.(string)
 		nwaclTemplate.ResourceGroup = &vpcv1.ResourceGroupIdentity{
 			ID: &rg,

@@ -588,7 +588,7 @@ func classicInstanceCreate(d *schema.ResourceData, meta interface{}, profile, na
 		oldList, newList := d.GetChange(isInstanceTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on create of resource vpc instance (%s) tags: %s", d.Id(), err)
 		}
 	}
@@ -758,7 +758,7 @@ func instanceCreate(d *schema.ResourceData, meta interface{}, profile, name, vpc
 		oldList, newList := d.GetChange(isInstanceTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on create of resource vpc instance (%s) tags: %s", d.Id(), err)
 		}
 	}
@@ -1040,7 +1040,7 @@ func classicInstanceGet(d *schema.ResourceData, meta interface{}, id string) err
 	}
 	tags, err := GetTagsUsingCRN(meta, *instance.Crn)
 	if err != nil {
-		return fmt.Errorf(
+		log.Printf(
 			"Error on get of resource vpc Instance (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isInstanceTags, tags)
@@ -1219,7 +1219,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	tags, err := GetTagsUsingCRN(meta, *instance.Crn)
 	if err != nil {
-		return fmt.Errorf(
+		log.Printf(
 			"Error on get of resource vpc Instance (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isInstanceTags, tags)
@@ -1444,12 +1444,12 @@ func classicInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		instance, response, err := instanceC.GetInstance(getinsOptions)
 		if err != nil {
-			return fmt.Errorf("Error Getting Instance: %s\n%s", err, response)
+			log.Printf("Error Getting Instance: %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isInstanceTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on update of resource vpc Instance (%s) tags: %s", d.Id(), err)
 		}
 	}
@@ -1675,7 +1675,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		oldList, newList := d.GetChange(isInstanceTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on update of resource vpc Instance (%s) tags: %s", d.Id(), err)
 		}
 	}

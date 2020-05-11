@@ -165,7 +165,7 @@ func classicKeyCreate(d *schema.ResourceData, meta interface{}, name, publickey 
 		oldList, newList := d.GetChange(isKeyTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *key.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on create of vpc SSH Key (%s) tags: %s", d.Id(), err)
 		}
 	}
@@ -201,7 +201,7 @@ func keyCreate(d *schema.ResourceData, meta interface{}, name, publickey string)
 		oldList, newList := d.GetChange(isKeyTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *key.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on create of vpc SSH Key (%s) tags: %s", d.Id(), err)
 		}
 	}
@@ -252,7 +252,7 @@ func classicKeyGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isKeyLength, *key.Length)
 	tags, err := GetTagsUsingCRN(meta, *key.Crn)
 	if err != nil {
-		return fmt.Errorf(
+		log.Printf(
 			"Error on get of vpc SSH Key (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isKeyTags, tags)
@@ -293,7 +293,7 @@ func keyGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isKeyLength, *key.Length)
 	tags, err := GetTagsUsingCRN(meta, *key.Crn)
 	if err != nil {
-		return fmt.Errorf(
+		log.Printf(
 			"Error on get of vpc SSH Key (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isKeyTags, tags)
@@ -356,7 +356,7 @@ func classicKeyUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 		oldList, newList := d.GetChange(isKeyTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *key.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on update of resource vpc SSH Key (%s) tags: %s", id, err)
 		}
 	}
@@ -389,7 +389,7 @@ func keyUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 		oldList, newList := d.GetChange(isKeyTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *key.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on update of resource vpc SSH Key (%s) tags: %s", id, err)
 		}
 	}

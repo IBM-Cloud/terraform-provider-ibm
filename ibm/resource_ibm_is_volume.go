@@ -237,7 +237,7 @@ func classicVolCreate(d *schema.ResourceData, meta interface{}, volName, profile
 		oldList, newList := d.GetChange(isVolumeTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *vol.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on create of resource vpc volume (%s) tags: %s", d.Id(), err)
 		}
 	}
@@ -297,7 +297,7 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 		oldList, newList := d.GetChange(isVolumeTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *vol.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on create of resource vpc volume (%s) tags: %s", d.Id(), err)
 		}
 	}
@@ -354,7 +354,7 @@ func classicVolGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isVolumeStatus, *vol.Status)
 	tags, err := GetTagsUsingCRN(meta, *vol.Crn)
 	if err != nil {
-		return fmt.Errorf(
+		log.Printf(
 			"Error on get of resource vpc volume (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isVolumeTags, tags)
@@ -402,7 +402,7 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isVolumeStatus, *vol.Status)
 	tags, err := GetTagsUsingCRN(meta, *vol.Crn)
 	if err != nil {
-		return fmt.Errorf(
+		log.Printf(
 			"Error on get of resource vpc volume (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isVolumeTags, tags)
@@ -466,7 +466,7 @@ func classicVolUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 		oldList, newList := d.GetChange(isVolumeTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *vol.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on update of resource vpc volume (%s) tags: %s", id, err)
 		}
 	}
@@ -499,7 +499,7 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 		oldList, newList := d.GetChange(isVolumeTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *vol.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on update of resource vpc volume (%s) tags: %s", id, err)
 		}
 	}

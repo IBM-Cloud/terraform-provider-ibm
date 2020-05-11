@@ -22,9 +22,9 @@ const (
 	isImageVisibility             = "visibility"
 	isImageFile                   = "file"
 	isImageMinimumProvisionedSize = "size"
-	// isImageFormat          = "format"
-	// isImageArchitecure     = "architecture"
-	isImageResourceGroup = "resource_group"
+	isImageFormat                 = "format"
+	isImageArchitecure            = "architecture"
+	isImageResourceGroup          = "resource_group"
 
 	isImageProvisioning     = "provisioning"
 	isImageProvisioningDone = "done"
@@ -91,10 +91,11 @@ func resourceIBMISImage() *schema.Resource {
 				Computed: true,
 			},
 
-			// isImageArchitecure: {
-			// 	Type:     schema.TypeString,
-			// 	Computed: true,
-			// },
+			isImageArchitecure: {
+				Type:     schema.TypeString,
+				Computed: true,
+				Removed:  "This field is removed",
+			},
 
 			isImageMinimumProvisionedSize: {
 				Type:     schema.TypeInt,
@@ -111,10 +112,11 @@ func resourceIBMISImage() *schema.Resource {
 				Computed: true,
 			},
 
-			// isImageFormat: {
-			// 	Type:     schema.TypeString,
-			// 	Computed: true,
-			// },
+			isImageFormat: {
+				Type:     schema.TypeString,
+				Computed: true,
+				Removed:  "This field is removed",
+			},
 
 			isImageResourceGroup: {
 				Type:     schema.TypeString,
@@ -220,7 +222,7 @@ func classicImgCreate(d *schema.ResourceData, meta interface{}, href, name, oper
 		oldList, newList := d.GetChange(isImageTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *image.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on create of resource vpc image (%s) tags: %s", d.Id(), err)
 		}
 	}
@@ -266,7 +268,7 @@ func imgCreate(d *schema.ResourceData, meta interface{}, href, name, operatingSy
 		oldList, newList := d.GetChange(isImageTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *image.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on create of resource vpc image (%s) tags: %s", d.Id(), err)
 		}
 	}
@@ -382,7 +384,7 @@ func classicImgUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 		oldList, newList := d.GetChange(isImageTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *image.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on update of resource vpc Image (%s) tags: %s", id, err)
 		}
 	}
@@ -415,7 +417,7 @@ func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 		oldList, newList := d.GetChange(isImageTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *image.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on update of resource vpc Image (%s) tags: %s", id, err)
 		}
 	}
@@ -481,7 +483,7 @@ func classicImgGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isImageVisibility, *image.Visibility)
 	tags, err := GetTagsUsingCRN(meta, *image.Crn)
 	if err != nil {
-		return fmt.Errorf(
+		log.Printf(
 			"Error on get of resource vpc Image (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isImageTags, tags)
@@ -536,7 +538,7 @@ func imgGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isImageVisibility, *image.Visibility)
 	tags, err := GetTagsUsingCRN(meta, *image.Crn)
 	if err != nil {
-		return fmt.Errorf(
+		log.Printf(
 			"Error on get of resource vpc Image (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isImageTags, tags)
