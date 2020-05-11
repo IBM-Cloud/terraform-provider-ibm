@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
 	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
 	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
@@ -312,7 +311,7 @@ func classicVpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg st
 		oldList, newList := d.GetChange(isVPCTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpc.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on create of resource vpc (%s) tags: %s", d.Id(), err)
 		}
 	}
@@ -385,7 +384,7 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 		oldList, newList := d.GetChange(isVPCTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpc.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on create of resource vpc (%s) tags: %s", d.Id(), err)
 		}
 	}
@@ -479,7 +478,7 @@ func classicVpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	tags, err := GetTagsUsingCRN(meta, *vpc.Crn)
 	if err != nil {
-		return fmt.Errorf(
+		log.Printf(
 			"Error on get of resource vpc (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isVPCTags, tags)
@@ -573,7 +572,7 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	tags, err := GetTagsUsingCRN(meta, *vpc.Crn)
 	if err != nil {
-		return fmt.Errorf(
+		log.Printf(
 			"Error on get of resource vpc (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isVPCTags, tags)
@@ -677,7 +676,7 @@ func classicVpcUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 		oldList, newList := d.GetChange(isVPCTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpc.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on update of resource vpc (%s) tags: %s", id, err)
 		}
 	}
@@ -710,7 +709,7 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 		oldList, newList := d.GetChange(isVPCTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpc.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on update of resource vpc (%s) tags: %s", d.Id(), err)
 		}
 	}
@@ -940,21 +939,4 @@ func resourceIBMVPCHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%s",
 		strings.ToLower(v.(string))))
 	return hashcode.String(buf.String())
-}
-
-func isErrorToString(err error) string {
-	iserror, ok := err.(iserrors.RiaasError)
-	if ok {
-		log.Printf("[DEBUG] Hit Riaas Error")
-		retmsg := ""
-
-		for _, e := range iserror.Payload.Errors {
-			retmsg = retmsg + "\n" + e.Message + "\n" + e.Code + "\n" + e.MoreInfo + "\n"
-			if e.Target != nil {
-				retmsg = retmsg + e.Target.Name + "\n" + e.Target.Type
-			}
-		}
-		return retmsg
-	}
-	return err.Error()
 }

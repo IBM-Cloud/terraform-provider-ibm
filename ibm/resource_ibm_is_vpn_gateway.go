@@ -181,7 +181,7 @@ func classicVpngwCreate(d *schema.ResourceData, meta interface{}, name, subnetID
 		oldList, newList := d.GetChange(isVPNGatewayTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *VPNGateway.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on create of resource vpc VPN Gateway (%s) tags: %s", d.Id(), err)
 		}
 	}
@@ -224,7 +224,7 @@ func vpngwCreate(d *schema.ResourceData, meta interface{}, name, subnetID string
 		oldList, newList := d.GetChange(isVPNGatewayTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *VPNGateway.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on create of resource vpc VPN Gateway (%s) tags: %s", d.Id(), err)
 		}
 	}
@@ -340,7 +340,7 @@ func classicVpngwGet(d *schema.ResourceData, meta interface{}, id string) error 
 	d.Set(isVPNGatewayPublicIPAddress, *VPNGateway.PublicIp.Address)
 	tags, err := GetTagsUsingCRN(meta, *VPNGateway.Crn)
 	if err != nil {
-		return fmt.Errorf(
+		log.Printf(
 			"Error on get of resource vpc VPN Gateway (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isVPNGatewayTags, tags)
@@ -381,7 +381,7 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isVPNGatewayPublicIPAddress, *VPNGateway.PublicIp.Address)
 	tags, err := GetTagsUsingCRN(meta, *VPNGateway.Crn)
 	if err != nil {
-		return fmt.Errorf(
+		log.Printf(
 			"Error on get of resource vpc VPN Gateway (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isVPNGatewayTags, tags)
@@ -445,7 +445,7 @@ func classicVpngwUpdate(d *schema.ResourceData, meta interface{}, id, name strin
 		oldList, newList := d.GetChange(isVPNGatewayTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *VPNGateway.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on update of resource vpc Vpn Gateway (%s) tags: %s", id, err)
 		}
 	}
@@ -478,7 +478,7 @@ func vpngwUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasC
 		oldList, newList := d.GetChange(isVPNGatewayTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *VPNGateway.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on update of resource vpc Vpn Gateway (%s) tags: %s", id, err)
 		}
 	}

@@ -206,7 +206,7 @@ func classicFipCreate(d *schema.ResourceData, meta interface{}, name string) err
 		oldList, newList := d.GetChange(isFloatingIPTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *floatingip.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on create of vpc Floating IP (%s) tags: %s", d.Id(), err)
 		}
 	}
@@ -267,7 +267,7 @@ func fipCreate(d *schema.ResourceData, meta interface{}, name string) error {
 		oldList, newList := d.GetChange(isFloatingIPTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *floatingip.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on create of vpc Floating IP (%s) tags: %s", d.Id(), err)
 		}
 	}
@@ -321,7 +321,7 @@ func classicFipGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	tags, err := GetTagsUsingCRN(meta, *floatingip.Crn)
 	if err != nil {
-		return fmt.Errorf(
+		log.Printf(
 			"Error on get of vpc Floating IP (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isFloatingIPTags, tags)
@@ -362,7 +362,7 @@ func fipGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	tags, err := GetTagsUsingCRN(meta, *floatingip.Crn)
 	if err != nil {
-		return fmt.Errorf(
+		log.Printf(
 			"Error on get of vpc Floating IP (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isFloatingIPTags, tags)
@@ -418,7 +418,7 @@ func classicFipUpdate(d *schema.ResourceData, meta interface{}, id string) error
 		oldList, newList := d.GetChange(isFloatingIPTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *fip.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on update of vpc Floating IP (%s) tags: %s", id, err)
 		}
 	}
@@ -464,7 +464,7 @@ func fipUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 		oldList, newList := d.GetChange(isFloatingIPTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *fip.Crn)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on update of vpc Floating IP (%s) tags: %s", id, err)
 		}
 	}
