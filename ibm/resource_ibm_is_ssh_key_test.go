@@ -9,16 +9,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/compute"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISSSHKey_basic(t *testing.T) {
-	var key *models.Key
+	var key string
 	publicKey := strings.TrimSpace(`
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
 `)
-	name := fmt.Sprintf("terraformsecurityuat-create-step-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfssh-createname-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -27,7 +27,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 			resource.TestStep{
 				Config: testAccCheckIBMISKeyConfig(publicKey, name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISKeyExists("ibm_is_ssh_key.isExampleKey", &key),
+					testAccCheckIBMISKeyExists("ibm_is_ssh_key.isExampleKey", key),
 					resource.TestCheckResourceAttr(
 						"ibm_is_ssh_key.isExampleKey", "name", name),
 				),
@@ -37,26 +37,44 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 }
 
 func checkKeyDestroy(s *terraform.State) error {
-	sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
+	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	keyC := compute.NewKeyClient(sess)
+	if userDetails.generation == 1 {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_ssh_key" {
+				continue
+			}
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_is_network_acl" {
-			continue
+			getkeyoptions := &vpcclassicv1.GetKeyOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetKey(getkeyoptions)
+			if err == nil {
+				return fmt.Errorf("key still exists: %s", rs.Primary.ID)
+			}
 		}
+	} else {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_ssh_key" {
+				continue
+			}
 
-		_, err := keyC.Get(rs.Primary.ID)
-
-		if err == nil {
-			return fmt.Errorf("key still exists: %s", rs.Primary.ID)
+			getkeyoptions := &vpcv1.GetKeyOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetKey(getkeyoptions)
+			if err == nil {
+				return fmt.Errorf("key still exists: %s", rs.Primary.ID)
+			}
 		}
 	}
 
 	return nil
 }
 
-func testAccCheckIBMISKeyExists(n string, key **models.Key) resource.TestCheckFunc {
+func testAccCheckIBMISKeyExists(n, keyID string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		fmt.Println("siv ", s.RootModule().Resources)
 		rs, ok := s.RootModule().Resources[n]
@@ -69,15 +87,29 @@ func testAccCheckIBMISKeyExists(n string, key **models.Key) resource.TestCheckFu
 			return errors.New("No Record ID is set")
 		}
 
-		sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
-		keyC := compute.NewKeyClient(sess)
-		foundKey, err := keyC.Get(rs.Primary.ID)
+		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-		if err != nil {
-			return err
+		if userDetails.generation == 1 {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+			getkeyoptions := &vpcclassicv1.GetKeyOptions{
+				ID: &rs.Primary.ID,
+			}
+			foundkey, _, err := sess.GetKey(getkeyoptions)
+			if err != nil {
+				return err
+			}
+			keyID = *foundkey.ID
+		} else {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+			getkeyoptions := &vpcv1.GetKeyOptions{
+				ID: &rs.Primary.ID,
+			}
+			foundkey, _, err := sess.GetKey(getkeyoptions)
+			if err != nil {
+				return err
+			}
+			keyID = *foundkey.ID
 		}
-
-		*key = foundKey
 		return nil
 	}
 }

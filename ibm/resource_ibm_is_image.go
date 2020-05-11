@@ -1,6 +1,7 @@
 package ibm
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -8,21 +9,22 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/compute"
-	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
-	isImageHref            = "href"
-	isImageName            = "name"
-	isImageTags            = "tags"
-	isImageOperatingSystem = "operating_system"
-	isImageStatus          = "status"
-	isImageVisibility      = "visibility"
-	isImageFile            = "file"
-	isImageFormat          = "format"
-	isImageArchitecure     = "architecture"
-	isImageResourceGroup   = "resource_group"
+	isImageHref                   = "href"
+	isImageName                   = "name"
+	isImageTags                   = "tags"
+	isImageOperatingSystem        = "operating_system"
+	isImageStatus                 = "status"
+	isImageVisibility             = "visibility"
+	isImageFile                   = "file"
+	isImageMinimumProvisionedSize = "size"
+	// isImageFormat          = "format"
+	// isImageArchitecure     = "architecture"
+	isImageResourceGroup = "resource_group"
 
 	isImageProvisioning     = "provisioning"
 	isImageProvisioningDone = "done"
@@ -89,8 +91,13 @@ func resourceIBMISImage() *schema.Resource {
 				Computed: true,
 			},
 
-			isImageArchitecure: {
-				Type:     schema.TypeString,
+			// isImageArchitecure: {
+			// 	Type:     schema.TypeString,
+			// 	Computed: true,
+			// },
+
+			isImageMinimumProvisionedSize: {
+				Type:     schema.TypeInt,
 				Computed: true,
 			},
 
@@ -104,10 +111,10 @@ func resourceIBMISImage() *schema.Resource {
 				Computed: true,
 			},
 
-			isImageFormat: {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
+			// isImageFormat: {
+			// 	Type:     schema.TypeString,
+			// 	Computed: true,
+			// },
 
 			isImageResourceGroup: {
 				Type:     schema.TypeString,
@@ -150,7 +157,7 @@ func resourceIBMISImage() *schema.Resource {
 }
 
 func resourceIBMISImageCreate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
@@ -160,43 +167,150 @@ func resourceIBMISImageCreate(d *schema.ResourceData, meta interface{}) error {
 	name := d.Get(isImageName).(string)
 	operatingSystem := d.Get(isImageOperatingSystem).(string)
 
-	var rg string
-	if grp, ok := d.GetOk(isImageResourceGroup); ok {
-		rg = grp.(string)
-	}
-	imageC := compute.NewImageClient(sess)
-	image, err := imageC.Create(href, name, operatingSystem, rg)
-	if err != nil {
-		log.Printf("[DEBUG] Image err %s", err)
-		return err
-	}
-
-	d.SetId(image.ID.String())
-	log.Printf("[INFO] Image : %s", image.ID.String())
-
-	_, err = isWaitForImageAvailable(imageC, d.Id(), d.Timeout(schema.TimeoutCreate))
-	if err != nil {
-		return err
-	}
-
-	v := os.Getenv("IC_ENV_TAGS")
-	if _, ok := d.GetOk(isImageTags); ok || v != "" {
-		oldList, newList := d.GetChange(isImageTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, image.Crn)
+	if userDetails.generation == 1 {
+		err := classicImgCreate(d, meta, href, name, operatingSystem)
 		if err != nil {
-			log.Printf(
-				"Error on create of resource vpc image (%s) tags: %s", d.Id(), err)
+			return err
+		}
+	} else {
+		err := imgCreate(d, meta, href, name, operatingSystem)
+		if err != nil {
+			return err
 		}
 	}
 	return resourceIBMISImageRead(d, meta)
 }
 
-func isWaitForImageAvailable(imageC *compute.ImageClient, id string, timeout time.Duration) (interface{}, error) {
+func classicImgCreate(d *schema.ResourceData, meta interface{}, href, name, operatingSystem string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	imagePrototype := &vpcclassicv1.ImagePrototype{
+		Name: &name,
+		File: &vpcclassicv1.ImageFilePrototype{
+			Href: &href,
+		},
+		OperatingSystem: &vpcclassicv1.OperatingSystemIdentity{
+			Name: &operatingSystem,
+		},
+	}
+	if rgrp, ok := d.GetOk(isImageResourceGroup); ok {
+		rg := rgrp.(string)
+		imagePrototype.ResourceGroup = &vpcclassicv1.ResourceGroupIdentity{
+			ID: &rg,
+		}
+	}
+	options := &vpcclassicv1.CreateImageOptions{
+		ImagePrototype: imagePrototype,
+	}
+
+	image, response, err := sess.CreateImage(options)
+	if err != nil {
+		return fmt.Errorf("[DEBUG] Image creation err %s\n%s", err, response)
+	}
+	d.SetId(*image.ID)
+	log.Printf("[INFO] Floating IP : %s", *image.ID)
+	_, err = isWaitForClassicImageAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return err
+	}
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isImageTags); ok || v != "" {
+		oldList, newList := d.GetChange(isImageTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *image.Crn)
+		if err != nil {
+			return fmt.Errorf(
+				"Error on create of resource vpc image (%s) tags: %s", d.Id(), err)
+		}
+	}
+	return nil
+}
+
+func imgCreate(d *schema.ResourceData, meta interface{}, href, name, operatingSystem string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	imagePrototype := &vpcv1.ImagePrototype{
+		Name: &name,
+		File: &vpcv1.ImageFilePrototype{
+			Href: &href,
+		},
+		OperatingSystem: &vpcv1.OperatingSystemIdentity{
+			Name: &operatingSystem,
+		},
+	}
+	if rgrp, ok := d.GetOk(isImageResourceGroup); ok {
+		rg := rgrp.(string)
+		imagePrototype.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+			ID: &rg,
+		}
+	}
+	options := &vpcv1.CreateImageOptions{
+		ImagePrototype: imagePrototype,
+	}
+
+	image, response, err := sess.CreateImage(options)
+	if err != nil {
+		return fmt.Errorf("[DEBUG] Image creation err %s\n%s", err, response)
+	}
+	d.SetId(*image.ID)
+	log.Printf("[INFO] Floating IP : %s", *image.ID)
+	_, err = isWaitForImageAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return err
+	}
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isImageTags); ok || v != "" {
+		oldList, newList := d.GetChange(isImageTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *image.Crn)
+		if err != nil {
+			return fmt.Errorf(
+				"Error on create of resource vpc image (%s) tags: %s", d.Id(), err)
+		}
+	}
+	return nil
+}
+
+func isWaitForClassicImageAvailable(imageC *vpcclassicv1.VpcClassicV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for image (%s) to be available.", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", isImageProvisioning},
-		Target:     []string{isImageProvisioningDone},
+		Target:     []string{isImageProvisioningDone, ""},
+		Refresh:    isClassicImageRefreshFunc(imageC, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isClassicImageRefreshFunc(imageC *vpcclassicv1.VpcClassicV1, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		getimgoptions := &vpcclassicv1.GetImageOptions{
+			ID: &id,
+		}
+		image, response, err := imageC.GetImage(getimgoptions)
+		if err != nil {
+			return nil, "", fmt.Errorf("Error Getting Image: %s\n%s", err, response)
+		}
+
+		if *image.Status == "available" || *image.Status == "failed" {
+			return image, isImageProvisioningDone, nil
+		}
+
+		return image, isImageProvisioning, nil
+	}
+}
+func isWaitForImageAvailable(imageC *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for image (%s) to be available.", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", isImageProvisioning},
+		Target:     []string{isImageProvisioningDone, ""},
 		Refresh:    isImageRefreshFunc(imageC, id),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
@@ -206,14 +320,17 @@ func isWaitForImageAvailable(imageC *compute.ImageClient, id string, timeout tim
 	return stateConf.WaitForState()
 }
 
-func isImageRefreshFunc(imageC *compute.ImageClient, id string) resource.StateRefreshFunc {
+func isImageRefreshFunc(imageC *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		image, err := imageC.Get(id)
+		getimgoptions := &vpcv1.GetImageOptions{
+			ID: &id,
+		}
+		image, response, err := imageC.GetImage(getimgoptions)
 		if err != nil {
-			return nil, "", err
+			return nil, "", fmt.Errorf("Error Getting Image: %s\n%s", err, response)
 		}
 
-		if image.Status == "available" || image.Status == "failed" {
+		if *image.Status == "available" || *image.Status == "failed" {
 			return image, isImageProvisioningDone, nil
 		}
 
@@ -222,61 +339,149 @@ func isImageRefreshFunc(imageC *compute.ImageClient, id string) resource.StateRe
 }
 
 func resourceIBMISImageUpdate(d *schema.ResourceData, meta interface{}) error {
-
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	imageC := compute.NewImageClient(sess)
 
-	image, err := imageC.Get(d.Id())
-	if err != nil {
-		return err
-	}
+	id := d.Id()
+	name := ""
+	hasChanged := false
 
 	if d.HasChange(isImageName) {
-		name := d.Get(isImageName).(string)
-		_, err := imageC.Update(d.Id(), name)
+		name = d.Get(isImageName).(string)
+		hasChanged = true
+	}
+	if userDetails.generation == 1 {
+		err := classicImgUpdate(d, meta, id, name, hasChanged)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := imgUpdate(d, meta, id, name, hasChanged)
 		if err != nil {
 			return err
 		}
 	}
-	if d.HasChange(isImageTags) {
-		oldList, newList := d.GetChange(isImageTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, image.Crn)
-		if err != nil {
-			log.Printf(
-				"Error on update of resource vpc Image (%s) tags: %s", d.Id(), err)
-		}
-	}
-
 	return resourceIBMISImageRead(d, meta)
 }
 
+func classicImgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	if d.HasChange(isImageTags) {
+		options := &vpcclassicv1.GetImageOptions{
+			ID: &id,
+		}
+		image, response, err := sess.GetImage(options)
+		if err != nil {
+			return fmt.Errorf("Error getting Image IP: %s\n%s", err, response)
+		}
+		oldList, newList := d.GetChange(isImageTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *image.Crn)
+		if err != nil {
+			return fmt.Errorf(
+				"Error on update of resource vpc Image (%s) tags: %s", id, err)
+		}
+	}
+	if hasChanged {
+		options := &vpcclassicv1.UpdateImageOptions{
+			ID:   &id,
+			Name: &name,
+		}
+		_, response, err := sess.UpdateImage(options)
+		if err != nil {
+			return fmt.Errorf("Error on update of resource vpc Image: %s\n%s", err, response)
+		}
+	}
+	return nil
+}
+
+func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	if d.HasChange(isImageTags) {
+		options := &vpcv1.GetImageOptions{
+			ID: &id,
+		}
+		image, response, err := sess.GetImage(options)
+		if err != nil {
+			return fmt.Errorf("Error getting Image IP: %s\n%s", err, response)
+		}
+		oldList, newList := d.GetChange(isImageTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *image.Crn)
+		if err != nil {
+			return fmt.Errorf(
+				"Error on update of resource vpc Image (%s) tags: %s", id, err)
+		}
+	}
+	if hasChanged {
+		options := &vpcv1.UpdateImageOptions{
+			ID:   &id,
+			Name: &name,
+		}
+		_, response, err := sess.UpdateImage(options)
+		if err != nil {
+			return fmt.Errorf("Error on update of resource vpc Image: %s\n%s", err, response)
+		}
+	}
+	return nil
+}
+
 func resourceIBMISImageRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
-	if err != nil {
-		return err
-	}
-	imageC := compute.NewImageClient(sess)
-
-	image, err := imageC.Get(d.Id())
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
 
-	d.Set("id", image.ID.String())
-	d.Set(isImageArchitecure, image.Architecture)
-	d.Set(isImageName, image.Name)
-	d.Set(isImageOperatingSystem, image.OperatingSystem)
-	d.Set(isImageFormat, image.Format)
-	d.Set(isImageFile, image.File)
-	d.Set(isImageHref, image.Href)
-	d.Set(isImageStatus, image.Status)
-	d.Set(isImageVisibility, image.Visibility)
-	tags, err := GetTagsUsingCRN(meta, image.Crn)
+	id := d.Id()
+	if userDetails.generation == 1 {
+		err := classicImgGet(d, meta, id)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := imgGet(d, meta, id)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func classicImgGet(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
-		log.Printf(
+		return err
+	}
+	options := &vpcclassicv1.GetImageOptions{
+		ID: &id,
+	}
+	image, response, err := sess.GetImage(options)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting Image (%s): %s\n%s", id, err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	d.Set("id", *image.ID)
+	// d.Set(isImageArchitecure, image.Architecture)
+	d.Set(isImageMinimumProvisionedSize, *image.MinimumProvisionedSize)
+	d.Set(isImageName, *image.Name)
+	d.Set(isImageOperatingSystem, *image.OperatingSystem)
+	// d.Set(isImageFormat, image.Format)
+	d.Set(isImageFile, *image.File)
+	d.Set(isImageHref, *image.Href)
+	d.Set(isImageStatus, *image.Status)
+	d.Set(isImageVisibility, *image.Visibility)
+	tags, err := GetTagsUsingCRN(meta, *image.Crn)
+	if err != nil {
+		return fmt.Errorf(
 			"Error on get of resource vpc Image (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isImageTags, tags)
@@ -284,46 +489,191 @@ func resourceIBMISImageRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	if sess.Generation == 1 {
-		d.Set(ResourceControllerURL, controller+"/vpc/compute/image")
-	} else {
-		d.Set(ResourceControllerURL, controller+"/vpc-ext/compute/image")
-	}
-	d.Set(ResourceName, image.Name)
-	d.Set(ResourceStatus, image.Status)
-	d.Set(ResourceCRN, image.Crn)
+	d.Set(ResourceControllerURL, controller+"/vpc/compute/image")
+	d.Set(ResourceName, *image.Name)
+	d.Set(ResourceStatus, *image.Status)
+	d.Set(ResourceCRN, *image.Crn)
 	if image.ResourceGroup != nil {
-		d.Set(ResourceGroupName, image.ResourceGroup.Name)
+		d.Set(isImageResourceGroup, *image.ResourceGroup.ID)
+		rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
+		if err != nil {
+			return err
+		}
+		grp, err := rsMangClient.ResourceGroup().Get(*image.ResourceGroup.ID)
+		if err != nil {
+			return err
+		}
+		d.Set(ResourceGroupName, grp.Name)
+	}
+	return nil
+}
+
+func imgGet(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	options := &vpcv1.GetImageOptions{
+		ID: &id,
+	}
+	image, response, err := sess.GetImage(options)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting Image (%s): %s\n%s", id, err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	d.Set("id", *image.ID)
+	// d.Set(isImageArchitecure, image.Architecture)
+	d.Set(isImageMinimumProvisionedSize, *image.MinimumProvisionedSize)
+	d.Set(isImageName, *image.Name)
+	d.Set(isImageOperatingSystem, *image.OperatingSystem)
+	// d.Set(isImageFormat, image.Format)
+	d.Set(isImageFile, *image.File)
+	d.Set(isImageHref, *image.Href)
+	d.Set(isImageStatus, *image.Status)
+	d.Set(isImageVisibility, *image.Visibility)
+	tags, err := GetTagsUsingCRN(meta, *image.Crn)
+	if err != nil {
+		return fmt.Errorf(
+			"Error on get of resource vpc Image (%s) tags: %s", d.Id(), err)
+	}
+	d.Set(isImageTags, tags)
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return err
+	}
+	d.Set(ResourceControllerURL, controller+"/vpc-ext/compute/image")
+	d.Set(ResourceName, *image.Name)
+	d.Set(ResourceStatus, *image.Status)
+	d.Set(ResourceCRN, *image.Crn)
+	if image.ResourceGroup != nil {
+		d.Set(isImageResourceGroup, *image.ResourceGroup.ID)
+		d.Set(ResourceGroupName, *image.ResourceGroup.Name)
 	}
 	return nil
 }
 
 func resourceIBMISImageDelete(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	imageC := compute.NewImageClient(sess)
-	err = imageC.Delete(d.Id())
+	id := d.Id()
+	if userDetails.generation == 1 {
+		err := classicImgDelete(d, meta, id)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := imgDelete(d, meta, id)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func classicImgDelete(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
+	}
+	getImageOptions := &vpcclassicv1.GetImageOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetImage(getImageOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting Image (%s): %s\n%s", id, err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
 	}
 
-	_, err = isWaitForImageDeleted(imageC, d.Id(), d.Timeout(schema.TimeoutDelete))
+	options := &vpcclassicv1.DeleteImageOptions{
+		ID: &id,
+	}
+	response, err = sess.DeleteImage(options)
+	if err != nil {
+		return fmt.Errorf("Error Deleting Image : %s\n%s", err, response)
+	}
+	_, err = isWaitForClassicImageDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return err
 	}
-
 	d.SetId("")
 	return nil
 }
 
-func isWaitForImageDeleted(imageC *compute.ImageClient, id string, timeout time.Duration) (interface{}, error) {
+func imgDelete(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getImageOptions := &vpcv1.GetImageOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetImage(getImageOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting Image (%s): %s\n%s", id, err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+
+	options := &vpcv1.DeleteImageOptions{
+		ID: &id,
+	}
+	response, err = sess.DeleteImage(options)
+	if err != nil {
+		return fmt.Errorf("Error Deleting Image : %s\n%s", err, response)
+	}
+	_, err = isWaitForImageDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return err
+	}
+	d.SetId("")
+	return nil
+}
+
+func isWaitForClassicImageDeleted(imageC *vpcclassicv1.VpcClassicV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for image (%s) to be deleted.", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", isImageDeleting},
-		Target:     []string{},
+		Target:     []string{"", isImageDeleted},
+		Refresh:    isClassicImageDeleteRefreshFunc(imageC, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isClassicImageDeleteRefreshFunc(imageC *vpcclassicv1.VpcClassicV1, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		log.Printf("[DEBUG] delete function here")
+		getimgoptions := &vpcclassicv1.GetImageOptions{
+			ID: &id,
+		}
+		image, response, err := imageC.GetImage(getimgoptions)
+		if err != nil && response.StatusCode != 404 {
+			return image, "", fmt.Errorf("Error Getting Image: %s\n%s", err, response)
+		}
+		if response.StatusCode == 404 {
+			return image, isImageDeleted, nil
+		}
+		return image, isImageDeleting, err
+	}
+}
+func isWaitForImageDeleted(imageC *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for image (%s) to be deleted.", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", isImageDeleting},
+		Target:     []string{"", isImageDeleted},
 		Refresh:    isImageDeleteRefreshFunc(imageC, id),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
@@ -333,44 +683,75 @@ func isWaitForImageDeleted(imageC *compute.ImageClient, id string, timeout time.
 	return stateConf.WaitForState()
 }
 
-func isImageDeleteRefreshFunc(imageC *compute.ImageClient, id string) resource.StateRefreshFunc {
+func isImageDeleteRefreshFunc(imageC *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] delete function here")
-		image, err := imageC.Get(id)
-		if err == nil {
-			return image, isImageDeleting, nil
+		getimgoptions := &vpcv1.GetImageOptions{
+			ID: &id,
 		}
-
-		iserror, ok := err.(iserrors.RiaasError)
-		if ok {
-			log.Printf("[DEBUG] %s", iserror.Error())
-			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "not_found" {
-				log.Printf("[DEBUG] returning deleted")
-				return nil, isImageDeleted, nil
-			}
+		image, response, err := imageC.GetImage(getimgoptions)
+		if err != nil && response.StatusCode != 404 {
+			return image, "", fmt.Errorf("Error Getting Image: %s\n%s", err, response)
 		}
-		return nil, isImageDeleting, err
+		if response.StatusCode == 404 {
+			return image, isImageDeleted, nil
+		}
+		return image, isImageDeleting, err
 	}
 }
-
 func resourceIBMISImageExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return false, err
 	}
-	imageC := compute.NewImageClient(sess)
+	id := d.Id()
 
-	_, err = imageC.Get(d.Id())
-	if err != nil {
-		iserror, ok := err.(iserrors.RiaasError)
-		if ok {
-			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "not_found" {
-				return false, nil
-			}
+	if userDetails.generation == 1 {
+		err := classicImgExists(d, meta, id)
+		if err != nil {
+			return false, err
 		}
-		return false, err
+	} else {
+		err := imgExists(d, meta, id)
+		if err != nil {
+			return false, err
+		}
 	}
 	return true, nil
+}
+
+func classicImgExists(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	options := &vpcclassicv1.GetImageOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetImage(options)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting Image: %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+	return nil
+}
+
+func imgExists(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	options := &vpcv1.GetImageOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetImage(options)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting Image: %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+	return nil
 }

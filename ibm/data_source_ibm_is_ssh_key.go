@@ -64,12 +64,12 @@ func dataSourceIBMISSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	name := d.Get(isKeyName).(string)
 	if userDetails.generation == 1 {
-		err := classicKeyGet(d, meta, name)
+		err := classicKeyGetByName(d, meta, name)
 		if err != nil {
 			return err
 		}
 	} else {
-		err := keyGet(d, meta, name)
+		err := keyGetByName(d, meta, name)
 		if err != nil {
 			return err
 		}
@@ -77,7 +77,7 @@ func dataSourceIBMISSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func classicKeyGet(d *schema.ResourceData, meta interface{}, name string) error {
+func classicKeyGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
@@ -110,7 +110,7 @@ func classicKeyGet(d *schema.ResourceData, meta interface{}, name string) error 
 	return fmt.Errorf("No SSH Key found with name %s", name)
 }
 
-func keyGet(d *schema.ResourceData, meta interface{}, name string) error {
+func keyGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err

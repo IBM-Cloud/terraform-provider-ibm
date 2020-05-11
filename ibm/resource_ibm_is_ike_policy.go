@@ -1,11 +1,12 @@
 package ibm
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/vpn"
-	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -141,7 +142,7 @@ func resourceIBMISIKEValidator() *ResourceValidator {
 
 	validateSchema := make([]ValidateSchema, 1)
 	authentication_algorithm := "md5, sha1, sha256"
-	encryption_algorithm := "3des, aes128, aes256"
+	encryption_algorithm := "triple_des, aes128, aes256"
 	dh_group := "2, 5, 14"
 	ike_version := "1, 2"
 
@@ -179,7 +180,7 @@ func resourceIBMISIKEValidator() *ResourceValidator {
 }
 
 func resourceIBMISIKEPolicyCreate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
@@ -188,57 +189,161 @@ func resourceIBMISIKEPolicyCreate(d *schema.ResourceData, meta interface{}) erro
 	name := d.Get(isIKEName).(string)
 	authenticationAlg := d.Get(isIKEAuthenticationAlg).(string)
 	encryptionAlg := d.Get(isIKEEncryptionAlg).(string)
-	dhGroup := d.Get(isIKEDhGroup).(int)
-	ikeVersion := d.Get(isIKEVERSION).(int)
-	resourceGrpId := d.Get(isIKEResourceGroup).(string)
-	keyLifetime := d.Get(isIKEKeyLifeTime).(int)
+	dhGroup := int64(d.Get(isIKEDhGroup).(int))
 
-	vpnC := vpn.NewVpnClient(sess)
-	ike, err := vpnC.CreateIkePolicy(authenticationAlg, encryptionAlg, name, resourceGrpId, dhGroup, ikeVersion, keyLifetime)
-	if err != nil {
-		log.Printf("[DEBUG] ike policy err %s", err)
-		return err
+	if userDetails.generation == 1 {
+		err := classicIkepCreate(d, meta, authenticationAlg, encryptionAlg, name, dhGroup)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := ikepCreate(d, meta, authenticationAlg, encryptionAlg, name, dhGroup)
+		if err != nil {
+			return err
+		}
 	}
-
-	d.SetId(ike.ID.String())
-	log.Printf("[INFO] IKE : %s", ike.ID.String())
 	return resourceIBMISIKEPolicyRead(d, meta)
 }
 
+func classicIkepCreate(d *schema.ResourceData, meta interface{}, authenticationAlg, encryptionAlg, name string, dhGroup int64) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	options := &vpcclassicv1.CreateIkePolicyOptions{
+		AuthenticationAlgorithm: &authenticationAlg,
+		EncryptionAlgorithm:     &encryptionAlg,
+		DhGroup:                 &dhGroup,
+		Name:                    &name,
+	}
+
+	if keylt, ok := d.GetOk(isIKEKeyLifeTime); ok {
+		keyLifetime := int64(keylt.(int))
+		options.KeyLifetime = &keyLifetime
+	} else {
+		keyLifetime := int64(28800)
+		options.KeyLifetime = &keyLifetime
+	}
+
+	if ikev, ok := d.GetOk(isIKEVERSION); ok {
+		ikeVersion := int64(ikev.(int))
+		options.IkeVersion = &ikeVersion
+	}
+
+	if rgrp, ok := d.GetOk(isIKEResourceGroup); ok {
+		rg := rgrp.(string)
+		options.ResourceGroup = &vpcclassicv1.ResourceGroupIdentity{
+			ID: &rg,
+		}
+	}
+
+	ike, response, err := sess.CreateIkePolicy(options)
+	if err != nil {
+		return fmt.Errorf("[DEBUG] ike policy err %s\n%s", err, response)
+	}
+	d.SetId(*ike.ID)
+	log.Printf("[INFO] ike policy : %s", *ike.ID)
+	return nil
+}
+
+func ikepCreate(d *schema.ResourceData, meta interface{}, authenticationAlg, encryptionAlg, name string, dhGroup int64) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	options := &vpcv1.CreateIkePolicyOptions{
+		AuthenticationAlgorithm: &authenticationAlg,
+		EncryptionAlgorithm:     &encryptionAlg,
+		DhGroup:                 &dhGroup,
+		Name:                    &name,
+	}
+
+	if keylt, ok := d.GetOk(isIKEKeyLifeTime); ok {
+		keyLifetime := int64(keylt.(int))
+		options.KeyLifetime = &keyLifetime
+	} else {
+		keyLifetime := int64(28800)
+		options.KeyLifetime = &keyLifetime
+	}
+
+	if ikev, ok := d.GetOk(isIKEVERSION); ok {
+		ikeVersion := int64(ikev.(int))
+		options.IkeVersion = &ikeVersion
+	}
+
+	if rgrp, ok := d.GetOk(isIKEResourceGroup); ok {
+		rg := rgrp.(string)
+		options.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+			ID: &rg,
+		}
+	}
+	ike, response, err := sess.CreateIkePolicy(options)
+	if err != nil {
+		return fmt.Errorf("[DEBUG] ike policy err %s\n%s", err, response)
+	}
+	d.SetId(*ike.ID)
+	log.Printf("[INFO] ike policy : %s", *ike.ID)
+	return nil
+}
+
 func resourceIBMISIKEPolicyRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	vpnC := vpn.NewVpnClient(sess)
+	id := d.Id()
+	if userDetails.generation == 1 {
+		err := classicIkepGet(d, meta, id)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := ikepGet(d, meta, id)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
-	ike, err := vpnC.GetIkePolicy(d.Id())
+func classicIkepGet(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
-
-	d.Set(isIKEName, ike.Name)
-	d.Set(isIKEAuthenticationAlg, ike.AuthenticationAlgorithm)
-	d.Set(isIKEEncryptionAlg, ike.EncryptionAlgorithm)
+	getikepoptions := &vpcclassicv1.GetIkePolicyOptions{
+		ID: &id,
+	}
+	ike, response, err := sess.GetIkePolicy(getikepoptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting IKE Policy(%s): %s\n%s", id, err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	d.Set(isIKEName, *ike.Name)
+	d.Set(isIKEAuthenticationAlg, *ike.AuthenticationAlgorithm)
+	d.Set(isIKEEncryptionAlg, *ike.EncryptionAlgorithm)
 	if ike.ResourceGroup != nil {
-		d.Set(isIKEResourceGroup, ike.ResourceGroup.ID)
+		d.Set(isIKEResourceGroup, *ike.ResourceGroup.ID)
 	} else {
 		d.Set(isIKEResourceGroup, nil)
 	}
-	if ike.KeyLifetime != 0 {
-		d.Set(isIKEKeyLifeTime, ike.KeyLifetime)
+	if *ike.KeyLifetime != int64(0) {
+		d.Set(isIKEKeyLifeTime, *ike.KeyLifetime)
 	}
-	d.Set(isIKEHref, ike.Href)
-	d.Set(isIKENegotiationMode, ike.NegotiationMode)
-	d.Set(isIKEVERSION, ike.IkeVersion)
-	d.Set(isIKEDhGroup, ike.DhGroup)
+	d.Set(isIKEHref, *ike.Href)
+	d.Set(isIKENegotiationMode, *ike.NegotiationMode)
+	d.Set(isIKEVERSION, *ike.IkeVersion)
+	d.Set(isIKEDhGroup, *ike.DhGroup)
 	connList := make([]map[string]interface{}, 0)
 	if ike.Connections != nil && len(ike.Connections) > 0 {
 		for _, connection := range ike.Connections {
 			conn := map[string]interface{}{}
-			conn[isIKEVPNConnectionName] = connection.Name
-			conn[isIKEVPNConnectionId] = connection.ID.String()
-			conn[isIKEVPNConnectionHref] = connection.Href
+			conn[isIKEVPNConnectionName] = *connection.Name
+			conn[isIKEVPNConnectionId] = *connection.ID
+			conn[isIKEVPNConnectionHref] = *connection.Href
 			connList = append(connList, conn)
 		}
 	}
@@ -247,18 +352,14 @@ func resourceIBMISIKEPolicyRead(d *schema.ResourceData, meta interface{}) error 
 	if err != nil {
 		return err
 	}
-	if sess.Generation == 1 {
-		d.Set(ResourceControllerURL, controller+"/vpc/network/ikepolicies")
-	} else {
-		d.Set(ResourceControllerURL, controller+"/vpc-ext/network/ikepolicies")
-	}
-	d.Set(ResourceName, ike.Name)
+	d.Set(ResourceControllerURL, controller+"/vpc/network/ikepolicies")
+	d.Set(ResourceName, *ike.Name)
 	if ike.ResourceGroup != nil {
 		rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
 		if err != nil {
 			return err
 		}
-		grp, err := rsMangClient.ResourceGroup().Get(ike.ResourceGroup.ID.String())
+		grp, err := rsMangClient.ResourceGroup().Get(*ike.ResourceGroup.ID)
 		if err != nil {
 			return err
 		}
@@ -267,63 +368,269 @@ func resourceIBMISIKEPolicyRead(d *schema.ResourceData, meta interface{}) error 
 	return nil
 }
 
-func resourceIBMISIKEPolicyUpdate(d *schema.ResourceData, meta interface{}) error {
-
-	sess, err := meta.(ClientSession).ISSession()
+func ikepGet(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
 	}
-	vpnC := vpn.NewVpnClient(sess)
+	getikepoptions := &vpcv1.GetIkePolicyOptions{
+		ID: &id,
+	}
+	ike, response, err := sess.GetIkePolicy(getikepoptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting IKE Policy(%s): %s\n%s", id, err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	d.Set(isIKEName, *ike.Name)
+	d.Set(isIKEAuthenticationAlg, *ike.AuthenticationAlgorithm)
+	d.Set(isIKEEncryptionAlg, *ike.EncryptionAlgorithm)
+	if ike.ResourceGroup != nil {
+		d.Set(isIKEResourceGroup, *ike.ResourceGroup.ID)
+		d.Set(ResourceGroupName, *ike.ResourceGroup.Name)
+	} else {
+		d.Set(isIKEResourceGroup, nil)
+	}
+	if *ike.KeyLifetime != int64(0) {
+		d.Set(isIKEKeyLifeTime, *ike.KeyLifetime)
+	}
+	d.Set(isIKEHref, *ike.Href)
+	d.Set(isIKENegotiationMode, *ike.NegotiationMode)
+	d.Set(isIKEVERSION, *ike.IkeVersion)
+	d.Set(isIKEDhGroup, *ike.DhGroup)
+	connList := make([]map[string]interface{}, 0)
+	if ike.Connections != nil && len(ike.Connections) > 0 {
+		for _, connection := range ike.Connections {
+			conn := map[string]interface{}{}
+			conn[isIKEVPNConnectionName] = *connection.Name
+			conn[isIKEVPNConnectionId] = *connection.ID
+			conn[isIKEVPNConnectionHref] = *connection.Href
+			connList = append(connList, conn)
+		}
+	}
+	d.Set(isIKEVPNConnections, connList)
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return err
+	}
+	d.Set(ResourceControllerURL, controller+"/vpc-ext/network/ikepolicies")
+	d.Set(ResourceName, *ike.Name)
+	return nil
+}
 
-	if d.HasChange(isIKEName) || d.HasChange(isIKEAuthenticationAlg) || d.HasChange(isIKEEncryptionAlg) || d.HasChange(isIKEDhGroup) || d.HasChange(isIKEVERSION) || d.HasChange(isIKEKeyLifeTime) {
-		name := d.Get(isIKEName).(string)
-		authenticationAlg := d.Get(isIKEAuthenticationAlg).(string)
-		encryptionAlg := d.Get(isIKEEncryptionAlg).(string)
-		keyLifetime := d.Get(isIKEKeyLifeTime).(int)
-		dhGroup := d.Get(isIKEDhGroup).(int)
-		ikeVersion := d.Get(isIKEVERSION).(int)
-		_, err := vpnC.UpdateIkePolicy(d.Id(), authenticationAlg, encryptionAlg, name, dhGroup, ikeVersion, keyLifetime)
+func resourceIBMISIKEPolicyUpdate(d *schema.ResourceData, meta interface{}) error {
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return err
+	}
+	id := d.Id()
+
+	if userDetails.generation == 1 {
+		err := classicIkepUpdate(d, meta, id)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := ikepUpdate(d, meta, id)
 		if err != nil {
 			return err
 		}
 	}
-
 	return resourceIBMISIKEPolicyRead(d, meta)
+}
+
+func classicIkepUpdate(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	options := &vpcclassicv1.UpdateIkePolicyOptions{
+		ID: &id,
+	}
+	if d.HasChange(isIKEName) || d.HasChange(isIKEAuthenticationAlg) || d.HasChange(isIKEEncryptionAlg) || d.HasChange(isIKEDhGroup) || d.HasChange(isIKEVERSION) || d.HasChange(isIKEKeyLifeTime) {
+		name := d.Get(isIKEName).(string)
+		authenticationAlg := d.Get(isIKEAuthenticationAlg).(string)
+		encryptionAlg := d.Get(isIKEEncryptionAlg).(string)
+		keyLifetime := int64(d.Get(isIKEKeyLifeTime).(int))
+		dhGroup := int64(d.Get(isIKEDhGroup).(int))
+		ikeVersion := int64(d.Get(isIKEVERSION).(int))
+
+		options.Name = &name
+		options.AuthenticationAlgorithm = &authenticationAlg
+		options.EncryptionAlgorithm = &encryptionAlg
+		options.KeyLifetime = &keyLifetime
+		options.DhGroup = &dhGroup
+		options.IkeVersion = &ikeVersion
+
+		_, response, err := sess.UpdateIkePolicy(options)
+		if err != nil {
+			return fmt.Errorf("Error on update of IKE Policy(%s): %s\n%s", id, err, response)
+		}
+	}
+	return nil
+}
+
+func ikepUpdate(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	options := &vpcv1.UpdateIkePolicyOptions{
+		ID: &id,
+	}
+	if d.HasChange(isIKEName) || d.HasChange(isIKEAuthenticationAlg) || d.HasChange(isIKEEncryptionAlg) || d.HasChange(isIKEDhGroup) || d.HasChange(isIKEVERSION) || d.HasChange(isIKEKeyLifeTime) {
+		name := d.Get(isIKEName).(string)
+		authenticationAlg := d.Get(isIKEAuthenticationAlg).(string)
+		encryptionAlg := d.Get(isIKEEncryptionAlg).(string)
+		keyLifetime := int64(d.Get(isIKEKeyLifeTime).(int))
+		dhGroup := int64(d.Get(isIKEDhGroup).(int))
+		ikeVersion := int64(d.Get(isIKEVERSION).(int))
+
+		options.Name = &name
+		options.AuthenticationAlgorithm = &authenticationAlg
+		options.EncryptionAlgorithm = &encryptionAlg
+		options.KeyLifetime = &keyLifetime
+		options.DhGroup = &dhGroup
+		options.IkeVersion = &ikeVersion
+
+		_, response, err := sess.UpdateIkePolicy(options)
+		if err != nil {
+			return fmt.Errorf("Error on update of IKE Policy(%s): %s\n%s", id, err, response)
+		}
+	}
+	return nil
 }
 
 func resourceIBMISIKEPolicyDelete(d *schema.ResourceData, meta interface{}) error {
 
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	vpnC := vpn.NewVpnClient(sess)
-	err = vpnC.DeleteIkePolicy(d.Id())
-	if err != nil {
-		return err
+	id := d.Id()
+	if userDetails.generation == 1 {
+		err := classicIkepDelete(d, meta, id)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := ikepDelete(d, meta, id)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
+}
 
+func classicIkepDelete(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getikepoptions := &vpcclassicv1.GetIkePolicyOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetIkePolicy(getikepoptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting IKE Policy(%s): %s\n%s", id, err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	deleteIkePolicyOptions := &vpcclassicv1.DeleteIkePolicyOptions{
+		ID: &id,
+	}
+	response, err = sess.DeleteIkePolicy(deleteIkePolicyOptions)
+	if err != nil {
+		return fmt.Errorf("Error Deleting IKE Policy(%s): %s\n%s", id, err, response)
+	}
+	d.SetId("")
+	return nil
+}
+
+func ikepDelete(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getikepoptions := &vpcv1.GetIkePolicyOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetIkePolicy(getikepoptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting IKE Policy(%s): %s\n%s", id, err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	deleteIkePolicyOptions := &vpcv1.DeleteIkePolicyOptions{
+		ID: &id,
+	}
+	response, err = sess.DeleteIkePolicy(deleteIkePolicyOptions)
+	if err != nil {
+		return fmt.Errorf("Error Deleting IKE Policy(%s): %s\n%s", id, err, response)
+	}
 	d.SetId("")
 	return nil
 }
 
 func resourceIBMISIKEPolicyExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return false, err
 	}
-	vpnC := vpn.NewVpnClient(sess)
+	id := d.Id()
 
-	_, err = vpnC.GetIkePolicy(d.Id())
-	if err != nil {
-		iserror, ok := err.(iserrors.RiaasError)
-		if ok {
-			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "ike_policy_not_found" {
-				return false, nil
-			}
+	if userDetails.generation == 1 {
+		err := classicikepExists(d, meta, id)
+		if err != nil {
+			return false, err
 		}
-		return false, err
+	} else {
+		err := fipExists(d, meta, id)
+		if err != nil {
+			return false, err
+		}
 	}
 	return true, nil
+}
+
+func classicikepExists(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	options := &vpcclassicv1.GetIkePolicyOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetIkePolicy(options)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting IKE Policy(%s): %s\n%s", id, err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+	return nil
+}
+
+func ikepExists(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	options := &vpcv1.GetIkePolicyOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetIkePolicy(options)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting IKE Policy(%s): %s\n%s", id, err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+	return nil
 }

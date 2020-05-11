@@ -8,12 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/vpn"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISIPSecPolicy_basic(t *testing.T) {
-	name := fmt.Sprintf("terraformipsecuat-create-step-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfipsecc-name-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -27,7 +27,7 @@ func TestAccIBMISIPSecPolicy_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_ipsec_policy.example", "authentication_algorithm", "md5"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_ipsec_policy.example", "encryption_algorithm", "3des"),
+						"ibm_is_ipsec_policy.example", "encryption_algorithm", "triple_des"),
 					resource.TestCheckResourceAttr(
 						"ibm_is_ipsec_policy.example", "pfs", "disabled"),
 				),
@@ -50,26 +50,43 @@ func TestAccIBMISIPSecPolicy_basic(t *testing.T) {
 }
 
 func checkPolicyDestroy(s *terraform.State) error {
-	sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
+	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	vpnC := vpn.NewVpnClient(sess)
+	if userDetails.generation == 1 {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_ipsec_policy" {
+				continue
+			}
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_is_ipsec_policy" {
-			continue
+			getipsecpoptions := &vpcclassicv1.GetIpsecPolicyOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetIpsecPolicy(getipsecpoptions)
+			if err == nil {
+				return fmt.Errorf("policy still exists: %s", rs.Primary.ID)
+			}
 		}
+	} else {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_ipsec_policy" {
+				continue
+			}
 
-		_, err := vpnC.GetIpsecPolicy(rs.Primary.ID)
-
-		if err == nil {
-			return fmt.Errorf("policy still exists: %s", rs.Primary.ID)
+			getipsecpoptions := &vpcv1.GetIpsecPolicyOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetIpsecPolicy(getipsecpoptions)
+			if err == nil {
+				return fmt.Errorf("policy still exists: %s", rs.Primary.ID)
+			}
 		}
 	}
-
 	return nil
 }
 
-func testAccCheckIBMISIpSecPolicyExists(n string, policy **models.IpsecPolicy) resource.TestCheckFunc {
+func testAccCheckIBMISIpSecPolicyExists(n, policy string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		fmt.Println("siv ", s.RootModule().Resources)
 		rs, ok := s.RootModule().Resources[n]
@@ -82,15 +99,29 @@ func testAccCheckIBMISIpSecPolicyExists(n string, policy **models.IpsecPolicy) r
 			return errors.New("No Record ID is set")
 		}
 
-		sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
-		vpnC := vpn.NewVpnClient(sess)
-		ipSecPolicy, err := vpnC.GetIpsecPolicy(rs.Primary.ID)
+		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-		if err != nil {
-			return err
+		if userDetails.generation == 1 {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+			getipsecpoptions := &vpcclassicv1.GetIpsecPolicyOptions{
+				ID: &rs.Primary.ID,
+			}
+			ipSecPolicy, _, err := sess.GetIpsecPolicy(getipsecpoptions)
+			if err != nil {
+				return err
+			}
+			policy = *ipSecPolicy.ID
+		} else {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+			getipsecpoptions := &vpcv1.GetIpsecPolicyOptions{
+				ID: &rs.Primary.ID,
+			}
+			ipSecPolicy, _, err := sess.GetIpsecPolicy(getipsecpoptions)
+			if err != nil {
+				return err
+			}
+			policy = *ipSecPolicy.ID
 		}
-
-		*policy = ipSecPolicy
 		return nil
 	}
 }
@@ -100,7 +131,7 @@ func testAccCheckIBMISIPSecPolicyConfig(name string) string {
 		resource "ibm_is_ipsec_policy" "example" {
 			name = "%s"
 			authentication_algorithm = "md5"
-			encryption_algorithm = "3des"
+			encryption_algorithm = "triple_des"
 			pfs = "disabled"
 		}
 	`, name)
