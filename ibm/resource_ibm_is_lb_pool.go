@@ -230,7 +230,7 @@ func classicLBPoolCreate(d *schema.ResourceData, meta interface{}, name, lbID, a
 	}
 	lbPool, response, err := sess.CreateLoadBalancerPool(options)
 	if err != nil {
-		log.Printf("[DEBUG] lbpool create err: %s\n%s", err, response)
+		return fmt.Errorf("[DEBUG] lbpool create err: %s\n%s", err, response)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", lbID, *lbPool.ID))
@@ -288,7 +288,7 @@ func lbPoolCreate(d *schema.ResourceData, meta interface{}, name, lbID, algorith
 	}
 	lbPool, response, err := sess.CreateLoadBalancerPool(options)
 	if err != nil {
-		log.Printf("[DEBUG] lbpool create err: %s\n%s", err, response)
+		return fmt.Errorf("[DEBUG] lbpool create err: %s\n%s", err, response)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", lbID, *lbPool.ID))

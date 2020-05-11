@@ -217,7 +217,7 @@ func classicLBCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg 
 		oldList, newList := d.GetChange(isLBTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *lb.Crn)
 		if err != nil {
-			log.Printf(
+			return fmt.Errorf(
 				"Error on create of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
 		}
 	}
@@ -264,7 +264,7 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 		oldList, newList := d.GetChange(isLBTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *lb.Crn)
 		if err != nil {
-			log.Printf(
+			return fmt.Errorf(
 				"Error on create of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
 		}
 	}
@@ -350,7 +350,7 @@ func classicLBGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isLBHostName, *lb.Hostname)
 	tags, err := GetTagsUsingCRN(meta, *lb.Crn)
 	if err != nil {
-		log.Printf(
+		return fmt.Errorf(
 			"Error on get of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isLBTags, tags)
@@ -425,7 +425,7 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isLBHostName, *lb.Hostname)
 	tags, err := GetTagsUsingCRN(meta, *lb.Crn)
 	if err != nil {
-		log.Printf(
+		return fmt.Errorf(
 			"Error on get of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isLBTags, tags)
@@ -485,7 +485,7 @@ func classicLBUpdate(d *schema.ResourceData, meta interface{}, id, name string, 
 		oldList, newList := d.GetChange(isLBTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *lb.Crn)
 		if err != nil {
-			log.Printf(
+			return fmt.Errorf(
 				"Error on update of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
 		}
 	}
@@ -518,7 +518,7 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 		oldList, newList := d.GetChange(isLBTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *lb.Crn)
 		if err != nil {
-			log.Printf(
+			return fmt.Errorf(
 				"Error on update of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
 		}
 	}

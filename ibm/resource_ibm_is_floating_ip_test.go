@@ -9,20 +9,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISFloatingIP_basic(t *testing.T) {
-	var ip *models.FloatingIP
-	vpcname := fmt.Sprintf("terraformipuat-vpc-%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("terraformipuat-%d", acctest.RandIntRange(10, 100))
-	instancename := fmt.Sprintf("terraformipuat-instance-%d", acctest.RandIntRange(10, 100))
-	subnetname := fmt.Sprintf("terraformipuat-subnet-%d", acctest.RandIntRange(10, 100))
+	var ip string
+	vpcname := fmt.Sprintf("tfip-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfip-%d", acctest.RandIntRange(10, 100))
+	instancename := fmt.Sprintf("tfip-instance-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfip-subnet-%d", acctest.RandIntRange(10, 100))
 	publicKey := strings.TrimSpace(`
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
 `)
-	sshname := fmt.Sprintf("terraformsecurityuat-create-step-name-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tfip-sshname-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -32,7 +32,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 			{
 				Config: testAccCheckIBMISFloatingIPConfig(vpcname, subnetname, sshname, publicKey, instancename, name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISFloatingIPExists("ibm_is_floating_ip.testacc_floatingip", &ip),
+					testAccCheckIBMISFloatingIPExists("ibm_is_floating_ip.testacc_floatingip", ip),
 					resource.TestCheckResourceAttr(
 						"ibm_is_floating_ip.testacc_floatingip", "name", name),
 					resource.TestCheckResourceAttr(
@@ -44,26 +44,43 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 }
 
 func testAccCheckIBMISFloatingIPDestroy(s *terraform.State) error {
-	sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
+	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	ipc := network.NewFloatingIPClient(sess)
+	if userDetails.generation == 1 {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_floating_ip" {
+				continue
+			}
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_is_floating_ip" {
-			continue
+			getfipoptions := &vpcclassicv1.GetFloatingIpOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetFloatingIp(getfipoptions)
+			if err == nil {
+				return fmt.Errorf("Floating IP still exists: %s", rs.Primary.ID)
+			}
 		}
+	} else {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_floating_ip" {
+				continue
+			}
 
-		_, err := ipc.Get(rs.Primary.ID)
-
-		if err == nil {
-			return fmt.Errorf("Floating IP still exists: %s", rs.Primary.ID)
+			getfipoptions := &vpcv1.GetFloatingIpOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetFloatingIp(getfipoptions)
+			if err == nil {
+				return fmt.Errorf("Floating IP still exists: %s", rs.Primary.ID)
+			}
 		}
 	}
-
 	return nil
 }
 
-func testAccCheckIBMISFloatingIPExists(n string, ip **models.FloatingIP) resource.TestCheckFunc {
+func testAccCheckIBMISFloatingIPExists(n, ip string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -74,16 +91,29 @@ func testAccCheckIBMISFloatingIPExists(n string, ip **models.FloatingIP) resourc
 		if rs.Primary.ID == "" {
 			return errors.New("No Record ID is set")
 		}
+		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-		sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
-		ipc := network.NewFloatingIPClient(sess)
-		foundip, err := ipc.Get(rs.Primary.ID)
-
-		if err != nil {
-			return err
+		if userDetails.generation == 1 {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+			getfipoptions := &vpcclassicv1.GetFloatingIpOptions{
+				ID: &rs.Primary.ID,
+			}
+			foundip, _, err := sess.GetFloatingIp(getfipoptions)
+			if err != nil {
+				return err
+			}
+			ip = *foundip.ID
+		} else {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+			getfipoptions := &vpcv1.GetFloatingIpOptions{
+				ID: &rs.Primary.ID,
+			}
+			foundip, _, err := sess.GetFloatingIp(getfipoptions)
+			if err != nil {
+				return err
+			}
+			ip = *foundip.ID
 		}
-
-		*ip = foundip
 		return nil
 	}
 }

@@ -183,7 +183,7 @@ func classiclbpMemberCreate(d *schema.ResourceData, meta interface{}, lbID, lbPo
 	}
 	lbPoolMember, response, err := sess.CreateLoadBalancerPoolMember(options)
 	if err != nil {
-		log.Printf("[DEBUG] lbpool member create err: %s\n%s", err, response)
+		return fmt.Errorf("[DEBUG] lbpool member create err: %s\n%s", err, response)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", lbID, lbPoolID, *lbPoolMember.ID))
@@ -239,7 +239,7 @@ func lbpMemberCreate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID, t
 	}
 	lbPoolMember, response, err := sess.CreateLoadBalancerPoolMember(options)
 	if err != nil {
-		log.Printf("[DEBUG] lbpool member create err: %s\n%s", err, response)
+		return fmt.Errorf("[DEBUG] lbpool member create err: %s\n%s", err, response)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", lbID, lbPoolID, *lbPoolMember.ID))

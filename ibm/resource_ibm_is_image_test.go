@@ -8,14 +8,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/compute"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISImage_basic(t *testing.T) {
-	var image *models.Image
+	var image string
 
-	name := fmt.Sprintf("terraformimageuat-create-step-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfimg-name-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckImage(t) },
 		Providers:    testAccProviders,
@@ -24,7 +24,7 @@ func TestAccIBMISImage_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMISImageConfig(name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISImageExists("ibm_is_image.isExampleImage", &image),
+					testAccCheckIBMISImageExists("ibm_is_image.isExampleImage", image),
 					resource.TestCheckResourceAttr(
 						"ibm_is_image.isExampleImage", "name", name),
 				),
@@ -34,26 +34,43 @@ func TestAccIBMISImage_basic(t *testing.T) {
 }
 
 func checkImageDestroy(s *terraform.State) error {
-	sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
+	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	imageC := compute.NewImageClient(sess)
+	if userDetails.generation == 1 {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_image" {
+				continue
+			}
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_is_image" {
-			continue
+			getimgoptions := &vpcclassicv1.GetImageOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetImage(getimgoptions)
+			if err == nil {
+				return fmt.Errorf("Image still exists: %s", rs.Primary.ID)
+			}
 		}
+	} else {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_image" {
+				continue
+			}
 
-		_, err := imageC.Get(rs.Primary.ID)
-
-		if err == nil {
-			return fmt.Errorf("Image still exists: %s", rs.Primary.ID)
+			getimgoptions := &vpcv1.GetImageOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetImage(getimgoptions)
+			if err == nil {
+				return fmt.Errorf("Image still exists: %s", rs.Primary.ID)
+			}
 		}
 	}
-
 	return nil
 }
 
-func testAccCheckIBMISImageExists(n string, image **models.Image) resource.TestCheckFunc {
+func testAccCheckIBMISImageExists(n, image string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		fmt.Println("siv ", s.RootModule().Resources)
 		rs, ok := s.RootModule().Resources[n]
@@ -65,16 +82,29 @@ func testAccCheckIBMISImageExists(n string, image **models.Image) resource.TestC
 		if rs.Primary.ID == "" {
 			return errors.New("No Record ID is set")
 		}
+		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-		sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
-		imageC := compute.NewImageClient(sess)
-		foundImage, err := imageC.Get(rs.Primary.ID)
-
-		if err != nil {
-			return err
+		if userDetails.generation == 1 {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+			getimgoptions := &vpcclassicv1.GetImageOptions{
+				ID: &rs.Primary.ID,
+			}
+			foundImage, _, err := sess.GetImage(getimgoptions)
+			if err != nil {
+				return err
+			}
+			image = *foundImage.ID
+		} else {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+			getimgoptions := &vpcv1.GetImageOptions{
+				ID: &rs.Primary.ID,
+			}
+			foundImage, _, err := sess.GetImage(getimgoptions)
+			if err != nil {
+				return err
+			}
+			image = *foundImage.ID
 		}
-
-		*image = foundImage
 		return nil
 	}
 }

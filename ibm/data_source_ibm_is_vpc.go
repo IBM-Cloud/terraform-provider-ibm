@@ -151,12 +151,12 @@ func dataSourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
 
 	name := d.Get(isVPCName).(string)
 	if userDetails.generation == 1 {
-		err := classicVpcList(d, meta, name)
+		err := classicVpcGetByName(d, meta, name)
 		if err != nil {
 			return err
 		}
 	} else {
-		err := vpcList(d, meta, name)
+		err := vpcGetByName(d, meta, name)
 		if err != nil {
 			return err
 		}
@@ -164,7 +164,7 @@ func dataSourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func classicVpcList(d *schema.ResourceData, meta interface{}, name string) error {
+func classicVpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
@@ -250,7 +250,7 @@ func classicVpcList(d *schema.ResourceData, meta interface{}, name string) error
 	}
 	return fmt.Errorf("No VPC found with name %s", name)
 }
-func vpcList(d *schema.ResourceData, meta interface{}, name string) error {
+func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err

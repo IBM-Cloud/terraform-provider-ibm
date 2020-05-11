@@ -230,7 +230,7 @@ func classicPgwCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone 
 		oldList, newList := d.GetChange(isPublicGatewayTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *publicgw.Crn)
 		if err != nil {
-			log.Printf(
+			return fmt.Errorf(
 				"Error on create of vpc public gateway (%s) tags: %s", d.Id(), err)
 		}
 	}
@@ -293,7 +293,7 @@ func pgwCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone string)
 		oldList, newList := d.GetChange(isPublicGatewayTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *publicgw.Crn)
 		if err != nil {
-			log.Printf(
+			return fmt.Errorf(
 				"Error on create of vpc public gateway (%s) tags: %s", d.Id(), err)
 		}
 	}
@@ -417,7 +417,7 @@ func classicPgwGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isPublicGatewayVPC, *publicgw.Vpc.ID)
 	tags, err := GetTagsUsingCRN(meta, *publicgw.Crn)
 	if err != nil {
-		log.Printf(
+		return fmt.Errorf(
 			"Error on get of vpc public gateway (%s) tags: %s", id, err)
 	}
 	d.Set(isPublicGatewayTags, tags)
@@ -463,7 +463,7 @@ func pgwGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isPublicGatewayVPC, *publicgw.Vpc.ID)
 	tags, err := GetTagsUsingCRN(meta, *publicgw.Crn)
 	if err != nil {
-		log.Printf(
+		return fmt.Errorf(
 			"Error on get of vpc public gateway (%s) tags: %s", id, err)
 	}
 	d.Set(isPublicGatewayTags, tags)
@@ -526,7 +526,7 @@ func classicPgwUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 		oldList, newList := d.GetChange(isPublicGatewayTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *publicgw.Crn)
 		if err != nil {
-			log.Printf(
+			return fmt.Errorf(
 				"Error on update of resource Public Gateway (%s) tags: %s", id, err)
 		}
 	}
@@ -559,7 +559,7 @@ func pgwUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 		oldList, newList := d.GetChange(isPublicGatewayTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *publicgw.Crn)
 		if err != nil {
-			log.Printf(
+			return fmt.Errorf(
 				"Error on update of resource Public Gateway (%s) tags: %s", id, err)
 		}
 	}

@@ -312,12 +312,13 @@ func classicVpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg st
 		oldList, newList := d.GetChange(isVPCTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpc.Crn)
 		if err != nil {
-			log.Printf(
+			return fmt.Errorf(
 				"Error on create of resource vpc (%s) tags: %s", d.Id(), err)
 		}
 	}
 	return nil
 }
+
 func isWaitForClassicVPCAvailable(vpc *vpcclassicv1.VpcClassicV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for VPC (%s) to be available.", id)
 
@@ -384,7 +385,7 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 		oldList, newList := d.GetChange(isVPCTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpc.Crn)
 		if err != nil {
-			log.Printf(
+			return fmt.Errorf(
 				"Error on create of resource vpc (%s) tags: %s", d.Id(), err)
 		}
 	}
@@ -478,7 +479,7 @@ func classicVpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	tags, err := GetTagsUsingCRN(meta, *vpc.Crn)
 	if err != nil {
-		log.Printf(
+		return fmt.Errorf(
 			"Error on get of resource vpc (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isVPCTags, tags)
@@ -518,7 +519,7 @@ func classicVpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	options := &vpcclassicv1.ListSubnetsOptions{}
 	s, response, err := sess.ListSubnets(options)
 	if err != nil {
-		log.Printf("Error Fetching subnets %s\n%s", err, response)
+		return fmt.Errorf("Error Fetching subnets %s\n%s", err, response)
 	} else {
 		subnetsInfo := make([]map[string]interface{}, 0)
 		for _, subnet := range s.Subnets {
@@ -572,7 +573,7 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	tags, err := GetTagsUsingCRN(meta, *vpc.Crn)
 	if err != nil {
-		log.Printf(
+		return fmt.Errorf(
 			"Error on get of resource vpc (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isVPCTags, tags)
@@ -612,7 +613,7 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	options := &vpcv1.ListSubnetsOptions{}
 	s, response, err := sess.ListSubnets(options)
 	if err != nil {
-		log.Printf("Error Fetching subnets %s\n%s", err, response)
+		return fmt.Errorf("Error Fetching subnets %s\n%s", err, response)
 	} else {
 		subnetsInfo := make([]map[string]interface{}, 0)
 		for _, subnet := range s.Subnets {
@@ -640,19 +641,19 @@ func resourceIBMISVPCUpdate(d *schema.ResourceData, meta interface{}) error {
 	id := d.Id()
 
 	name := ""
-	hasChange := false
+	hasChanged := false
 
 	if d.HasChange(isVPCName) {
 		name = d.Get(isVPCName).(string)
-		hasChange = true
+		hasChanged = true
 	}
 	if userDetails.generation == 1 {
-		err := classicVpcUpdate(d, meta, id, name, hasChange)
+		err := classicVpcUpdate(d, meta, id, name, hasChanged)
 		if err != nil {
 			return err
 		}
 	} else {
-		err := vpcUpdate(d, meta, id, name, hasChange)
+		err := vpcUpdate(d, meta, id, name, hasChanged)
 		if err != nil {
 			return err
 		}
@@ -660,7 +661,7 @@ func resourceIBMISVPCUpdate(d *schema.ResourceData, meta interface{}) error {
 	return resourceIBMISVPCRead(d, meta)
 }
 
-func classicVpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChange bool) error {
+func classicVpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
@@ -676,11 +677,11 @@ func classicVpcUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 		oldList, newList := d.GetChange(isVPCTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpc.Crn)
 		if err != nil {
-			log.Printf(
+			return fmt.Errorf(
 				"Error on update of resource vpc (%s) tags: %s", id, err)
 		}
 	}
-	if hasChange {
+	if hasChanged {
 		updateVpcOptions := &vpcclassicv1.UpdateVpcOptions{
 			ID:   &id,
 			Name: &name,
@@ -693,7 +694,7 @@ func classicVpcUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 	return nil
 }
 
-func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChange bool) error {
+func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -709,11 +710,11 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 		oldList, newList := d.GetChange(isVPCTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpc.Crn)
 		if err != nil {
-			log.Printf(
+			return fmt.Errorf(
 				"Error on update of resource vpc (%s) tags: %s", d.Id(), err)
 		}
 	}
-	if hasChange {
+	if hasChanged {
 		updateVpcOptions := &vpcv1.UpdateVpcOptions{
 			ID:   &id,
 			Name: &name,
@@ -743,7 +744,6 @@ func resourceIBMISVPCDelete(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 	}
-
 	d.SetId("")
 	return nil
 }

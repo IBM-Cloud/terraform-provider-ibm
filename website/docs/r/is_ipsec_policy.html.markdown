@@ -19,7 +19,7 @@ In the following example, you can create a ip sec policy:
 resource "ibm_is_ipsec_policy" "example" {
   name                     = "test"
   authentication_algorithm = "md5"
-  encryption_algorithm     = "3des"
+  encryption_algorithm     = "triple_des"
   pfs                      = "disabled"
 }
 
@@ -31,7 +31,7 @@ The following arguments are supported:
 
 * `name` - (Required, string) Name of the IPsec policy.
 * `authentication_algorithm` - (Required, string)  The authentication algorithm. Enumeration type: md5, sha1, sha256.
-* `encryption_algorithm` - (Required, string) The encryption algorithm. Enumeration type: 3des, aes128, aes256.
+* `encryption_algorithm` - (Required, string) The encryption algorithm. Enumeration type: triple_des, aes128, aes256.
 * `pfs` - (Required, string) Perfect Forward Secrecy. Enumeration type: disabled, group_2, group_5, group_14.
 * `key_lifetime` - (Optional, int) The key lifetime in seconds. Maximum: 86400, Minimum: 300. Default is 3600.
 * `resource_group` - (Optional, Forces new resource, string) The resource group ID where the ip sec policy to be created.
