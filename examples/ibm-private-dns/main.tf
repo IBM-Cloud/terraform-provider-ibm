@@ -100,3 +100,9 @@ resource "ibm_dns_resource_record" "test-pdns-resource-record-txt" {
   name        = "testTXT"
   rdata       = "textinformation"
 }
+
+data "ibm_dns_zones" "test" {
+  depends_on = [ibm_dns_zone.test-pdns-zone]
+  instance_id = ibm_resource_instance.test-pdns-instance.guid
+}
+
