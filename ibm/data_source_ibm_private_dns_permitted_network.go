@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	pdnsPermittedNetworks = "permitted_networks"
+	pdnsPermittedNetworks = "dns_permitted_networks"
 )
 
 func dataSourceIBMPrivateDNSPermittedNetworks() *schema.Resource {
@@ -20,15 +20,13 @@ func dataSourceIBMPrivateDNSPermittedNetworks() *schema.Resource {
 			pdnsInstanceID: {
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 				Description: "Instance ID",
 			},
 
 			pdnsZoneID: {
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
-				Description: "Zone Id",
+				Description: "Zone ID",
 			},
 
 			pdnsPermittedNetworks: {
@@ -48,39 +46,33 @@ func dataSourceIBMPrivateDNSPermittedNetworks() *schema.Resource {
 
 						pdnsInstanceID: {
 							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
+							Computed:    true,
 							Description: "Instance Id",
 						},
 
 						pdnsZoneID: {
 							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
+							Computed:    true,
 							Description: "Zone Id",
 						},
 
 						pdnsNetworkType: {
-							Type:         schema.TypeString,
-							Optional:     true,
-							ForceNew:     true,
-							Default:      "vpc",
-							ValidateFunc: validateAllowedStringValue([]string{"vpc"}),
-							Description:  "Network Type",
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Network Type",
 						},
 
 						pdnsPermittedNetwork: {
 							Type:        schema.TypeMap,
-							Description: "permitted network",
 							Computed:    true,
+							Description: "permitted network",
 							Elem: &schema.Resource{
 
 								Schema: map[string]*schema.Schema{
 
 									pdnsVpcCRN: {
 										Type:        schema.TypeString,
-										Required:    true,
-										ForceNew:    true,
+										Computed:    true,
 										Description: "VPC CRN id",
 									},
 								},
@@ -142,7 +134,6 @@ func dataSourceIBMPrivateDNSPermittedNetworksRead(d *schema.ResourceData, meta i
 		permittedNetwork[pdnsZoneID] = dnsZoneID
 
 		permittedNetworks = append(permittedNetworks, permittedNetwork)
-		log.Println("inside array : ", *instance.ID, *instance.CreatedOn, *instance.ModifiedOn)
 	}
 	d.SetId(dataSourceIBMPrivateDNSPermittedNetworkID(d))
 	d.Set(pdnsPermittedNetworks, permittedNetworks)
