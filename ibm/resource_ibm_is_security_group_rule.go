@@ -397,19 +397,20 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string) (
 
 	if icmpInterface, ok := d.GetOk("icmp"); ok {
 		haveType := false
-		if icmpInterface.([]interface{})[0] == nil {
-			return nil, fmt.Errorf("Internal error. icmp interface is nil")
-		}
-		icmp := icmpInterface.([]interface{})[0].(map[string]interface{})
-		if value, ok := icmp["type"]; ok {
-			parsed.icmpType = int64(value.(int))
-			haveType = true
-		}
-		if value, ok := icmp["code"]; ok {
-			if !haveType {
-				return nil, fmt.Errorf("icmp code requires icmp type")
+		if icmpInterface.([]interface{})[0] != nil {
+			//return nil, fmt.Errorf("Internal error. icmp interface is nil")
+
+			icmp := icmpInterface.([]interface{})[0].(map[string]interface{})
+			if value, ok := icmp["type"]; ok {
+				parsed.icmpType = int64(value.(int))
+				haveType = true
 			}
-			parsed.icmpCode = int64(value.(int))
+			if value, ok := icmp["code"]; ok {
+				if !haveType {
+					return nil, fmt.Errorf("icmp code requires icmp type")
+				}
+				parsed.icmpCode = int64(value.(int))
+			}
 		}
 		parsed.protocol = "icmp"
 	}
