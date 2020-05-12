@@ -25,7 +25,6 @@ type SnapshotCreate struct {
 	Name *string `json:"name"`
 
 	// List of volumes to include in the PVM instance snapshot
-	// Required: true
 	VolumeIds []string `json:"volumeIDs"`
 }
 
@@ -34,10 +33,6 @@ func (m *SnapshotCreate) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateVolumeIds(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -50,15 +45,6 @@ func (m *SnapshotCreate) Validate(formats strfmt.Registry) error {
 func (m *SnapshotCreate) validateName(formats strfmt.Registry) error {
 
 	if err := validate.Required("name", "body", m.Name); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *SnapshotCreate) validateVolumeIds(formats strfmt.Registry) error {
-
-	if err := validate.Required("volumeIDs", "body", m.VolumeIds); err != nil {
 		return err
 	}
 

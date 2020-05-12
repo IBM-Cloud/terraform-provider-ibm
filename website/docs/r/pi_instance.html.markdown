@@ -25,8 +25,10 @@ resource "ibm_pi_instance" "test-instance" {
     pi_key_pair_name      = ibm_pi_key.key.key_id
     pi_sys_type           = "s922"
     pi_cloud_instance_id  = "51e1879c-bcbe-4ee1-a008-49cdba0eaf60"
+    pi_pin_policy         = "none"
 }
 ```
+
 
 ## Timeouts
 
@@ -53,6 +55,7 @@ The following arguments are supported:
 * `pi_replicants` - (Optional, float) Specifies the number of VMs to deploy; default is 1.
 * `pi_replication_policy` - (Optional, string) Specifies the replication policy (e.g., none).
 * `pi_replication_scheme` - (Optional, string) Specifies the replicate scheme (prefix/suffix).
+* `pi_pin_policy` - (Optional,string) Specifies the pin policy for the lpar (none/soft/hard) - This is dependent on the cloud instance capabilities.
 
 ## Attribute Reference
 
@@ -75,7 +78,7 @@ The following attributes are exported:
   * `network_name` - The network name of the instance.
   * `type` - The type of the network
   * `external_ip` - The externalIP address of the instance.
-
+* `pin_policy` - The pin policy of the instance
 ## Import
 
 ibm_pi_instance can be imported using `power_instance_id` and `instance_id`, eg

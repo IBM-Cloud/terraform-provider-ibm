@@ -32,6 +32,9 @@ type NetworkCreate struct {
 	// IP Address Ranges
 	IPAddressRanges []*IPAddressRange `json:"ipAddressRanges"`
 
+	// Enable MTU Jumbo Network
+	Jumbo bool `json:"jumbo,omitempty"`
+
 	// Network Name
 	Name string `json:"name,omitempty"`
 

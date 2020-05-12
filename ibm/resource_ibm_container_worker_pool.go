@@ -118,7 +118,7 @@ func resourceIBMContainerWorkerPool() *schema.Resource {
 				Computed:         true,
 				ForceNew:         true,
 				DiffSuppressFunc: applyOnce,
-				Elem:             schema.TypeString,
+				Elem:             &schema.Schema{Type: schema.TypeString},
 				Description:      "list of labels to worker pool",
 			},
 

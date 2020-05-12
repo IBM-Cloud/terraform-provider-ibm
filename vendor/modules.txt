@@ -18,6 +18,7 @@ github.com/IBM-Cloud/bluemix-go/api/globalsearch/globalsearchv2
 github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3
 github.com/IBM-Cloud/bluemix-go/api/iam/iamv1
 github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1
+github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv2
 github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1
 github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2
 github.com/IBM-Cloud/bluemix-go/api/icd/icdv4
@@ -40,7 +41,7 @@ github.com/IBM-Cloud/bluemix-go/rest
 github.com/IBM-Cloud/bluemix-go/session
 github.com/IBM-Cloud/bluemix-go/trace
 github.com/IBM-Cloud/bluemix-go/utils
-# github.com/IBM-Cloud/power-go-client v1.0.0
+# github.com/IBM-Cloud/power-go-client v1.0.14
 github.com/IBM-Cloud/power-go-client/clients/instance
 github.com/IBM-Cloud/power-go-client/errors
 github.com/IBM-Cloud/power-go-client/helpers
@@ -57,6 +58,7 @@ github.com/IBM-Cloud/power-go-client/power/client/p_cloud_images
 github.com/IBM-Cloud/power-go-client/power/client/p_cloud_instances
 github.com/IBM-Cloud/power-go-client/power/client/p_cloud_networks
 github.com/IBM-Cloud/power-go-client/power/client/p_cloud_p_vm_instances
+github.com/IBM-Cloud/power-go-client/power/client/p_cloud_s_a_p
 github.com/IBM-Cloud/power-go-client/power/client/p_cloud_snapshots
 github.com/IBM-Cloud/power-go-client/power/client/p_cloud_system_pools
 github.com/IBM-Cloud/power-go-client/power/client/p_cloud_tasks
@@ -193,7 +195,7 @@ github.com/go-openapi/jsonpointer
 github.com/go-openapi/jsonreference
 # github.com/go-openapi/loads v0.19.4
 github.com/go-openapi/loads
-# github.com/go-openapi/runtime v0.19.11
+# github.com/go-openapi/runtime v0.19.15
 github.com/go-openapi/runtime
 github.com/go-openapi/runtime/client
 github.com/go-openapi/runtime/logger
@@ -206,9 +208,9 @@ github.com/go-openapi/runtime/security
 github.com/go-openapi/spec
 # github.com/go-openapi/strfmt v0.19.5
 github.com/go-openapi/strfmt
-# github.com/go-openapi/swag v0.19.7
+# github.com/go-openapi/swag v0.19.9
 github.com/go-openapi/swag
-# github.com/go-openapi/validate v0.19.6
+# github.com/go-openapi/validate v0.19.8
 github.com/go-openapi/validate
 # github.com/go-playground/locales v0.13.0
 github.com/go-playground/locales

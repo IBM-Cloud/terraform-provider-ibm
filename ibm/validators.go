@@ -63,6 +63,27 @@ func validateAllowedStringValue(validValues []string) schema.SchemaValidateFunc 
 	}
 }
 
+func validateRegexpLen(min, max int, regex string) schema.SchemaValidateFunc {
+	return func(v interface{}, k string) (ws []string, errors []error) {
+		value := v.(string)
+
+		acceptedcharacters, _ := regexp.MatchString(regex, value)
+
+		if acceptedcharacters {
+			if (len(value) < min) || (len(value) > max) && (min > 0 && max > 0) {
+				errors = append(errors, fmt.Errorf(
+					"%q (%q) must contain from %d to %d characters ", k, value, min, max))
+			}
+		} else {
+			errors = append(errors, fmt.Errorf(
+				"%q (%q) should match regexp %s ", k, v, regex))
+		}
+
+		return
+
+	}
+}
+
 func validateAllowedIntValue(is []int) schema.SchemaValidateFunc {
 	return func(v interface{}, k string) (ws []string, errors []error) {
 		value := v.(int)
@@ -1001,6 +1022,7 @@ const (
 	StringLenBetween
 	ValidateCIDR
 	ValidateAllowedIntValue
+	ValidateRegexpLen
 )
 
 // ValueType -- Copied from Terraform for now. You can refer to Terraform ValueType directly.
@@ -1045,6 +1067,7 @@ type ValidateSchema struct {
 	MaxValue       string
 	AllowedValues  string //Comma separated list of strings.
 	Matches        string
+	Regexp         string
 	MinValueLength int
 	MaxValueLength int
 
@@ -1128,6 +1151,9 @@ func invokeValidatorInternal(schema ValidateSchema) schema.SchemaValidateFunc {
 	case ValidateAllowedIntValue:
 		allowedValues := schema.GetValue(AllowedValues)
 		return validateAllowedIntValue(allowedValues.([]int))
+	case ValidateRegexpLen:
+		return validateRegexpLen(schema.MinValueLength, schema.MaxValueLength, schema.Regexp)
+
 	default:
 		return nil
 	}

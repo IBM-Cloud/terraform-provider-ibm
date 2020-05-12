@@ -39,6 +39,10 @@ type Network struct {
 	// Required: true
 	IPAddressRanges []*IPAddressRange `json:"ipAddressRanges"`
 
+	// MTU Jumbo Network enabled
+	// Required: true
+	Jumbo *bool `json:"jumbo"`
+
 	// Network Name
 	// Required: true
 	Name *string `json:"name"`
@@ -77,6 +81,10 @@ func (m *Network) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateIPAddressRanges(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateJumbo(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -162,6 +170,15 @@ func (m *Network) validateIPAddressRanges(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *Network) validateJumbo(formats strfmt.Registry) error {
+
+	if err := validate.Required("jumbo", "body", m.Jumbo); err != nil {
+		return err
 	}
 
 	return nil
