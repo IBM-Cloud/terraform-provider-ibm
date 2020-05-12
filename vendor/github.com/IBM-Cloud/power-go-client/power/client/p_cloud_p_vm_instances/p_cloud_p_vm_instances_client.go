@@ -25,7 +25,7 @@ type Client struct {
 }
 
 /*
-PcloudPvminstancesActionPost performs an action start stop reboot on a p VM instance
+PcloudPvminstancesActionPost performs an action start stop reboot immediate shutdown on a p VM instance
 */
 func (a *Client) PcloudPvminstancesActionPost(params *PcloudPvminstancesActionPostParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudPvminstancesActionPostOK, error) {
 	// TODO: Validate the params before sending
@@ -85,6 +85,35 @@ func (a *Client) PcloudPvminstancesCapturePost(params *PcloudPvminstancesCapture
 		return nil, value, nil
 	}
 	return nil, nil, nil
+
+}
+
+/*
+PcloudPvminstancesClonePost clones a p VM instance
+*/
+func (a *Client) PcloudPvminstancesClonePost(params *PcloudPvminstancesClonePostParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudPvminstancesClonePostAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPcloudPvminstancesClonePostParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "pcloud.pvminstances.clone.post",
+		Method:             "POST",
+		PathPattern:        "/pcloud/v1/cloud-instances/{cloud_instance_id}/pvm-instances/{pvm_instance_id}/clone",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PcloudPvminstancesClonePostReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PcloudPvminstancesClonePostAccepted), nil
 
 }
 
@@ -441,6 +470,35 @@ func (a *Client) PcloudPvminstancesSnapshotsPost(params *PcloudPvminstancesSnaps
 		return nil, err
 	}
 	return result.(*PcloudPvminstancesSnapshotsPostAccepted), nil
+
+}
+
+/*
+PcloudPvminstancesSnapshotsRestorePost restores a p VM instance snapshot
+*/
+func (a *Client) PcloudPvminstancesSnapshotsRestorePost(params *PcloudPvminstancesSnapshotsRestorePostParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudPvminstancesSnapshotsRestorePostAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPcloudPvminstancesSnapshotsRestorePostParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "pcloud.pvminstances.snapshots.restore.post",
+		Method:             "POST",
+		PathPattern:        "/pcloud/v1/cloud-instances/{cloud_instance_id}/pvm-instances/{pvm_instance_id}/snapshots/{snapshot_id}/restore",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PcloudPvminstancesSnapshotsRestorePostReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PcloudPvminstancesSnapshotsRestorePostAccepted), nil
 
 }
 

@@ -25,6 +25,9 @@ type PVMInstanceUpdate struct {
 	// Indicates if the server is allowed to migrate between hosts
 	Migratable *bool `json:"migratable,omitempty"`
 
+	// pin policy
+	PinPolicy PinPolicy `json:"pinPolicy,omitempty"`
+
 	// Processor type (dedicated, shared, capped)
 	// Enum: [dedicated shared capped]
 	ProcType string `json:"procType,omitempty"`
@@ -43,6 +46,10 @@ type PVMInstanceUpdate struct {
 func (m *PVMInstanceUpdate) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validatePinPolicy(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateProcType(formats); err != nil {
 		res = append(res, err)
 	}
@@ -54,6 +61,22 @@ func (m *PVMInstanceUpdate) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *PVMInstanceUpdate) validatePinPolicy(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.PinPolicy) { // not required
+		return nil
+	}
+
+	if err := m.PinPolicy.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("pinPolicy")
+		}
+		return err
+	}
+
 	return nil
 }
 

@@ -38,30 +38,6 @@ func ToError(err error) error {
 		return nil
 	}
 
-	/*
-		fmt.Println(reflect.TypeOf(err))
-		v, isAPIError := err.(*runtime.APIError)
-		if isAPIError {
-			response := reflect.ValueOf(v.Response)
-			fun := response.MethodByName("Body")
-			retvals := fun.Call([]reflect.Value{})
-			body, _ := retvals[0].Interface().(io.ReadCloser)
-			var bodyBytes []byte
-			if body != nil {
-				bodyBytes, _ = ioutil.ReadAll(body)
-			}
-			var payload models.Riaaserror
-
-			berr := json.Unmarshal(bodyBytes, &payload)
-			if berr != nil {
-				return errors.New(string(bodyBytes))
-			}
-			return RiaasError{
-				Payload: &payload,
-			}
-		}
-	*/
-
 	// check if its ours
 	kind := reflect.TypeOf(err).Kind()
 	if kind != reflect.Ptr {
@@ -99,15 +75,6 @@ func ToError(err error) error {
 		return err
 	}
 
-	//if len(payload.Errors) == 0 {
-	//	return nil
-	//}
-
-	//if len(payload.Errors) == 1 && payload.Errors[0].Code == "unexpected_return_value" {
-	//	statuscode := reflect.ValueOf(err).Elem().FieldByName("_statusCode")
-	//	payload.Errors[0].Target.Name = strconv.Itoa(int(statuscode.Int()))
-	//	payload.Errors[0].Target.Type = "http_code"
-	//}
 	var reterr = Error{
 		Payload: &payload,
 	}

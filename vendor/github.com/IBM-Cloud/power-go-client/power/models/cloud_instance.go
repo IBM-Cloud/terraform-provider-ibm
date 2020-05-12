@@ -19,6 +19,9 @@ import (
 // swagger:model CloudInstance
 type CloudInstance struct {
 
+	// Cloud Instance Capabilities
+	Capabilities []string `json:"capabilities"`
+
 	// Cloud Instance ID
 	// Required: true
 	CloudInstanceID *string `json:"cloudInstanceID"`
