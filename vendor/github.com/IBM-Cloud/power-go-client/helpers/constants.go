@@ -21,6 +21,10 @@ const (
 	PIInstanceMigratable      = "pi_migratable"
 	PICloudInstanceId         = "pi_cloud_instance_id"
 	PICloudInstanceSubnetName = "pi_cloud_instance_subnet_name"
+	PIInstanceMimMem          = "pi_minmem"
+	PIInstanceMaxProc         = "pi_maxproc"
+	PIInstanceMaxMem          = "pi_maxmem"
+	PIInstanceReboot          = "pi_reboot"
 
 	PIInstanceHealthStatus      = "pi_health_status"
 	PIInstanceReplicants        = "pi_replicants"
@@ -28,6 +32,7 @@ const (
 	PIInstanceReplicationScheme = "pi_replication_scheme"
 	PIInstanceProgress          = "pi_progress"
 	PIInstanceUserData          = "pi_user_data"
+	PIInstancePinPolicy         = "pi_pin_policy"
 
 	// IBM PI Volume
 	PIVolumeName      = "pi_volume_name"

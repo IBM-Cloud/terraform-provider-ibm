@@ -40,6 +40,9 @@ type PVMInstanceCreate struct {
 	// The pvm instance networks information
 	Networks []*PVMInstanceAddNetwork `json:"networks"`
 
+	// pin policy
+	PinPolicy PinPolicy `json:"pinPolicy,omitempty"`
+
 	// Processor type (dedicated, shared, capped)
 	// Required: true
 	// Enum: [dedicated shared capped]
@@ -93,6 +96,10 @@ func (m *PVMInstanceCreate) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateNetworks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePinPolicy(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -164,6 +171,22 @@ func (m *PVMInstanceCreate) validateNetworks(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *PVMInstanceCreate) validatePinPolicy(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.PinPolicy) { // not required
+		return nil
+	}
+
+	if err := m.PinPolicy.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("pinPolicy")
+		}
+		return err
 	}
 
 	return nil

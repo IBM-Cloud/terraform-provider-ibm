@@ -8,6 +8,10 @@ import (
 	"log"
 )
 
+const getNetwork = "Get Networks for [ Network id (%s) ] and CloudInstance id - (%s) ] "
+const getAllPortPrint = "Get Networks for [ Network id (%s) ] and CloudInstance id - (%s) ] "
+const getPortPrint = "Get Port for [ Port id - (%s) and  Network id -  (%s)  and CloudInstance id - (%s) ] "
+
 type IBMPINetworkClient struct {
 	session         *ibmpisession.IBMPISession
 	powerinstanceid string
@@ -22,7 +26,7 @@ func NewIBMPINetworkClient(sess *ibmpisession.IBMPISession, powerinstanceid stri
 }
 
 func (f *IBMPINetworkClient) Get(id, powerinstanceid string) (*models.Network, error) {
-
+	log.Printf(getNetwork, id, powerinstanceid)
 	params := p_cloud_networks.NewPcloudNetworksGetParams().WithCloudInstanceID(powerinstanceid).WithNetworkID(id)
 	resp, err := f.session.Power.PCloudNetworks.PcloudNetworksGet(params, ibmpisession.NewAuth(f.session, powerinstanceid))
 
@@ -62,9 +66,6 @@ func (f *IBMPINetworkClient) Create(name string, networktype string, cidr string
 	if resp != nil {
 		log.Printf("Failed to create the network ")
 	}
-	//if postok != nil {
-	//	log.Print("Request failed ")
-	//}
 
 	return resp.Payload, nil, nil
 }
@@ -98,11 +99,28 @@ func (f *IBMPINetworkClient) Delete(id string, powerinstanceid string) error {
 
 //Get all
 func (f *IBMPINetworkClient) GetAllPort(id string, powerinstanceid string) (*models.NetworkPorts, error) {
+
+	log.Printf(getAllPortPrint, id, powerinstanceid)
 	params := p_cloud_networks.NewPcloudNetworksPortsGetallParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithNetworkID(id)
 	resp, err := f.session.Power.PCloudNetworks.PcloudNetworksPortsGetall(params, ibmpisession.NewAuth(f.session, powerinstanceid))
-
+	log.Printf("Printing the response %s", len(resp.Payload.Ports))
 	if err != nil || resp.Payload == nil {
 		log.Printf("Failed to perform the GetNetworkPorts Operation... %v", err)
+		return nil, errors.ToError(err)
+	}
+	return resp.Payload, nil
+
+}
+
+// Get Port
+
+func (f *IBMPINetworkClient) GetPort(id string, powerinstanceid string, network_port_id string) (*models.NetworkPort, error) {
+	log.Printf(getPortPrint, network_port_id, id, powerinstanceid)
+	params := p_cloud_networks.NewPcloudNetworksPortsGetParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithNetworkID(id).WithPortID(network_port_id)
+	resp, err := f.session.Power.PCloudNetworks.PcloudNetworksPortsGet(params, ibmpisession.NewAuth(f.session, powerinstanceid))
+
+	if err != nil || resp.Payload == nil {
+		log.Printf("Failed to perform the GetNetworkPort Operation... %v", err)
 		return nil, errors.ToError(err)
 	}
 	return resp.Payload, nil

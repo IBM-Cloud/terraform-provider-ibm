@@ -18,11 +18,20 @@ import (
 // swagger:model SystemPool
 type SystemPool struct {
 
+	// Advertised capacity cores and memory (GB)
+	Capacity *System `json:"capacity,omitempty"`
+
 	// Processor to Memory (GB) Ratio
 	CoreMemoryRatio float64 `json:"coreMemoryRatio,omitempty"`
 
-	// Maximum configurable Processors and Memory GB
+	// Maximum configurable cores and memory (GB) (aggregated from all hosts)
 	MaxAvailable *System `json:"maxAvailable,omitempty"`
+
+	// Maximum configurable cores available combined with available memory of that host
+	MaxCoresAvailable *System `json:"maxCoresAvailable,omitempty"`
+
+	// Maximum configurable memory available combined with available cores of that host
+	MaxMemoryAvailable *System `json:"maxMemoryAvailable,omitempty"`
 
 	// min-max-default allocation percentage of shared core per vCPU
 	SharedCoreRatio *MinMaxDefault `json:"sharedCoreRatio,omitempty"`
@@ -38,7 +47,19 @@ type SystemPool struct {
 func (m *SystemPool) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateCapacity(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateMaxAvailable(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMaxCoresAvailable(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMaxMemoryAvailable(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -56,6 +77,24 @@ func (m *SystemPool) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *SystemPool) validateCapacity(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Capacity) { // not required
+		return nil
+	}
+
+	if m.Capacity != nil {
+		if err := m.Capacity.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("capacity")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *SystemPool) validateMaxAvailable(formats strfmt.Registry) error {
 
 	if swag.IsZero(m.MaxAvailable) { // not required
@@ -66,6 +105,42 @@ func (m *SystemPool) validateMaxAvailable(formats strfmt.Registry) error {
 		if err := m.MaxAvailable.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("maxAvailable")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *SystemPool) validateMaxCoresAvailable(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.MaxCoresAvailable) { // not required
+		return nil
+	}
+
+	if m.MaxCoresAvailable != nil {
+		if err := m.MaxCoresAvailable.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("maxCoresAvailable")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *SystemPool) validateMaxMemoryAvailable(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.MaxMemoryAvailable) { // not required
+		return nil
+	}
+
+	if m.MaxMemoryAvailable != nil {
+		if err := m.MaxMemoryAvailable.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("maxMemoryAvailable")
 			}
 			return err
 		}

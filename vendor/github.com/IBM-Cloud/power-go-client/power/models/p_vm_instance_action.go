@@ -19,9 +19,9 @@ import (
 // swagger:model PVMInstanceAction
 type PVMInstanceAction struct {
 
-	// Name of the action to take; can be start, stop, hard-reboot, soft-reboot
+	// Name of the action to take; can be start, stop, hard-reboot, soft-reboot, immediate-shutdown
 	// Required: true
-	// Enum: [start stop hard-reboot soft-reboot]
+	// Enum: [start stop immediate-shutdown hard-reboot soft-reboot]
 	Action *string `json:"action"`
 }
 
@@ -43,7 +43,7 @@ var pVmInstanceActionTypeActionPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["start","stop","hard-reboot","soft-reboot"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["start","stop","immediate-shutdown","hard-reboot","soft-reboot"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -58,6 +58,9 @@ const (
 
 	// PVMInstanceActionActionStop captures enum value "stop"
 	PVMInstanceActionActionStop string = "stop"
+
+	// PVMInstanceActionActionImmediateShutdown captures enum value "immediate-shutdown"
+	PVMInstanceActionActionImmediateShutdown string = "immediate-shutdown"
 
 	// PVMInstanceActionActionHardReboot captures enum value "hard-reboot"
 	PVMInstanceActionActionHardReboot string = "hard-reboot"

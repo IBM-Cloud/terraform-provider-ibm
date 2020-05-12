@@ -343,6 +343,35 @@ func (a *Client) PcloudPvminstancesVolumesSetbootPut(params *PcloudPvminstancesV
 
 }
 
+/*
+PcloudVolumesClonePost creates a volume clone for specified volumes
+*/
+func (a *Client) PcloudVolumesClonePost(params *PcloudVolumesClonePostParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudVolumesClonePostOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPcloudVolumesClonePostParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "pcloud.volumes.clone.post",
+		Method:             "POST",
+		PathPattern:        "/pcloud/v1/cloud-instances/{cloud_instance_id}/volumes/clone",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PcloudVolumesClonePostReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PcloudVolumesClonePostOK), nil
+
+}
+
 // SetTransport changes the transport on the client
 func (a *Client) SetTransport(transport runtime.ClientTransport) {
 	a.transport = transport
