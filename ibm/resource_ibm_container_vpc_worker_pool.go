@@ -76,7 +76,7 @@ func resourceIBMContainerVpcWorkerPool() *schema.Resource {
 			},
 
 			"labels": {
-				Type:             schema.TypeSet,
+				Type:             schema.TypeMap,
 				Optional:         true,
 				Computed:         true,
 				DiffSuppressFunc: applyOnce,

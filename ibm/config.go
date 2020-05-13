@@ -29,6 +29,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
 	"github.com/IBM-Cloud/bluemix-go/api/iam/iamv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
+	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv2"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
@@ -153,6 +154,7 @@ type ClientSession interface {
 	ICDAPI() (icdv4.ICDServiceAPI, error)
 	IAMAPI() (iamv1.IAMServiceAPI, error)
 	IAMPAPAPI() (iampapv1.IAMPAPAPI, error)
+	IAMPAPAPIV2() (iampapv2.IAMPAPAPIV2, error)
 	IAMUUMAPI() (iamuumv1.IAMUUMServiceAPI, error)
 	IAMUUMAPIV2() (iamuumv2.IAMUUMServiceAPIv2, error)
 	ISSession() (*issession.Session, error)
@@ -217,6 +219,9 @@ type clientSession struct {
 
 	iamPAPConfigErr  error
 	iamPAPServiceAPI iampapv1.IAMPAPAPI
+
+	iamPAPConfigErrv2  error
+	iamPAPServiceAPIv2 iampapv2.IAMPAPAPIV2
 
 	iamUUMConfigErr  error
 	iamUUMServiceAPI iamuumv1.IAMUUMServiceAPI
@@ -337,6 +342,11 @@ func (sess clientSession) IAMPAPAPI() (iampapv1.IAMPAPAPI, error) {
 	return sess.iamPAPServiceAPI, sess.iamPAPConfigErr
 }
 
+// IAMPAPAPIV2 provides IAM PAP APIs ...
+func (sess clientSession) IAMPAPAPIV2() (iampapv2.IAMPAPAPIV2, error) {
+	return sess.iamPAPServiceAPIv2, sess.iamPAPConfigErrv2
+}
+
 // IAMUUMAPI provides IAM UUM APIs ...
 func (sess clientSession) IAMUUMAPI() (iamuumv1.IAMUUMServiceAPI, error) {
 	return sess.iamUUMServiceAPI, sess.iamUUMConfigErr
@@ -448,6 +458,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.globalTaggingConfigErr = errEmptyBluemixCredentials
 		session.iamConfigErr = errEmptyBluemixCredentials
 		session.iamPAPConfigErr = errEmptyBluemixCredentials
+		session.iamPAPConfigErrv2 = errEmptyBluemixCredentials
 		session.iamUUMConfigErr = errEmptyBluemixCredentials
 		session.iamUUMConfigErrV2 = errEmptyBluemixCredentials
 		session.icdConfigErr = errEmptyBluemixCredentials
@@ -464,6 +475,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.vpcErr = errEmptyBluemixCredentials
 		session.apigatewayErr = errEmptyBluemixCredentials
 		session.pDnsErr = errEmptyBluemixCredentials
+		session.bmxUserFetchErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -579,7 +591,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	vpcclient, err := vpc.NewVpcV1(vpcoptions)
 	if err != nil {
-		session.vpcErr = fmt.Errorf("Error occured while configuring vpc classic service: %q", err)
+		session.vpcErr = fmt.Errorf("Error occured while configuring vpc service: %q", err)
 	}
 	session.vpcAPI = vpcclient
 
@@ -612,6 +624,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.iamPAPConfigErr = fmt.Errorf("Error occured while configuring Bluemix IAMPAP Service: %q", err)
 	}
 	session.iamPAPServiceAPI = iampap
+
+	iampapv2, err := iampapv2.New(sess.BluemixSession)
+	if err != nil {
+		session.iamPAPConfigErrv2 = fmt.Errorf("Error occured while configuring Bluemix IAMPAP Service: %q", err)
+	}
+	session.iamPAPServiceAPIv2 = iampapv2
 
 	iam, err := iamv1.New(sess.BluemixSession)
 	if err != nil {
@@ -817,7 +835,6 @@ func authenticateCF(sess *bxsession.Session) error {
 func fetchUserDetails(sess *bxsession.Session, generation int) (*UserConfig, error) {
 	config := sess.Config
 	user := UserConfig{}
-
 	var bluemixToken string
 
 	if strings.HasPrefix(config.IAMAccessToken, "Bearer") {
@@ -868,7 +885,11 @@ func refreshToken(sess *bxsession.Session) error {
 func envFallBack(envs []string, defaultValue string) string {
 	for _, k := range envs {
 		if v := os.Getenv(k); v != "" {
-			return v
+			if strings.Contains(v, "https://") {
+				return v
+			} else {
+				return fmt.Sprintf("https://%s/v1", v)
+			}
 		}
 	}
 	return defaultValue

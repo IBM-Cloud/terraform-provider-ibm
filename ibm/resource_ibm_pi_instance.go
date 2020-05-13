@@ -140,6 +140,11 @@ func resourceIBMPIInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Instance ID",
 			},
+			"pin_policy": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "PIN Policy of the Instance",
+			},
 			helpers.PIInstanceImageName: {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -202,6 +207,13 @@ func resourceIBMPIInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Progress of the operation",
 			},
+			helpers.PIInstancePinPolicy: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Pin Policy of the instance",
+				Default:      "none",
+				ValidateFunc: validateAllowedStringValue([]string{"none", "soft", "hard"}),
+			},
 		},
 	}
 }
@@ -230,6 +242,11 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	imageid := d.Get(helpers.PIInstanceImageName).(string)
 	processortype := d.Get(helpers.PIInstanceProcType).(string)
 
+	pinpolicy := d.Get(helpers.PIInstancePinPolicy).(string)
+	if d.Get(helpers.PIInstancePinPolicy) == "" {
+		pinpolicy = "none"
+	}
+
 	//var userdata = ""
 	user_data := d.Get(helpers.PIInstanceUserData).(string)
 
@@ -257,10 +274,13 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	if len(volids) > 0 {
 		body.VolumeIds = volids
 	}
+	if d.Get(helpers.PIInstancePinPolicy) == "soft" || d.Get(helpers.PIInstancePinPolicy) == "hard" {
+		body.PinPolicy = models.PinPolicy(pinpolicy)
+	}
 
 	client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
 
-	pvm, _, _, err := client.Create(&p_cloud_p_vm_instances.PcloudPvminstancesPostParams{
+	pvm, err := client.Create(&p_cloud_p_vm_instances.PcloudPvminstancesPostParams{
 		Body: body,
 	}, powerinstanceid)
 	//log.Printf("the number of instances is %d", len(*pvm))
@@ -336,6 +356,7 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("min_memory", powervmdata.Minmem)
 	d.Set("max_processors", powervmdata.Maxproc)
 	d.Set("max_memory", powervmdata.Maxmem)
+	d.Set("pin_policy", powervmdata.PinPolicy)
 
 	if powervmdata.Addresses != nil {
 		pvmaddress := make([]map[string]interface{}, len(powervmdata.Addresses))

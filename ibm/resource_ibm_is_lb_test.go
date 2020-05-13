@@ -8,14 +8,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/lbaas"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISLB_basic(t *testing.T) {
-	var lb *models.LoadBalancer
-	vpcname := fmt.Sprintf("terraformLBuat-vpc-%d", acctest.RandIntRange(10, 100))
-	subnetname := fmt.Sprintf("terraformLBuat-create-step-name-%d", acctest.RandIntRange(10, 100))
+	var lb string
+	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflb-create-name-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
 	name1 := fmt.Sprintf("tfupdate%d", acctest.RandIntRange(10, 100))
 
@@ -27,7 +27,7 @@ func TestAccIBMISLB_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMISLBConfig(vpcname, subnetname, ISZoneName, ISCIDR, name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", &lb),
+					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb.testacc_LB", "name", name),
 					resource.TestCheckResourceAttrSet(
@@ -38,7 +38,7 @@ func TestAccIBMISLB_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMISLBConfig(vpcname, subnetname, ISZoneName, ISCIDR, name1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", &lb),
+					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb.testacc_LB", "name", name1),
 				),
@@ -48,9 +48,9 @@ func TestAccIBMISLB_basic(t *testing.T) {
 }
 
 func TestAccIBMISLB_basic_private(t *testing.T) {
-	var lb *models.LoadBalancer
-	vpcname := fmt.Sprintf("terraformLBuat-vpc-%d", acctest.RandIntRange(10, 100))
-	subnetname := fmt.Sprintf("terraformLBuat-create-step-name-%d", acctest.RandIntRange(10, 100))
+	var lb string
+	vpcname := fmt.Sprintf("tflbt-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflb-create-name-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
 	name1 := fmt.Sprintf("tfupdate%d", acctest.RandIntRange(10, 100))
 
@@ -62,7 +62,7 @@ func TestAccIBMISLB_basic_private(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMISLBConfigPrivate(vpcname, subnetname, ISZoneName, ISCIDR, name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", &lb),
+					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb.testacc_LB", "name", name),
 				),
@@ -71,7 +71,7 @@ func TestAccIBMISLB_basic_private(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMISLBConfigPrivate(vpcname, subnetname, ISZoneName, ISCIDR, name1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", &lb),
+					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb.testacc_LB", "name", name1),
 				),
@@ -81,26 +81,44 @@ func TestAccIBMISLB_basic_private(t *testing.T) {
 }
 
 func testAccCheckIBMISLBDestroy(s *terraform.State) error {
-	sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
+	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	LBC := lbaas.NewLoadBalancerClient(sess)
+	if userDetails.generation == 1 {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_lb" {
+				continue
+			}
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_is_lb" {
-			continue
+			getlboptions := &vpcclassicv1.GetLoadBalancerOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetLoadBalancer(getlboptions)
+			if err == nil {
+				return fmt.Errorf("LB still exists: %s", rs.Primary.ID)
+			}
 		}
+	} else {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_lb" {
+				continue
+			}
 
-		_, err := LBC.Get(rs.Primary.ID)
-
-		if err == nil {
-			return fmt.Errorf("LB still exists: %s", rs.Primary.ID)
+			getlboptions := &vpcv1.GetLoadBalancerOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetLoadBalancer(getlboptions)
+			if err == nil {
+				return fmt.Errorf("LB still exists: %s", rs.Primary.ID)
+			}
 		}
 	}
 
 	return nil
 }
 
-func testAccCheckIBMISLBExists(n string, lb **models.LoadBalancer) resource.TestCheckFunc {
+func testAccCheckIBMISLBExists(n, lb string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -112,15 +130,29 @@ func testAccCheckIBMISLBExists(n string, lb **models.LoadBalancer) resource.Test
 			return errors.New("No Record ID is set")
 		}
 
-		sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
-		client := lbaas.NewLoadBalancerClient(sess)
-		foundLB, err := client.Get(rs.Primary.ID)
+		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-		if err != nil {
-			return err
+		if userDetails.generation == 1 {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+			getlboptions := &vpcclassicv1.GetLoadBalancerOptions{
+				ID: &rs.Primary.ID,
+			}
+			foundLB, _, err := sess.GetLoadBalancer(getlboptions)
+			if err != nil {
+				return err
+			}
+			lb = *foundLB.ID
+		} else {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+			getlboptions := &vpcv1.GetLoadBalancerOptions{
+				ID: &rs.Primary.ID,
+			}
+			foundLB, _, err := sess.GetLoadBalancer(getlboptions)
+			if err != nil {
+				return err
+			}
+			lb = *foundLB.ID
 		}
-
-		*lb = foundLB
 		return nil
 	}
 }

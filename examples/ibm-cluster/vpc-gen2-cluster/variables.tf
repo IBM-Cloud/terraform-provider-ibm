@@ -1,9 +1,9 @@
 variable "flavor" {
-  default = "bx1.2x8"
+  default = "bx2.2x8"
 }
 
 variable "kube_version" {
-  default = "1.17.4"
+  default = "1.17.5"
 }
 
 variable "worker_count" {

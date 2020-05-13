@@ -8,15 +8,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/vpn"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISVPNGateway_basic(t *testing.T) {
-	var vpnGateway *models.VPNGateway
-	vpcname := fmt.Sprintf("terraformvpnuat-vpc-%d", acctest.RandIntRange(10, 100))
-	subnetname := fmt.Sprintf("terraformvpnuat-subnet-%d", acctest.RandIntRange(10, 100))
-	name1 := fmt.Sprintf("terraformvpngatewayuat-create-step-name-%d", acctest.RandIntRange(10, 100))
+	var vpnGateway string
+	vpcname := fmt.Sprintf("tfvpnuat-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfvpnuat-subnet-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfvpnuat-createname-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -26,7 +26,7 @@ func TestAccIBMISVPNGateway_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMISVPNGatewayConfig(vpcname, subnetname, name1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVPNGatewayExists("ibm_is_vpn_gateway.testacc_vpnGateway", &vpnGateway),
+					testAccCheckIBMISVPNGatewayExists("ibm_is_vpn_gateway.testacc_vpnGateway", vpnGateway),
 					resource.TestCheckResourceAttr(
 						"ibm_is_vpn_gateway.testacc_vpnGateway", "name", name1),
 				),
@@ -36,26 +36,46 @@ func TestAccIBMISVPNGateway_basic(t *testing.T) {
 }
 
 func testAccCheckIBMISVPNGatewayDestroy(s *terraform.State) error {
-	sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
+	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	vpnGatewayC := vpn.NewVpnClient(sess)
+	if userDetails.generation == 1 {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_vpn_gateway" {
+				continue
+			}
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_is_vpn_gateway" {
-			continue
+			getvpngcptions := &vpcclassicv1.GetVpnGatewayConnectionOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetVpnGatewayConnection(getvpngcptions)
+
+			if err == nil {
+				return fmt.Errorf("vpnGateway still exists: %s", rs.Primary.ID)
+			}
 		}
+	} else {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_vpn_gateway" {
+				continue
+			}
 
-		_, err := vpnGatewayC.Get(rs.Primary.ID)
+			getvpngcptions := &vpcv1.GetVpnGatewayConnectionOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetVpnGatewayConnection(getvpngcptions)
 
-		if err == nil {
-			return fmt.Errorf("vpnGateway still exists: %s", rs.Primary.ID)
+			if err == nil {
+				return fmt.Errorf("vpnGateway still exists: %s", rs.Primary.ID)
+			}
 		}
 	}
 
 	return nil
 }
 
-func testAccCheckIBMISVPNGatewayExists(n string, vpnGateway **models.VPNGateway) resource.TestCheckFunc {
+func testAccCheckIBMISVPNGatewayExists(n, vpnGatewayID string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -67,15 +87,29 @@ func testAccCheckIBMISVPNGatewayExists(n string, vpnGateway **models.VPNGateway)
 			return errors.New("No Record ID is set")
 		}
 
-		sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
-		vpnGatewayC := vpn.NewVpnClient(sess)
-		foundvpnGateway, err := vpnGatewayC.Get(rs.Primary.ID)
+		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-		if err != nil {
-			return err
+		if userDetails.generation == 1 {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+			getvpngcptions := &vpcclassicv1.GetVpnGatewayConnectionOptions{
+				ID: &rs.Primary.ID,
+			}
+			foundvpnGateway, _, err := sess.GetVpnGatewayConnection(getvpngcptions)
+			if err != nil {
+				return err
+			}
+			vpnGatewayID = *foundvpnGateway.ID
+		} else {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+			getvpngcptions := &vpcv1.GetVpnGatewayConnectionOptions{
+				ID: &rs.Primary.ID,
+			}
+			foundvpnGateway, _, err := sess.GetVpnGatewayConnection(getvpngcptions)
+			if err != nil {
+				return err
+			}
+			vpnGatewayID = *foundvpnGateway.ID
 		}
-
-		*vpnGateway = foundvpnGateway
 		return nil
 	}
 }

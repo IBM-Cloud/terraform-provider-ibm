@@ -34,7 +34,7 @@ The following arguments are supported:
 * `name` - (Required, string) The address prefix name.
 * `vpc` - (Required, Forces new resource, string) The vpc id. 
 * `zone` - (Required, Forces new resource, string) Name of the zone. 
-* `cidr` - (Required, string) The CIDR block for the address prefix. 
+* `cidr` - (Required, Forces new resource, string) The CIDR block for the address prefix. 
 
 ## Attribute Reference
 

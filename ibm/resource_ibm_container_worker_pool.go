@@ -54,6 +54,13 @@ func resourceIBMContainerWorkerPool() *schema.Resource {
 				Description:  "Number of nodes per zone",
 			},
 
+			"entitlement": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: applyOnce,
+				Description:      "Entitlement option reduces additional OCP Licence cost in Openshift Clusters",
+			},
+
 			"hardware": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -106,7 +113,7 @@ func resourceIBMContainerWorkerPool() *schema.Resource {
 			},
 
 			"labels": {
-				Type:             schema.TypeSet,
+				Type:             schema.TypeMap,
 				Optional:         true,
 				Computed:         true,
 				ForceNew:         true,
@@ -171,6 +178,12 @@ func resourceIBMContainerWorkerPoolCreate(d *schema.ResourceData, meta interface
 		}
 		workerPoolConfig.Labels = labels
 	}
+
+	// Update workerpoolConfig with Entitlement option if provided
+	if v, ok := d.GetOk("entitlement"); ok {
+		workerPoolConfig.Entitlement = v.(string)
+	}
+
 	params := v1.WorkerPoolRequest{
 		WorkerPoolConfig: workerPoolConfig,
 		DiskEncryption:   d.Get("disk_encryption").(bool),

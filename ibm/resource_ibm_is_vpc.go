@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
 	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
 	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
@@ -65,7 +64,7 @@ func resourceIBMISVPC() *schema.Resource {
 				Optional:         true,
 				Default:          "auto",
 				DiffSuppressFunc: applyOnce,
-				ValidateFunc:     validateAllowedStringValue([]string{"auto", "manual"}),
+				ValidateFunc:     InvokeValidator("ibm_is_vpc", isVPCAddressPrefixManagement),
 				Description:      "Address Prefix management value",
 			},
 
@@ -225,6 +224,24 @@ func resourceIBMISVPC() *schema.Resource {
 	}
 }
 
+func resourceIBMISVPCValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	address_prefix_management := "auto, manual"
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPCAddressPrefixManagement,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Optional:                   true,
+			Default:                    "auto",
+			AllowedValues:              address_prefix_management})
+
+	ibmISVPCResourceValidator := ResourceValidator{ResourceName: "ibm_is_vpc", Schema: validateSchema}
+	return &ibmISVPCResourceValidator
+}
+
 func resourceIBMISVPCCreate(d *schema.ResourceData, meta interface{}) error {
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
@@ -300,6 +317,7 @@ func classicVpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg st
 	}
 	return nil
 }
+
 func isWaitForClassicVPCAvailable(vpc *vpcclassicv1.VpcClassicV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for VPC (%s) to be available.", id)
 
@@ -500,7 +518,7 @@ func classicVpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	options := &vpcclassicv1.ListSubnetsOptions{}
 	s, response, err := sess.ListSubnets(options)
 	if err != nil {
-		log.Printf("Error Fetching subnets %s\n%s", err, response)
+		return fmt.Errorf("Error Fetching subnets %s\n%s", err, response)
 	} else {
 		subnetsInfo := make([]map[string]interface{}, 0)
 		for _, subnet := range s.Subnets {
@@ -594,7 +612,7 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	options := &vpcv1.ListSubnetsOptions{}
 	s, response, err := sess.ListSubnets(options)
 	if err != nil {
-		log.Printf("Error Fetching subnets %s\n%s", err, response)
+		return fmt.Errorf("Error Fetching subnets %s\n%s", err, response)
 	} else {
 		subnetsInfo := make([]map[string]interface{}, 0)
 		for _, subnet := range s.Subnets {
@@ -622,19 +640,19 @@ func resourceIBMISVPCUpdate(d *schema.ResourceData, meta interface{}) error {
 	id := d.Id()
 
 	name := ""
-	hasChange := false
+	hasChanged := false
 
 	if d.HasChange(isVPCName) {
 		name = d.Get(isVPCName).(string)
-		hasChange = true
+		hasChanged = true
 	}
 	if userDetails.generation == 1 {
-		err := classicVpcUpdate(d, meta, id, name, hasChange)
+		err := classicVpcUpdate(d, meta, id, name, hasChanged)
 		if err != nil {
 			return err
 		}
 	} else {
-		err := vpcUpdate(d, meta, id, name, hasChange)
+		err := vpcUpdate(d, meta, id, name, hasChanged)
 		if err != nil {
 			return err
 		}
@@ -642,7 +660,7 @@ func resourceIBMISVPCUpdate(d *schema.ResourceData, meta interface{}) error {
 	return resourceIBMISVPCRead(d, meta)
 }
 
-func classicVpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChange bool) error {
+func classicVpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
@@ -662,7 +680,7 @@ func classicVpcUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 				"Error on update of resource vpc (%s) tags: %s", id, err)
 		}
 	}
-	if hasChange {
+	if hasChanged {
 		updateVpcOptions := &vpcclassicv1.UpdateVpcOptions{
 			ID:   &id,
 			Name: &name,
@@ -675,7 +693,7 @@ func classicVpcUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 	return nil
 }
 
-func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChange bool) error {
+func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -695,7 +713,7 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 				"Error on update of resource vpc (%s) tags: %s", d.Id(), err)
 		}
 	}
-	if hasChange {
+	if hasChanged {
 		updateVpcOptions := &vpcv1.UpdateVpcOptions{
 			ID:   &id,
 			Name: &name,
@@ -725,7 +743,6 @@ func resourceIBMISVPCDelete(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 	}
-
 	d.SetId("")
 	return nil
 }
@@ -819,10 +836,10 @@ func isClassicVPCDeleteRefreshFunc(vpc *vpcclassicv1.VpcClassicV1, id string) re
 			ID: &id,
 		}
 		vpc, response, err := vpc.GetVpc(getvpcOptions)
-		if err != nil && response.StatusCode != 404 {
+		if err != nil && response != nil && response.StatusCode != 404 {
 			return nil, isVPCFailed, fmt.Errorf("The VPC %s failed to delete: %s\n%s", id, err, response)
 		}
-		if response.StatusCode == 404 {
+		if response != nil && response.StatusCode == 404 {
 			return vpc, isVPCDeleted, nil
 		}
 		return vpc, isVPCDeleting, nil
@@ -866,14 +883,14 @@ func resourceIBMISVPCExists(d *schema.ResourceData, meta interface{}) (bool, err
 	if err != nil {
 		return false, err
 	}
-	ID := d.Id()
+	id := d.Id()
 	if userDetails.generation == 1 {
-		err := classicVpcExists(d, meta, ID)
+		err := classicVpcExists(d, meta, id)
 		if err != nil {
 			return false, err
 		}
 	} else {
-		err := vpcExists(d, meta, ID)
+		err := vpcExists(d, meta, id)
 		if err != nil {
 			return false, err
 		}
@@ -922,21 +939,4 @@ func resourceIBMVPCHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%s",
 		strings.ToLower(v.(string))))
 	return hashcode.String(buf.String())
-}
-
-func isErrorToString(err error) string {
-	iserror, ok := err.(iserrors.RiaasError)
-	if ok {
-		log.Printf("[DEBUG] Hit Riaas Error")
-		retmsg := ""
-
-		for _, e := range iserror.Payload.Errors {
-			retmsg = retmsg + "\n" + e.Message + "\n" + e.Code + "\n" + e.MoreInfo + "\n"
-			if e.Target != nil {
-				retmsg = retmsg + e.Target.Name + "\n" + e.Target.Type
-			}
-		}
-		return retmsg
-	}
-	return err.Error()
 }

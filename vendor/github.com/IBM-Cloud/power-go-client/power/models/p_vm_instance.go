@@ -67,6 +67,16 @@ type PVMInstance struct {
 	// The pvm instance networks information
 	Networks []*PVMInstanceNetwork `json:"networks"`
 
+	// OS system information (usually version and build)
+	OperatingSystem string `json:"operatingSystem,omitempty"`
+
+	// Type of the OS [aix, ibmi, redhat, sles]
+	// Required: true
+	OsType *string `json:"osType"`
+
+	// VM pinning policy to use [none, soft, hard]
+	PinPolicy string `json:"pinPolicy,omitempty"`
+
 	// Processor type (dedicated, shared, capped)
 	// Required: true
 	// Enum: [dedicated shared capped]
@@ -147,6 +157,10 @@ func (m *PVMInstance) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateNetworks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateOsType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -322,6 +336,15 @@ func (m *PVMInstance) validateNetworks(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *PVMInstance) validateOsType(formats strfmt.Registry) error {
+
+	if err := validate.Required("osType", "body", m.OsType); err != nil {
+		return err
 	}
 
 	return nil

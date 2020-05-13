@@ -13,6 +13,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
+	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -20,7 +21,7 @@ import (
 // NewPcloudImagesGetallParams creates a new PcloudImagesGetallParams object
 // with the default values initialized.
 func NewPcloudImagesGetallParams() *PcloudImagesGetallParams {
-
+	var ()
 	return &PcloudImagesGetallParams{
 
 		timeout: cr.DefaultTimeout,
@@ -30,7 +31,7 @@ func NewPcloudImagesGetallParams() *PcloudImagesGetallParams {
 // NewPcloudImagesGetallParamsWithTimeout creates a new PcloudImagesGetallParams object
 // with the default values initialized, and the ability to set a timeout on a request
 func NewPcloudImagesGetallParamsWithTimeout(timeout time.Duration) *PcloudImagesGetallParams {
-
+	var ()
 	return &PcloudImagesGetallParams{
 
 		timeout: timeout,
@@ -40,7 +41,7 @@ func NewPcloudImagesGetallParamsWithTimeout(timeout time.Duration) *PcloudImages
 // NewPcloudImagesGetallParamsWithContext creates a new PcloudImagesGetallParams object
 // with the default values initialized, and the ability to set a context for a request
 func NewPcloudImagesGetallParamsWithContext(ctx context.Context) *PcloudImagesGetallParams {
-
+	var ()
 	return &PcloudImagesGetallParams{
 
 		Context: ctx,
@@ -50,7 +51,7 @@ func NewPcloudImagesGetallParamsWithContext(ctx context.Context) *PcloudImagesGe
 // NewPcloudImagesGetallParamsWithHTTPClient creates a new PcloudImagesGetallParams object
 // with the default values initialized, and the ability to set a custom HTTPClient for a request
 func NewPcloudImagesGetallParamsWithHTTPClient(client *http.Client) *PcloudImagesGetallParams {
-
+	var ()
 	return &PcloudImagesGetallParams{
 		HTTPClient: client,
 	}
@@ -60,6 +61,13 @@ func NewPcloudImagesGetallParamsWithHTTPClient(client *http.Client) *PcloudImage
 for the pcloud images getall operation typically these are written to a http.Request
 */
 type PcloudImagesGetallParams struct {
+
+	/*Sap
+	  Include SAP images with get available stock images
+
+	*/
+	Sap *bool
+
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -98,6 +106,17 @@ func (o *PcloudImagesGetallParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithSap adds the sap to the pcloud images getall params
+func (o *PcloudImagesGetallParams) WithSap(sap *bool) *PcloudImagesGetallParams {
+	o.SetSap(sap)
+	return o
+}
+
+// SetSap adds the sap to the pcloud images getall params
+func (o *PcloudImagesGetallParams) SetSap(sap *bool) {
+	o.Sap = sap
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *PcloudImagesGetallParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -105,6 +124,22 @@ func (o *PcloudImagesGetallParams) WriteToRequest(r runtime.ClientRequest, reg s
 		return err
 	}
 	var res []error
+
+	if o.Sap != nil {
+
+		// query param sap
+		var qrSap bool
+		if o.Sap != nil {
+			qrSap = *o.Sap
+		}
+		qSap := swag.FormatBool(qrSap)
+		if qSap != "" {
+			if err := r.SetQueryParam("sap", qSap); err != nil {
+				return err
+			}
+		}
+
+	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)

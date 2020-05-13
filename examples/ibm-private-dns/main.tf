@@ -22,7 +22,7 @@ resource "ibm_resource_instance" "test-pdns-instance" {
   resource_group_id = data.ibm_resource_group.rg.id
   location          = "global"
   service           = "dns-svcs"
-  plan              = "free-plan"
+  plan              = "standard-dns"
 }
 
 resource "ibm_dns_zone" "test-pdns-zone" {
@@ -37,6 +37,18 @@ resource "ibm_dns_permitted_network" "test-pdns-permitted-network-nw" {
   zone_id     = ibm_dns_zone.test-pdns-zone.zone_id
   vpc_crn     = ibm_is_vpc.test_pdns_vpc.crn
 }
+
+
+data "ibm_dns_permitted_networks" "test" {
+  depends_on = [ibm_dns_permitted_network.test-pdns-permitted-network-nw]
+  instance_id = ibm_dns_zone.test-pdns-zone.instance_id
+  zone_id = ibm_dns_zone.test-pdns-zone.zone_id
+}
+
+output "dns_permitted_nw_output" {
+  value = data.ibm_dns_permitted_networks.test.dns_permitted_networks
+}
+
 
 resource "ibm_dns_resource_record" "test-pdns-resource-record-a" {
   instance_id = ibm_resource_instance.test-pdns-instance.guid
@@ -99,4 +111,14 @@ resource "ibm_dns_resource_record" "test-pdns-resource-record-txt" {
   type        = "TXT"
   name        = "testTXT"
   rdata       = "textinformation"
+}
+
+data "ibm_dns_zones" "test" {
+  depends_on = [ibm_dns_zone.test-pdns-zone]
+  instance_id = ibm_resource_instance.test-pdns-instance.guid
+}
+
+data "ibm_dns_resource_records" "test-res-rec" {
+  instance_id = ibm_resource_instance.test-pdns-instance.guid
+  zone_id = ibm_dns_resource_record.test-pdns-resource-record-a.zone_id
 }

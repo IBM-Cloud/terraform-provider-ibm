@@ -1003,8 +1003,8 @@ func classicInstanceGet(d *schema.ResourceData, meta interface{}, id string) err
 	d.Set(isInstanceVolumes, newStringSet(schema.HashString, volumes))
 	if instance.VolumeAttachments != nil {
 		volList := make([]map[string]interface{}, 0)
-		vol := map[string]interface{}{}
 		for _, volume := range instance.VolumeAttachments {
+			vol := map[string]interface{}{}
 			if volume.Volume != nil {
 				vol["id"] = *volume.ID
 				vol["volume_id"] = *volume.Volume.ID
@@ -1182,8 +1182,8 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isInstanceVolumes, newStringSet(schema.HashString, volumes))
 	if instance.VolumeAttachments != nil {
 		volList := make([]map[string]interface{}, 0)
-		vol := map[string]interface{}{}
 		for _, volume := range instance.VolumeAttachments {
+			vol := map[string]interface{}{}
 			if volume.Volume != nil {
 				vol["id"] = *volume.ID
 				vol["volume_id"] = *volume.Volume.ID
@@ -1444,7 +1444,7 @@ func classicInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		instance, response, err := instanceC.GetInstance(getinsOptions)
 		if err != nil {
-			return fmt.Errorf("Error Getting Instance: %s\n%s", err, response)
+			log.Printf("Error Getting Instance: %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isInstanceTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.Crn)
@@ -1749,11 +1749,11 @@ func classicInstanceDelete(d *schema.ResourceData, meta interface{}, id string) 
 		if *vol.Type == "data" {
 			delvolattoptions := &vpcclassicv1.DeleteVolumeAttachmentOptions{
 				InstanceID: &id,
-				ID:         vol.Volume.ID,
+				ID:         vol.ID,
 			}
 			_, err := instanceC.DeleteVolumeAttachment(delvolattoptions)
 			if err != nil {
-				return fmt.Errorf("Error while removing volume %q for instance %s: %q", *vol.ID, d.Id(), err)
+				return fmt.Errorf("Error while removing volume attachment %q for instance %s: %q", *vol.ID, d.Id(), err)
 			}
 			_, err = isWaitForClassicInstanceVolumeDetached(instanceC, d, d.Id(), *vol.ID)
 			if err != nil {
@@ -1776,9 +1776,11 @@ func classicInstanceDelete(d *schema.ResourceData, meta interface{}, id string) 
 	if err != nil {
 		return err
 	}
-	_, err = isWaitForClassicVolumeDeleted(instanceC, bootvolid, d.Timeout(schema.TimeoutDelete))
-	if err != nil {
-		return err
+	if _, ok := d.GetOk(isInstanceBootVolume); ok {
+		_, err = isWaitForClassicVolumeDeleted(instanceC, bootvolid, d.Timeout(schema.TimeoutDelete))
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -1829,11 +1831,11 @@ func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		if *vol.Type == "data" {
 			delvolattoptions := &vpcv1.DeleteVolumeAttachmentOptions{
 				InstanceID: &id,
-				ID:         vol.Volume.ID,
+				ID:         vol.ID,
 			}
 			_, err := instanceC.DeleteVolumeAttachment(delvolattoptions)
 			if err != nil {
-				return fmt.Errorf("Error while removing volume %q for instance %s: %q", *vol.ID, d.Id(), err)
+				return fmt.Errorf("Error while removing volume Attachment %q for instance %s: %q", *vol.ID, d.Id(), err)
 			}
 			_, err = isWaitForInstanceVolumeDetached(instanceC, d, d.Id(), *vol.ID)
 			if err != nil {
@@ -1856,9 +1858,11 @@ func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	if err != nil {
 		return err
 	}
-	_, err = isWaitForVolumeDeleted(instanceC, bootvolid, d.Timeout(schema.TimeoutDelete))
-	if err != nil {
-		return err
+	if _, ok := d.GetOk(isInstanceBootVolume); ok {
+		_, err = isWaitForVolumeDeleted(instanceC, bootvolid, d.Timeout(schema.TimeoutDelete))
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

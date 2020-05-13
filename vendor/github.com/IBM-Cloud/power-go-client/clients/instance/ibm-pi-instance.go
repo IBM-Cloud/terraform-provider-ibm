@@ -1,6 +1,7 @@
 package instance
 
 import (
+	"fmt"
 	"github.com/IBM-Cloud/power-go-client/errors"
 	"github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_p_vm_instances"
@@ -36,27 +37,38 @@ func (f *IBMPIInstanceClient) Get(id, powerinstanceid string) (*models.PVMInstan
 
 //Create
 
-func (f *IBMPIInstanceClient) Create(powerdef *p_cloud_p_vm_instances.PcloudPvminstancesPostParams, powerinstanceid string) (*models.PVMInstanceList, *models.PVMInstanceList, *models.PVMInstanceList, error) {
+func (f *IBMPIInstanceClient) Create(powerdef *p_cloud_p_vm_instances.PcloudPvminstancesPostParams, powerinstanceid string) (*models.PVMInstanceList, error) {
 
 	log.Printf("Calling the Power PVM Create Method")
 	params := p_cloud_p_vm_instances.NewPcloudPvminstancesPostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithBody(powerdef.Body)
 
 	log.Printf("Printing the params to be passed %+v", params)
 
-	postok, _, _, err := f.session.Power.PCloudPVMInstances.PcloudPvminstancesPost(params, ibmpisession.NewAuth(f.session, powerinstanceid))
+	postok, postcreated, postAccepted, err := f.session.Power.PCloudPVMInstances.PcloudPvminstancesPost(params, ibmpisession.NewAuth(f.session, powerinstanceid))
 
 	if err != nil {
 		log.Printf("failed to process the request..")
-		return nil, nil, nil, errors.ToError(err)
+		return nil, errors.ToError(err)
 	}
 
-	if len(postok.Payload) > 0 {
+	if postok != nil && len(postok.Payload) > 0 {
 		log.Printf("Looks like we have an instance created....")
 		log.Printf("Checking if the instance name is right ")
 		log.Printf("Printing the instanceid %s", *postok.Payload[0].PvmInstanceID)
+		return &postok.Payload, nil
+	}
+	if postcreated != nil && len(postcreated.Payload) > 0 {
+		log.Printf("Printing the instanceid %s", *postcreated.Payload[0].PvmInstanceID)
+		return &postcreated.Payload, nil
+	}
+	if postAccepted != nil && len(postAccepted.Payload) > 0 {
+
+		log.Printf("Printing the instanceid %s", *postAccepted.Payload[0].PvmInstanceID)
+		return &postAccepted.Payload, nil
 	}
 
-	return &postok.Payload, nil, nil, nil
+	//return &postok.Payload, nil
+	return nil, fmt.Errorf("No response Returned ")
 }
 
 // PVM Instances Delete
@@ -127,5 +139,31 @@ func (f *IBMPIInstanceClient) CaptureInstanceToImageCatalog(id, powerinstanceid 
 		return nil, errors.ToError(err)
 	}
 	return postok.Payload, nil
+
+}
+
+// Create a snapshot of the instance
+
+func (f *IBMPIInstanceClient) CreatePvmSnapShot(id, powerinstanceid string) (*models.SnapshotCreateResponse, error) {
+	log.Printf("Calling the Power PVM Snaphshot Method")
+	params := p_cloud_p_vm_instances.NewPcloudPvminstancesSnapshotsPostParamsWithTimeout(f.session.Timeout).WithPvmInstanceID(id).WithCloudInstanceID(powerinstanceid)
+	snapshotpostok, err := f.session.Power.PCloudPVMInstances.PcloudPvminstancesSnapshotsPost(params, ibmpisession.NewAuth(f.session, powerinstanceid))
+	if err != nil {
+		return nil, errors.ToError(err)
+	}
+	return snapshotpostok.Payload, nil
+}
+
+// Create a clone
+
+func (f *IBMPIInstanceClient) CreateClone(id, powerinstanceid string, clonebody p_cloud_p_vm_instances.PcloudPvminstancesClonePostParams) (*models.PVMInstance, error) {
+	log.Printf("Calling the Power PVM Clone Method")
+	params := p_cloud_p_vm_instances.NewPcloudPvminstancesClonePostParamsWithTimeout(f.session.Timeout).WithPvmInstanceID(id).WithCloudInstanceID(powerinstanceid).WithBody(clonebody.Body)
+	clonePost, err := f.session.Power.PCloudPVMInstances.PcloudPvminstancesClonePost(params, ibmpisession.NewAuth(f.session, powerinstanceid))
+	if err != nil {
+
+		return nil, errors.ToError(err)
+	}
+	return clonePost.Payload, nil
 
 }

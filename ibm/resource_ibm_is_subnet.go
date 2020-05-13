@@ -299,6 +299,13 @@ func subnetCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone, ipv
 			ID: &acl,
 		}
 	}
+	rg := ""
+	if grp, ok := d.GetOk(isSubnetResourceGroup); ok {
+		rg = grp.(string)
+		subnetTemplate.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+			ID: &rg,
+		}
+	}
 	//create a subnet
 	createSubnetOptions := &vpcv1.CreateSubnetOptions{
 		SubnetPrototype: subnetTemplate,
@@ -506,25 +513,13 @@ func resourceIBMISSubnetUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 	id := d.Id()
 
-	hasChanged := false
-	name := ""
-	acl := ""
-	if d.HasChange(isSubnetName) {
-		name = d.Get(isSubnetName).(string)
-		hasChanged = true
-	}
-	if d.HasChange(isSubnetNetworkACL) {
-		acl = d.Get(isSubnetNetworkACL).(string)
-		hasChanged = true
-	}
-
 	if userDetails.generation == 1 {
-		err := classicSubnetUpdate(d, meta, id, name, acl, hasChanged)
+		err := classicSubnetUpdate(d, meta, id)
 		if err != nil {
 			return err
 		}
 	} else {
-		err := subnetUpdate(d, meta, id, name, acl, hasChanged)
+		err := subnetUpdate(d, meta, id)
 		if err != nil {
 			return err
 		}
@@ -532,12 +527,27 @@ func resourceIBMISSubnetUpdate(d *schema.ResourceData, meta interface{}) error {
 	return resourceIBMISSubnetRead(d, meta)
 }
 
-func classicSubnetUpdate(d *schema.ResourceData, meta interface{}, id, name, acl string, hasChange bool) error {
+func classicSubnetUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
-	var gw string
+	hasChanged := false
+	name := ""
+	acl := ""
+	updateSubnetOptions := &vpcclassicv1.UpdateSubnetOptions{}
+	if d.HasChange(isSubnetName) {
+		name = d.Get(isSubnetName).(string)
+		updateSubnetOptions.Name = &name
+		hasChanged = true
+	}
+	if d.HasChange(isSubnetNetworkACL) {
+		acl = d.Get(isSubnetNetworkACL).(string)
+		updateSubnetOptions.NetworkAcl = &vpcclassicv1.NetworkACLIdentity{
+			ID: &acl,
+		}
+		hasChanged = true
+	}
 	if d.HasChange(isSubnetPublicGateway) {
 		gw := d.Get(isSubnetPublicGateway).(string)
 		if gw == "" {
@@ -552,32 +562,43 @@ func classicSubnetUpdate(d *schema.ResourceData, meta interface{}, id, name, acl
 			if err != nil {
 				return err
 			}
-
+			updateSubnetOptions.PublicGateway = &vpcclassicv1.PublicGatewayIdentity{
+				ID: &gw,
+			}
+			hasChanged = true
 		}
 	}
-	updateSubnetOptions := &vpcclassicv1.UpdateSubnetOptions{
-		ID:   &id,
-		Name: &name,
-		NetworkAcl: &vpcclassicv1.NetworkACLIdentity{
-			ID: &acl,
-		},
-		PublicGateway: &vpcclassicv1.PublicGatewayIdentity{
-			ID: &gw,
-		},
-	}
-	_, response, err := sess.UpdateSubnet(updateSubnetOptions)
-	if err != nil {
-		return fmt.Errorf("Error Updating Subnet : %s\n%s", err, response)
+	if hasChanged {
+		updateSubnetOptions.ID = &id
+		_, response, err := sess.UpdateSubnet(updateSubnetOptions)
+		if err != nil {
+			return fmt.Errorf("Error Updating Subnet : %s\n%s", err, response)
+		}
 	}
 	return nil
 }
 
-func subnetUpdate(d *schema.ResourceData, meta interface{}, id, name, acl string, hasChange bool) error {
+func subnetUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
 	}
-	var gw string
+	hasChanged := false
+	name := ""
+	acl := ""
+	updateSubnetOptions := &vpcv1.UpdateSubnetOptions{}
+	if d.HasChange(isSubnetName) {
+		name = d.Get(isSubnetName).(string)
+		updateSubnetOptions.Name = &name
+		hasChanged = true
+	}
+	if d.HasChange(isSubnetNetworkACL) {
+		acl = d.Get(isSubnetNetworkACL).(string)
+		updateSubnetOptions.NetworkAcl = &vpcv1.NetworkACLIdentity{
+			ID: &acl,
+		}
+		hasChanged = true
+	}
 	if d.HasChange(isSubnetPublicGateway) {
 		gw := d.Get(isSubnetPublicGateway).(string)
 		if gw == "" {
@@ -592,22 +613,18 @@ func subnetUpdate(d *schema.ResourceData, meta interface{}, id, name, acl string
 			if err != nil {
 				return err
 			}
-
+			updateSubnetOptions.PublicGateway = &vpcv1.PublicGatewayIdentity{
+				ID: &gw,
+			}
+			hasChanged = true
 		}
 	}
-	updateSubnetOptions := &vpcv1.UpdateSubnetOptions{
-		ID:   &id,
-		Name: &name,
-		NetworkAcl: &vpcv1.NetworkACLIdentity{
-			ID: &acl,
-		},
-		PublicGateway: &vpcv1.PublicGatewayIdentity{
-			ID: &gw,
-		},
-	}
-	_, response, err := sess.UpdateSubnet(updateSubnetOptions)
-	if err != nil {
-		return fmt.Errorf("Error Updating Subnet : %s\n%s", err, response)
+	if hasChanged {
+		updateSubnetOptions.ID = &id
+		_, response, err := sess.UpdateSubnet(updateSubnetOptions)
+		if err != nil {
+			return fmt.Errorf("Error Updating Subnet : %s\n%s", err, response)
+		}
 	}
 	return nil
 }

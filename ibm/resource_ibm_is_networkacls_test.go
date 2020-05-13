@@ -7,12 +7,12 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestNetworkACL(t *testing.T) {
-	var nwACL *models.NetworkACL
+	var nwACL string
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -21,7 +21,7 @@ func TestNetworkACL(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMISNetworkACLConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.isExampleACL", &nwACL),
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.isExampleACL", nwACL),
 					resource.TestCheckResourceAttr(
 						"ibm_is_network_acl.isExampleACL", "name", "is-example-acl"),
 					resource.TestCheckResourceAttr(
@@ -33,7 +33,7 @@ func TestNetworkACL(t *testing.T) {
 }
 
 func TestNetworkACLGen2(t *testing.T) {
-	var nwACL *models.NetworkACL
+	var nwACL string
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -42,7 +42,7 @@ func TestNetworkACLGen2(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMISNetworkACLConfig1(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.isExampleACL", &nwACL),
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.isExampleACL", nwACL),
 					resource.TestCheckResourceAttr(
 						"ibm_is_network_acl.isExampleACL", "name", "is-example-acl"),
 					resource.TestCheckResourceAttr(
@@ -54,26 +54,42 @@ func TestNetworkACLGen2(t *testing.T) {
 }
 
 func checkNetworkACLDestroy(s *terraform.State) error {
-	sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
+	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
+	if userDetails.generation == 1 {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_network_acl" {
+				continue
+			}
 
-	nwaclC := network.NewNetworkAclClient(sess)
-
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_is_network_acl" {
-			continue
+			getnwacloptions := &vpcclassicv1.GetNetworkAclOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetNetworkAcl(getnwacloptions)
+			if err == nil {
+				return fmt.Errorf("network acl still exists: %s", rs.Primary.ID)
+			}
 		}
+	} else {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_network_acl" {
+				continue
+			}
 
-		_, err := nwaclC.Get(rs.Primary.ID)
-
-		if err == nil {
-			return fmt.Errorf("network acl still exists: %s", rs.Primary.ID)
+			getnwacloptions := &vpcv1.GetNetworkAclOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetNetworkAcl(getnwacloptions)
+			if err == nil {
+				return fmt.Errorf("network acl still exists: %s", rs.Primary.ID)
+			}
 		}
 	}
-
 	return nil
 }
 
-func testAccCheckIBMISNetworkACLExists(n string, nwACL **models.NetworkACL) resource.TestCheckFunc {
+func testAccCheckIBMISNetworkACLExists(n, nwACL string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		fmt.Println("siv ", s.RootModule().Resources)
 		rs, ok := s.RootModule().Resources[n]
@@ -85,16 +101,29 @@ func testAccCheckIBMISNetworkACLExists(n string, nwACL **models.NetworkACL) reso
 		if rs.Primary.ID == "" {
 			return errors.New("No Record ID is set")
 		}
+		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-		sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
-		nwaclC := network.NewNetworkAclClient(sess)
-		foundNwACL, err := nwaclC.Get(rs.Primary.ID)
-
-		if err != nil {
-			return err
+		if userDetails.generation == 1 {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+			getnwacloptions := &vpcclassicv1.GetNetworkAclOptions{
+				ID: &rs.Primary.ID,
+			}
+			foundNwACL, _, err := sess.GetNetworkAcl(getnwacloptions)
+			if err != nil {
+				return err
+			}
+			nwACL = *foundNwACL.ID
+		} else {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+			getnwacloptions := &vpcv1.GetNetworkAclOptions{
+				ID: &rs.Primary.ID,
+			}
+			foundNwACL, _, err := sess.GetNetworkAcl(getnwacloptions)
+			if err != nil {
+				return err
+			}
+			nwACL = *foundNwACL.ID
 		}
-
-		*nwACL = foundNwACL
 		return nil
 	}
 }

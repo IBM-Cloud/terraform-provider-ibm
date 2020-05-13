@@ -11,6 +11,13 @@ resource "ibm_is_vpc_route" "route1" {
   depends_on  = ["ibm_is_subnet.subnet1"]
 }
 
+resource "ibm_is_vpc_address_prefix" "addprefix1" {
+  name = "addprefix1"
+  zone = var.zone1
+  vpc  = ibm_is_vpc.vpc1.id
+  cidr = "10.120.0.0/24"
+}
+
 resource "ibm_is_subnet" "subnet1" {
   name            = "subnet1"
   vpc             = ibm_is_vpc.vpc1.id
@@ -18,19 +25,38 @@ resource "ibm_is_subnet" "subnet1" {
   ipv4_cidr_block = "10.240.0.0/28"
 }
 
-resource "ibm_is_lb" "lb2" {
-  name    = "mylb"
-  subnets = ibm_is_subnet.subnet1.id
+resource "ibm_is_lb" "lb1" {
+  name    = "lb1"
+  subnets = [ibm_is_subnet.subnet1.id]
 }
 
-resource "ibm_is_lb_listener" "lb_listener2" {
-  lb       = ibm_is_lb.lb2.id
+resource "ibm_is_lb_pool" "lbpool1" {
+  name           = "lbpool1"
+  lb             = ibm_is_lb.lb1.id
+  algorithm      = "round_robin"
+  protocol       = "http"
+  health_delay   = 60
+  health_retries = 5
+  health_timeout = 30
+  health_type    = "http"
+}
+
+resource "ibm_is_lb_pool_member" "lbpoolmem1" {
+  lb             = ibm_is_lb.lb1.id
+  pool           = ibm_is_lb_pool.lbpool1.id
+  port           = 8080
+  target_address = "127.0.0.1"
+  weight         = 60
+}
+
+resource "ibm_is_lb_listener" "lblistener1" {
+  lb       = ibm_is_lb.lb1.id
   port     = "9086"
   protocol = "http"
 }
 resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
-  lb                      = ibm_is_lb.lb2.id
-  listener                = ibm_is_lb_listener.lb_listener2.listener_id
+  lb                      = ibm_is_lb.lb1.id
+  listener                = ibm_is_lb_listener.lblistener1.listener_id
   action                  = "redirect"
   priority                = 2
   name                    = "mylistenerpolicy"
@@ -46,7 +72,7 @@ resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
 
 resource "ibm_is_lb_listener_policy_rule" "lb_listener_policy_rule" {
   lb        = ibm_is_lb.lb2.id
-  listener  = ibm_is_lb_listener.lb_listener2.listener_id
+  listener  = ibm_is_lb_listener.lblistener1.listener_id
   policy    = ibm_is_lb_listener_policy.lb_listener_policy.policy_id
   condition = "equals"
   type      = "header"
@@ -92,6 +118,16 @@ resource "ibm_is_instance" "instance1" {
 resource "ibm_is_floating_ip" "floatingip1" {
   name   = "fip1"
   target = ibm_is_instance.instance1.primary_network_interface[0].id
+}
+
+resource "ibm_is_security_group" "sg1" {
+  name = "sg1"
+  vpc  = ibm_is_vpc.vpc1.id
+}
+
+resource "ibm_is_security_group_network_interface_attachment" "sgnic1" {
+  security_group    = ibm_is_security_group.sg1.id
+  network_interface = ibm_is_instance.instance1.primary_network_interface[0].id
 }
 
 resource "ibm_is_security_group_rule" "sg1_tcp_rule" {
@@ -144,14 +180,14 @@ resource "ibm_is_subnet" "subnet2" {
 resource "ibm_is_ipsec_policy" "example" {
   name                     = "test-ipsec"
   authentication_algorithm = "md5"
-  encryption_algorithm     = "3des"
+  encryption_algorithm     = "triple_des"
   pfs                      = "disabled"
 }
 
 resource "ibm_is_ike_policy" "example" {
   name                     = "test-ike"
   authentication_algorithm = "md5"
-  encryption_algorithm     = "3des"
+  encryption_algorithm     = "triple_des"
   dh_group                 = 2
   ike_version              = 1
 }
