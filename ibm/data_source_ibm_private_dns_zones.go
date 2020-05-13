@@ -89,8 +89,8 @@ func dataSourceIBMPrivateDNSZonesRead(d *schema.ResourceData, meta interface{}) 
 	dnsZones := make([]map[string]interface{}, 0)
 	for _, instance := range availableDNSZones.Dnszones {
 		dnsZone := map[string]interface{}{}
-		dnsZone[pdnsInstanceID] = instance.ID
-		dnsZone[pdnsZoneID] = instance.InstanceID
+		dnsZone[pdnsInstanceID] = instance.InstanceID
+		dnsZone[pdnsZoneID] = instance.ID
 		dnsZone[pdnsZoneName] = instance.Name
 		dnsZone[pdnsZoneDescription] = instance.Description
 		dnsZone[pdnsZoneLabel] = instance.Label
