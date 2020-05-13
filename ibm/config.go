@@ -475,6 +475,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.vpcErr = errEmptyBluemixCredentials
 		session.apigatewayErr = errEmptyBluemixCredentials
 		session.pDnsErr = errEmptyBluemixCredentials
+		session.bmxUserFetchErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -834,7 +835,6 @@ func authenticateCF(sess *bxsession.Session) error {
 func fetchUserDetails(sess *bxsession.Session, generation int) (*UserConfig, error) {
 	config := sess.Config
 	user := UserConfig{}
-
 	var bluemixToken string
 
 	if strings.HasPrefix(config.IAMAccessToken, "Bearer") {

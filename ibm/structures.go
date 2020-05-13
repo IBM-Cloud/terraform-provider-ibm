@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/sl"
-	vpc "github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
 
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
 	"github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
@@ -1524,22 +1524,6 @@ func UpdateTags(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func flattenISLBIPs(ips []*vpc.LoadBalancerIP) interface{} {
-	out := make([]interface{}, len(ips))
-	for i, ip := range ips {
-		out[i] = ip.Address
-	}
-	return out
-}
-
-func flattenISLBSubnets(subnets []*vpc.LoadBalancerSubnetsItems0) interface{} {
-	out := make([]interface{}, len(subnets))
-	for s, subnet := range subnets {
-		out[s] = subnet.ID
-	}
-	return out
-}
-
 func GetTagsUsingCRN(meta interface{}, resourceCRN string) (*schema.Set, error) {
 
 	gtClient, err := meta.(ClientSession).GlobalTaggingAPI()
@@ -1670,4 +1654,21 @@ func flattenCatalogRef(object schematics.CatalogInfo) map[string]interface{} {
 		"offering_version": object.OfferingVersion,
 	}
 	return catalogRef
+}
+
+func isErrorToString(err error) string {
+	iserror, ok := err.(iserrors.RiaasError)
+	if ok {
+		log.Printf("[DEBUG] Hit Riaas Error")
+		retmsg := ""
+
+		for _, e := range iserror.Payload.Errors {
+			retmsg = retmsg + "\n" + e.Message + "\n" + e.Code + "\n" + e.MoreInfo + "\n"
+			if e.Target != nil {
+				retmsg = retmsg + e.Target.Name + "\n" + e.Target.Type
+			}
+		}
+		return retmsg
+	}
+	return err.Error()
 }

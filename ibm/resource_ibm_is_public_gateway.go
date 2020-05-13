@@ -1,6 +1,7 @@
 package ibm
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -8,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
-	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -151,7 +152,8 @@ func resourceIBMISPublicGateway() *schema.Resource {
 }
 
 func resourceIBMISPublicGatewayCreate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
@@ -159,35 +161,66 @@ func resourceIBMISPublicGatewayCreate(d *schema.ResourceData, meta interface{}) 
 	name := d.Get(isPublicGatewayName).(string)
 	vpc := d.Get(isPublicGatewayVPC).(string)
 	zone := d.Get(isPublicGatewayZone).(string)
-	floatingipID := ""
-	floatingipadd := ""
-	if floatingipdataIntf, ok := d.GetOk(isPublicGatewayFloatingIP); ok {
-		floatingipdata := floatingipdataIntf.(map[string]interface{})
-		floatingipidintf, ispresent := floatingipdata["id"]
-		if ispresent {
-			floatingipID = floatingipidintf.(string)
+
+	if userDetails.generation == 1 {
+		err := classicPgwCreate(d, meta, name, vpc, zone)
+		if err != nil {
+			return err
 		}
-		floatingipaddintf, ispresentadd := floatingipdata[isPublicGatewayFloatingIPAddress]
-		if ispresentadd {
-			floatingipadd = floatingipaddintf.(string)
+	} else {
+		err := pgwCreate(d, meta, name, vpc, zone)
+		if err != nil {
+			return err
 		}
 	}
+	return resourceIBMISPublicGatewayRead(d, meta)
+}
 
-	var rg string
-	if grp, ok := d.GetOk(isPublicGatewayResourceGroup); ok {
-		rg = grp.(string)
-	}
-
-	publicgwC := network.NewPublicGatewayClient(sess)
-	publicgw, err := publicgwC.Create(name, zone, vpc, floatingipID, floatingipadd, rg)
+func classicPgwCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone string) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
 
-	d.SetId(publicgw.ID.String())
-	log.Printf("[INFO] PublicGateway : %s", publicgw.ID.String())
+	options := &vpcclassicv1.CreatePublicGatewayOptions{
+		Name: &name,
+		Vpc: &vpcclassicv1.VPCIdentity{
+			ID: &vpc,
+		},
+		Zone: &vpcclassicv1.ZoneIdentity{
+			Name: &zone,
+		},
+	}
+	floatingipID := ""
+	floatingipadd := ""
+	if floatingipdataIntf, ok := d.GetOk(isPublicGatewayFloatingIP); ok {
+		fip := &vpcclassicv1.PublicGatewayPrototypeFloatingIp{}
+		floatingipdata := floatingipdataIntf.(map[string]interface{})
+		floatingipidintf, ispresent := floatingipdata["id"]
+		if ispresent {
+			floatingipID = floatingipidintf.(string)
+			fip.ID = &floatingipID
+		}
+		floatingipaddintf, ispresentadd := floatingipdata[isPublicGatewayFloatingIPAddress]
+		if ispresentadd {
+			floatingipadd = floatingipaddintf.(string)
+			fip.Address = &floatingipadd
+		}
+		options.FloatingIp = fip
+	}
+	// if grp, ok := d.GetOk(isVPCResourceGroup); ok {
+	// 	rg := grp.(string)
+	// 	options.ResourceGroup = &rg
+	// }
 
-	_, err = isWaitForPublicGatewayAvailable(publicgwC, d.Id(), d)
+	publicgw, response, err := sess.CreatePublicGateway(options)
+	if err != nil {
+		return fmt.Errorf("Error while creating Public Gateway %s\n%s", err, response)
+	}
+	d.SetId(*publicgw.ID)
+	log.Printf("[INFO] PublicGateway : %s", *publicgw.ID)
+
+	_, err = isWaitForClassicPublicGatewayAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
 	}
@@ -195,24 +228,86 @@ func resourceIBMISPublicGatewayCreate(d *schema.ResourceData, meta interface{}) 
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isPublicGatewayTags); ok || v != "" {
 		oldList, newList := d.GetChange(isPublicGatewayTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, publicgw.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *publicgw.Crn)
 		if err != nil {
 			log.Printf(
 				"Error on create of vpc public gateway (%s) tags: %s", d.Id(), err)
 		}
 	}
-
-	return resourceIBMISPublicGatewayRead(d, meta)
+	return nil
 }
 
-func isWaitForPublicGatewayAvailable(publicgwC *network.PublicGatewayClient, id string, d *schema.ResourceData) (interface{}, error) {
+func pgwCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+
+	options := &vpcv1.CreatePublicGatewayOptions{
+		Name: &name,
+		Vpc: &vpcv1.VPCIdentity{
+			ID: &vpc,
+		},
+		Zone: &vpcv1.ZoneIdentity{
+			Name: &zone,
+		},
+	}
+	floatingipID := ""
+	floatingipadd := ""
+	if floatingipdataIntf, ok := d.GetOk(isPublicGatewayFloatingIP); ok {
+		fip := &vpcv1.PublicGatewayPrototypeFloatingIp{}
+		floatingipdata := floatingipdataIntf.(map[string]interface{})
+		floatingipidintf, ispresent := floatingipdata["id"]
+		if ispresent {
+			floatingipID = floatingipidintf.(string)
+			fip.ID = &floatingipID
+		}
+		floatingipaddintf, ispresentadd := floatingipdata[isPublicGatewayFloatingIPAddress]
+		if ispresentadd {
+			floatingipadd = floatingipaddintf.(string)
+			fip.Address = &floatingipadd
+		}
+		options.FloatingIp = fip
+	}
+	if grp, ok := d.GetOk(isVPCResourceGroup); ok {
+		rg := grp.(string)
+		options.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+			ID: &rg,
+		}
+	}
+
+	publicgw, response, err := sess.CreatePublicGateway(options)
+	if err != nil {
+		return fmt.Errorf("Error while creating Public Gateway %s\n%s", err, response)
+	}
+	d.SetId(*publicgw.ID)
+	log.Printf("[INFO] PublicGateway : %s", *publicgw.ID)
+
+	_, err = isWaitForPublicGatewayAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return err
+	}
+
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isPublicGatewayTags); ok || v != "" {
+		oldList, newList := d.GetChange(isPublicGatewayTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *publicgw.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on create of vpc public gateway (%s) tags: %s", d.Id(), err)
+		}
+	}
+	return nil
+}
+
+func isWaitForClassicPublicGatewayAvailable(publicgwC *vpcclassicv1.VpcClassicV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for public gateway (%s) to be available.", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", isPublicGatewayProvisioning},
-		Target:     []string{isPublicGatewayProvisioningDone},
-		Refresh:    isPublicGatewayRefreshFunc(publicgwC, id),
-		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Target:     []string{isPublicGatewayProvisioningDone, ""},
+		Refresh:    isClassicPublicGatewayRefreshFunc(publicgwC, id),
+		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
@@ -220,140 +315,393 @@ func isWaitForPublicGatewayAvailable(publicgwC *network.PublicGatewayClient, id 
 	return stateConf.WaitForState()
 }
 
-func isPublicGatewayRefreshFunc(publicgwC *network.PublicGatewayClient, id string) resource.StateRefreshFunc {
+func isClassicPublicGatewayRefreshFunc(publicgwC *vpcclassicv1.VpcClassicV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-
-		publicgw, err := publicgwC.Get(id)
+		getPublicGatewayOptions := &vpcclassicv1.GetPublicGatewayOptions{
+			ID: &id,
+		}
+		publicgw, response, err := publicgwC.GetPublicGateway(getPublicGatewayOptions)
 		if err != nil {
-			return nil, "", err
+			return nil, "", fmt.Errorf("Error getting Public Gateway : %s\n%s", err, response)
 		}
 
-		// if its still pending, returning provisioning
-		if publicgw.Status == "pending" {
-			return publicgw, isPublicGatewayProvisioning, nil
+		if *publicgw.Status == isPublicGatewayProvisioningDone {
+			return publicgw, isPublicGatewayProvisioningDone, nil
 		}
 
-		log.Printf("[Debug] state = %s", publicgw.Status)
-		log.Printf("[Debug] gw = %s", publicgw.FloatingIP)
-		return publicgw, isPublicGatewayProvisioningDone, nil
+		return publicgw, isPublicGatewayProvisioning, nil
+	}
+}
+
+func isWaitForPublicGatewayAvailable(publicgwC *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for public gateway (%s) to be available.", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", isPublicGatewayProvisioning},
+		Target:     []string{isPublicGatewayProvisioningDone, ""},
+		Refresh:    isPublicGatewayRefreshFunc(publicgwC, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isPublicGatewayRefreshFunc(publicgwC *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		getPublicGatewayOptions := &vpcv1.GetPublicGatewayOptions{
+			ID: &id,
+		}
+		publicgw, response, err := publicgwC.GetPublicGateway(getPublicGatewayOptions)
+		if err != nil {
+			return nil, "", fmt.Errorf("Error getting Public Gateway : %s\n%s", err, response)
+		}
+
+		if *publicgw.Status == isPublicGatewayProvisioningDone {
+			return publicgw, isPublicGatewayProvisioningDone, nil
+		}
+
+		return publicgw, isPublicGatewayProvisioning, nil
 	}
 }
 
 func resourceIBMISPublicGatewayRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	publicgwC := network.NewPublicGatewayClient(sess)
+	id := d.Id()
+	if userDetails.generation == 1 {
+		err := classicPgwGet(d, meta, id)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := pgwGet(d, meta, id)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
-	publicgw, err := publicgwC.Get(d.Id())
+func classicPgwGet(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
-
-	d.Set("id", publicgw.ID.String())
-	d.Set(isPublicGatewayName, publicgw.Name)
-	if publicgw.FloatingIP != nil {
-
+	getPublicGatewayOptions := &vpcclassicv1.GetPublicGatewayOptions{
+		ID: &id,
+	}
+	publicgw, response, err := sess.GetPublicGateway(getPublicGatewayOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting Public Gateway : %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	d.Set("id", *publicgw.ID)
+	d.Set(isPublicGatewayName, *publicgw.Name)
+	if publicgw.FloatingIp != nil {
 		floatIP := map[string]interface{}{
-			"id":                             publicgw.FloatingIP.ID.String(),
-			isPublicGatewayFloatingIPAddress: publicgw.FloatingIP.Address,
+			"id":                             *publicgw.FloatingIp.ID,
+			isPublicGatewayFloatingIPAddress: *publicgw.FloatingIp.Address,
 		}
 		d.Set(isPublicGatewayFloatingIP, floatIP)
 
 	}
-
-	d.Set(isPublicGatewayStatus, publicgw.Status)
-	d.Set(isPublicGatewayZone, publicgw.Zone.Name)
-	d.Set(isPublicGatewayVPC, publicgw.Vpc.ID.String())
-	if publicgw.ResourceGroup != nil {
-		d.Set(isPublicGatewayResourceGroup, publicgw.ResourceGroup.ID)
-	}
-	tags, err := GetTagsUsingCRN(meta, publicgw.Crn)
+	d.Set(isPublicGatewayStatus, *publicgw.Status)
+	d.Set(isPublicGatewayZone, *publicgw.Zone.Name)
+	d.Set(isPublicGatewayVPC, *publicgw.Vpc.ID)
+	tags, err := GetTagsUsingCRN(meta, *publicgw.Crn)
 	if err != nil {
 		log.Printf(
-			"Error on get of vpc public gateway (%s) tags: %s", d.Id(), err)
+			"Error on get of vpc public gateway (%s) tags: %s", id, err)
 	}
 	d.Set(isPublicGatewayTags, tags)
-
 	controller, err := getBaseController(meta)
 	if err != nil {
 		return err
 	}
-	if sess.Generation == 1 {
-		d.Set(ResourceControllerURL, controller+"/vpc/network/publicGateways")
-	} else {
-		d.Set(ResourceControllerURL, controller+"/vpc-ext/network/publicGateways")
+	d.Set(ResourceControllerURL, controller+"/vpc/network/publicGateways")
+	d.Set(ResourceName, *publicgw.Name)
+	d.Set(ResourceCRN, *publicgw.Crn)
+	d.Set(ResourceStatus, *publicgw.Status)
+	return nil
+}
+
+func pgwGet(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
 	}
-	d.Set(ResourceName, publicgw.Name)
-	d.Set(ResourceCRN, publicgw.Crn)
-	d.Set(ResourceStatus, publicgw.Status)
+	getPublicGatewayOptions := &vpcv1.GetPublicGatewayOptions{
+		ID: &id,
+	}
+	publicgw, response, err := sess.GetPublicGateway(getPublicGatewayOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting Public Gateway : %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	d.Set("id", *publicgw.ID)
+	d.Set(isPublicGatewayName, *publicgw.Name)
+	if publicgw.FloatingIp != nil {
+		floatIP := map[string]interface{}{
+			"id":                             *publicgw.FloatingIp.ID,
+			isPublicGatewayFloatingIPAddress: *publicgw.FloatingIp.Address,
+		}
+		d.Set(isPublicGatewayFloatingIP, floatIP)
+
+	}
+	d.Set(isPublicGatewayStatus, *publicgw.Status)
+	d.Set(isPublicGatewayZone, *publicgw.Zone.Name)
+	d.Set(isPublicGatewayVPC, *publicgw.Vpc.ID)
+	tags, err := GetTagsUsingCRN(meta, *publicgw.Crn)
+	if err != nil {
+		log.Printf(
+			"Error on get of vpc public gateway (%s) tags: %s", id, err)
+	}
+	d.Set(isPublicGatewayTags, tags)
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return err
+	}
+	d.Set(ResourceControllerURL, controller+"/vpc-ext/network/publicGateways")
+	d.Set(ResourceName, *publicgw.Name)
+	d.Set(ResourceCRN, *publicgw.Crn)
+	d.Set(ResourceStatus, *publicgw.Status)
 	if publicgw.ResourceGroup != nil {
-		d.Set(ResourceGroupName, publicgw.ResourceGroup.Name)
+		d.Set(isPublicGatewayResourceGroup, *publicgw.ResourceGroup.ID)
+		d.Set(ResourceGroupName, *publicgw.ResourceGroup.Name)
 	}
 	return nil
 }
 
 func resourceIBMISPublicGatewayUpdate(d *schema.ResourceData, meta interface{}) error {
-
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	publicgwC := network.NewPublicGatewayClient(sess)
+	id := d.Id()
 
 	name := ""
+	hasChanged := false
+
 	if d.HasChange(isPublicGatewayName) {
 		name = d.Get(isPublicGatewayName).(string)
+		hasChanged = true
 	}
-
-	if d.HasChange(isPublicGatewayTags) {
-		pg, err := publicgwC.Get(d.Id())
+	if userDetails.generation == 1 {
+		err := classicPgwUpdate(d, meta, id, name, hasChanged)
 		if err != nil {
 			return err
 		}
-		oldList, newList := d.GetChange(isPublicGatewayTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, pg.Crn)
+	} else {
+		err := pgwUpdate(d, meta, id, name, hasChanged)
 		if err != nil {
-			log.Printf(
-				"Error on update of vpc public gateway (%s) tags: %s", d.Id(), err)
+			return err
 		}
 	}
-	_, err = publicgwC.Update(d.Id(), name)
-	if err != nil {
-		return err
-	}
-
 	return resourceIBMISPublicGatewayRead(d, meta)
 }
 
+func classicPgwUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	if d.HasChange(isPublicGatewayTags) {
+		getPublicGatewayOptions := &vpcclassicv1.GetPublicGatewayOptions{
+			ID: &id,
+		}
+		publicgw, response, err := sess.GetPublicGateway(getPublicGatewayOptions)
+		if err != nil {
+			return fmt.Errorf("Error getting Public Gateway : %s\n%s", err, response)
+		}
+		oldList, newList := d.GetChange(isPublicGatewayTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *publicgw.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource Public Gateway (%s) tags: %s", id, err)
+		}
+	}
+	if hasChanged {
+		updatePublicGatewayOptions := &vpcclassicv1.UpdatePublicGatewayOptions{
+			ID:   &id,
+			Name: &name,
+		}
+		_, response, err := sess.UpdatePublicGateway(updatePublicGatewayOptions)
+		if err != nil {
+			return fmt.Errorf("Error Updating Public Gateway  : %s\n%s", err, response)
+		}
+	}
+	return nil
+}
+
+func pgwUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	if d.HasChange(isPublicGatewayTags) {
+		getPublicGatewayOptions := &vpcv1.GetPublicGatewayOptions{
+			ID: &id,
+		}
+		publicgw, response, err := sess.GetPublicGateway(getPublicGatewayOptions)
+		if err != nil {
+			return fmt.Errorf("Error getting Public Gateway : %s\n%s", err, response)
+		}
+		oldList, newList := d.GetChange(isPublicGatewayTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *publicgw.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource Public Gateway (%s) tags: %s", id, err)
+		}
+	}
+	if hasChanged {
+		updatePublicGatewayOptions := &vpcv1.UpdatePublicGatewayOptions{
+			ID:   &id,
+			Name: &name,
+		}
+		_, response, err := sess.UpdatePublicGateway(updatePublicGatewayOptions)
+		if err != nil {
+			return fmt.Errorf("Error Updating Public Gateway  : %s\n%s", err, response)
+		}
+	}
+	return nil
+}
+
 func resourceIBMISPublicGatewayDelete(d *schema.ResourceData, meta interface{}) error {
-
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	publicgwC := network.NewPublicGatewayClient(sess)
-	err = publicgwC.Delete(d.Id())
+	id := d.Id()
+	if userDetails.generation == 1 {
+		err := classicPgwDelete(d, meta, id)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := pgwDelete(d, meta, id)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func classicPgwDelete(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
 
-	_, err = isWaitForPublicGatewayDeleted(publicgwC, d.Id(), d.Timeout(schema.TimeoutDelete))
+	getPublicGatewayOptions := &vpcclassicv1.GetPublicGatewayOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetPublicGateway(getPublicGatewayOptions)
+
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting Public Gateway (%s): %s\n%s", id, err, response)
+	}
+
+	deletePublicGatewayOptions := &vpcclassicv1.DeletePublicGatewayOptions{
+		ID: &id,
+	}
+	response, err = sess.DeletePublicGateway(deletePublicGatewayOptions)
+	if err != nil {
+		return fmt.Errorf("Error Deleting Public Gateway : %s\n%s", err, response)
+	}
+	_, err = isWaitForClassicPublicGatewayDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return err
 	}
-
 	d.SetId("")
 	return nil
 }
 
-func isWaitForPublicGatewayDeleted(pg *network.PublicGatewayClient, id string, timeout time.Duration) (interface{}, error) {
+func pgwDelete(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+
+	getPublicGatewayOptions := &vpcv1.GetPublicGatewayOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetPublicGateway(getPublicGatewayOptions)
+
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error Getting Public Gateway (%s): %s\n%s", id, err, response)
+	}
+
+	deletePublicGatewayOptions := &vpcv1.DeletePublicGatewayOptions{
+		ID: &id,
+	}
+	response, err = sess.DeletePublicGateway(deletePublicGatewayOptions)
+	if err != nil {
+		return fmt.Errorf("Error Deleting Public Gateway : %s\n%s", err, response)
+	}
+	_, err = isWaitForPublicGatewayDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return err
+	}
+	d.SetId("")
+	return nil
+}
+
+func isWaitForClassicPublicGatewayDeleted(pg *vpcclassicv1.VpcClassicV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for public gateway (%s) to be deleted.", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", isPublicGatewayDeleting},
-		Target:     []string{},
+		Target:     []string{isPublicGatewayDeleted, ""},
+		Refresh:    isClassicPublicGatewayDeleteRefreshFunc(pg, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isClassicPublicGatewayDeleteRefreshFunc(pg *vpcclassicv1.VpcClassicV1, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		log.Printf("[DEBUG] delete function here")
+		getPublicGatewayOptions := &vpcclassicv1.GetPublicGatewayOptions{
+			ID: &id,
+		}
+		pgw, response, err := pg.GetPublicGateway(getPublicGatewayOptions)
+		if err != nil && response != nil && response.StatusCode != 404 {
+			return nil, "", fmt.Errorf("The Public Gateway %s failed to delete: %s\n%s", id, err, response)
+		}
+		if response != nil && response.StatusCode == 404 {
+			return pgw, isPublicGatewayDeleted, nil
+		}
+		return pgw, isPublicGatewayDeleting, nil
+	}
+}
+
+func isWaitForPublicGatewayDeleted(pg *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for public gateway (%s) to be deleted.", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", isPublicGatewayDeleting},
+		Target:     []string{isPublicGatewayDeleted, ""},
 		Refresh:    isPublicGatewayDeleteRefreshFunc(pg, id),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
@@ -363,44 +711,75 @@ func isWaitForPublicGatewayDeleted(pg *network.PublicGatewayClient, id string, t
 	return stateConf.WaitForState()
 }
 
-func isPublicGatewayDeleteRefreshFunc(pg *network.PublicGatewayClient, id string) resource.StateRefreshFunc {
+func isPublicGatewayDeleteRefreshFunc(pg *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		publicGateway, err := pg.Get(id)
-		if err == nil {
-			return publicGateway, isPublicGatewayDeleting, nil
+		log.Printf("[DEBUG] delete function here")
+		getPublicGatewayOptions := &vpcv1.GetPublicGatewayOptions{
+			ID: &id,
 		}
-
-		iserror, ok := err.(iserrors.RiaasError)
-		if ok {
-			log.Printf("[DEBUG] %s", iserror.Error())
-			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "not_found" {
-				log.Printf("[DEBUG] returning deleted")
-				return nil, isPublicGatewayDeleted, nil
-			}
+		pgw, response, err := pg.GetPublicGateway(getPublicGatewayOptions)
+		if err != nil && response != nil && response.StatusCode != 404 {
+			return nil, "", fmt.Errorf("The Public Gateway %s failed to delete: %s\n%s", id, err, response)
 		}
-		log.Printf("[DEBUG] returning x")
-		return nil, isPublicGatewayDeleting, err
+		if response != nil && response.StatusCode == 404 {
+			return pgw, isPublicGatewayDeleted, nil
+		}
+		return pgw, isPublicGatewayDeleting, nil
 	}
 }
 
 func resourceIBMISPublicGatewayExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return false, err
 	}
-	publicgwC := network.NewPublicGatewayClient(sess)
-
-	_, err = publicgwC.Get(d.Id())
-	if err != nil {
-		iserror, ok := err.(iserrors.RiaasError)
-		if ok {
-			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "not_found" {
-				return false, nil
-			}
+	id := d.Id()
+	if userDetails.generation == 1 {
+		err := classicPgwExists(d, meta, id)
+		if err != nil {
+			return false, err
 		}
-		return false, err
+	} else {
+		err := pgwExists(d, meta, id)
+		if err != nil {
+			return false, err
+		}
 	}
 	return true, nil
+}
+
+func classicPgwExists(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getPublicGatewayOptions := &vpcclassicv1.GetPublicGatewayOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetPublicGateway(getPublicGatewayOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting Public Gateway: %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+	return nil
+}
+
+func pgwExists(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getPublicGatewayOptions := &vpcv1.GetPublicGatewayOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetPublicGateway(getPublicGatewayOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting Public Gateway: %s\n%s", err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+	return nil
 }

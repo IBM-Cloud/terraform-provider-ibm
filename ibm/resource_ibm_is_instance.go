@@ -1444,7 +1444,7 @@ func classicInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		instance, response, err := instanceC.GetInstance(getinsOptions)
 		if err != nil {
-			return fmt.Errorf("Error Getting Instance: %s\n%s", err, response)
+			log.Printf("Error Getting Instance: %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isInstanceTags)
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.Crn)

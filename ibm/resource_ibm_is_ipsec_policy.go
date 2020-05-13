@@ -1,11 +1,12 @@
 package ibm
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/vpn"
-	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -50,7 +51,7 @@ func resourceIBMISIPSecPolicy() *schema.Resource {
 			isIpSecEncryptionAlg: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"3des", "aes128", "aes256"}),
+				ValidateFunc: validateAllowedStringValue([]string{"triple_des", "aes128", "aes256"}),
 				Description:  "Encryption algorithm",
 			},
 
@@ -137,7 +138,7 @@ func resourceIBMISIPSecPolicy() *schema.Resource {
 }
 
 func resourceIBMISIPSecPolicyCreate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
@@ -147,55 +148,149 @@ func resourceIBMISIPSecPolicyCreate(d *schema.ResourceData, meta interface{}) er
 	authenticationAlg := d.Get(isIpSecAuthenticationAlg).(string)
 	encryptionAlg := d.Get(isIpSecEncryptionAlg).(string)
 	pfs := d.Get(isIpSecPFS).(string)
-	resourceGrpId := d.Get(isIPSecResourceGroup).(string)
-	keyLifetime := d.Get(isIpSecKeyLifeTime).(int)
 
-	vpnC := vpn.NewVpnClient(sess)
-	ipSec, err := vpnC.CreateIpsecPolicy(authenticationAlg, encryptionAlg, name, pfs, resourceGrpId, keyLifetime)
-	if err != nil {
-		log.Printf("[DEBUG] ipsec err %s", err)
-		return err
+	if userDetails.generation == 1 {
+		err := classicIpsecpCreate(d, meta, authenticationAlg, encryptionAlg, name, pfs)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := ipsecpCreate(d, meta, authenticationAlg, encryptionAlg, name, pfs)
+		if err != nil {
+			return err
+		}
 	}
-
-	d.SetId(ipSec.ID.String())
-	log.Printf("[INFO] Ipsec : %s", ipSec.ID.String())
 	return resourceIBMISIPSecPolicyRead(d, meta)
 }
 
+func classicIpsecpCreate(d *schema.ResourceData, meta interface{}, authenticationAlg, encryptionAlg, name, pfs string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	options := &vpcclassicv1.CreateIpsecPolicyOptions{
+		AuthenticationAlgorithm: &authenticationAlg,
+		EncryptionAlgorithm:     &encryptionAlg,
+		Pfs:                     &pfs,
+		Name:                    &name,
+	}
+
+	if keylt, ok := d.GetOk(isIpSecKeyLifeTime); ok {
+		keyLifetime := int64(keylt.(int))
+		options.KeyLifetime = &keyLifetime
+	} else {
+		keyLifetime := int64(3600)
+		options.KeyLifetime = &keyLifetime
+	}
+
+	if rgrp, ok := d.GetOk(isIPSecResourceGroup); ok {
+		rg := rgrp.(string)
+		options.ResourceGroup = &vpcclassicv1.ResourceGroupIdentity{
+			ID: &rg,
+		}
+	}
+	ipSec, response, err := sess.CreateIpsecPolicy(options)
+	if err != nil {
+		return fmt.Errorf("[DEBUG] ipSec policy err %s\n%s", err, response)
+	}
+	d.SetId(*ipSec.ID)
+	log.Printf("[INFO] ipSec policy : %s", *ipSec.ID)
+	return nil
+}
+
+func ipsecpCreate(d *schema.ResourceData, meta interface{}, authenticationAlg, encryptionAlg, name, pfs string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	options := &vpcv1.CreateIpsecPolicyOptions{
+		AuthenticationAlgorithm: &authenticationAlg,
+		EncryptionAlgorithm:     &encryptionAlg,
+		Pfs:                     &pfs,
+		Name:                    &name,
+	}
+
+	if keylt, ok := d.GetOk(isIpSecKeyLifeTime); ok {
+		keyLifetime := int64(keylt.(int))
+		options.KeyLifetime = &keyLifetime
+	} else {
+		keyLifetime := int64(3600)
+		options.KeyLifetime = &keyLifetime
+	}
+
+	if rgrp, ok := d.GetOk(isIPSecResourceGroup); ok {
+		rg := rgrp.(string)
+		options.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+			ID: &rg,
+		}
+	}
+	ipSec, response, err := sess.CreateIpsecPolicy(options)
+	if err != nil {
+		return fmt.Errorf("[DEBUG] ipSec policy err %s\n%s", err, response)
+	}
+	d.SetId(*ipSec.ID)
+	log.Printf("[INFO] ipSec policy : %s", *ipSec.ID)
+	return nil
+}
+
 func resourceIBMISIPSecPolicyRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	vpnC := vpn.NewVpnClient(sess)
+	id := d.Id()
+	if userDetails.generation == 1 {
+		err := classicIpsecpGet(d, meta, id)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := ipsecpGet(d, meta, id)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
-	ipSec, err := vpnC.GetIpsecPolicy(d.Id())
+func classicIpsecpGet(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
-
-	d.Set(isIpSecName, ipSec.Name)
-	d.Set(isIpSecAuthenticationAlg, ipSec.AuthenticationAlgorithm)
-	d.Set(isIpSecEncryptionAlg, ipSec.EncryptionAlgorithm)
+	getIpsecPolicyOptions := &vpcclassicv1.GetIpsecPolicyOptions{
+		ID: &id,
+	}
+	ipSec, response, err := sess.GetIpsecPolicy(getIpsecPolicyOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting IPSEC Policy(%s): %s\n%s", id, err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	d.Set(isIpSecName, *ipSec.Name)
+	d.Set(isIpSecAuthenticationAlg, *ipSec.AuthenticationAlgorithm)
+	d.Set(isIpSecEncryptionAlg, *ipSec.EncryptionAlgorithm)
 	if ipSec.ResourceGroup != nil {
-		d.Set(isIPSecResourceGroup, ipSec.ResourceGroup.ID)
+		d.Set(isIPSecResourceGroup, *ipSec.ResourceGroup.ID)
 	} else {
 		d.Set(isIPSecResourceGroup, nil)
 	}
-	d.Set(isIpSecPFS, ipSec.Pfs)
-	if ipSec.KeyLifetime != 0 {
-		d.Set(isIpSecKeyLifeTime, ipSec.KeyLifetime)
+	d.Set(isIpSecPFS, *ipSec.Pfs)
+	if *ipSec.KeyLifetime != int64(0) {
+		d.Set(isIpSecKeyLifeTime, *ipSec.KeyLifetime)
 	}
-	d.Set(isIPSecEncapsulationMode, ipSec.EncapsulationMode)
-	d.Set(isIPSecTransformProtocol, ipSec.TransformProtocol)
+	d.Set(isIPSecEncapsulationMode, *ipSec.EncapsulationMode)
+	d.Set(isIPSecTransformProtocol, *ipSec.TransformProtocol)
 
 	connList := make([]map[string]interface{}, 0)
 	if ipSec.Connections != nil && len(ipSec.Connections) > 0 {
 		for _, connection := range ipSec.Connections {
 			conn := map[string]interface{}{}
-			conn[isIPSecVPNConnectionName] = connection.Name
-			conn[isIPSecVPNConnectionId] = connection.ID.String()
-			conn[isIPSecVPNConnectionHref] = connection.Href
+			conn[isIPSecVPNConnectionName] = *connection.Name
+			conn[isIPSecVPNConnectionId] = *connection.ID
+			conn[isIPSecVPNConnectionHref] = *connection.Href
 			connList = append(connList, conn)
 		}
 	}
@@ -204,84 +299,285 @@ func resourceIBMISIPSecPolicyRead(d *schema.ResourceData, meta interface{}) erro
 	if err != nil {
 		return err
 	}
-	if sess.Generation == 1 {
-		d.Set(ResourceControllerURL, controller+"/vpc/network/ipsecpolicies")
-	} else {
-		d.Set(ResourceControllerURL, controller+"/vpc-ext/network/ipsecpolicies")
-	}
-	d.Set(ResourceName, ipSec.Name)
-	d.Set(ResourceCRN, ipSec.Crn)
+	d.Set(ResourceControllerURL, controller+"/vpc/network/ipsecpolicies")
+	d.Set(ResourceName, *ipSec.Name)
+	// d.Set(ResourceCRN, *ipSec.Crn)
 	if ipSec.ResourceGroup != nil {
 		rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
 		if err != nil {
 			return err
 		}
-		grp, err := rsMangClient.ResourceGroup().Get(ipSec.ResourceGroup.ID.String())
+		grp, err := rsMangClient.ResourceGroup().Get(*ipSec.ResourceGroup.ID)
 		if err != nil {
 			return err
 		}
 		d.Set(ResourceGroupName, grp.Name)
-
 	}
 	return nil
 }
 
-func resourceIBMISIPSecPolicyUpdate(d *schema.ResourceData, meta interface{}) error {
-
-	sess, err := meta.(ClientSession).ISSession()
+func ipsecpGet(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
 	}
-	vpnC := vpn.NewVpnClient(sess)
+	getIpsecPolicyOptions := &vpcv1.GetIpsecPolicyOptions{
+		ID: &id,
+	}
+	ipSec, response, err := sess.GetIpsecPolicy(getIpsecPolicyOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting IPSEC Policy(%s): %s\n%s", id, err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+	d.Set(isIpSecName, *ipSec.Name)
+	d.Set(isIpSecAuthenticationAlg, *ipSec.AuthenticationAlgorithm)
+	d.Set(isIpSecEncryptionAlg, *ipSec.EncryptionAlgorithm)
+	if ipSec.ResourceGroup != nil {
+		d.Set(isIPSecResourceGroup, *ipSec.ResourceGroup.ID)
+		d.Set(ResourceGroupName, *ipSec.ResourceGroup.Name)
+	} else {
+		d.Set(isIPSecResourceGroup, nil)
+	}
+	d.Set(isIpSecPFS, *ipSec.Pfs)
+	if *ipSec.KeyLifetime != int64(0) {
+		d.Set(isIpSecKeyLifeTime, *ipSec.KeyLifetime)
+	}
+	d.Set(isIPSecEncapsulationMode, *ipSec.EncapsulationMode)
+	d.Set(isIPSecTransformProtocol, *ipSec.TransformProtocol)
 
+	connList := make([]map[string]interface{}, 0)
+	if ipSec.Connections != nil && len(ipSec.Connections) > 0 {
+		for _, connection := range ipSec.Connections {
+			conn := map[string]interface{}{}
+			conn[isIPSecVPNConnectionName] = *connection.Name
+			conn[isIPSecVPNConnectionId] = *connection.ID
+			conn[isIPSecVPNConnectionHref] = *connection.Href
+			connList = append(connList, conn)
+		}
+	}
+	d.Set(isIPSecVPNConnections, connList)
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return err
+	}
+	d.Set(ResourceControllerURL, controller+"/vpc-ext/network/ipsecpolicies")
+	d.Set(ResourceName, *ipSec.Name)
+	// d.Set(ResourceCRN, *ipSec.Crn)
+	return nil
+}
+
+func resourceIBMISIPSecPolicyUpdate(d *schema.ResourceData, meta interface{}) error {
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return err
+	}
+	id := d.Id()
+	if userDetails.generation == 1 {
+		err := classicIpsecpUpdate(d, meta, id)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := ipsecpUpdate(d, meta, id)
+		if err != nil {
+			return err
+		}
+	}
+	return resourceIBMISIPSecPolicyRead(d, meta)
+}
+
+func classicIpsecpUpdate(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+
+	options := &vpcclassicv1.UpdateIpsecPolicyOptions{
+		ID: &id,
+	}
 	if d.HasChange(isIpSecName) || d.HasChange(isIpSecAuthenticationAlg) || d.HasChange(isIpSecEncryptionAlg) || d.HasChange(isIpSecPFS) || d.HasChange(isIpSecKeyLifeTime) {
 		name := d.Get(isIpSecName).(string)
 		authenticationAlg := d.Get(isIpSecAuthenticationAlg).(string)
 		encryptionAlg := d.Get(isIpSecEncryptionAlg).(string)
 		pfs := d.Get(isIpSecPFS).(string)
-		keyLifetime := d.Get(isIpSecKeyLifeTime).(int)
-		_, err := vpnC.UpdateIpsecPolicy(d.Id(), authenticationAlg, encryptionAlg, name, pfs, keyLifetime)
+		keyLifetime := int64(d.Get(isIpSecKeyLifeTime).(int))
+
+		options.Name = &name
+		options.AuthenticationAlgorithm = &authenticationAlg
+		options.EncryptionAlgorithm = &encryptionAlg
+		options.Pfs = &pfs
+		options.KeyLifetime = &keyLifetime
+
+		_, response, err := sess.UpdateIpsecPolicy(options)
+		if err != nil {
+			return fmt.Errorf("Error on update of IPSEC Policy(%s): %s\n%s", id, err, response)
+		}
+	}
+	return nil
+}
+
+func ipsecpUpdate(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+
+	options := &vpcv1.UpdateIpsecPolicyOptions{
+		ID: &id,
+	}
+	if d.HasChange(isIpSecName) || d.HasChange(isIpSecAuthenticationAlg) || d.HasChange(isIpSecEncryptionAlg) || d.HasChange(isIpSecPFS) || d.HasChange(isIpSecKeyLifeTime) {
+		name := d.Get(isIpSecName).(string)
+		authenticationAlg := d.Get(isIpSecAuthenticationAlg).(string)
+		encryptionAlg := d.Get(isIpSecEncryptionAlg).(string)
+		pfs := d.Get(isIpSecPFS).(string)
+		keyLifetime := int64(d.Get(isIpSecKeyLifeTime).(int))
+
+		options.Name = &name
+		options.AuthenticationAlgorithm = &authenticationAlg
+		options.EncryptionAlgorithm = &encryptionAlg
+		options.Pfs = &pfs
+		options.KeyLifetime = &keyLifetime
+
+		_, response, err := sess.UpdateIpsecPolicy(options)
+		if err != nil {
+			return fmt.Errorf("Error on update of IPSEC Policy(%s): %s\n%s", id, err, response)
+		}
+	}
+	return nil
+}
+
+func resourceIBMISIPSecPolicyDelete(d *schema.ResourceData, meta interface{}) error {
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return err
+	}
+	id := d.Id()
+	if userDetails.generation == 1 {
+		err := classicIpsecpDelete(d, meta, id)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := ipsecpDelete(d, meta, id)
 		if err != nil {
 			return err
 		}
 	}
-
-	return resourceIBMISIPSecPolicyRead(d, meta)
+	return nil
 }
 
-func resourceIBMISIPSecPolicyDelete(d *schema.ResourceData, meta interface{}) error {
-
-	sess, err := meta.(ClientSession).ISSession()
+func classicIpsecpDelete(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
-	vpnC := vpn.NewVpnClient(sess)
-	err = vpnC.DeleteIpsecPolicy(d.Id())
+	getIpsecPolicyOptions := &vpcclassicv1.GetIpsecPolicyOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetIpsecPolicy(getIpsecPolicyOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting IPSEC Policy(%s): %s\n%s", id, err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+
+	deleteIpsecPolicyOptions := &vpcclassicv1.DeleteIpsecPolicyOptions{
+		ID: &id,
+	}
+	response, err = sess.DeleteIpsecPolicy(deleteIpsecPolicyOptions)
+	if err != nil {
+		return fmt.Errorf("Error Deleting IPSEC Policy(%s): %s\n%s", id, err, response)
+	}
+	d.SetId("")
+	return nil
+}
+
+func ipsecpDelete(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
 	}
+	getIpsecPolicyOptions := &vpcv1.GetIpsecPolicyOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetIpsecPolicy(getIpsecPolicyOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting IPSEC Policy(%s): %s\n%s", id, err, response)
+	}
+	if response.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
 
+	deleteIpsecPolicyOptions := &vpcv1.DeleteIpsecPolicyOptions{
+		ID: &id,
+	}
+	response, err = sess.DeleteIpsecPolicy(deleteIpsecPolicyOptions)
+	if err != nil {
+		return fmt.Errorf("Error Deleting IPSEC Policy(%s): %s\n%s", id, err, response)
+	}
 	d.SetId("")
 	return nil
 }
 
 func resourceIBMISIPSecPolicyExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return false, err
 	}
-	vpnC := vpn.NewVpnClient(sess)
+	id := d.Id()
 
-	_, err = vpnC.GetIpsecPolicy(d.Id())
-	if err != nil {
-		iserror, ok := err.(iserrors.RiaasError)
-		if ok {
-			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "ipsec_policy_not_found" {
-				return false, nil
-			}
+	if userDetails.generation == 1 {
+		err := classicIpsecpExists(d, meta, id)
+		if err != nil {
+			return false, err
 		}
-		return false, err
+	} else {
+		err := ipsecpExists(d, meta, id)
+		if err != nil {
+			return false, err
+		}
 	}
 	return true, nil
+}
+
+func classicIpsecpExists(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getIpsecPolicyOptions := &vpcclassicv1.GetIpsecPolicyOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetIpsecPolicy(getIpsecPolicyOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting IPSEC Policy(%s): %s\n%s", id, err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+	return nil
+}
+
+func ipsecpExists(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getIpsecPolicyOptions := &vpcv1.GetIpsecPolicyOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetIpsecPolicy(getIpsecPolicyOptions)
+	if err != nil && response.StatusCode != 404 {
+		return fmt.Errorf("Error getting IPSEC Policy(%s): %s\n%s", id, err, response)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+	return nil
 }

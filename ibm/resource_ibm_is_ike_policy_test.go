@@ -8,12 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/vpn"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISIKEPolicy_basic(t *testing.T) {
-	name := fmt.Sprintf("terraformIkeuat-create-step-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfike-name-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -27,7 +27,7 @@ func TestAccIBMISIKEPolicy_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_ike_policy.example", "authentication_algorithm", "md5"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_ike_policy.example", "encryption_algorithm", "3des"),
+						"ibm_is_ike_policy.example", "encryption_algorithm", "triple_des"),
 					resource.TestCheckResourceAttr(
 						"ibm_is_ike_policy.example", "dh_group", "2"),
 					resource.TestCheckResourceAttr(
@@ -54,26 +54,44 @@ func TestAccIBMISIKEPolicy_basic(t *testing.T) {
 }
 
 func checkIKEPolicyDestroy(s *terraform.State) error {
-	sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
+	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	vpnC := vpn.NewVpnClient(sess)
+	if userDetails.generation == 1 {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_ike_policy" {
+				continue
+			}
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_is_ike_policy" {
-			continue
+			getikepoptions := &vpcclassicv1.GetIkePolicyOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetIkePolicy(getikepoptions)
+			if err == nil {
+				return fmt.Errorf("policy still exists: %s", rs.Primary.ID)
+			}
 		}
+	} else {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_ike_policy" {
+				continue
+			}
 
-		_, err := vpnC.GetIkePolicy(rs.Primary.ID)
-
-		if err == nil {
-			return fmt.Errorf("policy still exists: %s", rs.Primary.ID)
+			getikepoptions := &vpcv1.GetIkePolicyOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetIkePolicy(getikepoptions)
+			if err == nil {
+				return fmt.Errorf("policy still exists: %s", rs.Primary.ID)
+			}
 		}
 	}
 
 	return nil
 }
 
-func testAccCheckIBMISIKEPolicyExists(n string, policy **models.IKEPolicy) resource.TestCheckFunc {
+func testAccCheckIBMISIKEPolicyExists(n, policy string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		fmt.Println("siv ", s.RootModule().Resources)
 		rs, ok := s.RootModule().Resources[n]
@@ -85,16 +103,29 @@ func testAccCheckIBMISIKEPolicyExists(n string, policy **models.IKEPolicy) resou
 		if rs.Primary.ID == "" {
 			return errors.New("No Record ID is set")
 		}
+		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-		sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
-		vpnC := vpn.NewVpnClient(sess)
-		ikePolicy, err := vpnC.GetIkePolicy(rs.Primary.ID)
-
-		if err != nil {
-			return err
+		if userDetails.generation == 1 {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+			getikepoptions := &vpcclassicv1.GetIkePolicyOptions{
+				ID: &rs.Primary.ID,
+			}
+			ikePolicy, _, err := sess.GetIkePolicy(getikepoptions)
+			if err != nil {
+				return err
+			}
+			policy = *ikePolicy.ID
+		} else {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+			getikepoptions := &vpcv1.GetIkePolicyOptions{
+				ID: &rs.Primary.ID,
+			}
+			ikePolicy, _, err := sess.GetIkePolicy(getikepoptions)
+			if err != nil {
+				return err
+			}
+			policy = *ikePolicy.ID
 		}
-
-		*policy = ikePolicy
 		return nil
 	}
 }
@@ -104,7 +135,7 @@ func testAccCheckIBMISIKEPolicyConfig(name string) string {
 		resource "ibm_is_ike_policy" "example" {
 			name = "%s"
 			authentication_algorithm = "md5"
-			encryption_algorithm = "3des"
+			encryption_algorithm = "triple_des"
 			dh_group = 2
 			ike_version = 1
 		}

@@ -164,8 +164,12 @@ func resourceIBMISVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	volName := d.Get(isVolumeName).(string)
 	profile := d.Get(isVolumeProfileName).(string)
 	zone := d.Get(isVolumeZone).(string)
-	volCapacity := int64(d.Get(isVolumeCapacity).(int))
-
+	var volCapacity int64
+	if capacity, ok := d.GetOk(isVolumeCapacity); ok {
+		volCapacity = int64(capacity.(int))
+	} else {
+		volCapacity = 100
+	}
 	if userDetails.generation == 1 {
 		err := classicVolCreate(d, meta, volName, profile, zone, volCapacity)
 		if err != nil {
@@ -418,7 +422,6 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 }
 
 func resourceIBMISVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
-
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
@@ -426,20 +429,20 @@ func resourceIBMISVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	id := d.Id()
 	name := ""
-	hasChange := false
+	hasChanged := false
 
 	if d.HasChange(isVolumeName) {
 		name = d.Get(isVolumeName).(string)
-		hasChange = true
+		hasChanged = true
 	}
 
 	if userDetails.generation == 1 {
-		err := classicVolUpdate(d, meta, id, name, hasChange)
+		err := classicVolUpdate(d, meta, id, name, hasChanged)
 		if err != nil {
 			return err
 		}
 	} else {
-		err := volUpdate(d, meta, id, name, hasChange)
+		err := volUpdate(d, meta, id, name, hasChanged)
 		if err != nil {
 			return err
 		}
@@ -447,7 +450,7 @@ func resourceIBMISVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	return resourceIBMISVolumeRead(d, meta)
 }
 
-func classicVolUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChange bool) error {
+func classicVolUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
@@ -467,7 +470,7 @@ func classicVolUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 				"Error on update of resource vpc volume (%s) tags: %s", id, err)
 		}
 	}
-	if hasChange {
+	if hasChanged {
 		options := &vpcclassicv1.UpdateVolumeOptions{
 			ID:   &id,
 			Name: &name,
@@ -480,7 +483,7 @@ func classicVolUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 	return nil
 }
 
-func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChange bool) error {
+func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -500,7 +503,7 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 				"Error on update of resource vpc volume (%s) tags: %s", id, err)
 		}
 	}
-	if hasChange {
+	if hasChanged {
 		options := &vpcv1.UpdateVolumeOptions{
 			ID:   &id,
 			Name: &name,
@@ -514,7 +517,6 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 }
 
 func resourceIBMISVolumeDelete(d *schema.ResourceData, meta interface{}) error {
-
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
