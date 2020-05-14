@@ -367,12 +367,12 @@ func classicLBListenerGet(d *schema.ResourceData, meta interface{}, lbID, lbList
 		ID:             &lbListenerID,
 	}
 	lbListener, response, err := sess.GetLoadBalancerListener(getLoadBalancerListenerOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting Load Balancer Listener : %s\n%s", err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set(isLBListenerLBID, lbID)
 	d.Set(isLBListenerPort, *lbListener.Port)
@@ -401,12 +401,12 @@ func lbListenerGet(d *schema.ResourceData, meta interface{}, lbID, lbListenerID 
 		ID:             &lbListenerID,
 	}
 	lbListener, response, err := sess.GetLoadBalancerListener(getLoadBalancerListenerOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting Load Balancer Listener : %s\n%s", err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set(isLBListenerLBID, lbID)
 	d.Set(isLBListenerPort, *lbListener.Port)
@@ -607,7 +607,6 @@ func lbListenerUpdate(d *schema.ResourceData, meta interface{}, lbID, lbListener
 }
 
 func resourceIBMISLBListenerDelete(d *schema.ResourceData, meta interface{}) error {
-
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
@@ -645,14 +644,13 @@ func classicLBListenerDelete(d *schema.ResourceData, meta interface{}, lbID, lbL
 	}
 	_, response, err := sess.GetLoadBalancerListener(getLoadBalancerListenerOptions)
 
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting vpc load balancer listener(%s): %s\n%s", lbListenerID, err, response)
 	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
-	}
-
 	_, err = isWaitForClassicLBAvailable(sess, lbID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return fmt.Errorf(
@@ -691,14 +689,13 @@ func lbListenerDelete(d *schema.ResourceData, meta interface{}, lbID, lbListener
 	}
 	_, response, err := sess.GetLoadBalancerListener(getLoadBalancerListenerOptions)
 
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting vpc load balancer listener(%s): %s\n%s", lbListenerID, err, response)
 	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
-	}
-
 	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return fmt.Errorf(
@@ -748,11 +745,11 @@ func isClassicLBListenerDeleteRefreshFunc(lbc *vpcclassicv1.VpcClassicV1, lbID, 
 			ID:             &lbListenerID,
 		}
 		lbLis, response, err := lbc.GetLoadBalancerListener(getLoadBalancerListenerOptions)
-		if err != nil && response.StatusCode != 404 {
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return lbLis, isLBListenerDeleted, nil
+			}
 			return nil, "", fmt.Errorf("The vpc load balancer listener %s failed to delete: %s\n%s", lbListenerID, err, response)
-		}
-		if response.StatusCode == 404 {
-			return lbLis, isLBListenerDeleted, nil
 		}
 		return lbLis, isLBListenerDeleting, nil
 	}
@@ -780,11 +777,11 @@ func isLBListenerDeleteRefreshFunc(lbc *vpcv1.VpcV1, lbID, lbListenerID string) 
 			ID:             &lbListenerID,
 		}
 		lbLis, response, err := lbc.GetLoadBalancerListener(getLoadBalancerListenerOptions)
-		if err != nil && response.StatusCode != 404 {
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return lbLis, isLBListenerDeleted, nil
+			}
 			return nil, "", fmt.Errorf("The vpc load balancer listener %s failed to delete: %s\n%s", lbListenerID, err, response)
-		}
-		if response.StatusCode == 404 {
-			return lbLis, isLBListenerDeleted, nil
 		}
 		return lbLis, isLBListenerDeleting, nil
 	}
@@ -805,23 +802,18 @@ func resourceIBMISLBListenerExists(d *schema.ResourceData, meta interface{}) (bo
 	lbListenerID := parts[1]
 
 	if userDetails.generation == 1 {
-		err := classicLBListenerExists(d, meta, lbID, lbListenerID)
-		if err != nil {
-			return false, err
-		}
+		exists, err := classicLBListenerExists(d, meta, lbID, lbListenerID)
+		return exists, err
 	} else {
-		err := lbListenerExists(d, meta, lbID, lbListenerID)
-		if err != nil {
-			return false, err
-		}
+		exists, err := lbListenerExists(d, meta, lbID, lbListenerID)
+		return exists, err
 	}
-	return true, nil
 }
 
-func classicLBListenerExists(d *schema.ResourceData, meta interface{}, lbID, lbListenerID string) error {
+func classicLBListenerExists(d *schema.ResourceData, meta interface{}, lbID, lbListenerID string) (bool, error) {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	getLoadBalancerListenerOptions := &vpcclassicv1.GetLoadBalancerListenerOptions{
@@ -829,19 +821,19 @@ func classicLBListenerExists(d *schema.ResourceData, meta interface{}, lbID, lbL
 		ID:             &lbListenerID,
 	}
 	_, response, err := sess.GetLoadBalancerListener(getLoadBalancerListenerOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting Load balancer Listener: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting Load balancer Listener: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }
 
-func lbListenerExists(d *schema.ResourceData, meta interface{}, lbID, lbListenerID string) error {
+func lbListenerExists(d *schema.ResourceData, meta interface{}, lbID, lbListenerID string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	getLoadBalancerListenerOptions := &vpcv1.GetLoadBalancerListenerOptions{
@@ -849,11 +841,11 @@ func lbListenerExists(d *schema.ResourceData, meta interface{}, lbID, lbListener
 		ID:             &lbListenerID,
 	}
 	_, response, err := sess.GetLoadBalancerListener(getLoadBalancerListenerOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting Load balancer Listener: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting Load balancer Listener: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }

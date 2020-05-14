@@ -238,12 +238,12 @@ func classicKeyGet(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	key, response, err := sess.GetKey(options)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting SSH Key (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set(isKeyName, *key.Name)
 	d.Set(isKeyPublicKey, *key.PublicKey)
@@ -279,12 +279,12 @@ func keyGet(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	key, response, err := sess.GetKey(options)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting SSH Key (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set(isKeyName, *key.Name)
 	d.Set(isKeyPublicKey, *key.PublicKey)
@@ -436,11 +436,11 @@ func classicKeyDelete(d *schema.ResourceData, meta interface{}, id string) error
 		ID: &id,
 	}
 	_, response, err := sess.GetKey(getKeyOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
 		return fmt.Errorf("Error Getting SSH Key (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		return nil
 	}
 
 	options := &vpcclassicv1.DeleteKeyOptions{
@@ -464,11 +464,11 @@ func keyDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	_, response, err := sess.GetKey(getKeyOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
 		return fmt.Errorf("Error Getting SSH Key (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		return nil
 	}
 
 	options := &vpcv1.DeleteKeyOptions{
@@ -490,51 +490,47 @@ func resourceIBMISSSHKeyExists(d *schema.ResourceData, meta interface{}) (bool, 
 	id := d.Id()
 
 	if userDetails.generation == 1 {
-		err := classicKeyExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := classicKeyExists(d, meta, id)
+		return exists, err
 	} else {
-		err := keyExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := keyExists(d, meta, id)
+		return exists, err
 	}
-	return true, nil
 }
 
-func classicKeyExists(d *schema.ResourceData, meta interface{}, id string) error {
+func classicKeyExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	options := &vpcclassicv1.GetKeyOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetKey(options)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting SSH Key: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting SSH Key: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+
+	return true, nil
 }
 
-func keyExists(d *schema.ResourceData, meta interface{}, id string) error {
+func keyExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	options := &vpcv1.GetKeyOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetKey(options)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting SSH Key: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting SSH Key: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }

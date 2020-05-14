@@ -199,7 +199,7 @@ func resourceIBMPrivateDnsZoneDelete(d *schema.ResourceData, meta interface{}) e
 
 	deleteZoneOptions := sess.NewDeleteDnszoneOptions(id_set[0], id_set[1])
 	response, err := sess.DeleteDnszone(deleteZoneOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
 		log.Printf("Error deleting dns zone:%s", response)
 		return err
 	}
@@ -218,8 +218,8 @@ func resourceIBMPrivateDnsZoneExists(d *schema.ResourceData, meta interface{}) (
 	id_set := strings.Split(d.Id(), "/")
 	getZoneOptions := sess.NewGetDnszoneOptions(id_set[0], id_set[1])
 	_, response, err := sess.GetDnszone(getZoneOptions)
-	if err != nil && response.StatusCode != 404 {
-		if response.StatusCode == 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
 		return false, err

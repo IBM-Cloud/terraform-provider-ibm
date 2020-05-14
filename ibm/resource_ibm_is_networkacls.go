@@ -383,12 +383,12 @@ func classicNwaclGet(d *schema.ResourceData, meta interface{}, id string) error 
 		ID: &id,
 	}
 	nwacl, response, err := sess.GetNetworkAcl(getNetworkAclOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error getting Network ACL(%s) : %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set(isNetworkACLName, *nwacl.Name)
 	d.Set(isNetworkACLSubnets, len(nwacl.Subnets))
@@ -498,12 +498,12 @@ func nwaclGet(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	nwacl, response, err := sess.GetNetworkAcl(getNetworkAclOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error getting Network ACL(%s) : %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set(isNetworkACLName, *nwacl.Name)
 	d.Set(isNetworkACLVPC, *nwacl.Vpc.ID)
@@ -740,12 +740,11 @@ func classicNwaclDelete(d *schema.ResourceData, meta interface{}, id string) err
 		ID: &id,
 	}
 	_, response, err := sess.GetNetworkAcl(getNetworkAclOptions)
-
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
-	}
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting Network ACL (%s): %s\n%s", id, err, response)
 	}
 
@@ -771,11 +770,11 @@ func nwaclDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	_, response, err := sess.GetNetworkAcl(getNetworkAclOptions)
 
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
-	}
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting Network ACL (%s): %s\n%s", id, err, response)
 	}
 
@@ -797,53 +796,48 @@ func resourceIBMISNetworkACLExists(d *schema.ResourceData, meta interface{}) (bo
 	}
 	id := d.Id()
 	if userDetails.generation == 1 {
-		err := classicNwaclExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := classicNwaclExists(d, meta, id)
+		return exists, err
 	} else {
-		err := nwaclExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := nwaclExists(d, meta, id)
+		return exists, err
 	}
-	return true, nil
 }
 
-func classicNwaclExists(d *schema.ResourceData, meta interface{}, id string) error {
+func classicNwaclExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	getNetworkAclOptions := &vpcclassicv1.GetNetworkAclOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetNetworkAcl(getNetworkAclOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting Network ACL: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting Network ACL: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }
 
-func nwaclExists(d *schema.ResourceData, meta interface{}, id string) error {
+func nwaclExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	getNetworkAclOptions := &vpcv1.GetNetworkAclOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetNetworkAcl(getNetworkAclOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting Network ACL: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting Network ACL: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }
 
 func sortclassicrules(rules []*vpcclassicv1.NetworkACLRuleItem) *list.List {

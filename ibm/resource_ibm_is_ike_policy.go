@@ -315,13 +315,14 @@ func classicIkepGet(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	ike, response, err := sess.GetIkePolicy(getikepoptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error getting IKE Policy(%s): %s\n%s", id, err, response)
 	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
-	}
+
 	d.Set(isIKEName, *ike.Name)
 	d.Set(isIKEAuthenticationAlg, *ike.AuthenticationAlgorithm)
 	d.Set(isIKEEncryptionAlg, *ike.EncryptionAlgorithm)
@@ -377,13 +378,14 @@ func ikepGet(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	ike, response, err := sess.GetIkePolicy(getikepoptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error getting IKE Policy(%s): %s\n%s", id, err, response)
 	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
-	}
+
 	d.Set(isIKEName, *ike.Name)
 	d.Set(isIKEAuthenticationAlg, *ike.AuthenticationAlgorithm)
 	d.Set(isIKEEncryptionAlg, *ike.EncryptionAlgorithm)
@@ -533,13 +535,15 @@ func classicIkepDelete(d *schema.ResourceData, meta interface{}, id string) erro
 		ID: &id,
 	}
 	_, response, err := sess.GetIkePolicy(getikepoptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+
 		return fmt.Errorf("Error getting IKE Policy(%s): %s\n%s", id, err, response)
 	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
-	}
+
 	deleteIkePolicyOptions := &vpcclassicv1.DeleteIkePolicyOptions{
 		ID: &id,
 	}
@@ -560,13 +564,14 @@ func ikepDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	_, response, err := sess.GetIkePolicy(getikepoptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error getting IKE Policy(%s): %s\n%s", id, err, response)
 	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
-	}
+
 	deleteIkePolicyOptions := &vpcv1.DeleteIkePolicyOptions{
 		ID: &id,
 	}
@@ -586,51 +591,48 @@ func resourceIBMISIKEPolicyExists(d *schema.ResourceData, meta interface{}) (boo
 	id := d.Id()
 
 	if userDetails.generation == 1 {
-		err := classicikepExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := classicikepExists(d, meta, id)
+		return exists, err
 	} else {
-		err := fipExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := ikepExists(d, meta, id)
+		return exists, err
 	}
-	return true, nil
 }
 
-func classicikepExists(d *schema.ResourceData, meta interface{}, id string) error {
+func classicikepExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	options := &vpcclassicv1.GetIkePolicyOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetIkePolicy(options)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting IKE Policy(%s): %s\n%s", id, err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting IKE Policy(%s): %s\n%s", id, err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+
+	return true, nil
 }
 
-func ikepExists(d *schema.ResourceData, meta interface{}, id string) error {
+func ikepExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	options := &vpcv1.GetIkePolicyOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetIkePolicy(options)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting IKE Policy(%s): %s\n%s", id, err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting IKE Policy(%s): %s\n%s", id, err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+
+	return true, nil
 }

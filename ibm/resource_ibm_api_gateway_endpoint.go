@@ -149,7 +149,7 @@ func resourceIBMApiGatewayEndPointCreate(d *schema.ResourceData, meta interface{
 
 	result, response, err := endpointservice.CreateEndpoint(payload)
 	if err != nil {
-		return fmt.Errorf("Error creating Endpoint: %s,%d", err, response.StatusCode)
+		return fmt.Errorf("Error creating Endpoint: %s,%s", err, response)
 	}
 
 	d.SetId(fmt.Sprintf("%s//%s", *result.ServiceInstanceCrn, *result.ArtifactID))
@@ -182,12 +182,12 @@ func resourceIBMApiGatewayEndPointGet(d *schema.ResourceData, meta interface{}) 
 		Authorization:      &oauthtoken,
 	}
 	result, response, err := endpointservice.GetEndpoint(&payload)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting Endpoint: %s\n%s", err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set("service_instance_crn", serviceInstanceCrn)
 	d.Set("endpoint_id", apiID)
@@ -203,7 +203,6 @@ func resourceIBMApiGatewayEndPointGet(d *schema.ResourceData, meta interface{}) 
 	d.Set("provider_id", result.ProviderID)
 	d.Set("shared", result.Shared)
 	d.Set("base_path", result.BasePath)
-	fmt.Printf("respose code = %v", response.StatusCode)
 	return nil
 }
 
@@ -305,7 +304,7 @@ func resourceIBMApiGatewayEndPointUpdate(d *schema.ResourceData, meta interface{
 
 		_, response, err := endpointservice.EndpointActions(actionPayload)
 		if err != nil {
-			return fmt.Errorf("Error updating Endpoint Action: %s,%d", err, response.StatusCode)
+			return fmt.Errorf("Error updating Endpoint Action: %s,%s", err, response)
 		}
 	}
 
@@ -350,7 +349,7 @@ func resourceIBMApiGatewayEndPointUpdate(d *schema.ResourceData, meta interface{
 	if update {
 		_, response, err := endpointservice.UpdateEndpoint(payload)
 		if err != nil {
-			return fmt.Errorf("Error updating Endpoint: %s,%d", err, response.StatusCode)
+			return fmt.Errorf("Error updating Endpoint: %s,%s", err, response)
 		}
 	}
 	return resourceIBMApiGatewayEndPointGet(d, meta)
@@ -381,8 +380,11 @@ func resourceIBMApiGatewayEndPointDelete(d *schema.ResourceData, meta interface{
 
 	response, err := endpointservice.DeleteEndpoint(&payload)
 
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error deleting Endpoint: %s", err)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
+		return fmt.Errorf("Error deleting Endpoint: %s\n%s", err, response)
 	}
 	d.SetId("")
 
@@ -414,7 +416,7 @@ func resourceIBMApiGatewayEndPointExists(d *schema.ResourceData, meta interface{
 	}
 	_, response, err := endpointservice.GetEndpoint(&payload)
 	if err != nil {
-		if response.StatusCode == 404 {
+		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
 		return false, err

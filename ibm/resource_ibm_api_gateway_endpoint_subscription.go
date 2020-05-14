@@ -111,7 +111,7 @@ func resourceIBMApiGatewayEndpointSubscriptionCreate(d *schema.ResourceData, met
 
 	result, response, err := endpointservice.CreateSubscription(payload)
 	if err != nil {
-		return fmt.Errorf("Error creating Subscription: %s %d", err, response.StatusCode)
+		return fmt.Errorf("Error creating Subscription: %s %s", err, response)
 	}
 	d.SetId(fmt.Sprintf("%s//%s", *result.ArtifactID, *result.ClientID))
 
@@ -142,12 +142,12 @@ func resourceIBMApiGatewayEndpointSubscriptionGet(d *schema.ResourceData, meta i
 		Authorization: &oauthtoken,
 	}
 	result, response, err := endpointservice.GetSubscription(&payload)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error Getting Subscription: %s", err)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("Error Getting Subscription: %s\n%s", err, response)
 	}
 	d.Set("artifact_id", result.ArtifactID)
 	d.Set("client_id", result.ClientID)
@@ -208,13 +208,13 @@ func resourceIBMApiGatewayEndpointSubscriptionUpdate(d *schema.ResourceData, met
 		}
 		_, SecretResponse, err := endpointservice.AddSubscriptionSecret(secretpayload)
 		if err != nil {
-			return fmt.Errorf("Error Adding Secret to Subscription: %s,%d", err, SecretResponse.StatusCode)
+			return fmt.Errorf("Error Adding Secret to Subscription: %s,%s", err, SecretResponse)
 		}
 	}
 	if update {
 		_, response, err := endpointservice.UpdateSubscription(payload)
 		if err != nil {
-			return fmt.Errorf("Error updating Subscription: %s,%d", err, response.StatusCode)
+			return fmt.Errorf("Error updating Subscription: %s,%s", err, response)
 		}
 	}
 	return resourceIBMApiGatewayEndpointSubscriptionGet(d, meta)
@@ -243,8 +243,11 @@ func resourceIBMApiGatewayEndpointSubscriptionDelete(d *schema.ResourceData, met
 		Authorization: &oauthtoken,
 	}
 	response, err := endpointservice.DeleteSubscription(&payload)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error deleting Subscription: %s", err)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
+		return fmt.Errorf("Error deleting Subscription: %s\n%s", err, response)
 	}
 	d.SetId("")
 
@@ -274,8 +277,8 @@ func resourceIBMApiGatewayEndpointSubscriptionExists(d *schema.ResourceData, met
 		Authorization: &oauthtoken,
 	}
 	_, response, err := endpointservice.GetSubscription(&payload)
-	if err != nil && response.StatusCode != 404 {
-		if response.StatusCode == 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
 		return false, err

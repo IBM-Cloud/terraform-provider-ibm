@@ -265,12 +265,12 @@ func classicVpcRouteGet(d *schema.ResourceData, meta interface{}, vpcID, routeID
 		ID:    &routeID,
 	}
 	route, response, err := sess.GetVpcRoute(getVpcRouteOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting VPC Route (%s): %s\n%s", routeID, err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set("id", *route.ID)
 	d.Set(isVPCRouteName, route.Name)
@@ -294,12 +294,12 @@ func vpcRouteGet(d *schema.ResourceData, meta interface{}, vpcID, routeID string
 		ID:    &routeID,
 	}
 	route, response, err := sess.GetVpcRoute(getVpcRouteOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting VPC Route (%s): %s\n%s", routeID, err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set("id", *route.ID)
 	d.Set(isVPCRouteName, route.Name)
@@ -426,13 +426,12 @@ func classicVpcRouteDelete(d *schema.ResourceData, meta interface{}, vpcID, rout
 		ID:    &routeID,
 	}
 	_, response, err := sess.GetVpcRoute(getVpcRouteOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
 		return fmt.Errorf("Error Getting VPC Route (%s): %s\n%s", routeID, err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-
 	deleteRouteOptions := &vpcclassicv1.DeleteVpcRouteOptions{
 		VpcID: &vpcID,
 		ID:    &routeID,
@@ -460,13 +459,12 @@ func vpcRouteDelete(d *schema.ResourceData, meta interface{}, vpcID, routeID str
 		ID:    &routeID,
 	}
 	_, response, err := sess.GetVpcRoute(getVpcRouteOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
 		return fmt.Errorf("Error Getting VPC Route (%s): %s\n%s", routeID, err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-
 	deleteRouteOptions := &vpcv1.DeleteVpcRouteOptions{
 		VpcID: &vpcID,
 		ID:    &routeID,
@@ -495,12 +493,13 @@ func isWaitForClassicVPCRouteDeleted(sess *vpcclassicv1.VpcClassicV1, vpcID, rou
 				ID:    &routeID,
 			}
 			route, response, err := sess.GetVpcRoute(getVpcRouteOptions)
-			if err != nil && response.StatusCode != 404 {
+			if err != nil {
+				if response != nil && response.StatusCode == 404 {
+					return route, isRouteStatusDeleted, nil
+				}
 				return route, isRouteStatusDeleting, fmt.Errorf("The VPC route %s failed to delete: %s\n%s", routeID, err, response)
 			}
-			if response.StatusCode == 404 {
-				return route, isRouteStatusDeleted, nil
-			}
+
 			return route, isRouteStatusDeleting, nil
 		},
 		Timeout:    timeout,
@@ -523,11 +522,11 @@ func isWaitForVPCRouteDeleted(sess *vpcv1.VpcV1, vpcID, routeID string, timeout 
 				ID:    &routeID,
 			}
 			route, response, err := sess.GetVpcRoute(getVpcRouteOptions)
-			if err != nil && response.StatusCode != 404 {
+			if err != nil {
+				if response != nil && response.StatusCode == 404 {
+					return route, isRouteStatusDeleted, nil
+				}
 				return route, isRouteStatusDeleting, fmt.Errorf("The VPC route %s failed to delete: %s\n%s", routeID, err, response)
-			}
-			if response.StatusCode == 404 {
-				return route, isRouteStatusDeleted, nil
 			}
 			return route, isRouteStatusDeleting, nil
 		},
@@ -552,53 +551,48 @@ func resourceIBMISVpcRouteExists(d *schema.ResourceData, meta interface{}) (bool
 	vpcID := parts[0]
 	routeID := parts[1]
 	if userDetails.generation == 1 {
-		err := classicVpcRouteExists(d, meta, vpcID, routeID)
-		if err != nil {
-			return false, err
-		}
+		exists, err := classicVpcRouteExists(d, meta, vpcID, routeID)
+		return exists, err
 	} else {
-		err := vpcRouteExists(d, meta, vpcID, routeID)
-		if err != nil {
-			return false, err
-		}
+		exists, err := vpcRouteExists(d, meta, vpcID, routeID)
+		return exists, err
 	}
-	return true, nil
 }
 
-func classicVpcRouteExists(d *schema.ResourceData, meta interface{}, vpcID, routeID string) error {
+func classicVpcRouteExists(d *schema.ResourceData, meta interface{}, vpcID, routeID string) (bool, error) {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	getVpcRouteOptions := &vpcclassicv1.GetVpcRouteOptions{
 		VpcID: &vpcID,
 		ID:    &routeID,
 	}
 	_, response, err := sess.GetVpcRoute(getVpcRouteOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting VPC Route: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting VPC Route: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }
 
-func vpcRouteExists(d *schema.ResourceData, meta interface{}, vpcID, routeID string) error {
+func vpcRouteExists(d *schema.ResourceData, meta interface{}, vpcID, routeID string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	getVpcRouteOptions := &vpcv1.GetVpcRouteOptions{
 		VpcID: &vpcID,
 		ID:    &routeID,
 	}
 	_, response, err := sess.GetVpcRoute(getVpcRouteOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting VPC Route: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting VPC Route: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }

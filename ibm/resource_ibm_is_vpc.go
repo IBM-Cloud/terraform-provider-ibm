@@ -453,13 +453,14 @@ func classicVpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	vpc, response, err := sess.GetVpc(getvpcOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error getting VPC : %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
-	}
+
 	d.Set("id", *vpc.ID)
 	d.Set(isVPCName, *vpc.Name)
 	d.Set(isVPCClassicAccess, *vpc.ClassicAccess)
@@ -547,13 +548,14 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	vpc, response, err := sess.GetVpc(getvpcOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error getting VPC : %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
-	}
+
 	d.Set("id", *vpc.ID)
 	d.Set(isVPCName, *vpc.Name)
 	d.Set(isVPCClassicAccess, *vpc.ClassicAccess)
@@ -757,13 +759,14 @@ func classicVpcDelete(d *schema.ResourceData, meta interface{}, id string) error
 		ID: &id,
 	}
 	_, response, err := sess.GetVpc(getVpcOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
-	}
-	if err != nil && response.StatusCode != 404 {
 		return fmt.Errorf("Error Getting VPC (%s): %s\n%s", id, err, response)
+
 	}
 
 	deletevpcOptions := &vpcclassicv1.DeleteVpcOptions{
@@ -791,11 +794,11 @@ func vpcDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	_, response, err := sess.GetVpc(getVpcOptions)
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
-	}
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting VPC (%s): %s\n%s", id, err, response)
 	}
 
@@ -836,12 +839,13 @@ func isClassicVPCDeleteRefreshFunc(vpc *vpcclassicv1.VpcClassicV1, id string) re
 			ID: &id,
 		}
 		vpc, response, err := vpc.GetVpc(getvpcOptions)
-		if err != nil && response != nil && response.StatusCode != 404 {
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return vpc, isVPCDeleted, nil
+			}
 			return nil, isVPCFailed, fmt.Errorf("The VPC %s failed to delete: %s\n%s", id, err, response)
 		}
-		if response != nil && response.StatusCode == 404 {
-			return vpc, isVPCDeleted, nil
-		}
+
 		return vpc, isVPCDeleting, nil
 	}
 }
@@ -868,12 +872,13 @@ func isVPCDeleteRefreshFunc(vpc *vpcv1.VpcV1, id string) resource.StateRefreshFu
 			ID: &id,
 		}
 		vpc, response, err := vpc.GetVpc(getvpcOptions)
-		if err != nil && response.StatusCode != 404 {
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return vpc, isVPCDeleted, nil
+			}
 			return nil, isVPCFailed, fmt.Errorf("The VPC %s failed to delete: %s\n%s", id, err, response)
 		}
-		if response.StatusCode == 404 {
-			return vpc, isVPCDeleted, nil
-		}
+
 		return vpc, isVPCDeleting, nil
 	}
 }
@@ -885,53 +890,49 @@ func resourceIBMISVPCExists(d *schema.ResourceData, meta interface{}) (bool, err
 	}
 	id := d.Id()
 	if userDetails.generation == 1 {
-		err := classicVpcExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := classicVpcExists(d, meta, id)
+		return exists, err
 	} else {
-		err := vpcExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := vpcExists(d, meta, id)
+		return exists, err
 	}
-	return true, nil
 }
 
-func classicVpcExists(d *schema.ResourceData, meta interface{}, id string) error {
+func classicVpcExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	getvpcOptions := &vpcclassicv1.GetVpcOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetVpc(getvpcOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting VPC: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting VPC: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+
+	return true, nil
 }
 
-func vpcExists(d *schema.ResourceData, meta interface{}, id string) error {
+func vpcExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	getvpcOptions := &vpcv1.GetVpcOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetVpc(getvpcOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting VPC: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting VPC: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }
 
 func resourceIBMVPCHash(v interface{}) int {

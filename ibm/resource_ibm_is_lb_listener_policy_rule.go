@@ -504,29 +504,24 @@ func resourceIBMISLBListenerPolicyRuleExists(d *schema.ResourceData, meta interf
 	}
 	ID := d.Id()
 	if userDetails.generation == 1 {
-		err := classicLbListenerPolicyRuleExists(d, meta, ID)
-		if err != nil {
-			return false, err
-		}
+		exists, err := classicLbListenerPolicyRuleExists(d, meta, ID)
+		return exists, err
 	} else {
-		err := lbListenerPolicyRuleExists(d, meta, ID)
-		if err != nil {
-			return false, err
-		}
+		exists, err := lbListenerPolicyRuleExists(d, meta, ID)
+		return exists, err
 	}
-	return true, nil
 }
 
-func classicLbListenerPolicyRuleExists(d *schema.ResourceData, meta interface{}, ID string) error {
+func classicLbListenerPolicyRuleExists(d *schema.ResourceData, meta interface{}, ID string) (bool, error) {
 	sess, err := classicVpcSdkClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	//Retrieve lbID, listenerID and policyID
 	parts, err := idParts(d.Id())
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	lbID := parts[0]
@@ -544,25 +539,23 @@ func classicLbListenerPolicyRuleExists(d *schema.ResourceData, meta interface{},
 
 	//Getting lb listener policy
 	_, response, err := sess.GetLoadBalancerListenerPolicyRule(getLbListenerPolicyRuleOptions)
-
 	if err != nil {
-		if response.StatusCode != 404 {
-			return nil
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
 		}
-		return err
+		return false, fmt.Errorf("Error getting policy: %s\n%s", err, response)
 	}
-
-	return nil
+	return true, nil
 }
 
-func lbListenerPolicyRuleExists(d *schema.ResourceData, meta interface{}, ID string) error {
+func lbListenerPolicyRuleExists(d *schema.ResourceData, meta interface{}, ID string) (bool, error) {
 	sess, err := vpcSdkClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	parts, err := idParts(d.Id())
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	lbID := parts[0]
@@ -581,12 +574,12 @@ func lbListenerPolicyRuleExists(d *schema.ResourceData, meta interface{}, ID str
 	_, response, err := sess.GetLoadBalancerListenerPolicyRule(getLbListenerPolicyRuleOptions)
 
 	if err != nil {
-		if response.StatusCode != 404 {
-			return nil
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
 		}
-		return err
+		return false, fmt.Errorf("Error getting policy: %s\n%s", err, response)
 	}
-	return nil
+	return true, nil
 }
 func resourceIBMISLBListenerPolicyRuleUpdate(d *schema.ResourceData, meta interface{}) error {
 
@@ -783,6 +776,25 @@ func classicLbListenerPolicyRuleDelete(d *schema.ResourceData, meta interface{},
 	if err != nil {
 		return err
 	}
+
+	//Getting rule optins
+	getLbListenerPolicyRuleOptions := &vpcclassicv1.GetLoadBalancerListenerPolicyRuleOptions{
+		LoadBalancerID: &lbID,
+		ListenerID:     &listenerID,
+		PolicyID:       &policyID,
+		ID:             &ID,
+	}
+
+	//Getting lb listener policy
+	_, response, err := sess.GetLoadBalancerListenerPolicyRule(getLbListenerPolicyRuleOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("Error in classicLbListenerPolicyGet : %s\n%s", err, response)
+	}
+
 	deleteLbListenerPolicyRuleOptions := &vpcclassicv1.DeleteLoadBalancerListenerPolicyRuleOptions{
 		LoadBalancerID: &lbID,
 		ListenerID:     &listenerID,
@@ -790,13 +802,10 @@ func classicLbListenerPolicyRuleDelete(d *schema.ResourceData, meta interface{},
 		ID:             &ID,
 	}
 
-	response, err := sess.DeleteLoadBalancerListenerPolicyRule(deleteLbListenerPolicyRuleOptions)
+	response, err = sess.DeleteLoadBalancerListenerPolicyRule(deleteLbListenerPolicyRuleOptions)
 
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
 		return fmt.Errorf("Error in classicLbListenerPolicyRuleDelete: %s\n%s", err, response)
-	}
-	if response.StatusCode == 404 {
-		return nil
 	}
 	_, err = isWaitForLbListenerPolicyRuleClassicDeleted(sess, d.Id(), d.Timeout(schema.TimeoutDelete))
 	if err != nil {
@@ -811,18 +820,34 @@ func lbListenerPolicyRuleDelete(d *schema.ResourceData, meta interface{}, lbID, 
 	if err != nil {
 		return err
 	}
+
+	//Getting rule optins
+	getLbListenerPolicyRuleOptions := &vpcv1.GetLoadBalancerListenerPolicyRuleOptions{
+		LoadBalancerID: &lbID,
+		ListenerID:     &listenerID,
+		PolicyID:       &policyID,
+		ID:             &ID,
+	}
+
+	//Getting lb listener policy
+	_, response, err := sess.GetLoadBalancerListenerPolicyRule(getLbListenerPolicyRuleOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("Error in LbListenerPolicyGet : %s\n%s", err, response)
+	}
+
 	deleteLbListenerPolicyRuleOptions := &vpcv1.DeleteLoadBalancerListenerPolicyRuleOptions{
 		LoadBalancerID: &lbID,
 		ListenerID:     &listenerID,
 		PolicyID:       &policyID,
 		ID:             &ID,
 	}
-	response, err := sess.DeleteLoadBalancerListenerPolicyRule(deleteLbListenerPolicyRuleOptions)
-	if err != nil && response.StatusCode != 404 {
+	response, err = sess.DeleteLoadBalancerListenerPolicyRule(deleteLbListenerPolicyRuleOptions)
+	if err != nil {
 		return fmt.Errorf("Error in lbListenerPolicyRuleDelete: %s\n%s", err, response)
-	}
-	if response.StatusCode == 404 {
-		return nil
 	}
 	_, err = isWaitForLbListnerPolicyRuleDeleted(sess, d.Id(), d.Timeout(schema.TimeoutDelete))
 	if err != nil {
@@ -834,7 +859,7 @@ func isWaitForLbListnerPolicyRuleDeleted(vpc *vpcv1.VpcV1, id string, timeout ti
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{isLBListenerPolicyRuleRetry, isLBListenerPolicyRuleDeleting},
-		Target:     []string{},
+		Target:     []string{isLBListenerPolicyRuleDeleted, isLBListenerPolicyRuleFailed},
 		Refresh:    isLbListenerPolicyRuleDeleteRefreshFunc(vpc, id),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
@@ -867,19 +892,15 @@ func isLbListenerPolicyRuleDeleteRefreshFunc(vpc *vpcv1.VpcV1, id string) resour
 
 		//Getting lb listener policy
 		rule, response, err := vpc.GetLoadBalancerListenerPolicyRule(getLbListenerPolicyRuleOptions)
+
 		if err != nil {
-			return nil, isLBListenerPolicyRuleFailed, nil
-		}
-
-		if err == nil {
-			if *(*rule).ProvisioningStatus == isLBListenerPolicyRuleFailed {
-				return rule, isLBListenerPolicyRuleFailed, fmt.Errorf("The LB-LP %s failed to delete: %v", *rule.ID, err)
+			if response != nil && response.StatusCode == 404 {
+				return nil, isLBListenerPolicyRuleDeleted, nil
 			}
-			return rule, isLBListenerPolicyRuleDeleting, nil
+			return rule, isLBListenerPolicyRuleFailed, err
 		}
-
-		if (*response).StatusCode == 404 {
-			return nil, isLBListenerPolicyRuleDeleted, nil
+		if *(*rule).ProvisioningStatus == isLBListenerPolicyRuleFailed {
+			return rule, isLBListenerPolicyRuleFailed, fmt.Errorf("The LB-LP %s failed to delete: %v", *rule.ID, err)
 		}
 
 		return nil, isLBListenerPolicyRuleDeleting, err
@@ -908,6 +929,10 @@ func classicLbListenerPolicyRuleGet(d *schema.ResourceData, meta interface{}, lb
 	//Getting lb listener policy
 	rule, response, err := sess.GetLoadBalancerListenerPolicyRule(getLbListenerPolicyRuleOptions)
 	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error in classicLbListenerPolicyGet : %s\n%s", err, response)
 	}
 
@@ -940,8 +965,12 @@ func lbListenerPolicyRuleGet(d *schema.ResourceData, meta interface{}, lbID, lis
 	}
 
 	//Getting lb listener policy
-	rule, _, err := sess.GetLoadBalancerListenerPolicyRule(getLbListenerPolicyRuleOptions)
+	rule, response, err := sess.GetLoadBalancerListenerPolicyRule(getLbListenerPolicyRuleOptions)
 	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 
@@ -963,7 +992,7 @@ func isWaitForLbListenerPolicyRuleClassicDeleted(vpc *vpcclassicv1.VpcClassicV1,
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{isLBListenerPolicyRuleRetry, isLBListenerPolicyRuleDeleting, "delete_pending"},
-		Target:     []string{},
+		Target:     []string{isLBListenerPolicyRuleDeleted, isLBListenerPolicyRuleFailed},
 		Refresh:    isLbListenerPolicyRuleClassicDeleteRefreshFunc(vpc, id),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
@@ -996,19 +1025,16 @@ func isLbListenerPolicyRuleClassicDeleteRefreshFunc(vpc *vpcclassicv1.VpcClassic
 
 		//Getting lb listener policy
 		rule, response, err := vpc.GetLoadBalancerListenerPolicyRule(getLbListenerPolicyRuleOptions)
-
 		//failed := isLBListenerPolicyRuleFailed
 		if err != nil {
-			if *(*rule).ProvisioningStatus == isLBListenerPolicyRuleFailed {
-				return rule, isLBListenerPolicyRuleFailed, fmt.Errorf("The LB-LP %s failed to delete: %v", *rule.ID, err)
+			if response != nil && response.StatusCode == 404 {
+				return rule, isLBListenerPolicyRuleDeleted, nil
 			}
-			return nil, isLBListenerPolicyRuleFailed, nil
+			return nil, isLBListenerPolicyRuleFailed, err
 		}
-
-		if (*response).StatusCode == 404 {
-			return nil, isLBListenerPolicyRuleDeleted, nil
+		if *rule.ProvisioningStatus == isLBListenerPolicyRuleFailed {
+			return rule, isLBListenerPolicyRuleFailed, fmt.Errorf("The LB-LP %s failed to delete: %v", *rule.ID, err)
 		}
-
-		return nil, isLBListenerPolicyRuleDeleting, err
+		return rule, isLBListenerPolicyRuleDeleting, err
 	}
 }

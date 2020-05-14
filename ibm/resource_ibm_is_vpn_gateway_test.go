@@ -91,20 +91,20 @@ func testAccCheckIBMISVPNGatewayExists(n, vpnGatewayID string) resource.TestChec
 
 		if userDetails.generation == 1 {
 			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-			getvpngcptions := &vpcclassicv1.GetVpnGatewayConnectionOptions{
+			getvpngcptions := &vpcclassicv1.GetVpnGatewayOptions{
 				ID: &rs.Primary.ID,
 			}
-			foundvpnGateway, _, err := sess.GetVpnGatewayConnection(getvpngcptions)
+			foundvpnGateway, _, err := sess.GetVpnGateway(getvpngcptions)
 			if err != nil {
 				return err
 			}
 			vpnGatewayID = *foundvpnGateway.ID
 		} else {
 			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-			getvpngcptions := &vpcv1.GetVpnGatewayConnectionOptions{
+			getvpngcptions := &vpcv1.GetVpnGatewayOptions{
 				ID: &rs.Primary.ID,
 			}
-			foundvpnGateway, _, err := sess.GetVpnGatewayConnection(getvpngcptions)
+			foundvpnGateway, _, err := sess.GetVpnGateway(getvpngcptions)
 			if err != nil {
 				return err
 			}

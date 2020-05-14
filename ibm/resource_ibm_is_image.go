@@ -464,12 +464,12 @@ func classicImgGet(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	image, response, err := sess.GetImage(options)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting Image (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set("id", *image.ID)
 	// d.Set(isImageArchitecure, image.Architecture)
@@ -519,12 +519,12 @@ func imgGet(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	image, response, err := sess.GetImage(options)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting Image (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set("id", *image.ID)
 	// d.Set(isImageArchitecure, image.Architecture)
@@ -586,11 +586,11 @@ func classicImgDelete(d *schema.ResourceData, meta interface{}, id string) error
 		ID: &id,
 	}
 	_, response, err := sess.GetImage(getImageOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
 		return fmt.Errorf("Error Getting Image (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		return nil
 	}
 
 	options := &vpcclassicv1.DeleteImageOptions{
@@ -617,11 +617,11 @@ func imgDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	_, response, err := sess.GetImage(getImageOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
 		return fmt.Errorf("Error Getting Image (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		return nil
 	}
 
 	options := &vpcv1.DeleteImageOptions{
@@ -661,11 +661,11 @@ func isClassicImageDeleteRefreshFunc(imageC *vpcclassicv1.VpcClassicV1, id strin
 			ID: &id,
 		}
 		image, response, err := imageC.GetImage(getimgoptions)
-		if err != nil && response.StatusCode != 404 {
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return image, isImageDeleted, nil
+			}
 			return image, "", fmt.Errorf("Error Getting Image: %s\n%s", err, response)
-		}
-		if response.StatusCode == 404 {
-			return image, isImageDeleted, nil
 		}
 		return image, isImageDeleting, err
 	}
@@ -692,11 +692,11 @@ func isImageDeleteRefreshFunc(imageC *vpcv1.VpcV1, id string) resource.StateRefr
 			ID: &id,
 		}
 		image, response, err := imageC.GetImage(getimgoptions)
-		if err != nil && response.StatusCode != 404 {
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return image, isImageDeleted, nil
+			}
 			return image, "", fmt.Errorf("Error Getting Image: %s\n%s", err, response)
-		}
-		if response.StatusCode == 404 {
-			return image, isImageDeleted, nil
 		}
 		return image, isImageDeleting, err
 	}
@@ -709,51 +709,46 @@ func resourceIBMISImageExists(d *schema.ResourceData, meta interface{}) (bool, e
 	id := d.Id()
 
 	if userDetails.generation == 1 {
-		err := classicImgExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := classicImgExists(d, meta, id)
+		return exists, err
 	} else {
-		err := imgExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := imgExists(d, meta, id)
+		return exists, err
 	}
-	return true, nil
 }
 
-func classicImgExists(d *schema.ResourceData, meta interface{}, id string) error {
+func classicImgExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	options := &vpcclassicv1.GetImageOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetImage(options)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting Image: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting Image: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }
 
-func imgExists(d *schema.ResourceData, meta interface{}, id string) error {
+func imgExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	options := &vpcv1.GetImageOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetImage(options)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting Image: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting Image: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }

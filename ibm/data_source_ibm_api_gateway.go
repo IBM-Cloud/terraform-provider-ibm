@@ -124,7 +124,7 @@ func dataSourceIBMApiGatewayRead(d *schema.ResourceData, meta interface{}) error
 	payload.ServiceInstanceCrn = &serviceInstanceCrn
 	allendpoints, response, err := endpointservice.GetAllEndpoints(payload)
 	if err != nil {
-		return fmt.Errorf("Error Getting All Endpoint: %s,%d", err, response.StatusCode)
+		return fmt.Errorf("Error Getting All Endpoint: %s,%s", err, response)
 	}
 	endpointsMap := make([]map[string]interface{}, 0, len(*allendpoints))
 

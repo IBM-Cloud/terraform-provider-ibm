@@ -304,12 +304,13 @@ func classicFipGet(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	floatingip, response, err := sess.GetFloatingIp(options)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting Floating IP (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
+
 	}
 	d.Set(isFloatingIPName, *floatingip.Name)
 	d.Set(isFloatingIPAddress, *floatingip.Address)
@@ -345,12 +346,13 @@ func fipGet(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	floatingip, response, err := sess.GetFloatingIp(options)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting Floating IP (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
+
 	}
 	d.Set(isFloatingIPName, *floatingip.Name)
 	d.Set(isFloatingIPAddress, *floatingip.Address)
@@ -523,11 +525,13 @@ func classicFipDelete(d *schema.ResourceData, meta interface{}, id string) error
 		ID: &id,
 	}
 	_, response, err := sess.GetFloatingIp(getFloatingIpOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
+
 		return fmt.Errorf("Error Getting Floating IP (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		return nil
+
 	}
 
 	options := &vpcclassicv1.ReleaseFloatingIpOptions{
@@ -554,11 +558,12 @@ func fipDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	_, response, err := sess.GetFloatingIp(getFloatingIpOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
+
 		return fmt.Errorf("Error Getting Floating IP (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		return nil
 	}
 
 	options := &vpcv1.ReleaseFloatingIpOptions{
@@ -584,53 +589,48 @@ func resourceIBMISFloatingIPExists(d *schema.ResourceData, meta interface{}) (bo
 	id := d.Id()
 
 	if userDetails.generation == 1 {
-		err := classicFipExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := classicFipExists(d, meta, id)
+		return exists, err
 	} else {
-		err := fipExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := fipExists(d, meta, id)
+		return exists, err
 	}
-	return true, nil
 }
 
-func classicFipExists(d *schema.ResourceData, meta interface{}, id string) error {
+func classicFipExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	getFloatingIpOptions := &vpcclassicv1.GetFloatingIpOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetFloatingIp(getFloatingIpOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting Floating IP: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting floating IP: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }
 
-func fipExists(d *schema.ResourceData, meta interface{}, id string) error {
+func fipExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	getFloatingIpOptions := &vpcv1.GetFloatingIpOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetFloatingIp(getFloatingIpOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting Floating IP: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting floating IP: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }
 
 func isWaitForClassicFloatingIPDeleted(fip *vpcclassicv1.VpcClassicV1, id string, timeout time.Duration) (interface{}, error) {
@@ -655,11 +655,11 @@ func isClassicFloatingIPDeleteRefreshFunc(fip *vpcclassicv1.VpcClassicV1, id str
 			ID: &id,
 		}
 		FloatingIP, response, err := fip.GetFloatingIp(getfipoptions)
-		if err != nil && response.StatusCode != 404 {
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return FloatingIP, isFloatingIPDeleted, nil
+			}
 			return FloatingIP, "", fmt.Errorf("Error Getting Floating IP: %s\n%s", err, response)
-		}
-		if response.StatusCode == 404 {
-			return FloatingIP, isFloatingIPDeleted, nil
 		}
 		return FloatingIP, isFloatingIPDeleting, err
 	}
@@ -687,11 +687,11 @@ func isFloatingIPDeleteRefreshFunc(fip *vpcv1.VpcV1, id string) resource.StateRe
 			ID: &id,
 		}
 		FloatingIP, response, err := fip.GetFloatingIp(getfipoptions)
-		if err != nil && response.StatusCode != 404 {
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return FloatingIP, isFloatingIPDeleted, nil
+			}
 			return FloatingIP, "", fmt.Errorf("Error Getting Floating IP: %s\n%s", err, response)
-		}
-		if response.StatusCode == 404 {
-			return FloatingIP, isFloatingIPDeleted, nil
 		}
 		return FloatingIP, isFloatingIPDeleting, err
 	}

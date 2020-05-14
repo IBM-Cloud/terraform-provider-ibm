@@ -395,12 +395,12 @@ func classicPgwGet(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	publicgw, response, err := sess.GetPublicGateway(getPublicGatewayOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error getting Public Gateway : %s\n%s", err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set("id", *publicgw.ID)
 	d.Set(isPublicGatewayName, *publicgw.Name)
@@ -441,12 +441,12 @@ func pgwGet(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	publicgw, response, err := sess.GetPublicGateway(getPublicGatewayOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error getting Public Gateway : %s\n%s", err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set("id", *publicgw.ID)
 	d.Set(isPublicGatewayName, *publicgw.Name)
@@ -606,12 +606,11 @@ func classicPgwDelete(d *schema.ResourceData, meta interface{}, id string) error
 		ID: &id,
 	}
 	_, response, err := sess.GetPublicGateway(getPublicGatewayOptions)
-
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
-	}
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting Public Gateway (%s): %s\n%s", id, err, response)
 	}
 
@@ -640,12 +639,11 @@ func pgwDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	_, response, err := sess.GetPublicGateway(getPublicGatewayOptions)
-
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
-	}
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting Public Gateway (%s): %s\n%s", id, err, response)
 	}
 
@@ -686,11 +684,11 @@ func isClassicPublicGatewayDeleteRefreshFunc(pg *vpcclassicv1.VpcClassicV1, id s
 			ID: &id,
 		}
 		pgw, response, err := pg.GetPublicGateway(getPublicGatewayOptions)
-		if err != nil && response != nil && response.StatusCode != 404 {
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return pgw, isPublicGatewayDeleted, nil
+			}
 			return nil, "", fmt.Errorf("The Public Gateway %s failed to delete: %s\n%s", id, err, response)
-		}
-		if response != nil && response.StatusCode == 404 {
-			return pgw, isPublicGatewayDeleted, nil
 		}
 		return pgw, isPublicGatewayDeleting, nil
 	}
@@ -718,11 +716,11 @@ func isPublicGatewayDeleteRefreshFunc(pg *vpcv1.VpcV1, id string) resource.State
 			ID: &id,
 		}
 		pgw, response, err := pg.GetPublicGateway(getPublicGatewayOptions)
-		if err != nil && response != nil && response.StatusCode != 404 {
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return pgw, isPublicGatewayDeleted, nil
+			}
 			return nil, "", fmt.Errorf("The Public Gateway %s failed to delete: %s\n%s", id, err, response)
-		}
-		if response != nil && response.StatusCode == 404 {
-			return pgw, isPublicGatewayDeleted, nil
 		}
 		return pgw, isPublicGatewayDeleting, nil
 	}
@@ -735,51 +733,46 @@ func resourceIBMISPublicGatewayExists(d *schema.ResourceData, meta interface{}) 
 	}
 	id := d.Id()
 	if userDetails.generation == 1 {
-		err := classicPgwExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := classicPgwExists(d, meta, id)
+		return exists, err
 	} else {
-		err := pgwExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := pgwExists(d, meta, id)
+		return exists, err
 	}
-	return true, nil
 }
 
-func classicPgwExists(d *schema.ResourceData, meta interface{}, id string) error {
+func classicPgwExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	getPublicGatewayOptions := &vpcclassicv1.GetPublicGatewayOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetPublicGateway(getPublicGatewayOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting Public Gateway: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting Public Gateway: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }
 
-func pgwExists(d *schema.ResourceData, meta interface{}, id string) error {
+func pgwExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	getPublicGatewayOptions := &vpcv1.GetPublicGatewayOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetPublicGateway(getPublicGatewayOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting Public Gateway: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting Public Gateway: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }

@@ -163,7 +163,7 @@ func resourceIBMPrivateDnsPermittedNetworkDelete(d *schema.ResourceData, meta in
 	deletePermittedNetworkOptions := sess.NewDeletePermittedNetworkOptions(id_set[0], id_set[1], id_set[2])
 	_, response, err := sess.DeletePermittedNetwork(deletePermittedNetworkOptions)
 
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
 		log.Printf("Error deleting dns zone:%s", response)
 		return err
 	}
@@ -181,8 +181,8 @@ func resourceIBMPrivateDnsPermittedNetworkExists(d *schema.ResourceData, meta in
 	id_set := strings.Split(d.Id(), "/")
 	getPermittedNetworkOptions := sess.NewGetPermittedNetworkOptions(id_set[0], id_set[1], id_set[2])
 	_, response, err := sess.GetPermittedNetwork(getPermittedNetworkOptions)
-	if err != nil && response.StatusCode != 404 {
-		if response.StatusCode == 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
 		return false, err

@@ -246,12 +246,12 @@ func classicSgnicGet(d *schema.ResourceData, meta interface{}, sgID, nicID strin
 		ID:              &nicID,
 	}
 	instanceNic, response, err := sess.GetSecurityGroupNetworkInterface(getSecurityGroupNetworkInterfaceOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error getting NetworkInterface(%s) for the SecurityGroup (%s) : %s\n%s", nicID, sgID, err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set(isSGNICAGroupId, sgID)
 	d.Set(isSGNICANicId, nicID)
@@ -298,12 +298,12 @@ func sgnicGet(d *schema.ResourceData, meta interface{}, sgID, nicID string) erro
 		ID:              &nicID,
 	}
 	instanceNic, response, err := sess.GetSecurityGroupNetworkInterface(getSecurityGroupNetworkInterfaceOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error getting NetworkInterface(%s) for the SecurityGroup (%s) : %s\n%s", nicID, sgID, err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set(isSGNICAGroupId, sgID)
 	d.Set(isSGNICANicId, nicID)
@@ -378,11 +378,11 @@ func classicSgnicDelete(d *schema.ResourceData, meta interface{}, sgID, nicID st
 		ID:              &nicID,
 	}
 	_, response, err := sess.GetSecurityGroupNetworkInterface(getSecurityGroupNetworkInterfaceOptions)
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
-	}
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error getting NetworkInterface(%s) for the SecurityGroup (%s) : %s\n%s", nicID, sgID, err, response)
 	}
 
@@ -409,11 +409,11 @@ func sgnicDelete(d *schema.ResourceData, meta interface{}, sgID, nicID string) e
 		ID:              &nicID,
 	}
 	_, response, err := sess.GetSecurityGroupNetworkInterface(getSecurityGroupNetworkInterfaceOptions)
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
-	}
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error getting NetworkInterface(%s) for the SecurityGroup (%s) : %s\n%s", nicID, sgID, err, response)
 	}
 
@@ -442,53 +442,48 @@ func resourceIBMISSecurityGroupNetworkInterfaceAttachmentExists(d *schema.Resour
 	sgID := parts[0]
 	nicID := parts[1]
 	if userDetails.generation == 1 {
-		err := classicSgnicExists(d, meta, sgID, nicID)
-		if err != nil {
-			return false, err
-		}
+		exists, err := classicSgnicExists(d, meta, sgID, nicID)
+		return exists, err
 	} else {
-		err := sgnicExists(d, meta, sgID, nicID)
-		if err != nil {
-			return false, err
-		}
+		exists, err := sgnicExists(d, meta, sgID, nicID)
+		return exists, err
 	}
-	return true, nil
 }
 
-func classicSgnicExists(d *schema.ResourceData, meta interface{}, sgID, nicID string) error {
+func classicSgnicExists(d *schema.ResourceData, meta interface{}, sgID, nicID string) (bool, error) {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	getSecurityGroupNetworkInterfaceOptions := &vpcclassicv1.GetSecurityGroupNetworkInterfaceOptions{
 		SecurityGroupID: &sgID,
 		ID:              &nicID,
 	}
 	_, response, err := sess.GetSecurityGroupNetworkInterface(getSecurityGroupNetworkInterfaceOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting NetworkInterface(%s) for the SecurityGroup (%s) : %s\n%s", nicID, sgID, err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting NetworkInterface(%s) for the SecurityGroup (%s) : %s\n%s", nicID, sgID, err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }
 
-func sgnicExists(d *schema.ResourceData, meta interface{}, sgID, nicID string) error {
+func sgnicExists(d *schema.ResourceData, meta interface{}, sgID, nicID string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	getSecurityGroupNetworkInterfaceOptions := &vpcv1.GetSecurityGroupNetworkInterfaceOptions{
 		SecurityGroupID: &sgID,
 		ID:              &nicID,
 	}
 	_, response, err := sess.GetSecurityGroupNetworkInterface(getSecurityGroupNetworkInterfaceOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting NetworkInterface(%s) for the SecurityGroup (%s) : %s\n%s", nicID, sgID, err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting NetworkInterface(%s) for the SecurityGroup (%s) : %s\n%s", nicID, sgID, err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }

@@ -300,12 +300,12 @@ func classicLBGet(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	lb, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error getting Load Balancer : %s\n%s", err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set("id", *lb.ID)
 	d.Set(isLBName, *lb.Name)
@@ -375,12 +375,12 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	lb, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error getting Load Balancer : %s\n%s", err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set("id", *lb.ID)
 	d.Set(isLBName, *lb.Name)
@@ -567,12 +567,11 @@ func classicLBDelete(d *schema.ResourceData, meta interface{}, id string) error 
 		ID: &id,
 	}
 	_, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
-
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
-	}
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting vpc load balancer(%s): %s\n%s", id, err, response)
 	}
 
@@ -601,12 +600,11 @@ func lbDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	_, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
-
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
-	}
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting vpc load balancer(%s): %s\n%s", id, err, response)
 	}
 
@@ -647,11 +645,11 @@ func isClassicLBDeleteRefreshFunc(lbc *vpcclassicv1.VpcClassicV1, id string) res
 			ID: &id,
 		}
 		lb, response, err := lbc.GetLoadBalancer(getLoadBalancerOptions)
-		if err != nil && response.StatusCode != 404 {
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return lb, isLBDeleted, nil
+			}
 			return nil, *lb.ProvisioningStatus, fmt.Errorf("The vpc load balancer %s failed to delete: %s\n%s", id, err, response)
-		}
-		if response.StatusCode == 404 {
-			return lb, isLBDeleted, nil
 		}
 		return lb, isLBDeleting, nil
 	}
@@ -679,11 +677,11 @@ func isLBDeleteRefreshFunc(lbc *vpcv1.VpcV1, id string) resource.StateRefreshFun
 			ID: &id,
 		}
 		lb, response, err := lbc.GetLoadBalancer(getLoadBalancerOptions)
-		if err != nil && response.StatusCode != 404 {
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return lb, isLBDeleted, nil
+			}
 			return nil, *lb.ProvisioningStatus, fmt.Errorf("The vpc load balancer %s failed to delete: %s\n%s", id, err, response)
-		}
-		if response.StatusCode == 404 {
-			return lb, isLBDeleted, nil
 		}
 		return lb, isLBDeleting, nil
 	}
@@ -696,53 +694,48 @@ func resourceIBMISLBExists(d *schema.ResourceData, meta interface{}) (bool, erro
 	}
 	id := d.Id()
 	if userDetails.generation == 1 {
-		err := classicLBExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := classicLBExists(d, meta, id)
+		return exists, err
 	} else {
-		err := lbExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := lbExists(d, meta, id)
+		return exists, err
 	}
-	return true, nil
 }
 
-func classicLBExists(d *schema.ResourceData, meta interface{}, id string) error {
+func classicLBExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	getLoadBalancerOptions := &vpcclassicv1.GetLoadBalancerOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting vpc load balancer: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting vpc load balancer: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }
 
-func lbExists(d *schema.ResourceData, meta interface{}, id string) error {
+func lbExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	getLoadBalancerOptions := &vpcv1.GetLoadBalancerOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting vpc load balancer: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting vpc load balancer: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }
 
 func isWaitForLBAvailable(sess *vpcv1.VpcV1, lbId string, timeout time.Duration) (interface{}, error) {

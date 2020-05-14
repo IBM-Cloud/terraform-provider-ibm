@@ -418,12 +418,12 @@ func classicSubnetGet(d *schema.ResourceData, meta interface{}, id string) error
 		ID: &id,
 	}
 	subnet, response, err := sess.GetSubnet(getSubnetOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting Subnet (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set("id", *subnet.ID)
 	d.Set(isSubnetName, *subnet.Name)
@@ -464,12 +464,12 @@ func subnetGet(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	subnet, response, err := sess.GetSubnet(getSubnetOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting Subnet (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set("id", *subnet.ID)
 	d.Set(isSubnetName, *subnet.Name)
@@ -660,11 +660,11 @@ func classicSubnetDelete(d *schema.ResourceData, meta interface{}, id string) er
 		ID: &id,
 	}
 	subnet, response, err := sess.GetSubnet(getSubnetOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
 		return fmt.Errorf("Error Getting Subnet (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		return nil
 	}
 	if subnet.PublicGateway != nil {
 		deleteSubnetPublicGatewayBindingOptions := &vpcclassicv1.DeleteSubnetPublicGatewayBindingOptions{
@@ -703,11 +703,11 @@ func subnetDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	subnet, response, err := sess.GetSubnet(getSubnetOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
 		return fmt.Errorf("Error Getting Subnet (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		return nil
 	}
 	if subnet.PublicGateway != nil {
 		deleteSubnetPublicGatewayBindingOptions := &vpcv1.DeleteSubnetPublicGatewayBindingOptions{
@@ -759,11 +759,11 @@ func isClassicSubnetDeleteRefreshFunc(subnetC *vpcclassicv1.VpcClassicV1, id str
 			ID: &id,
 		}
 		subnet, response, err := subnetC.GetSubnet(getSubnetOptions)
-		if err != nil && response.StatusCode != 404 {
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return subnet, isSubnetDeleted, nil
+			}
 			return subnet, "", fmt.Errorf("The Subnet %s failed to delete: %s\n%s", id, err, response)
-		}
-		if response.StatusCode == 404 {
-			return subnet, isSubnetDeleted, nil
 		}
 		return subnet, isSubnetDeleting, err
 	}
@@ -791,11 +791,11 @@ func isSubnetDeleteRefreshFunc(subnetC *vpcv1.VpcV1, id string) resource.StateRe
 			ID: &id,
 		}
 		subnet, response, err := subnetC.GetSubnet(getSubnetOptions)
-		if err != nil && response.StatusCode != 404 {
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return subnet, isSubnetDeleted, nil
+			}
 			return subnet, "", fmt.Errorf("The Subnet %s failed to delete: %s\n%s", id, err, response)
-		}
-		if response.StatusCode == 404 {
-			return subnet, isSubnetDeleted, nil
 		}
 		return subnet, isSubnetDeleting, err
 	}
@@ -808,51 +808,46 @@ func resourceIBMISSubnetExists(d *schema.ResourceData, meta interface{}) (bool, 
 	}
 	id := d.Id()
 	if userDetails.generation == 1 {
-		err := classicSubnetExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := classicSubnetExists(d, meta, id)
+		return exists, err
 	} else {
-		err := vpcExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := subnetExists(d, meta, id)
+		return exists, err
 	}
-	return true, nil
 }
 
-func classicSubnetExists(d *schema.ResourceData, meta interface{}, id string) error {
+func classicSubnetExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	getsubnetOptions := &vpcclassicv1.GetSubnetOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetSubnet(getsubnetOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting Subnet: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting Subnet: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }
 
-func subnetExists(d *schema.ResourceData, meta interface{}, id string) error {
+func subnetExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	getsubnetOptions := &vpcv1.GetSubnetOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetSubnet(getsubnetOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting Subnet: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting Subnet: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }

@@ -347,12 +347,12 @@ func classicLBPoolGet(d *schema.ResourceData, meta interface{}, lbID, lbPoolID s
 		ID:             &lbPoolID,
 	}
 	lbPool, response, err := sess.GetLoadBalancerPool(getLoadBalancerPoolOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting Load Balancer Pool : %s\n%s", err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 
 	d.Set(isLBPoolName, *lbPool.Name)
@@ -391,12 +391,12 @@ func lbPoolGet(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) 
 	}
 
 	lbPool, response, err := sess.GetLoadBalancerPool(getLoadBalancerPoolOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting Load Balancer Pool : %s\n%s", err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set(isLBPoolName, *lbPool.Name)
 	d.Set(isLBPool, lbPoolID)
@@ -673,12 +673,12 @@ func classicLBPoolDelete(d *schema.ResourceData, meta interface{}, lbID, lbPoolI
 	}
 	_, response, err := sess.GetLoadBalancerPool(getLoadBalancerPoolOptions)
 
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting vpc load balancer pool(%s): %s\n%s", lbPoolID, err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	_, err = isWaitForClassicLBAvailable(sess, lbID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
@@ -725,14 +725,13 @@ func lbPoolDelete(d *schema.ResourceData, meta interface{}, lbID, lbPoolID strin
 		ID:             &lbPoolID,
 	}
 	_, response, err := sess.GetLoadBalancerPool(getLoadBalancerPoolOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting vpc load balancer pool(%s): %s\n%s", lbPoolID, err, response)
 	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
-	}
-
 	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return fmt.Errorf(
@@ -783,23 +782,18 @@ func resourceIBMISLBPoolExists(d *schema.ResourceData, meta interface{}) (bool, 
 	lbPoolID := parts[1]
 
 	if userDetails.generation == 1 {
-		err := classicLBPoolExists(d, meta, lbID, lbPoolID)
-		if err != nil {
-			return false, err
-		}
+		exists, err := classicLBPoolExists(d, meta, lbID, lbPoolID)
+		return exists, err
 	} else {
-		err := lbPoolExists(d, meta, lbID, lbPoolID)
-		if err != nil {
-			return false, err
-		}
+		exists, err := lbPoolExists(d, meta, lbID, lbPoolID)
+		return exists, err
 	}
-	return true, nil
 }
 
-func classicLBPoolExists(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) error {
+func classicLBPoolExists(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) (bool, error) {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	getLoadBalancerPoolOptions := &vpcclassicv1.GetLoadBalancerPoolOptions{
@@ -807,19 +801,19 @@ func classicLBPoolExists(d *schema.ResourceData, meta interface{}, lbID, lbPoolI
 		ID:             &lbPoolID,
 	}
 	_, response, err := sess.GetLoadBalancerPool(getLoadBalancerPoolOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting Load balancer pool: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting Load balancer pool: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }
 
-func lbPoolExists(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) error {
+func lbPoolExists(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	getLoadBalancerPoolOptions := &vpcv1.GetLoadBalancerPoolOptions{
@@ -827,13 +821,13 @@ func lbPoolExists(d *schema.ResourceData, meta interface{}, lbID, lbPoolID strin
 		ID:             &lbPoolID,
 	}
 	_, response, err := sess.GetLoadBalancerPool(getLoadBalancerPoolOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting Load balancer pool: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting Load balancer pool: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }
 
 func isWaitForLBPoolActive(sess *vpcv1.VpcV1, lbId, lbPoolId string, timeout time.Duration) (interface{}, error) {
@@ -929,11 +923,11 @@ func isClassicLBPoolDeleteRefreshFunc(lbc *vpcclassicv1.VpcClassicV1, lbId, lbPo
 			ID:             &lbPoolId,
 		}
 		lbPool, response, err := lbc.GetLoadBalancerPool(getlbpOptions)
-		if err != nil && response.StatusCode != 404 {
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return lbPool, isLBPoolDeleteDone, nil
+			}
 			return nil, "", fmt.Errorf("The vpc load balancer pool %s failed to delete: %s\n%s", lbPoolId, err, response)
-		}
-		if response.StatusCode == 404 {
-			return lbPool, isLBPoolDeleteDone, nil
 		}
 		return lbPool, isLBPoolDeletePending, nil
 	}
@@ -962,11 +956,11 @@ func isLBPoolDeleteRefreshFunc(lbc *vpcv1.VpcV1, lbId, lbPoolId string) resource
 			ID:             &lbPoolId,
 		}
 		lbPool, response, err := lbc.GetLoadBalancerPool(getlbpOptions)
-		if err != nil && response.StatusCode != 404 {
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return lbPool, isLBPoolDeleteDone, nil
+			}
 			return nil, "", fmt.Errorf("The vpc load balancer pool %s failed to delete: %s\n%s", lbPoolId, err, response)
-		}
-		if response.StatusCode == 404 {
-			return lbPool, isLBPoolDeleteDone, nil
 		}
 		return lbPool, isLBPoolDeletePending, nil
 	}
