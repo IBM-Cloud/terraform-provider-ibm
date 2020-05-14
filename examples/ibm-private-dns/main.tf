@@ -118,3 +118,7 @@ data "ibm_dns_zones" "test" {
   instance_id = ibm_resource_instance.test-pdns-instance.guid
 }
 
+data "ibm_dns_resource_records" "test-res-rec" {
+  instance_id = ibm_resource_instance.test-pdns-instance.guid
+  zone_id = ibm_dns_resource_record.test-pdns-resource-record-a.zone_id
+}
