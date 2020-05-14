@@ -327,12 +327,12 @@ func classicVpngwGet(d *schema.ResourceData, meta interface{}, id string) error 
 		ID: &id,
 	}
 	VPNGateway, response, err := sess.GetVpnGateway(getVpnGatewayOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting Vpn Gateway (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set(isVPNGatewayName, *VPNGateway.Name)
 	d.Set(isVPNGatewaySubnet, *VPNGateway.Subnet.ID)
@@ -368,12 +368,12 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	VPNGateway, response, err := sess.GetVpnGateway(getVpnGatewayOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting Vpn Gateway (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set(isVPNGatewayName, *VPNGateway.Name)
 	d.Set(isVPNGatewaySubnet, *VPNGateway.Subnet.ID)
@@ -525,11 +525,11 @@ func classicVpngwDelete(d *schema.ResourceData, meta interface{}, id string) err
 		ID: &id,
 	}
 	_, response, err := sess.GetVpnGateway(getVpnGatewayOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
 		return fmt.Errorf("Error Getting Vpn Gateway (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		return nil
 	}
 
 	options := &vpcclassicv1.DeleteVpnGatewayOptions{
@@ -557,11 +557,11 @@ func vpngwDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	_, response, err := sess.GetVpnGateway(getVpnGatewayOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
 		return fmt.Errorf("Error Getting Vpn Gateway (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		return nil
 	}
 
 	options := &vpcv1.DeleteVpnGatewayOptions{
@@ -600,11 +600,11 @@ func isClassicVpnGatewayDeleteRefreshFunc(vpnGateway *vpcclassicv1.VpcClassicV1,
 			ID: &id,
 		}
 		vpngw, response, err := vpnGateway.GetVpnGateway(getVpnGatewayOptions)
-		if err != nil && response.StatusCode != 404 {
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return vpngw, isVPNGatewayDeleted, nil
+			}
 			return vpngw, "", fmt.Errorf("Error Getting Vpn Gateway: %s\n%s", err, response)
-		}
-		if response.StatusCode == 404 {
-			return vpngw, isVPNGatewayDeleted, nil
 		}
 		return nil, isVPNGatewayDeleting, err
 	}
@@ -631,11 +631,11 @@ func isVpnGatewayDeleteRefreshFunc(vpnGateway *vpcv1.VpcV1, id string) resource.
 			ID: &id,
 		}
 		vpngw, response, err := vpnGateway.GetVpnGateway(getVpnGatewayOptions)
-		if err != nil && response.StatusCode != 404 {
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return vpngw, isVPNGatewayDeleted, nil
+			}
 			return vpngw, "", fmt.Errorf("Error Getting Vpn Gateway: %s\n%s", err, response)
-		}
-		if response.StatusCode == 404 {
-			return vpngw, isVPNGatewayDeleted, nil
 		}
 		return nil, isVPNGatewayDeleting, err
 	}
@@ -648,51 +648,46 @@ func resourceIBMISVPNGatewayExists(d *schema.ResourceData, meta interface{}) (bo
 	}
 	id := d.Id()
 	if userDetails.generation == 1 {
-		err := classicVpngwExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := classicVpngwExists(d, meta, id)
+		return exists, err
 	} else {
-		err := vpngwExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := vpngwExists(d, meta, id)
+		return exists, err
 	}
-	return true, nil
 }
 
-func classicVpngwExists(d *schema.ResourceData, meta interface{}, id string) error {
+func classicVpngwExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	getVpnGatewayOptions := &vpcclassicv1.GetVpnGatewayOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetVpnGateway(getVpnGatewayOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting Vpn Gatewa: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting Vpn Gatewa: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }
 
-func vpngwExists(d *schema.ResourceData, meta interface{}, id string) error {
+func vpngwExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	getVpnGatewayOptions := &vpcv1.GetVpnGatewayOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetVpnGateway(getVpnGatewayOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting Vpn Gatewa: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting Vpn Gatewa: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }

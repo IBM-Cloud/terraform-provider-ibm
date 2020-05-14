@@ -262,13 +262,14 @@ func classicIpsecpGet(d *schema.ResourceData, meta interface{}, id string) error
 		ID: &id,
 	}
 	ipSec, response, err := sess.GetIpsecPolicy(getIpsecPolicyOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error getting IPSEC Policy(%s): %s\n%s", id, err, response)
 	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
-	}
+
 	d.Set(isIpSecName, *ipSec.Name)
 	d.Set(isIpSecAuthenticationAlg, *ipSec.AuthenticationAlgorithm)
 	d.Set(isIpSecEncryptionAlg, *ipSec.EncryptionAlgorithm)
@@ -325,12 +326,12 @@ func ipsecpGet(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	ipSec, response, err := sess.GetIpsecPolicy(getIpsecPolicyOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error getting IPSEC Policy(%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set(isIpSecName, *ipSec.Name)
 	d.Set(isIpSecAuthenticationAlg, *ipSec.AuthenticationAlgorithm)
@@ -478,12 +479,12 @@ func classicIpsecpDelete(d *schema.ResourceData, meta interface{}, id string) er
 		ID: &id,
 	}
 	_, response, err := sess.GetIpsecPolicy(getIpsecPolicyOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error getting IPSEC Policy(%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 
 	deleteIpsecPolicyOptions := &vpcclassicv1.DeleteIpsecPolicyOptions{
@@ -506,14 +507,13 @@ func ipsecpDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	_, response, err := sess.GetIpsecPolicy(getIpsecPolicyOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error getting IPSEC Policy(%s): %s\n%s", id, err, response)
 	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
-	}
-
 	deleteIpsecPolicyOptions := &vpcv1.DeleteIpsecPolicyOptions{
 		ID: &id,
 	}
@@ -533,51 +533,46 @@ func resourceIBMISIPSecPolicyExists(d *schema.ResourceData, meta interface{}) (b
 	id := d.Id()
 
 	if userDetails.generation == 1 {
-		err := classicIpsecpExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := classicIpsecpExists(d, meta, id)
+		return exists, err
 	} else {
-		err := ipsecpExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := ipsecpExists(d, meta, id)
+		return exists, err
 	}
-	return true, nil
 }
 
-func classicIpsecpExists(d *schema.ResourceData, meta interface{}, id string) error {
+func classicIpsecpExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	getIpsecPolicyOptions := &vpcclassicv1.GetIpsecPolicyOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetIpsecPolicy(getIpsecPolicyOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting IPSEC Policy(%s): %s\n%s", id, err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting IPSEC Policy(%s): %s\n%s", id, err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }
 
-func ipsecpExists(d *schema.ResourceData, meta interface{}, id string) error {
+func ipsecpExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	getIpsecPolicyOptions := &vpcv1.GetIpsecPolicyOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetIpsecPolicy(getIpsecPolicyOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting IPSEC Policy(%s): %s\n%s", id, err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting IPSEC Policy(%s): %s\n%s", id, err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }

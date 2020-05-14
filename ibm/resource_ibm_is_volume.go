@@ -334,12 +334,12 @@ func classicVolGet(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	vol, response, err := sess.GetVolume(options)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting Volume (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.SetId(*vol.ID)
 	d.Set(isVolumeName, *vol.Name)
@@ -382,12 +382,12 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	vol, response, err := sess.GetVolume(options)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting Volume (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.SetId(*vol.ID)
 	d.Set(isVolumeName, *vol.Name)
@@ -546,11 +546,11 @@ func classicVolDelete(d *schema.ResourceData, meta interface{}, id string) error
 		ID: &id,
 	}
 	_, response, err := sess.GetVolume(getvoloptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
 		return fmt.Errorf("Error Getting Volume (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		return nil
 	}
 
 	options := &vpcclassicv1.DeleteVolumeOptions{
@@ -578,11 +578,11 @@ func volDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		ID: &id,
 	}
 	_, response, err := sess.GetVolume(getvoloptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
 		return fmt.Errorf("Error Getting Volume (%s): %s\n%s", id, err, response)
-	}
-	if response.StatusCode == 404 {
-		return nil
 	}
 
 	options := &vpcv1.DeleteVolumeOptions{
@@ -621,11 +621,11 @@ func isClassicVolumeDeleteRefreshFunc(vol *vpcclassicv1.VpcClassicV1, id string)
 			ID: &id,
 		}
 		vol, response, err := vol.GetVolume(volgetoptions)
-		if err != nil && response.StatusCode != 404 {
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return vol, isVolumeDeleted, nil
+			}
 			return vol, "", fmt.Errorf("Error Getting Volume: %s\n%s", err, response)
-		}
-		if response.StatusCode == 404 {
-			return vol, isVolumeDeleted, nil
 		}
 		return vol, isVolumeDeleting, err
 	}
@@ -652,11 +652,11 @@ func isVolumeDeleteRefreshFunc(vol *vpcv1.VpcV1, id string) resource.StateRefres
 			ID: &id,
 		}
 		vol, response, err := vol.GetVolume(volgetoptions)
-		if err != nil && response.StatusCode != 404 {
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return vol, isVolumeDeleted, nil
+			}
 			return vol, "", fmt.Errorf("Error Getting Volume: %s\n%s", err, response)
-		}
-		if response.StatusCode == 404 {
-			return vol, isVolumeDeleted, nil
 		}
 		return vol, isVolumeDeleting, err
 	}
@@ -670,53 +670,48 @@ func resourceIBMISVolumeExists(d *schema.ResourceData, meta interface{}) (bool, 
 	id := d.Id()
 
 	if userDetails.generation == 1 {
-		err := classicVolExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := classicVolExists(d, meta, id)
+		return exists, err
 	} else {
-		err := volExists(d, meta, id)
-		if err != nil {
-			return false, err
-		}
+		exists, err := volExists(d, meta, id)
+		return exists, err
 	}
-	return true, nil
 }
 
-func classicVolExists(d *schema.ResourceData, meta interface{}, id string) error {
+func classicVolExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	options := &vpcclassicv1.GetVolumeOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetVolume(options)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting Volume: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting Volume: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }
 
-func volExists(d *schema.ResourceData, meta interface{}, id string) error {
+func volExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	options := &vpcv1.GetVolumeOptions{
 		ID: &id,
 	}
 	_, response, err := sess.GetVolume(options)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting Volume: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting Volume: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }
 
 func isWaitForClassicVolumeAvailable(client *vpcclassicv1.VpcClassicV1, id string, timeout time.Duration) (interface{}, error) {

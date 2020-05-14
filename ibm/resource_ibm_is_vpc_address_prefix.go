@@ -176,12 +176,12 @@ func classicVpcAddressPrefixGet(d *schema.ResourceData, meta interface{}, vpcID,
 		ID:    &addrPrefixID,
 	}
 	addrPrefix, response, err := sess.GetVpcAddressPrefix(getvpcAddressPrefixOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set(isVPCAddressPrefixPrefixName, *addrPrefix.Name)
 	if addrPrefix.Zone != nil {
@@ -203,12 +203,12 @@ func vpcAddressPrefixGet(d *schema.ResourceData, meta interface{}, vpcID, addrPr
 		ID:    &addrPrefixID,
 	}
 	addrPrefix, response, err := sess.GetVpcAddressPrefix(getvpcAddressPrefixOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
-	}
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return nil
 	}
 	d.Set(isVPCAddressPrefixPrefixName, *addrPrefix.Name)
 	if addrPrefix.Zone != nil {
@@ -342,23 +342,22 @@ func classicVpcAddressPrefixDelete(d *schema.ResourceData, meta interface{}, vpc
 		ID:    &addrPrefixID,
 	}
 	_, response, err := sess.GetVpcAddressPrefix(getvpcAddressPrefixOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
 		return fmt.Errorf("Error Getting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-
 	deletevpcAddressPrefixOptions := &vpcclassicv1.DeleteVpcAddressPrefixOptions{
 		VpcID: &vpcID,
 		ID:    &addrPrefixID,
 	}
 	response, err = sess.DeleteVpcAddressPrefix(deletevpcAddressPrefixOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
 		return fmt.Errorf("Error Deleting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
-	}
-	if response.StatusCode == 404 {
-		return nil
 	}
 	d.SetId("")
 	return nil
@@ -375,11 +374,11 @@ func vpcAddressPrefixDelete(d *schema.ResourceData, meta interface{}, vpcID, add
 		ID:    &addrPrefixID,
 	}
 	_, response, err := sess.GetVpcAddressPrefix(getvpcAddressPrefixOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
 		return fmt.Errorf("Error Getting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
-	}
-	if response.StatusCode == 404 {
-		return nil
 	}
 
 	deletevpcAddressPrefixOptions := &vpcv1.DeleteVpcAddressPrefixOptions{
@@ -387,11 +386,11 @@ func vpcAddressPrefixDelete(d *schema.ResourceData, meta interface{}, vpcID, add
 		ID:    &addrPrefixID,
 	}
 	response, err = sess.DeleteVpcAddressPrefix(deletevpcAddressPrefixOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
 		return fmt.Errorf("Error Deleting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
-	}
-	if response.StatusCode == 404 {
-		return nil
 	}
 	d.SetId("")
 	return nil
@@ -410,53 +409,48 @@ func resourceIBMISVpcAddressPrefixExists(d *schema.ResourceData, meta interface{
 	addrPrefixID := parts[1]
 
 	if userDetails.generation == 1 {
-		err := classicVpcAddressPrefixExists(d, meta, vpcID, addrPrefixID)
-		if err != nil {
-			return false, err
-		}
+		exists, err := classicVpcAddressPrefixExists(d, meta, vpcID, addrPrefixID)
+		return exists, err
 	} else {
-		err := vpcAddressPrefixExists(d, meta, vpcID, addrPrefixID)
-		if err != nil {
-			return false, err
-		}
+		exists, err := vpcAddressPrefixExists(d, meta, vpcID, addrPrefixID)
+		return exists, err
 	}
-	return true, nil
 }
 
-func classicVpcAddressPrefixExists(d *schema.ResourceData, meta interface{}, vpcID, addrPrefixID string) error {
+func classicVpcAddressPrefixExists(d *schema.ResourceData, meta interface{}, vpcID, addrPrefixID string) (bool, error) {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	getvpcAddressPrefixOptions := &vpcclassicv1.GetVpcAddressPrefixOptions{
 		VpcID: &vpcID,
 		ID:    &addrPrefixID,
 	}
 	_, response, err := sess.GetVpcAddressPrefix(getvpcAddressPrefixOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting VPC Address Prefix: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting VPC Address Prefix: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }
 
-func vpcAddressPrefixExists(d *schema.ResourceData, meta interface{}, vpcID, addrPrefixID string) error {
+func vpcAddressPrefixExists(d *schema.ResourceData, meta interface{}, vpcID, addrPrefixID string) (bool, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		return false, err
 	}
 	getvpcAddressPrefixOptions := &vpcv1.GetVpcAddressPrefixOptions{
 		VpcID: &vpcID,
 		ID:    &addrPrefixID,
 	}
 	_, response, err := sess.GetVpcAddressPrefix(getvpcAddressPrefixOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error getting VPC Address Prefix: %s\n%s", err, response)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting VPC Address Prefix: %s\n%s", err, response)
 	}
-	if response.StatusCode == 404 {
-		return nil
-	}
-	return nil
+	return true, nil
 }

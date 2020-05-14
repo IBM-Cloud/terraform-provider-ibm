@@ -485,7 +485,7 @@ func resourceIBMPrivateDNSResourceRecordDelete(d *schema.ResourceData, meta inte
 	id_set := strings.Split(d.Id(), "/")
 	deleteResourceRecordOptions := sess.NewDeleteResourceRecordOptions(id_set[0], id_set[1], id_set[2])
 	response, err := sess.DeleteResourceRecord(deleteResourceRecordOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
 		log.Printf("Error deleting dns record:%s", response)
 		return err
 	}
@@ -504,8 +504,8 @@ func resourceIBMPrivateDNSResourceRecordExists(d *schema.ResourceData, meta inte
 	getResourceRecordOptions := sess.NewGetResourceRecordOptions(id_set[0], id_set[1], id_set[2])
 	_, response, err := sess.GetResourceRecord(getResourceRecordOptions)
 
-	if err != nil && response.StatusCode != 404 {
-		if response.StatusCode == 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
 		return false, err
