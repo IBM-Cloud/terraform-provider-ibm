@@ -100,7 +100,7 @@ func testAccCheckIBMAPIGatewayEndpointBasic(name string) string {
 	service_instance_crn= ibm_resource_instance.apigateway.id
 	name = "%s"
 	managed="true"
-    open_api_doc_name="/Users/kavya/SDK-test.json"
+    open_api_doc_name="test-fixtures/SDK-test.json"
 	}
 	  `, name)
 }
