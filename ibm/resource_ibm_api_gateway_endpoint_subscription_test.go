@@ -98,7 +98,7 @@ func testAccCheckIBMAPIGatewaySubscriptionBasic(name string) string {
 	service_instance_crn = ibm_resource_instance.apigateway.id
 	name="test-endpoint"
 	managed="true"
-	open_api_doc_name = "/Users/Name/SDK-test.json"
+	open_api_doc_name = "test-fixtures/SDK-test.json"
 	}
 	resource "ibm_api_gateway_endpoint_subscription" "subscription"{
 		artifact_id = ibm_api_gateway_endpoint.endpoint.endpoint_id
