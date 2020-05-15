@@ -397,19 +397,19 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string) (
 
 	if icmpInterface, ok := d.GetOk("icmp"); ok {
 		haveType := false
-		if icmpInterface.([]interface{})[0] == nil {
-			return nil, fmt.Errorf("Internal error. icmp interface is nil")
-		}
-		icmp := icmpInterface.([]interface{})[0].(map[string]interface{})
-		if value, ok := icmp["type"]; ok {
-			parsed.icmpType = int64(value.(int))
-			haveType = true
-		}
-		if value, ok := icmp["code"]; ok {
-			if !haveType {
-				return nil, fmt.Errorf("icmp code requires icmp type")
+		if icmpInterface.([]interface{})[0] != nil {
+
+			icmp := icmpInterface.([]interface{})[0].(map[string]interface{})
+			if value, ok := icmp["type"]; ok {
+				parsed.icmpType = int64(value.(int))
+				haveType = true
 			}
-			parsed.icmpCode = int64(value.(int))
+			if value, ok := icmp["code"]; ok {
+				if !haveType {
+					return nil, fmt.Errorf("icmp code requires icmp type")
+				}
+				parsed.icmpCode = int64(value.(int))
+			}
 		}
 		parsed.protocol = "icmp"
 	}
@@ -417,25 +417,25 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string) (
 		if tcpInterface, ok := d.GetOk(prot); ok {
 			haveMin := false
 			haveMax := false
-			if tcpInterface.([]interface{})[0] == nil {
-				return nil, fmt.Errorf("Internal error. %q interface is nil", prot)
-			}
-			ports := tcpInterface.([]interface{})[0].(map[string]interface{})
-			if value, ok := ports["port_min"]; ok {
-				parsed.portMin = int64(value.(int))
-				haveMin = true
-			}
-			if value, ok := ports["port_max"]; ok {
-				parsed.portMax = int64(value.(int))
-				haveMax = true
-			}
+			if tcpInterface.([]interface{})[0] != nil {
+				ports := tcpInterface.([]interface{})[0].(map[string]interface{})
+				//ports := tcpInterface.([]interface{})[0].(map[string]interface{})
+				if value, ok := ports["port_min"]; ok {
+					parsed.portMin = int64(value.(int))
+					haveMin = true
+				}
+				if value, ok := ports["port_max"]; ok {
+					parsed.portMax = int64(value.(int))
+					haveMax = true
+				}
 
-			// If only min or max is set, ensure that both min and max are set to the same value
-			if haveMin && !haveMax {
-				parsed.portMax = parsed.portMin
-			}
-			if haveMax && !haveMin {
-				parsed.portMin = parsed.portMax
+				// If only min or max is set, ensure that both min and max are set to the same value
+				if haveMin && !haveMax {
+					parsed.portMax = parsed.portMin
+				}
+				if haveMax && !haveMin {
+					parsed.portMin = parsed.portMax
+				}
 			}
 			parsed.protocol = prot
 		}
