@@ -91,6 +91,31 @@ resource "ibm_is_vpc" "testacc_vpc" {
 resource "ibm_is_security_group" "testacc_security_group" {
 	name = "%s"
 	vpc = "${ibm_is_vpc.testacc_vpc.id}"
-}`, vpcname, name)
+}
+
+resource "ibm_is_security_group_rule" "testacc_security_group_rule_icmp" {
+    group = ibm_is_security_group.testacc_security_group.id
+    direction = "inbound"
+    remote = "127.0.0.1"
+    icmp {
+    }
+}
+
+resource "ibm_is_security_group_rule" "testacc_security_group_rule_udp" {
+    group = ibm_is_security_group.testacc_security_group.id
+    direction = "inbound"
+    remote = "127.0.0.1"
+    udp {
+    }
+}
+
+resource "ibm_is_security_group_rule" "testacc_security_group_rule_tcp" {
+    group = ibm_is_security_group.testacc_security_group.id
+    direction = "outbound"
+    remote = "127.0.0.1"
+    tcp {
+    }
+}
+`, vpcname, name)
 
 }
