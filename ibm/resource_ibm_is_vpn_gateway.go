@@ -378,7 +378,7 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isVPNGatewayName, *VPNGateway.Name)
 	d.Set(isVPNGatewaySubnet, *VPNGateway.Subnet.ID)
 	d.Set(isVPNGatewayStatus, *VPNGateway.Status)
-	d.Set(isVPNGatewayPublicIPAddress, *VPNGateway.PublicIp.Address)
+	// d.Set(isVPNGatewayPublicIPAddress, *VPNGateway.PublicIp.Address)
 	tags, err := GetTagsUsingCRN(meta, *VPNGateway.Crn)
 	if err != nil {
 		log.Printf(
