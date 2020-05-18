@@ -56,7 +56,7 @@ func TestAccIBMIAMServicePolicy_With_Service(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
-					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "resources.0.service", "cloud-object-storage"),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "resources.0.service", "cloudantnosqldb"),
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "roles.#", "1"),
 				),
 			},
@@ -64,7 +64,7 @@ func TestAccIBMIAMServicePolicy_With_Service(t *testing.T) {
 				Config: testAccCheckIBMIAMServicePolicyUpdateServiceAndRegion(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
-					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "resources.0.service", "kms"),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "resources.0.service", "cloudantnosqldb"),
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "resources.0.region", "us-south"),
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "roles.#", "2"),
 				),
@@ -286,7 +286,7 @@ func testAccCheckIBMIAMServicePolicyService(name string) string {
 			roles          = ["Viewer"]
 	  
 			resources {
-		 	 service = "cloud-object-storage"
+		 	 service = "cloudantnosqldb"
 			}
 	  	}
 	`, name)
@@ -304,7 +304,7 @@ func testAccCheckIBMIAMServicePolicyUpdateServiceAndRegion(name string) string {
 			roles          = ["Viewer", "Manager"]
 	  
 			resources {
-		  		service = "kms"
+		  		service = "cloudantnosqldb"
 		  		region  = "us-south"
 			}
 	  	}

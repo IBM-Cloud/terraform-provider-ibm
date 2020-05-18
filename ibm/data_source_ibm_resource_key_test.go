@@ -58,7 +58,7 @@ func testAccCheckIBMResourceKeyDataSourceConfig(resourceName, resourceKey string
 resource "ibm_resource_instance" "resource" {
   name     = "%s"
   service  = "cloud-object-storage"
-  plan     = "lite"
+  plan     = "standard"
   location = "global"
 }
 
@@ -86,7 +86,7 @@ func testAccCheckIBMResourceKeyDataSourceConfigRecent(resourceName, resourceKey 
 resource "ibm_resource_instance" "resource" {
   name     = "%s"
   service  = "cloud-object-storage"
-  plan     = "lite"
+  plan     = "standard"
   location = "global"
 }
 

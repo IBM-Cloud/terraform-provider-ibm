@@ -52,14 +52,14 @@ func TestAccIBMIAMUserPolicy_With_Service(t *testing.T) {
 				Config: testAccCheckIBMIAMUserPolicyService(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
-					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resources.0.service", "cloud-object-storage"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resources.0.service", "cloudantnosqldb"),
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "1"),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIBMIAMUserPolicyUpdateServiceAndRegion(),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resources.0.service", "kms"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resources.0.service", "cloudantnosqldb"),
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resources.0.region", "us-south"),
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "2"),
 				),
@@ -184,7 +184,7 @@ func TestAccIBMIAMUserPolicy_Invalid_User(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccCheckIBMIAMUserPolicyInvalidUser(),
-				ExpectError: regexp.MustCompile(`User test@in.ibm.com does not exist within the given account.`),
+				ExpectError: regexp.MustCompile(`User test@in.ibm.com is not found under current account`),
 			},
 		},
 	})
@@ -281,7 +281,7 @@ func testAccCheckIBMIAMUserPolicyService() string {
 			roles  = ["Viewer"]
 	  
 			resources {
-		 		 service = "cloud-object-storage"
+		 		 service = "cloudantnosqldb"
 			}
 	  	}
 
@@ -296,7 +296,7 @@ func testAccCheckIBMIAMUserPolicyUpdateServiceAndRegion() string {
 			roles        = ["Viewer", "Manager"]
 		  
 			resources {
-			  service = "kms"
+			  service = "cloudantnosqldb"
 			  region  = "us-south"
 			}
 		  }
