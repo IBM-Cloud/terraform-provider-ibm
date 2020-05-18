@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/IBM/go-sdk-core/v3/core"
 	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
 )
 
@@ -73,14 +72,17 @@ func printTestSummary() {
 	fmt.Printf("Number of tests ran: %d\n", counter.currentValue())
 }
 
-func createVpcClassicService(t *testing.T) *vpcclassicv1.VpcClassicV1 {
-	if *skipForMockTesting {
-		testService, _ := vpcclassicv1.NewVpcClassicV1(&vpcclassicv1.VpcClassicV1Options{
-			URL:           URL,
-			Authenticator: &core.NoAuthAuthenticator{},
-		})
-		return testService
+func TestConnectVPC(t *testing.T) {
+	var vpcService = InstantiateVPCService()
+	if vpcService == nil {
+		fmt.Println("Error creating VPC service.")
+		t.Error("Error creating vpc service with error message:")
+		return
 	}
+	t.Log("Success: VPC service creation complete.")
+}
+
+func createVpcClassicService(t *testing.T) *vpcclassicv1.VpcClassicV1 {
 	var vpcService = InstantiateVPCService()
 	if vpcService == nil {
 		fmt.Println("Error creating VPC service.")
@@ -89,17 +91,6 @@ func createVpcClassicService(t *testing.T) *vpcclassicv1.VpcClassicV1 {
 	}
 	t.Log("Success: VPC service creation complete.")
 	return vpcService
-}
-func TestConnectVPC(t *testing.T) {
-	if !*skipForMockTesting {
-		var vpcService = InstantiateVPCService()
-		if vpcService == nil {
-			fmt.Println("Error creating VPC service.")
-			t.Error("Error creating vpc service with error message:")
-			return
-		}
-		t.Log("Success: VPC service creation complete.")
-	}
 }
 
 func TestVPCResources(t *testing.T) {
@@ -371,7 +362,7 @@ func TestVPCResources(t *testing.T) {
 		})
 	})
 
-	t.Run("Instances Network Interfaces", func(t *testing.T) {
+	t.Run("Instances Network Attachments", func(t *testing.T) {
 		t.Run("Get Initialization", func(t *testing.T) {
 			res, _, err := GetInstanceInitialization(vpcService, *createdInstanceID)
 			TestResponse(t, res, err, GET, detailed, increment)
@@ -586,7 +577,13 @@ func TestVPCResources(t *testing.T) {
 }
 
 func TestVPCAccessControlLists(t *testing.T) {
-	vpcService := createVpcClassicService(t)
+	var vpcService = InstantiateVPCService()
+	if vpcService == nil {
+		fmt.Println("Error creating VPC service.")
+		t.Error("Error creating vpc service with error message:")
+		return
+	}
+	t.Log("Success: VPC service creation complete.")
 
 	t.Run("ACL Resources", func(t *testing.T) {
 
@@ -653,8 +650,13 @@ func TestVPCAccessControlLists(t *testing.T) {
 	printTestSummary()
 }
 func TestVPCSecurityGroups(t *testing.T) {
-	vpcService := createVpcClassicService(t)
-
+	var vpcService = InstantiateVPCService()
+	if vpcService == nil {
+		fmt.Println("Error creating VPC service.")
+		t.Error("Error creating vpc service with error message:")
+		return
+	}
+	t.Log("Success: VPC service creation complete.")
 	res, _, err := ListInstances(vpcService)
 	if err != nil {
 		fmt.Println("Error listing instances: ", err)
@@ -749,8 +751,13 @@ func TestVPCSecurityGroups(t *testing.T) {
 	printTestSummary()
 }
 func TestVPCPublicGateways(t *testing.T) {
-	vpcService := createVpcClassicService(t)
-
+	var vpcService = InstantiateVPCService()
+	if vpcService == nil {
+		fmt.Println("Error creating VPC service.")
+		t.Error("Error creating vpc service with error message:")
+		return
+	}
+	t.Log("Success: VPC service creation complete.")
 	res, _, err := ListInstances(vpcService)
 	if err != nil {
 		fmt.Println("Error listing instances: ", err)
@@ -792,9 +799,16 @@ func TestVPCPublicGateways(t *testing.T) {
 }
 
 func TestVPCLoadBalancers(t *testing.T) {
-	vpcService := createVpcClassicService(t)
-
 	t.Run("LB Resources", func(t *testing.T) {
+		// t.Parallel()
+		var vpcService = InstantiateVPCService()
+		if vpcService == nil {
+			fmt.Println("Error creating VPC service.")
+			t.Error("Error creating vpc service with error message:")
+			return
+		}
+		t.Log("Success: VPC service creation complete.")
+
 		var lbID *string
 		var subnetID *string
 		res, _, err := ListInstances(vpcService)
@@ -1032,8 +1046,13 @@ func TestVPCLoadBalancers(t *testing.T) {
 }
 
 func TestVPCVpn(t *testing.T) {
-	vpcService := createVpcClassicService(t)
-
+	var vpcService = InstantiateVPCService()
+	if vpcService == nil {
+		fmt.Println("Error creating VPC service.")
+		t.Error("Error creating vpc service with error message:")
+		return
+	}
+	t.Log("Success: VPC service creation complete.")
 	res, _, err := ListSubnets(vpcService)
 	if err != nil {
 		fmt.Println("Error: ", err)
