@@ -15,8 +15,8 @@ import (
 func TestAccIBMISSecurityGroupRule_basic(t *testing.T) {
 	var securityGroupRule *models.SecurityGroupRule
 
-	vpcname := fmt.Sprintf("terraformsecurityruleuat-vpc-%d", acctest.RandIntRange(10, 100))
-	name1 := fmt.Sprintf("terraformsecurityruleuat-create-step-name-%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tf-create-step-name-%d", acctest.RandIntRange(10, 100))
 	//name2 := fmt.Sprintf("terraformsecurityuat-update-step-name-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
