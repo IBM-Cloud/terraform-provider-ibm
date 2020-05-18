@@ -6,6 +6,8 @@ go:
 env:
   global:
   - GO111MODULE=on
+  #IBM_CLOUD_KEY
+  - secure: vmVxQywSboyGXWgsqEQUpFE6uvLZETy2y1Mcc0NncPUqL0giuUtlUwFiKg9K4m17IX9K+2AdWxo4wUjt54bSwf1ZZ57JT0sTa04Hl0EuinL45PS0kazmrQf+5HZ0D7JTdkvhvO8fS2sJ2Sz3BbY4GWyRBLuiuHYb01gTQYugAsGNwm5exI8cgIIkIwJV/xWvSGvfkzKDuQITfppTlaPeLqWc0fdcUgjrnC+A7eR5Pi6xNXQ6oWbhZbswnFRpgG5BEn9f5y/CuglDCGl7Nl1GzIBZECmvrLg9WhnRFhyGyaLB7A1JehLvsd9OVS5M6sWPtCU8k7fSRwFlXOzG2o+ZaFMBuGAzfW78vklQ7TkRK5eQPzLY7a4YUZtuhMA9AfNCwxY+XMssMo91PdEJofO42fDrKq7BjrzplaTrJ2bMrDjyAeFicitQMYvAhxY7hJsOe2hP/+khe3e9+KnN35DI2q/dr6v9JqNmUtKpxNFEtIN85qUd9Rc2ejETC68I2S1GAlKSKE8PTM+/1uF4Fg781Z0lRxg/mW9qZEa9o8SC4JyOsq2Tsbas6AAP/Z+IRsbXN4kvAMDYhLzPrjfIuiICE0rwclz32fnXu7mH2FWfP4mK9C1hTJOq+PpqA0lGP9eayRFNJ910YPE/0/XTjQcDKVQ+XzcpJeJY8PtatLRbuBs=
 script:
 - go test `go list ./... | grep -v integration`
 - cd integration

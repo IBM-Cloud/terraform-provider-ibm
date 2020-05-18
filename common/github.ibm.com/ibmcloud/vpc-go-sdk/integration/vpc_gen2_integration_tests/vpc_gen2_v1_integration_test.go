@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/IBM/go-sdk-core/v3/core"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
 	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
@@ -53,7 +53,6 @@ var createdPGWID *string
 var createdSgID *string
 var createdSgVnicID *string
 var createdSgRuleID *string
-var createdSecondVnicID *string
 
 var Running = "running"
 var Stopped = "stopped"
@@ -73,25 +72,16 @@ func printTestSummary() {
 	fmt.Printf("Total test run: %d\n", counter.currentValue())
 }
 func TestConnectVPC(t *testing.T) {
-	if !*skipForMockTesting {
-		var gen2 = InstantiateVPCGen2Service()
-		if gen2 == nil {
-			fmt.Println("Error creating VPC Gen2 service.")
-			t.Error("Error creating vpc gen 2 service with error message:")
-			return
-		}
-		t.Log("Success: VPC Gen2 service creation complete.")
+	var gen2 = InstantiateVPCGen2Service()
+	if gen2 == nil {
+		fmt.Println("Error creating VPC Gen2 service.")
+		t.Error("Error creating vpc gen 2 service with error message:")
+		return
 	}
+	t.Log("Success: VPC Gen2 service creation complete.")
 }
 
 func createVpcGen2Service(t *testing.T) *vpcv1.VpcV1 {
-	if *skipForMockTesting {
-		testService, _ := vpcv1.NewVpcV1(&vpcv1.VpcV1Options{
-			URL:           URL,
-			Authenticator: &core.NoAuthAuthenticator{},
-		})
-		return testService
-	}
 	var gen2 = InstantiateVPCGen2Service()
 	if gen2 == nil {
 		fmt.Println("Error creating VPC Gen2 service.")
@@ -299,11 +289,6 @@ func TestVPCResources(t *testing.T) {
 			TestResponse(t, res, err, GET, detailed, increment)
 		})
 
-		t.Run("Get VPC Default Network ACL", func(t *testing.T) {
-			res, _, err := GetVPCDefaultACL(vpcService, *createdVpcID)
-			TestResponse(t, res, err, GET, detailed, increment)
-		})
-
 		t.Run("Get VPC Address Prefix", func(t *testing.T) {
 			res, _, err := GetVpcAddressPrefix(vpcService, *createdVpcID, *createdVpcAddressPrefixID)
 			TestResponse(t, res, err, GET, detailed, increment)
@@ -380,16 +365,10 @@ func TestVPCResources(t *testing.T) {
 			TestResponse(t, res, err, GET, detailed, increment)
 		})
 
-		t.Run("Get Network Interfaces", func(t *testing.T) {
+		t.Run("Get  Network Interfaces", func(t *testing.T) {
 			res, _, err := ListNetworkInterfaces(vpcService, *createdInstanceID)
 			TestResponse(t, res, err, GET, detailed, increment)
 			createdVnicID = res.NetworkInterfaces[0].ID
-		})
-
-		t.Run("Create Network Interfaces", func(t *testing.T) {
-			res, _, err := CreateNetworkInterface(vpcService, *createdInstanceID, *createdSubnetID)
-			TestResponse(t, res, err, GET, detailed, increment)
-			createdSecondVnicID = res.ID
 		})
 
 		t.Run("Attach FIP to Vnic", func(t *testing.T) {
@@ -415,11 +394,6 @@ func TestVPCResources(t *testing.T) {
 		t.Run("Get Vnic FLoating IP", func(t *testing.T) {
 			res, _, err := GetNetworkInterfaceFloatingIp(vpcService, *createdInstanceID, *createdVnicID, *createdFipID)
 			TestResponse(t, res, err, GET, detailed, increment)
-		})
-
-		t.Run("Delete Network Interfaces", func(t *testing.T) {
-			res, err := DeleteNetworkInterface(vpcService, *createdInstanceID, *createdSecondVnicID)
-			TestDeleteResponse(t, res, err, DELETE, res.StatusCode, detailed, increment)
 		})
 
 	})
@@ -628,7 +602,7 @@ func TestVPCAccessControlLists(t *testing.T) {
 			name := "gosdk-aclrule-" + timestamp
 			res, _, err := CreateNetworkAclRule(vpcService, name, *createdACLID)
 			res2B, _ := json.Marshal(res)
-			rule := &vpcv1.NetworkACLRule{}
+			rule := &vpcclassicv1.NetworkACLRule{}
 			_ = json.Unmarshal([]byte(string(res2B)), &rule)
 			TestResponse(t, rule, err, POST, detailed, increment)
 			createdACLRuleID = rule.ID
@@ -717,7 +691,7 @@ func TestVPCSecurityGroups(t *testing.T) {
 		t.Run("Create Security Group Rule", func(t *testing.T) {
 			res, _, err := CreateSecurityGroupRule(vpcService, *createdSgID)
 			res2B, _ := json.Marshal(res)
-			rule := &vpcv1.SecurityGroupRule{}
+			rule := &vpcclassicv1.SecurityGroupRule{}
 			_ = json.Unmarshal([]byte(string(res2B)), &rule)
 			TestResponse(t, rule, err, POST, detailed, increment)
 			createdSgRuleID = rule.ID
@@ -809,9 +783,8 @@ func TestVPCPublicGateways(t *testing.T) {
 }
 
 func TestVPCLoadBalancers(t *testing.T) {
-	vpcService := createVpcGen2Service(t)
-
 	t.Run("LB Resources", func(t *testing.T) {
+		vpcService := createVpcGen2Service(t)
 		var lbID *string
 		var subnetID *string
 		res, _, err := ListInstances(vpcService)

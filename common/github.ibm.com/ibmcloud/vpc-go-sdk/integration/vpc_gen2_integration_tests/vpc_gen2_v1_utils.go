@@ -83,6 +83,7 @@ func GetZone(vpcService *vpcv1.VpcV1, regionName, zoneName string) (*vpcv1.Zone,
 func GetFloatingIPsList(vpcService *vpcv1.VpcV1) (*vpcv1.FloatingIPCollection, *core.DetailedResponse, error) {
 	listFloatingIpsOptions := vpcService.NewListFloatingIpsOptions()
 	result, returnValue, returnValueErr := vpcService.ListFloatingIps(listFloatingIpsOptions)
+	// TODO: target is not coming back in the response
 	return result, returnValue, returnValueErr
 }
 
@@ -112,6 +113,10 @@ func UpdateFloatingIP(vpcService *vpcv1.VpcV1, id, name string) (*vpcv1.Floating
 		ID:   core.StringPtr(id),
 		Name: core.StringPtr(name),
 	}
+	// To update target
+	// updateFloatingIpOptions.SetTarget(&vpcv1.NetworkInterfaceIdentity{
+	// 	ID: core.StringPtr(targetId),
+	// })
 	result, returnValue, returnValueErr := vpcService.UpdateFloatingIp(options)
 	return result, returnValue, returnValueErr
 }
@@ -181,6 +186,7 @@ func DeleteSSHKey(vpcService *vpcv1.VpcV1, id string) (*core.DetailedResponse, e
 // Create a key
 func CreateSSHKey(vpcService *vpcv1.VpcV1, name, publicKey string) (*vpcv1.Key, *core.DetailedResponse, error) {
 	options := &vpcv1.CreateKeyOptions{}
+
 	options.SetName(name)
 	options.SetPublicKey(publicKey)
 	result, returnValue, returnValueErr := vpcService.CreateKey(options)
@@ -256,24 +262,9 @@ func CreateVPC(vpcService *vpcv1.VpcV1, name, resourceGroup string) (*vpcv1.VPC,
 // /vpcs/{id}/default_security_group
 // Retrieve a VPC's default security group
 func GetVPCDefaultSecurityGroup(vpcService *vpcv1.VpcV1, id string) (*vpcv1.DefaultSecurityGroup, *core.DetailedResponse, error) {
-	options := &vpcv1.GetVpcDefaultSecurityGroupOptions{}
-	options.SetID(id)
-	result, returnValue, returnValueErr := vpcService.GetVpcDefaultSecurityGroup(options)
-	return result, returnValue, returnValueErr
-}
-
-/**
- * VPC default ACL
- * Getting default security group for a vpc with id
- */
-
-// GetVPCDefaultACL - GET
-// /vpcs/{id}/default_network_acl
-// Retrieve a VPC's default network acl
-func GetVPCDefaultACL(vpcService *vpcv1.VpcV1, id string) (*vpcv1.DefaultNetworkACL, *core.DetailedResponse, error) {
-	options := &vpcv1.GetVpcDefaultNetworkAclOptions{}
-	options.SetID(id)
-	result, returnValue, returnValueErr := vpcService.GetVpcDefaultNetworkAcl(options)
+	getVpcDefaultSecurityGroupOptions := &vpcv1.GetVpcDefaultSecurityGroupOptions{}
+	getVpcDefaultSecurityGroupOptions.SetID(id)
+	result, returnValue, returnValueErr := vpcService.GetVpcDefaultSecurityGroup(getVpcDefaultSecurityGroupOptions)
 	return result, returnValue, returnValueErr
 }
 
@@ -334,6 +325,7 @@ func DeleteVpcAddressPrefix(vpcService *vpcv1.VpcV1, vpcID, addressPrefixID stri
 // Update an address pool prefix
 func UpdateVpcAddressPrefix(vpcService *vpcv1.VpcV1, vpcID, addressPrefixID, name string) (*vpcv1.AddressPrefix, *core.DetailedResponse, error) {
 	options := &vpcv1.UpdateVpcAddressPrefixOptions{}
+
 	options.SetVpcID(vpcID)
 	options.SetID(addressPrefixID)
 	options.SetName(name)
@@ -351,6 +343,7 @@ func UpdateVpcAddressPrefix(vpcService *vpcv1.VpcV1, vpcID, addressPrefixID, nam
 // List all user-defined routes for a VPC
 func ListVpcRoutes(vpcService *vpcv1.VpcV1, vpcID string) (*vpcv1.RouteCollection, *core.DetailedResponse, error) {
 	options := &vpcv1.ListVpcRoutesOptions{}
+
 	options.SetVpcID(vpcID)
 	result, returnValue, returnValueErr := vpcService.ListVpcRoutes(options)
 	return result, returnValue, returnValueErr
@@ -361,6 +354,7 @@ func ListVpcRoutes(vpcService *vpcv1.VpcV1, vpcID string) (*vpcv1.RouteCollectio
 // Retrieve the specified route
 func GetVpcRoute(vpcService *vpcv1.VpcV1, vpcID, routeID string) (*vpcv1.Route, *core.DetailedResponse, error) {
 	options := &vpcv1.GetVpcRouteOptions{}
+
 	options.SetVpcID(vpcID)
 	options.SetID(routeID)
 	result, returnValue, returnValueErr := vpcService.GetVpcRoute(options)
@@ -372,6 +366,7 @@ func GetVpcRoute(vpcService *vpcv1.VpcV1, vpcID, routeID string) (*vpcv1.Route, 
 // Create a route on your VPC
 func CreateVpcRoute(vpcService *vpcv1.VpcV1, vpcID, zone, destination, nextHopAddress, name string) (*vpcv1.Route, *core.DetailedResponse, error) {
 	options := &vpcv1.CreateVpcRouteOptions{}
+
 	options.SetVpcID(vpcID)
 	options.SetName(name)
 	options.SetZone(&vpcv1.ZoneIdentity{
@@ -401,6 +396,7 @@ func DeleteVpcRoute(vpcService *vpcv1.VpcV1, vpcID, routeID string) (*core.Detai
 // Update a route
 func UpdateVpcRoute(vpcService *vpcv1.VpcV1, vpcID, routeID, name string) (*vpcv1.Route, *core.DetailedResponse, error) {
 	options := &vpcv1.UpdateVpcRouteOptions{}
+
 	options.SetVpcID(vpcID)
 	options.SetID(routeID)
 	options.SetName(name)
@@ -418,6 +414,7 @@ func UpdateVpcRoute(vpcService *vpcv1.VpcV1, vpcID, routeID, name string) (*vpcv
 // List all volume profiles
 func ListVolumeProfiles(vpcService *vpcv1.VpcV1) (*vpcv1.VolumeProfileCollection, *core.DetailedResponse, error) {
 	options := &vpcv1.ListVolumeProfilesOptions{}
+
 	result, returnValue, returnValueErr := vpcService.ListVolumeProfiles(options)
 	return result, returnValue, returnValueErr
 }
@@ -437,6 +434,7 @@ func GetVolumeProfile(vpcService *vpcv1.VpcV1, profileName string) (*vpcv1.Volum
 // List all volumes
 func ListVolumes(vpcService *vpcv1.VpcV1) (*vpcv1.VolumeCollection, *core.DetailedResponse, error) {
 	options := &vpcv1.ListVolumesOptions{}
+
 	result, returnValue, returnValueErr := vpcService.ListVolumes(options)
 	return result, returnValue, returnValueErr
 }
@@ -446,6 +444,7 @@ func ListVolumes(vpcService *vpcv1.VpcV1) (*vpcv1.VolumeCollection, *core.Detail
 // Retrieve specified volume
 func GetVolume(vpcService *vpcv1.VpcV1, volumeID string) (*vpcv1.Volume, *core.DetailedResponse, error) {
 	options := &vpcv1.GetVolumeOptions{}
+
 	options.SetID(volumeID)
 	result, returnValue, returnValueErr := vpcService.GetVolume(options)
 	return result, returnValue, returnValueErr
@@ -456,6 +455,7 @@ func GetVolume(vpcService *vpcv1.VpcV1, volumeID string) (*vpcv1.Volume, *core.D
 // Delete specified volume
 func DeleteVolume(vpcService *vpcv1.VpcV1, id string) (*core.DetailedResponse, error) {
 	options := &vpcv1.DeleteVolumeOptions{}
+
 	options.SetID(id)
 	returnValue, returnValueErr := vpcService.DeleteVolume(options)
 	return returnValue, returnValueErr
@@ -466,6 +466,7 @@ func DeleteVolume(vpcService *vpcv1.VpcV1, id string) (*core.DetailedResponse, e
 // Update specified volume
 func UpdateVolume(vpcService *vpcv1.VpcV1, id, name string) (*vpcv1.Volume, *core.DetailedResponse, error) {
 	options := &vpcv1.UpdateVolumeOptions{}
+
 	options.SetID(id)
 	options.SetName(name)
 	result, returnValue, returnValueErr := vpcService.UpdateVolume(options)
@@ -501,6 +502,7 @@ func CreateVolume(vpcService *vpcv1.VpcV1, name, profileName, zoneName string, c
 // List all subnets
 func ListSubnets(vpcService *vpcv1.VpcV1) (*vpcv1.SubnetCollection, *core.DetailedResponse, error) {
 	options := &vpcv1.ListSubnetsOptions{}
+
 	result, returnValue, returnValueErr := vpcService.ListSubnets(options)
 	return result, returnValue, returnValueErr
 }
@@ -510,6 +512,7 @@ func ListSubnets(vpcService *vpcv1.VpcV1) (*vpcv1.SubnetCollection, *core.Detail
 // Retrieve specified subnet
 func GetSubnet(vpcService *vpcv1.VpcV1, subnetID string) (*vpcv1.Subnet, *core.DetailedResponse, error) {
 	options := &vpcv1.GetSubnetOptions{}
+
 	options.SetID(subnetID)
 	result, returnValue, returnValueErr := vpcService.GetSubnet(options)
 	return result, returnValue, returnValueErr
@@ -520,6 +523,7 @@ func GetSubnet(vpcService *vpcv1.VpcV1, subnetID string) (*vpcv1.Subnet, *core.D
 // Delete specified subnet
 func DeleteSubnet(vpcService *vpcv1.VpcV1, id string) (*core.DetailedResponse, error) {
 	options := &vpcv1.DeleteSubnetOptions{}
+
 	options.SetID(id)
 	returnValue, returnValueErr := vpcService.DeleteSubnet(options)
 	return returnValue, returnValueErr
@@ -530,6 +534,7 @@ func DeleteSubnet(vpcService *vpcv1.VpcV1, id string) (*core.DetailedResponse, e
 // Update specified subnet
 func UpdateSubnet(vpcService *vpcv1.VpcV1, id, name string) (*vpcv1.Subnet, *core.DetailedResponse, error) {
 	options := &vpcv1.UpdateSubnetOptions{}
+
 	options.SetID(id)
 	options.SetName(name)
 	result, returnValue, returnValueErr := vpcService.UpdateSubnet(options)
@@ -541,6 +546,7 @@ func UpdateSubnet(vpcService *vpcv1.VpcV1, id, name string) (*vpcv1.Subnet, *cor
 // Create a subnet
 func CreateSubnet(vpcService *vpcv1.VpcV1, vpcID, name, zone string) (*vpcv1.Subnet, *core.DetailedResponse, error) {
 	options := &vpcv1.CreateSubnetOptions{}
+
 	options.SetSubnetPrototype(&vpcv1.SubnetPrototype{
 		Ipv4CidrBlock: core.StringPtr("10.243.0.0/24"),
 		Name:          core.StringPtr(name),
@@ -653,18 +659,20 @@ func UpdateImage(vpcService *vpcv1.VpcV1, id, name string) (*vpcv1.Image, *core.
 	return result, returnValue, returnValueErr
 }
 
-func CreateImage(vpcService *vpcv1.VpcV1, vpcId, name, cidr string) (*vpcv1.Image, *core.DetailedResponse, error) {
-	options := &vpcv1.CreateImageOptions{}
-	cosID := "cos://cos-location-of-image-file"
-	options.SetImagePrototype(&vpcv1.ImagePrototype{
-		Name: core.StringPtr(name),
-		File: &vpcv1.ImageFilePrototype{
-			Href: &cosID,
-		},
-	})
-	result, returnValue, returnValueErr := vpcService.CreateImage(options)
-	return result, returnValue, returnValueErr
-}
+// TODO
+// func CreateImage(vpcService *vpcv1.VpcV1, vpcId, name, cidr string) (*vpcv1.Image,*core.DetailedResponse, error) {
+// 	options := &vpcv1.CreateSubnetOptions{}
+//
+// 	options.SetCreateSubnetRequest(&vpcv1.CreateSubnetRequest{
+// 		Ipv4CidrBlock: core.StringPtr(cidr),
+// 		Name:          core.StringPtr(name),
+// 		Vpc: &vpcv1.VPCIdentity{
+// 			ID: core.StringPtr(vpcId),
+// 		},
+// 	})
+// 	returnValue, returnValueErr := vpcService.CreateImage(options)
+// 	return result, returnValueErr
+// }
 
 func ListOperatingSystems(vpcService *vpcv1.VpcV1) (*vpcv1.OperatingSystemCollection, *core.DetailedResponse, error) {
 	options := &vpcv1.ListOperatingSystemsOptions{}
@@ -744,7 +752,7 @@ func UpdateInstance(vpcService *vpcv1.VpcV1, id, name string) (*vpcv1.Instance, 
 }
 
 // CreateInstance POST
-// /instances/{instance_id}
+// /instances/{instance_id}/actions
 // Create an instance action
 func CreateInstance(vpcService *vpcv1.VpcV1, name, profileName, imageID, zoneName, subnetID, sshkeyID, vpcID string) (*vpcv1.Instance, *core.DetailedResponse, error) {
 	options := &vpcv1.CreateInstanceOptions{}
@@ -778,7 +786,7 @@ func CreateInstance(vpcService *vpcv1.VpcV1, name, profileName, imageID, zoneNam
 }
 
 // CreateInstanceAction PATCH
-// /instances/{instance_id}/actions
+// /instances/{id}
 // Update specified instance
 func CreateInstanceAction(vpcService *vpcv1.VpcV1, instanceID, typeOfAction string) (*vpcv1.InstanceAction, *core.DetailedResponse, error) {
 	options := &vpcv1.CreateInstanceActionOptions{}
@@ -806,31 +814,6 @@ func ListNetworkInterfaces(vpcService *vpcv1.VpcV1, id string) (*vpcv1.NetworkIn
 	options.SetInstanceID(id)
 	result, returnValue, returnValueErr := vpcService.ListNetworkInterfaces(options)
 	return result, returnValue, returnValueErr
-}
-
-// CreateNetworkInterface POST
-// /instances/{instance_id}/network_interfaces
-// List all network interfaces on an instance
-func CreateNetworkInterface(vpcService *vpcv1.VpcV1, id, subnetID string) (*vpcv1.NetworkInterface, *core.DetailedResponse, error) {
-	options := &vpcv1.CreateNetworkInterfaceOptions{}
-	options.SetInstanceID(id)
-	options.SetName("eth1")
-	options.SetSubnet(&vpcv1.SubnetIdentityByID{
-		ID: &subnetID,
-	})
-	result, returnValue, returnValueErr := vpcService.CreateNetworkInterface(options)
-	return result, returnValue, returnValueErr
-}
-
-// DeleteNetworkInterface Delete
-// /instances/{instance_id}/network_interfaces/{id}
-// Retrieve specified network interface
-func DeleteNetworkInterface(vpcService *vpcv1.VpcV1, instanceID, vnicID string) (*core.DetailedResponse, error) {
-	options := &vpcv1.DeleteNetworkInterfaceOptions{}
-	options.SetID(vnicID)
-	options.SetInstanceID(instanceID)
-	returnValue, returnValueErr := vpcService.DeleteNetworkInterface(options)
-	return returnValue, returnValueErr
 }
 
 // GetNetworkInterface GET
@@ -1042,12 +1025,12 @@ func ListNetworkAcls(vpcService *vpcv1.VpcV1) (*vpcv1.NetworkACLCollection, *cor
 func CreateNetworkAcl(vpcService *vpcv1.VpcV1, name, copyableAclID, vpcID string) (*vpcv1.NetworkACL, *core.DetailedResponse, error) {
 	options := &vpcv1.CreateNetworkAclOptions{}
 	options.SetNetworkACLPrototype(&vpcv1.NetworkACLPrototype{
-		Name: &name,
+		Name: core.StringPtr(name),
 		SourceNetworkAcl: &vpcv1.NetworkACLIdentity{
-			ID: &copyableAclID,
+			ID: core.StringPtr(copyableAclID),
 		},
 		Vpc: &vpcv1.VPCIdentity{
-			ID: &vpcID,
+			ID: core.StringPtr(vpcID),
 		},
 	})
 	result, returnValue, returnValueErr := vpcService.CreateNetworkAcl(options)
@@ -1166,6 +1149,7 @@ func ListSecurityGroups(vpcService *vpcv1.VpcV1) (*vpcv1.SecurityGroupCollection
 // Create a security group
 func CreateSecurityGroup(vpcService *vpcv1.VpcV1, name, vpcID string) (*vpcv1.SecurityGroup, *core.DetailedResponse, error) {
 	options := &vpcv1.CreateSecurityGroupOptions{}
+
 	options.SetVpc(&vpcv1.VPCIdentity{
 		ID: core.StringPtr(vpcID),
 	})
@@ -1179,6 +1163,7 @@ func CreateSecurityGroup(vpcService *vpcv1.VpcV1, name, vpcID string) (*vpcv1.Se
 // Delete a security group
 func DeleteSecurityGroup(vpcService *vpcv1.VpcV1, id string) (*core.DetailedResponse, error) {
 	options := &vpcv1.DeleteSecurityGroupOptions{}
+
 	options.SetID(id)
 	returnValue, returnValueErr := vpcService.DeleteSecurityGroup(options)
 	return returnValue, returnValueErr
@@ -1432,6 +1417,7 @@ func GetLoadBalancerListener(vpcService *vpcv1.VpcV1, lbID, listenerID string) (
 // Update a listener
 func UpdateLoadBalancerListener(vpcService *vpcv1.VpcV1, lbID, listenerID string) (*vpcv1.LoadBalancerListener, *core.DetailedResponse, error) {
 	options := &vpcv1.UpdateLoadBalancerListenerOptions{}
+
 	options.SetLoadBalancerID(lbID)
 	options.SetID(listenerID)
 	options.SetProtocol("tcp")
@@ -1494,6 +1480,7 @@ func UpdateLoadBalancerListenerPolicy(vpcService *vpcv1.VpcV1, lbID, listenerID,
 	options.SetLoadBalancerID(lbID)
 	options.SetListenerID(listenerID)
 	options.SetID(policyID)
+
 	options.SetPriority(4)
 	options.SetName("some-name")
 	target := &vpcv1.LoadBalancerListenerPolicyPatchTarget{
@@ -1793,6 +1780,7 @@ func ListVpnGatewayIkePolicyConnections(vpcService *vpcv1.VpcV1, id string) (*vp
 // List all IPsec policies
 func ListIpsecPolicies(vpcService *vpcv1.VpcV1) (*vpcv1.IPsecPolicyCollection, *core.DetailedResponse, error) {
 	options := &vpcv1.ListIpsecPoliciesOptions{}
+
 	result, returnValue, returnValueErr := vpcService.ListIpsecPolicies(options)
 	return result, returnValue, returnValueErr
 }
@@ -1806,6 +1794,7 @@ func CreateIpsecPolicy(vpcService *vpcv1.VpcV1, name string) (*vpcv1.IPsecPolicy
 	options.SetAuthenticationAlgorithm("md5")
 	options.SetEncryptionAlgorithm("aes128")
 	options.SetPfs("disabled")
+
 	result, returnValue, returnValueErr := vpcService.CreateIpsecPolicy(options)
 	return result, returnValue, returnValueErr
 }
@@ -1990,7 +1979,7 @@ func DeleteVpnGatewayConnectionLocalCidr(vpcService *vpcv1.VpcV1, gatewayID, con
 }
 
 // GetVpnGatewayConnectionLocalCidr GET
-// /vpn_gateways/{vpn_gateway_id}/connections/{id}/local_cidrs
+// /vpn_gateways/{vpn_gateway_id}/connections/{id}/local_cidrs/{prefix_address}/{prefix_length}
 // Check if a specific CIDR exists on a specific resource
 func GetVpnGatewayConnectionLocalCidr(vpcService *vpcv1.VpcV1, gatewayID, connID, prefixAdd, prefixLen string) (*core.DetailedResponse, error) {
 	options := &vpcv1.GetVpnGatewayConnectionLocalCidrOptions{}
