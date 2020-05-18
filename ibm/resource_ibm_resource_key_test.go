@@ -89,7 +89,7 @@ func TestAccIBMResourceKey_Parameters(t *testing.T) {
 					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey", conf),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "name", resourceKey),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "role", "Manager"),
-					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "credentials.%", "7"),
+					resource.TestCheckResourceAttrSet("ibm_resource_key.resourceKey", "credentials.%"),
 				),
 			},
 		},
@@ -150,7 +150,7 @@ func testAccCheckIBMResourceKey_basic(resourceName, resourceKey string) string {
 		resource "ibm_resource_instance" "resource" {
 			name              = "%s"
 			service           = "cloud-object-storage"
-			plan              = "lite"
+			plan              = "standard"
 			location          = "global"
 		}
 		resource "ibm_resource_key" "resourceKey" {
@@ -167,7 +167,7 @@ func testAccCheckIBMResourceKey_with_tags(resourceName, resourceKey string) stri
 		resource "ibm_resource_instance" "resource" {
 			name              = "%s"
 			service           = "cloud-object-storage"
-			plan              = "lite"
+			plan              = "standard"
 			location          = "global"
 		}
 		resource "ibm_resource_key" "resourceKey" {
@@ -184,7 +184,7 @@ func testAccCheckIBMResourceKey_with_updated_tags(resourceName, resourceKey stri
 		resource "ibm_resource_instance" "resource" {
 			name              = "%s"
 			service           = "cloud-object-storage"
-			plan              = "lite"
+			plan              = "standard"
 			location          = "global"
 		}
 		resource "ibm_resource_key" "resourceKey" {
@@ -202,7 +202,7 @@ func testAccCheckIBMResourceKey_parameters(resourceName, resourceKey string) str
 		resource "ibm_resource_instance" "resource" {
 			name              = "%s"
 			service           = "cloud-object-storage"
-			plan              = "lite"
+			plan              = "standard"
 			location          = "global"
 		}
 		resource "ibm_resource_key" "resourceKey" {

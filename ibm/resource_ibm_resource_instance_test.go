@@ -27,7 +27,7 @@ func TestAccIBMResourceInstance_Basic(t *testing.T) {
 					testAccCheckIBMResourceInstanceExists("ibm_resource_instance.instance", conf),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "name", serviceName),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "service", "cloud-object-storage"),
-					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "plan", "lite"),
+					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "plan", "standard"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "location", "global"),
 				),
 			},
@@ -37,7 +37,7 @@ func TestAccIBMResourceInstance_Basic(t *testing.T) {
 					testAccCheckIBMResourceInstanceExists("ibm_resource_instance.instance", conf),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "name", serviceName),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "service", "cloud-object-storage"),
-					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "plan", "lite"),
+					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "plan", "standard"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "location", "global"),
 				),
 			},
@@ -46,7 +46,7 @@ func TestAccIBMResourceInstance_Basic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "name", updateName),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "service", "cloud-object-storage"),
-					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "plan", "lite"),
+					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "plan", "standard"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "location", "global"),
 				),
 			},
@@ -79,7 +79,7 @@ func TestAccIBMResourceInstance_import(t *testing.T) {
 					testAccCheckIBMResourceInstanceExists(resourceName, conf),
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
 					resource.TestCheckResourceAttr(resourceName, "service", "cloud-object-storage"),
-					resource.TestCheckResourceAttr(resourceName, "plan", "lite"),
+					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
 					resource.TestCheckResourceAttr(resourceName, "location", "global"),
 				),
 			},
@@ -135,7 +135,7 @@ func TestAccIBMResourceInstance_with_resource_group(t *testing.T) {
 					testAccCheckIBMResourceInstanceExists(resourceName, conf),
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
 					resource.TestCheckResourceAttr(resourceName, "service", "cloud-object-storage"),
-					resource.TestCheckResourceAttr(resourceName, "plan", "lite"),
+					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
 					resource.TestCheckResourceAttr(resourceName, "location", "global"),
 				),
 			},
@@ -197,7 +197,7 @@ func testAccCheckIBMResourceInstance_basic(serviceName string) string {
 	resource "ibm_resource_instance" "instance" {
 		name     = "%s"
 		service  = "cloud-object-storage"
-		plan     = "lite"
+		plan     = "standard"
 		location = "global"
 		parameters = {
 		  "HMAC" = true
@@ -218,7 +218,7 @@ func testAccCheckIBMResourceInstance_updateWithSameName(serviceName string) stri
 	resource "ibm_resource_instance" "instance" {
 		name     = "%s"
 		service  = "cloud-object-storage"
-		plan     = "lite"
+		plan     = "standard"
 		location = "global"
 		parameters = {
 		  "HMAC" = true
@@ -234,7 +234,7 @@ func testAccCheckIBMResourceInstance_update(updateName string) string {
 	resource "ibm_resource_instance" "instance" {
 		name     = "%s"
 		service  = "cloud-object-storage"
-		plan     = "lite"
+		plan     = "standard"
 		location = "global"
 		parameters = {
 		  "HMAC" = true
@@ -264,7 +264,7 @@ func testAccCheckIBMResourceInstance_with_resource_group(serviceName string) str
 	resource "ibm_resource_instance" "instance" {
 		name              = "%s"
 		service           = "cloud-object-storage"
-		plan              = "lite"
+		plan              = "standard"
 		location          = "global"
 		resource_group_id = data.ibm_resource_group.group.id
 		parameters = {

@@ -167,7 +167,7 @@ func testAccCheckIBMIAMAuthorizationPolicyResourceInstance(instanceName string) 
 	resource "ibm_resource_instance" "instance1" {
 		name     = "%s"
 		service  = "cloud-object-storage"
-		plan     = "lite"
+		plan     = "standard"
 		location = "global"
 	  }
 	  

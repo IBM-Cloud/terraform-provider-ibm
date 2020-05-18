@@ -131,7 +131,7 @@ func testAccCheckIBMIAMDynamicRuleMultiple(agname, name, identityProvider, claim
 		conditions {
 		  claim    = "%s"
 		  operator = "%s"
-		  value    = "\"test-bluegroup-saml\""
+		  value    = "test-bluegroup-saml"
 		}
 		conditions {
 		  claim    = "%s"

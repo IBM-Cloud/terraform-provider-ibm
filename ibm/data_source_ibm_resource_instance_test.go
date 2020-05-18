@@ -29,7 +29,7 @@ func TestAccIBMResourceInstanceDataSource_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_resource_instance.testacc_ds_resource_instance", "name", instanceName),
 					resource.TestCheckResourceAttr("data.ibm_resource_instance.testacc_ds_resource_instance", "service", "cloud-object-storage"),
-					resource.TestCheckResourceAttr("data.ibm_resource_instance.testacc_ds_resource_instance", "plan", "lite"),
+					resource.TestCheckResourceAttr("data.ibm_resource_instance.testacc_ds_resource_instance", "plan", "standard"),
 					resource.TestCheckResourceAttr("data.ibm_resource_instance.testacc_ds_resource_instance", "location", "global"),
 				),
 			},
@@ -52,7 +52,7 @@ func setupResourceInstanceConfig(instanceName string) string {
 resource "ibm_resource_instance" "instance" {
   name     = "%s"
   service  = "cloud-object-storage"
-  plan     = "lite"
+  plan     = "standard"
   location = "global"
 }
 
@@ -76,7 +76,7 @@ data "ibm_resource_group" "group" {
 resource "ibm_resource_instance" "instance" {
   name     = "%s"
   service  = "cloud-object-storage"
-  plan     = "lite"
+  plan     = "standard"
   location = "global"
 }
 
@@ -102,7 +102,7 @@ func testAccCheckIBMResourceInstanceDataSourceConfigWithService(instanceName str
 resource "ibm_resource_instance" "instance" {
   name     = "%s"
   service  = "cloud-object-storage"
-  plan     = "lite"
+  plan     = "standard"
   location = "global"
 }
 
