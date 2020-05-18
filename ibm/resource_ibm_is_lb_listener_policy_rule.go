@@ -895,14 +895,10 @@ func isLbListenerPolicyRuleDeleteRefreshFunc(vpc *vpcv1.VpcV1, id string) resour
 
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
-				return nil, isLBListenerPolicyRuleDeleted, nil
+				return rule, isLBListenerPolicyRuleDeleted, nil
 			}
 			return rule, isLBListenerPolicyRuleFailed, err
 		}
-		if *(*rule).ProvisioningStatus == isLBListenerPolicyRuleFailed {
-			return rule, isLBListenerPolicyRuleFailed, fmt.Errorf("The LB-LP %s failed to delete: %v", *rule.ID, err)
-		}
-
 		return nil, isLBListenerPolicyRuleDeleting, err
 	}
 }
@@ -1031,9 +1027,6 @@ func isLbListenerPolicyRuleClassicDeleteRefreshFunc(vpc *vpcclassicv1.VpcClassic
 				return rule, isLBListenerPolicyRuleDeleted, nil
 			}
 			return nil, isLBListenerPolicyRuleFailed, err
-		}
-		if *rule.ProvisioningStatus == isLBListenerPolicyRuleFailed {
-			return rule, isLBListenerPolicyRuleFailed, fmt.Errorf("The LB-LP %s failed to delete: %v", *rule.ID, err)
 		}
 		return rule, isLBListenerPolicyRuleDeleting, err
 	}

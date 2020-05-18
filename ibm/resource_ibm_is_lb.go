@@ -649,7 +649,7 @@ func isClassicLBDeleteRefreshFunc(lbc *vpcclassicv1.VpcClassicV1, id string) res
 			if response != nil && response.StatusCode == 404 {
 				return lb, isLBDeleted, nil
 			}
-			return nil, *lb.ProvisioningStatus, fmt.Errorf("The vpc load balancer %s failed to delete: %s\n%s", id, err, response)
+			return nil, "failed", fmt.Errorf("The vpc load balancer %s failed to delete: %s\n%s", id, err, response)
 		}
 		return lb, isLBDeleting, nil
 	}
@@ -681,7 +681,7 @@ func isLBDeleteRefreshFunc(lbc *vpcv1.VpcV1, id string) resource.StateRefreshFun
 			if response != nil && response.StatusCode == 404 {
 				return lb, isLBDeleted, nil
 			}
-			return nil, *lb.ProvisioningStatus, fmt.Errorf("The vpc load balancer %s failed to delete: %s\n%s", id, err, response)
+			return nil, "failed", fmt.Errorf("The vpc load balancer %s failed to delete: %s\n%s", id, err, response)
 		}
 		return lb, isLBDeleting, nil
 	}

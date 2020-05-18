@@ -805,7 +805,7 @@ func lbListenerPolicyExists(d *schema.ResourceData, meta interface{}, ID string)
 		}
 		return false, fmt.Errorf("Error getting Load balancer policy: %s\n%s", err, response)
 	}
-	return false, nil
+	return true, nil
 }
 func resourceIBMISLBListenerPolicyUpdate(d *schema.ResourceData, meta interface{}) error {
 
@@ -1195,10 +1195,6 @@ func isLbListenerPolicyDeleteRefreshFunc(vpc *vpcv1.VpcV1, id string) resource.S
 			}
 			return nil, isLBListenerPolicyFailed, err
 		}
-		if *policy.ProvisioningStatus == isLBListenerPolicyFailed {
-			return policy, isLBListenerPolicyFailed, fmt.Errorf("The LB-LP %s failed to delete: %v", *policy.ID, err)
-		}
-
 		return policy, isLBListenerPolicyDeleting, err
 	}
 }
@@ -1388,9 +1384,6 @@ func isLbListenerPolicyClassicDeleteRefreshFunc(vpc *vpcclassicv1.VpcClassicV1, 
 			}
 
 			return nil, isLBListenerPolicyFailed, err
-		}
-		if *policy.ProvisioningStatus == isLBListenerPolicyFailed {
-			return policy, isLBListenerPolicyFailed, fmt.Errorf("The LB-LP %s failed to delete: %v", *policy.ID, err)
 		}
 
 		return policy, isLBListenerPolicyDeleting, err
