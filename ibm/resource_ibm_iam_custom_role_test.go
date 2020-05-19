@@ -14,7 +14,7 @@ import (
 )
 
 func TestAccIBMIAMCustomRole_Basic(t *testing.T) {
-	var conf iampapv2.CreateRoleResponse
+	var conf iampapv2.Role
 	name := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
 	displayName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
 	updateDisplayName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
@@ -53,7 +53,7 @@ func TestAccIBMIAMCustomRole_Basic(t *testing.T) {
 }
 
 func TestAccIBMIAMCustomRole_import(t *testing.T) {
-	var conf iampapv2.CreateRoleResponse
+	var conf iampapv2.Role
 	name := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
 	displayName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_custom_role.customrole"
@@ -103,7 +103,7 @@ func testAccCheckIBMIAMCustomRoleDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMIAMCustomRoleExists(n string, obj iampapv2.CreateRoleResponse) resource.TestCheckFunc {
+func testAccCheckIBMIAMCustomRoleExists(n string, obj iampapv2.Role) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

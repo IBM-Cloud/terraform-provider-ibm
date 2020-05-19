@@ -188,6 +188,29 @@ func TestAccIBMIAMServicePolicy_account_management(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMServicePolicyWithCustomRole(t *testing.T) {
+	var conf iampapv1.Policy
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	crName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
+	displayName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIAMServicePolicyWithCustomRole(name, crName, displayName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "tags.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "roles.#", "2"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIAMServicePolicyDestroy(s *terraform.State) error {
 	rsContClient, err := testAccProvider.Meta().(ClientSession).IAMPAPAPI()
 	if err != nil {
@@ -416,4 +439,30 @@ func testAccCheckIBMIAMServicePolicyAccountManagement(name string) string {
 	  	}
 
 	`, name)
+}
+
+func testAccCheckIBMIAMServicePolicyWithCustomRole(name, crName, displayName string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_service_id" "serviceID" {
+			name = "%s"
+		}
+		resource "ibm_iam_custom_role" "customrole" {
+			name         = "%s"
+			display_name = "%s"
+			description  = "role for test scenario1"
+			service = "kms"
+			actions      = ["kms.secrets.rotate"]
+		}
+	  
+	  	resource "ibm_iam_service_policy" "policy" {
+			iam_service_id = ibm_iam_service_id.serviceID.id
+			roles          = [ibm_iam_custom_role.customrole.display_name,"Viewer"]
+			tags           = ["tag1"]
+			resources {
+				service           = "kms"
+		   }
+	  	}
+
+	`, name, crName, displayName)
 }

@@ -7,8 +7,9 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
+	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv2"
 	v2 "github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
-	"github.com/IBM-Cloud/bluemix-go/models"
+	"github.com/IBM-Cloud/bluemix-go/utils"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -664,32 +665,40 @@ func getPolicies(d *schema.ResourceData, meta interface{}, policies []interface{
 		}
 		policyResource.SetAccountID(accountID)
 
-		iamClient, err := meta.(ClientSession).IAMAPI()
+		iamClient, err := meta.(ClientSession).IAMPAPAPIV2()
 		if err != nil {
 			return policyList, err
 		}
 
-		iamRepo := iamClient.ServiceRoles()
+		iamRepo := iamClient.IAMRoles()
 
-		var roles []models.PolicyRole
+		var roles []iampapv2.Role
+		userDetails, err := meta.(ClientSession).BluemixUserDetails()
+		if err != nil {
+			return policyList, err
+		}
 
+		query := iampapv2.RoleQuery{
+			AccountID:   userDetails.userAccount,
+			ServiceName: serviceName,
+		}
 		if serviceName == "" {
 			roles, err = iamRepo.ListSystemDefinedRoles()
 		} else {
-			roles, err = iamRepo.ListServiceRoles(serviceName)
+			roles, err = iamRepo.ListAll(query)
 		}
 		if err != nil {
 			return policyList, err
 		}
-		var policyRoles = make([]models.PolicyRole, 0)
+		var policyRoles = make([]iampapv2.Role, 0)
 		if userRoles, ok := p["roles"]; ok {
-			policyRoles, err = getRolesFromRoleNames(expandStringList(userRoles.([]interface{})), roles)
+			policyRoles, err = utils.GetRolesFromRoleNamesV2(expandStringList(userRoles.([]interface{})), roles)
 			if err != nil {
 				return policyList, err
 			}
 		}
 
-		policyList = append(policyList, v2.UserPolicy{Roles: iampapv1.ConvertRoleModels(policyRoles), Resources: []iampapv1.Resource{policyResource}, Type: ACCESS})
+		policyList = append(policyList, v2.UserPolicy{Roles: iampapv1.ConvertV2RoleModels(policyRoles), Resources: []iampapv1.Resource{policyResource}, Type: ACCESS})
 	}
 	return policyList, nil
 }

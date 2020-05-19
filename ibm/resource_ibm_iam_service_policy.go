@@ -125,7 +125,7 @@ func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{})
 
 	var policy iampapv1.Policy
 
-	policy, err = generateAccountPolicy(d, meta)
+	policy, err = generateAccountPolicyV2(d, meta)
 	if err != nil {
 		return err
 	}
@@ -317,57 +317,57 @@ func resourceIBMIAMServicePolicyExists(d *schema.ResourceData, meta interface{})
 	return tempID == d.Id(), nil
 }
 
-func generatePolicy(d *schema.ResourceData, meta interface{}, accountID string) (models.Policy, error) {
+// func generatePolicy(d *schema.ResourceData, meta interface{}, accountID string) (models.Policy, error) {
 
-	policyResources := []models.PolicyResource{}
-	var resources []interface{}
-	var serviceName string
+// 	policyResources := []models.PolicyResource{}
+// 	var resources []interface{}
+// 	var serviceName string
 
-	if res, ok := d.GetOk("resources"); ok {
-		resources = res.([]interface{})
-		for _, resource := range resources {
-			r, _ := resource.(map[string]interface{})
-			serviceName = r["service"].(string)
-			resourceParam := models.PolicyResource{
-				ServiceName:     r["service"].(string),
-				ServiceInstance: r["resource_instance_id"].(string),
-				Region:          r["region"].(string),
-				ResourceType:    r["resource_type"].(string),
-				Resource:        r["resource"].(string),
-				AccountID:       accountID,
-				ResourceGroupID: r["resource_group_id"].(string),
-			}
-			policyResources = append(policyResources, resourceParam)
-		}
-	} else {
-		policyResources = append(policyResources, models.PolicyResource{AccountID: accountID})
-	}
+// 	if res, ok := d.GetOk("resources"); ok {
+// 		resources = res.([]interface{})
+// 		for _, resource := range resources {
+// 			r, _ := resource.(map[string]interface{})
+// 			serviceName = r["service"].(string)
+// 			resourceParam := models.PolicyResource{
+// 				ServiceName:     r["service"].(string),
+// 				ServiceInstance: r["resource_instance_id"].(string),
+// 				Region:          r["region"].(string),
+// 				ResourceType:    r["resource_type"].(string),
+// 				Resource:        r["resource"].(string),
+// 				AccountID:       accountID,
+// 				ResourceGroupID: r["resource_group_id"].(string),
+// 			}
+// 			policyResources = append(policyResources, resourceParam)
+// 		}
+// 	} else {
+// 		policyResources = append(policyResources, models.PolicyResource{AccountID: accountID})
+// 	}
 
-	iamClient, err := meta.(ClientSession).IAMAPI()
-	if err != nil {
-		return models.Policy{}, err
-	}
+// 	iamClient, err := meta.(ClientSession).IAMAPI()
+// 	if err != nil {
+// 		return models.Policy{}, err
+// 	}
 
-	iamRepo := iamClient.ServiceRoles()
+// 	iamRepo := iamClient.ServiceRoles()
 
-	var roles []models.PolicyRole
+// 	var roles []models.PolicyRole
 
-	if serviceName == "" {
-		roles, err = iamRepo.ListSystemDefinedRoles()
-	} else {
-		roles, err = iamRepo.ListServiceRoles(serviceName)
-	}
-	if err != nil {
-		return models.Policy{}, err
-	}
+// 	if serviceName == "" {
+// 		roles, err = iamRepo.ListSystemDefinedRoles()
+// 	} else {
+// 		roles, err = iamRepo.ListServiceRoles(serviceName)
+// 	}
+// 	if err != nil {
+// 		return models.Policy{}, err
+// 	}
 
-	policyRoles, err := getRolesFromRoleNames(expandStringList(d.Get("roles").([]interface{})), roles)
-	if err != nil {
-		return models.Policy{}, err
-	}
+// 	policyRoles, err := getRolesFromRoleNames(expandStringList(d.Get("roles").([]interface{})), roles)
+// 	if err != nil {
+// 		return models.Policy{}, err
+// 	}
 
-	return models.Policy{Roles: policyRoles, Resources: policyResources}, nil
-}
+// 	return models.Policy{Roles: policyRoles, Resources: policyResources}, nil
+// }
 
 func getRolesFromRoleNames(roleNames []string, roles []models.PolicyRole) ([]models.PolicyRole, error) {
 
