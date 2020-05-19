@@ -65,6 +65,11 @@ The following arguments are supported:
 **Note**: If you do not have a private or public VLAN in that zone, do not specify `private_vlan_id` and `public_vlan_id`. A private and a public VLAN are automatically created for you when you initially add a new zone to your worker pool.
 * `region` - (Deprecated, Forces new resource, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(IC_REGION/IBMCLOUD_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
 * `resource_group_id` - (Optional, Forces new resource, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
+* `wait_till_albs` - (Optional, Bool) The woker-pool zone attachment adds the zone specified to the worker-pool. Post addition of zone, resource waits for added nodes to be normal and albs to be avialbe in the added zone. To avoid the longer wait times for resource execution, this field is introduced.
+Resource will wait for ALBs to availbale in the zone added if attribute is set to true.
+
+**NOTE**: 
+1. `wait_till_albs` is set only for the first time creation of the resource, modification in the further runs will not any impacts.
 
 ## Attribute Reference
 
