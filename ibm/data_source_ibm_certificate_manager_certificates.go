@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"
+	"strconv"
 )
 
 func dataIBMCertificateManagerCertificates() *schema.Resource {
@@ -78,7 +79,7 @@ func dataIBMCertificateManagerCertificates() *schema.Resource {
 										Computed: true,
 									},
 									"ordered_on": {
-										Type:     schema.TypeInt,
+										Type:     schema.TypeString,
 										Computed: true,
 									},
 									"code": {
@@ -125,10 +126,20 @@ func dataIBMCertificateManagerCertificatesRead(d *schema.ResourceData, meta inte
 		certificate["has_previous"] = c.HasPrevious
 		if c.IssuanceInfo != nil {
 			issuanceinfo := make(map[string]interface{})
-			issuanceinfo["status"] = c.IssuanceInfo.Status
-			issuanceinfo["code"] = c.IssuanceInfo.Code
-			issuanceinfo["additional_info"] = c.IssuanceInfo.AdditionalInfo
-			issuanceinfo["ordered_on"] = c.IssuanceInfo.OrderedOn
+			if c.IssuanceInfo.Status != "" {
+				issuanceinfo["status"] = c.IssuanceInfo.Status
+			}
+			if c.IssuanceInfo.Code != "" {
+				issuanceinfo["code"] = c.IssuanceInfo.Code
+			}
+			if c.IssuanceInfo.AdditionalInfo != "" {
+				issuanceinfo["additional_info"] = c.IssuanceInfo.AdditionalInfo
+			}
+			if c.IssuanceInfo.OrderedOn != 0 {
+				order := c.IssuanceInfo.OrderedOn
+				orderedOn := strconv.FormatInt(order, 10)
+				issuanceinfo["ordered_on"] = orderedOn
+			}
 			certificate["issuance_info"] = issuanceinfo
 		}
 		record[i] = certificate
