@@ -13,25 +13,45 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
-func TestAccIBMCertificateManagerOrder_Basic(t *testing.T) {
+func TestAccIBMCertificateManagerOrder_Import(t *testing.T) {
 	var conf models.CertificateInfo
-	name1 := fmt.Sprintf("tf-acc-test1-%s", acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
+	orderName := fmt.Sprintf("tf-acc-test1-%s", acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
+	cmsName := fmt.Sprintf("tf-acc-test1-%s", acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMCertificateManagerOrderDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCertificateManagerOrder_basic(name1),
+				Config: testAccCheckIBMCertificateManagerOrder_basic(cmsName, orderName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMCMOrderExists("ibm_certificate_manager_order.cert", conf),
-					resource.TestCheckResourceAttr("ibm_certificate_manager_order.cert", "name", name1),
+					resource.TestCheckResourceAttr("ibm_certificate_manager_order.cert", "name", orderName),
 				),
 			},
 			resource.TestStep{
 				ResourceName:      "ibm_certificate_manager_order.cert",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+func TestAccIBMCertificateManagerOrder_Basic(t *testing.T) {
+	var conf models.CertificateInfo
+	orderName := fmt.Sprintf("tf-acc-test1-%s", acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
+	cmsName := fmt.Sprintf("tf-acc-test1-%s", acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMCertificateManagerOrderDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMCertificateManagerOrder_basic(cmsName, orderName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMCMOrderExists("ibm_certificate_manager_order.cert", conf),
+					resource.TestCheckResourceAttr("ibm_certificate_manager_order.cert", "name", orderName),
+				),
 			},
 		},
 	})
@@ -59,19 +79,36 @@ func testAccCheckIBMCertificateManagerOrderDestroy(s *terraform.State) error {
 
 }
 
-func testAccCheckIBMCertificateManagerOrder_basic(name1 string) string {
+func testAccCheckIBMCertificateManagerOrder_basic(cmsName, orderName string) string {
 	return fmt.Sprintf(`
+	resource "ibm_resource_instance" "cm" {
+		name                = "%s"
+		location            = "us-south"
+		service             = "cloudcerts"
+		plan                = "free"
+	}
+	data "ibm_resource_group" "web_group" {
+		name = "default"
+	}
+	data "ibm_cis" "instance" {
+		name              = "Terraform-Test-CIS"
+		resource_group_id = data.ibm_resource_group.web_group.id
+	}
+	data "ibm_cis_domain" "web_domain" {
+		cis_id = ibm_cis.instance.id
+		domain = "cis-test-domain.com"
+	}
 	resource "ibm_certificate_manager_order" "cert" {
 		certificate_manager_instance_id = ibm_resource_instance.cm.id
 		name                            = "%s"
 		description                     = "test description"
-		domains                         = ["example.com"]
+		domains                         = ["cis-test-domain.com"]
 		rotate_keys                     = false
 		domain_validation_method        = "dns-01"
-		dns_provider_instance_crn       = ibm_cis.instance.id
+		dns_provider_instance_crn       = data.ibm_cis.instance.id
 	  }
 	  
-	  `, name1)
+	  `, cmsName, orderName)
 }
 
 func testAccCheckIBMCMOrderExists(n string, obj models.CertificateInfo) resource.TestCheckFunc {
