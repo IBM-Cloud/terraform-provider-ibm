@@ -124,7 +124,7 @@ func resourceIBMIAMUserPolicyCreate(d *schema.ResourceData, meta interface{}) er
 
 	accountID := userDetails.userAccount
 	var policy iampapv1.Policy
-	policy, err = generateAccountPolicy(d, meta)
+	policy, err = generateAccountPolicyV2(d, meta)
 	if err != nil {
 		return err
 	}

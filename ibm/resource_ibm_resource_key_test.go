@@ -96,6 +96,31 @@ func TestAccIBMResourceKey_Parameters(t *testing.T) {
 	})
 }
 
+func TestAccIBMResourceKeyWithCustomRole(t *testing.T) {
+	var conf models.ServiceKey
+	resourceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	resourceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	crName := fmt.Sprintf("Name%d", acctest.RandIntRange(10, 100))
+	displayName := fmt.Sprintf("Disp%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMResourceKeyDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMResourceKeyWithCustomRole(resourceName, resourceKey, crName, displayName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey", conf),
+					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "name", resourceKey),
+					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "credentials.%", "7"),
+					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "role", crName),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMResourceKeyExists(n string, obj models.ServiceKey) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
@@ -216,4 +241,28 @@ func testAccCheckIBMResourceKey_parameters(resourceName, resourceKey string) str
 			role = "Manager"
 		}
 	`, resourceName, resourceKey)
+}
+
+func testAccCheckIBMResourceKeyWithCustomRole(resourceName, resourceKey, crName, displayName string) string {
+	return fmt.Sprintf(`
+		
+		resource "ibm_resource_instance" "resource" {
+			name              = "%s"
+			service           = "cloud-object-storage"
+			plan              = "lite"
+			location          = "global"
+		}
+		resource "ibm_iam_custom_role" "customrole" {
+			name         = "%s"
+			display_name = "%s"
+			description  = "role for test scenario1"
+			service = "cloud-object-storage"
+			actions      = ["cloud-object-storage.bucket.get_cors"]
+		}
+		resource "ibm_resource_key" "resourceKey" {
+			name = "%s"
+			resource_instance_id = "${ibm_resource_instance.resource.id}"
+			role = "${ibm_iam_custom_role.customrole.display_name}"
+		}
+	`, resourceName, crName, displayName, resourceKey)
 }

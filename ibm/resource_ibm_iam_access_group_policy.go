@@ -4,7 +4,9 @@ import (
 	"fmt"
 
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
+	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv2"
 	"github.com/IBM-Cloud/bluemix-go/models"
+	"github.com/IBM-Cloud/bluemix-go/utils"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -126,7 +128,7 @@ func resourceIBMIAMAccessGroupPolicyCreate(d *schema.ResourceData, meta interfac
 
 	var policy iampapv1.Policy
 
-	policy, err = generateAccountPolicy(d, meta)
+	policy, err = generateAccountPolicyV2(d, meta)
 	if err != nil {
 		return err
 	}
@@ -221,7 +223,7 @@ func resourceIBMIAMAccessGroupPolicyUpdate(d *schema.ResourceData, meta interfac
 
 		var policy iampapv1.Policy
 
-		policy, err = generateAccountPolicy(d, meta)
+		policy, err = generateAccountPolicyV2(d, meta)
 		if err != nil {
 			return err
 		}
@@ -389,4 +391,100 @@ func generateAccountPolicy(d *schema.ResourceData, meta interface{}) (iampapv1.P
 	}
 
 	return iampapv1.Policy{Roles: iampapv1.ConvertRoleModels(policyRoles), Resources: []iampapv1.Resource{policyResource}}, nil
+}
+
+func generateAccountPolicyV2(d *schema.ResourceData, meta interface{}) (iampapv1.Policy, error) {
+
+	var serviceName string
+	policyResource := iampapv1.Resource{}
+
+	if res, ok := d.GetOk("resources"); ok {
+		resources := res.([]interface{})
+		for _, resource := range resources {
+			r, _ := resource.(map[string]interface{})
+			serviceName = r["service"].(string)
+			if r, ok := r["service"]; ok {
+				if r.(string) != "" {
+					policyResource.SetServiceName(r.(string))
+				}
+			}
+			if r, ok := r["resource_instance_id"]; ok {
+				if r.(string) != "" {
+					policyResource.SetServiceInstance(r.(string))
+				}
+
+			}
+			if r, ok := r["region"]; ok {
+				if r.(string) != "" {
+					policyResource.SetRegion(r.(string))
+				}
+
+			}
+			if r, ok := r["resource_type"]; ok {
+				if r.(string) != "" {
+					policyResource.SetResourceType(r.(string))
+				}
+
+			}
+			if r, ok := r["resource"]; ok {
+				if r.(string) != "" {
+					policyResource.SetResource(r.(string))
+				}
+
+			}
+			if r, ok := r["resource_group_id"]; ok {
+				if r.(string) != "" {
+					policyResource.SetResourceGroupID(r.(string))
+				}
+
+			}
+			if r, ok := r["attributes"]; ok {
+				for k, v := range r.(map[string]interface{}) {
+					policyResource.SetAttribute(k, v.(string))
+				}
+
+			}
+
+		}
+	}
+
+	if d.Get("account_management").(bool) {
+		policyResource.SetServiceType("platform_service")
+	}
+
+	if len(policyResource.Attributes) == 0 {
+		policyResource.SetServiceType("service")
+	}
+
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return iampapv1.Policy{}, err
+	}
+
+	iamClient, err := meta.(ClientSession).IAMPAPAPIV2()
+	if err != nil {
+		return iampapv1.Policy{}, err
+	}
+
+	iamRepo := iamClient.IAMRoles()
+
+	var roles []iampapv2.Role
+
+	query := iampapv2.RoleQuery{
+		AccountID:   userDetails.userAccount,
+		ServiceName: serviceName,
+	}
+
+	if serviceName == "" {
+		roles, err = iamRepo.ListSystemDefinedRoles()
+	} else {
+		roles, err = iamRepo.ListAll(query)
+	}
+
+	policyRoles, err := utils.GetRolesFromRoleNamesV2(expandStringList(d.Get("roles").([]interface{})), roles)
+	if err != nil {
+		return iampapv1.Policy{}, err
+	}
+
+	return iampapv1.Policy{Roles: iampapv1.ConvertV2RoleModels(policyRoles), Resources: []iampapv1.Resource{policyResource}}, nil
 }
