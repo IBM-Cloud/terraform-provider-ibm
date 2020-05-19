@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -115,7 +116,7 @@ func resourceIBMCertificateManagerOrder() *schema.Resource {
 							Computed: true,
 						},
 						"ordered_on": {
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"code": {
@@ -202,10 +203,20 @@ func resourceIBMCertificateManagerRead(d *schema.ResourceData, meta interface{})
 
 	if certificatedata.IssuanceInfo != nil {
 		issuanceinfo := map[string]interface{}{}
-		issuanceinfo["status"] = certificatedata.IssuanceInfo.Status
-		issuanceinfo["code"] = certificatedata.IssuanceInfo.Code
-		issuanceinfo["additional_info"] = certificatedata.IssuanceInfo.AdditionalInfo
-		issuanceinfo["ordered_on"] = certificatedata.IssuanceInfo.OrderedOn
+		if certificatedata.IssuanceInfo.Status != "" {
+			issuanceinfo["status"] = certificatedata.IssuanceInfo.Status
+		}
+		if certificatedata.IssuanceInfo.Code != "" {
+			issuanceinfo["code"] = certificatedata.IssuanceInfo.Code
+		}
+		if certificatedata.IssuanceInfo.AdditionalInfo != "" {
+			issuanceinfo["additional_info"] = certificatedata.IssuanceInfo.AdditionalInfo
+		}
+		if certificatedata.IssuanceInfo.OrderedOn != 0 {
+			order := certificatedata.IssuanceInfo.OrderedOn
+			orderedOn := strconv.FormatInt(order, 10)
+			issuanceinfo["ordered_on"] = orderedOn
+		}
 		d.Set("issuance_info", issuanceinfo)
 	}
 	return nil
