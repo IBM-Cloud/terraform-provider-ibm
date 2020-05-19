@@ -26,8 +26,8 @@
 		{
 			"checksumSHA1": "4Grez5BBqGGkb6Qx1gsIpZERb5A=",
 			"path": "github.com/IBM-Cloud/bluemix-go",
-			"revision": "36abc6bdd8dd76187190f5461d71a0a25f663ed4",
-			"revisionTime": "2020-05-01T08:59:36Z"
+			"revision": "c59b02bad60e102984c03f9b136329b49a941266",
+			"revisionTime": "2020-05-13T11:48:19Z"
 		},
 		{
 			"checksumSHA1": "CAnazuOQBqX9lpiF/CUfpqyleEY=",
@@ -100,6 +100,12 @@
 			"path": "github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1",
 			"revision": "36abc6bdd8dd76187190f5461d71a0a25f663ed4",
 			"revisionTime": "2020-05-01T08:59:36Z"
+		},
+		{
+			"checksumSHA1": "DXi73ySi+KK865XWH3RFpbTyZI8=",
+			"path": "github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv2",
+			"revision": "c59b02bad60e102984c03f9b136329b49a941266",
+			"revisionTime": "2020-05-13T11:48:19Z"
 		},
 		{
 			"checksumSHA1": "ZeSyqjtDFqkbi8Rf86vw4lcKe2g=",
@@ -180,10 +186,10 @@
 			"revisionTime": "2019-12-11T04:38:12Z"
 		},
 		{
-			"checksumSHA1": "laAk7ZSBqlCLLi0yxKeqEiGkFUY=",
+			"checksumSHA1": "PO2GWyvVwFqAg7arkxh1a51aIqY=",
 			"path": "github.com/IBM-Cloud/bluemix-go/client",
-			"revision": "d884072eb6f5b3da1bd78b61fce8414b09fa1589",
-			"revisionTime": "2020-04-14T07:55:25Z"
+			"revision": "c59b02bad60e102984c03f9b136329b49a941266",
+			"revisionTime": "2020-05-13T11:48:19Z"
 		},
 		{
 			"checksumSHA1": "sLUDhMnMg7E6TXEuWyIJy/BC5jc=",
@@ -586,18 +592,18 @@
 			"revisionTime": "2020-03-29T20:23:51Z"
 		},
 		{
+			"path": "github.com/IBM/go-sdk-core/core",
+			"revision": "2050cbfeb7bceffbde475fa32ceeb44660687843"
+		},
+		{
+			"path": "github.com/IBM/go-sdk-core/core",
+			"revision": "2050cbfeb7bceffbde475fa32ceeb44660687843"
+		},
+		{
 			"checksumSHA1": "uhx4vydkhaBSVJ1Bq+oRkErxlIM=",
 			"path": "github.com/IBM/go-sdk-core/core",
 			"revision": "2050cbfeb7bceffbde475fa32ceeb44660687843",
 			"revisionTime": "2020-03-29T20:23:51Z"
-		},
-		{
-			"path": "github.com/IBM/go-sdk-core/core",
-			"revision": "2050cbfeb7bceffbde475fa32ceeb44660687843"
-		},
-		{
-			"path": "github.com/IBM/go-sdk-core/core",
-			"revision": "2050cbfeb7bceffbde475fa32ceeb44660687843"
 		},
 		{
 			"path": "github.com/IBM/go-sdk-core/v3/core",
