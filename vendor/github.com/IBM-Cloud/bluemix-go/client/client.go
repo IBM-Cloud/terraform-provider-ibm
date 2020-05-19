@@ -295,7 +295,7 @@ func getDefaultAuthHeaders(serviceName bluemix.ServiceName, c *bluemix.Config) g
 	case bluemix.ContainerRegistryService:
 		h.Set(authorizationHeader, c.IAMAccessToken)
 		h.Set(crRefreshTokenHeader, c.IAMRefreshToken)
-	case bluemix.IAMPAPService, bluemix.AccountServicev1, bluemix.ResourceCatalogrService, bluemix.ResourceControllerService, bluemix.ResourceManagementService, bluemix.ResourceManagementServicev2, bluemix.IAMService, bluemix.IAMUUMService, bluemix.IAMUUMServicev2, bluemix.CseService:
+	case bluemix.IAMPAPService, bluemix.AccountServicev1, bluemix.ResourceCatalogrService, bluemix.ResourceControllerService, bluemix.ResourceManagementService, bluemix.ResourceManagementServicev2, bluemix.IAMService, bluemix.IAMUUMService, bluemix.IAMUUMServicev2, bluemix.IAMPAPServicev2, bluemix.CseService:
 		h.Set(authorizationHeader, c.IAMAccessToken)
 	case bluemix.UserManagement:
 		h.Set(userAgentHeader, http.UserAgent())
@@ -323,7 +323,7 @@ func getDefaultAuthHeaders(serviceName bluemix.ServiceName, c *bluemix.Config) g
 func isTimeout(err error) bool {
 	if bmErr, ok := err.(bmxerror.RequestFailure); ok {
 		switch bmErr.StatusCode() {
-		case 408, 504, 599, 429, 500:
+		case 408, 504, 599, 429, 500, 502:
 			return true
 		}
 	}

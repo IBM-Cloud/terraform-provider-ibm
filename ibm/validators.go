@@ -154,6 +154,24 @@ func validateDomainName(v interface{}, k string) (ws []string, errors []error) {
 
 	return
 }
+func validateCustomRoleName(v interface{}, k string) (ws []string, errors []error) {
+	value := v.(string)
+
+	regex := `^[A-Z]{1}[A-Za-z0-9]{0,29}$`
+	acceptedcharacters, _ := regexp.MatchString(regex, value)
+
+	if acceptedcharacters {
+		if (len(value) < 1) || (len(value) > 50) {
+			errors = append(errors, fmt.Errorf(
+				"%q (%q) must contain from 1 to 50 characters ", k, value))
+		}
+	} else {
+		errors = append(errors, fmt.Errorf(
+			"%q (%q) should match regexp %s ", k, v, regex))
+	}
+
+	return
+}
 
 func validateAppInstance(v interface{}, k string) (ws []string, errors []error) {
 	instances := v.(int)
