@@ -1,6 +1,9 @@
 package iampapv1
 
-import "github.com/IBM-Cloud/bluemix-go/models"
+import (
+	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv2"
+	"github.com/IBM-Cloud/bluemix-go/models"
+)
 
 // Policy is the model of IAM PAP policy
 type Policy struct {
@@ -38,6 +41,17 @@ func ConvertRoleModels(roles []models.PolicyRole) []Role {
 	results := make([]Role, len(roles))
 	for i, r := range roles {
 		results[i] = fromModel(r)
+	}
+	return results
+}
+
+// ConvertV2RoleModels will transform role models returned from "/v2/roles" to the model used by policy
+func ConvertV2RoleModels(roles []iampapv2.Role) []Role {
+	results := make([]Role, len(roles))
+	for i, r := range roles {
+		results[i] = Role{
+			RoleID: r.Crn,
+		}
 	}
 	return results
 }

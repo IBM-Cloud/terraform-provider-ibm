@@ -96,10 +96,10 @@
 			"revisionTime": "2019-12-11T04:38:12Z"
 		},
 		{
-			"checksumSHA1": "oAOPZ+im1VIykSqfWoO8mjhHQS4=",
+			"checksumSHA1": "5RieO6crIeTujPRpsFK0GwVA2AM=",
 			"path": "github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1",
-			"revision": "36abc6bdd8dd76187190f5461d71a0a25f663ed4",
-			"revisionTime": "2020-05-01T08:59:36Z"
+			"revision": "c59b02bad60e102984c03f9b136329b49a941266",
+			"revisionTime": "2020-05-13T11:48:19Z"
 		},
 		{
 			"checksumSHA1": "DXi73ySi+KK865XWH3RFpbTyZI8=",
@@ -544,10 +544,10 @@
 			"revisionTime": "2019-12-11T04:38:12Z"
 		},
 		{
-			"checksumSHA1": "E3ma77plhbwjOouOo+k45izeUIU=",
+			"checksumSHA1": "ppirnHfP27vHj76XGiWIyGj1pSQ=",
 			"path": "github.com/IBM-Cloud/bluemix-go/utils",
-			"revision": "ac9b271eaf42942cb8c2c2e68b8343466ae6b3cc",
-			"revisionTime": "2019-12-11T04:38:12Z"
+			"revision": "c59b02bad60e102984c03f9b136329b49a941266",
+			"revisionTime": "2020-05-13T11:48:19Z"
 		},
 		{
 			"checksumSHA1": "gel7mC/hrl8t0QM3AYmFitB4KwA=",

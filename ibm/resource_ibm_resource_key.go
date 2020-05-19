@@ -2,11 +2,14 @@ package ibm
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/IBM-Cloud/bluemix-go/models"
+	"github.com/IBM-Cloud/bluemix-go/utils"
 
+	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv2"
 	"github.com/hashicorp/terraform/flatmap"
 
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
@@ -38,11 +41,12 @@ func resourceIBMResourceKey() *schema.Resource {
 			},
 
 			"role": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				Description:  "Name of the user role.Valid roles are Writer, Reader, Manager, Administrator, Operator, Viewer, Editor.",
-				ValidateFunc: validateRole,
+				Type:     schema.TypeString,
+				Required: true,
+				// ForceNew:    true,
+				DiffSuppressFunc: applyOnce,
+				Description:      "Name of the user role.Valid roles are Writer, Reader, Manager, Administrator, Operator, Viewer, Editor and Custom Roles.",
+				// ValidateFunc: validateRole,
 			},
 
 			"resource_instance_id": {
@@ -123,7 +127,17 @@ func resourceIBMResourceKeyCreate(d *schema.ResourceData, meta interface{}) erro
 	var keyParams map[string]interface{}
 
 	if parameters, ok := d.GetOk("parameters"); ok {
-		keyParams = parameters.(map[string]interface{})
+		temp := parameters.(map[string]interface{})
+		keyParams = make(map[string]interface{})
+		for k, v := range temp {
+			if v == "true" || v == "false" {
+				b, _ := strconv.ParseBool(v.(string))
+				keyParams[k] = b
+
+			} else {
+				keyParams[k] = v
+			}
+		}
 	} else {
 		keyParams = make(map[string]interface{})
 	}
@@ -149,7 +163,7 @@ func resourceIBMResourceKeyCreate(d *schema.ResourceData, meta interface{}) erro
 	if err != nil {
 		return fmt.Errorf("Error creating resource key: %s", err)
 	}
-	keyParams["role_crn"] = serviceRole.ID
+	keyParams["role_crn"] = serviceRole.Crn
 
 	request := controller.CreateServiceKeyRequest{
 		Name:       name,
@@ -185,7 +199,6 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("credentials", flatmap.Flatten(resourceKey.Credentials))
 	d.Set("name", resourceKey.Name)
 	d.Set("status", resourceKey.State)
-
 	if roleCrn, ok := resourceKey.Parameters["role_crn"].(string); ok {
 		d.Set("role", roleCrn[strings.LastIndex(roleCrn, ":")+1:])
 	} else if roleCrn, ok := resourceKey.Credentials["iam_role_crn"].(string); ok {
@@ -262,28 +275,37 @@ func getResourceInstanceAndCRN(d *schema.ResourceData, meta interface{}) (*model
 
 }
 
-func getRoleFromName(roleName, serviceName string, meta interface{}) (models.PolicyRole, error) {
+func getRoleFromName(roleName, serviceName string, meta interface{}) (iampapv2.Role, error) {
 
-	iamClient, err := meta.(ClientSession).IAMAPI()
+	iamClient, err := meta.(ClientSession).IAMPAPAPIV2()
 	if err != nil {
-		return models.PolicyRole{}, err
+		return iampapv2.Role{}, err
 	}
 
-	iamRepo := iamClient.ServiceRoles()
+	iamRepo := iamClient.IAMRoles()
 
-	var roles []models.PolicyRole
+	var roles []iampapv2.Role
 
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return iampapv2.Role{}, err
+	}
+	query := iampapv2.RoleQuery{
+		AccountID:   userDetails.userAccount,
+		ServiceName: serviceName,
+	}
 	if serviceName == "" {
 		roles, err = iamRepo.ListSystemDefinedRoles()
 	} else {
-		roles, err = iamRepo.ListServiceRoles(serviceName)
+		roles, err = iamRepo.ListAll(query)
 	}
 	if err != nil {
-		return models.PolicyRole{}, err
+		return iampapv2.Role{}, err
 	}
-	role, err := findRoleByName(roles, roleName)
+
+	role, err := utils.FindRoleByNameV2(roles, roleName)
 	if err != nil {
-		return models.PolicyRole{}, err
+		return iampapv2.Role{}, err
 	}
 	return role, nil
 
