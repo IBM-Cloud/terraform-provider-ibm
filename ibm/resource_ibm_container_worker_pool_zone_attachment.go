@@ -80,6 +80,13 @@ func resourceIBMContainerWorkerPoolZoneAttachment() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
+			"wait_till_albs": {
+				Type:             schema.TypeBool,
+				Optional:         true,
+				Default:          true,
+				DiffSuppressFunc: applyOnce,
+				Description:      "wait_till_albs can be configured to wait for albs during the worker pool zone attachment.",
+			},
 		},
 	}
 }
@@ -136,10 +143,17 @@ func resourceIBMContainerWorkerPoolZoneAttachmentCreate(d *schema.ResourceData, 
 			"Error waiting for workers of worker pool (%s) of cluster (%s) to become ready: %s", workerPool, cluster, err)
 	}
 
-	_, err = waitForWorkerZoneALB(cluster, zone, meta, d.Timeout(schema.TimeoutUpdate), targetEnv)
-	if err != nil {
-		return fmt.Errorf(
-			"Error waiting for ALBs in zone (%s) of cluster (%s) to become ready: %s", zone, cluster, err)
+	var waitTillALBs bool
+	if v, ok := d.GetOk("wait_till_albs"); ok {
+		waitTillALBs = v.(bool)
+	}
+
+	if waitTillALBs {
+		_, err = waitForWorkerZoneALB(cluster, zone, meta, d.Timeout(schema.TimeoutUpdate), targetEnv)
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for ALBs in zone (%s) of cluster (%s) to become ready: %s", zone, cluster, err)
+		}
 	}
 
 	return resourceIBMContainerWorkerPoolZoneAttachmentRead(d, meta)
