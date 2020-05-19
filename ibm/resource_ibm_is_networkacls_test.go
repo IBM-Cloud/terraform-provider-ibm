@@ -11,7 +11,7 @@ import (
 	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
-func TestNetworkACL(t *testing.T) {
+func TestNetworkACLGen1(t *testing.T) {
 	var nwACL string
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
