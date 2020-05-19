@@ -1,7 +1,9 @@
 package ibm
 
 import (
+	"encoding/json"
 	"log"
+	"reflect"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -175,18 +177,44 @@ func dataSourceIBMISInstanceTemplates() *schema.Resource {
 								},
 							},
 						},
-						isInstanceTemplatePrimaryNetworkInterface: {
-							Type:     schema.TypeMap,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									/*
+						/*
+							isInstanceTemplatePrimaryNetworkInterface: {
+								Type:     schema.TypeMap,
+								Computed: true,
+								Elem: &schema.Resource{
+									Schema: map[string]*schema.Schema{
+
 										isInstanceTemplateNicAllowIpSpoofing: {
 											Type:     schema.TypeBool,
 											Optional: true,
 											Default:  false,
 										},
-									*/
+
+										isInstanceTemplateNicName: {
+											Type:     schema.TypeString,
+											Computed: true,
+										},
+										isInstanceTemplateNicPrimaryIpv4Address: {
+											Type:     schema.TypeString,
+											Computed: true,
+										},
+										isInstanceTemplateNicSecurityGroups: {
+											Type:     schema.TypeString,
+											Computed: true,
+										},
+										isInstanceTemplateNicSubnet: {
+											Type:     schema.TypeString,
+											Computed: true,
+										},
+									},
+								},
+							},
+						*/
+						isInstanceTemplatePrimaryNetworkInterface: {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
 									isInstanceTemplateNicName: {
 										Type:     schema.TypeString,
 										Computed: true,
@@ -195,12 +223,13 @@ func dataSourceIBMISInstanceTemplates() *schema.Resource {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									isInstanceNicSecurityGroups: {
-										Type:     schema.TypeList,
+									isInstanceTemplateNicSecurityGroups: {
+										Type:     schema.TypeSet,
 										Computed: true,
 										Elem:     &schema.Schema{Type: schema.TypeString},
+										Set:      schema.HashString,
 									},
-									isInstanceNicSubnet: {
+									isInstanceTemplateNicSubnet: {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
@@ -225,13 +254,11 @@ func dataSourceIBMISInstanceTemplates() *schema.Resource {
 									},
 									isInstanceTemplateNicPrimaryIpv4Address: {
 										Type:     schema.TypeString,
-										Optional: true,
 										Computed: true,
 									},
 									isInstanceNicSecurityGroups: {
-										Type:     schema.TypeList,
+										Type:     schema.TypeString,
 										Computed: true,
-										Elem:     &schema.Schema{Type: schema.TypeString},
 									},
 									isInstanceNicSubnet: {
 										Type:     schema.TypeString,
@@ -356,7 +383,7 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 			subInf := instance.PrimaryNetworkInterface.Subnet
 			subnetIdentity := subInf.(*vpcv1.SubnetIdentity)
 			log.Println("Primary Network Interface subnet id:", *subnetIdentity.ID)
-			currentPrimNic[isInstanceNicSubnet] = *subnetIdentity.ID
+			currentPrimNic[isInstanceTemplateNicSubnet] = *subnetIdentity.ID
 
 			//currentPrimNic[isInstanceTemplateNicAllowIpSpoofing] = instance.PrimaryNetworkInterface.AllowIpSpoofing
 			/*
@@ -378,20 +405,20 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 					log.Println("Primary Network Interface ", currentPrimNic)
 				}
 			*/
-
-			if len(instance.PrimaryNetworkInterface.SecurityGroups) > 0 {
-				secgrpList := []string{}
-				for i := 0; i < len(instance.PrimaryNetworkInterface.SecurityGroups); i++ {
-					secGrpInf := instance.PrimaryNetworkInterface.SecurityGroups[i]
-					secGrpIdentity := secGrpInf.(*vpcv1.SecurityGroupIdentity)
-					secgrpList = append(secgrpList, string(*secGrpIdentity.ID))
-					log.Println("Primary Network Interface secgrp id:", string(*secGrpIdentity.ID))
+			/*
+				if len(instance.PrimaryNetworkInterface.SecurityGroups) > 0 {
+					secgrpList := []string{}
+					for i := 0; i < len(instance.PrimaryNetworkInterface.SecurityGroups); i++ {
+						secGrpInf := instance.PrimaryNetworkInterface.SecurityGroups[i]
+						secGrpIdentity := secGrpInf.(*vpcv1.SecurityGroupIdentity)
+						secgrpList = append(secgrpList, string(*secGrpIdentity.ID))
+						log.Println("Primary Network Interface secgrp id:", string(*secGrpIdentity.ID))
+					}
+					//currentPrimNic[isInstanceNicSecurityGroups] = strings.Join(secgrpList, ",")
+					currentPrimNic[isInstanceNicSecurityGroups] = secgrpList
+					log.Println("Primary Network Interface secgrp id:", secgrpList)
 				}
-				//currentPrimNic[isInstanceNicSecurityGroups] = strings.Join(secgrpList, ",")
-				currentPrimNic[isInstanceNicSecurityGroups] = secgrpList
-				log.Println("Primary Network Interface secgrp id:", secgrpList)
-			}
-
+			*/
 			/*
 				secgrpList := []string{}
 				for i := 0; i < len(instance.PrimaryNetworkInterface.SecurityGroups); i++ {
@@ -415,42 +442,54 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 					log.Println("Primary Network Interface secgrp id:", jsonStr)
 				}
 			*/
+			if len(instance.PrimaryNetworkInterface.SecurityGroups) != 0 {
+				secgrpList := []string{}
+				for i := 0; i < len(instance.PrimaryNetworkInterface.SecurityGroups); i++ {
+					secGrpInf := instance.PrimaryNetworkInterface.SecurityGroups[i]
+					secGrpIdentity := secGrpInf.(*vpcv1.SecurityGroupIdentity)
+					log.Println("Primary Network Interface secgrp id:", string(*secGrpIdentity.ID))
+					secgrpList = append(secgrpList, string(*secGrpIdentity.ID))
+				}
+				currentPrimNic[isInstanceTemplateNicSecurityGroups] = newStringSet(schema.HashString, secgrpList)
+				//log.Println("Primary Network Interface secgrpList:", strings.Join(secgrpList, ","))
+				//currentPrimNic[isInstanceTemplateNicSecurityGroups] = strings.Join(secgrpList, ",")
+			}
 			template[isInstanceTemplatePrimaryNetworkInterface] = currentPrimNic
 			log.Println("Primary Network Interface template", template)
 		}
-		/*
-			if instance.NetworkInterfaces != nil {
-				interfacesList := make([]map[string]interface{}, 0)
-				log.Println("count of Network Interfaces ", len(instance.NetworkInterfaces))
-				for _, intfc := range instance.NetworkInterfaces {
-					currentNic := map[string]interface{}{}
-					currentNic[isInstanceTemplateNicName] = *intfc.Name
-					log.Println("Network Interface name:", *intfc.Name)
-					if intfc.PrimaryIpv4Address != nil {
-						currentNic[isInstanceTemplateNicPrimaryIpv4Address] = *intfc.PrimaryIpv4Address
-						log.Println("Network Interface ipv4:", *instance.PrimaryNetworkInterface.PrimaryIpv4Address)
-					}
-					//currentNic[isInstanceTemplateNicAllowIpSpoofing] = intfc.AllowIpSpoofing
-					subInf := intfc.Subnet
-					subnetIdentity := subInf.(*vpcv1.SubnetIdentity)
-					currentNic[isInstanceTemplateNicSubnet] = *subnetIdentity.ID
-					log.Println("Network Interface subnet id:", *subnetIdentity.ID)
-					/*
-						if len(intfc.SecurityGroups) != 0 {
-							secgrpList := make([]map[string]interface{}, 0)
-							for i := 0; i < len(intfc.SecurityGroups); i++ {
-								secGrpInf := intfc.SecurityGroups[i]
-								secGrpIdentity := secGrpInf.(*vpcv1.SecurityGroupIdentity)
-								secGrp := map[string]interface{}{}
-								secGrp["id"] = *secGrpIdentity.ID
-								secGrp[isInstanceTemplatesCrn] = *secGrpIdentity.Crn
-								secGrp[isInstanceTemplatesHref] = *secGrpIdentity.Href
-								secgrpList = append(secgrpList, secGrp)
-							}
-							currentNic[isInstanceTemplateNicSecurityGroups] = secgrpList
+
+		if instance.NetworkInterfaces != nil {
+			interfacesList := make([]map[string]interface{}, 0)
+			log.Println("count of Network Interfaces ", len(instance.NetworkInterfaces))
+			for _, intfc := range instance.NetworkInterfaces {
+				currentNic := map[string]interface{}{}
+				currentNic[isInstanceTemplateNicName] = *intfc.Name
+				log.Println("Network Interface name:", *intfc.Name)
+				if intfc.PrimaryIpv4Address != nil {
+					currentNic[isInstanceTemplateNicPrimaryIpv4Address] = *intfc.PrimaryIpv4Address
+					log.Println("Network Interface ipv4:", *instance.PrimaryNetworkInterface.PrimaryIpv4Address)
+				}
+				//currentNic[isInstanceTemplateNicAllowIpSpoofing] = intfc.AllowIpSpoofing
+				subInf := intfc.Subnet
+				subnetIdentity := subInf.(*vpcv1.SubnetIdentity)
+				currentNic[isInstanceTemplateNicSubnet] = *subnetIdentity.ID
+				log.Println("Network Interface subnet id:", *subnetIdentity.ID)
+				/*
+					if len(intfc.SecurityGroups) != 0 {
+						secgrpList := make([]map[string]interface{}, 0)
+						for i := 0; i < len(intfc.SecurityGroups); i++ {
+							secGrpInf := intfc.SecurityGroups[i]
+							secGrpIdentity := secGrpInf.(*vpcv1.SecurityGroupIdentity)
+							secGrp := map[string]interface{}{}
+							secGrp["id"] = *secGrpIdentity.ID
+							secGrp[isInstanceTemplatesCrn] = *secGrpIdentity.Crn
+							secGrp[isInstanceTemplatesHref] = *secGrpIdentity.Href
+							secgrpList = append(secgrpList, secGrp)
 						}
-		*/
-		/*
+						currentNic[isInstanceTemplateNicSecurityGroups] = secgrpList
+					}
+				*/
+				/*
 					if len(intfc.SecurityGroups) > 0 {
 						secGrpsData, err := json.Marshal(intfc.SecurityGroups)
 						if err != nil {
@@ -461,11 +500,12 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 						currentNic[isInstanceNicSecurityGroups] = jsonStr
 						log.Println("Network Interface secgrp id:", jsonStr)
 					}
-					interfacesList = append(interfacesList, currentNic)
-				}
-				template[isInstanceTemplateNetworkInterfaces] = interfacesList
+				*/
+				interfacesList = append(interfacesList, currentNic)
 			}
-		*/
+			template[isInstanceTemplateNetworkInterfaces] = interfacesList
+		}
+
 		if instance.Image != nil {
 			imageNode := map[string]interface{}{}
 			imageInf := instance.Image
@@ -489,70 +529,68 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 			zoneNode[isInstanceTemplateName] = zone.Name
 			template[isInstanceTemplateZone] = zoneNode
 		}
-		/*
-			interfacesList := make([]map[string]interface{}, 0)
-			if instance.VolumeAttachments != nil {
-				for _, volume := range instance.VolumeAttachments {
-					volumeAttach := map[string]interface{}{}
-					volumeAttach[isInstanceTemplateVolAttName] = *volume.Name
-					volumeAttach[isInstanceTemplateDeleteVolume] = *volume.DeleteVolumeOnInstanceDelete
-					/*
-						volumeId := map[string]interface{}{}
-						volumeIntf := volume.Volume
-						volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentPrototypeInstanceContextVolume)
-						volumeId[isInstanceTemplateVolAttVolName] = volumeInst.Name
-						volumeId[isInstanceTemplateVolAttVolIops] = volumeInst.Iops
 
+		interfacesList := make([]map[string]interface{}, 0)
+		if instance.VolumeAttachments != nil {
+			for _, volume := range instance.VolumeAttachments {
+				volumeAttach := map[string]interface{}{}
+				volumeAttach[isInstanceTemplateVolAttName] = *volume.Name
+				volumeAttach[isInstanceTemplateDeleteVolume] = *volume.DeleteVolumeOnInstanceDelete
+				log.Println("Volume attachment delete:", *volume.DeleteVolumeOnInstanceDelete)
+				/*
+					volumeId := map[string]interface{}{}
 					volumeIntf := volume.Volume
 					volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentPrototypeInstanceContextVolume)
-					volData, err := json.Marshal(volumeInst)
-					if err != nil {
-						log.Printf("Error reading volume of volume attachments :%s", err)
-						return err
-					}
-					jsonStr := string(volData)
-					volumeAttach[isInstanceTemplateVolAttVolume] = jsonStr
-					interfacesList = append(interfacesList, volumeAttach)
-				}
-				template[isInstanceTemplateVolumeAttachments] = interfacesList
-			}
-		*/
-		/*
-			if instance.BootVolumeAttachment != nil {
-				bootVol := map[string]interface{}{}
-				bootVol[isInstanceTemplateBootName] = *instance.BootVolumeAttachment.Name
-				log.Println("Type of delete ", reflect.TypeOf(instance.BootVolumeAttachment.DeleteVolumeOnInstanceDelete).String())
-				// bootVol[isInstanceTemplateDeleteVolume] = *instance.BootVolumeAttachment.DeleteVolumeOnInstanceDelete
-				log.Println("Boot Volume name :", *instance.BootVolumeAttachment.Name)
-				log.Println("Boot Volume delete :", *instance.BootVolumeAttachment.DeleteVolumeOnInstanceDelete)
-
-				volumeIntf := instance.BootVolumeAttachment.Volume
-				volData, err := json.Marshal(volumeIntf)
+					volumeId[isInstanceTemplateVolAttVolName] = volumeInst.Name
+					volumeId[isInstanceTemplateVolAttVolIops] = volumeInst.Iops
+				*/
+				volumeIntf := volume.Volume
+				volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentPrototypeInstanceContextVolume)
+				volData, err := json.Marshal(volumeInst)
 				if err != nil {
-					log.Printf("Error reading volume of boot volume attachment :%s", err)
+					log.Printf("Error reading volume of volume attachments :%s", err)
 					return err
 				}
 				jsonStr := string(volData)
-				bootVol[isInstanceTemplateVolAttVolume] = jsonStr
-				log.Println("Boot Volume json :", jsonStr)
-				log.Println("Boot Volume  :", bootVol)
-
-				// getvolattoptions := &vpcclassicv1.GetVolumeAttachmentOptions{
-				// 	InstanceID: &ID,
-				// 	ID:         instance.BootVolumeAttachment.Volume.ID,
-				// }
-				// vol, _, err := instanceC.GetVolumeAttachment(getvolattoptions)
-				// if err != nil {
-				// 	return fmt.Errorf("Error while retrieving boot volume %s for instance %s: %v", getvolattoptions.ID, d.Id(), err)
-				// }
-
-				// bootVol[isInstanceBootSize] = instance.BootVolumeAttachment.Capacity
-				// bootVol[isInstanceBootIOPS] = instance.BootVolumeAttachment.Iops
-				// bootVol[isInstanceBootProfile] = instance.BootVolumeAttachment.Name
-
-				template[isInstanceTemplatesBootVolumeAttachment] = bootVol
+				volumeAttach[isInstanceTemplateVolAttVolume] = jsonStr
+				interfacesList = append(interfacesList, volumeAttach)
 			}
-		*/
+			template[isInstanceTemplateVolumeAttachments] = interfacesList
+		}
+
+		if instance.BootVolumeAttachment != nil {
+			bootVol := map[string]interface{}{}
+			bootVol[isInstanceTemplateBootName] = *instance.BootVolumeAttachment.Name
+			log.Println("Type of delete ", reflect.TypeOf(instance.BootVolumeAttachment.DeleteVolumeOnInstanceDelete).String())
+			log.Println("Boot Volume name :", *instance.BootVolumeAttachment.Name)
+
+			volumeIntf := instance.BootVolumeAttachment.Volume
+			volData, err := json.Marshal(volumeIntf)
+			if err != nil {
+				log.Printf("Error reading volume of boot volume attachment :%s", err)
+				return err
+			}
+			jsonStr := string(volData)
+			bootVol[isInstanceTemplateVolAttVolume] = jsonStr
+			log.Println("Boot Volume json :", jsonStr)
+			log.Println("Boot Volume  :", bootVol)
+
+			// getvolattoptions := &vpcclassicv1.GetVolumeAttachmentOptions{
+			// 	InstanceID: &ID,
+			// 	ID:         instance.BootVolumeAttachment.Volume.ID,
+			// }
+			// vol, _, err := instanceC.GetVolumeAttachment(getvolattoptions)
+			// if err != nil {
+			// 	return fmt.Errorf("Error while retrieving boot volume %s for instance %s: %v", getvolattoptions.ID, d.Id(), err)
+			// }
+
+			// bootVol[isInstanceBootSize] = instance.BootVolumeAttachment.Capacity
+			// bootVol[isInstanceBootIOPS] = instance.BootVolumeAttachment.Iops
+			// bootVol[isInstanceBootProfile] = instance.BootVolumeAttachment.Name
+
+			template[isInstanceTemplatesBootVolumeAttachment] = bootVol
+		}
+
 		if instance.ResourceGroup != nil {
 			rgNode := map[string]interface{}{}
 			rg := instance.ResourceGroup
