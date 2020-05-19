@@ -34,7 +34,7 @@ func testAccCheckIBMPrivateDNSResourceRecordsDataSourceConfig(riname, zonename, 
 	// status filter defaults to empty
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "rg" {
-		name = "VNF VPC Development"
+		name = "default"
 	}	
 
 	resource "ibm_resource_instance" "test-pdns-instance" {
