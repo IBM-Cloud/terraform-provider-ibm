@@ -9,7 +9,7 @@ import (
 )
 
 func TestAccIBMPrivateDNSNetworkDataSource_basic(t *testing.T) {
-	node := "data.ibm_dns_permitted_networks.test.permitted_networks"
+	node := "data.ibm_dns_permitted_networks.test"
 	riname := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(100, 200))
 	vpcname := fmt.Sprintf("tfc-vpc-name-%d", acctest.RandIntRange(10, 100))
 	zonename := fmt.Sprintf("tf-dnszone-%d.com", acctest.RandIntRange(100, 200))
@@ -20,9 +20,9 @@ func TestAccIBMPrivateDNSNetworkDataSource_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMpDNSPermittedNetworksDataSourceConfig(riname, vpcname, zonename),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(node, "permitted_networks.0.permitted_network_id"),
-					resource.TestCheckResourceAttrSet(node, "permitted_networks.0.state"),
-					resource.TestCheckResourceAttrSet(node, "permitted_networks.0.type"),
+					resource.TestCheckResourceAttrSet(node, "dns_permitted_networks.0.permitted_network_id"),
+					resource.TestCheckResourceAttrSet(node, "dns_permitted_networks.0.state"),
+					resource.TestCheckResourceAttrSet(node, "dns_permitted_networks.0.type"),
 				),
 			},
 		},
