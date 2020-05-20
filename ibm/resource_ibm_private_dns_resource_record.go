@@ -50,20 +50,23 @@ func resourceIBMPrivateDNSResourceRecord() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			pdnsResourceRecordID: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Resource record ID",
 			},
 
 			pdnsInstanceID: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Instance ID",
 			},
 
 			pdnsZoneID: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Zone ID",
 			},
 
 			pdnsRecordName: {
@@ -71,6 +74,7 @@ func resourceIBMPrivateDNSResourceRecord() *schema.Resource {
 				Required:         true,
 				ForceNew:         true,
 				DiffSuppressFunc: caseDiffSuppress,
+				Description:      "DNS record name",
 			},
 
 			pdnsRecordType: {
@@ -93,6 +97,7 @@ func resourceIBMPrivateDNSResourceRecord() *schema.Resource {
 					)
 					return
 				},
+				Description: "DNS record Type",
 			},
 
 			pdnsRdata: {
@@ -111,6 +116,7 @@ func resourceIBMPrivateDNSResourceRecord() *schema.Resource {
 					}
 					return
 				},
+				Description: "DNS record Data",
 			},
 
 			pdnsRecordTTL: {
@@ -120,49 +126,58 @@ func resourceIBMPrivateDNSResourceRecord() *schema.Resource {
 				DefaultFunc: func() (interface{}, error) {
 					return 900, nil
 				},
+				Description: "DNS record TTL",
 			},
 
 			pdnsMxPreference: {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  0,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     0,
+				Description: "DNS maximum preference",
 			},
 
 			pdnsSrvPort: {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "DNS server Port",
 			},
 
 			pdnsSrvPriority: {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  0,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     0,
+				Description: "DNS server Priority",
 			},
 
 			pdnsSrvWeight: {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  0,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     0,
+				Description: "DNS server weight",
 			},
 
 			pdnsSrvService: {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Service info",
 			},
 
 			pdnsSrvProtocol: {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Protocol",
 			},
 
 			pdnsRecordCreatedOn: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Creation Data",
 			},
 
 			pdnsRecordModifiedOn: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Modification date",
 			},
 		},
 	}
@@ -354,7 +369,10 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 	}
 
 	updateResourceRecordOptions := sess.NewUpdateResourceRecordOptions(id_set[0], id_set[1], id_set[2])
-	updateResourceRecordOptions.SetName(*response.Type)
+	recordName := d.Get(pdnsRecordName).(string)
+	if *response.Type != "PTR" {
+		updateResourceRecordOptions.SetName(recordName)
+	}
 
 	//
 	var ttl int64
@@ -396,14 +414,8 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 			updateResourceRecordOptions.SetRdata(resourceRecordCnameData)
 		}
 	case "PTR":
-		if d.HasChange(pdnsRecordTTL) || d.HasChange(pdnsRdata) {
+		if d.HasChange(pdnsRecordTTL) {
 			updateResourceRecordOptions.SetTTL(ttl)
-			rdata = d.Get(pdnsRdata).(string)
-			resourceRecordPtrData, err := sess.NewResourceRecordUpdateInputRdataRdataPtrRecord(rdata)
-			if err != nil {
-				return err
-			}
-			updateResourceRecordOptions.SetRdata(resourceRecordPtrData)
 		}
 	case "TXT":
 		if d.HasChange(pdnsRecordTTL) || d.HasChange(pdnsRdata) {
@@ -421,9 +433,9 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 
 			updateResourceRecordOptions.SetTTL(ttl)
 			rdata = d.Get(pdnsRdata).(string)
-			preference := d.Get(pdnsMxPreference).(int64)
+			preference := d.Get(pdnsMxPreference).(int)
 
-			resourceRecordMxData, err := sess.NewResourceRecordUpdateInputRdataRdataMxRecord(rdata, preference)
+			resourceRecordMxData, err := sess.NewResourceRecordUpdateInputRdataRdataMxRecord(rdata, int64(preference))
 			if err != nil {
 				return err
 			}
@@ -437,11 +449,11 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 
 			updateResourceRecordOptions.SetTTL(ttl)
 			rdata = d.Get(pdnsRdata).(string)
-			port := d.Get(pdnsSrvPort).(int64)
-			priority := d.Get(pdnsSrvPriority).(int64)
-			weight := d.Get(pdnsSrvWeight).(int64)
+			port := d.Get(pdnsSrvPort).(int)
+			priority := d.Get(pdnsSrvPriority).(int)
+			weight := d.Get(pdnsSrvWeight).(int)
 
-			resourceRecordSrvData, err := sess.NewResourceRecordUpdateInputRdataRdataSrvRecord(port, priority, rdata, weight)
+			resourceRecordSrvData, err := sess.NewResourceRecordUpdateInputRdataRdataSrvRecord(int64(port), int64(priority), rdata, int64(weight))
 			if err != nil {
 				return err
 			}
@@ -473,7 +485,7 @@ func resourceIBMPrivateDNSResourceRecordDelete(d *schema.ResourceData, meta inte
 	id_set := strings.Split(d.Id(), "/")
 	deleteResourceRecordOptions := sess.NewDeleteResourceRecordOptions(id_set[0], id_set[1], id_set[2])
 	response, err := sess.DeleteResourceRecord(deleteResourceRecordOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
 		log.Printf("Error deleting dns record:%s", response)
 		return err
 	}
@@ -492,8 +504,8 @@ func resourceIBMPrivateDNSResourceRecordExists(d *schema.ResourceData, meta inte
 	getResourceRecordOptions := sess.NewGetResourceRecordOptions(id_set[0], id_set[1], id_set[2])
 	_, response, err := sess.GetResourceRecord(getResourceRecordOptions)
 
-	if err != nil && response.StatusCode != 404 {
-		if response.StatusCode == 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
 		return false, err

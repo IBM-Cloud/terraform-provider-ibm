@@ -48,17 +48,17 @@ func Provider() terraform.ResourceProvider {
 				Description: "The IBM cloud Region (for example 'us-south').",
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_REGION", "IBMCLOUD_REGION", "BM_REGION", "BLUEMIX_REGION"}, "us-south"),
 			},
-			"resource_group": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The Resource group id.",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_RESOURCE_GROUP", "IBMCLOUD_RESOURCE_GROUP", "BM_RESOURCE_GROUP", "BLUEMIX_RESOURCE_GROUP"}, ""),
-			},
 			"zone": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The IBM cloud Region zone (for example 'us-south-1') for power resources.",
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_ZONE", "IBMCLOUD_ZONE"}, ""),
+			},
+			"resource_group": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Resource group id.",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_RESOURCE_GROUP", "IBMCLOUD_RESOURCE_GROUP", "BM_RESOURCE_GROUP", "BLUEMIX_RESOURCE_GROUP"}, ""),
 			},
 			"softlayer_api_key": {
 				Type:        schema.TypeString,
@@ -183,8 +183,8 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dns_domain_registration":          dataSourceIBMDNSDomainRegistration(),
 			"ibm_dns_domain":                       dataSourceIBMDNSDomain(),
 			"ibm_dns_secondary":                    dataSourceIBMDNSSecondary(),
-			"ibm_iam_auth_token":                   dataSourceIBMIAMAuthToken(),
 			"ibm_iam_access_group":                 dataSourceIBMIAMAccessGroup(),
+			"ibm_iam_auth_token":                   dataSourceIBMIAMAuthToken(),
 			"ibm_iam_user_policy":                  dataSourceIBMIAMUserPolicy(),
 			"ibm_iam_service_id":                   dataSourceIBMIAMServiceID(),
 			"ibm_iam_service_policy":               dataSourceIBMIAMServicePolicy(),
@@ -229,6 +229,12 @@ func Provider() terraform.ResourceProvider {
 			"ibm_pi_public_network":   dataSourceIBMPIPublicNetwork(),
 			"ibm_pi_images":           dataSourceIBMPIImages(),
 			"ibm_pi_instance_ip":      dataSourceIBMPIInstanceIP(),
+
+			// Added for private dns zones
+
+			"ibm_dns_zones":              dataSourceIBMPrivateDNSZones(),
+			"ibm_dns_permitted_networks": dataSourceIBMPrivateDNSPermittedNetworks(),
+			"ibm_dns_resource_records":   dataSourceIBMPrivateDNSResourceRecords(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -282,12 +288,12 @@ func Provider() terraform.ResourceProvider {
 			"ibm_firewall":                                       resourceIBMFirewall(),
 			"ibm_firewall_policy":                                resourceIBMFirewallPolicy(),
 			"ibm_iam_access_group":                               resourceIBMIAMAccessGroup(),
+			"ibm_iam_custom_role":                                resourceIBMIAMCustomRole(),
 			"ibm_iam_access_group_dynamic_rule":                  resourceIBMIAMDynamicRule(),
 			"ibm_iam_access_group_members":                       resourceIBMIAMAccessGroupMembers(),
 			"ibm_iam_access_group_policy":                        resourceIBMIAMAccessGroupPolicy(),
 			"ibm_iam_authorization_policy":                       resourceIBMIAMAuthorizationPolicy(),
 			"ibm_iam_authorization_policy_detach":                resourceIBMIAMAuthorizationPolicyDetach(),
-			"ibm_iam_custom_role":                                resourceIBMIAMCustomRole(),
 			"ibm_iam_user_policy":                                resourceIBMIAMUserPolicy(),
 			"ibm_iam_service_id":                                 resourceIBMIAMServiceID(),
 			"ibm_iam_service_policy":                             resourceIBMIAMServicePolicy(),

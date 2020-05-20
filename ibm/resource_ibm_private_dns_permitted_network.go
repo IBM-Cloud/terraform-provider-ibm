@@ -16,6 +16,7 @@ const (
 	pdnsPermittedNetworkCreatedOn  = "created_on"
 	pdnsPermittedNetworkModifiedOn = "modified_on"
 	pdnsPermittedNetworkState      = "state"
+	pdnsPermittedNetwork           = "permitted_network"
 )
 
 var allowedNetworkTypes = []string{
@@ -37,20 +38,23 @@ func resourceIBMPrivateDNSPermittedNetwork() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			pdnsPermittedNetworkID: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Network Id",
 			},
 
 			pdnsInstanceID: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Instance Id",
 			},
 
 			pdnsZoneID: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Zone Id",
 			},
 
 			pdnsNetworkType: {
@@ -59,27 +63,32 @@ func resourceIBMPrivateDNSPermittedNetwork() *schema.Resource {
 				ForceNew:     true,
 				Default:      "vpc",
 				ValidateFunc: validateAllowedStringValue([]string{"vpc"}),
+				Description:  "Network Type",
 			},
 
 			pdnsVpcCRN: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "VPC CRN id",
 			},
 
 			pdnsPermittedNetworkCreatedOn: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Network creation date",
 			},
 
 			pdnsPermittedNetworkModifiedOn: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Network Modification date",
 			},
 
 			pdnsPermittedNetworkState: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Network status",
 			},
 		},
 	}
@@ -154,7 +163,7 @@ func resourceIBMPrivateDnsPermittedNetworkDelete(d *schema.ResourceData, meta in
 	deletePermittedNetworkOptions := sess.NewDeletePermittedNetworkOptions(id_set[0], id_set[1], id_set[2])
 	_, response, err := sess.DeletePermittedNetwork(deletePermittedNetworkOptions)
 
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
 		log.Printf("Error deleting dns zone:%s", response)
 		return err
 	}
@@ -172,8 +181,8 @@ func resourceIBMPrivateDnsPermittedNetworkExists(d *schema.ResourceData, meta in
 	id_set := strings.Split(d.Id(), "/")
 	getPermittedNetworkOptions := sess.NewGetPermittedNetworkOptions(id_set[0], id_set[1], id_set[2])
 	_, response, err := sess.GetPermittedNetwork(getPermittedNetworkOptions)
-	if err != nil && response.StatusCode != 404 {
-		if response.StatusCode == 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
 		return false, err

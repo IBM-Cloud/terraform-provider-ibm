@@ -37,47 +37,55 @@ func resourceIBMPrivateDNSZone() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			pdnsInstanceID: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Instance ID",
 			},
 
 			pdnsZoneID: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Zone ID",
 			},
 
 			pdnsZoneName: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Zone name",
 			},
 
 			pdnsZoneDescription: {
-				Type:     schema.TypeString,
-				Required: false,
-				Optional: true,
+				Type:        schema.TypeString,
+				Required:    false,
+				Optional:    true,
+				Description: "Zone description",
 			},
 
 			pdnsZoneState: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Zone state",
 			},
 
 			pdnsZoneLabel: {
-				Type:     schema.TypeString,
-				Required: false,
-				Optional: true,
+				Type:        schema.TypeString,
+				Required:    false,
+				Optional:    true,
+				Description: "Label",
 			},
 
 			pdnsZoneCreatedOn: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Creation date",
 			},
 
 			pdnsZoneModifiedOn: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Modification date",
 			},
 		},
 	}
@@ -191,7 +199,7 @@ func resourceIBMPrivateDnsZoneDelete(d *schema.ResourceData, meta interface{}) e
 
 	deleteZoneOptions := sess.NewDeleteDnszoneOptions(id_set[0], id_set[1])
 	response, err := sess.DeleteDnszone(deleteZoneOptions)
-	if err != nil && response.StatusCode != 404 {
+	if err != nil {
 		log.Printf("Error deleting dns zone:%s", response)
 		return err
 	}
@@ -210,8 +218,8 @@ func resourceIBMPrivateDnsZoneExists(d *schema.ResourceData, meta interface{}) (
 	id_set := strings.Split(d.Id(), "/")
 	getZoneOptions := sess.NewGetDnszoneOptions(id_set[0], id_set[1])
 	_, response, err := sess.GetDnszone(getZoneOptions)
-	if err != nil && response.StatusCode != 404 {
-		if response.StatusCode == 404 {
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
 		return false, err
