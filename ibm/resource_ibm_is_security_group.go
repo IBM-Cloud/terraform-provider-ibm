@@ -1,12 +1,12 @@
 package ibm
 
 import (
-	"github.com/go-openapi/strfmt"
+	"fmt"
+	"reflect"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	gouuid "github.com/satori/go.uuid"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
-	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
-	networkc "github.ibm.com/Bluemix/riaas-go-client/riaas/client/network"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -87,224 +87,493 @@ func resourceIBMISSecurityGroup() *schema.Resource {
 }
 
 func resourceIBMISSecurityGroupCreate(d *schema.ResourceData, meta interface{}) error {
-	parsed, err := parseIBMISSecurityGroupDictionary(d, "create")
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	sess, err := meta.(ClientSession).ISSession()
-	if err != nil {
-		return err
+	vpc := d.Get(isSecurityGroupVPC).(string)
+	if userDetails.generation == 1 {
+		err := classicSgCreate(d, meta, vpc)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := sgCreate(d, meta, vpc)
+		if err != nil {
+			return err
+		}
 	}
-	sgC := network.NewSecurityGroupClient(sess)
-
-	sgdef, err := makeIBMISSecurityGroupCreateParams(parsed)
-	group, err := sgC.Create(*sgdef)
-	if err != nil {
-		return err
-	}
-
-	if err != nil {
-		return err
-	}
-	d.SetId(group.ID.String())
 	return resourceIBMISSecurityGroupRead(d, meta)
 }
 
+func classicSgCreate(d *schema.ResourceData, meta interface{}, vpc string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+	createSecurityGroupOptions := &vpcclassicv1.CreateSecurityGroupOptions{
+		Vpc: &vpcclassicv1.VPCIdentity{
+			ID: &vpc,
+		},
+	}
+	var rg, name string
+	if grp, ok := d.GetOk(isSecurityGroupResourceGroup); ok {
+		rg = grp.(string)
+		createSecurityGroupOptions.ResourceGroup = &vpcclassicv1.ResourceGroupIdentity{
+			ID: &rg,
+		}
+	}
+	if nm, ok := d.GetOk(isSecurityGroupName); ok {
+		name = nm.(string)
+		createSecurityGroupOptions.Name = &name
+	}
+
+	sg, response, err := sess.CreateSecurityGroup(createSecurityGroupOptions)
+	if err != nil {
+		return fmt.Errorf("Error while creating Security Group %s\n%s", err, response)
+	}
+	d.SetId(*sg.ID)
+	return nil
+}
+
+func sgCreate(d *schema.ResourceData, meta interface{}, vpc string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	createSecurityGroupOptions := &vpcv1.CreateSecurityGroupOptions{
+		Vpc: &vpcv1.VPCIdentity{
+			ID: &vpc,
+		},
+	}
+	var rg, name string
+	if grp, ok := d.GetOk(isSecurityGroupResourceGroup); ok {
+		rg = grp.(string)
+		createSecurityGroupOptions.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+			ID: &rg,
+		}
+	}
+	if nm, ok := d.GetOk(isSecurityGroupName); ok {
+		name = nm.(string)
+		createSecurityGroupOptions.Name = &name
+	}
+	sg, response, err := sess.CreateSecurityGroup(createSecurityGroupOptions)
+	if err != nil {
+		return fmt.Errorf("Error while creating Security Group %s\n%s", err, response)
+	}
+	d.SetId(*sg.ID)
+	return nil
+}
+
 func resourceIBMISSecurityGroupRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	sgC := network.NewSecurityGroupClient(sess)
+	id := d.Id()
+	if userDetails.generation == 1 {
+		err := classicSgGet(d, meta, id)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := sgGet(d, meta, id)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
-	group, err := sgC.Get(d.Id())
+func classicSgGet(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
-
-	d.Set(isSecurityGroupName, group.Name)
-	d.Set(isSecurityGroupVPC, group.Vpc.ID.String())
+	getSecurityGroupOptions := &vpcclassicv1.GetSecurityGroupOptions{
+		ID: &id,
+	}
+	group, response, err := sess.GetSecurityGroup(getSecurityGroupOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("Error getting Security Group : %s\n%s", err, response)
+	}
+	d.Set(isSecurityGroupName, *group.Name)
+	d.Set(isSecurityGroupVPC, *group.Vpc.ID)
 	rules := make([]map[string]interface{}, 0)
 	if len(group.Rules) > 0 {
 		for _, rule := range group.Rules {
-			r := make(map[string]interface{})
-			if rule.Code != nil {
-				r[isSecurityGroupRuleCode] = int(*rule.Code)
+			switch reflect.TypeOf(rule).String() {
+			case "*vpcclassicv1.SecurityGroupRuleProtocolICMP":
+				{
+					rule := rule.(*vpcclassicv1.SecurityGroupRuleProtocolICMP)
+					r := make(map[string]interface{})
+					if rule.Code != nil {
+						r[isSecurityGroupRuleCode] = int(*rule.Code)
+					}
+					if rule.Type != nil {
+						r[isSecurityGroupRuleType] = int(*rule.Type)
+					}
+					r[isSecurityGroupRuleDirection] = *rule.Direction
+					r[isSecurityGroupRuleIPVersion] = *rule.IpVersion
+					if rule.Protocol != nil {
+						r[isSecurityGroupRuleProtocol] = *rule.Protocol
+					}
+					rules = append(rules, r)
+					remotePtrValue := reflect.ValueOf(rule.Remote)
+					remoteValue := reflect.Indirect(remotePtrValue)
+					d.Set(isSecurityGroupRuleRemote, remoteValue)
+				}
+			case "*vpcclassicv1.SecurityGroupRuleProtocolAll":
+				{
+					rule := rule.(*vpcclassicv1.SecurityGroupRuleProtocolAll)
+					r := make(map[string]interface{})
+					r[isSecurityGroupRuleDirection] = *rule.Direction
+					r[isSecurityGroupRuleIPVersion] = *rule.IpVersion
+					if rule.Protocol != nil {
+						r[isSecurityGroupRuleProtocol] = *rule.Protocol
+					}
+					rules = append(rules, r)
+					remotePtrValue := reflect.ValueOf(rule.Remote)
+					remoteValue := reflect.Indirect(remotePtrValue)
+					d.Set(isSecurityGroupRuleRemote, remoteValue)
+				}
+			case "*vpcclassicv1.SecurityGroupRuleProtocolTCPUDP":
+				{
+					rule := rule.(*vpcclassicv1.SecurityGroupRuleProtocolTCPUDP)
+					r := make(map[string]interface{})
+					if rule.PortMin != nil {
+						r[isSecurityGroupRulePortMin] = int(*rule.PortMin)
+					}
+					if rule.PortMax != nil {
+						r[isSecurityGroupRulePortMax] = int(*rule.PortMax)
+					}
+					r[isSecurityGroupRuleDirection] = *rule.Direction
+					r[isSecurityGroupRuleIPVersion] = *rule.IpVersion
+					if rule.Protocol != nil {
+						r[isSecurityGroupRuleProtocol] = *rule.Protocol
+					}
+					rules = append(rules, r)
+					remotePtrValue := reflect.ValueOf(rule.Remote)
+					remoteValue := reflect.Indirect(remotePtrValue)
+					d.Set(isSecurityGroupRuleRemote, remoteValue)
+				}
 			}
-			if rule.Type != nil {
-				r[isSecurityGroupRuleType] = int(*rule.Type)
-			}
-			if rule.PortMin != nil {
-				r[isSecurityGroupRulePortMin] = int(*rule.PortMin)
-			}
-			if rule.PortMax != nil {
-				r[isSecurityGroupRulePortMax] = int(*rule.PortMax)
-			}
-			r[isSecurityGroupRuleDirection] = rule.Direction
-			r[isSecurityGroupRuleIPVersion] = rule.IPVersion
-			if rule.Protocol != nil {
-				r[isSecurityGroupRuleProtocol] = *rule.Protocol
-			}
-
-			rules = append(rules, r)
 		}
 	}
 	d.Set(isSecurityGroupRules, rules)
-	d.SetId(group.ID.String())
+	d.SetId(*group.ID)
 	if group.ResourceGroup != nil {
 		d.Set(isSecurityGroupResourceGroup, group.ResourceGroup.ID)
+		rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
+		if err != nil {
+			return err
+		}
+		grp, err := rsMangClient.ResourceGroup().Get(*group.ResourceGroup.ID)
+		if err != nil {
+			return err
+		}
+		d.Set(ResourceGroupName, grp.Name)
 	}
 	controller, err := getBaseController(meta)
 	if err != nil {
 		return err
 	}
-	if sess.Generation == 1 {
-		d.Set(ResourceControllerURL, controller+"/vpc/network/securityGroups")
-	} else {
-		d.Set(ResourceControllerURL, controller+"/vpc-ext/network/securityGroups")
+	d.Set(ResourceControllerURL, controller+"/vpc/network/securityGroups")
+	d.Set(ResourceName, *group.Name)
+	d.Set(ResourceCRN, *group.Crn)
+	return nil
+}
+
+func sgGet(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
 	}
-	d.Set(ResourceName, group.Name)
-	d.Set(ResourceCRN, group.Crn)
+	getSecurityGroupOptions := &vpcv1.GetSecurityGroupOptions{
+		ID: &id,
+	}
+	group, response, err := sess.GetSecurityGroup(getSecurityGroupOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("Error getting Security Group : %s\n%s", err, response)
+	}
+	d.Set(isSecurityGroupName, *group.Name)
+	d.Set(isSecurityGroupVPC, *group.Vpc.ID)
+	rules := make([]map[string]interface{}, 0)
+	if len(group.Rules) > 0 {
+		for _, rule := range group.Rules {
+			switch reflect.TypeOf(rule).String() {
+			case "*vpcv1.SecurityGroupRuleProtocolICMP":
+				{
+					rule := rule.(*vpcv1.SecurityGroupRuleProtocolICMP)
+					r := make(map[string]interface{})
+					if rule.Code != nil {
+						r[isSecurityGroupRuleCode] = int(*rule.Code)
+					}
+					if rule.Type != nil {
+						r[isSecurityGroupRuleType] = int(*rule.Type)
+					}
+					r[isSecurityGroupRuleDirection] = *rule.Direction
+					r[isSecurityGroupRuleIPVersion] = *rule.IpVersion
+					if rule.Protocol != nil {
+						r[isSecurityGroupRuleProtocol] = *rule.Protocol
+					}
+					rules = append(rules, r)
+					remotePtrValue := reflect.ValueOf(rule.Remote)
+					remoteValue := reflect.Indirect(remotePtrValue)
+					d.Set(isSecurityGroupRuleRemote, remoteValue)
+				}
+			case "*vpcv1.SecurityGroupRuleProtocolAll":
+				{
+					rule := rule.(*vpcv1.SecurityGroupRuleProtocolAll)
+					r := make(map[string]interface{})
+					r[isSecurityGroupRuleDirection] = *rule.Direction
+					r[isSecurityGroupRuleIPVersion] = *rule.IpVersion
+					if rule.Protocol != nil {
+						r[isSecurityGroupRuleProtocol] = *rule.Protocol
+					}
+					rules = append(rules, r)
+					remotePtrValue := reflect.ValueOf(rule.Remote)
+					remoteValue := reflect.Indirect(remotePtrValue)
+					d.Set(isSecurityGroupRuleRemote, remoteValue)
+				}
+			case "*vpcv1.SecurityGroupRuleProtocolTCPUDP":
+				{
+					rule := rule.(*vpcv1.SecurityGroupRuleProtocolTCPUDP)
+					r := make(map[string]interface{})
+					if rule.PortMin != nil {
+						r[isSecurityGroupRulePortMin] = int(*rule.PortMin)
+					}
+					if rule.PortMax != nil {
+						r[isSecurityGroupRulePortMax] = int(*rule.PortMax)
+					}
+					r[isSecurityGroupRuleDirection] = *rule.Direction
+					r[isSecurityGroupRuleIPVersion] = *rule.IpVersion
+					if rule.Protocol != nil {
+						r[isSecurityGroupRuleProtocol] = *rule.Protocol
+					}
+					rules = append(rules, r)
+					remotePtrValue := reflect.ValueOf(rule.Remote)
+					remoteValue := reflect.Indirect(remotePtrValue)
+					d.Set(isSecurityGroupRuleRemote, remoteValue)
+				}
+			}
+		}
+	}
+	d.Set(isSecurityGroupRules, rules)
+	d.SetId(*group.ID)
 	if group.ResourceGroup != nil {
+		d.Set(isSecurityGroupResourceGroup, group.ResourceGroup.ID)
 		d.Set(ResourceGroupName, group.ResourceGroup.Name)
 	}
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return err
+	}
+	d.Set(ResourceControllerURL, controller+"/vpc-ext/network/securityGroups")
+	d.Set(ResourceName, *group.Name)
+	d.Set(ResourceCRN, *group.Crn)
 	return nil
 }
 
 func resourceIBMISSecurityGroupUpdate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	sgC := network.NewSecurityGroupClient(sess)
-	if !d.HasChange(isSecurityGroupName) {
+	id := d.Id()
+	name := ""
+	hasChanged := false
+
+	if d.HasChange(isSecurityGroupName) {
+		name = d.Get(isSecurityGroupName).(string)
+		hasChanged = true
+	} else {
 		return resourceIBMISSecurityGroupRead(d, meta)
 	}
+	if userDetails.generation == 1 {
+		err := classicSgUpdate(d, meta, id, name, hasChanged)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := sgUpdate(d, meta, id, name, hasChanged)
+		if err != nil {
+			return err
+		}
+	}
+	return resourceIBMISSecurityGroupRead(d, meta)
+}
 
-	name := d.Get(isSecurityGroupName).(string)
-
-	_, err = sgC.Update(d.Id(), name)
+func classicSgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
-	err = resourceIBMISSecurityGroupRead(d, meta)
-	return err
+	if hasChanged {
+		updateSecurityGroupOptions := &vpcclassicv1.UpdateSecurityGroupOptions{
+			ID:   &id,
+			Name: &name,
+		}
+		_, response, err := sess.UpdateSecurityGroup(updateSecurityGroupOptions)
+		if err != nil {
+			return fmt.Errorf("Error Updating Security Group : %s\n%s", err, response)
+		}
+	}
+	return nil
+}
+
+func sgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	if hasChanged {
+		updateSecurityGroupOptions := &vpcv1.UpdateSecurityGroupOptions{
+			ID:   &id,
+			Name: &name,
+		}
+		_, response, err := sess.UpdateSecurityGroup(updateSecurityGroupOptions)
+		if err != nil {
+			return fmt.Errorf("Error Updating Security Group : %s\n%s", err, response)
+		}
+	}
+	return nil
 }
 
 func resourceIBMISSecurityGroupDelete(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	sgC := network.NewSecurityGroupClient(sess)
-
-	err = sgC.Delete(d.Id())
-	if err != nil {
-		iserror, ok := err.(iserrors.RiaasError)
-		if ok {
-			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "not_found" {
-				return nil
-			}
+	id := d.Id()
+	if userDetails.generation == 1 {
+		err := classicSgDelete(d, meta, id)
+		if err != nil {
+			return err
 		}
+	} else {
+		err := sgDelete(d, meta, id)
+		if err != nil {
+			return err
+		}
+	}
+	d.SetId("")
+	return nil
+}
+
+func classicSgDelete(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
 		return err
 	}
-	return err
+	getSecurityGroupOptions := &vpcclassicv1.GetSecurityGroupOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetSecurityGroup(getSecurityGroupOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("Error Getting Security Group (%s): %s\n%s", id, err, response)
+	}
+
+	deleteSecurityGroupOptions := &vpcclassicv1.DeleteSecurityGroupOptions{
+		ID: &id,
+	}
+	response, err = sess.DeleteSecurityGroup(deleteSecurityGroupOptions)
+	if err != nil {
+		return fmt.Errorf("Error Deleting Security Group : %s\n%s", err, response)
+	}
+	d.SetId("")
+	return nil
+}
+
+func sgDelete(d *schema.ResourceData, meta interface{}, id string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	getSecurityGroupOptions := &vpcv1.GetSecurityGroupOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetSecurityGroup(getSecurityGroupOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("Error Getting Security Group (%s): %s\n%s", id, err, response)
+	}
+
+	deleteSecurityGroupOptions := &vpcv1.DeleteSecurityGroupOptions{
+		ID: &id,
+	}
+	response, err = sess.DeleteSecurityGroup(deleteSecurityGroupOptions)
+	if err != nil {
+		return fmt.Errorf("Error Deleting Security Group : %s\n%s", err, response)
+	}
+	d.SetId("")
+	return nil
 }
 
 func resourceIBMISSecurityGroupExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	sess, err := meta.(ClientSession).ISSession()
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return false, err
 	}
-	sgC := network.NewSecurityGroupClient(sess)
+	id := d.Id()
+	if userDetails.generation == 1 {
+		exists, err := classicSgExists(d, meta, id)
+		return exists, err
+	} else {
+		exists, err := sgExists(d, meta, id)
+		return exists, err
+	}
+}
 
-	_, err = sgC.Get(d.Id())
+func classicSgExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
+	sess, err := classicVpcClient(meta)
 	if err != nil {
-		iserror, ok := err.(iserrors.RiaasError)
-		if ok {
-			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "not_found" {
-				return false, nil
-			}
-		}
 		return false, err
+	}
+	getSecurityGroupOptions := &vpcclassicv1.GetSecurityGroupOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetSecurityGroup(getSecurityGroupOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting Security Group: %s\n%s", err, response)
 	}
 	return true, nil
 }
 
-type parsedIBMISSecurityGroupRule struct {
-	// After parsing, unused string fields are set to
-	// "" and unused int64 fields will be set to -1.
-	// This ("" for unused strings and -1 for unused int64s)
-	// is expected by our riaas API client.
-	secgrpID       string
-	ruleID         string
-	direction      string
-	ipversion      string
-	remote         string
-	remoteAddress  string
-	remoteCIDR     string
-	remoteSecGrpID string
-	protocol       string
-	icmpType       int64
-	icmpCode       int64
-	portMin        int64
-	portMax        int64
-}
-
-func newParsedIBMISSecurityGroupRule() *parsedIBMISSecurityGroupRule {
-	return &parsedIBMISSecurityGroupRule{
-		icmpType: -1,
-		icmpCode: -1,
-		portMin:  -1,
-		portMax:  -1,
-	}
-}
-
-type parsedIBMISSecurityGroupDictionary struct {
-	name          string
-	resourceGroup string
-	vpc           string
-}
-
-func newParsedIBMISSecurityGroupDictionary() *parsedIBMISSecurityGroupDictionary {
-	p := &parsedIBMISSecurityGroupDictionary{}
-	return p
-}
-
-func parseIBMISSecurityGroupDictionary(d *schema.ResourceData, tag string) (*parsedIBMISSecurityGroupDictionary, error) {
-	parsed := newParsedIBMISSecurityGroupDictionary()
-	parsed.name = d.Get(isSecurityGroupName).(string)
-	parsed.vpc = d.Get(isSecurityGroupVPC).(string)
-	if rg, ok := d.GetOk(isSecurityGroupResourceGroup); ok {
-		parsed.resourceGroup = rg.(string)
-
-	}
-
-	return parsed, nil
-}
-
-func makeStrfmtUUID(s string) (strfmt.UUID, error) {
-	uuid, err := gouuid.FromString(s)
+func sgExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
+	sess, err := vpcClient(meta)
 	if err != nil {
-		return strfmt.UUID(""), err
+		return false, err
 	}
-	return strfmt.UUID(uuid.String()), nil
-}
-
-func makeIBMISSecurityGroupCreateParams(parsed *parsedIBMISSecurityGroupDictionary) (*networkc.PostSecurityGroupsBody, error) {
-	params := &networkc.PostSecurityGroupsBody{}
-	params.Name = parsed.name
-	if parsed.resourceGroup != "" {
-		rgref := networkc.PostSecurityGroupsParamsBodyResourceGroup{
-			ID: strfmt.UUID(parsed.resourceGroup),
+	getSecurityGroupOptions := &vpcv1.GetSecurityGroupOptions{
+		ID: &id,
+	}
+	_, response, err := sess.GetSecurityGroup(getSecurityGroupOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
 		}
-		params.ResourceGroup = &rgref
+		return false, fmt.Errorf("Error getting Security Group: %s\n%s", err, response)
 	}
-
-	params.Vpc = &networkc.PostSecurityGroupsParamsBodyVpc{ID: strfmt.UUID(parsed.vpc)}
-	return params, nil
+	return true, nil
 }
 
 func makeIBMISSecurityRuleSchema() map[string]*schema.Schema {

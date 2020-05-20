@@ -8,16 +8,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/network"
-	"github.ibm.com/Bluemix/riaas-go-client/riaas/models"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISSecurityGroup_basic(t *testing.T) {
-	var securityGroup *models.SecurityGroup
+	var securityGroup string
 
-	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
-	name1 := fmt.Sprintf("tf-create-step-name-%d", acctest.RandIntRange(10, 100))
-	//name2 := fmt.Sprintf("tf-update-step-name-%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tfsg-vpc-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfsg-createname-%d", acctest.RandIntRange(10, 100))
+	//name2 := fmt.Sprintf("tfsg-updatename-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -27,7 +27,7 @@ func TestAccIBMISSecurityGroup_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMISsecurityGroupConfig(vpcname, name1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISSecurityGroupExists("ibm_is_security_group.testacc_security_group", &securityGroup),
+					testAccCheckIBMISSecurityGroupExists("ibm_is_security_group.testacc_security_group", securityGroup),
 					resource.TestCheckResourceAttr(
 						"ibm_is_security_group.testacc_security_group", "name", name1),
 				),
@@ -37,26 +37,45 @@ func TestAccIBMISSecurityGroup_basic(t *testing.T) {
 }
 
 func testAccCheckIBMISSecurityGroupDestroy(s *terraform.State) error {
-	sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
+	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	securityGroupC := network.NewSecurityGroupClient(sess)
+	if userDetails.generation == 1 {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_security_group" {
+				continue
+			}
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_is_security_group" {
-			continue
+			getsgoptions := &vpcclassicv1.GetSecurityGroupOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetSecurityGroup(getsgoptions)
+			if err == nil {
+				return fmt.Errorf("securitygroup still exists: %s", rs.Primary.ID)
+			}
 		}
+	} else {
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "ibm_is_security_group" {
+				continue
+			}
 
-		_, err := securityGroupC.Get(rs.Primary.ID)
+			getsgoptions := &vpcv1.GetSecurityGroupOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err := sess.GetSecurityGroup(getsgoptions)
 
-		if err == nil {
-			return fmt.Errorf("securitygroup still exists: %s", rs.Primary.ID)
+			if err == nil {
+				return fmt.Errorf("securitygroup still exists: %s", rs.Primary.ID)
+			}
 		}
 	}
 
 	return nil
 }
 
-func testAccCheckIBMISSecurityGroupExists(n string, securityGroup **models.SecurityGroup) resource.TestCheckFunc {
+func testAccCheckIBMISSecurityGroupExists(n, securityGroupID string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		fmt.Println("siv ", s.RootModule().Resources)
 		rs, ok := s.RootModule().Resources[n]
@@ -69,15 +88,29 @@ func testAccCheckIBMISSecurityGroupExists(n string, securityGroup **models.Secur
 			return errors.New("No Record ID is set")
 		}
 
-		sess, _ := testAccProvider.Meta().(ClientSession).ISSession()
-		securityGroupC := network.NewSecurityGroupClient(sess)
-		foundsecurityGroup, err := securityGroupC.Get(rs.Primary.ID)
+		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-		if err != nil {
-			return err
+		if userDetails.generation == 1 {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
+			getsgoptions := &vpcclassicv1.GetSecurityGroupOptions{
+				ID: &rs.Primary.ID,
+			}
+			foundsecurityGroup, _, err := sess.GetSecurityGroup(getsgoptions)
+			if err != nil {
+				return err
+			}
+			securityGroupID = *foundsecurityGroup.ID
+		} else {
+			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+			getsgoptions := &vpcv1.GetSecurityGroupOptions{
+				ID: &rs.Primary.ID,
+			}
+			foundsecurityGroup, _, err := sess.GetSecurityGroup(getsgoptions)
+			if err != nil {
+				return err
+			}
+			securityGroupID = *foundsecurityGroup.ID
 		}
-
-		*securityGroup = foundsecurityGroup
 		return nil
 	}
 }
