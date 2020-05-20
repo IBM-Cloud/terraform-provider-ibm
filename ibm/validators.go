@@ -1185,16 +1185,25 @@ func (vs ValidateSchema) GetValue(valueConstraint ValueConstraintType) interface
 		return b
 	case TypeInt:
 		// Convert comma separated string to array
-		var arr2 []int
-		arr1 := strings.Split(valueToConvert, ",")
-		for _, ele := range arr1 {
-			e, err := strconv.Atoi(strings.TrimSpace(ele))
+		if strings.Contains(valueToConvert, ",") {
+			var arr2 []int
+			arr1 := strings.Split(valueToConvert, ",")
+			for _, ele := range arr1 {
+				e, err := strconv.Atoi(strings.TrimSpace(ele))
+				if err != nil {
+					return vs.Zero()
+				}
+				arr2 = append(arr2, e)
+			}
+			return arr2
+		} else {
+			num, err := strconv.Atoi(valueToConvert)
 			if err != nil {
 				return vs.Zero()
 			}
-			arr2 = append(arr2, e)
+			return num
 		}
-		return arr2
+
 	case TypeFloat:
 		f, err := strconv.ParseFloat(valueToConvert, 32)
 		if err != nil {
