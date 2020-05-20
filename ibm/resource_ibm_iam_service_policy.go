@@ -232,7 +232,7 @@ func resourceIBMIAMServicePolicyUpdate(d *schema.ResourceData, meta interface{})
 
 		var policy iampapv1.Policy
 
-		policy, err = generateAccountPolicy(d, meta)
+		policy, err = generateAccountPolicyV2(d, meta)
 		if err != nil {
 			return err
 		}
