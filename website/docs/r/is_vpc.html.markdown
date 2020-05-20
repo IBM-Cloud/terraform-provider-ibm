@@ -22,6 +22,14 @@ resource "ibm_is_vpc" "testacc_vpc" {
 
 ```
 
+## Timeouts
+
+ibm_is_vpc provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+
+* `create` - (Default 10 minutes) Used for Creating vpc.
+* `delete` - (Default 10 minutes) Used for Deleting vpc.
+
+
 ## Argument Reference
 
 The following arguments are supported:

@@ -31,7 +31,7 @@ resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection" {
 
 ibm_is_vpn_gateway_connection provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
-* `delete` - (Default 60 minutes) Used for deleting Instance.
+* `delete` - (Default 10 minutes) Used for deleting Instance.
 
 ## Argument Reference
 

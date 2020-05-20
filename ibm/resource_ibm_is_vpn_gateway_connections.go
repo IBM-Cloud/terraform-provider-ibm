@@ -41,8 +41,7 @@ func resourceIBMISVPNGatewayConnection() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(60 * time.Minute),
-			Delete: schema.DefaultTimeout(60 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -406,12 +405,6 @@ func resourceIBMISVPNGatewayConnectionUpdate(d *schema.ResourceData, meta interf
 		return err
 	}
 	hasChanged := false
-	// var name, peerAddress, psk string
-	// var deadPeerDetection *models.VPNGatewayConnectionDPD
-	// var ikePolicy *models.IKEPolicyIdentity
-	// var ipsecPolicy *models.IpsecPolicyIdentity
-	// hasChanged := false
-	// adminStateUp := d.Get(isVPNGatewayConnectionAdminStateup).(bool)
 
 	parts, err := idParts(d.Id())
 	if err != nil {

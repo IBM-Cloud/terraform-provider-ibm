@@ -40,8 +40,8 @@ resource "ibm_is_volume" "testacc_volume" {
 
 ibm_is_volume provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
-* `create` - (Default 60 minutes) Used for Creating Instance.
-* `delete` - (Default 60 minutes) Used for Deleting Instance.
+* `create` - (Default 10 minutes) Used for Creating Instance.
+* `delete` - (Default 10 minutes) Used for Deleting Instance.
 
 
 ## Argument Reference
