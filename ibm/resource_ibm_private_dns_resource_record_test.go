@@ -77,7 +77,7 @@ func testAccCheckIBMPrivateDNSResourceRecordBasic(name string) string {
 		resource_group_id = data.ibm_resource_group.rg.id
 		location = "global"
 		service = "dns-svcs"
-		plan = "free-plan"
+		plan = "standard-dns"
 	}
 	
 	resource "ibm_dns_zone" "test-pdns-zone" {
