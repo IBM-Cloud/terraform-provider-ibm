@@ -15,6 +15,7 @@ import (
 func TestAccIBMISVPCRoute_basic(t *testing.T) {
 	var vpcRoute string
 	name1 := fmt.Sprintf("tfvpcuat-create-%d", acctest.RandIntRange(10, 100))
+	subnetName := fmt.Sprintf("tfsubnet-%d", acctest.RandIntRange(10, 100))
 	routeName := fmt.Sprintf("tfvpcuat-create-%d", acctest.RandIntRange(10, 100))
 	routeName1 := fmt.Sprintf("tfvpcuat-create-%d", acctest.RandIntRange(10, 100))
 
@@ -24,7 +25,7 @@ func TestAccIBMISVPCRoute_basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMISVPCRouteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMISVPCRouteConfig(name1, routeName),
+				Config: testAccCheckIBMISVPCRouteConfig(name1, subnetName, routeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISVPCRouteExists("ibm_is_vpc_route.testacc_vpc_route", vpcRoute),
 					resource.TestCheckResourceAttr(
@@ -32,7 +33,7 @@ func TestAccIBMISVPCRoute_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMISVPCRouteConfig(name1, routeName1),
+				Config: testAccCheckIBMISVPCRouteConfig(name1, subnetName, routeName1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISVPCRouteExists("ibm_is_vpc_route.testacc_vpc_route", vpcRoute),
 					resource.TestCheckResourceAttr(
@@ -144,16 +145,25 @@ func testAccCheckIBMISVPCRouteExists(n, vpcrouteID string) resource.TestCheckFun
 	}
 }
 
-func testAccCheckIBMISVPCRouteConfig(name, routeName string) string {
+func testAccCheckIBMISVPCRouteConfig(name, subnetName, routeName string) string {
 	return fmt.Sprintf(`
 resource "ibm_is_vpc" "testacc_vpc" {
     name = "%s"
 }
+
+resource "ibm_is_subnet" "testacc_subnet" {
+	name = "%s"
+	vpc = ibm_is_vpc.testacc_vpc.id
+	zone = "%s"
+	ipv4_cidr_block = "%s"
+}
+
 resource "ibm_is_vpc_route" "testacc_vpc_route" {
     name = "%s"
     zone = "%s"
-    vpc = "${ibm_is_vpc.testacc_vpc.id}"
+    vpc = ibm_is_vpc.testacc_vpc.id
 	destination = "%s"
 	next_hop = "%s"
-}`, name, routeName, ISZoneName, ISRouteDestination, ISRouteNextHop)
+	depends_on  = [ibm_is_subnet.testacc_subnet]
+}`, name, subnetName, ISZoneName, ISCIDR, routeName, ISZoneName, ISRouteDestination, ISRouteNextHop)
 }

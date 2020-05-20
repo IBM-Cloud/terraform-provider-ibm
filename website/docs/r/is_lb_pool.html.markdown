@@ -33,9 +33,9 @@ resource "ibm_is_lb_pool" "testacc_pool" {
 
 ibm_is_lb_pool provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
-* `create` - (Default 60 minutes) Used for creating Instance.
-* `update` - (Default 60 minutes) Used for updating Instance.
-* `delete` - (Default 60 minutes) Used for deleting Instance.
+* `create` - (Default 10 minutes) Used for creating Instance.
+* `update` - (Default 10 minutes) Used for updating Instance.
+* `delete` - (Default 10 minutes) Used for deleting Instance.
 
 ## Argument Reference
 

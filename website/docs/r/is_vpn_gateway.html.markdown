@@ -23,6 +23,13 @@ resource "ibm_is_vpn_gateway" "testacc_vpn_gateway" {
 
 ```
 
+## Timeouts
+
+ibm_is_vpn_gateway provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+
+* `create` - (Default 10 minutes) Used for creating vpn gateway Instance.
+* `delete` - (Default 10 minutes) Used for deleting vpn gateway Instance.
+
 ## Argument Reference
 
 The following arguments are supported:
