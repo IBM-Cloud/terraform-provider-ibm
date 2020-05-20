@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/models"
 
@@ -75,6 +76,41 @@ func GenerateBoundToCRN(region models.Region, accountID string) crn.CRN {
 	boundTo.ScopeType = crn.ScopeAccount
 	boundTo.Scope = accountID
 	return boundTo
+}
+
+func GetRolesFromRoleNamesV2(roleNames []string, roles []iampapv2.Role) ([]iampapv2.Role, error) {
+
+	filteredRoles := []iampapv2.Role{}
+	for _, roleName := range roleNames {
+		role, err := FindRoleByNameV2(roles, roleName)
+		if err != nil {
+			return []iampapv2.Role{}, err
+		}
+		filteredRoles = append(filteredRoles, role)
+	}
+	return filteredRoles, nil
+}
+func FindRoleByNameV2(supported []iampapv2.Role, name string) (iampapv2.Role, error) {
+	for _, role := range supported {
+		if role.DisplayName == name {
+			return role, nil
+		}
+	}
+	supportedRoles := getSupportedRolesStringV2(supported)
+	return iampapv2.Role{}, bmxerror.New(ErrCodeRRoleDoesnotExist,
+		fmt.Sprintf("%s was not found. Valid roles are %s", name, supportedRoles))
+
+}
+
+func getSupportedRolesStringV2(supported []iampapv2.Role) string {
+	rolesStr := ""
+	for index, role := range supported {
+		if index != 0 {
+			rolesStr += ", "
+		}
+		rolesStr += role.DisplayName
+	}
+	return rolesStr
 }
 
 func GetRolesFromRoleNames(roleNames []string, roles []models.PolicyRole) ([]models.PolicyRole, error) {
