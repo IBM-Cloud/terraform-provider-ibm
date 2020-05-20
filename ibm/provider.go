@@ -167,6 +167,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_cis":                              dataSourceIBMCISInstance(),
 			"ibm_cis_domain":                       dataSourceIBMCISDomain(),
 			"ibm_cis_firewall":                     dataIBMCISFirewallRecord(),
+			"ibm_cis_rate_limit":                   dataSourceIBMCISRateLimit(),
 			"ibm_cis_ip_addresses":                 dataSourceIBMCISIP(),
 			"ibm_database":                         dataSourceIBMDatabaseInstance(),
 			"ibm_compute_bare_metal":               dataSourceIBMComputeBareMetal(),
@@ -260,6 +261,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_cis_origin_pool":                                resourceIBMCISPool(),
 			"ibm_cis_global_load_balancer":                       resourceIBMCISGlb(),
 			"ibm_cis_dns_record":                                 resourceIBMCISDnsRecord(),
+			"ibm_cis_rate_limit":                                 resourceIBMCISRateLimit(),
 			"ibm_compute_autoscale_group":                        resourceIBMComputeAutoScaleGroup(),
 			"ibm_compute_autoscale_policy":                       resourceIBMComputeAutoScalePolicy(),
 			"ibm_compute_bare_metal":                             resourceIBMComputeBareMetal(),
@@ -392,6 +394,7 @@ func Validator() ValidatorDict {
 				"ibm_is_vpc":          resourceIBMISVPCValidator(),
 				"ibm_is_ike_policy":   resourceIBMISIKEValidator(),
 				"ibm_iam_custom_role": resourceIBMIAMCustomRoleValidator(),
+				"ibm_cis_rate_limit":  resourceIBMCISRateLimitValidator(),
 			},
 		}
 	})
