@@ -396,6 +396,7 @@ func generateAccountPolicy(d *schema.ResourceData, meta interface{}) (iampapv1.P
 func generateAccountPolicyV2(d *schema.ResourceData, meta interface{}) (iampapv1.Policy, error) {
 
 	var serviceName string
+	var resourceType string
 	policyResource := iampapv1.Resource{}
 
 	if res, ok := d.GetOk("resources"); ok {
@@ -410,6 +411,7 @@ func generateAccountPolicyV2(d *schema.ResourceData, meta interface{}) (iampapv1
 			}
 			if r, ok := r["resource_instance_id"]; ok {
 				if r.(string) != "" {
+					resourceType = r.(string)
 					policyResource.SetServiceInstance(r.(string))
 				}
 
@@ -470,16 +472,20 @@ func generateAccountPolicyV2(d *schema.ResourceData, meta interface{}) (iampapv1
 
 	var roles []iampapv2.Role
 
-	query := iampapv2.RoleQuery{
-		AccountID:   userDetails.userAccount,
-		ServiceName: serviceName,
+	serviceToQuery := serviceName
+
+	if serviceName == "" && // no specific service specified
+		!d.Get("account_management").(bool) && // not all account management services
+		resourceType != "resource-group" { // not to a resource group
+		serviceToQuery = "alliamserviceroles"
 	}
 
-	if serviceName == "" {
-		roles, err = iamRepo.ListSystemDefinedRoles()
-	} else {
-		roles, err = iamRepo.ListAll(query)
+	query := iampapv2.RoleQuery{
+		AccountID:   userDetails.userAccount,
+		ServiceName: serviceToQuery,
 	}
+
+	roles, err = iamRepo.ListAll(query)
 
 	policyRoles, err := utils.GetRolesFromRoleNamesV2(expandStringList(d.Get("roles").([]interface{})), roles)
 	if err != nil {
