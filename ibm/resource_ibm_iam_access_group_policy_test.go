@@ -313,7 +313,7 @@ func testAccCheckIBMIAMAccessGroupPolicyUpdateRole(name string) string {
 	  
 	  	resource "ibm_iam_access_group_policy" "policy" {
 			access_group_id = ibm_iam_access_group.accgrp.id
-			roles           = ["Viewer", "Manager"]
+			roles           = ["Viewer", "Administrator"]
 			tags            = ["tag1", "tag2"]
 	  	}
 	`, name)
@@ -392,7 +392,7 @@ func testAccCheckIBMIAMAccessGroupPolicyResourceGroup(name string) string {
 	  	}
 	  
 	  	data "ibm_resource_group" "group" {
-			name = "Default"
+			name = "default"
 	  	}
 	  
 	  	resource "ibm_iam_access_group_policy" "policy" {
@@ -417,7 +417,7 @@ func testAccCheckIBMIAMAccessGroupPolicyResourceType(name string) string {
 	  	}
 	  
 	  	data "ibm_resource_group" "group" {
-			name = "Default"
+			name = "default"
 	  	}
 	  
 	  	resource "ibm_iam_access_group_policy" "policy" {
