@@ -323,7 +323,7 @@ func getDefaultAuthHeaders(serviceName bluemix.ServiceName, c *bluemix.Config) g
 func isTimeout(err error) bool {
 	if bmErr, ok := err.(bmxerror.RequestFailure); ok {
 		switch bmErr.StatusCode() {
-		case 408, 504, 599, 429, 500:
+		case 408, 504, 599, 429, 500, 502:
 			return true
 		}
 	}
