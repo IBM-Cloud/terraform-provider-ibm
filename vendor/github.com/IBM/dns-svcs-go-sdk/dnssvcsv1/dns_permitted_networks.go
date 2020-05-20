@@ -577,7 +577,7 @@ const (
 // The state of a permitted network.
 const (
 	PermittedNetwork_State_Active        = "ACTIVE"
-	PermittedNetwork_State_PendingRemove = "PENDING_REMOVE"
+	PermittedNetwork_State_PendingRemove = "REMOVAL_IN_PROGRESS"
 )
 
 // UnmarshalPermittedNetwork constructs an instance of PermittedNetwork from the specified map.

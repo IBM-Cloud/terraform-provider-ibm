@@ -311,6 +311,12 @@ func (dnsSvcs *DnsSvcsV1) UpdateResourceRecord(updateResourceRecordOptions *Upda
 	if updateResourceRecordOptions.TTL != nil {
 		body["ttl"] = updateResourceRecordOptions.TTL
 	}
+	if updateResourceRecordOptions.Service != nil {
+		body["service"] = updateResourceRecordOptions.Service
+	}
+	if updateResourceRecordOptions.Protocol != nil {
+		body["protocol"] = updateResourceRecordOptions.Protocol
+	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
 		return
