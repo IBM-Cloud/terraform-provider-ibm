@@ -40,9 +40,8 @@ resource "ibm_dns_permitted_network" "test-pdns-permitted-network-nw" {
 
 
 data "ibm_dns_permitted_networks" "test" {
-  depends_on = [ibm_dns_permitted_network.test-pdns-permitted-network-nw]
-  instance_id = ibm_dns_zone.test-pdns-zone.instance_id
-  zone_id = ibm_dns_zone.test-pdns-zone.zone_id
+  instance_id = ibm_dns_permitted_network.test-pdns-permitted-network-nw.instance_id
+  zone_id = ibm_dns_permitted_network.test-pdns-permitted-network-nw.zone_id
 }
 
 output "dns_permitted_nw_output" {

@@ -46,6 +46,7 @@ func testAccCheckIBMpDNSPermittedNetworksDataSourceConfig(riname, vpcname, zonen
 
 	resource "ibm_is_vpc" "test_pdns_vpc" {
 		name = "%s"
+		resource_group = data.ibm_resource_group.rg.id
 	}
 
 	resource "ibm_dns_zone" "test-pdns-zone" {
@@ -62,8 +63,7 @@ func testAccCheckIBMpDNSPermittedNetworksDataSourceConfig(riname, vpcname, zonen
 	}
 
 	data "ibm_dns_permitted_networks" "test" {
-		depends_on = [ibm_dns_permitted_network.test-pdns-permitted-network-nw]
-		instance_id = ibm_dns_zone.test-pdns-zone.instance_id
-		zone_id = ibm_dns_zone.test-pdns-zone.zone_id
+		instance_id = ibm_dns_permitted_network.test-pdns-permitted-network-nw.instance_id
+		zone_id = ibm_dns_permitted_network.test-pdns-permitted-network-nw.zone_id
 	}`, riname, vpcname, zonename)
 }
