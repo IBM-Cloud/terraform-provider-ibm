@@ -9,11 +9,12 @@ resource "ibm_dns_domain_registration_nameservers" "web_domain" {
   dns_registration_id = data.ibm_dns_domain_registration.web_domain.id
 }
 */
+
 # IBM Cloud Resource Group the CIS instance will be created under
 data "ibm_resource_group" "web_group" {
   name = var.resource_group
 }
-
+#IBM CLOUD CIS instance resource
 resource "ibm_cis" "web_domain" {
   name              = "web_domain"
   resource_group_id = data.ibm_resource_group.web_group.id
@@ -21,6 +22,7 @@ resource "ibm_cis" "web_domain" {
   location          = "global"
 }
 
+#Domain settings for IBM CIS instance
 resource "ibm_cis_domain_settings" "web_domain" {
   cis_id          = ibm_cis.web_domain.id
   domain_id       = ibm_cis_domain.web_domain.id
@@ -29,11 +31,13 @@ resource "ibm_cis_domain_settings" "web_domain" {
   min_tls_version = "1.2"
 }
 
+#Adding valid Domain for IBM CIS instance
 resource "ibm_cis_domain" "web_domain" {
   cis_id = ibm_cis.web_domain.id
   domain = var.domain
 }
 
+# CIS GLB Monitor|HealthCheck
 resource "ibm_cis_healthcheck" "root" {
   cis_id         = ibm_cis.web_domain.id
   description    = "Websiteroot"
@@ -42,6 +46,7 @@ resource "ibm_cis_healthcheck" "root" {
   path           = "/"
 }
 
+# CIS GLB Origin Pool
 resource "ibm_cis_origin_pool" "lon" {
   cis_id        = ibm_cis.web_domain.id
   name          = var.datacenter1
@@ -87,4 +92,74 @@ resource "ibm_cis_global_load_balancer" "web_domain" {
   proxied          = true
   session_affinity = "cookie"
 }
+
+# CIS DNS Record
+resource "ibm_cis_dns_record" "example" {
+  cis_id           = ibm_cis.web_domain.id
+  domain_id        = ibm_cis_domain.web_domain.id
+  name= var.record_name
+  type= var.record_type
+  content= var.record_content
+  proxied=true
+
+}
+
+# CIS Firewall - Present resource supports only lockdown
+resource "ibm_cis_firewall" "lockdown" {
+  cis_id           = ibm_cis.web_domain.id
+  domain_id        = ibm_cis_domain.web_domain.id
+  firewall_type = var.firewall_type
+
+  lockdown {
+    paused = "true"
+    urls   = [var.lockdown_url]
+   
+    configurations {
+      target = var.lockdown_target
+      value  = var.lockdown_value
+    }
+  }
+}
+
+#CIS Rate Limit
+resource "ibm_cis_rate_limit" "ratelimit" {
+  cis_id = data.ibm_cis.web_domain.id
+  domain_id = data.ibm_cis_domain.web_domain.id
+  threshold = var.threshold
+  period = var.period
+  match {
+    request {
+      url = var.match_request_url
+      schemes = var.match_request_schemes
+      methods = var.match_request_methods
+    }
+    response {
+      status = var.match_response_status
+      origin_traffic = var.match_response_traffic
+      header {
+        name= var.header1_name
+        op= var.header1_op
+        value= var.hearder1_value
+      }
+    }
+  }
+  action {
+    mode = var.action_mode
+    timeout = var.action_timeout
+    response {
+      content_type = var.action_response_content_type
+      body = var.action_response_body
+    }
+  }
+  correlate {
+    by = var.correlate_by
+  }
+  disabled = var.disabled
+  description = var.description
+  bypass {
+    name= var.bypass1_name
+    value= var.bypass1_value
+  }
+}
+
 
