@@ -54,10 +54,10 @@
 			"revisionTime": "2020-04-23T11:29:26Z"
 		},
 		{
-			"checksumSHA1": "Q45Ea/Hv1YMbk5JxFo6GfwltpDA=",
+			"checksumSHA1": "1j0BexrRQrxcZanLJ/Kg2WGneaU=",
 			"path": "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1",
-			"revision": "d884072eb6f5b3da1bd78b61fce8414b09fa1589",
-			"revisionTime": "2020-04-14T07:55:25Z"
+			"revision": "1c81a6866a57ac63680f3a289eae66c62e444bf4",
+			"revisionTime": "2020-05-20T12:45:28Z"
 		},
 		{
 			"checksumSHA1": "zFJumI9t7WwgpFSWS1wXU+e8oTk=",
