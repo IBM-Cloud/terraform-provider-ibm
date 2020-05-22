@@ -233,6 +233,9 @@ func resourceIBMCOSCreate(d *schema.ResourceData, meta interface{}) error {
 		bLocation = bucketLocation.(string)
 		apiType = "ssl"
 	}
+	if bLocation == "" {
+		return fmt.Errorf("Provide either `cross_region_location` or `region_location` or `single_site_location`")
+	}
 	lConstraint := fmt.Sprintf("%s-%s", bLocation, storageClass)
 	apiEndpoint, _ := selectCosApi(apiType, bLocation)
 	create := &s3.CreateBucketInput{
