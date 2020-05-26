@@ -360,7 +360,7 @@ func resourceIBMPrivateDNSResourceRecordRead(d *schema.ResourceData, meta interf
 
 func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta interface{}) error {
 	id_set := strings.Split(d.Id(), "/")
-	mk := "private_dns_resource_record_" + id_set[2]
+	mk := "private_dns_resource_record_" + id_set[1]
 	ibmMutexKV.Lock(mk)
 	defer ibmMutexKV.Unlock(mk)
 
