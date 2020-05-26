@@ -80,6 +80,8 @@ func TestAccIBMVpcContainerVpcCluster_importBasic(t *testing.T) {
 				ResourceName:      "ibm_container_vpc_cluster.cluster",
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"wait_till"},
 			},
 		},
 	})

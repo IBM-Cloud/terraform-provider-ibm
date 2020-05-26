@@ -51,6 +51,8 @@ func TestAccIBMVpcContainerWorkerPool_importBasic(t *testing.T) {
 				ResourceName:      "ibm_container_vpc_worker_pool.test_pool",
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"resource_group_id"},
 			},
 		},
 	})
@@ -135,27 +137,23 @@ func testAccCheckIBMVpcContainerWorkerPool_basic(flavor string, worker_count, na
 		worker_count      = "%d"
 		resource_group_id = "${data.ibm_resource_group.resource_group.id}"
 	  
-		zones = [
-		  {
+		zones {
 			subnet_id = "${ibm_is_subnet.subnet1.id}"
 			name      = "${local.ZONE1}"
-		  },
-		]
+		  }
 	  }
 	  
-	  resource "ibm_container_vpc_worker_pool" "cluster_pool" {
+	  resource "ibm_container_vpc_worker_pool" "test_pool" {
 		cluster          = "${ibm_container_vpc_cluster.cluster.id}"
 		worker_pool_name = "workerpool${var.name1}"
 		flavor           = "%s"
 		vpc_id           = "${ibm_is_vpc.vpc1.id}"
 		worker_count     = "%d"
 		resource_group_id = "${data.ibm_resource_group.resource_group.id}"
-		zones = [
-		  {
+		zones {
 			name      = "${local.ZONE2}"
 			subnet_id = "${ibm_is_subnet.subnet2.id}"
-		  },
-		]
+		  }
 	  }
 	  
 		`, name1, name2, flavor, worker_count, flavor, worker_count)

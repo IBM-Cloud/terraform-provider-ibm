@@ -277,6 +277,7 @@ func dataSourceIBMContainerClusterVPCRead(d *schema.ResourceData, meta interface
 	d.Set("pod_subnet", cls.PodSubnet)
 	d.Set("state", cls.State)
 	d.Set("resource_group_id", cls.ResourceGroupID)
+	d.Set("worker_count", cls.WorkerCount)
 	d.Set("public_service_endpoint_url", cls.ServiceEndpoints.PublicServiceEndpointURL)
 	d.Set("private_service_endpoint_url", cls.ServiceEndpoints.PrivateServiceEndpointURL)
 	d.Set("public_service_endpoint", cls.ServiceEndpoints.PublicServiceEndpointEnabled)
