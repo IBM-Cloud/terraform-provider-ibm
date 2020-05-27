@@ -786,62 +786,68 @@ func parseIBMISClassicSecurityGroupRuleDictionary(d *schema.ResourceData, tag st
 	parsed.protocol = "all"
 
 	if icmpInterface, ok := d.GetOk("icmp"); ok {
-		haveType := false
-		if icmpInterface.([]interface{})[0] == nil {
-			return nil, nil, nil, fmt.Errorf("Internal error. icmp interface is nil")
-		}
-		icmp := icmpInterface.([]interface{})[0].(map[string]interface{})
-		if value, ok := icmp["type"]; ok {
-			parsed.icmpType = int64(value.(int))
-			haveType = true
-		}
-		if value, ok := icmp["code"]; ok {
-			if !haveType {
-				return nil, nil, nil, fmt.Errorf("icmp code requires icmp type")
+		if icmpInterface.([]interface{})[0] != nil {
+			haveType := false
+			icmp := icmpInterface.([]interface{})[0].(map[string]interface{})
+			if value, ok := icmp["type"]; ok {
+				parsed.icmpType = int64(value.(int))
+				haveType = true
 			}
-			parsed.icmpCode = int64(value.(int))
+			if value, ok := icmp["code"]; ok {
+				if !haveType {
+					return nil, nil, nil, fmt.Errorf("icmp code requires icmp type")
+				}
+				parsed.icmpCode = int64(value.(int))
+			}
 		}
 		parsed.protocol = "icmp"
-		sgTemplate.Type = &parsed.icmpType
-		sgTemplate.Code = &parsed.icmpCode
+		if icmpInterface.([]interface{})[0] == nil {
+			parsed.icmpType = 0
+			parsed.icmpCode = 0
+		} else {
+			sgTemplate.Type = &parsed.icmpType
+			sgTemplate.Code = &parsed.icmpCode
+		}
 		sgTemplate.Protocol = &parsed.protocol
 		sgTemplateUpdate.Type = &parsed.icmpType
 		sgTemplateUpdate.Code = &parsed.icmpCode
-		sgTemplateUpdate.Protocol = &parsed.protocol
 	}
 	for _, prot := range []string{"tcp", "udp"} {
 		if tcpInterface, ok := d.GetOk(prot); ok {
-			haveMin := false
-			haveMax := false
-			if tcpInterface.([]interface{})[0] == nil {
-				return nil, nil, nil, fmt.Errorf("Internal error. %q interface is nil", prot)
-			}
-			ports := tcpInterface.([]interface{})[0].(map[string]interface{})
-			if value, ok := ports["port_min"]; ok {
-				parsed.portMin = int64(value.(int))
-				haveMin = true
-			}
-			if value, ok := ports["port_max"]; ok {
-				parsed.portMax = int64(value.(int))
-				haveMax = true
-			}
+			if tcpInterface.([]interface{})[0] != nil {
+				haveMin := false
+				haveMax := false
+				ports := tcpInterface.([]interface{})[0].(map[string]interface{})
+				if value, ok := ports["port_min"]; ok {
+					parsed.portMin = int64(value.(int))
+					haveMin = true
+				}
+				if value, ok := ports["port_max"]; ok {
+					parsed.portMax = int64(value.(int))
+					haveMax = true
+				}
 
-			// If only min or max is set, ensure that both min and max are set to the same value
-			if haveMin && !haveMax {
-				parsed.portMax = parsed.portMin
-			}
-			if haveMax && !haveMin {
-				parsed.portMin = parsed.portMax
+				// If only min or max is set, ensure that both min and max are set to the same value
+				if haveMin && !haveMax {
+					parsed.portMax = parsed.portMin
+				}
+				if haveMax && !haveMin {
+					parsed.portMin = parsed.portMax
+				}
 			}
 			parsed.protocol = prot
+			sgTemplate.Protocol = &parsed.protocol
+			if tcpInterface.([]interface{})[0] == nil {
+				parsed.portMax = 65535
+				parsed.portMin = 1
+			}
 			sgTemplate.PortMax = &parsed.portMax
 			sgTemplate.PortMin = &parsed.portMin
-			sgTemplate.Protocol = &parsed.protocol
 			sgTemplateUpdate.PortMax = &parsed.portMax
 			sgTemplateUpdate.PortMin = &parsed.portMin
-			sgTemplateUpdate.Protocol = &parsed.protocol
 		}
 	}
+
 	if parsed.protocol == "all" {
 		sgTemplate.Protocol = &parsed.protocol
 		sgTemplateUpdate.Protocol = &parsed.protocol
@@ -932,7 +938,6 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 		if icmpInterface.([]interface{})[0] == nil {
 			parsed.icmpType = 0
 			parsed.icmpCode = 0
-
 		} else {
 			sgTemplate.Type = &parsed.icmpType
 			sgTemplate.Code = &parsed.icmpCode
