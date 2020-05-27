@@ -604,9 +604,9 @@ func isClassicVpnGatewayDeleteRefreshFunc(vpnGateway *vpcclassicv1.VpcClassicV1,
 			if response != nil && response.StatusCode == 404 {
 				return vpngw, isVPNGatewayDeleted, nil
 			}
-			return vpngw, "", fmt.Errorf("Error Getting Vpn Gateway: %s\n%s", err, response)
+			return nil, "", fmt.Errorf("Error Getting Vpn Gateway: %s\n%s", err, response)
 		}
-		return nil, isVPNGatewayDeleting, err
+		return vpngw, isVPNGatewayDeleting, err
 	}
 }
 
@@ -635,9 +635,9 @@ func isVpnGatewayDeleteRefreshFunc(vpnGateway *vpcv1.VpcV1, id string) resource.
 			if response != nil && response.StatusCode == 404 {
 				return vpngw, isVPNGatewayDeleted, nil
 			}
-			return vpngw, "", fmt.Errorf("Error Getting Vpn Gateway: %s\n%s", err, response)
+			return nil, "", fmt.Errorf("Error Getting Vpn Gateway: %s\n%s", err, response)
 		}
-		return nil, isVPNGatewayDeleting, err
+		return vpngw, isVPNGatewayDeleting, err
 	}
 }
 
