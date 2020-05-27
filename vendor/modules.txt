@@ -6,7 +6,7 @@ cloud.google.com/go/internal/optional
 cloud.google.com/go/internal/trace
 cloud.google.com/go/internal/version
 cloud.google.com/go/storage
-# github.com/IBM-Cloud/bluemix-go v0.0.0-20200515061120-c59b02bad60e
+# github.com/IBM-Cloud/bluemix-go v0.0.0-20200522122103-1c81a6866a57
 github.com/IBM-Cloud/bluemix-go
 github.com/IBM-Cloud/bluemix-go/api/account/accountv1
 github.com/IBM-Cloud/bluemix-go/api/account/accountv2
@@ -430,7 +430,6 @@ github.com/zclconf/go-cty/cty/set
 github.com/zclconf/go-cty-yaml
 # github.ibm.com/Bluemix/riaas-go-client v0.0.0-20191018070922-afd27ac04d4f => ./common/github.ibm.com/Bluemix/riaas-go-client
 github.ibm.com/Bluemix/riaas-go-client/clients/lbaas
-github.ibm.com/Bluemix/riaas-go-client/clients/network
 github.ibm.com/Bluemix/riaas-go-client/errors
 github.ibm.com/Bluemix/riaas-go-client/helpers
 github.ibm.com/Bluemix/riaas-go-client/riaas/client
