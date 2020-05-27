@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/Bowery/prompt v0.0.0-20190916142128-fa8279994f75 // indirect
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20200515061120-c59b02bad60e
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20200522122103-1c81a6866a57
 	github.com/IBM-Cloud/power-go-client v1.0.14
 	github.com/IBM/apigateway-go-sdk v0.0.0-20200414212859-416e5948678a
 	github.com/IBM/dns-svcs-go-sdk v0.0.3
@@ -17,7 +17,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/runtime v0.19.15 // indirect
-	github.com/go-openapi/strfmt v0.19.5
+	github.com/go-openapi/strfmt v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.9 // indirect
 	github.com/go-openapi/validate v0.19.8 // indirect
 	github.com/go-test/deep v1.0.4 // indirect
