@@ -62,14 +62,14 @@
 		{
 			"checksumSHA1": "zFJumI9t7WwgpFSWS1wXU+e8oTk=",
 			"path": "github.com/IBM-Cloud/bluemix-go/api/container/containerv1",
-			"revision": "4b514ee792a6695f1fd94ac35f974d3b9840655f",
-			"revisionTime": "2020-05-05T04:38:31Z"
+			"revision": "1c81a6866a57ac63680f3a289eae66c62e444bf4",
+			"revisionTime": "2020-05-20T12:45:28Z"
 		},
 		{
-			"checksumSHA1": "vkr0B6DaplZZ0tjMhMSB4e1ETP4=",
+			"checksumSHA1": "Uq1fcS47qdpOBFzl2y946vb19kk=",
 			"path": "github.com/IBM-Cloud/bluemix-go/api/container/containerv2",
-			"revision": "0408d77148388e314e3204a3674a85cd16b7b6c2",
-			"revisionTime": "2020-01-22T11:47:15Z"
+			"revision": "1c81a6866a57ac63680f3a289eae66c62e444bf4",
+			"revisionTime": "2020-05-20T12:45:28Z"
 		},
 		{
 			"checksumSHA1": "H2TOe3MqDWY1FwV8czBE2D3sZ9o=",
