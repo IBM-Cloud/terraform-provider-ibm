@@ -57,6 +57,29 @@ resource "ibm_container_vpc_cluster" "cluster" {
 
 ```
 
+Create the Openshift Cluster with default worker Pool entitlement with one worker node:
+```
+provider "ibm" {
+  generation = 2
+}
+resource "ibm_container_vpc_cluster" "cluster" {
+  name              = "my_vpc_cluster" 
+  vpc_id            = "r006-abb7c7ea-aadf-41bd-94c5-b8521736fadf"
+  kube_version 	    = "4.3_openshift"
+	flavor            = "bx2.16x64"
+  worker_count      = "1"
+  entitlement       = "cloud_pak"
+  resource_group_id = "${data.ibm_resource_group.resource_group.id}"
+  zones = [
+      {
+         subnet_id = "0717-0c0899ce-48ac-4eb6-892d-4e2e1ff8c9478"
+         name = "us-south-1"
+      }
+  ]
+}
+
+```
+
 
 ## Argument Reference
 
@@ -75,6 +98,10 @@ The following arguments are supported:
 * `worker_count` - (Optional, Int) The number of worker nodes per zone in the default worker pool. Default value '1'.
 * `resource_group_id` - (Optional, Forces new resource, string) The ID of the resource group. You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
 * `tags` - (Optional, array of strings) Tags associated with the container cluster instance.
+* `entitlement` - (Optional, string) The openshift cluster entitlement avoids the OCP licence charges incurred. Use cloud paks with OCP Licence entitlement to create the Openshift cluster.
+  **NOTE**:
+  1. It is set only for the first time creation of the cluster, modification in the further runs will not have any impacts.
+  2. Set this argument to 'cloud_pak' only if you use this cluster with a Cloud Pak that has an OpenShift entitlement
 * `wait_till` - (Optional, String) The cluster creation happens in multi-stages. To avoid the longer wait times for resource execution, this field is introduced.
 Resource will wait for only the specified stage and complete execution. The supported stages are
   - *MasterNodeReady*: resource will wait till the master node is ready
