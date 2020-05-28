@@ -153,6 +153,13 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				Description:      "wait_till can be configured for Master Ready, One worker Ready or Ingress Ready",
 			},
 
+			"entitlement": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: applyOnce,
+				Description:      "Entitlement option reduces additional OCP Licence cost in Openshift Clusters",
+			},
+
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -349,6 +356,11 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		Provider:                     vpcProvider,
 	}
 
+	// Update params with Entitlement option if provided
+	if v, ok := d.GetOk("entitlement"); ok {
+		params.DefaultWorkerPoolEntitlement = v.(string)
+	}
+
 	targetEnv, err := getVpcClusterTargetHeader(d, meta)
 	if err != nil {
 		return err
@@ -511,7 +523,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	}
 
 	albs, err := albsAPI.ListClusterAlbs(clusterID, targetEnv)
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "This operation is not supported for your cluster's version.") {
 		return fmt.Errorf("Error retrieving alb's of the cluster %s: %s", clusterID, err)
 	}
 
