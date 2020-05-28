@@ -135,7 +135,6 @@ func classicSubnetList(d *schema.ResourceData, meta interface{}) error {
 			l["public_gateway"] = *subnet.PublicGateway.ID
 		}
 		subnetsInfo = append(subnetsInfo, l)
-		subnetsInfo = append(subnetsInfo, l)
 	}
 	d.SetId(dataSourceIBMISSubnetsID(d))
 	d.Set(isSubnets, subnetsInfo)
