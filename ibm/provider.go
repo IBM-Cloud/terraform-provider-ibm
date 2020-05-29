@@ -221,16 +221,18 @@ func Provider() terraform.ResourceProvider {
 
 			// Added for Power Resources
 
-			"ibm_pi_key":              dataSourceIBMPIKey(),
-			"ibm_pi_image":            dataSourceIBMPIImage(),
-			"ibm_pi_instance":         dataSourceIBMPIInstance(),
-			"ibm_pi_tenant":           dataSourceIBMPITenant(),
-			"ibm_pi_network":          dataSourceIBMPINetwork(),
-			"ibm_pi_volume":           dataSourceIBMPIVolume(),
-			"ibm_pi_instance_volumes": dataSourceIBMPIVolumes(),
-			"ibm_pi_public_network":   dataSourceIBMPIPublicNetwork(),
-			"ibm_pi_images":           dataSourceIBMPIImages(),
-			"ibm_pi_instance_ip":      dataSourceIBMPIInstanceIP(),
+			"ibm_pi_key":                dataSourceIBMPIKey(),
+			"ibm_pi_image":              dataSourceIBMPIImage(),
+			"ibm_pi_instance":           dataSourceIBMPIInstance(),
+			"ibm_pi_tenant":             dataSourceIBMPITenant(),
+			"ibm_pi_network":            dataSourceIBMPINetwork(),
+			"ibm_pi_volume":             dataSourceIBMPIVolume(),
+			"ibm_pi_instance_volumes":   dataSourceIBMPIVolumes(),
+			"ibm_pi_public_network":     dataSourceIBMPIPublicNetwork(),
+			"ibm_pi_images":             dataSourceIBMPIImages(),
+			"ibm_pi_instance_ip":        dataSourceIBMPIInstanceIP(),
+			"ibm_pi_instance_snapshots": dataSourceIBMPISnapshots(),
+			"ibm_pi_pvm_snapshots":      dataSourceIBMPISnapshot(),
 
 			// Added for private dns zones
 
