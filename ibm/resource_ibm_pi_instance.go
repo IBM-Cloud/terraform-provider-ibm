@@ -3,7 +3,6 @@ package ibm
 import (
 	"encoding/base64"
 	"fmt"
-
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
@@ -11,6 +10,7 @@ import (
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"strings"
 
 	"log"
 	"time"
@@ -214,12 +214,17 @@ func resourceIBMPIInstance() *schema.Resource {
 				Default:      "none",
 				ValidateFunc: validateAllowedStringValue([]string{"none", "soft", "hard"}),
 			},
+
+			"reboot_for_resource_change": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Flag to be passed for CPU/Memory changes that require a reboot to take effect",
+			},
 		},
 	}
 }
 
 func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error {
-
 	log.Printf("Now in the PowerVMCreate")
 	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
@@ -236,12 +241,9 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	volids := expandStringList((d.Get(helpers.PIInstanceVolumeIds).(*schema.Set)).List())
 	replicants := d.Get(helpers.PIInstanceReplicants).(float64)
 	replicationpolicy := d.Get(helpers.PIInstanceReplicationPolicy).(string)
-
 	replicationNamingScheme := d.Get(helpers.PIInstanceReplicationScheme).(string)
-
 	imageid := d.Get(helpers.PIInstanceImageName).(string)
 	processortype := d.Get(helpers.PIInstanceProcType).(string)
-
 	pinpolicy := d.Get(helpers.PIInstancePinPolicy).(string)
 	if d.Get(helpers.PIInstancePinPolicy) == "" {
 		pinpolicy = "none"
@@ -292,20 +294,42 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 
 	log.Printf("Printing the instance info %+v", &pvm)
 
-	truepvmid := (*pvm)[0].PvmInstanceID
-	d.SetId(fmt.Sprintf("%s/%s", powerinstanceid, *truepvmid))
-	//d.Set("addresses",(*pvm)[0].Addresses)
+	var pvminstanceids []string
+	if replicants > 1 {
+		log.Printf("We are in a multi create mode")
+		for i := 0; i < int(replicants); i++ {
+			truepvmid := (*pvm)[i].PvmInstanceID
+			log.Printf("Printing the instance id %s", *truepvmid)
+			pvminstanceids = append(pvminstanceids, fmt.Sprintf("%s", *truepvmid))
+			log.Printf("Printing each of the pvminstance ids %s", pvminstanceids)
+			d.SetId(fmt.Sprintf("%s/%s", powerinstanceid, *truepvmid))
+		}
+		d.SetId(strings.Join(pvminstanceids, "/"))
+	} else {
+		log.Printf("Single Create Mode ")
+		truepvmid := (*pvm)[0].PvmInstanceID
+		d.SetId(fmt.Sprintf("%s/%s", powerinstanceid, *truepvmid))
 
-	log.Printf("Printing the instance id .. after the create ... %s", *truepvmid)
+		pvminstanceids = append(pvminstanceids, *truepvmid)
+		log.Printf("Printing the instance id .. after the create ... %s", *truepvmid)
+	}
 
-	_, err = isWaitForPIInstanceAvailable(client, *truepvmid, d.Timeout(schema.TimeoutCreate), powerinstanceid)
-	if err != nil {
-		return err
+	log.Printf("the number of pvminstanceids is %d", len(pvminstanceids))
+	for ids, _ := range pvminstanceids {
+
+		log.Printf("The pvm instance id is [%s] .Checking for status", pvminstanceids[ids])
+		//ids, err = strconv.Atoi(str)
+		if err != nil {
+			return err
+		}
+
+		_, err = isWaitForPIInstanceAvailable(client, pvminstanceids[ids], d.Timeout(schema.TimeoutCreate), powerinstanceid)
+		if err != nil {
+			return err
+		}
 	}
 
 	return resourceIBMPIInstanceRead(d, meta)
-
-	//return dataSourceIBMPIVolumesRead(d,meta)
 
 }
 
@@ -389,38 +413,151 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 
 func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	sess, _ := meta.(ClientSession).IBMPISession()
-	if d.HasChange(helpers.PIInstanceName) || d.HasChange(helpers.PIInstanceMemory) || d.HasChange(helpers.PIInstanceProcessors) || d.HasChange(helpers.PIInstanceProcType) {
-		name := d.Get(helpers.PIInstanceName).(string)
-		mem := d.Get(helpers.PIInstanceMemory).(float64)
-		procs := d.Get(helpers.PIInstanceProcessors).(float64)
+	name := d.Get(helpers.PIInstanceName).(string)
+	mem := d.Get(helpers.PIInstanceMemory).(float64)
+	procs := d.Get(helpers.PIInstanceProcessors).(float64)
+	processortype := d.Get(helpers.PIInstanceProcType).(string)
+
+	sess, err := meta.(ClientSession).IBMPISession()
+	if err != nil {
+		fmt.Errorf("Failed to get the session from the IBM Cloud Service")
+		return err
+	}
+	if d.Get("health_status") == "WARNING" {
+
+		return fmt.Errorf("The operation cannot be performed when the lpar health in the WARNING State")
+	}
+
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return err
+	}
+	powerinstanceid := parts[0]
+	client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
+
+	//if d.HasChange(helpers.PIInstanceName) || d.HasChange(helpers.PIInstanceProcessors) || d.HasChange(helpers.PIInstanceProcType) || d.HasChange(helpers.PIInstancePinPolicy){
+	if d.HasChange(helpers.PIInstanceProcType) {
+
+		// Stop the lpar
 		processortype := d.Get(helpers.PIInstanceProcType).(string)
+		if d.Get("status") == "SHUTOFF" {
+			log.Printf("the lpar is in the shutoff state. Nothing to do . Moving on ")
+		} else {
 
-		parts, err := idParts(d.Id())
+			body := &models.PVMInstanceAction{
+				//Action: ptrToString("stop"),
+				Action: ptrToString("immediate-shutdown"),
+			}
+			resp, err := client.Action(&p_cloud_p_vm_instances.PcloudPvminstancesActionPostParams{Body: body}, parts[1], powerinstanceid)
+			if err != nil {
+				log.Printf("Stop Action failed on [%s]")
+				return err
+			}
+			log.Printf("Getting the response from the shutdown ... %v", resp)
+
+			_, err = isWaitForPIInstanceStopped(client, parts[1], d.Timeout(schema.TimeoutUpdate), powerinstanceid)
+			if err != nil {
+				return err
+			}
+		}
+
+		// Modify
+
+		log.Printf("At this point the lpar should be off. Executing the Processor Update Change")
+		updatebody := &models.PVMInstanceUpdate{ProcType: processortype}
+		updateresp, err := client.Update(parts[1], powerinstanceid, &p_cloud_p_vm_instances.PcloudPvminstancesPutParams{Body: updatebody})
 		if err != nil {
 			return err
 		}
-		powerinstanceid := parts[0]
+		log.Printf("Getting the response from the change %s", updateresp.StatusURL)
 
-		client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
+		// To check if the verify resize operation is complete.. and then it will go to SHUTOFF
 
-		body := &models.PVMInstanceUpdate{
-			Memory:     mem,
-			ProcType:   processortype,
-			Processors: procs,
-			ServerName: name,
-		}
-
-		resp, err := client.Update(parts[1], powerinstanceid, &p_cloud_p_vm_instances.PcloudPvminstancesPutParams{Body: body})
+		_, err = isWaitForPIInstanceStopped(client, parts[1], d.Timeout(schema.TimeoutUpdate), powerinstanceid)
 		if err != nil {
 			return err
 		}
 
-		log.Printf("Getting the response %s", resp.StatusURL)
+		// Start
+
+		startbody := &models.PVMInstanceAction{
+			Action: ptrToString("start"),
+		}
+		startresp, err := client.Action(&p_cloud_p_vm_instances.PcloudPvminstancesActionPostParams{Body: startbody}, parts[1], powerinstanceid)
+		if err != nil {
+			return err
+		}
+
+		log.Printf("Getting the response from the start %s", startresp)
 
 		_, err = isWaitForPIInstanceAvailable(client, parts[1], d.Timeout(schema.TimeoutUpdate), powerinstanceid)
 		if err != nil {
 			return err
+		}
+
+	}
+
+	// Start of the change for Memory and Processors
+
+	if d.HasChange(helpers.PIInstanceMemory) || d.HasChange(helpers.PIInstanceProcessors) {
+		log.Printf("Checking for cpu / memory change..")
+
+		max_mem_lpar := d.Get("max_memory").(float64)
+		max_cpu_lpar := d.Get("max_processors").(float64)
+		//log.Printf("the required memory is set to [%d] and current max memory is set to  [%d] ", int(mem), int(max_mem_lpar))
+
+		if mem > max_mem_lpar || procs > max_cpu_lpar {
+			log.Printf("Will require a shutdown to perform the change")
+
+		} else {
+			log.Printf("max_mem_lpar is set to %d", max_mem_lpar)
+			log.Printf("max_cpu_lpar is set to %d", max_cpu_lpar)
+		}
+
+		//if d.GetOkExists("reboot_for_resource_change")
+
+		if mem > max_mem_lpar || procs > max_cpu_lpar {
+
+			_, err = performChangeAndReboot(client, parts[1], powerinstanceid, mem, procs)
+			//_, err = stopLparForResourceChange(client, parts[1], powerinstanceid)
+			if err != nil {
+				fmt.Errorf("Failed to perform the operation for the change")
+			}
+
+			log.Printf("Getting the response from the bigger change block")
+
+		} else {
+			log.Printf("Memory change is within limits")
+			parts, err := idParts(d.Id())
+			if err != nil {
+				return err
+			}
+			powerinstanceid := parts[0]
+
+			client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
+
+			body := &models.PVMInstanceUpdate{
+				Memory:     mem,
+				ProcType:   processortype,
+				Processors: procs,
+				ServerName: name,
+			}
+
+			resp, err := client.Update(parts[1], powerinstanceid, &p_cloud_p_vm_instances.PcloudPvminstancesPutParams{Body: body})
+			if err != nil {
+				fmt.Errorf("Failed to update the lpar with the change")
+				return err
+			} else {
+				log.Printf("Succesfully updated the lpar.. ")
+			}
+
+			log.Printf("Getting the response from the bigger change block %s", resp.StatusURL)
+
+			_, err = isWaitForPIInstanceAvailable(client, parts[1], d.Timeout(schema.TimeoutUpdate), powerinstanceid)
+			if err != nil {
+				return err
+			}
+
 		}
 
 	}
@@ -459,6 +596,7 @@ func resourceIBMPIInstanceDelete(d *schema.ResourceData, meta interface{}) error
 
 func resourceIBMPIInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 
+	log.Printf("Calling the PowerInstance Exists method")
 	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
 		return false, err
@@ -492,9 +630,9 @@ func isWaitForPIInstanceDeleted(client *st.IBMPIInstanceClient, id string, timeo
 		Pending:    []string{"retry", helpers.PIInstanceDeleting},
 		Target:     []string{helpers.PIInstanceNotFound},
 		Refresh:    isPIInstanceDeleteRefreshFunc(client, id, powerinstanceid),
-		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
+		Timeout:    10 * time.Minute,
 	}
 
 	return stateConf.WaitForState()
@@ -514,15 +652,15 @@ func isPIInstanceDeleteRefreshFunc(client *st.IBMPIInstanceClient, id, powerinst
 }
 
 func isWaitForPIInstanceAvailable(client *st.IBMPIInstanceClient, id string, timeout time.Duration, powerinstanceid string) (interface{}, error) {
-	log.Printf("Waiting for PIInstance (%s) to be available and sleeping ", id)
+	log.Printf("Waiting for PIInstance (%s) to be available and active ", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"PENDING", "BUILD", helpers.PIInstanceHealthWarning},
 		Target:     []string{"OK", "ACTIVE", helpers.PIInstanceHealthOk},
 		Refresh:    isPIInstanceRefreshFunc(client, id, powerinstanceid),
-		Delay:      3 * time.Minute,
-		MinTimeout: 60 * time.Second,
-		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 2 * time.Minute,
+		Timeout:    60 * time.Minute,
 	}
 
 	return stateConf.WaitForState()
@@ -539,13 +677,10 @@ func isPIInstanceRefreshFunc(client *st.IBMPIInstanceClient, id, powerinstanceid
 		//if pvm.Health.Status == helpers.PIInstanceHealthOk {
 		if *pvm.Status == helpers.PIInstanceAvailable && pvm.Health.Status == helpers.PIInstanceHealthOk {
 			log.Printf("The health status is now ok")
-			//if *pvm.Status == "active" ; if *pvm.Addresses[0].IP == nil  {
-			//return pvm, helpers.PIInstanceHealthOk, nil
 			return pvm, helpers.PIInstanceAvailable, nil
-			//}
+
 		}
 
-		//return pvm, helpers.PIInstanceHealthWarning, nil
 		return pvm, helpers.PIInstanceBuilding, nil
 	}
 }
@@ -574,4 +709,207 @@ func checkBase64(input string) error {
 	fmt.Printf("Data is correctly Encoded to Base64 %s", data)
 	return err
 
+}
+
+func isWaitForPIInstanceStopped(client *st.IBMPIInstanceClient, id string, timeout time.Duration, powerinstanceid string) (interface{}, error) {
+	log.Printf("Waiting for PIInstance (%s) to be stopped and powered off ", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"STOPPING", "RESIZE", "VERIFY_RESIZE", helpers.PIInstanceHealthWarning},
+		Target:     []string{"OK", "SHUTOFF"},
+		Refresh:    isPIInstanceRefreshFuncOff(client, id, powerinstanceid),
+		Delay:      10 * time.Second,
+		MinTimeout: 2 * time.Minute, // This is the time that the client will execute to check the status of the request
+		Timeout:    30 * time.Minute,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isPIInstanceRefreshFuncOff(client *st.IBMPIInstanceClient, id, powerinstanceid string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+
+		log.Printf("Calling the check Refresh status of the pvm [%s] for cloud instance id [%s ]", id, powerinstanceid)
+		pvm, err := client.Get(id, powerinstanceid)
+		if err != nil {
+			return nil, "", err
+		}
+		log.Printf("The lpar status with id [ %s] is now %s", id, *pvm.Status)
+		//if pvm.Health.Status == helpers.PIInstanceHealthOk {
+		if *pvm.Status == "SHUTOFF" && pvm.Health.Status == helpers.PIInstanceHealthOk {
+			log.Printf("The lpar is now off")
+
+			return pvm, "SHUTOFF", nil
+			//}
+		}
+
+		return pvm, "STOPPING", nil
+	}
+}
+
+func stopLparForResourceChange(client *st.IBMPIInstanceClient, id, powerinstanceid string) (interface{}, error) {
+	//TODO
+
+	log.Printf("Callin the stop lpar for Resource Change code ..")
+	body := &models.PVMInstanceAction{
+		//Action: ptrToString("stop"),
+		Action: ptrToString("immediate-shutdown"),
+	}
+	resp, err := client.Action(&p_cloud_p_vm_instances.PcloudPvminstancesActionPostParams{Body: body}, id, powerinstanceid)
+	if err != nil {
+		log.Printf("Stop Action failed on [%s]")
+		return nil, err
+	}
+	log.Printf("Getting the response from the shutdown ... %v", resp)
+
+	_, err = isWaitForPIInstanceStopped(client, id, 30, powerinstanceid)
+	if err != nil {
+		fmt.Errorf("Failed to stop the lpar")
+		return nil, err
+	}
+
+	return nil, err
+}
+
+// Start the lpar
+
+func startLparAfterResourceChange(client *st.IBMPIInstanceClient, id, powerinstanceid string) (interface{}, error) {
+	//TODO
+
+	log.Printf("Callin the start lpar for Resource Change code ..")
+	body := &models.PVMInstanceAction{
+		//Action: ptrToString("stop"),
+		Action: ptrToString("start"),
+	}
+	resp, err := client.Action(&p_cloud_p_vm_instances.PcloudPvminstancesActionPostParams{Body: body}, id, powerinstanceid)
+	if err != nil {
+		log.Printf("Start Action failed on [%s]", id)
+		return nil, err
+	}
+	log.Printf("Getting the response from the start ... %v", resp)
+
+	_, err = isWaitForPIInstanceAvailable(client, id, 30, powerinstanceid)
+	if err != nil {
+		fmt.Errorf("Failed to stop the lpar")
+		return nil, err
+	}
+
+	return nil, err
+}
+
+// Stop / Modify / Start only when the lpar is off limits
+
+func performChangeAndReboot(client *st.IBMPIInstanceClient, id, powerinstanceid string, mem, procs float64) (interface{}, error) {
+	/*
+		These are the steps
+		1. Stop the lpar - Check if the lpar is SHUTOFF
+		2. Once the lpar is SHUTOFF - Make the cpu / memory change - DUring this time , you can check for RESIZE and VERIFY_RESIZE as the transition states
+		3. If the change is successful , the lpar state will be back in SHUTOFF
+		4. Once the LPAR state is SHUTOFF , initiate the start again and check for ACTIVE + OK
+	*/
+	//Execute the stop
+
+	log.Printf("Callin the stop lpar for Resource Change code ..")
+	stopbody := &models.PVMInstanceAction{
+		//Action: ptrToString("stop"),
+		Action: ptrToString("immediate-shutdown"),
+	}
+
+	resp, err := client.Action(&p_cloud_p_vm_instances.PcloudPvminstancesActionPostParams{Body: stopbody}, id, powerinstanceid)
+	if err != nil {
+		log.Printf("Stop Action failed on [%s]")
+		return nil, err
+	}
+	log.Printf("Getting the response from the shutdown ... %v", resp)
+
+	_, err = isWaitForPIInstanceStopped(client, id, 30, powerinstanceid)
+	if err != nil {
+		fmt.Errorf("Failed to stop the lpar")
+		return nil, err
+	}
+
+	log.Printf("Completed the stop successfully. Initiating the resource change ")
+
+	body := &models.PVMInstanceUpdate{
+		Memory: mem,
+		//ProcType:   processortype,
+		Processors: procs,
+		//ServerName: name,
+	}
+
+	update_resp, update_err := client.Update(id, powerinstanceid, &p_cloud_p_vm_instances.PcloudPvminstancesPutParams{Body: body})
+	if err != nil {
+		fmt.Errorf("Failed to update the lpar with the change")
+		return update_err, nil
+	}
+	if update_resp.ServerName == "" {
+		log.Printf("the server name is null...from the update call")
+	} else {
+		log.Printf("printing the response from the update %s", update_resp.ServerName)
+	}
+
+	_, err = isWaitforPIInstanceUpdate(client, id, 30, powerinstanceid)
+	if err != nil {
+		fmt.Errorf("Failed to get an update from the Service after the resource change")
+	}
+
+	// Now we can start the lpar
+
+	log.Printf("Callin the start lpar After the  Resource Change code ..")
+	startbody := &models.PVMInstanceAction{
+		//Action: ptrToString("stop"),
+		Action: ptrToString("start"),
+	}
+	startresp, starterr := client.Action(&p_cloud_p_vm_instances.PcloudPvminstancesActionPostParams{Body: startbody}, id, powerinstanceid)
+	if err != nil {
+		log.Printf("Start Action failed on [%s]", id)
+		fmt.Errorf("The error from the start is %s", err)
+		return nil, starterr
+	}
+	log.Printf("Getting the response from the start ... %v", startresp)
+
+	_, err = isWaitForPIInstanceAvailable(client, id, 30, powerinstanceid)
+	if err != nil {
+		fmt.Errorf("Failed to stop the lpar")
+		return nil, err
+	}
+
+	return nil, err
+
+}
+
+func isWaitforPIInstanceUpdate(client *st.IBMPIInstanceClient, id string, timeout time.Duration, powerinstanceid string) (interface{}, error) {
+	log.Printf("Waiting for PIInstance (%s) to be SHUTOFF AFTER THE RESIZE Due to DLPAR Operation ", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"RESIZE", "VERIFY_RESIZE"},
+		Target:     []string{"ACTIVE", "SHUTOFF", helpers.PIInstanceHealthOk},
+		Refresh:    isPIInstanceShutAfterResourceChange(client, id, powerinstanceid),
+		Delay:      10 * time.Second,
+		MinTimeout: 5 * time.Minute,
+		Timeout:    60 * time.Minute,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isPIInstanceShutAfterResourceChange(client *st.IBMPIInstanceClient, id, powerinstanceid string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+
+		log.Printf("Calling the check lpar status of the pvm [%s] for cloud instance id [%s ] after the resource change", id, powerinstanceid)
+		pvm, err := client.Get(id, powerinstanceid)
+		if err != nil {
+			return nil, "", err
+		}
+		log.Printf("The lpar status with id [%s] is now %s", id, *pvm.Status)
+		//if pvm.Health.Status == helpers.PIInstanceHealthOk {
+		if *pvm.Status == "SHUTOFF" && pvm.Health.Status == helpers.PIInstanceHealthOk {
+			log.Printf("The lpar is now off after the resource change...")
+
+			return pvm, "SHUTOFF", nil
+			//}
+		}
+
+		return pvm, "RESIZE", nil
+	}
 }
