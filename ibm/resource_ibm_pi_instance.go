@@ -289,10 +289,11 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 
 	if err != nil {
 		log.Printf("[DEBUG]  err %s", isErrorToString(err))
+		fmt.Errorf("Failed to provision the instance")
 		return err
+	} else {
+		log.Printf("Printing the instance info %+v", &pvm)
 	}
-
-	log.Printf("Printing the instance info %+v", &pvm)
 
 	var pvminstanceids []string
 	if replicants > 1 {
@@ -450,7 +451,7 @@ func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 			}
 			resp, err := client.Action(&p_cloud_p_vm_instances.PcloudPvminstancesActionPostParams{Body: body}, parts[1], powerinstanceid)
 			if err != nil {
-				log.Printf("Stop Action failed on [%s]")
+				log.Printf("Stop Action failed on [%s]", name)
 				return err
 			}
 			log.Printf("Getting the response from the shutdown ... %v", resp)
@@ -510,8 +511,8 @@ func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 			log.Printf("Will require a shutdown to perform the change")
 
 		} else {
-			log.Printf("max_mem_lpar is set to %d", max_mem_lpar)
-			log.Printf("max_cpu_lpar is set to %d", max_cpu_lpar)
+			log.Printf("max_mem_lpar is set to %f", max_mem_lpar)
+			log.Printf("max_cpu_lpar is set to %f", max_cpu_lpar)
 		}
 
 		//if d.GetOkExists("reboot_for_resource_change")
@@ -757,7 +758,7 @@ func stopLparForResourceChange(client *st.IBMPIInstanceClient, id, powerinstance
 	}
 	resp, err := client.Action(&p_cloud_p_vm_instances.PcloudPvminstancesActionPostParams{Body: body}, id, powerinstanceid)
 	if err != nil {
-		log.Printf("Stop Action failed on [%s]")
+		log.Printf("Stop Action failed on [%s]", id)
 		return nil, err
 	}
 	log.Printf("Getting the response from the shutdown ... %v", resp)
@@ -817,7 +818,7 @@ func performChangeAndReboot(client *st.IBMPIInstanceClient, id, powerinstanceid 
 
 	resp, err := client.Action(&p_cloud_p_vm_instances.PcloudPvminstancesActionPostParams{Body: stopbody}, id, powerinstanceid)
 	if err != nil {
-		log.Printf("Stop Action failed on [%s]")
+		log.Printf("Stop Action failed on [%s]", id)
 		return nil, err
 	}
 	log.Printf("Getting the response from the shutdown ... %v", resp)
