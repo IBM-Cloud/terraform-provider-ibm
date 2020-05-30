@@ -28,36 +28,43 @@ func resourceIBMCISRateLimit() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{
 			"cis_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "CIS Intance CRN",
 			},
 			"domain_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "CIS Domain ID",
 			},
 			"disabled": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Whether this rate limiting rule is currently disabled.",
 			},
 			cisRLDescription: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: InvokeValidator("ibm_cis_rate_limit", cisRLDescription),
+				Description:  "A note that you can use to describe the reason for a rate limiting rule.",
 			},
 			"bypass": {
-				Type:     schema.TypeList,
-				Optional: true,
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Bypass URL",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Default:  "url",
+							Type:        schema.TypeString,
+							Optional:    true,
+							Default:     "url",
+							Description: "bypass URL name",
 						},
 						"value": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "bypass URL value",
 						},
 					},
 				},
@@ -66,16 +73,19 @@ func resourceIBMCISRateLimit() *schema.Resource {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: InvokeValidator("ibm_cis_rate_limit", cisRLThreshold),
+				Description:  "Rate Limiting Threshold",
 			},
 			cisRLPeriod: {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: InvokeValidator("ibm_cis_rate_limit", cisRLPeriod),
+				Description:  "Rate Limiting Period",
 			},
 			"correlate": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Ratelimiting Correlate",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"by": {
@@ -83,42 +93,49 @@ func resourceIBMCISRateLimit() *schema.Resource {
 							Optional:     true,
 							Default:      "nat",
 							ValidateFunc: InvokeValidator("ibm_cis_rate_limit", "by"),
+							Description:  "Whether to enable NAT based rate limiting",
 						},
 					},
 				},
 			},
 			"action": {
-				Type:     schema.TypeList,
-				Required: true,
-				MinItems: 1,
-				MaxItems: 1,
+				Type:        schema.TypeList,
+				Required:    true,
+				MinItems:    1,
+				MaxItems:    1,
+				Description: "Rate Limiting Action",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"mode": {
 							Type:         schema.TypeString,
 							Required:     true,
 							ValidateFunc: InvokeValidator("ibm_cis_rate_limit", "mode"),
+							Description:  "Type of action performed.Valid values are: 'simulate', 'ban', 'challenge', 'js_challenge'.",
 						},
 						"timeout": {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							ValidateFunc: InvokeValidator("ibm_cis_rate_limit", cisRLTimeout),
+							Description:  "The time to perform the mitigation action. Timeout be the same or greater than the period.",
 						},
 						"response": {
-							Type:     schema.TypeList,
-							Optional: true,
-							MaxItems: 1,
+							Type:        schema.TypeList,
+							Optional:    true,
+							MaxItems:    1,
+							Description: "Rate Limiting Action Response",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"content_type": {
 										Type:         schema.TypeString,
 										Required:     true,
 										ValidateFunc: InvokeValidator("ibm_cis_rate_limit", "content_type"),
+										Description:  "Custom content-type and body to return. It must be one of following 'text/plain', 'text/xml', 'application/json'.",
 									},
 									"body": {
 										Type:         schema.TypeString,
 										Required:     true,
 										ValidateFunc: InvokeValidator("ibm_cis_rate_limit", cisRLBody),
+										Description:  "The body to return. The content here must confirm to the 'content_type'",
 									},
 								},
 							},
@@ -127,29 +144,33 @@ func resourceIBMCISRateLimit() *schema.Resource {
 				},
 			},
 			"match": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Rate Limiting Match",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"request": {
-							Type:     schema.TypeList,
-							Optional: true,
-							MinItems: 1,
-							MaxItems: 1,
+							Type:        schema.TypeList,
+							Optional:    true,
+							MinItems:    1,
+							MaxItems:    1,
+							Description: "Rate Limiting Match Request",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"methods": {
-										Type:     schema.TypeSet,
-										Optional: true,
+										Type:        schema.TypeSet,
+										Optional:    true,
+										Description: "HTTP Methos of matching request. It can be one or many. Example methods 'POST', 'PUT'",
 										Elem: &schema.Schema{
 											Type:         schema.TypeString,
 											ValidateFunc: InvokeValidator("ibm_cis_rate_limit", "methods"),
 										},
 									},
 									"schemes": {
-										Type:     schema.TypeSet,
-										Optional: true,
+										Type:        schema.TypeSet,
+										Optional:    true,
+										Description: "HTTP Schemes of matching request. It can be one or many. Example schemes 'HTTP', 'HTTPS'.",
 										Elem: &schema.Schema{
 											Type:         schema.TypeString,
 											ValidateFunc: InvokeValidator("ibm_cis_rate_limit", "schemes"),
@@ -158,26 +179,30 @@ func resourceIBMCISRateLimit() *schema.Resource {
 									"url": {
 										Type:         schema.TypeString,
 										Optional:     true,
+										Description:  "URL pattern of matching request",
 										ValidateFunc: InvokeValidator("ibm_cis_rate_limit", cisRLURL),
 									},
 								},
 							},
 						},
 						"response": {
-							Type:     schema.TypeList,
-							Optional: true,
-							MinItems: 1,
-							MaxItems: 1,
+							Type:        schema.TypeList,
+							Optional:    true,
+							MinItems:    1,
+							MaxItems:    1,
+							Description: "Rate Limiting Response",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"status": {
-										Type:     schema.TypeSet,
-										Optional: true,
-										Elem:     &schema.Schema{Type: schema.TypeInt},
+										Type:        schema.TypeSet,
+										Optional:    true,
+										Description: "HTTP Status Codes of matching response. It can be one or many. Example status codes '403', '401",
+										Elem:        &schema.Schema{Type: schema.TypeInt},
 									},
 									"origin_traffic": {
-										Type:     schema.TypeBool,
-										Optional: true,
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: "Origin Traffic of matching response.",
 									},
 									"headers": {
 										Type:     schema.TypeList,
@@ -185,16 +210,19 @@ func resourceIBMCISRateLimit() *schema.Resource {
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"name": {
-													Type:     schema.TypeString,
-													Optional: true,
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The name of the response header to match.",
 												},
 												"op": {
-													Type:     schema.TypeString,
-													Optional: true,
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The operator when matching. Valid values are 'eq' and 'ne'.",
 												},
 												"value": {
-													Type:     schema.TypeString,
-													Optional: true,
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The value of the header, which is exactly matched.",
 												},
 											},
 										},
@@ -206,8 +234,9 @@ func resourceIBMCISRateLimit() *schema.Resource {
 				},
 			},
 			"rule_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Rate Limit rule Id",
 			},
 		},
 	}
