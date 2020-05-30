@@ -3,17 +3,18 @@ package ibm
 import (
 	"encoding/base64"
 	"fmt"
+	"log"
+	"strings"
+	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_p_vm_instances"
 	"github.com/IBM-Cloud/power-go-client/power/models"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"strings"
-
-	"log"
-	"time"
 )
 
 func resourceIBMPIInstance() *schema.Resource {
@@ -288,9 +289,7 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	//log.Printf("the number of instances is %d", len(*pvm))
 
 	if err != nil {
-		log.Printf("[DEBUG]  err %s", isErrorToString(err))
-		fmt.Errorf("Failed to provision the instance")
-		return err
+		return fmt.Errorf("Failed to provision the instance")
 	} else {
 		log.Printf("Printing the instance info %+v", &pvm)
 	}
@@ -421,8 +420,7 @@ func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 
 	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
-		fmt.Errorf("Failed to get the session from the IBM Cloud Service")
-		return err
+		return fmt.Errorf("Failed to get the session from the IBM Cloud Service")
 	}
 	if d.Get("health_status") == "WARNING" {
 
@@ -522,7 +520,7 @@ func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 			_, err = performChangeAndReboot(client, parts[1], powerinstanceid, mem, procs)
 			//_, err = stopLparForResourceChange(client, parts[1], powerinstanceid)
 			if err != nil {
-				fmt.Errorf("Failed to perform the operation for the change")
+				return fmt.Errorf("Failed to perform the operation for the change")
 			}
 
 			log.Printf("Getting the response from the bigger change block")
@@ -546,12 +544,8 @@ func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 
 			resp, err := client.Update(parts[1], powerinstanceid, &p_cloud_p_vm_instances.PcloudPvminstancesPutParams{Body: body})
 			if err != nil {
-				fmt.Errorf("Failed to update the lpar with the change")
-				return err
-			} else {
-				log.Printf("Succesfully updated the lpar.. ")
+				return fmt.Errorf("Failed to update the lpar with the change")
 			}
-
 			log.Printf("Getting the response from the bigger change block %s", resp.StatusURL)
 
 			_, err = isWaitForPIInstanceAvailable(client, parts[1], d.Timeout(schema.TimeoutUpdate), powerinstanceid)
@@ -765,8 +759,7 @@ func stopLparForResourceChange(client *st.IBMPIInstanceClient, id, powerinstance
 
 	_, err = isWaitForPIInstanceStopped(client, id, 30, powerinstanceid)
 	if err != nil {
-		fmt.Errorf("Failed to stop the lpar")
-		return nil, err
+		return nil, fmt.Errorf("Failed to stop the lpar")
 	}
 
 	return nil, err
@@ -784,15 +777,13 @@ func startLparAfterResourceChange(client *st.IBMPIInstanceClient, id, powerinsta
 	}
 	resp, err := client.Action(&p_cloud_p_vm_instances.PcloudPvminstancesActionPostParams{Body: body}, id, powerinstanceid)
 	if err != nil {
-		log.Printf("Start Action failed on [%s]", id)
-		return nil, err
+		return nil, fmt.Errorf("Start Action failed on [%s] %s", id, err)
 	}
 	log.Printf("Getting the response from the start ... %v", resp)
 
 	_, err = isWaitForPIInstanceAvailable(client, id, 30, powerinstanceid)
 	if err != nil {
-		fmt.Errorf("Failed to stop the lpar")
-		return nil, err
+		return nil, fmt.Errorf("Failed to stop the lpar")
 	}
 
 	return nil, err
@@ -825,8 +816,7 @@ func performChangeAndReboot(client *st.IBMPIInstanceClient, id, powerinstanceid 
 
 	_, err = isWaitForPIInstanceStopped(client, id, 30, powerinstanceid)
 	if err != nil {
-		fmt.Errorf("Failed to stop the lpar")
-		return nil, err
+		return nil, fmt.Errorf("Failed to stop the lpar")
 	}
 
 	log.Printf("Completed the stop successfully. Initiating the resource change ")
@@ -839,9 +829,8 @@ func performChangeAndReboot(client *st.IBMPIInstanceClient, id, powerinstanceid 
 	}
 
 	update_resp, update_err := client.Update(id, powerinstanceid, &p_cloud_p_vm_instances.PcloudPvminstancesPutParams{Body: body})
-	if err != nil {
-		fmt.Errorf("Failed to update the lpar with the change")
-		return update_err, nil
+	if update_err != nil {
+		return nil, fmt.Errorf("Failed to update the lpar with the change, %s", update_err)
 	}
 	if update_resp.ServerName == "" {
 		log.Printf("the server name is null...from the update call")
@@ -851,7 +840,7 @@ func performChangeAndReboot(client *st.IBMPIInstanceClient, id, powerinstanceid 
 
 	_, err = isWaitforPIInstanceUpdate(client, id, 30, powerinstanceid)
 	if err != nil {
-		fmt.Errorf("Failed to get an update from the Service after the resource change")
+		return nil, fmt.Errorf("Failed to get an update from the Service after the resource change, %s", err)
 	}
 
 	// Now we can start the lpar
@@ -862,17 +851,16 @@ func performChangeAndReboot(client *st.IBMPIInstanceClient, id, powerinstanceid 
 		Action: ptrToString("start"),
 	}
 	startresp, starterr := client.Action(&p_cloud_p_vm_instances.PcloudPvminstancesActionPostParams{Body: startbody}, id, powerinstanceid)
-	if err != nil {
+	if starterr != nil {
 		log.Printf("Start Action failed on [%s]", id)
-		fmt.Errorf("The error from the start is %s", err)
-		return nil, starterr
+
+		return nil, fmt.Errorf("The error from the start is %s", starterr)
 	}
 	log.Printf("Getting the response from the start ... %v", startresp)
 
 	_, err = isWaitForPIInstanceAvailable(client, id, 30, powerinstanceid)
 	if err != nil {
-		fmt.Errorf("Failed to stop the lpar")
-		return nil, err
+		return nil, fmt.Errorf("Failed to stop the lpar %s", err)
 	}
 
 	return nil, err
