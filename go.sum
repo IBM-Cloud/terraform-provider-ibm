@@ -58,6 +58,8 @@ github.com/IBM-Cloud/power-go-client v1.0.0 h1:iy7ElG6CmCYOeRal07JMGtIvby0qOKBPP
 github.com/IBM-Cloud/power-go-client v1.0.0/go.mod h1:+mOxjyLeLIloR4EMHTpiDbN+FilZpiVHTwu5eqi+cbI=
 github.com/IBM-Cloud/power-go-client v1.0.14 h1:trQkSz3WEjVSnsOCHhW+jTs9zci3T0iOt7htdwilckg=
 github.com/IBM-Cloud/power-go-client v1.0.14/go.mod h1:+mOxjyLeLIloR4EMHTpiDbN+FilZpiVHTwu5eqi+cbI=
+github.com/IBM-Cloud/power-go-client v1.0.24 h1:C3rjKpTnVn63F+0mu66WNmDfJl6CyM/rpq1d7lx4Ahc=
+github.com/IBM-Cloud/power-go-client v1.0.24/go.mod h1:+mOxjyLeLIloR4EMHTpiDbN+FilZpiVHTwu5eqi+cbI=
 github.com/IBM/apigateway-go-sdk v0.0.0-20200319174228-a4e4a3b46d9e h1:LiWEe8x+iAktPSEiJ4HNhOqrvLZvpicgGnGIi8QuEfI=
 github.com/IBM/apigateway-go-sdk v0.0.0-20200319174228-a4e4a3b46d9e/go.mod h1:sNVpGpUv3jvA2dQbRPFjVrRFNdmnQrf2QTtKa/c2XrI=
 github.com/IBM/apigateway-go-sdk v0.0.0-20200414212859-416e5948678a h1:lX3vP+9Y5gTP0w6l+4oL0mvNfgXZYJsMdlsiUG43GBw=
