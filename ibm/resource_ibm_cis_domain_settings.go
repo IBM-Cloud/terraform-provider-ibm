@@ -1,10 +1,12 @@
 package ibm
 
 import (
-	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"log"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
+	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 )
 
 func resourceIBMCISSettings() *schema.Resource {
@@ -67,6 +69,132 @@ func resourceIBMCISSettings() *schema.Resource {
 				Computed:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
 			},
+			"always_use_https": {
+				Type:         schema.TypeString,
+				Description:  "always_use_https setting",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+			},
+			"ipv6": {
+				Type:         schema.TypeString,
+				Description:  "ipv6 setting",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+			},
+			"browser_check": {
+				Type:         schema.TypeString,
+				Description:  "browser_check setting",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+			},
+			"hotlink_protection": {
+				Type:         schema.TypeString,
+				Description:  "hotlink_protection setting",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+			},
+			"http2": {
+				Type:         schema.TypeString,
+				Description:  "http2 setting",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+			},
+			"image_load_optimization": {
+				Type:         schema.TypeString,
+				Description:  "image_load_optimization setting",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+			},
+			"image_size_optimization": {
+				Type:         schema.TypeString,
+				Description:  "image_size_optimization setting",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"lossless", "off", "lossy"}),
+			},
+			"ip_geolocation": {
+				Type:         schema.TypeString,
+				Description:  "ip_geolocation setting",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+			},
+			"origin_error_page_pass_thru": {
+				Type:         schema.TypeString,
+				Description:  "origin_error_page_pass_thru setting",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+			},
+			"brotli": {
+				Type:         schema.TypeString,
+				Description:  "brotli setting",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+			},
+			"pseudo_ipv4": {
+				Type:         schema.TypeString,
+				Description:  "pseudo_ipv4 setting",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"overwrite_header", "off", "add_header"}),
+			},
+			"prefetch_preload": {
+				Type:         schema.TypeString,
+				Description:  "prefetch_preload setting",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+			},
+			"response_buffering": {
+				Type:         schema.TypeString,
+				Description:  "response_buffering setting",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+			},
+			"script_load_optimization": {
+				Type:         schema.TypeString,
+				Description:  "script_load_optimization setting",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+			},
+			"server_side_exclude": {
+				Type:         schema.TypeString,
+				Description:  "server_side_exclude setting",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+			},
+			"tls_client_auth": {
+				Type:         schema.TypeString,
+				Description:  "tls_client_auth setting",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+			},
+			"true_client_ip_header": {
+				Type:         schema.TypeString,
+				Description:  "true_client_ip_header setting",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+			},
+			"websockets": {
+				Type:         schema.TypeString,
+				Description:  "websockets setting",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+			},
 		},
 
 		Create:   resourceCISSettingsUpdate,
@@ -77,7 +205,7 @@ func resourceIBMCISSettings() *schema.Resource {
 	}
 }
 
-var settingsList = [...]string{"waf", "ssl", "min_tls_version", "automatic_https_rewrites", "opportunistic_encryption", "cname_flattening"}
+var settingsList = [...]string{"waf", "ssl", "min_tls_version", "automatic_https_rewrites", "opportunistic_encryption", "cname_flattening", "always_use_https", "ipv6", "browser_check", "hotlink_protection", "http2", "image_load_optimization", "image_size_optimization", "ip_geolocation", "origin_error_page_pass_thru", "brotli", "pseudo_ipv4", "prefetch_preload", "response_buffering", "script_load_optimization", "server_side_exclude", "tls_client_auth", "true_client_ip_header", "websockets"}
 
 func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 	cisClient, err := meta.(ClientSession).CisAPI()
