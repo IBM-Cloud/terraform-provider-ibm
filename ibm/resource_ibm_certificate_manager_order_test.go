@@ -33,6 +33,8 @@ func TestAccIBMCertificateManagerOrder_Import(t *testing.T) {
 				ResourceName:      "ibm_certificate_manager_order.cert",
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"dns_provider_instance_crn"},
 			},
 		},
 	})
@@ -95,7 +97,7 @@ func testAccCheckIBMCertificateManagerOrder_basic(cmsName, orderName string) str
 		resource_group_id = data.ibm_resource_group.web_group.id
 	}
 	data "ibm_cis_domain" "web_domain" {
-		cis_id = ibm_cis.instance.id
+		cis_id = data.ibm_cis.instance.id
 		domain = "cis-test-domain.com"
 	}
 	resource "ibm_certificate_manager_order" "cert" {

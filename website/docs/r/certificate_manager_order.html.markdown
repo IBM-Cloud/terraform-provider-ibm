@@ -41,6 +41,7 @@ The following arguments are supported:
 * `domains` - (Required,ForeceNew,List) An array of valid domains for the issued certificate. The first domain is the primary domain. Additional domains are secondary domains.
 * `rotate_keys` - (Optional,bool) Default: False.
 * `domain_validation_method` - (Optional,Default,string) Allowable values [dns-01]
+* `key_algorithm` - (Optional,Default,string) Key Algorithm. Allowable values: [`rsaEncryption 2048 bit`,`rsaEncryption 4096 bit`] Default: [`rsaEncryption 2048 bit`]
 * `dns_provider_instance_crn` - (Optional,string) The CRN-based instance ID of the IBM Cloud Internet Services instance that manages the domains. If not present, Certificate Manager assumes a v4 or above Callback URL notifications channel with domain validation exists.
 
 
@@ -56,5 +57,4 @@ The following attributes are exported:
 * `imported` - Indicates whether a certificate has a imported or not.
 * `status` - The status of certificate. Possible values: [active,inactive,expired,revoked,valid,pending,failed]
 * `has_previous` - Indicates whether a certificate has a previous version.
-* `key_algorithm` - Key Algorithm. Allowable values: [rsaEncryption 2048 bit rsaEncryption 4096 bit] Default: [rsaEncryption 2048 bit]
 * `algorithm` - Algorithm. Allowable values: [sha256WithRSAEncryption]Default: [sha256WithRSAEncryption]

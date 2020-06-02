@@ -58,7 +58,7 @@ func resourceIBMCertificateManagerOrder() *schema.Resource {
 			"domain_validation_method": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "dns - 01",
+				Default:     "dns-01",
 				Description: "Domain validation methods",
 			},
 			"dns_provider_instance_crn": {
@@ -72,9 +72,11 @@ func resourceIBMCertificateManagerOrder() *schema.Resource {
 				Description: "Certificate issuer info",
 			},
 			"key_algorithm": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Keyalgorithm info",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "rsaEncryption 2048 bit",
+				Description:  "Keyalgorithm info",
+				ValidateFunc: validateAllowedStringValue([]string{"rsaEncryption 2048 bit", "rsaEncryption 4096 bit"}),
 			},
 			"algorithm": {
 				Type:        schema.TypeString,
@@ -153,6 +155,9 @@ func resourceIBMCertificateManagerOrderCertificate(d *schema.ResourceData, meta 
 	if dnsInsCrn, ok := d.GetOk("dns_provider_instance_crn"); ok {
 		dnsProviderInstanceCrn = dnsInsCrn.(string)
 	}
+
+	keyAlgorithm := d.Get("key_algorithm").(string)
+
 	var domainList = make([]string, 0)
 	if domains, ok := d.GetOk("domains"); ok {
 		for _, domain := range domains.([]interface{}) {
@@ -160,7 +165,7 @@ func resourceIBMCertificateManagerOrderCertificate(d *schema.ResourceData, meta 
 		}
 	}
 	client := cmService.Certificate()
-	payload := models.CertificateOrderData{Name: name, Description: description, Domains: domainList, DomainValidationMethod: domainValidationMethod, DNSProviderInstanceCrn: dnsProviderInstanceCrn}
+	payload := models.CertificateOrderData{Name: name, Description: description, Domains: domainList, DomainValidationMethod: domainValidationMethod, DNSProviderInstanceCrn: dnsProviderInstanceCrn, KeyAlgorithm: keyAlgorithm}
 	result, err := client.OrderCertificate(instanceID, payload)
 	if err != nil {
 		return err
