@@ -125,6 +125,12 @@ func dataSourceIBMISVPC() *schema.Resource {
 							Description: "subnet status",
 						},
 
+						"zone": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "subnet location",
+						},
+
 						totalIPV4AddressCount: {
 							Type:        schema.TypeInt,
 							Computed:    true,
@@ -237,6 +243,7 @@ func classicVpcGetByName(d *schema.ResourceData, meta interface{}, name string) 
 							"name":                    *subnet.Name,
 							"id":                      *subnet.ID,
 							"status":                  *subnet.Status,
+							"zone":                    *subnet.Zone.Name,
 							totalIPV4AddressCount:     *subnet.TotalIpv4AddressCount,
 							availableIPV4AddressCount: *subnet.AvailableIpv4AddressCount,
 						}
@@ -323,6 +330,7 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 							"name":                    *subnet.Name,
 							"id":                      *subnet.ID,
 							"status":                  *subnet.Status,
+							"zone":                    *subnet.Zone.Name,
 							totalIPV4AddressCount:     *subnet.TotalIpv4AddressCount,
 							availableIPV4AddressCount: *subnet.AvailableIpv4AddressCount,
 						}
