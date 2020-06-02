@@ -48,5 +48,6 @@ The following attributes are exported:
   * `name` - Name of the subnet.
   * `id` - ID of the subnet.
   * `status` -  Status of the subnet.
+  * `zone` -  Zone of the subnet.
   * `total_ipv4_address_count` - Total IPv4 addresses under the subnet.
   * `available_ipv4_address_count` - Available IPv4 addresses available for the usage in the subnet.
