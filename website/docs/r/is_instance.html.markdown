@@ -57,6 +57,85 @@ resource "ibm_is_instance" "testacc_instance" {
 
 ```
 
+Here is an example of creating virtual server instance with security group, security group rule. Here, the security group, security group rule, and virtual server instance must be created sequentially as security group rule depends on security group creation and virtual server instance depends on security group, security group rule creation. The sequential creation of resources like security group, security rule, virtual server instance is achieved using "depends_on" attribute. You can find more information about depends_on attribute in [terraform documentation](https://www.terraform.io/docs/configuration/resources.html). Creating security group, security group rule, virtual server instance without depends_on attribute will create the resources in parallel and virtual server instance creation may fail with "Error: The security group to attach to is not available" as security group or security group rule creation is not complete and security group may be in Pending state.         
+
+```hcl
+
+resource "ibm_is_vpc" "testacc_vpc" {
+    name = "test"
+}
+
+resource "ibm_is_security_group" "testacc_security_group" {
+    name = "test"
+    vpc = ibm_is_vpc.testacc_vpc.id
+}
+
+resource "ibm_is_security_group_rule" "testacc_security_group_rule_all" {
+    group = ibm_is_security_group.testacc_security_group.id
+    direction = "inbound"
+    remote = "127.0.0.1"
+    depends_on = [ibm_is_security_group.testacc_security_group]
+ }
+
+ resource "ibm_is_security_group_rule" "testacc_security_group_rule_icmp" {
+    group = ibm_is_security_group.testacc_security_group.id
+    direction = "inbound"
+    remote = "127.0.0.1"
+    icmp {
+        code = 20
+        type = 30
+    }
+    depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_all]
+
+ }
+
+ resource "ibm_is_security_group_rule" "testacc_security_group_rule_udp" {
+    group = ibm_is_security_group.testacc_security_group.id
+    direction = "inbound"
+    remote = "127.0.0.1"
+    udp {
+        port_min = 805
+        port_max = 807
+    }
+    depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_icmp]
+ }
+
+ resource "ibm_is_security_group_rule" "testacc_security_group_rule_tcp" {
+    group = ibm_is_security_group.testacc_security_group.id
+    direction = "outbound"
+    remote = "127.0.0.1"
+    tcp {
+        port_min = 8080
+        port_max = 8080
+    }
+    depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_udp]
+ }
+
+resource "ibm_is_instance" "testacc_instance" {
+  name    = "testinstance"
+  image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
+  profile = "b-2x8"
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.testacc_subnet.id
+    security_groups = [ibm_is_security_group.testacc_security_group.id]
+  }
+
+  vpc  = ibm_is_vpc.testacc_vpc.id
+  zone = "us-south-1"
+  keys = [ibm_is_ssh_key.testacc_sshkey.id]
+  depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_tcp]
+
+  //User can configure timeouts
+  timeouts {
+    create = "90m"
+    delete = "30m"
+  }
+}
+
+
+```  
+
 ## Timeouts
 
 ibm_is_instance provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
