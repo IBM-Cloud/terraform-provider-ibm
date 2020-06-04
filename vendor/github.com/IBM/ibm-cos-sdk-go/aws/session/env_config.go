@@ -1,12 +1,15 @@
 package session
 
 import (
+	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/IBM/ibm-cos-sdk-go/aws"
 	"github.com/IBM/ibm-cos-sdk-go/aws/credentials"
 	"github.com/IBM/ibm-cos-sdk-go/aws/defaults"
+	"github.com/IBM/ibm-cos-sdk-go/aws/endpoints"
 )
 
 // EnvProviderName provides a name of the provider when config is loaded from environment.
@@ -18,7 +21,7 @@ const EnvProviderName = "EnvConfigCredentials"
 // will be ignored.
 type envConfig struct {
 	// Environment configuration values. If set both Access Key ID and Secret Access
-	// Key must be provided. Session token and optionally also be provided, but is
+	// Key must be provided. Session Token and optionally also be provided, but is
 	// not required.
 	//
 	//	# Access Key ID
@@ -29,7 +32,7 @@ type envConfig struct {
 	//	AWS_SECRET_ACCESS_KEY=SECRET
 	//	AWS_SECRET_KEY=SECRET=SECRET # only read if AWS_SECRET_ACCESS_KEY is not set.
 	//
-	//	# Session token
+	//	# Session Token
 	//	AWS_SESSION_TOKEN=TOKEN
 	Creds credentials.Value
 
@@ -103,6 +106,19 @@ type envConfig struct {
 	//
 	//	AWS_ENABLE_ENDPOINT_DISCOVERY=true
 	EnableEndpointDiscovery *bool
+
+	// Specifies the S3 Regional Endpoint flag for the SDK to resolve the
+	// endpoint for a service.
+	//
+	// AWS_S3_US_EAST_1_REGIONAL_ENDPOINT=regional
+	// This can take value as `regional` or `legacy`
+	S3UsEast1RegionalEndpoint endpoints.S3UsEast1RegionalEndpoint
+
+	// Specifies if the S3 service should allow ARNs to direct the region
+	// the client's requests are sent to.
+	//
+	// AWS_S3_USE_ARN_REGION=true
+	S3UseARNRegion bool
 }
 
 var (
@@ -136,6 +152,12 @@ var (
 	sharedConfigFileEnvKey = []string{
 		"AWS_CONFIG_FILE",
 	}
+	s3UsEast1RegionalEndpoint = []string{
+		"AWS_S3_US_EAST_1_REGIONAL_ENDPOINT",
+	}
+	s3UseARNRegionEnvKey = []string{
+		"AWS_S3_USE_ARN_REGION",
+	}
 )
 
 // loadEnvConfig retrieves the SDK's environment configuration.
@@ -144,7 +166,7 @@ var (
 // If the environment variable `AWS_SDK_LOAD_CONFIG` is set to a truthy value
 // the shared SDK config will be loaded in addition to the SDK's specific
 // configuration values.
-func loadEnvConfig() envConfig {
+func loadEnvConfig() (envConfig, error) {
 	enableSharedConfig, _ := strconv.ParseBool(os.Getenv("AWS_SDK_LOAD_CONFIG"))
 	return envConfigLoad(enableSharedConfig)
 }
@@ -155,11 +177,11 @@ func loadEnvConfig() envConfig {
 // Loads the shared configuration in addition to the SDK's specific configuration.
 // This will load the same values as `loadEnvConfig` if the `AWS_SDK_LOAD_CONFIG`
 // environment variable is set.
-func loadSharedEnvConfig() envConfig {
+func loadSharedEnvConfig() (envConfig, error) {
 	return envConfigLoad(true)
 }
 
-func envConfigLoad(enableSharedConfig bool) envConfig {
+func envConfigLoad(enableSharedConfig bool) (envConfig, error) {
 	cfg := envConfig{}
 
 	cfg.EnableSharedConfig = enableSharedConfig
@@ -210,12 +232,38 @@ func envConfigLoad(enableSharedConfig bool) envConfig {
 
 	cfg.CustomCABundle = os.Getenv("AWS_CA_BUNDLE")
 
-	return cfg
+	var err error
+	// S3 Regional Endpoint variable
+	for _, k := range s3UsEast1RegionalEndpoint {
+		if v := os.Getenv(k); len(v) != 0 {
+			cfg.S3UsEast1RegionalEndpoint, err = endpoints.GetS3UsEast1RegionalEndpoint(v)
+			if err != nil {
+				return cfg, fmt.Errorf("failed to load, %v from env config, %v", k, err)
+			}
+		}
+	}
+
+	var s3UseARNRegion string
+	setFromEnvVal(&s3UseARNRegion, s3UseARNRegionEnvKey)
+	if len(s3UseARNRegion) != 0 {
+		switch {
+		case strings.EqualFold(s3UseARNRegion, "false"):
+			cfg.S3UseARNRegion = false
+		case strings.EqualFold(s3UseARNRegion, "true"):
+			cfg.S3UseARNRegion = true
+		default:
+			return envConfig{}, fmt.Errorf(
+				"invalid value for environment variable, %s=%s, need true or false",
+				s3UseARNRegionEnvKey[0], s3UseARNRegion)
+		}
+	}
+
+	return cfg, nil
 }
 
 func setFromEnvVal(dst *string, keys []string) {
 	for _, k := range keys {
-		if v := os.Getenv(k); len(v) > 0 {
+		if v := os.Getenv(k); len(v) != 0 {
 			*dst = v
 			break
 		}

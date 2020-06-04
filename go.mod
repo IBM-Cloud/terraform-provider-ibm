@@ -9,7 +9,8 @@ require (
 	github.com/IBM/apigateway-go-sdk v0.0.0-20200414212859-416e5948678a
 	github.com/IBM/dns-svcs-go-sdk v0.0.3
 	github.com/IBM/go-sdk-core/v3 v3.2.4
-	github.com/IBM/ibm-cos-sdk-go v1.2.0
+	github.com/IBM/ibm-cos-sdk-go v1.3.1
+	github.com/IBM/ibm-cos-sdk-go-config v1.0.0
 	github.com/IBM/keyprotect-go-client v0.3.5-0.20200325142150-b63163832e26
 	github.com/apache/incubator-openwhisk-client-go v0.0.0-20171128215515-ad814bc98c32
 	github.com/apparentlymart/go-cidr v1.0.1
@@ -38,7 +39,6 @@ require (
 	github.ibm.com/Bluemix/riaas-go-client v0.0.0-20191018070922-afd27ac04d4f
 	github.ibm.com/ibmcloud/vpc-go-sdk v0.0.0-00010101000000-000000000000
 	golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898 // indirect
-	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 )
 
 replace github.ibm.com/Bluemix/riaas-go-client v0.0.0-20191018070922-afd27ac04d4f => ./common/github.ibm.com/Bluemix/riaas-go-client
