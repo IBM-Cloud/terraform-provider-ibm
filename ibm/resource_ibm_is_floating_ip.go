@@ -316,8 +316,8 @@ func classicFipGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isFloatingIPAddress, *floatingip.Address)
 	d.Set(isFloatingIPStatus, *floatingip.Status)
 	d.Set(isFloatingIPZone, *floatingip.Zone.Name)
-	target := floatingip.Target.(*vpcclassicv1.FloatingIPTarget)
-	if target != nil {
+	target, ok := floatingip.Target.(*vpcclassicv1.FloatingIPTarget)
+	if ok {
 		d.Set(isFloatingIPTarget, target.ID)
 	}
 	tags, err := GetTagsUsingCRN(meta, *floatingip.Crn)
