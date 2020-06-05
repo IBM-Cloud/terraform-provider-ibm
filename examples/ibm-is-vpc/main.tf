@@ -313,3 +313,40 @@ resource "ibm_is_public_gateway" "publicgateway1" {
   vpc  = ibm_is_vpc.vpc1.id
   zone = var.zone1
 }
+
+resource "ibm_is_dedicated_host_group" "group1" {
+  name           = "group1"
+  resource_group = data.ibm_resource_group.rg.id
+  zone = data.ibm_is_zone.zone.name
+}
+
+resource "ibm_is_dedicated_host" "host1" {
+  name = "dedicatedhost1"
+  instance_placement_enabled = "false"
+  group = ibm_is_dedicated_host_group.group1.id
+  resource_group = data.ibm_resource_group.rg.id
+  profile = "dh2-56x464"
+}
+
+resource "ibm_is_instance_template" "instancetemplate1" {
+  name    = "instancetemplate1"
+  image   = var.image
+  profile = "dh2-56x464"
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.subnet2.id
+  }
+
+  placement_target {
+     resource_type="dedicated_host_group"
+     id = ibm_is_dedicated_host_group.group1.id
+  }
+
+  vpc       = ibm_is_vpc.vpc2.id
+  zone      = var.zone2
+  keys      = [ibm_is_ssh_key.sshkey.id]
+  user_data = file("nginx.sh")
+}
+
+data "ibm_is_instance_templates" "dstemplates" {
+}
