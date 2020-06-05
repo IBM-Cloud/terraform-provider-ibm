@@ -43,6 +43,29 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	})
 }
 
+func TestAccIBMISFloatingIP_NoTarget(t *testing.T) {
+	var ip string
+	name := fmt.Sprintf("tfip-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMISFloatingIPDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISFloatingIPNoTargetConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISFloatingIPExists("ibm_is_floating_ip.testacc_floatingip", ip),
+					resource.TestCheckResourceAttr(
+						"ibm_is_floating_ip.testacc_floatingip", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_floating_ip.testacc_floatingip", "zone", ISZoneName),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMISFloatingIPDestroy(s *terraform.State) error {
 	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
@@ -154,4 +177,13 @@ func testAccCheckIBMISFloatingIPConfig(vpcname, subnetname, sshname, publicKey, 
 		target = ibm_is_instance.testacc_instance.primary_network_interface[0].id
 	  }
 `, vpcname, subnetname, ISZoneName, ISCIDR, sshname, publicKey, instancename, isImage, instanceProfileName, ISZoneName, name)
+}
+
+func testAccCheckIBMISFloatingIPNoTargetConfig(name string) string {
+	return fmt.Sprintf(`
+	  resource "ibm_is_floating_ip" "testacc_floatingip" {
+		name   = "%s"
+		zone   = "%s"
+	  }
+`, name, ISZoneName)
 }
