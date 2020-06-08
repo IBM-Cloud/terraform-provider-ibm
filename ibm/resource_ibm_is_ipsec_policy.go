@@ -279,7 +279,7 @@ func classicIpsecpGet(d *schema.ResourceData, meta interface{}, id string) error
 		d.Set(isIPSecResourceGroup, nil)
 	}
 	d.Set(isIpSecPFS, *ipSec.Pfs)
-	if *ipSec.KeyLifetime != int64(0) {
+	if ipSec.KeyLifetime != nil {
 		d.Set(isIpSecKeyLifeTime, *ipSec.KeyLifetime)
 	}
 	d.Set(isIPSecEncapsulationMode, *ipSec.EncapsulationMode)
@@ -343,7 +343,7 @@ func ipsecpGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isIPSecResourceGroup, nil)
 	}
 	d.Set(isIpSecPFS, *ipSec.Pfs)
-	if *ipSec.KeyLifetime != int64(0) {
+	if ipSec.KeyLifetime != nil {
 		d.Set(isIpSecKeyLifeTime, *ipSec.KeyLifetime)
 	}
 	d.Set(isIPSecEncapsulationMode, *ipSec.EncapsulationMode)
