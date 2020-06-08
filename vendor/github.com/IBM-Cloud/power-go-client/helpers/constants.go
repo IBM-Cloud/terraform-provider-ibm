@@ -25,6 +25,7 @@ const (
 	PIInstanceMaxProc         = "pi_maxproc"
 	PIInstanceMaxMem          = "pi_maxmem"
 	PIInstanceReboot          = "pi_reboot"
+	PITenantId                = "pi_tenant_id"
 
 	PIInstanceHealthStatus      = "pi_health_status"
 	PIInstanceReplicants        = "pi_replicants"
@@ -40,6 +41,14 @@ const (
 	PIVolumeType      = "pi_volume_type"
 	PIVolumeShareable = "pi_volume_shareable"
 	PIVolumeId        = "pi_volume_id"
+
+	// IBM PI Snapshots
+
+	PISnapshot         = "pi_snap_shot_id"
+	PISnapshotName     = "pi_snap_shot_name"
+	PISnapshotStatus   = "pi_snap_shot_status"
+	PISnapshotAction   = "pi_snap_shot_action"
+	PISnapshotComplete = "pi_snap_shot_complete"
 
 	// IBM PI Image
 

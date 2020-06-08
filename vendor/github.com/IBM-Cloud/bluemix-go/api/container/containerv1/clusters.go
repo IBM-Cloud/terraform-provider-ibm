@@ -31,6 +31,7 @@ type ClusterInfo struct {
 	Region                        string   `json:"region"`
 	ResourceGroupID               string   `json:"resourceGroup"`
 	ServerURL                     string   `json:"serverURL"`
+	MasterURL                     string   `json:"masterURL"`
 	State                         string   `json:"state"`
 	OrgID                         string   `json:"logOrg"`
 	OrgName                       string   `json:"logOrgName"`
@@ -368,6 +369,9 @@ func (r *clusters) FindWithOutShowResourcesCompatible(name string, target Cluste
 	_, err := r.client.Get(rawURL, &cluster, target.ToMap())
 	if err != nil {
 		return cluster, err
+	}
+	if cluster.ServerURL == "" {
+		cluster.ServerURL = cluster.MasterURL
 	}
 	return cluster, err
 }
