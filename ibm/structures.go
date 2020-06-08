@@ -1635,18 +1635,6 @@ func resourceTagsCustomizeDiff(diff *schema.ResourceDiff) error {
 	return nil
 }
 
-func flattenCseIPs(list []VPCCSESourceIP) []map[string]interface{} {
-	cseIPsInfo := make([]map[string]interface{}, 0)
-	for _, object := range list {
-		l := map[string]interface{}{
-			"address":   object.Address,
-			"zone_name": object.ZoneName,
-		}
-		cseIPsInfo = append(cseIPsInfo, l)
-	}
-	return cseIPsInfo
-}
-
 func flattenRoleData(object []iampapv2.Role, roleType string) []map[string]string {
 	var roles []map[string]string
 

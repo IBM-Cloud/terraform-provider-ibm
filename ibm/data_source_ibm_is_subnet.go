@@ -70,11 +70,17 @@ func dataSourceIBMISSubnet() *schema.Resource {
 				Computed: true,
 			},
 
+			isSubnetResourceGroup: {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
 			},
+
 			ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
