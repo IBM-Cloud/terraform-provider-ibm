@@ -331,7 +331,7 @@ func classicIkepGet(d *schema.ResourceData, meta interface{}, id string) error {
 	} else {
 		d.Set(isIKEResourceGroup, nil)
 	}
-	if *ike.KeyLifetime != int64(0) {
+	if ike.KeyLifetime != nil {
 		d.Set(isIKEKeyLifeTime, *ike.KeyLifetime)
 	}
 	d.Set(isIKEHref, *ike.Href)
@@ -395,7 +395,7 @@ func ikepGet(d *schema.ResourceData, meta interface{}, id string) error {
 	} else {
 		d.Set(isIKEResourceGroup, nil)
 	}
-	if *ike.KeyLifetime != int64(0) {
+	if ike.KeyLifetime != nil {
 		d.Set(isIKEKeyLifeTime, *ike.KeyLifetime)
 	}
 	d.Set(isIKEHref, *ike.Href)
