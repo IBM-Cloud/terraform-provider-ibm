@@ -8,6 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
+const (
+	_OPENSHIFT = "_openshift"
+)
+
 func dataSourceIBMContainerVPCCluster() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMContainerClusterVPCRead,
@@ -266,8 +270,8 @@ func dataSourceIBMContainerClusterVPCRead(d *schema.ResourceData, meta interface
 	d.Set("crn", cls.CRN)
 	d.Set("status", cls.Lifecycle.MasterStatus)
 	d.Set("health", cls.Lifecycle.MasterHealth)
-	if strings.HasSuffix(cls.MasterKubeVersion, "_openshift") {
-		d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0]+"_openshift")
+	if strings.HasSuffix(cls.MasterKubeVersion, _OPENSHIFT) {
+		d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0]+_OPENSHIFT)
 	} else {
 		d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0])
 
@@ -303,16 +307,17 @@ func dataSourceIBMContainerClusterVPCRead(d *schema.ResourceData, meta interface
 
 	d.Set("worker_pools", flattenVpcWorkerPools(pools))
 
-	albs, err := csClient.Albs().ListClusterAlbs(clusterID, targetEnv)
-	if err != nil && !strings.Contains(err.Error(), "The specified cluster is a lite cluster.") {
-		return fmt.Errorf("Error retrieving alb's of the cluster %s: %s", clusterID, err)
+	if !strings.HasSuffix(cls.MasterKubeVersion, _OPENSHIFT) {
+		albs, err := csClient.Albs().ListClusterAlbs(clusterID, targetEnv)
+		if err != nil && !strings.Contains(err.Error(), "The specified cluster is a lite cluster.") {
+			return fmt.Errorf("Error retrieving alb's of the cluster %s: %s", clusterID, err)
+		}
+
+		filterType := d.Get("alb_type").(string)
+		filteredAlbs := flattenVpcAlbs(albs, filterType)
+
+		d.Set("albs", filteredAlbs)
 	}
-
-	filterType := d.Get("alb_type").(string)
-	filteredAlbs := flattenVpcAlbs(albs, filterType)
-
-	d.Set("albs", filteredAlbs)
-
 	tags, err := GetTagsUsingCRN(meta, cls.CRN)
 	if err != nil {
 		log.Printf(

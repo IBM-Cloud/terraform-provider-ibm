@@ -1,8 +1,10 @@
 package instance
 
 import (
+	"fmt"
 	"github.com/IBM-Cloud/power-go-client/errors"
 	"github.com/IBM-Cloud/power-go-client/ibmpisession"
+	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_p_vm_instances"
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_snapshots"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"log"
@@ -48,9 +50,9 @@ func (f *IBMPISnapshotClient) Delete(id string, powerinstanceid string) error {
 }
 
 // Update..
-func (f *IBMPISnapshotClient) Update(id, powerinstanceid string) (models.Object, error) {
+func (f *IBMPISnapshotClient) Update(id, powerinstanceid string, snapshotdef *models.SnapshotUpdate) (models.Object, error) {
 
-	params := p_cloud_snapshots.NewPcloudCloudinstancesSnapshotsPutParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithSnapshotID(id)
+	params := p_cloud_snapshots.NewPcloudCloudinstancesSnapshotsPutParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithSnapshotID(id).WithBody(snapshotdef)
 
 	resp, err := f.session.Power.PCloudSnapshots.PcloudCloudinstancesSnapshotsPut(params, ibmpisession.NewAuth(f.session, powerinstanceid))
 
@@ -73,4 +75,16 @@ func (f *IBMPISnapshotClient) GetAll(id, powerinstanceid string) (*models.Snapsh
 	}
 	return resp.Payload, nil
 
+}
+
+// Restore a Snapshot
+
+func (f *IBMPISnapshotClient) Create(pvminstanceid, powerinstanceid, snapshotid, restorefailAction string) (*models.Snapshot, error) {
+	log.Printf("Calling the Power Snapshots Restore Method")
+	params := p_cloud_p_vm_instances.NewPcloudPvminstancesSnapshotsRestorePostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithCloudInstanceID(pvminstanceid).WithSnapshotID(snapshotid).WithRestoreFailAction(&restorefailAction)
+	resp, err := f.session.Power.PCloudPVMInstances.PcloudPvminstancesSnapshotsRestorePost(params, ibmpisession.NewAuth(f.session, powerinstanceid))
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create the restore")
+	}
+	return resp.Payload, nil
 }
