@@ -502,24 +502,18 @@ func classicVpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isVPCResourceGroup, *vpc.ResourceGroup.ID)
 		d.Set(ResourceGroupName, *vpc.ResourceGroup.ID)
 	}
-	// set the cse ip addresses info
+	//set the cse ip addresses info
 	if vpc.CseSourceIps != nil {
-		displaySourceIps := []VPCCSESourceIP{}
-		sourceIPs := vpc.CseSourceIps
-
-		for _, sourceIP := range sourceIPs {
-			// work around to parse the cse_source_ip data structure from map[string]interface{} type as we define it as any type in swagger.yaml file
-			ip, zone := safeGetIPZone(sourceIP)
-			if ip == "" {
-				continue
+		cseSourceIpsList := make([]map[string]interface{}, 0)
+		for _, sourceIP := range vpc.CseSourceIps {
+			currentCseSourceIp := map[string]interface{}{}
+			if sourceIP.Ip != nil {
+				currentCseSourceIp["address"] = *sourceIP.Ip.Address
+				currentCseSourceIp["zone_name"] = *sourceIP.Zone.Name
+				cseSourceIpsList = append(cseSourceIpsList, currentCseSourceIp)
 			}
-			displaySourceIps = append(displaySourceIps, VPCCSESourceIP{
-				Address:  ip,
-				ZoneName: zone,
-			})
 		}
-		info := flattenCseIPs(displaySourceIps)
-		d.Set(cseSourceAddresses, info)
+		d.Set(cseSourceAddresses, cseSourceIpsList)
 	}
 	// set the subnets list
 	options := &vpcclassicv1.ListSubnetsOptions{}
@@ -598,24 +592,18 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isVPCResourceGroup, *vpc.ResourceGroup.ID)
 		d.Set(ResourceGroupName, *vpc.ResourceGroup.Name)
 	}
-	// set the cse ip addresses info
+	//set the cse ip addresses info
 	if vpc.CseSourceIps != nil {
-		displaySourceIps := []VPCCSESourceIP{}
-		sourceIPs := vpc.CseSourceIps
-
-		for _, sourceIP := range sourceIPs {
-			// work around to parse the cse_source_ip data structure from map[string]interface{} type as we define it as any type in swagger.yaml file
-			ip, zone := safeGetIPZone(sourceIP)
-			if ip == "" {
-				continue
+		cseSourceIpsList := make([]map[string]interface{}, 0)
+		for _, sourceIP := range vpc.CseSourceIps {
+			currentCseSourceIp := map[string]interface{}{}
+			if sourceIP.Ip != nil {
+				currentCseSourceIp["address"] = *sourceIP.Ip.Address
+				currentCseSourceIp["zone_name"] = *sourceIP.Zone.Name
+				cseSourceIpsList = append(cseSourceIpsList, currentCseSourceIp)
 			}
-			displaySourceIps = append(displaySourceIps, VPCCSESourceIP{
-				Address:  ip,
-				ZoneName: zone,
-			})
 		}
-		info := flattenCseIPs(displaySourceIps)
-		d.Set(cseSourceAddresses, info)
+		d.Set(cseSourceAddresses, cseSourceIpsList)
 	}
 	// set the subnets list
 	options := &vpcv1.ListSubnetsOptions{}

@@ -25,6 +25,8 @@ func TestAccIBMISVPCDatasource_basic(t *testing.T) {
 						"data.ibm_is_vpc.ds_vpc", "name", name),
 					resource.TestCheckResourceAttr(
 						"data.ibm_is_vpc.ds_vpc", "tags.#", "1"),
+					resource.TestCheckResourceAttr(
+						"data.ibm_is_vpc.ds_vpc", "cse_source_addresses.#", "3"),
 				),
 			},
 		},

@@ -51,6 +51,8 @@ func TestAccIBMISVPC_basic(t *testing.T) {
 						"ibm_is_vpc.testacc_vpc1", "name", name2),
 					resource.TestCheckResourceAttr(
 						"ibm_is_vpc.testacc_vpc1", "tags.#", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc1", "cse_source_addresses.#", "3"),
 				),
 			},
 		},
