@@ -86,7 +86,12 @@ resource "ibm_is_instance" "instance1" {
   vpc       = ibm_is_vpc.vpc1.id
   zone      = var.zone1
   keys      = [ibm_is_ssh_key.sshkey.id]
-  user_data = file("nginx.sh")
+}
+
+data "ibm_is_instance" "ds_instance" {
+  name = ibm_is_instance.instance1.name
+  private_key = file("~/.ssh/id_rsa")
+  passphrase = ""
 }
 
 resource "ibm_is_floating_ip" "floatingip1" {
@@ -144,14 +149,14 @@ resource "ibm_is_subnet" "subnet2" {
 resource "ibm_is_ipsec_policy" "example" {
   name                     = "test-ipsec"
   authentication_algorithm = "md5"
-  encryption_algorithm     = "3des"
+  encryption_algorithm     = "triple_des"
   pfs                      = "disabled"
 }
 
 resource "ibm_is_ike_policy" "example" {
   name                     = "test-ike"
   authentication_algorithm = "md5"
-  encryption_algorithm     = "3des"
+  encryption_algorithm     = "triple_des"
   dh_group                 = 2
   ike_version              = 1
 }
@@ -184,7 +189,6 @@ resource "ibm_is_instance" "instance2" {
   vpc       = ibm_is_vpc.vpc2.id
   zone      = var.zone2
   keys      = [ibm_is_ssh_key.sshkey.id]
-  user_data = file("nginx.sh")
 }
 
 resource "ibm_is_floating_ip" "floatingip2" {

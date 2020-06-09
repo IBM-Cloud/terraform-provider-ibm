@@ -84,9 +84,9 @@ func classicImageGet(d *schema.ResourceData, meta interface{}, name, visibility 
 		if visibility != "" {
 			listImagesOptions.Visibility = &visibility
 		}
-		availableImages, _, err := sess.ListImages(listImagesOptions)
+		availableImages, response, err := sess.ListImages(listImagesOptions)
 		if err != nil {
-			return err
+			return fmt.Errorf("Error Fetching Images %s\n%s", err, response)
 		}
 		start = GetNext(availableImages.Next)
 		allrecs = append(allrecs, availableImages.Images...)
@@ -123,9 +123,9 @@ func imageGet(d *schema.ResourceData, meta interface{}, name, visibility string)
 		if visibility != "" {
 			listImagesOptions.Visibility = &visibility
 		}
-		availableImages, _, err := sess.ListImages(listImagesOptions)
+		availableImages, response, err := sess.ListImages(listImagesOptions)
 		if err != nil {
-			return err
+			return fmt.Errorf("Error Fetching Images %s\n%s", err, response)
 		}
 		start = GetNext(availableImages.Next)
 		allrecs = append(allrecs, availableImages.Images...)

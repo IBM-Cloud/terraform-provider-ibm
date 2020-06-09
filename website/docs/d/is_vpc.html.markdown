@@ -37,6 +37,7 @@ The following attributes are exported:
 * `crn` - The CRN of VPC.
 * `status` - The status of VPC.
 * `default_network_acl` - ID of the default network ACL.
+* `default_security_group` - The unique identifier of the VPC default security group.
 * `classic_access` - Indicates whether this VPC is connected to Classic Infrastructure.
 * `resource_group` - The resource group ID where the VPC created.
 * `tags` - Tags associated with the instance.

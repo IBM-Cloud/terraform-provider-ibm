@@ -71,6 +71,7 @@ var pi_instance_name string
 
 var IsImageName string
 var isImage string
+var isWinImage string
 var image_cos_url string
 var image_operating_system string
 
@@ -312,6 +313,13 @@ func init() {
 		isImage = "fc538f61-7dd6-4408-978c-c6b85b69fe76" // for classic infrastructure
 		// isImage = "r006-ed3f775f-ad7e-4e37-ae62-7199b4988b00" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'fc538f61-7dd6-4408-978c-c6b85b69fe76'")
+	}
+
+	isWinImage = os.Getenv("IS_WIN_IMAGE")
+	if isWinImage == "" {
+		isWinImage = "a7a0626c-f97e-4180-afbe-0331ec62f32a" // classic windows machine: ibm-windows-server-2012-full-standard-amd64-1
+		// isWinImage = "r006-5f9568ae-792e-47e1-a710-5538b2bdfca7" // next gen windows machine: ibm-windows-server-2012-full-standard-amd64-3
+		fmt.Println("[INFO] Set the environment variable IS_WIN_IMAGE for testing ibm_is_instance data source else it is set to default value 'a7a0626c-f97e-4180-afbe-0331ec62f32a'")
 	}
 
 	instanceProfileName = os.Getenv("SL_INSTANCE_PROFILE")

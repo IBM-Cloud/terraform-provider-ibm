@@ -1,6 +1,7 @@
 package ibm
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
@@ -69,9 +70,9 @@ func classicInstanceProfilesList(d *schema.ResourceData, meta interface{}) error
 		listInstanceProfilesOptions := &vpcclassicv1.ListInstanceProfilesOptions{
 			Start: &start,
 		}
-		availableProfiles, _, err := sess.ListInstanceProfiles(listInstanceProfilesOptions)
+		availableProfiles, response, err := sess.ListInstanceProfiles(listInstanceProfilesOptions)
 		if err != nil {
-			return err
+			return fmt.Errorf("Error Fetching Instance Profiles %s\n%s", err, response)
 		}
 		start = GetNext(availableProfiles.Next)
 		allrecs = append(allrecs, availableProfiles.Profiles...)
@@ -99,9 +100,9 @@ func instanceProfilesList(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	listInstanceProfilesOptions := &vpcv1.ListInstanceProfilesOptions{}
-	availableProfiles, _, err := sess.ListInstanceProfiles(listInstanceProfilesOptions)
+	availableProfiles, response, err := sess.ListInstanceProfiles(listInstanceProfilesOptions)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error Fetching Instance Profiles %s\n%s", err, response)
 	}
 	profilesInfo := make([]map[string]interface{}, 0)
 	for _, profile := range availableProfiles.Profiles {

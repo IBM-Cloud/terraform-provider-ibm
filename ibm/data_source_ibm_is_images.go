@@ -1,6 +1,7 @@
 package ibm
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
@@ -89,9 +90,9 @@ func classicImageList(d *schema.ResourceData, meta interface{}) error {
 		listImagesOptions := &vpcclassicv1.ListImagesOptions{
 			Start: &start,
 		}
-		availableImages, _, err := sess.ListImages(listImagesOptions)
+		availableImages, response, err := sess.ListImages(listImagesOptions)
 		if err != nil {
-			return err
+			return fmt.Errorf("Error Fetching Images %s\n%s", err, response)
 		}
 		start = GetNext(availableImages.Next)
 		allrecs = append(allrecs, availableImages.Images...)
@@ -129,9 +130,9 @@ func imageList(d *schema.ResourceData, meta interface{}) error {
 		listImagesOptions := &vpcv1.ListImagesOptions{
 			Start: &start,
 		}
-		availableImages, _, err := sess.ListImages(listImagesOptions)
+		availableImages, response, err := sess.ListImages(listImagesOptions)
 		if err != nil {
-			return err
+			return fmt.Errorf("Error Fetching Images %s\n%s", err, response)
 		}
 		start = GetNext(availableImages.Next)
 		allrecs = append(allrecs, availableImages.Images...)

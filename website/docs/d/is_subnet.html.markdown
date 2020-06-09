@@ -51,4 +51,5 @@ The following attributes are exported:
 * `status` - The status of the subnet.
 * `vpc` - The vpc id.
 * `zone` - The subnet zone name.
+* `resource_group` - The subnet Resource group.
 * `available_ipv4_address_count` - The total number of available IPv4 addresses.
