@@ -88,9 +88,9 @@ func classicKeyGetByName(d *schema.ResourceData, meta interface{}, name string) 
 		listKeysOptions := &vpcclassicv1.ListKeysOptions{
 			Start: &start,
 		}
-		keys, _, err := sess.ListKeys(listKeysOptions)
+		keys, response, err := sess.ListKeys(listKeysOptions)
 		if err != nil {
-			return err
+			return fmt.Errorf("Error Fetching Keys %s\n%s", err, response)
 		}
 		start = GetNext(keys.Next)
 		allrecs = append(allrecs, keys.Keys...)
@@ -127,9 +127,9 @@ func keyGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 		return err
 	}
 	listKeysOptions := &vpcv1.ListKeysOptions{}
-	keys, _, err := sess.ListKeys(listKeysOptions)
+	keys, response, err := sess.ListKeys(listKeysOptions)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error Fetching Keys %s\n%s", err, response)
 	}
 	for _, key := range keys.Keys {
 		if *key.Name == name {

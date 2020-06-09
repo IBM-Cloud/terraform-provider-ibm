@@ -33,7 +33,7 @@ resource "ibm_is_ssh_key" "testacc_sshkey" {
 resource "ibm_is_instance" "testacc_instance" {
   name    = "testinstance"
   image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
-  profile = "b-2x8"
+  profile = "bc1-2x8"
 
   primary_network_interface {
     subnet = ibm_is_subnet.testacc_subnet.id
@@ -50,8 +50,9 @@ resource "ibm_is_instance" "testacc_instance" {
 
   //User can configure timeouts
   timeouts {
-    create = "90m"
-    delete = "30m"
+    create = "15m"
+    update = "15m"
+    delete = "15m"
   }
 }
 
@@ -114,7 +115,7 @@ resource "ibm_is_security_group_rule" "testacc_security_group_rule_all" {
 resource "ibm_is_instance" "testacc_instance" {
   name    = "testinstance"
   image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
-  profile = "b-2x8"
+  profile = "bc1-2x8"
 
   primary_network_interface {
     subnet = ibm_is_subnet.testacc_subnet.id
@@ -128,8 +129,9 @@ resource "ibm_is_instance" "testacc_instance" {
 
   //User can configure timeouts
   timeouts {
-    create = "90m"
-    delete = "30m"
+    create = "15m"
+    update = "15m"
+    delete = "15m"
   }
 }
 
