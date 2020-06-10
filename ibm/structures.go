@@ -23,6 +23,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
+	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv2"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
@@ -1666,6 +1667,38 @@ func flattenCseIPs(list []VPCCSESourceIP) []map[string]interface{} {
 	return cseIPsInfo
 }
 
+func flattenRoleData(object []iampapv2.Role, roleType string) []map[string]string {
+	var roles []map[string]string
+
+	for _, item := range object {
+		role := make(map[string]string)
+		role["name"] = item.DisplayName
+		role["type"] = roleType
+		role["description"] = item.Description
+		roles = append(roles, role)
+	}
+	return roles
+}
+
+func flattenActions(object []iampapv2.Role) map[string]interface{} {
+	actions := map[string]interface{}{
+		"reader":      flattenActionbyDisplayName("Reader", object),
+		"manager":     flattenActionbyDisplayName("Manager", object),
+		"reader_plus": flattenActionbyDisplayName("ReaderPlus", object),
+		"writer":      flattenActionbyDisplayName("Writer", object),
+	}
+	return actions
+}
+
+func flattenActionbyDisplayName(displayName string, object []iampapv2.Role) []string {
+	var actionIDs []string
+	for _, role := range object {
+		if role.DisplayName == displayName {
+			actionIDs = role.Actions
+		}
+	}
+	return actionIDs
+}
 func flattenCatalogRef(object schematics.CatalogInfo) map[string]interface{} {
 	catalogRef := map[string]interface{}{
 		"item_id":          object.ItemID,
