@@ -552,7 +552,6 @@ func imgGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(ResourceCRN, *image.Crn)
 	if image.ResourceGroup != nil {
 		d.Set(isImageResourceGroup, *image.ResourceGroup.ID)
-		d.Set(ResourceGroupName, *image.ResourceGroup.Name)
 	}
 	return nil
 }
