@@ -35,7 +35,7 @@ func TestAccIBMIAMDynamicRule_Basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMIAMDynamicRuleupdate(agname, name1, identityProvider, claim, operator, expiration),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_iam_access_group_dynamic_rule.accgroup", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_dynamic_rule.accgroup", "name", name1),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_dynamic_rule.accgroup", "identity_provider", identityProvider),
 				),
 			},
@@ -112,14 +112,16 @@ func testAccCheckIBMIAMDynamicRuleBasic(agname, name, identityProvider, claim, o
 	  
 	  resource "ibm_iam_access_group_dynamic_rule" "accgroup" {
 		name              = "%s"
-		access_group_id   = ibm_iam_access_group.newgroup.id
+		access_group_id   = "${ibm_iam_access_group.newgroup.id}"
 		expiration        = %d
 		identity_provider = "%s"
-		conditions {
+		conditions = [
+		{
 		  claim    = "%s"
 		  operator = "%s"
-		  value    = "\"test-bluegroup-saml\""
-		}
+		  value    = "test-bluegroup-saml"
+		},
+		]
 	  
 	  }`, agname, name, expiration, identityProvider, claim, operator)
 }
@@ -134,14 +136,16 @@ func testAccCheckIBMIAMDynamicRuleupdate(agname, name1, identityProvider, claim,
 	  
 	  resource "ibm_iam_access_group_dynamic_rule" "accgroup" {
 		name              = "%s"
-		access_group_id   = ibm_iam_access_group.newgroup.id
+		access_group_id   = "${ibm_iam_access_group.newgroup.id}"
 		expiration        = %d
 		identity_provider = "%s"
-		conditions {
+		conditions = [
+			{
 		  claim    = "%s"
 		  operator = "%s"
-		  value    = "\"test-bluegroup-saml\""
-		}
+		  value    = "test-bluegroup-saml"
+		},
+		]
 	  
 	  }`, agname, name1, expiration, identityProvider, claim, operator)
 }
@@ -155,19 +159,22 @@ func testAccCheckIBMIAMDynamicRuleMultiple(agname, name, identityProvider, claim
 	  
 	  resource "ibm_iam_access_group_dynamic_rule" "accgroup" {
 		name              = "%s"
-		access_group_id   = ibm_iam_access_group.newgroup.id
+		access_group_id   = "${ibm_iam_access_group.newgroup.id}"
 		expiration        = %d
 		identity_provider = "%s"
-		conditions {
+		conditions = [
+			{
 		  claim    = "%s"
 		  operator = "%s"
-		  value    = "\"test-bluegroup-saml\""
-		}
+		  value    = "test-bluegroup-saml"
+		},
 		conditions {
-		  claim    = "%s"
-		  operator = "%s"
-		  value    = "\"test-bluegroup-saml\""
-		}
+			claim    = "%s"
+			operator = "%s"
+			value    = "test-bluegroup-saml"
+		  },
+		]
+		
 	  
 	  }
 	`, agname, name, expiration, identityProvider, claim, operator, claim, operator)
