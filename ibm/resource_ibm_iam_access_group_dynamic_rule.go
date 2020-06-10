@@ -113,7 +113,7 @@ func resourceIBMIAMDynamicRuleCreate(d *schema.ResourceData, meta interface{}) e
 	ruleID := response.RuleID
 	d.SetId(fmt.Sprintf("%s/%s", grpID, ruleID))
 
-	return resourceIBMIAMAccessGroupMembersRead(d, meta)
+	return resourceIBMIAMDynamicRuleRead(d, meta)
 }
 
 func resourceIBMIAMDynamicRuleRead(d *schema.ResourceData, meta interface{}) error {
