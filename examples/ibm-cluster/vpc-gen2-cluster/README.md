@@ -1,26 +1,113 @@
-# IBM Cluster example
+# IBM VPC Gen2 Cluster example
 
-This example shows how to create a Kubernetes VPC Gen-2 Cluster under a specified resource group id, with default worker node with given zone and subnets. 
-To have a multizone cluster, update the zones with new zone-name and subnet-id.
-It also creates a additional worker pool on different zone. After successfull creation of cluster it binds the cloud-object-storage service.
-To run, configure your IBM Cloud provider
+This example shows how to create a Kubernetes VPC Gen-2 Cluster under a specified resource group id, with default worker node with given zone and subnets. To have a multizone cluster, update the zones with new zone-name and subnet-id. 
+ 
+Note : To create a Gen-2 VPC cluster user need to set the generation parameter inside provider blcok to 2 or export the environment varaibale IC_GENERATION as value 2. By default, value of IC_GENERATION is 2.
 
-Running the example
+Following types of resources are supported:
 
-For planning phase
+* [ VPC Gen-2 Cluster Resource ](https://cloud.ibm.com/docs/terraform?topic=terraform-container-resources#vpc-gen2)
 
-```shell
-terraform plan
+
+## Terraform versions
+
+Terraform 0.12. Pin module version to `~> v1.7.1`. Branch - `master`.
+
+Terraform 0.11. Pin module version to `~> v0.29.1`. Branch - `terraform_v0.11.x`.
+
+## Usage
+
+To run this example you need to execute:
+
+```bash
+$ terraform init
+$ terraform plan
+$ terraform apply
 ```
 
-For apply phase
+Run `terraform destroy` when you don't need these resources.
 
-```shell
-terraform apply
+## Example Usage
+
+Create a container cluster:
+
+```hcl
+
+provider "ibm" {
+  generation = 2
+}
+
+resource "ibm_is_vpc" "vpc1" {
+  name = "vpc"
+}
+
+data "ibm_resource_group" "resource_group" {
+  name = "Default"
+}
+
+resource "ibm_is_subnet" "subnet1" {
+  name                     = "subnet-1"
+  vpc                      = ibm_is_vpc.vpc1.id
+  zone                     = "us-south-1"
+  total_ipv4_address_count = 256
+}
+
+resource "ibm_container_vpc_cluster" "cluster" {
+  name              = "vpccluster"
+  vpc_id            = ibm_is_vpc.vpc1.id
+  flavor            = "c2.2x4"
+  worker_count      = "1"
+  resource_group_id = data.ibm_resource_group.resource_group.id
+
+  zones {
+    subnet_id = ibm_is_subnet.subnet1.id
+    name      = "us-south-1"
+  }
+}
 ```
 
-For destroy
-
-```shell
-terraform destroy
+```hcl
+data "ibm_container_vpc_cluster" "cluster" {
+  cluster_name_id   = "vpccluster"
+  resource_group_id = data.ibm_resource_group.group.id
+}
 ```
+
+## Examples
+
+* [ VPC Gen-2 Cluster  ](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-cluster/vpc-gen2-cluster)
+
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+## Requirements
+
+| Name | Version |
+|------|---------|
+| terraform | ~> 0.12 |
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| ibm | n/a |
+
+## Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| name | Name of the cluster. | `string` | yes |
+| vpc\_id | The ID of the VPC that you want to use for your cluster. | `string` | yes |
+| flavor | The flavor of the VPC worker node that you want to use. | `string` | yes |
+| worker\_count | The number of worker nodes per zone in the default worker pool. Default value `1`.| `integer` | no |
+| resource\_group_id | The ID of the resource group. | `string` | no |
+| zones | A nested block describing the zones of this VPC cluster.| `List` | yes |
+| zones.subnet\_id | The VPC subnet to assign the cluster. | `string` | yes |
+| zones.name | The name of the zone | `string` | yes |
+
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| id | The ID of the VPC cluster. |
+
+
