@@ -15,8 +15,8 @@ import (
 func TestAccIBMISSecurityGroupRule_basic(t *testing.T) {
 	var securityGroupRule *models.SecurityGroupRule
 
-	vpcname := fmt.Sprintf("terraformsecurityruleuat-vpc-%d", acctest.RandIntRange(10, 100))
-	name1 := fmt.Sprintf("terraformsecurityruleuat-create-step-name-%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tfsecurityruleuat-vpc-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfsecurityruleuat-create-step-name-%d", acctest.RandIntRange(10, 100))
 	//name2 := fmt.Sprintf("terraformsecurityuat-update-step-name-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -142,6 +142,32 @@ resource "ibm_is_security_group_rule" "testacc_security_group_rule_all" {
 		port_max = 8080
 	}
  }
+ resource "ibm_is_security_group_rule" "testacc_security_group_rule_icmp_any" {
+	depends_on = ["ibm_is_security_group_rule.testacc_security_group_rule_tcp"]
+	group      = "${ibm_is_security_group.testacc_security_group.id}"
+	direction  = "inbound"
+	remote     = "127.0.0.1"
+	icmp {
+	}
+  }
+  
+  resource "ibm_is_security_group_rule" "testacc_security_group_rule_udp_any" {
+	depends_on = ["ibm_is_security_group_rule.testacc_security_group_rule_icmp_any"]
+	group      = "${ibm_is_security_group.testacc_security_group.id}"
+	direction  = "inbound"
+	remote     = "127.0.0.1"
+	udp {
+	}
+  }
+  
+  resource "ibm_is_security_group_rule" "testacc_security_group_rule_tcp_any" {
+	depends_on = ["ibm_is_security_group_rule.testacc_security_group_rule_udp_any"]
+	group      = "${ibm_is_security_group.testacc_security_group.id}"
+	direction  = "inbound"
+	remote     = "127.0.0.1"
+	tcp {
+	}
+  }
  `, vpcname, name)
 
 }
