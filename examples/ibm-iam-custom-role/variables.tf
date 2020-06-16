@@ -3,6 +3,10 @@ variable "name" {
   default = "Role1"
 }
 
+variable "agname" {
+  default = "ag1"
+}
+
 variable "displayname" {
   default = "Role1Display"
 }

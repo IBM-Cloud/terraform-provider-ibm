@@ -45,6 +45,7 @@ The following arguments are supported:
 * `encrypted_nonce` - (Optional, Forces new resource, string) The encrypted nonce value that verifies your request to import a key to Key Protect. This value must be encrypted by using the key material that you want to import to the service. To retrieve a nonce, use `ibmcloud kp import-token get`. Then, encrypt the value by running `ibmcloud kp import-token encrypt-nonce`. Only for imported root key.
 * `iv_value` - (Optional, Forces new resource, string) Used with import tokens. The initialization vector (IV) that is generated when you encrypt a nonce. The IV value is required to decrypt the encrypted nonce value that you provide when you make a key import request to the service. To generate an IV, encrypt the nonce by running `ibmcloud kp import-token encrypt-nonce`. Only for imported root key.
 * `force_delete` - (Optional, bool) If set to true, Key Protect forces deletion on a key that is protecting a cloud resource, such as a Cloud Object Storage bucket. The action removes any registrations that are associated with the key. Note: If a key is protecting a cloud resource that has a retention policy, Key Protect cannot delete the key. Default: false.
+    **NOTE**: Before doing terraform destroy if force_delete flag is introduced after provisioning keys, a terraform apply must be done before terraform destroy for force_delete flag to take effect.
 
 
 ## Attribute Reference

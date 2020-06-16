@@ -48,7 +48,7 @@ func resourceIBMkey() *schema.Resource {
 				Default:     false,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "Satandard key type",
+				Description: "Standard key type",
 			},
 			"payload": {
 				Type:     schema.TypeString,
