@@ -1,6 +1,7 @@
 package ibm
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -29,6 +30,11 @@ func dataSourceSchematicsOut() *schema.Resource {
 				Type:     schema.TypeMap,
 				Computed: true,
 			},
+			"output_json": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The json output in string",
+			},
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -54,12 +60,19 @@ func resourceIBMSchematicsOutRead(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("Error while retreiving outputs of workspace: %s", err)
 	}
 
+	var outputJSON string
 	items := make(map[string]interface{})
 	found := false
 	for _, feilds := range out {
 		if feilds.TemplateID == templateID {
 			output := feilds.Output
 			found = true
+			outputByte, err := json.MarshalIndent(output, "", "")
+			if err != nil {
+				return err
+			}
+
+			outputJSON = string(outputByte[:])
 			// items := map[string]interface{}
 
 			for _, value := range output {
@@ -75,6 +88,7 @@ func resourceIBMSchematicsOutRead(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("Error while fetching template id in workspace: %s", workspaceID)
 	}
 
+	d.Set("output_json", outputJSON)
 	d.SetId(fmt.Sprintf("%s/%s", workspaceID, templateID))
 	d.Set("output_values", Flatten(items))
 
