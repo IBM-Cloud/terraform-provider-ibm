@@ -1,0 +1,393 @@
+package ibm
+
+import (
+	"reflect"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
+)
+
+const (
+	isSgName          = "name"
+	isSgRules         = "rules"
+	isSgRuleID        = "rule_id"
+	isSgRuleDirection = "direction"
+	isSgRuleIPVersion = "ip_version"
+	isSgRuleRemote    = "remote"
+	isSgRuleType      = "type"
+	isSgRuleCode      = "code"
+	isSgRulePortMax   = "port_max"
+	isSgRulePortMin   = "port_min"
+	isSgRuleProtocol  = "protocol"
+	isSgVPC           = "vpc"
+)
+
+func dataSourceIBMISSecurityGroupRule() *schema.Resource {
+	return &schema.Resource{
+
+		Read: dataSourceIBMISSecurityGroupRuleRead,
+
+		Schema: map[string]*schema.Schema{
+
+			isSgName: {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Security group name",
+			},
+
+			isSecurityGroupVPC: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Security group's resource group id",
+				ForceNew:    true,
+			},
+
+			isSgRules: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Security Rules",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+
+						isSgRuleID: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Rule id",
+						},
+
+						isSgRuleDirection: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Direction of traffic to enforce, either inbound or outbound",
+						},
+
+						isSgRuleIPVersion: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "IP version: ipv4 or ipv6",
+						},
+
+						isSgRuleRemote: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Security group id: an IP address, a CIDR block, or a single security group identifier",
+						},
+
+						isSgRuleType: {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+
+						isSgRuleCode: {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+
+						isSgRulePortMin: {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+
+						isSgRulePortMax: {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+
+						isSgRuleProtocol: {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+
+			ResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+			},
+
+			ResourceName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the resource",
+			},
+
+			ResourceCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+
+			ResourceGroupName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The resource group name in which resource is provisioned",
+			},
+		},
+	}
+}
+
+func dataSourceIBMISSecurityGroupRuleRead(d *schema.ResourceData, meta interface{}) error {
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return err
+	}
+	sgName := d.Get(isSgName).(string)
+	if userDetails.generation == 1 {
+		err := classicSecurityGroupGet(d, meta, sgName)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := securityGroupGet(d, meta, sgName)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func classicSecurityGroupGet(d *schema.ResourceData, meta interface{}, name string) error {
+	sess, err := classicVpcClient(meta)
+	if err != nil {
+		return err
+	}
+
+	listSgOptions := &vpcclassicv1.ListSecurityGroupsOptions{}
+	sgs, _, err := sess.ListSecurityGroups(listSgOptions)
+	if err != nil {
+		return err
+	}
+
+	for _, group := range sgs.SecurityGroups {
+		if *group.Name == name {
+
+			d.Set(isSgName, *group.Name)
+			d.Set(isSgVPC, *group.Vpc.ID)
+
+			rules := make([]map[string]interface{}, 0)
+			for _, sgrule := range group.Rules {
+				switch reflect.TypeOf(sgrule).String() {
+				case "*vpcclassicv1.SecurityGroupRuleProtocolICMP":
+					{
+						rule := sgrule.(*vpcclassicv1.SecurityGroupRuleProtocolICMP)
+						r := make(map[string]interface{})
+						if rule.Code != nil {
+							r[isSgRuleCode] = int(*rule.Code)
+						}
+						if rule.Type != nil {
+							r[isSgRuleType] = int(*rule.Type)
+						}
+						r[isSgRuleDirection] = *rule.Direction
+						r[isSgRuleIPVersion] = *rule.IpVersion
+						if rule.Protocol != nil {
+							r[isSgRuleProtocol] = *rule.Protocol
+						}
+						r[isSgRuleID] = *rule.ID
+
+						for _, v := range rule.Remote.(map[string]interface{}) {
+							r[isSgRuleRemote] = v.(string)
+						}
+						rules = append(rules, r)
+					}
+
+				case "*vpcclassicv1.SecurityGroupRuleProtocolAll":
+					{
+						rule := sgrule.(*vpcclassicv1.SecurityGroupRuleProtocolAll)
+						r := make(map[string]interface{})
+						r[isSgRuleDirection] = *rule.Direction
+						r[isSgRuleIPVersion] = *rule.IpVersion
+						if rule.Protocol != nil {
+							r[isSgRuleProtocol] = *rule.Protocol
+						}
+						r[isSgRuleID] = *rule.ID
+
+						for _, v := range rule.Remote.(map[string]interface{}) {
+							r[isSgRuleRemote] = v.(string)
+						}
+						rules = append(rules, r)
+					}
+
+				case "*vpcclassicv1.SecurityGroupRuleProtocolTCPUDP":
+					{
+						rule := sgrule.(*vpcclassicv1.SecurityGroupRuleProtocolTCPUDP)
+						r := make(map[string]interface{})
+						if rule.PortMin != nil {
+							r[isSgRulePortMin] = int(*rule.PortMin)
+						}
+						if rule.PortMax != nil {
+							r[isSgRulePortMax] = int(*rule.PortMax)
+						}
+						r[isSgRuleDirection] = *rule.Direction
+						r[isSgRuleIPVersion] = *rule.IpVersion
+						if rule.Protocol != nil {
+							r[isSgRuleProtocol] = *rule.Protocol
+						}
+
+						r[isSgRuleID] = *rule.ID
+						for _, v := range rule.Remote.(map[string]interface{}) {
+							r[isSgRuleRemote] = v.(string)
+						}
+
+						rules = append(rules, r)
+					}
+				}
+			}
+
+			d.Set(isSgRules, rules)
+			d.SetId(*group.ID)
+
+			if group.ResourceGroup != nil {
+				rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
+				if err != nil {
+					return err
+				}
+				grp, err := rsMangClient.ResourceGroup().Get(*group.ResourceGroup.ID)
+				if err != nil {
+					return err
+				}
+				d.Set(ResourceGroupName, grp.Name)
+			}
+
+			controller, err := getBaseController(meta)
+			if err != nil {
+				return err
+			}
+			d.Set(ResourceControllerURL, controller+"/vpc/network/securityGroups")
+			if group.Name != nil {
+				d.Set(ResourceName, *group.Name)
+			}
+
+			if group.Crn != nil {
+				d.Set(ResourceCRN, *group.Crn)
+			}
+			return nil
+		}
+	}
+
+	return nil
+}
+
+func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+
+	listSgOptions := &vpcv1.ListSecurityGroupsOptions{}
+	sgs, _, err := sess.ListSecurityGroups(listSgOptions)
+	if err != nil {
+		return err
+	}
+
+	for _, group := range sgs.SecurityGroups {
+		if *group.Name == name {
+
+			d.Set(isSgName, *group.Name)
+			d.Set(isSgVPC, *group.Vpc.ID)
+
+			rules := make([]map[string]interface{}, 0)
+			for _, sgrule := range group.Rules {
+				switch reflect.TypeOf(sgrule).String() {
+				case "*vpcv1.SecurityGroupRuleProtocolICMP":
+					{
+						rule := sgrule.(*vpcv1.SecurityGroupRuleProtocolICMP)
+						r := make(map[string]interface{})
+						if rule.Code != nil {
+							r[isSgRuleCode] = int(*rule.Code)
+						}
+						if rule.Type != nil {
+							r[isSgRuleType] = int(*rule.Type)
+						}
+						r[isSgRuleDirection] = *rule.Direction
+						r[isSgRuleIPVersion] = *rule.IpVersion
+						if rule.Protocol != nil {
+							r[isSgRuleProtocol] = *rule.Protocol
+						}
+						r[isSgRuleID] = *rule.ID
+
+						for _, v := range rule.Remote.(map[string]interface{}) {
+							r[isSgRuleRemote] = v.(string)
+						}
+						rules = append(rules, r)
+					}
+
+				case "*vpcv1.SecurityGroupRuleProtocolAll":
+					{
+						rule := sgrule.(*vpcv1.SecurityGroupRuleProtocolAll)
+						r := make(map[string]interface{})
+						r[isSgRuleDirection] = *rule.Direction
+						r[isSgRuleIPVersion] = *rule.IpVersion
+						if rule.Protocol != nil {
+							r[isSgRuleProtocol] = *rule.Protocol
+						}
+						r[isSgRuleID] = *rule.ID
+
+						for _, v := range rule.Remote.(map[string]interface{}) {
+							r[isSgRuleRemote] = v.(string)
+						}
+						rules = append(rules, r)
+					}
+
+				case "*vpcv1.SecurityGroupRuleProtocolTCPUDP":
+					{
+						rule := sgrule.(*vpcv1.SecurityGroupRuleProtocolTCPUDP)
+						r := make(map[string]interface{})
+						if rule.PortMin != nil {
+							r[isSgRulePortMin] = int(*rule.PortMin)
+						}
+						if rule.PortMax != nil {
+							r[isSgRulePortMax] = int(*rule.PortMax)
+						}
+						r[isSgRuleDirection] = *rule.Direction
+						r[isSgRuleIPVersion] = *rule.IpVersion
+						if rule.Protocol != nil {
+							r[isSgRuleProtocol] = *rule.Protocol
+						}
+
+						r[isSgRuleID] = *rule.ID
+						for _, v := range rule.Remote.(map[string]interface{}) {
+							r[isSgRuleRemote] = v.(string)
+						}
+
+						rules = append(rules, r)
+					}
+				}
+			}
+
+			d.Set(isSgRules, rules)
+			d.SetId(*group.ID)
+
+			if group.ResourceGroup != nil {
+				rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
+				if err != nil {
+					return err
+				}
+				grp, err := rsMangClient.ResourceGroup().Get(*group.ResourceGroup.ID)
+				if err != nil {
+					return err
+				}
+				d.Set(ResourceGroupName, grp.Name)
+			}
+
+			controller, err := getBaseController(meta)
+			if err != nil {
+				return err
+			}
+			d.Set(ResourceControllerURL, controller+"/vpc/network/securityGroups")
+			if group.Name != nil {
+				d.Set(ResourceName, *group.Name)
+			}
+
+			if group.Crn != nil {
+				d.Set(ResourceCRN, *group.Crn)
+			}
+			return nil
+		}
+	}
+
+	return nil
+
+}

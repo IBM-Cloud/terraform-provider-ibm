@@ -31,7 +31,6 @@ func resourceIBMISSecurityGroup() *schema.Resource {
 			isSecurityGroupName: {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Computed:     true,
 				Description:  "Security group name",
 				ValidateFunc: validateISName,
 			},
@@ -43,7 +42,8 @@ func resourceIBMISSecurityGroup() *schema.Resource {
 			},
 
 			isSecurityGroupRules: {
-				Type:        schema.TypeList,
+				Type: schema.TypeList,
+				//Optional:    true,
 				Computed:    true,
 				Description: "Security Rules",
 				Elem: &schema.Resource{
@@ -226,6 +226,7 @@ func classicSgGet(d *schema.ResourceData, meta interface{}, id string) error {
 					remotePtrValue := reflect.ValueOf(rule.Remote)
 					remoteValue := reflect.Indirect(remotePtrValue)
 					d.Set(isSecurityGroupRuleRemote, remoteValue)
+					d.Set(isSecurityGroupRuleID, *rule.ID)
 				}
 			case "*vpcclassicv1.SecurityGroupRuleProtocolAll":
 				{
@@ -240,6 +241,7 @@ func classicSgGet(d *schema.ResourceData, meta interface{}, id string) error {
 					remotePtrValue := reflect.ValueOf(rule.Remote)
 					remoteValue := reflect.Indirect(remotePtrValue)
 					d.Set(isSecurityGroupRuleRemote, remoteValue)
+					d.Set(isSecurityGroupRuleID, *rule.ID)
 				}
 			case "*vpcclassicv1.SecurityGroupRuleProtocolTCPUDP":
 				{
@@ -260,6 +262,7 @@ func classicSgGet(d *schema.ResourceData, meta interface{}, id string) error {
 					remotePtrValue := reflect.ValueOf(rule.Remote)
 					remoteValue := reflect.Indirect(remotePtrValue)
 					d.Set(isSecurityGroupRuleRemote, remoteValue)
+					d.Set(isSecurityGroupRuleID, *rule.ID)
 				}
 			}
 		}
