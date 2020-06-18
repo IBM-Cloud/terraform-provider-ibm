@@ -394,7 +394,9 @@ func classicNwaclGet(d *schema.ResourceData, meta interface{}, id string) error 
 	d.Set(isNetworkACLSubnets, len(nwacl.Subnets))
 
 	log.Printf("[DEBUG] Looking up rules for network ACL with id %s", id)
+	limit := int64(100)
 	listNetworkAclRulesOptions := &vpcclassicv1.ListNetworkAclRulesOptions{
+		Limit:        &limit,
 		NetworkAclID: &id,
 	}
 	rawrules, response, err := sess.ListNetworkAclRules(listNetworkAclRulesOptions)
@@ -514,7 +516,9 @@ func nwaclGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isNetworkACLSubnets, len(nwacl.Subnets))
 
 	log.Printf("[DEBUG] Looking up rules for network ACL with id %s", id)
+	limit := int64(100)
 	listNetworkAclRulesOptions := &vpcv1.ListNetworkAclRulesOptions{
+		Limit:        &limit,
 		NetworkAclID: &id,
 	}
 	rawrules, response, err := sess.ListNetworkAclRules(listNetworkAclRulesOptions)
