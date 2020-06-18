@@ -111,7 +111,7 @@ The following arguments are supported:
   **NOTE**:
   1. It is set only for the first time creation of the cluster, modification in the further runs will not have any impacts.
   2. Set this argument to 'cloud_pak' only if you use this cluster with a Cloud Pak that has an OpenShift entitlement
-* `cos_instance_crn` - (Optional, String) The standard cloud object storage instance CRN to back up the internal registry in your OpenShift on VPC Gen 2 cluster.
+* `cos_instance_crn` - (Optional, String) Required for OpenShift clusters only. The standard cloud object storage instance CRN to back up the internal registry in your OpenShift on VPC Gen 2 cluster.
 * `wait_till` - (Optional, String) The cluster creation happens in multi-stages. To avoid the longer wait times for resource execution, this field is introduced.
 Resource will wait for only the specified stage and complete execution. The supported stages are
   - *MasterNodeReady*: resource will wait till the master node is ready
