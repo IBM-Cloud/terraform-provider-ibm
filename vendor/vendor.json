@@ -610,6 +610,24 @@
 			"revision": "2050cbfeb7bceffbde475fa32ceeb44660687843"
 		},
 		{
+			"checksumSHA1": "V4bcZWyeQXzx4DwjALwqxYxQeWY=",
+			"path": "github.com/IBM/ibm-cos-sdk-go-config",
+			"revision": "62679bd9361045d3c0bd56aa0b5c2892e10a6f34",
+			"revisionTime": "2020-03-25T10:01:00Z"
+		},
+		{
+			"checksumSHA1": "fUkmlxCCCvGCvWGPjnFEqbBdD4c=",
+			"path": "github.com/IBM/ibm-cos-sdk-go-config/common",
+			"revision": "62679bd9361045d3c0bd56aa0b5c2892e10a6f34",
+			"revisionTime": "2020-03-25T10:01:00Z"
+		},
+		{
+			"checksumSHA1": "v9FztKy0k1v1RfJqPLUxaWqXiA4=",
+			"path": "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1",
+			"revision": "62679bd9361045d3c0bd56aa0b5c2892e10a6f34",
+			"revisionTime": "2020-03-25T10:01:00Z"
+		},
+		{
 			"checksumSHA1": "/MvaToh2ZEhrCpTNXblbVWRxpfg=",
 			"path": "github.com/IBM/ibm-cos-sdk-go/aws",
 			"revision": "1b29d24c7f95d890f15593274b91bbbcff517111",
@@ -1591,20 +1609,20 @@
 			"revisionTime": "2018-05-24T22:32:19Z"
 		},
 		{
-			"checksumSHA1": "DqaoG++NXRCfvH/OloneLWrM+3k=",
-			"path": "github.com/hashicorp/terraform/plugin",
-			"revision": "dbce85d85ff0beebc660b3d1805b4ef15361af00",
-			"revisionTime": "2018-04-05T19:25:37Z",
-			"version": "=v0.11.6",
-			"versionExact": "v0.11.6"
-		},
-		{
 			"checksumSHA1": "6AA7ZAzswfl7SOzleP6e6he0lq4=",
 			"path": "github.com/hashicorp/terraform/plugin",
 			"revision": "8d560482c34e865458fd884cb0790b4f73f09ad1",
 			"revisionTime": "2017-06-08T00:14:54Z",
 			"version": "v0.9.8",
 			"versionExact": "v0.9.8"
+		},
+		{
+			"checksumSHA1": "DqaoG++NXRCfvH/OloneLWrM+3k=",
+			"path": "github.com/hashicorp/terraform/plugin",
+			"revision": "dbce85d85ff0beebc660b3d1805b4ef15361af00",
+			"revisionTime": "2018-04-05T19:25:37Z",
+			"version": "=v0.11.6",
+			"versionExact": "v0.11.6"
 		},
 		{
 			"checksumSHA1": "tx5xrdiUWdAHqoRV5aEfALgT1aU=",
@@ -2529,6 +2547,10 @@
 		},
 		{
 			"path": "http://github.com/IBM-Cloud/bluemix-go/api",
+			"revision": ""
+		},
+		{
+			"path": "https://github.com/IBM/ibm-cos-sdk-go-config",
 			"revision": ""
 		},
 		{

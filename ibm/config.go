@@ -48,6 +48,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 	dns "github.com/IBM/dns-svcs-go-sdk/dnssvcsv1"
 	"github.com/IBM/go-sdk-core/core"
+	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
 	vpcclassic "github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
 	vpc "github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
@@ -173,6 +174,7 @@ type ClientSession interface {
 	VpcV1API() (*vpc.VpcV1, error)
 	APIGateway() (*apigateway.ApiGatewayControllerApiV1, error)
 	PrivateDnsClientSession() (*dns.DnsSvcsV1, error)
+	CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error)
 }
 
 type clientSession struct {
@@ -270,6 +272,9 @@ type clientSession struct {
 
 	vpcErr error
 	vpcAPI *vpc.VpcV1
+
+	cosConfigErr error
+	cosConfigAPI *cosconfig.ResourceConfigurationV1
 }
 
 // BluemixAcccountAPI ...
@@ -419,6 +424,10 @@ func (sess clientSession) VpcV1API() (*vpc.VpcV1, error) {
 	return sess.vpcAPI, sess.vpcErr
 }
 
+func (sess clientSession) CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error) {
+	return sess.cosConfigAPI, sess.cosConfigErr
+}
+
 // Session to the Power Colo Service
 
 func (sess clientSession) IBMPISession() (*ibmpisession.IBMPISession, error) {
@@ -475,6 +484,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.vpcErr = errEmptyBluemixCredentials
 		session.apigatewayErr = errEmptyBluemixCredentials
 		session.pDnsErr = errEmptyBluemixCredentials
+		session.bmxUserFetchErr = errEmptyBluemixCredentials
+		session.cosConfigErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -593,6 +604,16 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.vpcErr = fmt.Errorf("Error occured while configuring vpc classic service: %q", err)
 	}
 	session.vpcAPI = vpcclient
+
+	//cosconfigurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", c.Region)
+	cosconfigoptions := &cosconfig.ResourceConfigurationV1Options{
+		Authenticator: authenticator,
+	}
+	cosconfigclient, err := cosconfig.NewResourceConfigurationV1(cosconfigoptions)
+	if err != nil {
+		session.cosConfigErr = fmt.Errorf("Error occured while configuring COS config service: %q", err)
+	}
+	session.cosConfigAPI = cosconfigclient
 
 	schematicService, err := schematics.New(sess.BluemixSession)
 	if err != nil {
