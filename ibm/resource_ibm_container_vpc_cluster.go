@@ -160,6 +160,13 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				Description:      "Entitlement option reduces additional OCP Licence cost in Openshift Clusters",
 			},
 
+			"cos_instance_crn": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: applyOnce,
+				Description:      "A standard cloud object storage instance CRN to back up the internal registry in your OpenShift on VPC Gen 2 cluster",
+			},
+
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -359,6 +366,11 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	// Update params with Entitlement option if provided
 	if v, ok := d.GetOk("entitlement"); ok {
 		params.DefaultWorkerPoolEntitlement = v.(string)
+	}
+
+	// Update params with Cloud Object Store instance CRN id option if provided
+	if v, ok := d.GetOk("cos_instance_crn"); ok {
+		params.CosInstanceCRN = v.(string)
 	}
 
 	targetEnv, err := getVpcClusterTargetHeader(d, meta)
