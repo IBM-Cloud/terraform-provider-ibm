@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	"github.com/IBM/ibm-cos-sdk-go/aws"
 	"github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam"
 	token "github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam/token"
@@ -73,6 +74,53 @@ func dataSourceIBMCosBucket() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Private endpoint for the COS bucket",
+			},
+			"allowed_ip": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "List of IPv4 or IPv6 addresses ",
+			},
+			"activity_tracking": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"read_data_events": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "If set to true, all object read events will be sent to Activity Tracker.",
+						},
+						"write_data_events": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "If set to true, all object write events will be sent to Activity Tracker.",
+						},
+						"activity_tracker_crn": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The instance of Activity Tracker that will receive object event data",
+						},
+					},
+				},
+			},
+			"metrics_monitoring": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"usage_metrics_enabled": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Usage metrics will be sent to the monitoring service.",
+						},
+						"metrics_monitoring_crn": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Instance of IBM Cloud Monitoring that will receive the bucket metrics.",
+						},
+					},
+				},
 			},
 		},
 	}
@@ -170,6 +218,36 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("resource_instance_id", serviceID)
 	d.Set("s3_endpoint_public", apiEndpoint)
 	d.Set("s3_endpoint_private", apiEndpointPrivate)
+
+	getBucketConfigOptions := &resourceconfigurationv1.GetBucketConfigOptions{
+		Bucket: &bucketName,
+	}
+
+	sess, err := meta.(ClientSession).CosConfigV1API()
+	if err != nil {
+		return err
+	}
+
+	bucketPtr, response, err := sess.GetBucketConfig(getBucketConfigOptions)
+
+	if err != nil {
+		return fmt.Errorf("Error in getting bucket info rule: %s\n%s", err, response)
+	}
+
+	if bucketPtr != nil {
+
+		if bucketPtr.Firewall != nil {
+			d.Set("allowed_ip", flattenStringList(bucketPtr.Firewall.AllowedIp))
+		}
+		if bucketPtr.ActivityTracking != nil {
+			d.Set("activity_tracking", flattenActivityTrack(bucketPtr.ActivityTracking))
+		}
+		if bucketPtr.MetricsMonitoring != nil {
+			d.Set("metrics_monitoring", flattenMetricsMonitor(bucketPtr.MetricsMonitoring))
+		}
+
+	}
+
 	return nil
 }
 

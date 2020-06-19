@@ -17,6 +17,7 @@ import (
 )
 
 func TestAccIBMCosBucket_Basic(t *testing.T) {
+
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
 	bucketRegion := "eu"
@@ -44,6 +45,47 @@ func TestAccIBMCosBucket_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "cross_region_location", bucketRegion),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_ActivityTracker_Monitor(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	activityServiceName := fmt.Sprintf("activity_tracker_%d", acctest.RandIntRange(10, 100))
+	monitorServiceName := fmt.Sprintf("metrics_monitor_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us"
+	bucketClass := "standard"
+	bucketRegionType := "cross_region_location"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMCosBucket_activityTracker_monitor(cosServiceName, activityServiceName, monitorServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "cross_region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.#", "1"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMCosBucket_update_activityTracker_monitor(cosServiceName, activityServiceName, monitorServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "cross_region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "activity_tracking.#", "0"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.#", "0"),
 				),
 			},
 		},
@@ -124,9 +166,8 @@ func testAccCheckIBMCosBucketDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type == "ibm_cos_bucket" {
 			apiEndpoint = rs.Primary.Attributes["s3_endpoint_public"]
-
 		}
-		if rs.Type == "ibm_resource_instance" {
+		if rs.Type == "ibm_resource_instance" && rs.Primary.Attributes["service"] == "cloud-object-storage" {
 			resourceInstance = rs.Primary.Attributes["crn"]
 
 		}
@@ -239,6 +280,7 @@ func testAccCheckIBMCosBucketExists(resource string, bucket string, regiontype s
 }
 
 func testAccCheckIBMCosBucket_basic(serviceName string, bucketName string, regiontype string, region string, storageClass string) string {
+
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "group" {
 		name = "default"
@@ -264,6 +306,7 @@ func testAccCheckIBMCosBucket_basic(serviceName string, bucketName string, regio
 }
 
 func testAccCheckIBMCosBucket_updateWithSameName(serviceName string, bucketName string, regiontype string, region, storageClass string) string {
+
 	return fmt.Sprintf(`	
 	data "ibm_resource_group" "group" {
 		name = "default"
@@ -284,4 +327,89 @@ func testAccCheckIBMCosBucket_updateWithSameName(serviceName string, bucketName 
 		cross_region_location = "%s"
 	}
 	`, serviceName, bucketName, storageClass, region)
+}
+
+func testAccCheckIBMCosBucket_activityTracker_monitor(cosServiceName, activityServiceName, monitorServiceName, bucketName, regiontype, region, storageClass string) string {
+
+	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "cos_group" {
+		name = "default"
+	  }
+	  resource "ibm_resource_instance" "instance2" {
+		name              = "%s"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+	  }
+	  resource "ibm_resource_instance" "activity_tracker2" {
+		name              = "%s"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+		service           = "logdnaat"
+		plan              = "lite"
+		location          = "us-south"
+	  }
+	  resource "ibm_resource_instance" "metrics_monitor2" {
+		name              = "%s"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+		service           = "sysdig-monitor"
+		plan              = "lite"
+		location          = "us-south"
+	  }
+	  resource "ibm_cos_bucket" "bucket2" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance2.id
+		cross_region_location      = "%s"
+		storage_class        = "%s"
+		activity_tracking {
+		  read_data_events     = true
+		  write_data_events    = true
+		  activity_tracker_crn = ibm_resource_instance.activity_tracker2.id
+		}
+		metrics_monitoring {
+		  usage_metrics_enabled  = true
+		  metrics_monitoring_crn = ibm_resource_instance.metrics_monitor2.id
+		}
+	  }  
+	`, cosServiceName, activityServiceName, monitorServiceName, bucketName, region, storageClass)
+}
+
+func testAccCheckIBMCosBucket_update_activityTracker_monitor(cosServiceName, activityServiceName, monitorServiceName, bucketName, regiontype, region, storageClass string) string {
+
+	return fmt.Sprintf(`	
+	data "ibm_resource_group" "cos_group" {
+		name = "default"
+	}
+	  
+	resource "ibm_resource_instance" "instance2" {
+		name              = "%s"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+	  }
+	  
+	resource "ibm_resource_instance" "activity_tracker2" {
+		name              = "%s"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+		service           = "logdnaat"
+		plan              = "lite"
+		location          = "us-south"
+	}
+	  
+	resource "ibm_resource_instance" "metrics_monitor2" {
+		name              = "%s"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+		service           = "sysdig-monitor"
+		plan              = "lite"
+		location          = "us-south"
+	}
+	resource "ibm_cos_bucket" "bucket2" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance2.id
+		cross_region_location      = "%s"
+		storage_class        = "%s"
+	}	  
+	`, cosServiceName, activityServiceName, monitorServiceName, bucketName, region, storageClass)
 }

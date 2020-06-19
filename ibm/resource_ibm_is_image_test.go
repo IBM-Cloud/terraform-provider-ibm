@@ -14,8 +14,8 @@ import (
 
 func TestAccIBMISImage_basic(t *testing.T) {
 	var image string
-
 	name := fmt.Sprintf("tfimg-name-%d", acctest.RandIntRange(10, 100))
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckImage(t) },
 		Providers:    testAccProviders,

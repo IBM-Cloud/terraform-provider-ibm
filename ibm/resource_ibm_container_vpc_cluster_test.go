@@ -25,6 +25,8 @@ func TestAccIBMContainerVpcCluster_basic(t *testing.T) {
 	zone := "us-south"
 	workerCount := "1"
 	flavorGen2 := "bx2.2x8"
+	openshiftFlavour := "bx2.16x64"
+	openShiftworkerCount := "2"
 	var conf *v2.ClusterInfo
 
 	resource.Test(t, resource.TestCase{
@@ -54,6 +56,18 @@ func TestAccIBMContainerVpcCluster_basic(t *testing.T) {
 						"ibm_container_vpc_cluster.clustergen2", "worker_count", workerCount),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.clustergen2", "flavor", flavorGen2),
+				),
+			},
+			{
+				Config: testAccCheckIBMContainerVpcOcpClusterGen2basic(zone, vpc, subnet, clusterNamegen2, openshiftFlavour, openShiftworkerCount),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.clustergen2", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.clustergen2", "name", clusterNamegen2),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.clustergen2", "worker_count", openShiftworkerCount),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.clustergen2", "flavor", openshiftFlavour),
 				),
 			},
 		},
@@ -222,6 +236,56 @@ resource "ibm_container_vpc_cluster" "clustergen2" {
 	worker_count      = "%s"
 	kube_version 	  = "1.17.5"
 	wait_till         = "OneWorkerNodeReady"
+	resource_group_id = "${data.ibm_resource_group.resource_group.id}"
+	zones {
+		 subnet_id = "${ibm_is_subnet.subnet1.id}"
+		 name      = "${local.ZONE1}"
+	  }
+  }`, zone, vpc, subnet, clusterName, flavor, workerCount)
+
+}
+
+func testAccCheckIBMContainerVpcOcpClusterGen2basic(zone, vpc, subnet, clusterName, flavor, workerCount string) string {
+	return fmt.Sprintf(`
+provider "ibm" {
+	generation =2
+}	
+data "ibm_resource_group" "resource_group" {
+	is_default = "true"
+}
+
+locals {
+	ZONE1 = "%s-1"
+}
+  
+resource "ibm_is_vpc" "vpc1" {
+	name = "%s"
+}
+
+resource "ibm_resource_instance" "cos_instance" {
+	name     = "testcos_instance"
+	service  = "cloud-object-storage"
+	plan     = "standard"
+	location = "global"
+  }
+  
+resource "ibm_is_subnet" "subnet1" {
+	name                     = "%s"
+	vpc                      = "${ibm_is_vpc.vpc1.id}"
+	zone                     = "${local.ZONE1}"
+	total_ipv4_address_count = 256
+}
+
+resource "ibm_container_vpc_cluster" "clustergen2" {
+	name              = "%s"
+	vpc_id            = "${ibm_is_vpc.vpc1.id}"
+	flavor            = "%s"
+	worker_count      = "%s"
+	kube_version 	  = "4.3.23_openshift"
+	wait_till         = "OneWorkerNodeReady"
+	entitlement       = "cloud_pak"
+	cos_instance_crn  = ibm_resource_instance.cos_instance.id
+
 	resource_group_id = "${data.ibm_resource_group.resource_group.id}"
 	zones {
 		 subnet_id = "${ibm_is_subnet.subnet1.id}"
