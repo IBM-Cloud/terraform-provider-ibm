@@ -2,7 +2,6 @@
 
 This example shows how to create a Kubernetes Cluster under a specified resource group id, with a default worker pool with 2 workers, edit the default worker pool to add a new zone to it, add a worker pool with different zone with 2 workers and binds a service instance to a cluster.
 
-
 Following types of resources are supported:
 
 * [ Container Worker Pool Zone Attachement](https://cloud.ibm.com/docs/terraform?topic=terraform-container-resources#container-pool-zone)
@@ -15,6 +14,7 @@ Terraform 0.12. Pin module version to `~> v1.7.1`. Branch - `master`.
 Terraform 0.11. Pin module version to `~> v0.29.1`. Branch - `terraform_v0.11.x`.
 
 ## Usage
+
 
 To run this example you need to execute:
 
@@ -79,7 +79,8 @@ resource "ibm_container_worker_pool_zone_attachment" "test_zone" {
 
 ## Examples
 
-* [ VPC IKS Cluster  ](https://github.com/umarali-nagoor/terraform-provider-ibm/tree/v12_iks_openshift_example_update/examples/ibm-cluster/cluster-worker-pool-zone)
+* [ VPC Classic Cluster  ](https://github.com/umarali-nagoor/terraform-provider-ibm/tree/v12_iks_openshift_example_update/examples/ibm-cluster/cluster-worker-pool-zone)
+
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
@@ -108,10 +109,8 @@ resource "ibm_container_worker_pool_zone_attachment" "test_zone" {
 | worker_pool_name | The name of the worker pool. | `string` | no |
 | zone | The name of the zone that you want to attach to the worker pool.  | `string` | yes |
 
-
 ## Outputs
 
 | Name | Description |
 |------|-------------|
 | cluster_config_file_path | Path where cluster config file is written to. |
-

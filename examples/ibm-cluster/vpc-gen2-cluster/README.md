@@ -100,12 +100,8 @@ data "ibm_container_vpc_cluster" "cluster" {
 | zone | Name of the zone.| `string` | yes |
 | resource\_group | Name of the resource group.| `string` | yes |
 
-
-
 ## Outputs
 
 | Name | Description |
 |------|-------------|
 | cluster_config_file_path | Path where cluster config file is written to. |
-
-

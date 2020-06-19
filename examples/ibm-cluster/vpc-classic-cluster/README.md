@@ -105,5 +105,3 @@ data "ibm_container_vpc_cluster" "cluster" {
 | Name | Description |
 |------|-------------|
 | cluster_config_file_path | Path where cluster config file is written to. |
-
-
