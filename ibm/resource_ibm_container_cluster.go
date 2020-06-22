@@ -1262,7 +1262,7 @@ func WaitForClusterAvailable(d *schema.ResourceData, meta interface{}, target v1
 
 func clusterStateRefreshFunc(client v1.Clusters, instanceID string, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		clusterFields, err := client.FindWithOutShowResources(instanceID, target)
+		clusterFields, err := client.FindWithOutShowResourcesCompatible(instanceID, target)
 		if err != nil {
 			return nil, "", fmt.Errorf("Error retrieving cluster: %s", err)
 		}
@@ -1374,7 +1374,7 @@ func WaitForSubnetAvailable(d *schema.ResourceData, meta interface{}, target v1.
 
 func subnetStateRefreshFunc(client v1.Clusters, instanceID string, d *schema.ResourceData, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		cluster, err := client.FindWithOutShowResources(instanceID, target)
+		cluster, err := client.FindWithOutShowResourcesCompatible(instanceID, target)
 		if err != nil {
 			return nil, "", fmt.Errorf("Error retrieving cluster: %s", err)
 		}
@@ -1408,7 +1408,7 @@ func WaitForClusterVersionUpdate(d *schema.ResourceData, meta interface{}, targe
 
 func clusterVersionRefreshFunc(client v1.Clusters, instanceID string, d *schema.ResourceData, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		clusterFields, err := client.FindWithOutShowResources(instanceID, target)
+		clusterFields, err := client.FindWithOutShowResourcesCompatible(instanceID, target)
 		if err != nil {
 			return nil, "", fmt.Errorf("Error retrieving cluster: %s", err)
 		}
@@ -1431,7 +1431,7 @@ func resourceIBMContainerClusterExists(d *schema.ResourceData, meta interface{})
 		return false, err
 	}
 	clusterID := d.Id()
-	cls, err := csClient.Clusters().FindWithOutShowResources(clusterID, targetEnv)
+	cls, err := csClient.Clusters().FindWithOutShowResourcesCompatible(clusterID, targetEnv)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
 			if apiErr.StatusCode() == 404 {
