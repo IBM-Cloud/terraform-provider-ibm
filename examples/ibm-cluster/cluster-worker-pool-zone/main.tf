@@ -1,17 +1,8 @@
 provider "ibm" {
 }
 
-data "ibm_org" "org" {
-  org = var.org
-}
-
-data "ibm_space" "space" {
-  org   = var.org
-  space = var.space
-}
-
 data "ibm_resource_group" "testacc_ds_resource_group" {
-  name = "Default"
+  name = var.resource_group
 }
 
 resource "ibm_container_cluster" "cluster" {
@@ -23,7 +14,6 @@ resource "ibm_container_cluster" "cluster" {
   hardware          = "shared"
   resource_group_id = data.ibm_resource_group.testacc_ds_resource_group.id
   machine_type      = var.machine_type
-  //isolation         = var.isolation
   public_vlan_id    = var.public_vlan_id
   private_vlan_id   = var.private_vlan_id
 }
@@ -57,23 +47,18 @@ resource "ibm_container_worker_pool_zone_attachment" "test_zone" {
   private_vlan_id = var.zone_private_vlan_id
 }
 
-resource "ibm_service_instance" "service" {
-  name       = "${var.service_instance_name}${random_id.name.hex}"
-  space_guid = data.ibm_space.space.id
-  service    = var.service_offering
-  plan       = var.plan
-  tags       = ["my-service"]
-}
-
-resource "ibm_service_key" "key" {
-  name                  = var.service_key
-  service_instance_guid = ibm_service_instance.service.id
+resource "ibm_resource_instance" "cos_instance" {
+  name     = var.service_instance_name
+  service  = "cloud-object-storage"
+  plan     = "standard"
+  location = "global"
 }
 
 resource "ibm_container_bind_service" "bind_service" {
-  cluster_name_id     = ibm_container_cluster.cluster.id
-  service_instance_id = ibm_service_instance.service.id
+  cluster_name_id     = ibm_container_vpc_cluster.cluster.id
+  service_instance_id = element(split(":", ibm_resource_instance.cos_instance.id), 7)
   namespace_id        = "default"
+  role                = "Writer"
 }
 
 data "ibm_container_cluster_config" "cluster_config" {
