@@ -45,8 +45,8 @@ The following attributes are exported:
 
 ## Import
 
-ibm_is_vpc_address_prefix can be imported using ID, eg
+ibm_is_vpc_address_prefix can be imported using using VPC ID and VPC Addressprefix  ID, eg
 
 ```
-$ terraform import ibm_is_vpc_address_prefix.example d7bec597-4726-451f-8a63-e62e6f19c32c
+$ terraform import ibm_is_vpc_address_prefix.example d7bec597-4726-451f-8a63-e62e6f19c32c/a1aaa111-1111-111a-1a11-a11a1a11a11a
 ```
