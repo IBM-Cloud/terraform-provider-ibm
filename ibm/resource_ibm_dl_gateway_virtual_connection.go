@@ -9,6 +9,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.ibm.com/ibmcloud/networking-go-sdk/directlinkapisv1"
 )
+const (
+	dlGatewaysVirtualConnections = "gateway_vcs"
+	dlVCNetworkAccount           = "network_account"
+	dlVCNetworkId                = "network_id"
+	dlVCName                     = "name"
+	dlVCType                     = "type"
+	dlVCCreatedAt                = "created_at"
+	dlVCStatus                   = "status"
+	dlGatewayId                  = "gateway"
+	ID                           = "id"
+)
 
 func resourceIBMDLGatewayVC() *schema.Resource {
 	return &schema.Resource{
