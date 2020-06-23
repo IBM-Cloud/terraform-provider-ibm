@@ -27,7 +27,7 @@ Run `terraform destroy` when you don't need these resources.
 
 ## Example Usage
 
-Create a direct link gateway:
+Create a transit gateway:
 
 ```hcl
 resource "ibm_tg_gateway" "new_tg_gw"{
