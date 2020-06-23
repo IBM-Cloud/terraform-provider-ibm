@@ -18,7 +18,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/runtime v0.19.15 // indirect
-	github.com/go-openapi/strfmt v0.19.5 // indirect
+	github.com/go-openapi/strfmt v0.19.5
 	github.com/go-openapi/swag v0.19.9 // indirect
 	github.com/go-openapi/validate v0.19.8 // indirect
 	github.com/go-test/deep v1.0.4 // indirect
