@@ -384,7 +384,8 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dns_resource_record":   resourceIBMPrivateDNSResourceRecord(),
 
 			//Direct Link related resources
-			"ibm_dl_gateway": resourceIBMDLGateway(),
+			"ibm_dl_gateway":    resourceIBMDLGateway(),
+			"ibm_dl_gateway_vc": resourceIBMDLGatewayVC(),
 		},
 
 		ConfigureFunc: providerConfigure,
