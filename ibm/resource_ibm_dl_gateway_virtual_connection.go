@@ -92,14 +92,14 @@ func resourceIBMdlGatewayVCCreate(d *schema.ResourceData, meta interface{}) erro
 
 	gatewayId := d.Get(dlGatewayId).(string)
 	createGatewayVCOptions.SetGatewayID(gatewayId)
-	dlVCname := d.Get(dlVCName).(string)
-	createGatewayVCOptions.SetName(dlVCname)
-	dlVCtype := d.Get(dlVCType).(string)
-	createGatewayVCOptions.SetType(dlVCtype)
+	vcName := d.Get(dlVCName).(string)
+	createGatewayVCOptions.SetName(vcName)
+	vcType := d.Get(dlVCType).(string)
+	createGatewayVCOptions.SetType(vcType)
 
 	if _, ok := d.GetOk(dlVCNetworkId); ok {
-		dlVCnetworkId := d.Get(dlVCNetworkId).(string)
-		createGatewayVCOptions.SetNetworkID(dlVCnetworkId)
+		vcNetworkId := d.Get(dlVCNetworkId).(string)
+		createGatewayVCOptions.SetNetworkID(vcNetworkId)
 	}
 
 	gatewayVC, response, err := directLink.CreateGatewayVirtualConnection(createGatewayVCOptions)
@@ -130,10 +130,10 @@ func resourceIBMdlGatewayVCRead(d *schema.ResourceData, meta interface{}) error 
 
 	getGatewayVirtualConnectionOptions := &directlinkapisv1.GetGatewayVirtualConnectionOptions{}
 	gatewayId := d.Get(dlGatewayId).(string)
-	dlGatewayVCId := ID
+	gatewayVCId := ID
 
 	getGatewayVirtualConnectionOptions.SetGatewayID(gatewayId)
-	getGatewayVirtualConnectionOptions.SetID(dlGatewayVCId)
+	getGatewayVirtualConnectionOptions.SetID(gatewayVCId)
 	instance, _, err := directLink.GetGatewayVirtualConnection(getGatewayVirtualConnectionOptions)
 	if err != nil {
 		return err
