@@ -6,7 +6,7 @@ cloud.google.com/go/internal/optional
 cloud.google.com/go/internal/trace
 cloud.google.com/go/internal/version
 cloud.google.com/go/storage
-# github.com/IBM-Cloud/bluemix-go v0.0.0-20200618045128-dcf70b676caf
+# github.com/IBM-Cloud/bluemix-go v0.0.0-20200522122103-1c81a6866a57
 github.com/IBM-Cloud/bluemix-go
 github.com/IBM-Cloud/bluemix-go/api/account/accountv1
 github.com/IBM-Cloud/bluemix-go/api/account/accountv2
@@ -79,9 +79,8 @@ github.com/IBM/dns-svcs-go-sdk/common
 github.com/IBM/dns-svcs-go-sdk/dnssvcsv1
 # github.com/IBM/go-sdk-core/v3 v3.2.4
 github.com/IBM/go-sdk-core/v3/core
-# github.com/IBM/ibm-cos-sdk-go v1.3.1
+# github.com/IBM/ibm-cos-sdk-go v1.2.0
 github.com/IBM/ibm-cos-sdk-go/aws
-github.com/IBM/ibm-cos-sdk-go/aws/arn
 github.com/IBM/ibm-cos-sdk-go/aws/awserr
 github.com/IBM/ibm-cos-sdk-go/aws/awsutil
 github.com/IBM/ibm-cos-sdk-go/aws/client
@@ -103,7 +102,6 @@ github.com/IBM/ibm-cos-sdk-go/aws/signer/v4
 github.com/IBM/ibm-cos-sdk-go/internal/ini
 github.com/IBM/ibm-cos-sdk-go/internal/s3err
 github.com/IBM/ibm-cos-sdk-go/internal/sdkio
-github.com/IBM/ibm-cos-sdk-go/internal/sdkmath
 github.com/IBM/ibm-cos-sdk-go/internal/sdkrand
 github.com/IBM/ibm-cos-sdk-go/internal/shareddefaults
 github.com/IBM/ibm-cos-sdk-go/private/protocol
@@ -114,10 +112,6 @@ github.com/IBM/ibm-cos-sdk-go/private/protocol/rest
 github.com/IBM/ibm-cos-sdk-go/private/protocol/restxml
 github.com/IBM/ibm-cos-sdk-go/private/protocol/xml/xmlutil
 github.com/IBM/ibm-cos-sdk-go/service/s3
-github.com/IBM/ibm-cos-sdk-go/service/s3/internal/arn
-# github.com/IBM/ibm-cos-sdk-go-config v1.0.0
-github.com/IBM/ibm-cos-sdk-go-config/common
-github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1
 # github.com/IBM/keyprotect-go-client v0.3.5-0.20200325142150-b63163832e26
 github.com/IBM/keyprotect-go-client
 github.com/IBM/keyprotect-go-client/iam
@@ -138,9 +132,8 @@ github.com/apparentlymart/go-textseg/textseg
 github.com/armon/go-radix
 # github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
 github.com/asaskevich/govalidator
-# github.com/aws/aws-sdk-go v1.26.2
+# github.com/aws/aws-sdk-go v1.25.3
 github.com/aws/aws-sdk-go/aws
-github.com/aws/aws-sdk-go/aws/arn
 github.com/aws/aws-sdk-go/aws/awserr
 github.com/aws/aws-sdk-go/aws/awsutil
 github.com/aws/aws-sdk-go/aws/client
@@ -175,7 +168,6 @@ github.com/aws/aws-sdk-go/private/protocol/rest
 github.com/aws/aws-sdk-go/private/protocol/restxml
 github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
 github.com/aws/aws-sdk-go/service/s3
-github.com/aws/aws-sdk-go/service/s3/internal/arn
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
 # github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d

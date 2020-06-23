@@ -6,11 +6,31 @@ variable "worker_count" {
   default = "1"
 }
 
+variable "region" {
+  default = "us-south"
+}
+
 variable "resource_group" {
   default = "Default"
 }
 
-variable "name" {
+variable "cluster_name" {
   default = "cluster"
+}
+
+variable "worker_pool_name" {
+  default = "workerpool"
+}
+
+variable "service_instance_name" {
+  default = "myservice"
+}
+
+variable "service_offering" {
+  default = "speech_to_text"
+}
+
+variable "plan" {
+  default = "lite"
 }
 

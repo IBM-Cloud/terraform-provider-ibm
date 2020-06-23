@@ -1944,7 +1944,7 @@ func (c *S3) ListBucketsExtendedWithContext(ctx aws.Context, input *ListBucketsE
 //    // Example iterating over at most 3 pages of a ListBucketsExtended operation.
 //    pageNum := 0
 //    err := client.ListBucketsExtendedPages(params,
-//        func(page *s3.ListBucketsExtendedOutput, lastPage bool) bool {
+//        func(page *ListBucketsExtendedOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -1976,12 +1976,10 @@ func (c *S3) ListBucketsExtendedPagesWithContext(ctx aws.Context, input *ListBuc
 		},
 	}
 
-	for p.Next() {
-		if !fn(p.Page().(*ListBucketsExtendedOutput), !p.HasNextPage()) {
-			break
-		}
+	cont := true
+	for p.Next() && cont {
+		cont = fn(p.Page().(*ListBucketsExtendedOutput), !p.HasNextPage())
 	}
-
 	return p.Err()
 }
 
@@ -2150,7 +2148,7 @@ func (c *S3) ListMultipartUploadsWithContext(ctx aws.Context, input *ListMultipa
 //    // Example iterating over at most 3 pages of a ListMultipartUploads operation.
 //    pageNum := 0
 //    err := client.ListMultipartUploadsPages(params,
-//        func(page *s3.ListMultipartUploadsOutput, lastPage bool) bool {
+//        func(page *ListMultipartUploadsOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -2182,12 +2180,10 @@ func (c *S3) ListMultipartUploadsPagesWithContext(ctx aws.Context, input *ListMu
 		},
 	}
 
-	for p.Next() {
-		if !fn(p.Page().(*ListMultipartUploadsOutput), !p.HasNextPage()) {
-			break
-		}
+	cont := true
+	for p.Next() && cont {
+		cont = fn(p.Page().(*ListMultipartUploadsOutput), !p.HasNextPage())
 	}
-
 	return p.Err()
 }
 
@@ -2289,7 +2285,7 @@ func (c *S3) ListObjectsWithContext(ctx aws.Context, input *ListObjectsInput, op
 //    // Example iterating over at most 3 pages of a ListObjects operation.
 //    pageNum := 0
 //    err := client.ListObjectsPages(params,
-//        func(page *s3.ListObjectsOutput, lastPage bool) bool {
+//        func(page *ListObjectsOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -2321,152 +2317,10 @@ func (c *S3) ListObjectsPagesWithContext(ctx aws.Context, input *ListObjectsInpu
 		},
 	}
 
-	for p.Next() {
-		if !fn(p.Page().(*ListObjectsOutput), !p.HasNextPage()) {
-			break
-		}
+	cont := true
+	for p.Next() && cont {
+		cont = fn(p.Page().(*ListObjectsOutput), !p.HasNextPage())
 	}
-
-	return p.Err()
-}
-
-const opListObjectsV2 = "ListObjectsV2"
-
-// ListObjectsV2Request generates a "aws/request.Request" representing the
-// client's request for the ListObjectsV2 operation. The "output" return
-// value will be populated with the request's response once the request completes
-// successfully.
-//
-// Use "Send" method on the returned Request to send the API call to the service.
-// the "output" return value is not valid until after Send returns without error.
-//
-// See ListObjectsV2 for more information on using the ListObjectsV2
-// API call, and error handling.
-//
-// This method is useful when you want to inject custom logic or configuration
-// into the SDK's request lifecycle. Such as custom headers, or retry logic.
-//
-//
-//    // Example sending a request using the ListObjectsV2Request method.
-//    req, resp := client.ListObjectsV2Request(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
-//
-// See also, https://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/ListObjectsV2
-func (c *S3) ListObjectsV2Request(input *ListObjectsV2Input) (req *request.Request, output *ListObjectsV2Output) {
-	op := &request.Operation{
-		Name:       opListObjectsV2,
-		HTTPMethod: "GET",
-		HTTPPath:   "/{Bucket}?list-type=2",
-		Paginator: &request.Paginator{
-			InputTokens:     []string{"ContinuationToken"},
-			OutputTokens:    []string{"NextContinuationToken"},
-			LimitToken:      "MaxKeys",
-			TruncationToken: "",
-		},
-	}
-
-	if input == nil {
-		input = &ListObjectsV2Input{}
-	}
-
-	output = &ListObjectsV2Output{}
-	req = c.newRequest(op, input, output)
-	return
-}
-
-// ListObjectsV2 API operation for Amazon Simple Storage Service.
-//
-// Returns some or all (up to 1000) of the objects in a bucket. You can use
-// the request parameters as selection criteria to return a subset of the objects
-// in a bucket. Note: ListObjectsV2 is the revised List Objects API and we recommend
-// you use this revised API for new application development.
-//
-// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
-// with awserr.Error's Code and Message methods to get detailed information about
-// the error.
-//
-// See the AWS API reference guide for Amazon Simple Storage Service's
-// API operation ListObjectsV2 for usage and error information.
-//
-// Returned Error Codes:
-//   * ErrCodeNoSuchBucket "NoSuchBucket"
-//   The specified bucket does not exist.
-//
-// See also, https://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/ListObjectsV2
-func (c *S3) ListObjectsV2(input *ListObjectsV2Input) (*ListObjectsV2Output, error) {
-	req, out := c.ListObjectsV2Request(input)
-	return out, req.Send()
-}
-
-// ListObjectsV2WithContext is the same as ListObjectsV2 with the addition of
-// the ability to pass a context and additional request options.
-//
-// See ListObjectsV2 for details on how to use this API operation.
-//
-// The context must be non-nil and will be used for request cancellation. If
-// the context is nil a panic will occur. In the future the SDK may create
-// sub-contexts for http.Requests. See https://golang.org/pkg/context/
-// for more information on using Contexts.
-func (c *S3) ListObjectsV2WithContext(ctx aws.Context, input *ListObjectsV2Input, opts ...request.Option) (*ListObjectsV2Output, error) {
-	req, out := c.ListObjectsV2Request(input)
-	req.SetContext(ctx)
-	req.ApplyOptions(opts...)
-	return out, req.Send()
-}
-
-// ListObjectsV2Pages iterates over the pages of a ListObjectsV2 operation,
-// calling the "fn" function with the response data for each page. To stop
-// iterating, return false from the fn function.
-//
-// See ListObjectsV2 method for more information on how to use this operation.
-//
-// Note: This operation can generate multiple requests to a service.
-//
-//    // Example iterating over at most 3 pages of a ListObjectsV2 operation.
-//    pageNum := 0
-//    err := client.ListObjectsV2Pages(params,
-//        func(page *s3.ListObjectsV2Output, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
-func (c *S3) ListObjectsV2Pages(input *ListObjectsV2Input, fn func(*ListObjectsV2Output, bool) bool) error {
-	return c.ListObjectsV2PagesWithContext(aws.BackgroundContext(), input, fn)
-}
-
-// ListObjectsV2PagesWithContext same as ListObjectsV2Pages except
-// it takes a Context and allows setting request options on the pages.
-//
-// The context must be non-nil and will be used for request cancellation. If
-// the context is nil a panic will occur. In the future the SDK may create
-// sub-contexts for http.Requests. See https://golang.org/pkg/context/
-// for more information on using Contexts.
-func (c *S3) ListObjectsV2PagesWithContext(ctx aws.Context, input *ListObjectsV2Input, fn func(*ListObjectsV2Output, bool) bool, opts ...request.Option) error {
-	p := request.Pagination{
-		NewRequest: func() (*request.Request, error) {
-			var inCpy *ListObjectsV2Input
-			if input != nil {
-				tmp := *input
-				inCpy = &tmp
-			}
-			req, _ := c.ListObjectsV2Request(inCpy)
-			req.SetContext(ctx)
-			req.ApplyOptions(opts...)
-			return req, nil
-		},
-	}
-
-	for p.Next() {
-		if !fn(p.Page().(*ListObjectsV2Output), !p.HasNextPage()) {
-			break
-		}
-	}
-
 	return p.Err()
 }
 
@@ -2561,7 +2415,7 @@ func (c *S3) ListPartsWithContext(ctx aws.Context, input *ListPartsInput, opts .
 //    // Example iterating over at most 3 pages of a ListParts operation.
 //    pageNum := 0
 //    err := client.ListPartsPages(params,
-//        func(page *s3.ListPartsOutput, lastPage bool) bool {
+//        func(page *ListPartsOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -2593,12 +2447,10 @@ func (c *S3) ListPartsPagesWithContext(ctx aws.Context, input *ListPartsInput, f
 		},
 	}
 
-	for p.Next() {
-		if !fn(p.Page().(*ListPartsOutput), !p.HasNextPage()) {
-			break
-		}
+	cont := true
+	for p.Next() && cont {
+		cont = fn(p.Page().(*ListPartsOutput), !p.HasNextPage())
 	}
-
 	return p.Err()
 }
 
@@ -3367,7 +3219,7 @@ func (c *S3) UploadPartCopyWithContext(ctx aws.Context, input *UploadPartCopyInp
 }
 
 type AbortMultipartUploadInput struct {
-	_ struct{} `locationName:"AbortMultipartUploadRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -3527,7 +3379,7 @@ func (s *AccessControlPolicy) SetOwner(v *Owner) *AccessControlPolicy {
 }
 
 type AddLegalHoldInput struct {
-	_ struct{} `locationName:"AddLegalHoldRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -3986,7 +3838,7 @@ func (s *CommonPrefix) SetPrefix(v string) *CommonPrefix {
 }
 
 type CompleteMultipartUploadInput struct {
-	_ struct{} `locationName:"CompleteMultipartUploadRequest" type:"structure" payload:"MultipartUpload"`
+	_ struct{} `type:"structure" payload:"MultipartUpload"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -4274,7 +4126,7 @@ func (s *CompletedPart) SetPartNumber(v int64) *CompletedPart {
 }
 
 type CopyObjectInput struct {
-	_ struct{} `locationName:"CopyObjectRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// The canned ACL to apply to the object.
 	ACL *string `location:"header" locationName:"x-amz-acl" type:"string" enum:"ObjectCannedACL"`
@@ -4897,7 +4749,7 @@ func (s *CreateBucketConfiguration) SetLocationConstraint(v string) *CreateBucke
 }
 
 type CreateBucketInput struct {
-	_ struct{} `locationName:"CreateBucketRequest" type:"structure" payload:"CreateBucketConfiguration"`
+	_ struct{} `type:"structure" payload:"CreateBucketConfiguration"`
 
 	// The canned ACL to apply to the bucket.
 	ACL *string `location:"header" locationName:"x-amz-acl" type:"string" enum:"BucketCannedACL"`
@@ -5059,7 +4911,7 @@ func (s *CreateBucketOutput) SetLocation(v string) *CreateBucketOutput {
 }
 
 type CreateMultipartUploadInput struct {
-	_ struct{} `locationName:"CreateMultipartUploadRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// The canned ACL to apply to the object.
 	ACL *string `location:"header" locationName:"x-amz-acl" type:"string" enum:"ObjectCannedACL"`
@@ -5508,7 +5360,7 @@ func (s *Delete) SetQuiet(v bool) *Delete {
 }
 
 type DeleteBucketCorsInput struct {
-	_ struct{} `locationName:"DeleteBucketCorsRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -5568,7 +5420,7 @@ func (s DeleteBucketCorsOutput) GoString() string {
 }
 
 type DeleteBucketInput struct {
-	_ struct{} `locationName:"DeleteBucketRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -5614,7 +5466,7 @@ func (s *DeleteBucketInput) getBucket() (v string) {
 }
 
 type DeleteBucketLifecycleInput struct {
-	_ struct{} `locationName:"DeleteBucketLifecycleRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -5688,7 +5540,7 @@ func (s DeleteBucketOutput) GoString() string {
 }
 
 type DeleteLegalHoldInput struct {
-	_ struct{} `locationName:"DeleteLegalHoldRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -5775,7 +5627,7 @@ func (s DeleteLegalHoldOutput) GoString() string {
 }
 
 type DeleteObjectInput struct {
-	_ struct{} `locationName:"DeleteObjectRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -5911,7 +5763,7 @@ func (s *DeleteObjectOutput) SetVersionId(v string) *DeleteObjectOutput {
 }
 
 type DeleteObjectsInput struct {
-	_ struct{} `locationName:"DeleteObjectsRequest" type:"structure" payload:"Delete"`
+	_ struct{} `type:"structure" payload:"Delete"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -6128,7 +5980,7 @@ func (s *Error) SetVersionId(v string) *Error {
 }
 
 type ExtendObjectRetentionInput struct {
-	_ struct{} `locationName:"ExtendObjectRetentionRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Additional time, in seconds, to add to the existing retention period for
 	// the object. If this field and New-Retention-Time and/or New-Retention-Expiration-Date
@@ -6258,7 +6110,7 @@ func (s ExtendObjectRetentionOutput) GoString() string {
 }
 
 type GetBucketAclInput struct {
-	_ struct{} `locationName:"GetBucketAclRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -6335,7 +6187,7 @@ func (s *GetBucketAclOutput) SetOwner(v *Owner) *GetBucketAclOutput {
 }
 
 type GetBucketCorsInput struct {
-	_ struct{} `locationName:"GetBucketCorsRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -6403,7 +6255,7 @@ func (s *GetBucketCorsOutput) SetCORSRules(v []*CORSRule) *GetBucketCorsOutput {
 }
 
 type GetBucketLifecycleConfigurationInput struct {
-	_ struct{} `locationName:"GetBucketLifecycleConfigurationRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -6472,7 +6324,7 @@ func (s *GetBucketLifecycleConfigurationOutput) SetRules(v []*LifecycleRule) *Ge
 }
 
 type GetBucketLocationInput struct {
-	_ struct{} `locationName:"GetBucketLocationRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -6540,7 +6392,7 @@ func (s *GetBucketLocationOutput) SetLocationConstraint(v string) *GetBucketLoca
 }
 
 type GetBucketLoggingInput struct {
-	_ struct{} `locationName:"GetBucketLoggingRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -6611,7 +6463,7 @@ func (s *GetBucketLoggingOutput) SetLoggingEnabled(v *LoggingEnabled) *GetBucket
 }
 
 type GetBucketProtectionConfigurationInput struct {
-	_ struct{} `locationName:"GetBucketProtectionConfigurationRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -6680,7 +6532,7 @@ func (s *GetBucketProtectionConfigurationOutput) SetProtectionConfiguration(v *P
 }
 
 type GetObjectAclInput struct {
-	_ struct{} `locationName:"GetObjectAclRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -6803,7 +6655,7 @@ func (s *GetObjectAclOutput) SetRequestCharged(v string) *GetObjectAclOutput {
 }
 
 type GetObjectInput struct {
-	_ struct{} `locationName:"GetObjectRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -7533,7 +7385,7 @@ func (s *Grantee) SetURI(v string) *Grantee {
 }
 
 type HeadBucketInput struct {
-	_ struct{} `locationName:"HeadBucketRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -7612,7 +7464,7 @@ func (s *HeadBucketOutput) SetIBMSSEKPEnabled(v bool) *HeadBucketOutput {
 }
 
 type HeadObjectInput struct {
-	_ struct{} `locationName:"HeadObjectRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -8355,7 +8207,7 @@ func (s *LifecycleRuleFilter) SetPrefix(v string) *LifecycleRuleFilter {
 }
 
 type ListBucketsExtendedInput struct {
-	_ struct{} `locationName:"ListBucketsExtendedRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Sets the IBM Service Instance Id in the request.
 	//
@@ -8474,7 +8326,7 @@ func (s *ListBucketsExtendedOutput) SetPrefix(v string) *ListBucketsExtendedOutp
 }
 
 type ListBucketsInput struct {
-	_ struct{} `locationName:"ListBucketsRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Sets the IBM Service Instance Id in the request.
 	//
@@ -8529,7 +8381,7 @@ func (s *ListBucketsOutput) SetOwner(v *Owner) *ListBucketsOutput {
 }
 
 type ListLegalHoldsInput struct {
-	_ struct{} `locationName:"ListLegalHoldsRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -8642,7 +8494,7 @@ func (s *ListLegalHoldsOutput) SetRetentionPeriodExpirationDate(v time.Time) *Li
 }
 
 type ListMultipartUploadsInput struct {
-	_ struct{} `locationName:"ListMultipartUploadsRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -8886,7 +8738,7 @@ func (s *ListMultipartUploadsOutput) SetUploads(v []*MultipartUpload) *ListMulti
 }
 
 type ListObjectsInput struct {
-	_ struct{} `locationName:"ListObjectsRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -9116,269 +8968,8 @@ func (s *ListObjectsOutput) SetPrefix(v string) *ListObjectsOutput {
 	return s
 }
 
-type ListObjectsV2Input struct {
-	_ struct{} `locationName:"ListObjectsV2Request" type:"structure"`
-
-	// Name of the bucket to list.
-	//
-	// Bucket is a required field
-	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
-
-	// ContinuationToken indicates Amazon S3 that the list is being continued on
-	// this bucket with a token. ContinuationToken is obfuscated and is not a real
-	// key
-	ContinuationToken *string `location:"querystring" locationName:"continuation-token" type:"string"`
-
-	// A delimiter is a character you use to group keys.
-	Delimiter *string `location:"querystring" locationName:"delimiter" type:"string"`
-
-	// Encoding type used by Amazon S3 to encode object keys in the response.
-	EncodingType *string `location:"querystring" locationName:"encoding-type" type:"string" enum:"EncodingType"`
-
-	// The owner field is not present in listV2 by default, if you want to return
-	// owner field with each key in the result then set the fetch owner field to
-	// true
-	FetchOwner *bool `location:"querystring" locationName:"fetch-owner" type:"boolean"`
-
-	// Sets the maximum number of keys returned in the response. The response might
-	// contain fewer keys but will never contain more.
-	MaxKeys *int64 `location:"querystring" locationName:"max-keys" type:"integer"`
-
-	// Limits the response to keys that begin with the specified prefix.
-	Prefix *string `location:"querystring" locationName:"prefix" type:"string"`
-
-	// Confirms that the requester knows that she or he will be charged for the
-	// list objects request in V2 style. Bucket owners need not specify this parameter
-	// in their requests.
-	RequestPayer *string `location:"header" locationName:"x-amz-request-payer" type:"string" enum:"RequestPayer"`
-
-	// StartAfter is where you want Amazon S3 to start listing from. Amazon S3 starts
-	// listing after this specified key. StartAfter can be any key in the bucket
-	StartAfter *string `location:"querystring" locationName:"start-after" type:"string"`
-}
-
-// String returns the string representation
-func (s ListObjectsV2Input) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s ListObjectsV2Input) GoString() string {
-	return s.String()
-}
-
-// Validate inspects the fields of the type to determine if they are valid.
-func (s *ListObjectsV2Input) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "ListObjectsV2Input"}
-	if s.Bucket == nil {
-		invalidParams.Add(request.NewErrParamRequired("Bucket"))
-	}
-	if s.Bucket != nil && len(*s.Bucket) < 1 {
-		invalidParams.Add(request.NewErrParamMinLen("Bucket", 1))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-// SetBucket sets the Bucket field's value.
-func (s *ListObjectsV2Input) SetBucket(v string) *ListObjectsV2Input {
-	s.Bucket = &v
-	return s
-}
-
-func (s *ListObjectsV2Input) getBucket() (v string) {
-	if s.Bucket == nil {
-		return v
-	}
-	return *s.Bucket
-}
-
-// SetContinuationToken sets the ContinuationToken field's value.
-func (s *ListObjectsV2Input) SetContinuationToken(v string) *ListObjectsV2Input {
-	s.ContinuationToken = &v
-	return s
-}
-
-// SetDelimiter sets the Delimiter field's value.
-func (s *ListObjectsV2Input) SetDelimiter(v string) *ListObjectsV2Input {
-	s.Delimiter = &v
-	return s
-}
-
-// SetEncodingType sets the EncodingType field's value.
-func (s *ListObjectsV2Input) SetEncodingType(v string) *ListObjectsV2Input {
-	s.EncodingType = &v
-	return s
-}
-
-// SetFetchOwner sets the FetchOwner field's value.
-func (s *ListObjectsV2Input) SetFetchOwner(v bool) *ListObjectsV2Input {
-	s.FetchOwner = &v
-	return s
-}
-
-// SetMaxKeys sets the MaxKeys field's value.
-func (s *ListObjectsV2Input) SetMaxKeys(v int64) *ListObjectsV2Input {
-	s.MaxKeys = &v
-	return s
-}
-
-// SetPrefix sets the Prefix field's value.
-func (s *ListObjectsV2Input) SetPrefix(v string) *ListObjectsV2Input {
-	s.Prefix = &v
-	return s
-}
-
-// SetRequestPayer sets the RequestPayer field's value.
-func (s *ListObjectsV2Input) SetRequestPayer(v string) *ListObjectsV2Input {
-	s.RequestPayer = &v
-	return s
-}
-
-// SetStartAfter sets the StartAfter field's value.
-func (s *ListObjectsV2Input) SetStartAfter(v string) *ListObjectsV2Input {
-	s.StartAfter = &v
-	return s
-}
-
-type ListObjectsV2Output struct {
-	_ struct{} `type:"structure"`
-
-	// CommonPrefixes contains all (if there are any) keys between Prefix and the
-	// next occurrence of the string specified by delimiter
-	CommonPrefixes []*CommonPrefix `type:"list" flattened:"true"`
-
-	// Metadata about each object returned.
-	Contents []*Object `type:"list" flattened:"true"`
-
-	// ContinuationToken indicates Amazon S3 that the list is being continued on
-	// this bucket with a token. ContinuationToken is obfuscated and is not a real
-	// key
-	ContinuationToken *string `type:"string"`
-
-	// A delimiter is a character you use to group keys.
-	Delimiter *string `type:"string"`
-
-	// Encoding type used by Amazon S3 to encode object keys in the response.
-	EncodingType *string `type:"string" enum:"EncodingType"`
-
-	// A flag that indicates whether or not Amazon S3 returned all of the results
-	// that satisfied the search criteria.
-	IsTruncated *bool `type:"boolean"`
-
-	// KeyCount is the number of keys returned with this request. KeyCount will
-	// always be less than equals to MaxKeys field. Say you ask for 50 keys, your
-	// result will include less than equals 50 keys
-	KeyCount *int64 `type:"integer"`
-
-	// Sets the maximum number of keys returned in the response. The response might
-	// contain fewer keys but will never contain more.
-	MaxKeys *int64 `type:"integer"`
-
-	// Name of the bucket to list.
-	Name *string `type:"string"`
-
-	// NextContinuationToken is sent when isTruncated is true which means there
-	// are more keys in the bucket that can be listed. The next list requests to
-	// Amazon S3 can be continued with this NextContinuationToken. NextContinuationToken
-	// is obfuscated and is not a real key
-	NextContinuationToken *string `type:"string"`
-
-	// Limits the response to keys that begin with the specified prefix.
-	Prefix *string `type:"string"`
-
-	// StartAfter is where you want Amazon S3 to start listing from. Amazon S3 starts
-	// listing after this specified key. StartAfter can be any key in the bucket
-	StartAfter *string `type:"string"`
-}
-
-// String returns the string representation
-func (s ListObjectsV2Output) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s ListObjectsV2Output) GoString() string {
-	return s.String()
-}
-
-// SetCommonPrefixes sets the CommonPrefixes field's value.
-func (s *ListObjectsV2Output) SetCommonPrefixes(v []*CommonPrefix) *ListObjectsV2Output {
-	s.CommonPrefixes = v
-	return s
-}
-
-// SetContents sets the Contents field's value.
-func (s *ListObjectsV2Output) SetContents(v []*Object) *ListObjectsV2Output {
-	s.Contents = v
-	return s
-}
-
-// SetContinuationToken sets the ContinuationToken field's value.
-func (s *ListObjectsV2Output) SetContinuationToken(v string) *ListObjectsV2Output {
-	s.ContinuationToken = &v
-	return s
-}
-
-// SetDelimiter sets the Delimiter field's value.
-func (s *ListObjectsV2Output) SetDelimiter(v string) *ListObjectsV2Output {
-	s.Delimiter = &v
-	return s
-}
-
-// SetEncodingType sets the EncodingType field's value.
-func (s *ListObjectsV2Output) SetEncodingType(v string) *ListObjectsV2Output {
-	s.EncodingType = &v
-	return s
-}
-
-// SetIsTruncated sets the IsTruncated field's value.
-func (s *ListObjectsV2Output) SetIsTruncated(v bool) *ListObjectsV2Output {
-	s.IsTruncated = &v
-	return s
-}
-
-// SetKeyCount sets the KeyCount field's value.
-func (s *ListObjectsV2Output) SetKeyCount(v int64) *ListObjectsV2Output {
-	s.KeyCount = &v
-	return s
-}
-
-// SetMaxKeys sets the MaxKeys field's value.
-func (s *ListObjectsV2Output) SetMaxKeys(v int64) *ListObjectsV2Output {
-	s.MaxKeys = &v
-	return s
-}
-
-// SetName sets the Name field's value.
-func (s *ListObjectsV2Output) SetName(v string) *ListObjectsV2Output {
-	s.Name = &v
-	return s
-}
-
-// SetNextContinuationToken sets the NextContinuationToken field's value.
-func (s *ListObjectsV2Output) SetNextContinuationToken(v string) *ListObjectsV2Output {
-	s.NextContinuationToken = &v
-	return s
-}
-
-// SetPrefix sets the Prefix field's value.
-func (s *ListObjectsV2Output) SetPrefix(v string) *ListObjectsV2Output {
-	s.Prefix = &v
-	return s
-}
-
-// SetStartAfter sets the StartAfter field's value.
-func (s *ListObjectsV2Output) SetStartAfter(v string) *ListObjectsV2Output {
-	s.StartAfter = &v
-	return s
-}
-
 type ListPartsInput struct {
-	_ struct{} `locationName:"ListPartsRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -10080,7 +9671,7 @@ func (s *ProtectionConfiguration) SetStatus(v string) *ProtectionConfiguration {
 }
 
 type PutBucketAclInput struct {
-	_ struct{} `locationName:"PutBucketAclRequest" type:"structure" payload:"AccessControlPolicy"`
+	_ struct{} `type:"structure" payload:"AccessControlPolicy"`
 
 	// The canned ACL to apply to the bucket.
 	ACL *string `location:"header" locationName:"x-amz-acl" type:"string" enum:"BucketCannedACL"`
@@ -10208,7 +9799,7 @@ func (s PutBucketAclOutput) GoString() string {
 }
 
 type PutBucketCorsInput struct {
-	_ struct{} `locationName:"PutBucketCorsRequest" type:"structure" payload:"CORSConfiguration"`
+	_ struct{} `type:"structure" payload:"CORSConfiguration"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -10285,7 +9876,7 @@ func (s PutBucketCorsOutput) GoString() string {
 }
 
 type PutBucketLifecycleConfigurationInput struct {
-	_ struct{} `locationName:"PutBucketLifecycleConfigurationRequest" type:"structure" payload:"LifecycleConfiguration"`
+	_ struct{} `type:"structure" payload:"LifecycleConfiguration"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -10362,7 +9953,7 @@ func (s PutBucketLifecycleConfigurationOutput) GoString() string {
 }
 
 type PutBucketLoggingInput struct {
-	_ struct{} `locationName:"PutBucketLoggingRequest" type:"structure" payload:"BucketLoggingStatus"`
+	_ struct{} `type:"structure" payload:"BucketLoggingStatus"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -10439,7 +10030,7 @@ func (s PutBucketLoggingOutput) GoString() string {
 }
 
 type PutBucketProtectionConfigurationInput struct {
-	_ struct{} `locationName:"PutBucketProtectionConfigurationRequest" type:"structure" payload:"ProtectionConfiguration"`
+	_ struct{} `type:"structure" payload:"ProtectionConfiguration"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -10516,7 +10107,7 @@ func (s PutBucketProtectionConfigurationOutput) GoString() string {
 }
 
 type PutObjectAclInput struct {
-	_ struct{} `locationName:"PutObjectAclRequest" type:"structure" payload:"AccessControlPolicy"`
+	_ struct{} `type:"structure" payload:"AccessControlPolicy"`
 
 	// The canned ACL to apply to the object.
 	ACL *string `location:"header" locationName:"x-amz-acl" type:"string" enum:"ObjectCannedACL"`
@@ -10690,7 +10281,7 @@ func (s *PutObjectAclOutput) SetRequestCharged(v string) *PutObjectAclOutput {
 }
 
 type PutObjectInput struct {
-	_ struct{} `locationName:"PutObjectRequest" type:"structure" payload:"Body"`
+	_ struct{} `type:"structure" payload:"Body"`
 
 	// The canned ACL to apply to the object.
 	ACL *string `location:"header" locationName:"x-amz-acl" type:"string" enum:"ObjectCannedACL"`
@@ -11129,7 +10720,7 @@ func (s *PutObjectOutput) SetVersionId(v string) *PutObjectOutput {
 }
 
 type RestoreObjectInput struct {
-	_ struct{} `locationName:"RestoreObjectRequest" type:"structure" payload:"RestoreRequest"`
+	_ struct{} `type:"structure" payload:"RestoreRequest"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -11360,7 +10951,7 @@ func (s *Transition) SetStorageClass(v string) *Transition {
 }
 
 type UploadPartCopyInput struct {
-	_ struct{} `locationName:"UploadPartCopyRequest" type:"structure"`
+	_ struct{} `type:"structure"`
 
 	// Bucket is a required field
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
@@ -11690,7 +11281,7 @@ func (s *UploadPartCopyOutput) SetServerSideEncryption(v string) *UploadPartCopy
 }
 
 type UploadPartInput struct {
-	_ struct{} `locationName:"UploadPartRequest" type:"structure" payload:"Body"`
+	_ struct{} `type:"structure" payload:"Body"`
 
 	// Object data.
 	Body io.ReadSeeker `type:"blob"`

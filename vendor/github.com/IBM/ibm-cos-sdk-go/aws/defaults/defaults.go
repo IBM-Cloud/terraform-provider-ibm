@@ -15,12 +15,13 @@ import (
 	"os"
 	"time"
 
+	"github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam"
+
 	"github.com/IBM/ibm-cos-sdk-go/aws"
 	"github.com/IBM/ibm-cos-sdk-go/aws/awserr"
 	"github.com/IBM/ibm-cos-sdk-go/aws/corehandlers"
 	"github.com/IBM/ibm-cos-sdk-go/aws/credentials"
 	"github.com/IBM/ibm-cos-sdk-go/aws/credentials/endpointcreds"
-	"github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam"
 	"github.com/IBM/ibm-cos-sdk-go/aws/endpoints"
 	"github.com/IBM/ibm-cos-sdk-go/aws/request"
 )

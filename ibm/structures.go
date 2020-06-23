@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -627,36 +626,6 @@ func expandLimits(l []interface{}) *whisk.Limits {
 		Logsize: ptrToInt(in["log_size"].(int)),
 	}
 	return obj
-}
-
-func flattenActivityTrack(in *resourceconfigurationv1.ActivityTracking) []interface{} {
-
-	att := make(map[string]interface{})
-	if in != nil {
-		if in.ReadDataEvents != nil {
-			att["read_data_events"] = *in.ReadDataEvents
-		}
-		if in.WriteDataEvents != nil {
-			att["write_data_events"] = *in.WriteDataEvents
-		}
-		if in.ActivityTrackerCrn != nil {
-			att["activity_tracker_crn"] = *in.ActivityTrackerCrn
-		}
-	}
-	return []interface{}{att}
-}
-
-func flattenMetricsMonitor(in *resourceconfigurationv1.MetricsMonitoring) []interface{} {
-	att := make(map[string]interface{})
-	if in != nil {
-		if in.UsageMetricsEnabled != nil {
-			att["usage_metrics_enabled"] = *in.UsageMetricsEnabled
-		}
-		if in.MetricsMonitoringCrn != nil {
-			att["metrics_monitoring_crn"] = *in.MetricsMonitoringCrn
-		}
-	}
-	return []interface{}{att}
 }
 
 func flattenLimits(in *whisk.Limits) []interface{} {

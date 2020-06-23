@@ -31,7 +31,7 @@ type ClusterInfo struct {
 	Region                        string   `json:"region"`
 	ResourceGroupID               string   `json:"resourceGroup"`
 	ServerURL                     string   `json:"serverURL"`
-	MasterURL                     string   `json:"masterURL"` // vpc cluster serverURL is empty
+	MasterURL                     string   `json:"masterURL"`
 	State                         string   `json:"state"`
 	OrgID                         string   `json:"logOrg"`
 	OrgName                       string   `json:"logOrgName"`
@@ -370,7 +370,6 @@ func (r *clusters) FindWithOutShowResourcesCompatible(name string, target Cluste
 	if err != nil {
 		return cluster, err
 	}
-	// Handle VPC cluster.  ServerURL is blank for v2/vpc clusters
 	if cluster.ServerURL == "" {
 		cluster.ServerURL = cluster.MasterURL
 	}

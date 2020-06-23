@@ -4,13 +4,12 @@ go 1.12
 
 require (
 	github.com/Bowery/prompt v0.0.0-20190916142128-fa8279994f75 // indirect
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20200618045128-dcf70b676caf
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20200522122103-1c81a6866a57
 	github.com/IBM-Cloud/power-go-client v1.0.24
 	github.com/IBM/apigateway-go-sdk v0.0.0-20200414212859-416e5948678a
 	github.com/IBM/dns-svcs-go-sdk v0.0.3
 	github.com/IBM/go-sdk-core/v3 v3.2.4
-	github.com/IBM/ibm-cos-sdk-go v1.3.1
-	github.com/IBM/ibm-cos-sdk-go-config v1.0.0
+	github.com/IBM/ibm-cos-sdk-go v1.2.0
 	github.com/IBM/keyprotect-go-client v0.3.5-0.20200325142150-b63163832e26
 	github.com/apache/incubator-openwhisk-client-go v0.0.0-20171128215515-ad814bc98c32
 	github.com/apparentlymart/go-cidr v1.0.1
@@ -37,9 +36,9 @@ require (
 	github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22
 	github.com/zclconf/go-cty v1.2.1 // indirect
 	github.ibm.com/Bluemix/riaas-go-client v0.0.0-20191018070922-afd27ac04d4f
-	github.ibm.com/ibmcloud/networking-go-sdk v0.0.0-00010101000000-000000000000
 	github.ibm.com/ibmcloud/vpc-go-sdk v0.0.0-00010101000000-000000000000
 	golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898 // indirect
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 )
 
 replace github.ibm.com/Bluemix/riaas-go-client v0.0.0-20191018070922-afd27ac04d4f => ./common/github.ibm.com/Bluemix/riaas-go-client
@@ -47,5 +46,3 @@ replace github.ibm.com/Bluemix/riaas-go-client v0.0.0-20191018070922-afd27ac04d4
 replace github.ibm.com/ibmcloud/vpc-go-sdk => ./common/github.ibm.com/ibmcloud/vpc-go-sdk
 
 replace github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22 => ./common/github.com/softlayer/softlayer-go
-
-replace github.ibm.com/ibmcloud/networking-go-sdk => ./common/github.ibm.com/ibmcloud/networking-go-sdk

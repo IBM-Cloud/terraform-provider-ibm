@@ -16,7 +16,6 @@ type ClusterCreateRequest struct {
 	ServiceSubnet                string           `json:"serviceSubnet"`
 	Name                         string           `json:"name" binding:"required" description:"The cluster's name"`
 	DefaultWorkerPoolEntitlement string           `json:"defaultWorkerPoolEntitlement"`
-	CosInstanceCRN               string           `json:"cosInstanceCRN"`
 	WorkerPools                  WorkerPoolConfig `json:"workerPool"`
 }
 

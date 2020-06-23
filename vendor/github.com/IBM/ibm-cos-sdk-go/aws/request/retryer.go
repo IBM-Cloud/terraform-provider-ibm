@@ -35,41 +35,10 @@ type Retryer interface {
 }
 
 // WithRetryer sets a Retryer value to the given Config returning the Config
-// value for chaining. The value must not be nil.
+// value for chaining.
 func WithRetryer(cfg *aws.Config, retryer Retryer) *aws.Config {
-	if retryer == nil {
-		if cfg.Logger != nil {
-			cfg.Logger.Log("ERROR: Request.WithRetryer called with nil retryer. Replacing with retry disabled Retryer.")
-		}
-		retryer = noOpRetryer{}
-	}
 	cfg.Retryer = retryer
 	return cfg
-
-}
-
-// noOpRetryer is a internal no op retryer used when a request is created
-// without a retryer.
-//
-// Provides a retryer that performs no retries.
-// It should be used when we do not want retries to be performed.
-type noOpRetryer struct{}
-
-// MaxRetries returns the number of maximum returns the service will use to make
-// an individual API; For NoOpRetryer the MaxRetries will always be zero.
-func (d noOpRetryer) MaxRetries() int {
-	return 0
-}
-
-// ShouldRetry will always return false for NoOpRetryer, as it should never retry.
-func (d noOpRetryer) ShouldRetry(_ *Request) bool {
-	return false
-}
-
-// RetryRules returns the delay duration before retrying this request again;
-// since NoOpRetryer does not retry, RetryRules always returns 0.
-func (d noOpRetryer) RetryRules(_ *Request) time.Duration {
-	return 0
 }
 
 // retryableCodes is a collection of service response codes which are retry-able
@@ -125,6 +94,10 @@ var validParentCodes = map[string]struct{}{
 	ErrCodeRead:          {},
 }
 
+type temporaryError interface {
+	Temporary() bool
+}
+
 func isNestedErrorRetryable(parentErr awserr.Error) bool {
 	if parentErr == nil {
 		return false
@@ -143,7 +116,7 @@ func isNestedErrorRetryable(parentErr awserr.Error) bool {
 		return isCodeRetryable(aerr.Code())
 	}
 
-	if t, ok := err.(temporary); ok {
+	if t, ok := err.(temporaryError); ok {
 		return t.Temporary() || isErrConnectionReset(err)
 	}
 
@@ -153,9 +126,6 @@ func isNestedErrorRetryable(parentErr awserr.Error) bool {
 // IsErrorRetryable returns whether the error is retryable, based on its Code.
 // Returns false if error is nil.
 func IsErrorRetryable(err error) bool {
-	if err == nil {
-		return false
-	}
 	return shouldRetryError(err)
 }
 
@@ -246,20 +216,13 @@ func IsErrorExpiredCreds(err error) bool {
 //
 // Alias for the utility function IsErrorRetryable
 func (r *Request) IsErrorRetryable() bool {
+	if r.Error == nil {
+		return false
+	}
 	if isErrCode(r.Error, r.RetryErrorCodes) {
 		return true
 	}
 
-	// HTTP response status code 501 should not be retried.
-	// 501 represents Not Implemented which means the request method is not
-	// supported by the server and cannot be handled.
-	if r.HTTPResponse != nil {
-		// HTTP response status code 500 represents internal server error and
-		// should be retried without any throttle.
-		if r.HTTPResponse.StatusCode == 500 {
-			return true
-		}
-	}
 	return IsErrorRetryable(r.Error)
 }
 
@@ -274,11 +237,7 @@ func (r *Request) IsErrorThrottle() bool {
 
 	if r.HTTPResponse != nil {
 		switch r.HTTPResponse.StatusCode {
-		case
-			429, // error caused due to too many requests
-			502, // Bad Gateway error should be throttled
-			503, // caused when service is unavailable
-			504: // error occurred due to gateway timeout
+		case 429, 502, 503, 504:
 			return true
 		}
 	}
@@ -287,7 +246,7 @@ func (r *Request) IsErrorThrottle() bool {
 }
 
 func isErrCode(err error, codes []string) bool {
-	if aerr, ok := err.(awserr.Error); ok && aerr != nil {
+	if aerr, ok := err.(awserr.Error); ok {
 		for _, code := range codes {
 			if code == aerr.Code() {
 				return true

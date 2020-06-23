@@ -37,7 +37,7 @@ const (
 
 // parseTable is a state machine to dictate the grammar above.
 var parseTable = map[ASTKind]map[TokenType]int{
-	ASTKindStart: map[TokenType]int{
+	ASTKindStart: {
 		TokenLit:     StatementState,
 		TokenSep:     OpenScopeState,
 		TokenWS:      SkipTokenState,
@@ -45,7 +45,7 @@ var parseTable = map[ASTKind]map[TokenType]int{
 		TokenComment: CommentState,
 		TokenNone:    TerminalState,
 	},
-	ASTKindCommentStatement: map[TokenType]int{
+	ASTKindCommentStatement: {
 		TokenLit:     StatementState,
 		TokenSep:     OpenScopeState,
 		TokenWS:      SkipTokenState,
@@ -53,7 +53,7 @@ var parseTable = map[ASTKind]map[TokenType]int{
 		TokenComment: CommentState,
 		TokenNone:    MarkCompleteState,
 	},
-	ASTKindExpr: map[TokenType]int{
+	ASTKindExpr: {
 		TokenOp:      StatementPrimeState,
 		TokenLit:     ValueState,
 		TokenSep:     OpenScopeState,
@@ -62,12 +62,12 @@ var parseTable = map[ASTKind]map[TokenType]int{
 		TokenComment: CommentState,
 		TokenNone:    MarkCompleteState,
 	},
-	ASTKindEqualExpr: map[TokenType]int{
+	ASTKindEqualExpr: {
 		TokenLit: ValueState,
 		TokenWS:  SkipTokenState,
 		TokenNL:  SkipState,
 	},
-	ASTKindStatement: map[TokenType]int{
+	ASTKindStatement: {
 		TokenLit:     SectionState,
 		TokenSep:     CloseScopeState,
 		TokenWS:      SkipTokenState,
@@ -75,7 +75,7 @@ var parseTable = map[ASTKind]map[TokenType]int{
 		TokenComment: CommentState,
 		TokenNone:    MarkCompleteState,
 	},
-	ASTKindExprStatement: map[TokenType]int{
+	ASTKindExprStatement: {
 		TokenLit:     ValueState,
 		TokenSep:     OpenScopeState,
 		TokenOp:      ValueState,
@@ -85,14 +85,14 @@ var parseTable = map[ASTKind]map[TokenType]int{
 		TokenNone:    TerminalState,
 		TokenComma:   SkipState,
 	},
-	ASTKindSectionStatement: map[TokenType]int{
+	ASTKindSectionStatement: {
 		TokenLit: SectionState,
 		TokenOp:  SectionState,
 		TokenSep: CloseScopeState,
 		TokenWS:  SectionState,
 		TokenNL:  SkipTokenState,
 	},
-	ASTKindCompletedSectionStatement: map[TokenType]int{
+	ASTKindCompletedSectionStatement: {
 		TokenWS:      SkipTokenState,
 		TokenNL:      SkipTokenState,
 		TokenLit:     StatementState,
@@ -100,7 +100,7 @@ var parseTable = map[ASTKind]map[TokenType]int{
 		TokenComment: CommentState,
 		TokenNone:    MarkCompleteState,
 	},
-	ASTKindSkipStatement: map[TokenType]int{
+	ASTKindSkipStatement: {
 		TokenLit:     StatementState,
 		TokenSep:     OpenScopeState,
 		TokenWS:      SkipTokenState,
@@ -162,7 +162,7 @@ loop:
 			if len(tokens) == 0 {
 				break loop
 			}
-			// if should skip is true, we skip the tokens until should skip is set to false.
+
 			step = SkipTokenState
 		}
 
@@ -218,7 +218,7 @@ loop:
 			// S -> equal_expr' expr_stmt'
 			switch k.Kind {
 			case ASTKindEqualExpr:
-				// assigning a value to some key
+				// assiging a value to some key
 				k.AppendChild(newExpression(tok))
 				stack.Push(newExprStatement(k))
 			case ASTKindExpr:
@@ -249,13 +249,6 @@ loop:
 		case OpenScopeState:
 			if !runeCompare(tok.Raw(), openBrace) {
 				return nil, NewParseError("expected '['")
-			}
-			// If OpenScopeState is not at the start, we must mark the previous ast as complete
-			//
-			// for example: if previous ast was a skip statement;
-			// we should mark it as complete before we create a new statement
-			if k.Kind != ASTKindStart {
-				stack.MarkComplete(k)
 			}
 
 			stmt := newStatement()
@@ -311,9 +304,7 @@ loop:
 			stmt := newCommentStatement(tok)
 			stack.Push(stmt)
 		default:
-			return nil, NewParseError(
-				fmt.Sprintf("invalid state with ASTKind %v and TokenType %v",
-					k, tok.Type()))
+			return nil, NewParseError(fmt.Sprintf("invalid state with ASTKind %v and TokenType %v", k, tok))
 		}
 
 		if len(tokens) > 0 {
@@ -323,7 +314,7 @@ loop:
 
 	// this occurs when a statement has not been completed
 	if stack.top > 1 {
-		return nil, NewParseError(fmt.Sprintf("incomplete ini expression"))
+		return nil, NewParseError(fmt.Sprintf("incomplete expression: %v", stack.container))
 	}
 
 	// returns a sublist which excludes the start symbol

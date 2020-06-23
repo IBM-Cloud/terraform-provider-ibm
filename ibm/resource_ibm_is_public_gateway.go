@@ -193,19 +193,25 @@ func classicPgwCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone 
 	}
 	floatingipID := ""
 	floatingipadd := ""
-	if floatingipdataIntf, ok := d.GetOk(isPublicGatewayFloatingIP); ok && floatingipdataIntf != nil {
-		fip := &vpcclassicv1.PublicGatewayPrototypeFloatingIpFloatingIPIdentity{}
+	if floatingipdataIntf, ok := d.GetOk(isPublicGatewayFloatingIP); ok {
+		fip := &vpcclassicv1.PublicGatewayPrototypeFloatingIp{}
 		floatingipdata := floatingipdataIntf.(map[string]interface{})
-		if floatingipidintf, ok := floatingipdata["id"]; ok && floatingipidintf != nil {
+		floatingipidintf, ispresent := floatingipdata["id"]
+		if ispresent {
 			floatingipID = floatingipidintf.(string)
 			fip.ID = &floatingipID
 		}
-		if floatingipaddintf, ok := floatingipdata[isPublicGatewayFloatingIPAddress]; ok && floatingipaddintf != nil {
+		floatingipaddintf, ispresentadd := floatingipdata[isPublicGatewayFloatingIPAddress]
+		if ispresentadd {
 			floatingipadd = floatingipaddintf.(string)
 			fip.Address = &floatingipadd
 		}
 		options.FloatingIp = fip
 	}
+	// if grp, ok := d.GetOk(isVPCResourceGroup); ok {
+	// 	rg := grp.(string)
+	// 	options.ResourceGroup = &rg
+	// }
 
 	publicgw, response, err := sess.CreatePublicGateway(options)
 	if err != nil {
@@ -248,14 +254,16 @@ func pgwCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone string)
 	}
 	floatingipID := ""
 	floatingipadd := ""
-	if floatingipdataIntf, ok := d.GetOk(isPublicGatewayFloatingIP); ok && floatingipdataIntf != nil {
-		fip := &vpcv1.PublicGatewayPrototypeFloatingIpFloatingIPIdentity{}
+	if floatingipdataIntf, ok := d.GetOk(isPublicGatewayFloatingIP); ok {
+		fip := &vpcv1.PublicGatewayPrototypeFloatingIp{}
 		floatingipdata := floatingipdataIntf.(map[string]interface{})
-		if floatingipidintf, ok := floatingipdata["id"]; ok && floatingipidintf != nil {
+		floatingipidintf, ispresent := floatingipdata["id"]
+		if ispresent {
 			floatingipID = floatingipidintf.(string)
 			fip.ID = &floatingipID
 		}
-		if floatingipaddintf, ok := floatingipdata[isPublicGatewayFloatingIPAddress]; ok && floatingipaddintf != nil {
+		floatingipaddintf, ispresentadd := floatingipdata[isPublicGatewayFloatingIPAddress]
+		if ispresentadd {
 			floatingipadd = floatingipaddintf.(string)
 			fip.Address = &floatingipadd
 		}

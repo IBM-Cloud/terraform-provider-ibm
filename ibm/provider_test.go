@@ -327,8 +327,15 @@ func init() {
 
 	ISRouteNextHop = os.Getenv("SL_ROUTE_NEXTHOP")
 	if ISRouteNextHop == "" {
-		ISRouteNextHop = "10.240.0.0"
+		ISRouteNextHop = "10.0.0.4"
 		fmt.Println("[INFO] Set the environment variable SL_ROUTE_NEXTHOP for testing ibm_is_vpc_route else it is set to default value '10.0.0.4'")
+	}
+
+	imageName = os.Getenv("SL_IMAGE_NAME")
+	if imageName == "" {
+		imageName = "ubuntu-18.04-amd64" // for classic infrastructure
+		// imageName = "ibm-ubuntu-18-04-1-minimal-amd64-1" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable SL_IMAGE_NAME for testing data source ibm_is_image else it is set to default value `ubuntu-18.04-amd64`")
 	}
 
 	// Added for Power Colo Testing
@@ -376,13 +383,13 @@ func init() {
 	// Added for resource image testing
 	image_cos_url = os.Getenv("IMAGE_COS_URL")
 	if image_cos_url == "" {
-		image_cos_url = "cos://us-south/cosbucket-vpc-image-gen2/rhel-guest-image-7.0-20140930.0.x86_64.qcow2"
+		image_cos_url = ""
 		fmt.Println("[WARN] Set the environment variable IMAGE_COS_URL with a VALID COS Image SQL URL for testing ibm_is_image resources on staging/test")
 	}
 
 	image_operating_system = os.Getenv("IMAGE_OPERATING_SYSTEM")
 	if image_operating_system == "" {
-		image_operating_system = "red-7-amd64"
+		image_operating_system = ""
 		fmt.Println("[WARN] Set the environment variable IMAGE_OPERATING_SYSTEM with a VALID Operating system for testing ibm_is_image resources on staging/test")
 	}
 }
