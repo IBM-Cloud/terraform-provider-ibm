@@ -12,6 +12,7 @@ import (
 	// Added code for the Power Colo Offering
 
 	apigateway "github.com/IBM/apigateway-go-sdk"
+	"github.com/go-openapi/strfmt"
 
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
 	jwt "github.com/dgrijalva/jwt-go"
@@ -51,6 +52,8 @@ import (
 
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
+	dl "github.ibm.com/ibmcloud/networking-go-sdk/directlinkapisv1"
+	tg "github.ibm.com/ibmcloud/networking-go-sdk/transitgatewayapisv1"
 	vpcclassic "github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
 	vpc "github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
@@ -176,6 +179,8 @@ type ClientSession interface {
 	APIGateway() (*apigateway.ApiGatewayControllerApiV1, error)
 	PrivateDnsClientSession() (*dns.DnsSvcsV1, error)
 	CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error)
+	DirectlinkV1API() (*dl.DirectLinkApisV1, error)
+	TransitGatewayV1API() (*tg.TransitGatewayApIsV1, error)
 }
 
 type clientSession struct {
@@ -274,8 +279,14 @@ type clientSession struct {
 	vpcErr error
 	vpcAPI *vpc.VpcV1
 
+	directlinkAPI *dl.DirectLinkApisV1
+	directlinkErr error
+
 	cosConfigErr error
 	cosConfigAPI *cosconfig.ResourceConfigurationV1
+
+	transitgatewayAPI *tg.TransitGatewayApIsV1
+	transitgatewayErr error
 }
 
 // BluemixAcccountAPI ...
@@ -425,8 +436,16 @@ func (sess clientSession) VpcV1API() (*vpc.VpcV1, error) {
 	return sess.vpcAPI, sess.vpcErr
 }
 
+func (sess clientSession) DirectlinkV1API() (*dl.DirectLinkApisV1, error) {
+	return sess.directlinkAPI, sess.directlinkErr
+}
+
 func (sess clientSession) CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error) {
 	return sess.cosConfigAPI, sess.cosConfigErr
+}
+
+func (sess clientSession) TransitGatewayV1API() (*tg.TransitGatewayApIsV1, error) {
+	return sess.transitgatewayAPI, sess.transitgatewayErr
 }
 
 // Session to the Power Colo Service
@@ -486,7 +505,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.apigatewayErr = errEmptyBluemixCredentials
 		session.pDnsErr = errEmptyBluemixCredentials
 		session.bmxUserFetchErr = errEmptyBluemixCredentials
+		session.directlinkErr = errEmptyBluemixCredentials
 		session.cosConfigErr = errEmptyBluemixCredentials
+		session.transitgatewayErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -746,10 +767,48 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	session.pDnsClient, session.pDnsErr = dns.NewDnsSvcsV1(dnsOptions)
 	if session.pDnsErr != nil {
-		session.pDnsErr = fmt.Errorf("Error occured while configuring PrivateDNS Service: %s", err)
+		session.pDnsErr = fmt.Errorf("Error occured while configuring PrivateDNS Service: %s", session.pDnsErr)
 	}
 
+	bluemixToken := ""
+	if strings.HasPrefix(sess.BluemixSession.Config.IAMAccessToken, "Bearer") {
+		bluemixToken = sess.BluemixSession.Config.IAMAccessToken[7:len(sess.BluemixSession.Config.IAMAccessToken)]
+	} else {
+		bluemixToken = sess.BluemixSession.Config.IAMAccessToken
+	}
+
+	directlinkOptions := &dl.DirectLinkApisV1Options{
+		URL: envFallBack([]string{"IBMCLOUD_DL_API_ENDPOINT"}, "https://directlink.cloud.ibm.com/v1"),
+		Authenticator: &core.BearerTokenAuthenticator{
+			BearerToken: bluemixToken,
+		},
+		Version: CreateVersionDate(),
+	}
+
+	session.directlinkAPI, session.directlinkErr = dl.NewDirectLinkApisV1(directlinkOptions)
+	if session.directlinkErr != nil {
+		session.directlinkErr = fmt.Errorf("Error occured while configuring Direct Link Service: %s", session.directlinkErr)
+	}
+
+	transitgatewayOptions := &tg.TransitGatewayApIsV1Options{
+		URL: envFallBack([]string{"IBMCLOUD_TG_API_ENDPOINT"}, "https://transit.cloud.ibm.com/v1"),
+		Authenticator: &core.BearerTokenAuthenticator{
+			BearerToken: bluemixToken,
+		},
+		Version: CreateVersionDate(),
+	}
+
+	session.transitgatewayAPI, session.transitgatewayErr = tg.NewTransitGatewayApIsV1(transitgatewayOptions)
+	if session.transitgatewayErr != nil {
+		session.transitgatewayErr = fmt.Errorf("Error occured while configuring Transit Gateway Service: %s", session.transitgatewayErr)
+	}
 	return session, nil
+}
+
+// CreateVersionDate requires mandatory version attribute. Any date from 2019-12-13 up to the currentdate may be provided. Specify the current date to request the latest version.
+func CreateVersionDate() *strfmt.Date {
+	d := strfmt.Date(time.Date(2020, time.June, 13, 0, 0, 0, 0, time.UTC))
+	return &d
 }
 
 func newSession(c *Config) (*Session, error) {

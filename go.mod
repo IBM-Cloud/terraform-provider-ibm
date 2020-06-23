@@ -18,7 +18,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/runtime v0.19.15 // indirect
-	github.com/go-openapi/strfmt v0.19.5 // indirect
+	github.com/go-openapi/strfmt v0.19.5
 	github.com/go-openapi/swag v0.19.9 // indirect
 	github.com/go-openapi/validate v0.19.8 // indirect
 	github.com/go-test/deep v1.0.4 // indirect
@@ -37,6 +37,7 @@ require (
 	github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22
 	github.com/zclconf/go-cty v1.2.1 // indirect
 	github.ibm.com/Bluemix/riaas-go-client v0.0.0-20191018070922-afd27ac04d4f
+	github.ibm.com/ibmcloud/networking-go-sdk v0.0.0-00010101000000-000000000000
 	github.ibm.com/ibmcloud/vpc-go-sdk v0.0.0-00010101000000-000000000000
 	golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898 // indirect
 )
@@ -46,3 +47,5 @@ replace github.ibm.com/Bluemix/riaas-go-client v0.0.0-20191018070922-afd27ac04d4
 replace github.ibm.com/ibmcloud/vpc-go-sdk => ./common/github.ibm.com/ibmcloud/vpc-go-sdk
 
 replace github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22 => ./common/github.com/softlayer/softlayer-go
+
+replace github.ibm.com/ibmcloud/networking-go-sdk => ./common/github.ibm.com/ibmcloud/networking-go-sdk

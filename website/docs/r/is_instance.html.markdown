@@ -140,9 +140,9 @@ resource "ibm_is_instance" "testacc_instance" {
 
 ibm_is_instance provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
-* `create` - (Default 10 minutes) Used for creating Instance.
-* `update` - (Default 10 minutes) Used for updating Instance or while attaching it with volume attachments or interfaces.
-* `delete` - (Default 10 minutes) Used for deleting Instance.
+* `create` - (Default 30 minutes) Used for creating Instance.
+* `update` - (Default 30 minutes) Used for updating Instance or while attaching it with volume attachments or interfaces.
+* `delete` - (Default 30 minutes) Used for deleting Instance.
 
 ## Argument Reference
 

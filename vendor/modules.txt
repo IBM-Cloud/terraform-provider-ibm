@@ -79,6 +79,8 @@ github.com/IBM/dns-svcs-go-sdk/common
 github.com/IBM/dns-svcs-go-sdk/dnssvcsv1
 # github.com/IBM/go-sdk-core/v3 v3.2.4
 github.com/IBM/go-sdk-core/v3/core
+# github.com/IBM/go-sdk-core/v4 v4.0.2
+github.com/IBM/go-sdk-core/v4/core
 # github.com/IBM/ibm-cos-sdk-go v1.3.1
 github.com/IBM/ibm-cos-sdk-go/aws
 github.com/IBM/ibm-cos-sdk-go/aws/arn
@@ -136,7 +138,7 @@ github.com/apparentlymart/go-cidr/cidr
 github.com/apparentlymart/go-textseg/textseg
 # github.com/armon/go-radix v1.0.0
 github.com/armon/go-radix
-# github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
+# github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535
 github.com/asaskevich/govalidator
 # github.com/aws/aws-sdk-go v1.26.2
 github.com/aws/aws-sdk-go/aws
@@ -195,7 +197,7 @@ github.com/ghodss/yaml
 # github.com/go-openapi/analysis v0.19.5
 github.com/go-openapi/analysis
 github.com/go-openapi/analysis/internal
-# github.com/go-openapi/errors v0.19.3
+# github.com/go-openapi/errors v0.19.4
 github.com/go-openapi/errors
 # github.com/go-openapi/jsonpointer v0.19.3
 github.com/go-openapi/jsonpointer
@@ -379,7 +381,7 @@ github.com/mitchellh/go-homedir
 github.com/mitchellh/go-testing-interface
 # github.com/mitchellh/go-wordwrap v1.0.0
 github.com/mitchellh/go-wordwrap
-# github.com/mitchellh/mapstructure v1.1.2
+# github.com/mitchellh/mapstructure v1.3.0
 github.com/mitchellh/mapstructure
 # github.com/mitchellh/reflectwalk v1.0.1
 github.com/mitchellh/reflectwalk
@@ -451,13 +453,17 @@ github.ibm.com/Bluemix/riaas-go-client/riaas/client/v_p_naa_s
 github.ibm.com/Bluemix/riaas-go-client/riaas/models
 github.ibm.com/Bluemix/riaas-go-client/session
 github.ibm.com/Bluemix/riaas-go-client/utils
+# github.ibm.com/ibmcloud/networking-go-sdk v0.0.0-00010101000000-000000000000 => ./common/github.ibm.com/ibmcloud/networking-go-sdk
+github.ibm.com/ibmcloud/networking-go-sdk/common
+github.ibm.com/ibmcloud/networking-go-sdk/directlinkapisv1
 # github.ibm.com/ibmcloud/vpc-go-sdk v0.0.0-00010101000000-000000000000 => ./common/github.ibm.com/ibmcloud/vpc-go-sdk
 github.ibm.com/ibmcloud/vpc-go-sdk/common
 github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1
 github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1
-# go.mongodb.org/mongo-driver v1.1.2
+# go.mongodb.org/mongo-driver v1.3.3
 go.mongodb.org/mongo-driver/bson
 go.mongodb.org/mongo-driver/bson/bsoncodec
+go.mongodb.org/mongo-driver/bson/bsonoptions
 go.mongodb.org/mongo-driver/bson/bsonrw
 go.mongodb.org/mongo-driver/bson/bsontype
 go.mongodb.org/mongo-driver/bson/primitive
