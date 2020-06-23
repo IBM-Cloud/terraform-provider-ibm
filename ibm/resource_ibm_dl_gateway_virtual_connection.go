@@ -142,22 +142,22 @@ func resourceIBMdlGatewayVCRead(d *schema.ResourceData, meta interface{}) error 
 		d.SetId(*instance.ID)
 	}
 	if instance.Name != nil {
-		d.Set(dlVCname, *instance.Name)
+		d.Set(dlVCName, *instance.Name)
 	}
 	if instance.Type != nil {
-		d.Set(dlVCtype, *instance.Type)
+		d.Set(dlVCType, *instance.Type)
 	}
 	if instance.NetworkAccount != nil {
-		d.Set(dlVCNetAcc, *instance.NetworkAccount)
+		d.Set(dlVCNetworkAccount, *instance.NetworkAccount)
 	}
 	if instance.NetworkID != nil {
-		d.Set(dlVCNetId, *instance.NetworkID)
+		d.Set(dlVCNetworkId, *instance.NetworkID)
 	}
 	if instance.CreatedAt != nil {
-		d.Set(dlVCcreatedAt, instance.CreatedAt.String())
+		d.Set(dlVCCreatedAt, instance.CreatedAt.String())
 	}
 	if instance.Status != nil {
-		d.Set(dlVCstatus, *instance.ID)
+		d.Set(dlVCStatus, *instance.ID)
 	}
 	return nil
 }
