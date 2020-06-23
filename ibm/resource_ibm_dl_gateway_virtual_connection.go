@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.ibm.com/ibmcloud/networking-go-sdk/directlinkapisv1"
 )
+
 const (
 	dlGatewaysVirtualConnections = "gateway_vcs"
 	dlVCNetworkAccount           = "network_account"
