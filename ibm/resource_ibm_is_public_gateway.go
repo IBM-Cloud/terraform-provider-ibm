@@ -57,9 +57,10 @@ func resourceIBMISPublicGateway() *schema.Resource {
 			},
 
 			isPublicGatewayFloatingIP: {
-				Type:     schema.TypeMap,
-				Optional: true,
-				Computed: true,
+				Type:             schema.TypeMap,
+				Optional:         true,
+				Computed:         true,
+				DiffSuppressFunc: applyOnce,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
