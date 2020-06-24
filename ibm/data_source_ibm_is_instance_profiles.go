@@ -3,9 +3,9 @@ package ibm
 import (
 	"time"
 
+	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -63,13 +63,24 @@ func classicInstanceProfilesList(d *schema.ResourceData, meta interface{}) error
 	if err != nil {
 		return err
 	}
-	listInstanceProfilesOptions := &vpcclassicv1.ListInstanceProfilesOptions{}
-	availableProfiles, _, err := sess.ListInstanceProfiles(listInstanceProfilesOptions)
-	if err != nil {
-		return err
+	start := ""
+	allrecs := []vpcclassicv1.InstanceProfile{}
+	for {
+		listInstanceProfilesOptions := &vpcclassicv1.ListInstanceProfilesOptions{
+			Start: &start,
+		}
+		availableProfiles, _, err := sess.ListInstanceProfiles(listInstanceProfilesOptions)
+		if err != nil {
+			return err
+		}
+		start = GetNext(availableProfiles.Next)
+		allrecs = append(allrecs, availableProfiles.Profiles...)
+		if start == "" {
+			break
+		}
 	}
 	profilesInfo := make([]map[string]interface{}, 0)
-	for _, profile := range availableProfiles.Profiles {
+	for _, profile := range allrecs {
 
 		l := map[string]interface{}{
 			"name":   *profile.Name,
