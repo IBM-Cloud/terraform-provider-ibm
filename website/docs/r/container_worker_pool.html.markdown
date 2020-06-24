@@ -91,7 +91,6 @@ The following attributes are exported:
    * `private_vlan` - The ID of the private VLAN.
    * `public_vlan` - The ID of the public VLAN.
    * `worker_count` - Number of workers attached to this zone.
-* `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this cluster.
 
 ## Import
 

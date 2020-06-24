@@ -40,7 +40,6 @@ The following attributes are exported:
 * `classic_access` - Indicates whether this VPC is connected to Classic Infrastructure.
 * `resource_group` - The resource group ID where the VPC created.
 * `tags` - Tags associated with the instance.
-* `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
 * `cse_source_addresses` - A list describing the cloud service endpoint source ip adresses and zones. The nested cse_source_addresses block have the following structure:
   * `address` - Ip Address of the cloud service endpoint.
   * `zone_name` - Zone associated with the IP Address.
