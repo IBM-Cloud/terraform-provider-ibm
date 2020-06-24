@@ -47,7 +47,6 @@ The following attributes are exported:
 	* `name` - The name given to this VPN connection.
 	* `id` -  The unique identifier of a VPN connection.
 	* `href` - The VPN connection's canonical URL.
-* `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
 
 
 ## Import

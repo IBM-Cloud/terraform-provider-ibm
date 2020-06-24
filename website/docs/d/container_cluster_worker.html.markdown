@@ -41,4 +41,3 @@ The following attributes are exported:
 * `public_vlan` -  The public VLAN of the worker node.
 * `private_ip` - The private IP of the worker node.
 * `public_ip` -  The public IP of the worker node.
-* `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this cluster.
