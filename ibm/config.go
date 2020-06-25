@@ -8,16 +8,21 @@ import (
 	"os"
 	"strings"
 	"time"
-
 	// Added code for the Power Colo Offering
 
 	apigateway "github.com/IBM/apigateway-go-sdk"
-	"github.com/go-openapi/strfmt"
-
+	dns "github.com/IBM/dns-svcs-go-sdk/dnssvcsv1"
+	"github.com/IBM/go-sdk-core/v3/core"
+	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
+	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/go-openapi/strfmt"
 	slsession "github.com/softlayer/softlayer-go/session"
 	issession "github.ibm.com/Bluemix/riaas-go-client/session"
+	dl "github.ibm.com/ibmcloud/networking-go-sdk/directlinkapisv1"
+	vpcclassic "github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	vpc "github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
@@ -47,14 +52,6 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
-	dns "github.com/IBM/dns-svcs-go-sdk/dnssvcsv1"
-	"github.com/IBM/go-sdk-core/v3/core"
-
-	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
-	kp "github.com/IBM/keyprotect-go-client"
-	dl "github.ibm.com/ibmcloud/networking-go-sdk/directlinkapisv1"
-	vpcclassic "github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
-	vpc "github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 //RetryDelay
@@ -457,6 +454,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("[INFO] Configured Region: %s\n", c.Region)
 	session := clientSession{
 		session: sess,
 	}
