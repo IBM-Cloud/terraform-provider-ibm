@@ -144,6 +144,7 @@ func classicSubnetGetByID(d *schema.ResourceData, meta interface{}, id string) e
 	if err != nil {
 		return fmt.Errorf("Error Getting Subnet (%s): %s\n%s", id, err, response)
 	}
+	d.SetId(*subnet.ID)
 	d.Set("id", *subnet.ID)
 	d.Set(isSubnetName, *subnet.Name)
 	d.Set(isSubnetIpv4CidrBlock, *subnet.Ipv4CidrBlock)
@@ -184,6 +185,7 @@ func subnetGetByID(d *schema.ResourceData, meta interface{}, id string) error {
 	if err != nil {
 		return fmt.Errorf("Error Getting Subnet (%s): %s\n%s", id, err, response)
 	}
+	d.SetId(*subnet.ID)
 	d.Set("id", *subnet.ID)
 	d.Set(isSubnetName, *subnet.Name)
 	d.Set(isSubnetIpv4CidrBlock, *subnet.Ipv4CidrBlock)
