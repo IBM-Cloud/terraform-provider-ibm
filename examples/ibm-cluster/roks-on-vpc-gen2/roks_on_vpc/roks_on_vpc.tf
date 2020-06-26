@@ -49,7 +49,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
   flavor            = var.flavor
   worker_count      = var.worker_count
   resource_group_id = data.ibm_resource_group.resource_group.id
-  entitlement       = "cloud_pak"
+  entitlement       = var.entitlement
   cos_instance_crn  = var.cos_instance_crn
 
   zones {
@@ -65,7 +65,7 @@ resource "ibm_container_vpc_worker_pool" "cluster_pool" {
   vpc_id            = ibm_is_vpc.vpc1.id
   worker_count      = var.worker_count
   resource_group_id = data.ibm_resource_group.resource_group.id
-  entitlement       = "cloud_pak"
+  entitlement       = var.entitlement
   zones {
     name      = local.ZONE2
     subnet_id = ibm_is_subnet.subnet2.id
