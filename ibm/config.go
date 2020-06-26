@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 	"time"
+
 	// Added code for the Power Colo Offering
 
 	apigateway "github.com/IBM/apigateway-go-sdk"
@@ -21,6 +22,7 @@ import (
 	slsession "github.com/softlayer/softlayer-go/session"
 	issession "github.ibm.com/Bluemix/riaas-go-client/session"
 	dl "github.ibm.com/ibmcloud/networking-go-sdk/directlinkapisv1"
+	tg "github.ibm.com/ibmcloud/networking-go-sdk/transitgatewayapisv1"
 	vpcclassic "github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
 	vpc "github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 
@@ -176,6 +178,7 @@ type ClientSession interface {
 	PrivateDnsClientSession() (*dns.DnsSvcsV1, error)
 	CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error)
 	DirectlinkV1API() (*dl.DirectLinkApisV1, error)
+	TransitGatewayV1API() (*tg.TransitGatewayApIsV1, error)
 }
 
 type clientSession struct {
@@ -279,6 +282,9 @@ type clientSession struct {
 
 	cosConfigErr error
 	cosConfigAPI *cosconfig.ResourceConfigurationV1
+
+	transitgatewayAPI *tg.TransitGatewayApIsV1
+	transitgatewayErr error
 }
 
 // BluemixAcccountAPI ...
@@ -436,6 +442,10 @@ func (sess clientSession) CosConfigV1API() (*cosconfig.ResourceConfigurationV1, 
 	return sess.cosConfigAPI, sess.cosConfigErr
 }
 
+func (sess clientSession) TransitGatewayV1API() (*tg.TransitGatewayApIsV1, error) {
+	return sess.transitgatewayAPI, sess.transitgatewayErr
+}
+
 // Session to the Power Colo Service
 
 func (sess clientSession) IBMPISession() (*ibmpisession.IBMPISession, error) {
@@ -496,6 +506,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.bmxUserFetchErr = errEmptyBluemixCredentials
 		session.directlinkErr = errEmptyBluemixCredentials
 		session.cosConfigErr = errEmptyBluemixCredentials
+		session.transitgatewayErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -778,6 +789,18 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.directlinkErr = fmt.Errorf("Error occured while configuring Direct Link Service: %s", session.directlinkErr)
 	}
 
+	transitgatewayOptions := &tg.TransitGatewayApIsV1Options{
+		URL: envFallBack([]string{"IBMCLOUD_TG_API_ENDPOINT"}, "https://transit.cloud.ibm.com/v1"),
+		Authenticator: &core.BearerTokenAuthenticator{
+			BearerToken: bluemixToken,
+		},
+		Version: CreateVersionDateTG(),
+	}
+
+	session.transitgatewayAPI, session.transitgatewayErr = tg.NewTransitGatewayApIsV1(transitgatewayOptions)
+	if session.transitgatewayErr != nil {
+		session.transitgatewayErr = fmt.Errorf("Error occured while configuring Transit Gateway Service: %s", session.transitgatewayErr)
+	}
 	return session, nil
 }
 
@@ -787,6 +810,11 @@ func CreateVersionDate() *strfmt.Date {
 	return &d
 }
 
+// CreateVersionDateTG requires mandatory version attribute.
+func CreateVersionDateTG() *strfmt.Date {
+	d := strfmt.Date(time.Date(2020, time.June, 13, 0, 0, 0, 0, time.UTC))
+	return &d
+}
 func newSession(c *Config) (*Session, error) {
 	ibmSession := &Session{}
 

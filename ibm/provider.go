@@ -385,6 +385,9 @@ func Provider() terraform.ResourceProvider {
 
 			//Direct Link related resources
 			"ibm_dl_gateway": resourceIBMDLGateway(),
+
+			//Added for Transit Gateway
+			"ibm_tg_gateway": resourceIBMTransitGateway(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -402,6 +405,7 @@ func Validator() ValidatorDict {
 				"ibm_is_ike_policy":   resourceIBMISIKEValidator(),
 				"ibm_iam_custom_role": resourceIBMIAMCustomRoleValidator(),
 				"ibm_cis_rate_limit":  resourceIBMCISRateLimitValidator(),
+				"ibm_tg_gateway":      resourceIBMTGValidator(),
 			},
 		}
 	})
