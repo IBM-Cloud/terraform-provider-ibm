@@ -9,6 +9,7 @@ import (
 )
 
 func TestAccIBMISSubnetsDataSource_basic(t *testing.T) {
+	var subnet string
 	resName := "data.ibm_is_subnets.test1"
 	vpcname := fmt.Sprintf("tfsubnet-vpc-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tfsubnet-name-%d", acctest.RandIntRange(10, 100))
@@ -17,8 +18,20 @@ func TestAccIBMISSubnetsDataSource_basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMISSubnetsDataSourceConfig(vpcname, name, ISZoneName, ISCIDR),
+			{
+				Config: testAccCheckIBMISSubnetConfig(vpcname, name, ISZoneName, ISCIDR),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSubnetExists("ibm_is_subnet.testacc_subnet", subnet),
+					resource.TestCheckResourceAttr(
+						"ibm_is_subnet.testacc_subnet", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_subnet.testacc_subnet", "zone", ISZoneName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_subnet.testacc_subnet", "ipv4_cidr_block", ISCIDR),
+				),
+			},
+			{
+				Config: testAccCheckIBMISSubnetsDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resName, "subnets.0.name"),
 					resource.TestCheckResourceAttrSet(resName, "subnets.0.status"),
@@ -36,20 +49,9 @@ func TestAccIBMISSubnetsDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMISSubnetsDataSourceConfig(vpcname, name, zone, cidr string) string {
+func testAccCheckIBMISSubnetsDataSourceConfig() string {
 	// status filter defaults to empty
 	return fmt.Sprintf(`
-	resource "ibm_is_vpc" "testacc_vpc" {
-	name = "%s"
-	}
-
-	resource "ibm_is_subnet" "testacc_subnet" {
-	name            = "%s"
-	vpc             = "${ibm_is_vpc.testacc_vpc.id}"
-	zone            = "%s"
-	ipv4_cidr_block = "%s"
-	}
-
 	data "ibm_is_subnets" "test1" {
-	}`, vpcname, name, zone, cidr)
+	}`)
 }
