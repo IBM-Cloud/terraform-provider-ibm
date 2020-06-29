@@ -166,6 +166,7 @@ resource "ibm_is_security_group_rule" "sg1_app_tcp_rule" {
   }
 }
 
+
 resource "ibm_is_vpc" "vpc2" {
   name = "vpc2"
 }
