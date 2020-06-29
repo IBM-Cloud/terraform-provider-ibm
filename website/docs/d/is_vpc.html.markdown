@@ -51,3 +51,15 @@ The following attributes are exported:
   * `zone` -  Zone of the subnet.
   * `total_ipv4_address_count` - Total IPv4 addresses under the subnet.
   * `available_ipv4_address_count` - Available IPv4 addresses available for the usage in the subnet.
+* `security_group` - A list of security groups attached to VPC. The nested security group block has the following structure:
+  * `group_id` - Security group ID.
+  * `group_name` - Name of the security group.
+  * `rules` -  Set of rules attached to a security group
+    * `rule_id` - ID of the rule
+    * `direction` - Direction of the traffic either inbound or outbound
+    * `ip_version` - ip version either ipv4 or ipv6
+    * `remote` - Security group id, an IP address, a CIDR block, or a single security group identifier.
+    * `type` - The ICMP traffic type to allow.
+    * `code` - The ICMP traffic code to allow.
+    * `port_min` - The inclusive lower bound of TCP port range. 
+    * `port_max` - The inclusive upper bound of TCP port range. 

@@ -281,3 +281,14 @@ resource "ibm_is_public_gateway" "publicgateway1" {
   vpc  = ibm_is_vpc.vpc1.id
   zone = var.zone1
 }
+
+data "ibm_is_vpc" "vpc1" {
+  name = ibm_is_vpc.vpc1.name
+}
+
+output "vpc_sg" {
+  value = ibm_is_vpc.testacc_vpc.security_group
+}
+
+
+
