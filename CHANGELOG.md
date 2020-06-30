@@ -1,3 +1,14 @@
+## 1.8.1 (June 30, 2020)
+
+ENHANCEMENTS:
+
+* datasource: Support for aggregation of VPC images([#1580](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1580))
+
+BUGFIXES
+
+* resource: Fix the destroy of virtual instance with volumes
+* resource: Fix the mutex of pdns resource records([#1601](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1601))
+
 ## 1.8.0 (June 23, 2020)
 
 FEATURES:
