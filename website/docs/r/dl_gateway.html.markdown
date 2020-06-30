@@ -23,8 +23,6 @@ resource ibm_dl_gateway test_dl_gateway {
   name = "Gateway1"
   resource_group = "bf823d4f45b64ceaa4671bee0479346e"
   speed_mbps = 1000 
-  loa_reject_reason = "The port mentioned was incorrect"
-  operational_status = "loa_accepted"
   type =  "dedicated" 
   cross_connect_router = "LAB-xcr01.dal09"
   location_name = "dal09"
@@ -49,12 +47,10 @@ The following arguments are supported:
 * `bgp_cer_cidr` - (Optional, Forces new resource, string) BGP customer edge router CIDR. Specify a value within bgp_base_cidr. If bgp_base_cidr is 169.254.0.0/16, this field can be ommitted and a CIDR will be selected automatically. Example: 10.254.30.78/30
 * `bgp_ibm_cidr` - (Optional, Forces new resource, string) BGP IBM CIDR. Specify a value within bgp_base_cidr. If bgp_base_cidr is 169.254.0.0/16, this field can be ommitted and a CIDR will be selected automatically. Example: 10.254.30.77/30 
 * `resource_group` - (Optional, Forces new resource, string) Resource group for this resource. If unspecified, the account's default resource group is used. 
-* `carrier_name` - (Required, Forces new resource, string) Carrier name. Constraints: 1 ≤ length ≤ 128, Value must match regular expression ^[a-z][A-Z][0-9][ -_]$. Example: myCarrierName
-* `cross_connect_router` - (Required, Forces new resource, string) Cross connect router. Example: xcr01.dal03
-* `customer_name` - (Required, Forces new resource, string) Customer name. Constraints: 1 ≤ length ≤ 128, Value must match regular expression ^[a-z][A-Z][0-9][ -_]$. Example: newCustomerName
-* `location_name` - (Required, Forces new resource, string) Gateway location. Example: dal03
-* `loa_reject_reason` - (Optional, string) Use this field during LOA rejection to provide the reason for the rejection. Example: The port mentioned was incorrect
-* `operational_status` - (Optional, string) Gateway operational status. For gateways pending LOA approval, patch operational_status to the appropriate value to approve or reject its LOA. When rejecting an LOA, provide reject reasoning in loa_reject_reason. Allowable values: [loa_accepted,loa_rejected]. Example: loa_accepted
+* `carrier_name` - (Required for 'dedicated' type, Forces new resource, string) Carrier name. Constraints: 1 ≤ length ≤ 128, Value must match regular expression ^[a-z][A-Z][0-9][ -_]$. Example: myCarrierName
+* `cross_connect_router` - (Required for 'dedicated' type,  Forces new resource, string) Cross connect router. Example: xcr01.dal03
+* `customer_name` - (Required for 'dedicated' type, Forces new resource, string) Customer name. Constraints: 1 ≤ length ≤ 128, Value must match regular expression ^[a-z][A-Z][0-9][ -_]$. Example: newCustomerName
+* `location_name` - (Required for 'dedicated' type, Forces new resource, string) Gateway location. Example: dal03
 
 
 ## Attribute Reference
@@ -74,6 +70,9 @@ The following attributes are exported:
 * `port` - gateway port for type=connect gateways
 * `vlan` - VLAN allocated for this gateway. Only set for type=connect gateways created directly through the IBM portal. 
 * `provider_api_managed` - Indicates whether gateway changes must be made via a provider portal.
+* `operational_status` - Gateway operational status. For gateways pending LOA approval, patch operational_status to the appropriate value to approve or reject its LOA. Example: loa_accepted
+
+**NOTE:** `operational_status`(Gateway operational status) and `loa_reject_reason`(LOA reject reason) cannot be updated using terraform as the status and reason keeps changing with different workflow actions.   
 
 ## Import
 

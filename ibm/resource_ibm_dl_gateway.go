@@ -3,6 +3,7 @@ package ibm
 import (
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
@@ -38,6 +39,7 @@ const (
 	dlPort                         = "port"
 	dlProviderAPIManaged           = "provider_api_managed"
 	dlVlan                         = "vlan"
+	dlTags                         = "tags"
 )
 
 func resourceIBMDLGateway() *schema.Resource {
@@ -63,133 +65,171 @@ func resourceIBMDLGateway() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			dlBgpAsn: {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+				Description: "BGP ASN",
 			},
 			dlBgpBaseCidr: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "BGP base CIDR",
 			},
 			dlCrossConnectRouter: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Cross connect router",
 			},
 			dlGlobal: {
-				Type:     schema.TypeBool,
-				Required: true,
-				ForceNew: false,
+				Type:        schema.TypeBool,
+				Required:    true,
+				ForceNew:    false,
+				Description: "Gateways with global routing (true) can connect to networks outside their associated region",
 			},
 			dlLocationName: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Gateway location",
 			},
 			dlMetered: {
-				Type:     schema.TypeBool,
-				Required: true,
-				ForceNew: false,
+				Type:        schema.TypeBool,
+				Required:    true,
+				ForceNew:    false,
+				Description: "Metered billing option",
 			},
 			dlName: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: false,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     false,
+				Description:  "The unique user-defined name for this gateway",
+				ValidateFunc: InvokeValidator("ibm_dl_gateway", dlName),
+				// ValidateFunc: validateRegexpLen(1, 63, "^([a-zA-Z]|[a-zA-Z][-_a-zA-Z0-9]*[a-zA-Z0-9])$"),
 			},
-
 			dlCarrierName: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Carrier name",
+				// ValidateFunc: validateRegexpLen(1, 128, "^[a-z][A-Z][0-9][ -_]$"),
 			},
 			dlCustomerName: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Customer name",
+				// ValidateFunc: validateRegexpLen(1, 128, "^[a-z][A-Z][0-9][ -_]$"),
 			},
 			dlSpeedMbps: {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: false,
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    false,
+				Description: "Gateway speed in megabits per second",
 			},
 			dlType: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				Description:  "Gateway type",
+				ValidateFunc: InvokeValidator("ibm_dl_gateway", dlType),
+				// ValidateFunc: validateAllowedStringValue([]string{"dedicated", "connect"}),
 			},
 			dlBgpCerCidr: {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "BGP customer edge router CIDR",
 			},
 			dlLoaRejectReason: {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "Loa reject reason",
 			},
 			dlBgpIbmCidr: {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
-			},
-			dlOperationalStatus: {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "BGP IBM CIDR",
 			},
 			dlResourceGroup: {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "Gateway resource group",
+			},
+
+			dlOperationalStatus: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Gateway operational status",
 			},
 			dlPort: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type: schema.TypeString,
+
+				Computed:    true,
+				Description: "Gateway port",
 			},
 			dlProviderAPIManaged: {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether gateway was created through a provider portal",
 			},
 			dlVlan: {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "VLAN allocated for this gateway",
 			},
 			dlBgpIbmAsn: {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "IBM BGP ASN",
 			},
 
 			dlBgpStatus: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Gateway BGP status",
 			},
 			dlCompletionNoticeRejectReason: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Reason for completion notice rejection",
 			},
 			dlCreatedAt: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time resource was created",
 			},
 			dlCrn: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The CRN (Cloud Resource Name) of this gateway",
 			},
 			dlLinkStatus: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Gateway link status",
 			},
 			dlLocationDisplayName: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Gateway location long name",
 			},
-
+			dlTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "Tags for the direct link gateway",
+			},
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -223,6 +263,32 @@ func resourceIBMDLGateway() *schema.Resource {
 	}
 }
 
+func resourceIBMDLGatewayValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 2)
+	dlTypeAllowedValues := "dedicated, connect"
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 dlType,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              dlTypeAllowedValues})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 dlName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-zA-Z]|[a-zA-Z][-_a-zA-Z0-9]*[a-zA-Z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+
+	ibmISDLGatewayResourceValidator := ResourceValidator{ResourceName: "ibm_dl_gateway", Schema: validateSchema}
+	return &ibmISDLGatewayResourceValidator
+}
+
 func directlinkClient(meta interface{}) (*directlinkapisv1.DirectLinkApisV1, error) {
 	sess, err := meta.(ClientSession).DirectlinkV1API()
 	return sess, err
@@ -251,14 +317,41 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 	gatewayTemplateModel.BgpBaseCidr = &bgpBaseCidr
 	metered := d.Get(dlMetered).(bool)
 	gatewayTemplateModel.Metered = &metered
-	carrierName := d.Get(dlCarrierName).(string)
-	gatewayTemplateModel.CarrierName = &carrierName
-	crossConnectRouter := d.Get(dlCrossConnectRouter).(string)
-	gatewayTemplateModel.CrossConnectRouter = &crossConnectRouter
-	locationName := d.Get(dlLocationName).(string)
-	gatewayTemplateModel.LocationName = &locationName
-	customerName := d.Get(dlCustomerName).(string)
-	gatewayTemplateModel.CustomerName = &customerName
+
+	if dtype == "dedicated" {
+		if _, ok := d.GetOk(dlCarrierName); ok {
+			carrierName := d.Get(dlCarrierName).(string)
+			gatewayTemplateModel.CarrierName = &carrierName
+		} else {
+			err = fmt.Errorf("Error creating gateway, %s is a required field", dlCarrierName)
+			log.Printf("%s is a required field", dlCarrierName)
+			return err
+		}
+		if _, ok := d.GetOk(dlCrossConnectRouter); ok {
+			crossConnectRouter := d.Get(dlCrossConnectRouter).(string)
+			gatewayTemplateModel.CrossConnectRouter = &crossConnectRouter
+		} else {
+			err = fmt.Errorf("Error creating gateway, %s is a required field", dlCrossConnectRouter)
+			log.Printf("%s is a required field", dlCrossConnectRouter)
+			return err
+		}
+		if _, ok := d.GetOk(dlLocationName); ok {
+			locationName := d.Get(dlLocationName).(string)
+			gatewayTemplateModel.LocationName = &locationName
+		} else {
+			err = fmt.Errorf("Error creating gateway, %s is a required field", dlLocationName)
+			log.Printf("%s is a required field", dlLocationName)
+			return err
+		}
+		if _, ok := d.GetOk(dlCustomerName); ok {
+			customerName := d.Get(dlCustomerName).(string)
+			gatewayTemplateModel.CustomerName = &customerName
+		} else {
+			err = fmt.Errorf("Error creating gateway, %s is a required field", dlCustomerName)
+			log.Printf("%s is a required field", dlCustomerName)
+			return err
+		}
+	}
 
 	if _, ok := d.GetOk(dlBgpIbmCidr); ok {
 		bgpIbmCidr := d.Get(dlBgpIbmCidr).(string)
@@ -283,6 +376,16 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 	d.SetId(*gateway.ID)
 
 	log.Printf("[INFO] Created Direct Link Gateway (Dedicated Template) : %s", *gateway.ID)
+
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(dlTags); ok || v != "" {
+		oldList, newList := d.GetChange(dlTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *gateway.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource direct link gateway dedicated (%s) tags: %s", d.Id(), err)
+		}
+	}
 
 	return resourceIBMdlGatewayRead(d, meta)
 }
@@ -372,6 +475,12 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	if instance.CreatedAt != nil {
 		d.Set(dlCreatedAt, instance.CreatedAt.String())
 	}
+	tags, err := GetTagsUsingCRN(meta, *instance.Crn)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource direct link gateway (%s) tags: %s", d.Id(), err)
+	}
+	d.Set(dlTags, tags)
 	controller, err := getBaseController(meta)
 	if err != nil {
 		return err
@@ -400,7 +509,7 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 	getOptions := &directlinkapisv1.GetGatewayOptions{
 		ID: &ID,
 	}
-	_, detail, err := directLink.GetGateway(getOptions)
+	instance, detail, err := directLink.GetGateway(getOptions)
 
 	if err != nil {
 		log.Printf("Error fetching Direct Link Gateway (Dedicated Template):%s", detail)
@@ -409,6 +518,16 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	updateGatewayOptionsModel := &directlinkapisv1.UpdateGatewayOptions{}
 	updateGatewayOptionsModel.ID = &ID
+
+	if d.HasChange(dlTags) {
+		oldList, newList := d.GetChange(dlTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource direct link gateway dedicated (%s) tags: %s", *instance.ID, err)
+		}
+	}
+
 	if d.HasChange(dlName) {
 		name := d.Get(dlName).(string)
 		updateGatewayOptionsModel.Name = &name
@@ -417,16 +536,23 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 		speed := int64(d.Get(dlSpeedMbps).(int))
 		updateGatewayOptionsModel.SpeedMbps = &speed
 	}
-	if d.HasChange(dlOperationalStatus) {
-		if _, ok := d.GetOk(dlOperationalStatus); ok {
-			operStatus := d.Get(dlOperationalStatus).(string)
-			updateGatewayOptionsModel.OperationalStatus = &operStatus
+	/*
+		NOTE: Operational Status cannot be maintained in terraform. The status keeps changing automatically in server side.
+		Hence, cannot be maintained in terraform.
+		Operational Status and LoaRejectReason are linked.
+		Hence, a user cannot update through terraform.
+
+		if d.HasChange(dlOperationalStatus) {
+			if _, ok := d.GetOk(dlOperationalStatus); ok {
+				operStatus := d.Get(dlOperationalStatus).(string)
+				updateGatewayOptionsModel.OperationalStatus = &operStatus
+			}
+			if _, ok := d.GetOk(dlLoaRejectReason); ok {
+				loaRejectReason := d.Get(dlLoaRejectReason).(string)
+				updateGatewayOptionsModel.LoaRejectReason = &loaRejectReason
+			}
 		}
-		if _, ok := d.GetOk(dlLoaRejectReason); ok {
-			loaRejectReason := d.Get(dlLoaRejectReason).(string)
-			updateGatewayOptionsModel.LoaRejectReason = &loaRejectReason
-		}
-	}
+	*/
 	if d.HasChange(dlGlobal) {
 		global := d.Get(dlGlobal).(bool)
 		updateGatewayOptionsModel.Global = &global
