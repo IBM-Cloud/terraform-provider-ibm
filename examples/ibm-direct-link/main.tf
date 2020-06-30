@@ -26,4 +26,17 @@ resource ibm_dl_gateway test_dl_gateway {
 
 }   
 
-
+resource "ibm_is_vpc" "test_dl_vc_vpc" {
+		name = "myVpc"
+}  
+	
+resource "ibm_dl_virtual_connection" "test_dl_gateway_vc"{
+		depends_on = [ibm_is_vpc.test_dl_vc_vpc,ibm_dl_gateway.test_dl_gateway]
+		gateway = ibm_dl_gateway.test_dl_gateway.id
+		name = "myVC"
+		type = "vpc"
+		network_id = ibm_is_vpc.test_dl_vc_vpc.resource_crn
+}
+ 
+data "ibm_dl_gateways" "test_dl_gateways" {
+}

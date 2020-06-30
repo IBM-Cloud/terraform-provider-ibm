@@ -63,4 +63,3 @@ The following attributes are exported:
 * `id` - The id of the floating ip.
 * `status` - The status of the floating ip.
 * `address` - The floating ip address. 
-* `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.

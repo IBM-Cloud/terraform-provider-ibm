@@ -241,6 +241,10 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dns_zones":              dataSourceIBMPrivateDNSZones(),
 			"ibm_dns_permitted_networks": dataSourceIBMPrivateDNSPermittedNetworks(),
 			"ibm_dns_resource_records":   dataSourceIBMPrivateDNSResourceRecords(),
+
+			// Added for Direct Link
+
+			"ibm_dl_gateways": dataSourceIBMDLGateways(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -384,7 +388,10 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dns_resource_record":   resourceIBMPrivateDNSResourceRecord(),
 
 			//Direct Link related resources
-			"ibm_dl_gateway": resourceIBMDLGateway(),
+			"ibm_dl_gateway":            resourceIBMDLGateway(),
+			"ibm_dl_virtual_connection": resourceIBMDLGatewayVC(),
+			//Added for Transit Gateway
+			"ibm_tg_gateway": resourceIBMTransitGateway(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -398,10 +405,12 @@ func Validator() ValidatorDict {
 	initOnce.Do(func() {
 		globalValidatorDict = ValidatorDict{
 			ResourceValidatorDictionary: map[string]*ResourceValidator{
-				"ibm_is_vpc":          resourceIBMISVPCValidator(),
-				"ibm_is_ike_policy":   resourceIBMISIKEValidator(),
-				"ibm_iam_custom_role": resourceIBMIAMCustomRoleValidator(),
-				"ibm_cis_rate_limit":  resourceIBMCISRateLimitValidator(),
+				"ibm_is_vpc":                resourceIBMISVPCValidator(),
+				"ibm_is_ike_policy":         resourceIBMISIKEValidator(),
+				"ibm_iam_custom_role":       resourceIBMIAMCustomRoleValidator(),
+				"ibm_cis_rate_limit":        resourceIBMCISRateLimitValidator(),
+				"ibm_tg_gateway":            resourceIBMTGValidator(),
+				"ibm_dl_virtual_connection": resourceIBMdlGatewayVCValidator(),
 			},
 		}
 	})

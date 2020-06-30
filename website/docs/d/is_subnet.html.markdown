@@ -52,4 +52,3 @@ The following attributes are exported:
 * `vpc` - The vpc id.
 * `zone` - The subnet zone name.
 * `available_ipv4_address_count` - The total number of available IPv4 addresses.
-* `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.

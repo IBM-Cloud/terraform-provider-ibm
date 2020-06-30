@@ -79,4 +79,3 @@ The following attributes are exported:
 * `public_service_endpoint` - Is public service endpoint enabled to make the master publicly accessible.
 * `private_service_endpoint` - Is private service endpoint enabled to make the master privately accessible.
 * `crn` - CRN of the instance.
-* `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this cluster.

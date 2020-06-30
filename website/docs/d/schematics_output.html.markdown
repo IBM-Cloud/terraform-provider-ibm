@@ -35,5 +35,3 @@ The following attributes are exported:
 
 * `output_values` - The output values exported as a map of key:value pairs
 * `output_json` - The JSON representation of the output values data in string format.
-* `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about the workspace.
-

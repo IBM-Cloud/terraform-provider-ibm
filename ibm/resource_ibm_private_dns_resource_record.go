@@ -184,9 +184,6 @@ func resourceIBMPrivateDNSResourceRecord() *schema.Resource {
 }
 
 func resourceIBMPrivateDNSResourceRecordCreate(d *schema.ResourceData, meta interface{}) error {
-	mk := "private_dns_resource_record_" + d.Get(pdnsResourceRecordID).(string)
-	ibmMutexKV.Lock(mk)
-	defer ibmMutexKV.Unlock(mk)
 	sess, err := meta.(ClientSession).PrivateDnsClientSession()
 	if err != nil {
 		return err
@@ -286,7 +283,9 @@ func resourceIBMPrivateDNSResourceRecordCreate(d *schema.ResourceData, meta inte
 		createResourceRecordOptions.SetService(service)
 		createResourceRecordOptions.SetProtocol(protocol)
 	}
-
+	mk := "private_dns_resource_record_" + instanceID + zoneID
+	ibmMutexKV.Lock(mk)
+	defer ibmMutexKV.Unlock(mk)
 	response, detail, err := sess.CreateResourceRecord(createResourceRecordOptions)
 	if err != nil {
 		log.Printf("Error creating dns record:%s", detail)
@@ -301,9 +300,6 @@ func resourceIBMPrivateDNSResourceRecordCreate(d *schema.ResourceData, meta inte
 
 func resourceIBMPrivateDNSResourceRecordRead(d *schema.ResourceData, meta interface{}) error {
 	id_set := strings.Split(d.Id(), "/")
-	mk := "private_dns_resource_record_" + id_set[1]
-	ibmMutexKV.Lock(mk)
-	defer ibmMutexKV.Unlock(mk)
 	sess, err := meta.(ClientSession).PrivateDnsClientSession()
 	if err != nil {
 		return err
@@ -360,9 +356,6 @@ func resourceIBMPrivateDNSResourceRecordRead(d *schema.ResourceData, meta interf
 
 func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta interface{}) error {
 	id_set := strings.Split(d.Id(), "/")
-	mk := "private_dns_resource_record_" + id_set[1]
-	ibmMutexKV.Lock(mk)
-	defer ibmMutexKV.Unlock(mk)
 
 	sess, err := meta.(ClientSession).PrivateDnsClientSession()
 	if err != nil {
@@ -370,6 +363,9 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 	}
 
 	getResourceRecordOptions := sess.NewGetResourceRecordOptions(id_set[0], id_set[1], id_set[2])
+	mk := "private_dns_resource_record_" + id_set[0] + id_set[1]
+	ibmMutexKV.Lock(mk)
+	defer ibmMutexKV.Unlock(mk)
 	response, detail, err := sess.GetResourceRecord(getResourceRecordOptions)
 	if err != nil {
 		log.Printf("Error updating dns record:%s", detail)
@@ -486,9 +482,6 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 
 func resourceIBMPrivateDNSResourceRecordDelete(d *schema.ResourceData, meta interface{}) error {
 	id_set := strings.Split(d.Id(), "/")
-	mk := "private_dns_resource_record_" + id_set[1]
-	ibmMutexKV.Lock(mk)
-	defer ibmMutexKV.Unlock(mk)
 
 	sess, err := meta.(ClientSession).PrivateDnsClientSession()
 	if err != nil {
@@ -496,6 +489,9 @@ func resourceIBMPrivateDNSResourceRecordDelete(d *schema.ResourceData, meta inte
 	}
 
 	deleteResourceRecordOptions := sess.NewDeleteResourceRecordOptions(id_set[0], id_set[1], id_set[2])
+	mk := "private_dns_resource_record_" + id_set[0] + id_set[1]
+	ibmMutexKV.Lock(mk)
+	defer ibmMutexKV.Unlock(mk)
 	response, err := sess.DeleteResourceRecord(deleteResourceRecordOptions)
 	if err != nil {
 		log.Printf("Error deleting dns record:%s", response)
@@ -513,10 +509,10 @@ func resourceIBMPrivateDNSResourceRecordExists(d *schema.ResourceData, meta inte
 	}
 
 	id_set := strings.Split(d.Id(), "/")
-	mk := "private_dns_resource_record_" + id_set[1]
+	getResourceRecordOptions := sess.NewGetResourceRecordOptions(id_set[0], id_set[1], id_set[2])
+	mk := "private_dns_resource_record_" + id_set[0] + id_set[1]
 	ibmMutexKV.Lock(mk)
 	defer ibmMutexKV.Unlock(mk)
-	getResourceRecordOptions := sess.NewGetResourceRecordOptions(id_set[0], id_set[1], id_set[2])
 	_, response, err := sess.GetResourceRecord(getResourceRecordOptions)
 
 	if err != nil {

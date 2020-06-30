@@ -38,7 +38,6 @@ The following attributes are exported:
 * `template_id` - The ID of the templates that are present in the workspace.
 * `tags` - The tags suppoprted by workspace.
 * `resource_group` - The resource group associated with the workspace.
-* `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about the workspace.
 * `location` - The location of worspace instantiated.
 * `crn` - The cloud resource name of the worspace.
 * `description` - The description provided for the workspace.

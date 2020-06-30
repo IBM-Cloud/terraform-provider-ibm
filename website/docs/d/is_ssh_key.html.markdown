@@ -35,4 +35,3 @@ The following attributes are exported:
 * `fingerprint` -  The SHA256 fingerprint of the public key.
 * `length` - The length of this key.
 * `type` - The cryptosystem used by this key.
-* `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.

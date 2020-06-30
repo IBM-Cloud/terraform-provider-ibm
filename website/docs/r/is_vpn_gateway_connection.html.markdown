@@ -40,7 +40,7 @@ The following arguments are supported:
 * `name` - (Required, string) Name of the VPN gateway connection.
 * `vpn_gateway` - (Required, Forces new resource, string) The unique identifier of VPN gateway.
 * `peer_address` - (Required, string) The IP address of the peer VPN gateway.
-* `preshared_key`: The preshared key.
+* `preshared_key`- (Required, string) The preshared key.
 * `local_cidrs` - (Optional, Forces new resource, list) List of CIDRs for this resource.
 * `peer_cidrs` - (Optional, Forces new resource, list) List of CIDRs for this resource.
 * `admin_state_up` - (Optional, bool) VPN gateway connection status. Default false. If set to false, the VPN gateway connection is shut down
