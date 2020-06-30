@@ -12,12 +12,19 @@ import (
 	// Added code for the Power Colo Offering
 
 	apigateway "github.com/IBM/apigateway-go-sdk"
-	"github.com/go-openapi/strfmt"
-
+	dns "github.com/IBM/dns-svcs-go-sdk/dnssvcsv1"
+	"github.com/IBM/go-sdk-core/v3/core"
+	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
+	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/go-openapi/strfmt"
 	slsession "github.com/softlayer/softlayer-go/session"
 	issession "github.ibm.com/Bluemix/riaas-go-client/session"
+	dl "github.ibm.com/ibmcloud/networking-go-sdk/directlinkapisv1"
+	tg "github.ibm.com/ibmcloud/networking-go-sdk/transitgatewayapisv1"
+	vpcclassic "github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	vpc "github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
@@ -47,14 +54,6 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
-	dns "github.com/IBM/dns-svcs-go-sdk/dnssvcsv1"
-	"github.com/IBM/go-sdk-core/v3/core"
-
-	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
-	kp "github.com/IBM/keyprotect-go-client"
-	dl "github.ibm.com/ibmcloud/networking-go-sdk/directlinkapisv1"
-	vpcclassic "github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
-	vpc "github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 //RetryDelay
@@ -179,6 +178,7 @@ type ClientSession interface {
 	PrivateDnsClientSession() (*dns.DnsSvcsV1, error)
 	CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error)
 	DirectlinkV1API() (*dl.DirectLinkApisV1, error)
+	TransitGatewayV1API() (*tg.TransitGatewayApIsV1, error)
 }
 
 type clientSession struct {
@@ -282,6 +282,9 @@ type clientSession struct {
 
 	cosConfigErr error
 	cosConfigAPI *cosconfig.ResourceConfigurationV1
+
+	transitgatewayAPI *tg.TransitGatewayApIsV1
+	transitgatewayErr error
 }
 
 // BluemixAcccountAPI ...
@@ -439,6 +442,10 @@ func (sess clientSession) CosConfigV1API() (*cosconfig.ResourceConfigurationV1, 
 	return sess.cosConfigAPI, sess.cosConfigErr
 }
 
+func (sess clientSession) TransitGatewayV1API() (*tg.TransitGatewayApIsV1, error) {
+	return sess.transitgatewayAPI, sess.transitgatewayErr
+}
+
 // Session to the Power Colo Service
 
 func (sess clientSession) IBMPISession() (*ibmpisession.IBMPISession, error) {
@@ -457,6 +464,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("[INFO] Configured Region: %s\n", c.Region)
 	session := clientSession{
 		session: sess,
 	}
@@ -498,6 +506,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.bmxUserFetchErr = errEmptyBluemixCredentials
 		session.directlinkErr = errEmptyBluemixCredentials
 		session.cosConfigErr = errEmptyBluemixCredentials
+		session.transitgatewayErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -780,6 +789,18 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.directlinkErr = fmt.Errorf("Error occured while configuring Direct Link Service: %s", session.directlinkErr)
 	}
 
+	transitgatewayOptions := &tg.TransitGatewayApIsV1Options{
+		URL: envFallBack([]string{"IBMCLOUD_TG_API_ENDPOINT"}, "https://transit.cloud.ibm.com/v1"),
+		Authenticator: &core.BearerTokenAuthenticator{
+			BearerToken: bluemixToken,
+		},
+		Version: CreateVersionDateTG(),
+	}
+
+	session.transitgatewayAPI, session.transitgatewayErr = tg.NewTransitGatewayApIsV1(transitgatewayOptions)
+	if session.transitgatewayErr != nil {
+		session.transitgatewayErr = fmt.Errorf("Error occured while configuring Transit Gateway Service: %s", session.transitgatewayErr)
+	}
 	return session, nil
 }
 
@@ -789,6 +810,11 @@ func CreateVersionDate() *strfmt.Date {
 	return &d
 }
 
+// CreateVersionDateTG requires mandatory version attribute.
+func CreateVersionDateTG() *strfmt.Date {
+	d := strfmt.Date(time.Date(2020, time.June, 13, 0, 0, 0, 0, time.UTC))
+	return &d
+}
 func newSession(c *Config) (*Session, error) {
 	ibmSession := &Session{}
 

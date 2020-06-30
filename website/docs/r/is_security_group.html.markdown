@@ -47,8 +47,6 @@ Nested `rules` blocks have the following structure:
   * `code` - The ICMP traffic code to allow.
   * `port_max` - The inclusive upper bound of TCP/UDP port range.
   * `port_min` - The inclusive lower bound of TCP/UDP port range. 
-* `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
-
    
 ## Import
 

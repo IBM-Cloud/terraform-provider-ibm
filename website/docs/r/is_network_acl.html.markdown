@@ -156,8 +156,6 @@ Nested `rules` blocks have the following structure:
 	* `id` - The rule id.
 	* `ip_version` - The IP version of the rule.
 	* `subnets` - The subnets for the ACL rule.
-* `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
-
 
 ## Import
 

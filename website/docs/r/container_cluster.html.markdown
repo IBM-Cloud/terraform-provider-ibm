@@ -200,4 +200,3 @@ The following attributes are exported:
 * `private_service_endpoint_url` - Private service endpoint url.
 * `public_service_endpoint_url` - Public service endpoint url.
 * `crn` - CRN of the instance.
-* `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this cluster.

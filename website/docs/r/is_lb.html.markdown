@@ -50,7 +50,6 @@ The following attributes are exported:
 * `status` - The status of load balancer.
 * `operating_status` - The operating status of this load balancer.
 * `hostname` - Fully qualified domain name assigned to this load balancer.
-* `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
 
 
 ## Import
