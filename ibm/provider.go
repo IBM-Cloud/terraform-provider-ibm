@@ -241,6 +241,10 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dns_zones":              dataSourceIBMPrivateDNSZones(),
 			"ibm_dns_permitted_networks": dataSourceIBMPrivateDNSPermittedNetworks(),
 			"ibm_dns_resource_records":   dataSourceIBMPrivateDNSResourceRecords(),
+
+			// Added for Direct Link
+
+			"ibm_dl_gateways": dataSourceIBMDLGateways(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
