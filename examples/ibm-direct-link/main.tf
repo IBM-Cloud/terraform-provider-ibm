@@ -36,5 +36,8 @@ resource "ibm_dl_virtual_connection" "test_dl_gateway_vc"{
 		type = "vpc"
 		network_id = ibm_is_vpc.test_dl_vc_vpc.resource_crn
 }
+
+data "ibm_dl_gateways" "test_dl_gateways" {
+}
  
 
