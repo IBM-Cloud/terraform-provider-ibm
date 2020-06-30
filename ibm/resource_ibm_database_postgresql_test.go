@@ -7,10 +7,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
 
 func TestAccIBMDatabaseInstance_Postgres_Basic(t *testing.T) {
@@ -318,7 +319,6 @@ func testAccCheckIBMDatabaseInstance_Postgres_reduced(databaseResourceGroup stri
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 2048
 		members_disk_allocation_mb   = 14336
-		members_cpu_allocation_count = 3
 		service_endpoints            = "public"
 		tags                         = ["one:two"]
 	  }

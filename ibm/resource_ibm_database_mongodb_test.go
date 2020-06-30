@@ -57,7 +57,7 @@ func TestAccIBMDatabaseInstance_Mongodb_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "connectionstrings.2.name", "admin"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.0.hosts.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.0.scheme", "mongodb"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.0.database", ""),
+					resource.TestCheckResourceAttr(name, "connectionstrings.0.database", "ibmclouddb"),
 				),
 			},
 			resource.TestStep{

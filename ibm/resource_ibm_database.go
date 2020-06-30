@@ -64,7 +64,7 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
-			Update: schema.DefaultTimeout(20 * time.Minute),
+			Update: schema.DefaultTimeout(45 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
@@ -1247,7 +1247,7 @@ func waitForDatabaseTaskComplete(taskId string, d *schema.ResourceData, meta int
 	}
 	delayDuration := 5 * time.Second
 
-	timeout := time.After(15 * time.Minute)
+	timeout := time.After(60 * time.Minute)
 	delay := time.Tick(delayDuration)
 	innerTask := icdv4.Task{}
 
