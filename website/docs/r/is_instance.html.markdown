@@ -221,6 +221,8 @@ Nested `volume_attachments` block have the following structure:
   * `volume_id` - The id of the volume attachment's volume
   * `volume_name` -  The name of the volume attachment's volume
   * `volume_crn` -  The CRN of the volume attachment's volume
+* `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
+
 
 ## Import
 

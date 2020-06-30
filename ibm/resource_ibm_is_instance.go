@@ -1758,6 +1758,7 @@ func classicInstanceDelete(d *schema.ResourceData, meta interface{}, id string) 
 			if err != nil {
 				return err
 			}
+			break
 		}
 		if *vol.Type == "boot" {
 			bootvolid = *vol.Volume.ID
@@ -1838,6 +1839,7 @@ func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
 			if err != nil {
 				return err
 			}
+			break
 		}
 		if *vol.Type == "boot" {
 			bootvolid = *vol.Volume.ID

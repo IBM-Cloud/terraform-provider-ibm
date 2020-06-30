@@ -50,7 +50,8 @@ The following arguments are supported:
 * `floating_ip` - (Optional, string) A nested block describing the floating IP of this gateway. Only one of `id` or `address` to be given.
 Nested `floating_ip` blocks have the following structure:
   * `id` - (Optional, string) ID of the floating ip bound to the public gateway.
-  * `address` - (Optional, string) IP address of the floating ip bound to the public gateway.
+  * `address` - (Optional, string) IP address of the floating ip bound to the public gateway. 
+* `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
 
 
 ## Attribute Reference

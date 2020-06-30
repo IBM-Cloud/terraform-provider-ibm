@@ -75,26 +75,15 @@ func classicImageGet(d *schema.ResourceData, meta interface{}, name, visibility 
 	if err != nil {
 		return err
 	}
-	start := ""
-	allrecs := []vpcclassicv1.Image{}
-	for {
-		listImagesOptions := &vpcclassicv1.ListImagesOptions{
-			Start: &start,
-		}
-		if visibility != "" {
-			listImagesOptions.Visibility = &visibility
-		}
-		availableImages, _, err := sess.ListImages(listImagesOptions)
-		if err != nil {
-			return err
-		}
-		start = GetNext(availableImages.Next)
-		allrecs = append(allrecs, availableImages.Images...)
-		if start == "" {
-			break
-		}
+	listImagesOptions := &vpcclassicv1.ListImagesOptions{}
+	if visibility != "" {
+		listImagesOptions.Visibility = &visibility
 	}
-	for _, image := range allrecs {
+	images, _, err := sess.ListImages(listImagesOptions)
+	if err != nil {
+		return err
+	}
+	for _, image := range images.Images {
 		if *image.Name == name {
 			d.SetId(*image.ID)
 			d.Set("status", *image.Status)
@@ -114,26 +103,15 @@ func imageGet(d *schema.ResourceData, meta interface{}, name, visibility string)
 	if err != nil {
 		return err
 	}
-	start := ""
-	allrecs := []vpcv1.Image{}
-	for {
-		listImagesOptions := &vpcv1.ListImagesOptions{
-			Start: &start,
-		}
-		if visibility != "" {
-			listImagesOptions.Visibility = &visibility
-		}
-		availableImages, _, err := sess.ListImages(listImagesOptions)
-		if err != nil {
-			return err
-		}
-		start = GetNext(availableImages.Next)
-		allrecs = append(allrecs, availableImages.Images...)
-		if start == "" {
-			break
-		}
+	listImagesOptions := &vpcv1.ListImagesOptions{}
+	if visibility != "" {
+		listImagesOptions.Visibility = &visibility
 	}
-	for _, image := range allrecs {
+	images, _, err := sess.ListImages(listImagesOptions)
+	if err != nil {
+		return err
+	}
+	for _, image := range images.Images {
 		if *image.Name == name {
 			d.SetId(*image.ID)
 			d.Set("status", *image.Status)

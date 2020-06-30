@@ -69,7 +69,6 @@ The following variable needs to be set in the variables.tf
 |worker_pool_name          | Worker pool name                                          |`string` |   yes    |
 |worker_pool_workers_count | Number of Worker nodes in the worker pool                 |`int`    |   yes    |
 |cos_instance_crn          | CRN id of the COS instance created                        |`string` |   yes    |
-|entitlement               | Openshift Cluster entitlement                             |`string` |   yes    |
 
 
 ## Outputs

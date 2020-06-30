@@ -1725,18 +1725,3 @@ func isErrorToString(err error) string {
 	}
 	return err.Error()
 }
-
-// GetNext ...
-func GetNext(next interface{}) string {
-	if reflect.ValueOf(next).IsNil() {
-		return ""
-	}
-
-	u, err := url.Parse(reflect.ValueOf(next).Elem().FieldByName("Href").Elem().String())
-	if err != nil {
-		return ""
-	}
-
-	q := u.Query()
-	return q.Get("start")
-}

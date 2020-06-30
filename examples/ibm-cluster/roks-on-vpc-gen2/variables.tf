@@ -37,7 +37,3 @@ variable "cluster_name" {
 variable "worker_pool_name" {
   default = "workerpool"
 }
-
-variable "entitlement"{
-  default = ""
-}

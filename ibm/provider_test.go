@@ -51,6 +51,7 @@ var regionName string
 var ISZoneName string
 var ISCIDR string
 var ISAddressPrefixCIDR string
+var isImage string
 var instanceProfileName string
 var ISRouteDestination string
 var ISRouteNextHop string
@@ -69,8 +70,6 @@ var pi_instance_name string
 
 // For Image
 
-var IsImageName string
-var isImage string
 var image_cos_url string
 var image_operating_system string
 
@@ -306,11 +305,10 @@ func init() {
 		ISAddressPrefixCIDR = "10.120.0.0/24"
 		fmt.Println("[INFO] Set the environment variable SL_ADDRESS_PREFIX_CIDR for testing ibm_is_vpc_address_prefix else it is set to default value '10.120.0.0/24'")
 	}
-
-	isImage = os.Getenv("IS_IMAGE")
+	isImage = os.Getenv("SL_IMAGE")
 	if isImage == "" {
-		isImage = "fc538f61-7dd6-4408-978c-c6b85b69fe76" // for classic infrastructure
-		// isImage = "r006-ed3f775f-ad7e-4e37-ae62-7199b4988b00" // for next gen infrastructure
+		isImage = "7eb4e35b-4257-56f8-d7da-326d85452591" // for classic infrastructure
+		// isImage = "99edcc54-c513-4d46-9f5b-36243a1e50e2" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable SL_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value '7eb4e35b-4257-56f8-d7da-326d85452591'")
 	}
 
@@ -386,13 +384,6 @@ func init() {
 	if image_operating_system == "" {
 		image_operating_system = "red-7-amd64"
 		fmt.Println("[WARN] Set the environment variable IMAGE_OPERATING_SYSTEM with a VALID Operating system for testing ibm_is_image resources on staging/test")
-	}
-
-	IsImageName = os.Getenv("IS_IMAGE_NAME")
-	if IsImageName == "" {
-		IsImageName = "ibm-ubuntu-18-04-2-minimal-amd64-1" // for classic infrastructure
-		// IsImageName = "ibm-ubuntu-18-04-1-minimal-amd64-2" // for next gen infrastructure
-		fmt.Println("[INFO] Set the environment variable IS_IMAGE_NAME for testing data source ibm_is_image else it is set to default value `ubuntu-18.04-amd64`")
 	}
 }
 
