@@ -244,7 +244,8 @@ func Provider() terraform.ResourceProvider {
 
 			// Added for Direct Link
 
-			"ibm_dl_gateways": dataSourceIBMDLGateways(),
+			"ibm_dl_gateways":      dataSourceIBMDLGateways(),
+			"ibm_dl_speed_options": dataSourceIBMDLSpeedOptions(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -412,6 +413,7 @@ func Validator() ValidatorDict {
 				"ibm_tg_gateway":            resourceIBMTGValidator(),
 				"ibm_dl_virtual_connection": resourceIBMdlGatewayVCValidator(),
 				"ibm_dl_gateway":            resourceIBMDLGatewayValidator(),
+				"ibm_dl_speed_options":      datasourceIBMDLSpeedOptionsValidator(),
 			},
 		}
 	})
