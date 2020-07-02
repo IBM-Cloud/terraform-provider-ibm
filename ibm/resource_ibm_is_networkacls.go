@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -268,11 +268,11 @@ func classicNwaclCreate(d *schema.ResourceData, meta interface{}, name string) e
 		return err
 	}
 
-	options := &vpcclassicv1.CreateNetworkAclOptions{
+	options := &vpcclassicv1.CreateNetworkACLOptions{
 		NetworkACLPrototype: nwaclTemplate,
 	}
 
-	nwacl, response, err := sess.CreateNetworkAcl(options)
+	nwacl, response, err := sess.CreateNetworkACL(options)
 	if err != nil {
 		return fmt.Errorf("[DEBUG]Error while creating Network ACL err %s\n%s", err, response)
 	}
@@ -307,7 +307,7 @@ func nwaclCreate(d *schema.ResourceData, meta interface{}, name string) error {
 
 	nwaclTemplate := &vpcv1.NetworkACLPrototype{
 		Name: &name,
-		Vpc: &vpcv1.VPCIdentity{
+		VPC: &vpcv1.VPCIdentity{
 			ID: &vpc,
 		},
 	}
@@ -328,11 +328,11 @@ func nwaclCreate(d *schema.ResourceData, meta interface{}, name string) error {
 		return err
 	}
 
-	options := &vpcv1.CreateNetworkAclOptions{
+	options := &vpcv1.CreateNetworkACLOptions{
 		NetworkACLPrototype: nwaclTemplate,
 	}
 
-	nwacl, response, err := sess.CreateNetworkAcl(options)
+	nwacl, response, err := sess.CreateNetworkACL(options)
 	if err != nil {
 		return fmt.Errorf("[DEBUG]Error while creating Network ACL err %s\n%s", err, response)
 	}
@@ -379,10 +379,10 @@ func classicNwaclGet(d *schema.ResourceData, meta interface{}, id string) error 
 	if err != nil {
 		return err
 	}
-	getNetworkAclOptions := &vpcclassicv1.GetNetworkAclOptions{
+	getNetworkAclOptions := &vpcclassicv1.GetNetworkACLOptions{
 		ID: &id,
 	}
-	nwacl, response, err := sess.GetNetworkAcl(getNetworkAclOptions)
+	nwacl, response, err := sess.GetNetworkACL(getNetworkAclOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -399,13 +399,13 @@ func classicNwaclGet(d *schema.ResourceData, meta interface{}, id string) error 
 			log.Println("[DEBUG] Type of the Rule", reflect.TypeOf(rulex))
 			rule := make(map[string]interface{})
 			switch reflect.TypeOf(rulex).String() {
-			case "*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolICMP":
+			case "*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolIcmp":
 				{
-					rulex := rulex.(*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolICMP)
+					rulex := rulex.(*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolIcmp)
 					rule[isNetworkACLRuleID] = *rulex.ID
 					rule[isNetworkACLRuleName] = *rulex.Name
 					rule[isNetworkACLRuleAction] = *rulex.Action
-					rule[isNetworkACLRuleIPVersion] = *rulex.IpVersion
+					rule[isNetworkACLRuleIPVersion] = *rulex.IPVersion
 					rule[isNetworkACLRuleSource] = *rulex.Source
 					rule[isNetworkACLRuleDestination] = *rulex.Destination
 					rule[isNetworkACLRuleDirection] = *rulex.Direction
@@ -418,13 +418,13 @@ func classicNwaclGet(d *schema.ResourceData, meta interface{}, id string) error 
 					}
 					rule[isNetworkACLRuleICMP] = icmp
 				}
-			case "*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolTCPUDP":
+			case "*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolTcpudp":
 				{
-					rulex := rulex.(*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolTCPUDP)
+					rulex := rulex.(*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolTcpudp)
 					rule[isNetworkACLRuleID] = *rulex.ID
 					rule[isNetworkACLRuleName] = *rulex.Name
 					rule[isNetworkACLRuleAction] = *rulex.Action
-					rule[isNetworkACLRuleIPVersion] = *rulex.IpVersion
+					rule[isNetworkACLRuleIPVersion] = *rulex.IPVersion
 					rule[isNetworkACLRuleSource] = *rulex.Source
 					rule[isNetworkACLRuleDestination] = *rulex.Destination
 					rule[isNetworkACLRuleDirection] = *rulex.Direction
@@ -458,7 +458,7 @@ func classicNwaclGet(d *schema.ResourceData, meta interface{}, id string) error 
 					rule[isNetworkACLRuleID] = *rulex.ID
 					rule[isNetworkACLRuleName] = *rulex.Name
 					rule[isNetworkACLRuleAction] = *rulex.Action
-					rule[isNetworkACLRuleIPVersion] = *rulex.IpVersion
+					rule[isNetworkACLRuleIPVersion] = *rulex.IPVersion
 					rule[isNetworkACLRuleSource] = *rulex.Source
 					rule[isNetworkACLRuleDestination] = *rulex.Destination
 					rule[isNetworkACLRuleDirection] = *rulex.Direction
@@ -486,10 +486,10 @@ func nwaclGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if err != nil {
 		return err
 	}
-	getNetworkAclOptions := &vpcv1.GetNetworkAclOptions{
+	getNetworkAclOptions := &vpcv1.GetNetworkACLOptions{
 		ID: &id,
 	}
-	nwacl, response, err := sess.GetNetworkAcl(getNetworkAclOptions)
+	nwacl, response, err := sess.GetNetworkACL(getNetworkAclOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -498,7 +498,7 @@ func nwaclGet(d *schema.ResourceData, meta interface{}, id string) error {
 		return fmt.Errorf("Error getting Network ACL(%s) : %s\n%s", id, err, response)
 	}
 	d.Set(isNetworkACLName, *nwacl.Name)
-	d.Set(isNetworkACLVPC, *nwacl.Vpc.ID)
+	d.Set(isNetworkACLVPC, *nwacl.VPC.ID)
 	if nwacl.ResourceGroup != nil {
 		d.Set(isNetworkACLResourceGroup, *nwacl.ResourceGroup.ID)
 		d.Set(ResourceGroupName, *nwacl.ResourceGroup.Name)
@@ -511,13 +511,13 @@ func nwaclGet(d *schema.ResourceData, meta interface{}, id string) error {
 			log.Println("[DEBUG] Type of the Rule", reflect.TypeOf(rulex))
 			rule := make(map[string]interface{})
 			switch reflect.TypeOf(rulex).String() {
-			case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolICMP":
+			case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolIcmp":
 				{
-					rulex := rulex.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolICMP)
+					rulex := rulex.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolIcmp)
 					rule[isNetworkACLRuleID] = *rulex.ID
 					rule[isNetworkACLRuleName] = *rulex.Name
 					rule[isNetworkACLRuleAction] = *rulex.Action
-					rule[isNetworkACLRuleIPVersion] = *rulex.IpVersion
+					rule[isNetworkACLRuleIPVersion] = *rulex.IPVersion
 					rule[isNetworkACLRuleSource] = *rulex.Source
 					rule[isNetworkACLRuleDestination] = *rulex.Destination
 					rule[isNetworkACLRuleDirection] = *rulex.Direction
@@ -530,13 +530,13 @@ func nwaclGet(d *schema.ResourceData, meta interface{}, id string) error {
 					}
 					rule[isNetworkACLRuleICMP] = icmp
 				}
-			case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolTCPUDP":
+			case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolTcpudp":
 				{
-					rulex := rulex.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolTCPUDP)
+					rulex := rulex.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolTcpudp)
 					rule[isNetworkACLRuleID] = *rulex.ID
 					rule[isNetworkACLRuleName] = *rulex.Name
 					rule[isNetworkACLRuleAction] = *rulex.Action
-					rule[isNetworkACLRuleIPVersion] = *rulex.IpVersion
+					rule[isNetworkACLRuleIPVersion] = *rulex.IPVersion
 					rule[isNetworkACLRuleSource] = *rulex.Source
 					rule[isNetworkACLRuleDestination] = *rulex.Destination
 					rule[isNetworkACLRuleDirection] = *rulex.Direction
@@ -570,7 +570,7 @@ func nwaclGet(d *schema.ResourceData, meta interface{}, id string) error {
 					rule[isNetworkACLRuleID] = *rulex.ID
 					rule[isNetworkACLRuleName] = *rulex.Name
 					rule[isNetworkACLRuleAction] = *rulex.Action
-					rule[isNetworkACLRuleIPVersion] = *rulex.IpVersion
+					rule[isNetworkACLRuleIPVersion] = *rulex.IPVersion
 					rule[isNetworkACLRuleSource] = *rulex.Source
 					rule[isNetworkACLRuleDestination] = *rulex.Destination
 					rule[isNetworkACLRuleDirection] = *rulex.Direction
@@ -629,11 +629,11 @@ func classicNwaclUpdate(d *schema.ResourceData, meta interface{}, id, name strin
 	}
 	rules := d.Get(isNetworkACLRules).([]interface{})
 	if hasChanged {
-		updateNetworkAclOptions := &vpcclassicv1.UpdateNetworkAclOptions{
+		updateNetworkAclOptions := &vpcclassicv1.UpdateNetworkACLOptions{
 			ID:   &id,
 			Name: &name,
 		}
-		_, response, err := sess.UpdateNetworkAcl(updateNetworkAclOptions)
+		_, response, err := sess.UpdateNetworkACL(updateNetworkAclOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating Network ACL(%s) : %s\n%s", id, err, response)
 		}
@@ -664,11 +664,11 @@ func nwaclUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasC
 	}
 	rules := d.Get(isNetworkACLRules).([]interface{})
 	if hasChanged {
-		updateNetworkAclOptions := &vpcv1.UpdateNetworkAclOptions{
+		updateNetworkAclOptions := &vpcv1.UpdateNetworkACLOptions{
 			ID:   &id,
 			Name: &name,
 		}
-		_, response, err := sess.UpdateNetworkAcl(updateNetworkAclOptions)
+		_, response, err := sess.UpdateNetworkACL(updateNetworkAclOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating Network ACL(%s) : %s\n%s", id, err, response)
 		}
@@ -720,10 +720,10 @@ func classicNwaclDelete(d *schema.ResourceData, meta interface{}, id string) err
 		return err
 	}
 
-	getNetworkAclOptions := &vpcclassicv1.GetNetworkAclOptions{
+	getNetworkAclOptions := &vpcclassicv1.GetNetworkACLOptions{
 		ID: &id,
 	}
-	_, response, err := sess.GetNetworkAcl(getNetworkAclOptions)
+	_, response, err := sess.GetNetworkACL(getNetworkAclOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -732,10 +732,10 @@ func classicNwaclDelete(d *schema.ResourceData, meta interface{}, id string) err
 		return fmt.Errorf("Error Getting Network ACL (%s): %s\n%s", id, err, response)
 	}
 
-	deleteNetworkAclOptions := &vpcclassicv1.DeleteNetworkAclOptions{
+	deleteNetworkAclOptions := &vpcclassicv1.DeleteNetworkACLOptions{
 		ID: &id,
 	}
-	response, err = sess.DeleteNetworkAcl(deleteNetworkAclOptions)
+	response, err = sess.DeleteNetworkACL(deleteNetworkAclOptions)
 	if err != nil {
 		return fmt.Errorf("Error Deleting Network ACL : %s\n%s", err, response)
 	}
@@ -749,10 +749,10 @@ func nwaclDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		return err
 	}
 
-	getNetworkAclOptions := &vpcv1.GetNetworkAclOptions{
+	getNetworkAclOptions := &vpcv1.GetNetworkACLOptions{
 		ID: &id,
 	}
-	_, response, err := sess.GetNetworkAcl(getNetworkAclOptions)
+	_, response, err := sess.GetNetworkACL(getNetworkAclOptions)
 
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
@@ -762,10 +762,10 @@ func nwaclDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		return fmt.Errorf("Error Getting Network ACL (%s): %s\n%s", id, err, response)
 	}
 
-	deleteNetworkAclOptions := &vpcv1.DeleteNetworkAclOptions{
+	deleteNetworkAclOptions := &vpcv1.DeleteNetworkACLOptions{
 		ID: &id,
 	}
-	response, err = sess.DeleteNetworkAcl(deleteNetworkAclOptions)
+	response, err = sess.DeleteNetworkACL(deleteNetworkAclOptions)
 	if err != nil {
 		return fmt.Errorf("Error Deleting Network ACL : %s\n%s", err, response)
 	}
@@ -793,10 +793,10 @@ func classicNwaclExists(d *schema.ResourceData, meta interface{}, id string) (bo
 	if err != nil {
 		return false, err
 	}
-	getNetworkAclOptions := &vpcclassicv1.GetNetworkAclOptions{
+	getNetworkAclOptions := &vpcclassicv1.GetNetworkACLOptions{
 		ID: &id,
 	}
-	_, response, err := sess.GetNetworkAcl(getNetworkAclOptions)
+	_, response, err := sess.GetNetworkACL(getNetworkAclOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
@@ -811,10 +811,10 @@ func nwaclExists(d *schema.ResourceData, meta interface{}, id string) (bool, err
 	if err != nil {
 		return false, err
 	}
-	getNetworkAclOptions := &vpcv1.GetNetworkAclOptions{
+	getNetworkAclOptions := &vpcv1.GetNetworkACLOptions{
 		ID: &id,
 	}
-	_, response, err := sess.GetNetworkAcl(getNetworkAclOptions)
+	_, response, err := sess.GetNetworkACL(getNetworkAclOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
@@ -856,31 +856,41 @@ func checkNetworkACLNil(ptr *int64) int {
 }
 
 func classicClearRules(nwaclC *vpcclassicv1.VpcClassicV1, nwaclid string) error {
-	listNetworkAclRulesOptions := &vpcclassicv1.ListNetworkAclRulesOptions{
-		NetworkAclID: &nwaclid,
-	}
-	rawrules, response, err := nwaclC.ListNetworkAclRules(listNetworkAclRulesOptions)
-	if err != nil {
-		return fmt.Errorf("Error Listing network ACL rules : %s\n%s", err, response)
+	start := ""
+	allrecs := []vpcclassicv1.NetworkACLRuleItemIntf{}
+	for {
+		listNetworkAclRulesOptions := &vpcclassicv1.ListNetworkACLRulesOptions{
+			Start:        &start,
+			NetworkACLID: &nwaclid,
+		}
+		rawrules, response, err := nwaclC.ListNetworkACLRules(listNetworkAclRulesOptions)
+		if err != nil {
+			return fmt.Errorf("Error Listing network ACL rules : %s\n%s", err, response)
+		}
+		start = GetNext(rawrules.Next)
+		allrecs = append(allrecs, rawrules.Rules...)
+		if start == "" {
+			break
+		}
 	}
 
-	for _, rule := range rawrules.Rules {
-		deleteNetworkAclRuleOptions := &vpcclassicv1.DeleteNetworkAclRuleOptions{
-			NetworkAclID: &nwaclid,
+	for _, rule := range allrecs {
+		deleteNetworkAclRuleOptions := &vpcclassicv1.DeleteNetworkACLRuleOptions{
+			NetworkACLID: &nwaclid,
 		}
 		switch reflect.TypeOf(rule).String() {
-		case "*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolICMP":
-			rule := rule.(*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolICMP)
+		case "*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolIcmp":
+			rule := rule.(*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolIcmp)
 			deleteNetworkAclRuleOptions.ID = rule.ID
-		case "*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolTCPUDP":
-			rule := rule.(*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolTCPUDP)
+		case "*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolTcpudp":
+			rule := rule.(*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolTcpudp)
 			deleteNetworkAclRuleOptions.ID = rule.ID
 		case "*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolAll":
 			rule := rule.(*vpcclassicv1.NetworkACLRuleItemNetworkACLRuleProtocolAll)
 			deleteNetworkAclRuleOptions.ID = rule.ID
 		}
 
-		response, err := nwaclC.DeleteNetworkAclRule(deleteNetworkAclRuleOptions)
+		response, err := nwaclC.DeleteNetworkACLRule(deleteNetworkAclRuleOptions)
 		if err != nil {
 			return fmt.Errorf("Error Deleting network ACL rule : %s\n%s", err, response)
 		}
@@ -889,31 +899,41 @@ func classicClearRules(nwaclC *vpcclassicv1.VpcClassicV1, nwaclid string) error 
 }
 
 func clearRules(nwaclC *vpcv1.VpcV1, nwaclid string) error {
-	listNetworkAclRulesOptions := &vpcv1.ListNetworkAclRulesOptions{
-		NetworkAclID: &nwaclid,
-	}
-	rawrules, response, err := nwaclC.ListNetworkAclRules(listNetworkAclRulesOptions)
-	if err != nil {
-		return fmt.Errorf("Error Listing network ACL rules : %s\n%s", err, response)
+	start := ""
+	allrecs := []vpcv1.NetworkACLRuleItemIntf{}
+	for {
+		listNetworkAclRulesOptions := &vpcv1.ListNetworkACLRulesOptions{
+			Start:        &start,
+			NetworkACLID: &nwaclid,
+		}
+		rawrules, response, err := nwaclC.ListNetworkACLRules(listNetworkAclRulesOptions)
+		if err != nil {
+			return fmt.Errorf("Error Listing network ACL rules : %s\n%s", err, response)
+		}
+		start = GetNext(rawrules.Next)
+		allrecs = append(allrecs, rawrules.Rules...)
+		if start == "" {
+			break
+		}
 	}
 
-	for _, rule := range rawrules.Rules {
-		deleteNetworkAclRuleOptions := &vpcv1.DeleteNetworkAclRuleOptions{
-			NetworkAclID: &nwaclid,
+	for _, rule := range allrecs {
+		deleteNetworkAclRuleOptions := &vpcv1.DeleteNetworkACLRuleOptions{
+			NetworkACLID: &nwaclid,
 		}
 		switch reflect.TypeOf(rule).String() {
-		case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolICMP":
-			rule := rule.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolICMP)
+		case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolIcmp":
+			rule := rule.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolIcmp)
 			deleteNetworkAclRuleOptions.ID = rule.ID
-		case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolTCPUDP":
-			rule := rule.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolTCPUDP)
+		case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolTcpudp":
+			rule := rule.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolTcpudp)
 			deleteNetworkAclRuleOptions.ID = rule.ID
 		case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolAll":
 			rule := rule.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolAll)
 			deleteNetworkAclRuleOptions.ID = rule.ID
 		}
 
-		response, err := nwaclC.DeleteNetworkAclRule(deleteNetworkAclRuleOptions)
+		response, err := nwaclC.DeleteNetworkACLRule(deleteNetworkAclRuleOptions)
 		if err != nil {
 			return fmt.Errorf("Error Deleting network ACL rule : %s\n%s", err, response)
 		}
@@ -1039,11 +1059,11 @@ func classicCreateInlineRules(nwaclC *vpcclassicv1.VpcClassicV1, nwaclid string,
 			ruleTemplate.Protocol = &protocol
 		}
 
-		createNetworkAclRuleOptions := &vpcclassicv1.CreateNetworkAclRuleOptions{
-			NetworkAclID:            &nwaclid,
+		createNetworkAclRuleOptions := &vpcclassicv1.CreateNetworkACLRuleOptions{
+			NetworkACLID:            &nwaclid,
 			NetworkACLRulePrototype: ruleTemplate,
 		}
-		_, response, err := nwaclC.CreateNetworkAclRule(createNetworkAclRuleOptions)
+		_, response, err := nwaclC.CreateNetworkACLRule(createNetworkAclRuleOptions)
 		if err != nil {
 			return fmt.Errorf("Error Creating network ACL rule : %s\n%s", err, response)
 		}
@@ -1146,11 +1166,11 @@ func createInlineRules(nwaclC *vpcv1.VpcV1, nwaclid string, rules []interface{})
 			ruleTemplate.Protocol = &protocol
 		}
 
-		createNetworkAclRuleOptions := &vpcv1.CreateNetworkAclRuleOptions{
-			NetworkAclID:            &nwaclid,
+		createNetworkAclRuleOptions := &vpcv1.CreateNetworkACLRuleOptions{
+			NetworkACLID:            &nwaclid,
 			NetworkACLRulePrototype: ruleTemplate,
 		}
-		_, response, err := nwaclC.CreateNetworkAclRule(createNetworkAclRuleOptions)
+		_, response, err := nwaclC.CreateNetworkACLRule(createNetworkAclRuleOptions)
 		if err != nil {
 			return fmt.Errorf("Error Creating network ACL rule : %s\n%s", err, response)
 		}

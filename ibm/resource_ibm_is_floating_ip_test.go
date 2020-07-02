@@ -6,11 +6,11 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISFloatingIP_basic(t *testing.T) {
@@ -76,10 +76,10 @@ func testAccCheckIBMISFloatingIPDestroy(s *terraform.State) error {
 				continue
 			}
 
-			getfipoptions := &vpcclassicv1.GetFloatingIpOptions{
+			getfipoptions := &vpcclassicv1.GetFloatingIPOptions{
 				ID: &rs.Primary.ID,
 			}
-			_, _, err := sess.GetFloatingIp(getfipoptions)
+			_, _, err := sess.GetFloatingIP(getfipoptions)
 			if err == nil {
 				return fmt.Errorf("Floating IP still exists: %s", rs.Primary.ID)
 			}
@@ -91,10 +91,10 @@ func testAccCheckIBMISFloatingIPDestroy(s *terraform.State) error {
 				continue
 			}
 
-			getfipoptions := &vpcv1.GetFloatingIpOptions{
+			getfipoptions := &vpcv1.GetFloatingIPOptions{
 				ID: &rs.Primary.ID,
 			}
-			_, _, err := sess.GetFloatingIp(getfipoptions)
+			_, _, err := sess.GetFloatingIP(getfipoptions)
 			if err == nil {
 				return fmt.Errorf("Floating IP still exists: %s", rs.Primary.ID)
 			}
@@ -118,20 +118,20 @@ func testAccCheckIBMISFloatingIPExists(n, ip string) resource.TestCheckFunc {
 
 		if userDetails.generation == 1 {
 			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-			getfipoptions := &vpcclassicv1.GetFloatingIpOptions{
+			getfipoptions := &vpcclassicv1.GetFloatingIPOptions{
 				ID: &rs.Primary.ID,
 			}
-			foundip, _, err := sess.GetFloatingIp(getfipoptions)
+			foundip, _, err := sess.GetFloatingIP(getfipoptions)
 			if err != nil {
 				return err
 			}
 			ip = *foundip.ID
 		} else {
 			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-			getfipoptions := &vpcv1.GetFloatingIpOptions{
+			getfipoptions := &vpcv1.GetFloatingIPOptions{
 				ID: &rs.Primary.ID,
 			}
-			foundip, _, err := sess.GetFloatingIp(getfipoptions)
+			foundip, _, err := sess.GetFloatingIP(getfipoptions)
 			if err != nil {
 				return err
 			}

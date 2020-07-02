@@ -3,9 +3,9 @@ package ibm
 import (
 	"fmt"
 
+	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -182,11 +182,11 @@ func classicSgnicCreate(d *schema.ResourceData, meta interface{}, sgID, nicID st
 	if err != nil {
 		return err
 	}
-	options := &vpcclassicv1.CreateSecurityGroupNetworkInterfaceBindingOptions{
+	options := &vpcclassicv1.AddSecurityGroupNetworkInterfaceOptions{
 		SecurityGroupID: &sgID,
 		ID:              &nicID,
 	}
-	_, response, err := sess.CreateSecurityGroupNetworkInterfaceBinding(options)
+	_, response, err := sess.AddSecurityGroupNetworkInterface(options)
 	if err != nil {
 		return fmt.Errorf("Error while creating SecurityGroup NetworkInterface Binding %s\n%s", err, response)
 	}
@@ -199,11 +199,11 @@ func sgnicCreate(d *schema.ResourceData, meta interface{}, sgID, nicID string) e
 	if err != nil {
 		return err
 	}
-	options := &vpcv1.CreateSecurityGroupNetworkInterfaceBindingOptions{
+	options := &vpcv1.AddSecurityGroupNetworkInterfaceOptions{
 		SecurityGroupID: &sgID,
 		ID:              &nicID,
 	}
-	_, response, err := sess.CreateSecurityGroupNetworkInterfaceBinding(options)
+	_, response, err := sess.AddSecurityGroupNetworkInterface(options)
 	if err != nil {
 		return fmt.Errorf("Error while creating SecurityGroup NetworkInterface Binding %s\n%s", err, response)
 	}
@@ -267,7 +267,7 @@ func classicSgnicGet(d *schema.ResourceData, meta interface{}, sgID, nicID strin
 	sgs := make([]map[string]interface{}, len(instanceNic.SecurityGroups))
 	for i, sgObj := range instanceNic.SecurityGroups {
 		sg := make(map[string]interface{})
-		sg[isSGNICASecurityGroupCRN] = *sgObj.Crn
+		sg[isSGNICASecurityGroupCRN] = *sgObj.CRN
 		sg[isSGNICASecurityGroupID] = *sgObj.ID
 		sg[isSGNICASecurityGroupName] = *sgObj.Name
 		sgs[i] = sg
@@ -277,7 +277,7 @@ func classicSgnicGet(d *schema.ResourceData, meta interface{}, sgID, nicID strin
 	fps := make([]map[string]interface{}, len(instanceNic.FloatingIps))
 	for i, fpObj := range instanceNic.FloatingIps {
 		fp := make(map[string]interface{})
-		fp[isSGNICAFloatingIpCRN] = fpObj.Crn
+		fp[isSGNICAFloatingIpCRN] = fpObj.CRN
 		fp[isSGNICAFloatingIpID] = *fpObj.ID
 		fp[isSGNICAFloatingIpName] = *fpObj.Name
 		fps[i] = fp
@@ -319,7 +319,7 @@ func sgnicGet(d *schema.ResourceData, meta interface{}, sgID, nicID string) erro
 	sgs := make([]map[string]interface{}, len(instanceNic.SecurityGroups))
 	for i, sgObj := range instanceNic.SecurityGroups {
 		sg := make(map[string]interface{})
-		sg[isSGNICASecurityGroupCRN] = *sgObj.Crn
+		sg[isSGNICASecurityGroupCRN] = *sgObj.CRN
 		sg[isSGNICASecurityGroupID] = *sgObj.ID
 		sg[isSGNICASecurityGroupName] = *sgObj.Name
 		sgs[i] = sg
@@ -329,7 +329,7 @@ func sgnicGet(d *schema.ResourceData, meta interface{}, sgID, nicID string) erro
 	fps := make([]map[string]interface{}, len(instanceNic.FloatingIps))
 	for i, fpObj := range instanceNic.FloatingIps {
 		fp := make(map[string]interface{})
-		fp[isSGNICAFloatingIpCRN] = fpObj.Crn
+		fp[isSGNICAFloatingIpCRN] = fpObj.CRN
 		fp[isSGNICAFloatingIpID] = *fpObj.ID
 		fp[isSGNICAFloatingIpName] = *fpObj.Name
 		fps[i] = fp
@@ -386,11 +386,11 @@ func classicSgnicDelete(d *schema.ResourceData, meta interface{}, sgID, nicID st
 		return fmt.Errorf("Error getting NetworkInterface(%s) for the SecurityGroup (%s) : %s\n%s", nicID, sgID, err, response)
 	}
 
-	deleteSecurityGroupNetworkInterfaceBindingOptions := &vpcclassicv1.DeleteSecurityGroupNetworkInterfaceBindingOptions{
+	removeSecurityGroupNetworkInterfaceOptions := &vpcclassicv1.RemoveSecurityGroupNetworkInterfaceOptions{
 		SecurityGroupID: &sgID,
 		ID:              &nicID,
 	}
-	response, err = sess.DeleteSecurityGroupNetworkInterfaceBinding(deleteSecurityGroupNetworkInterfaceBindingOptions)
+	response, err = sess.RemoveSecurityGroupNetworkInterface(removeSecurityGroupNetworkInterfaceOptions)
 	if err != nil {
 		return fmt.Errorf("Error Deleting NetworkInterface(%s) for the SecurityGroup (%s) : %s\n%s", nicID, sgID, err, response)
 	}
@@ -417,11 +417,11 @@ func sgnicDelete(d *schema.ResourceData, meta interface{}, sgID, nicID string) e
 		return fmt.Errorf("Error getting NetworkInterface(%s) for the SecurityGroup (%s) : %s\n%s", nicID, sgID, err, response)
 	}
 
-	deleteSecurityGroupNetworkInterfaceBindingOptions := &vpcv1.DeleteSecurityGroupNetworkInterfaceBindingOptions{
+	removeSecurityGroupNetworkInterfaceOptions := &vpcv1.RemoveSecurityGroupNetworkInterfaceOptions{
 		SecurityGroupID: &sgID,
 		ID:              &nicID,
 	}
-	response, err = sess.DeleteSecurityGroupNetworkInterfaceBinding(deleteSecurityGroupNetworkInterfaceBindingOptions)
+	response, err = sess.RemoveSecurityGroupNetworkInterface(removeSecurityGroupNetworkInterfaceOptions)
 	if err != nil {
 		return fmt.Errorf("Error Deleting NetworkInterface(%s) for the SecurityGroup (%s) : %s\n%s", nicID, sgID, err, response)
 	}
