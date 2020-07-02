@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -177,7 +177,7 @@ func classicLBListenerCreate(d *schema.ResourceData, meta interface{}, lbID, pro
 	}
 	if certificateCRN != "" {
 		options.CertificateInstance = &vpcclassicv1.CertificateInstanceIdentity{
-			Crn: &certificateCRN,
+			CRN: &certificateCRN,
 		}
 	}
 	if connLimit > int64(0) {
@@ -226,7 +226,7 @@ func lbListenerCreate(d *schema.ResourceData, meta interface{}, lbID, protocol, 
 	}
 	if certificateCRN != "" {
 		options.CertificateInstance = &vpcv1.CertificateInstanceIdentity{
-			Crn: &certificateCRN,
+			CRN: &certificateCRN,
 		}
 	}
 	if connLimit > int64(0) {
@@ -382,7 +382,7 @@ func classicLBListenerGet(d *schema.ResourceData, meta interface{}, lbID, lbList
 		d.Set(isLBListenerDefaultPool, *lbListener.DefaultPool.ID)
 	}
 	if lbListener.CertificateInstance != nil {
-		d.Set(isLBListenerCertificateInstance, *lbListener.CertificateInstance.Crn)
+		d.Set(isLBListenerCertificateInstance, *lbListener.CertificateInstance.CRN)
 	}
 	if lbListener.ConnectionLimit != nil {
 		d.Set(isLBListenerConnectionLimit, *lbListener.ConnectionLimit)
@@ -416,7 +416,7 @@ func lbListenerGet(d *schema.ResourceData, meta interface{}, lbID, lbListenerID 
 		d.Set(isLBListenerDefaultPool, *lbListener.DefaultPool.ID)
 	}
 	if lbListener.CertificateInstance != nil {
-		d.Set(isLBListenerCertificateInstance, *lbListener.CertificateInstance.Crn)
+		d.Set(isLBListenerCertificateInstance, *lbListener.CertificateInstance.CRN)
 	}
 	if lbListener.ConnectionLimit != nil {
 		d.Set(isLBListenerConnectionLimit, *lbListener.ConnectionLimit)
@@ -469,7 +469,7 @@ func classicLBListenerUpdate(d *schema.ResourceData, meta interface{}, lbID, lbL
 	if d.HasChange(isLBListenerCertificateInstance) {
 		certificateInstance = d.Get(isLBListenerCertificateInstance).(string)
 		updateLoadBalancerListenerOptions.CertificateInstance = &vpcclassicv1.CertificateInstanceIdentity{
-			Crn: &certificateInstance,
+			CRN: &certificateInstance,
 		}
 		hasChanged = true
 	}
@@ -545,7 +545,7 @@ func lbListenerUpdate(d *schema.ResourceData, meta interface{}, lbID, lbListener
 	if d.HasChange(isLBListenerCertificateInstance) {
 		certificateInstance = d.Get(isLBListenerCertificateInstance).(string)
 		updateLoadBalancerListenerOptions.CertificateInstance = &vpcv1.CertificateInstanceIdentity{
-			Crn: &certificateInstance,
+			CRN: &certificateInstance,
 		}
 		hasChanged = true
 	}
