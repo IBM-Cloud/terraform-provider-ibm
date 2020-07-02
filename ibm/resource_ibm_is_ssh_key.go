@@ -5,10 +5,10 @@ import (
 	"log"
 	"os"
 
+	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -163,7 +163,7 @@ func classicKeyCreate(d *schema.ResourceData, meta interface{}, name, publickey 
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isKeyTags); ok || v != "" {
 		oldList, newList := d.GetChange(isKeyTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *key.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *key.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on create of vpc SSH Key (%s) tags: %s", d.Id(), err)
@@ -199,7 +199,7 @@ func keyCreate(d *schema.ResourceData, meta interface{}, name, publickey string)
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isKeyTags); ok || v != "" {
 		oldList, newList := d.GetChange(isKeyTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *key.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *key.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on create of vpc SSH Key (%s) tags: %s", d.Id(), err)
@@ -250,7 +250,7 @@ func classicKeyGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isKeyType, *key.Type)
 	d.Set(isKeyFingerprint, *key.Fingerprint)
 	d.Set(isKeyLength, *key.Length)
-	tags, err := GetTagsUsingCRN(meta, *key.Crn)
+	tags, err := GetTagsUsingCRN(meta, *key.CRN)
 	if err != nil {
 		log.Printf(
 			"Error on get of vpc SSH Key (%s) tags: %s", d.Id(), err)
@@ -262,7 +262,7 @@ func classicKeyGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set(ResourceControllerURL, controller+"/vpc/compute/sshKeys")
 	d.Set(ResourceName, *key.Name)
-	d.Set(ResourceCRN, *key.Crn)
+	d.Set(ResourceCRN, *key.CRN)
 	if key.ResourceGroup != nil {
 		d.Set(ResourceGroupName, *key.ResourceGroup.ID)
 		d.Set(isKeyResourceGroup, *key.ResourceGroup.ID)
@@ -291,7 +291,7 @@ func keyGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isKeyType, *key.Type)
 	d.Set(isKeyFingerprint, *key.Fingerprint)
 	d.Set(isKeyLength, *key.Length)
-	tags, err := GetTagsUsingCRN(meta, *key.Crn)
+	tags, err := GetTagsUsingCRN(meta, *key.CRN)
 	if err != nil {
 		log.Printf(
 			"Error on get of vpc SSH Key (%s) tags: %s", d.Id(), err)
@@ -303,7 +303,7 @@ func keyGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/compute/sshKeys")
 	d.Set(ResourceName, *key.Name)
-	d.Set(ResourceCRN, *key.Crn)
+	d.Set(ResourceCRN, *key.CRN)
 	if key.ResourceGroup != nil {
 		d.Set(ResourceGroupName, *key.ResourceGroup.Name)
 		d.Set(isKeyResourceGroup, *key.ResourceGroup.ID)
@@ -354,7 +354,7 @@ func classicKeyUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 			return fmt.Errorf("Error getting SSH Key : %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isKeyTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *key.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *key.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource vpc SSH Key (%s) tags: %s", id, err)
@@ -387,7 +387,7 @@ func keyUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 			return fmt.Errorf("Error getting SSH Key : %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isKeyTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *key.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *key.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource vpc SSH Key (%s) tags: %s", id, err)

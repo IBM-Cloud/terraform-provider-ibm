@@ -6,11 +6,11 @@ import (
 	"os"
 	"time"
 
+	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -439,7 +439,7 @@ func classicInstanceCreate(d *schema.ResourceData, meta interface{}, profile, na
 			Name: &profile,
 		},
 		Name: &name,
-		Vpc: &vpcclassicv1.VPCIdentity{
+		VPC: &vpcclassicv1.VPCIdentity{
 			ID: &vpcID,
 		},
 	}
@@ -456,7 +456,7 @@ func classicInstanceCreate(d *schema.ResourceData, meta interface{}, profile, na
 		encstr := enc.(string)
 		if ok && encstr != "" {
 			volTemplate.EncryptionKey = &vpcclassicv1.EncryptionKeyIdentity{
-				Crn: &encstr,
+				CRN: &encstr,
 			}
 		}
 		volcap := 100
@@ -586,7 +586,7 @@ func classicInstanceCreate(d *schema.ResourceData, meta interface{}, profile, na
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isInstanceTags); ok || v != "" {
 		oldList, newList := d.GetChange(isInstanceTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource vpc instance (%s) tags: %s", d.Id(), err)
@@ -611,7 +611,7 @@ func instanceCreate(d *schema.ResourceData, meta interface{}, profile, name, vpc
 			Name: &profile,
 		},
 		Name: &name,
-		Vpc: &vpcv1.VPCIdentity{
+		VPC: &vpcv1.VPCIdentity{
 			ID: &vpcID,
 		},
 	}
@@ -756,7 +756,7 @@ func instanceCreate(d *schema.ResourceData, meta interface{}, profile, name, vpc
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isInstanceTags); ok || v != "" {
 		oldList, newList := d.GetChange(isInstanceTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource vpc instance (%s) tags: %s", d.Id(), err)
@@ -930,11 +930,11 @@ func classicInstanceGet(d *schema.ResourceData, meta interface{}, id string) err
 		currentPrimNic["id"] = *instance.PrimaryNetworkInterface.ID
 		currentPrimNic[isInstanceNicName] = *instance.PrimaryNetworkInterface.Name
 		currentPrimNic[isInstanceNicPrimaryIpv4Address] = *instance.PrimaryNetworkInterface.PrimaryIpv4Address
-		getnicoptions := &vpcclassicv1.GetNetworkInterfaceOptions{
+		getnicoptions := &vpcclassicv1.GetInstanceNetworkInterfaceOptions{
 			InstanceID: &id,
 			ID:         instance.PrimaryNetworkInterface.ID,
 		}
-		insnic, response, err := instanceC.GetNetworkInterface(getnicoptions)
+		insnic, response, err := instanceC.GetInstanceNetworkInterface(getnicoptions)
 		if err != nil {
 			return fmt.Errorf("Error getting network interfaces attached to the instance %s\n%s", err, response)
 		}
@@ -959,11 +959,11 @@ func classicInstanceGet(d *schema.ResourceData, meta interface{}, id string) err
 				currentNic["id"] = *intfc.ID
 				currentNic[isInstanceNicName] = *intfc.Name
 				currentNic[isInstanceNicPrimaryIpv4Address] = *intfc.PrimaryIpv4Address
-				getnicoptions := &vpcclassicv1.GetNetworkInterfaceOptions{
+				getnicoptions := &vpcclassicv1.GetInstanceNetworkInterfaceOptions{
 					InstanceID: &id,
 					ID:         intfc.ID,
 				}
-				insnic, response, err := instanceC.GetNetworkInterface(getnicoptions)
+				insnic, response, err := instanceC.GetInstanceNetworkInterface(getnicoptions)
 				if err != nil {
 					return fmt.Errorf("Error getting network interfaces attached to the instance %s\n%s", err, response)
 				}
@@ -988,7 +988,7 @@ func classicInstanceGet(d *schema.ResourceData, meta interface{}, id string) err
 	}
 
 	d.Set(isInstanceStatus, *instance.Status)
-	d.Set(isInstanceVPC, *instance.Vpc.ID)
+	d.Set(isInstanceVPC, *instance.VPC.ID)
 	d.Set(isInstanceZone, *instance.Zone.Name)
 
 	var volumes []string
@@ -1010,7 +1010,7 @@ func classicInstanceGet(d *schema.ResourceData, meta interface{}, id string) err
 				vol["volume_id"] = *volume.Volume.ID
 				vol["name"] = *volume.Name
 				vol["volume_name"] = *volume.Volume.Name
-				vol["volume_crn"] = *volume.Volume.Crn
+				vol["volume_crn"] = *volume.Volume.CRN
 				volList = append(volList, vol)
 			}
 		}
@@ -1028,8 +1028,8 @@ func classicInstanceGet(d *schema.ResourceData, meta interface{}, id string) err
 		// if err != nil {
 		// 	return fmt.Errorf("Error while retrieving boot volume %s for instance %s: %v", getvolattoptions.ID, d.Id(), err)
 		// }
-		if instance.BootVolumeAttachment.Volume.Crn != nil {
-			bootVol[isInstanceBootEncryption] = *instance.BootVolumeAttachment.Volume.Crn
+		if instance.BootVolumeAttachment.Volume.CRN != nil {
+			bootVol[isInstanceBootEncryption] = *instance.BootVolumeAttachment.Volume.CRN
 		}
 		// bootVol[isInstanceBootSize] = instance.BootVolumeAttachment.Capacity
 		// bootVol[isInstanceBootIOPS] = instance.BootVolumeAttachment.Iops
@@ -1038,7 +1038,7 @@ func classicInstanceGet(d *schema.ResourceData, meta interface{}, id string) err
 
 		d.Set(isInstanceBootVolume, bootVolList)
 	}
-	tags, err := GetTagsUsingCRN(meta, *instance.Crn)
+	tags, err := GetTagsUsingCRN(meta, *instance.CRN)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc Instance (%s) tags: %s", d.Id(), err)
@@ -1051,7 +1051,7 @@ func classicInstanceGet(d *schema.ResourceData, meta interface{}, id string) err
 	}
 	d.Set(ResourceControllerURL, controller+"/vpc/compute/vs")
 	d.Set(ResourceName, instance.Name)
-	d.Set(ResourceCRN, instance.Crn)
+	d.Set(ResourceCRN, instance.CRN)
 	d.Set(ResourceStatus, instance.Status)
 	if instance.ResourceGroup != nil {
 		d.Set(isInstanceResourceGroup, instance.ResourceGroup.ID)
@@ -1109,11 +1109,11 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		currentPrimNic["id"] = *instance.PrimaryNetworkInterface.ID
 		currentPrimNic[isInstanceNicName] = *instance.PrimaryNetworkInterface.Name
 		currentPrimNic[isInstanceNicPrimaryIpv4Address] = *instance.PrimaryNetworkInterface.PrimaryIpv4Address
-		getnicoptions := &vpcv1.GetNetworkInterfaceOptions{
+		getnicoptions := &vpcv1.GetInstanceNetworkInterfaceOptions{
 			InstanceID: &id,
 			ID:         instance.PrimaryNetworkInterface.ID,
 		}
-		insnic, response, err := instanceC.GetNetworkInterface(getnicoptions)
+		insnic, response, err := instanceC.GetInstanceNetworkInterface(getnicoptions)
 		if err != nil {
 			return fmt.Errorf("Error getting network interfaces attached to the instance %s\n%s", err, response)
 		}
@@ -1138,11 +1138,11 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 				currentNic["id"] = *intfc.ID
 				currentNic[isInstanceNicName] = *intfc.Name
 				currentNic[isInstanceNicPrimaryIpv4Address] = *intfc.PrimaryIpv4Address
-				getnicoptions := &vpcv1.GetNetworkInterfaceOptions{
+				getnicoptions := &vpcv1.GetInstanceNetworkInterfaceOptions{
 					InstanceID: &id,
 					ID:         intfc.ID,
 				}
-				insnic, response, err := instanceC.GetNetworkInterface(getnicoptions)
+				insnic, response, err := instanceC.GetInstanceNetworkInterface(getnicoptions)
 				if err != nil {
 					return fmt.Errorf("Error getting network interfaces attached to the instance %s\n%s", err, response)
 				}
@@ -1167,7 +1167,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 
 	d.Set(isInstanceStatus, *instance.Status)
-	d.Set(isInstanceVPC, *instance.Vpc.ID)
+	d.Set(isInstanceVPC, *instance.VPC.ID)
 	d.Set(isInstanceZone, *instance.Zone.Name)
 
 	var volumes []string
@@ -1189,7 +1189,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 				vol["volume_id"] = *volume.Volume.ID
 				vol["name"] = *volume.Name
 				vol["volume_name"] = *volume.Volume.Name
-				vol["volume_crn"] = *volume.Volume.Crn
+				vol["volume_crn"] = *volume.Volume.CRN
 				volList = append(volList, vol)
 			}
 		}
@@ -1207,8 +1207,8 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		// if err != nil {
 		// 	return fmt.Errorf("Error while retrieving boot volume %s for instance %s: %v", getvolattoptions.ID, d.Id(), err)
 		// }
-		if instance.BootVolumeAttachment.Volume.Crn != nil {
-			bootVol[isInstanceBootEncryption] = *instance.BootVolumeAttachment.Volume.Crn
+		if instance.BootVolumeAttachment.Volume.CRN != nil {
+			bootVol[isInstanceBootEncryption] = *instance.BootVolumeAttachment.Volume.CRN
 		}
 		// bootVol[isInstanceBootSize] = instance.BootVolumeAttachment.Capacity
 		// bootVol[isInstanceBootIOPS] = instance.BootVolumeAttachment.Iops
@@ -1217,7 +1217,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 
 		d.Set(isInstanceBootVolume, bootVolList)
 	}
-	tags, err := GetTagsUsingCRN(meta, *instance.Crn)
+	tags, err := GetTagsUsingCRN(meta, *instance.CRN)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc Instance (%s) tags: %s", d.Id(), err)
@@ -1230,7 +1230,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/compute/vs")
 	d.Set(ResourceName, *instance.Name)
-	d.Set(ResourceCRN, *instance.Crn)
+	d.Set(ResourceCRN, *instance.CRN)
 	d.Set(ResourceStatus, *instance.Status)
 	if instance.ResourceGroup != nil {
 		d.Set(isInstanceResourceGroup, *instance.ResourceGroup.ID)
@@ -1255,13 +1255,13 @@ func classicInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		if len(add) > 0 {
 			for i := range add {
-				createvolattoptions := &vpcclassicv1.CreateVolumeAttachmentOptions{
+				createvolattoptions := &vpcclassicv1.CreateInstanceVolumeAttachmentOptions{
 					InstanceID: &id,
 					Volume: &vpcclassicv1.VolumeIdentity{
 						ID: &add[i],
 					},
 				}
-				vol, response, err := instanceC.CreateVolumeAttachment(createvolattoptions)
+				vol, response, err := instanceC.CreateInstanceVolumeAttachment(createvolattoptions)
 				if err != nil {
 					return fmt.Errorf("Error while attaching volume %q for instance %s\n%s: %q", add[i], d.Id(), err, response)
 				}
@@ -1274,20 +1274,20 @@ func classicInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		if len(remove) > 0 {
 			for i := range remove {
-				listvolattoptions := &vpcclassicv1.ListVolumeAttachmentsOptions{
+				listvolattoptions := &vpcclassicv1.ListInstanceVolumeAttachmentsOptions{
 					InstanceID: &id,
 				}
-				vols, _, err := instanceC.ListVolumeAttachments(listvolattoptions)
+				vols, _, err := instanceC.ListInstanceVolumeAttachments(listvolattoptions)
 				if err != nil {
 					return err
 				}
 				for _, vol := range vols.VolumeAttachments {
 					if *vol.Volume.ID == remove[i] {
-						delvolattoptions := &vpcclassicv1.DeleteVolumeAttachmentOptions{
+						delvolattoptions := &vpcclassicv1.DeleteInstanceVolumeAttachmentOptions{
 							InstanceID: &id,
 							ID:         vol.ID,
 						}
-						response, err := instanceC.DeleteVolumeAttachment(delvolattoptions)
+						response, err := instanceC.DeleteInstanceVolumeAttachment(delvolattoptions)
 						if err != nil {
 							return fmt.Errorf("Error while removing volume %q for instance %s\n%s: %q", remove[i], d.Id(), err, response)
 						}
@@ -1311,11 +1311,11 @@ func classicInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		if len(add) > 0 {
 			networkID := d.Get("primary_network_interface.0.id").(string)
 			for i := range add {
-				createsgnicoptions := &vpcclassicv1.CreateSecurityGroupNetworkInterfaceBindingOptions{
+				createsgnicoptions := &vpcclassicv1.AddSecurityGroupNetworkInterfaceOptions{
 					SecurityGroupID: &add[i],
 					ID:              &networkID,
 				}
-				_, response, err := instanceC.CreateSecurityGroupNetworkInterfaceBinding(createsgnicoptions)
+				_, response, err := instanceC.AddSecurityGroupNetworkInterface(createsgnicoptions)
 				if err != nil {
 					return fmt.Errorf("Error while creating security group %q for primary network interface of instance %s\n%s: %q", add[i], d.Id(), err, response)
 				}
@@ -1329,11 +1329,11 @@ func classicInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		if len(remove) > 0 {
 			networkID := d.Get("primary_network_interface.0.id").(string)
 			for i := range remove {
-				deletesgnicoptions := &vpcclassicv1.DeleteSecurityGroupNetworkInterfaceBindingOptions{
+				deletesgnicoptions := &vpcclassicv1.RemoveSecurityGroupNetworkInterfaceOptions{
 					SecurityGroupID: &remove[i],
 					ID:              &networkID,
 				}
-				response, err := instanceC.DeleteSecurityGroupNetworkInterfaceBinding(deletesgnicoptions)
+				response, err := instanceC.RemoveSecurityGroupNetworkInterface(deletesgnicoptions)
 				if err != nil {
 					return fmt.Errorf("Error while removing security group %q for primary network interface of instance %s\n%s: %q", remove[i], d.Id(), err, response)
 				}
@@ -1373,11 +1373,11 @@ func classicInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					networkIDKey := fmt.Sprintf("network_interfaces.%d.id", i)
 					networkID := d.Get(networkIDKey).(string)
 					for i := range add {
-						createsgnicoptions := &vpcclassicv1.CreateSecurityGroupNetworkInterfaceBindingOptions{
+						createsgnicoptions := &vpcclassicv1.AddSecurityGroupNetworkInterfaceOptions{
 							SecurityGroupID: &add[i],
 							ID:              &networkID,
 						}
-						_, response, err := instanceC.CreateSecurityGroupNetworkInterfaceBinding(createsgnicoptions)
+						_, response, err := instanceC.AddSecurityGroupNetworkInterface(createsgnicoptions)
 						if err != nil {
 							return fmt.Errorf("Error while creating security group %q for network interface of instance %s\n%s: %q", add[i], d.Id(), err, response)
 						}
@@ -1392,11 +1392,11 @@ func classicInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					networkIDKey := fmt.Sprintf("network_interfaces.%d.id", i)
 					networkID := d.Get(networkIDKey).(string)
 					for i := range remove {
-						deletesgnicoptions := &vpcclassicv1.DeleteSecurityGroupNetworkInterfaceBindingOptions{
+						deletesgnicoptions := &vpcclassicv1.RemoveSecurityGroupNetworkInterfaceOptions{
 							SecurityGroupID: &remove[i],
 							ID:              &networkID,
 						}
-						response, err := instanceC.DeleteSecurityGroupNetworkInterfaceBinding(deletesgnicoptions)
+						response, err := instanceC.RemoveSecurityGroupNetworkInterface(deletesgnicoptions)
 						if err != nil {
 							return fmt.Errorf("Error while removing security group %q for network interface of instance %s\n%s: %q", remove[i], d.Id(), err, response)
 						}
@@ -1447,7 +1447,7 @@ func classicInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			log.Printf("Error Getting Instance: %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isInstanceTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource vpc Instance (%s) tags: %s", d.Id(), err)
@@ -1472,13 +1472,13 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		if len(add) > 0 {
 			for i := range add {
-				createvolattoptions := &vpcv1.CreateVolumeAttachmentOptions{
+				createvolattoptions := &vpcv1.CreateInstanceVolumeAttachmentOptions{
 					InstanceID: &id,
 					Volume: &vpcv1.VolumeIdentity{
 						ID: &add[i],
 					},
 				}
-				vol, _, err := instanceC.CreateVolumeAttachment(createvolattoptions)
+				vol, _, err := instanceC.CreateInstanceVolumeAttachment(createvolattoptions)
 				if err != nil {
 					return fmt.Errorf("Error while attaching volume %q for instance %s: %q", add[i], d.Id(), err)
 				}
@@ -1491,20 +1491,20 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		if len(remove) > 0 {
 			for i := range remove {
-				listvolattoptions := &vpcv1.ListVolumeAttachmentsOptions{
+				listvolattoptions := &vpcv1.ListInstanceVolumeAttachmentsOptions{
 					InstanceID: &id,
 				}
-				vols, _, err := instanceC.ListVolumeAttachments(listvolattoptions)
+				vols, _, err := instanceC.ListInstanceVolumeAttachments(listvolattoptions)
 				if err != nil {
 					return err
 				}
 				for _, vol := range vols.VolumeAttachments {
 					if *vol.Volume.ID == remove[i] {
-						delvolattoptions := &vpcv1.DeleteVolumeAttachmentOptions{
+						delvolattoptions := &vpcv1.DeleteInstanceVolumeAttachmentOptions{
 							InstanceID: &id,
 							ID:         vol.ID,
 						}
-						_, err := instanceC.DeleteVolumeAttachment(delvolattoptions)
+						_, err := instanceC.DeleteInstanceVolumeAttachment(delvolattoptions)
 						if err != nil {
 							return fmt.Errorf("Error while removing volume %q for instance %s: %q", remove[i], d.Id(), err)
 						}
@@ -1528,11 +1528,11 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		if len(add) > 0 {
 			networkID := d.Get("primary_network_interface.0.id").(string)
 			for i := range add {
-				createsgnicoptions := &vpcv1.CreateSecurityGroupNetworkInterfaceBindingOptions{
+				createsgnicoptions := &vpcv1.AddSecurityGroupNetworkInterfaceOptions{
 					SecurityGroupID: &add[i],
 					ID:              &networkID,
 				}
-				_, response, err := instanceC.CreateSecurityGroupNetworkInterfaceBinding(createsgnicoptions)
+				_, response, err := instanceC.AddSecurityGroupNetworkInterface(createsgnicoptions)
 				if err != nil {
 					return fmt.Errorf("Error while creating security group %q for primary network interface of instance %s\n%s: %q", add[i], d.Id(), err, response)
 				}
@@ -1546,11 +1546,11 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		if len(remove) > 0 {
 			networkID := d.Get("primary_network_interface.0.id").(string)
 			for i := range remove {
-				deletesgnicoptions := &vpcv1.DeleteSecurityGroupNetworkInterfaceBindingOptions{
+				deletesgnicoptions := &vpcv1.RemoveSecurityGroupNetworkInterfaceOptions{
 					SecurityGroupID: &remove[i],
 					ID:              &networkID,
 				}
-				response, err := instanceC.DeleteSecurityGroupNetworkInterfaceBinding(deletesgnicoptions)
+				response, err := instanceC.RemoveSecurityGroupNetworkInterface(deletesgnicoptions)
 				if err != nil {
 					return fmt.Errorf("Error while removing security group %q for primary network interface of instance %s\n%s: %q", remove[i], d.Id(), err, response)
 				}
@@ -1565,12 +1565,12 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("primary_network_interface.0.name") && !d.IsNewResource() {
 		newName := d.Get("primary_network_interface.0.name").(string)
 		networkID := d.Get("primary_network_interface.0.id").(string)
-		updatepnicfoptions := &vpcv1.UpdateNetworkInterfaceOptions{
+		updatepnicfoptions := &vpcv1.UpdateInstanceNetworkInterfaceOptions{
 			InstanceID: &id,
 			ID:         &networkID,
 			Name:       &newName,
 		}
-		_, response, err := instanceC.UpdateNetworkInterface(updatepnicfoptions)
+		_, response, err := instanceC.UpdateInstanceNetworkInterface(updatepnicfoptions)
 		if err != nil {
 			return fmt.Errorf("Error while updating name %s for primary network interface of instance %s\n%s: %q", newName, d.Id(), err, response)
 		}
@@ -1595,11 +1595,11 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					networkIDKey := fmt.Sprintf("network_interfaces.%d.id", i)
 					networkID := d.Get(networkIDKey).(string)
 					for i := range add {
-						createsgnicoptions := &vpcv1.CreateSecurityGroupNetworkInterfaceBindingOptions{
+						createsgnicoptions := &vpcv1.AddSecurityGroupNetworkInterfaceOptions{
 							SecurityGroupID: &add[i],
 							ID:              &networkID,
 						}
-						_, response, err := instanceC.CreateSecurityGroupNetworkInterfaceBinding(createsgnicoptions)
+						_, response, err := instanceC.AddSecurityGroupNetworkInterface(createsgnicoptions)
 						if err != nil {
 							return fmt.Errorf("Error while creating security group %q for network interface of instance %s\n%s: %q", add[i], d.Id(), err, response)
 						}
@@ -1614,11 +1614,11 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					networkIDKey := fmt.Sprintf("network_interfaces.%d.id", i)
 					networkID := d.Get(networkIDKey).(string)
 					for i := range remove {
-						deletesgnicoptions := &vpcv1.DeleteSecurityGroupNetworkInterfaceBindingOptions{
+						deletesgnicoptions := &vpcv1.RemoveSecurityGroupNetworkInterfaceOptions{
 							SecurityGroupID: &remove[i],
 							ID:              &networkID,
 						}
-						response, err := instanceC.DeleteSecurityGroupNetworkInterfaceBinding(deletesgnicoptions)
+						response, err := instanceC.RemoveSecurityGroupNetworkInterface(deletesgnicoptions)
 						if err != nil {
 							return fmt.Errorf("Error while removing security group %q for network interface of instance %s\n%s: %q", remove[i], d.Id(), err, response)
 						}
@@ -1635,12 +1635,12 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				newName := d.Get(networkNameKey).(string)
 				networkIDKey := fmt.Sprintf("network_interfaces.%d.id", i)
 				networkID := d.Get(networkIDKey).(string)
-				updatepnicfoptions := &vpcv1.UpdateNetworkInterfaceOptions{
+				updatepnicfoptions := &vpcv1.UpdateInstanceNetworkInterfaceOptions{
 					InstanceID: &id,
 					ID:         &networkID,
 					Name:       &newName,
 				}
-				_, response, err := instanceC.UpdateNetworkInterface(updatepnicfoptions)
+				_, response, err := instanceC.UpdateInstanceNetworkInterface(updatepnicfoptions)
 				if err != nil {
 					return fmt.Errorf("Error while updating name %s for network interface of instance %s\n%s: %q", newName, d.Id(), err, response)
 				}
@@ -1673,7 +1673,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 	if d.HasChange(isInstanceTags) {
 		oldList, newList := d.GetChange(isInstanceTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource vpc Instance (%s) tags: %s", d.Id(), err)
@@ -1736,21 +1736,21 @@ func classicInstanceDelete(d *schema.ResourceData, meta interface{}, id string) 
 	if err != nil {
 		return err
 	}
-	listvolattoptions := &vpcclassicv1.ListVolumeAttachmentsOptions{
+	listvolattoptions := &vpcclassicv1.ListInstanceVolumeAttachmentsOptions{
 		InstanceID: &id,
 	}
-	vols, response, err := instanceC.ListVolumeAttachments(listvolattoptions)
+	vols, response, err := instanceC.ListInstanceVolumeAttachments(listvolattoptions)
 	if err != nil {
 		return fmt.Errorf("Error Listing volume attachments to the instance: %s\n%s", err, response)
 	}
 	bootvolid := ""
 	for _, vol := range vols.VolumeAttachments {
 		if *vol.Type == "data" {
-			delvolattoptions := &vpcclassicv1.DeleteVolumeAttachmentOptions{
+			delvolattoptions := &vpcclassicv1.DeleteInstanceVolumeAttachmentOptions{
 				InstanceID: &id,
 				ID:         vol.ID,
 			}
-			_, err := instanceC.DeleteVolumeAttachment(delvolattoptions)
+			_, err := instanceC.DeleteInstanceVolumeAttachment(delvolattoptions)
 			if err != nil {
 				return fmt.Errorf("Error while removing volume attachment %q for instance %s: %q", *vol.ID, d.Id(), err)
 			}
@@ -1816,21 +1816,21 @@ func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	if err != nil {
 		return err
 	}
-	listvolattoptions := &vpcv1.ListVolumeAttachmentsOptions{
+	listvolattoptions := &vpcv1.ListInstanceVolumeAttachmentsOptions{
 		InstanceID: &id,
 	}
-	vols, response, err := instanceC.ListVolumeAttachments(listvolattoptions)
+	vols, response, err := instanceC.ListInstanceVolumeAttachments(listvolattoptions)
 	if err != nil {
 		return fmt.Errorf("Error Listing volume attachments to the instance: %s\n%s", err, response)
 	}
 	bootvolid := ""
 	for _, vol := range vols.VolumeAttachments {
 		if *vol.Type == "data" {
-			delvolattoptions := &vpcv1.DeleteVolumeAttachmentOptions{
+			delvolattoptions := &vpcv1.DeleteInstanceVolumeAttachmentOptions{
 				InstanceID: &id,
 				ID:         vol.ID,
 			}
-			_, err := instanceC.DeleteVolumeAttachment(delvolattoptions)
+			_, err := instanceC.DeleteInstanceVolumeAttachment(delvolattoptions)
 			if err != nil {
 				return fmt.Errorf("Error while removing volume Attachment %q for instance %s: %q", *vol.ID, d.Id(), err)
 			}
@@ -2062,11 +2062,11 @@ func isWaitForClassicInstanceVolumeAttached(instanceC *vpcclassicv1.VpcClassicV1
 
 func isClassicInstanceVolumeRefreshFunc(instanceC *vpcclassicv1.VpcClassicV1, id, volID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		getvolattoptions := &vpcclassicv1.GetVolumeAttachmentOptions{
+		getvolattoptions := &vpcclassicv1.GetInstanceVolumeAttachmentOptions{
 			InstanceID: &id,
 			ID:         &volID,
 		}
-		vol, response, err := instanceC.GetVolumeAttachment(getvolattoptions)
+		vol, response, err := instanceC.GetInstanceVolumeAttachment(getvolattoptions)
 		if err != nil {
 			return nil, "", fmt.Errorf("Error Attaching volume: %s\n%s", err, response)
 		}
@@ -2096,11 +2096,11 @@ func isWaitForInstanceVolumeAttached(instanceC *vpcv1.VpcV1, d *schema.ResourceD
 
 func isInstanceVolumeRefreshFunc(instanceC *vpcv1.VpcV1, id, volID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		getvolattoptions := &vpcv1.GetVolumeAttachmentOptions{
+		getvolattoptions := &vpcv1.GetInstanceVolumeAttachmentOptions{
 			InstanceID: &id,
 			ID:         &volID,
 		}
-		vol, response, err := instanceC.GetVolumeAttachment(getvolattoptions)
+		vol, response, err := instanceC.GetInstanceVolumeAttachment(getvolattoptions)
 		if err != nil {
 			return nil, "", fmt.Errorf("Error Attaching volume: %s\n%s", err, response)
 		}
@@ -2119,11 +2119,11 @@ func isWaitForClassicInstanceVolumeDetached(instanceC *vpcclassicv1.VpcClassicV1
 		Pending: []string{isInstanceVolumeAttached, isInstanceVolumeDetaching},
 		Target:  []string{isInstanceDeleteDone, ""},
 		Refresh: func() (interface{}, string, error) {
-			getvolattoptions := &vpcclassicv1.GetVolumeAttachmentOptions{
+			getvolattoptions := &vpcclassicv1.GetInstanceVolumeAttachmentOptions{
 				InstanceID: &id,
 				ID:         &volID,
 			}
-			vol, response, err := instanceC.GetVolumeAttachment(getvolattoptions)
+			vol, response, err := instanceC.GetInstanceVolumeAttachment(getvolattoptions)
 			if err != nil {
 				if response != nil && response.StatusCode == 404 {
 					return vol, isInstanceDeleteDone, nil
@@ -2149,11 +2149,11 @@ func isWaitForInstanceVolumeDetached(instanceC *vpcv1.VpcV1, d *schema.ResourceD
 		Pending: []string{isInstanceVolumeAttached, isInstanceVolumeDetaching},
 		Target:  []string{isInstanceDeleteDone, ""},
 		Refresh: func() (interface{}, string, error) {
-			getvolattoptions := &vpcv1.GetVolumeAttachmentOptions{
+			getvolattoptions := &vpcv1.GetInstanceVolumeAttachmentOptions{
 				InstanceID: &id,
 				ID:         &volID,
 			}
-			vol, response, err := instanceC.GetVolumeAttachment(getvolattoptions)
+			vol, response, err := instanceC.GetInstanceVolumeAttachment(getvolattoptions)
 			if err != nil {
 				if response != nil && response.StatusCode == 404 {
 					return vol, isInstanceDeleteDone, nil
