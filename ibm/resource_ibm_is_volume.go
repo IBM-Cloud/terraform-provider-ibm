@@ -6,11 +6,11 @@ import (
 	"os"
 	"time"
 
+	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -206,7 +206,7 @@ func classicVolCreate(d *schema.ResourceData, meta interface{}, volName, profile
 	if key, ok := d.GetOk(isVolumeEncryptionKey); ok {
 		encryptionKey := key.(string)
 		volTemplate.EncryptionKey = &vpcclassicv1.EncryptionKeyIdentity{
-			Crn: &encryptionKey,
+			CRN: &encryptionKey,
 		}
 	}
 
@@ -235,7 +235,7 @@ func classicVolCreate(d *schema.ResourceData, meta interface{}, volName, profile
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isVolumeTags); ok || v != "" {
 		oldList, newList := d.GetChange(isVolumeTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *vol.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *vol.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource vpc volume (%s) tags: %s", d.Id(), err)
@@ -295,7 +295,7 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isVolumeTags); ok || v != "" {
 		oldList, newList := d.GetChange(isVolumeTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *vol.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *vol.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource vpc volume (%s) tags: %s", d.Id(), err)
@@ -346,13 +346,13 @@ func classicVolGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isVolumeProfileName, *vol.Profile.Name)
 	d.Set(isVolumeZone, *vol.Zone.Name)
 	if vol.EncryptionKey != nil {
-		d.Set(isVolumeEncryptionKey, *vol.EncryptionKey.Crn)
+		d.Set(isVolumeEncryptionKey, *vol.EncryptionKey.CRN)
 	}
 	d.Set(isVolumeIops, *vol.Iops)
 	d.Set(isVolumeCapacity, *vol.Capacity)
-	d.Set(isVolumeCrn, *vol.Crn)
+	d.Set(isVolumeCrn, *vol.CRN)
 	d.Set(isVolumeStatus, *vol.Status)
-	tags, err := GetTagsUsingCRN(meta, *vol.Crn)
+	tags, err := GetTagsUsingCRN(meta, *vol.CRN)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc volume (%s) tags: %s", d.Id(), err)
@@ -364,7 +364,7 @@ func classicVolGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set(ResourceControllerURL, controller+"/vpc/storage/storageVolumes")
 	d.Set(ResourceName, *vol.Name)
-	d.Set(ResourceCRN, *vol.Crn)
+	d.Set(ResourceCRN, *vol.CRN)
 	d.Set(ResourceStatus, *vol.Status)
 	if vol.ResourceGroup != nil {
 		d.Set(ResourceGroupName, *vol.ResourceGroup.ID)
@@ -398,9 +398,9 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 	// }
 	d.Set(isVolumeIops, *vol.Iops)
 	d.Set(isVolumeCapacity, *vol.Capacity)
-	d.Set(isVolumeCrn, *vol.Crn)
+	d.Set(isVolumeCrn, *vol.CRN)
 	d.Set(isVolumeStatus, *vol.Status)
-	tags, err := GetTagsUsingCRN(meta, *vol.Crn)
+	tags, err := GetTagsUsingCRN(meta, *vol.CRN)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc volume (%s) tags: %s", d.Id(), err)
@@ -412,7 +412,7 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/storage/storageVolumes")
 	d.Set(ResourceName, *vol.Name)
-	d.Set(ResourceCRN, *vol.Crn)
+	d.Set(ResourceCRN, *vol.CRN)
 	d.Set(ResourceStatus, *vol.Status)
 	if vol.ResourceGroup != nil {
 		d.Set(ResourceGroupName, *vol.ResourceGroup.Name)
@@ -464,7 +464,7 @@ func classicVolUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 			return fmt.Errorf("Error getting Volume : %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isVolumeTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *vol.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *vol.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource vpc volume (%s) tags: %s", id, err)
@@ -497,7 +497,7 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 			return fmt.Errorf("Error getting Volume : %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isVolumeTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *vol.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *vol.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource vpc volume (%s) tags: %s", id, err)
