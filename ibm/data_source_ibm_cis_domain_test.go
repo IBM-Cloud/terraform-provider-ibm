@@ -29,16 +29,16 @@ func testAccCheckIBMCisDomainDataSourceConfig_basic1(resourceName string, domain
 	
 	data "ibm_cis_domain" "cis_domain" {
 		cis_id = data.ibm_cis.cis.id
-		domain = "test123.com"
+		domain = "cis-test-domain.com"
 	}
 	  
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 	  
 	data "ibm_cis" "cis" {
 		resource_group_id = data.ibm_resource_group.test_acc.id
-		name              = "test-domain"
+		name              = "Terraform-Test-CIS"
 	}
 	`)
 }
