@@ -245,6 +245,10 @@ func Provider() terraform.ResourceProvider {
 			// Added for Direct Link
 
 			"ibm_dl_gateways": dataSourceIBMDLGateways(),
+
+			//Added for Transit Gateway
+			"ibm_tg_gateway":  dataSourceIBMTransitGateway(),
+			"ibm_tg_gateways": dataSourceIBMTransitGateways(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
