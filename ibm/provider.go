@@ -245,6 +245,8 @@ func Provider() terraform.ResourceProvider {
 			// Added for Direct Link
 
 			"ibm_dl_gateways": dataSourceIBMDLGateways(),
+			"ibm_dl_port":     dataSourceIBMDirectLinkPort(),
+			"ibm_dl_ports":    dataSourceIBMDirectLinkPorts(),
 
 			//Added for Transit Gateway
 			"ibm_tg_gateway":  dataSourceIBMTransitGateway(),
