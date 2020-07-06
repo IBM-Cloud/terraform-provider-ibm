@@ -73,7 +73,8 @@ func resourceIBMPIKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	sshResponse, _, err := client.Create(name, sshkey, powerinstanceid)
 	if err != nil {
 		log.Printf("[DEBUG]  err %s", isErrorToString(err))
-		return err
+		return fmt.Errorf("Failed to create the key %v", err)
+
 	}
 
 	log.Printf("Printing the sshkey %+v", &sshResponse)
@@ -90,7 +91,7 @@ func resourceIBMPIKeyRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	parts, err := idParts(d.Id())
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to obtain the key %v", err)
 	}
 
 	powerinstanceid := parts[0]

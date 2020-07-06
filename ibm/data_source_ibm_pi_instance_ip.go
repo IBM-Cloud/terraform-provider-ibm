@@ -79,7 +79,7 @@ func dataSourceIBMPIInstancesIPRead(d *schema.ResourceData, meta interface{}) er
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	powerinstancesubnet := d.Get(helpers.PINetworkName).(string)
 	powerC := instance.NewIBMPIInstanceClient(sess, powerinstanceid)
-	powervmdata, err := powerC.Get(d.Get(helpers.PIInstanceName).(string), powerinstanceid)
+	powervmdata, err := powerC.Get(d.Get(helpers.PIInstanceName).(string), powerinstanceid, getTimeOut)
 
 	if err != nil {
 		return err
@@ -118,7 +118,7 @@ func checkValidSubnet(d *schema.ResourceData, meta interface{}) error {
 	powerinstancesubnet := d.Get(helpers.PINetworkName).(string)
 
 	networkC := instance.NewIBMPINetworkClient(sess, powerinstanceid)
-	networkdata, err := networkC.Get(powerinstancesubnet, powerinstanceid)
+	networkdata, err := networkC.Get(powerinstancesubnet, powerinstanceid, getTimeOut)
 
 	if err != nil {
 		return err

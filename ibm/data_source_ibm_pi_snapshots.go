@@ -78,7 +78,7 @@ func dataSourceIBMPISnapshotsRead(d *schema.ResourceData, meta interface{}) erro
 
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	snapshot := instance.NewIBMPISnapshotClient(sess, powerinstanceid)
-	snapshotData, err := snapshot.GetAll("", powerinstanceid)
+	snapshotData, err := snapshot.GetAll("", powerinstanceid, getTimeOut)
 
 	if err != nil {
 		return err

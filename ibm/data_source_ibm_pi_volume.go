@@ -72,7 +72,7 @@ func dataSourceIBMPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	volumeC := instance.NewIBMPIVolumeClient(sess, powerinstanceid)
-	volumedata, err := volumeC.Get(d.Get(helpers.PIVolumeName).(string), powerinstanceid)
+	volumedata, err := volumeC.Get(d.Get(helpers.PIVolumeName).(string), powerinstanceid, getTimeOut)
 
 	if err != nil {
 		return err

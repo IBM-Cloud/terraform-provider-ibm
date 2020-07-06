@@ -125,7 +125,7 @@ func dataSourceIBMPIInstancesRead(d *schema.ResourceData, meta interface{}) erro
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 
 	powerC := instance.NewIBMPIInstanceClient(sess, powerinstanceid)
-	powervmdata, err := powerC.Get(d.Get(helpers.PIInstanceName).(string), powerinstanceid)
+	powervmdata, err := powerC.Get(d.Get(helpers.PIInstanceName).(string), powerinstanceid, getTimeOut)
 
 	if err != nil {
 		return err
