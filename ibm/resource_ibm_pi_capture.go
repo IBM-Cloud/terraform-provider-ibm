@@ -121,7 +121,7 @@ func resourceIBMPICaptureCreate(d *schema.ResourceData, meta interface{}) error 
 
 	captureinfo, err := client.CaptureInstanceToImageCatalog(name, powerinstanceid, &p_cloud_p_vm_instances.PcloudPvminstancesCapturePostParams{
 		Body: body,
-	})
+	}, createTimeOut)
 
 	log.Printf("Printing the data from the capture %+v", &captureinfo)
 
@@ -169,7 +169,7 @@ func resourceIBMPICaptureUpdate(d *schema.ResourceData, meta interface{}) error 
 	size := float64(d.Get(helpers.PIVolumeSize).(float64))
 	shareable := bool(d.Get(helpers.PIVolumeShareable).(bool))
 
-	volrequest, err := client.Update(d.Id(), name, size, shareable, powerinstanceid)
+	volrequest, err := client.Update(d.Id(), name, size, shareable, powerinstanceid, postTimeOut)
 	if err != nil {
 		return err
 	}
@@ -188,7 +188,7 @@ func resourceIBMPICaptureDelete(d *schema.ResourceData, meta interface{}) error 
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	client := st.NewIBMPIVolumeClient(sess, powerinstanceid)
 
-	err := client.Delete(d.Id(), powerinstanceid)
+	err := client.Delete(d.Id(), powerinstanceid, deleteTimeOut)
 	if err != nil {
 		return err
 	}

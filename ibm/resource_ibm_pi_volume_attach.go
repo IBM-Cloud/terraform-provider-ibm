@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -9,6 +10,13 @@ import (
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+)
+
+const (
+
+	/* Fix for PowerVC taking time to attach volume depending on load*/
+
+	attachVolumeTimeOut = 240 * time.Second
 )
 
 func resourceIBMPIVolumeAttach() *schema.Resource {
@@ -79,11 +87,10 @@ func resourceIBMPIVolumeAttachCreate(d *schema.ResourceData, meta interface{}) e
 
 	client := st.NewIBMPIVolumeClient(sess, powerinstanceid)
 
-	//log.Print("Now doing a get with the volumename %s  ", name)
-	volinfo, err := client.Get(name, powerinstanceid)
+	volinfo, err := client.Get(name, powerinstanceid, getTimeOut)
 
 	if err != nil {
-		return errors.New("The volume cannot be attached since it's not available")
+		return fmt.Errorf("The volume [ %s] cannot be attached since it's not available", name)
 	}
 	//log.Print("The volume info is %s", volinfo)
 
@@ -101,7 +108,7 @@ func resourceIBMPIVolumeAttachCreate(d *schema.ResourceData, meta interface{}) e
 		return errors.New("The volume cannot be attached in the current state. The volume must be in the *available* state. No other states are permissible")
 	}
 
-	resp, err := client.Attach(servername, name, powerinstanceid)
+	resp, err := client.Attach(servername, name, powerinstanceid, attachVolumeTimeOut)
 
 	if err != nil {
 		return err
@@ -125,9 +132,11 @@ func resourceIBMPIVolumeAttachCreate(d *schema.ResourceData, meta interface{}) e
 func resourceIBMPIVolumeAttachRead(d *schema.ResourceData, meta interface{}) error {
 	sess, _ := meta.(ClientSession).IBMPISession()
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	servername := d.Get(helpers.PIInstanceName).(string)
 
 	client := st.NewIBMPIVolumeClient(sess, powerinstanceid)
-	vol, err := client.Get(d.Id(), powerinstanceid)
+
+	vol, err := client.CheckVolumeAttach(powerinstanceid, servername, d.Id(), getTimeOut)
 	if err != nil {
 		return err
 	}
@@ -153,7 +162,7 @@ func resourceIBMPIVolumeAttachUpdate(d *schema.ResourceData, meta interface{}) e
 	size := float64(d.Get(helpers.PIVolumeSize).(float64))
 	shareable := bool(d.Get(helpers.PIVolumeShareable).(bool))
 
-	volrequest, err := client.Update(d.Id(), name, size, shareable, powerinstanceid)
+	volrequest, err := client.Update(d.Id(), name, size, shareable, powerinstanceid, postTimeOut)
 	if err != nil {
 		return err
 	}
@@ -175,7 +184,7 @@ func resourceIBMPIVolumeAttachDelete(d *schema.ResourceData, meta interface{}) e
 	client := st.NewIBMPIVolumeClient(sess, powerinstanceid)
 
 	log.Printf("the id of the volume to detach is%s ", d.Id())
-	_, err := client.Detach(servername, name, powerinstanceid)
+	_, err := client.Detach(servername, name, powerinstanceid, deleteTimeOut)
 	if err != nil {
 		return err
 	}
@@ -192,9 +201,9 @@ func isWaitForIBMPIVolumeAttachAvailable(client *st.IBMPIVolumeClient, id, power
 		Pending:    []string{"retry", helpers.PIVolumeProvisioning},
 		Target:     []string{helpers.PIVolumeAllowableAttachStatus},
 		Refresh:    isIBMPIVolumeAttachRefreshFunc(client, id, powerinstanceid),
-		Timeout:    timeout,
 		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
+		MinTimeout: 2 * time.Minute,
+		Timeout:    10 * time.Minute,
 	}
 
 	return stateConf.WaitForState()
@@ -202,7 +211,7 @@ func isWaitForIBMPIVolumeAttachAvailable(client *st.IBMPIVolumeClient, id, power
 
 func isIBMPIVolumeAttachRefreshFunc(client *st.IBMPIVolumeClient, id, powerinstanceid string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		vol, err := client.Get(id, powerinstanceid)
+		vol, err := client.Get(id, powerinstanceid, getTimeOut)
 		if err != nil {
 			return nil, "", err
 		}

@@ -235,6 +235,8 @@ func Provider() terraform.ResourceProvider {
 			"ibm_pi_instance_ip":        dataSourceIBMPIInstanceIP(),
 			"ibm_pi_instance_snapshots": dataSourceIBMPISnapshots(),
 			"ibm_pi_pvm_snapshots":      dataSourceIBMPISnapshot(),
+			"ibm_pi_network_port":       dataSourceIBMPINetworkPort(),
+			"ibm_pi_cloud_instance":     dataSourceIBMPICloudInstance(),
 
 			// Added for private dns zones
 
@@ -390,6 +392,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_pi_volume_attach": resourceIBMPIVolumeAttach(),
 			"ibm_pi_capture":       resourceIBMPICapture(),
 			"ibm_pi_image":         resourceIBMPIImage(),
+			"ibm_pi_network_port":  resourceIBMPINetworkPort(),
 
 			//Private DNS related resources
 			"ibm_dns_zone":              resourceIBMPrivateDNSZone(),

@@ -49,10 +49,6 @@ func dataSourceIBMPITenant() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						//"limits": {
-						//	Type:     schema.TypeString,
-						//	Computed: true,
-						//},
 					},
 				},
 			},

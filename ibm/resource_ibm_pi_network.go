@@ -100,7 +100,7 @@ func resourceIBMPINetworkCreate(d *schema.ResourceData, meta interface{}) error 
 	if networktype == "vlan" {
 		networkgateway, firstip, lastip = generateIPData(networkcidr)
 	}
-	networkResponse, _, err := client.Create(networkname, networktype, networkcidr, networkdns, networkgateway, firstip, lastip, powerinstanceid)
+	networkResponse, _, err := client.Create(networkname, networktype, networkcidr, networkdns, networkgateway, firstip, lastip, powerinstanceid, postTimeOut)
 
 	if err != nil {
 		return err
@@ -137,7 +137,7 @@ func resourceIBMPINetworkRead(d *schema.ResourceData, meta interface{}) error {
 
 	powerinstanceid := parts[0]
 	networkC := st.NewIBMPINetworkClient(sess, powerinstanceid)
-	networkdata, err := networkC.Get(parts[1], powerinstanceid)
+	networkdata, err := networkC.Get(parts[1], powerinstanceid, getTimeOut)
 
 	if err != nil {
 		return err
@@ -172,7 +172,7 @@ func resourceIBMPINetworkDelete(d *schema.ResourceData, meta interface{}) error 
 	}
 	powerinstanceid := parts[0]
 	networkC := st.NewIBMPINetworkClient(sess, powerinstanceid)
-	err = networkC.Delete(parts[1], powerinstanceid)
+	err = networkC.Delete(parts[1], powerinstanceid, deleteTimeOut)
 
 	if err != nil {
 		return err
@@ -194,7 +194,7 @@ func resourceIBMPINetworkExists(d *schema.ResourceData, meta interface{}) (bool,
 	powerinstanceid := parts[0]
 	client := st.NewIBMPINetworkClient(sess, powerinstanceid)
 
-	network, err := client.Get(parts[0], powerinstanceid)
+	network, err := client.Get(parts[0], powerinstanceid, getTimeOut)
 	if err != nil {
 
 		return false, err
@@ -221,7 +221,7 @@ func isIBMPINetworkRefreshFunc(client *st.IBMPINetworkClient, id, powerinstancei
 
 	log.Printf("Calling the IsIBMPINetwork Refresh Function....with the following id %s and waiting for network to be READY", id)
 	return func() (interface{}, string, error) {
-		network, err := client.Get(id, powerinstanceid)
+		network, err := client.Get(id, powerinstanceid, getTimeOut)
 		if err != nil {
 			return nil, "", err
 		}

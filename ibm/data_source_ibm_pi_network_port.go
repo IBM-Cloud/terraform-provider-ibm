@@ -1,25 +1,27 @@
 package ibm
 
 import (
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"log"
 
+	//"fmt"
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
-func dataSourceIBMPIVolumes() *schema.Resource {
+func dataSourceIBMPINetworkPort() *schema.Resource {
 
 	return &schema.Resource{
-		Read: dataSourceIBMPIVolumesRead,
+		Read: dataSourceIBMPINetworkPortsRead,
 		Schema: map[string]*schema.Schema{
 
-			helpers.PIInstanceName: {
+			helpers.PINetworkName: {
 				Type:         schema.TypeString,
 				Required:     true,
-				Description:  "Instance Name to be used for pvminstances",
+				Description:  "Network Name to be used for pvminstances",
 				ValidateFunc: validation.NoZeroValues,
 			},
 
@@ -29,49 +31,37 @@ func dataSourceIBMPIVolumes() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 			},
 
-			//Computed Attributes
+			// Computed Attributes
 
-			"boot_volume_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
-			"instance_volumes": {
+			"network_ports": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": {
+						"ipaddress": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						"macaddress": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"size": {
-							Type:     schema.TypeFloat,
+						"portid": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"status": {
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"href": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"name": {
+						"description": {
 							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"state": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"type": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"shareable": {
-							Type:     schema.TypeBool,
-							Computed: true,
-						},
-						"bootable": {
-							Type:     schema.TypeBool,
-							Computed: true,
+							Required: true,
 						},
 					},
 				},
@@ -80,7 +70,7 @@ func dataSourceIBMPIVolumes() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMPINetworkPortsRead(d *schema.ResourceData, meta interface{}) error {
 
 	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
@@ -88,34 +78,31 @@ func dataSourceIBMPIVolumesRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	volumeC := instance.NewIBMPIVolumeClient(sess, powerinstanceid)
-	volumedata, err := volumeC.GetAll(d.Get(helpers.PIInstanceName).(string), powerinstanceid, getTimeOut)
+	networkportC := instance.NewIBMPINetworkClient(sess, powerinstanceid)
+	networkportdata, err := networkportC.GetAllPort(d.Get(helpers.PINetworkName).(string), powerinstanceid, getTimeOut)
 
 	if err != nil {
 		return err
 	}
-
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
-	d.Set("boot_volume_id", *volumedata.Volumes[0].VolumeID)
-	d.Set("instance_volumes", flattenVolumesInstances(volumedata.Volumes))
+
+	d.Set("network_ports", flattenNetworkPorts(networkportdata.Ports))
 
 	return nil
 
 }
 
-func flattenVolumesInstances(list []*models.VolumeReference) []map[string]interface{} {
-	result := make([]map[string]interface{}, 0, len(list))
-	for _, i := range list {
+func flattenNetworkPorts(networkPorts []*models.NetworkPort) interface{} {
+	result := make([]map[string]interface{}, 0, len(networkPorts))
+	log.Printf("the number of ports is %d", len(networkPorts))
+	for _, i := range networkPorts {
 		l := map[string]interface{}{
-			"id":        *i.VolumeID,
-			"state":     *i.State,
-			"href":      *i.Href,
-			"name":      *i.Name,
-			"size":      *i.Size,
-			"type":      *i.DiskType,
-			"shareable": *i.Shareable,
-			"bootable":  *i.Bootable,
+			"portid":     *i.PortID,
+			"status":     *i.Status,
+			"href":       i.Href,
+			"ipaddress":  *i.IPAddress,
+			"macaddress": *i.MacAddress,
 		}
 
 		result = append(result, l)
