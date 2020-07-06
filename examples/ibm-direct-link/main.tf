@@ -37,7 +37,12 @@ resource "ibm_dl_virtual_connection" "test_dl_gateway_vc"{
 
 data "ibm_dl_gateways" "test_dl_gateways" {
 }
- data "ibm_dl_gateway" "test_dl_gateway_vc" {
+ 
+data "ibm_dl_offering_speeds" "test_dl_speeds" {
+  offering_type="dedicated"
+}
+
+data "ibm_dl_gateway" "test_dl_gateway_vc" {
    name ="terraformtestGateway"
 }
 
