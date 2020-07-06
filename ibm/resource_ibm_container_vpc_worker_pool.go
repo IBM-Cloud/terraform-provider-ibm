@@ -250,12 +250,18 @@ func resourceIBMContainerVpcWorkerPoolRead(d *schema.ResourceData, meta interfac
 		}
 	}
 
+	cls, err := wpClient.Clusters().GetCluster(cluster, targetEnv)
+	if err != nil {
+		return fmt.Errorf("Error retrieving conatiner vpc cluster: %s", err)
+	}
+
 	d.Set("worker_pool_name", workerPool.PoolName)
 	d.Set("flavor", workerPool.Flavor)
 	d.Set("worker_count", workerPool.WorkerCount)
 	d.Set("provider", workerPool.Provider)
 	d.Set("labels", workerPool.Labels)
 	d.Set("zones", zones)
+	d.Set("resource_group_id", cls.ResourceGroupID)
 	d.Set("cluster", cluster)
 	d.Set("vpc_id", workerPool.VpcID)
 

@@ -19,8 +19,8 @@ func TestAccIBMContainerVpcCluster_basic(t *testing.T) {
 	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	clusterNamegen2 := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	randint := acctest.RandIntRange(10, 100)
-	vpc := fmt.Sprintf("vpc-%d", randint)
-	subnet := fmt.Sprintf("subnet-%d", randint)
+	vpc := fmt.Sprintf("terraform_vpc-%d", randint)
+	subnet := fmt.Sprintf("terraform_subnet-%d", randint)
 	flavor := "c2.2x4"
 	zone := "us-south"
 	workerCount := "1"
@@ -74,7 +74,7 @@ func TestAccIBMContainerVpcCluster_basic(t *testing.T) {
 	})
 }
 
-func TestAccIBMVpcContainerVpcCluster_importBasic(t *testing.T) {
+func TestAccIBMContainerVpcCluster_importBasic(t *testing.T) {
 	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	randint := acctest.RandIntRange(10, 100)
 	vpc := fmt.Sprintf("vpc-%d", randint)
@@ -94,6 +94,8 @@ func TestAccIBMVpcContainerVpcCluster_importBasic(t *testing.T) {
 				ResourceName:      "ibm_container_vpc_cluster.cluster",
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"wait_till"},
 			},
 		},
 	})
@@ -234,7 +236,7 @@ resource "ibm_container_vpc_cluster" "clustergen2" {
 	vpc_id            = "${ibm_is_vpc.vpc1.id}"
 	flavor            = "%s"
 	worker_count      = "%s"
-	kube_version 	  = "1.17.5"
+	kube_version 	  = "1.17.7"
 	wait_till         = "OneWorkerNodeReady"
 	resource_group_id = "${data.ibm_resource_group.resource_group.id}"
 	zones {
@@ -282,7 +284,7 @@ resource "ibm_container_vpc_cluster" "clustergen2" {
 	flavor            = "%s"
 	worker_count      = "%s"
 	kube_version 	  = "4.3.23_openshift"
-	wait_till         = "OneWorkerNodeReady"
+	wait_till         = "IngressReady"
 	entitlement       = "cloud_pak"
 	cos_instance_crn  = ibm_resource_instance.cos_instance.id
 

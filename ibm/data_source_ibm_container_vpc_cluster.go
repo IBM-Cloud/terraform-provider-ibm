@@ -277,6 +277,7 @@ func dataSourceIBMContainerClusterVPCRead(d *schema.ResourceData, meta interface
 
 	}
 	d.Set("master_url", cls.MasterURL)
+	d.Set("worker_count", cls.WorkerCount)
 	d.Set("service_subnet", cls.ServiceSubnet)
 	d.Set("pod_subnet", cls.PodSubnet)
 	d.Set("state", cls.State)
