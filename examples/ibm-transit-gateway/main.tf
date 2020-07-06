@@ -12,3 +12,11 @@ location="us-south"
 global=true
 resource_group = data.ibm_resource_group.rg.id
 } 
+
+data "ibm_tg_gateway" "tg_gateway" {
+name="tg-gateway-1"
+}
+
+data "ibm_tg_gateways" "all_tg_gws"{
+
+}

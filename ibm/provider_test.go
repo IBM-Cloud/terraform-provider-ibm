@@ -311,7 +311,7 @@ func init() {
 	if isImage == "" {
 		isImage = "fc538f61-7dd6-4408-978c-c6b85b69fe76" // for classic infrastructure
 		// isImage = "r006-ed3f775f-ad7e-4e37-ae62-7199b4988b00" // for next gen infrastructure
-		fmt.Println("[INFO] Set the environment variable SL_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value '7eb4e35b-4257-56f8-d7da-326d85452591'")
+		fmt.Println("[INFO] Set the environment variable IS_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'fc538f61-7dd6-4408-978c-c6b85b69fe76'")
 	}
 
 	instanceProfileName = os.Getenv("SL_INSTANCE_PROFILE")

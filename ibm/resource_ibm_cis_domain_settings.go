@@ -221,14 +221,15 @@ func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	for _, item := range settingsList {
-
-		value := d.Get(item).(string)
-		if value != "" {
-			settingsNew := v1.SettingsBody{Value: value}
-			_, err = cisClient.Settings().UpdateSetting(cisId, zoneId, item, settingsNew)
-			if err != nil {
-				log.Printf("Update settings Failed on %s, %s\n", item, err)
-				return err
+		if d.HasChange(item) {
+			if v, ok := d.GetOk(item); ok {
+				value := v.(string)
+				settingsNew := v1.SettingsBody{Value: value}
+				_, err = cisClient.Settings().UpdateSetting(cisId, zoneId, item, settingsNew)
+				if err != nil {
+					log.Printf("Update settings Failed on %s, %s\n", item, err)
+					return err
+				}
 			}
 		}
 	}
@@ -250,6 +251,10 @@ func resourceCISSettingsRead(d *schema.ResourceData, meta interface{}) error {
 		if err != nil {
 			if checkCisSettingsDeleted(d, meta, err, cisId) {
 				d.SetId("")
+				return nil
+			}
+			if strings.Contains(err.Error(), "Request failed with status code: 405") {
+				log.Printf("[WARN] This action is unavailable for the current plan")
 				return nil
 			}
 			log.Printf("[WARN] Error getting zone during DomainRead %v\n", err)

@@ -18,6 +18,13 @@ func TestAccIBMCisSettings_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
+				Config: testAccCheckCisSettingsConfigBasic3("test", cisDomainStatic),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(name, "waf", "on"),
+					resource.TestCheckResourceAttr(name, "min_tls_version", "1.1"),
+				),
+			},
+			{
 				Config: testAccCheckCisSettingsConfigBasic1("test", cisDomainStatic),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "waf", "on"),
@@ -35,6 +42,15 @@ func TestAccIBMCisSettings_Basic(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testAccCheckCisSettingsConfigBasic3(id string, cisDomainStatic string) string {
+	return testAccCheckIBMCisDomainDataSourceConfig_basic1("test", cisDomainStatic) + fmt.Sprintf(`
+	resource "ibm_cis_domain_settings" "%[1]s" {
+		cis_id          = data.ibm_cis.cis.id
+		domain_id       = data.ibm_cis_domain.cis_domain.id
+	  }
+`, id)
 }
 
 func testAccCheckCisSettingsConfigBasic1(id string, cisDomainStatic string) string {
