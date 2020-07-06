@@ -26,6 +26,7 @@ resource "ibm_pi_instance" "test-instance" {
     pi_sys_type           = "s922"
     pi_cloud_instance_id  = "51e1879c-bcbe-4ee1-a008-49cdba0eaf60"
     pi_pin_policy         = "none"
+    pi_health_status      = "WARNING"
 }
 ```
 
@@ -56,7 +57,7 @@ The following arguments are supported:
 * `pi_replication_policy` - (Optional, string) Specifies the replication policy (e.g., none).
 * `pi_replication_scheme` - (Optional, string) Specifies the replicate scheme (prefix/suffix).
 * `pi_pin_policy` - (Optional,string) Specifies the pin policy for the lpar (none/soft/hard) - This is dependent on the cloud instance capabilities.
-
+* `pi_health_status` - (Optional,string) Specifies if terraform should poll for the Health Status to be OK or WARNING.  Default is OK. 
 ## Attribute Reference
 
 The following attributes are exported:

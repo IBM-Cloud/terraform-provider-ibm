@@ -62,7 +62,7 @@ func dataSourceIBMPIPublicNetworksRead(d *schema.ResourceData, meta interface{})
 
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	networkC := instance.NewIBMPINetworkClient(sess, powerinstanceid)
-	networkdata, err := networkC.GetPublic(powerinstanceid)
+	networkdata, err := networkC.GetPublic(powerinstanceid, getTimeOut)
 
 	if err != nil {
 		return err
