@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccIBMVpcContainerWorkerPool_basic(t *testing.T) {
+func TestAccIBMContainerVpcClusterWorkerPool_basic(t *testing.T) {
 
 	flavor := "c2.2x4"
 	worker_count := 1
@@ -33,7 +33,7 @@ func TestAccIBMVpcContainerWorkerPool_basic(t *testing.T) {
 	})
 }
 
-func TestAccIBMVpcContainerWorkerPool_importBasic(t *testing.T) {
+func TestAccIBMContainerVpcClusterWorkerPool_importBasic(t *testing.T) {
 	flavor := "c2.2x4"
 	worker_count := 1
 	name1 := acctest.RandIntRange(10, 100)
@@ -107,18 +107,18 @@ func testAccCheckIBMVpcContainerWorkerPool_basic(flavor string, worker_count, na
 	  }
 	  
 	  resource "ibm_is_vpc" "vpc1" {
-		name = "vpc-${var.name1}"
+		name = "terraform_vpc-${var.name1}"
 	  }
 	  
 	  resource "ibm_is_subnet" "subnet1" {
-		name                     = "subnet-${var.name1}"
+		name                     = "terraform_subnet-${var.name1}"
 		vpc                      = "${ibm_is_vpc.vpc1.id}"
 		zone                     = "${local.ZONE1}"
 		total_ipv4_address_count = 256
 	  }
 	  
 	  resource "ibm_is_subnet" "subnet2" {
-		name                     = "subnet-${var.name2}"
+		name                     = "terraform_subnet-${var.name2}"
 		vpc                      = "${ibm_is_vpc.vpc1.id}"
 		zone                     = "${local.ZONE2}"
 		total_ipv4_address_count = 256
@@ -129,33 +129,29 @@ func testAccCheckIBMVpcContainerWorkerPool_basic(flavor string, worker_count, na
 	  }
 	  
 	  resource "ibm_container_vpc_cluster" "cluster" {
-		name              = "cluster${var.name1}"
+		name              = "terraform_cluster${var.name1}"
 		vpc_id            = "${ibm_is_vpc.vpc1.id}"
 		flavor            = "%s"
 		worker_count      = "%d"
 		resource_group_id = "${data.ibm_resource_group.resource_group.id}"
 	  
-		zones = [
-		  {
+		zones {
 			subnet_id = "${ibm_is_subnet.subnet1.id}"
 			name      = "${local.ZONE1}"
-		  },
-		]
+		  }
 	  }
 	  
-	  resource "ibm_container_vpc_worker_pool" "cluster_pool" {
+	  resource "ibm_container_vpc_worker_pool" "test_pool" {
 		cluster          = "${ibm_container_vpc_cluster.cluster.id}"
-		worker_pool_name = "workerpool${var.name1}"
+		worker_pool_name = "terraform_workerpool${var.name1}"
 		flavor           = "%s"
 		vpc_id           = "${ibm_is_vpc.vpc1.id}"
 		worker_count     = "%d"
 		resource_group_id = "${data.ibm_resource_group.resource_group.id}"
-		zones = [
-		  {
+		zones {
 			name      = "${local.ZONE2}"
 			subnet_id = "${ibm_is_subnet.subnet2.id}"
-		  },
-		]
+		  }
 	  }
 	  
 		`, name1, name2, flavor, worker_count, flavor, worker_count)
