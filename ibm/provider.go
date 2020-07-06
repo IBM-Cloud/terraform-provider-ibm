@@ -247,6 +247,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dl_gateways": dataSourceIBMDLGateways(),
 			"ibm_dl_port":     dataSourceIBMDirectLinkPort(),
 			"ibm_dl_ports":    dataSourceIBMDirectLinkPorts(),
+			"ibm_dl_offering_speeds": dataSourceIBMDLOfferingSpeeds(),
 
 			//Added for Transit Gateway
 			"ibm_tg_gateway":  dataSourceIBMTransitGateway(),
@@ -419,6 +420,7 @@ func Validator() ValidatorDict {
 				"ibm_tg_gateway":            resourceIBMTGValidator(),
 				"ibm_dl_virtual_connection": resourceIBMdlGatewayVCValidator(),
 				"ibm_dl_gateway":            resourceIBMDLGatewayValidator(),
+				"ibm_dl_offering_speeds":    datasourceIBMDLOfferingSpeedsValidator(),
 			},
 		}
 	})

@@ -37,6 +37,7 @@ resource "ibm_dl_virtual_connection" "test_dl_gateway_vc" {
 
 data "ibm_dl_gateways" "test_dl_gateways" {
 }
+
 data "ibm_dl_gateway" "test_dl_gateway_vc" {
   name = "terraformtestGateway"
 }
@@ -46,4 +47,8 @@ data ibm_dl_ports "test_ds_dl_ports" {
 
 data ibm_dl_port "test_ds_dl_port" {
   port_id = "2f41cf65-e72a-4522-9526-e156e4ca02b5"
+}
+ 
+data "ibm_dl_offering_speeds" "test_dl_speeds" {
+  offering_type="dedicated"
 }

@@ -556,16 +556,27 @@ func classicSubnetUpdate(d *schema.ResourceData, meta interface{}, id string) er
 			}
 			response, err := sess.DeleteSubnetPublicGatewayBinding(deleteSubnetPublicGatewayBindingOptions)
 			if err != nil {
-				return fmt.Errorf("Error Detaching public gateway attached to the subnet : %s\n%s", err, response)
+				return fmt.Errorf("Error Detaching the public gateway attached to the subnet : %s\n%s", err, response)
 			}
-			_, err = isWaitForClassicSubnetAvailable(sess, d.Id(), d.Timeout(schema.TimeoutDelete))
+			_, err = isWaitForClassicSubnetAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
 				return err
 			}
-			updateSubnetOptions.PublicGateway = &vpcclassicv1.PublicGatewayIdentity{
-				ID: &gw,
+		} else {
+			setSubnetPublicGatewayBindingOptions := &vpcclassicv1.SetSubnetPublicGatewayBindingOptions{
+				ID: &id,
+				PublicGatewayIdentity: &vpcclassicv1.PublicGatewayIdentity{
+					ID: &gw,
+				},
 			}
-			hasChanged = true
+			_, response, err := sess.SetSubnetPublicGatewayBinding(setSubnetPublicGatewayBindingOptions)
+			if err != nil {
+				return fmt.Errorf("Error Attaching public gateway to the subnet : %s\n%s", err, response)
+			}
+			_, err = isWaitForClassicSubnetAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return err
+			}
 		}
 	}
 	if hasChanged {
@@ -607,16 +618,27 @@ func subnetUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 			}
 			response, err := sess.DeleteSubnetPublicGatewayBinding(deleteSubnetPublicGatewayBindingOptions)
 			if err != nil {
-				return fmt.Errorf("Error Detaching public gateway attached to the subnet : %s\n%s", err, response)
+				return fmt.Errorf("Error Detaching the public gateway attached to the subnet : %s\n%s", err, response)
 			}
-			_, err = isWaitForSubnetAvailable(sess, d.Id(), d.Timeout(schema.TimeoutDelete))
+			_, err = isWaitForSubnetAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
 				return err
 			}
-			updateSubnetOptions.PublicGateway = &vpcv1.PublicGatewayIdentity{
-				ID: &gw,
+		} else {
+			setSubnetPublicGatewayBindingOptions := &vpcv1.SetSubnetPublicGatewayBindingOptions{
+				ID: &id,
+				PublicGatewayIdentity: &vpcv1.PublicGatewayIdentity{
+					ID: &gw,
+				},
 			}
-			hasChanged = true
+			_, response, err := sess.SetSubnetPublicGatewayBinding(setSubnetPublicGatewayBindingOptions)
+			if err != nil {
+				return fmt.Errorf("Error Attaching public gateway to the subnet : %s\n%s", err, response)
+			}
+			_, err = isWaitForSubnetAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return err
+			}
 		}
 	}
 	if hasChanged {
