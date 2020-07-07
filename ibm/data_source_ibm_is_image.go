@@ -3,9 +3,9 @@ package ibm
 import (
 	"fmt"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
-	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func dataSourceIBMISImage() *schema.Resource {
@@ -102,7 +102,7 @@ func classicImageGet(d *schema.ResourceData, meta interface{}, name, visibility 
 			d.Set("visibility", *image.Visibility)
 			d.Set("os", *image.OperatingSystem.Name)
 			d.Set("architecture", *image.OperatingSystem.Architecture)
-			d.Set("crn", *image.CRN)
+			d.Set("crn", *image.Crn)
 			return nil
 		}
 	}
@@ -141,7 +141,7 @@ func imageGet(d *schema.ResourceData, meta interface{}, name, visibility string)
 			d.Set("visibility", *image.Visibility)
 			d.Set("os", *image.OperatingSystem.Name)
 			d.Set("architecture", *image.OperatingSystem.Architecture)
-			d.Set("crn", *image.CRN)
+			d.Set("crn", *image.Crn)
 			return nil
 		}
 	}

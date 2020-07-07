@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
-	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISVPCRoute_basic(t *testing.T) {
@@ -60,11 +60,11 @@ func testAccCheckIBMISVPCRouteDestroy(s *terraform.State) error {
 
 			vpcID := parts[0]
 			routeID := parts[1]
-			getVpcRouteOptions := &vpcclassicv1.GetVPCRouteOptions{
-				VPCID: &vpcID,
+			getVpcRouteOptions := &vpcclassicv1.GetVpcRouteOptions{
+				VpcID: &vpcID,
 				ID:    &routeID,
 			}
-			_, _, err1 := sess.GetVPCRoute(getVpcRouteOptions)
+			_, _, err1 := sess.GetVpcRoute(getVpcRouteOptions)
 
 			if err1 == nil {
 				return fmt.Errorf("vpc route still exists: %s", rs.Primary.ID)
@@ -83,11 +83,11 @@ func testAccCheckIBMISVPCRouteDestroy(s *terraform.State) error {
 
 			vpcID := parts[0]
 			routeID := parts[1]
-			getVpcRouteOptions := &vpcv1.GetVPCRouteOptions{
-				VPCID: &vpcID,
+			getVpcRouteOptions := &vpcv1.GetVpcRouteOptions{
+				VpcID: &vpcID,
 				ID:    &routeID,
 			}
-			_, _, err1 := sess.GetVPCRoute(getVpcRouteOptions)
+			_, _, err1 := sess.GetVpcRoute(getVpcRouteOptions)
 
 			if err1 == nil {
 				return fmt.Errorf("vpc route still exists: %s", rs.Primary.ID)
@@ -120,22 +120,22 @@ func testAccCheckIBMISVPCRouteExists(n, vpcrouteID string) resource.TestCheckFun
 
 		if userDetails.generation == 1 {
 			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-			getVpcRouteOptions := &vpcclassicv1.GetVPCRouteOptions{
-				VPCID: &vpcID,
+			getVpcRouteOptions := &vpcclassicv1.GetVpcRouteOptions{
+				VpcID: &vpcID,
 				ID:    &routeID,
 			}
-			foundroute, _, err := sess.GetVPCRoute(getVpcRouteOptions)
+			foundroute, _, err := sess.GetVpcRoute(getVpcRouteOptions)
 			if err != nil {
 				return err
 			}
 			vpcrouteID = *foundroute.ID
 		} else {
 			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-			getVpcRouteOptions := &vpcv1.GetVPCRouteOptions{
-				VPCID: &vpcID,
+			getVpcRouteOptions := &vpcv1.GetVpcRouteOptions{
+				VpcID: &vpcID,
 				ID:    &routeID,
 			}
-			foundroute, _, err := sess.GetVPCRoute(getVpcRouteOptions)
+			foundroute, _, err := sess.GetVpcRoute(getVpcRouteOptions)
 			if err != nil {
 				return err
 			}

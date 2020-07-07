@@ -3,9 +3,9 @@ package ibm
 import (
 	"fmt"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
-	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func dataSourceIBMISSubnet() *schema.Resource {
@@ -147,11 +147,11 @@ func classicSubnetGetByID(d *schema.ResourceData, meta interface{}, id string) e
 	d.SetId(*subnet.ID)
 	d.Set("id", *subnet.ID)
 	d.Set(isSubnetName, *subnet.Name)
-	d.Set(isSubnetIpv4CidrBlock, *subnet.Ipv4CIDRBlock)
+	d.Set(isSubnetIpv4CidrBlock, *subnet.Ipv4CidrBlock)
 	d.Set(isSubnetAvailableIpv4AddressCount, *subnet.AvailableIpv4AddressCount)
 	d.Set(isSubnetTotalIpv4AddressCount, *subnet.TotalIpv4AddressCount)
-	if subnet.NetworkACL != nil {
-		d.Set(isSubnetNetworkACL, *subnet.NetworkACL.ID)
+	if subnet.NetworkAcl != nil {
+		d.Set(isSubnetNetworkACL, *subnet.NetworkAcl.ID)
 	}
 	if subnet.PublicGateway != nil {
 		d.Set(isSubnetPublicGateway, *subnet.PublicGateway.ID)
@@ -160,7 +160,7 @@ func classicSubnetGetByID(d *schema.ResourceData, meta interface{}, id string) e
 	}
 	d.Set(isSubnetStatus, *subnet.Status)
 	d.Set(isSubnetZone, *subnet.Zone.Name)
-	d.Set(isSubnetVPC, *subnet.VPC.ID)
+	d.Set(isSubnetVPC, *subnet.Vpc.ID)
 
 	controller, err := getBaseController(meta)
 	if err != nil {
@@ -168,7 +168,7 @@ func classicSubnetGetByID(d *schema.ResourceData, meta interface{}, id string) e
 	}
 	d.Set(ResourceControllerURL, controller+"/vpc/network/subnets")
 	d.Set(ResourceName, *subnet.Name)
-	d.Set(ResourceCRN, *subnet.CRN)
+	d.Set(ResourceCRN, *subnet.Crn)
 	d.Set(ResourceStatus, *subnet.Status)
 	return nil
 }
@@ -188,11 +188,11 @@ func subnetGetByID(d *schema.ResourceData, meta interface{}, id string) error {
 	d.SetId(*subnet.ID)
 	d.Set("id", *subnet.ID)
 	d.Set(isSubnetName, *subnet.Name)
-	d.Set(isSubnetIpv4CidrBlock, *subnet.Ipv4CIDRBlock)
+	d.Set(isSubnetIpv4CidrBlock, *subnet.Ipv4CidrBlock)
 	d.Set(isSubnetAvailableIpv4AddressCount, *subnet.AvailableIpv4AddressCount)
 	d.Set(isSubnetTotalIpv4AddressCount, *subnet.TotalIpv4AddressCount)
-	if subnet.NetworkACL != nil {
-		d.Set(isSubnetNetworkACL, *subnet.NetworkACL.ID)
+	if subnet.NetworkAcl != nil {
+		d.Set(isSubnetNetworkACL, *subnet.NetworkAcl.ID)
 	}
 	if subnet.PublicGateway != nil {
 		d.Set(isSubnetPublicGateway, *subnet.PublicGateway.ID)
@@ -201,7 +201,7 @@ func subnetGetByID(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set(isSubnetStatus, *subnet.Status)
 	d.Set(isSubnetZone, *subnet.Zone.Name)
-	d.Set(isSubnetVPC, *subnet.VPC.ID)
+	d.Set(isSubnetVPC, *subnet.Vpc.ID)
 
 	controller, err := getBaseController(meta)
 	if err != nil {
@@ -209,7 +209,7 @@ func subnetGetByID(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/network/subnets")
 	d.Set(ResourceName, *subnet.Name)
-	d.Set(ResourceCRN, *subnet.CRN)
+	d.Set(ResourceCRN, *subnet.Crn)
 	d.Set(ResourceStatus, *subnet.Status)
 	if subnet.ResourceGroup != nil {
 		d.Set(isSubnetResourceGroup, *subnet.ResourceGroup.ID)

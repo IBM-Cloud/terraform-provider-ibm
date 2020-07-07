@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
-	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -289,7 +289,7 @@ func classicVpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg st
 	if err != nil {
 		return err
 	}
-	options := &vpcclassicv1.CreateVPCOptions{
+	options := &vpcclassicv1.CreateVpcOptions{
 		Name: &name,
 	}
 	if rg != "" {
@@ -302,7 +302,7 @@ func classicVpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg st
 	}
 	options.ClassicAccess = &isClassic
 
-	vpc, response, err := sess.CreateVPC(options)
+	vpc, response, err := sess.CreateVpc(options)
 	if err != nil {
 		return fmt.Errorf("Error while creating VPC err %s\n%s", err, response)
 	}
@@ -315,7 +315,7 @@ func classicVpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg st
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isVPCTags); ok || v != "" {
 		oldList, newList := d.GetChange(isVPCTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpc.CRN)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpc.Crn)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource vpc (%s) tags: %s", d.Id(), err)
@@ -341,10 +341,10 @@ func isWaitForClassicVPCAvailable(vpc *vpcclassicv1.VpcClassicV1, id string, tim
 
 func isClassicVPCRefreshFunc(vpc *vpcclassicv1.VpcClassicV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		getvpcOptions := &vpcclassicv1.GetVPCOptions{
+		getvpcOptions := &vpcclassicv1.GetVpcOptions{
 			ID: &id,
 		}
-		vpc, response, err := vpc.GetVPC(getvpcOptions)
+		vpc, response, err := vpc.GetVpc(getvpcOptions)
 		if err != nil {
 			return nil, isVPCFailed, fmt.Errorf("Error getting VPC : %s\n%s", err, response)
 		}
@@ -362,7 +362,7 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 	if err != nil {
 		return err
 	}
-	options := &vpcv1.CreateVPCOptions{
+	options := &vpcv1.CreateVpcOptions{
 		Name: &name,
 	}
 	if rg != "" {
@@ -375,7 +375,7 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 	}
 	options.ClassicAccess = &isClassic
 
-	vpc, response, err := sess.CreateVPC(options)
+	vpc, response, err := sess.CreateVpc(options)
 	if err != nil {
 		return fmt.Errorf("Error while creating VPC err %s\n%s", err, response)
 	}
@@ -388,7 +388,7 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isVPCTags); ok || v != "" {
 		oldList, newList := d.GetChange(isVPCTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpc.CRN)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpc.Crn)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource vpc (%s) tags: %s", d.Id(), err)
@@ -414,10 +414,10 @@ func isWaitForVPCAvailable(vpc *vpcv1.VpcV1, id string, timeout time.Duration) (
 
 func isVPCRefreshFunc(vpc *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		getvpcOptions := &vpcv1.GetVPCOptions{
+		getvpcOptions := &vpcv1.GetVpcOptions{
 			ID: &id,
 		}
-		vpc, response, err := vpc.GetVPC(getvpcOptions)
+		vpc, response, err := vpc.GetVpc(getvpcOptions)
 		if err != nil {
 			return nil, isVPCFailed, fmt.Errorf("Error getting VPC : %s\n%s", err, response)
 		}
@@ -455,10 +455,10 @@ func classicVpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if err != nil {
 		return err
 	}
-	getvpcOptions := &vpcclassicv1.GetVPCOptions{
+	getvpcOptions := &vpcclassicv1.GetVpcOptions{
 		ID: &id,
 	}
-	vpc, response, err := sess.GetVPC(getvpcOptions)
+	vpc, response, err := sess.GetVpc(getvpcOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -471,9 +471,9 @@ func classicVpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isVPCName, *vpc.Name)
 	d.Set(isVPCClassicAccess, *vpc.ClassicAccess)
 	d.Set(isVPCStatus, *vpc.Status)
-	if vpc.DefaultNetworkACL != nil {
-		log.Printf("[DEBUG] vpc default network acl is not null :%s", *vpc.DefaultNetworkACL.ID)
-		d.Set(isVPCDefaultNetworkACL, *vpc.DefaultNetworkACL.ID)
+	if vpc.DefaultNetworkAcl != nil {
+		log.Printf("[DEBUG] vpc default network acl is not null :%s", *vpc.DefaultNetworkAcl.ID)
+		d.Set(isVPCDefaultNetworkACL, *vpc.DefaultNetworkAcl.ID)
 	} else {
 		log.Printf("[DEBUG] vpc default network acl is  null")
 		d.Set(isVPCDefaultNetworkACL, nil)
@@ -483,7 +483,7 @@ func classicVpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	} else {
 		d.Set(isVPCIDefaultSecurityGroup, nil)
 	}
-	tags, err := GetTagsUsingCRN(meta, *vpc.CRN)
+	tags, err := GetTagsUsingCRN(meta, *vpc.Crn)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc (%s) tags: %s", d.Id(), err)
@@ -493,10 +493,10 @@ func classicVpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if err != nil {
 		return err
 	}
-	d.Set(isVPCCRN, *vpc.CRN)
+	d.Set(isVPCCRN, *vpc.Crn)
 	d.Set(ResourceControllerURL, controller+"/vpc/network/vpcs")
 	d.Set(ResourceName, *vpc.Name)
-	d.Set(ResourceCRN, *vpc.CRN)
+	d.Set(ResourceCRN, *vpc.Crn)
 	d.Set(ResourceStatus, *vpc.Status)
 	if vpc.ResourceGroup != nil {
 		d.Set(isVPCResourceGroup, *vpc.ResourceGroup.ID)
@@ -507,8 +507,8 @@ func classicVpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		cseSourceIpsList := make([]map[string]interface{}, 0)
 		for _, sourceIP := range vpc.CseSourceIps {
 			currentCseSourceIp := map[string]interface{}{}
-			if sourceIP.IP != nil {
-				currentCseSourceIp["address"] = *sourceIP.IP.Address
+			if sourceIP.Ip != nil {
+				currentCseSourceIp["address"] = *sourceIP.Ip.Address
 				currentCseSourceIp["zone_name"] = *sourceIP.Zone.Name
 				cseSourceIpsList = append(cseSourceIpsList, currentCseSourceIp)
 			}
@@ -516,38 +516,27 @@ func classicVpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(cseSourceAddresses, cseSourceIpsList)
 	}
 	// set the subnets list
-	start := ""
-	allrecs := []vpcclassicv1.Subnet{}
-	for {
-		options := &vpcclassicv1.ListSubnetsOptions{
-			Start: &start,
-		}
-		s, response, err := sess.ListSubnets(options)
-		if err != nil {
-			return fmt.Errorf("Error Fetching subnets %s\n%s", err, response)
-		}
-		start = GetNext(s.Next)
-		allrecs = append(allrecs, s.Subnets...)
-		if start == "" {
-			break
-		}
-	}
-
-	subnetsInfo := make([]map[string]interface{}, 0)
-	for _, subnet := range allrecs {
-		if *subnet.VPC.ID == d.Id() {
-			l := map[string]interface{}{
-				"name":                    *subnet.Name,
-				"id":                      *subnet.ID,
-				"status":                  *subnet.Status,
-				"zone":                    *subnet.Zone.Name,
-				totalIPV4AddressCount:     *subnet.TotalIpv4AddressCount,
-				availableIPV4AddressCount: *subnet.AvailableIpv4AddressCount,
+	options := &vpcclassicv1.ListSubnetsOptions{}
+	s, response, err := sess.ListSubnets(options)
+	if err != nil {
+		return fmt.Errorf("Error Fetching subnets %s\n%s", err, response)
+	} else {
+		subnetsInfo := make([]map[string]interface{}, 0)
+		for _, subnet := range s.Subnets {
+			if *subnet.Vpc.ID == d.Id() {
+				l := map[string]interface{}{
+					"name":                    *subnet.Name,
+					"id":                      *subnet.ID,
+					"status":                  *subnet.Status,
+					"zone":                    *subnet.Zone.Name,
+					totalIPV4AddressCount:     *subnet.TotalIpv4AddressCount,
+					availableIPV4AddressCount: *subnet.AvailableIpv4AddressCount,
+				}
+				subnetsInfo = append(subnetsInfo, l)
 			}
-			subnetsInfo = append(subnetsInfo, l)
 		}
+		d.Set(subnetsList, subnetsInfo)
 	}
-	d.Set(subnetsList, subnetsInfo)
 	return nil
 }
 
@@ -556,10 +545,10 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if err != nil {
 		return err
 	}
-	getvpcOptions := &vpcv1.GetVPCOptions{
+	getvpcOptions := &vpcv1.GetVpcOptions{
 		ID: &id,
 	}
-	vpc, response, err := sess.GetVPC(getvpcOptions)
+	vpc, response, err := sess.GetVpc(getvpcOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -572,9 +561,9 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isVPCName, *vpc.Name)
 	d.Set(isVPCClassicAccess, *vpc.ClassicAccess)
 	d.Set(isVPCStatus, *vpc.Status)
-	if vpc.DefaultNetworkACL != nil {
-		log.Printf("[DEBUG] vpc default network acl is not null :%s", *vpc.DefaultNetworkACL.ID)
-		d.Set(isVPCDefaultNetworkACL, *vpc.DefaultNetworkACL.ID)
+	if vpc.DefaultNetworkAcl != nil {
+		log.Printf("[DEBUG] vpc default network acl is not null :%s", *vpc.DefaultNetworkAcl.ID)
+		d.Set(isVPCDefaultNetworkACL, *vpc.DefaultNetworkAcl.ID)
 	} else {
 		log.Printf("[DEBUG] vpc default network acl is  null")
 		d.Set(isVPCDefaultNetworkACL, nil)
@@ -584,7 +573,7 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	} else {
 		d.Set(isVPCIDefaultSecurityGroup, nil)
 	}
-	tags, err := GetTagsUsingCRN(meta, *vpc.CRN)
+	tags, err := GetTagsUsingCRN(meta, *vpc.Crn)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc (%s) tags: %s", d.Id(), err)
@@ -594,10 +583,10 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if err != nil {
 		return err
 	}
-	d.Set(isVPCCRN, *vpc.CRN)
+	d.Set(isVPCCRN, *vpc.Crn)
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/network/vpcs")
 	d.Set(ResourceName, *vpc.Name)
-	d.Set(ResourceCRN, *vpc.CRN)
+	d.Set(ResourceCRN, *vpc.Crn)
 	d.Set(ResourceStatus, *vpc.Status)
 	if vpc.ResourceGroup != nil {
 		d.Set(isVPCResourceGroup, *vpc.ResourceGroup.ID)
@@ -608,8 +597,8 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		cseSourceIpsList := make([]map[string]interface{}, 0)
 		for _, sourceIP := range vpc.CseSourceIps {
 			currentCseSourceIp := map[string]interface{}{}
-			if sourceIP.IP != nil {
-				currentCseSourceIp["address"] = *sourceIP.IP.Address
+			if sourceIP.Ip != nil {
+				currentCseSourceIp["address"] = *sourceIP.Ip.Address
 				currentCseSourceIp["zone_name"] = *sourceIP.Zone.Name
 				cseSourceIpsList = append(cseSourceIpsList, currentCseSourceIp)
 			}
@@ -617,39 +606,27 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(cseSourceAddresses, cseSourceIpsList)
 	}
 	// set the subnets list
-	start := ""
-	allrecs := []vpcv1.Subnet{}
-	for {
-		options := &vpcv1.ListSubnetsOptions{
-			Start: &start,
-		}
-		s, response, err := sess.ListSubnets(options)
-		if err != nil {
-			return fmt.Errorf("Error Fetching subnets %s\n%s", err, response)
-		}
-		start = GetNext(s.Next)
-		allrecs = append(allrecs, s.Subnets...)
-		if start == "" {
-			break
-		}
-	}
-
-	subnetsInfo := make([]map[string]interface{}, 0)
-	for _, subnet := range allrecs {
-		if *subnet.VPC.ID == d.Id() {
-			l := map[string]interface{}{
-				"name":                    *subnet.Name,
-				"id":                      *subnet.ID,
-				"status":                  *subnet.Status,
-				"zone":                    *subnet.Zone.Name,
-				totalIPV4AddressCount:     *subnet.TotalIpv4AddressCount,
-				availableIPV4AddressCount: *subnet.AvailableIpv4AddressCount,
+	options := &vpcv1.ListSubnetsOptions{}
+	s, response, err := sess.ListSubnets(options)
+	if err != nil {
+		return fmt.Errorf("Error Fetching subnets %s\n%s", err, response)
+	} else {
+		subnetsInfo := make([]map[string]interface{}, 0)
+		for _, subnet := range s.Subnets {
+			if *subnet.Vpc.ID == d.Id() {
+				l := map[string]interface{}{
+					"name":                    *subnet.Name,
+					"id":                      *subnet.ID,
+					"status":                  *subnet.Status,
+					"zone":                    *subnet.Zone.Name,
+					totalIPV4AddressCount:     *subnet.TotalIpv4AddressCount,
+					availableIPV4AddressCount: *subnet.AvailableIpv4AddressCount,
+				}
+				subnetsInfo = append(subnetsInfo, l)
 			}
-			subnetsInfo = append(subnetsInfo, l)
 		}
+		d.Set(subnetsList, subnetsInfo)
 	}
-	d.Set(subnetsList, subnetsInfo)
-
 	return nil
 }
 
@@ -687,26 +664,26 @@ func classicVpcUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 		return err
 	}
 	if d.HasChange(isVPCTags) {
-		getvpcOptions := &vpcclassicv1.GetVPCOptions{
+		getvpcOptions := &vpcclassicv1.GetVpcOptions{
 			ID: &id,
 		}
-		vpc, response, err := sess.GetVPC(getvpcOptions)
+		vpc, response, err := sess.GetVpc(getvpcOptions)
 		if err != nil {
 			return fmt.Errorf("Error getting VPC : %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isVPCTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpc.CRN)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpc.Crn)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource vpc (%s) tags: %s", id, err)
 		}
 	}
 	if hasChanged {
-		updateVpcOptions := &vpcclassicv1.UpdateVPCOptions{
+		updateVpcOptions := &vpcclassicv1.UpdateVpcOptions{
 			ID:   &id,
 			Name: &name,
 		}
-		_, response, err := sess.UpdateVPC(updateVpcOptions)
+		_, response, err := sess.UpdateVpc(updateVpcOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating VPC : %s\n%s", err, response)
 		}
@@ -720,26 +697,26 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 		return err
 	}
 	if d.HasChange(isVPCTags) {
-		getvpcOptions := &vpcv1.GetVPCOptions{
+		getvpcOptions := &vpcv1.GetVpcOptions{
 			ID: &id,
 		}
-		vpc, response, err := sess.GetVPC(getvpcOptions)
+		vpc, response, err := sess.GetVpc(getvpcOptions)
 		if err != nil {
 			return fmt.Errorf("Error getting VPC : %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isVPCTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpc.CRN)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpc.Crn)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource vpc (%s) tags: %s", d.Id(), err)
 		}
 	}
 	if hasChanged {
-		updateVpcOptions := &vpcv1.UpdateVPCOptions{
+		updateVpcOptions := &vpcv1.UpdateVpcOptions{
 			ID:   &id,
 			Name: &name,
 		}
-		_, response, err := sess.UpdateVPC(updateVpcOptions)
+		_, response, err := sess.UpdateVpc(updateVpcOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating VPC : %s\n%s", err, response)
 		}
@@ -774,10 +751,10 @@ func classicVpcDelete(d *schema.ResourceData, meta interface{}, id string) error
 		return err
 	}
 
-	getVpcOptions := &vpcclassicv1.GetVPCOptions{
+	getVpcOptions := &vpcclassicv1.GetVpcOptions{
 		ID: &id,
 	}
-	_, response, err := sess.GetVPC(getVpcOptions)
+	_, response, err := sess.GetVpc(getVpcOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -788,10 +765,10 @@ func classicVpcDelete(d *schema.ResourceData, meta interface{}, id string) error
 
 	}
 
-	deletevpcOptions := &vpcclassicv1.DeleteVPCOptions{
+	deletevpcOptions := &vpcclassicv1.DeleteVpcOptions{
 		ID: &id,
 	}
-	response, err = sess.DeleteVPC(deletevpcOptions)
+	response, err = sess.DeleteVpc(deletevpcOptions)
 	if err != nil {
 		return fmt.Errorf("Error Deleting VPC : %s\n%s", err, response)
 	}
@@ -809,10 +786,10 @@ func vpcDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		return err
 	}
 
-	getVpcOptions := &vpcv1.GetVPCOptions{
+	getVpcOptions := &vpcv1.GetVpcOptions{
 		ID: &id,
 	}
-	_, response, err := sess.GetVPC(getVpcOptions)
+	_, response, err := sess.GetVpc(getVpcOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -821,10 +798,10 @@ func vpcDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		return fmt.Errorf("Error Getting VPC (%s): %s\n%s", id, err, response)
 	}
 
-	deletevpcOptions := &vpcv1.DeleteVPCOptions{
+	deletevpcOptions := &vpcv1.DeleteVpcOptions{
 		ID: &id,
 	}
-	response, err = sess.DeleteVPC(deletevpcOptions)
+	response, err = sess.DeleteVpc(deletevpcOptions)
 	if err != nil {
 		return fmt.Errorf("Error Deleting VPC : %s\n%s", err, response)
 	}
@@ -854,10 +831,10 @@ func isWaitForClassicVPCDeleted(vpc *vpcclassicv1.VpcClassicV1, id string, timeo
 func isClassicVPCDeleteRefreshFunc(vpc *vpcclassicv1.VpcClassicV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] delete function here")
-		getvpcOptions := &vpcclassicv1.GetVPCOptions{
+		getvpcOptions := &vpcclassicv1.GetVpcOptions{
 			ID: &id,
 		}
-		vpc, response, err := vpc.GetVPC(getvpcOptions)
+		vpc, response, err := vpc.GetVpc(getvpcOptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
 				return vpc, isVPCDeleted, nil
@@ -887,10 +864,10 @@ func isWaitForVPCDeleted(vpc *vpcv1.VpcV1, id string, timeout time.Duration) (in
 func isVPCDeleteRefreshFunc(vpc *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] delete function here")
-		getvpcOptions := &vpcv1.GetVPCOptions{
+		getvpcOptions := &vpcv1.GetVpcOptions{
 			ID: &id,
 		}
-		vpc, response, err := vpc.GetVPC(getvpcOptions)
+		vpc, response, err := vpc.GetVpc(getvpcOptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
 				return vpc, isVPCDeleted, nil
@@ -922,10 +899,10 @@ func classicVpcExists(d *schema.ResourceData, meta interface{}, id string) (bool
 	if err != nil {
 		return false, err
 	}
-	getvpcOptions := &vpcclassicv1.GetVPCOptions{
+	getvpcOptions := &vpcclassicv1.GetVpcOptions{
 		ID: &id,
 	}
-	_, response, err := sess.GetVPC(getvpcOptions)
+	_, response, err := sess.GetVpc(getvpcOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
@@ -941,10 +918,10 @@ func vpcExists(d *schema.ResourceData, meta interface{}, id string) (bool, error
 	if err != nil {
 		return false, err
 	}
-	getvpcOptions := &vpcv1.GetVPCOptions{
+	getvpcOptions := &vpcv1.GetVpcOptions{
 		ID: &id,
 	}
-	_, response, err := sess.GetVPC(getvpcOptions)
+	_, response, err := sess.GetVpc(getvpcOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			return false, nil

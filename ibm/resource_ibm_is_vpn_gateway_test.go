@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
-	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISVPNGateway_basic(t *testing.T) {
@@ -45,10 +45,10 @@ func testAccCheckIBMISVPNGatewayDestroy(s *terraform.State) error {
 				continue
 			}
 
-			getvpngcptions := &vpcclassicv1.GetVPNGatewayConnectionOptions{
+			getvpngcptions := &vpcclassicv1.GetVpnGatewayConnectionOptions{
 				ID: &rs.Primary.ID,
 			}
-			_, _, err := sess.GetVPNGatewayConnection(getvpngcptions)
+			_, _, err := sess.GetVpnGatewayConnection(getvpngcptions)
 
 			if err == nil {
 				return fmt.Errorf("vpnGateway still exists: %s", rs.Primary.ID)
@@ -61,10 +61,10 @@ func testAccCheckIBMISVPNGatewayDestroy(s *terraform.State) error {
 				continue
 			}
 
-			getvpngcptions := &vpcv1.GetVPNGatewayConnectionOptions{
+			getvpngcptions := &vpcv1.GetVpnGatewayConnectionOptions{
 				ID: &rs.Primary.ID,
 			}
-			_, _, err := sess.GetVPNGatewayConnection(getvpngcptions)
+			_, _, err := sess.GetVpnGatewayConnection(getvpngcptions)
 
 			if err == nil {
 				return fmt.Errorf("vpnGateway still exists: %s", rs.Primary.ID)
@@ -91,20 +91,20 @@ func testAccCheckIBMISVPNGatewayExists(n, vpnGatewayID string) resource.TestChec
 
 		if userDetails.generation == 1 {
 			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-			getvpngcptions := &vpcclassicv1.GetVPNGatewayOptions{
+			getvpngcptions := &vpcclassicv1.GetVpnGatewayOptions{
 				ID: &rs.Primary.ID,
 			}
-			foundvpnGateway, _, err := sess.GetVPNGateway(getvpngcptions)
+			foundvpnGateway, _, err := sess.GetVpnGateway(getvpngcptions)
 			if err != nil {
 				return err
 			}
 			vpnGatewayID = *foundvpnGateway.ID
 		} else {
 			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-			getvpngcptions := &vpcv1.GetVPNGatewayOptions{
+			getvpngcptions := &vpcv1.GetVpnGatewayOptions{
 				ID: &rs.Primary.ID,
 			}
-			foundvpnGateway, _, err := sess.GetVPNGateway(getvpngcptions)
+			foundvpnGateway, _, err := sess.GetVpnGateway(getvpngcptions)
 			if err != nil {
 				return err
 			}

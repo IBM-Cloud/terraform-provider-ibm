@@ -10,6 +10,7 @@ go test -v ./directlinkapisv1
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -435,6 +436,7 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 				Expect(err).To(BeNil())
 				Expect(detailedResponse.StatusCode).To(Equal(200))
 				Expect(len(result.Speeds)).Should(BeNumerically(">", 0))
+				fmt.Println("Offering Speeds ==== ", result.Speeds[0].LinkSpeed)
 			})
 
 			It("should fetch the offering speeds for the type connect", func() {
@@ -444,6 +446,7 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 				Expect(err).To(BeNil())
 				Expect(detailedResponse.StatusCode).To(Equal(200))
 				Expect(len(result.Speeds)).Should(BeNumerically(">", 0))
+				fmt.Println("Offering Speeds ==== ", result.Speeds[0].LinkSpeed)
 			})
 
 			It("should proper error for invalid offering type", func() {
@@ -466,6 +469,8 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 			Expect(err).To(BeNil())
 			Expect(detailedResponse.StatusCode).To(Equal(200))
 			Expect(len(result.Ports)).Should(BeNumerically(">", 0))
+			fmt.Println("Ports ID ==== ", result.Ports[0].ID)
+			fmt.Println("Ports LocationDisplayName ==== ", result.Ports[0].LocationDisplayName)
 			os.Setenv("PORT_ID", *result.Ports[0].ID)
 			os.Setenv("PORT_LOCATION_DISPLAY_NAME", *result.Ports[0].LocationDisplayName)
 			os.Setenv("PORT_LOCATION_NAME", *result.Ports[0].LocationName)

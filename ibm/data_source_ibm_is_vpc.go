@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
-	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func dataSourceIBMISVPC() *schema.Resource {
@@ -180,23 +180,12 @@ func classicVpcGetByName(d *schema.ResourceData, meta interface{}, name string) 
 	if err != nil {
 		return err
 	}
-	start := ""
-	allrecs := []vpcclassicv1.VPC{}
-	for {
-		listVpcsOptions := &vpcclassicv1.ListVpcsOptions{
-			Start: &start,
-		}
-		vpcs, response, err := sess.ListVpcs(listVpcsOptions)
-		if err != nil {
-			return fmt.Errorf("Error Fetching vpcs %s\n%s", err, response)
-		}
-		start = GetNext(vpcs.Next)
-		allrecs = append(allrecs, vpcs.Vpcs...)
-		if start == "" {
-			break
-		}
+	listVpcsOptions := &vpcclassicv1.ListVpcsOptions{}
+	vpcs, _, err := sess.ListVpcs(listVpcsOptions)
+	if err != nil {
+		return err
 	}
-	for _, vpc := range allrecs {
+	for _, vpc := range vpcs.Vpcs {
 		if *vpc.Name == name {
 			d.SetId(*vpc.ID)
 			d.Set("id", *vpc.ID)
@@ -204,8 +193,8 @@ func classicVpcGetByName(d *schema.ResourceData, meta interface{}, name string) 
 			d.Set(isVPCClassicAccess, *vpc.ClassicAccess)
 			d.Set(isVPCStatus, *vpc.Status)
 			d.Set(isVPCResourceGroup, *vpc.ResourceGroup.ID)
-			if vpc.DefaultNetworkACL != nil {
-				d.Set(isVPCDefaultNetworkACL, *vpc.DefaultNetworkACL.ID)
+			if vpc.DefaultNetworkAcl != nil {
+				d.Set(isVPCDefaultNetworkACL, *vpc.DefaultNetworkAcl.ID)
 			} else {
 				d.Set(isVPCDefaultNetworkACL, nil)
 			}
@@ -214,13 +203,13 @@ func classicVpcGetByName(d *schema.ResourceData, meta interface{}, name string) 
 			} else {
 				d.Set(isVPCIDefaultSecurityGroup, nil)
 			}
-			tags, err := GetTagsUsingCRN(meta, *vpc.CRN)
+			tags, err := GetTagsUsingCRN(meta, *vpc.Crn)
 			if err != nil {
 				log.Printf(
 					"An error occured during reading of vpc (%s) tags : %s", d.Id(), err)
 			}
 			d.Set(isVPCTags, tags)
-			d.Set(isVPCCRN, *vpc.CRN)
+			d.Set(isVPCCRN, *vpc.Crn)
 
 			controller, err := getBaseController(meta)
 			if err != nil {
@@ -228,7 +217,7 @@ func classicVpcGetByName(d *schema.ResourceData, meta interface{}, name string) 
 			}
 			d.Set(ResourceControllerURL, controller+"/vpc/network/vpcs")
 			d.Set(ResourceName, *vpc.Name)
-			d.Set(ResourceCRN, *vpc.CRN)
+			d.Set(ResourceCRN, *vpc.Crn)
 			d.Set(ResourceStatus, *vpc.Status)
 			if vpc.ResourceGroup != nil {
 				d.Set(ResourceGroupName, *vpc.ResourceGroup.ID)
@@ -238,8 +227,8 @@ func classicVpcGetByName(d *schema.ResourceData, meta interface{}, name string) 
 				cseSourceIpsList := make([]map[string]interface{}, 0)
 				for _, sourceIP := range vpc.CseSourceIps {
 					currentCseSourceIp := map[string]interface{}{}
-					if sourceIP.IP != nil {
-						currentCseSourceIp["address"] = *sourceIP.IP.Address
+					if sourceIP.Ip != nil {
+						currentCseSourceIp["address"] = *sourceIP.Ip.Address
 						currentCseSourceIp["zone_name"] = *sourceIP.Zone.Name
 						cseSourceIpsList = append(cseSourceIpsList, currentCseSourceIp)
 					}
@@ -253,7 +242,7 @@ func classicVpcGetByName(d *schema.ResourceData, meta interface{}, name string) 
 			} else {
 				subnetsInfo := make([]map[string]interface{}, 0)
 				for _, subnet := range s.Subnets {
-					if *subnet.VPC.ID == d.Id() {
+					if *subnet.Vpc.ID == d.Id() {
 						l := map[string]interface{}{
 							"name":                    *subnet.Name,
 							"id":                      *subnet.ID,
@@ -277,23 +266,12 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 	if err != nil {
 		return err
 	}
-	start := ""
-	allrecs := []vpcv1.VPC{}
-	for {
-		listVpcsOptions := &vpcv1.ListVpcsOptions{
-			Start: &start,
-		}
-		vpcs, response, err := sess.ListVpcs(listVpcsOptions)
-		if err != nil {
-			return fmt.Errorf("Error Fetching vpcs %s\n%s", err, response)
-		}
-		start = GetNext(vpcs.Next)
-		allrecs = append(allrecs, vpcs.Vpcs...)
-		if start == "" {
-			break
-		}
+	listVpcsOptions := &vpcv1.ListVpcsOptions{}
+	vpcs, _, err := sess.ListVpcs(listVpcsOptions)
+	if err != nil {
+		return err
 	}
-	for _, vpc := range allrecs {
+	for _, vpc := range vpcs.Vpcs {
 		if *vpc.Name == name {
 			d.SetId(*vpc.ID)
 			d.Set("id", *vpc.ID)
@@ -301,8 +279,8 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			d.Set(isVPCClassicAccess, *vpc.ClassicAccess)
 			d.Set(isVPCStatus, *vpc.Status)
 			d.Set(isVPCResourceGroup, *vpc.ResourceGroup.ID)
-			if vpc.DefaultNetworkACL != nil {
-				d.Set(isVPCDefaultNetworkACL, *vpc.DefaultNetworkACL.ID)
+			if vpc.DefaultNetworkAcl != nil {
+				d.Set(isVPCDefaultNetworkACL, *vpc.DefaultNetworkAcl.ID)
 			} else {
 				d.Set(isVPCDefaultNetworkACL, nil)
 			}
@@ -311,13 +289,13 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			} else {
 				d.Set(isVPCIDefaultSecurityGroup, nil)
 			}
-			tags, err := GetTagsUsingCRN(meta, *vpc.CRN)
+			tags, err := GetTagsUsingCRN(meta, *vpc.Crn)
 			if err != nil {
 				log.Printf(
 					"An error occured during reading of vpc (%s) tags : %s", d.Id(), err)
 			}
 			d.Set(isVPCTags, tags)
-			d.Set(isVPCCRN, *vpc.CRN)
+			d.Set(isVPCCRN, *vpc.Crn)
 
 			controller, err := getBaseController(meta)
 			if err != nil {
@@ -325,7 +303,7 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			}
 			d.Set(ResourceControllerURL, controller+"/vpc-ext/network/vpcs")
 			d.Set(ResourceName, *vpc.Name)
-			d.Set(ResourceCRN, *vpc.CRN)
+			d.Set(ResourceCRN, *vpc.Crn)
 			d.Set(ResourceStatus, *vpc.Status)
 			if vpc.ResourceGroup != nil {
 				d.Set(ResourceGroupName, *vpc.ResourceGroup.Name)
@@ -335,8 +313,8 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 				cseSourceIpsList := make([]map[string]interface{}, 0)
 				for _, sourceIP := range vpc.CseSourceIps {
 					currentCseSourceIp := map[string]interface{}{}
-					if sourceIP.IP != nil {
-						currentCseSourceIp["address"] = *sourceIP.IP.Address
+					if sourceIP.Ip != nil {
+						currentCseSourceIp["address"] = *sourceIP.Ip.Address
 						currentCseSourceIp["zone_name"] = *sourceIP.Zone.Name
 						cseSourceIpsList = append(cseSourceIpsList, currentCseSourceIp)
 					}
@@ -350,7 +328,7 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			} else {
 				subnetsInfo := make([]map[string]interface{}, 0)
 				for _, subnet := range s.Subnets {
-					if *subnet.VPC.ID == d.Id() {
+					if *subnet.Vpc.ID == d.Id() {
 						l := map[string]interface{}{
 							"name":                    *subnet.Name,
 							"id":                      *subnet.ID,

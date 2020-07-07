@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
-	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestNetworkACLGen1(t *testing.T) {
@@ -62,10 +62,10 @@ func checkNetworkACLDestroy(s *terraform.State) error {
 				continue
 			}
 
-			getnwacloptions := &vpcclassicv1.GetNetworkACLOptions{
+			getnwacloptions := &vpcclassicv1.GetNetworkAclOptions{
 				ID: &rs.Primary.ID,
 			}
-			_, _, err := sess.GetNetworkACL(getnwacloptions)
+			_, _, err := sess.GetNetworkAcl(getnwacloptions)
 			if err == nil {
 				return fmt.Errorf("network acl still exists: %s", rs.Primary.ID)
 			}
@@ -77,10 +77,10 @@ func checkNetworkACLDestroy(s *terraform.State) error {
 				continue
 			}
 
-			getnwacloptions := &vpcv1.GetNetworkACLOptions{
+			getnwacloptions := &vpcv1.GetNetworkAclOptions{
 				ID: &rs.Primary.ID,
 			}
-			_, _, err := sess.GetNetworkACL(getnwacloptions)
+			_, _, err := sess.GetNetworkAcl(getnwacloptions)
 			if err == nil {
 				return fmt.Errorf("network acl still exists: %s", rs.Primary.ID)
 			}
@@ -105,20 +105,20 @@ func testAccCheckIBMISNetworkACLExists(n, nwACL string) resource.TestCheckFunc {
 
 		if userDetails.generation == 1 {
 			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-			getnwacloptions := &vpcclassicv1.GetNetworkACLOptions{
+			getnwacloptions := &vpcclassicv1.GetNetworkAclOptions{
 				ID: &rs.Primary.ID,
 			}
-			foundNwACL, _, err := sess.GetNetworkACL(getnwacloptions)
+			foundNwACL, _, err := sess.GetNetworkAcl(getnwacloptions)
 			if err != nil {
 				return err
 			}
 			nwACL = *foundNwACL.ID
 		} else {
 			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-			getnwacloptions := &vpcv1.GetNetworkACLOptions{
+			getnwacloptions := &vpcv1.GetNetworkAclOptions{
 				ID: &rs.Primary.ID,
 			}
-			foundNwACL, _, err := sess.GetNetworkACL(getnwacloptions)
+			foundNwACL, _, err := sess.GetNetworkAcl(getnwacloptions)
 			if err != nil {
 				return err
 			}

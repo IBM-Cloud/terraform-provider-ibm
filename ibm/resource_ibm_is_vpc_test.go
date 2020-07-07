@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
-	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISVPC_basic(t *testing.T) {
@@ -69,10 +69,10 @@ func testAccCheckIBMISVPCDestroy(s *terraform.State) error {
 				continue
 			}
 
-			getvpcoptions := &vpcclassicv1.GetVPCOptions{
+			getvpcoptions := &vpcclassicv1.GetVpcOptions{
 				ID: &rs.Primary.ID,
 			}
-			_, _, err := sess.GetVPC(getvpcoptions)
+			_, _, err := sess.GetVpc(getvpcoptions)
 
 			if err == nil {
 				return fmt.Errorf("vpc still exists: %s", rs.Primary.ID)
@@ -85,10 +85,10 @@ func testAccCheckIBMISVPCDestroy(s *terraform.State) error {
 				continue
 			}
 
-			getvpcoptions := &vpcv1.GetVPCOptions{
+			getvpcoptions := &vpcv1.GetVpcOptions{
 				ID: &rs.Primary.ID,
 			}
-			_, _, err := sess.GetVPC(getvpcoptions)
+			_, _, err := sess.GetVpc(getvpcoptions)
 
 			if err == nil {
 				return fmt.Errorf("vpc still exists: %s", rs.Primary.ID)
@@ -113,20 +113,20 @@ func testAccCheckIBMISVPCExists(n, vpcID string) resource.TestCheckFunc {
 
 		if userDetails.generation == 1 {
 			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-			getvpcoptions := &vpcclassicv1.GetVPCOptions{
+			getvpcoptions := &vpcclassicv1.GetVpcOptions{
 				ID: &rs.Primary.ID,
 			}
-			foundvpc, _, err := sess.GetVPC(getvpcoptions)
+			foundvpc, _, err := sess.GetVpc(getvpcoptions)
 			if err != nil {
 				return err
 			}
 			vpcID = *foundvpc.ID
 		} else {
 			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-			getvpcoptions := &vpcv1.GetVPCOptions{
+			getvpcoptions := &vpcv1.GetVpcOptions{
 				ID: &rs.Primary.ID,
 			}
-			foundvpc, _, err := sess.GetVPC(getvpcoptions)
+			foundvpc, _, err := sess.GetVpc(getvpcoptions)
 			if err != nil {
 				return err
 			}

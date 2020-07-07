@@ -1169,18 +1169,16 @@ type CreateGatewayActionOptions struct {
 	// Action request.
 	Action *string `json:"action" validate:"required"`
 
-	// Required for create_gateway_approve requests to select the gateway's routing option.  Gateways with global routing
+	// Set for create_gateway_approve requests to select the gateway's routing option.  Gateways with global routing
 	// (`true`) can connect to networks outside of their associated region.
 	Global *bool `json:"global,omitempty"`
 
-	// Required for create_gateway_approve requests to select the gateway's metered billing option.  When `true` gateway
-	// usage is billed per gigabyte.  When `false` there is no per gigabyte usage charge, instead a flat rate is charged
-	// for the gateway.
+	// Set for create_gateway_approve requests to select the gateway's metered billing option.  When `true` gateway usage
+	// is billed per gigabyte.  When `false` there is no per gigabyte usage charge, instead a flat rate is charged for the
+	// gateway.
 	Metered *bool `json:"metered,omitempty"`
 
-	// Set for create_gateway_approve requests to select the gateway's resource group.  If unspecified on
-	// create_gateway_approve, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// Set for create_gateway_approve requests to select the gateway's resource group.
 	ResourceGroup *ResourceGroupIdentity `json:"resource_group,omitempty"`
 
 	// Specify attribute updates being approved or rejected, update_attributes_approve and update_attributes_reject actions
@@ -1395,7 +1393,7 @@ func (options *CreateGatewayVirtualConnectionOptions) SetHeaders(param map[strin
 // CrossConnectRouter : Cross Connect Router details.
 type CrossConnectRouter struct {
 	// The name of the Router.
-	RouterName *string `json:"router_name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Count of existing Direct Link Dedicated gateways on this router for this account.
 	TotalConnections *int64 `json:"total_connections,omitempty"`
@@ -1404,7 +1402,7 @@ type CrossConnectRouter struct {
 // UnmarshalCrossConnectRouter unmarshals an instance of CrossConnectRouter from the specified map of raw messages.
 func UnmarshalCrossConnectRouter(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(CrossConnectRouter)
-	err = core.UnmarshalPrimitive(m, "router_name", &obj.RouterName)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -1610,7 +1608,6 @@ const (
 	Gateway_OperationalStatus_CompletionNoticeReceived = "completion_notice_received"
 	Gateway_OperationalStatus_CompletionNoticeRejected = "completion_notice_rejected"
 	Gateway_OperationalStatus_CreatePending            = "create_pending"
-	Gateway_OperationalStatus_CreateRejected           = "create_rejected"
 	Gateway_OperationalStatus_DeletePending            = "delete_pending"
 	Gateway_OperationalStatus_LoaAccepted              = "loa_accepted"
 	Gateway_OperationalStatus_LoaCreated               = "loa_created"
@@ -1952,7 +1949,7 @@ type GatewayTemplate struct {
 	Name *string `json:"name" validate:"required"`
 
 	// Resource group for this resource. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://console.bluemix.net/apidocs/resource-manager#introduction) is used.
 	ResourceGroup *ResourceGroupIdentity `json:"resource_group,omitempty"`
 
 	// Gateway speed in megabits per second.
@@ -2567,10 +2564,10 @@ func UnmarshalLocationCrossConnectRouterCollection(m map[string]json.RawMessage,
 
 // LocationOutput : location.
 type LocationOutput struct {
-	// Billing location.  Only present for locations where provisioning is enabled.
-	BillingLocation *string `json:"billing_location,omitempty"`
+	// Billing location.
+	BillingLocation *string `json:"billing_location" validate:"required"`
 
-	// Building colocation owner.  Only present for offering_type=dedicated locations where provisioning is enabled.
+	// Building colocation owner.  Only present for offering_type=dedicated locations.
 	BuildingColocationOwner *string `json:"building_colocation_owner,omitempty"`
 
 	// Location long name.
@@ -2582,11 +2579,11 @@ type LocationOutput struct {
 	// Location market.
 	Market *string `json:"market" validate:"required"`
 
-	// Location geography.  Only present for locations where provisioning is enabled.
-	MarketGeography *string `json:"market_geography,omitempty"`
+	// Location geography.
+	MarketGeography *string `json:"market_geography" validate:"required"`
 
-	// Is location a multi-zone region (MZR).  Only present for locations where provisioning is enabled.
-	Mzr *bool `json:"mzr,omitempty"`
+	// Is location a multi-zone region (MZR).
+	Mzr *bool `json:"mzr" validate:"required"`
 
 	// Location short name.
 	Name *string `json:"name" validate:"required"`
@@ -2594,10 +2591,7 @@ type LocationOutput struct {
 	// Location offering type.
 	OfferingType *string `json:"offering_type" validate:"required"`
 
-	// Indicates for the specific offering_type whether this location supports gateway provisioning.
-	ProvisionEnabled *bool `json:"provision_enabled" validate:"required"`
-
-	// Location's VPC region.  Only present for locations where provisioning is enabled.
+	// Location's VPC region.
 	VpcRegion *string `json:"vpc_region,omitempty"`
 }
 
@@ -2637,10 +2631,6 @@ func UnmarshalLocationOutput(m map[string]json.RawMessage, result interface{}) (
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "offering_type", &obj.OfferingType)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "provision_enabled", &obj.ProvisionEnabled)
 	if err != nil {
 		return
 	}
@@ -2832,7 +2822,7 @@ func UnmarshalPortsPaginatedCollectionNext(m map[string]json.RawMessage, result 
 }
 
 // ResourceGroupIdentity : Resource group for this resource. If unspecified, the account's [default resource
-// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+// group](https://console.bluemix.net/apidocs/resource-manager#introduction) is used.
 type ResourceGroupIdentity struct {
 	// Resource group identifier.
 	ID *string `json:"id" validate:"required"`
@@ -3230,7 +3220,7 @@ type GatewayTemplateGatewayTypeConnectTemplate struct {
 	Name *string `json:"name" validate:"required"`
 
 	// Resource group for this resource. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://console.bluemix.net/apidocs/resource-manager#introduction) is used.
 	ResourceGroup *ResourceGroupIdentity `json:"resource_group,omitempty"`
 
 	// Gateway speed in megabits per second.
@@ -3349,7 +3339,7 @@ type GatewayTemplateGatewayTypeDedicatedTemplate struct {
 	Name *string `json:"name" validate:"required"`
 
 	// Resource group for this resource. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://console.bluemix.net/apidocs/resource-manager#introduction) is used.
 	ResourceGroup *ResourceGroupIdentity `json:"resource_group,omitempty"`
 
 	// Gateway speed in megabits per second.

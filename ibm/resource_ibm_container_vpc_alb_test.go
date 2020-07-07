@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccIBMContainerVPCClusterALB_Basic(t *testing.T) {
+func TestAccIBMVpcContainerALB_Basic(t *testing.T) {
 	flavor := "c2.2x4"
 	worker_count := 1
 	name1 := acctest.RandIntRange(10, 100)
@@ -81,18 +81,18 @@ func testAccCheckIBMVpcContainerALB_basic(enable bool, flavor string, worker_cou
 	  }
 	  
 	  resource "ibm_is_vpc" "vpc1" {
-		name = "terraform_vpc-${var.name1}"
+		name = "vpc-${var.name1}"
 	  }
 	  
 	  resource "ibm_is_subnet" "subnet1" {
-		name                     = "terraform_subnet-${var.name1}"
+		name                     = "subnet-${var.name1}"
 		vpc                      = "${ibm_is_vpc.vpc1.id}"
 		zone                     = "${local.ZONE1}"
 		total_ipv4_address_count = 256
 	  }
 	  
 	  resource "ibm_is_subnet" "subnet2" {
-		name                     = "terraform_subnet-${var.name2}"
+		name                     = "subnet-${var.name2}"
 		vpc                      = "${ibm_is_vpc.vpc1.id}"
 		zone                     = "${local.ZONE2}"
 		total_ipv4_address_count = 256
@@ -103,20 +103,22 @@ func testAccCheckIBMVpcContainerALB_basic(enable bool, flavor string, worker_cou
 	  }
 	  
 	  resource "ibm_container_vpc_cluster" "cluster" {
-		name              = "terraform_cluster${var.name1}"
+		name              = "cluster${var.name1}"
 		vpc_id            = "${ibm_is_vpc.vpc1.id}"
 		flavor            = "%s"
 		worker_count      = "%d"
 		resource_group_id = "${data.ibm_resource_group.resource_group.id}"
 	  
-		zones {
+		zones = [
+		  {
 			subnet_id = "${ibm_is_subnet.subnet1.id}"
 			name      = "${local.ZONE1}"
-		  }
+		  },
+		]
 	  }
 	  
 	  resource ibm_container_vpc_alb alb {
-		alb_id = "${ibm_container_vpc_cluster.cluster.albs.0.id}"
+		alb_id = "${ibm_container_vpc_cluster.cluster.id}"
 		enable = "%t"
 	  }
 	  `, name1, name2, flavor, worker_count, enable)

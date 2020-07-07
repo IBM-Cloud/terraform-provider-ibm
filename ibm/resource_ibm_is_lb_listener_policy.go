@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
-	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -309,7 +309,7 @@ func classicLbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbI
 
 		if statusSet {
 			sc := int64(statusCode.(int))
-			urlPrototype.HTTPStatusCode = &sc
+			urlPrototype.HttpStatusCode = &sc
 		} else {
 			return fmt.Errorf("When action is redirect please specify target_http_status_code")
 		}
@@ -485,6 +485,11 @@ func isLbListenerPolicyClassicRefreshFunc(vpc *vpcclassicv1.VpcClassicV1, id str
 	}
 }
 
+func vpcClient(meta interface{}) (*vpcv1.VpcV1, error) {
+	sess, err := meta.(ClientSession).VpcV1API()
+	return sess, err
+}
+
 func lbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbID, listenerID, action, name string, priority int64) error {
 
 	sess, err := vpcClient(meta)
@@ -524,7 +529,7 @@ func lbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbID, list
 
 		if statusSet {
 			sc := int64(statusCode.(int))
-			urlPrototype.HTTPStatusCode = &sc
+			urlPrototype.HttpStatusCode = &sc
 		} else {
 			return fmt.Errorf("When action is redirect please specify target_http_status_code")
 		}
@@ -887,7 +892,7 @@ func classicLbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbI
 		if d.HasChange(isLBListenerPolicyTargetHTTPStatusCode) {
 			status := d.Get(isLBListenerPolicyTargetHTTPStatusCode).(int)
 			sc := int64(status)
-			redirectPatch.HTTPStatusCode = &sc
+			redirectPatch.HttpStatusCode = &sc
 			hasChanged = true
 			targetChange = true
 		}
@@ -979,7 +984,7 @@ func lbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbID, list
 		if d.HasChange(isLBListenerPolicyTargetHTTPStatusCode) {
 			status := d.Get(isLBListenerPolicyTargetHTTPStatusCode).(int)
 			sc := int64(status)
-			redirectPatch.HTTPStatusCode = &sc
+			redirectPatch.HttpStatusCode = &sc
 			hasChanged = true
 			targetChange = true
 		}
@@ -1194,6 +1199,11 @@ func isLbListenerPolicyDeleteRefreshFunc(vpc *vpcv1.VpcV1, id string) resource.S
 	}
 }
 
+func classicVpcClient(meta interface{}) (*vpcclassicv1.VpcClassicV1, error) {
+	sess, err := meta.(ClientSession).VpcClassicV1API()
+	return sess, err
+}
+
 func classicLbListenerPolicyGet(d *schema.ResourceData, meta interface{}, lbID, listenerID, id string) error {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
@@ -1261,7 +1271,7 @@ func classicLbListenerPolicyGet(d *schema.ResourceData, meta interface{}, lbID, 
 	} else if *(policy.Action) == "redirect" {
 		target := policy.Target.(*vpcclassicv1.LoadBalancerListenerPolicyTargetReference)
 		d.Set(isLBListenerPolicyTargetURL, target.URL)
-		d.Set(isLBListenerPolicyTargetHTTPStatusCode, target.HTTPStatusCode)
+		d.Set(isLBListenerPolicyTargetHTTPStatusCode, target.HttpStatusCode)
 
 	}
 
@@ -1325,7 +1335,7 @@ func lbListenerPolicyGet(d *schema.ResourceData, meta interface{}, lbID, listene
 	} else if *(policy.Action) == "redirect" {
 		target := policy.Target.(*vpcv1.LoadBalancerListenerPolicyTargetReference)
 		d.Set(isLBListenerPolicyTargetURL, target.URL)
-		d.Set(isLBListenerPolicyTargetHTTPStatusCode, target.HTTPStatusCode)
+		d.Set(isLBListenerPolicyTargetHTTPStatusCode, target.HttpStatusCode)
 
 	}
 

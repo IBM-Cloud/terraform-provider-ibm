@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -114,7 +115,8 @@ func resourceIBMPrivateDnsPermittedNetworkCreate(d *schema.ResourceData, meta in
 	createPermittedNetworkOptions.SetType(nwType)
 	response, detail, err := sess.CreatePermittedNetwork(createPermittedNetworkOptions)
 	if err != nil {
-		return fmt.Errorf("Error creating pdns permitted network:%s\n%s", err, detail)
+		log.Printf("Error creating dns zone:%s", detail)
+		return err
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", instanceID, zoneID, *response.ID))
@@ -134,7 +136,8 @@ func resourceIBMPrivateDnsPermittedNetworkRead(d *schema.ResourceData, meta inte
 	response, detail, err := sess.GetPermittedNetwork(getPermittedNetworkOptions)
 
 	if err != nil {
-		return fmt.Errorf("Error reading pdns permitted network:%s\n%s", err, detail)
+		log.Printf("Error reading dns zone:%s", detail)
+		return err
 	}
 
 	d.Set("id", response.ID)
@@ -161,7 +164,8 @@ func resourceIBMPrivateDnsPermittedNetworkDelete(d *schema.ResourceData, meta in
 	_, response, err := sess.DeletePermittedNetwork(deletePermittedNetworkOptions)
 
 	if err != nil {
-		return fmt.Errorf("Error deleting pdns permitted network:%s\n%s", err, response)
+		log.Printf("Error deleting dns zone:%s", response)
+		return err
 	}
 
 	d.SetId("")

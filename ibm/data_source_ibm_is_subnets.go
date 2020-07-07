@@ -1,13 +1,12 @@
 package ibm
 
 import (
-	"fmt"
 	"strconv"
 	"time"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
-	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -109,24 +108,14 @@ func classicSubnetList(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	start := ""
-	allrecs := []vpcclassicv1.Subnet{}
-	for {
-		options := &vpcclassicv1.ListSubnetsOptions{
-			Start: &start,
-		}
-		subnets, response, err := sess.ListSubnets(options)
-		if err != nil {
-			return fmt.Errorf("Error Fetching subnets %s\n%s", err, response)
-		}
-		start = GetNext(subnets.Next)
-		allrecs = append(allrecs, subnets.Subnets...)
-		if start == "" {
-			break
-		}
+	listSubnetsOptions := &vpcclassicv1.ListSubnetsOptions{}
+	subnets, _, err := sess.ListSubnets(listSubnetsOptions)
+	if err != nil {
+		return err
 	}
 	subnetsInfo := make([]map[string]interface{}, 0)
-	for _, subnet := range allrecs {
+	for _, subnet := range subnets.Subnets {
+
 		var aac string = strconv.FormatInt(*subnet.AvailableIpv4AddressCount, 10)
 		var tac string = strconv.FormatInt(*subnet.TotalIpv4AddressCount, 10)
 
@@ -134,12 +123,12 @@ func classicSubnetList(d *schema.ResourceData, meta interface{}) error {
 			"name":                         *subnet.Name,
 			"id":                           *subnet.ID,
 			"status":                       *subnet.Status,
-			"crn":                          *subnet.CRN,
-			"ipv4_cidr_block":              *subnet.Ipv4CIDRBlock,
+			"crn":                          *subnet.Crn,
+			"ipv4_cidr_block":              *subnet.Ipv4CidrBlock,
 			"available_ipv4_address_count": aac,
-			"network_acl":                  *subnet.NetworkACL.Name,
+			"network_acl":                  *subnet.NetworkAcl.Name,
 			"total_ipv4_address_count":     tac,
-			"vpc":                          *subnet.VPC.ID,
+			"vpc":                          *subnet.Vpc.ID,
 			"zone":                         *subnet.Zone.Name,
 		}
 		if subnet.PublicGateway != nil {
@@ -157,24 +146,13 @@ func subnetList(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	start := ""
-	allrecs := []vpcv1.Subnet{}
-	for {
-		options := &vpcv1.ListSubnetsOptions{
-			Start: &start,
-		}
-		subnets, response, err := sess.ListSubnets(options)
-		if err != nil {
-			return fmt.Errorf("Error Fetching subnets %s\n%s", err, response)
-		}
-		start = GetNext(subnets.Next)
-		allrecs = append(allrecs, subnets.Subnets...)
-		if start == "" {
-			break
-		}
+	listSubnetsOptions := &vpcv1.ListSubnetsOptions{}
+	subnets, _, err := sess.ListSubnets(listSubnetsOptions)
+	if err != nil {
+		return err
 	}
 	subnetsInfo := make([]map[string]interface{}, 0)
-	for _, subnet := range allrecs {
+	for _, subnet := range subnets.Subnets {
 
 		var aac string = strconv.FormatInt(*subnet.AvailableIpv4AddressCount, 10)
 		var tac string = strconv.FormatInt(*subnet.TotalIpv4AddressCount, 10)
@@ -182,12 +160,12 @@ func subnetList(d *schema.ResourceData, meta interface{}) error {
 			"name":                         *subnet.Name,
 			"id":                           *subnet.ID,
 			"status":                       *subnet.Status,
-			"crn":                          *subnet.CRN,
-			"ipv4_cidr_block":              *subnet.Ipv4CIDRBlock,
+			"crn":                          *subnet.Crn,
+			"ipv4_cidr_block":              *subnet.Ipv4CidrBlock,
 			"available_ipv4_address_count": aac,
-			"network_acl":                  *subnet.NetworkACL.Name,
+			"network_acl":                  *subnet.NetworkAcl.Name,
 			"total_ipv4_address_count":     tac,
-			"vpc":                          *subnet.VPC.ID,
+			"vpc":                          *subnet.Vpc.ID,
 			"zone":                         *subnet.Zone.Name,
 		}
 		if subnet.PublicGateway != nil {

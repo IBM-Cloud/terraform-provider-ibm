@@ -3,9 +3,9 @@ package ibm
 import (
 	"fmt"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
-	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -64,11 +64,11 @@ func classicZoneGet(d *schema.ResourceData, meta interface{}, regionName, zoneNa
 	if err != nil {
 		return err
 	}
-	getRegionZoneOptions := &vpcclassicv1.GetRegionZoneOptions{
+	getZoneOptions := &vpcclassicv1.GetZoneOptions{
 		RegionName: &regionName,
 		ZoneName:   &zoneName,
 	}
-	zone, _, err := sess.GetRegionZone(getRegionZoneOptions)
+	zone, _, err := sess.GetZone(getZoneOptions)
 	if err != nil {
 		return err
 	}
@@ -86,11 +86,11 @@ func zoneGet(d *schema.ResourceData, meta interface{}, regionName, zoneName stri
 	if err != nil {
 		return err
 	}
-	getRegionZoneOptions := &vpcv1.GetRegionZoneOptions{
+	getZoneOptions := &vpcv1.GetZoneOptions{
 		RegionName: &regionName,
 		ZoneName:   &zoneName,
 	}
-	zone, _, err := sess.GetRegionZone(getRegionZoneOptions)
+	zone, _, err := sess.GetZone(getZoneOptions)
 	if err != nil {
 		return err
 	}

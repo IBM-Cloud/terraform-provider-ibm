@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
-	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -112,7 +112,7 @@ func classicSgCreate(d *schema.ResourceData, meta interface{}, vpc string) error
 		return err
 	}
 	createSecurityGroupOptions := &vpcclassicv1.CreateSecurityGroupOptions{
-		VPC: &vpcclassicv1.VPCIdentity{
+		Vpc: &vpcclassicv1.VPCIdentity{
 			ID: &vpc,
 		},
 	}
@@ -142,7 +142,7 @@ func sgCreate(d *schema.ResourceData, meta interface{}, vpc string) error {
 		return err
 	}
 	createSecurityGroupOptions := &vpcv1.CreateSecurityGroupOptions{
-		VPC: &vpcv1.VPCIdentity{
+		Vpc: &vpcv1.VPCIdentity{
 			ID: &vpc,
 		},
 	}
@@ -202,14 +202,14 @@ func classicSgGet(d *schema.ResourceData, meta interface{}, id string) error {
 		return fmt.Errorf("Error getting Security Group : %s\n%s", err, response)
 	}
 	d.Set(isSecurityGroupName, *group.Name)
-	d.Set(isSecurityGroupVPC, *group.VPC.ID)
+	d.Set(isSecurityGroupVPC, *group.Vpc.ID)
 	rules := make([]map[string]interface{}, 0)
 	if len(group.Rules) > 0 {
 		for _, rule := range group.Rules {
 			switch reflect.TypeOf(rule).String() {
-			case "*vpcclassicv1.SecurityGroupRuleProtocolIcmp":
+			case "*vpcclassicv1.SecurityGroupRuleProtocolICMP":
 				{
-					rule := rule.(*vpcclassicv1.SecurityGroupRuleProtocolIcmp)
+					rule := rule.(*vpcclassicv1.SecurityGroupRuleProtocolICMP)
 					r := make(map[string]interface{})
 					if rule.Code != nil {
 						r[isSecurityGroupRuleCode] = int(*rule.Code)
@@ -218,7 +218,7 @@ func classicSgGet(d *schema.ResourceData, meta interface{}, id string) error {
 						r[isSecurityGroupRuleType] = int(*rule.Type)
 					}
 					r[isSecurityGroupRuleDirection] = *rule.Direction
-					r[isSecurityGroupRuleIPVersion] = *rule.IPVersion
+					r[isSecurityGroupRuleIPVersion] = *rule.IpVersion
 					if rule.Protocol != nil {
 						r[isSecurityGroupRuleProtocol] = *rule.Protocol
 					}
@@ -232,7 +232,7 @@ func classicSgGet(d *schema.ResourceData, meta interface{}, id string) error {
 					rule := rule.(*vpcclassicv1.SecurityGroupRuleProtocolAll)
 					r := make(map[string]interface{})
 					r[isSecurityGroupRuleDirection] = *rule.Direction
-					r[isSecurityGroupRuleIPVersion] = *rule.IPVersion
+					r[isSecurityGroupRuleIPVersion] = *rule.IpVersion
 					if rule.Protocol != nil {
 						r[isSecurityGroupRuleProtocol] = *rule.Protocol
 					}
@@ -241,9 +241,9 @@ func classicSgGet(d *schema.ResourceData, meta interface{}, id string) error {
 					remoteValue := reflect.Indirect(remotePtrValue)
 					d.Set(isSecurityGroupRuleRemote, remoteValue)
 				}
-			case "*vpcclassicv1.SecurityGroupRuleProtocolTcpudp":
+			case "*vpcclassicv1.SecurityGroupRuleProtocolTCPUDP":
 				{
-					rule := rule.(*vpcclassicv1.SecurityGroupRuleProtocolTcpudp)
+					rule := rule.(*vpcclassicv1.SecurityGroupRuleProtocolTCPUDP)
 					r := make(map[string]interface{})
 					if rule.PortMin != nil {
 						r[isSecurityGroupRulePortMin] = int(*rule.PortMin)
@@ -252,7 +252,7 @@ func classicSgGet(d *schema.ResourceData, meta interface{}, id string) error {
 						r[isSecurityGroupRulePortMax] = int(*rule.PortMax)
 					}
 					r[isSecurityGroupRuleDirection] = *rule.Direction
-					r[isSecurityGroupRuleIPVersion] = *rule.IPVersion
+					r[isSecurityGroupRuleIPVersion] = *rule.IpVersion
 					if rule.Protocol != nil {
 						r[isSecurityGroupRuleProtocol] = *rule.Protocol
 					}
@@ -284,7 +284,7 @@ func classicSgGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set(ResourceControllerURL, controller+"/vpc/network/securityGroups")
 	d.Set(ResourceName, *group.Name)
-	d.Set(ResourceCRN, *group.CRN)
+	d.Set(ResourceCRN, *group.Crn)
 	return nil
 }
 
@@ -305,14 +305,14 @@ func sgGet(d *schema.ResourceData, meta interface{}, id string) error {
 		return fmt.Errorf("Error getting Security Group : %s\n%s", err, response)
 	}
 	d.Set(isSecurityGroupName, *group.Name)
-	d.Set(isSecurityGroupVPC, *group.VPC.ID)
+	d.Set(isSecurityGroupVPC, *group.Vpc.ID)
 	rules := make([]map[string]interface{}, 0)
 	if len(group.Rules) > 0 {
 		for _, rule := range group.Rules {
 			switch reflect.TypeOf(rule).String() {
-			case "*vpcv1.SecurityGroupRuleProtocolIcmp":
+			case "*vpcv1.SecurityGroupRuleProtocolICMP":
 				{
-					rule := rule.(*vpcv1.SecurityGroupRuleProtocolIcmp)
+					rule := rule.(*vpcv1.SecurityGroupRuleProtocolICMP)
 					r := make(map[string]interface{})
 					if rule.Code != nil {
 						r[isSecurityGroupRuleCode] = int(*rule.Code)
@@ -321,7 +321,7 @@ func sgGet(d *schema.ResourceData, meta interface{}, id string) error {
 						r[isSecurityGroupRuleType] = int(*rule.Type)
 					}
 					r[isSecurityGroupRuleDirection] = *rule.Direction
-					r[isSecurityGroupRuleIPVersion] = *rule.IPVersion
+					r[isSecurityGroupRuleIPVersion] = *rule.IpVersion
 					if rule.Protocol != nil {
 						r[isSecurityGroupRuleProtocol] = *rule.Protocol
 					}
@@ -335,7 +335,7 @@ func sgGet(d *schema.ResourceData, meta interface{}, id string) error {
 					rule := rule.(*vpcv1.SecurityGroupRuleProtocolAll)
 					r := make(map[string]interface{})
 					r[isSecurityGroupRuleDirection] = *rule.Direction
-					r[isSecurityGroupRuleIPVersion] = *rule.IPVersion
+					r[isSecurityGroupRuleIPVersion] = *rule.IpVersion
 					if rule.Protocol != nil {
 						r[isSecurityGroupRuleProtocol] = *rule.Protocol
 					}
@@ -344,9 +344,9 @@ func sgGet(d *schema.ResourceData, meta interface{}, id string) error {
 					remoteValue := reflect.Indirect(remotePtrValue)
 					d.Set(isSecurityGroupRuleRemote, remoteValue)
 				}
-			case "*vpcv1.SecurityGroupRuleProtocolTcpudp":
+			case "*vpcv1.SecurityGroupRuleProtocolTCPUDP":
 				{
-					rule := rule.(*vpcv1.SecurityGroupRuleProtocolTcpudp)
+					rule := rule.(*vpcv1.SecurityGroupRuleProtocolTCPUDP)
 					r := make(map[string]interface{})
 					if rule.PortMin != nil {
 						r[isSecurityGroupRulePortMin] = int(*rule.PortMin)
@@ -355,7 +355,7 @@ func sgGet(d *schema.ResourceData, meta interface{}, id string) error {
 						r[isSecurityGroupRulePortMax] = int(*rule.PortMax)
 					}
 					r[isSecurityGroupRuleDirection] = *rule.Direction
-					r[isSecurityGroupRuleIPVersion] = *rule.IPVersion
+					r[isSecurityGroupRuleIPVersion] = *rule.IpVersion
 					if rule.Protocol != nil {
 						r[isSecurityGroupRuleProtocol] = *rule.Protocol
 					}
@@ -379,7 +379,7 @@ func sgGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/network/securityGroups")
 	d.Set(ResourceName, *group.Name)
-	d.Set(ResourceCRN, *group.CRN)
+	d.Set(ResourceCRN, *group.Crn)
 	return nil
 }
 

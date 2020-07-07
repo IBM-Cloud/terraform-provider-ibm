@@ -5,10 +5,10 @@ import (
 	"log"
 	"time"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
-	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -194,12 +194,12 @@ func classicVpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatew
 	if err != nil {
 		return err
 	}
-	options := &vpcclassicv1.CreateVPNGatewayConnectionOptions{
-		VPNGatewayID: &gatewayID,
+	options := &vpcclassicv1.CreateVpnGatewayConnectionOptions{
+		VpnGatewayID: &gatewayID,
 		PeerAddress:  &peerAddress,
 		Psk:          &prephasedKey,
 		AdminStateUp: &stateUp,
-		DeadPeerDetection: &vpcclassicv1.VPNGatewayConnectionDpdPrototype{
+		DeadPeerDetection: &vpcclassicv1.VPNGatewayConnectionDPDPrototype{
 			Action:   &action,
 			Interval: &interval,
 			Timeout:  &timeout,
@@ -220,7 +220,7 @@ func classicVpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatew
 
 	if ikePolicy, ok := d.GetOk(isVPNGatewayConnectionIKEPolicy); ok {
 		ikePolicyIdentity = ikePolicy.(string)
-		options.IkePolicy = &vpcclassicv1.IkePolicyIdentity{
+		options.IkePolicy = &vpcclassicv1.IKEPolicyIdentity{
 			ID: &ikePolicyIdentity,
 		}
 	}
@@ -231,7 +231,7 @@ func classicVpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatew
 		}
 	}
 
-	vpnGatewayConnection, response, err := sess.CreateVPNGatewayConnection(options)
+	vpnGatewayConnection, response, err := sess.CreateVpnGatewayConnection(options)
 	if err != nil {
 		return fmt.Errorf("[DEBUG] Create VPN Gateway Connection err %s\n%s", err, response)
 	}
@@ -245,12 +245,12 @@ func vpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatewayID, p
 	if err != nil {
 		return err
 	}
-	options := &vpcv1.CreateVPNGatewayConnectionOptions{
-		VPNGatewayID: &gatewayID,
+	options := &vpcv1.CreateVpnGatewayConnectionOptions{
+		VpnGatewayID: &gatewayID,
 		PeerAddress:  &peerAddress,
 		Psk:          &prephasedKey,
 		AdminStateUp: &stateUp,
-		DeadPeerDetection: &vpcv1.VPNGatewayConnectionDpdPrototype{
+		DeadPeerDetection: &vpcv1.VPNGatewayConnectionDPDPrototype{
 			Action:   &action,
 			Interval: &interval,
 			Timeout:  &timeout,
@@ -271,7 +271,7 @@ func vpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatewayID, p
 
 	if ikePolicy, ok := d.GetOk(isVPNGatewayConnectionIKEPolicy); ok {
 		ikePolicyIdentity = ikePolicy.(string)
-		options.IkePolicy = &vpcv1.IkePolicyIdentity{
+		options.IkePolicy = &vpcv1.IKEPolicyIdentity{
 			ID: &ikePolicyIdentity,
 		}
 	} else {
@@ -286,7 +286,7 @@ func vpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatewayID, p
 		options.IpsecPolicy = nil
 	}
 
-	vpnGatewayConnection, response, err := sess.CreateVPNGatewayConnection(options)
+	vpnGatewayConnection, response, err := sess.CreateVpnGatewayConnection(options)
 	if err != nil {
 		return fmt.Errorf("[DEBUG] Create VPN Gateway Connection err %s\n%s", err, response)
 	}
@@ -328,11 +328,11 @@ func classicVpngwconGet(d *schema.ResourceData, meta interface{}, gID, gConnID s
 	if err != nil {
 		return err
 	}
-	options := &vpcclassicv1.GetVPNGatewayConnectionOptions{
-		VPNGatewayID: &gID,
+	options := &vpcclassicv1.GetVpnGatewayConnectionOptions{
+		VpnGatewayID: &gID,
 		ID:           &gConnID,
 	}
-	vpnGatewayConnection, response, err := sess.GetVPNGatewayConnection(options)
+	vpnGatewayConnection, response, err := sess.GetVpnGatewayConnection(options)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -348,7 +348,7 @@ func classicVpngwconGet(d *schema.ResourceData, meta interface{}, gID, gConnID s
 	d.Set(isVPNGatewayConnectionLocalCIDRS, flattenStringList(vpnGatewayConnection.LocalCidrs))
 	d.Set(isVPNGatewayConnectionPeerCIDRS, flattenStringList(vpnGatewayConnection.PeerCidrs))
 	if vpnGatewayConnection.IkePolicy != nil {
-		ikepolicy := vpnGatewayConnection.IkePolicy.(*vpcclassicv1.IkePolicyIdentity)
+		ikepolicy := vpnGatewayConnection.IkePolicy.(*vpcclassicv1.IKEPolicyIdentity)
 		d.Set(isVPNGatewayConnectionIKEPolicy, *ikepolicy.ID)
 	}
 	if vpnGatewayConnection.IpsecPolicy != nil {
@@ -366,11 +366,11 @@ func vpngwconGet(d *schema.ResourceData, meta interface{}, gID, gConnID string) 
 	if err != nil {
 		return err
 	}
-	options := &vpcv1.GetVPNGatewayConnectionOptions{
-		VPNGatewayID: &gID,
+	options := &vpcv1.GetVpnGatewayConnectionOptions{
+		VpnGatewayID: &gID,
 		ID:           &gConnID,
 	}
-	vpnGatewayConnection, response, err := sess.GetVPNGatewayConnection(options)
+	vpnGatewayConnection, response, err := sess.GetVpnGatewayConnection(options)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -386,7 +386,7 @@ func vpngwconGet(d *schema.ResourceData, meta interface{}, gID, gConnID string) 
 	d.Set(isVPNGatewayConnectionLocalCIDRS, flattenStringList(vpnGatewayConnection.LocalCidrs))
 	d.Set(isVPNGatewayConnectionPeerCIDRS, flattenStringList(vpnGatewayConnection.PeerCidrs))
 	if vpnGatewayConnection.IkePolicy != nil {
-		ikepolicy := vpnGatewayConnection.IkePolicy.(*vpcv1.IkePolicyIdentity)
+		ikepolicy := vpnGatewayConnection.IkePolicy.(*vpcv1.IKEPolicyIdentity)
 		d.Set(isVPNGatewayConnectionIKEPolicy, *ikepolicy.ID)
 	}
 	if vpnGatewayConnection.IpsecPolicy != nil {
@@ -434,8 +434,8 @@ func classicVpngwconUpdate(d *schema.ResourceData, meta interface{}, gID, gConnI
 		return err
 	}
 
-	updateVpnGatewayConnectionOptions := &vpcclassicv1.UpdateVPNGatewayConnectionOptions{
-		VPNGatewayID: &gID,
+	updateVpnGatewayConnectionOptions := &vpcclassicv1.UpdateVpnGatewayConnectionOptions{
+		VpnGatewayID: &gID,
 		ID:           &gConnID,
 	}
 	if d.HasChange(isVPNGatewayConnectionName) {
@@ -468,7 +468,7 @@ func classicVpngwconUpdate(d *schema.ResourceData, meta interface{}, gID, gConnI
 
 	if d.HasChange(isVPNGatewayConnectionIKEPolicy) {
 		ikePolicyIdentity := d.Get(isVPNGatewayConnectionIKEPolicy).(string)
-		updateVpnGatewayConnectionOptions.IkePolicy = &vpcclassicv1.IkePolicyIdentity{
+		updateVpnGatewayConnectionOptions.IkePolicy = &vpcclassicv1.IKEPolicyIdentity{
 			ID: &ikePolicyIdentity,
 		}
 		hasChanged = true
@@ -493,7 +493,7 @@ func classicVpngwconUpdate(d *schema.ResourceData, meta interface{}, gID, gConnI
 	}
 
 	if hasChanged {
-		_, response, err := sess.UpdateVPNGatewayConnection(updateVpnGatewayConnectionOptions)
+		_, response, err := sess.UpdateVpnGatewayConnection(updateVpnGatewayConnectionOptions)
 		if err != nil {
 			return fmt.Errorf("Error updating Vpn Gateway Connection: %s\n%s", err, response)
 		}
@@ -507,8 +507,8 @@ func vpngwconUpdate(d *schema.ResourceData, meta interface{}, gID, gConnID strin
 		return err
 	}
 
-	updateVpnGatewayConnectionOptions := &vpcv1.UpdateVPNGatewayConnectionOptions{
-		VPNGatewayID: &gID,
+	updateVpnGatewayConnectionOptions := &vpcv1.UpdateVpnGatewayConnectionOptions{
+		VpnGatewayID: &gID,
 		ID:           &gConnID,
 	}
 	if d.HasChange(isVPNGatewayConnectionName) {
@@ -541,7 +541,7 @@ func vpngwconUpdate(d *schema.ResourceData, meta interface{}, gID, gConnID strin
 
 	if d.HasChange(isVPNGatewayConnectionIKEPolicy) {
 		ikePolicyIdentity := d.Get(isVPNGatewayConnectionIKEPolicy).(string)
-		updateVpnGatewayConnectionOptions.IkePolicy = &vpcv1.IkePolicyIdentity{
+		updateVpnGatewayConnectionOptions.IkePolicy = &vpcv1.IKEPolicyIdentity{
 			ID: &ikePolicyIdentity,
 		}
 		hasChanged = true
@@ -566,7 +566,7 @@ func vpngwconUpdate(d *schema.ResourceData, meta interface{}, gID, gConnID strin
 	}
 
 	if hasChanged {
-		_, response, err := sess.UpdateVPNGatewayConnection(updateVpnGatewayConnectionOptions)
+		_, response, err := sess.UpdateVpnGatewayConnection(updateVpnGatewayConnectionOptions)
 		if err != nil {
 			return fmt.Errorf("Error updating Vpn Gateway Connection: %s\n%s", err, response)
 		}
@@ -607,11 +607,11 @@ func classicVpngwconDelete(d *schema.ResourceData, meta interface{}, gID, gConnI
 	if err != nil {
 		return err
 	}
-	getVpnGatewayConnectionOptions := &vpcclassicv1.GetVPNGatewayConnectionOptions{
-		VPNGatewayID: &gID,
+	getVpnGatewayConnectionOptions := &vpcclassicv1.GetVpnGatewayConnectionOptions{
+		VpnGatewayID: &gID,
 		ID:           &gConnID,
 	}
-	_, response, err := sess.GetVPNGatewayConnection(getVpnGatewayConnectionOptions)
+	_, response, err := sess.GetVpnGatewayConnection(getVpnGatewayConnectionOptions)
 
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
@@ -620,11 +620,11 @@ func classicVpngwconDelete(d *schema.ResourceData, meta interface{}, gID, gConnI
 		}
 		return fmt.Errorf("Error Getting Vpn Gateway Connection(%s): %s\n%s", gConnID, err, response)
 	}
-	deleteVpnGatewayConnectionOptions := &vpcclassicv1.DeleteVPNGatewayConnectionOptions{
-		VPNGatewayID: &gID,
+	deleteVpnGatewayConnectionOptions := &vpcclassicv1.DeleteVpnGatewayConnectionOptions{
+		VpnGatewayID: &gID,
 		ID:           &gConnID,
 	}
-	response, err = sess.DeleteVPNGatewayConnection(deleteVpnGatewayConnectionOptions)
+	response, err = sess.DeleteVpnGatewayConnection(deleteVpnGatewayConnectionOptions)
 	if err != nil {
 		return fmt.Errorf("Error Deleting Vpn Gateway Connection : %s\n%s", err, response)
 	}
@@ -644,11 +644,11 @@ func vpngwconDelete(d *schema.ResourceData, meta interface{}, gID, gConnID strin
 	if err != nil {
 		return err
 	}
-	getVpnGatewayConnectionOptions := &vpcv1.GetVPNGatewayConnectionOptions{
-		VPNGatewayID: &gID,
+	getVpnGatewayConnectionOptions := &vpcv1.GetVpnGatewayConnectionOptions{
+		VpnGatewayID: &gID,
 		ID:           &gConnID,
 	}
-	_, response, err := sess.GetVPNGatewayConnection(getVpnGatewayConnectionOptions)
+	_, response, err := sess.GetVpnGatewayConnection(getVpnGatewayConnectionOptions)
 
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
@@ -658,11 +658,11 @@ func vpngwconDelete(d *schema.ResourceData, meta interface{}, gID, gConnID strin
 		return fmt.Errorf("Error Getting Vpn Gateway Connection(%s): %s\n%s", gConnID, err, response)
 	}
 
-	deleteVpnGatewayConnectionOptions := &vpcv1.DeleteVPNGatewayConnectionOptions{
-		VPNGatewayID: &gID,
+	deleteVpnGatewayConnectionOptions := &vpcv1.DeleteVpnGatewayConnectionOptions{
+		VpnGatewayID: &gID,
 		ID:           &gConnID,
 	}
-	response, err = sess.DeleteVPNGatewayConnection(deleteVpnGatewayConnectionOptions)
+	response, err = sess.DeleteVpnGatewayConnection(deleteVpnGatewayConnectionOptions)
 	if err != nil {
 		return fmt.Errorf("Error Deleting Vpn Gateway Connection : %s\n%s", err, response)
 	}
@@ -694,11 +694,11 @@ func isWaitForClassicVPNGatewayConnectionDeleted(vpnGatewayConnection *vpcclassi
 
 func isClassicVPNGatewayConnectionDeleteRefreshFunc(vpnGatewayConnection *vpcclassicv1.VpcClassicV1, gID, gConnID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		getVpnGatewayConnectionOptions := &vpcclassicv1.GetVPNGatewayConnectionOptions{
-			VPNGatewayID: &gID,
+		getVpnGatewayConnectionOptions := &vpcclassicv1.GetVpnGatewayConnectionOptions{
+			VpnGatewayID: &gID,
 			ID:           &gConnID,
 		}
-		vpngwcon, response, err := vpnGatewayConnection.GetVPNGatewayConnection(getVpnGatewayConnectionOptions)
+		vpngwcon, response, err := vpnGatewayConnection.GetVpnGatewayConnection(getVpnGatewayConnectionOptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
 				return vpngwcon, isVPNGatewayConnectionDeleted, nil
@@ -726,11 +726,11 @@ func isWaitForVPNGatewayConnectionDeleted(vpnGatewayConnection *vpcv1.VpcV1, gID
 
 func isVPNGatewayConnectionDeleteRefreshFunc(vpnGatewayConnection *vpcv1.VpcV1, gID, gConnID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		getVpnGatewayConnectionOptions := &vpcv1.GetVPNGatewayConnectionOptions{
-			VPNGatewayID: &gID,
+		getVpnGatewayConnectionOptions := &vpcv1.GetVpnGatewayConnectionOptions{
+			VpnGatewayID: &gID,
 			ID:           &gConnID,
 		}
-		vpngwcon, response, err := vpnGatewayConnection.GetVPNGatewayConnection(getVpnGatewayConnectionOptions)
+		vpngwcon, response, err := vpnGatewayConnection.GetVpnGatewayConnection(getVpnGatewayConnectionOptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
 				return vpngwcon, isVPNGatewayConnectionDeleted, nil
@@ -768,11 +768,11 @@ func classicVpngwconExists(d *schema.ResourceData, meta interface{}, gID, gConnI
 		return false, err
 	}
 
-	getVpnGatewayConnectionOptions := &vpcclassicv1.GetVPNGatewayConnectionOptions{
-		VPNGatewayID: &gID,
+	getVpnGatewayConnectionOptions := &vpcclassicv1.GetVpnGatewayConnectionOptions{
+		VpnGatewayID: &gID,
 		ID:           &gConnID,
 	}
-	_, response, err := sess.GetVPNGatewayConnection(getVpnGatewayConnectionOptions)
+	_, response, err := sess.GetVpnGatewayConnection(getVpnGatewayConnectionOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
@@ -788,11 +788,11 @@ func vpngwconExists(d *schema.ResourceData, meta interface{}, gID, gConnID strin
 		return false, err
 	}
 
-	getVpnGatewayConnectionOptions := &vpcv1.GetVPNGatewayConnectionOptions{
-		VPNGatewayID: &gID,
+	getVpnGatewayConnectionOptions := &vpcv1.GetVpnGatewayConnectionOptions{
+		VpnGatewayID: &gID,
 		ID:           &gConnID,
 	}
-	_, response, err := sess.GetVPNGatewayConnection(getVpnGatewayConnectionOptions)
+	_, response, err := sess.GetVpnGatewayConnection(getVpnGatewayConnectionOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			return false, nil

@@ -5,9 +5,9 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
-	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -201,9 +201,9 @@ func classicSgRuleCreate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error while creating Security Group Rule %s\n%s", err, response)
 	}
 	switch reflect.TypeOf(rule).String() {
-	case "*vpcclassicv1.SecurityGroupRuleProtocolIcmp":
+	case "*vpcclassicv1.SecurityGroupRuleProtocolICMP":
 		{
-			sgrule := rule.(*vpcclassicv1.SecurityGroupRuleProtocolIcmp)
+			sgrule := rule.(*vpcclassicv1.SecurityGroupRuleProtocolICMP)
 			d.Set(isSecurityGroupRuleID, *sgrule.ID)
 			tfID := makeTerraformRuleID(parsed.secgrpID, *sgrule.ID)
 			d.SetId(tfID)
@@ -215,9 +215,9 @@ func classicSgRuleCreate(d *schema.ResourceData, meta interface{}) error {
 			tfID := makeTerraformRuleID(parsed.secgrpID, *sgrule.ID)
 			d.SetId(tfID)
 		}
-	case "*vpcclassicv1.SecurityGroupRuleProtocolTcpudp":
+	case "*vpcclassicv1.SecurityGroupRuleProtocolTCPUDP":
 		{
-			sgrule := rule.(*vpcclassicv1.SecurityGroupRuleProtocolTcpudp)
+			sgrule := rule.(*vpcclassicv1.SecurityGroupRuleProtocolTCPUDP)
 			d.Set(isSecurityGroupRuleID, *sgrule.ID)
 			tfID := makeTerraformRuleID(parsed.secgrpID, *sgrule.ID)
 			d.SetId(tfID)
@@ -249,9 +249,9 @@ func sgRuleCreate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error while creating Security Group Rule %s\n%s", err, response)
 	}
 	switch reflect.TypeOf(rule).String() {
-	case "*vpcv1.SecurityGroupRuleProtocolIcmp":
+	case "*vpcv1.SecurityGroupRuleProtocolICMP":
 		{
-			sgrule := rule.(*vpcv1.SecurityGroupRuleProtocolIcmp)
+			sgrule := rule.(*vpcv1.SecurityGroupRuleProtocolICMP)
 			d.Set(isSecurityGroupRuleID, *sgrule.ID)
 			tfID := makeTerraformRuleID(parsed.secgrpID, *sgrule.ID)
 			d.SetId(tfID)
@@ -263,9 +263,9 @@ func sgRuleCreate(d *schema.ResourceData, meta interface{}) error {
 			tfID := makeTerraformRuleID(parsed.secgrpID, *sgrule.ID)
 			d.SetId(tfID)
 		}
-	case "*vpcv1.SecurityGroupRuleProtocolTcpudp":
+	case "*vpcv1.SecurityGroupRuleProtocolTCPUDP":
 		{
-			sgrule := rule.(*vpcv1.SecurityGroupRuleProtocolTcpudp)
+			sgrule := rule.(*vpcv1.SecurityGroupRuleProtocolTCPUDP)
 			d.Set(isSecurityGroupRuleID, *sgrule.ID)
 			tfID := makeTerraformRuleID(parsed.secgrpID, *sgrule.ID)
 			d.SetId(tfID)
@@ -317,13 +317,13 @@ func classicSgRuleGet(d *schema.ResourceData, meta interface{}, secgrpID, ruleID
 
 	d.Set(isSecurityGroupID, secgrpID)
 	switch reflect.TypeOf(sgrule).String() {
-	case "*vpcclassicv1.SecurityGroupRuleProtocolIcmp":
+	case "*vpcclassicv1.SecurityGroupRuleProtocolICMP":
 		{
-			rule := sgrule.(*vpcclassicv1.SecurityGroupRuleProtocolIcmp)
+			rule := sgrule.(*vpcclassicv1.SecurityGroupRuleProtocolICMP)
 			d.Set(isSecurityGroupRuleID, *rule.ID)
 			tfID := makeTerraformRuleID(secgrpID, *rule.ID)
 			d.SetId(tfID)
-			d.Set(isSecurityGroupRuleIPVersion, *rule.IPVersion)
+			d.Set(isSecurityGroupRuleIPVersion, *rule.IpVersion)
 			d.Set(isSecurityGroupRuleProtocol, *rule.Protocol)
 			icmpProtocol := map[string]interface{}{}
 
@@ -346,19 +346,19 @@ func classicSgRuleGet(d *schema.ResourceData, meta interface{}, secgrpID, ruleID
 			d.Set(isSecurityGroupRuleID, *rule.ID)
 			tfID := makeTerraformRuleID(secgrpID, *rule.ID)
 			d.SetId(tfID)
-			d.Set(isSecurityGroupRuleIPVersion, *rule.IPVersion)
+			d.Set(isSecurityGroupRuleIPVersion, *rule.IpVersion)
 			d.Set(isSecurityGroupRuleProtocol, *rule.Protocol)
 			remotePtrValue := reflect.ValueOf(rule.Remote)
 			remoteValue := reflect.Indirect(remotePtrValue)
 			d.Set(isSecurityGroupRuleRemote, remoteValue)
 		}
-	case "*vpcclassicv1.SecurityGroupRuleProtocolTcpudp":
+	case "*vpcclassicv1.SecurityGroupRuleProtocolTCPUDP":
 		{
-			rule := sgrule.(*vpcclassicv1.SecurityGroupRuleProtocolTcpudp)
+			rule := sgrule.(*vpcclassicv1.SecurityGroupRuleProtocolTCPUDP)
 			d.Set(isSecurityGroupRuleID, *rule.ID)
 			tfID := makeTerraformRuleID(secgrpID, *rule.ID)
 			d.SetId(tfID)
-			d.Set(isSecurityGroupRuleIPVersion, *rule.IPVersion)
+			d.Set(isSecurityGroupRuleIPVersion, *rule.IpVersion)
 			d.Set(isSecurityGroupRuleProtocol, *rule.Protocol)
 			tcpProtocol := map[string]interface{}{}
 
@@ -402,13 +402,13 @@ func sgRuleGet(d *schema.ResourceData, meta interface{}, secgrpID, ruleID string
 	}
 	d.Set(isSecurityGroupID, secgrpID)
 	switch reflect.TypeOf(sgrule).String() {
-	case "*vpcv1.SecurityGroupRuleProtocolIcmp":
+	case "*vpcv1.SecurityGroupRuleProtocolICMP":
 		{
-			rule := sgrule.(*vpcv1.SecurityGroupRuleProtocolIcmp)
+			rule := sgrule.(*vpcv1.SecurityGroupRuleProtocolICMP)
 			d.Set(isSecurityGroupRuleID, *rule.ID)
 			tfID := makeTerraformRuleID(secgrpID, *rule.ID)
 			d.SetId(tfID)
-			d.Set(isSecurityGroupRuleIPVersion, *rule.IPVersion)
+			d.Set(isSecurityGroupRuleIPVersion, *rule.IpVersion)
 			d.Set(isSecurityGroupRuleProtocol, *rule.Protocol)
 			icmpProtocol := map[string]interface{}{}
 
@@ -431,19 +431,19 @@ func sgRuleGet(d *schema.ResourceData, meta interface{}, secgrpID, ruleID string
 			d.Set(isSecurityGroupRuleID, *rule.ID)
 			tfID := makeTerraformRuleID(secgrpID, *rule.ID)
 			d.SetId(tfID)
-			d.Set(isSecurityGroupRuleIPVersion, *rule.IPVersion)
+			d.Set(isSecurityGroupRuleIPVersion, *rule.IpVersion)
 			d.Set(isSecurityGroupRuleProtocol, *rule.Protocol)
 			remotePtrValue := reflect.ValueOf(rule.Remote)
 			remoteValue := reflect.Indirect(remotePtrValue)
 			d.Set(isSecurityGroupRuleRemote, remoteValue)
 		}
-	case "*vpcv1.SecurityGroupRuleProtocolTcpudp":
+	case "*vpcv1.SecurityGroupRuleProtocolTCPUDP":
 		{
-			rule := sgrule.(*vpcv1.SecurityGroupRuleProtocolTcpudp)
+			rule := sgrule.(*vpcv1.SecurityGroupRuleProtocolTCPUDP)
 			d.Set(isSecurityGroupRuleID, *rule.ID)
 			tfID := makeTerraformRuleID(secgrpID, *rule.ID)
 			d.SetId(tfID)
-			d.Set(isSecurityGroupRuleIPVersion, *rule.IPVersion)
+			d.Set(isSecurityGroupRuleIPVersion, *rule.IpVersion)
 			d.Set(isSecurityGroupRuleProtocol, *rule.Protocol)
 			tcpProtocol := map[string]interface{}{}
 
@@ -747,12 +747,12 @@ func parseIBMISClassicSecurityGroupRuleDictionary(d *schema.ResourceData, tag st
 
 	if version, ok := d.GetOk(isSecurityGroupRuleIPVersion); ok {
 		parsed.ipversion = version.(string)
-		sgTemplate.IPVersion = &parsed.ipversion
-		sgTemplateUpdate.IPVersion = &parsed.ipversion
+		sgTemplate.IpVersion = &parsed.ipversion
+		sgTemplateUpdate.IpVersion = &parsed.ipversion
 	} else {
 		parsed.ipversion = "IPv4"
-		sgTemplate.IPVersion = &parsed.ipversion
-		sgTemplateUpdate.IPVersion = &parsed.ipversion
+		sgTemplate.IpVersion = &parsed.ipversion
+		sgTemplateUpdate.IpVersion = &parsed.ipversion
 	}
 
 	parsed.remote = ""
@@ -771,8 +771,8 @@ func parseIBMISClassicSecurityGroupRuleDictionary(d *schema.ResourceData, tag st
 			remoteTemplate.Address = &parsed.remoteAddress
 			remoteTemplateUpdate.Address = &parsed.remoteAddress
 		} else if parsed.remoteCIDR != "" {
-			remoteTemplate.CIDRBlock = &parsed.remoteCIDR
-			remoteTemplateUpdate.CIDRBlock = &parsed.remoteCIDR
+			remoteTemplate.CidrBlock = &parsed.remoteCIDR
+			remoteTemplateUpdate.CidrBlock = &parsed.remoteCIDR
 		} else if parsed.remoteSecGrpID != "" {
 			remoteTemplate.ID = &parsed.remoteSecGrpID
 			remoteTemplateUpdate.ID = &parsed.remoteSecGrpID
@@ -882,12 +882,12 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 
 	if version, ok := d.GetOk(isSecurityGroupRuleIPVersion); ok {
 		parsed.ipversion = version.(string)
-		sgTemplate.IPVersion = &parsed.ipversion
-		sgTemplateUpdate.IPVersion = &parsed.ipversion
+		sgTemplate.IpVersion = &parsed.ipversion
+		sgTemplateUpdate.IpVersion = &parsed.ipversion
 	} else {
 		parsed.ipversion = "IPv4"
-		sgTemplate.IPVersion = &parsed.ipversion
-		sgTemplateUpdate.IPVersion = &parsed.ipversion
+		sgTemplate.IpVersion = &parsed.ipversion
+		sgTemplateUpdate.IpVersion = &parsed.ipversion
 	}
 
 	parsed.remote = ""
@@ -906,8 +906,8 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 			remoteTemplate.Address = &parsed.remoteAddress
 			remoteTemplateUpdate.Address = &parsed.remoteAddress
 		} else if parsed.remoteCIDR != "" {
-			remoteTemplate.CIDRBlock = &parsed.remoteCIDR
-			remoteTemplateUpdate.CIDRBlock = &parsed.remoteCIDR
+			remoteTemplate.CidrBlock = &parsed.remoteCIDR
+			remoteTemplateUpdate.CidrBlock = &parsed.remoteCIDR
 		} else if parsed.remoteSecGrpID != "" {
 			remoteTemplate.ID = &parsed.remoteSecGrpID
 			remoteTemplateUpdate.ID = &parsed.remoteSecGrpID

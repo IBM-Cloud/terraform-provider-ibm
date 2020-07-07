@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -222,31 +223,31 @@ func resourceIBMPrivateDNSResourceRecordCreate(d *schema.ResourceData, meta inte
 	case "A":
 		resourceRecordAData, err := sess.NewResourceRecordInputRdataRdataARecord(rdata)
 		if err != nil {
-			return fmt.Errorf("Error creating pdns resource record A data:%s", err)
+			return err
 		}
 		createResourceRecordOptions.SetRdata(resourceRecordAData)
 	case "AAAA":
 		resourceRecordAaaaData, err := sess.NewResourceRecordInputRdataRdataAaaaRecord(rdata)
 		if err != nil {
-			return fmt.Errorf("Error creating pdns resource record Aaaa data:%s", err)
+			return err
 		}
 		createResourceRecordOptions.SetRdata(resourceRecordAaaaData)
 	case "CNAME":
 		resourceRecordCnameData, err := sess.NewResourceRecordInputRdataRdataCnameRecord(rdata)
 		if err != nil {
-			return fmt.Errorf("Error creating pdns resource record Cname data:%s", err)
+			return err
 		}
 		createResourceRecordOptions.SetRdata(resourceRecordCnameData)
 	case "PTR":
 		resourceRecordPtrData, err := sess.NewResourceRecordInputRdataRdataPtrRecord(rdata)
 		if err != nil {
-			return fmt.Errorf("Error creating pdns resource record Ptr data:%s", err)
+			return err
 		}
 		createResourceRecordOptions.SetRdata(resourceRecordPtrData)
 	case "TXT":
 		resourceRecordTxtData, err := sess.NewResourceRecordInputRdataRdataTxtRecord(rdata)
 		if err != nil {
-			return fmt.Errorf("Error creating pdns resource record Txt data:%s", err)
+			return err
 		}
 		createResourceRecordOptions.SetRdata(resourceRecordTxtData)
 	case "MX":
@@ -255,7 +256,7 @@ func resourceIBMPrivateDNSResourceRecordCreate(d *schema.ResourceData, meta inte
 		}
 		resourceRecordMxData, err := sess.NewResourceRecordInputRdataRdataMxRecord(rdata, int64(preference))
 		if err != nil {
-			return fmt.Errorf("Error creating pdns resource record Mx data:%s", err)
+			return err
 		}
 		createResourceRecordOptions.SetRdata(resourceRecordMxData)
 	case "SRV":
@@ -270,7 +271,7 @@ func resourceIBMPrivateDNSResourceRecordCreate(d *schema.ResourceData, meta inte
 		}
 		resourceRecordSrvData, err := sess.NewResourceRecordInputRdataRdataSrvRecord(int64(port), int64(priority), rdata, int64(weight))
 		if err != nil {
-			return fmt.Errorf("Error creating pdns resource record Srv data:%s", err)
+			return err
 		}
 		if v, ok := d.GetOk(pdnsSrvService); ok {
 			service = v.(string)
@@ -287,7 +288,8 @@ func resourceIBMPrivateDNSResourceRecordCreate(d *schema.ResourceData, meta inte
 	defer ibmMutexKV.Unlock(mk)
 	response, detail, err := sess.CreateResourceRecord(createResourceRecordOptions)
 	if err != nil {
-		return fmt.Errorf("Error creating pdns resource record:%s\n%s", err, detail)
+		log.Printf("Error creating dns record:%s", detail)
+		return err
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", instanceID, zoneID, *response.ID))
@@ -305,7 +307,8 @@ func resourceIBMPrivateDNSResourceRecordRead(d *schema.ResourceData, meta interf
 	getResourceRecordOptions := sess.NewGetResourceRecordOptions(id_set[0], id_set[1], id_set[2])
 	response, detail, err := sess.GetResourceRecord(getResourceRecordOptions)
 	if err != nil {
-		return fmt.Errorf("Error reading pdns resource record:%s\n%s", err, detail)
+		log.Printf("Error reading dns record:%s", detail)
+		return err
 	}
 
 	// extract the record name by removing zone details
@@ -365,7 +368,8 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 	defer ibmMutexKV.Unlock(mk)
 	response, detail, err := sess.GetResourceRecord(getResourceRecordOptions)
 	if err != nil {
-		return fmt.Errorf("Error fetching pdns resource record:%s\n%s", err, detail)
+		log.Printf("Error updating dns record:%s", detail)
+		return err
 	}
 
 	updateResourceRecordOptions := sess.NewUpdateResourceRecordOptions(id_set[0], id_set[1], id_set[2])
@@ -389,7 +393,7 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 			rdata = d.Get(pdnsRdata).(string)
 			resourceRecordAData, err := sess.NewResourceRecordUpdateInputRdataRdataARecord(rdata)
 			if err != nil {
-				return fmt.Errorf("Error creating pdns resource record A data:%s", err)
+				return err
 			}
 			updateResourceRecordOptions.SetRdata(resourceRecordAData)
 		}
@@ -399,7 +403,7 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 			rdata = d.Get(pdnsRdata).(string)
 			resourceRecordAaaaData, err := sess.NewResourceRecordUpdateInputRdataRdataAaaaRecord(rdata)
 			if err != nil {
-				return fmt.Errorf("Error creating pdns resource record Aaaa data:%s", err)
+				return err
 			}
 			updateResourceRecordOptions.SetRdata(resourceRecordAaaaData)
 		}
@@ -409,7 +413,7 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 			rdata = d.Get(pdnsRdata).(string)
 			resourceRecordCnameData, err := sess.NewResourceRecordUpdateInputRdataRdataCnameRecord(rdata)
 			if err != nil {
-				return fmt.Errorf("Error creating pdns resource record Cname data:%s", err)
+				return err
 			}
 			updateResourceRecordOptions.SetRdata(resourceRecordCnameData)
 		}
@@ -423,7 +427,7 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 			rdata = d.Get(pdnsRdata).(string)
 			resourceRecordTxtData, err := sess.NewResourceRecordUpdateInputRdataRdataTxtRecord(rdata)
 			if err != nil {
-				return fmt.Errorf("Error creating pdns resource record Txt data:%s", err)
+				return err
 			}
 			updateResourceRecordOptions.SetRdata(resourceRecordTxtData)
 		}
@@ -437,7 +441,7 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 
 			resourceRecordMxData, err := sess.NewResourceRecordUpdateInputRdataRdataMxRecord(rdata, int64(preference))
 			if err != nil {
-				return fmt.Errorf("Error creating pdns resource record Mx data:%s", err)
+				return err
 			}
 			updateResourceRecordOptions.SetRdata(resourceRecordMxData)
 		}
@@ -455,7 +459,7 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 
 			resourceRecordSrvData, err := sess.NewResourceRecordUpdateInputRdataRdataSrvRecord(int64(port), int64(priority), rdata, int64(weight))
 			if err != nil {
-				return fmt.Errorf("Error creating pdns resource record Srv data:%s", err)
+				return err
 			}
 			updateResourceRecordOptions.SetRdata(resourceRecordSrvData)
 
@@ -469,7 +473,8 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 	//
 	_, detail, err = sess.UpdateResourceRecord(updateResourceRecordOptions)
 	if err != nil {
-		return fmt.Errorf("Error updating pdns resource record:%s\n%s", err, detail)
+		log.Printf("Error updating dns record:%s", detail)
+		return err
 	}
 
 	return resourceIBMPrivateDNSResourceRecordRead(d, meta)
@@ -489,7 +494,8 @@ func resourceIBMPrivateDNSResourceRecordDelete(d *schema.ResourceData, meta inte
 	defer ibmMutexKV.Unlock(mk)
 	response, err := sess.DeleteResourceRecord(deleteResourceRecordOptions)
 	if err != nil {
-		return fmt.Errorf("Error deleting pdns resource record:%s\n%s", err, response)
+		log.Printf("Error deleting dns record:%s", response)
+		return err
 	}
 
 	d.SetId("")

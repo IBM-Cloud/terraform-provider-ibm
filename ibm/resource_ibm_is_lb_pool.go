@@ -5,10 +5,10 @@ import (
 	"log"
 	"time"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
-	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -218,7 +218,7 @@ func classicLBPoolCreate(d *schema.ResourceData, meta interface{}, name, lbID, a
 		},
 	}
 	if healthMonitorURL != "" {
-		options.HealthMonitor.URLPath = &healthMonitorURL
+		options.HealthMonitor.UrlPath = &healthMonitorURL
 	}
 	if healthMonitorPort > int64(0) {
 		options.HealthMonitor.Port = &healthMonitorPort
@@ -276,7 +276,7 @@ func lbPoolCreate(d *schema.ResourceData, meta interface{}, name, lbID, algorith
 		},
 	}
 	if healthMonitorURL != "" {
-		options.HealthMonitor.URLPath = &healthMonitorURL
+		options.HealthMonitor.UrlPath = &healthMonitorURL
 	}
 	if healthMonitorPort > int64(0) {
 		options.HealthMonitor.Port = &healthMonitorPort
@@ -366,8 +366,8 @@ func classicLBPoolGet(d *schema.ResourceData, meta interface{}, lbID, lbPoolID s
 	if lbPool.HealthMonitor.Type != nil {
 		d.Set(isLBPoolHealthType, *lbPool.HealthMonitor.Type)
 	}
-	if lbPool.HealthMonitor.URLPath != nil {
-		d.Set(isLBPoolHealthMonitorURL, *lbPool.HealthMonitor.URLPath)
+	if lbPool.HealthMonitor.UrlPath != nil {
+		d.Set(isLBPoolHealthMonitorURL, *lbPool.HealthMonitor.UrlPath)
 	}
 	if lbPool.HealthMonitor.Port != nil {
 		d.Set(isLBPoolHealthMonitorPort, *lbPool.HealthMonitor.Port)
@@ -409,8 +409,8 @@ func lbPoolGet(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) 
 	if lbPool.HealthMonitor.Type != nil {
 		d.Set(isLBPoolHealthType, *lbPool.HealthMonitor.Type)
 	}
-	if lbPool.HealthMonitor.URLPath != nil {
-		d.Set(isLBPoolHealthMonitorURL, *lbPool.HealthMonitor.URLPath)
+	if lbPool.HealthMonitor.UrlPath != nil {
+		d.Set(isLBPoolHealthMonitorURL, *lbPool.HealthMonitor.UrlPath)
 	}
 	if lbPool.HealthMonitor.Port != nil {
 		d.Set(isLBPoolHealthMonitorPort, *lbPool.HealthMonitor.Port)
@@ -478,7 +478,7 @@ func classicLBPoolUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolI
 			MaxRetries: &maxretries,
 			Timeout:    &timeout,
 			Type:       &healthtype,
-			URLPath:    &urlpath,
+			UrlPath:    &urlpath,
 		}
 		port := int64(d.Get(isLBPoolHealthMonitorPort).(int))
 		if port > int64(0) {
@@ -567,7 +567,7 @@ func lbPoolUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID strin
 			MaxRetries: &maxretries,
 			Timeout:    &timeout,
 			Type:       &healthtype,
-			URLPath:    &urlpath,
+			UrlPath:    &urlpath,
 		}
 		port := int64(d.Get(isLBPoolHealthMonitorPort).(int))
 		if port > int64(0) {

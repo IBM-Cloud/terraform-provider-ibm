@@ -2,7 +2,7 @@ package ibm
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -75,7 +75,8 @@ func dataSourceIBMPrivateDNSResourceRecordsRead(d *schema.ResourceData, meta int
 	listDNSResRecOptions := sess.NewListResourceRecordsOptions(instanceID, DnszoneID)
 	availableDNSResRecs, detail, err := sess.ListResourceRecords(listDNSResRecOptions)
 	if err != nil {
-		return fmt.Errorf("Error reading list of pdns resource records:%s\n%s", err, detail)
+		log.Printf("Error reading list of dns resource records:%s", detail)
+		return err
 	}
 	dnsResRecs := make([]map[string]interface{}, 0)
 	for _, instance := range availableDNSResRecs.ResourceRecords {
@@ -86,7 +87,8 @@ func dataSourceIBMPrivateDNSResourceRecordsRead(d *schema.ResourceData, meta int
 		// Marshal the rdata map into a JSON string
 		rData, err := json.Marshal(instance.Rdata)
 		if err != nil {
-			return fmt.Errorf("Error reading rdata map of dns resource records:%s", err)
+			log.Printf("Error reading rdata map of dns resource records:%s", err)
+			return err
 		}
 		jsonStr := string(rData)
 		dnsRecord[pdnsRdata] = jsonStr

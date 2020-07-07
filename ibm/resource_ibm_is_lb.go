@@ -6,11 +6,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
-	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -215,7 +215,7 @@ func classicLBCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg 
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isLBTags); ok || v != "" {
 		oldList, newList := d.GetChange(isLBTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *lb.CRN)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *lb.Crn)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
@@ -262,7 +262,7 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isLBTags); ok || v != "" {
 		oldList, newList := d.GetChange(isLBTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *lb.CRN)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *lb.Crn)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
@@ -348,7 +348,7 @@ func classicLBGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set(isLBResourceGroup, *lb.ResourceGroup.ID)
 	d.Set(isLBHostName, *lb.Hostname)
-	tags, err := GetTagsUsingCRN(meta, *lb.CRN)
+	tags, err := GetTagsUsingCRN(meta, *lb.Crn)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
@@ -423,7 +423,7 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set(isLBResourceGroup, *lb.ResourceGroup.ID)
 	d.Set(isLBHostName, *lb.Hostname)
-	tags, err := GetTagsUsingCRN(meta, *lb.CRN)
+	tags, err := GetTagsUsingCRN(meta, *lb.Crn)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
@@ -483,7 +483,7 @@ func classicLBUpdate(d *schema.ResourceData, meta interface{}, id, name string, 
 			return fmt.Errorf("Error getting Load Balancer : %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isLBTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *lb.CRN)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *lb.Crn)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
@@ -516,7 +516,7 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 			return fmt.Errorf("Error getting Load Balancer : %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isLBTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *lb.CRN)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *lb.Crn)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)

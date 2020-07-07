@@ -3,9 +3,9 @@ package ibm
 import (
 	"fmt"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
-	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func dataSourceIBMISSSHKey() *schema.Resource {
@@ -82,23 +82,12 @@ func classicKeyGetByName(d *schema.ResourceData, meta interface{}, name string) 
 	if err != nil {
 		return err
 	}
-	start := ""
-	allrecs := []vpcclassicv1.Key{}
-	for {
-		listKeysOptions := &vpcclassicv1.ListKeysOptions{
-			Start: &start,
-		}
-		keys, _, err := sess.ListKeys(listKeysOptions)
-		if err != nil {
-			return err
-		}
-		start = GetNext(keys.Next)
-		allrecs = append(allrecs, keys.Keys...)
-		if start == "" {
-			break
-		}
+	listKeysOptions := &vpcclassicv1.ListKeysOptions{}
+	keys, _, err := sess.ListKeys(listKeysOptions)
+	if err != nil {
+		return err
 	}
-	for _, key := range allrecs {
+	for _, key := range keys.Keys {
 		if *key.Name == name {
 			d.SetId(*key.ID)
 			d.Set("name", *key.Name)
@@ -111,7 +100,7 @@ func classicKeyGetByName(d *schema.ResourceData, meta interface{}, name string) 
 			}
 			d.Set(ResourceControllerURL, controller+"/vpc/compute/sshKeys")
 			d.Set(ResourceName, *key.Name)
-			d.Set(ResourceCRN, *key.CRN)
+			d.Set(ResourceCRN, *key.Crn)
 			if key.ResourceGroup != nil {
 				d.Set(ResourceGroupName, *key.ResourceGroup.ID)
 			}
@@ -144,7 +133,7 @@ func keyGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			}
 			d.Set(ResourceControllerURL, controller+"/vpc/compute/sshKeys")
 			d.Set(ResourceName, *key.Name)
-			d.Set(ResourceCRN, *key.CRN)
+			d.Set(ResourceCRN, *key.Crn)
 			if key.ResourceGroup != nil {
 				d.Set(ResourceGroupName, *key.ResourceGroup.ID)
 			}

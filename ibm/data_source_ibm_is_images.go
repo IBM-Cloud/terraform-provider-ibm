@@ -3,9 +3,9 @@ package ibm
 import (
 	"time"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
-	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
+	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -106,7 +106,7 @@ func classicImageList(d *schema.ResourceData, meta interface{}) error {
 			"name":         *image.Name,
 			"id":           *image.ID,
 			"status":       *image.Status,
-			"crn":          *image.CRN,
+			"crn":          *image.Crn,
 			"visibility":   *image.Visibility,
 			"os":           *image.OperatingSystem.Name,
 			"architecture": *image.OperatingSystem.Architecture,
@@ -146,7 +146,7 @@ func imageList(d *schema.ResourceData, meta interface{}) error {
 			"name":         *image.Name,
 			"id":           *image.ID,
 			"status":       *image.Status,
-			"crn":          *image.CRN,
+			"crn":          *image.Crn,
 			"visibility":   *image.Visibility,
 			"os":           *image.OperatingSystem.Name,
 			"architecture": *image.OperatingSystem.Architecture,

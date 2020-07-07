@@ -1,7 +1,7 @@
 package ibm
 
 import (
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -83,7 +83,8 @@ func dataSourceIBMPrivateDNSZonesRead(d *schema.ResourceData, meta interface{}) 
 	listDNSZonesOptions := sess.NewListDnszonesOptions(instanceID)
 	availableDNSZones, detail, err := sess.ListDnszones(listDNSZonesOptions)
 	if err != nil {
-		return fmt.Errorf("Error reading list of dns zones:%s\n%s", err, detail)
+		log.Printf("Error reading list of dns zones:%s", detail)
+		return err
 	}
 	dnsZones := make([]map[string]interface{}, 0)
 	for _, instance := range availableDNSZones.Dnszones {
