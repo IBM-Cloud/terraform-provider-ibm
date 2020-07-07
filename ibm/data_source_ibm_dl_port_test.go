@@ -9,13 +9,16 @@ import (
 
 func TestAccIBMDLPortDataSource_basic(t *testing.T) {
 	name := "dl_port"
+	resName := "data.ibm_dl_port.test_dl_port"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMDLPortDataSourceConfig(name),
-				Check:  resource.ComposeTestCheckFunc(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "port_id"),
+				),
 			},
 		},
 	})

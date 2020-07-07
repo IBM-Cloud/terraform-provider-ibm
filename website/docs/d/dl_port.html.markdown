@@ -33,7 +33,6 @@ The following attributes are exported:
 * `label` - Port Label.
 * `location_display_name` - Port location long name.
 * `location_name` - Port location name identifier.
-* `port_id` - Port identifier.
 * `provider_name` - Port's provider name.
 * `supported_link_speeds` - Port's supported speeds in megabits per second.
   

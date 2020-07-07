@@ -55,12 +55,12 @@ func dataSourceIBMDirectLinkPorts() *schema.Resource {
 						dlLocationName: {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Port location long name",
+							Description: "Port location name identifier",
 						},
 						dlProviderName: {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Port location long name",
+							Description: "Port's provider name",
 						},
 						dlSupportedLinkSpeeds: {
 							Type: schema.TypeList,
