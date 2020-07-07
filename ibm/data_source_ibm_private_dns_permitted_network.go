@@ -1,7 +1,7 @@
 package ibm
 
 import (
-	"log"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -114,8 +114,7 @@ func dataSourceIBMPrivateDNSPermittedNetworksRead(d *schema.ResourceData, meta i
 	listPermittedNetworkOptions := sess.NewListPermittedNetworksOptions(instanceID, dnsZoneID)
 	availablePermittedNetworks, detail, err := sess.ListPermittedNetworks(listPermittedNetworkOptions)
 	if err != nil {
-		log.Printf("Error reading list of permitted networks:%s", detail)
-		return err
+		return fmt.Errorf("Error reading list of pdns permitted networks:%s\n%s", err, detail)
 	}
 
 	permittedNetworks := make([]map[string]interface{}, 0)
