@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISVPCAddressPrefix_basic(t *testing.T) {
@@ -60,11 +60,11 @@ func testAccCheckIBMISVPCAddressPrefixDestroy(s *terraform.State) error {
 
 			vpcID := parts[0]
 			addrPrefixID := parts[1]
-			getvpcAddressPrefixOptions := &vpcclassicv1.GetVpcAddressPrefixOptions{
-				VpcID: &vpcID,
+			getvpcAddressPrefixOptions := &vpcclassicv1.GetVPCAddressPrefixOptions{
+				VPCID: &vpcID,
 				ID:    &addrPrefixID,
 			}
-			_, _, err1 := sess.GetVpcAddressPrefix(getvpcAddressPrefixOptions)
+			_, _, err1 := sess.GetVPCAddressPrefix(getvpcAddressPrefixOptions)
 			if err1 == nil {
 				return fmt.Errorf("vpc still exists: %s", rs.Primary.ID)
 			}
@@ -83,11 +83,11 @@ func testAccCheckIBMISVPCAddressPrefixDestroy(s *terraform.State) error {
 
 			vpcID := parts[0]
 			addrPrefixID := parts[1]
-			getvpcAddressPrefixOptions := &vpcv1.GetVpcAddressPrefixOptions{
-				VpcID: &vpcID,
+			getvpcAddressPrefixOptions := &vpcv1.GetVPCAddressPrefixOptions{
+				VPCID: &vpcID,
 				ID:    &addrPrefixID,
 			}
-			_, _, err1 := sess.GetVpcAddressPrefix(getvpcAddressPrefixOptions)
+			_, _, err1 := sess.GetVPCAddressPrefix(getvpcAddressPrefixOptions)
 			if err1 == nil {
 				return fmt.Errorf("vpc still exists: %s", rs.Primary.ID)
 			}
@@ -117,22 +117,22 @@ func testAccCheckIBMISVPCAddressPrefixExists(n, vpcAddressPrefix string) resourc
 		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 		if userDetails.generation == 1 {
 			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-			getvpcAddressPrefixOptions := &vpcclassicv1.GetVpcAddressPrefixOptions{
-				VpcID: &vpcID,
+			getvpcAddressPrefixOptions := &vpcclassicv1.GetVPCAddressPrefixOptions{
+				VPCID: &vpcID,
 				ID:    &addrPrefixID,
 			}
-			addrPrefix, _, err := sess.GetVpcAddressPrefix(getvpcAddressPrefixOptions)
+			addrPrefix, _, err := sess.GetVPCAddressPrefix(getvpcAddressPrefixOptions)
 			if err != nil {
 				return err
 			}
 			vpcAddressPrefix = *addrPrefix.ID
 		} else {
 			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-			getvpcAddressPrefixOptions := &vpcv1.GetVpcAddressPrefixOptions{
-				VpcID: &vpcID,
+			getvpcAddressPrefixOptions := &vpcv1.GetVPCAddressPrefixOptions{
+				VPCID: &vpcID,
 				ID:    &addrPrefixID,
 			}
-			addrPrefix, _, err := sess.GetVpcAddressPrefix(getvpcAddressPrefixOptions)
+			addrPrefix, _, err := sess.GetVPCAddressPrefix(getvpcAddressPrefixOptions)
 			if err != nil {
 				return err
 			}

@@ -3,9 +3,9 @@ package ibm
 import (
 	"time"
 
+	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -62,10 +62,10 @@ func classicZonesList(d *schema.ResourceData, meta interface{}, regionName strin
 	if err != nil {
 		return err
 	}
-	listZonesOptions := &vpcclassicv1.ListZonesOptions{
+	listRegionZonesOptions := &vpcclassicv1.ListRegionZonesOptions{
 		RegionName: &regionName,
 	}
-	availableZones, _, err := sess.ListZones(listZonesOptions)
+	availableZones, _, err := sess.ListRegionZones(listRegionZonesOptions)
 	if err != nil {
 		return err
 	}
@@ -86,10 +86,10 @@ func zonesList(d *schema.ResourceData, meta interface{}, regionName string) erro
 	if err != nil {
 		return err
 	}
-	listZonesOptions := &vpcv1.ListZonesOptions{
+	listRegionZonesOptions := &vpcv1.ListRegionZonesOptions{
 		RegionName: &regionName,
 	}
-	availableZones, _, err := sess.ListZones(listZonesOptions)
+	availableZones, _, err := sess.ListRegionZones(listRegionZonesOptions)
 	if err != nil {
 		return err
 	}

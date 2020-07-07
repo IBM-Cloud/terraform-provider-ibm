@@ -277,7 +277,11 @@ func unmarshalModelSlice(rawInput interface{}, propertyName string, result inter
 
 		var rawMsg json.RawMessage
 		rawMsg, foundIt = rawMap[propertyName]
-		if foundIt && rawMsg != nil {
+
+		// If we didn't find the property containing the JSON input, then bail out now.
+		if !foundIt || isJsonNull(rawMsg) {
+			return
+		} else {
 			err = json.Unmarshal(rawMsg, &rawSlice)
 			if err != nil {
 				causedBy := fmt.Errorf(errorUnmarshalModel, propInsert(propertyName),
@@ -347,6 +351,15 @@ func unmarshalModelSlice(rawInput interface{}, propertyName string, result inter
 	return
 }
 
+// isJsonNull returns true iff 'rawMsg' is exlicitly nil or contains a JSON "null" value.
+func isJsonNull(rawMsg json.RawMessage) bool {
+	var nullLiteral = []byte("null")
+	if rawMsg == nil || string(rawMsg) == string(nullLiteral) {
+		return true
+	}
+	return false
+}
+
 //
 // unmarshalModelMap unmarshals 'rawInput' into a map[string]<model>.
 //
@@ -376,6 +389,10 @@ func unmarshalModelMap(rawInput interface{}, propertyName string, result interfa
 		return
 	}
 
+	if !foundInput {
+		return
+	}
+
 	// Get a "reflective" view of the result map and initialize it.
 	rResultMap := reflect.ValueOf(result).Elem()
 	rResultMap.Set(reflect.MakeMap(reflect.TypeOf(result).Elem()))
@@ -391,7 +408,7 @@ func unmarshalModelMap(rawInput interface{}, propertyName string, result interfa
 				reflect.TypeOf(result).Elem().String(), err.Error())
 			return
 		}
-		
+
 		for k, v := range rawMap {
 			// Unmarshal the map entry's value (a json.RawMessage) into a map[string]RawMessage.
 			// The resulting map should contain an instance of the model.
@@ -451,36 +468,44 @@ func unmarshalModelSliceMap(rawInput interface{}, propertyName string, result in
 		return
 	}
 
+	if !foundInput {
+		return
+	}
+
 	// Get a "reflective" view of the result map and initialize it.
 	rResultMap := reflect.ValueOf(result).Elem()
 	rResultMap.Set(reflect.MakeMap(reflect.TypeOf(result).Elem()))
 
 	if foundInput && rawMap != nil {
 		for k, v := range rawMap {
-			// Each value in 'rawMap' should contain an instance of []<model>.
-			// We'll first unmarshal each value into a []jsonRawMessage, then unmarshal that
-			// into a []<model> using unmarshalModelSlice.
-			var rawSlice []json.RawMessage
-			err = json.Unmarshal(v, &rawSlice)
-			if err != nil {
-				err = fmt.Errorf(errorUnmarshalModel, propInsert(propertyName),
-					reflect.TypeOf(result).Elem().String(), err.Error())
-				return
+			
+			// Make sure our slice raw message isn't an explicit JSON null value.
+			if !isJsonNull(v) {
+				// Each value in 'rawMap' should contain an instance of []<model>.
+				// We'll first unmarshal each value into a []jsonRawMessage, then unmarshal that
+				// into a []<model> using unmarshalModelSlice.
+				var rawSlice []json.RawMessage
+				err = json.Unmarshal(v, &rawSlice)
+				if err != nil {
+					err = fmt.Errorf(errorUnmarshalModel, propInsert(propertyName),
+						reflect.TypeOf(result).Elem().String(), err.Error())
+					return
+				}
+
+				// Construct a slice of the correct type.
+				rSliceValue := reflect.New(reflect.TypeOf(result).Elem().Elem())
+
+				// Unmarshal rawSlice into a model slice.
+				err = unmarshalModelSlice(rawSlice, "", rSliceValue.Interface(), unmarshaller)
+				if err != nil {
+					err = fmt.Errorf(errorUnmarshalModel, propInsert(propertyName),
+						reflect.TypeOf(result).Elem().String(), err.Error())
+					return
+				}
+
+				// Now add the unmarshalled model slice to the result map (reflectively, of course :) ).
+				rResultMap.SetMapIndex(reflect.ValueOf(k), rSliceValue.Elem())
 			}
-
-			// Construct a slice of the correct type.
-			rSliceValue := reflect.New(reflect.TypeOf(result).Elem().Elem())
-
-			// Unmarshal rawSlice into a model slice.
-			err = unmarshalModelSlice(rawSlice, "", rSliceValue.Interface(), unmarshaller)
-			if err != nil {
-				err = fmt.Errorf(errorUnmarshalModel, propInsert(propertyName),
-					reflect.TypeOf(result).Elem().String(), err.Error())
-				return
-			}
-
-			// Now add the unmarshalled model slice to the result map (reflectively, of course :) ).
-			rResultMap.SetMapIndex(reflect.ValueOf(k), rSliceValue.Elem())
 		}
 	}
 	return
@@ -511,7 +536,10 @@ func getUnmarshalInputSource(rawInput interface{}, propertyName string) (foundIn
 	if propertyName != "" {
 		var rawMsg json.RawMessage
 		rawMsg, foundInput = rawMap[propertyName]
-		if foundInput && rawMsg != nil {
+		if !foundInput || isJsonNull(rawMsg) {
+			foundInput = false
+			return
+		} else {
 			rawMap = make(map[string]json.RawMessage)
 			err = json.Unmarshal(rawMsg, &rawMap)
 			if err != nil {

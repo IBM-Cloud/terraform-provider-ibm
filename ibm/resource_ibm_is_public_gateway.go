@@ -6,11 +6,11 @@ import (
 	"os"
 	"time"
 
+	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -185,7 +185,7 @@ func classicPgwCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone 
 
 	options := &vpcclassicv1.CreatePublicGatewayOptions{
 		Name: &name,
-		Vpc: &vpcclassicv1.VPCIdentity{
+		VPC: &vpcclassicv1.VPCIdentity{
 			ID: &vpc,
 		},
 		Zone: &vpcclassicv1.ZoneIdentity{
@@ -195,7 +195,7 @@ func classicPgwCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone 
 	floatingipID := ""
 	floatingipadd := ""
 	if floatingipdataIntf, ok := d.GetOk(isPublicGatewayFloatingIP); ok && floatingipdataIntf != nil {
-		fip := &vpcclassicv1.PublicGatewayPrototypeFloatingIpFloatingIPIdentity{}
+		fip := &vpcclassicv1.PublicGatewayPrototypeFloatingIP{}
 		floatingipdata := floatingipdataIntf.(map[string]interface{})
 		if floatingipidintf, ok := floatingipdata["id"]; ok && floatingipidintf != nil {
 			floatingipID = floatingipidintf.(string)
@@ -205,7 +205,7 @@ func classicPgwCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone 
 			floatingipadd = floatingipaddintf.(string)
 			fip.Address = &floatingipadd
 		}
-		options.FloatingIp = fip
+		options.FloatingIP = fip
 	}
 
 	publicgw, response, err := sess.CreatePublicGateway(options)
@@ -223,7 +223,7 @@ func classicPgwCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone 
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isPublicGatewayTags); ok || v != "" {
 		oldList, newList := d.GetChange(isPublicGatewayTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *publicgw.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *publicgw.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on create of vpc public gateway (%s) tags: %s", d.Id(), err)
@@ -240,7 +240,7 @@ func pgwCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone string)
 
 	options := &vpcv1.CreatePublicGatewayOptions{
 		Name: &name,
-		Vpc: &vpcv1.VPCIdentity{
+		VPC: &vpcv1.VPCIdentity{
 			ID: &vpc,
 		},
 		Zone: &vpcv1.ZoneIdentity{
@@ -250,7 +250,7 @@ func pgwCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone string)
 	floatingipID := ""
 	floatingipadd := ""
 	if floatingipdataIntf, ok := d.GetOk(isPublicGatewayFloatingIP); ok && floatingipdataIntf != nil {
-		fip := &vpcv1.PublicGatewayPrototypeFloatingIpFloatingIPIdentity{}
+		fip := &vpcv1.PublicGatewayPrototypeFloatingIP{}
 		floatingipdata := floatingipdataIntf.(map[string]interface{})
 		if floatingipidintf, ok := floatingipdata["id"]; ok && floatingipidintf != nil {
 			floatingipID = floatingipidintf.(string)
@@ -260,7 +260,7 @@ func pgwCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone string)
 			floatingipadd = floatingipaddintf.(string)
 			fip.Address = &floatingipadd
 		}
-		options.FloatingIp = fip
+		options.FloatingIP = fip
 	}
 	if grp, ok := d.GetOk(isVPCResourceGroup); ok {
 		rg := grp.(string)
@@ -284,7 +284,7 @@ func pgwCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone string)
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isPublicGatewayTags); ok || v != "" {
 		oldList, newList := d.GetChange(isPublicGatewayTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *publicgw.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *publicgw.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on create of vpc public gateway (%s) tags: %s", d.Id(), err)
@@ -397,18 +397,18 @@ func classicPgwGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set("id", *publicgw.ID)
 	d.Set(isPublicGatewayName, *publicgw.Name)
-	if publicgw.FloatingIp != nil {
+	if publicgw.FloatingIP != nil {
 		floatIP := map[string]interface{}{
-			"id":                             *publicgw.FloatingIp.ID,
-			isPublicGatewayFloatingIPAddress: *publicgw.FloatingIp.Address,
+			"id":                             *publicgw.FloatingIP.ID,
+			isPublicGatewayFloatingIPAddress: *publicgw.FloatingIP.Address,
 		}
 		d.Set(isPublicGatewayFloatingIP, floatIP)
 
 	}
 	d.Set(isPublicGatewayStatus, *publicgw.Status)
 	d.Set(isPublicGatewayZone, *publicgw.Zone.Name)
-	d.Set(isPublicGatewayVPC, *publicgw.Vpc.ID)
-	tags, err := GetTagsUsingCRN(meta, *publicgw.Crn)
+	d.Set(isPublicGatewayVPC, *publicgw.VPC.ID)
+	tags, err := GetTagsUsingCRN(meta, *publicgw.CRN)
 	if err != nil {
 		log.Printf(
 			"Error on get of vpc public gateway (%s) tags: %s", id, err)
@@ -420,7 +420,7 @@ func classicPgwGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set(ResourceControllerURL, controller+"/vpc/network/publicGateways")
 	d.Set(ResourceName, *publicgw.Name)
-	d.Set(ResourceCRN, *publicgw.Crn)
+	d.Set(ResourceCRN, *publicgw.CRN)
 	d.Set(ResourceStatus, *publicgw.Status)
 	return nil
 }
@@ -443,18 +443,18 @@ func pgwGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set("id", *publicgw.ID)
 	d.Set(isPublicGatewayName, *publicgw.Name)
-	if publicgw.FloatingIp != nil {
+	if publicgw.FloatingIP != nil {
 		floatIP := map[string]interface{}{
-			"id":                             *publicgw.FloatingIp.ID,
-			isPublicGatewayFloatingIPAddress: *publicgw.FloatingIp.Address,
+			"id":                             *publicgw.FloatingIP.ID,
+			isPublicGatewayFloatingIPAddress: *publicgw.FloatingIP.Address,
 		}
 		d.Set(isPublicGatewayFloatingIP, floatIP)
 
 	}
 	d.Set(isPublicGatewayStatus, *publicgw.Status)
 	d.Set(isPublicGatewayZone, *publicgw.Zone.Name)
-	d.Set(isPublicGatewayVPC, *publicgw.Vpc.ID)
-	tags, err := GetTagsUsingCRN(meta, *publicgw.Crn)
+	d.Set(isPublicGatewayVPC, *publicgw.VPC.ID)
+	tags, err := GetTagsUsingCRN(meta, *publicgw.CRN)
 	if err != nil {
 		log.Printf(
 			"Error on get of vpc public gateway (%s) tags: %s", id, err)
@@ -466,7 +466,7 @@ func pgwGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/network/publicGateways")
 	d.Set(ResourceName, *publicgw.Name)
-	d.Set(ResourceCRN, *publicgw.Crn)
+	d.Set(ResourceCRN, *publicgw.CRN)
 	d.Set(ResourceStatus, *publicgw.Status)
 	if publicgw.ResourceGroup != nil {
 		d.Set(isPublicGatewayResourceGroup, *publicgw.ResourceGroup.ID)
@@ -517,7 +517,7 @@ func classicPgwUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 			return fmt.Errorf("Error getting Public Gateway : %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isPublicGatewayTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *publicgw.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *publicgw.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource Public Gateway (%s) tags: %s", id, err)
@@ -550,7 +550,7 @@ func pgwUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 			return fmt.Errorf("Error getting Public Gateway : %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isPublicGatewayTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *publicgw.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *publicgw.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource Public Gateway (%s) tags: %s", id, err)
