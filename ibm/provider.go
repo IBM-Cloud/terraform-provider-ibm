@@ -248,11 +248,12 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dl_offering_speeds": dataSourceIBMDLOfferingSpeeds(),
 			"ibm_dl_port":            dataSourceIBMDirectLinkPort(),
 			"ibm_dl_ports":           dataSourceIBMDirectLinkPorts(),
+			"ibm_dl_gateway":         dataSourceIBMDLGateway(),
+			"ibm_dl_locations":       dataSourceIBMDLLocations(),
 
 			//Added for Transit Gateway
 			"ibm_tg_gateway":  dataSourceIBMTransitGateway(),
 			"ibm_tg_gateways": dataSourceIBMTransitGateways(),
-			"ibm_dl_gateway":  dataSourceIBMDLGateway(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
