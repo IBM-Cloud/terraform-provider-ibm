@@ -6,11 +6,11 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISSecurityGroupRule_basic(t *testing.T) {
@@ -111,9 +111,9 @@ func testAccCheckIBMISSecurityGroupRuleExists(n, securityGroupRuleID string) res
 				return err
 			}
 			switch reflect.TypeOf(foundSecurityGroupRule).String() {
-			case "*vpcclassicv1.SecurityGroupRuleProtocolICMP":
+			case "*vpcclassicv1.SecurityGroupRuleProtocolIcmp":
 				{
-					sgr := foundSecurityGroupRule.(*vpcclassicv1.SecurityGroupRuleProtocolICMP)
+					sgr := foundSecurityGroupRule.(*vpcclassicv1.SecurityGroupRuleProtocolIcmp)
 					securityGroupRuleID = *sgr.ID
 				}
 			case "*vpcclassicv1.SecurityGroupRuleProtocolAll":
@@ -121,9 +121,9 @@ func testAccCheckIBMISSecurityGroupRuleExists(n, securityGroupRuleID string) res
 					sgr := foundSecurityGroupRule.(*vpcclassicv1.SecurityGroupRuleProtocolAll)
 					securityGroupRuleID = *sgr.ID
 				}
-			case "*vpcclassicv1.SecurityGroupRuleProtocolTCPUDP":
+			case "*vpcclassicv1.SecurityGroupRuleProtocolTcpudp":
 				{
-					sgr := foundSecurityGroupRule.(*vpcclassicv1.SecurityGroupRuleProtocolTCPUDP)
+					sgr := foundSecurityGroupRule.(*vpcclassicv1.SecurityGroupRuleProtocolTcpudp)
 					securityGroupRuleID = *sgr.ID
 				}
 			}
@@ -138,9 +138,9 @@ func testAccCheckIBMISSecurityGroupRuleExists(n, securityGroupRuleID string) res
 				return err
 			}
 			switch reflect.TypeOf(foundSecurityGroupRule).String() {
-			case "*vpcv1.SecurityGroupRuleProtocolICMP":
+			case "*vpcv1.SecurityGroupRuleProtocolIcmp":
 				{
-					sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleProtocolICMP)
+					sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleProtocolIcmp)
 					securityGroupRuleID = *sgr.ID
 				}
 			case "*vpcv1.SecurityGroupRuleProtocolAll":
@@ -148,9 +148,9 @@ func testAccCheckIBMISSecurityGroupRuleExists(n, securityGroupRuleID string) res
 					sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleProtocolAll)
 					securityGroupRuleID = *sgr.ID
 				}
-			case "*vpcv1.SecurityGroupRuleProtocolTCPUDP":
+			case "*vpcv1.SecurityGroupRuleProtocolTcpudp":
 				{
-					sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleProtocolTCPUDP)
+					sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleProtocolTcpudp)
 					securityGroupRuleID = *sgr.ID
 				}
 			}

@@ -6,11 +6,11 @@ import (
 	"os"
 	"time"
 
+	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -137,6 +137,16 @@ func resourceIBMISFloatingIP() *schema.Resource {
 	}
 }
 
+func classicVpcClient(meta interface{}) (*vpcclassicv1.VpcClassicV1, error) {
+	sess, err := meta.(ClientSession).VpcClassicV1API()
+	return sess, err
+}
+
+func vpcClient(meta interface{}) (*vpcv1.VpcV1, error) {
+	sess, err := meta.(ClientSession).VpcV1API()
+	return sess, err
+}
+
 func resourceIBMISFloatingIPCreate(d *schema.ResourceData, meta interface{}) error {
 
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
@@ -188,10 +198,10 @@ func classicFipCreate(d *schema.ResourceData, meta interface{}, name string) err
 		return fmt.Errorf("%s or %s need to be provided", isFloatingIPZone, isFloatingIPTarget)
 	}
 
-	options := &vpcclassicv1.ReserveFloatingIpOptions{
+	createFloatingIPOptions := &vpcclassicv1.CreateFloatingIPOptions{
 		FloatingIPPrototype: floatingIPPrototype,
 	}
-	floatingip, response, err := sess.ReserveFloatingIp(options)
+	floatingip, response, err := sess.CreateFloatingIP(createFloatingIPOptions)
 	if err != nil {
 		return fmt.Errorf("[DEBUG] Floating IP err %s\n%s", err, response)
 	}
@@ -204,7 +214,7 @@ func classicFipCreate(d *schema.ResourceData, meta interface{}, name string) err
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isFloatingIPTags); ok || v != "" {
 		oldList, newList := d.GetChange(isFloatingIPTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *floatingip.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *floatingip.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on create of vpc Floating IP (%s) tags: %s", d.Id(), err)
@@ -248,11 +258,11 @@ func fipCreate(d *schema.ResourceData, meta interface{}, name string) error {
 		}
 	}
 
-	options := &vpcv1.ReserveFloatingIpOptions{
+	createFloatingIPOptions := &vpcv1.CreateFloatingIPOptions{
 		FloatingIPPrototype: floatingIPPrototype,
 	}
 
-	floatingip, response, err := sess.ReserveFloatingIp(options)
+	floatingip, response, err := sess.CreateFloatingIP(createFloatingIPOptions)
 	if err != nil {
 		return fmt.Errorf("[DEBUG] Floating IP err %s\n%s", err, response)
 	}
@@ -265,7 +275,7 @@ func fipCreate(d *schema.ResourceData, meta interface{}, name string) error {
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isFloatingIPTags); ok || v != "" {
 		oldList, newList := d.GetChange(isFloatingIPTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *floatingip.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *floatingip.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on create of vpc Floating IP (%s) tags: %s", d.Id(), err)
@@ -300,10 +310,10 @@ func classicFipGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if err != nil {
 		return err
 	}
-	options := &vpcclassicv1.GetFloatingIpOptions{
+	getFloatingIPOptions := &vpcclassicv1.GetFloatingIPOptions{
 		ID: &id,
 	}
-	floatingip, response, err := sess.GetFloatingIp(options)
+	floatingip, response, err := sess.GetFloatingIP(getFloatingIPOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -320,7 +330,7 @@ func classicFipGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if ok {
 		d.Set(isFloatingIPTarget, target.ID)
 	}
-	tags, err := GetTagsUsingCRN(meta, *floatingip.Crn)
+	tags, err := GetTagsUsingCRN(meta, *floatingip.CRN)
 	if err != nil {
 		log.Printf(
 			"Error on get of vpc Floating IP (%s) tags: %s", d.Id(), err)
@@ -332,7 +342,7 @@ func classicFipGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set(ResourceControllerURL, controller+"/vpc/network/floatingIPs")
 	d.Set(ResourceName, *floatingip.Name)
-	d.Set(ResourceCRN, *floatingip.Crn)
+	d.Set(ResourceCRN, *floatingip.CRN)
 	d.Set(ResourceStatus, *floatingip.Status)
 	return nil
 }
@@ -342,10 +352,10 @@ func fipGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if err != nil {
 		return err
 	}
-	options := &vpcv1.GetFloatingIpOptions{
+	getFloatingIPOptions := &vpcv1.GetFloatingIPOptions{
 		ID: &id,
 	}
-	floatingip, response, err := sess.GetFloatingIp(options)
+	floatingip, response, err := sess.GetFloatingIP(getFloatingIPOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -362,7 +372,7 @@ func fipGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if ok {
 		d.Set(isFloatingIPTarget, target.ID)
 	}
-	tags, err := GetTagsUsingCRN(meta, *floatingip.Crn)
+	tags, err := GetTagsUsingCRN(meta, *floatingip.CRN)
 	if err != nil {
 		log.Printf(
 			"Error on get of vpc Floating IP (%s) tags: %s", d.Id(), err)
@@ -374,7 +384,7 @@ func fipGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/network/floatingIPs")
 	d.Set(ResourceName, *floatingip.Name)
-	d.Set(ResourceCRN, *floatingip.Crn)
+	d.Set(ResourceCRN, *floatingip.CRN)
 	d.Set(ResourceStatus, *floatingip.Status)
 	if floatingip.ResourceGroup != nil {
 		d.Set(ResourceGroupName, *floatingip.ResourceGroup.Name)
@@ -410,22 +420,22 @@ func classicFipUpdate(d *schema.ResourceData, meta interface{}, id string) error
 		return err
 	}
 	if d.HasChange(isFloatingIPTags) {
-		options := &vpcclassicv1.GetFloatingIpOptions{
+		options := &vpcclassicv1.GetFloatingIPOptions{
 			ID: &id,
 		}
-		fip, response, err := sess.GetFloatingIp(options)
+		fip, response, err := sess.GetFloatingIP(options)
 		if err != nil {
 			return fmt.Errorf("Error getting Floating IP: %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isFloatingIPTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *fip.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *fip.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on update of vpc Floating IP (%s) tags: %s", id, err)
 		}
 	}
 	hasChanged := false
-	options := &vpcclassicv1.UpdateFloatingIpOptions{
+	options := &vpcclassicv1.UpdateFloatingIPOptions{
 		ID: &id,
 	}
 	if d.HasChange(isFloatingIPName) {
@@ -442,7 +452,7 @@ func classicFipUpdate(d *schema.ResourceData, meta interface{}, id string) error
 		hasChanged = true
 	}
 	if hasChanged {
-		_, response, err := sess.UpdateFloatingIp(options)
+		_, response, err := sess.UpdateFloatingIP(options)
 		if err != nil {
 			return fmt.Errorf("Error updating vpc Floating IP: %s\n%s", err, response)
 		}
@@ -456,22 +466,22 @@ func fipUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 		return err
 	}
 	if d.HasChange(isFloatingIPTags) {
-		options := &vpcv1.GetFloatingIpOptions{
+		options := &vpcv1.GetFloatingIPOptions{
 			ID: &id,
 		}
-		fip, response, err := sess.GetFloatingIp(options)
+		fip, response, err := sess.GetFloatingIP(options)
 		if err != nil {
 			return fmt.Errorf("Error getting Floating IP: %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isFloatingIPTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *fip.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *fip.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on update of vpc Floating IP (%s) tags: %s", id, err)
 		}
 	}
 	hasChanged := false
-	options := &vpcv1.UpdateFloatingIpOptions{
+	options := &vpcv1.UpdateFloatingIPOptions{
 		ID: &id,
 	}
 	if d.HasChange(isFloatingIPName) {
@@ -488,7 +498,7 @@ func fipUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 		hasChanged = true
 	}
 	if hasChanged {
-		_, response, err := sess.UpdateFloatingIp(options)
+		_, response, err := sess.UpdateFloatingIP(options)
 		if err != nil {
 			return fmt.Errorf("Error updating vpc Floating IP: %s\n%s", err, response)
 		}
@@ -521,10 +531,10 @@ func classicFipDelete(d *schema.ResourceData, meta interface{}, id string) error
 	if err != nil {
 		return err
 	}
-	getFloatingIpOptions := &vpcclassicv1.GetFloatingIpOptions{
+	getFloatingIpOptions := &vpcclassicv1.GetFloatingIPOptions{
 		ID: &id,
 	}
-	_, response, err := sess.GetFloatingIp(getFloatingIpOptions)
+	_, response, err := sess.GetFloatingIP(getFloatingIpOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			return nil
@@ -534,10 +544,10 @@ func classicFipDelete(d *schema.ResourceData, meta interface{}, id string) error
 
 	}
 
-	options := &vpcclassicv1.ReleaseFloatingIpOptions{
+	options := &vpcclassicv1.DeleteFloatingIPOptions{
 		ID: &id,
 	}
-	response, err = sess.ReleaseFloatingIp(options)
+	response, err = sess.DeleteFloatingIP(options)
 	if err != nil {
 		return fmt.Errorf("Error Deleting Floating IP : %s\n%s", err, response)
 	}
@@ -554,10 +564,10 @@ func fipDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	if err != nil {
 		return err
 	}
-	getFloatingIpOptions := &vpcv1.GetFloatingIpOptions{
+	getFloatingIpOptions := &vpcv1.GetFloatingIPOptions{
 		ID: &id,
 	}
-	_, response, err := sess.GetFloatingIp(getFloatingIpOptions)
+	_, response, err := sess.GetFloatingIP(getFloatingIpOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			return nil
@@ -566,10 +576,10 @@ func fipDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		return fmt.Errorf("Error Getting Floating IP (%s): %s\n%s", id, err, response)
 	}
 
-	options := &vpcv1.ReleaseFloatingIpOptions{
+	options := &vpcv1.DeleteFloatingIPOptions{
 		ID: &id,
 	}
-	response, err = sess.ReleaseFloatingIp(options)
+	response, err = sess.DeleteFloatingIP(options)
 	if err != nil {
 		return fmt.Errorf("Error Deleting Floating IP : %s\n%s", err, response)
 	}
@@ -602,10 +612,10 @@ func classicFipExists(d *schema.ResourceData, meta interface{}, id string) (bool
 	if err != nil {
 		return false, err
 	}
-	getFloatingIpOptions := &vpcclassicv1.GetFloatingIpOptions{
+	getFloatingIpOptions := &vpcclassicv1.GetFloatingIPOptions{
 		ID: &id,
 	}
-	_, response, err := sess.GetFloatingIp(getFloatingIpOptions)
+	_, response, err := sess.GetFloatingIP(getFloatingIpOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
@@ -620,10 +630,10 @@ func fipExists(d *schema.ResourceData, meta interface{}, id string) (bool, error
 	if err != nil {
 		return false, err
 	}
-	getFloatingIpOptions := &vpcv1.GetFloatingIpOptions{
+	getFloatingIpOptions := &vpcv1.GetFloatingIPOptions{
 		ID: &id,
 	}
-	_, response, err := sess.GetFloatingIp(getFloatingIpOptions)
+	_, response, err := sess.GetFloatingIP(getFloatingIpOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
@@ -651,10 +661,10 @@ func isWaitForClassicFloatingIPDeleted(fip *vpcclassicv1.VpcClassicV1, id string
 func isClassicFloatingIPDeleteRefreshFunc(fip *vpcclassicv1.VpcClassicV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] delete function here")
-		getfipoptions := &vpcclassicv1.GetFloatingIpOptions{
+		getfipoptions := &vpcclassicv1.GetFloatingIPOptions{
 			ID: &id,
 		}
-		FloatingIP, response, err := fip.GetFloatingIp(getfipoptions)
+		FloatingIP, response, err := fip.GetFloatingIP(getfipoptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
 				return FloatingIP, isFloatingIPDeleted, nil
@@ -683,10 +693,10 @@ func isWaitForFloatingIPDeleted(fip *vpcv1.VpcV1, id string, timeout time.Durati
 func isFloatingIPDeleteRefreshFunc(fip *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] delete function here")
-		getfipoptions := &vpcv1.GetFloatingIpOptions{
+		getfipoptions := &vpcv1.GetFloatingIPOptions{
 			ID: &id,
 		}
-		FloatingIP, response, err := fip.GetFloatingIp(getfipoptions)
+		FloatingIP, response, err := fip.GetFloatingIP(getfipoptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
 				return FloatingIP, isFloatingIPDeleted, nil
@@ -714,10 +724,10 @@ func isWaitForClassicInstanceFloatingIP(floatingipC *vpcclassicv1.VpcClassicV1, 
 
 func isClassicInstanceFloatingIPRefreshFunc(floatingipC *vpcclassicv1.VpcClassicV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		getfipoptions := &vpcclassicv1.GetFloatingIpOptions{
+		getfipoptions := &vpcclassicv1.GetFloatingIPOptions{
 			ID: &id,
 		}
-		instance, response, err := floatingipC.GetFloatingIp(getfipoptions)
+		instance, response, err := floatingipC.GetFloatingIP(getfipoptions)
 		if err != nil {
 			return nil, "", fmt.Errorf("Error Getting Floating IP for the instance: %s\n%s", err, response)
 		}
@@ -747,10 +757,10 @@ func isWaitForInstanceFloatingIP(floatingipC *vpcv1.VpcV1, id string, d *schema.
 
 func isInstanceFloatingIPRefreshFunc(floatingipC *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		getfipoptions := &vpcv1.GetFloatingIpOptions{
+		getfipoptions := &vpcv1.GetFloatingIPOptions{
 			ID: &id,
 		}
-		instance, response, err := floatingipC.GetFloatingIp(getfipoptions)
+		instance, response, err := floatingipC.GetFloatingIP(getfipoptions)
 		if err != nil {
 			return nil, "", fmt.Errorf("Error Getting Floating IP for the instance: %s\n%s", err, response)
 		}

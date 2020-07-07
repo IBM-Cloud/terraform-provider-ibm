@@ -16,6 +16,8 @@ import (
 	"github.com/IBM/go-sdk-core/v3/core"
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
+	vpcclassic "github.com/IBM/vpc-go-sdk/vpcclassicv1"
+	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/incubator-openwhisk-client-go/whisk"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/go-openapi/strfmt"
@@ -23,8 +25,6 @@ import (
 	issession "github.ibm.com/Bluemix/riaas-go-client/session"
 	dl "github.ibm.com/ibmcloud/networking-go-sdk/directlinkapisv1"
 	tg "github.ibm.com/ibmcloud/networking-go-sdk/transitgatewayapisv1"
-	vpcclassic "github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
-	vpc "github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
@@ -61,9 +61,6 @@ const RetryAPIDelay = 5 * time.Second
 
 //BluemixRegion ...
 var BluemixRegion string
-
-//VPCAPIVersion ...
-var VPCAPIVersion = "2020-03-24"
 
 var (
 	errEmptySoftLayerCredentials = errors.New("iaas_classic_username and iaas_classic_api_key must be provided. Please see the documentation on how to configure them")
@@ -178,7 +175,7 @@ type ClientSession interface {
 	PrivateDnsClientSession() (*dns.DnsSvcsV1, error)
 	CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error)
 	DirectlinkV1API() (*dl.DirectLinkApisV1, error)
-	TransitGatewayV1API() (*tg.TransitGatewayApIsV1, error)
+	TransitGatewayV1API() (*tg.TransitGatewayApisV1, error)
 }
 
 type clientSession struct {
@@ -283,7 +280,7 @@ type clientSession struct {
 	cosConfigErr error
 	cosConfigAPI *cosconfig.ResourceConfigurationV1
 
-	transitgatewayAPI *tg.TransitGatewayApIsV1
+	transitgatewayAPI *tg.TransitGatewayApisV1
 	transitgatewayErr error
 }
 
@@ -442,7 +439,7 @@ func (sess clientSession) CosConfigV1API() (*cosconfig.ResourceConfigurationV1, 
 	return sess.cosConfigAPI, sess.cosConfigErr
 }
 
-func (sess clientSession) TransitGatewayV1API() (*tg.TransitGatewayApIsV1, error) {
+func (sess clientSession) TransitGatewayV1API() (*tg.TransitGatewayApisV1, error) {
 	return sess.transitgatewayAPI, sess.transitgatewayErr
 }
 
@@ -605,7 +602,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 	vpcclassicurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", c.Region)
 	vpcclassicoptions := &vpcclassic.VpcClassicV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_IS_API_ENDPOINT"}, vpcclassicurl),
-		Version:       &VPCAPIVersion,
 		Authenticator: authenticator,
 	}
 	vpcclassicclient, err := vpcclassic.NewVpcClassicV1(vpcclassicoptions)
@@ -617,7 +613,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 	vpcurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", c.Region)
 	vpcoptions := &vpc.VpcV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_IS_NG_API_ENDPOINT"}, vpcurl),
-		Version:       &VPCAPIVersion,
 		Authenticator: authenticator,
 	}
 	vpcclient, err := vpc.NewVpcV1(vpcoptions)
@@ -789,7 +784,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.directlinkErr = fmt.Errorf("Error occured while configuring Direct Link Service: %s", session.directlinkErr)
 	}
 
-	transitgatewayOptions := &tg.TransitGatewayApIsV1Options{
+	transitgatewayOptions := &tg.TransitGatewayApisV1Options{
 		URL: envFallBack([]string{"IBMCLOUD_TG_API_ENDPOINT"}, "https://transit.cloud.ibm.com/v1"),
 		Authenticator: &core.BearerTokenAuthenticator{
 			BearerToken: bluemixToken,
@@ -797,7 +792,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		Version: CreateVersionDateTG(),
 	}
 
-	session.transitgatewayAPI, session.transitgatewayErr = tg.NewTransitGatewayApIsV1(transitgatewayOptions)
+	session.transitgatewayAPI, session.transitgatewayErr = tg.NewTransitGatewayApisV1(transitgatewayOptions)
 	if session.transitgatewayErr != nil {
 		session.transitgatewayErr = fmt.Errorf("Error occured while configuring Transit Gateway Service: %s", session.transitgatewayErr)
 	}

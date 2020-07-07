@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIBMISVPNGatewayConnection_basic(t *testing.T) {
@@ -67,11 +67,11 @@ func testAccCheckIBMISVPNGatewayConnectionDestroy(s *terraform.State) error {
 			gID := parts[0]
 			gConnID := parts[1]
 
-			getvpngcoptions := &vpcclassicv1.GetVpnGatewayConnectionOptions{
-				VpnGatewayID: &gID,
+			getvpngcoptions := &vpcclassicv1.GetVPNGatewayConnectionOptions{
+				VPNGatewayID: &gID,
 				ID:           &gConnID,
 			}
-			_, _, err1 := sess.GetVpnGatewayConnection(getvpngcoptions)
+			_, _, err1 := sess.GetVPNGatewayConnection(getvpngcoptions)
 
 			if err1 == nil {
 				return fmt.Errorf("VPNGatewayConnection still exists: %s", rs.Primary.ID)
@@ -91,11 +91,11 @@ func testAccCheckIBMISVPNGatewayConnectionDestroy(s *terraform.State) error {
 			gID := parts[0]
 			gConnID := parts[1]
 
-			getvpngcoptions := &vpcv1.GetVpnGatewayConnectionOptions{
-				VpnGatewayID: &gID,
+			getvpngcoptions := &vpcv1.GetVPNGatewayConnectionOptions{
+				VPNGatewayID: &gID,
 				ID:           &gConnID,
 			}
-			_, _, err1 := sess.GetVpnGatewayConnection(getvpngcoptions)
+			_, _, err1 := sess.GetVPNGatewayConnection(getvpngcoptions)
 
 			if err1 == nil {
 				return fmt.Errorf("VPNGatewayConnection still exists: %s", rs.Primary.ID)
@@ -131,22 +131,22 @@ func testAccCheckIBMISVPNGatewayConnectionExists(n, vpngcID string) resource.Tes
 
 		if userDetails.generation == 1 {
 			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-			getvpngcoptions := &vpcclassicv1.GetVpnGatewayConnectionOptions{
-				VpnGatewayID: &gID,
+			getvpngcoptions := &vpcclassicv1.GetVPNGatewayConnectionOptions{
+				VPNGatewayID: &gID,
 				ID:           &gConnID,
 			}
-			foundvpngc, _, err := sess.GetVpnGatewayConnection(getvpngcoptions)
+			foundvpngc, _, err := sess.GetVPNGatewayConnection(getvpngcoptions)
 			if err != nil {
 				return err
 			}
 			vpngcID = *foundvpngc.ID
 		} else {
 			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-			getvpngcoptions := &vpcv1.GetVpnGatewayConnectionOptions{
-				VpnGatewayID: &gID,
+			getvpngcoptions := &vpcv1.GetVPNGatewayConnectionOptions{
+				VPNGatewayID: &gID,
 				ID:           &gConnID,
 			}
-			foundvpngc, _, err := sess.GetVpnGatewayConnection(getvpngcoptions)
+			foundvpngc, _, err := sess.GetVPNGatewayConnection(getvpngcoptions)
 			if err != nil {
 				return err
 			}

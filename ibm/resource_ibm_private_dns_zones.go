@@ -2,7 +2,6 @@ package ibm
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -117,8 +116,7 @@ func resourceIBMPrivateDnsZoneCreate(d *schema.ResourceData, meta interface{}) e
 	createZoneOptions.SetLabel(zoneLabel)
 	response, detail, err := sess.CreateDnszone(createZoneOptions)
 	if err != nil {
-		log.Printf("Error creating dns zone:%s", detail)
-		return err
+		return fmt.Errorf("Error creating pdns zone:%s\n%s", err, detail)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *response.InstanceID, *response.ID))
@@ -137,8 +135,7 @@ func resourceIBMPrivateDnsZoneRead(d *schema.ResourceData, meta interface{}) err
 	getZoneOptions := sess.NewGetDnszoneOptions(id_set[0], id_set[1])
 	response, detail, err := sess.GetDnszone(getZoneOptions)
 	if err != nil {
-		log.Printf("Error reading dns zone:%s", detail)
-		return err
+		return fmt.Errorf("Error fetching pdns zone:%s\n%s", err, detail)
 	}
 
 	d.Set("id", response.ID)
@@ -164,9 +161,9 @@ func resourceIBMPrivateDnsZoneUpdate(d *schema.ResourceData, meta interface{}) e
 
 	// Check DNS zone is present?
 	getZoneOptions := sess.NewGetDnszoneOptions(id_set[0], id_set[1])
-	_, _, err = sess.GetDnszone(getZoneOptions)
+	_, response, err := sess.GetDnszone(getZoneOptions)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error fetching pdns zone:%s\n%s", err, response)
 	}
 
 	// Update DNS zone if attributes has any change
@@ -181,8 +178,7 @@ func resourceIBMPrivateDnsZoneUpdate(d *schema.ResourceData, meta interface{}) e
 		_, detail, err := sess.UpdateDnszone(updateZoneOptions)
 
 		if err != nil {
-			log.Printf("Error updating dns zone:%s", detail)
-			return err
+			return fmt.Errorf("Error updating pdns zone:%s\n%s", err, detail)
 		}
 	}
 
@@ -200,8 +196,7 @@ func resourceIBMPrivateDnsZoneDelete(d *schema.ResourceData, meta interface{}) e
 	deleteZoneOptions := sess.NewDeleteDnszoneOptions(id_set[0], id_set[1])
 	response, err := sess.DeleteDnszone(deleteZoneOptions)
 	if err != nil {
-		log.Printf("Error deleting dns zone:%s", response)
-		return err
+		return fmt.Errorf("Error deleting pdns zone:%s\n%s", err, response)
 	}
 
 	d.SetId("")

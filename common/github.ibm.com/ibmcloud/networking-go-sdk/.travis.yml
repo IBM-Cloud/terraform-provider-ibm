@@ -14,7 +14,8 @@ before_install:
 - sudo apt-get install python
 - nvm install 12
 - npm install -g npm@6.x
-#- '[ "${TRAVIS_PULL_REQUEST}" == "false" ] && openssl aes-256-cbc -K $my_key -iv $my_iv -in myservice.env.enc -out myservice.env -d || true'
+- '[ "${TRAVIS_PULL_REQUEST}" == "false" ] && openssl aes-256-cbc -K $encrypted_6de0fb2f002f_key -iv $encrypted_6de0fb2f002f_iv -in directlink.env.enc -out directlink.env -d || true'
+- '[ "${TRAVIS_PULL_REQUEST}" == "false" ] && openssl aes-256-cbc -K $encrypted_3d8a3eb98382_key -iv $encrypted_3d8a3eb98382_iv -in transit.env.enc -out transit.env -d || true'
 
 install:
 - curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $(go env GOPATH)/bin v1.21.0

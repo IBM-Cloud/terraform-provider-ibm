@@ -5,10 +5,10 @@ import (
 	"log"
 	"time"
 
+	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -226,7 +226,7 @@ func classicSubnetCreate(d *schema.ResourceData, meta interface{}, name, vpc, zo
 	}
 	subnetTemplate := &vpcclassicv1.SubnetPrototype{
 		Name: &name,
-		Vpc: &vpcclassicv1.VPCIdentity{
+		VPC: &vpcclassicv1.VPCIdentity{
 			ID: &vpc,
 		},
 		Zone: &vpcclassicv1.ZoneIdentity{
@@ -234,7 +234,7 @@ func classicSubnetCreate(d *schema.ResourceData, meta interface{}, name, vpc, zo
 		},
 	}
 	if ipv4cidr != "" {
-		subnetTemplate.Ipv4CidrBlock = &ipv4cidr
+		subnetTemplate.Ipv4CIDRBlock = &ipv4cidr
 	}
 	if ipv4addrcount64 != int64(0) {
 		subnetTemplate.TotalIpv4AddressCount = &ipv4addrcount64
@@ -246,7 +246,7 @@ func classicSubnetCreate(d *schema.ResourceData, meta interface{}, name, vpc, zo
 	}
 
 	if acl != "" {
-		subnetTemplate.NetworkAcl = &vpcclassicv1.NetworkACLIdentity{
+		subnetTemplate.NetworkACL = &vpcclassicv1.NetworkACLIdentity{
 			ID: &acl,
 		}
 	}
@@ -275,7 +275,7 @@ func subnetCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone, ipv
 	}
 	subnetTemplate := &vpcv1.SubnetPrototype{
 		Name: &name,
-		Vpc: &vpcv1.VPCIdentity{
+		VPC: &vpcv1.VPCIdentity{
 			ID: &vpc,
 		},
 		Zone: &vpcv1.ZoneIdentity{
@@ -283,7 +283,7 @@ func subnetCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone, ipv
 		},
 	}
 	if ipv4cidr != "" {
-		subnetTemplate.Ipv4CidrBlock = &ipv4cidr
+		subnetTemplate.Ipv4CIDRBlock = &ipv4cidr
 	}
 	if ipv4addrcount64 != int64(0) {
 		subnetTemplate.TotalIpv4AddressCount = &ipv4addrcount64
@@ -295,7 +295,7 @@ func subnetCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone, ipv
 	}
 
 	if acl != "" {
-		subnetTemplate.NetworkAcl = &vpcv1.NetworkACLIdentity{
+		subnetTemplate.NetworkACL = &vpcv1.NetworkACLIdentity{
 			ID: &acl,
 		}
 	}
@@ -428,12 +428,12 @@ func classicSubnetGet(d *schema.ResourceData, meta interface{}, id string) error
 	d.Set("id", *subnet.ID)
 	d.Set(isSubnetName, *subnet.Name)
 	// d.Set(isSubnetIPVersion, *subnet..IPVersion)
-	d.Set(isSubnetIpv4CidrBlock, *subnet.Ipv4CidrBlock)
+	d.Set(isSubnetIpv4CidrBlock, *subnet.Ipv4CIDRBlock)
 	// d.Set(isSubnetIpv6CidrBlock, *subnet.IPV6CidrBlock)
 	d.Set(isSubnetAvailableIpv4AddressCount, *subnet.AvailableIpv4AddressCount)
 	d.Set(isSubnetTotalIpv4AddressCount, *subnet.TotalIpv4AddressCount)
-	if subnet.NetworkAcl != nil {
-		d.Set(isSubnetNetworkACL, *subnet.NetworkAcl.ID)
+	if subnet.NetworkACL != nil {
+		d.Set(isSubnetNetworkACL, *subnet.NetworkACL.ID)
 	}
 	if subnet.PublicGateway != nil {
 		d.Set(isSubnetPublicGateway, *subnet.PublicGateway.ID)
@@ -442,7 +442,7 @@ func classicSubnetGet(d *schema.ResourceData, meta interface{}, id string) error
 	}
 	d.Set(isSubnetStatus, *subnet.Status)
 	d.Set(isSubnetZone, *subnet.Zone.Name)
-	d.Set(isSubnetVPC, *subnet.Vpc.ID)
+	d.Set(isSubnetVPC, *subnet.VPC.ID)
 
 	controller, err := getBaseController(meta)
 	if err != nil {
@@ -450,7 +450,7 @@ func classicSubnetGet(d *schema.ResourceData, meta interface{}, id string) error
 	}
 	d.Set(ResourceControllerURL, controller+"/vpc/network/subnets")
 	d.Set(ResourceName, *subnet.Name)
-	d.Set(ResourceCRN, *subnet.Crn)
+	d.Set(ResourceCRN, *subnet.CRN)
 	d.Set(ResourceStatus, *subnet.Status)
 	return nil
 }
@@ -474,12 +474,12 @@ func subnetGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set("id", *subnet.ID)
 	d.Set(isSubnetName, *subnet.Name)
 	// d.Set(isSubnetIPVersion, *subnet..IPVersion)
-	d.Set(isSubnetIpv4CidrBlock, *subnet.Ipv4CidrBlock)
+	d.Set(isSubnetIpv4CidrBlock, *subnet.Ipv4CIDRBlock)
 	// d.Set(isSubnetIpv6CidrBlock, *subnet.IPV6CidrBlock)
 	d.Set(isSubnetAvailableIpv4AddressCount, *subnet.AvailableIpv4AddressCount)
 	d.Set(isSubnetTotalIpv4AddressCount, *subnet.TotalIpv4AddressCount)
-	if subnet.NetworkAcl != nil {
-		d.Set(isSubnetNetworkACL, *subnet.NetworkAcl.ID)
+	if subnet.NetworkACL != nil {
+		d.Set(isSubnetNetworkACL, *subnet.NetworkACL.ID)
 	}
 	if subnet.PublicGateway != nil {
 		d.Set(isSubnetPublicGateway, *subnet.PublicGateway.ID)
@@ -488,7 +488,7 @@ func subnetGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set(isSubnetStatus, *subnet.Status)
 	d.Set(isSubnetZone, *subnet.Zone.Name)
-	d.Set(isSubnetVPC, *subnet.Vpc.ID)
+	d.Set(isSubnetVPC, *subnet.VPC.ID)
 
 	controller, err := getBaseController(meta)
 	if err != nil {
@@ -496,7 +496,7 @@ func subnetGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/network/subnets")
 	d.Set(ResourceName, *subnet.Name)
-	d.Set(ResourceCRN, *subnet.Crn)
+	d.Set(ResourceCRN, *subnet.CRN)
 	d.Set(ResourceStatus, *subnet.Status)
 	if subnet.ResourceGroup != nil {
 		d.Set(isSubnetResourceGroup, *subnet.ResourceGroup.ID)
@@ -543,7 +543,7 @@ func classicSubnetUpdate(d *schema.ResourceData, meta interface{}, id string) er
 	}
 	if d.HasChange(isSubnetNetworkACL) {
 		acl = d.Get(isSubnetNetworkACL).(string)
-		updateSubnetOptions.NetworkAcl = &vpcclassicv1.NetworkACLIdentity{
+		updateSubnetOptions.NetworkACL = &vpcclassicv1.NetworkACLIdentity{
 			ID: &acl,
 		}
 		hasChanged = true
@@ -551,21 +551,32 @@ func classicSubnetUpdate(d *schema.ResourceData, meta interface{}, id string) er
 	if d.HasChange(isSubnetPublicGateway) {
 		gw := d.Get(isSubnetPublicGateway).(string)
 		if gw == "" {
-			deleteSubnetPublicGatewayBindingOptions := &vpcclassicv1.DeleteSubnetPublicGatewayBindingOptions{
+			unsetSubnetPublicGatewayOptions := &vpcclassicv1.UnsetSubnetPublicGatewayOptions{
 				ID: &id,
 			}
-			response, err := sess.DeleteSubnetPublicGatewayBinding(deleteSubnetPublicGatewayBindingOptions)
+			response, err := sess.UnsetSubnetPublicGateway(unsetSubnetPublicGatewayOptions)
 			if err != nil {
-				return fmt.Errorf("Error Detaching public gateway attached to the subnet : %s\n%s", err, response)
+				return fmt.Errorf("Error Detaching the public gateway attached to the subnet : %s\n%s", err, response)
 			}
-			_, err = isWaitForClassicSubnetAvailable(sess, d.Id(), d.Timeout(schema.TimeoutDelete))
+			_, err = isWaitForClassicSubnetAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
 				return err
 			}
-			updateSubnetOptions.PublicGateway = &vpcclassicv1.PublicGatewayIdentity{
-				ID: &gw,
+		} else {
+			setSubnetPublicGatewayOptions := &vpcclassicv1.SetSubnetPublicGatewayOptions{
+				ID: &id,
+				PublicGatewayIdentity: &vpcclassicv1.PublicGatewayIdentity{
+					ID: &gw,
+				},
 			}
-			hasChanged = true
+			_, response, err := sess.SetSubnetPublicGateway(setSubnetPublicGatewayOptions)
+			if err != nil {
+				return fmt.Errorf("Error Attaching public gateway to the subnet : %s\n%s", err, response)
+			}
+			_, err = isWaitForClassicSubnetAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return err
+			}
 		}
 	}
 	if hasChanged {
@@ -594,7 +605,7 @@ func subnetUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	if d.HasChange(isSubnetNetworkACL) {
 		acl = d.Get(isSubnetNetworkACL).(string)
-		updateSubnetOptions.NetworkAcl = &vpcv1.NetworkACLIdentity{
+		updateSubnetOptions.NetworkACL = &vpcv1.NetworkACLIdentity{
 			ID: &acl,
 		}
 		hasChanged = true
@@ -602,21 +613,32 @@ func subnetUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 	if d.HasChange(isSubnetPublicGateway) {
 		gw := d.Get(isSubnetPublicGateway).(string)
 		if gw == "" {
-			deleteSubnetPublicGatewayBindingOptions := &vpcv1.DeleteSubnetPublicGatewayBindingOptions{
+			unsetSubnetPublicGatewayOptions := &vpcv1.UnsetSubnetPublicGatewayOptions{
 				ID: &id,
 			}
-			response, err := sess.DeleteSubnetPublicGatewayBinding(deleteSubnetPublicGatewayBindingOptions)
+			response, err := sess.UnsetSubnetPublicGateway(unsetSubnetPublicGatewayOptions)
 			if err != nil {
-				return fmt.Errorf("Error Detaching public gateway attached to the subnet : %s\n%s", err, response)
+				return fmt.Errorf("Error Detaching the public gateway attached to the subnet : %s\n%s", err, response)
 			}
-			_, err = isWaitForSubnetAvailable(sess, d.Id(), d.Timeout(schema.TimeoutDelete))
+			_, err = isWaitForSubnetAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
 				return err
 			}
-			updateSubnetOptions.PublicGateway = &vpcv1.PublicGatewayIdentity{
-				ID: &gw,
+		} else {
+			setSubnetPublicGatewayOptions := &vpcv1.SetSubnetPublicGatewayOptions{
+				ID: &id,
+				PublicGatewayIdentity: &vpcv1.PublicGatewayIdentity{
+					ID: &gw,
+				},
 			}
-			hasChanged = true
+			_, response, err := sess.SetSubnetPublicGateway(setSubnetPublicGatewayOptions)
+			if err != nil {
+				return fmt.Errorf("Error Attaching public gateway to the subnet : %s\n%s", err, response)
+			}
+			_, err = isWaitForSubnetAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return err
+			}
 		}
 	}
 	if hasChanged {
@@ -667,10 +689,10 @@ func classicSubnetDelete(d *schema.ResourceData, meta interface{}, id string) er
 		return fmt.Errorf("Error Getting Subnet (%s): %s\n%s", id, err, response)
 	}
 	if subnet.PublicGateway != nil {
-		deleteSubnetPublicGatewayBindingOptions := &vpcclassicv1.DeleteSubnetPublicGatewayBindingOptions{
+		unsetSubnetPublicGatewayOptions := &vpcclassicv1.UnsetSubnetPublicGatewayOptions{
 			ID: &id,
 		}
-		_, err = sess.DeleteSubnetPublicGatewayBinding(deleteSubnetPublicGatewayBindingOptions)
+		_, err = sess.UnsetSubnetPublicGateway(unsetSubnetPublicGatewayOptions)
 		if err != nil {
 			return err
 		}
@@ -710,10 +732,10 @@ func subnetDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		return fmt.Errorf("Error Getting Subnet (%s): %s\n%s", id, err, response)
 	}
 	if subnet.PublicGateway != nil {
-		deleteSubnetPublicGatewayBindingOptions := &vpcv1.DeleteSubnetPublicGatewayBindingOptions{
+		unsetSubnetPublicGatewayOptions := &vpcv1.UnsetSubnetPublicGatewayOptions{
 			ID: &id,
 		}
-		_, err = sess.DeleteSubnetPublicGatewayBinding(deleteSubnetPublicGatewayBindingOptions)
+		_, err = sess.UnsetSubnetPublicGateway(unsetSubnetPublicGatewayOptions)
 		if err != nil {
 			return err
 		}

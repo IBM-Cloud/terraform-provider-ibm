@@ -6,11 +6,11 @@ import (
 	"os"
 	"time"
 
+	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 const (
@@ -220,7 +220,7 @@ func classicImgCreate(d *schema.ResourceData, meta interface{}, href, name, oper
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isImageTags); ok || v != "" {
 		oldList, newList := d.GetChange(isImageTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *image.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *image.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource vpc image (%s) tags: %s", d.Id(), err)
@@ -266,7 +266,7 @@ func imgCreate(d *schema.ResourceData, meta interface{}, href, name, operatingSy
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isImageTags); ok || v != "" {
 		oldList, newList := d.GetChange(isImageTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *image.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *image.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource vpc image (%s) tags: %s", d.Id(), err)
@@ -382,7 +382,7 @@ func classicImgUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 			return fmt.Errorf("Error getting Image IP: %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isImageTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *image.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *image.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource vpc Image (%s) tags: %s", id, err)
@@ -415,7 +415,7 @@ func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 			return fmt.Errorf("Error getting Image IP: %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isImageTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *image.Crn)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *image.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource vpc Image (%s) tags: %s", id, err)
@@ -481,7 +481,7 @@ func classicImgGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isImageHref, *image.Href)
 	d.Set(isImageStatus, *image.Status)
 	d.Set(isImageVisibility, *image.Visibility)
-	tags, err := GetTagsUsingCRN(meta, *image.Crn)
+	tags, err := GetTagsUsingCRN(meta, *image.CRN)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc Image (%s) tags: %s", d.Id(), err)
@@ -494,7 +494,7 @@ func classicImgGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(ResourceControllerURL, controller+"/vpc/compute/image")
 	d.Set(ResourceName, *image.Name)
 	d.Set(ResourceStatus, *image.Status)
-	d.Set(ResourceCRN, *image.Crn)
+	d.Set(ResourceCRN, *image.CRN)
 	if image.ResourceGroup != nil {
 		d.Set(isImageResourceGroup, *image.ResourceGroup.ID)
 		rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
@@ -536,7 +536,7 @@ func imgGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isImageHref, *image.Href)
 	d.Set(isImageStatus, *image.Status)
 	d.Set(isImageVisibility, *image.Visibility)
-	tags, err := GetTagsUsingCRN(meta, *image.Crn)
+	tags, err := GetTagsUsingCRN(meta, *image.CRN)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc Image (%s) tags: %s", d.Id(), err)
@@ -549,7 +549,7 @@ func imgGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/compute/image")
 	d.Set(ResourceName, *image.Name)
 	d.Set(ResourceStatus, *image.Status)
-	d.Set(ResourceCRN, *image.Crn)
+	d.Set(ResourceCRN, *image.CRN)
 	if image.ResourceGroup != nil {
 		d.Set(isImageResourceGroup, *image.ResourceGroup.ID)
 	}
