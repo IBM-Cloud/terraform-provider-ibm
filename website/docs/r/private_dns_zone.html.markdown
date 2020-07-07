@@ -16,7 +16,7 @@ Provides a private dns zone resource. This allows dns zones to be created, and u
 
 resource "ibm_dns_zone" "pdns-1-zone" {
     name = "test.com"
-    instance_id = p-dns-instance-id
+    instance_id = p-dns-instance-guid
     description = "testdescription"
     label = "testlabel"
 }
@@ -29,7 +29,7 @@ resource "ibm_dns_zone" "pdns-1-zone" {
 The following arguments are supported:
 
 * `name` - (Required, string) The name of the DNS zone to be created.
-* `instance_id` - (Required, string) The id of the private DNS on which zone has to be created. 
+* `instance_id` - (Required, string) The guid of the private DNS on which zone has to be created. 
 * `description` - (Optional, string) The text describing the purpose of a DNS zone.
 * `label` -  (Optional, string) The label of a DNS zone.
 
@@ -37,7 +37,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - The unique identifier of the private DNS zone. The id is composed of <instance_id>/<zone_id>.
+* `id` - The unique identifier of the private DNS zone. The id is composed of <instance_guid>/<zone_id>.
 * `zone_id` - The unique identifier of the private DNS zone.
 * `created_on` - The time (Created On) of the DNS zone. 
 * `modified_on` - The time (Modified On) of the DNS zone.
