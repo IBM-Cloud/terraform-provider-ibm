@@ -52,6 +52,13 @@ data "ibm_dl_ports" "test_ds_dl_ports" {
 data "ibm_dl_port" "test_ds_dl_port" {
   port_id = "2f41cf65-e72a-4522-9526-e156e4ca02b5"
 }
+
 data "ibm_dl_locations" "test_dl_locations"{
 		offering_type = "dedicated"
 }
+
+data "ibm_dl_routers" "test_dl_routers" {
+  offering_type = "dedicated"
+  location_name = "dal09"
+}
+
