@@ -117,7 +117,7 @@ func resourceIBMPIVolumeAttachCreate(d *schema.ResourceData, meta interface{}) e
 
 	d.SetId(*volinfo.VolumeID)
 	if err != nil {
-		log.Printf("[DEBUG]  err %s", isErrorToString(err))
+		log.Printf("[DEBUG]  err %s", err)
 		return err
 	}
 

@@ -112,7 +112,7 @@ func resourceIBMPINetworkCreate(d *schema.ResourceData, meta interface{}) error 
 
 	d.SetId(fmt.Sprintf("%s/%s", powerinstanceid, IBMPINetworkID))
 	if err != nil {
-		log.Printf("[DEBUG]  err %s", isErrorToString(err))
+		log.Printf("[DEBUG]  err %s", err)
 		return err
 	}
 	_, err = isWaitForIBMPINetworkAvailable(client, IBMPINetworkID, d.Timeout(schema.TimeoutCreate), powerinstanceid)

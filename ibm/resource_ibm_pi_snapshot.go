@@ -2,10 +2,11 @@ package ibm
 
 import (
 	"fmt"
-	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_p_vm_instances"
-	"github.com/IBM-Cloud/power-go-client/power/models"
 	"log"
 	"time"
+
+	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_p_vm_instances"
+	"github.com/IBM-Cloud/power-go-client/power/models"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -122,13 +123,13 @@ func resourceIBMPISnapshotCreate(d *schema.ResourceData, meta interface{}) error
 	}, instanceid, powerinstanceid, createTimeOut)
 
 	if err != nil {
-		log.Printf("[DEBUG]  err %s", isErrorToString(err))
+		log.Printf("[DEBUG]  err %s", err)
 		return err
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", powerinstanceid, *snapshotResponse.SnapshotID))
 	if err != nil {
-		log.Printf("[DEBUG]  err %s", isErrorToString(err))
+		log.Printf("[DEBUG]  err %s", err)
 		return err
 	}
 
