@@ -19,26 +19,25 @@ package transitgatewayapisv1_test
 import (
 	"bytes"
 	"fmt"
+	"github.com/IBM/go-sdk-core/v4/core"
+	"github.com/go-openapi/strfmt"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"github.ibm.com/ibmcloud/networking-go-sdk/transitgatewayapisv1"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"time"
-
-	"github.com/IBM/go-sdk-core/v4/core"
-	"github.com/go-openapi/strfmt"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"github.ibm.com/ibmcloud/networking-go-sdk/transitgatewayapisv1"
 )
 
-var _ = Describe(`TransitGatewayApIsV1`, func() {
+var _ = Describe(`TransitGatewayApisV1`, func() {
 	var testServer *httptest.Server
 	Describe(`Service constructor tests`, func() {
 		version := CreateMockDate()
 		It(`Instantiate service client`, func() {
-			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 				Authenticator: &core.NoAuthAuthenticator{},
 				Version:       version,
 			})
@@ -46,7 +45,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 			Expect(testServiceErr).To(BeNil())
 		})
 		It(`Instantiate service client with error: Invalid URL`, func() {
-			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 				URL:     "{BAD_URL_STRING",
 				Version: version,
 			})
@@ -54,7 +53,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 			Expect(testServiceErr).ToNot(BeNil())
 		})
 		It(`Instantiate service client with error: Invalid Auth`, func() {
-			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 				URL:     "https://transitgatewayapisv1/api",
 				Version: version,
 				Authenticator: &core.BasicAuthenticator{
@@ -66,7 +65,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 			Expect(testServiceErr).ToNot(BeNil())
 		})
 		It(`Instantiate service client with error: Validation Error`, func() {
-			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{})
+			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{})
 			Expect(testService).To(BeNil())
 			Expect(testServiceErr).ToNot(BeNil())
 		})
@@ -76,13 +75,13 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 		Context(`Using external config, construct service client instances`, func() {
 			// Map containing environment variables used in testing.
 			var testEnvironment = map[string]string{
-				"TRANSIT_GATEWAY_AP_IS_URL":       "https://transitgatewayapisv1/api",
-				"TRANSIT_GATEWAY_AP_IS_AUTH_TYPE": "noauth",
+				"TRANSIT_GATEWAY_APIS_URL":       "https://transitgatewayapisv1/api",
+				"TRANSIT_GATEWAY_APIS_AUTH_TYPE": "noauth",
 			}
 
 			It(`Create service client using external config successfully`, func() {
 				SetTestEnvironment(testEnvironment)
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					Version: version,
 				})
 				Expect(testService).ToNot(BeNil())
@@ -91,7 +90,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 			})
 			It(`Create service client using external config and set url from constructor successfully`, func() {
 				SetTestEnvironment(testEnvironment)
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:     "https://testService/api",
 					Version: version,
 				})
@@ -102,7 +101,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 			})
 			It(`Create service client using external config and set url programatically successfully`, func() {
 				SetTestEnvironment(testEnvironment)
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					Version: version,
 				})
 				err := testService.SetServiceURL("https://testService/api")
@@ -116,12 +115,12 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 		Context(`Using external config, construct service client instances with error: Invalid Auth`, func() {
 			// Map containing environment variables used in testing.
 			var testEnvironment = map[string]string{
-				"TRANSIT_GATEWAY_AP_IS_URL":       "https://transitgatewayapisv1/api",
-				"TRANSIT_GATEWAY_AP_IS_AUTH_TYPE": "someOtherAuth",
+				"TRANSIT_GATEWAY_APIS_URL":       "https://transitgatewayapisv1/api",
+				"TRANSIT_GATEWAY_APIS_AUTH_TYPE": "someOtherAuth",
 			}
 
 			SetTestEnvironment(testEnvironment)
-			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApisV1Options{
 				Version: version,
 			})
 
@@ -134,11 +133,11 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 		Context(`Using external config, construct service client instances with error: Invalid URL`, func() {
 			// Map containing environment variables used in testing.
 			var testEnvironment = map[string]string{
-				"TRANSIT_GATEWAY_AP_IS_AUTH_TYPE": "NOAuth",
+				"TRANSIT_GATEWAY_APIS_AUTH_TYPE": "NOAuth",
 			}
 
 			SetTestEnvironment(testEnvironment)
-			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApisV1Options{
 				URL:     "{BAD_URL_STRING",
 				Version: version,
 			})
@@ -170,7 +169,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				}))
 			})
 			It(`Invoke ListTransitGateways with error: Operation response processing error`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -213,7 +212,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				}))
 			})
 			It(`Invoke ListTransitGateways successfully`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -238,7 +237,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				Expect(result).ToNot(BeNil())
 			})
 			It(`Invoke ListTransitGateways with error: Operation request error`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -283,7 +282,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				}))
 			})
 			It(`Invoke CreateTransitGateway with error: Operation response processing error`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -334,7 +333,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				}))
 			})
 			It(`Invoke CreateTransitGateway successfully`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -367,7 +366,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				Expect(result).ToNot(BeNil())
 			})
 			It(`Invoke CreateTransitGateway with error: Operation validation and request error`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -426,7 +425,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				}))
 			})
 			It(`Invoke DeleteTransitGateway successfully`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -450,7 +449,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				Expect(response).ToNot(BeNil())
 			})
 			It(`Invoke DeleteTransitGateway with error: Operation validation and request error`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -501,7 +500,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				}))
 			})
 			It(`Invoke DetailTransitGateway with error: Operation response processing error`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -545,7 +544,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				}))
 			})
 			It(`Invoke DetailTransitGateway successfully`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -571,7 +570,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				Expect(result).ToNot(BeNil())
 			})
 			It(`Invoke DetailTransitGateway with error: Operation validation and request error`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -624,7 +623,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				}))
 			})
 			It(`Invoke UpdateTransitGateway with error: Operation response processing error`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -670,7 +669,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				}))
 			})
 			It(`Invoke UpdateTransitGateway successfully`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -698,7 +697,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				Expect(result).ToNot(BeNil())
 			})
 			It(`Invoke UpdateTransitGateway with error: Operation validation and request error`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -736,7 +735,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 	Describe(`Service constructor tests`, func() {
 		version := CreateMockDate()
 		It(`Instantiate service client`, func() {
-			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 				Authenticator: &core.NoAuthAuthenticator{},
 				Version:       version,
 			})
@@ -744,7 +743,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 			Expect(testServiceErr).To(BeNil())
 		})
 		It(`Instantiate service client with error: Invalid URL`, func() {
-			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 				URL:     "{BAD_URL_STRING",
 				Version: version,
 			})
@@ -752,7 +751,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 			Expect(testServiceErr).ToNot(BeNil())
 		})
 		It(`Instantiate service client with error: Invalid Auth`, func() {
-			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 				URL:     "https://transitgatewayapisv1/api",
 				Version: version,
 				Authenticator: &core.BasicAuthenticator{
@@ -764,7 +763,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 			Expect(testServiceErr).ToNot(BeNil())
 		})
 		It(`Instantiate service client with error: Validation Error`, func() {
-			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{})
+			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{})
 			Expect(testService).To(BeNil())
 			Expect(testServiceErr).ToNot(BeNil())
 		})
@@ -774,13 +773,13 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 		Context(`Using external config, construct service client instances`, func() {
 			// Map containing environment variables used in testing.
 			var testEnvironment = map[string]string{
-				"TRANSIT_GATEWAY_AP_IS_URL":       "https://transitgatewayapisv1/api",
-				"TRANSIT_GATEWAY_AP_IS_AUTH_TYPE": "noauth",
+				"TRANSIT_GATEWAY_APIS_URL":       "https://transitgatewayapisv1/api",
+				"TRANSIT_GATEWAY_APIS_AUTH_TYPE": "noauth",
 			}
 
 			It(`Create service client using external config successfully`, func() {
 				SetTestEnvironment(testEnvironment)
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					Version: version,
 				})
 				Expect(testService).ToNot(BeNil())
@@ -789,7 +788,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 			})
 			It(`Create service client using external config and set url from constructor successfully`, func() {
 				SetTestEnvironment(testEnvironment)
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:     "https://testService/api",
 					Version: version,
 				})
@@ -800,7 +799,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 			})
 			It(`Create service client using external config and set url programatically successfully`, func() {
 				SetTestEnvironment(testEnvironment)
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					Version: version,
 				})
 				err := testService.SetServiceURL("https://testService/api")
@@ -814,12 +813,12 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 		Context(`Using external config, construct service client instances with error: Invalid Auth`, func() {
 			// Map containing environment variables used in testing.
 			var testEnvironment = map[string]string{
-				"TRANSIT_GATEWAY_AP_IS_URL":       "https://transitgatewayapisv1/api",
-				"TRANSIT_GATEWAY_AP_IS_AUTH_TYPE": "someOtherAuth",
+				"TRANSIT_GATEWAY_APIS_URL":       "https://transitgatewayapisv1/api",
+				"TRANSIT_GATEWAY_APIS_AUTH_TYPE": "someOtherAuth",
 			}
 
 			SetTestEnvironment(testEnvironment)
-			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApisV1Options{
 				Version: version,
 			})
 
@@ -832,11 +831,11 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 		Context(`Using external config, construct service client instances with error: Invalid URL`, func() {
 			// Map containing environment variables used in testing.
 			var testEnvironment = map[string]string{
-				"TRANSIT_GATEWAY_AP_IS_AUTH_TYPE": "NOAuth",
+				"TRANSIT_GATEWAY_APIS_AUTH_TYPE": "NOAuth",
 			}
 
 			SetTestEnvironment(testEnvironment)
-			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApisV1Options{
 				URL:     "{BAD_URL_STRING",
 				Version: version,
 			})
@@ -868,7 +867,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				}))
 			})
 			It(`Invoke ListTransitGatewayConnections with error: Operation response processing error`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -912,7 +911,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				}))
 			})
 			It(`Invoke ListTransitGatewayConnections successfully`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -938,7 +937,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				Expect(result).ToNot(BeNil())
 			})
 			It(`Invoke ListTransitGatewayConnections with error: Operation validation and request error`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -991,7 +990,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				}))
 			})
 			It(`Invoke CreateTransitGatewayConnection with error: Operation response processing error`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -1038,7 +1037,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				}))
 			})
 			It(`Invoke CreateTransitGatewayConnection successfully`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -1067,7 +1066,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				Expect(result).ToNot(BeNil())
 			})
 			It(`Invoke CreateTransitGatewayConnection with error: Operation validation and request error`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -1122,7 +1121,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				}))
 			})
 			It(`Invoke DeleteTransitGatewayConnection successfully`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -1147,7 +1146,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				Expect(response).ToNot(BeNil())
 			})
 			It(`Invoke DeleteTransitGatewayConnection with error: Operation validation and request error`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -1199,7 +1198,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				}))
 			})
 			It(`Invoke DetailTransitGatewayConnection with error: Operation response processing error`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -1244,7 +1243,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				}))
 			})
 			It(`Invoke DetailTransitGatewayConnection successfully`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -1271,7 +1270,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				Expect(result).ToNot(BeNil())
 			})
 			It(`Invoke DetailTransitGatewayConnection with error: Operation validation and request error`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -1325,7 +1324,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				}))
 			})
 			It(`Invoke UpdateTransitGatewayConnection with error: Operation response processing error`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -1371,7 +1370,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				}))
 			})
 			It(`Invoke UpdateTransitGatewayConnection successfully`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -1399,7 +1398,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				Expect(result).ToNot(BeNil())
 			})
 			It(`Invoke UpdateTransitGatewayConnection with error: Operation validation and request error`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -1437,7 +1436,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 	Describe(`Service constructor tests`, func() {
 		version := CreateMockDate()
 		It(`Instantiate service client`, func() {
-			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 				Authenticator: &core.NoAuthAuthenticator{},
 				Version:       version,
 			})
@@ -1445,7 +1444,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 			Expect(testServiceErr).To(BeNil())
 		})
 		It(`Instantiate service client with error: Invalid URL`, func() {
-			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 				URL:     "{BAD_URL_STRING",
 				Version: version,
 			})
@@ -1453,7 +1452,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 			Expect(testServiceErr).ToNot(BeNil())
 		})
 		It(`Instantiate service client with error: Invalid Auth`, func() {
-			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 				URL:     "https://transitgatewayapisv1/api",
 				Version: version,
 				Authenticator: &core.BasicAuthenticator{
@@ -1465,7 +1464,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 			Expect(testServiceErr).ToNot(BeNil())
 		})
 		It(`Instantiate service client with error: Validation Error`, func() {
-			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{})
+			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{})
 			Expect(testService).To(BeNil())
 			Expect(testServiceErr).ToNot(BeNil())
 		})
@@ -1475,13 +1474,13 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 		Context(`Using external config, construct service client instances`, func() {
 			// Map containing environment variables used in testing.
 			var testEnvironment = map[string]string{
-				"TRANSIT_GATEWAY_AP_IS_URL":       "https://transitgatewayapisv1/api",
-				"TRANSIT_GATEWAY_AP_IS_AUTH_TYPE": "noauth",
+				"TRANSIT_GATEWAY_APIS_URL":       "https://transitgatewayapisv1/api",
+				"TRANSIT_GATEWAY_APIS_AUTH_TYPE": "noauth",
 			}
 
 			It(`Create service client using external config successfully`, func() {
 				SetTestEnvironment(testEnvironment)
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					Version: version,
 				})
 				Expect(testService).ToNot(BeNil())
@@ -1490,7 +1489,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 			})
 			It(`Create service client using external config and set url from constructor successfully`, func() {
 				SetTestEnvironment(testEnvironment)
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:     "https://testService/api",
 					Version: version,
 				})
@@ -1501,7 +1500,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 			})
 			It(`Create service client using external config and set url programatically successfully`, func() {
 				SetTestEnvironment(testEnvironment)
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					Version: version,
 				})
 				err := testService.SetServiceURL("https://testService/api")
@@ -1515,12 +1514,12 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 		Context(`Using external config, construct service client instances with error: Invalid Auth`, func() {
 			// Map containing environment variables used in testing.
 			var testEnvironment = map[string]string{
-				"TRANSIT_GATEWAY_AP_IS_URL":       "https://transitgatewayapisv1/api",
-				"TRANSIT_GATEWAY_AP_IS_AUTH_TYPE": "someOtherAuth",
+				"TRANSIT_GATEWAY_APIS_URL":       "https://transitgatewayapisv1/api",
+				"TRANSIT_GATEWAY_APIS_AUTH_TYPE": "someOtherAuth",
 			}
 
 			SetTestEnvironment(testEnvironment)
-			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApisV1Options{
 				Version: version,
 			})
 
@@ -1533,11 +1532,11 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 		Context(`Using external config, construct service client instances with error: Invalid URL`, func() {
 			// Map containing environment variables used in testing.
 			var testEnvironment = map[string]string{
-				"TRANSIT_GATEWAY_AP_IS_AUTH_TYPE": "NOAuth",
+				"TRANSIT_GATEWAY_APIS_AUTH_TYPE": "NOAuth",
 			}
 
 			SetTestEnvironment(testEnvironment)
-			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+			testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1UsingExternalConfig(&transitgatewayapisv1.TransitGatewayApisV1Options{
 				URL:     "{BAD_URL_STRING",
 				Version: version,
 			})
@@ -1569,7 +1568,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				}))
 			})
 			It(`Invoke ListGatewayLocations with error: Operation response processing error`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -1612,7 +1611,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				}))
 			})
 			It(`Invoke ListGatewayLocations successfully`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -1637,7 +1636,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				Expect(result).ToNot(BeNil())
 			})
 			It(`Invoke ListGatewayLocations with error: Operation request error`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -1682,7 +1681,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				}))
 			})
 			It(`Invoke DetailGatewayLocation with error: Operation response processing error`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -1726,7 +1725,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				}))
 			})
 			It(`Invoke DetailGatewayLocation successfully`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -1752,7 +1751,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 				Expect(result).ToNot(BeNil())
 			})
 			It(`Invoke DetailGatewayLocation with error: Operation validation and request error`, func() {
-				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+				testService, testServiceErr := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 					URL:           testServer.URL,
 					Authenticator: &core.NoAuthAuthenticator{},
 					Version:       version,
@@ -1788,7 +1787,7 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 	Describe(`Model constructor tests`, func() {
 		Context(`Using a service client instance`, func() {
 			version := CreateMockDate()
-			testService, _ := transitgatewayapisv1.NewTransitGatewayApIsV1(&transitgatewayapisv1.TransitGatewayApIsV1Options{
+			testService, _ := transitgatewayapisv1.NewTransitGatewayApisV1(&transitgatewayapisv1.TransitGatewayApisV1Options{
 				URL:           "http://transitgatewayapisv1modelgenerator.com",
 				Authenticator: &core.NoAuthAuthenticator{},
 				Version:       version,
