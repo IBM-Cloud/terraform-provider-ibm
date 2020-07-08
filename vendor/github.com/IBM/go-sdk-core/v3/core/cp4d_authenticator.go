@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -62,6 +63,9 @@ type CloudPakForDataAuthenticator struct {
 	// The cached token and expiration time.
 	tokenData *cp4dTokenData
 }
+
+var cp4dRequestTokenMutex sync.Mutex
+var cp4dNeedsRefreshMutex sync.Mutex
 
 // NewCloudPakForDataAuthenticator constructs a new CloudPakForDataAuthenticator
 // instance.
@@ -144,22 +148,67 @@ func (authenticator *CloudPakForDataAuthenticator) Authenticate(request *http.Re
 }
 
 // getToken: returns an access token to be used in an Authorization header.
-// Whenever a new token is needed (when a token doesn't yet exist, or the existing token has expired),
-// a new access token is fetched from the token server.
+// Whenever a new token is needed (when a token doesn't yet exist, needs to be refreshed,
+// or the existing token has expired), a new access token is fetched from the token server.
 func (authenticator *CloudPakForDataAuthenticator) getToken() (string, error) {
 	if authenticator.tokenData == nil || !authenticator.tokenData.isTokenValid() {
-		tokenResponse, err := authenticator.requestToken()
+		// synchronously request the token
+		err := authenticator.synchronizedRequestToken()
 		if err != nil {
 			return "", err
 		}
-
-		authenticator.tokenData, err = newCp4dTokenData(tokenResponse)
-		if err != nil {
-			return "", err
+	} else if authenticator.tokenData.needsRefresh() {
+		// If refresh needed, kick off a go routine in the background to get a new token
+		ch := make(chan error)
+		go func() {
+			ch <- authenticator.getTokenData()
+		}()
+		select {
+		case err := <-ch:
+			if err != nil {
+				return "", err
+			}
+		default:
 		}
 	}
 
+	// return an error if the access token is not valid or was not fetched
+	if authenticator.tokenData == nil || authenticator.tokenData.AccessToken == "" {
+		return "", fmt.Errorf("Error while trying to get access token")
+	}
+
 	return authenticator.tokenData.AccessToken, nil
+}
+
+// synchronizedRequestToken: synchronously checks if the current token in cache
+// is valid. If token is not valid or does not exist, it will fetch a new token
+// and set the tokenRefreshTime
+func (authenticator *CloudPakForDataAuthenticator) synchronizedRequestToken() error {
+	cp4dRequestTokenMutex.Lock()
+	defer cp4dRequestTokenMutex.Unlock()
+	// if cached token is still valid, then just continue to use it
+	if authenticator.tokenData != nil && authenticator.tokenData.isTokenValid() {
+		return nil
+	}
+
+	return authenticator.getTokenData()
+}
+
+// getTokenData: requests a new token from the access server and
+// unmarshals the token information to the tokenData cache. Returns
+// an error if the token was unable to be fetched, otherwise returns nil
+func (authenticator *CloudPakForDataAuthenticator) getTokenData() error {
+	tokenResponse, err := authenticator.requestToken()
+	if err != nil {
+		return err
+	}
+
+	authenticator.tokenData, err = newCp4dTokenData(tokenResponse)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // requestToken: fetches a new access token from the token server.
@@ -240,6 +289,7 @@ type cp4dTokenServerResponse struct {
 type cp4dTokenData struct {
 	AccessToken string
 	RefreshTime int64
+	Expiration  int64
 }
 
 // newCp4dTokenData: constructs a new Cp4dTokenData instance from the specified Cp4dTokenServerResponse instance.
@@ -249,7 +299,6 @@ func newCp4dTokenData(tokenResponse *cp4dTokenServerResponse) (*cp4dTokenData, e
 	if token, _ := jwt.ParseWithClaims(tokenResponse.AccessToken, claims, nil); token == nil {
 		return nil, fmt.Errorf("Error while trying to parse access token!")
 	}
-
 	// Compute the adjusted refresh time (expiration time - 20% of timeToLive)
 	timeToLive := claims.ExpiresAt - claims.IssuedAt
 	expireTime := claims.ExpiresAt
@@ -257,6 +306,7 @@ func newCp4dTokenData(tokenResponse *cp4dTokenServerResponse) (*cp4dTokenData, e
 
 	tokenData := &cp4dTokenData{
 		AccessToken: tokenResponse.AccessToken,
+		Expiration:  expireTime,
 		RefreshTime: refreshTime,
 	}
 	return tokenData, nil
@@ -264,8 +314,25 @@ func newCp4dTokenData(tokenResponse *cp4dTokenServerResponse) (*cp4dTokenData, e
 
 // isTokenValid: returns true iff the Cp4dTokenData instance represents a valid (non-expired) access token.
 func (this *cp4dTokenData) isTokenValid() bool {
-	if this.AccessToken != "" && GetCurrentTime() < this.RefreshTime {
+	if this.AccessToken != "" && GetCurrentTime() < this.Expiration {
 		return true
 	}
 	return false
+}
+
+// needsRefresh: synchronously returns true iff the currently stored access token should be refreshed. This method also
+// updates the refresh time if it determines the token needs refreshed to prevent other threads from
+// making multiple refresh calls.
+func (this *cp4dTokenData) needsRefresh() bool {
+	cp4dNeedsRefreshMutex.Lock()
+	defer cp4dNeedsRefreshMutex.Unlock()
+
+	// Advance refresh by one minute
+	if this.RefreshTime >= 0 && GetCurrentTime() > this.RefreshTime {
+		this.RefreshTime += 60
+		return true
+	}
+
+	return false
+
 }

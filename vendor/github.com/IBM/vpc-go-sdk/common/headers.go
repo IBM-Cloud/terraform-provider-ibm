@@ -8,7 +8,7 @@ import (
 const (
 	HEADER_NAME_USER_AGENT = "User-Agent"
 
-	SDK_NAME = "go-sdk-template"
+	SDK_NAME = "vpc-go-sdk"
 )
 
 //
