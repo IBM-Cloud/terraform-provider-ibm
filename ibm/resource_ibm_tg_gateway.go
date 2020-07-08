@@ -142,7 +142,7 @@ func resourceIBMTGValidator() *ResourceValidator {
 	return &ibmTGResourceValidator
 }
 
-func transitgatewayClient(meta interface{}) (*transitgatewayapisv1.TransitGatewayApIsV1, error) {
+func transitgatewayClient(meta interface{}) (*transitgatewayapisv1.TransitGatewayApisV1, error) {
 	sess, err := meta.(ClientSession).TransitGatewayV1API()
 	return sess, err
 }
@@ -195,7 +195,7 @@ func resourceIBMTransitGatewayCreate(d *schema.ResourceData, meta interface{}) e
 	return resourceIBMTransitGatewayRead(d, meta)
 }
 
-func isWaitForTransitGatewayAvailable(client *transitgatewayapisv1.TransitGatewayApIsV1, id string, timeout time.Duration) (interface{}, error) {
+func isWaitForTransitGatewayAvailable(client *transitgatewayapisv1.TransitGatewayApisV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for transit gateway (%s) to be available.", id)
 
 	stateConf := &resource.StateChangeConf{
@@ -210,7 +210,7 @@ func isWaitForTransitGatewayAvailable(client *transitgatewayapisv1.TransitGatewa
 	return stateConf.WaitForState()
 }
 
-func isTransitGatewayRefreshFunc(client *transitgatewayapisv1.TransitGatewayApIsV1, id string) resource.StateRefreshFunc {
+func isTransitGatewayRefreshFunc(client *transitgatewayapisv1.TransitGatewayApisV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		gettgwoptions := &transitgatewayapisv1.DetailTransitGatewayOptions{
 			ID: &id,
@@ -355,7 +355,7 @@ func resourceIBMTransitGatewayDelete(d *schema.ResourceData, meta interface{}) e
 	return nil
 }
 
-func isWaitForTransitGatewayDeleted(client *transitgatewayapisv1.TransitGatewayApIsV1, id string, timeout time.Duration) (interface{}, error) {
+func isWaitForTransitGatewayDeleted(client *transitgatewayapisv1.TransitGatewayApisV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for transit gateway (%s) to be deleted.", id)
 
 	stateConf := &resource.StateChangeConf{
@@ -370,7 +370,7 @@ func isWaitForTransitGatewayDeleted(client *transitgatewayapisv1.TransitGatewayA
 	return stateConf.WaitForState()
 }
 
-func isTransitGatewayDeleteRefreshFunc(client *transitgatewayapisv1.TransitGatewayApIsV1, id string) resource.StateRefreshFunc {
+func isTransitGatewayDeleteRefreshFunc(client *transitgatewayapisv1.TransitGatewayApisV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] delete function here")
 		gettgwoptions := &transitgatewayapisv1.DetailTransitGatewayOptions{

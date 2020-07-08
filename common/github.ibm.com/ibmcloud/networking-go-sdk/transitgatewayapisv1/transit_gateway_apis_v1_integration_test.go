@@ -16,22 +16,31 @@
 
 package transitgatewayapisv1_test
 
+/*
+
+How to run this test:
+
+go test -v ./transitgatewayapisv1
+
+*/
+
 import (
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/IBM/go-sdk-core/v4/core"
 	"github.com/go-openapi/strfmt"
 	"github.com/joho/godotenv"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.ibm.com/ibmcloud/networking-go-sdk/transitgatewayapisv1"
-	"os"
-	"time"
 )
 
-var GATEWAY_INSTANCE_ID string
-var CONN_INSTANCE_ID string
+// var GATEWAY_INSTANCE_ID string
+// var CONN_INSTANCE_ID string
 
-var _ = Describe(`TransitGatewayApIsV1`, func() {
+var _ = Describe(`TransitGatewayApisV1`, func() {
 	err := godotenv.Load("../transit.env")
 	It(`Successfully loading .env file`, func() {
 		Expect(err).To(BeNil())
@@ -44,14 +53,14 @@ var _ = Describe(`TransitGatewayApIsV1`, func() {
 
 	version := strfmt.Date(time.Now())
 	serviceURL := os.Getenv("SERVICE_URL")
-	options := &transitgatewayapisv1.TransitGatewayApIsV1Options{
-		ServiceName:   "TransitGatewayApIsV1_Mocking",
+	options := &transitgatewayapisv1.TransitGatewayApisV1Options{
+		ServiceName:   "TransitGatewayApisV1_Mocking",
 		Authenticator: authenticator,
 		URL:           serviceURL,
 		Version:       &version,
 	}
-	service, err := transitgatewayapisv1.NewTransitGatewayApIsV1UsingExternalConfig(options)
-	It(`Successfully created TransitGatewayApIsV1 service instance`, func() {
+	service, err := transitgatewayapisv1.NewTransitGatewayApisV1UsingExternalConfig(options)
+	It(`Successfully created TransitGatewayApisV1 service instance`, func() {
 		Expect(err).To(BeNil())
 	})
 

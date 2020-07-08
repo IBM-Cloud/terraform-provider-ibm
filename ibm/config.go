@@ -175,7 +175,7 @@ type ClientSession interface {
 	PrivateDnsClientSession() (*dns.DnsSvcsV1, error)
 	CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error)
 	DirectlinkV1API() (*dl.DirectLinkApisV1, error)
-	TransitGatewayV1API() (*tg.TransitGatewayApIsV1, error)
+	TransitGatewayV1API() (*tg.TransitGatewayApisV1, error)
 }
 
 type clientSession struct {
@@ -280,7 +280,7 @@ type clientSession struct {
 	cosConfigErr error
 	cosConfigAPI *cosconfig.ResourceConfigurationV1
 
-	transitgatewayAPI *tg.TransitGatewayApIsV1
+	transitgatewayAPI *tg.TransitGatewayApisV1
 	transitgatewayErr error
 }
 
@@ -439,7 +439,7 @@ func (sess clientSession) CosConfigV1API() (*cosconfig.ResourceConfigurationV1, 
 	return sess.cosConfigAPI, sess.cosConfigErr
 }
 
-func (sess clientSession) TransitGatewayV1API() (*tg.TransitGatewayApIsV1, error) {
+func (sess clientSession) TransitGatewayV1API() (*tg.TransitGatewayApisV1, error) {
 	return sess.transitgatewayAPI, sess.transitgatewayErr
 }
 
@@ -784,7 +784,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.directlinkErr = fmt.Errorf("Error occured while configuring Direct Link Service: %s", session.directlinkErr)
 	}
 
-	transitgatewayOptions := &tg.TransitGatewayApIsV1Options{
+	transitgatewayOptions := &tg.TransitGatewayApisV1Options{
 		URL: envFallBack([]string{"IBMCLOUD_TG_API_ENDPOINT"}, "https://transit.cloud.ibm.com/v1"),
 		Authenticator: &core.BearerTokenAuthenticator{
 			BearerToken: bluemixToken,
@@ -792,7 +792,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		Version: CreateVersionDateTG(),
 	}
 
-	session.transitgatewayAPI, session.transitgatewayErr = tg.NewTransitGatewayApIsV1(transitgatewayOptions)
+	session.transitgatewayAPI, session.transitgatewayErr = tg.NewTransitGatewayApisV1(transitgatewayOptions)
 	if session.transitgatewayErr != nil {
 		session.transitgatewayErr = fmt.Errorf("Error occured while configuring Transit Gateway Service: %s", session.transitgatewayErr)
 	}

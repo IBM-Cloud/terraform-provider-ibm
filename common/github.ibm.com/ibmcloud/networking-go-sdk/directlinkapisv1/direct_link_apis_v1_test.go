@@ -1381,7 +1381,7 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
-					fmt.Fprintf(res, `{"locations": [{"billing_location": "us", "building_colocation_owner": "MyProvider", "display_name": "Dallas 9", "location_type": "PoP", "market": "Dallas", "market_geography": "N/S America", "mzr": true, "name": "dal03", "offering_type": "dedicated", "vpc_region": "us-south"}]}`)
+					fmt.Fprintf(res, `{"locations": [{"billing_location": "us", "building_colocation_owner": "MyProvider", "display_name": "Dallas 9", "location_type": "PoP", "market": "Dallas", "market_geography": "N/S America", "mzr": true, "name": "dal03", "offering_type": "dedicated", "provision_enabled": true, "vpc_region": "us-south"}]}`)
 				}))
 			})
 			It(`Invoke ListOfferingTypeLocations successfully`, func() {
@@ -1505,7 +1505,7 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
-					fmt.Fprintf(res, `{"cross_connect_routers": [{"name": "xcr01.dal03", "total_connections": 1}]}`)
+					fmt.Fprintf(res, `{"cross_connect_routers": [{"router_name": "xcr01.dal03", "total_connections": 1}]}`)
 				}))
 			})
 			It(`Invoke ListOfferingTypeLocationCrossConnectRouters successfully`, func() {

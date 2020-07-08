@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package transitgatewayapisv1_test
+package wafrulepackagesapiv1_test
 
 import (
-	"testing"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"testing"
 )
 
-func TestTransitGatewayApIsV1(t *testing.T) {
+func TestWafRulePackagesApiV1(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "TransitGatewayApIsV1 Suite")
+	RunSpecs(t, "WafRulePackagesApiV1 Suite")
 }
