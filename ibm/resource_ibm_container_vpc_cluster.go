@@ -11,13 +11,15 @@ import (
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/IBM/go-sdk-core/v3/core"
+	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
+	vpcclassic "github.com/IBM/vpc-go-sdk/vpcclassicv1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
+	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.ibm.com/Bluemix/riaas-go-client/clients/lbaas"
-	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
-	"github.ibm.com/Bluemix/riaas-go-client/session"
 )
 
 const (
@@ -303,14 +305,14 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 
 func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface{}) error {
 
-	sess, err := meta.(ClientSession).ISSession()
+	var vpcProvider string
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-
-	var vpcProvider string
-	vpcProvider = "vpc-classic"
-	if sess.Generation == 2 {
+	if userDetails.generation == 1 {
+		vpcProvider = "vpc-classic"
+	} else {
 		vpcProvider = "vpc-gen2"
 	}
 
@@ -627,23 +629,24 @@ func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface
 
 		}
 	}
+
 	splitZone := strings.Split(zonesList[0].ID, "-")
 	region := splitZone[0] + "-" + splitZone[1]
 
-	sess1, err := meta.(ClientSession).ISSession()
+	bxsession, err := meta.(ClientSession).BluemixSession()
 	if err != nil {
-		log.Println("error creating ISsession", err)
+		return err
 	}
 
-	newSess, err := session.New(sess1.IAMToken, region, int(sess1.Generation), false, 10*time.Minute)
-	if err != nil {
-		log.Println("error creating new ISsession", err)
-	}
-	client := lbaas.NewLoadBalancerClient(newSess)
-
-	lbs, err := client.List()
-	if err != nil {
-		log.Println("cannot retreive load balancers=", err)
+	var authenticator *core.BearerTokenAuthenticator
+	if strings.HasPrefix(bxsession.Config.IAMAccessToken, "Bearer") {
+		authenticator = &core.BearerTokenAuthenticator{
+			BearerToken: bxsession.Config.IAMAccessToken[7:],
+		}
+	} else {
+		authenticator = &core.BearerTokenAuthenticator{
+			BearerToken: bxsession.Config.IAMAccessToken,
+		}
 	}
 
 	err = csClient.Clusters().Delete(clusterID, targetEnv)
@@ -655,25 +658,81 @@ func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface
 		return err
 	}
 
-	if len(lbs) > 0 {
-		for _, lb := range lbs {
-			if strings.Contains(lb.Name, clusterID) {
-				log.Println("Deleting Load Balancer", lb.Name)
-				client := lbaas.NewLoadBalancerClient(newSess)
-				err = client.Delete(string(lb.ID))
-				if err != nil {
-					log.Println("error deleting Load Balancer", err)
-				}
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return err
+	}
+	if userDetails.generation == 1 {
+		vpcclassicurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", region)
+		vpcclassicoptions := &vpcclassic.VpcClassicV1Options{
+			URL:           envFallBack([]string{"IBMCLOUD_IS_API_ENDPOINT"}, vpcclassicurl),
+			Authenticator: authenticator,
+		}
+		sess1, err := vpcclassic.NewVpcClassicV1(vpcclassicoptions)
+		if err != nil {
+			log.Println("error creating vpcclassic session", err)
+		}
+		listlbOptions := &vpcclassicv1.ListLoadBalancersOptions{}
+		lbs, response, err1 := sess1.ListLoadBalancers(listlbOptions)
+		if err1 != nil {
+			log.Printf("Error Retrieving vpc load balancers: %s\n%s", err, response)
+		}
+		if len(lbs.LoadBalancers) > 0 {
+			for _, lb := range lbs.LoadBalancers {
+				if strings.Contains(*lb.Name, clusterID) {
+					log.Println("Deleting Load Balancer", *lb.Name)
+					id := *lb.ID
+					deleteLoadBalancerOptions := &vpcclassicv1.DeleteLoadBalancerOptions{
+						ID: &id,
+					}
+					response, err := sess1.DeleteLoadBalancer(deleteLoadBalancerOptions)
+					if err != nil {
+						log.Printf("Error deleting vpc load balancer: %s\n%s", err, response)
+					}
+					_, err = isWaitForClassicLBDeleted(sess1, id, d.Timeout(schema.TimeoutDelete))
+					if err != nil {
+						log.Printf("Error waiting for vpc load balancer to be deleted: %s\n", err)
 
-				_, err = isWaitForDeleted(client, string(lb.ID), d.Timeout(schema.TimeoutDelete))
-				if err != nil {
-					log.Println("error waiting for Load Balancer to be deleted", err)
+					}
 				}
 			}
 		}
+	} else {
+		vpcurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", region)
+		vpcoptions := &vpc.VpcV1Options{
+			URL:           envFallBack([]string{"IBMCLOUD_IS_NG_API_ENDPOINT"}, vpcurl),
+			Authenticator: authenticator,
+		}
+		sess1, err := vpc.NewVpcV1(vpcoptions)
+		if err != nil {
+			log.Println("error creating vpc session", err)
+		}
+		listlbOptions := &vpcv1.ListLoadBalancersOptions{}
+		lbs, response, err1 := sess1.ListLoadBalancers(listlbOptions)
+		if err1 != nil {
+			log.Printf("Error Retrieving vpc load balancers: %s\n%s", err, response)
+		}
+		if len(lbs.LoadBalancers) > 0 {
+			for _, lb := range lbs.LoadBalancers {
+				if strings.Contains(*lb.Name, clusterID) {
+					log.Println("Deleting Load Balancer", *lb.Name)
+					id := *lb.ID
+					deleteLoadBalancerOptions := &vpcv1.DeleteLoadBalancerOptions{
+						ID: &id,
+					}
+					response, err := sess1.DeleteLoadBalancer(deleteLoadBalancerOptions)
+					if err != nil {
+						log.Printf("Error deleting vpc load balancer: %s\n%s", err, response)
+					}
+					_, err = isWaitForLBDeleted(sess1, id, d.Timeout(schema.TimeoutDelete))
+					if err != nil {
+						log.Printf("Error waiting for vpc load balancer to be deleted: %s\n", err)
 
+					}
+				}
+			}
+		}
 	}
-
 	return nil
 }
 
@@ -917,39 +976,5 @@ func vpcClusterVersionRefreshFunc(client v2.Clusters, instanceID string, d *sche
 			return cls, versionUpdating, nil
 		}
 		return cls, clusterNormal, nil
-	}
-}
-
-func isWaitForDeleted(lbc *lbaas.LoadBalancerClient, id string, timeout time.Duration) (interface{}, error) {
-	log.Printf("Waiting for  (%s) to be deleted.", id)
-
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", isLBDeleting},
-		Target:     []string{},
-		Refresh:    isDeleteRefreshFunc(lbc, id),
-		Timeout:    timeout,
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-
-	return stateConf.WaitForState()
-}
-
-func isDeleteRefreshFunc(lbc *lbaas.LoadBalancerClient, id string) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-		lb, err := lbc.Get(id)
-		if err == nil {
-			return lb, isLBDeleting, nil
-		}
-
-		iserror, ok := err.(iserrors.RiaasError)
-		if ok {
-			log.Printf("[DEBUG] %s", iserror.Error())
-			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "load_balancer_not_found" {
-				return nil, isLBDeleted, nil
-			}
-		}
-		return nil, isLBDeleting, err
 	}
 }
