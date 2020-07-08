@@ -262,7 +262,7 @@ func pgwCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone string)
 		}
 		options.FloatingIP = fip
 	}
-	if grp, ok := d.GetOk(isVPCResourceGroup); ok {
+	if grp, ok := d.GetOk(isPublicGatewayResourceGroup); ok {
 		rg := grp.(string)
 		options.ResourceGroup = &vpcv1.ResourceGroupIdentity{
 			ID: &rg,
