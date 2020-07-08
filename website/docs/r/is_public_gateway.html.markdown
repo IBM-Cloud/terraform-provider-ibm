@@ -45,7 +45,7 @@ The following arguments are supported:
 * `name` - (Required, string) The name of the gateway.
 * `vpc` - (Required, Forces new resource, string) The vpc id.
 * `zone` - (Required, Forces new resource, string) The gateway zone name.
-* `resource_group` - (Optional, Forces new resource, string) The resource group ID where the Public gateway is to be created.
+* `resource_group` - (Optional, Forces new resource, string) The resource group ID where the Public gateway is to be created. (This argument is supported only for Generation `2` infrastructure)
 * `tags` - (Optional, array of strings) Tags associated with the Public gateway.
 * `floating_ip` - (Optional, string) A nested block describing the floating IP of this gateway. Only one of `id` or `address` to be given.
 Nested `floating_ip` blocks have the following structure:
