@@ -11,13 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
-	"github.com/apache/incubator-openwhisk-client-go/whisk"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/softlayer/softlayer-go/datatypes"
-	"github.com/softlayer/softlayer-go/sl"
-	iserrors "github.ibm.com/Bluemix/riaas-go-client/errors"
-
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
 	"github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
@@ -30,6 +23,11 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Cloud/bluemix-go/api/schematics"
 	"github.com/IBM-Cloud/bluemix-go/models"
+	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
+	"github.com/apache/incubator-openwhisk-client-go/whisk"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/softlayer/softlayer-go/datatypes"
+	"github.com/softlayer/softlayer-go/sl"
 )
 
 const (
@@ -1707,23 +1705,6 @@ func flattenCatalogRef(object schematics.CatalogInfo) map[string]interface{} {
 		"offering_version": object.OfferingVersion,
 	}
 	return catalogRef
-}
-
-func isErrorToString(err error) string {
-	iserror, ok := err.(iserrors.RiaasError)
-	if ok {
-		log.Printf("[DEBUG] Hit Riaas Error")
-		retmsg := ""
-
-		for _, e := range iserror.Payload.Errors {
-			retmsg = retmsg + "\n" + e.Message + "\n" + e.Code + "\n" + e.MoreInfo + "\n"
-			if e.Target != nil {
-				retmsg = retmsg + e.Target.Name + "\n" + e.Target.Type
-			}
-		}
-		return retmsg
-	}
-	return err.Error()
 }
 
 // GetNext ...
