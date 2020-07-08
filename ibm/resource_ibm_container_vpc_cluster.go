@@ -13,9 +13,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM/go-sdk-core/v3/core"
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
-	vpcclassic "github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -664,11 +662,11 @@ func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface
 	}
 	if userDetails.generation == 1 {
 		vpcclassicurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", region)
-		vpcclassicoptions := &vpcclassic.VpcClassicV1Options{
+		vpcclassicoptions := &vpcclassicv1.VpcClassicV1Options{
 			URL:           envFallBack([]string{"IBMCLOUD_IS_API_ENDPOINT"}, vpcclassicurl),
 			Authenticator: authenticator,
 		}
-		sess1, err := vpcclassic.NewVpcClassicV1(vpcclassicoptions)
+		sess1, err := vpcclassicv1.NewVpcClassicV1(vpcclassicoptions)
 		if err != nil {
 			log.Println("error creating vpcclassic session", err)
 		}
@@ -699,11 +697,11 @@ func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface
 		}
 	} else {
 		vpcurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", region)
-		vpcoptions := &vpc.VpcV1Options{
+		vpcoptions := &vpcv1.VpcV1Options{
 			URL:           envFallBack([]string{"IBMCLOUD_IS_NG_API_ENDPOINT"}, vpcurl),
 			Authenticator: authenticator,
 		}
-		sess1, err := vpc.NewVpcV1(vpcoptions)
+		sess1, err := vpcv1.NewVpcV1(vpcoptions)
 		if err != nil {
 			log.Println("error creating vpc session", err)
 		}

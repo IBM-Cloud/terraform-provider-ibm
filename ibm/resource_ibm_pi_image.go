@@ -84,7 +84,7 @@ func resourceIBMPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 	d.SetId(fmt.Sprintf("%s/%s", powerinstanceid, *IBMPIImageID))
 	log.Printf("the Image id from the post is %s", *IBMPIImageID)
 	if err != nil {
-		log.Printf("[DEBUG]  err %s", isErrorToString(err))
+		log.Printf("[DEBUG]  err %s", err)
 		return err
 	}
 	_, err = isWaitForIBMPIImageAvailable(client, *IBMPIImageID, d.Timeout(schema.TimeoutCreate), powerinstanceid)
@@ -93,7 +93,7 @@ func resourceIBMPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if err != nil {
-		log.Printf("[DEBUG]  err %s", isErrorToString(err))
+		log.Printf("[DEBUG]  err %s", err)
 		return err
 	}
 

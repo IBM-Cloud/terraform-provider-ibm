@@ -2,10 +2,11 @@ package ibm
 
 import (
 	"fmt"
-	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_networks"
-	"github.com/IBM-Cloud/power-go-client/power/models"
 	"log"
 	"time"
+
+	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_networks"
+	"github.com/IBM-Cloud/power-go-client/power/models"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
@@ -105,7 +106,7 @@ func resourceIBMPINetworkPortCreate(d *schema.ResourceData, meta interface{}) er
 
 	d.SetId(fmt.Sprintf("%s/%s", powerinstanceid, IBMPINetworkPortID))
 	if err != nil {
-		log.Printf("[DEBUG]  err %s", isErrorToString(err))
+		log.Printf("[DEBUG]  err %s", err)
 		return err
 	}
 	_, err = isWaitForIBMPINetworkPortAvailable(client, IBMPINetworkPortID, d.Timeout(schema.TimeoutCreate), powerinstanceid, networkname)
