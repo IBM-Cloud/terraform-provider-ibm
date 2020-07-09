@@ -406,8 +406,9 @@ func classicInstanceGetByName(d *schema.ResourceData, meta interface{}, name str
 	start := ""
 	allrecs := []vpcclassicv1.Instance{}
 	for {
-		listInstancesOptions := &vpcclassicv1.ListInstancesOptions{
-			Start: &start,
+		listInstancesOptions := &vpcclassicv1.ListInstancesOptions{}
+		if start != "" {
+			listInstancesOptions.Start = &start
 		}
 		instances, response, err := sess.ListInstances(listInstancesOptions)
 		if err != nil {
@@ -684,9 +685,9 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 	start := ""
 	allrecs := []vpcv1.Instance{}
 	for {
-		listInstancesOptions := &vpcv1.ListInstancesOptions{
-			Start: &start,
-			Name:  &name,
+		listInstancesOptions := &vpcv1.ListInstancesOptions{}
+		if start != "" {
+			listInstancesOptions.Start = &start
 		}
 		instances, response, err := sess.ListInstances(listInstancesOptions)
 		if err != nil {

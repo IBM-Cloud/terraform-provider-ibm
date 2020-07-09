@@ -183,8 +183,9 @@ func classicVpcGetByName(d *schema.ResourceData, meta interface{}, name string) 
 	start := ""
 	allrecs := []vpcclassicv1.VPC{}
 	for {
-		listVpcsOptions := &vpcclassicv1.ListVpcsOptions{
-			Start: &start,
+		listVpcsOptions := &vpcclassicv1.ListVpcsOptions{}
+		if start != "" {
+			listVpcsOptions.Start = &start
 		}
 		vpcs, response, err := sess.ListVpcs(listVpcsOptions)
 		if err != nil {
@@ -280,8 +281,9 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 	start := ""
 	allrecs := []vpcv1.VPC{}
 	for {
-		listVpcsOptions := &vpcv1.ListVpcsOptions{
-			Start: &start,
+		listVpcsOptions := &vpcv1.ListVpcsOptions{}
+		if start != "" {
+			listVpcsOptions.Start = &start
 		}
 		vpcs, response, err := sess.ListVpcs(listVpcsOptions)
 		if err != nil {

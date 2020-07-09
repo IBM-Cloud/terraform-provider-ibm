@@ -78,8 +78,9 @@ func classicImageGet(d *schema.ResourceData, meta interface{}, name, visibility 
 	start := ""
 	allrecs := []vpcclassicv1.Image{}
 	for {
-		listImagesOptions := &vpcclassicv1.ListImagesOptions{
-			Start: &start,
+		listImagesOptions := &vpcclassicv1.ListImagesOptions{}
+		if start != "" {
+			listImagesOptions.Start = &start
 		}
 		if visibility != "" {
 			listImagesOptions.Visibility = &visibility
@@ -117,8 +118,9 @@ func imageGet(d *schema.ResourceData, meta interface{}, name, visibility string)
 	start := ""
 	allrecs := []vpcv1.Image{}
 	for {
-		listImagesOptions := &vpcv1.ListImagesOptions{
-			Start: &start,
+		listImagesOptions := &vpcv1.ListImagesOptions{}
+		if start != "" {
+			listImagesOptions.Start = &start
 		}
 		if visibility != "" {
 			listImagesOptions.Visibility = &visibility
