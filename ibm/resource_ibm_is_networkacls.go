@@ -412,9 +412,11 @@ func classicNwaclGet(d *schema.ResourceData, meta interface{}, id string) error 
 					rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
 					rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
 					icmp := make([]map[string]int, 1, 1)
-					icmp[0] = map[string]int{
-						isNetworkACLRuleICMPCode: checkNetworkACLNil(rulex.Code),
-						isNetworkACLRuleICMPType: checkNetworkACLNil(rulex.Type),
+					if rulex.Code != nil && rulex.Type != nil {
+						icmp[0] = map[string]int{
+							isNetworkACLRuleICMPCode: int(*rulex.Code),
+							isNetworkACLRuleICMPType: int(*rulex.Code),
+						}
 					}
 					rule[isNetworkACLRuleICMP] = icmp
 				}
@@ -524,9 +526,11 @@ func nwaclGet(d *schema.ResourceData, meta interface{}, id string) error {
 					rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
 					rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
 					icmp := make([]map[string]int, 1, 1)
-					icmp[0] = map[string]int{
-						isNetworkACLRuleICMPCode: checkNetworkACLNil(rulex.Code),
-						isNetworkACLRuleICMPType: checkNetworkACLNil(rulex.Type),
+					if rulex.Code != nil && rulex.Type != nil {
+						icmp[0] = map[string]int{
+							isNetworkACLRuleICMPCode: int(*rulex.Code),
+							isNetworkACLRuleICMPType: int(*rulex.Code),
+						}
 					}
 					rule[isNetworkACLRuleICMP] = icmp
 				}
@@ -1007,7 +1011,7 @@ func classicCreateInlineRules(nwaclC *vpcclassicv1.VpcClassicV1, nwaclid string,
 		if len(icmp) > 0 {
 			protocol = "icmp"
 			ruleTemplate.Protocol = &protocol
-			if icmp[0] != nil {
+			if !isNil(icmp[0]) {
 				icmpval := icmp[0].(map[string]interface{})
 				if val, ok := icmpval[isNetworkACLRuleICMPType]; ok {
 					icmptype = int64(val.(int))
@@ -1114,7 +1118,7 @@ func createInlineRules(nwaclC *vpcv1.VpcV1, nwaclid string, rules []interface{})
 		if len(icmp) > 0 {
 			protocol = "icmp"
 			ruleTemplate.Protocol = &protocol
-			if icmp[0] != nil {
+			if !isNil(icmp[0]) {
 				icmpval := icmp[0].(map[string]interface{})
 				if val, ok := icmpval[isNetworkACLRuleICMPType]; ok {
 					icmptype = int64(val.(int))
@@ -1180,4 +1184,8 @@ func createInlineRules(nwaclC *vpcv1.VpcV1, nwaclid string, rules []interface{})
 		}
 	}
 	return nil
+}
+
+func isNil(i interface{}) bool {
+	return i == nil || reflect.ValueOf(i).IsNil()
 }
