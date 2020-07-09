@@ -15,8 +15,10 @@ Import the details of an existing IBM Cloud Infrastructure private domain name s
 
 ```hcl
 
+data "ibm_resource_instance" "dns" { }
+
 data "ibm_dns_zones" "ds_pdnszones" {
-  instance_id = "resource_instance_guid"
+  instance_id = data.ibm_resource_instance.dns.guid
 }
 
 ```
@@ -25,7 +27,7 @@ data "ibm_dns_zones" "ds_pdnszones" {
 
 The following arguments are supported:
 
-* `instance_id` - (Required, string) The resource instance id of the private DNS on which zones were created.
+* `instance_id` - (Required, string) The resource instance guid of the private DNS on which zones were created.
 
 
 
@@ -35,7 +37,7 @@ The following attributes are exported:
 
 * `dns_zones` - List of all private domain name service zones in the IBM Cloud Infrastructure.
   * `zone_id` - The unique identifier of the private DNS zone.
-  * `instance_id` - The resource instance id of the private DNS on which zones were created.
+  * `instance_id` -  The resource instance guid of a service instance.
   * `description` - The text describing the purpose of the DNS zone.
   * `name` - The name of the DNS zone.
   * `label` - The label of the DNS zone.
