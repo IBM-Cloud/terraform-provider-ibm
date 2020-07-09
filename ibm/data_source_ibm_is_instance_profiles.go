@@ -67,8 +67,9 @@ func classicInstanceProfilesList(d *schema.ResourceData, meta interface{}) error
 	start := ""
 	allrecs := []vpcclassicv1.InstanceProfile{}
 	for {
-		listInstanceProfilesOptions := &vpcclassicv1.ListInstanceProfilesOptions{
-			Start: &start,
+		listInstanceProfilesOptions := &vpcclassicv1.ListInstanceProfilesOptions{}
+		if start != "" {
+			listInstanceProfilesOptions.Start = &start
 		}
 		availableProfiles, response, err := sess.ListInstanceProfiles(listInstanceProfilesOptions)
 		if err != nil {

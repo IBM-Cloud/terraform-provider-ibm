@@ -85,8 +85,9 @@ func classicKeyGetByName(d *schema.ResourceData, meta interface{}, name string) 
 	start := ""
 	allrecs := []vpcclassicv1.Key{}
 	for {
-		listKeysOptions := &vpcclassicv1.ListKeysOptions{
-			Start: &start,
+		listKeysOptions := &vpcclassicv1.ListKeysOptions{}
+		if start != "" {
+			listKeysOptions.Start = &start
 		}
 		keys, response, err := sess.ListKeys(listKeysOptions)
 		if err != nil {

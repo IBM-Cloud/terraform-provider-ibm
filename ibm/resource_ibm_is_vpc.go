@@ -519,8 +519,9 @@ func classicVpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	start := ""
 	allrecs := []vpcclassicv1.Subnet{}
 	for {
-		options := &vpcclassicv1.ListSubnetsOptions{
-			Start: &start,
+		options := &vpcclassicv1.ListSubnetsOptions{}
+		if start != "" {
+			options.Start = &start
 		}
 		s, response, err := sess.ListSubnets(options)
 		if err != nil {
@@ -532,7 +533,6 @@ func classicVpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 			break
 		}
 	}
-
 	subnetsInfo := make([]map[string]interface{}, 0)
 	for _, subnet := range allrecs {
 		if *subnet.VPC.ID == d.Id() {
@@ -620,8 +620,9 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	start := ""
 	allrecs := []vpcv1.Subnet{}
 	for {
-		options := &vpcv1.ListSubnetsOptions{
-			Start: &start,
+		options := &vpcv1.ListSubnetsOptions{}
+		if start != "" {
+			options.Start = &start
 		}
 		s, response, err := sess.ListSubnets(options)
 		if err != nil {
@@ -633,7 +634,6 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 			break
 		}
 	}
-
 	subnetsInfo := make([]map[string]interface{}, 0)
 	for _, subnet := range allrecs {
 		if *subnet.VPC.ID == d.Id() {

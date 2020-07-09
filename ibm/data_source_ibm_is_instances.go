@@ -266,8 +266,9 @@ func classicInstancesList(d *schema.ResourceData, meta interface{}) error {
 	start := ""
 	allrecs := []vpcclassicv1.Instance{}
 	for {
-		listInstancesOptions := &vpcclassicv1.ListInstancesOptions{
-			Start: &start,
+		listInstancesOptions := &vpcclassicv1.ListInstancesOptions{}
+		if start != "" {
+			listInstancesOptions.Start = &start
 		}
 		instances, response, err := sess.ListInstances(listInstancesOptions)
 		if err != nil {
@@ -407,8 +408,9 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 	start := ""
 	allrecs := []vpcv1.Instance{}
 	for {
-		listInstancesOptions := &vpcv1.ListInstancesOptions{
-			Start: &start,
+		listInstancesOptions := &vpcv1.ListInstancesOptions{}
+		if start != "" {
+			listInstancesOptions.Start = &start
 		}
 		instances, response, err := sess.ListInstances(listInstancesOptions)
 		if err != nil {

@@ -860,8 +860,10 @@ func classicClearRules(nwaclC *vpcclassicv1.VpcClassicV1, nwaclid string) error 
 	allrecs := []vpcclassicv1.NetworkACLRuleItemIntf{}
 	for {
 		listNetworkAclRulesOptions := &vpcclassicv1.ListNetworkACLRulesOptions{
-			Start:        &start,
 			NetworkACLID: &nwaclid,
+		}
+		if start != "" {
+			listNetworkAclRulesOptions.Start = &start
 		}
 		rawrules, response, err := nwaclC.ListNetworkACLRules(listNetworkAclRulesOptions)
 		if err != nil {
@@ -903,8 +905,10 @@ func clearRules(nwaclC *vpcv1.VpcV1, nwaclid string) error {
 	allrecs := []vpcv1.NetworkACLRuleItemIntf{}
 	for {
 		listNetworkAclRulesOptions := &vpcv1.ListNetworkACLRulesOptions{
-			Start:        &start,
 			NetworkACLID: &nwaclid,
+		}
+		if start != "" {
+			listNetworkAclRulesOptions.Start = &start
 		}
 		rawrules, response, err := nwaclC.ListNetworkACLRules(listNetworkAclRulesOptions)
 		if err != nil {

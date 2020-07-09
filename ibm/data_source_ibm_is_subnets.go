@@ -112,8 +112,9 @@ func classicSubnetList(d *schema.ResourceData, meta interface{}) error {
 	start := ""
 	allrecs := []vpcclassicv1.Subnet{}
 	for {
-		options := &vpcclassicv1.ListSubnetsOptions{
-			Start: &start,
+		options := &vpcclassicv1.ListSubnetsOptions{}
+		if start != "" {
+			options.Start = &start
 		}
 		subnets, response, err := sess.ListSubnets(options)
 		if err != nil {
@@ -160,8 +161,9 @@ func subnetList(d *schema.ResourceData, meta interface{}) error {
 	start := ""
 	allrecs := []vpcv1.Subnet{}
 	for {
-		options := &vpcv1.ListSubnetsOptions{
-			Start: &start,
+		options := &vpcv1.ListSubnetsOptions{}
+		if start != "" {
+			options.Start = &start
 		}
 		subnets, response, err := sess.ListSubnets(options)
 		if err != nil {
