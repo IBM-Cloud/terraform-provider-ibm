@@ -32,6 +32,20 @@ func (o *PcloudPvminstancesActionPostReader) ReadResponse(response runtime.Clien
 		}
 		return result, nil
 
+	case 400:
+		result := NewPcloudPvminstancesActionPostBadRequest()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+
+	case 404:
+		result := NewPcloudPvminstancesActionPostNotFound()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
+
 	case 500:
 		result := NewPcloudPvminstancesActionPostInternalServerError()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -65,6 +79,64 @@ func (o *PcloudPvminstancesActionPostOK) readResponse(response runtime.ClientRes
 
 	// response payload
 	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewPcloudPvminstancesActionPostBadRequest creates a PcloudPvminstancesActionPostBadRequest with default headers values
+func NewPcloudPvminstancesActionPostBadRequest() *PcloudPvminstancesActionPostBadRequest {
+	return &PcloudPvminstancesActionPostBadRequest{}
+}
+
+/*PcloudPvminstancesActionPostBadRequest handles this case with default header values.
+
+Bad Request
+*/
+type PcloudPvminstancesActionPostBadRequest struct {
+	Payload *models.Error
+}
+
+func (o *PcloudPvminstancesActionPostBadRequest) Error() string {
+	return fmt.Sprintf("[POST /pcloud/v1/cloud-instances/{cloud_instance_id}/pvm-instances/{pvm_instance_id}/action][%d] pcloudPvminstancesActionPostBadRequest  %+v", 400, o.Payload)
+}
+
+func (o *PcloudPvminstancesActionPostBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.Error)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewPcloudPvminstancesActionPostNotFound creates a PcloudPvminstancesActionPostNotFound with default headers values
+func NewPcloudPvminstancesActionPostNotFound() *PcloudPvminstancesActionPostNotFound {
+	return &PcloudPvminstancesActionPostNotFound{}
+}
+
+/*PcloudPvminstancesActionPostNotFound handles this case with default header values.
+
+Not Found
+*/
+type PcloudPvminstancesActionPostNotFound struct {
+	Payload *models.Error
+}
+
+func (o *PcloudPvminstancesActionPostNotFound) Error() string {
+	return fmt.Sprintf("[POST /pcloud/v1/cloud-instances/{cloud_instance_id}/pvm-instances/{pvm_instance_id}/action][%d] pcloudPvminstancesActionPostNotFound  %+v", 404, o.Payload)
+}
+
+func (o *PcloudPvminstancesActionPostNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.Error)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

@@ -71,16 +71,18 @@ const (
 
 	// IBM PI Network
 
-	PINetworkReady          = "ready"
-	PINetworkID             = "pi_networkid"
-	PINetworkName           = "pi_network_name"
-	PINetworkCidr           = "pi_cidr"
-	PINetworkDNS            = "pi_dns"
-	PINetworkType           = "pi_network_type"
-	PINetworkGateway        = "pi_gateway"
-	PINetworkIPAddressRange = "pi_ipaddress_range"
-	PINetworkVlanId         = "pi_vlan_id"
-	PINetworkProvisioning   = "build"
+	PINetworkReady           = "ready"
+	PINetworkID              = "pi_networkid"
+	PINetworkName            = "pi_network_name"
+	PINetworkCidr            = "pi_cidr"
+	PINetworkDNS             = "pi_dns"
+	PINetworkType            = "pi_network_type"
+	PINetworkGateway         = "pi_gateway"
+	PINetworkIPAddressRange  = "pi_ipaddress_range"
+	PINetworkVlanId          = "pi_vlan_id"
+	PINetworkProvisioning    = "build"
+	PINetworkPortDescription = "pi_network_port_description"
+	PINetworkPortIPAddress   = "pi_network_port_ipaddress"
 
 	// IBM PI Operations
 	PIInstanceOperationType       = "pi_operation"

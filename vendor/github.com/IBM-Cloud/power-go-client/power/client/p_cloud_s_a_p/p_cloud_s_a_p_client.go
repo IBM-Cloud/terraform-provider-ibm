@@ -25,6 +25,35 @@ type Client struct {
 }
 
 /*
+PcloudSapGet gets the information on an s a p profile
+*/
+func (a *Client) PcloudSapGet(params *PcloudSapGetParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudSapGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPcloudSapGetParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "pcloud.sap.get",
+		Method:             "GET",
+		PathPattern:        "/pcloud/v1/cloud-instances/{cloud_instance_id}/sap/{sap_profile_id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PcloudSapGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PcloudSapGetOK), nil
+
+}
+
+/*
 PcloudSapGetall gets list of s a p profiles
 */
 func (a *Client) PcloudSapGetall(params *PcloudSapGetallParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudSapGetallOK, error) {

@@ -7,10 +7,15 @@ import (
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_p_vm_instances"
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_s_a_p"
 	"github.com/IBM-Cloud/power-go-client/power/models"
-
 	"log"
+	"time"
 )
 
+/*  ChangeLog
+
+2020-June-05 : Added the timeout variable to the clients since a lot of the SB / Powervc calls are timing out.
+
+*/
 type IBMPIInstanceClient struct {
 	session         *ibmpisession.IBMPISession
 	powerinstanceid string
@@ -25,9 +30,9 @@ func NewIBMPIInstanceClient(sess *ibmpisession.IBMPISession, powerinstanceid str
 }
 
 //Get information about a single pvm only
-func (f *IBMPIInstanceClient) Get(id, powerinstanceid string) (*models.PVMInstance, error) {
+func (f *IBMPIInstanceClient) Get(id, powerinstanceid string, timeout time.Duration) (*models.PVMInstance, error) {
 
-	params := p_cloud_p_vm_instances.NewPcloudPvminstancesGetParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithPvmInstanceID(id)
+	params := p_cloud_p_vm_instances.NewPcloudPvminstancesGetParamsWithTimeout(timeout).WithCloudInstanceID(powerinstanceid).WithPvmInstanceID(id)
 	resp, err := f.session.Power.PCloudPVMInstances.PcloudPvminstancesGet(params, ibmpisession.NewAuth(f.session, powerinstanceid))
 	if err != nil || resp.Payload == nil {
 		log.Printf("Failed to perform the operation... %v", err)
@@ -38,9 +43,9 @@ func (f *IBMPIInstanceClient) Get(id, powerinstanceid string) (*models.PVMInstan
 
 // Get Information about all the PVM Instances for a Client
 
-func (f *IBMPIInstanceClient) GetAll(powerinstanceid string) (*models.PVMInstances, error) {
+func (f *IBMPIInstanceClient) GetAll(powerinstanceid string, timeout time.Duration) (*models.PVMInstances, error) {
 
-	params := p_cloud_p_vm_instances.NewPcloudPvminstancesGetallParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid)
+	params := p_cloud_p_vm_instances.NewPcloudPvminstancesGetallParamsWithTimeout(getTimeOut).WithCloudInstanceID(powerinstanceid)
 	resp, err := f.session.Power.PCloudPVMInstances.PcloudPvminstancesGetall(params, ibmpisession.NewAuth(f.session, powerinstanceid))
 	if err != nil || resp.Payload == nil {
 		log.Printf("Failed to perform the operation... %v", err)
@@ -51,10 +56,10 @@ func (f *IBMPIInstanceClient) GetAll(powerinstanceid string) (*models.PVMInstanc
 
 //Create
 
-func (f *IBMPIInstanceClient) Create(powerdef *p_cloud_p_vm_instances.PcloudPvminstancesPostParams, powerinstanceid string) (*models.PVMInstanceList, error) {
+func (f *IBMPIInstanceClient) Create(powerdef *p_cloud_p_vm_instances.PcloudPvminstancesPostParams, powerinstanceid string, timeout time.Duration) (*models.PVMInstanceList, error) {
 
 	log.Printf("Calling the Power PVM Create Method")
-	params := p_cloud_p_vm_instances.NewPcloudPvminstancesPostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithBody(powerdef.Body)
+	params := p_cloud_p_vm_instances.NewPcloudPvminstancesPostParamsWithTimeout(timeout).WithCloudInstanceID(powerinstanceid).WithBody(powerdef.Body)
 
 	log.Printf("Printing the params to be passed %+v", params)
 
@@ -86,10 +91,10 @@ func (f *IBMPIInstanceClient) Create(powerdef *p_cloud_p_vm_instances.PcloudPvmi
 }
 
 // PVM Instances Delete
-func (f *IBMPIInstanceClient) Delete(id, powerinstanceid string) error {
+func (f *IBMPIInstanceClient) Delete(id, powerinstanceid string, timeout time.Duration) error {
 
 	log.Printf("Calling the Power PVM Delete Method")
-	params := p_cloud_p_vm_instances.NewPcloudPvminstancesDeleteParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithPvmInstanceID(id)
+	params := p_cloud_p_vm_instances.NewPcloudPvminstancesDeleteParamsWithTimeout(timeout).WithCloudInstanceID(powerinstanceid).WithPvmInstanceID(id)
 	_, err := f.session.Power.PCloudPVMInstances.PcloudPvminstancesDelete(params, ibmpisession.NewAuth(f.session, powerinstanceid))
 
 	if err != nil {
@@ -100,10 +105,10 @@ func (f *IBMPIInstanceClient) Delete(id, powerinstanceid string) error {
 }
 
 // PVM Instances Update
-func (f *IBMPIInstanceClient) Update(id, powerinstanceid string, powerupdateparams *p_cloud_p_vm_instances.PcloudPvminstancesPutParams) (*models.PVMInstanceUpdateResponse, error) {
+func (f *IBMPIInstanceClient) Update(id, powerinstanceid string, powerupdateparams *p_cloud_p_vm_instances.PcloudPvminstancesPutParams, timeout time.Duration) (*models.PVMInstanceUpdateResponse, error) {
 
 	log.Printf("Calling the Power PVM Update Instance Method")
-	params := p_cloud_p_vm_instances.NewPcloudPvminstancesPutParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithPvmInstanceID(id).WithBody(powerupdateparams.Body)
+	params := p_cloud_p_vm_instances.NewPcloudPvminstancesPutParamsWithTimeout(timeout).WithCloudInstanceID(powerinstanceid).WithPvmInstanceID(id).WithBody(powerupdateparams.Body)
 	resp, err := f.session.Power.PCloudPVMInstances.PcloudPvminstancesPut(params, ibmpisession.NewAuth(f.session, powerinstanceid))
 
 	if err != nil {
@@ -114,11 +119,11 @@ func (f *IBMPIInstanceClient) Update(id, powerinstanceid string, powerupdatepara
 }
 
 // PVM Instances Operations
-func (f *IBMPIInstanceClient) Action(poweractionparams *p_cloud_p_vm_instances.PcloudPvminstancesActionPostParams, id, powerinstanceid string) (models.Object, error) {
+func (f *IBMPIInstanceClient) Action(poweractionparams *p_cloud_p_vm_instances.PcloudPvminstancesActionPostParams, id, powerinstanceid string, timeout time.Duration) (models.Object, error) {
 
 	log.Printf("Calling the Power PVM Action Method")
 	log.Printf("the params are %s - powerinstance id is %s", id, powerinstanceid)
-	params := p_cloud_p_vm_instances.NewPcloudPvminstancesActionPostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithPvmInstanceID(id).WithBody(poweractionparams.Body)
+	params := p_cloud_p_vm_instances.NewPcloudPvminstancesActionPostParamsWithTimeout(timeout).WithCloudInstanceID(powerinstanceid).WithPvmInstanceID(id).WithBody(poweractionparams.Body)
 
 	log.Printf("printing the poweraction params %+v", params)
 
@@ -133,8 +138,8 @@ func (f *IBMPIInstanceClient) Action(poweractionparams *p_cloud_p_vm_instances.P
 
 // Generate the Console URL
 
-func (f *IBMPIInstanceClient) PostConsoleURL(id, powerinstanceid string) (models.Object, error) {
-	params := p_cloud_p_vm_instances.NewPcloudPvminstancesConsolePostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithPvmInstanceID(id)
+func (f *IBMPIInstanceClient) PostConsoleURL(id, powerinstanceid string, timeout time.Duration) (models.Object, error) {
+	params := p_cloud_p_vm_instances.NewPcloudPvminstancesConsolePostParamsWithTimeout(postTimeOut).WithCloudInstanceID(powerinstanceid).WithPvmInstanceID(id)
 
 	postok, err := f.session.Power.PCloudPVMInstances.PcloudPvminstancesConsolePost(params, ibmpisession.NewAuth(f.session, powerinstanceid))
 
@@ -146,9 +151,9 @@ func (f *IBMPIInstanceClient) PostConsoleURL(id, powerinstanceid string) (models
 
 // Capture an instance
 
-func (f *IBMPIInstanceClient) CaptureInstanceToImageCatalog(id, powerinstanceid string, picaptureparams *p_cloud_p_vm_instances.PcloudPvminstancesCapturePostParams) (models.Object, error) {
+func (f *IBMPIInstanceClient) CaptureInstanceToImageCatalog(id, powerinstanceid string, picaptureparams *p_cloud_p_vm_instances.PcloudPvminstancesCapturePostParams, timeout time.Duration) (models.Object, error) {
 
-	params := p_cloud_p_vm_instances.NewPcloudPvminstancesCapturePostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithPvmInstanceID(id).WithBody(picaptureparams.Body)
+	params := p_cloud_p_vm_instances.NewPcloudPvminstancesCapturePostParamsWithTimeout(getTimeOut).WithCloudInstanceID(powerinstanceid).WithPvmInstanceID(id).WithBody(picaptureparams.Body)
 	postok, _, err := f.session.Power.PCloudPVMInstances.PcloudPvminstancesCapturePost(params, ibmpisession.NewAuth(f.session, powerinstanceid))
 	if err != nil {
 		return nil, errors.ToError(err)
@@ -158,9 +163,9 @@ func (f *IBMPIInstanceClient) CaptureInstanceToImageCatalog(id, powerinstanceid 
 }
 
 // Create a snapshot of the instance
-func (f *IBMPIInstanceClient) CreatePvmSnapShot(snapshotdef *p_cloud_p_vm_instances.PcloudPvminstancesSnapshotsPostParams, pvminstanceid, powerinstanceid string) (*models.SnapshotCreateResponse, error) {
+func (f *IBMPIInstanceClient) CreatePvmSnapShot(snapshotdef *p_cloud_p_vm_instances.PcloudPvminstancesSnapshotsPostParams, pvminstanceid, powerinstanceid string, timeout time.Duration) (*models.SnapshotCreateResponse, error) {
 	log.Printf("Calling the Power PVM Snaphshot Method and printing the following data %s - %s - %s", snapshotdef.Body.Description, snapshotdef.Body.Name, snapshotdef.Body.VolumeIds)
-	params := p_cloud_p_vm_instances.NewPcloudPvminstancesSnapshotsPostParamsWithTimeout(f.session.Timeout).WithPvmInstanceID(pvminstanceid).WithCloudInstanceID(powerinstanceid).WithBody(snapshotdef.Body)
+	params := p_cloud_p_vm_instances.NewPcloudPvminstancesSnapshotsPostParamsWithTimeout(postTimeOut).WithPvmInstanceID(pvminstanceid).WithCloudInstanceID(powerinstanceid).WithBody(snapshotdef.Body)
 	snapshotpostaccepted, err := f.session.Power.PCloudPVMInstances.PcloudPvminstancesSnapshotsPost(params, ibmpisession.NewAuth(f.session, powerinstanceid))
 
 	log.Printf("*** Printing the error from the snapshot call *** %s", err)
@@ -179,7 +184,7 @@ func (f *IBMPIInstanceClient) CreatePvmSnapShot(snapshotdef *p_cloud_p_vm_instan
 
 func (f *IBMPIInstanceClient) CreateClone(clonedef *p_cloud_p_vm_instances.PcloudPvminstancesClonePostParams, pvminstanceid, powerinstanceid string) (*models.PVMInstance, error) {
 	log.Printf("Calling the Power PVM Clone Method")
-	params := p_cloud_p_vm_instances.NewPcloudPvminstancesClonePostParamsWithTimeout(f.session.Timeout).WithPvmInstanceID(pvminstanceid).WithCloudInstanceID(powerinstanceid).WithBody(clonedef.Body)
+	params := p_cloud_p_vm_instances.NewPcloudPvminstancesClonePostParamsWithTimeout(postTimeOut).WithPvmInstanceID(pvminstanceid).WithCloudInstanceID(powerinstanceid).WithBody(clonedef.Body)
 	clonePost, err := f.session.Power.PCloudPVMInstances.PcloudPvminstancesClonePost(params, ibmpisession.NewAuth(f.session, powerinstanceid))
 	if err != nil {
 
@@ -190,12 +195,12 @@ func (f *IBMPIInstanceClient) CreateClone(clonedef *p_cloud_p_vm_instances.Pclou
 
 // Get information about the snapshots for a vm
 
-func (f *IBMPIInstanceClient) GetSnapShotVM(powerinstanceid, pvminstanceid string) (*models.Snapshots, error) {
+func (f *IBMPIInstanceClient) GetSnapShotVM(powerinstanceid, pvminstanceid string, timeout time.Duration) (*models.Snapshots, error) {
 
 	log.Printf("Calling the GetSnapshot for vm Method..")
 	log.Printf("The input pvmid name is %s and  to the cloudinstance id %s", pvminstanceid, powerinstanceid)
 
-	params := p_cloud_p_vm_instances.NewPcloudPvminstancesSnapshotsGetallParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithPvmInstanceID(pvminstanceid)
+	params := p_cloud_p_vm_instances.NewPcloudPvminstancesSnapshotsGetallParamsWithTimeout(timeout).WithCloudInstanceID(powerinstanceid).WithPvmInstanceID(pvminstanceid)
 	resp, err := f.session.Power.PCloudPVMInstances.PcloudPvminstancesSnapshotsGetall(params, ibmpisession.NewAuth(f.session, powerinstanceid))
 
 	if err != nil || resp.Payload == nil {
@@ -208,24 +213,40 @@ func (f *IBMPIInstanceClient) GetSnapShotVM(powerinstanceid, pvminstanceid strin
 
 // Restore a snapshot
 
-func (f *IBMPIInstanceClient) RestoreSnapShotVM(powerinstanceid, pvminstanceid, snapshotid, restoreAction string, restoreparams *p_cloud_p_vm_instances.PcloudPvminstancesSnapshotsRestorePostParams) (*models.Snapshot, error) {
+func (f *IBMPIInstanceClient) RestoreSnapShotVM(powerinstanceid, pvminstanceid, snapshotid, restoreAction string, restoreparams *p_cloud_p_vm_instances.PcloudPvminstancesSnapshotsRestorePostParams, timeout time.Duration) (*models.Snapshot, error) {
 	log.Printf("Performing the snapshot restore for lpar with instanceid [%s] and snapshotid [%s] ", pvminstanceid, snapshotid)
-	params := p_cloud_p_vm_instances.NewPcloudPvminstancesSnapshotsRestorePostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithPvmInstanceID(pvminstanceid).WithSnapshotID(snapshotid).WithRestoreFailAction(&restoreAction).WithBody(restoreparams.Body)
+	params := p_cloud_p_vm_instances.NewPcloudPvminstancesSnapshotsRestorePostParamsWithTimeout(timeout).WithCloudInstanceID(powerinstanceid).WithPvmInstanceID(pvminstanceid).WithSnapshotID(snapshotid).WithRestoreFailAction(&restoreAction).WithBody(restoreparams.Body)
 	resp, err := f.session.Power.PCloudPVMInstances.PcloudPvminstancesSnapshotsRestorePost(params, ibmpisession.NewAuth(f.session, powerinstanceid))
 
-	if err != nil || resp.Payload.SnapshotID != nil {
+	if err != nil {
 		log.Printf("Failed to perform the snapshot restore operation")
 		return nil, errors.ToError(err)
 	}
 	return resp.Payload, nil
 }
 
+// Add a network to the instance
+
+func (f *IBMPIInstanceClient) AddNetwork(powerinstanceid, pvminstanceid string, networkdef *p_cloud_p_vm_instances.PcloudPvminstancesNetworksPostParams, timeout time.Duration) (*models.PVMInstanceNetwork, error) {
+	log.Printf("Adding a network to the existing pvm instance with instanceid [%s] ", pvminstanceid)
+	params := p_cloud_p_vm_instances.NewPcloudPvminstancesNetworksPostParamsWithTimeout(timeout).WithCloudInstanceID(powerinstanceid).WithPvmInstanceID(pvminstanceid).WithBody(networkdef.Body)
+	resp, err := f.session.Power.PCloudPVMInstances.PcloudPvminstancesNetworksPost(params, ibmpisession.NewAuth(f.session, powerinstanceid))
+
+	if err != nil || resp.Payload.NetworkID == "" {
+		return nil, fmt.Errorf("Failed to attach the network to the pvminstanceid ")
+
+	}
+	return resp.Payload, nil
+}
+
+// Delete a network from an instance
+
 // Create SAP Systems
 
-func (f *IBMPIInstanceClient) CreateSAP(powerdef *p_cloud_s_a_p.PcloudSapPostParams, powerinstanceid string) (*models.PVMInstanceList, error) {
+func (f *IBMPIInstanceClient) CreateSAP(powerdef *p_cloud_s_a_p.PcloudSapPostParams, powerinstanceid string, timeout time.Duration) (*models.PVMInstanceList, error) {
 
 	log.Printf("Calling the Power PVM Create Method For SAP")
-	params := p_cloud_s_a_p.NewPcloudSapPostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithBody(powerdef.Body)
+	params := p_cloud_s_a_p.NewPcloudSapPostParamsWithTimeout(timeout).WithCloudInstanceID(powerinstanceid).WithBody(powerdef.Body)
 
 	log.Printf("Printing the params to be passed %+v", params)
 

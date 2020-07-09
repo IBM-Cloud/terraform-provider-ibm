@@ -50,6 +50,9 @@ type PVMInstanceReference struct {
 	// Required: true
 	PvmInstanceID *string `json:"pvmInstanceID"`
 
+	// If this is an SAP pvm-instance the profile reference will link to the SAP profile
+	SapProfile *SAPProfileReference `json:"sapProfile,omitempty"`
+
 	// Name of the server
 	// Required: true
 	ServerName *string `json:"serverName"`
@@ -102,6 +105,10 @@ func (m *PVMInstanceReference) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validatePvmInstanceID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSapProfile(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -248,6 +255,24 @@ func (m *PVMInstanceReference) validatePvmInstanceID(formats strfmt.Registry) er
 
 	if err := validate.Required("pvmInstanceID", "body", m.PvmInstanceID); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *PVMInstanceReference) validateSapProfile(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.SapProfile) { // not required
+		return nil
+	}
+
+	if m.SapProfile != nil {
+		if err := m.SapProfile.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("sapProfile")
+			}
+			return err
+		}
 	}
 
 	return nil
