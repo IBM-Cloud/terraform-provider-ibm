@@ -41,7 +41,7 @@ github.com/IBM-Cloud/bluemix-go/rest
 github.com/IBM-Cloud/bluemix-go/session
 github.com/IBM-Cloud/bluemix-go/trace
 github.com/IBM-Cloud/bluemix-go/utils
-# github.com/IBM-Cloud/power-go-client v1.0.24
+# github.com/IBM-Cloud/power-go-client v1.0.37
 github.com/IBM-Cloud/power-go-client/clients/instance
 github.com/IBM-Cloud/power-go-client/errors
 github.com/IBM-Cloud/power-go-client/helpers
@@ -131,6 +131,8 @@ github.com/IBM/vpc-go-sdk/vpcv1
 github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
 github.com/PuerkitoBio/urlesc
+# github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
+github.com/ScaleFT/sshkeys
 # github.com/agext/levenshtein v1.2.2
 github.com/agext/levenshtein
 # github.com/apache/incubator-openwhisk-client-go v0.0.0-20171128215515-ad814bc98c32
@@ -142,7 +144,7 @@ github.com/apparentlymart/go-cidr/cidr
 github.com/apparentlymart/go-textseg/textseg
 # github.com/armon/go-radix v1.0.0
 github.com/armon/go-radix
-# github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535
+# github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
 github.com/asaskevich/govalidator
 # github.com/aws/aws-sdk-go v1.26.2
 github.com/aws/aws-sdk-go/aws
@@ -192,6 +194,8 @@ github.com/bgentry/speakeasy
 github.com/cloudfoundry/jibber_jabber
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
+# github.com/dchest/bcrypt_pbkdf v0.0.0-20150205184540-83f37f9c154a
+github.com/dchest/bcrypt_pbkdf
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
 github.com/dgrijalva/jwt-go
 # github.com/fatih/color v1.9.0
@@ -201,7 +205,7 @@ github.com/ghodss/yaml
 # github.com/go-openapi/analysis v0.19.5
 github.com/go-openapi/analysis
 github.com/go-openapi/analysis/internal
-# github.com/go-openapi/errors v0.19.4
+# github.com/go-openapi/errors v0.19.3
 github.com/go-openapi/errors
 # github.com/go-openapi/jsonpointer v0.19.3
 github.com/go-openapi/jsonpointer
@@ -385,7 +389,7 @@ github.com/mitchellh/go-homedir
 github.com/mitchellh/go-testing-interface
 # github.com/mitchellh/go-wordwrap v1.0.0
 github.com/mitchellh/go-wordwrap
-# github.com/mitchellh/mapstructure v1.3.0
+# github.com/mitchellh/mapstructure v1.1.2
 github.com/mitchellh/mapstructure
 # github.com/mitchellh/reflectwalk v1.0.1
 github.com/mitchellh/reflectwalk
@@ -461,10 +465,9 @@ github.ibm.com/Bluemix/riaas-go-client/utils
 github.ibm.com/ibmcloud/networking-go-sdk/common
 github.ibm.com/ibmcloud/networking-go-sdk/directlinkapisv1
 github.ibm.com/ibmcloud/networking-go-sdk/transitgatewayapisv1
-# go.mongodb.org/mongo-driver v1.3.3
+# go.mongodb.org/mongo-driver v1.1.2
 go.mongodb.org/mongo-driver/bson
 go.mongodb.org/mongo-driver/bson/bsoncodec
-go.mongodb.org/mongo-driver/bson/bsonoptions
 go.mongodb.org/mongo-driver/bson/bsonrw
 go.mongodb.org/mongo-driver/bson/bsontype
 go.mongodb.org/mongo-driver/bson/primitive
@@ -486,7 +489,7 @@ go.opencensus.io/trace
 go.opencensus.io/trace/internal
 go.opencensus.io/trace/propagation
 go.opencensus.io/trace/tracestate
-# golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d
+# golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/cast5

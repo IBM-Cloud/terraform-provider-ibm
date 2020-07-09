@@ -17,6 +17,10 @@ import (
 // swagger:model HostPVMInstance
 type HostPVMInstance struct {
 
+	// Cloud Instance ID pvm instance is a member of
+	// Required: true
+	CloudInstanceID *string `json:"cloudInstanceID"`
+
 	// Owner information of pvm instance
 	// Required: true
 	Owner *OwnerInfo `json:"owner"`
@@ -32,11 +36,19 @@ type HostPVMInstance struct {
 	// State of pvm instance
 	// Required: true
 	State *string `json:"state"`
+
+	// Tenant ID of pvm instance
+	// Required: true
+	TenantID *string `json:"tenantID"`
 }
 
 // Validate validates this host p VM instance
 func (m *HostPVMInstance) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateCloudInstanceID(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateOwner(formats); err != nil {
 		res = append(res, err)
@@ -54,9 +66,22 @@ func (m *HostPVMInstance) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateTenantID(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *HostPVMInstance) validateCloudInstanceID(formats strfmt.Registry) error {
+
+	if err := validate.Required("cloudInstanceID", "body", m.CloudInstanceID); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -99,6 +124,15 @@ func (m *HostPVMInstance) validatePvmName(formats strfmt.Registry) error {
 func (m *HostPVMInstance) validateState(formats strfmt.Registry) error {
 
 	if err := validate.Required("state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *HostPVMInstance) validateTenantID(formats strfmt.Registry) error {
+
+	if err := validate.Required("tenantID", "body", m.TenantID); err != nil {
 		return err
 	}
 

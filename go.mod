@@ -41,7 +41,7 @@ require (
 	github.ibm.com/Bluemix/riaas-go-client v0.0.0-20191018070922-afd27ac04d4f
 	github.ibm.com/ibmcloud/namespace-go-sdk v0.0.0-00010101000000-000000000000 // indirect
 	github.ibm.com/ibmcloud/networking-go-sdk v0.0.0-00010101000000-000000000000
-	github.ibm.com/ibmcloud/vpc-go-sdk v0.0.0-00010101000000-000000000000
+	github.ibm.com/ibmcloud/vpc-go-sdk v0.0.0-00010101000000-000000000000 // indirect
 	golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59
 )
 
