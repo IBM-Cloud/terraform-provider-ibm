@@ -15,7 +15,6 @@ const (
 	isSubnetIpv4CidrBlock             = "ipv4_cidr_block"
 	isSubnetIpv6CidrBlock             = "ipv6_cidr_block"
 	isSubnetTotalIpv4AddressCount     = "total_ipv4_address_count"
-	isSubnetIPVersion                 = "ip_version"
 	isSubnetName                      = "name"
 	isSubnetNetworkACL                = "network_acl"
 	isSubnetPublicGateway             = "public_gateway"
@@ -72,15 +71,6 @@ func resourceIBMISSubnet() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{isSubnetIpv4CidrBlock},
-			},
-
-			isSubnetIPVersion: {
-				Type:         schema.TypeString,
-				ForceNew:     true,
-				Default:      "ipv4",
-				Optional:     true,
-				ValidateFunc: validateIPVersion,
-				Description:  "Subnet IP version",
 			},
 
 			isSubnetName: {
@@ -427,7 +417,6 @@ func classicSubnetGet(d *schema.ResourceData, meta interface{}, id string) error
 	}
 	d.Set("id", *subnet.ID)
 	d.Set(isSubnetName, *subnet.Name)
-	// d.Set(isSubnetIPVersion, *subnet..IPVersion)
 	d.Set(isSubnetIpv4CidrBlock, *subnet.Ipv4CIDRBlock)
 	// d.Set(isSubnetIpv6CidrBlock, *subnet.IPV6CidrBlock)
 	d.Set(isSubnetAvailableIpv4AddressCount, *subnet.AvailableIpv4AddressCount)
@@ -473,7 +462,6 @@ func subnetGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set("id", *subnet.ID)
 	d.Set(isSubnetName, *subnet.Name)
-	// d.Set(isSubnetIPVersion, *subnet..IPVersion)
 	d.Set(isSubnetIpv4CidrBlock, *subnet.Ipv4CIDRBlock)
 	// d.Set(isSubnetIpv6CidrBlock, *subnet.IPV6CidrBlock)
 	d.Set(isSubnetAvailableIpv4AddressCount, *subnet.AvailableIpv4AddressCount)

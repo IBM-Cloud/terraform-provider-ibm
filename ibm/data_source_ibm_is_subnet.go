@@ -39,11 +39,6 @@ func dataSourceIBMISSubnet() *schema.Resource {
 				Computed: true,
 			},
 
-			isSubnetIPVersion: {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
-
 			isSubnetName: {
 				Type:     schema.TypeString,
 				Computed: true,
