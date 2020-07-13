@@ -20,3 +20,7 @@ name="tg-gateway-1"
 data "ibm_tg_gateways" "all_tg_gws"{
 
 }
+
+data "ibm_tg_locations" "tg_locations" {
+}
+ 
