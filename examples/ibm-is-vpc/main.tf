@@ -71,7 +71,7 @@ resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
 }
 
 resource "ibm_is_lb_listener_policy_rule" "lb_listener_policy_rule" {
-  lb        = ibm_is_lb.lb2.id
+  lb        = ibm_is_lb.lb1.id
   listener  = ibm_is_lb_listener.lblistener1.listener_id
   policy    = ibm_is_lb_listener_policy.lb_listener_policy.policy_id
   condition = "equals"
@@ -313,3 +313,8 @@ resource "ibm_is_public_gateway" "publicgateway1" {
   vpc  = ibm_is_vpc.vpc1.id
   zone = var.zone1
 }
+
+data "ibm_is_vpc" "vpc1" {
+  name = ibm_is_vpc.vpc1.name
+}
+
