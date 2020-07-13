@@ -1,5 +1,6 @@
 variable "flavor" {
   default = "bx2.2x8"
+
 }
 
 variable "worker_count" {
@@ -23,7 +24,7 @@ variable "region" {
 }
 
 variable "service_instance_name" {
-  default = "my_service_instance"
+  default = "my-service-instance"
 }
 
 variable "cluster_name" {
