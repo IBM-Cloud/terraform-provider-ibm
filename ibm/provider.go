@@ -257,8 +257,9 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dl_routers":         dataSourceIBMDLRouters(),
 
 			//Added for Transit Gateway
-			"ibm_tg_gateway":  dataSourceIBMTransitGateway(),
-			"ibm_tg_gateways": dataSourceIBMTransitGateways(),
+			"ibm_tg_gateway":   dataSourceIBMTransitGateway(),
+			"ibm_tg_gateways":  dataSourceIBMTransitGateways(),
+			"ibm_tg_locations": dataSourceIBMTransitGatewaysLocations(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
