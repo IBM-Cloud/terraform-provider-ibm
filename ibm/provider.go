@@ -407,7 +407,8 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dl_gateway":            resourceIBMDLGateway(),
 			"ibm_dl_virtual_connection": resourceIBMDLGatewayVC(),
 			//Added for Transit Gateway
-			"ibm_tg_gateway": resourceIBMTransitGateway(),
+			"ibm_tg_gateway":    resourceIBMTransitGateway(),
+			"ibm_tg_connection": resourceIBMTransitGatewayConnection(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -426,6 +427,7 @@ func Validator() ValidatorDict {
 				"ibm_iam_custom_role":       resourceIBMIAMCustomRoleValidator(),
 				"ibm_cis_rate_limit":        resourceIBMCISRateLimitValidator(),
 				"ibm_tg_gateway":            resourceIBMTGValidator(),
+				"ibm_tg_connection":         resourceIBMTransitGatewayConnectionValidator(),
 				"ibm_dl_virtual_connection": resourceIBMdlGatewayVCValidator(),
 				"ibm_dl_gateway":            resourceIBMDLGatewayValidator(),
 				"ibm_dl_offering_speeds":    datasourceIBMDLOfferingSpeedsValidator(),
