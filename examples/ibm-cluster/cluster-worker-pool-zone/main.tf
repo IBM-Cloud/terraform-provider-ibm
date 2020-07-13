@@ -55,8 +55,8 @@ resource "ibm_resource_instance" "cos_instance" {
 }
 
 resource "ibm_container_bind_service" "bind_service" {
-  cluster_name_id     = ibm_container_vpc_cluster.cluster.id
-  service_instance_id = element(split(":", ibm_resource_instance.cos_instance.id), 7)
+  cluster_name_id     = ibm_container_cluster.cluster.id
+  service_instance_id = ibm_resource_instance.cos_instance.id
   namespace_id        = "default"
   role                = "Writer"
 }
