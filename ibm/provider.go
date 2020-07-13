@@ -222,6 +222,9 @@ func Provider() terraform.ResourceProvider {
 			"ibm_schematics_workspace":             dataSourceSchematicsWorkspace(),
 			"ibm_schematics_output":                dataSourceSchematicsOut(),
 			"ibm_schematics_state":                 dataSourceSchematicsState(),
+			"ibm_is_instance_group":                dataSourceIBMISInstanceGroup(),
+			"ibm_is_instance_group_manager":        dataSourceIBMISInstanceGroupManager(),
+			"ibm_is_instance_group_manager_policy": dataSourceIBMISInstanceGroupManagerPolicies(),
 
 			// Added for Power Resources
 
@@ -384,6 +387,9 @@ func Provider() terraform.ResourceProvider {
 			"ibm_ssl_certificate":                                resourceIBMSSLCertificate(),
 			"ibm_cdn":                                            resourceIBMCDN(),
 			"ibm_hardware_firewall_shared":                       resourceIBMFirewallShared(),
+			"ibm_is_instance_group":                              resourceIBMISInstanceGroup(),
+			"ibm_is_instance_group_manager":                      resourceIBMISInstanceGroupManager(),
+			"ibm_is_instance_group_manager_policy":               resourceIBMISInstanceGroupManagerPolicy(),
 
 			//Added for Power Colo
 

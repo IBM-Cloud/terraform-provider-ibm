@@ -42,6 +42,7 @@ require (
 	github.ibm.com/ibmcloud/namespace-go-sdk v0.0.0-00010101000000-000000000000 // indirect
 	github.ibm.com/ibmcloud/networking-go-sdk v0.0.0-00010101000000-000000000000
 	github.ibm.com/ibmcloud/vpc-go-sdk v0.0.0-00010101000000-000000000000 // indirect
+	github.ibm.com/ibmcloud/vpc-go-sdk-scoped v0.0.0-00010101000000-000000000000
 	golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59
 )
 
@@ -54,3 +55,5 @@ replace github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22 => 
 replace github.ibm.com/ibmcloud/networking-go-sdk => ./common/github.ibm.com/ibmcloud/networking-go-sdk
 
 replace github.ibm.com/ibmcloud/namespace-go-sdk => ./common/github.ibm.com/ibmcloud/namespace-go-sdk
+
+replace github.ibm.com/ibmcloud/vpc-go-sdk-scoped => ./common/github.ibm.com/ibmcloud/vpc-go-sdk-scoped
