@@ -59,6 +59,31 @@ func TestAccIBMISVPC_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMISVPC_securityGroups(t *testing.T) {
+	var vpc string
+	vpcname := fmt.Sprintf("terraformvpcuat-%d", acctest.RandIntRange(10, 100))
+	sgname := fmt.Sprintf("terraformvpcsg-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMISVPCDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVPCSgConfig(vpcname, sgname),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPCExists("ibm_is_vpc.testacc_vpc", vpc),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc", "name", vpcname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group.testacc_security_group", "name", sgname),
+					resource.TestCheckResourceAttrSet("ibm_is_vpc.testacc_vpc", "security_group.0.group_name"),
+					resource.TestCheckResourceAttrSet("ibm_is_vpc.testacc_vpc", "security_group.0.group_id"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMISVPCDestroy(s *terraform.State) error {
 	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
@@ -161,5 +186,29 @@ resource "ibm_is_vpc" "testacc_vpc1" {
 	address_prefix_management = "%s"
 	tags = ["Tag1", "tag2"]
 }`, name, apm)
+
+}
+
+func testAccCheckIBMISVPCSgConfig(vpcname string, sgname string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	  }
+	  
+	  resource "ibm_is_security_group" "testacc_security_group" {
+		name = "%s"
+		vpc  = ibm_is_vpc.testacc_vpc.id
+	  }
+	  
+	  resource "ibm_is_security_group_rule" "testacc_security_group_rule_udp" {
+		group      = ibm_is_security_group.testacc_security_group.id
+		direction  = "inbound"
+		remote     = "127.0.0.1"
+		udp {
+		  port_min = 805
+		  port_max = 807
+		}
+	}  
+`, vpcname, sgname)
 
 }

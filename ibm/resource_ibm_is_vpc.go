@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"reflect"
 	"strings"
 	"time"
 
@@ -17,25 +18,38 @@ import (
 )
 
 const (
-	isVPCDefaultNetworkACL       = "default_network_acl"
-	isVPCIsDefault               = "is_default"
-	isVPCIDefaultSecurityGroup   = "default_security_group"
-	isVPCName                    = "name"
-	isVPCResourceGroup           = "resource_group"
-	isVPCStatus                  = "status"
-	isVPCDeleting                = "deleting"
-	isVPCDeleted                 = "done"
-	isVPCTags                    = "tags"
-	isVPCClassicAccess           = "classic_access"
-	isVPCAvailable               = "available"
-	isVPCFailed                  = "failed"
-	isVPCPending                 = "pending"
-	isVPCAddressPrefixManagement = "address_prefix_management"
-	cseSourceAddresses           = "cse_source_addresses"
-	subnetsList                  = "subnets"
-	totalIPV4AddressCount        = "total_ipv4_address_count"
-	availableIPV4AddressCount    = "available_ipv4_address_count"
-	isVPCCRN                     = "crn"
+	isVPCDefaultNetworkACL          = "default_network_acl"
+	isVPCIsDefault                  = "is_default"
+	isVPCIDefaultSecurityGroup      = "default_security_group"
+	isVPCName                       = "name"
+	isVPCResourceGroup              = "resource_group"
+	isVPCStatus                     = "status"
+	isVPCDeleting                   = "deleting"
+	isVPCDeleted                    = "done"
+	isVPCTags                       = "tags"
+	isVPCClassicAccess              = "classic_access"
+	isVPCAvailable                  = "available"
+	isVPCFailed                     = "failed"
+	isVPCPending                    = "pending"
+	isVPCAddressPrefixManagement    = "address_prefix_management"
+	cseSourceAddresses              = "cse_source_addresses"
+	subnetsList                     = "subnets"
+	totalIPV4AddressCount           = "total_ipv4_address_count"
+	availableIPV4AddressCount       = "available_ipv4_address_count"
+	isVPCCRN                        = "crn"
+	isVPCSecurityGroupList          = "security_group"
+	isVPCSecurityGroupName          = "group_name"
+	isVPCSgRules                    = "rules"
+	isVPCSecurityGroupRuleID        = "rule_id"
+	isVPCSecurityGroupRuleDirection = "direction"
+	isVPCSecurityGroupRuleIPVersion = "ip_version"
+	isVPCSecurityGroupRuleRemote    = "remote"
+	isVPCSecurityGroupRuleType      = "type"
+	isVPCSecurityGroupRuleCode      = "code"
+	isVPCSecurityGroupRulePortMax   = "port_max"
+	isVPCSecurityGroupRulePortMin   = "port_min"
+	isVPCSecurityGroupRuleProtocol  = "protocol"
+	isVPCSecurityGroupID            = "group_id"
 )
 
 func resourceIBMISVPC() *schema.Resource {
@@ -178,6 +192,86 @@ func resourceIBMISVPC() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Location info of CSE Address",
+						},
+					},
+				},
+			},
+
+			isVPCSecurityGroupList: {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isVPCSecurityGroupName: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Security group name",
+						},
+
+						isVPCSecurityGroupID: {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Security group id",
+							ForceNew:    true,
+						},
+
+						isSecurityGroupRules: {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Security Rules",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+
+									isVPCSecurityGroupRuleID: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Rule ID",
+									},
+
+									isVPCSecurityGroupRuleDirection: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Direction of traffic to enforce, either inbound or outbound",
+									},
+
+									isVPCSecurityGroupRuleIPVersion: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "IP version: ipv4 or ipv6",
+									},
+
+									isVPCSecurityGroupRuleRemote: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Security group id: an IP address, a CIDR block, or a single security group identifier",
+									},
+
+									isVPCSecurityGroupRuleType: {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+
+									isVPCSecurityGroupRuleCode: {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+
+									isVPCSecurityGroupRulePortMin: {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+
+									isVPCSecurityGroupRulePortMax: {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+
+									isVPCSecurityGroupRuleProtocol: {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
 						},
 					},
 				},
@@ -548,6 +642,103 @@ func classicVpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 	}
 	d.Set(subnetsList, subnetsInfo)
+
+	//Set Security group list
+
+	listSgOptions := &vpcclassicv1.ListSecurityGroupsOptions{}
+	sgs, _, err := sess.ListSecurityGroups(listSgOptions)
+	if err != nil {
+		return err
+	}
+
+	securityGroupList := make([]map[string]interface{}, 0)
+
+	for _, group := range sgs.SecurityGroups {
+		if *group.VPC.ID == d.Id() {
+			g := make(map[string]interface{})
+
+			g[isVPCSecurityGroupName] = *group.Name
+			g[isVPCSecurityGroupID] = *group.ID
+
+			rules := make([]map[string]interface{}, 0)
+			for _, sgrule := range group.Rules {
+				switch reflect.TypeOf(sgrule).String() {
+				case "*vpcclassicv1.SecurityGroupRuleProtocolIcmp":
+					{
+						rule := sgrule.(*vpcclassicv1.SecurityGroupRuleProtocolIcmp)
+						r := make(map[string]interface{})
+						if rule.Code != nil {
+							r[isVPCSecurityGroupRuleCode] = int(*rule.Code)
+						}
+						if rule.Type != nil {
+							r[isVPCSecurityGroupRuleType] = int(*rule.Type)
+						}
+						r[isVPCSecurityGroupRuleDirection] = *rule.Direction
+						r[isVPCSecurityGroupRuleIPVersion] = *rule.IPVersion
+						if rule.Protocol != nil {
+							r[isVPCSecurityGroupRuleProtocol] = *rule.Protocol
+						}
+						r[isVPCSecurityGroupRuleID] = *rule.ID
+						//remote:<map[string]interface {} Value>
+						for _, v := range rule.Remote.(map[string]interface{}) {
+							r[isVPCSecurityGroupRuleRemote] = v.(string)
+						}
+
+						rules = append(rules, r)
+					}
+
+				case "*vpcclassicv1.SecurityGroupRuleProtocolAll":
+					{
+						rule := sgrule.(*vpcclassicv1.SecurityGroupRuleProtocolAll)
+						r := make(map[string]interface{})
+						r[isVPCSecurityGroupRuleDirection] = *rule.Direction
+						r[isVPCSecurityGroupRuleIPVersion] = *rule.IPVersion
+						if rule.Protocol != nil {
+							r[isVPCSecurityGroupRuleProtocol] = *rule.Protocol
+						}
+						r[isVPCSecurityGroupRuleID] = *rule.ID
+
+						//remote:<map[string]interface {} Value>
+						for _, v := range rule.Remote.(map[string]interface{}) {
+							r[isVPCSecurityGroupRuleRemote] = v.(string)
+						}
+
+						rules = append(rules, r)
+					}
+
+				case "*vpcclassicv1.SecurityGroupRuleProtocolTcpudp":
+					{
+						rule := sgrule.(*vpcclassicv1.SecurityGroupRuleProtocolTcpudp)
+						r := make(map[string]interface{})
+						r[isVPCSecurityGroupRuleDirection] = *rule.Direction
+						r[isVPCSecurityGroupRuleIPVersion] = *rule.IPVersion
+						if rule.PortMin != nil {
+							r[isVPCSecurityGroupRulePortMin] = int(*rule.PortMin)
+						}
+						if rule.PortMax != nil {
+							r[isVPCSecurityGroupRulePortMax] = int(*rule.PortMax)
+						}
+
+						if rule.Protocol != nil {
+							r[isVPCSecurityGroupRuleProtocol] = *rule.Protocol
+						}
+
+						r[isVPCSecurityGroupRuleID] = *rule.ID
+
+						//remote:<map[string]interface {} Value>
+						for _, v := range rule.Remote.(map[string]interface{}) {
+							r[isVPCSecurityGroupRuleRemote] = v.(string)
+						}
+						rules = append(rules, r)
+					}
+				}
+			}
+			g[isVPCSgRules] = rules
+			securityGroupList = append(securityGroupList, g)
+		}
+	}
+
+	d.Set(isVPCSecurityGroupList, securityGroupList)
 	return nil
 }
 
@@ -650,6 +841,102 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set(subnetsList, subnetsInfo)
 
+	//Set Security group list
+
+	listSgOptions := &vpcv1.ListSecurityGroupsOptions{}
+	sgs, _, err := sess.ListSecurityGroups(listSgOptions)
+	if err != nil {
+		return err
+	}
+
+	securityGroupList := make([]map[string]interface{}, 0)
+
+	for _, group := range sgs.SecurityGroups {
+		if *group.VPC.ID == d.Id() {
+			g := make(map[string]interface{})
+
+			g[isVPCSecurityGroupName] = *group.Name
+			g[isVPCSecurityGroupID] = *group.ID
+
+			rules := make([]map[string]interface{}, 0)
+			for _, sgrule := range group.Rules {
+				switch reflect.TypeOf(sgrule).String() {
+				case "*vpcv1.SecurityGroupRuleProtocolIcmp":
+					{
+						rule := sgrule.(*vpcv1.SecurityGroupRuleProtocolIcmp)
+						r := make(map[string]interface{})
+						if rule.Code != nil {
+							r[isVPCSecurityGroupRuleCode] = int(*rule.Code)
+						}
+						if rule.Type != nil {
+							r[isVPCSecurityGroupRuleType] = int(*rule.Type)
+						}
+						r[isVPCSecurityGroupRuleDirection] = *rule.Direction
+						r[isVPCSecurityGroupRuleIPVersion] = *rule.IPVersion
+						if rule.Protocol != nil {
+							r[isVPCSecurityGroupRuleProtocol] = *rule.Protocol
+						}
+						r[isVPCSecurityGroupRuleID] = *rule.ID
+						//remote:<map[string]interface {} Value>
+						for _, v := range rule.Remote.(map[string]interface{}) {
+							r[isVPCSecurityGroupRuleRemote] = v.(string)
+						}
+
+						rules = append(rules, r)
+					}
+
+				case "*vpcv1.SecurityGroupRuleProtocolAll":
+					{
+						rule := sgrule.(*vpcv1.SecurityGroupRuleProtocolAll)
+						r := make(map[string]interface{})
+						r[isVPCSecurityGroupRuleDirection] = *rule.Direction
+						r[isVPCSecurityGroupRuleIPVersion] = *rule.IPVersion
+						if rule.Protocol != nil {
+							r[isVPCSecurityGroupRuleProtocol] = *rule.Protocol
+						}
+						r[isVPCSecurityGroupRuleID] = *rule.ID
+
+						//remote:<map[string]interface {} Value>
+						for _, v := range rule.Remote.(map[string]interface{}) {
+							r[isVPCSecurityGroupRuleRemote] = v.(string)
+						}
+
+						rules = append(rules, r)
+					}
+
+				case "*vpcv1.SecurityGroupRuleProtocolTcpudp":
+					{
+						rule := sgrule.(*vpcv1.SecurityGroupRuleProtocolTcpudp)
+						r := make(map[string]interface{})
+						r[isVPCSecurityGroupRuleDirection] = *rule.Direction
+						r[isVPCSecurityGroupRuleIPVersion] = *rule.IPVersion
+						if rule.PortMin != nil {
+							r[isVPCSecurityGroupRulePortMin] = int(*rule.PortMin)
+						}
+						if rule.PortMax != nil {
+							r[isVPCSecurityGroupRulePortMax] = int(*rule.PortMax)
+						}
+
+						if rule.Protocol != nil {
+							r[isVPCSecurityGroupRuleProtocol] = *rule.Protocol
+						}
+
+						r[isVPCSecurityGroupRuleID] = *rule.ID
+
+						//remote:<map[string]interface {} Value>
+						for _, v := range rule.Remote.(map[string]interface{}) {
+							r[isVPCSecurityGroupRuleRemote] = v.(string)
+						}
+						rules = append(rules, r)
+					}
+				}
+			}
+			g[isVPCSgRules] = rules
+			securityGroupList = append(securityGroupList, g)
+		}
+	}
+
+	d.Set(isVPCSecurityGroupList, securityGroupList)
 	return nil
 }
 
