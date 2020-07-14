@@ -103,6 +103,9 @@ func resourceIBMPrivateDnsPermittedNetworkCreate(d *schema.ResourceData, meta in
 	zoneID := d.Get(pdnsZoneID).(string)
 	vpcCRN := d.Get(pdnsVpcCRN).(string)
 	nwType := d.Get(pdnsNetworkType).(string)
+	mk := "private_dns_permitted_network_" + instanceID + zoneID
+	ibmMutexKV.Lock(mk)
+	defer ibmMutexKV.Unlock(mk)
 
 	createPermittedNetworkOptions := sess.NewCreatePermittedNetworkOptions(instanceID, zoneID)
 	permittedNetworkCrn, err := sess.NewPermittedNetworkVpc(vpcCRN)
@@ -157,6 +160,9 @@ func resourceIBMPrivateDnsPermittedNetworkDelete(d *schema.ResourceData, meta in
 	}
 
 	id_set := strings.Split(d.Id(), "/")
+	mk := "private_dns_permitted_network_" + id_set[0] + id_set[1]
+	ibmMutexKV.Lock(mk)
+	defer ibmMutexKV.Unlock(mk)
 	deletePermittedNetworkOptions := sess.NewDeletePermittedNetworkOptions(id_set[0], id_set[1], id_set[2])
 	_, response, err := sess.DeletePermittedNetwork(deletePermittedNetworkOptions)
 
@@ -175,6 +181,9 @@ func resourceIBMPrivateDnsPermittedNetworkExists(d *schema.ResourceData, meta in
 	}
 
 	id_set := strings.Split(d.Id(), "/")
+	mk := "private_dns_permitted_network_" + id_set[0] + id_set[1]
+	ibmMutexKV.Lock(mk)
+	defer ibmMutexKV.Unlock(mk)
 	getPermittedNetworkOptions := sess.NewGetPermittedNetworkOptions(id_set[0], id_set[1], id_set[2])
 	_, response, err := sess.GetPermittedNetwork(getPermittedNetworkOptions)
 	if err != nil {
