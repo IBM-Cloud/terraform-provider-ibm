@@ -260,6 +260,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_tg_gateway":   dataSourceIBMTransitGateway(),
 			"ibm_tg_gateways":  dataSourceIBMTransitGateways(),
 			"ibm_tg_locations": dataSourceIBMTransitGatewaysLocations(),
+			"ibm_tg_location":  dataSourceIBMTransitGatewaysLocation(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
