@@ -149,6 +149,12 @@ func resourceIBMResourceInstance() *schema.Resource {
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about the resource",
 			},
+
+			"extensions": {
+				Type:        schema.TypeMap,
+				Computed:    true,
+				Description: "The extended metadata as a map associated with the resource instance.",
+			},
 		},
 	}
 }
@@ -337,6 +343,9 @@ func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 		if endpoint, ok := instance.Parameters["service-endpoints"]; ok {
 			d.Set("service_endpoints", endpoint)
 		}
+	}
+	if instance.Extensions != nil {
+		d.Set("extensions", instance.Extensions)
 	}
 
 	return nil

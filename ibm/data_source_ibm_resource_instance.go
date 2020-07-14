@@ -88,6 +88,12 @@ func dataSourceIBMResourceInstance() *schema.Resource {
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about the resource",
 			},
+
+			"extensions": {
+				Type:        schema.TypeMap,
+				Computed:    true,
+				Description: "The extended metadata as a map associated with the resource instance.",
+			},
 		},
 	}
 }
@@ -187,6 +193,9 @@ func dataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set(ResourceCRN, instance.Crn.String())
 	d.Set(ResourceStatus, instance.State)
 	d.Set(ResourceGroupName, instance.ResourceGroupName)
+	if instance.Extensions != nil {
+		d.Set("extensions", instance.Extensions)
+	}
 
 	rcontroller, err := getBaseController(meta)
 	if err != nil {
