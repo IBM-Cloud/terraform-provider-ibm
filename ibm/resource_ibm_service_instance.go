@@ -106,6 +106,11 @@ func resourceIBMServiceInstance() *schema.Resource {
 				Optional:    true,
 				Default:     10,
 			},
+			"dashboard_url": {
+				Description: "Dashboard URL to access resource.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -192,6 +197,7 @@ func resourceIBMServiceInstanceRead(d *schema.ResourceData, meta interface{}) er
 	d.Set("credentials", Flatten(service.Entity.Credentials))
 	d.Set("tags", service.Entity.Tags)
 	d.Set("name", service.Entity.Name)
+	d.Set("dashboard_url", service.Entity.DashboardURL)
 
 	d.Set("plan", service.Entity.ServicePlan.Entity.Name)
 
