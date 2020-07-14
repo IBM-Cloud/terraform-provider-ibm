@@ -25,6 +25,10 @@ data "ibm_tg_gateways" "all_tg_gws"{
 
 data "ibm_tg_locations" "tg_locations" {
 }
+
+data "ibm_tg_location" "tg_location" {
+	name = "us-south"
+} 
  
 resource "ibm_tg_connection" "test_ibm_tg_connection"{
 		gateway = "${ibm_tg_gateway.new_tg_gw.id}"
