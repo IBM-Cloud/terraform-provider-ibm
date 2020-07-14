@@ -165,6 +165,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_function_rule":                    dataSourceIBMFunctionRule(),
 			"ibm_function_trigger":                 dataSourceIBMFunctionTrigger(),
 			"ibm_certificate_manager_certificates": dataIBMCertificateManagerCertificates(),
+			"ibm_certificate_manager_certificate":  dataIBMCertificateManagerCertificate(),
 			"ibm_cis":                              dataSourceIBMCISInstance(),
 			"ibm_cis_domain":                       dataSourceIBMCISDomain(),
 			"ibm_cis_firewall":                     dataIBMCISFirewallRecord(),

@@ -78,6 +78,16 @@ data "ibm_certificate_manager_certificates" "certs"{
 }
 
 ```
+`Get details of certificate:`
+
+```hcl
+
+data "ibm_certificate_manager_certificate" "certificate"{
+    certificate_manager_instance_id=data.ibm_resource_instance.cm.id
+    name = "cert_name"
+}
+
+```
 
 ## Assumptions
 
