@@ -112,6 +112,13 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				Description: "Kubernetes version",
 			},
 
+			"update_all_workers": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Updates all the woker nodes if sets to true",
+			},
+
 			"service_subnet": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -472,17 +479,20 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 			return fmt.Errorf(
 				"Error waiting for cluster (%s) version to be updated: %s", d.Id(), err)
 		}
-		// Update the worker nodes after master node kube-version is updated.
 
-		workers, err := csClient.Workers().ListWorkers(clusterID, false, targetEnv)
-		if err != nil {
-			return fmt.Errorf("Error retrieving workers for cluster: %s", err)
-		}
-		for _, worker := range workers {
-			_, err := csClient.Workers().ReplaceWokerNode(clusterID, worker.ID, targetEnv)
-			// As API returns http response 204 NO CONTENT, error raised will be exempted.
-			if err != nil && !strings.Contains(err.Error(), "EmptyResponseBody") {
-				return fmt.Errorf("Error replacing the worker node from the cluster: %s", err)
+		// Update the worker nodes after master node kube-version is updated.
+		updateAllWorkers := d.Get("update_all_workers").(bool)
+		if updateAllWorkers {
+			workers, err := csClient.Workers().ListWorkers(clusterID, false, targetEnv)
+			if err != nil {
+				return fmt.Errorf("Error retrieving workers for cluster: %s", err)
+			}
+			for _, worker := range workers {
+				_, err := csClient.Workers().ReplaceWokerNode(clusterID, worker.ID, targetEnv)
+				// As API returns http response 204 NO CONTENT, error raised will be exempted.
+				if err != nil && !strings.Contains(err.Error(), "EmptyResponseBody") {
+					return fmt.Errorf("Error replacing the worker node from the cluster: %s", err)
+				}
 			}
 		}
 	}
