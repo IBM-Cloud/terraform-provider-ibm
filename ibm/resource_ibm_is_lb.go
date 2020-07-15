@@ -204,7 +204,7 @@ func classicLBCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg 
 
 	lb, response, err := sess.CreateLoadBalancer(options)
 	if err != nil {
-		return fmt.Errorf("Error while creating Load Balanacer err %s\n%s", err, response)
+		return fmt.Errorf("Error while creating Load Balancer err %s\n%s", err, response)
 	}
 	d.SetId(*lb.ID)
 	log.Printf("[INFO] VPC : %s", *lb.ID)
@@ -251,7 +251,7 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 
 	lb, response, err := sess.CreateLoadBalancer(options)
 	if err != nil {
-		return fmt.Errorf("Error while creating Load Balanacer err %s\n%s", err, response)
+		return fmt.Errorf("Error while creating Load Balancer err %s\n%s", err, response)
 	}
 	d.SetId(*lb.ID)
 	log.Printf("[INFO] VPC : %s", *lb.ID)
