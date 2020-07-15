@@ -48,3 +48,4 @@ The following attributes are exported:
 * `credentials` - The credentials provided by the service broker to use the service.
 * `service_keys` - The service keys associated with the service.
 * `service_plan_guid` - The plan of the service offering used by this service instance.
+* `dashboard_url`- The dashboard url of the new service instance.
