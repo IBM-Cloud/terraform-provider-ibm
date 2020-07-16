@@ -40,7 +40,9 @@ The following attributes are exported:
 * `updated_at` - The date and time that this connection was last updated.
 * `status` - What is the current configuration state of this connection
 Possible values: [attached,failed,pending,deleting]
-
+* `request_status` - Only visible for cross account connections, this field represents the status of the request to connect the given network between accounts
+Possible values: [ pending, approved, rejected, expired, detached ]
+* `network_account_id` - The ID of the account which owns the network that is being connected. Required if trying to connect a classic network owned by a different account than the gateway.
 
 ## Import
 

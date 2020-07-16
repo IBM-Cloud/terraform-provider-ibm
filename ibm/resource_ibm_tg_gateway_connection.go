@@ -23,6 +23,8 @@ const (
 	isTransitGatewayConnectionDetaching = "detaching"
 	isTransitGatewayConnectionDeleted   = "detached"
 	tgConnectionId                      = "connection_id"
+	tgNetworkAccountId                  = "network_account_id"
+	tgRequestStatus                     = "request_status"
 )
 
 func resourceIBMTransitGatewayConnection() *schema.Resource {
@@ -51,6 +53,11 @@ func resourceIBMTransitGatewayConnection() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The Transit Gateway Connection identifier",
+			},
+			tgNetworkAccountId: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the account which owns the network that is being connected. Required if trying to connect a classic network owned by a different account than the gateway.",
 			},
 			tgNetworkType: {
 				Type:         schema.TypeString,
@@ -86,7 +93,11 @@ func resourceIBMTransitGatewayConnection() *schema.Resource {
 			tgStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Status of the virtual connection.Possible values: [pending,attached,approval_pending,rejected,expired,deleting,detached_by_network_pending,detached_by_network]",
+				Description: "Status of the virtual connection.Possible values: [ attached, failed, pending, deleting, detaching, detached]",
+			}, tgRequestStatus: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Only visible for cross account connections, this field represents the status of the request to connect the given network between accounts.Possible values: [pending, approved, rejected, expired, detached]",
 			},
 		},
 	}
@@ -200,6 +211,14 @@ func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interf
 	if instance.Status != nil {
 		d.Set(tgStatus, *instance.Status)
 	}
+
+	if instance.NetworkAccountID != nil {
+		d.Set(tgNetworkAccountId, *instance.NetworkAccountID)
+	}
+	if instance.RequestStatus != nil {
+		d.Set(tgRequestStatus, *instance.RequestStatus)
+	}
+
 	d.Set(tgConnectionId, *instance.ID)
 
 	return nil
