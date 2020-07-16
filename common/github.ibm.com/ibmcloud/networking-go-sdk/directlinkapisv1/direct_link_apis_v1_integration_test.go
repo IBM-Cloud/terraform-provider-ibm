@@ -1,11 +1,8 @@
 package directlinkapisv1_test
 
 /*
-
 How to run this test:
-
 go test -v ./directlinkapisv1
-
 */
 
 import (
@@ -34,10 +31,6 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 		URL:    "https://iam.test.cloud.ibm.com/identity/token",
 	}
 
-	//authenticator := &core.BearerTokenAuthenticator{
-	//	BearerToken: os.Getenv("BEARER_TOKEN"),
-	//}
-
 	version := strfmt.Date(time.Now())
 	serviceURL := os.Getenv("SERVICE_URL")
 	options := &directlinkapisv1.DirectLinkApisV1Options{
@@ -46,15 +39,17 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 		URL:           serviceURL,
 		Version:       &version,
 	}
+
 	service, err := directlinkapisv1.NewDirectLinkApisV1UsingExternalConfig(options)
 	It(`Successfully created DirectLinkApisV1 service instance`, func() {
 		Expect(err).To(BeNil())
 	})
 
-	Describe("Direct Link Gateways", func() {
+	timestamp := time.Now().Unix()
 
-		gatewayName := "GO-INT-SDK"
-		updatedGatewayName := "GO-INT-SDK-PATCH"
+	Describe("Direct Link Gateways", func() {
+		gatewayName := "GO-INT-SDK-" + strconv.FormatInt(timestamp, 10)
+		updatedGatewayName := "GO-INT-SDK-PATCH-" + strconv.FormatInt(timestamp, 10)
 		bgpAsn := int64(64999)
 		bgpBaseCidr := "169.254.0.0/16"
 		crossConnectRouter := "LAB-xcr01.dal09"
@@ -83,7 +78,6 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 		})
 
 		Context("Create gateway", func() {
-
 			gateway, _ := service.NewGatewayTemplateGatewayTypeDedicatedTemplate(bgpAsn, bgpBaseCidr, global, metered, gatewayName, speedMbps, gatewayType, carrierName, crossConnectRouter, customerName, locationName)
 
 			createGatewayOptions := service.NewCreateGatewayOptions(gateway)
@@ -151,6 +145,16 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 				Expect(*result.Type).To(Equal(gatewayType))
 				Expect(*result.CrossConnectRouter).To(Equal(crossConnectRouter))
 				Expect(*result.LocationName).To(Equal(locationName))
+				Expect(*result.LocationDisplayName).NotTo(Equal(""))
+				Expect(*result.BgpCerCidr).NotTo(BeEmpty())
+				Expect(*result.BgpIbmCidr).NotTo(Equal(""))
+				Expect(*result.BgpIbmAsn).NotTo(Equal(""))
+				Expect(*result.BgpStatus).To(Equal("idle"))
+				Expect(*result.CreatedAt).NotTo(Equal(""))
+				Expect(*result.Crn).To(HavePrefix("crn:v1"))
+				Expect(*result.LinkStatus).To(Equal("down"))
+				Expect(*result.OperationalStatus).To(Equal("awaiting_loa"))
+				Expect(*result.ResourceGroup.ID).NotTo(Equal(""))
 			})
 
 			It("Successfully fetches the created Gateway", func() {
@@ -161,6 +165,7 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 				Expect(err).To(BeNil())
 				Expect(detailedResponse.StatusCode).To(Equal(200))
 
+				Expect(*result.ID).To(Equal(gatewayId))
 				Expect(*result.Name).To(Equal(gatewayName))
 				Expect(*result.BgpAsn).To(Equal(bgpAsn))
 				Expect(*result.Global).To(Equal(global))
@@ -169,6 +174,16 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 				Expect(*result.Type).To(Equal(gatewayType))
 				Expect(*result.CrossConnectRouter).To(Equal(crossConnectRouter))
 				Expect(*result.LocationName).To(Equal(locationName))
+				Expect(*result.LocationDisplayName).NotTo(Equal(""))
+				Expect(*result.BgpCerCidr).NotTo(BeEmpty())
+				Expect(*result.BgpIbmCidr).NotTo(Equal(""))
+				Expect(*result.BgpIbmAsn).NotTo(Equal(""))
+				Expect(*result.BgpStatus).To(Equal("idle"))
+				Expect(*result.CreatedAt).NotTo(Equal(""))
+				Expect(*result.Crn).To(HavePrefix("crn:v1"))
+				Expect(*result.LinkStatus).To(Equal("down"))
+				Expect(*result.OperationalStatus).To(Equal("awaiting_loa"))
+				Expect(*result.ResourceGroup.ID).NotTo(Equal(""))
 			})
 
 			It("Throws an Error when creating a gateway with same name", func() {
@@ -192,10 +207,39 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 
 				gateways := result.Gateways
 				Expect(len(gateways)).Should(BeNumerically(">", 0))
+				found := false
+				// find the created gateway and verify the attributes
+				gatewayId := os.Getenv("GATEWAY_ID")
+				for _, gw := range gateways {
+					if *gw.ID == gatewayId {
+						found = true
+						Expect(*gw.Name).To(Equal(gatewayName))
+						Expect(*gw.BgpAsn).To(Equal(bgpAsn))
+						Expect(*gw.Global).To(Equal(global))
+						Expect(*gw.Metered).To(Equal(metered))
+						Expect(*gw.SpeedMbps).To(Equal(speedMbps))
+						Expect(*gw.Type).To(Equal(gatewayType))
+						Expect(*gw.CrossConnectRouter).To(Equal(crossConnectRouter))
+						Expect(*gw.LocationName).To(Equal(locationName))
+						Expect(*gw.LocationDisplayName).NotTo(Equal(""))
+						Expect(*gw.BgpCerCidr).NotTo(BeEmpty())
+						Expect(*gw.BgpIbmCidr).NotTo(Equal(""))
+						Expect(*gw.BgpIbmAsn).NotTo(Equal(""))
+						Expect(*gw.BgpStatus).To(Equal("idle"))
+						Expect(*gw.CreatedAt).NotTo(Equal(""))
+						Expect(*gw.Crn).To(HavePrefix("crn:v1"))
+						Expect(*gw.LinkStatus).To(Equal("down"))
+						Expect(*gw.OperationalStatus).To(Equal("awaiting_loa"))
+						Expect(*gw.ResourceGroup.ID).NotTo(Equal(""))
+						break
+					}
+				}
+				// expect the created gateway to have been found.  If not found, throw an error
+				Expect(found).To(Equal(true))
 			})
 		})
 
-		Context("Update the Gateway", func() {
+		Context("Fail update Gateway", func() {
 			It("Fails if an invalid GatewayID is provided", func() {
 				patchGatewayOptions := service.NewUpdateGatewayOptions(invalidGatewayId).SetOperationalStatus("loa_accepted")
 
@@ -214,15 +258,25 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 				Expect(err).To(BeNil())
 				Expect(detailedResponse.StatusCode).To(Equal(200))
 
+				Expect(*result.ID).To(Equal(gatewayId))
 				Expect(*result.Name).To(Equal(updatedGatewayName))
-				Expect(*result.Global).To(Equal(false))
-				Expect(*result.SpeedMbps).To(Equal(speedMbps))
-
 				Expect(*result.BgpAsn).To(Equal(bgpAsn))
+				Expect(*result.Global).To(Equal(false))
 				Expect(*result.Metered).To(Equal(metered))
+				Expect(*result.SpeedMbps).To(Equal(speedMbps))
 				Expect(*result.Type).To(Equal(gatewayType))
 				Expect(*result.CrossConnectRouter).To(Equal(crossConnectRouter))
 				Expect(*result.LocationName).To(Equal(locationName))
+				Expect(*result.LocationDisplayName).NotTo(Equal(""))
+				Expect(*result.BgpCerCidr).NotTo(BeEmpty())
+				Expect(*result.BgpIbmCidr).NotTo(Equal(""))
+				Expect(*result.BgpIbmAsn).NotTo(Equal(""))
+				Expect(*result.BgpStatus).To(Equal("idle"))
+				Expect(*result.CreatedAt).NotTo(Equal(""))
+				Expect(*result.Crn).To(HavePrefix("crn:v1"))
+				Expect(*result.LinkStatus).To(Equal("down"))
+				Expect(*result.OperationalStatus).To(Equal("awaiting_loa"))
+				Expect(*result.ResourceGroup.ID).NotTo(Equal(""))
 			})
 
 			It("Successfully fetches the updated Gateway", func() {
@@ -233,6 +287,7 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 				Expect(err).To(BeNil())
 				Expect(detailedResponse.StatusCode).To(Equal(200))
 
+				Expect(*result.ID).To(Equal(gatewayId))
 				Expect(*result.Name).To(Equal(updatedGatewayName))
 				Expect(*result.BgpAsn).To(Equal(bgpAsn))
 				Expect(*result.Global).To(Equal(false))
@@ -241,6 +296,16 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 				Expect(*result.Type).To(Equal(gatewayType))
 				Expect(*result.CrossConnectRouter).To(Equal(crossConnectRouter))
 				Expect(*result.LocationName).To(Equal(locationName))
+				Expect(*result.LocationDisplayName).NotTo(Equal(""))
+				Expect(*result.BgpCerCidr).NotTo(BeEmpty())
+				Expect(*result.BgpIbmCidr).NotTo(Equal(""))
+				Expect(*result.BgpIbmAsn).NotTo(Equal(""))
+				Expect(*result.BgpStatus).To(Equal("idle"))
+				Expect(*result.CreatedAt).NotTo(Equal(""))
+				Expect(*result.Crn).To(HavePrefix("crn:v1"))
+				Expect(*result.LinkStatus).To(Equal("down"))
+				Expect(*result.OperationalStatus).To(Equal("awaiting_loa"))
+				Expect(*result.ResourceGroup.ID).NotTo(Equal(""))
 			})
 		})
 
@@ -268,18 +333,21 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 
 			// to create a connect gateway, we need to have a port.  List the ports and save the id of the 1st one found
 			portId := ""
+			portLocationDisplayName := ""
+			portLocationName := ""
+
 			It("List ports and save the id of the first port", func() {
 				listPortsOptions := service.NewListPortsOptions()
 				result, detailedResponse, err := service.ListPorts(listPortsOptions)
 				Expect(err).To(BeNil())
 				Expect(detailedResponse.StatusCode).To(Equal(200))
 				portId = *result.Ports[0].ID
+				portLocationDisplayName = *result.Ports[0].LocationDisplayName
+				portLocationName = *result.Ports[0].LocationName
 			})
 
 			It("create connect gateway", func() {
-				sec := time.Now().Unix()
-				timestamp := strconv.FormatInt(sec, 10)
-				gatewayName = "GO-INT-SDK-CONNECT-" + timestamp
+				gatewayName = "GO-INT-SDK-CONNECT-" + strconv.FormatInt(timestamp, 10)
 				portIdentity, _ := service.NewGatewayPortIdentity(portId)
 				gateway, _ := service.NewGatewayTemplateGatewayTypeConnectTemplate(bgpAsn, bgpBaseCidr, global, metered, gatewayName,
 					speedMbps, "connect", portIdentity)
@@ -294,11 +362,23 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 
 				Expect(*result.Name).To(Equal(gatewayName))
 				Expect(*result.BgpAsn).To(Equal(bgpAsn))
-				Expect(*result.Global).To(Equal(global))
+				Expect(*result.Global).To(Equal(true))
 				Expect(*result.Metered).To(Equal(metered))
 				Expect(*result.SpeedMbps).To(Equal(speedMbps))
+				Expect(*result.LocationName).To(Equal(portLocationName))
+				Expect(*result.LocationDisplayName).To(Equal(portLocationDisplayName))
+				Expect(*result.BgpBaseCidr).NotTo(BeEmpty())
+				Expect(*result.BgpCerCidr).NotTo(BeEmpty())
+				Expect(*result.BgpIbmCidr).NotTo(Equal(""))
+				Expect(*result.BgpIbmAsn).NotTo(Equal(0))
+				Expect(*result.BgpStatus).To(Equal("idle"))
+				Expect(*result.CreatedAt).NotTo(Equal(""))
+				Expect(*result.Crn).To(HavePrefix("crn:v1"))
+				Expect(*result.OperationalStatus).To(Equal("create_pending"))
+				Expect(*result.ResourceGroup.ID).NotTo(Equal(""))
 				Expect(*result.Type).To(Equal("connect"))
 				Expect(*result.Port.ID).To(Equal(portId))
+				Expect(*result.ProviderApiManaged).To(Equal(false))
 			})
 
 			It("Successfully waits for connect gateway to be provisioned state", func() {
@@ -312,6 +392,25 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 					result, detailedResponse, err := service.GetGateway(getGatewayOptions)
 					Expect(err).To(BeNil())
 					Expect(detailedResponse.StatusCode).To(Equal(200))
+
+					Expect(*result.Name).To(Equal(gatewayName))
+					Expect(*result.BgpAsn).To(Equal(bgpAsn))
+					Expect(*result.Global).To(Equal(true))
+					Expect(*result.Metered).To(Equal(metered))
+					Expect(*result.SpeedMbps).To(Equal(speedMbps))
+					Expect(*result.LocationName).To(Equal(portLocationName))
+					Expect(*result.LocationDisplayName).To(Equal(portLocationDisplayName))
+					//	Expect(*result.BgpBaseCidr).NotTo(BeEmpty())
+					Expect(*result.BgpCerCidr).NotTo(BeEmpty())
+					Expect(*result.BgpIbmCidr).NotTo(Equal(""))
+					Expect(*result.BgpIbmAsn).NotTo(Equal(0))
+					Expect(*result.BgpStatus).To(Equal("idle"))
+					Expect(*result.CreatedAt).NotTo(Equal(""))
+					Expect(*result.Crn).To(HavePrefix("crn:v1"))
+					Expect(*result.ResourceGroup.ID).NotTo(Equal(""))
+					Expect(*result.Type).To(Equal("connect"))
+					Expect(*result.Port.ID).To(Equal(portId))
+					Expect(*result.ProviderApiManaged).To(Equal(false))
 
 					// if operational status is "provisioned" then we are done
 					if *result.OperationalStatus == "provisioned" {
@@ -353,6 +452,17 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 				Expect(len(result.Locations)).Should(BeNumerically(">", 0))
 				os.Setenv("OT_DEDICATED_LOCATION_DISPLAY_NAME", *result.Locations[0].DisplayName)
 				os.Setenv("OT_DEDICATED_LOCATION_NAME", *result.Locations[0].Name)
+
+				Expect(*result.Locations[0].BillingLocation).NotTo(Equal(""))
+				Expect(*result.Locations[0].BuildingColocationOwner).NotTo(Equal(""))
+				Expect(*result.Locations[0].LocationType).NotTo(Equal(""))
+				Expect(*result.Locations[0].Market).NotTo(Equal(""))
+				Expect(*result.Locations[0].MarketGeography).NotTo(Equal(""))
+				Expect(*result.Locations[0].Mzr).NotTo(Equal(""))
+				Expect(*result.Locations[0].OfferingType).To(Equal("dedicated"))
+				Expect(*result.Locations[0].ProvisionEnabled).NotTo(BeNil())
+				Expect(*result.Locations[0].VpcRegion).NotTo(Equal(""))
+
 			})
 
 			It("should fetch the locations for the type connect", func() {
@@ -364,6 +474,15 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 				Expect(len(result.Locations)).Should(BeNumerically(">", 0))
 				os.Setenv("OT_CONNECT_LOCATION_DISPLAY_NAME", *result.Locations[0].DisplayName)
 				os.Setenv("OT_CONNECT_LOCATION_NAME", *result.Locations[0].Name)
+
+				Expect(*result.Locations[0].BillingLocation).NotTo(Equal(""))
+				Expect(*result.Locations[0].LocationType).NotTo(Equal(""))
+				Expect(*result.Locations[0].Market).NotTo(Equal(""))
+				Expect(*result.Locations[0].MarketGeography).NotTo(Equal(""))
+				Expect(*result.Locations[0].Mzr).NotTo(Equal(""))
+				Expect(*result.Locations[0].OfferingType).To(Equal("connect"))
+				Expect(*result.Locations[0].ProvisionEnabled).NotTo(BeNil())
+				Expect(*result.Locations[0].VpcRegion).NotTo(Equal(""))
 			})
 
 			It("should return an error for invalid location type", func() {
@@ -385,6 +504,9 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 				Expect(err).To(BeNil())
 				Expect(detailedResponse.StatusCode).To(Equal(200))
 				Expect(len(result.CrossConnectRouters)).Should(BeNumerically(">", 0))
+
+				Expect(*result.CrossConnectRouters[0].RouterName).NotTo(Equal(""))
+				Expect(*result.CrossConnectRouters[0].TotalConnections).Should(BeNumerically(">=", 0))
 			})
 
 			It("should list the location info for type dedicated and location display name", func() {
@@ -394,6 +516,9 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 				Expect(err).To(BeNil())
 				Expect(detailedResponse.StatusCode).To(Equal(200))
 				Expect(len(result.CrossConnectRouters)).Should(BeNumerically(">", 0))
+
+				Expect(*result.CrossConnectRouters[0].RouterName).NotTo(Equal(""))
+				Expect(*result.CrossConnectRouters[0].TotalConnections).Should(BeNumerically(">=", 0))
 			})
 
 			It("should return proper error when unsupported offering type CONNECT is provided", func() {
@@ -466,10 +591,20 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 			Expect(err).To(BeNil())
 			Expect(detailedResponse.StatusCode).To(Equal(200))
 			Expect(len(result.Ports)).Should(BeNumerically(">", 0))
+
+			Expect(*result.Ports[0].ID).NotTo(Equal(""))
+			Expect(*result.Ports[0].DirectLinkCount).Should(BeNumerically(">=", 0))
+			Expect(*result.Ports[0].Label).NotTo(Equal(""))
+			Expect(*result.Ports[0].LocationDisplayName).NotTo(Equal(""))
+			Expect(*result.Ports[0].LocationName).NotTo(Equal(""))
+			Expect(*result.Ports[0].ProviderName).NotTo(Equal(""))
+			Expect(len(result.Ports[0].SupportedLinkSpeeds)).Should(BeNumerically(">=", 0))
+
 			os.Setenv("PORT_ID", *result.Ports[0].ID)
 			os.Setenv("PORT_LOCATION_DISPLAY_NAME", *result.Ports[0].LocationDisplayName)
 			os.Setenv("PORT_LOCATION_NAME", *result.Ports[0].LocationName)
 			os.Setenv("PORT_LABEL", *result.Ports[0].Label)
+
 		})
 
 		It("should fetch the port by ID", func() {
@@ -482,15 +617,19 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 			result, detailedResponse, err := service.GetPort(getPortOptions)
 			Expect(err).To(BeNil())
 			Expect(detailedResponse.StatusCode).To(Equal(200))
+
 			Expect(*result.ID).To(Equal(portId))
 			Expect(*result.LocationDisplayName).To(Equal(locationDisplayName))
 			Expect(*result.LocationName).To(Equal(locationName))
 			Expect(*result.Label).To(Equal(label))
+			Expect(*result.DirectLinkCount).Should(BeNumerically(">=", 0))
+			Expect(*result.ProviderName).NotTo(Equal(""))
+			Expect(len(result.SupportedLinkSpeeds)).Should(BeNumerically(">=", 0))
 		})
 	})
 
 	Describe("Direct Link Virtual Connections", func() {
-		gatewayName := "GO-INT-VC-SDK"
+		gatewayName := "GO-INT-VC-SDK-" + strconv.FormatInt(timestamp, 10)
 		bgpAsn := int64(64999)
 		bgpBaseCidr := "169.254.0.0/16"
 		crossConnectRouter := "LAB-xcr01.dal09"
@@ -526,7 +665,7 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 			})
 
 			It("Successfully create a CLASSIC virtual connection", func() {
-				vcName := "GO-INT-CLASSIC-VC-SDK"
+				vcName := "GO-INT-CLASSIC-VC-SDK-" + strconv.FormatInt(timestamp, 10)
 				createGatewayVCOptions := service.NewCreateGatewayVirtualConnectionOptions(os.Getenv("GATEWAY_ID"), vcName, directlinkapisv1.CreateGatewayVirtualConnectionOptions_Type_Classic)
 				result, detailedResponse, err := service.CreateGatewayVirtualConnection(createGatewayVCOptions)
 				Expect(err).To(BeNil())
@@ -534,12 +673,15 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 
 				os.Setenv("CLASSIC_VC_ID", *result.ID)
 
+				Expect(*result.ID).NotTo(Equal(""))
 				Expect(*result.Name).To(Equal(vcName))
 				Expect(*result.Type).To(Equal(directlinkapisv1.CreateGatewayVirtualConnectionOptions_Type_Classic))
+				Expect(*result.CreatedAt).NotTo(Equal(""))
+				Expect(*result.Status).To(Equal("pending"))
 			})
 
 			It("Successfully get a CLASSIC virtual connection", func() {
-				vcName := "GO-INT-CLASSIC-VC-SDK"
+				vcName := "GO-INT-CLASSIC-VC-SDK-" + strconv.FormatInt(timestamp, 10)
 				getGatewayVCOptions := service.NewGetGatewayVirtualConnectionOptions(os.Getenv("GATEWAY_ID"), os.Getenv("CLASSIC_VC_ID"))
 				result, detailedResponse, err := service.GetGatewayVirtualConnection(getGatewayVCOptions)
 				Expect(err).To(BeNil())
@@ -548,10 +690,12 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 				Expect(*result.ID).To(Equal(os.Getenv("CLASSIC_VC_ID")))
 				Expect(*result.Name).To(Equal(vcName))
 				Expect(*result.Type).To(Equal(directlinkapisv1.CreateGatewayVirtualConnectionOptions_Type_Classic))
+				Expect(*result.CreatedAt).NotTo(Equal(""))
+				Expect(*result.Status).To(Equal("pending"))
 			})
 
 			It("Successfully create a Gen 2 VPC virtual connection", func() {
-				vcName := "GO-INT-GEN2-VPC-VC-SDK"
+				vcName := "GO-INT-GEN2-VPC-VC-SDK-" + strconv.FormatInt(timestamp, 10)
 				vpcCrn := os.Getenv("GEN2_VPC_CRN")
 				createGatewayVCOptions := service.NewCreateGatewayVirtualConnectionOptions(os.Getenv("GATEWAY_ID"), vcName, directlinkapisv1.CreateGatewayVirtualConnectionOptions_Type_Vpc)
 				createGatewayVCOptionsWithNetworkID := createGatewayVCOptions.SetNetworkID(vpcCrn)
@@ -562,7 +706,10 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 				// save the id so it can be deleted later
 				os.Setenv("GEN2_VPC_VC_ID", *result.ID)
 
+				Expect(*result.ID).NotTo(Equal(""))
 				Expect(*result.Name).To(Equal(vcName))
+				Expect(*result.CreatedAt).NotTo(Equal(""))
+				Expect(*result.Status).To(Equal("pending"))
 				Expect(*result.Type).To(Equal(directlinkapisv1.CreateGatewayVirtualConnectionOptions_Type_Vpc))
 				Expect(*result.NetworkID).To(Equal(vpcCrn))
 			})
@@ -574,7 +721,9 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 				Expect(detailedResponse.StatusCode).To(Equal(200))
 
 				Expect(*result.ID).To(Equal(os.Getenv("GEN2_VPC_VC_ID")))
-				Expect(*result.Name).To(Equal("GO-INT-GEN2-VPC-VC-SDK"))
+				Expect(*result.Name).To(Equal("GO-INT-GEN2-VPC-VC-SDK-" + strconv.FormatInt(timestamp, 10)))
+				Expect(*result.CreatedAt).NotTo(Equal(""))
+				Expect(*result.Status).To(Equal("pending"))
 				Expect(*result.Type).To(Equal(directlinkapisv1.CreateGatewayVirtualConnectionOptions_Type_Vpc))
 				Expect(*result.NetworkID).To(Equal(os.Getenv("GEN2_VPC_CRN")))
 			})
@@ -588,12 +737,28 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 				vcs := result.VirtualConnections
 				// two VCs were created for the GW, so we should expect 2
 				Expect(len(vcs)).Should(BeNumerically("==", 2))
+
+				for _, vc := range vcs {
+					if *vc.ID == os.Getenv("GEN2_VPC_VC_ID") {
+						Expect(*vc.Name).To(Equal("GO-INT-GEN2-VPC-VC-SDK-" + strconv.FormatInt(timestamp, 10)))
+						Expect(*vc.CreatedAt).NotTo(Equal(""))
+						Expect(*vc.Status).To(Equal("pending"))
+						Expect(*vc.Type).To(Equal(directlinkapisv1.CreateGatewayVirtualConnectionOptions_Type_Vpc))
+						Expect(*vc.NetworkID).To(Equal(os.Getenv("GEN2_VPC_CRN")))
+					} else {
+						Expect(*vc.ID).To(Equal(os.Getenv("CLASSIC_VC_ID")))
+						Expect(*vc.Name).To(Equal("GO-INT-CLASSIC-VC-SDK-" + strconv.FormatInt(timestamp, 10)))
+						Expect(*vc.Type).To(Equal(directlinkapisv1.CreateGatewayVirtualConnectionOptions_Type_Classic))
+						Expect(*vc.CreatedAt).NotTo(Equal(""))
+						Expect(*vc.Status).To(Equal("pending"))
+					}
+				}
 			})
 
 			It("Successfully Update a virtual connection name", func() {
 				gatewayId := os.Getenv("GATEWAY_ID")
 				vcId := os.Getenv("GEN2_VPC_VC_ID")
-				vcName := "GO-INT-GEN2-VPC-VC-PATCH-SDK"
+				vcName := "GO-INT-GEN2-VPC-VC-PATCH-SDK-" + strconv.FormatInt(timestamp, 10)
 				patchGatewayOptions := service.NewUpdateGatewayVirtualConnectionOptions(gatewayId, vcId)
 				patchGatewayOptions = patchGatewayOptions.SetName(vcName)
 
@@ -601,8 +766,11 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 				Expect(err).To(BeNil())
 				Expect(detailedResponse.StatusCode).To(Equal(200))
 
-				Expect(*result.ID).To(Equal(os.Getenv("GEN2_VPC_VC_ID")))
+				Expect(*result.ID).To(Equal(vcId))
 				Expect(*result.Name).To(Equal(vcName))
+				Expect(*result.CreatedAt).NotTo(Equal(""))
+				Expect(*result.Status).To(Equal("pending"))
+				Expect(*result.Type).To(Equal(directlinkapisv1.CreateGatewayVirtualConnectionOptions_Type_Vpc))
 				Expect(*result.NetworkID).To(Equal(os.Getenv("GEN2_VPC_CRN")))
 			})
 
@@ -707,7 +875,7 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 	})
 
 	Describe("LOA and Completion Notice", func() {
-		gatewayName := "GO-INT-LOA-SDK"
+		gatewayName := "GO-INT-LOA-SDK-" + strconv.FormatInt(timestamp, 10)
 		bgpAsn := int64(64999)
 		bgpBaseCidr := "169.254.0.0/16"
 		crossConnectRouter := "LAB-xcr01.dal09"
@@ -747,7 +915,7 @@ var _ = Describe(`DirectLinkApisV1`, func() {
 				Expect(result).To(BeNil())
 			})
 
-			It("Successfully PUT completion notice", func() {
+			It("Successfully call PUT completion notice", func() {
 				buffer, err := ioutil.ReadFile("completion_notice.pdf")
 				Expect(err).To(BeNil())
 				r := ioutil.NopCloser(bytes.NewReader(buffer))

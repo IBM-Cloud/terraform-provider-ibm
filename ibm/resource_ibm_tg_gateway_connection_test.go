@@ -114,11 +114,11 @@ func testAccCheckIBMTransitGatewayConnectionExists(n string, vc string) resource
 		gatewayId := parts[0]
 		ID := parts[1]
 
-		getVCOptions := &transitgatewayapisv1.DetailTransitGatewayConnectionOptions{
+		getVCOptions := &transitgatewayapisv1.GetTransitGatewayConnectionOptions{
 			ID: &ID,
 		}
 		getVCOptions.SetTransitGatewayID(gatewayId)
-		r, response, err := client.DetailTransitGatewayConnection(getVCOptions)
+		r, response, err := client.GetTransitGatewayConnection(getVCOptions)
 		if err != nil {
 			return fmt.Errorf("testAccCheckIBMTransitGatewayConnectionExists: Error Getting Transit Gateway  Connection: %s\n%s", err, response)
 		}
