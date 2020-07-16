@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/IBM/go-sdk-core/v4/core"
 	"github.com/joho/godotenv"
@@ -75,12 +76,14 @@ var _ = Describe(`GlobalLoadBalancerMonitorV1`, func() {
 				Expect(*result.Success).Should(BeTrue())
 
 				for _, glb := range result.Result {
-					option := testService.NewDeleteLoadBalancerMonitorOptions(*glb.ID)
-					result, response, operationErr := testService.DeleteLoadBalancerMonitor(option)
-					Expect(operationErr).To(BeNil())
-					Expect(response).ToNot(BeNil())
-					Expect(result).ToNot(BeNil())
-					Expect(*result.Success).Should(BeTrue())
+					if strings.Contains(*glb.Description, "GLBMonitor") {
+						option := testService.NewDeleteLoadBalancerMonitorOptions(*glb.ID)
+						result, response, operationErr := testService.DeleteLoadBalancerMonitor(option)
+						Expect(operationErr).To(BeNil())
+						Expect(response).ToNot(BeNil())
+						Expect(result).ToNot(BeNil())
+						Expect(*result.Success).Should(BeTrue())
+					}
 				}
 			})
 			AfterEach(func() {
@@ -92,12 +95,14 @@ var _ = Describe(`GlobalLoadBalancerMonitorV1`, func() {
 				Expect(*result.Success).Should(BeTrue())
 
 				for _, glb := range result.Result {
-					option := testService.NewDeleteLoadBalancerMonitorOptions(*glb.ID)
-					result, response, operationErr := testService.DeleteLoadBalancerMonitor(option)
-					Expect(operationErr).To(BeNil())
-					Expect(response).ToNot(BeNil())
-					Expect(result).ToNot(BeNil())
-					Expect(*result.Success).Should(BeTrue())
+					if strings.Contains(*glb.Description, "GLBMonitor") {
+						option := testService.NewDeleteLoadBalancerMonitorOptions(*glb.ID)
+						result, response, operationErr := testService.DeleteLoadBalancerMonitor(option)
+						Expect(operationErr).To(BeNil())
+						Expect(response).ToNot(BeNil())
+						Expect(result).ToNot(BeNil())
+						Expect(*result.Success).Should(BeTrue())
+					}
 				}
 			})
 			It(`Global Load Balancer Monitor tests`, func() {
@@ -106,7 +111,7 @@ var _ = Describe(`GlobalLoadBalancerMonitorV1`, func() {
 				options.SetExpectedBody("alive")
 				options.SetExpectedCodes("2xx")
 				options.SetType("http")
-				options.SetDescription("Test GLB Monitor 1")
+				options.SetDescription("Test GLBMonitor 1")
 				options.SetMethod("GET")
 				options.SetPort(80)
 				options.SetPath("/auto/test")
@@ -126,7 +131,7 @@ var _ = Describe(`GlobalLoadBalancerMonitorV1`, func() {
 
 				options = testService.NewCreateLoadBalancerMonitorOptions()
 				options.SetType("tcp")
-				options.SetDescription("Test GLB Monitor 2")
+				options.SetDescription("Test GLBMonitor 2")
 				options.SetMethod("GET")
 				options.SetPort(20)
 				options.SetPath("/auto/test")
@@ -158,7 +163,7 @@ var _ = Describe(`GlobalLoadBalancerMonitorV1`, func() {
 				editOptions.SetExpectedBody("new page")
 				editOptions.SetExpectedCodes("2xx")
 				editOptions.SetType("https")
-				editOptions.SetDescription("Test GLB Monitor 3")
+				editOptions.SetDescription("Test GLBMonitor 3")
 				editOptions.SetMethod("GET")
 				editOptions.SetPort(80)
 				editOptions.SetPath("/auto/test")
@@ -177,7 +182,7 @@ var _ = Describe(`GlobalLoadBalancerMonitorV1`, func() {
 
 				editOptions = testService.NewEditLoadBalancerMonitorOptions(monitorID2)
 				editOptions.SetType("tcp")
-				editOptions.SetDescription("Test GLB Monitor 4")
+				editOptions.SetDescription("Test GLBMonitor 4")
 				editOptions.SetMethod("GET")
 				editOptions.SetPort(12345)
 				editOptions.SetPath("/auto/test")
@@ -208,7 +213,7 @@ var _ = Describe(`GlobalLoadBalancerMonitorV1`, func() {
 				for i := 1; i < 10; i++ {
 					options := testService.NewCreateLoadBalancerMonitorOptions()
 					options.SetType("tcp")
-					options.SetDescription("Test GLB Monitor " + strconv.Itoa(i))
+					options.SetDescription("Test GLBMonitor " + strconv.Itoa(i))
 					options.SetMethod("GET")
 					options.SetPort(port)
 					options.SetPath("/auto/test")

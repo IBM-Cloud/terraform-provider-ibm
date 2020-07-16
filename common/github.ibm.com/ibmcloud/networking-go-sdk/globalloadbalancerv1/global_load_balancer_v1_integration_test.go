@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/IBM/go-sdk-core/core"
 	"github.com/joho/godotenv"
@@ -28,7 +29,7 @@ func shouldSkipTest() {
 	}
 }
 
-var _ = Describe(`GlobalLoadBalancerPoolsV0`, func() {
+var _ = Describe(`GlobalLoadBalancerV1`, func() {
 	if _, err := os.Stat(configFile); err != nil {
 		configLoaded = false
 	}
@@ -98,12 +99,14 @@ var _ = Describe(`GlobalLoadBalancerPoolsV0`, func() {
 				Expect(*listResult.Success).Should(BeTrue())
 
 				for _, glb := range listResult.Result {
-					option := glbService.NewDeleteLoadBalancerOptions(*glb.ID)
-					result, response, operationErr := glbService.DeleteLoadBalancer(option)
-					Expect(operationErr).To(BeNil())
-					Expect(response).ToNot(BeNil())
-					Expect(result).ToNot(BeNil())
-					Expect(*result.Success).Should(BeTrue())
+					if strings.Contains(*glb.Name, "glbtest") {
+						option := glbService.NewDeleteLoadBalancerOptions(*glb.ID)
+						result, response, operationErr := glbService.DeleteLoadBalancer(option)
+						Expect(operationErr).To(BeNil())
+						Expect(response).ToNot(BeNil())
+						Expect(result).ToNot(BeNil())
+						Expect(*result.Success).Should(BeTrue())
+					}
 				}
 
 				/// delete all glb pools
@@ -113,11 +116,13 @@ var _ = Describe(`GlobalLoadBalancerPoolsV0`, func() {
 				Expect(result).ToNot(BeNil())
 
 				for _, pool := range result.Result {
-					option := testService.NewDeleteLoadBalancerPoolOptions(*pool.ID)
-					result, response, operationErr := testService.DeleteLoadBalancerPool(option)
-					Expect(operationErr).To(BeNil())
-					Expect(response).ToNot(BeNil())
-					Expect(result).ToNot(BeNil())
+					if strings.Contains(*pool.Name, "glbtest") {
+						option := testService.NewDeleteLoadBalancerPoolOptions(*pool.ID)
+						result, response, operationErr := testService.DeleteLoadBalancerPool(option)
+						Expect(operationErr).To(BeNil())
+						Expect(response).ToNot(BeNil())
+						Expect(result).ToNot(BeNil())
+					}
 				}
 
 				// deelte all glb monitors
@@ -128,12 +133,14 @@ var _ = Describe(`GlobalLoadBalancerPoolsV0`, func() {
 				Expect(*monitorResult.Success).Should(BeTrue())
 
 				for _, glb := range monitorResult.Result {
-					option := monitorService.NewDeleteLoadBalancerMonitorOptions(*glb.ID)
-					result, response, operationErr := monitorService.DeleteLoadBalancerMonitor(option)
-					Expect(operationErr).To(BeNil())
-					Expect(response).ToNot(BeNil())
-					Expect(result).ToNot(BeNil())
-					Expect(*result.Success).Should(BeTrue())
+					if strings.Contains(*glb.Description, "glbtest") {
+						option := monitorService.NewDeleteLoadBalancerMonitorOptions(*glb.ID)
+						result, response, operationErr := monitorService.DeleteLoadBalancerMonitor(option)
+						Expect(operationErr).To(BeNil())
+						Expect(response).ToNot(BeNil())
+						Expect(result).ToNot(BeNil())
+						Expect(*result.Success).Should(BeTrue())
+					}
 				}
 
 				// create glb monitor for pool
@@ -141,7 +148,7 @@ var _ = Describe(`GlobalLoadBalancerPoolsV0`, func() {
 				options.SetExpectedBody("alive")
 				options.SetExpectedCodes("2xx")
 				options.SetType("http")
-				options.SetDescription("Test GLB Monitor 1")
+				options.SetDescription("Test glbtest 1")
 				options.SetMethod("GET")
 				options.SetPort(80)
 				options.SetPath("/auto/test")
@@ -161,7 +168,7 @@ var _ = Describe(`GlobalLoadBalancerPoolsV0`, func() {
 
 				// create glb pool 1
 				option := testService.NewCreateLoadBalancerPoolOptions()
-				option.SetName("test-lb-pool1")
+				option.SetName("glbtest-pool11")
 				regions := []string{"WEU", "ENAM"}
 				option.SetCheckRegions(regions)
 				origin := &globalloadbalancerpoolsv0.LoadBalancerPoolReqOriginsItem{
@@ -186,7 +193,7 @@ var _ = Describe(`GlobalLoadBalancerPoolsV0`, func() {
 
 				// create glb pool 2
 				option = testService.NewCreateLoadBalancerPoolOptions()
-				option.SetName("test-lb-pool2")
+				option.SetName("glbtest-pool2")
 				regions = []string{"WEU", "ENAM"}
 				option.SetCheckRegions(regions)
 				origin = &globalloadbalancerpoolsv0.LoadBalancerPoolReqOriginsItem{
@@ -219,12 +226,14 @@ var _ = Describe(`GlobalLoadBalancerPoolsV0`, func() {
 				Expect(*listResult.Success).Should(BeTrue())
 
 				for _, glb := range listResult.Result {
-					option := glbService.NewDeleteLoadBalancerOptions(*glb.ID)
-					result, response, operationErr := glbService.DeleteLoadBalancer(option)
-					Expect(operationErr).To(BeNil())
-					Expect(response).ToNot(BeNil())
-					Expect(result).ToNot(BeNil())
-					Expect(*result.Success).Should(BeTrue())
+					if strings.Contains(*glb.Name, "glbtest") {
+						option := glbService.NewDeleteLoadBalancerOptions(*glb.ID)
+						result, response, operationErr := glbService.DeleteLoadBalancer(option)
+						Expect(operationErr).To(BeNil())
+						Expect(response).ToNot(BeNil())
+						Expect(result).ToNot(BeNil())
+						Expect(*result.Success).Should(BeTrue())
+					}
 				}
 
 				/// delete all glb pools
@@ -234,14 +243,16 @@ var _ = Describe(`GlobalLoadBalancerPoolsV0`, func() {
 				Expect(result).ToNot(BeNil())
 
 				for _, pool := range result.Result {
-					option := testService.NewDeleteLoadBalancerPoolOptions(*pool.ID)
-					result, response, operationErr := testService.DeleteLoadBalancerPool(option)
-					Expect(operationErr).To(BeNil())
-					Expect(response).ToNot(BeNil())
-					Expect(result).ToNot(BeNil())
+					if strings.Contains(*pool.Name, "glbtest") {
+						option := testService.NewDeleteLoadBalancerPoolOptions(*pool.ID)
+						result, response, operationErr := testService.DeleteLoadBalancerPool(option)
+						Expect(operationErr).To(BeNil())
+						Expect(response).ToNot(BeNil())
+						Expect(result).ToNot(BeNil())
+					}
 				}
 
-				// deelte all glb monitors
+				// delete all glb monitors
 				monitorResult, monitorResponse, monitorErr := monitorService.ListAllLoadBalancerMonitors(monitorService.NewListAllLoadBalancerMonitorsOptions())
 				Expect(monitorErr).To(BeNil())
 				Expect(monitorResponse).ToNot(BeNil())
@@ -249,18 +260,20 @@ var _ = Describe(`GlobalLoadBalancerPoolsV0`, func() {
 				Expect(*monitorResult.Success).Should(BeTrue())
 
 				for _, glb := range monitorResult.Result {
-					option := monitorService.NewDeleteLoadBalancerMonitorOptions(*glb.ID)
-					result, response, operationErr := monitorService.DeleteLoadBalancerMonitor(option)
-					Expect(operationErr).To(BeNil())
-					Expect(response).ToNot(BeNil())
-					Expect(result).ToNot(BeNil())
-					Expect(*result.Success).Should(BeTrue())
+					if strings.Contains(*glb.Description, "glbtest") {
+						option := monitorService.NewDeleteLoadBalancerMonitorOptions(*glb.ID)
+						result, response, operationErr := monitorService.DeleteLoadBalancerMonitor(option)
+						Expect(operationErr).To(BeNil())
+						Expect(response).ToNot(BeNil())
+						Expect(result).ToNot(BeNil())
+						Expect(*result.Success).Should(BeTrue())
+					}
 				}
 			})
 			It(`create/update/delete/get global load balancer`, func() {
 				// create glb
 				glbOpt := glbService.NewCreateLoadBalancerOptions()
-				glbOpt.SetName("test1." + URL)
+				glbOpt.SetName("glbtest1." + URL)
 				glbOpt.SetDefaultPools([]string{glbPoolID1})
 				glbOpt.SetFallbackPool(glbPoolID2)
 				glbOpt.SetDescription("test glb")
@@ -276,7 +289,7 @@ var _ = Describe(`GlobalLoadBalancerPoolsV0`, func() {
 
 				// update glb
 				editOpt := glbService.NewEditLoadBalancerOptions(glbID)
-				editOpt.SetName("test2." + URL)
+				editOpt.SetName("glbtest2." + URL)
 				editOpt.SetDefaultPools([]string{glbPoolID1})
 				editOpt.SetFallbackPool(glbPoolID1)
 				editOpt.SetDescription("test glb 2")
@@ -309,7 +322,7 @@ var _ = Describe(`GlobalLoadBalancerPoolsV0`, func() {
 				for i := 1; i < 5; i++ {
 					// create glb
 					glbOpt := glbService.NewCreateLoadBalancerOptions()
-					glbOpt.SetName("test" + strconv.Itoa(i) + "." + URL)
+					glbOpt.SetName("glbtest" + strconv.Itoa(i) + "." + URL)
 					glbOpt.SetDefaultPools([]string{glbPoolID1})
 					glbOpt.SetFallbackPool(glbPoolID2)
 					glbOpt.SetDescription("test glb " + strconv.Itoa(i))
