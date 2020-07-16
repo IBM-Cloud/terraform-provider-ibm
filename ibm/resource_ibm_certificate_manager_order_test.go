@@ -42,6 +42,7 @@ func TestAccIBMCertificateManagerOrder_Import(t *testing.T) {
 func TestAccIBMCertificateManagerOrder_Basic(t *testing.T) {
 	var conf models.CertificateInfo
 	orderName := fmt.Sprintf("tf-acc-test1-%s", acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
+	updatedName := fmt.Sprintf("tf-acc-test1-%s", acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
 	cmsName := fmt.Sprintf("tf-acc-test1-%s", acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -53,6 +54,15 @@ func TestAccIBMCertificateManagerOrder_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMCMOrderExists("ibm_certificate_manager_order.cert", conf),
 					resource.TestCheckResourceAttr("ibm_certificate_manager_order.cert", "name", orderName),
+					resource.TestCheckResourceAttr("ibm_certificate_manager_order.cert", "auto_renew_enabled", "false"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMCertificateManagerOrder_Update(cmsName, updatedName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMCMOrderExists("ibm_certificate_manager_order.cert", conf),
+					resource.TestCheckResourceAttr("ibm_certificate_manager_order.cert", "name", updatedName),
+					resource.TestCheckResourceAttr("ibm_certificate_manager_order.cert", "auto_renew_enabled", "true"),
 				),
 			},
 		},
@@ -108,9 +118,42 @@ func testAccCheckIBMCertificateManagerOrder_basic(cmsName, orderName string) str
 		rotate_keys                     = false
 		domain_validation_method        = "dns-01"
 		dns_provider_instance_crn       = data.ibm_cis.instance.id
+		auto_renew_enabled 				= false
 	  }
 	  
 	  `, cmsName, orderName)
+}
+func testAccCheckIBMCertificateManagerOrder_Update(cmsName, updatedName string) string {
+	return fmt.Sprintf(`
+	resource "ibm_resource_instance" "cm" {
+		name                = "%s"
+		location            = "us-south"
+		service             = "cloudcerts"
+		plan                = "free"
+	}
+	data "ibm_resource_group" "web_group" {
+		name = "default"
+	}
+	data "ibm_cis" "instance" {
+		name              = "Terraform-Test-CIS"
+		resource_group_id = data.ibm_resource_group.web_group.id
+	}
+	data "ibm_cis_domain" "web_domain" {
+		cis_id = data.ibm_cis.instance.id
+		domain = "cis-test-domain.com"
+	}
+	resource "ibm_certificate_manager_order" "cert" {
+		certificate_manager_instance_id = ibm_resource_instance.cm.id
+		name                            = "%s"
+		description                     = "test description"
+		domains                         = ["cis-test-domain.com"]
+		rotate_keys                     = false
+		domain_validation_method        = "dns-01"
+		dns_provider_instance_crn       = data.ibm_cis.instance.id
+		auto_renew_enabled 				= true
+	  }
+	  
+	  `, cmsName, updatedName)
 }
 
 func testAccCheckIBMCMOrderExists(n string, obj models.CertificateInfo) resource.TestCheckFunc {
