@@ -78,6 +78,11 @@ func resourceIBMCertificateManagerOrder() *schema.Resource {
 				Description:  "Keyalgorithm info",
 				ValidateFunc: validateAllowedStringValue([]string{"rsaEncryption 2048 bit", "rsaEncryption 4096 bit"}),
 			},
+			"auto_renew_enabled": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 			"algorithm": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -157,6 +162,7 @@ func resourceIBMCertificateManagerOrderCertificate(d *schema.ResourceData, meta 
 	}
 
 	keyAlgorithm := d.Get("key_algorithm").(string)
+	autoRenew := d.Get("auto_renew_enabled").(bool)
 
 	var domainList = make([]string, 0)
 	if domains, ok := d.GetOk("domains"); ok {
@@ -165,7 +171,7 @@ func resourceIBMCertificateManagerOrderCertificate(d *schema.ResourceData, meta 
 		}
 	}
 	client := cmService.Certificate()
-	payload := models.CertificateOrderData{Name: name, Description: description, Domains: domainList, DomainValidationMethod: domainValidationMethod, DNSProviderInstanceCrn: dnsProviderInstanceCrn, KeyAlgorithm: keyAlgorithm}
+	payload := models.CertificateOrderData{Name: name, Description: description, Domains: domainList, DomainValidationMethod: domainValidationMethod, DNSProviderInstanceCrn: dnsProviderInstanceCrn, KeyAlgorithm: keyAlgorithm, AutoRenewEnabled: autoRenew}
 	result, err := client.OrderCertificate(instanceID, payload)
 	if err != nil {
 		return err
@@ -205,6 +211,7 @@ func resourceIBMCertificateManagerRead(d *schema.ResourceData, meta interface{})
 	d.Set("key_algorithm", certificatedata.KeyAlgorithm)
 	d.Set("issuer", certificatedata.Issuer)
 	d.Set("has_previous", certificatedata.HasPrevious)
+	d.Set("auto_renew_enabled", certificatedata.OrderPolicy.AutoRenewEnabled)
 
 	if certificatedata.IssuanceInfo != nil {
 		issuanceinfo := map[string]interface{}{}
@@ -250,6 +257,15 @@ func resourceIBMCertificateManagerRenew(d *schema.ResourceData, meta interface{}
 		payload := models.CertificateMetadataUpdate{Name: name, Description: description}
 
 		err := client.UpdateCertificateMetaData(certID, payload)
+		if err != nil {
+			return err
+		}
+	}
+	if d.HasChange("auto_renew_enabled") {
+		autoRenew := d.Get("auto_renew_enabled").(bool)
+		payload := models.OrderPolicy{AutoRenewEnabled: autoRenew}
+
+		_, err := client.UpdateOrderPolicy(certID, payload)
 		if err != nil {
 			return err
 		}

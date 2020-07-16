@@ -43,14 +43,15 @@ The following arguments are supported:
 * `domain_validation_method` - (Optional,Default,string) Allowable values [dns-01]
 * `key_algorithm` - (Optional,Default,string) Key Algorithm. Allowable values: [`rsaEncryption 2048 bit`,`rsaEncryption 4096 bit`] Default: [`rsaEncryption 2048 bit`]
 * `dns_provider_instance_crn` - (Optional,string) The CRN-based instance ID of the IBM Cloud Internet Services instance that manages the domains. If not present, Certificate Manager assumes a v4 or above Callback URL notifications channel with domain validation exists.
-
+* `auto_renew_enabled` - (Optional, Default, bool) Determines whether the certificate should be auto renewed. Default: false.
+    **NOTE:** With `auto_renew_enabled`, certificates are automatically renewed 31 days before they expire. If your certificate expires in less than 31 days, you must renew it by updating `rotate_keys`. After you do so, your future certificates are renewed automatically.
 
 
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - The Id of the Certificate
+* `id` - The Crn Id of the Certificate. It is a combination of instance crn and the certificate id i.e <instance crn>:certificate:<certID>
 * `issuer` - The issuer of the certificate.
 * `begins_on` - The creation date of the certificate in Unix epoch time.
 * `expires_on` - The expiration date of the certificate in Unix epoch time.
@@ -58,3 +59,13 @@ The following attributes are exported:
 * `status` - The status of certificate. Possible values: [active,inactive,expired,revoked,valid,pending,failed]
 * `has_previous` - Indicates whether a certificate has a previous version.
 * `algorithm` - Algorithm. Allowable values: [sha256WithRSAEncryption]Default: [sha256WithRSAEncryption]
+
+## Import
+
+The `ibm_certificate_manager_order` resource can be imported using the `id`. The ID is the crn id of the certificate.
+* **ID** is a string of the form: `crn:v1:bluemix:public:cloudcerts:us-south:a/4448261269a14562b839e0a3019ed980:8e80c112-5e48-43f8-8ab9-e198520f62e4:certificate:f543e1907a0020cfe0e883936916b336`. The id of an existing certificate is also avaiable in the UI as `Certificate CRN` under the certificate details section.
+
+```
+$ terraform import ibm_certificate_manager_order.cert <id>
+
+$ terraform import ibm_certificate_manager_order.cert crn:v1:bluemix:public:cloudcerts:us-south:a/4448261269a14562b839e0a3019ed980:8e80c112-5e48-43f8-8ab9-e198520f62e4:certificate:f543e1907a0020cfe0e883936916b336
