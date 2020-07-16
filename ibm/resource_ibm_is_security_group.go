@@ -222,10 +222,15 @@ func classicSgGet(d *schema.ResourceData, meta interface{}, id string) error {
 					if rule.Protocol != nil {
 						r[isSecurityGroupRuleProtocol] = *rule.Protocol
 					}
+					if rule.Remote != nil && reflect.ValueOf(rule.Remote).IsNil() == false {
+						for k, v := range rule.Remote.(map[string]interface{}) {
+							if k == "id" || k == "address" || k == "cidr_block" {
+								r[isSecurityGroupRuleRemote] = v.(string)
+								break
+							}
+						}
+					}
 					rules = append(rules, r)
-					remotePtrValue := reflect.ValueOf(rule.Remote)
-					remoteValue := reflect.Indirect(remotePtrValue)
-					d.Set(isSecurityGroupRuleRemote, remoteValue)
 				}
 			case "*vpcclassicv1.SecurityGroupRuleProtocolAll":
 				{
@@ -236,10 +241,15 @@ func classicSgGet(d *schema.ResourceData, meta interface{}, id string) error {
 					if rule.Protocol != nil {
 						r[isSecurityGroupRuleProtocol] = *rule.Protocol
 					}
+					if rule.Remote != nil && reflect.ValueOf(rule.Remote).IsNil() == false {
+						for k, v := range rule.Remote.(map[string]interface{}) {
+							if k == "id" || k == "address" || k == "cidr_block" {
+								r[isSecurityGroupRuleRemote] = v.(string)
+								break
+							}
+						}
+					}
 					rules = append(rules, r)
-					remotePtrValue := reflect.ValueOf(rule.Remote)
-					remoteValue := reflect.Indirect(remotePtrValue)
-					d.Set(isSecurityGroupRuleRemote, remoteValue)
 				}
 			case "*vpcclassicv1.SecurityGroupRuleProtocolTcpudp":
 				{
@@ -256,10 +266,15 @@ func classicSgGet(d *schema.ResourceData, meta interface{}, id string) error {
 					if rule.Protocol != nil {
 						r[isSecurityGroupRuleProtocol] = *rule.Protocol
 					}
+					if rule.Remote != nil && reflect.ValueOf(rule.Remote).IsNil() == false {
+						for k, v := range rule.Remote.(map[string]interface{}) {
+							if k == "id" || k == "address" || k == "cidr_block" {
+								r[isSecurityGroupRuleRemote] = v.(string)
+								break
+							}
+						}
+					}
 					rules = append(rules, r)
-					remotePtrValue := reflect.ValueOf(rule.Remote)
-					remoteValue := reflect.Indirect(remotePtrValue)
-					d.Set(isSecurityGroupRuleRemote, remoteValue)
 				}
 			}
 		}
@@ -325,10 +340,15 @@ func sgGet(d *schema.ResourceData, meta interface{}, id string) error {
 					if rule.Protocol != nil {
 						r[isSecurityGroupRuleProtocol] = *rule.Protocol
 					}
+					if rule.Remote != nil && reflect.ValueOf(rule.Remote).IsNil() == false {
+						for k, v := range rule.Remote.(map[string]interface{}) {
+							if k == "id" || k == "address" || k == "cidr_block" {
+								r[isSecurityGroupRuleRemote] = v.(string)
+								break
+							}
+						}
+					}
 					rules = append(rules, r)
-					remotePtrValue := reflect.ValueOf(rule.Remote)
-					remoteValue := reflect.Indirect(remotePtrValue)
-					d.Set(isSecurityGroupRuleRemote, remoteValue)
 				}
 			case "*vpcv1.SecurityGroupRuleProtocolAll":
 				{
@@ -339,10 +359,15 @@ func sgGet(d *schema.ResourceData, meta interface{}, id string) error {
 					if rule.Protocol != nil {
 						r[isSecurityGroupRuleProtocol] = *rule.Protocol
 					}
+					if rule.Remote != nil && reflect.ValueOf(rule.Remote).IsNil() == false {
+						for k, v := range rule.Remote.(map[string]interface{}) {
+							if k == "id" || k == "address" || k == "cidr_block" {
+								r[isSecurityGroupRuleRemote] = v.(string)
+								break
+							}
+						}
+					}
 					rules = append(rules, r)
-					remotePtrValue := reflect.ValueOf(rule.Remote)
-					remoteValue := reflect.Indirect(remotePtrValue)
-					d.Set(isSecurityGroupRuleRemote, remoteValue)
 				}
 			case "*vpcv1.SecurityGroupRuleProtocolTcpudp":
 				{
@@ -359,10 +384,15 @@ func sgGet(d *schema.ResourceData, meta interface{}, id string) error {
 					if rule.Protocol != nil {
 						r[isSecurityGroupRuleProtocol] = *rule.Protocol
 					}
+					if rule.Remote != nil && reflect.ValueOf(rule.Remote).IsNil() == false {
+						for k, v := range rule.Remote.(map[string]interface{}) {
+							if k == "id" || k == "address" || k == "cidr_block" {
+								r[isSecurityGroupRuleRemote] = v.(string)
+								break
+							}
+						}
+					}
 					rules = append(rules, r)
-					remotePtrValue := reflect.ValueOf(rule.Remote)
-					remoteValue := reflect.Indirect(remotePtrValue)
-					d.Set(isSecurityGroupRuleRemote, remoteValue)
 				}
 			}
 		}
