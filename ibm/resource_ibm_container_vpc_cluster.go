@@ -680,13 +680,6 @@ func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface
 				if strings.Contains(*lb.Name, clusterID) {
 					log.Println("Deleting Load Balancer", *lb.Name)
 					id := *lb.ID
-					deleteLoadBalancerOptions := &vpcclassicv1.DeleteLoadBalancerOptions{
-						ID: &id,
-					}
-					response, err := sess1.DeleteLoadBalancer(deleteLoadBalancerOptions)
-					if err != nil {
-						log.Printf("Error deleting vpc load balancer: %s\n%s", err, response)
-					}
 					_, err = isWaitForClassicLBDeleted(sess1, id, d.Timeout(schema.TimeoutDelete))
 					if err != nil {
 						log.Printf("Error waiting for vpc load balancer to be deleted: %s\n", err)
@@ -715,13 +708,6 @@ func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface
 				if strings.Contains(*lb.Name, clusterID) {
 					log.Println("Deleting Load Balancer", *lb.Name)
 					id := *lb.ID
-					deleteLoadBalancerOptions := &vpcv1.DeleteLoadBalancerOptions{
-						ID: &id,
-					}
-					response, err := sess1.DeleteLoadBalancer(deleteLoadBalancerOptions)
-					if err != nil {
-						log.Printf("Error deleting vpc load balancer: %s\n%s", err, response)
-					}
 					_, err = isWaitForLBDeleted(sess1, id, d.Timeout(schema.TimeoutDelete))
 					if err != nil {
 						log.Printf("Error waiting for vpc load balancer to be deleted: %s\n", err)
