@@ -67,3 +67,4 @@ The following attributes are exported:
 * `id` - The unique identifier of the new resource instance.
 * `status` - Status of resource instance.
 * `guid`- Guid of the resource instance.
+* `extensions` - The extended metadata as a map associated with the resource instance.
