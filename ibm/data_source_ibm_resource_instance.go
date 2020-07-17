@@ -193,8 +193,10 @@ func dataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set(ResourceCRN, instance.Crn.String())
 	d.Set(ResourceStatus, instance.State)
 	d.Set(ResourceGroupName, instance.ResourceGroupName)
-	if instance.Extensions != nil {
+	if len(instance.Extensions) == 0 {
 		d.Set("extensions", instance.Extensions)
+	} else {
+		d.Set("extensions", Flatten(instance.Extensions))
 	}
 
 	rcontroller, err := getBaseController(meta)

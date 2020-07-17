@@ -16,7 +16,10 @@ func Flatten(thing map[string]interface{}) Map {
 	result := make(map[string]string)
 
 	for k, raw := range thing {
-		flatten(result, k, reflect.ValueOf(raw))
+		val := reflect.ValueOf(raw)
+		if val.IsValid() {
+			flatten(result, k, val)
+		}
 	}
 
 	return Map(result)
