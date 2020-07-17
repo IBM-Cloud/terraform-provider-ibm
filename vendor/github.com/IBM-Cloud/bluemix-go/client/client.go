@@ -313,6 +313,8 @@ func getDefaultAuthHeaders(serviceName bluemix.ServiceName, c *bluemix.Config) g
 	case bluemix.CertificateManager:
 		h.Set(userAgentHeader, http.UserAgent())
 		h.Set(authorizationHeader, c.IAMAccessToken)
+	case bluemix.HPCService:
+		h.Set(authorizationHeader, c.IAMAccessToken)
 
 	default:
 		log.Println("Unknown service - No auth headers set")

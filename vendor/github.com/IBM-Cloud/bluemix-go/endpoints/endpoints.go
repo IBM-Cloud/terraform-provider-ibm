@@ -28,6 +28,7 @@ type EndpointLocator interface {
 	CseEndpoint() (string, error)
 	SchematicsEndpoint() (string, error)
 	UserManagementEndpoint() (string, error)
+	HpcsEndpoint() (string, error)
 }
 
 const (
@@ -121,6 +122,12 @@ var regionToEndpoint = map[string]map[string]string{
 	},
 	"usermanagement": {
 		"global": "https://user-management.cloud.ibm.com",
+	},
+	"hpcs": {
+		"us-south": "https://zcryptobroker.mybluemix.net/crypto_v2/",
+		"us-east":  "https://zcryptobroker-wdc.us-east.mybluemix.net/crypto_v2/",
+		"au-syd":   "https://zcryptobroker-syd.au-syd.mybluemix.net/crypto_v2/",
+		"eu-de":    "https://zcryptobroker-de.eu-de.mybluemix.net/crypto_v2/",
 	},
 }
 
@@ -299,4 +306,12 @@ func (e *endpointLocator) UserManagementEndpoint() (string, error) {
 
 	}
 	return "", bmxerror.New(ErrCodeServiceEndpoint, fmt.Sprintf("User Management endpoint doesn't exist"))
+}
+
+func (e *endpointLocator) HpcsEndpoint() (string, error) {
+	if ep, ok := regionToEndpoint["hpcs"][e.region]; ok {
+		//As the current list of regionToEndpoint above is not exhaustive we allow to read endpoints from the env
+		return helpers.EnvFallBack([]string{"IBMCLOUD_HPCS_API_ENDPOINT"}, ep), nil
+	}
+	return "", bmxerror.New(ErrCodeServiceEndpoint, fmt.Sprintf("HPCS Service endpoint doesn't exist for region: %q", e.region))
 }

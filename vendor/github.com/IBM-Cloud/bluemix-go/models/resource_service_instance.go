@@ -7,7 +7,7 @@ import (
 )
 
 type MetadataType struct {
-	ID string `json:"id"`
+	ID        string     `json:"id"`
 	Guid      string     `json:"guid"`
 	Url       string     `json:"url"`
 	CreatedAt *time.Time `json:"created_at"`
@@ -26,6 +26,7 @@ type ServiceInstance struct {
 	Crn                 crn.CRN                `json:"crn,omitempty"`
 	Tags                []string               `json:"tags,omitempty"`
 	Parameters          map[string]interface{} `json:"parameters,omitempty"`
+	Extensions          map[string]interface{} `json:"extensions,omitempty"`
 	CreateTime          int64                  `json:"create_time"`
 	State               string                 `json:"state"`
 	Type                string                 `json:"type"`
