@@ -36,5 +36,5 @@ func makeTransport(config *bluemix.Config) http.RoundTripper {
 
 //UserAgent ...
 func UserAgent() string {
-	return fmt.Sprintf("Blumix-go SDK %s / %s ", bluemix.Version, runtime.GOOS)
+	return fmt.Sprintf("Bluemix-go SDK %s / %s ", bluemix.Version, runtime.GOOS)
 }

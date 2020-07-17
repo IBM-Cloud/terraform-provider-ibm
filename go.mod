@@ -24,12 +24,10 @@ require (
 	github.com/go-openapi/swag v0.19.9 // indirect
 	github.com/go-openapi/validate v0.19.8 // indirect
 	github.com/go-test/deep v1.0.4 // indirect
-	github.com/google/go-querystring v1.0.0 // indirect
-	github.com/hashicorp/go-getter v1.4.2-0.20200106182914-9813cbd4eb02 // indirect
 	github.com/hashicorp/go-uuid v1.0.1
 	github.com/hashicorp/go-version v1.2.0
-	github.com/hashicorp/hcl/v2 v2.3.0 // indirect
-	github.com/hashicorp/terraform-config-inspect v0.0.0-20191212124732-c6ae6269b9d7 // indirect
+	github.com/hashicorp/hil v0.0.0-20200423225030-a18a1cd20038 // indirect
+	github.com/hashicorp/terraform v0.12.28 // indirect
 	github.com/hashicorp/terraform-plugin-sdk v1.6.0
 	github.com/hokaccha/go-prettyjson v0.0.0-20170213120834-e6b9231a2b1c // indirect
 	github.com/minsikl/netscaler-nitro-go v0.0.0-20170827154432-5b14ce3643e3
@@ -37,10 +35,9 @@ require (
 	github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22
-	github.com/zclconf/go-cty v1.2.1 // indirect
 	github.ibm.com/ibmcloud/namespace-go-sdk v0.0.0-00010101000000-000000000000 // indirect
 	github.ibm.com/ibmcloud/networking-go-sdk v0.0.0-00010101000000-000000000000
-	golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59
+	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
 )
 
 replace github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22 => ./common/github.com/softlayer/softlayer-go
