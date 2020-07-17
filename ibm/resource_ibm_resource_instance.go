@@ -350,8 +350,10 @@ func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 			d.Set("service_endpoints", endpoint)
 		}
 	}
-	if instance.Extensions != nil {
+	if len(instance.Extensions) == 0 {
 		d.Set("extensions", instance.Extensions)
+	} else {
+		d.Set("extensions", Flatten(instance.Extensions))
 	}
 
 	return nil
