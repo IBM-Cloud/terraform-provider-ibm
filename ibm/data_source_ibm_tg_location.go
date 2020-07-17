@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/ibmcloud/networking-go-sdk/transitgatewayapisv1"
 )
 
 const (
@@ -68,10 +68,10 @@ func dataSourceIBMTransitGatewaysLocationRead(d *schema.ResourceData, meta inter
 		return err
 	}
 
-	detailGatewayLocationOptionsModel := &transitgatewayapisv1.GetGatewayLocationOptions{}
+	detailGatewayLocationOptionsModel := &transitgatewayapisv1.DetailGatewayLocationOptions{}
 	locName := d.Get(tgLocationsName).(string)
 	detailGatewayLocationOptionsModel.Name = &locName
-	detailTransitGatewayLocation, response, err := client.GetGatewayLocation(detailGatewayLocationOptionsModel)
+	detailTransitGatewayLocation, response, err := client.DetailGatewayLocation(detailGatewayLocationOptionsModel)
 	if err != nil {
 		return fmt.Errorf("Error while fetching transit gateway detailed location: %s\n%s", err, response)
 	}

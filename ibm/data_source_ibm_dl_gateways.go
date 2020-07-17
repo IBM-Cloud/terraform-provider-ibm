@@ -3,8 +3,8 @@ package ibm
 import (
 	"time"
 
+	"github.com/IBM/networking-go-sdk/directlinkapisv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/ibmcloud/networking-go-sdk/directlinkapisv1"
 )
 
 const (

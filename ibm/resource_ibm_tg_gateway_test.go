@@ -6,10 +6,10 @@ import (
 	"log"
 	"testing"
 
+	"github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/ibmcloud/networking-go-sdk/transitgatewayapisv1"
 )
 
 func TestAccIBMTransitGateway_basic(t *testing.T) {
@@ -67,10 +67,10 @@ func testAccCheckIBMTransitGatewayExists(n string, instance string) resource.Tes
 		if err != nil {
 			return err
 		}
-		tgOptions := &transitgatewayapisv1.GetTransitGatewayOptions{
+		tgOptions := &transitgatewayapisv1.DetailTransitGatewayOptions{
 			ID: &rs.Primary.ID,
 		}
-		instance1, response, err := client.GetTransitGateway(tgOptions)
+		instance1, response, err := client.DetailTransitGateway(tgOptions)
 		if err != nil {
 			return fmt.Errorf("Error Getting Transit Gateway: %s\n%s", err, response)
 		}
@@ -95,10 +95,10 @@ func testAccCheckIBMTransitGatewayDestroy(s *terraform.State) error {
 				log.Printf("Error deleting transit gateway :%s", response)
 				return err
 			}
-			tgOptions := &transitgatewayapisv1.GetTransitGatewayOptions{
+			tgOptions := &transitgatewayapisv1.DetailTransitGatewayOptions{
 				ID: &rs.Primary.ID,
 			}
-			_, response, err = client.GetTransitGateway(tgOptions)
+			_, response, err = client.DetailTransitGateway(tgOptions)
 
 			if err == nil {
 				return fmt.Errorf(" tarnsit gateway still exists: %s", rs.Primary.ID)

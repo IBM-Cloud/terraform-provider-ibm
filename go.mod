@@ -12,6 +12,7 @@ require (
 	github.com/IBM/ibm-cos-sdk-go v1.3.1
 	github.com/IBM/ibm-cos-sdk-go-config v1.0.0
 	github.com/IBM/keyprotect-go-client v0.3.5-0.20200325142150-b63163832e26
+	github.com/IBM/networking-go-sdk v0.1.0
 	github.com/IBM/vpc-go-sdk v0.0.1
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/apache/incubator-openwhisk-client-go v0.0.0-20171128215515-ad814bc98c32
@@ -36,12 +37,9 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22
 	github.ibm.com/ibmcloud/namespace-go-sdk v0.0.0-00010101000000-000000000000 // indirect
-	github.ibm.com/ibmcloud/networking-go-sdk v0.0.0-00010101000000-000000000000
-	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
+	golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59
 )
 
 replace github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22 => ./common/github.com/softlayer/softlayer-go
-
-replace github.ibm.com/ibmcloud/networking-go-sdk => ./common/github.ibm.com/ibmcloud/networking-go-sdk
 
 replace github.ibm.com/ibmcloud/namespace-go-sdk => ./common/github.ibm.com/ibmcloud/namespace-go-sdk

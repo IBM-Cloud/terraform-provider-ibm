@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/ibmcloud/networking-go-sdk/transitgatewayapisv1"
 )
 
 const (
