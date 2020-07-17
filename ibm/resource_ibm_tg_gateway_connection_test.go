@@ -2,10 +2,10 @@ package ibm
 
 import (
 	"fmt"
+	"github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/ibmcloud/networking-go-sdk/transitgatewayapisv1"
 	"log"
 	"testing"
 )
@@ -114,11 +114,11 @@ func testAccCheckIBMTransitGatewayConnectionExists(n string, vc string) resource
 		gatewayId := parts[0]
 		ID := parts[1]
 
-		getVCOptions := &transitgatewayapisv1.GetTransitGatewayConnectionOptions{
+		getVCOptions := &transitgatewayapisv1.DetailTransitGatewayConnectionOptions{
 			ID: &ID,
 		}
 		getVCOptions.SetTransitGatewayID(gatewayId)
-		r, response, err := client.GetTransitGatewayConnection(getVCOptions)
+		r, response, err := client.DetailTransitGatewayConnection(getVCOptions)
 		if err != nil {
 			return fmt.Errorf("testAccCheckIBMTransitGatewayConnectionExists: Error Getting Transit Gateway  Connection: %s\n%s", err, response)
 		}

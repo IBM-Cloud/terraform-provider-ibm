@@ -6,10 +6,10 @@ import (
 	"log"
 	"testing"
 
+	"github.com/IBM/networking-go-sdk/directlinkapisv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/ibmcloud/networking-go-sdk/directlinkapisv1"
 )
 
 func TestAccIBMDLGateway_basic(t *testing.T) {
