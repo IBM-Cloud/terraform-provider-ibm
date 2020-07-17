@@ -40,8 +40,8 @@ func resourceIBMISLB() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(10 * time.Minute),
-			Delete: schema.DefaultTimeout(10 * time.Minute),
+			Create: schema.DefaultTimeout(30 * time.Minute),
+			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
 
 		CustomizeDiff: customdiff.Sequence(
@@ -204,7 +204,7 @@ func classicLBCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg 
 
 	lb, response, err := sess.CreateLoadBalancer(options)
 	if err != nil {
-		return fmt.Errorf("Error while creating Load Balanacer err %s\n%s", err, response)
+		return fmt.Errorf("Error while creating Load Balancer err %s\n%s", err, response)
 	}
 	d.SetId(*lb.ID)
 	log.Printf("[INFO] VPC : %s", *lb.ID)
@@ -251,7 +251,7 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 
 	lb, response, err := sess.CreateLoadBalancer(options)
 	if err != nil {
-		return fmt.Errorf("Error while creating Load Balanacer err %s\n%s", err, response)
+		return fmt.Errorf("Error while creating Load Balancer err %s\n%s", err, response)
 	}
 	d.SetId(*lb.ID)
 	log.Printf("[INFO] VPC : %s", *lb.ID)

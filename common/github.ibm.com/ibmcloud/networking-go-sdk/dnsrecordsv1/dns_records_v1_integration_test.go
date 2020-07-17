@@ -3,6 +3,7 @@ package dnsrecordsv1_test
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/IBM/go-sdk-core/core"
 	"github.com/joho/godotenv"
@@ -61,13 +62,14 @@ var _ = Describe(`DNSRecordsV1`, func() {
 				Expect(*result.Success).Should(BeTrue())
 
 				for _, rule := range result.Result {
-					option := testService.NewDeleteDnsRecordOptions(*rule.ID)
-					delResult, response, err := testService.DeleteDnsRecord(option)
-					Expect(err).To(BeNil())
-					Expect(response).ToNot(BeNil())
-					Expect(delResult).ToNot(BeNil())
-					Expect(*result.Success).Should(BeTrue())
-
+					if strings.Contains(*rule.Name, "example") {
+						option := testService.NewDeleteDnsRecordOptions(*rule.ID)
+						delResult, response, err := testService.DeleteDnsRecord(option)
+						Expect(err).To(BeNil())
+						Expect(response).ToNot(BeNil())
+						Expect(delResult).ToNot(BeNil())
+						Expect(*result.Success).Should(BeTrue())
+					}
 				}
 			})
 			AfterEach(func() {
@@ -79,12 +81,14 @@ var _ = Describe(`DNSRecordsV1`, func() {
 				Expect(*result.Success).Should(BeTrue())
 
 				for _, rule := range result.Result {
-					option := testService.NewDeleteDnsRecordOptions(*rule.ID)
-					delResult, response, err := testService.DeleteDnsRecord(option)
-					Expect(err).To(BeNil())
-					Expect(response).ToNot(BeNil())
-					Expect(delResult).ToNot(BeNil())
-					Expect(*result.Success).Should(BeTrue())
+					if strings.Contains(*rule.Name, "example") {
+						option := testService.NewDeleteDnsRecordOptions(*rule.ID)
+						delResult, response, err := testService.DeleteDnsRecord(option)
+						Expect(err).To(BeNil())
+						Expect(response).ToNot(BeNil())
+						Expect(delResult).ToNot(BeNil())
+						Expect(*result.Success).Should(BeTrue())
+					}
 				}
 			})
 			It(`create/delete/get dns A type records`, func() {

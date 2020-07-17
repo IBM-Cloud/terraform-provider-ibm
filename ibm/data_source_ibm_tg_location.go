@@ -68,10 +68,10 @@ func dataSourceIBMTransitGatewaysLocationRead(d *schema.ResourceData, meta inter
 		return err
 	}
 
-	detailGatewayLocationOptionsModel := &transitgatewayapisv1.DetailGatewayLocationOptions{}
+	detailGatewayLocationOptionsModel := &transitgatewayapisv1.GetGatewayLocationOptions{}
 	locName := d.Get(tgLocationsName).(string)
 	detailGatewayLocationOptionsModel.Name = &locName
-	detailTransitGatewayLocation, response, err := client.DetailGatewayLocation(detailGatewayLocationOptionsModel)
+	detailTransitGatewayLocation, response, err := client.GetGatewayLocation(detailGatewayLocationOptionsModel)
 	if err != nil {
 		return fmt.Errorf("Error while fetching transit gateway detailed location: %s\n%s", err, response)
 	}

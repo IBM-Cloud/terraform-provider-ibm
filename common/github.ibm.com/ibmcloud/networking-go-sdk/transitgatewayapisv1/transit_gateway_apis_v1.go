@@ -283,20 +283,20 @@ func (transitGatewayApis *TransitGatewayApisV1) DeleteTransitGateway(deleteTrans
 	return
 }
 
-// DetailTransitGateway : Retrieves specified Transit Gateway
+// GetTransitGateway : Retrieves specified Transit Gateway
 // This request retrieves a single Transit Gateway specified by the identifier in the URL.
-func (transitGatewayApis *TransitGatewayApisV1) DetailTransitGateway(detailTransitGatewayOptions *DetailTransitGatewayOptions) (result *TransitGateway, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(detailTransitGatewayOptions, "detailTransitGatewayOptions cannot be nil")
+func (transitGatewayApis *TransitGatewayApisV1) GetTransitGateway(getTransitGatewayOptions *GetTransitGatewayOptions) (result *TransitGateway, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getTransitGatewayOptions, "getTransitGatewayOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(detailTransitGatewayOptions, "detailTransitGatewayOptions")
+	err = core.ValidateStruct(getTransitGatewayOptions, "getTransitGatewayOptions")
 	if err != nil {
 		return
 	}
 
 	pathSegments := []string{"transit_gateways"}
-	pathParameters := []string{*detailTransitGatewayOptions.ID}
+	pathParameters := []string{*getTransitGatewayOptions.ID}
 
 	builder := core.NewRequestBuilder(core.GET)
 	_, err = builder.ConstructHTTPURL(transitGatewayApis.Service.Options.URL, pathSegments, pathParameters)
@@ -304,11 +304,11 @@ func (transitGatewayApis *TransitGatewayApisV1) DetailTransitGateway(detailTrans
 		return
 	}
 
-	for headerName, headerValue := range detailTransitGatewayOptions.Headers {
+	for headerName, headerValue := range getTransitGatewayOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("transit_gateway_apis", "V1", "DetailTransitGateway")
+	sdkHeaders := common.GetSdkHeaders("transit_gateway_apis", "V1", "GetTransitGateway")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -496,6 +496,9 @@ func (transitGatewayApis *TransitGatewayApisV1) CreateTransitGatewayConnection(c
 	if createTransitGatewayConnectionOptions.NetworkID != nil {
 		body["network_id"] = createTransitGatewayConnectionOptions.NetworkID
 	}
+	if createTransitGatewayConnectionOptions.NetworkAccountID != nil {
+		body["network_account_id"] = createTransitGatewayConnectionOptions.NetworkAccountID
+	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
 		return
@@ -563,20 +566,20 @@ func (transitGatewayApis *TransitGatewayApisV1) DeleteTransitGatewayConnection(d
 	return
 }
 
-// DetailTransitGatewayConnection : Retrieves specified Transit Gateway connection
+// GetTransitGatewayConnection : Retrieves specified Transit Gateway connection
 // This request retrieves a connection from the Transit Gateway.
-func (transitGatewayApis *TransitGatewayApisV1) DetailTransitGatewayConnection(detailTransitGatewayConnectionOptions *DetailTransitGatewayConnectionOptions) (result *TransitGatewayConnectionCust, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(detailTransitGatewayConnectionOptions, "detailTransitGatewayConnectionOptions cannot be nil")
+func (transitGatewayApis *TransitGatewayApisV1) GetTransitGatewayConnection(getTransitGatewayConnectionOptions *GetTransitGatewayConnectionOptions) (result *TransitGatewayConnectionCust, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getTransitGatewayConnectionOptions, "getTransitGatewayConnectionOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(detailTransitGatewayConnectionOptions, "detailTransitGatewayConnectionOptions")
+	err = core.ValidateStruct(getTransitGatewayConnectionOptions, "getTransitGatewayConnectionOptions")
 	if err != nil {
 		return
 	}
 
 	pathSegments := []string{"transit_gateways", "connections"}
-	pathParameters := []string{*detailTransitGatewayConnectionOptions.TransitGatewayID, *detailTransitGatewayConnectionOptions.ID}
+	pathParameters := []string{*getTransitGatewayConnectionOptions.TransitGatewayID, *getTransitGatewayConnectionOptions.ID}
 
 	builder := core.NewRequestBuilder(core.GET)
 	_, err = builder.ConstructHTTPURL(transitGatewayApis.Service.Options.URL, pathSegments, pathParameters)
@@ -584,11 +587,11 @@ func (transitGatewayApis *TransitGatewayApisV1) DetailTransitGatewayConnection(d
 		return
 	}
 
-	for headerName, headerValue := range detailTransitGatewayConnectionOptions.Headers {
+	for headerName, headerValue := range getTransitGatewayConnectionOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("transit_gateway_apis", "V1", "DetailTransitGatewayConnection")
+	sdkHeaders := common.GetSdkHeaders("transit_gateway_apis", "V1", "GetTransitGatewayConnection")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -677,6 +680,58 @@ func (transitGatewayApis *TransitGatewayApisV1) UpdateTransitGatewayConnection(u
 	return
 }
 
+// CreateTransitGatewayConnectionActions : Perform actions on a connection for a Transit Gateway
+// Allow a network owner to approve or reject a cross-account connection request.
+func (transitGatewayApis *TransitGatewayApisV1) CreateTransitGatewayConnectionActions(createTransitGatewayConnectionActionsOptions *CreateTransitGatewayConnectionActionsOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createTransitGatewayConnectionActionsOptions, "createTransitGatewayConnectionActionsOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(createTransitGatewayConnectionActionsOptions, "createTransitGatewayConnectionActionsOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"transit_gateways", "connections", "actions"}
+	pathParameters := []string{*createTransitGatewayConnectionActionsOptions.TransitGatewayID, *createTransitGatewayConnectionActionsOptions.ID}
+
+	builder := core.NewRequestBuilder(core.POST)
+	_, err = builder.ConstructHTTPURL(transitGatewayApis.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range createTransitGatewayConnectionActionsOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("transit_gateway_apis", "V1", "CreateTransitGatewayConnectionActions")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*transitGatewayApis.Version))
+
+	body := make(map[string]interface{})
+	if createTransitGatewayConnectionActionsOptions.Action != nil {
+		body["action"] = createTransitGatewayConnectionActionsOptions.Action
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = transitGatewayApis.Service.Request(request, nil)
+
+	return
+}
+
 // ListGatewayLocations : List all locations that support Transit Gateways
 // List all locations that support Transit Gateways.
 func (transitGatewayApis *TransitGatewayApisV1) ListGatewayLocations(listGatewayLocationsOptions *ListGatewayLocationsOptions) (result *TSCollection, response *core.DetailedResponse, err error) {
@@ -725,20 +780,20 @@ func (transitGatewayApis *TransitGatewayApisV1) ListGatewayLocations(listGateway
 	return
 }
 
-// DetailGatewayLocation : Show the details of a given Transit Gateway location
+// GetGatewayLocation : Show the details of a given Transit Gateway location
 // Get the details of a Transit Gateway Location.
-func (transitGatewayApis *TransitGatewayApisV1) DetailGatewayLocation(detailGatewayLocationOptions *DetailGatewayLocationOptions) (result *TSLocation, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(detailGatewayLocationOptions, "detailGatewayLocationOptions cannot be nil")
+func (transitGatewayApis *TransitGatewayApisV1) GetGatewayLocation(getGatewayLocationOptions *GetGatewayLocationOptions) (result *TSLocation, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getGatewayLocationOptions, "getGatewayLocationOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(detailGatewayLocationOptions, "detailGatewayLocationOptions")
+	err = core.ValidateStruct(getGatewayLocationOptions, "getGatewayLocationOptions")
 	if err != nil {
 		return
 	}
 
 	pathSegments := []string{"locations"}
-	pathParameters := []string{*detailGatewayLocationOptions.Name}
+	pathParameters := []string{*getGatewayLocationOptions.Name}
 
 	builder := core.NewRequestBuilder(core.GET)
 	_, err = builder.ConstructHTTPURL(transitGatewayApis.Service.Options.URL, pathSegments, pathParameters)
@@ -746,11 +801,11 @@ func (transitGatewayApis *TransitGatewayApisV1) DetailGatewayLocation(detailGate
 		return
 	}
 
-	for headerName, headerValue := range detailGatewayLocationOptions.Headers {
+	for headerName, headerValue := range getGatewayLocationOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("transit_gateway_apis", "V1", "DetailGatewayLocation")
+	sdkHeaders := common.GetSdkHeaders("transit_gateway_apis", "V1", "GetGatewayLocation")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -777,6 +832,61 @@ func (transitGatewayApis *TransitGatewayApisV1) DetailGatewayLocation(detailGate
 	return
 }
 
+// CreateTransitGatewayConnectionActionsOptions : The CreateTransitGatewayConnectionActions options.
+type CreateTransitGatewayConnectionActionsOptions struct {
+	// The Transit Gateway identifier.
+	TransitGatewayID *string `json:"transit_gateway_id" validate:"required"`
+
+	// The connection identifier.
+	ID *string `json:"id" validate:"required"`
+
+	// The action that is to be performed against the connection request.
+	Action *string `json:"action" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// Constants associated with the CreateTransitGatewayConnectionActionsOptions.Action property.
+// The action that is to be performed against the connection request.
+const (
+	CreateTransitGatewayConnectionActionsOptions_Action_Approve = "approve"
+	CreateTransitGatewayConnectionActionsOptions_Action_Reject  = "reject"
+)
+
+// NewCreateTransitGatewayConnectionActionsOptions : Instantiate CreateTransitGatewayConnectionActionsOptions
+func (*TransitGatewayApisV1) NewCreateTransitGatewayConnectionActionsOptions(transitGatewayID string, id string, action string) *CreateTransitGatewayConnectionActionsOptions {
+	return &CreateTransitGatewayConnectionActionsOptions{
+		TransitGatewayID: core.StringPtr(transitGatewayID),
+		ID:               core.StringPtr(id),
+		Action:           core.StringPtr(action),
+	}
+}
+
+// SetTransitGatewayID : Allow user to set TransitGatewayID
+func (options *CreateTransitGatewayConnectionActionsOptions) SetTransitGatewayID(transitGatewayID string) *CreateTransitGatewayConnectionActionsOptions {
+	options.TransitGatewayID = core.StringPtr(transitGatewayID)
+	return options
+}
+
+// SetID : Allow user to set ID
+func (options *CreateTransitGatewayConnectionActionsOptions) SetID(id string) *CreateTransitGatewayConnectionActionsOptions {
+	options.ID = core.StringPtr(id)
+	return options
+}
+
+// SetAction : Allow user to set Action
+func (options *CreateTransitGatewayConnectionActionsOptions) SetAction(action string) *CreateTransitGatewayConnectionActionsOptions {
+	options.Action = core.StringPtr(action)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *CreateTransitGatewayConnectionActionsOptions) SetHeaders(param map[string]string) *CreateTransitGatewayConnectionActionsOptions {
+	options.Headers = param
+	return options
+}
+
 // CreateTransitGatewayConnectionOptions : The CreateTransitGatewayConnection options.
 type CreateTransitGatewayConnectionOptions struct {
 	// The Transit Gateway identifier.
@@ -793,6 +903,10 @@ type CreateTransitGatewayConnectionOptions struct {
 	// network type 'vpc' this is the CRN of the VPC to be connected. This field is required to be unspecified for network
 	// type 'classic'.
 	NetworkID *string `json:"network_id,omitempty"`
+
+	// The ID of the account which owns the network that is being connected. Generally only used if the network is in a
+	// different account than the gateway.
+	NetworkAccountID *string `json:"network_account_id,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -837,6 +951,12 @@ func (options *CreateTransitGatewayConnectionOptions) SetNetworkID(networkID str
 	return options
 }
 
+// SetNetworkAccountID : Allow user to set NetworkAccountID
+func (options *CreateTransitGatewayConnectionOptions) SetNetworkAccountID(networkAccountID string) *CreateTransitGatewayConnectionOptions {
+	options.NetworkAccountID = core.StringPtr(networkAccountID)
+	return options
+}
+
 // SetHeaders : Allow user to set Headers
 func (options *CreateTransitGatewayConnectionOptions) SetHeaders(param map[string]string) *CreateTransitGatewayConnectionOptions {
 	options.Headers = param
@@ -851,7 +971,7 @@ type CreateTransitGatewayOptions struct {
 	// Name Transit Gateway Services.
 	Name *string `json:"name" validate:"required"`
 
-	// Allow global routing for a Transit Gateway.
+	// Allow global routing for a Transit Gateway. If unspecified, the default value is false.
 	Global *bool `json:"global,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
@@ -966,8 +1086,8 @@ func (options *DeleteTransitGatewayOptions) SetHeaders(param map[string]string) 
 	return options
 }
 
-// DetailGatewayLocationOptions : The DetailGatewayLocation options.
-type DetailGatewayLocationOptions struct {
+// GetGatewayLocationOptions : The GetGatewayLocation options.
+type GetGatewayLocationOptions struct {
 	// The Transit Gateway location Name.
 	Name *string `json:"name" validate:"required"`
 
@@ -975,27 +1095,27 @@ type DetailGatewayLocationOptions struct {
 	Headers map[string]string
 }
 
-// NewDetailGatewayLocationOptions : Instantiate DetailGatewayLocationOptions
-func (*TransitGatewayApisV1) NewDetailGatewayLocationOptions(name string) *DetailGatewayLocationOptions {
-	return &DetailGatewayLocationOptions{
+// NewGetGatewayLocationOptions : Instantiate GetGatewayLocationOptions
+func (*TransitGatewayApisV1) NewGetGatewayLocationOptions(name string) *GetGatewayLocationOptions {
+	return &GetGatewayLocationOptions{
 		Name: core.StringPtr(name),
 	}
 }
 
 // SetName : Allow user to set Name
-func (options *DetailGatewayLocationOptions) SetName(name string) *DetailGatewayLocationOptions {
+func (options *GetGatewayLocationOptions) SetName(name string) *GetGatewayLocationOptions {
 	options.Name = core.StringPtr(name)
 	return options
 }
 
 // SetHeaders : Allow user to set Headers
-func (options *DetailGatewayLocationOptions) SetHeaders(param map[string]string) *DetailGatewayLocationOptions {
+func (options *GetGatewayLocationOptions) SetHeaders(param map[string]string) *GetGatewayLocationOptions {
 	options.Headers = param
 	return options
 }
 
-// DetailTransitGatewayConnectionOptions : The DetailTransitGatewayConnection options.
-type DetailTransitGatewayConnectionOptions struct {
+// GetTransitGatewayConnectionOptions : The GetTransitGatewayConnection options.
+type GetTransitGatewayConnectionOptions struct {
 	// The Transit Gateway identifier.
 	TransitGatewayID *string `json:"transit_gateway_id" validate:"required"`
 
@@ -1006,34 +1126,34 @@ type DetailTransitGatewayConnectionOptions struct {
 	Headers map[string]string
 }
 
-// NewDetailTransitGatewayConnectionOptions : Instantiate DetailTransitGatewayConnectionOptions
-func (*TransitGatewayApisV1) NewDetailTransitGatewayConnectionOptions(transitGatewayID string, id string) *DetailTransitGatewayConnectionOptions {
-	return &DetailTransitGatewayConnectionOptions{
+// NewGetTransitGatewayConnectionOptions : Instantiate GetTransitGatewayConnectionOptions
+func (*TransitGatewayApisV1) NewGetTransitGatewayConnectionOptions(transitGatewayID string, id string) *GetTransitGatewayConnectionOptions {
+	return &GetTransitGatewayConnectionOptions{
 		TransitGatewayID: core.StringPtr(transitGatewayID),
 		ID:               core.StringPtr(id),
 	}
 }
 
 // SetTransitGatewayID : Allow user to set TransitGatewayID
-func (options *DetailTransitGatewayConnectionOptions) SetTransitGatewayID(transitGatewayID string) *DetailTransitGatewayConnectionOptions {
+func (options *GetTransitGatewayConnectionOptions) SetTransitGatewayID(transitGatewayID string) *GetTransitGatewayConnectionOptions {
 	options.TransitGatewayID = core.StringPtr(transitGatewayID)
 	return options
 }
 
 // SetID : Allow user to set ID
-func (options *DetailTransitGatewayConnectionOptions) SetID(id string) *DetailTransitGatewayConnectionOptions {
+func (options *GetTransitGatewayConnectionOptions) SetID(id string) *GetTransitGatewayConnectionOptions {
 	options.ID = core.StringPtr(id)
 	return options
 }
 
 // SetHeaders : Allow user to set Headers
-func (options *DetailTransitGatewayConnectionOptions) SetHeaders(param map[string]string) *DetailTransitGatewayConnectionOptions {
+func (options *GetTransitGatewayConnectionOptions) SetHeaders(param map[string]string) *GetTransitGatewayConnectionOptions {
 	options.Headers = param
 	return options
 }
 
-// DetailTransitGatewayOptions : The DetailTransitGateway options.
-type DetailTransitGatewayOptions struct {
+// GetTransitGatewayOptions : The GetTransitGateway options.
+type GetTransitGatewayOptions struct {
 	// The Transit Gateway identifier.
 	ID *string `json:"id" validate:"required"`
 
@@ -1041,21 +1161,21 @@ type DetailTransitGatewayOptions struct {
 	Headers map[string]string
 }
 
-// NewDetailTransitGatewayOptions : Instantiate DetailTransitGatewayOptions
-func (*TransitGatewayApisV1) NewDetailTransitGatewayOptions(id string) *DetailTransitGatewayOptions {
-	return &DetailTransitGatewayOptions{
+// NewGetTransitGatewayOptions : Instantiate GetTransitGatewayOptions
+func (*TransitGatewayApisV1) NewGetTransitGatewayOptions(id string) *GetTransitGatewayOptions {
+	return &GetTransitGatewayOptions{
 		ID: core.StringPtr(id),
 	}
 }
 
 // SetID : Allow user to set ID
-func (options *DetailTransitGatewayOptions) SetID(id string) *DetailTransitGatewayOptions {
+func (options *GetTransitGatewayOptions) SetID(id string) *GetTransitGatewayOptions {
 	options.ID = core.StringPtr(id)
 	return options
 }
 
 // SetHeaders : Allow user to set Headers
-func (options *DetailTransitGatewayOptions) SetHeaders(param map[string]string) *DetailTransitGatewayOptions {
+func (options *GetTransitGatewayOptions) SetHeaders(param map[string]string) *GetTransitGatewayOptions {
 	options.Headers = param
 	return options
 }
@@ -1310,14 +1430,14 @@ type TransitGateway struct {
 	// A human readable name for the transit gateway.
 	Name *string `json:"name" validate:"required"`
 
-	// Allow global routing for a Transit Gateway.
-	Global *bool `json:"global" validate:"required"`
-
 	// Location of Transit Gateway Services.
 	Location *string `json:"location" validate:"required"`
 
 	// The date and time that this gateway was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// Allow global routing for a Transit Gateway.
+	Global *bool `json:"global" validate:"required"`
 
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://console.bluemix.net/apidocs/resource-manager#introduction) is used.
@@ -1354,15 +1474,15 @@ func UnmarshalTransitGateway(m map[string]json.RawMessage, result interface{}) (
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "global", &obj.Global)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "location", &obj.Location)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "global", &obj.Global)
 	if err != nil {
 		return
 	}
@@ -1422,17 +1542,27 @@ type TransitGatewayConnectionCust struct {
 	// VPC in the case of network type 'vpc', and the word Classic, in the case of network type 'classic').
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the network being connected. For VPC this is the CRN of that VPC.
+	// The ID of the network being connected via this connection. This field is required for some types, such as 'vpc'. For
+	// network type 'vpc' this is the CRN of the VPC to be connected. This field is required to be unspecified for network
+	// type 'classic'.
 	NetworkID *string `json:"network_id,omitempty"`
 
 	// Defines what type of network is connected via this connection.
 	NetworkType *string `json:"network_type" validate:"required"`
+
+	// The ID of the account which owns the network that is being connected. Generally only used if the network is in a
+	// different account than the gateway.
+	NetworkAccountID *string `json:"network_account_id,omitempty"`
 
 	// The unique identifier for this Transit Gateway Connection to Network (vpc/classic).
 	ID *string `json:"id" validate:"required"`
 
 	// The date and time that this connection was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// Only visible for cross account connections, this field represents the status of the request to connect the given
+	// network between accounts.
+	RequestStatus *string `json:"request_status,omitempty"`
 
 	// What is the current configuration state of this connection.
 	Status *string `json:"status,omitempty"`
@@ -1448,13 +1578,26 @@ const (
 	TransitGatewayConnectionCust_NetworkType_Vpc     = "vpc"
 )
 
+// Constants associated with the TransitGatewayConnectionCust.RequestStatus property.
+// Only visible for cross account connections, this field represents the status of the request to connect the given
+// network between accounts.
+const (
+	TransitGatewayConnectionCust_RequestStatus_Approved = "approved"
+	TransitGatewayConnectionCust_RequestStatus_Detached = "detached"
+	TransitGatewayConnectionCust_RequestStatus_Expired  = "expired"
+	TransitGatewayConnectionCust_RequestStatus_Pending  = "pending"
+	TransitGatewayConnectionCust_RequestStatus_Rejected = "rejected"
+)
+
 // Constants associated with the TransitGatewayConnectionCust.Status property.
 // What is the current configuration state of this connection.
 const (
-	TransitGatewayConnectionCust_Status_Attached = "attached"
-	TransitGatewayConnectionCust_Status_Deleting = "deleting"
-	TransitGatewayConnectionCust_Status_Failed   = "failed"
-	TransitGatewayConnectionCust_Status_Pending  = "pending"
+	TransitGatewayConnectionCust_Status_Attached  = "attached"
+	TransitGatewayConnectionCust_Status_Deleting  = "deleting"
+	TransitGatewayConnectionCust_Status_Detached  = "detached"
+	TransitGatewayConnectionCust_Status_Detaching = "detaching"
+	TransitGatewayConnectionCust_Status_Failed    = "failed"
+	TransitGatewayConnectionCust_Status_Pending   = "pending"
 )
 
 // UnmarshalTransitGatewayConnectionCust unmarshals an instance of TransitGatewayConnectionCust from the specified map of raw messages.
@@ -1472,11 +1615,19 @@ func UnmarshalTransitGatewayConnectionCust(m map[string]json.RawMessage, result 
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "network_account_id", &obj.NetworkAccountID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "request_status", &obj.RequestStatus)
 	if err != nil {
 		return
 	}
@@ -1500,8 +1651,9 @@ type UpdateTransitGatewayConnectionOptions struct {
 	// The connection identifier.
 	ID *string `json:"id" validate:"required"`
 
-	// The user-defined name for this transit gateway. If unspecified, the name will be a hyphenated list of
-	// randomly-selected words.
+	// The user-defined name for this transit gateway. If specified as empty string or nil,  the name will be the network
+	// name (the name of the VPC in the case of network type 'vpc',  and the word Classic, in the case of network type
+	// 'classic').
 	Name *string `json:"name,omitempty"`
 
 	// Allows users to set headers on API requests

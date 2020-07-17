@@ -111,7 +111,7 @@ func resourceIBMPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	volumeid := *vol.VolumeID
 	d.SetId(fmt.Sprintf("%s/%s", powerinstanceid, volumeid))
 	if err != nil {
-		log.Printf("[DEBUG]  err %s", isErrorToString(err))
+		log.Printf("[DEBUG]  err %s", err)
 		return err
 	}
 	_, err = isWaitForIBMPIVolumeAvailable(client, volumeid, powerinstanceid, d.Timeout(schema.TimeoutCreate))

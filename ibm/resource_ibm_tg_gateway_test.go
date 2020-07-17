@@ -17,7 +17,6 @@ func TestAccIBMTransitGateway_basic(t *testing.T) {
 	gatewayname := fmt.Sprintf("tg-gateway-name-%d", acctest.RandIntRange(10, 100))
 	newgatewayname := fmt.Sprintf("newgateway-name-%d", acctest.RandIntRange(10, 100))
 	location := fmt.Sprintf("us-south")
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -68,10 +67,10 @@ func testAccCheckIBMTransitGatewayExists(n string, instance string) resource.Tes
 		if err != nil {
 			return err
 		}
-		tgOptions := &transitgatewayapisv1.DetailTransitGatewayOptions{
+		tgOptions := &transitgatewayapisv1.GetTransitGatewayOptions{
 			ID: &rs.Primary.ID,
 		}
-		instance1, response, err := client.DetailTransitGateway(tgOptions)
+		instance1, response, err := client.GetTransitGateway(tgOptions)
 		if err != nil {
 			return fmt.Errorf("Error Getting Transit Gateway: %s\n%s", err, response)
 		}
@@ -96,10 +95,10 @@ func testAccCheckIBMTransitGatewayDestroy(s *terraform.State) error {
 				log.Printf("Error deleting transit gateway :%s", response)
 				return err
 			}
-			tgOptions := &transitgatewayapisv1.DetailTransitGatewayOptions{
+			tgOptions := &transitgatewayapisv1.GetTransitGatewayOptions{
 				ID: &rs.Primary.ID,
 			}
-			_, response, err = client.DetailTransitGateway(tgOptions)
+			_, response, err = client.GetTransitGateway(tgOptions)
 
 			if err == nil {
 				return fmt.Errorf(" tarnsit gateway still exists: %s", rs.Primary.ID)

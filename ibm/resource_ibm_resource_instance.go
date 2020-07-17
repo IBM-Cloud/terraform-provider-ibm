@@ -121,6 +121,11 @@ func resourceIBMResourceInstance() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"public", "private", "public-and-private"}),
 			},
+			"dashboard_url": {
+				Description: "Dashboard URL to access resource.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -308,6 +313,7 @@ func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("resource_group_id", instance.ResourceGroupID)
 	d.Set("location", instance.RegionID)
 	d.Set("crn", instance.Crn.String())
+	d.Set("dashboard_url", instance.DashboardUrl)
 
 	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
 	if err != nil {

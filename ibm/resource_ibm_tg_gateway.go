@@ -212,10 +212,10 @@ func isWaitForTransitGatewayAvailable(client *transitgatewayapisv1.TransitGatewa
 
 func isTransitGatewayRefreshFunc(client *transitgatewayapisv1.TransitGatewayApisV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		gettgwoptions := &transitgatewayapisv1.DetailTransitGatewayOptions{
+		gettgwoptions := &transitgatewayapisv1.GetTransitGatewayOptions{
 			ID: &id,
 		}
-		transitGateway, response, err := client.DetailTransitGateway(gettgwoptions)
+		transitGateway, response, err := client.GetTransitGateway(gettgwoptions)
 		if err != nil {
 			return nil, "", fmt.Errorf("Error Getting Transit Gateway: %s\n%s", err, response)
 		}
@@ -234,12 +234,12 @@ func resourceIBMTransitGatewayRead(d *schema.ResourceData, meta interface{}) err
 	if err != nil {
 		return err
 	}
-	tgOptions := &transitgatewayapisv1.DetailTransitGatewayOptions{}
+	tgOptions := &transitgatewayapisv1.GetTransitGatewayOptions{}
 	if id != "" {
 		tgOptions.ID = &id
 	}
 
-	tgw, _, err := client.DetailTransitGateway(tgOptions)
+	tgw, _, err := client.GetTransitGateway(tgOptions)
 	if err != nil {
 		return err
 	}
@@ -288,10 +288,10 @@ func resourceIBMTransitGatewayUpdate(d *schema.ResourceData, meta interface{}) e
 	}
 
 	ID := d.Id()
-	tgOptions := &transitgatewayapisv1.DetailTransitGatewayOptions{
+	tgOptions := &transitgatewayapisv1.GetTransitGatewayOptions{
 		ID: &ID,
 	}
-	tgw, resp, err := client.DetailTransitGateway(tgOptions)
+	tgw, resp, err := client.GetTransitGateway(tgOptions)
 
 	if err != nil {
 		log.Printf("Error fetching Tranisit  Gateway: %s", resp)
@@ -373,10 +373,10 @@ func isWaitForTransitGatewayDeleted(client *transitgatewayapisv1.TransitGatewayA
 func isTransitGatewayDeleteRefreshFunc(client *transitgatewayapisv1.TransitGatewayApisV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] delete function here")
-		gettgwoptions := &transitgatewayapisv1.DetailTransitGatewayOptions{
+		gettgwoptions := &transitgatewayapisv1.GetTransitGatewayOptions{
 			ID: &id,
 		}
-		transitGateway, response, err := client.DetailTransitGateway(gettgwoptions)
+		transitGateway, response, err := client.GetTransitGateway(gettgwoptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
 				return client, isTransitGatewayDeleted, nil
@@ -396,11 +396,11 @@ func resourceIBMTransitGatewayExists(d *schema.ResourceData, meta interface{}) (
 
 	ID := d.Id()
 
-	tgOptions := &transitgatewayapisv1.DetailTransitGatewayOptions{}
+	tgOptions := &transitgatewayapisv1.GetTransitGatewayOptions{}
 	if ID != "" {
 		tgOptions.ID = &ID
 	}
-	_, response, err := client.DetailTransitGateway(tgOptions)
+	_, response, err := client.GetTransitGateway(tgOptions)
 	if err != nil {
 		return false, fmt.Errorf("Error Getting Transit Gateway: %s\n%s", err, response)
 	}

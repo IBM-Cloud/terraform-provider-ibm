@@ -27,6 +27,7 @@ go test -v ./transitgatewayapisv1
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/IBM/go-sdk-core/v4/core"
@@ -36,9 +37,6 @@ import (
 	. "github.com/onsi/gomega"
 	"github.ibm.com/ibmcloud/networking-go-sdk/transitgatewayapisv1"
 )
-
-// var GATEWAY_INSTANCE_ID string
-// var CONN_INSTANCE_ID string
 
 var _ = Describe(`TransitGatewayApisV1`, func() {
 	err := godotenv.Load("../transit.env")
@@ -64,37 +62,57 @@ var _ = Describe(`TransitGatewayApisV1`, func() {
 		Expect(err).To(BeNil())
 	})
 
+	timestamp := time.Now().Unix()
+	name := "GO-SDK-INT-GATEWAY-" + strconv.FormatInt(timestamp, 10)
+	updateName := "GO-SDK-INT-GATEWAY-UPDATE-" + strconv.FormatInt(timestamp, 10)
+	connectionName := "GO-SDK-INT-CONNECTION-" + strconv.FormatInt(timestamp, 10)
+	updateConnectionName := "GO-SDK-INT-CONNECTION-UPDATE-" + strconv.FormatInt(timestamp, 10)
+
 	Describe(`CreateTransitGateway(createTransitGatewayOptions *CreateTransitGatewayOptions)`, func() {
 		Context(`Success: create Transit Gateway`, func() {
 			header := map[string]string{
 				"Content-type": "application/json",
 			}
-			name := "SDK-INT-gateway"
+
 			location := os.Getenv("LOCATION")
 			createTransitGatewayOptions := service.NewCreateTransitGatewayOptions(location, name)
 			createTransitGatewayOptions.SetHeaders(header)
-			//createTransitGatewayOptions.SetResourceGroup(service.NewResourceGroupIdentity(resourceGroup))
 
 			It(`Successfully created new gateway`, func() {
 				result, detailedResponse, err := service.CreateTransitGateway(createTransitGatewayOptions)
 				Expect(err).To(BeNil())
 				Expect(detailedResponse.StatusCode).To(Equal(201))
-				Expect(*result.Name).To(Equal("SDK-INT-gateway"))
+				Expect(*result.Name).To(Equal(name))
 				Expect(*result.Location).To(Equal(os.Getenv("LOCATION")))
+				Expect(*result.CreatedAt).NotTo(Equal(""))
+				Expect(*result.UpdatedAt).NotTo(Equal(""))
+				Expect(*result.Status).To(Equal("pending"))
+				Expect(*result.ID).NotTo(Equal(""))
+				Expect(*result.Crn).NotTo(Equal(""))
+				Expect(*result.Global).NotTo(BeNil())
+				Expect(*result.ResourceGroup.ID).NotTo(Equal(""))
+
 				os.Setenv("GATEWAY_INSTANCE_ID", *result.ID)
 				//time.Sleep(30 * time.Second)
 			})
 			It("Successfully waits for gateway to report as available", func() {
-				detailTransitGatewayOptions := service.NewDetailTransitGatewayOptions(os.Getenv("GATEWAY_INSTANCE_ID"))
+				getTransitGatewayOptions := service.NewGetTransitGatewayOptions(os.Getenv("GATEWAY_INSTANCE_ID"))
 
 				// Gateway creation might not be instantaneous.  Poll the Gateway looking for 'available' status.  Fail after 2 min
 				timer := 0
 				for {
-					response, _, _ := service.DetailTransitGateway(detailTransitGatewayOptions)
+					response, _, _ := service.GetTransitGateway(getTransitGatewayOptions)
 
 					// if available then we are done
 					if *response.Status == "available" {
 						Expect(*response.Status).To(Equal("available")) // response is available, exit success
+						Expect(*response.Name).To(Equal(name))
+						Expect(*response.Location).To(Equal(os.Getenv("LOCATION")))
+						Expect(*response.CreatedAt).NotTo(Equal(""))
+						Expect(*response.ID).To(Equal(os.Getenv("GATEWAY_INSTANCE_ID")))
+						Expect(*response.Crn).NotTo(Equal(""))
+						Expect(*response.Global).NotTo(BeNil())
+						Expect(*response.ResourceGroup.ID).NotTo(Equal(""))
 						break
 					}
 
@@ -141,9 +159,63 @@ var _ = Describe(`TransitGatewayApisV1`, func() {
 				Expect(err).To(BeNil())
 				Expect(detailedResponse.StatusCode).To(Equal(200))
 
-				firstResource := result.TransitGateways[0]
-				Expect(*firstResource.ID).ToNot(BeNil())
-				Expect(*firstResource.Name).ToNot(BeNil())
+				Expect(len(result.TransitGateways)).Should(BeNumerically(">", 0))
+				found := false
+				for _, gw := range result.TransitGateways {
+					if *gw.ID == os.Getenv("GATEWAY_INSTANCE_ID") {
+						Expect(*gw.Name).To(Equal(name))
+						Expect(*gw.Status).To(Equal("available"))
+						Expect(*gw.Location).To(Equal(os.Getenv("LOCATION")))
+						Expect(*gw.CreatedAt).NotTo(Equal(""))
+						Expect(*gw.UpdatedAt).NotTo(Equal(""))
+						Expect(*gw.Crn).NotTo(Equal(""))
+						Expect(*gw.Global).NotTo(BeNil())
+						Expect(*gw.ResourceGroup.ID).NotTo(Equal(""))
+						found = true
+						break
+					}
+				}
+				Expect(found).To(Equal(true))
+			})
+		})
+	})
+
+	Describe(`GetTransitGateway(getTransitGatewayOptions *GetTransitGatewayOptions)`, func() {
+		Context(`Successfully get gateway by instanceID`, func() {
+
+			It(`Successfully get resource by instanceID`, func() {
+				gateway_id := os.Getenv("GATEWAY_INSTANCE_ID")
+				getTransitGatewayOptions := service.NewGetTransitGatewayOptions(gateway_id)
+
+				result, detailedResponse, err := service.GetTransitGateway(getTransitGatewayOptions)
+				Expect(err).To(BeNil())
+				Expect(detailedResponse.StatusCode).To(Equal(200))
+
+				Expect(*result.Name).To(Equal(name))
+				Expect(*result.Location).To(Equal(os.Getenv("LOCATION")))
+				Expect(*result.CreatedAt).NotTo(Equal(""))
+				//				Expect(*result.UpdatedAt).NotTo(Equal(""))
+				Expect(*result.Status).To(Equal("available"))
+				Expect(*result.ID).To(Equal(gateway_id))
+				Expect(*result.Crn).NotTo(Equal(""))
+				Expect(*result.Global).NotTo(BeNil())
+				Expect(*result.ResourceGroup.ID).NotTo(Equal(""))
+			})
+		})
+
+		Context(`Failed to get resource by instanceID`, func() {
+			header := map[string]string{
+				"Content-type": "application/json",
+			}
+			badinstanceID := "111"
+			getTransitGatewayOptions := &transitgatewayapisv1.GetTransitGatewayOptions{}
+			getTransitGatewayOptions.SetID(badinstanceID)
+			getTransitGatewayOptions.SetHeaders(header)
+			It(`Failed to get resource by instanceID`, func() {
+				result, detailedResponse, err := service.GetTransitGateway(getTransitGatewayOptions)
+				Expect(result).To(BeNil())
+				Expect(detailedResponse.StatusCode).To(Equal(404))
+				Expect(err).Should(HaveOccurred())
 			})
 		})
 	})
@@ -151,17 +223,25 @@ var _ = Describe(`TransitGatewayApisV1`, func() {
 	Describe(`UpdateTransitGateway(updateTransitGatewayOptions *UpdateTransitGatewayOptions)`, func() {
 		Context(`Success: update Gateway name by instanceID`, func() {
 
-			name := "update-SDK-INT-gateway"
 			It(`Successfully update name of gateway`, func() {
 				gateway_id := os.Getenv("GATEWAY_INSTANCE_ID")
 				fmt.Println("Gateway to update ", gateway_id)
 				updateTransitGatewayOptions := service.NewUpdateTransitGatewayOptions(gateway_id).
-					SetName(name)
+					SetName(updateName)
 
 				result, detailedResponse, err := service.UpdateTransitGateway(updateTransitGatewayOptions)
 				Expect(err).To(BeNil())
 				Expect(detailedResponse.StatusCode).To(Equal(200))
-				Expect(*result.Name).To(Equal(name))
+
+				Expect(*result.Name).To(Equal(updateName))
+				Expect(*result.Location).To(Equal(os.Getenv("LOCATION")))
+				Expect(*result.CreatedAt).NotTo(Equal(""))
+				Expect(*result.UpdatedAt).NotTo(Equal(""))
+				Expect(*result.Status).To(Equal("available"))
+				Expect(*result.ID).To(Equal(gateway_id))
+				Expect(*result.Crn).NotTo(Equal(""))
+				Expect(*result.Global).NotTo(BeNil())
+				Expect(*result.ResourceGroup.ID).NotTo(Equal(""))
 			})
 		})
 
@@ -170,7 +250,7 @@ var _ = Describe(`TransitGatewayApisV1`, func() {
 				"Content-type": "application/json",
 			}
 			badinstanceID := "111"
-			instanceName := "To Update"
+			instanceName := "To Update-" + strconv.FormatInt(timestamp, 10)
 			updateTransitGatewayOptions := &transitgatewayapisv1.UpdateTransitGatewayOptions{}
 			updateTransitGatewayOptions.SetID(badinstanceID)
 			updateTransitGatewayOptions.SetName(instanceName)
@@ -183,38 +263,6 @@ var _ = Describe(`TransitGatewayApisV1`, func() {
 			})
 		})
 	})
-
-	Describe(`DetailTransitGateway(detailTransitGatewayOptions *DetailTransitGatewayOptions)`, func() {
-		Context(`Successfully get gateway by instanceID`, func() {
-
-			It(`Successfully get resource by instanceID`, func() {
-				gateway_id := os.Getenv("GATEWAY_INSTANCE_ID")
-				detailTransitGatewayOptions := service.NewDetailTransitGatewayOptions(gateway_id)
-
-				result, detailedResponse, err := service.DetailTransitGateway(detailTransitGatewayOptions)
-				Expect(err).To(BeNil())
-				Expect(detailedResponse.StatusCode).To(Equal(200))
-				Expect(*result.ID).To(Equal(gateway_id))
-			})
-		})
-
-		Context(`Failed to get resource by instanceID`, func() {
-			header := map[string]string{
-				"Content-type": "application/json",
-			}
-			badinstanceID := "111"
-			detailTransitGatewayOptions := &transitgatewayapisv1.DetailTransitGatewayOptions{}
-			detailTransitGatewayOptions.SetID(badinstanceID)
-			detailTransitGatewayOptions.SetHeaders(header)
-			It(`Failed to get resource by instanceID`, func() {
-				result, detailedResponse, err := service.DetailTransitGateway(detailTransitGatewayOptions)
-				Expect(result).To(BeNil())
-				Expect(detailedResponse.StatusCode).To(Equal(404))
-				Expect(err).Should(HaveOccurred())
-			})
-		})
-	})
-
 	Describe(`CreateTransitGatewayConnection(createTransitGatewayConnectionOptions *CreateTransitGatewayConnectionOptions)`, func() {
 		Context(`Success: create Transit Gateway Connection`, func() {
 			header := map[string]string{
@@ -223,31 +271,45 @@ var _ = Describe(`TransitGatewayApisV1`, func() {
 			It(`Successfully create new resource`, func() {
 				gatewayID := os.Getenv("GATEWAY_INSTANCE_ID")
 				network_type := "vpc"
-				name := "SDK-INT-gateway-conn"
 				crn := os.Getenv("VPC_CRN")
 				createTransitGatewayConnectionOptions := service.NewCreateTransitGatewayConnectionOptions(gatewayID, network_type)
 				createTransitGatewayConnectionOptions.SetHeaders(header)
-				createTransitGatewayConnectionOptions.SetName(name)
+				createTransitGatewayConnectionOptions.SetName(connectionName)
 				createTransitGatewayConnectionOptions.SetNetworkID(crn)
 
 				result, detailedResponse, err := service.CreateTransitGatewayConnection(createTransitGatewayConnectionOptions)
 				Expect(err).To(BeNil())
 				Expect(detailedResponse.StatusCode).To(Equal(201))
-				Expect(*result.Name).To(Equal(name))
+
 				os.Setenv("CONN_INSTANCE_ID", *result.ID)
-				//time.Sleep(60 * time.Second)
+
+				Expect(*result.Name).To(Equal(connectionName))
+				Expect(*result.NetworkID).To(Equal(crn))
+				Expect(*result.NetworkType).To(Equal(network_type))
+				Expect(*result.CreatedAt).NotTo(Equal(""))
+				Expect(*result.UpdatedAt).NotTo(Equal(""))
+				Expect(*result.ID).NotTo(Equal(""))
+				Expect(*result.Status).To(Equal("pending"))
 			})
+
 			It("Successfully waits for connection to report as attached", func() {
-				detailTransitGatewayConnectionOptions := service.NewDetailTransitGatewayConnectionOptions(os.Getenv("GATEWAY_INSTANCE_ID"), os.Getenv("CONN_INSTANCE_ID"))
+
+				getTransitGatewayConnectionOptions := service.NewGetTransitGatewayConnectionOptions(os.Getenv("GATEWAY_INSTANCE_ID"), os.Getenv("CONN_INSTANCE_ID"))
 
 				// Connection creation might not be instantaneous.  Poll the Conn looking for 'attached' status.  Fail after 2 min
 				timer := 0
 				for {
-					response, _, _ := service.DetailTransitGatewayConnection(detailTransitGatewayConnectionOptions)
+					response, _, _ := service.GetTransitGatewayConnection(getTransitGatewayConnectionOptions)
 
 					// if attached then we are done
 					if *response.Status == "attached" {
-						Expect(*response.Status).To(Equal("attached")) // response is attached, exit success
+						// response is attached, exit success
+						Expect(*response.Name).To(Equal(connectionName))
+						Expect(*response.NetworkID).To(Equal(os.Getenv("VPC_CRN")))
+						Expect(*response.NetworkType).To(Equal("vpc"))
+						Expect(*response.CreatedAt).NotTo(Equal(""))
+						Expect(*response.UpdatedAt).NotTo(Equal(""))
+						Expect(*response.ID).To(Equal(os.Getenv("CONN_INSTANCE_ID")))
 						break
 					}
 
@@ -280,7 +342,6 @@ var _ = Describe(`TransitGatewayApisV1`, func() {
 				Expect(err).Should(HaveOccurred())
 			})
 		})
-
 	})
 
 	Describe(`ListTransitGatewayConnections(listTransitGatewayConnectionsOptions *ListTransitGatewayConnectionsOptions)`, func() {
@@ -298,9 +359,61 @@ var _ = Describe(`TransitGatewayApisV1`, func() {
 				Expect(err).To(BeNil())
 				Expect(detailedResponse.StatusCode).To(Equal(200))
 
-				firstResource := result.Connections[0]
-				Expect(*firstResource.ID).ToNot(BeNil())
-				Expect(*firstResource.Name).ToNot(BeNil())
+				Expect(len(result.Connections)).Should(BeNumerically(">", 0))
+				found := false
+				for _, conn := range result.Connections {
+					if *conn.ID == os.Getenv("CONN_INSTANCE_ID") {
+						Expect(*conn.Name).To(Equal(connectionName))
+						Expect(*conn.Status).To(Equal("attached"))
+						Expect(*conn.NetworkID).To(Equal(os.Getenv("VPC_CRN")))
+						Expect(*conn.NetworkType).To(Equal("vpc"))
+						Expect(*conn.CreatedAt).NotTo(Equal(""))
+						Expect(*conn.UpdatedAt).NotTo(Equal(""))
+
+						found = true
+						break
+					}
+				}
+				Expect(found).To(Equal(true))
+			})
+		})
+	})
+
+	Describe(`GetTransitGatewayConnection(getTransitGatewayConnectionOptions *GetTransitGatewayConnectionOptions)`, func() {
+		Context(`Successfully get gateway by instanceID`, func() {
+			It(`Successfully get resource by instanceID`, func() {
+				gatewayID := os.Getenv("GATEWAY_INSTANCE_ID")
+				instanceID := os.Getenv("CONN_INSTANCE_ID")
+				getTransitGatewayConnectionOptions := service.NewGetTransitGatewayConnectionOptions(gatewayID, instanceID)
+
+				result, detailedResponse, err := service.GetTransitGatewayConnection(getTransitGatewayConnectionOptions)
+				Expect(err).To(BeNil())
+				Expect(detailedResponse.StatusCode).To(Equal(200))
+
+				Expect(*result.ID).To(Equal(instanceID))
+				Expect(*result.Name).To(Equal(connectionName))
+				Expect(*result.NetworkID).To(Equal(os.Getenv("VPC_CRN")))
+				Expect(*result.NetworkType).To(Equal("vpc"))
+				Expect(*result.CreatedAt).NotTo(Equal(""))
+				Expect(*result.UpdatedAt).NotTo(Equal(""))
+				Expect(*result.Status).To(Equal("attached"))
+			})
+		})
+
+		Context(`Failed to get resource by instanceID`, func() {
+			header := map[string]string{
+				"Content-type": "application/json",
+			}
+			badinstanceID := "111"
+			getTransitGatewayConnectionOptions := &transitgatewayapisv1.GetTransitGatewayConnectionOptions{}
+			getTransitGatewayConnectionOptions.SetTransitGatewayID(badinstanceID)
+			getTransitGatewayConnectionOptions.SetID(badinstanceID)
+			getTransitGatewayConnectionOptions.SetHeaders(header)
+			It(`Failed to get resource by instanceID`, func() {
+				result, detailedResponse, err := service.GetTransitGatewayConnection(getTransitGatewayConnectionOptions)
+				Expect(result).To(BeNil())
+				Expect(detailedResponse.StatusCode).To(Equal(404))
+				Expect(err).Should(HaveOccurred())
 			})
 		})
 	})
@@ -310,14 +423,20 @@ var _ = Describe(`TransitGatewayApisV1`, func() {
 			It(`Successfully update resource by instanceID`, func() {
 				gatewayID := os.Getenv("GATEWAY_INSTANCE_ID")
 				instanceID := os.Getenv("CONN_INSTANCE_ID")
-				name := "update-SDK-INT-gateway"
 				updateTransitGatewayConnectionOptions := service.NewUpdateTransitGatewayConnectionOptions(gatewayID, instanceID).
-					SetName(name)
+					SetName(updateConnectionName)
 
 				result, detailedResponse, err := service.UpdateTransitGatewayConnection(updateTransitGatewayConnectionOptions)
 				Expect(err).To(BeNil())
 				Expect(detailedResponse.StatusCode).To(Equal(200))
-				Expect(*result.Name).To(Equal(name))
+
+				Expect(*result.Name).To(Equal(updateConnectionName))
+				Expect(*result.NetworkID).To(Equal(os.Getenv("VPC_CRN")))
+				Expect(*result.NetworkType).To(Equal("vpc"))
+				Expect(*result.CreatedAt).NotTo(Equal(""))
+				Expect(*result.UpdatedAt).NotTo(Equal(""))
+				Expect(*result.ID).To(Equal(os.Getenv("CONN_INSTANCE_ID")))
+				Expect(*result.Status).To(Equal("attached"))
 			})
 		})
 
@@ -326,7 +445,7 @@ var _ = Describe(`TransitGatewayApisV1`, func() {
 				"Content-type": "application/json",
 			}
 			badinstanceID := "111"
-			instanceName := "To Update"
+			instanceName := "To Update-" + strconv.FormatInt(timestamp, 10)
 			updateTransitGatewayConnectionOptions := &transitgatewayapisv1.UpdateTransitGatewayConnectionOptions{}
 			updateTransitGatewayConnectionOptions.SetTransitGatewayID(badinstanceID)
 			updateTransitGatewayConnectionOptions.SetID(badinstanceID)
@@ -334,39 +453,6 @@ var _ = Describe(`TransitGatewayApisV1`, func() {
 			updateTransitGatewayConnectionOptions.SetHeaders(header)
 			It(`Failed to update gateway by instanceID`, func() {
 				result, detailedResponse, err := service.UpdateTransitGatewayConnection(updateTransitGatewayConnectionOptions)
-				Expect(result).To(BeNil())
-				Expect(detailedResponse.StatusCode).To(Equal(404))
-				Expect(err).Should(HaveOccurred())
-			})
-		})
-	})
-
-	Describe(`DetailTransitGatewayConnection(detailTransitGatewayConnectionOptions *DetailTransitGatewayConnectionOptions)`, func() {
-		Context(`Successfully get gateway by instanceID`, func() {
-			It(`Successfully get resource by instanceID`, func() {
-				gatewayID := os.Getenv("GATEWAY_INSTANCE_ID")
-				instanceID := os.Getenv("CONN_INSTANCE_ID")
-				detailTransitGatewayConnectionOptions := service.NewDetailTransitGatewayConnectionOptions(gatewayID, instanceID)
-
-				result, detailedResponse, err := service.DetailTransitGatewayConnection(detailTransitGatewayConnectionOptions)
-				Expect(err).To(BeNil())
-				Expect(detailedResponse.StatusCode).To(Equal(200))
-
-				Expect(*result.ID).To(Equal(instanceID))
-			})
-		})
-
-		Context(`Failed to get resource by instanceID`, func() {
-			header := map[string]string{
-				"Content-type": "application/json",
-			}
-			badinstanceID := "111"
-			detailTransitGatewayConnectionOptions := &transitgatewayapisv1.DetailTransitGatewayConnectionOptions{}
-			detailTransitGatewayConnectionOptions.SetTransitGatewayID(badinstanceID)
-			detailTransitGatewayConnectionOptions.SetID(badinstanceID)
-			detailTransitGatewayConnectionOptions.SetHeaders(header)
-			It(`Failed to get resource by instanceID`, func() {
-				result, detailedResponse, err := service.DetailTransitGatewayConnection(detailTransitGatewayConnectionOptions)
 				Expect(result).To(BeNil())
 				Expect(detailedResponse.StatusCode).To(Equal(404))
 				Expect(err).Should(HaveOccurred())
@@ -387,13 +473,13 @@ var _ = Describe(`TransitGatewayApisV1`, func() {
 				//time.Sleep(90 * time.Second)
 			})
 			It("Successfully waits for connection to report as deleted", func() {
-				detailTransitGatewayConnectionOptions := service.NewDetailTransitGatewayConnectionOptions(os.Getenv("GATEWAY_INSTANCE_ID"), os.Getenv("CONN_INSTANCE_ID"))
+				getTransitGatewayConnectionOptions := service.NewGetTransitGatewayConnectionOptions(os.Getenv("GATEWAY_INSTANCE_ID"), os.Getenv("CONN_INSTANCE_ID"))
 
 				// Connection delete might not be instantaneous.  Poll the Conn looking for a not found.  Fail after 4 min
 				timer := 0
 				for {
 					// Get the current rc for the VC
-					_, detailedResponse, _ := service.DetailTransitGatewayConnection(detailTransitGatewayConnectionOptions)
+					_, detailedResponse, _ := service.GetTransitGatewayConnection(getTransitGatewayConnectionOptions)
 
 					// if 404 then we are done
 					if detailedResponse.StatusCode == 404 {
@@ -472,21 +558,28 @@ var _ = Describe(`TransitGatewayApisV1`, func() {
 				Expect(err).To(BeNil())
 				Expect(detailedResponse.StatusCode).To(Equal(200))
 
+				Expect(len(result.Locations)).Should(BeNumerically(">", 0))
+
 				firstResource := result.Locations[0]
 				Expect(*firstResource.Name).ToNot(BeNil())
+				Expect(*firstResource.BillingLocation).ToNot(BeNil())
+				Expect(*firstResource.Type).ToNot(BeNil())
 			})
 		})
 	})
 
-	Describe(`DetailGatewayLocation(detailGatewayLocationOptions *DetailGatewayLocationOptions)`, func() {
+	Describe(`GetGatewayLocation(getGatewayLocationOptions *GetGatewayLocationOptions)`, func() {
 		Context(`Successfully get location by ID`, func() {
 			instanceID := "us-south"
-			detailGatewayLocationOptions := service.NewDetailGatewayLocationOptions(instanceID)
+			getGatewayLocationOptions := service.NewGetGatewayLocationOptions(instanceID)
 			It(`Successfully get location by instanceID`, func() {
-				result, detailedResponse, err := service.DetailGatewayLocation(detailGatewayLocationOptions)
+				result, detailedResponse, err := service.GetGatewayLocation(getGatewayLocationOptions)
 				Expect(err).To(BeNil())
 				Expect(detailedResponse.StatusCode).To(Equal(200))
 				Expect(*result.Name).To(Equal(instanceID))
+				Expect(*result.BillingLocation).ToNot(BeNil())
+				Expect(*result.Type).ToNot(BeNil())
+				Expect(len(result.LocalConnectionLocations)).Should(BeNumerically(">", 0))
 			})
 		})
 
@@ -495,11 +588,11 @@ var _ = Describe(`TransitGatewayApisV1`, func() {
 				"Content-type": "application/json",
 			}
 			badinstanceID := "111"
-			detailGatewayLocationOptions := &transitgatewayapisv1.DetailGatewayLocationOptions{}
-			detailGatewayLocationOptions.SetName(badinstanceID)
-			detailGatewayLocationOptions.SetHeaders(header)
+			getGatewayLocationOptions := &transitgatewayapisv1.GetGatewayLocationOptions{}
+			getGatewayLocationOptions.SetName(badinstanceID)
+			getGatewayLocationOptions.SetHeaders(header)
 			It(`Failed to get resource by instanceID`, func() {
-				result, detailedResponse, err := service.DetailGatewayLocation(detailGatewayLocationOptions)
+				result, detailedResponse, err := service.GetGatewayLocation(getGatewayLocationOptions)
 				Expect(result).To(BeNil())
 				Expect(detailedResponse.StatusCode).To(Equal(404))
 				Expect(err).Should(HaveOccurred())

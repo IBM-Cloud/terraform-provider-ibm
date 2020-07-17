@@ -72,7 +72,7 @@ func resourceIBMPIKeyCreate(d *schema.ResourceData, meta interface{}) error {
 
 	sshResponse, _, err := client.Create(name, sshkey, powerinstanceid)
 	if err != nil {
-		log.Printf("[DEBUG]  err %s", isErrorToString(err))
+		log.Printf("[DEBUG]  err %s", err)
 		return fmt.Errorf("Failed to create the key %v", err)
 
 	}

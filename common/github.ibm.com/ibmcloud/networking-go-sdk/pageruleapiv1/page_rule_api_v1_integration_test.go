@@ -176,17 +176,6 @@ var _ = Describe(`pageruleapiv1`, func() {
 				changeOpt.SetPriority(5)
 				changeOpt.SetStatus("active")
 
-				targetConstraintOpt = TargetsItemConstraint{
-					Operator: core.StringPtr("matches"),
-					Value:    &url,
-				}
-				targetOpt = []TargetsItem{
-					{
-						Target:     core.StringPtr("url"),
-						Constraint: &targetConstraintOpt,
-					},
-				}
-
 				changeResult, changeResp, changeErr := service.ChangePageRule(changeOpt)
 				Expect(changeErr).To(BeNil())
 				Expect(changeResp).ToNot(BeNil())

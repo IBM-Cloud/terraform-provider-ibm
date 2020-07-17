@@ -93,9 +93,6 @@ var _ = Describe(`wafrulesapiv1`, func() {
 					Expect(*listResult.Success).Should(BeTrue())
 
 					for _, rule := range listResult.Result {
-						fmt.Println("rule id: ", *rule.ID)
-						fmt.Println("modes : ", *rule.Mode)
-
 						if *rule.Mode == WafRuleBodyCis_Mode_Default ||
 							*rule.Mode == WafRuleBodyCis_Mode_Block ||
 							*rule.Mode == WafRuleBodyCis_Mode_Challenge ||

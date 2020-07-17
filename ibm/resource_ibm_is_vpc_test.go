@@ -205,8 +205,8 @@ func testAccCheckIBMISVPCSgConfig(vpcname string, sgname string) string {
 		direction  = "inbound"
 		remote     = "127.0.0.1"
 		udp {
-		  port_min = 805
-		  port_max = 807
+			port_min = 805
+			port_max = 807
 		}
 	}  
 `, vpcname, sgname)

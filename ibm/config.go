@@ -22,7 +22,6 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/go-openapi/strfmt"
 	slsession "github.com/softlayer/softlayer-go/session"
-	issession "github.ibm.com/Bluemix/riaas-go-client/session"
 	dl "github.ibm.com/ibmcloud/networking-go-sdk/directlinkapisv1"
 	tg "github.ibm.com/ibmcloud/networking-go-sdk/transitgatewayapisv1"
 
@@ -157,7 +156,6 @@ type ClientSession interface {
 	IAMPAPAPIV2() (iampapv2.IAMPAPAPIV2, error)
 	IAMUUMAPI() (iamuumv1.IAMUUMServiceAPI, error)
 	IAMUUMAPIV2() (iamuumv2.IAMUUMServiceAPIv2, error)
-	ISSession() (*issession.Session, error)
 	MccpAPI() (mccpv2.MccpServiceAPI, error)
 	ResourceCatalogAPI() (catalog.ResourceCatalogAPI, error)
 	ResourceManagementAPI() (management.ResourceManagementAPI, error)
@@ -240,9 +238,6 @@ type clientSession struct {
 
 	icdConfigErr  error
 	icdServiceAPI icdv4.ICDServiceAPI
-
-	isConfigErr error
-	isSession   *issession.Session
 
 	resourceControllerConfigErr  error
 	resourceControllerServiceAPI controller.ResourceControllerAPI
@@ -374,11 +369,6 @@ func (sess clientSession) ICDAPI() (icdv4.ICDServiceAPI, error) {
 	return sess.icdServiceAPI, sess.icdConfigErr
 }
 
-// ISSession to provide the IS RIASS Session
-func (sess clientSession) ISSession() (*issession.Session, error) {
-	return sess.isSession, sess.isConfigErr
-}
-
 // MccpAPI provides Multi Cloud Controller Proxy APIs ...
 func (sess clientSession) MccpAPI() (mccpv2.MccpServiceAPI, error) {
 	return sess.cfServiceAPI, sess.cfConfigErr
@@ -491,7 +481,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.resourceManagementConfigErr = errEmptyBluemixCredentials
 		session.resourceManagementConfigErrv2 = errEmptyBluemixCredentials
 		session.resourceControllerConfigErr = errEmptyBluemixCredentials
-		session.isConfigErr = errEmptyBluemixCredentials
 		session.powerConfigErr = errEmptyBluemixCredentials
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
 		session.userManagementErr = errEmptyBluemixCredentials
@@ -513,7 +502,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		if err != nil {
 			session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
 			session.functionConfigErr = fmt.Errorf("Error occured while fetching auth key for function: %q", err)
-			session.isConfigErr = fmt.Errorf("Error occured while fetching auth key for vpc: %q", err)
 			session.powerConfigErr = fmt.Errorf("Error occured while fetching the auth key for power iaas: %q", err)
 			session.ibmpiConfigErr = fmt.Errorf("Error occured while fetching the auth key for power iaas: %q", err)
 		}
@@ -684,13 +672,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.iamUUMConfigErrV2 = fmt.Errorf("Error occured while configuring Bluemix IAMUUM Service: %q", err)
 	}
 	session.iamUUMServiceAPIV2 = iamuumv2
-
-	issession, err := issession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, c.Generation, false, c.BluemixTimeout)
-	if err != nil {
-		session.isConfigErr = err
-		return nil, err
-	}
-	session.isSession = issession
 
 	icdAPI, err := icdv4.New(sess.BluemixSession)
 	if err != nil {

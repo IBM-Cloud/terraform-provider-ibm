@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_p_vm_instances"
@@ -137,7 +138,7 @@ func resourceIBMPIOperationsCreate(d *schema.ResourceData, meta interface{}) err
 	}, name, powerinstanceid, 30*time.Second)
 
 	if err != nil {
-		log.Printf("[DEBUG]  err %s", isErrorToString(err))
+		log.Printf("[DEBUG]  err %s", err)
 		return fmt.Errorf("Failed to perform the operation on  the instance %v", err)
 
 	} else {

@@ -2,9 +2,10 @@ package ibm
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"log"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
@@ -82,7 +83,7 @@ func resourceIBMPINetworkPortAttachCreate(d *schema.ResourceData, meta interface
 
 	d.SetId(fmt.Sprintf("%s/%s", powerinstanceid, IBMPINetworkPortID))
 	if err != nil {
-		log.Printf("[DEBUG]  err %s", isErrorToString(err))
+		log.Printf("[DEBUG]  err %s", err)
 		return err
 	}
 	_, err = isWaitForIBMPINetworkPortAvailable(client, IBMPINetworkPortID, d.Timeout(schema.TimeoutCreate), powerinstanceid, networkname)

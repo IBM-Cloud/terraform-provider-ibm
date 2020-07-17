@@ -654,6 +654,7 @@ func classicVpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	securityGroupList := make([]map[string]interface{}, 0)
 
 	for _, group := range sgs.SecurityGroups {
+
 		if *group.VPC.ID == d.Id() {
 			g := make(map[string]interface{})
 
@@ -679,9 +680,14 @@ func classicVpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 							r[isVPCSecurityGroupRuleProtocol] = *rule.Protocol
 						}
 						r[isVPCSecurityGroupRuleID] = *rule.ID
-						//remote:<map[string]interface {} Value>
-						for _, v := range rule.Remote.(map[string]interface{}) {
-							r[isVPCSecurityGroupRuleRemote] = v.(string)
+
+						if rule.Remote != nil && reflect.ValueOf(rule.Remote).IsNil() == false {
+							for k, v := range rule.Remote.(map[string]interface{}) {
+								if k == "id" || k == "address" || k == "cidr_block" {
+									r[isVPCSecurityGroupRuleRemote] = v.(string)
+									break
+								}
+							}
 						}
 
 						rules = append(rules, r)
@@ -698,9 +704,13 @@ func classicVpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 						}
 						r[isVPCSecurityGroupRuleID] = *rule.ID
 
-						//remote:<map[string]interface {} Value>
-						for _, v := range rule.Remote.(map[string]interface{}) {
-							r[isVPCSecurityGroupRuleRemote] = v.(string)
+						if rule.Remote != nil && reflect.ValueOf(rule.Remote).IsNil() == false {
+							for k, v := range rule.Remote.(map[string]interface{}) {
+								if k == "id" || k == "address" || k == "cidr_block" {
+									r[isVPCSecurityGroupRuleRemote] = v.(string)
+									break
+								}
+							}
 						}
 
 						rules = append(rules, r)
@@ -725,10 +735,15 @@ func classicVpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 
 						r[isVPCSecurityGroupRuleID] = *rule.ID
 
-						//remote:<map[string]interface {} Value>
-						for _, v := range rule.Remote.(map[string]interface{}) {
-							r[isVPCSecurityGroupRuleRemote] = v.(string)
+						if rule.Remote != nil && reflect.ValueOf(rule.Remote).IsNil() == false {
+							for k, v := range rule.Remote.(map[string]interface{}) {
+								if k == "id" || k == "address" || k == "cidr_block" {
+									r[isVPCSecurityGroupRuleRemote] = v.(string)
+									break
+								}
+							}
 						}
+
 						rules = append(rules, r)
 					}
 				}
@@ -877,9 +892,14 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 							r[isVPCSecurityGroupRuleProtocol] = *rule.Protocol
 						}
 						r[isVPCSecurityGroupRuleID] = *rule.ID
-						//remote:<map[string]interface {} Value>
-						for _, v := range rule.Remote.(map[string]interface{}) {
-							r[isVPCSecurityGroupRuleRemote] = v.(string)
+
+						if rule.Remote != nil && reflect.ValueOf(rule.Remote).IsNil() == false {
+							for k, v := range rule.Remote.(map[string]interface{}) {
+								if k == "id" || k == "address" || k == "cidr_block" {
+									r[isVPCSecurityGroupRuleRemote] = v.(string)
+									break
+								}
+							}
 						}
 
 						rules = append(rules, r)
@@ -896,9 +916,13 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 						}
 						r[isVPCSecurityGroupRuleID] = *rule.ID
 
-						//remote:<map[string]interface {} Value>
-						for _, v := range rule.Remote.(map[string]interface{}) {
-							r[isVPCSecurityGroupRuleRemote] = v.(string)
+						if rule.Remote != nil && reflect.ValueOf(rule.Remote).IsNil() == false {
+							for k, v := range rule.Remote.(map[string]interface{}) {
+								if k == "id" || k == "address" || k == "cidr_block" {
+									r[isVPCSecurityGroupRuleRemote] = v.(string)
+									break
+								}
+							}
 						}
 
 						rules = append(rules, r)
@@ -923,9 +947,13 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 
 						r[isVPCSecurityGroupRuleID] = *rule.ID
 
-						//remote:<map[string]interface {} Value>
-						for _, v := range rule.Remote.(map[string]interface{}) {
-							r[isVPCSecurityGroupRuleRemote] = v.(string)
+						if rule.Remote != nil && reflect.ValueOf(rule.Remote).IsNil() == false {
+							for k, v := range rule.Remote.(map[string]interface{}) {
+								if k == "id" || k == "address" || k == "cidr_block" {
+									r[isVPCSecurityGroupRuleRemote] = v.(string)
+									break
+								}
+							}
 						}
 						rules = append(rules, r)
 					}

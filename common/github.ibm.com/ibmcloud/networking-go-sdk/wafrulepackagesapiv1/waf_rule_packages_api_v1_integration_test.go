@@ -87,7 +87,6 @@ var _ = Describe(`wafrulesapiv1`, func() {
 					if *pack.DetectionMode == "anomaly" {
 						for _, sensitivity := range sensitivities {
 							for _, mode := range modes {
-								fmt.Printf("\nsensitivity: %s action mode: %s\n", sensitivity, mode)
 								updateOpt := testService.NewUpdateWafPackageOptions(*pack.ID)
 								updateOpt.SetActionMode(mode)
 								updateOpt.SetSensitivity(sensitivity)
