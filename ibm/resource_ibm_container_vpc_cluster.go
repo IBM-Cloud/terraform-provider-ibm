@@ -142,6 +142,15 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				Description: "Number of worker nodes in the cluster",
 			},
 
+			"worker_labels": {
+				Type:             schema.TypeMap,
+				Optional:         true,
+				Computed:         true,
+				DiffSuppressFunc: applyOnce,
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				Description:      "Labels for default worker pool",
+			},
+
 			"disable_public_service_endpoint": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -364,6 +373,14 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		Flavor:      flavor,
 		WorkerCount: workerCount,
 		Zones:       zonesList,
+	}
+
+	if l, ok := d.GetOk("worker_labels"); ok {
+		labels := make(map[string]string)
+		for k, v := range l.(map[string]interface{}) {
+			labels[k] = v.(string)
+		}
+		workerpool.Labels = labels
 	}
 
 	params := v2.ClusterCreateRequest{
