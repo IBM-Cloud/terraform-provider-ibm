@@ -106,6 +106,7 @@ The following arguments are supported:
 * `pod_subnet` - (Optional, Forces new resource,String) Specify a custom subnet CIDR to provide private IP addresses for pods. The subnet must be at least '/23' or larger. For more info, refer [here](https://cloud.ibm.com/docs/containers?topic=containers-cli-plugin-kubernetes-service-cli#pod-subnet).
 * `service_subnet` - (Optional, Forces new resource,String) Specify a custom subnet CIDR to provide private IP addresses for services. The subnet must be at least '/24' or larger. For more info, refer [here](https://cloud.ibm.com/docs/containers?topic=containers-cli-plugin-kubernetes-service-cli#service-subnet).
 * `worker_count` - (Optional, Int) The number of worker nodes per zone in the default worker pool. Default value '1'.
+* `worker_labels` - (Optional, map) Labels on all the workers in the default worker pool.
 * `resource_group_id` - (Optional, Forces new resource, string) The ID of the resource group. You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
 * `tags` - (Optional, array of strings) Tags associated with the container cluster instance.
 * `entitlement` - (Optional, String) The openshift cluster entitlement avoids the OCP licence charges incurred. Use cloud paks with OCP Licence entitlement to create the Openshift cluster.
