@@ -8,6 +8,7 @@ require (
 	github.com/IBM-Cloud/power-go-client v1.0.37
 	github.com/IBM/apigateway-go-sdk v0.0.0-20200414212859-416e5948678a
 	github.com/IBM/dns-svcs-go-sdk v0.0.3
+	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/go-sdk-core/v3 v3.3.1
 	github.com/IBM/ibm-cos-sdk-go v1.3.1
 	github.com/IBM/ibm-cos-sdk-go-config v1.0.0
@@ -16,6 +17,7 @@ require (
 	github.com/IBM/vpc-go-sdk v0.0.1
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/apache/incubator-openwhisk-client-go v0.0.0-20171128215515-ad814bc98c32
+	github.com/apache/openwhisk-client-go v0.0.0-20200201143223-a804fb82d105
 	github.com/apparentlymart/go-cidr v1.0.1
 	github.com/cloudfoundry/jibber_jabber v0.0.0-20151120183258-bcc4c8345a21 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible

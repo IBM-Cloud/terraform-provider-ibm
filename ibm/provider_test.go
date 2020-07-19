@@ -57,6 +57,7 @@ var ISRouteNextHop string
 var workspaceID string
 var templateID string
 var imageName string
+var functionNamespace string
 
 // For Power Colo
 
@@ -401,6 +402,11 @@ func init() {
 		IsImageName = "ibm-ubuntu-18-04-2-minimal-amd64-1" // for classic infrastructure
 		// IsImageName = "ibm-ubuntu-18-04-1-minimal-amd64-2" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_IMAGE_NAME for testing data source ibm_is_image else it is set to default value `ubuntu-18.04-amd64`")
+	}
+
+	functionNamespace = os.Getenv("IBM_FUNCTION_NAMESPACE")
+	if functionNamespace == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_FUNCTION_NAMESPACE for testing ibm_function_package, ibm_function_action, ibm_function_rule, ibm_function_trigger resource else  tests will fail if this is not set correctly")
 	}
 }
 

@@ -4,10 +4,18 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
-	"github.com/apache/incubator-openwhisk-client-go/whisk"
+	"github.com/apache/openwhisk-client-go/whisk"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+)
+
+const (
+	funcActionName         = "name"
+	funcActionNamespace    = "namespace"
+	funcActionUsrDefAnnots = "user_defined_annotations"
+	funcActionUsrDefParams = "user_defined_parameters"
 )
 
 func resourceIBMFunctionAction() *schema.Resource {
@@ -20,12 +28,19 @@ func resourceIBMFunctionAction() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"name": {
+			funcActionName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				Description:  "Name of action.",
-				ValidateFunc: validateActionName,
+				ValidateFunc: InvokeValidator("ibm_function_action", funcActionName),
+			},
+			funcActionNamespace: {
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				Description:  "IBM Cloud function namespace.",
+				ValidateFunc: InvokeValidator("ibm_function_action", funcActionNamespace),
 			},
 			"limits": {
 				Type:     schema.TypeList,
@@ -111,24 +126,24 @@ func resourceIBMFunctionAction() *schema.Resource {
 				Computed:    true,
 				Description: "Semantic version of the item.",
 			},
-			"user_defined_annotations": {
+			funcActionUsrDefAnnots: {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Default:          "[]",
 				Description:      "Annotation values in KEY VALUE format.",
-				ValidateFunc:     validateJSONString,
+				ValidateFunc:     InvokeValidator("ibm_function_action", funcActionUsrDefAnnots),
 				DiffSuppressFunc: suppressEquivalentJSON,
 				StateFunc: func(v interface{}) string {
 					json, _ := normalizeJSONString(v)
 					return json
 				},
 			},
-			"user_defined_parameters": {
+			funcActionUsrDefParams: {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Default:          "[]",
 				Description:      "Parameters values in KEY VALUE format. Parameter bindings included in the context passed to the action.",
-				ValidateFunc:     validateJSONString,
+				ValidateFunc:     InvokeValidator("ibm_function_action", funcActionUsrDefParams),
 				DiffSuppressFunc: suppressEquivalentJSON,
 				StateFunc: func(v interface{}) string {
 					json, _ := normalizeJSONString(v)
@@ -145,8 +160,47 @@ func resourceIBMFunctionAction() *schema.Resource {
 				Computed:    true,
 				Description: "All paramters set on action by user and those set by the IBM Cloud Function backend/API.",
 			},
+			"action_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
+}
+
+func resourceIBMFuncActionValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 funcActionName,
+			ValidateFunctionIdentifier: ValidateRegexp,
+			Type:                       TypeString,
+			Regexp:                     `^[^/*][a-zA-Z0-9/_@.-]`,
+			Required:                   true})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 funcActionNamespace,
+			ValidateFunctionIdentifier: ValidateNoZeroValues,
+			Type:                       TypeString,
+			Required:                   true})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 funcActionUsrDefAnnots,
+			ValidateFunctionIdentifier: ValidateJSONString,
+			Type:                       TypeString,
+			Default:                    "[]",
+			Optional:                   true})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 funcActionUsrDefParams,
+			ValidateFunctionIdentifier: ValidateJSONString,
+			Type:                       TypeString,
+			Optional:                   true})
+
+	ibmFuncActionResourceValidator := ResourceValidator{ResourceName: "ibm_function_action", Schema: validateSchema}
+	return &ibmFuncActionResourceValidator
 }
 
 func resourceIBMFunctionActionCreate(d *schema.ResourceData, meta interface{}) error {
@@ -154,8 +208,19 @@ func resourceIBMFunctionActionCreate(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return err
 	}
-	actionService := wskClient.Actions
 
+	bxSession, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return err
+	}
+	namespace := d.Get("namespace").(string)
+	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	if err != nil {
+		return err
+
+	}
+
+	actionService := wskClient.Actions
 	name := d.Get("name").(string)
 
 	var qualifiedName = new(QualifiedName)
@@ -166,7 +231,7 @@ func resourceIBMFunctionActionCreate(d *schema.ResourceData, meta interface{}) e
 
 	payload := whisk.Action{
 		Name:      qualifiedName.GetEntityName(),
-		Namespace: qualifiedName.GetNamespace(),
+		Namespace: namespace,
 	}
 
 	exec := d.Get("exec").([]interface{})
@@ -194,44 +259,66 @@ func resourceIBMFunctionActionCreate(d *schema.ResourceData, meta interface{}) e
 	}
 
 	log.Println("[INFO] Creating IBM Cloud Function Action")
-	action, _, err := actionService.Insert(&payload, false)
+	_, _, err = actionService.Insert(&payload, true)
+
 	if err != nil {
 		return fmt.Errorf("Error creating IBM Cloud Function Action: %s", err)
 	}
 
-	temp := strings.Split(action.Namespace, "/")
-
-	if len(temp) == 2 {
-		d.SetId(fmt.Sprintf("%s/%s", temp[1], action.Name))
-	} else {
-		d.SetId(action.Name)
-	}
+	d.SetId(fmt.Sprintf("%s:%s", namespace, qualifiedName.GetEntityName()))
 
 	return resourceIBMFunctionActionRead(d, meta)
 }
 
 func resourceIBMFunctionActionRead(d *schema.ResourceData, meta interface{}) error {
+	parts, err := cfIdParts(d.Id())
+	if err != nil {
+		return err
+	}
+
+	namespace := ""
+	actionID := ""
+	if len(parts) == 2 {
+		namespace = parts[0]
+		actionID = parts[1]
+	} else {
+		namespace = os.Getenv("FUNCTION_NAMESPACE")
+		actionID = parts[0]
+		d.SetId(fmt.Sprintf("%s:%s", namespace, actionID))
+	}
+
 	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
 
-	actionService := wskClient.Actions
-	id := d.Id()
-
-	action, _, err := actionService.Get(id)
+	bxSession, err := meta.(ClientSession).BluemixSession()
 	if err != nil {
-		return fmt.Errorf("Error retrieving IBM Cloud Function Action %s : %s", id, err)
+		return err
 	}
 
+	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	if err != nil {
+		return err
+
+	}
+
+	actionService := wskClient.Actions
+	action, _, err := actionService.Get(actionID, true)
+	if err != nil {
+		return fmt.Errorf("Error retrieving IBM Cloud Function Action %s : %s", actionID, err)
+	}
+	d.Set("namespace", namespace)
 	d.Set("limits", flattenLimits(action.Limits))
 	d.Set("exec", flattenExec(action.Exec))
 	d.Set("publish", action.Publish)
 	d.Set("version", action.Version)
+	d.Set("action_id", action.Name)
 	annotations, err := flattenAnnotations(action.Annotations)
 	if err != nil {
 		return err
 	}
+
 	d.Set("annotations", annotations)
 	parameters, err := flattenParameters(action.Parameters)
 	if err != nil {
@@ -240,27 +327,27 @@ func resourceIBMFunctionActionRead(d *schema.ResourceData, meta interface{}) err
 	d.Set("parameters", parameters)
 
 	temp := strings.Split(action.Namespace, "/")
-
 	if len(temp) == 2 {
 		d.Set("name", fmt.Sprintf("%s/%s", temp[1], action.Name))
 		c, err := whisk.NewClient(http.DefaultClient, &whisk.Config{
-			Namespace: wskClient.Namespace,
-			AuthToken: wskClient.AuthToken,
-			Host:      wskClient.Host,
+			Namespace:         wskClient.Namespace,
+			AuthToken:         wskClient.AuthToken,
+			Host:              wskClient.Host,
+			AdditionalHeaders: wskClient.AdditionalHeaders,
 		})
-		pkg, _, err := c.Packages.Get(temp[1])
 
+		pkg, _, err := c.Packages.Get(temp[1])
 		if err != nil {
 			return fmt.Errorf("Error retrieving package IBM Cloud Function package %s : %s", temp[1], err)
 		}
 
-		userAnnotations, err := flattenAnnotations(filterInheritedAnnotations(pkg.Annotations, pkg.Annotations))
+		userAnnotations, err := flattenAnnotations(filterInheritedAnnotations(pkg.Annotations, action.Annotations))
 		if err != nil {
 			return err
 		}
-		d.Set("user_defined_annotations", userAnnotations)
 
-		userParameters, err := flattenParameters(filterInheritedParameters(pkg.Parameters, pkg.Parameters))
+		d.Set("user_defined_annotations", userAnnotations)
+		userParameters, err := flattenParameters(filterInheritedParameters(pkg.Parameters, action.Parameters))
 		if err != nil {
 			return err
 		}
@@ -279,29 +366,46 @@ func resourceIBMFunctionActionRead(d *schema.ResourceData, meta interface{}) err
 		}
 		d.Set("user_defined_parameters", userDefinedParameters)
 	}
+
 	return nil
 }
 
 func resourceIBMFunctionActionUpdate(d *schema.ResourceData, meta interface{}) error {
+	parts, err := cfIdParts(d.Id())
+	if err != nil {
+		return err
+	}
+
+	namespace := parts[0]
+	actionID := parts[1]
+
 	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
-	actionService := wskClient.Actions
 
-	id := d.Id()
+	bxSession, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return err
+	}
+
+	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	if err != nil {
+		return err
+
+	}
+
+	actionService := wskClient.Actions
 
 	var qualifiedName = new(QualifiedName)
 
-	if qualifiedName, err = NewQualifiedName(id); err != nil {
-		return NewQualifiedNameError(id, err)
+	if qualifiedName, err = NewQualifiedName(actionID); err != nil {
+		return NewQualifiedNameError(actionID, err)
 	}
-
-	wskClient.Namespace = qualifiedName.GetNamespace()
 
 	payload := whisk.Action{
 		Name:      qualifiedName.GetEntityName(),
-		Namespace: qualifiedName.GetNamespace(),
+		Namespace: namespace,
 	}
 
 	ischanged := false
@@ -343,7 +447,6 @@ func resourceIBMFunctionActionUpdate(d *schema.ResourceData, meta interface{}) e
 
 	if ischanged {
 		log.Println("[INFO] Update IBM Cloud Function Action")
-
 		_, _, err = actionService.Insert(&payload, true)
 		if err != nil {
 			return fmt.Errorf("Error updating IBM Cloud Function Action: %s", err)
@@ -354,14 +457,33 @@ func resourceIBMFunctionActionUpdate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceIBMFunctionActionDelete(d *schema.ResourceData, meta interface{}) error {
+	parts, err := cfIdParts(d.Id())
+	if err != nil {
+		return err
+	}
+
+	namespace := parts[0]
+	actionID := parts[1]
+
 	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
-	actionService := wskClient.Actions
-	id := d.Id()
 
-	_, err = actionService.Delete(id)
+	bxSession, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return err
+	}
+
+	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	if err != nil {
+		return err
+
+	}
+
+	actionService := wskClient.Actions
+
+	_, err = actionService.Delete(actionID)
 	if err != nil {
 		return fmt.Errorf("Error deleting IBM Cloud Function Action: %s", err)
 	}
@@ -371,14 +493,41 @@ func resourceIBMFunctionActionDelete(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceIBMFunctionActionExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	parts, err := cfIdParts(d.Id())
+	if err != nil {
+		return false, err
+	}
+
+	namespace := ""
+	actionID := ""
+	if len(parts) >= 2 {
+		namespace = parts[0]
+		actionID = parts[1]
+	} else {
+		namespace = os.Getenv("FUNCTION_NAMESPACE")
+		actionID = parts[0]
+		d.SetId(fmt.Sprintf("%s:%s", namespace, actionID))
+	}
+
 	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return false, err
 	}
-	actionService := wskClient.Actions
-	id := d.Id()
 
-	action, resp, err := actionService.Get(id)
+	bxSession, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return false, err
+	}
+
+	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	if err != nil {
+		return false, err
+
+	}
+
+	actionService := wskClient.Actions
+
+	action, resp, err := actionService.Get(actionID, true)
 	if err != nil {
 		if resp.StatusCode == 404 {
 			return false, nil
@@ -395,5 +544,5 @@ func resourceIBMFunctionActionExists(d *schema.ResourceData, meta interface{}) (
 		name = action.Name
 	}
 
-	return name == id, nil
+	return name == actionID, nil
 }

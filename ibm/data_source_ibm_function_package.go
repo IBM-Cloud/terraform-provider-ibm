@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -16,6 +17,11 @@ func dataSourceIBMFunctionPackage() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Name of the package.",
+			},
+			"namespace": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name of the namespace.",
 			},
 			"publish": {
 				Type:        schema.TypeBool,
@@ -45,6 +51,11 @@ func dataSourceIBMFunctionPackage() *schema.Resource {
 				Computed:    true,
 				Description: "Name of binded package.",
 			},
+
+			"package_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -54,9 +65,20 @@ func dataSourceIBMFunctionPackageRead(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return err
 	}
+
+	bxSession, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return err
+	}
+	namespace := d.Get("namespace").(string)
+	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	if err != nil {
+		return err
+
+	}
+
 	packageService := wskClient.Packages
 	name := d.Get("name").(string)
-
 	pkg, _, err := packageService.Get(name)
 	if err != nil {
 		return fmt.Errorf("Error retrieving IBM Cloud Function package %s : %s", name, err)
@@ -64,16 +86,20 @@ func dataSourceIBMFunctionPackageRead(d *schema.ResourceData, meta interface{}) 
 
 	d.SetId(pkg.Name)
 	d.Set("name", pkg.Name)
+	d.Set("namespace", namespace)
 	d.Set("publish", pkg.Publish)
 	d.Set("version", pkg.Version)
+	d.Set("package_id", pkg.Name)
 	annotations, err := flattenAnnotations(pkg.Annotations)
 	if err != nil {
-		return err
+		log.Printf(
+			"An error occured during reading of package (%s) annotations : %s", d.Id(), err)
 	}
 	d.Set("annotations", annotations)
 	parameters, err := flattenParameters(pkg.Parameters)
 	if err != nil {
-		return err
+		log.Printf(
+			"An error occured during reading of package (%s) parameters : %s", d.Id(), err)
 	}
 	d.Set("parameters", parameters)
 

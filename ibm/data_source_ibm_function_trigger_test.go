@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -10,6 +11,7 @@ import (
 
 func TestAccFunctionTriggerDataSourceBasic(t *testing.T) {
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -17,9 +19,10 @@ func TestAccFunctionTriggerDataSourceBasic(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			resource.TestStep{
-				Config: testAccCheckFunctionTriggerDataSource(name),
+				Config: testAccCheckFunctionTriggerDataSource(name, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "namespace", namespace),
 					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "version", "0.0.1"),
 					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "publish", "false"),
 					resource.TestCheckResourceAttr("data.ibm_function_trigger.datatrigger", "name", name),
@@ -29,16 +32,18 @@ func TestAccFunctionTriggerDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckFunctionTriggerDataSource(name string) string {
+func testAccCheckFunctionTriggerDataSource(name, namespace string) string {
 	return fmt.Sprintf(`
 	
 resource "ibm_function_trigger" "trigger" {
-	name = "%s"		  
+	name      = "%s"		  
+	namespace = "%s"
 }
-data "ibm_function_trigger" "datatrigger" {
-	name = ibm_function_trigger.trigger.name
 
+data "ibm_function_trigger" "datatrigger" {
+	name      = ibm_function_trigger.trigger.name
+	namespace = ibm_function_trigger.trigger.namespace
 }
-`, name)
+`, name, namespace)
 
 }

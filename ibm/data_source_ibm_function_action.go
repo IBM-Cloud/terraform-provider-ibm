@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -17,6 +18,11 @@ func dataSourceIBMFunctionAction() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Name of action.",
+			},
+			"namespace": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name of the namespace.",
 			},
 			"limits": {
 				Type:     schema.TypeList,
@@ -100,27 +106,40 @@ func dataSourceIBMFunctionAction() *schema.Resource {
 				Computed:    true,
 				Description: "All paramters set on action by user and those set by the IBM Cloud Function backend/API.",
 			},
+			"action_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
 
 func dataSourceIBMFunctionActionRead(d *schema.ResourceData, meta interface{}) error {
-
 	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
 
+	bxSession, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return err
+	}
+	namespace := d.Get("namespace").(string)
+	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	if err != nil {
+		return err
+
+	}
+
 	actionService := wskClient.Actions
 	name := d.Get("name").(string)
 
-	action, _, err := actionService.Get(name)
+	action, _, err := actionService.Get(name, true)
 	if err != nil {
 		return fmt.Errorf("Error retrieving IBM Cloud Function Action %s : %s", name, err)
 	}
 
 	temp := strings.Split(action.Namespace, "/")
-
 	if len(temp) == 2 {
 		d.SetId(fmt.Sprintf("%s/%s", temp[1], action.Name))
 		d.Set("name", fmt.Sprintf("%s/%s", temp[1], action.Name))
@@ -128,18 +147,23 @@ func dataSourceIBMFunctionActionRead(d *schema.ResourceData, meta interface{}) e
 		d.SetId(action.Name)
 		d.Set("name", action.Name)
 	}
+
+	d.Set("namespace", namespace)
 	d.Set("limits", flattenLimits(action.Limits))
 	d.Set("exec", flattenExec(action.Exec))
 	d.Set("publish", action.Publish)
 	d.Set("version", action.Version)
+	d.Set("action_id", action.Name)
 	annotations, err := flattenAnnotations(action.Annotations)
 	if err != nil {
-		return err
+		log.Printf(
+			"An error occured during reading of action (%s) annotations : %s", d.Id(), err)
 	}
 	d.Set("annotations", annotations)
 	parameters, err := flattenParameters(action.Parameters)
 	if err != nil {
-		return err
+		log.Printf(
+			"An error occured during reading of action (%s) parameters : %s", d.Id(), err)
 	}
 	d.Set("parameters", parameters)
 	return nil

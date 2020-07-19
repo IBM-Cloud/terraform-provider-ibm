@@ -17,6 +17,7 @@ Create, update, or delete [IBM Cloud Functions triggers](https://cloud.ibm.com/d
 ```hcl
 resource "ibm_function_trigger" "trigger" {
   name = "trigger-name"
+  namespace = "function-namespace-name"
 
   user_defined_parameters = <<EOF
                         [
@@ -47,6 +48,7 @@ EOF
 ```hcl
 resource "ibm_function_trigger" "feedtrigger" {
   name = "alarmFeed"
+  namespace = "function-namespace-name"
 
   feed {
     name = "/whisk.system/alarms/alarm"
@@ -83,6 +85,7 @@ EOF
 The following arguments are supported:
 
 * `name` - (Required, Forces new resource, string) The name of the trigger.
+* `namespace` - (Required, string) The name of the function namespace.
 * `feed` - (Optional, Forces new resource, list) A nested block to describe the feed. Nested `feed` blocks have the following structure:
     * `name` - (Required, Forces new resource, string) Trigger feed `ACTION_NAME`.
     * `parameters` - (Optional, string) Parameters definitions in key value format. Parameter bindings are included in the context and passed when the action is invoked.
@@ -93,19 +96,23 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - The ID of the new trigger.
+* `id` - The unique identifier of the trigger.The id is combination of namespace and triggerID delimited by `:`.
+* `namespace` - The name of the function namespace.
 * `publish` - Trigger visibility.
 * `version` - Semantic version of the item.
 * `annotations` - All annotations to describe the trigger, including those set by you or by IBM Cloud Functions.
 * `parameters` - All parameters passed to the trigger, including those set by you or by IBM Cloud Functions.
+* `trigger_id` - Trigger ID
 
 ## Import
 
-`ibm_function_trigger` can be imported using the ID.
+`ibm_function_trigger` can be imported using the namespace and triggerID.
 
 Example:
 
 ```
-$ terraform import ibm_function_trigger.trigger alaram
+$ terraform import ibm_function_trigger.trigger <namespace>:<trigger_id>
+
+$ terraform import ibm_function_trigger.trigger Namespace01:alarmtrigger
 
 ```

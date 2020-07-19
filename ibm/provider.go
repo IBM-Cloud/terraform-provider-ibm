@@ -124,6 +124,7 @@ func Provider() terraform.ResourceProvider {
 				Optional:    true,
 				Description: "The IBM Cloud Function namespace",
 				DefaultFunc: schema.EnvDefaultFunc("FUNCTION_NAMESPACE", ""),
+				Deprecated:  "This field will be deprecated soon",
 			},
 			"riaas_endpoint": {
 				Type:        schema.TypeString,
@@ -433,6 +434,10 @@ func Validator() ValidatorDict {
 				"ibm_dl_gateway":            resourceIBMDLGatewayValidator(),
 				"ibm_dl_offering_speeds":    datasourceIBMDLOfferingSpeedsValidator(),
 				"ibm_dl_routers":            datasourceIBMDLRoutersValidator(),
+				"ibm_function_package":      resourceIBMFuncPackageValidator(),
+				"ibm_function_action":       resourceIBMFuncActionValidator(),
+				"ibm_function_rule":         resourceIBMFuncRuleValidator(),
+				"ibm_function_trigger":      resourceIBMFuncTriggerValidator(),
 			},
 		}
 	})

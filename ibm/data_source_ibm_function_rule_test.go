@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -12,6 +13,7 @@ func TestAccFunctionRuleDataSourceBasic(t *testing.T) {
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	actionName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	triggerName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -19,9 +21,10 @@ func TestAccFunctionRuleDataSourceBasic(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			resource.TestStep{
-				Config: testAccCheckFunctionRuleDataSource(actionName, triggerName, name),
+				Config: testAccCheckFunctionRuleDataSource(actionName, triggerName, name, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_function_rule.rule", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_rule.rule", "namespace", namespace),
 					resource.TestCheckResourceAttr("ibm_function_rule.rule", "version", "0.0.1"),
 					resource.TestCheckResourceAttr("ibm_function_rule.rule", "publish", "false"),
 					resource.TestCheckResourceAttr("ibm_function_rule.rule", "trigger_name", triggerName),
@@ -32,11 +35,12 @@ func TestAccFunctionRuleDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckFunctionRuleDataSource(actionName, triggerName, name string) string {
+func testAccCheckFunctionRuleDataSource(actionName, triggerName, name, namespace string) string {
 	return fmt.Sprintf(`
 	
 	resource "ibm_function_action" "action" {
-		name = "%s"
+		name      = "%s"
+		namespace = "%s"
 		exec {
 		  kind = "nodejs:6"
 		  code = file("test-fixtures/hellonode.js")
@@ -44,7 +48,8 @@ func testAccCheckFunctionRuleDataSource(actionName, triggerName, name string) st
 	  }
 	  
 	  resource "ibm_function_trigger" "trigger" {
-		name = "%s"
+		name      = "%s"
+		namespace = "%s"
 		feed {
 		  name       = "/whisk.system/alarms/alarm"
 		  parameters = <<EOF
@@ -73,14 +78,16 @@ func testAccCheckFunctionRuleDataSource(actionName, triggerName, name string) st
 	  
 	  resource "ibm_function_rule" "rule" {
 		name         = "%s"
+		namespace    = "%s"
 		trigger_name = ibm_function_trigger.trigger.name
 		action_name  = ibm_function_action.action.name
 	  }
 	  
 	  data "ibm_function_rule" "datarule" {
-		name = ibm_function_rule.rule.name
+		name      = ibm_function_rule.rule.name
+		namespace = ibm_function_rule.rule.namespace
 	  }
 	  
-`, actionName, triggerName, name)
+`, actionName, namespace, triggerName, namespace, name, namespace)
 
 }
