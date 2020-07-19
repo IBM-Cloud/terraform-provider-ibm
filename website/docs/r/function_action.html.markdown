@@ -17,7 +17,8 @@ Create, update, or delete [IBM Cloud Functions actions](https://cloud.ibm.com/do
 
 ```hcl
 resource "ibm_function_action" "nodehello" {
-  name = "action-name"
+  name      = "action-name"
+  namespace = "function-namespace-name"
 
   exec {
     kind = "nodejs:6"
@@ -30,8 +31,9 @@ resource "ibm_function_action" "nodehello" {
 
 ```hcl
 resource "ibm_function_action" "nodehellowithparameter" {
-  name = "hellonodeparam"
-
+  name      = "hellonodeparam"
+  namespace = "function-namespace-name"
+  
   exec {
     kind = "nodejs:6"
     code = file("hellonodewithparameter.js")
@@ -55,7 +57,8 @@ EOF
 
 ``` hcl
 resource "ibm_function_action" "nodezip" {
-  name = "nodezip"
+  name      = "nodezip"
+  namespace = "function-namespace-name"
 
   exec {
     kind = "nodejs:6"
@@ -69,7 +72,8 @@ resource "ibm_function_action" "nodezip" {
 
 ``` hcl
 resource "ibm_function_action" "swifthello" {
-  name = "actionsequence"
+  name      = "actionsequence"
+  namespace = "function-namespace-name"
 
   exec {
     kind       = "sequence"
@@ -83,7 +87,8 @@ resource "ibm_function_action" "swifthello" {
 
 ``` hcl
 resource "ibm_function_action" "swifthello" {
-  name = "dockeraction"
+  name      = "dockeraction"
+  namespace = "function-namespace-name"
 
   exec {
     kind  = "janesmith/blackboxdemo"
@@ -98,6 +103,7 @@ resource "ibm_function_action" "swifthello" {
 The following arguments are supported:
 
 * `name` - (Required, Forces new resource, string) The name of the action.
+* `namespace` - (Required, string) The name of the function namespace.
 * `limits` - (Optional, list) A nested block to describe assigned limits. Nested `limits` blocks have the following structure:
     * `timeout` - The timeout limit to terminate the action, specified in milliseconds. Default value: `60000`.
     * `memory` - The maximum memory for the action, specified in MBs. Default value: `256`.
@@ -122,19 +128,22 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - The ID of the new action.
+* `id` - The unique identifier of the action.The id is combination of namespace and actionID delimited by `:` .
+* `namespace` - The name of the function namespace.
 * `version` - Semantic version of the item.
 * `annotations` - All annotations to describe the action, including those set by you or by IBM Cloud Functions.
 * `parameters` - All parameters passed to the action when the action is invoked, including those set by you or by IBM Cloud Functions.
-
+* `action_id` - Action ID	
 
 ## Import
 
-`ibm_function_action` can be imported using the ID.
+`ibm_function_action` can be imported using the namespace and actionID.
 
 Example:
 
 ```
-$ terraform import ibm_function_action.nodeAction hello
+$ terraform import ibm_function_action.nodeAction <namespace>:<action_id>
+
+$ terraform import ibm_function_action.nodeAction Namespace-01:nodezip
 
 ```

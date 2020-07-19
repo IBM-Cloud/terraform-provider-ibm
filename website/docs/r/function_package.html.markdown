@@ -16,7 +16,8 @@ Create, update, or delete [IBM Cloud Functions packages](https://cloud.ibm.com/d
 
 ```hcl
 resource "ibm_function_package" "package" {
-  name = "package-name"
+  name      = "package-name"
+  namespace = "function-namespace-name"
 
   user_defined_annotations = <<EOF
         [
@@ -51,6 +52,8 @@ EOF
 ``` hcl
 resource "ibm_function_package" "bindpackage" {
   name              = "bindalaram"
+  namespace         = "function-namespace-name"
+
   bind_package_name = "/whisk.system/alarms/alarm"
 
   user_defined_parameters = <<EOF
@@ -83,6 +86,7 @@ EOF
 The following arguments are supported:
 
 * `name` - (Required,  Forces new resource, string) The name of the package.
+* `namespace` - (Required, string) The name of the function namespace.
 * `publish` - (Optional, boolean) Package visibility.
 * `user_defined_annotations` - (Optional, string) Annotations defined in key value format.
 * `user_defined_parameters` - (Optional, string) Parameters defined in key value format. Parameter bindings included in the context passed to the package.
@@ -92,18 +96,22 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - The ID of the new package.
+* `id` - The unique identifier of the package.The id is combination of namespace and packageID delimited by `:`.
+* `namespace` - The name of the function namespace.
 * `version` - Semantic version of the item.
 * `annotations` - All annotations to describe the package, including those set by you or by IBM Cloud Functions.
 * `parameters` - All parameters passed to the package, including those set by you or by IBM Cloud Functions.
+* `package_id` - Package ID
 
 ## Import
 
-`ibm_function_package` can be imported using the ID.
+`ibm_function_package` can be imported using the namespace and packageID.
 
 Example:
 
 ```
-$ terraform import ibm_function_package.sample hello
+$ terraform import ibm_function_package.sample <namespace>:<package_id>
+
+$ terraform import ibm_function_package.sample Namespace-01:util
 
 ```

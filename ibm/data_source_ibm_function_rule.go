@@ -17,6 +17,11 @@ func dataSourceIBMFunctionRule() *schema.Resource {
 				Required:    true,
 				Description: "Name of the rule.",
 			},
+			"namespace": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name of the namespace.",
+			},
 			"trigger_name": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -42,6 +47,10 @@ func dataSourceIBMFunctionRule() *schema.Resource {
 				Computed:    true,
 				Description: "Semantic version of the rule",
 			},
+			"rule_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -51,6 +60,19 @@ func dataSourceIBMFunctionRuleRead(d *schema.ResourceData, meta interface{}) err
 	if err != nil {
 		return err
 	}
+
+	bxSession, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return err
+	}
+
+	namespace := d.Get("namespace").(string)
+	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	if err != nil {
+		return err
+
+	}
+
 	ruleService := wskClient.Rules
 	name := d.Get("name").(string)
 
@@ -61,9 +83,11 @@ func dataSourceIBMFunctionRuleRead(d *schema.ResourceData, meta interface{}) err
 
 	d.SetId(rule.Name)
 	d.Set("name", rule.Name)
+	d.Set("namespace", namespace)
 	d.Set("publish", rule.Publish)
 	d.Set("version", rule.Version)
 	d.Set("status", rule.Status)
+	d.Set("rule_id", rule.Name)
 	d.Set("trigger_name", rule.Trigger.(map[string]interface{})["name"])
 	path := rule.Action.(map[string]interface{})["path"]
 	actionName := rule.Action.(map[string]interface{})["name"]

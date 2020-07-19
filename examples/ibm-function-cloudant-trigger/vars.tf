@@ -1,3 +1,7 @@
+variable "namespace" {
+  default = ""
+}
+
 variable "packageName" {
   default = "utils"
 }

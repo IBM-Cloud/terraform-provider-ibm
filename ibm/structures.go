@@ -24,7 +24,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/schematics"
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
-	"github.com/apache/incubator-openwhisk-client-go/whisk"
+	"github.com/apache/openwhisk-client-go/whisk"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/sl"
@@ -983,6 +983,11 @@ func idParts(id string) ([]string, error) {
 
 func vmIdParts(id string) ([]string, error) {
 	parts := strings.Split(id, "/")
+	return parts, nil
+}
+
+func cfIdParts(id string) ([]string, error) {
+	parts := strings.Split(id, ":")
 	return parts, nil
 }
 

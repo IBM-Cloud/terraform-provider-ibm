@@ -7,8 +7,16 @@ import (
 	"os"
 	"strings"
 
-	"github.com/apache/incubator-openwhisk-client-go/whisk"
+	"github.com/apache/openwhisk-client-go/whisk"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+)
+
+const (
+	funcPkgNamespace    = "namespace"
+	funcPkgName         = "name"
+	funcPkgUsrDefAnnots = "user_defined_annotations"
+	funcPkgUsrDefParams = "user_defined_parameters"
+	funcPkgBindPkgName  = "bind_package_name"
 )
 
 func resourceIBMFunctionPackage() *schema.Resource {
@@ -21,12 +29,19 @@ func resourceIBMFunctionPackage() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"name": {
+			funcPkgNamespace: {
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				Description:  "IBM Cloud function namespace.",
+				ValidateFunc: InvokeValidator("ibm_function_package", funcPkgNamespace),
+			},
+			funcPkgName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				Description:  "Name of package.",
-				ValidateFunc: validateFunctionName,
+				ValidateFunc: InvokeValidator("ibm_function_package", funcPkgName),
 			},
 			"publish": {
 				Type:        schema.TypeBool,
@@ -39,23 +54,23 @@ func resourceIBMFunctionPackage() *schema.Resource {
 				Computed:    true,
 				Description: "Semantic version of the item.",
 			},
-			"user_defined_annotations": {
+			funcPkgUsrDefAnnots: {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Description:      "Annotation values in KEY VALUE format.",
 				Default:          "[]",
-				ValidateFunc:     validateJSONString,
+				ValidateFunc:     InvokeValidator("ibm_function_package", funcPkgUsrDefAnnots),
 				DiffSuppressFunc: suppressEquivalentJSON,
 				StateFunc: func(v interface{}) string {
 					json, _ := normalizeJSONString(v)
 					return json
 				},
 			},
-			"user_defined_parameters": {
+			funcPkgUsrDefParams: {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Description:      "Parameters values in KEY VALUE format. Parameter bindings included in the context passed to the package.",
-				ValidateFunc:     validateJSONString,
+				ValidateFunc:     InvokeValidator("ibm_function_package", funcPkgUsrDefParams),
 				Default:          "[]",
 				DiffSuppressFunc: suppressEquivalentJSON,
 				StateFunc: func(v interface{}) string {
@@ -73,33 +88,79 @@ func resourceIBMFunctionPackage() *schema.Resource {
 				Computed:    true,
 				Description: "All parameters set on package by user and those set by the IBM Cloud Function backend/API.",
 			},
-			"bind_package_name": {
+			funcPkgBindPkgName: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ForceNew:     true,
 				Description:  "Name of package to be binded.",
-				ValidateFunc: validateBindedPackageName,
+				ValidateFunc: InvokeValidator("ibm_function_package", funcPkgBindPkgName),
 				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
 					if o == "" {
 						return false
 					}
-					if strings.HasPrefix(n, "/_") {
-						temp := strings.Replace(n, "/_", "/"+os.Getenv("FUNCTION_NAMESPACE"), 1)
-						if strings.Compare(temp, o) == 0 {
-							return true
-						}
+					if strings.Compare(n, o) == 0 {
+						return true
 					}
 					return false
 				},
 			},
+			"package_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
+}
+
+func resourceIBMFuncPackageValidator() *ResourceValidator {
+	validateSchema := make([]ValidateSchema, 1)
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 funcPkgName,
+			ValidateFunctionIdentifier: ValidateRegexp,
+			Type:                       TypeString,
+			Regexp:                     `\A([\w]|[\w][\w@ .-]*[\w@.-]+)\z`,
+			Required:                   true})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 funcPkgNamespace,
+			ValidateFunctionIdentifier: ValidateNoZeroValues,
+			Type:                       TypeString,
+			Required:                   true})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 funcPkgUsrDefAnnots,
+			ValidateFunctionIdentifier: ValidateJSONString,
+			Type:                       TypeString,
+			Default:                    "[]",
+			Optional:                   true})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 funcPkgBindPkgName,
+			ValidateFunctionIdentifier: ValidateBindedPackageName,
+			Type:                       TypeString,
+			Optional:                   true})
+
+	ibmFuncPackageResourceValidator := ResourceValidator{ResourceName: "ibm_function_package", Schema: validateSchema}
+	return &ibmFuncPackageResourceValidator
 }
 
 func resourceIBMFunctionPackageCreate(d *schema.ResourceData, meta interface{}) error {
 	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
+	}
+
+	bxSession, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return err
+	}
+	namespace := d.Get("namespace").(string)
+	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	if err != nil {
+		return err
+
 	}
 	packageService := wskClient.Packages
 
@@ -144,32 +205,58 @@ func resourceIBMFunctionPackageCreate(d *schema.ResourceData, meta interface{}) 
 		}
 		payload.Binding = &BindingPayload
 	}
+
 	log.Println("[INFO] Creating IBM CLoud Function package")
 	result, _, err := packageService.Insert(&payload, false)
 	if err != nil {
 		return fmt.Errorf("Error creating IBM CLoud Function package: %s", err)
 	}
 
-	d.SetId(result.Name)
+	d.SetId(fmt.Sprintf("%s:%s", namespace, result.Name))
 
 	return resourceIBMFunctionPackageRead(d, meta)
 }
 
 func resourceIBMFunctionPackageRead(d *schema.ResourceData, meta interface{}) error {
+	parts, err := cfIdParts(d.Id())
+	if err != nil {
+		return err
+	}
+
+	namespace := ""
+	packageID := ""
+	if len(parts) == 2 {
+		namespace = parts[0]
+		packageID = parts[1]
+	} else {
+		namespace = os.Getenv("FUNCTION_NAMESPACE")
+		packageID = parts[0]
+		d.SetId(fmt.Sprintf("%s:%s", namespace, packageID))
+	}
+
 	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
-	packageService := wskClient.Packages
-	id := d.Id()
 
-	pkg, _, err := packageService.Get(id)
+	bxSession, err := meta.(ClientSession).BluemixSession()
 	if err != nil {
-		return fmt.Errorf("Error retrieving IBM Cloud Function package %s : %s", id, err)
+		return err
 	}
 
-	d.SetId(pkg.Name)
+	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	if err != nil {
+		return err
+	}
+	packageService := wskClient.Packages
+
+	pkg, _, err := packageService.Get(packageID)
+	if err != nil {
+		return fmt.Errorf("Error retrieving IBM Cloud Function package %s : %s", packageID, err)
+	}
+	d.Set("package_id", pkg.Name)
 	d.Set("name", pkg.Name)
+	d.Set("namespace", namespace)
 	d.Set("publish", pkg.Publish)
 	d.Set("version", pkg.Version)
 	annotations, err := flattenAnnotations(pkg.Annotations)
@@ -189,14 +276,13 @@ func resourceIBMFunctionPackageRead(d *schema.ResourceData, meta interface{}) er
 
 	} else {
 		d.Set("bind_package_name", fmt.Sprintf("/%s/%s", pkg.Binding.Namespace, pkg.Binding.Name))
-
 		c, err := whisk.NewClient(http.DefaultClient, &whisk.Config{
-			Namespace: pkg.Binding.Namespace,
-			AuthToken: wskClient.AuthToken,
-			Host:      wskClient.Host,
+			Namespace:         pkg.Binding.Namespace,
+			AuthToken:         wskClient.AuthToken,
+			Host:              wskClient.Host,
+			AdditionalHeaders: wskClient.AdditionalHeaders,
 		})
 		bindedPkg, _, err := c.Packages.Get(pkg.Binding.Name)
-
 		if err != nil {
 			return fmt.Errorf("Error retrieving Binded IBM Cloud Function package %s : %s", pkg.Binding.Name, err)
 		}
@@ -213,14 +299,33 @@ func resourceIBMFunctionPackageRead(d *schema.ResourceData, meta interface{}) er
 		}
 		d.Set("user_defined_parameters", userParameters)
 	}
+
 	return nil
 }
 
 func resourceIBMFunctionPackageUpdate(d *schema.ResourceData, meta interface{}) error {
+	parts, err := cfIdParts(d.Id())
+	if err != nil {
+		return err
+	}
+
+	namespace := parts[0]
+
 	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
+
+	bxSession, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return err
+	}
+
+	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	if err != nil {
+		return err
+	}
+
 	packageService := wskClient.Packages
 
 	var qualifiedName = new(QualifiedName)
@@ -270,14 +375,32 @@ func resourceIBMFunctionPackageUpdate(d *schema.ResourceData, meta interface{}) 
 }
 
 func resourceIBMFunctionPackageDelete(d *schema.ResourceData, meta interface{}) error {
+	parts, err := cfIdParts(d.Id())
+	if err != nil {
+		return err
+	}
+
+	namespace := parts[0]
+	packageID := parts[1]
+
 	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
-	packageService := wskClient.Packages
-	id := d.Id()
 
-	_, err = packageService.Delete(id)
+	bxSession, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return err
+	}
+
+	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	if err != nil {
+		return err
+	}
+
+	packageService := wskClient.Packages
+
+	_, err = packageService.Delete(packageID)
 	if err != nil {
 		return fmt.Errorf("Error deleting IBM Cloud Function Package: %s", err)
 	}
@@ -287,19 +410,46 @@ func resourceIBMFunctionPackageDelete(d *schema.ResourceData, meta interface{}) 
 }
 
 func resourceIBMFunctionPackageExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	parts, err := cfIdParts(d.Id())
+	if err != nil {
+		return false, err
+	}
+
+	namespace := ""
+	packageID := ""
+	if len(parts) == 2 {
+		namespace = parts[0]
+		packageID = parts[1]
+	} else {
+		namespace = os.Getenv("FUNCTION_NAMESPACE")
+		packageID = parts[0]
+		d.SetId(fmt.Sprintf("%s:%s", namespace, packageID))
+	}
+
 	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return false, err
 	}
-	packageService := wskClient.Packages
-	id := d.Id()
 
-	pkg, resp, err := packageService.Get(id)
+	bxSession, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return false, err
+	}
+
+	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	if err != nil {
+		return false, err
+	}
+
+	packageService := wskClient.Packages
+
+	pkg, resp, err := packageService.Get(packageID)
 	if err != nil {
 		if resp.StatusCode == 404 {
 			return false, nil
 		}
 		return false, fmt.Errorf("Error communicating with IBM Cloud Function Client : %s", err)
 	}
-	return pkg.Name == id, nil
+
+	return pkg.Name == packageID, nil
 }

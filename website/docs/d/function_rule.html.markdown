@@ -14,7 +14,8 @@ Import the details of an existing [IBM Cloud Functions rule](https://cloud.ibm.c
 
 ```hcl
 data "ibm_function_rule" "rule" {
-	name = "rule-name"
+	name      = "rule-name"
+	namespace = "function-namespace-name"
 }
 ```
 
@@ -23,14 +24,17 @@ data "ibm_function_rule" "rule" {
 The following arguments are supported:
 
 * `name` - (Required, string) The name of the rule.
+* `namespace` -  The name of the function namespace.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-* `id` - The ID of the trigger.
+* `id` - The ID of the rule.
+* `namespace` -  The name of the function namespace.
 * `publish` - Trigger visibility.
 * `version` - Semantic version of the trigger.
 * `status` - The status of the rule.
 * `trigger_name` - The name of the trigger.
 * `action_name` - The name of the action.
+* `rule_id` - rule ID.

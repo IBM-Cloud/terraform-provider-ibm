@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -16,6 +17,11 @@ func dataSourceIBMFunctionTrigger() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Name of Trigger.",
+			},
+			"namespace": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name of the namespace.",
 			},
 			"publish": {
 				Type:        schema.TypeBool,
@@ -38,6 +44,10 @@ func dataSourceIBMFunctionTrigger() *schema.Resource {
 				Computed:    true,
 				Description: "All parameters set on trigger by user and those set by the IBM Cloud Function backend/API.",
 			},
+			"trigger_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -47,6 +57,18 @@ func dataSourceIBMFunctionTriggerRead(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return err
 	}
+
+	bxSession, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return err
+	}
+	namespace := d.Get("namespace").(string)
+	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	if err != nil {
+		return err
+
+	}
+
 	triggerService := wskClient.Triggers
 	name := d.Get("name").(string)
 
@@ -57,16 +79,21 @@ func dataSourceIBMFunctionTriggerRead(d *schema.ResourceData, meta interface{}) 
 
 	d.SetId(trigger.Name)
 	d.Set("name", trigger.Name)
+	d.Set("namespace", namespace)
 	d.Set("publish", trigger.Publish)
 	d.Set("version", trigger.Version)
+	d.Set("trigger_id", trigger.Name)
 	annotations, err := flattenAnnotations(trigger.Annotations)
 	if err != nil {
-		return err
+		log.Printf(
+			"An error occured during reading of trigger (%s) annotations : %s", d.Id(), err)
+
 	}
 	d.Set("annotations", annotations)
 	parameters, err := flattenParameters(trigger.Parameters)
 	if err != nil {
-		return err
+		log.Printf(
+			"An error occured during reading of trigger (%s) parameters : %s", d.Id(), err)
 	}
 	d.Set("parameters", parameters)
 

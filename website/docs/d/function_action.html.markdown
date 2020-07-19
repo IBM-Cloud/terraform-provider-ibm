@@ -14,7 +14,8 @@ Import the details of an existing [IBM Cloud Functions action](https://cloud.ibm
 
 ```hcl
 data "ibm_function_action" "nodehello" {
-    name = "action-name"		  
+    name      = "action-name"		  
+    namespace = "function-namespace-name"
 }
 ```
 
@@ -23,12 +24,14 @@ data "ibm_function_action" "nodehello" {
 The following arguments are supported:
 
 * `name` - (Required, string) The name of the action.
+* `namespace` - (Required, string) The name of the function namespace.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
 * `id`- The ID of the action.
+* `namespace` -  The name of the function namespace.
 * `version` - Semantic version of the item.
 * `annotations` - Annotations to describe the action, including those set by you or by IBM Cloud Functions.
 * `parameters` - Parameters passed to the action when the action is invoked, including those set by you or by IBM Cloud Functions.
@@ -44,3 +47,4 @@ The following attributes are exported:
     * `main` - The name of the action entry point (function or fully-qualified method name, when applicable).
     * `components` - The list of fully qualified actions.
 * `publish` - Action visibility.
+* `action_id` - action ID.

@@ -14,7 +14,8 @@ Create, update, or delete [IBM Cloud Functions triggers](https://cloud.ibm.com/d
 
 ```hcl
 resource "ibm_function_action" "action" {
-  name = "hello"
+  name      = "hello"
+  namespace = "function-namespace-name
 
   exec {
     kind = "nodejs:6"
@@ -23,11 +24,12 @@ resource "ibm_function_action" "action" {
 }
 
 resource "ibm_function_trigger" "trigger" {
-  name = "alarmtrigger"
+  name      = "alarmtrigger"
+  namespace = "function-namespace-name
 
   feed {
-    name = "/whisk.system/alarms/alarm"
-
+    name      = "/whisk.system/alarms/alarm"
+    namespace = "function-namespace-name
     parameters = <<EOF
                                         [
                                                 {
@@ -43,6 +45,7 @@ EOF
 
 resource "ibm_function_rule" "rule" {
   name         = "alarmrule"
+  namespace    = "function-namespace-name
   trigger_name = ibm_function_trigger.trigger.name
   action_name  = ibm_function_action.action.name
 }
@@ -54,6 +57,7 @@ resource "ibm_function_rule" "rule" {
 The following arguments are supported:
 
 * `name` - (Required, Forces new resource, string) The name of the rule.
+* `namespace` - (Required, string) The name of the function namespace.
 * `trigger_name` - (Required, string) The name of the trigger.
 * `action_name` - (Required, string) The name of the action.
 
@@ -61,18 +65,22 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - The ID of the new rule.
+* `id` - The unique identifier of the rule.The id is combination of namespace and ruleID delimited by `:`.
+* `namespace` - The name of the function namespace.
 * `publish` - Rule visibility.
 * `version` - Semantic version of the item.
 * `status` - The status of the rule.
+* `rule_id` - Rule ID	
 
 ## Import
 
-`ibm_function_rule` can be imported using the ID.
+`ibm_function_rule` can be imported using the namespace and ruleID.
 
 Example: 
 
 ```
-$ terraform import ibm_function_rule.sampleRule alarmrule
+$ terraform import ibm_function_rule.sampleRule <namespace>:<rule_id>
+
+$ terraform import ibm_function_rule.sampleRule Namespace-01:alaramrule
 
 ```

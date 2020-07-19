@@ -4,16 +4,25 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
-	"github.com/apache/incubator-openwhisk-client-go/whisk"
+	"github.com/apache/openwhisk-client-go/whisk"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-const feedLifeCycleEvent = "lifecycleEvent"
-const feedTriggerName = "triggerName"
-const feedAuthKey = "authKey"
-const feedCreate = "CREATE"
-const feedDelete = "DELETE"
+const (
+	funcTriggerNamespace    = "namespace"
+	funcTriggerName         = "name"
+	funcTriggerParams       = "parameters"
+	funcTriggerUsrDefAnnots = "user_defined_annotations"
+	funcTriggerUsrDefParams = "user_defined_parameters"
+
+	feedLifeCycleEvent = "lifecycleEvent"
+	feedTriggerName    = "triggerName"
+	feedAuthKey        = "authKey"
+	feedCreate         = "CREATE"
+	feedDelete         = "DELETE"
+)
 
 func resourceIBMFunctionTrigger() *schema.Resource {
 	return &schema.Resource{
@@ -25,12 +34,19 @@ func resourceIBMFunctionTrigger() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"name": {
+			funcTriggerNamespace: {
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				Description:  "IBM Cloud function namespace.",
+				ValidateFunc: InvokeValidator("ibm_function_trigger", funcTriggerNamespace),
+			},
+			funcTriggerName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				Description:  "Name of Trigger.",
-				ValidateFunc: validateFunctionName,
+				ValidateFunc: InvokeValidator("ibm_function_trigger", funcTriggerName),
 			},
 			"feed": {
 				Type:        schema.TypeList,
@@ -46,12 +62,12 @@ func resourceIBMFunctionTrigger() *schema.Resource {
 							ForceNew:    true,
 							Description: "Trigger feed ACTION_NAME.",
 						},
-						"parameters": {
+						funcTriggerParams: {
 							Type:         schema.TypeString,
 							Optional:     true,
 							Default:      "[]",
 							Description:  "Parameters values in KEY VALUE format. Parameter bindings included in the context passed to the action invoke.",
-							ValidateFunc: validateJSONString,
+							ValidateFunc: InvokeValidator("ibm_function_trigger", funcTriggerParams),
 							DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
 								if o == "" && n == "" {
 									return false
@@ -79,24 +95,24 @@ func resourceIBMFunctionTrigger() *schema.Resource {
 				Computed:    true,
 				Description: "Semantic version of the item.",
 			},
-			"user_defined_annotations": {
+			funcTriggerUsrDefAnnots: {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Description:      "Annotation values in KEY VALUE format.",
 				Default:          "[]",
-				ValidateFunc:     validateJSONString,
+				ValidateFunc:     InvokeValidator("ibm_function_trigger", funcTriggerUsrDefAnnots),
 				DiffSuppressFunc: suppressEquivalentJSON,
 				StateFunc: func(v interface{}) string {
 					json, _ := normalizeJSONString(v)
 					return json
 				},
 			},
-			"user_defined_parameters": {
+			funcTriggerUsrDefParams: {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Default:          "[]",
 				Description:      "Parameters values in KEY VALUE format. Parameter bindings included in the context passed to the trigger.",
-				ValidateFunc:     validateJSONString,
+				ValidateFunc:     InvokeValidator("ibm_function_trigger", funcTriggerUsrDefParams),
 				DiffSuppressFunc: suppressEquivalentJSON,
 				StateFunc: func(v interface{}) string {
 					json, _ := normalizeJSONString(v)
@@ -113,8 +129,53 @@ func resourceIBMFunctionTrigger() *schema.Resource {
 				Computed:    true,
 				Description: "All parameters set on trigger by user and those set by the IBM Cloud Function backend/API.",
 			},
+			"trigger_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
+}
+
+func resourceIBMFuncTriggerValidator() *ResourceValidator {
+	validateSchema := make([]ValidateSchema, 1)
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 funcTriggerName,
+			ValidateFunctionIdentifier: ValidateRegexp,
+			Type:                       TypeString,
+			Regexp:                     `\A([\w]|[\w][\w@ .-]*[\w@.-]+)\z`,
+			Required:                   true})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 funcTriggerNamespace,
+			ValidateFunctionIdentifier: ValidateNoZeroValues,
+			Type:                       TypeString,
+			Required:                   true})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 funcTriggerUsrDefAnnots,
+			ValidateFunctionIdentifier: ValidateJSONString,
+			Type:                       TypeString,
+			Default:                    "[]",
+			Optional:                   true})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 funcTriggerUsrDefParams,
+			ValidateFunctionIdentifier: ValidateJSONString,
+			Type:                       TypeString,
+			Optional:                   true})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 funcTriggerParams,
+			ValidateFunctionIdentifier: ValidateJSONString,
+			Type:                       TypeString,
+			Default:                    "[]",
+			Optional:                   true})
+
+	ibmFuncTriggerResourceValidator := ResourceValidator{ResourceName: "ibm_function_trigger", Schema: validateSchema}
+	return &ibmFuncTriggerResourceValidator
 }
 
 func resourceIBMFunctionTriggerCreate(d *schema.ResourceData, meta interface{}) error {
@@ -122,6 +183,19 @@ func resourceIBMFunctionTriggerCreate(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return err
 	}
+
+	bxSession, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return err
+	}
+
+	namespace := d.Get("namespace").(string)
+	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	if err != nil {
+		return err
+
+	}
+
 	triggerService := wskClient.Triggers
 	feed := false
 	feedPayload := map[string]interface{}{}
@@ -168,7 +242,7 @@ func resourceIBMFunctionTriggerCreate(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Error creating IBM Cloud Function trigger: %s", err)
 	}
 
-	d.SetId(result.Name)
+	d.SetId(fmt.Sprintf("%s:%s", namespace, result.Name))
 
 	if feed {
 		feed := d.Get("feed").([]interface{})[0].(map[string]interface{})
@@ -197,10 +271,14 @@ func resourceIBMFunctionTriggerCreate(d *schema.ResourceData, meta interface{}) 
 		feedPayload[feedTriggerName] = fmt.Sprintf("/%s/%s", qualifiedName.GetNamespace(), name)
 
 		c, err := whisk.NewClient(http.DefaultClient, &whisk.Config{
-			Namespace: feedQualifiedName.GetNamespace(),
-			AuthToken: wskClient.AuthToken,
-			Host:      wskClient.Host,
+			AuthToken:         wskClient.AuthToken,
+			Host:              wskClient.Host,
+			AdditionalHeaders: wskClient.AdditionalHeaders,
 		})
+
+		if feedQualifiedName.GetNamespace() != namespace {
+			c.Config.Namespace = feedQualifiedName.GetNamespace()
+		}
 		actionService := c.Actions
 		_, _, err = actionService.Invoke(feedQualifiedName.GetEntityName(), feedPayload, true, true)
 		if err != nil {
@@ -213,25 +291,52 @@ func resourceIBMFunctionTriggerCreate(d *schema.ResourceData, meta interface{}) 
 		}
 	}
 
-	d.SetId(result.Name)
+	d.SetId(fmt.Sprintf("%s:%s", namespace, result.Name))
 
 	return resourceIBMFunctionTriggerRead(d, meta)
 }
 
 func resourceIBMFunctionTriggerRead(d *schema.ResourceData, meta interface{}) error {
+	parts, err := cfIdParts(d.Id())
+	if err != nil {
+		return err
+	}
+
+	namespace := ""
+	triggerID := ""
+	if len(parts) == 2 {
+		namespace = parts[0]
+		triggerID = parts[1]
+	} else {
+		namespace = os.Getenv("FUNCTION_NAMESPACE")
+		triggerID = parts[0]
+		d.SetId(fmt.Sprintf("%s:%s", namespace, triggerID))
+	}
+
 	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return err
 	}
-	triggerService := wskClient.Triggers
-	id := d.Id()
 
-	trigger, _, err := triggerService.Get(id)
+	bxSession, err := meta.(ClientSession).BluemixSession()
 	if err != nil {
-		return fmt.Errorf("Error retrieving IBM Cloud Function Trigger %s : %s", id, err)
+		return err
 	}
 
-	d.SetId(trigger.Name)
+	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	if err != nil {
+		return err
+
+	}
+
+	triggerService := wskClient.Triggers
+
+	trigger, _, err := triggerService.Get(triggerID)
+	if err != nil {
+		return fmt.Errorf("Error retrieving IBM Cloud Function Trigger %s : %s", triggerID, err)
+	}
+	d.Set("trigger_id", trigger.Name)
+	d.Set("namespace", namespace)
 	d.Set("name", trigger.Name)
 	d.Set("publish", trigger.Publish)
 	d.Set("version", trigger.Version)
@@ -267,6 +372,23 @@ func resourceIBMFunctionTriggerUpdate(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return err
 	}
+
+	bxSession, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return err
+	}
+
+	parts, err := cfIdParts(d.Id())
+	if err != nil {
+		return err
+	}
+	namespace := parts[0]
+	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	if err != nil {
+		return err
+
+	}
+
 	triggerService := wskClient.Triggers
 
 	name := d.Get("name").(string)
@@ -318,17 +440,34 @@ func resourceIBMFunctionTriggerDelete(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return err
 	}
-	triggerService := wskClient.Triggers
-	id := d.Id()
 
-	var qualifiedName = new(QualifiedName)
-
-	if qualifiedName, err = NewQualifiedName(id); err != nil {
-		return NewQualifiedNameError(id, err)
-	}
-	trigger, _, err := triggerService.Get(id)
+	bxSession, err := meta.(ClientSession).BluemixSession()
 	if err != nil {
-		return fmt.Errorf("Error retrieving IBM Cloud Function Trigger %s : %s", id, err)
+		return err
+	}
+
+	parts, err := cfIdParts(d.Id())
+	if err != nil {
+		return err
+	}
+	namespace := parts[0]
+	triggerID := parts[1]
+
+	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	if err != nil {
+		return err
+
+	}
+
+	triggerService := wskClient.Triggers
+	var qualifiedName = new(QualifiedName)
+	fmt.Println(qualifiedName)
+	if qualifiedName, err = NewQualifiedName(triggerID); err != nil {
+		return NewQualifiedNameError(triggerID, err)
+	}
+	trigger, _, err := triggerService.Get(triggerID)
+	if err != nil {
+		return fmt.Errorf("Error retrieving IBM Cloud Function Trigger %s : %s", triggerID, err)
 	}
 	found := trigger.Annotations.FindKeyValue("feed")
 	if found >= 0 {
@@ -342,22 +481,27 @@ func resourceIBMFunctionTriggerDelete(d *schema.ResourceData, meta interface{}) 
 		feedPayload := map[string]interface{}{
 			feedLifeCycleEvent: feedDelete,
 			feedAuthKey:        wskClient.Config.AuthToken,
-			feedTriggerName:    fmt.Sprintf("/%s/%s", qualifiedName.GetNamespace(), id),
+			feedTriggerName:    fmt.Sprintf("/%s/%s", qualifiedName.GetNamespace(), triggerID),
 		}
+
 		c, err := whisk.NewClient(http.DefaultClient, &whisk.Config{
-			Namespace: feedQualifiedName.GetNamespace(),
-			AuthToken: wskClient.AuthToken,
-			Host:      wskClient.Host,
+			AuthToken:         wskClient.AuthToken,
+			Host:              wskClient.Host,
+			AdditionalHeaders: wskClient.AdditionalHeaders,
 		})
+		if feedQualifiedName.GetNamespace() != namespace {
+			c.Config.Namespace = feedQualifiedName.GetNamespace()
+		}
+
 		actionService := c.Actions
 		_, _, err = actionService.Invoke(feedQualifiedName.GetEntityName(), feedPayload, true, true)
 		if err != nil {
 			return fmt.Errorf("Error deleting IBM Cloud Function trigger with feed: %s", err)
+
 		}
-		wskClient.Namespace = qualifiedName.GetNamespace()
 	}
 
-	_, _, err = triggerService.Delete(id)
+	_, _, err = triggerService.Delete(triggerID)
 	if err != nil {
 		return fmt.Errorf("Error deleting IBM Cloud Function Trigger: %s", err)
 	}
@@ -367,18 +511,45 @@ func resourceIBMFunctionTriggerDelete(d *schema.ResourceData, meta interface{}) 
 }
 
 func resourceIBMFunctionTriggerExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	parts, err := cfIdParts(d.Id())
+	if err != nil {
+		return false, err
+	}
+
+	namespace := ""
+	triggerID := ""
+	if len(parts) == 2 {
+		namespace = parts[0]
+		triggerID = parts[1]
+	} else {
+		namespace = os.Getenv("FUNCTION_NAMESPACE")
+		triggerID = parts[0]
+		d.SetId(fmt.Sprintf("%s:%s", namespace, triggerID))
+	}
+
 	wskClient, err := meta.(ClientSession).FunctionClient()
 	if err != nil {
 		return false, err
 	}
+
+	bxSession, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return false, err
+	}
+
+	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	if err != nil {
+		return false, err
+
+	}
+
 	triggerService := wskClient.Triggers
-	id := d.Id()
-	trigger, resp, err := triggerService.Get(id)
+	trigger, resp, err := triggerService.Get(triggerID)
 	if err != nil {
 		if resp.StatusCode == 404 {
 			return false, nil
 		}
 		return false, fmt.Errorf("Error communicating with IBM Cloud Function Client : %s", err)
 	}
-	return trigger.Name == id, nil
+	return trigger.Name == triggerID, nil
 }

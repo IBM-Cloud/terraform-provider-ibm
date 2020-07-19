@@ -2,9 +2,10 @@ package ibm
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
-	"github.com/apache/incubator-openwhisk-client-go/whisk"
+	"github.com/apache/openwhisk-client-go/whisk"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -15,6 +16,7 @@ import (
 func TestAccFunctionTrigger_Basic(t *testing.T) {
 	var conf whisk.Trigger
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -22,20 +24,22 @@ func TestAccFunctionTrigger_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			resource.TestStep{
-				Config: testAccCheckFunctionTriggerCreate(name),
+				Config: testAccCheckFunctionTriggerCreate(name, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionTriggerExists("ibm_function_trigger.trigger", &conf),
 					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "namespace", namespace),
 					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "version", "0.0.1"),
 					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "publish", "false"),
 				),
 			},
 
 			resource.TestStep{
-				Config: testAccCheckFunctionTriggerUpdate(name),
+				Config: testAccCheckFunctionTriggerUpdate(name, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionTriggerExists("ibm_function_trigger.trigger", &conf),
 					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "namespace", namespace),
 					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "version", "0.0.2"),
 				),
 			},
@@ -46,6 +50,7 @@ func TestAccFunctionTrigger_Basic(t *testing.T) {
 func TestAccFunctionTrigger_Feed_Basic(t *testing.T) {
 	var conf whisk.Trigger
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -53,10 +58,11 @@ func TestAccFunctionTrigger_Feed_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			resource.TestStep{
-				Config: testAccCheckFunctionTriggerFeedCreate(name),
+				Config: testAccCheckFunctionTriggerFeedCreate(name, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionTriggerExists("ibm_function_trigger.feedtrigger", &conf),
 					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "namespace", namespace),
 					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "version", "0.0.1"),
 					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "publish", "false"),
 					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "feed.0.name", "/whisk.system/alarms/alarm"),
@@ -64,10 +70,11 @@ func TestAccFunctionTrigger_Feed_Basic(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccCheckFunctionTriggerFeedUpdate(name),
+				Config: testAccCheckFunctionTriggerFeedUpdate(name, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionTriggerExists("ibm_function_trigger.feedtrigger", &conf),
 					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "namespace", namespace),
 					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "version", "0.0.2"),
 					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "feed.0.name", "/whisk.system/alarms/alarm"),
 				),
@@ -79,6 +86,7 @@ func TestAccFunctionTrigger_Feed_Basic(t *testing.T) {
 func TestAccFunctionTrigger_Import(t *testing.T) {
 	var conf whisk.Trigger
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -86,10 +94,11 @@ func TestAccFunctionTrigger_Import(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			resource.TestStep{
-				Config: testAccCheckFunctionTriggerImport(name),
+				Config: testAccCheckFunctionTriggerImport(name, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionTriggerExists("ibm_function_trigger.import", &conf),
 					resource.TestCheckResourceAttr("ibm_function_trigger.import", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_trigger.import", "namespace", namespace),
 					resource.TestCheckResourceAttr("ibm_function_trigger.import", "version", "0.0.1"),
 					resource.TestCheckResourceAttr("ibm_function_trigger.import", "publish", "false"),
 				),
@@ -112,11 +121,28 @@ func testAccCheckFunctionTriggerExists(n string, obj *whisk.Trigger) resource.Te
 			return fmt.Errorf("Not found: %s", n)
 		}
 
+		parts, err := cfIdParts(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		namespace := parts[0]
+		name := parts[1]
+
 		client, err := testAccProvider.Meta().(ClientSession).FunctionClient()
 		if err != nil {
 			return err
 		}
-		name := rs.Primary.ID
+
+		bxSession, err := testAccProvider.Meta().(ClientSession).BluemixSession()
+		if err != nil {
+			return err
+		}
+		client, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, client)
+		if err != nil {
+			return err
+
+		}
 
 		trigger, _, err := client.Triggers.Get(name)
 		if err != nil {
@@ -134,13 +160,29 @@ func testAccCheckFunctionTriggerDestroy(s *terraform.State) error {
 		return err
 	}
 
+	bxSession, err := testAccProvider.Meta().(ClientSession).BluemixSession()
+	if err != nil {
+		return err
+	}
+
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "ibm_function_trigger" {
 			continue
 		}
 
-		name := rs.Primary.ID
-		_, _, err := client.Triggers.Get(name)
+		parts, err := cfIdParts(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+		namespace := parts[0]
+		name := parts[1]
+
+		client, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, client)
+		if err != nil {
+			return err
+
+		}
+		_, _, err = client.Triggers.Get(name)
 
 		if err != nil {
 			if apierr, ok := err.(bmxerror.RequestFailure); ok && apierr.StatusCode() != 404 {
@@ -151,19 +193,21 @@ func testAccCheckFunctionTriggerDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckFunctionTriggerCreate(name string) string {
+func testAccCheckFunctionTriggerCreate(name, namespace string) string {
 	return fmt.Sprintf(`
 		resource "ibm_function_trigger" "trigger" {
 			name = "%s"		  
+			namespace = "%s"
 			}
-`, name)
+`, name, namespace)
 
 }
 
-func testAccCheckFunctionTriggerUpdate(name string) string {
+func testAccCheckFunctionTriggerUpdate(name, namespace string) string {
 	return fmt.Sprintf(`
 	resource "ibm_function_trigger" "trigger" {
 		name                    = "%s"
+		namespace               = "%s"
 		user_defined_parameters = <<EOF
 							  [
 									  {
@@ -186,14 +230,15 @@ func testAccCheckFunctionTriggerUpdate(name string) string {
 	  EOF
 	  
 	  }
-`, name)
+`, name, namespace)
 
 }
 
-func testAccCheckFunctionTriggerFeedCreate(name string) string {
+func testAccCheckFunctionTriggerFeedCreate(name, namespace string) string {
 	return fmt.Sprintf(`
 	resource "ibm_function_trigger" "feedtrigger" {
 		name = "%s"
+		namespace = "%s"
 		feed {
 		  name       = "/whisk.system/alarms/alarm"
 		  parameters = <<EOF
@@ -219,14 +264,15 @@ func testAccCheckFunctionTriggerFeedCreate(name string) string {
 	  EOF
 	  
 	  }
-`, name)
+`, name, namespace)
 
 }
 
-func testAccCheckFunctionTriggerFeedUpdate(name string) string {
+func testAccCheckFunctionTriggerFeedUpdate(name, namespace string) string {
 	return fmt.Sprintf(`
 	resource "ibm_function_trigger" "feedtrigger" {
 		name = "%s"
+		namespace = "%s"
 		feed {
 		  name = "/whisk.system/alarms/alarm"
 	  
@@ -265,14 +311,15 @@ func testAccCheckFunctionTriggerFeedUpdate(name string) string {
 	  
 	  }
 	  
-`, name)
+`, name, namespace)
 
 }
 
-func testAccCheckFunctionTriggerImport(name string) string {
+func testAccCheckFunctionTriggerImport(name, namespace string) string {
 	return fmt.Sprintf(`
 	resource "ibm_function_trigger" "import" {
 		name                    = "%s"
+		namespace		= "%s"
 		user_defined_parameters = <<EOF
 							  [
 									  {
@@ -295,6 +342,6 @@ func testAccCheckFunctionTriggerImport(name string) string {
 	  EOF
 	  
 	  }
-`, name)
+`, name, namespace)
 
 }

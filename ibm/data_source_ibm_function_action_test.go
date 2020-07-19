@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -10,6 +11,7 @@ import (
 
 func TestAccFunctionActionDataSourceBasic(t *testing.T) {
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -17,10 +19,11 @@ func TestAccFunctionActionDataSourceBasic(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			resource.TestStep{
-				Config: testAccCheckFunctionActionDataSource(name),
+				Config: testAccCheckFunctionActionDataSource(name, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_function_action.pythonzip", "name", name),
-					resource.TestCheckResourceAttr("ibm_function_action.pythonzip", "exec.0.kind", "python"),
+					resource.TestCheckResourceAttr("ibm_function_action.pythonzip", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_action.pythonzip", "exec.0.kind", "python:3"),
 					resource.TestCheckResourceAttr("data.ibm_function_action.action", "name", name),
 				),
 			},
@@ -28,21 +31,24 @@ func TestAccFunctionActionDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckFunctionActionDataSource(name string) string {
+func testAccCheckFunctionActionDataSource(name, namespace string) string {
 	return fmt.Sprintf(`
 	
 	resource "ibm_function_action" "pythonzip" {
-		name = "%s"
+		name      = "%s"
+		namespace = "%s"
+		
 		exec {
-		  kind = "python"
-		  code = base64encode(file("test-fixtures/pythonaction.zip"))
+		  kind = "python:3"
+		  code = base64encode("test-fixtures/pythonaction.zip")
 		}
 	  }
 	  
 	  data "ibm_function_action" "action" {
-		name = ibm_function_action.pythonzip.name
+		name      = ibm_function_action.pythonzip.name
+		namespace = ibm_function_action.pythonzip.namespace
 	  }
 	  
-`, name)
+`, name, namespace)
 
 }

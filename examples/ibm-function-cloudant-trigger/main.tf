@@ -58,9 +58,7 @@ resource "ibm_app" "app" {
   wait_time_minutes = 10
 
   buildpack  = var.buildpack
-  disk_quota = 512
-
-  command               = var.command
+  
   memory                = 256
   instances             = 2
   disk_quota            = 512
@@ -72,6 +70,7 @@ resource "ibm_app" "app" {
 
 resource "ibm_function_package" "package" {
   name = var.packageName
+  namespace = var.namespace
 
   user_defined_parameters = <<EOF
         [
@@ -90,6 +89,7 @@ EOF
 
 resource "ibm_function_action" "action" {
   name = "${ibm_function_package.package.name}/${var.actionName}"
+  namespace = var.namespace  
 
   exec {
     kind = "nodejs:6"
@@ -100,6 +100,7 @@ resource "ibm_function_action" "action" {
 resource "ibm_function_package" "boundpackage" {
   name              = var.boundPackageName
   bind_package_name = "/whisk.system/cloudant"
+  namespace = var.namespace
 
   user_defined_parameters = <<EOF
 	[
@@ -123,6 +124,7 @@ EOF
 resource "ibm_function_trigger" "trigger" {
   depends_on = [ibm_app.app]
   name       = var.triggerName
+  namespace = var.namespace
 
   feed {
     name = "${ibm_function_package.boundpackage.name}/changes"
@@ -145,6 +147,7 @@ EOF
 
 resource "ibm_function_rule" "rule" {
   name         = var.ruleName
+  namespace = var.namespace
   trigger_name = ibm_function_trigger.trigger.name
   action_name  = ibm_function_action.action.name
 }

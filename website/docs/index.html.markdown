@@ -58,7 +58,8 @@ resource "ibm_service_instance" "service" {
 
 # Create a Cloud Functions action
 resource "ibm_function_action" "nodehello" {
-  name = "action-name"
+  name      = "action-name"
+  namespace = "function-namespace-name"
   exec {
     kind = "nodejs:6"
     code = file("hellonode.js")

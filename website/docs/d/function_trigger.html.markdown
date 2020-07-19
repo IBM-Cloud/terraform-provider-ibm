@@ -15,7 +15,8 @@ Import the details of an existing [IBM Cloud Functions trigger](https://cloud.ib
 
 ```hcl
 data "ibm_function_trigger" "trigger" {
-			name = "trigger-name"		  
+	name      = "trigger-name"		  
+	namespace = "function-namespace-name"
 }
 ```
 
@@ -24,13 +25,16 @@ data "ibm_function_trigger" "trigger" {
 The following arguments are supported:
 
 * `name` - (Required, string) The name of the trigger.
+* `namespace` - (Required, string) The name of the function namespace.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
 * `id` - The ID of the trigger.
+* `namespace` - The name of the function namespace.
 * `publish` - Trigger visibility.
 * `version` - Semantic version of the trigger.
 * `annotations` - All annotations to describe the trigger, including those set by you or by IBM Cloud Functions.
 * `parameters` - All parameters passed to the trigger, including those set by you or by IBM Cloud Functions.
+* `trigger_id` - trigger ID.

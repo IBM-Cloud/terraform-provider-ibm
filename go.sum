@@ -54,6 +54,9 @@ github.com/agnivade/levenshtein v1.0.1/go.mod h1:CURSv5d9Uaml+FovSIICkLbAUZ9S4Rq
 github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883/go.mod h1:rCTlJbsFo29Kk6CurOXKm700vrz8f0KW0JNfpkRJY/8=
 github.com/apache/incubator-openwhisk-client-go v0.0.0-20171128215515-ad814bc98c32 h1:u4mxj01IJyxfqxFRfpyCbYH/hZEkjMEjdu70Rt0Ax1s=
 github.com/apache/incubator-openwhisk-client-go v0.0.0-20171128215515-ad814bc98c32/go.mod h1:tkMtcI5DHxdNk03R1YVLF66VhkF8uJkZs7pgHE9Mgqk=
+github.com/apache/incubator-openwhisk-client-go v0.0.0-20200201143223-a804fb82d105 h1:te9jteXtOdT9l5B44/F2tnEYjSqIEVjnFx/Dpwm9KZ4=
+github.com/apache/openwhisk-client-go v0.0.0-20200201143223-a804fb82d105 h1:k1wP1gZMrNJeXTz6a+3010NKC/ZvSffk07BzrLmYrmc=
+github.com/apache/openwhisk-client-go v0.0.0-20200201143223-a804fb82d105/go.mod h1:jLLKYP7+1+LFlIJW1n9U1gqeveLM1HIwa4ZHNOFxjPw=
 github.com/apparentlymart/go-cidr v1.0.1 h1:NmIwLZ/KdsjIUlhf+/Np40atNXm/+lZ5txfTJ/SpF+U=
 github.com/apparentlymart/go-cidr v1.0.1/go.mod h1:EBcsNrHc3zQeuaeCeCtQruQm+n9/YjEn/vI25Lg7Gwc=
 github.com/apparentlymart/go-dump v0.0.0-20180507223929-23540a00eaa3/go.mod h1:oL81AME2rN47vu18xqj1S1jPIPuN7afo62yKTNn3XMM=
