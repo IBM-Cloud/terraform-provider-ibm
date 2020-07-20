@@ -97,9 +97,9 @@ The following arguments are supported:
 * `flavor` - (Required, Forces new resource, string) The flavor of the VPC worker node.
 * `name` - (Required, Forces new resource, string) The name of the cluster.
 * `vpc_id` - (Required, Forces new resource, string) The ID of the VPC in which to create the worker nodes. To list available IDs, run 'ibmcloud ks vpcs'.
-* `zones` - (Required, Forces new resource, List) A nested block describing the zones of this VPC cluster. Nested zones blocks have the following structure:
-  * `subnet-id` - (Required, Forces new resource, string) The VPC subnet to assign the cluster.
-  * `name` - (Required, Forces new resource, string) Name of the zone.
+* `zones` - (Required, set) A nested block describing the zones of this VPC cluster. Nested zones blocks have the following structure:
+  * `subnet-id` - (Required, string) The VPC subnet to assign the cluster. 
+  * `name` - (Required, string) Name of the zone.
 * `disable_public_service_endpoint` - (Optional,Bool) Disable the public service endpoint to prevent public access to the master. Default Value 'true'.
 * `kube_version` - (Optional,String) Specify the Kubernetes version, including at least the major.minor version. If you do not include this flag, the default version is used. To see available versions, run 'ibmcloud ks versions'.
 * `update_all_workers` - (Optional, bool)  Set to `true` if you want to update workers kube version along with the cluster kube_version

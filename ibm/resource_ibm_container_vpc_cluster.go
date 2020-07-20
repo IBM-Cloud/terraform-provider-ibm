@@ -7,10 +7,6 @@ import (
 	"strings"
 	"time"
 
-	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
-	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM/go-sdk-core/v3/core"
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -18,6 +14,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+
+	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
+	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
 
 const (
@@ -69,23 +70,20 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 			},
 
 			"zones": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Required:    true,
-				ForceNew:    true,
 				Description: "Zone info",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
 							Type:        schema.TypeString,
 							Required:    true,
-							ForceNew:    true,
 							Description: "Zone for the worker pool in a multizone cluster",
 						},
 
 						"subnet_id": {
 							Type:        schema.TypeString,
 							Required:    true,
-							ForceNew:    true,
 							Description: "The VPC subnet to assign the cluster",
 						},
 					},
@@ -347,7 +345,7 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	var zonesList = make([]v2.Zone, 0)
 
 	if res, ok := d.GetOk("zones"); ok {
-		zones := res.([]interface{})
+		zones := res.(*schema.Set).List()
 		for _, e := range zones {
 			r, _ := e.(map[string]interface{})
 			if ID, subnetID := r["name"], r["subnet_id"]; ID != nil && subnetID != nil {
@@ -511,10 +509,95 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 				"Error updating the worker_count %d: %s", count, err)
 		}
 	}
+	if d.HasChange("zones") && !d.IsNewResource() {
+		oldList, newList := d.GetChange("zones")
+		if oldList == nil {
+			oldList = new(schema.Set)
+		}
+		if newList == nil {
+			newList = new(schema.Set)
+		}
+		os := oldList.(*schema.Set)
+		ns := newList.(*schema.Set)
+		remove := os.Difference(ns).List()
+		add := ns.Difference(os).List()
+		if len(add) > 0 {
+			for _, zone := range add {
+				newZone := zone.(map[string]interface{})
+				zoneParam := v2.WorkerPoolZone{
+					Cluster:      clusterID,
+					Id:           newZone["name"].(string),
+					SubnetID:     newZone["subnet_id"].(string),
+					WorkerPoolID: "default",
+				}
+				err = csClient.WorkerPools().CreateWorkerPoolZone(zoneParam, targetEnv)
+				if err != nil {
+					return fmt.Errorf("Error adding zone to conatiner vpc cluster: %s", err)
+				}
+				_, err = WaitForWorkerPoolAvailable(d, meta, clusterID, "default", d.Timeout(schema.TimeoutCreate), targetEnv)
+				if err != nil {
+					return fmt.Errorf(
+						"Error waiting for workerpool (%s) to become ready: %s", d.Id(), err)
+				}
+
+			}
+		}
+		if len(remove) > 0 {
+			for _, zone := range remove {
+				oldZone := zone.(map[string]interface{})
+				ClusterClient, err := meta.(ClientSession).ContainerAPI()
+				if err != nil {
+					return err
+				}
+				Env := v1.ClusterTargetHeader{ResourceGroup: targetEnv.ResourceGroup}
+				err = ClusterClient.WorkerPools().RemoveZone(clusterID, oldZone["name"].(string), "default", Env)
+				if err != nil {
+					return fmt.Errorf("Error deleting zone to conatiner vpc cluster: %s", err)
+				}
+				_, err = WaitForV2WorkerZoneDeleted(clusterID, "default", oldZone["name"].(string), meta, d.Timeout(schema.TimeoutDelete), targetEnv)
+				if err != nil {
+					return fmt.Errorf(
+						"Error waiting for deleting workers of worker pool (%s) of cluster (%s):  %s", "default", clusterID, err)
+				}
+			}
+		}
+	}
 
 	return resourceIBMContainerVpcClusterRead(d, meta)
 }
+func WaitForV2WorkerZoneDeleted(clusterNameOrID, workerPoolNameOrID, zone string, meta interface{}, timeout time.Duration, target v2.ClusterTargetHeader) (interface{}, error) {
+	csClient, err := meta.(ClientSession).VpcContainerAPI()
+	if err != nil {
+		return nil, err
+	}
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"deleting"},
+		Target:     []string{workerDeleteState},
+		Refresh:    workerPoolV2ZoneDeleteStateRefreshFunc(csClient.Workers(), clusterNameOrID, workerPoolNameOrID, zone, target),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
 
+	return stateConf.WaitForState()
+}
+func workerPoolV2ZoneDeleteStateRefreshFunc(client v2.Workers, instanceID, workerPoolNameOrID, zone string, target v2.ClusterTargetHeader) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		workerFields, err := client.ListByWorkerPool(instanceID, workerPoolNameOrID, true, target)
+		if err != nil {
+			return nil, "", fmt.Errorf("Error retrieving workers for cluster: %s", err)
+		}
+		//Done worker has two fields State and Status , so check for those 2
+		for _, e := range workerFields {
+			if e.Location == zone {
+				if strings.Compare(e.LifeCycle.ActualState, "deleted") != 0 {
+					return workerFields, "deleting", nil
+				}
+			}
+		}
+		return workerFields, workerDeleteState, nil
+	}
+}
 func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}) error {
 
 	csClient, err := meta.(ClientSession).VpcContainerAPI()
@@ -626,7 +709,7 @@ func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface
 	var zonesList = make([]v2.Zone, 0)
 
 	if res, ok := d.GetOk("zones"); ok {
-		zones := res.([]interface{})
+		zones := res.(*schema.Set).List()
 		for _, e := range zones {
 			r, _ := e.(map[string]interface{})
 			if ID, subnetID := r["name"], r["subnet_id"]; ID != nil && subnetID != nil {
