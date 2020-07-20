@@ -733,23 +733,23 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	session.ibmpiSession = ibmpisession
 
+	bluemixToken := ""
+	if strings.HasPrefix(sess.BluemixSession.Config.IAMAccessToken, "Bearer") {
+		bluemixToken = sess.BluemixSession.Config.IAMAccessToken[7:len(sess.BluemixSession.Config.IAMAccessToken)]
+	} else {
+		bluemixToken = sess.BluemixSession.Config.IAMAccessToken
+	}
+
 	dnsOptions := &dns.DnsSvcsV1Options{
 		URL: envFallBack([]string{"IBMCLOUD_PRIVATE_DNS_API_ENDPOINT"}, "https://api.dns-svcs.cloud.ibm.com/v1"),
 		Authenticator: &core.BearerTokenAuthenticator{
-			BearerToken: sess.BluemixSession.Config.IAMAccessToken,
+			BearerToken: bluemixToken,
 		},
 	}
 
 	session.pDnsClient, session.pDnsErr = dns.NewDnsSvcsV1(dnsOptions)
 	if session.pDnsErr != nil {
 		session.pDnsErr = fmt.Errorf("Error occured while configuring PrivateDNS Service: %s", session.pDnsErr)
-	}
-
-	bluemixToken := ""
-	if strings.HasPrefix(sess.BluemixSession.Config.IAMAccessToken, "Bearer") {
-		bluemixToken = sess.BluemixSession.Config.IAMAccessToken[7:len(sess.BluemixSession.Config.IAMAccessToken)]
-	} else {
-		bluemixToken = sess.BluemixSession.Config.IAMAccessToken
 	}
 
 	directlinkOptions := &dl.DirectLinkApisV1Options{
