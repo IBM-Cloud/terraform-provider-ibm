@@ -1,4 +1,0 @@
-group: bluezone
-language: go
-go:
-  - 1.9.2
