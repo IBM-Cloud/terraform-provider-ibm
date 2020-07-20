@@ -6,11 +6,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 const (
@@ -54,9 +55,8 @@ func resourceIBMContainerVpcWorkerPool() *schema.Resource {
 			},
 
 			"zones": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Required:    true,
-				ForceNew:    true,
 				Description: "Zones info",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -124,7 +124,7 @@ func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interf
 	zone := []v2.Zone{}
 
 	if res, ok := d.GetOk("zones"); ok {
-		zonei = res.([]interface{})
+		zonei = res.(*schema.Set).List()
 		for _, e := range zonei {
 			r, _ := e.(map[string]interface{})
 			zoneParam := v2.Zone{
@@ -211,6 +211,70 @@ func resourceIBMContainerVpcWorkerPoolUpdate(d *schema.ResourceData, meta interf
 		if err != nil {
 			return fmt.Errorf(
 				"Error updating the worker_count %d: %s", count, err)
+		}
+	}
+
+	if d.HasChange("zones") && !d.IsNewResource() {
+		clusterID := d.Get("cluster").(string)
+		workerPoolName := d.Get("worker_pool_name").(string)
+		targetEnv, err := getVpcClusterTargetHeader(d, meta)
+		if err != nil {
+			return err
+		}
+		oldList, newList := d.GetChange("zones")
+		if oldList == nil {
+			oldList = new(schema.Set)
+		}
+		if newList == nil {
+			newList = new(schema.Set)
+		}
+		os := oldList.(*schema.Set)
+		ns := newList.(*schema.Set)
+		remove := os.Difference(ns).List()
+		add := ns.Difference(os).List()
+		if len(add) > 0 {
+			csClient, err := meta.(ClientSession).VpcContainerAPI()
+			if err != nil {
+				return err
+			}
+			for _, zone := range add {
+				newZone := zone.(map[string]interface{})
+				zoneParam := v2.WorkerPoolZone{
+					Cluster:      clusterID,
+					Id:           newZone["name"].(string),
+					SubnetID:     newZone["subnet_id"].(string),
+					WorkerPoolID: workerPoolName,
+				}
+				err = csClient.WorkerPools().CreateWorkerPoolZone(zoneParam, targetEnv)
+				if err != nil {
+					return fmt.Errorf("Error adding zone to conatiner vpc cluster: %s", err)
+				}
+				_, err = WaitForWorkerPoolAvailable(d, meta, clusterID, workerPoolName, d.Timeout(schema.TimeoutCreate), targetEnv)
+				if err != nil {
+					return fmt.Errorf(
+						"Error waiting for workerpool (%s) to become ready: %s", d.Id(), err)
+				}
+
+			}
+		}
+		if len(remove) > 0 {
+			for _, zone := range remove {
+				oldZone := zone.(map[string]interface{})
+				ClusterClient, err := meta.(ClientSession).ContainerAPI()
+				if err != nil {
+					return err
+				}
+				Env := v1.ClusterTargetHeader{ResourceGroup: targetEnv.ResourceGroup}
+				err = ClusterClient.WorkerPools().RemoveZone(clusterID, oldZone["name"].(string), workerPoolName, Env)
+				if err != nil {
+					return fmt.Errorf("Error deleting zone to conatiner vpc cluster: %s", err)
+				}
+				_, err = WaitForV2WorkerZoneDeleted(clusterID, workerPoolName, oldZone["name"].(string), meta, d.Timeout(schema.TimeoutDelete), targetEnv)
+				if err != nil {
+					return fmt.Errorf(
+						"Error waiting for deleting workers of worker pool (%s) of cluster (%s):  %s", workerPoolName, clusterID, err)
+				}
+			}
 		}
 	}
 	return resourceIBMContainerVpcWorkerPoolRead(d, meta)

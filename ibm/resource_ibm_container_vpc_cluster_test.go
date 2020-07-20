@@ -6,13 +6,13 @@ import (
 	"strings"
 	"testing"
 
-	bluemix "github.com/IBM-Cloud/bluemix-go"
-	"github.com/IBM-Cloud/bluemix-go/session"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-
-	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+
+	bluemix "github.com/IBM-Cloud/bluemix-go"
+	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
+	"github.com/IBM-Cloud/bluemix-go/session"
 )
 
 func TestAccIBMContainerVpcCluster_basic(t *testing.T) {
@@ -79,9 +79,12 @@ func TestAccIBMContainerVpcCluster_importBasic(t *testing.T) {
 	randint := acctest.RandIntRange(10, 100)
 	vpc := fmt.Sprintf("vpc-%d", randint)
 	subnet := fmt.Sprintf("subnet-%d", randint)
+	subnet1 := fmt.Sprintf("subnet1-%d", randint)
 	flavor := "c2.2x4"
 	zone := "us-south"
+	zone1 := "us-south"
 	workerCount := "1"
+	var conf *v2.ClusterInfo
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -89,13 +92,38 @@ func TestAccIBMContainerVpcCluster_importBasic(t *testing.T) {
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIBMContainerVpcCluster_basic(zone, vpc, subnet, clusterName, flavor, workerCount),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "name", clusterName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "worker_count", workerCount),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "flavor", flavor),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "zones.#", "1"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMContainerVpcClusterZone_update(zone, zone1, vpc, subnet, subnet1, clusterName, flavor, workerCount),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "name", clusterName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "worker_count", workerCount),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "flavor", flavor),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "zones.#", "2"),
+				),
 			},
 			resource.TestStep{
 				ResourceName:      "ibm_container_vpc_cluster.cluster",
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_till"},
+					"wait_till", "update_all_workers"},
 			},
 		},
 	})
@@ -204,6 +232,56 @@ resource "ibm_container_vpc_cluster" "cluster" {
 		 name      = "${local.ZONE1}"
 	  }
   }`, zone, vpc, subnet, clusterName, flavor, workerCount)
+
+}
+
+func testAccCheckIBMContainerVpcClusterZone_update(zone, zone1, vpc, subnet, subnet1, clusterName, flavor, workerCount string) string {
+	return fmt.Sprintf(`
+provider "ibm" {
+	generation =1
+}	
+data "ibm_resource_group" "resource_group" {
+	is_default = "true"
+}
+
+locals {
+	ZONE1 = "%s-1"
+}
+locals {
+	ZONE2 = "%s-2"
+}
+resource "ibm_is_vpc" "vpc1" {
+	name = "%s"
+}
+  
+resource "ibm_is_subnet" "subnet1" {
+	name                     = "%s"
+	vpc                      = "${ibm_is_vpc.vpc1.id}"
+	zone                     = "${local.ZONE1}"
+	total_ipv4_address_count = 256
+}
+resource "ibm_is_subnet" "subnet2" {
+	name                     = "%s"
+	vpc                      = "${ibm_is_vpc.vpc1.id}"
+	zone                     = "${local.ZONE2}"
+	total_ipv4_address_count = 256
+}
+resource "ibm_container_vpc_cluster" "cluster" {
+	name              = "%s"
+	vpc_id            = "${ibm_is_vpc.vpc1.id}"
+	flavor            = "%s"
+	worker_count      = "%s"
+	wait_till         = "OneWorkerNodeReady"
+	resource_group_id = "${data.ibm_resource_group.resource_group.id}"
+	zones {
+		 subnet_id = "${ibm_is_subnet.subnet1.id}"
+		 name      = "${local.ZONE1}"
+	}
+	zones {
+		subnet_id = "${ibm_is_subnet.subnet2.id}"
+		name      = "${local.ZONE2}"
+	}
+  }`, zone, zone1, vpc, subnet, subnet1, clusterName, flavor, workerCount)
 
 }
 
