@@ -667,9 +667,19 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 			return fmt.Errorf("Error retrieving workers of default worker pool for cluster: %s", err)
 		}
 
+		// to get the private and public vlan IDs of the gateway enabled cluster.
+		if poolName == computeWorkerPool {
+			gatewayWorkersByPool, err := wrkAPI.ListByWorkerPool(clusterID, gatewayWorkerpool, false, targetEnv)
+			if err != nil {
+				return fmt.Errorf("Error retrieving workers of default worker pool for cluster: %s", err)
+			}
+			d.Set("public_vlan_id", gatewayWorkersByPool[0].PublicVlan)
+			d.Set("private_vlan_id", gatewayWorkersByPool[0].PrivateVlan)
+		} else {
+			d.Set("public_vlan_id", workersByPool[0].PublicVlan)
+			d.Set("private_vlan_id", workersByPool[0].PrivateVlan)
+		}
 		d.Set("machine_type", strings.Split(workersByPool[0].MachineType, ".encrypted")[0])
-		d.Set("public_vlan_id", workersByPool[0].PublicVlan)
-		d.Set("private_vlan_id", workersByPool[0].PrivateVlan)
 		d.Set("datacenter", cls.DataCenter)
 		if workersByPool[0].MachineType != "free" {
 			if strings.HasSuffix(workersByPool[0].MachineType, ".encrypted") {
