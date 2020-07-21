@@ -94,7 +94,6 @@ func resourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Type:        schema.TypeInt,
 				Required:    true,
 				Description: "The number of workers",
-				ForceNew:    true,
 			},
 			"entitlement": {
 				Type:             schema.TypeString,
