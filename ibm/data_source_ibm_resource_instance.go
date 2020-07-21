@@ -60,6 +60,13 @@ func dataSourceIBMResourceInstance() *schema.Resource {
 				Computed:    true,
 				Description: "CRN of resource instance",
 			},
+
+			"guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Guid of resource instance",
+			},
+
 			ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -193,6 +200,7 @@ func dataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set(ResourceCRN, instance.Crn.String())
 	d.Set(ResourceStatus, instance.State)
 	d.Set(ResourceGroupName, instance.ResourceGroupName)
+	d.Set("guid", instance.Guid)
 	if len(instance.Extensions) == 0 {
 		d.Set("extensions", instance.Extensions)
 	} else {
