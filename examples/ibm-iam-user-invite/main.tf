@@ -60,3 +60,9 @@ resource "ibm_iam_user_invite" "invite_user" {
   }
 }
 
+resource "ibm_iam_user_settings" "user_setting" {
+  depends_on = [ibm_iam_user_invite.invite_user]
+  iam_id = var.user1
+  allowed_ip_addresses = ["192.168.0.1","192.168.0.2","192.168.0.3"]
+}
+
