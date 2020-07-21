@@ -101,3 +101,9 @@ type CertificateRenewData struct {
 type CertificatesInfo struct {
 	CertificateList []CertificateInfo `json:"certificates"`
 }
+
+//OrderPolicy ...
+type OrderPolicy struct {
+	Name             string `json:"name,omitempty"`
+	AutoRenewEnabled bool   `json:"auto_renew_enabled,omitempty"`
+}

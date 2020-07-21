@@ -50,6 +50,8 @@ const (
 	ResourceManagementServicev2 ServiceName = ServiceName("resource-managementv2")
 	//resourceControllerService
 	ResourceControllerService ServiceName = ServiceName("resource-controller")
+	//resourceControllerServicev2
+	ResourceControllerServicev2 ServiceName = ServiceName("resource-controllerv2")
 	//resourceCatalogService
 	ResourceCatalogrService ServiceName = ServiceName("resource-catalog ")
 	//UAAService ...

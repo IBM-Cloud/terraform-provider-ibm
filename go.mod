@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/Bowery/prompt v0.0.0-20190916142128-fa8279994f75 // indirect
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20200714095434-4dd1df3322eb
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20200721115835-2b475d459c7b
 	github.com/IBM-Cloud/power-go-client v1.0.37
 	github.com/IBM/apigateway-go-sdk v0.0.0-20200414212859-416e5948678a
 	github.com/IBM/dns-svcs-go-sdk v0.0.3
@@ -16,7 +16,7 @@ require (
 	github.com/IBM/networking-go-sdk v0.1.0
 	github.com/IBM/vpc-go-sdk v0.0.1
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
-	github.com/apache/incubator-openwhisk-client-go v0.0.0-20171128215515-ad814bc98c32
+	github.com/apache/incubator-openwhisk-client-go v0.0.0-20171128215515-ad814bc98c32 // indirect
 	github.com/apache/openwhisk-client-go v0.0.0-20200201143223-a804fb82d105
 	github.com/apparentlymart/go-cidr v1.0.1
 	github.com/cloudfoundry/jibber_jabber v0.0.0-20151120183258-bcc4c8345a21 // indirect
@@ -38,8 +38,8 @@ require (
 	github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22
-	github.ibm.com/ibmcloud/namespace-go-sdk v0.0.0-00010101000000-000000000000 // indirect
-	golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59
+	github.ibm.com/ibmcloud/namespace-go-sdk v0.0.0-00010101000000-000000000000
+	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
 )
 
 replace github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22 => ./common/github.com/softlayer/softlayer-go
