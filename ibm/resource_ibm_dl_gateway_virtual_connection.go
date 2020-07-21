@@ -80,6 +80,11 @@ func resourceIBMDLGatewayVC() *schema.Resource {
 				Computed:    true,
 				Description: "For virtual connections across two different IBM Cloud Accounts network_account indicates the account that owns the target network.",
 			},
+			dlVirtualConnectionId: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The Direct Gateway virtual connection identifier",
+			},
 		},
 	}
 }
@@ -183,6 +188,7 @@ func resourceIBMdlGatewayVCRead(d *schema.ResourceData, meta interface{}) error 
 	if instance.Status != nil {
 		d.Set(dlVCStatus, *instance.Status)
 	}
+	d.Set(dlVirtualConnectionId, *instance.ID)
 	return nil
 }
 
