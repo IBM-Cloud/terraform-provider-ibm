@@ -35,7 +35,8 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `created_at` - The date and time resource was created.
-* `id` - The unique identifier for this virtual connection.Example: ef4dcb1a-fee4-41c7-9e11-9cd99e65c1f4
+* `id` - The unique identifier of the resource.It's combination of gateway/virtual_connection_id
+* `virtual_connection_id` - The unique identifier for this Direct link Gateway virtual connection. 
 * `status` - Status of the virtual connection.
 Possible values: [pending,attached,approval_pending,rejected,expired,deleting,detached_by_network_pending,detached_by_network]
 Example: attached
