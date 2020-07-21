@@ -583,6 +583,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 
 	}
 	d.Set("worker_count", workerPool.WorkerCount)
+	d.Set("worker_labels", workerPool.Labels)
 	d.Set("vpc_id", cls.Vpcs[0])
 	d.Set("master_url", cls.MasterURL)
 	d.Set("flavor", workerPool.Flavor)
