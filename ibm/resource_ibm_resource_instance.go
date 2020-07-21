@@ -281,8 +281,8 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 		oldList, newList := d.GetChange("tags")
 		err = UpdateTagsUsingCRN(oldList, newList, meta, instance.Crn.String())
 		if err != nil {
-			return fmt.Errorf(
-				"Error on create of resource instance tags (%s) tags: %s", d.Id(), err)
+			log.Printf(
+				"Error on create of resource instance (%s) tags: %s", d.Id(), err)
 		}
 	}
 
@@ -304,7 +304,7 @@ func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 
 	tags, err := GetTagsUsingCRN(meta, instance.Crn.String())
 	if err != nil {
-		return fmt.Errorf(
+		log.Printf(
 			"Error on get of resource instance tags (%s) tags: %s", d.Id(), err)
 	}
 	d.Set("tags", tags)
@@ -421,7 +421,7 @@ func resourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{})
 		err = UpdateTagsUsingCRN(oldList, newList, meta, instance.Crn.String())
 		if err != nil {
 			log.Printf(
-				"Error on update of resource vpc (%s) tags: %s", d.Id(), err)
+				"Error on update of resource instance (%s) tags: %s", d.Id(), err)
 		}
 	}
 

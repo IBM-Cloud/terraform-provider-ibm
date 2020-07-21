@@ -46,3 +46,4 @@ The following attributes are exported:
 * `status` - The status of resource instance.
 * `plan` - The plan for the service offering used by this resource instance.
 * `extensions` - The extended metadata as a map associated with the resource instance.
+* `guid`- Guid of the resource instance.
