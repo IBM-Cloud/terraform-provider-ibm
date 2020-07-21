@@ -43,14 +43,11 @@ resource ibm_dl_gateway test_dl_gateway {
   name = "terraformtestGateway"
   resource_group = data.ibm_resource_group.rg.id
   speed_mbps = 1000 
-  loa_reject_reason = "The port mentioned was incorrect"
-  operational_status = "loa_accepted"
   type =  "dedicated" 
   cross_connect_router = "LAB-xcr01.dal09"
   location_name = "dal09"
   customer_name = "Customer1" 
   carrier_name = "Carrier1"
-
 }   
 ```
 
