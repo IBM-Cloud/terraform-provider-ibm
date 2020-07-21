@@ -19,6 +19,7 @@ type Certificate interface {
 	UpdateCertificateMetaData(CertID string, updateData models.CertificateMetadataUpdate) error
 	ReimportCertificate(CertID string, reimportData models.CertificateReimportData) (models.CertificateInfo, error)
 	ListCertificates(InstanceID string) ([]models.CertificateInfo, error)
+	UpdateOrderPolicy(CertID string, autoRenew models.OrderPolicy) (models.OrderPolicy, error)
 }
 
 //Certificates client struct
@@ -112,4 +113,14 @@ func (r *Certificates) ListCertificates(InstanceID string) ([]models.Certificate
 		return nil, err
 	}
 	return certificatesInfo.CertificateList, err
+}
+
+//UpdateOrderPolicy ..
+func (r *Certificates) UpdateOrderPolicy(CertID string, autoRenew models.OrderPolicy) (models.OrderPolicy, error) {
+	orderPolicyInfo := models.OrderPolicy{}
+	_, err := r.client.Put(fmt.Sprintf("/api/v1/certificate/%s/order/policy", url.QueryEscape(CertID)), autoRenew, &orderPolicyInfo)
+	if err != nil {
+		return orderPolicyInfo, err
+	}
+	return orderPolicyInfo, err
 }

@@ -8,20 +8,19 @@ import (
 )
 
 type Glb struct {
-	Id              string     `json:"id"`
-	Name            string     `json:"name"`
-	Desc            string     `json:"description"`
-	FallbackPool    string     `json:"fallback_pool"`
-	DefaultPools    []string   `json:"default_pools"`
-	Ttl             int        `json:"ttl"`
-	Proxied         bool       `json:"proxied"`
-	CreatedOn       *time.Time `json:"created_on,omitempty"`
-	ModifiedOn      *time.Time `json:"modified_on,omitempty"`
-	SessionAffinity string     `json:"session_affinity"`
-	Enabled         bool       `json:"enabled,omitempty"`
-	// Future support
-	// RegionPools  map[string][]string `json:"region_pools"`
-	// PopPools     map[string][]string `json:"pop_pools"`
+	Id              string              `json:"id"`
+	Name            string              `json:"name"`
+	Desc            string              `json:"description"`
+	FallbackPool    string              `json:"fallback_pool"`
+	DefaultPools    []string            `json:"default_pools"`
+	Ttl             int                 `json:"ttl"`
+	Proxied         bool                `json:"proxied"`
+	CreatedOn       *time.Time          `json:"created_on,omitempty"`
+	ModifiedOn      *time.Time          `json:"modified_on,omitempty"`
+	SessionAffinity string              `json:"session_affinity"`
+	Enabled         bool                `json:"enabled,omitempty"`
+	RegionPools     map[string][]string `json:"region_pools,omitempty"`
+	PopPools        map[string][]string `json:"pop_pools,omitempty"`
 }
 
 type GlbResults struct {
@@ -39,14 +38,16 @@ type GlbResult struct {
 }
 
 type GlbBody struct {
-	Desc            string   `json:"description,omitempty"`
-	Proxied         bool     `json:"proxied,omitempty"`
-	Name            string   `json:"name"`
-	FallbackPool    string   `json:"fallback_pool"`
-	DefaultPools    []string `json:"default_pools"`
-	SessionAffinity string   `json:"session_affinity,omitempty"`
-	Ttl             int      `json:"ttl,omitempty"`
-	Enabled         bool     `json:"enabled,omitempty"`
+	Desc            string              `json:"description,omitempty"`
+	Proxied         bool                `json:"proxied,omitempty"`
+	Name            string              `json:"name"`
+	FallbackPool    string              `json:"fallback_pool"`
+	DefaultPools    []string            `json:"default_pools"`
+	SessionAffinity string              `json:"session_affinity,omitempty"`
+	Ttl             int                 `json:"ttl,omitempty"`
+	Enabled         bool                `json:"enabled,omitempty"`
+	RegionPools     map[string][]string `json:"region_pools,omitempty"`
+	PopPools        map[string][]string `json:"pop_pools,omitempty"`
 }
 
 type GlbDelete struct {

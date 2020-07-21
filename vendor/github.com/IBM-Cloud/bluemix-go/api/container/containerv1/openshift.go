@@ -27,9 +27,11 @@ import (
 	"strings"
 	"time"
 
+	yaml "github.com/ghodss/yaml"
+
+	bxhttp "github.com/IBM-Cloud/bluemix-go/http"
 	"github.com/IBM-Cloud/bluemix-go/rest"
 	"github.com/IBM-Cloud/bluemix-go/trace"
-	yaml "github.com/ghodss/yaml"
 )
 
 const (
@@ -101,7 +103,7 @@ func NormalizeName(name string) (string, error) {
 }
 
 // logInAndFillOCToken will update kubeConfig with an Openshift token, if one is not there
-func (r *clusters) FetchOCTokenForKubeConfig(kubecfg []byte, cMeta *ClusterInfo) (kubecfgEdited []byte, rerr error) {
+func (r *clusters) FetchOCTokenForKubeConfig(kubecfg []byte, cMeta *ClusterInfo, skipSSLVerification bool) (kubecfgEdited []byte, rerr error) {
 	// TODO: this is not a a standard manner to login ... using propriatary OC cli reverse engineering
 	defer func() {
 		err := PanicCatch(recover())
@@ -125,8 +127,16 @@ func (r *clusters) FetchOCTokenForKubeConfig(kubecfg []byte, cMeta *ClusterInfo)
 		var auth authEndpoints
 		tempVar := r.client.ServiceName
 		r.client.ServiceName = ""
+
+		tempSSL := r.client.Config.SSLDisable
+		tempClient := r.client.Config.HTTPClient
+		r.client.Config.SSLDisable = skipSSLVerification
+		r.client.Config.HTTPClient = bxhttp.NewHTTPClient(r.client.Config)
+
 		defer func() {
 			r.client.ServiceName = tempVar
+			r.client.Config.SSLDisable = tempSSL
+			r.client.Config.HTTPClient = tempClient
 		}()
 		resp, err := r.client.SendRequest(request, &auth)
 		if err != nil {
@@ -142,7 +152,7 @@ func (r *clusters) FetchOCTokenForKubeConfig(kubecfg []byte, cMeta *ClusterInfo)
 	}(cMeta)
 
 	trace.Logger.Println("Got authentication end points for getting oc token")
-	token, uname, err := r.openShiftAuthorizePasscode(authEP, passcode)
+	token, uname, err := r.openShiftAuthorizePasscode(authEP, passcode, cMeta.IsStagingSatelliteCluster())
 	trace.Logger.Println("Got the token and user ", uname)
 	clusterName, _ := NormalizeName(authEP.ServerURL[len("https://"):len(authEP.ServerURL)]) //TODO deal with http
 	ccontext := "default/" + clusterName + "/" + uname
@@ -178,15 +188,22 @@ func neverRedirect(req *http.Request, via []*http.Request) error {
 	return http.ErrUseLastResponse
 }
 
-func (r *clusters) openShiftAuthorizePasscode(authEP *authEndpoints, passcode string) (string, string, error) {
+func (r *clusters) openShiftAuthorizePasscode(authEP *authEndpoints, passcode string, skipSSLVerification bool) (string, string, error) {
 	request := rest.GetRequest(authEP.AuthorizationEndpoint+"?response_type=token&client_id=openshift-challenging-client").
 		Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("passcode:%s", passcode))))
+
+	tempSSL := r.client.Config.SSLDisable
+	tempClient := r.client.Config.HTTPClient
+	r.client.Config.SSLDisable = skipSSLVerification
+	r.client.Config.HTTPClient = bxhttp.NewHTTPClient(r.client.Config)
 
 	// To never redirect for this call
 	tempVar := r.client.Config.HTTPClient.CheckRedirect
 	r.client.Config.HTTPClient.CheckRedirect = neverRedirect
 	defer func() {
 		r.client.Config.HTTPClient.CheckRedirect = tempVar
+		r.client.Config.SSLDisable = tempSSL
+		r.client.Config.HTTPClient = tempClient
 	}()
 
 	var respInterface interface{}
