@@ -31,6 +31,7 @@ type ClusterInfo struct {
 	Region                        string   `json:"region"`
 	ResourceGroupID               string   `json:"resourceGroup"`
 	ServerURL                     string   `json:"serverURL"`
+	MasterURL                     string   `json:"masterURL"` // vpc cluster serverURL is empty
 	State                         string   `json:"state"`
 	OrgID                         string   `json:"logOrg"`
 	OrgName                       string   `json:"logOrgName"`
@@ -57,6 +58,7 @@ type ClusterInfo struct {
 	PublicServiceEndpointEnabled  bool     `json:"publicServiceEndpointEnabled"`
 	PublicServiceEndpointURL      string   `json:"publicServiceEndpointURL"`
 	Type                          string   `json:"type"`
+	Provider                      string   `json:"provider"`
 }
 
 // ClusterUpdateParam ...
@@ -269,7 +271,7 @@ type Clusters interface {
 	ListServicesBoundToCluster(clusterNameOrID, namespace string, target ClusterTargetHeader) (BoundServices, error)
 	FindServiceBoundToCluster(clusterNameOrID, serviceName, namespace string, target ClusterTargetHeader) (BoundService, error)
 	RefreshAPIServers(clusterNameOrID string, target ClusterTargetHeader) error
-	FetchOCTokenForKubeConfig(kubeConfig []byte, clusterInfo *ClusterInfo) ([]byte, error)
+	FetchOCTokenForKubeConfig(kubeConfig []byte, clusterInfo *ClusterInfo, skipSSLVerification bool) ([]byte, error)
 }
 
 type clusters struct {
@@ -280,6 +282,11 @@ func newClusterAPI(c *client.Client) Clusters {
 	return &clusters{
 		client: c,
 	}
+}
+
+func (r *ClusterInfo) IsStagingSatelliteCluster() bool {
+
+	return strings.Index(r.ServerURL, "stg") > 0 && r.Provider == "satellite"
 }
 
 //Create ...
@@ -369,6 +376,10 @@ func (r *clusters) FindWithOutShowResourcesCompatible(name string, target Cluste
 	if err != nil {
 		return cluster, err
 	}
+	// Handle VPC cluster.  ServerURL is blank for v2/vpc clusters
+	if cluster.ServerURL == "" {
+		cluster.ServerURL = cluster.MasterURL
+	}
 	return cluster, err
 }
 
@@ -444,7 +455,7 @@ func (r *clusters) GetClusterConfig(name, dir string, admin bool, target Cluster
 		if yamlConfig, err = ioutil.ReadFile(kubeyml); err != nil {
 			return "", err
 		}
-		yamlConfig, err = r.FetchOCTokenForKubeConfig(yamlConfig, &clusterInfo)
+		yamlConfig, err = r.FetchOCTokenForKubeConfig(yamlConfig, &clusterInfo, clusterInfo.IsStagingSatelliteCluster())
 		if err != nil {
 			return "", err
 		}
@@ -554,7 +565,7 @@ func (r *clusters) GetClusterConfigDetail(name, dir string, admin bool, target C
 		if yamlConfig, err = ioutil.ReadFile(kubeyml); err != nil {
 			return clusterkey, err
 		}
-		yamlConfig, err = r.FetchOCTokenForKubeConfig(yamlConfig, &clusterInfo)
+		yamlConfig, err = r.FetchOCTokenForKubeConfig(yamlConfig, &clusterInfo, clusterInfo.IsStagingSatelliteCluster())
 		if err != nil {
 			return clusterkey, err
 		}
@@ -678,7 +689,7 @@ func (r *clusters) StoreConfig(name, dir string, admin, createCalicoConfig bool,
 		if yamlConfig, err = ioutil.ReadFile(kubeconfigFileName); err != nil {
 			return "", "", err
 		}
-		yamlConfig, err = r.FetchOCTokenForKubeConfig(yamlConfig, &clusterInfo)
+		yamlConfig, err = r.FetchOCTokenForKubeConfig(yamlConfig, &clusterInfo, clusterInfo.IsStagingSatelliteCluster())
 		if err != nil {
 			return "", "", err
 		}
@@ -807,7 +818,7 @@ func (r *clusters) StoreConfigDetail(name, dir string, admin, createCalicoConfig
 		if yamlConfig, err = ioutil.ReadFile(kubeconfigFileName); err != nil {
 			return "", clusterkey, err
 		}
-		yamlConfig, err = r.FetchOCTokenForKubeConfig(yamlConfig, &clusterInfo)
+		yamlConfig, err = r.FetchOCTokenForKubeConfig(yamlConfig, &clusterInfo, clusterInfo.IsStagingSatelliteCluster())
 		if err != nil {
 			return "", clusterkey, err
 		}
