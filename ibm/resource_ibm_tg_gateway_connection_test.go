@@ -170,9 +170,10 @@ func TestAccIBMTransitGatewayConnectionImport(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_tg_connection.test_ibm_tg_connection",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "ibm_tg_connection.test_ibm_tg_connection",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"gateway"},
 			},
 		},
 	})
