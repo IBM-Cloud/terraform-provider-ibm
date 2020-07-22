@@ -30,7 +30,13 @@ func TestAccIBMDLGatewayDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMDLGatewayVCsDataSourceConfig(gatewayname, custname, carriername string) string {
 	return fmt.Sprintf(`
-	
+	data "ibm_dl_locations" "test_dl_locations"{
+		offering_type = "dedicated"
+	 }
+	data "ibm_dl_routers" "test1" {
+		offering_type = "dedicated"
+		location_name = data.ibm_dl_locations.test_dl_locations.locations[0].name
+	}
 	resource "ibm_dl_gateway" "test_dl_gateway" {
 		bgp_asn =  64999
         bgp_base_cidr =  "169.254.0.0/16"
@@ -39,8 +45,8 @@ func testAccCheckIBMDLGatewayVCsDataSourceConfig(gatewayname, custname, carriern
         name = "%s"
         speed_mbps = 1000
         type =  "dedicated"
-        cross_connect_router = "LAB-xcr01.dal09"
-        location_name = "dal09"
+        cross_connect_router = data.ibm_dl_routers.test1.cross_connect_routers[0].router_name
+        location_name = data.ibm_dl_locations.test_dl_locations.locations[0].name
         customer_name = "%s"
         carrier_name = "%s"
 	  }

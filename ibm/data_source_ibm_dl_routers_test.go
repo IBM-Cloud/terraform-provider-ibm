@@ -27,9 +27,13 @@ func TestAccIBMDLRoutersDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMDLRoutersDataSourceConfig() string {
 	return fmt.Sprintf(`
+	data "ibm_dl_locations" "test_dl_locations"{
+		offering_type = "dedicated"
+	 }
+	
 	data "ibm_dl_routers" "test1" {
 		offering_type = "dedicated"
-		location_name = "dal09"
-	}
+	    location_name = data.ibm_dl_locations.test_dl_locations.locations[0].name
+   	}
 	`)
 }
