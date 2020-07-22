@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"testing"
-
 	//"regexp"
 
 	//"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -26,13 +25,26 @@ func TestAccIBMCisGlb_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckCisGlbDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCisGlbConfigCisDS_Basic("test", cisDomainStatic),
+				Config:             testAccCheckCisGlbConfigCisDS_Basic("test", cisDomainStatic),
+				ExpectNonEmptyPlan: true,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisGlbExists(name, &glb),
 					// dont check that specified values are set, this will be evident by lack of plan diff
 					// some values will get empty values
-					//resource.TestCheckResourceAttr(name, "pop_pools.#", "0"),
-					//resource.TestCheckResourceAttr(name, "region_pools.#", "0"),
+					resource.TestCheckResourceAttr(name, "pop_pools.#", "0"),
+					resource.TestCheckResourceAttr(name, "region_pools.#", "0"),
+					resource.TestCheckResourceAttr(name, "proxied", "false"), // default value
+				),
+			},
+			{
+				Config:             testAccCheckCisGlbConfigCisDS_Update("test", cisDomainStatic),
+				ExpectNonEmptyPlan: true,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckCisGlbExists(name, &glb),
+					// dont check that specified values are set, this will be evident by lack of plan diff
+					// some values will get empty values
+					resource.TestCheckResourceAttr(name, "pop_pools.#", "1"),
+					resource.TestCheckResourceAttr(name, "region_pools.#", "1"),
 					resource.TestCheckResourceAttr(name, "proxied", "false"), // default value
 				),
 			},
@@ -249,6 +261,26 @@ func testAccCheckCisGlbConfigCisDS_Basic(id string, cisDomain string) string {
 		name             = "%[2]s"
 		fallback_pool_id = ibm_cis_origin_pool.origin_pool.id
 		default_pool_ids = [ibm_cis_origin_pool.origin_pool.id]
+	  }
+	`, id, cisDomainStatic, cisInstance)
+}
+
+func testAccCheckCisGlbConfigCisDS_Update(id string, cisDomain string) string {
+	return testAccCheckCisPoolConfigFullySpecified(id, cisDomain) + fmt.Sprintf(`
+	resource "ibm_cis_global_load_balancer" "%[1]s" {
+		cis_id           = data.ibm_cis.cis.id
+		domain_id        = data.ibm_cis_domain.cis_domain.id
+		name             = "%[2]s"
+		fallback_pool_id = ibm_cis_origin_pool.origin_pool.id
+		default_pool_ids = [ibm_cis_origin_pool.origin_pool.id]
+		region_pools{
+			region="WEU"
+			pool_ids = [ibm_cis_origin_pool.origin_pool.id]
+		}
+		pop_pools{
+			pop="LAX"
+			pool_ids = [ibm_cis_origin_pool.origin_pool.id]
+		}
 	  }
 	`, id, cisDomainStatic, cisInstance)
 }

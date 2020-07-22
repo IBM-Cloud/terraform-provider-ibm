@@ -1,6 +1,7 @@
 package ibm
 
 import (
+	"fmt"
 	"log"
 	"reflect"
 	"strings"
@@ -76,18 +77,47 @@ func resourceIBMCISGlb() *schema.Resource {
 				Default:     true,
 				Description: "set to true of LB needs to enabled",
 			},
-			// "region_pools": &schema.Schema{
-			// 	Type:     schema.TypeMap,
-			// 	Optional: true,
-			// 	Computed: true,
-			// 	Elem:     &schema.Schema{Type: schema.TypeString},
-			// },
-			// "pop_pools": &schema.Schema{
-			// 	Type:     schema.TypeMap,
-			// 	Optional: true,
-			// 	Computed: true,
-			// 	Elem:     &schema.Schema{Type: schema.TypeString},
-			// },
+			"pop_pools": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"pop": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+
+						"pool_ids": {
+							Type:     schema.TypeList,
+							Required: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
+				},
+			},
+
+			"region_pools": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"region": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+
+						"pool_ids": {
+							Type:     schema.TypeList,
+							Required: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
+				},
+			},
 			"created_on": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -144,6 +174,22 @@ func resourceCISGlbCreate(d *schema.ResourceData, meta interface{}) error {
 	if ttl, ok := d.GetOk("ttl"); ok {
 		glbNew.Ttl = ttl.(int)
 	}
+	if regionPools, ok := d.GetOk("region_pools"); ok {
+		expandedRegionPools, err := expandGeoPools(regionPools, "region")
+		if err != nil {
+			return err
+		}
+		glbNew.RegionPools = expandedRegionPools
+	}
+
+	if popPools, ok := d.GetOk("pop_pools"); ok {
+		expandedPopPools, err := expandGeoPools(popPools, "pop")
+		if err != nil {
+			return err
+		}
+		glbNew.PopPools = expandedPopPools
+	}
+
 	glb, err = cisClient.Glbs().CreateGlb(cisId, zoneId, glbNew)
 	if err != nil {
 		log.Printf("CreateGlbs Failed %s\n", err)
@@ -153,6 +199,21 @@ func resourceCISGlbCreate(d *schema.ResourceData, meta interface{}) error {
 	d.SetId(convertCisToTfThreeVar(glbObj.Id, zoneId, cisId))
 
 	return resourceCISGlbUpdate(d, meta)
+}
+func expandGeoPools(pool interface{}, geoType string) (map[string][]string, error) {
+	pools := pool.(*schema.Set).List()
+	expandPool := make(map[string][]string)
+	for _, v := range pools {
+		locationConfig := v.(map[string]interface{})
+		location := locationConfig[geoType].(string)
+		if _, p := expandPool[location]; !p {
+			geoPools := expandStringList(locationConfig["pool_ids"].([]interface{}))
+			expandPool[location], _, _ = convertTfToCisTwoVarSlice(geoPools)
+		} else {
+			return nil, fmt.Errorf("duplicate entry specified for %s pool in location %q. each location must only be specified once", geoType, location)
+		}
+	}
+	return expandPool, nil
 }
 
 func resourceCISGlbRead(d *schema.ResourceData, meta interface{}) error {
@@ -187,8 +248,26 @@ func resourceCISGlbRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("proxied", glbObj.Proxied)
 	d.Set("enabled", glbObj.Enabled)
 	d.Set("session_affinity", glbObj.SessionAffinity)
+	if err := d.Set("pop_pools", flattenPools(glbObj.PopPools, "pop", cisId)); err != nil {
+		log.Printf("[WARN] Error setting pop_pools on cis load balancer %q: %s", d.Id(), err)
+	}
+
+	if err := d.Set("region_pools", flattenPools(glbObj.RegionPools, "region", cisId)); err != nil {
+		log.Printf("[WARN] Error setting region_pools on cis  load balancer %q: %s", d.Id(), err)
+	}
 
 	return nil
+}
+func flattenPools(pools map[string][]string, geoType string, cisId string) []interface{} {
+	result := make([]interface{}, 0)
+	for k, v := range pools {
+		pool := map[string]interface{}{
+			geoType:    k,
+			"pool_ids": convertCisToTfTwoVarSlice(v, cisId),
+		}
+		result = append(result, pool)
+	}
+	return result
 }
 
 func resourceCISGlbUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -203,7 +282,7 @@ func resourceCISGlbUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 	glbUpdate := v1.GlbBody{}
 
-	if d.HasChange("name") || d.HasChange("default_pool_ids") || d.HasChange("fallback_pool_id") || d.HasChange("proxied") || d.HasChange("session_affinity") || d.HasChange("description") || d.HasChange("ttl") || d.HasChange("enabled") {
+	if d.HasChange("name") || d.HasChange("default_pool_ids") || d.HasChange("fallback_pool_id") || d.HasChange("proxied") || d.HasChange("session_affinity") || d.HasChange("description") || d.HasChange("ttl") || d.HasChange("enabled") || d.HasChange("pop_pools") || d.HasChange("region_pools") {
 
 		name := d.Get("name").(string)
 		glbUpdate.Name = name
@@ -223,6 +302,21 @@ func resourceCISGlbUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		if enabled, ok := d.GetOk("enabled"); ok {
 			glbUpdate.Enabled = enabled.(bool)
+		}
+		if regionPools, ok := d.GetOk("region_pools"); ok {
+			expandedRegionPools, err := expandGeoPools(regionPools, "region")
+			if err != nil {
+				return err
+			}
+			glbUpdate.RegionPools = expandedRegionPools
+		}
+
+		if popPools, ok := d.GetOk("pop_pools"); ok {
+			expandedPopPools, err := expandGeoPools(popPools, "pop")
+			if err != nil {
+				return err
+			}
+			glbUpdate.PopPools = expandedPopPools
 		}
 		_, err = cisClient.Glbs().UpdateGlb(cisId, zoneId, glbId, glbUpdate)
 		if err != nil {

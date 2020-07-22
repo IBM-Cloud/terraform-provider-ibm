@@ -25,6 +25,14 @@ resource "ibm_cis_global_load_balancer" "example" {
   default_pool_ids = [ibm_cis_origin_pool.example.id]
   description      = "example load balancer using geo-balancing"
   proxied          = true
+  region_pools{
+			region="WEU"
+			pool_ids = [ibm_cis_origin_pool.example.id]
+		}
+		pop_pools{
+			pop="LAX"
+			pool_ids = [ibm_cis_origin_pool.example.id]
+		}
 }
 
 resource "ibm_cis_origin_pool" "example" {
@@ -53,6 +61,12 @@ The following arguments are supported:
 * `ttl` - (Optional,int) Time to live (TTL) of the DNS entry for the IP address returned by this load balancer. 
 * `enabled` - (Optional,bool) Indicates if the load balancer is enabled or not.
 Region and pop pools are not currently implemented in this version of the provider. 
+* `region_pools` - (Optional,set) A set containing mappings of region/country codes to a list of pool IDs (ordered by their failover priority) for the given region.
+  * `region` - (Required,string) A region code. Multiple entries should not be specified with the same region.
+  * `pool_ids` - (Required,string) A list of pool IDs in failover priority to use in the given region.
+* `pop_pools` - (Optional,set) A set containing mappings of IBM Point-of-Presence (PoP) identifiers to a list of pool IDs (ordered by their failover priority) for the PoP (datacenter). This feature is only available to enterprise customers.
+  * `pop` - (Required,string) A 3-letter code for the Point-of-Presence.Multiple entries should not be specified with the same PoP.
+  * `pool_ids` - (Required,string) A list of pool IDs in failover priority to use for traffic reaching the given PoP.
 
 ## Attributes Reference
 
