@@ -288,12 +288,12 @@ func testAccCheckCisPoolConfigFullySpecified(resourceId string, cisDomainStatic 
 		notification_email = "admin@outlook.com"
 		origins {
 		  name    = "example-1"
-		  address = "192.0.2.1"
+		  address = "150.0.0.1"
 		  enabled = true
 		}
 		origins {
 		  name    = "example-2"
-		  address = "192.0.2.2"
+		  address = "150.0.0.2"
 		  enabled = true
 		}
 		check_regions   = ["WEU"]
