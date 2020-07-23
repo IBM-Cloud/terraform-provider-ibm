@@ -102,18 +102,10 @@ func testAccCheckIBMDLGatewayDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "ibm_dl_gateway" {
 			log.Printf("Destroy called ...%s", rs.Primary.ID)
-			delOptions := &directlinkapisv1.DeleteGatewayOptions{
-				ID: &rs.Primary.ID,
-			}
-			response, err := directLink.DeleteGateway(delOptions)
-			if err != nil && response.StatusCode != 404 {
-				log.Printf("Error deleting direct link gateway dedicated:%s", response)
-				return err
-			}
 			getOptions := &directlinkapisv1.GetGatewayOptions{
 				ID: &rs.Primary.ID,
 			}
-			_, response, err = directLink.GetGateway(getOptions)
+			_, _, err = directLink.GetGateway(getOptions)
 
 			if err == nil {
 				return fmt.Errorf("gateway still exists: %s", rs.Primary.ID)
