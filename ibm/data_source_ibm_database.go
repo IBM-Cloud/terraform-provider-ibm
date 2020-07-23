@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/models"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func dataSourceIBMDatabaseInstance() *schema.Resource {
@@ -83,6 +83,30 @@ func dataSourceIBMDatabaseInstance() *schema.Resource {
 				Description: "Disk allocation required for cluster",
 				Type:        schema.TypeInt,
 				Computed:    true,
+			},
+			"platform_options": {
+				Description: "Platform-specific options for this deployment.r",
+				Type:        schema.TypeMap,
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key_protect_key_id": {
+							Description: "The CRN of Key protect key",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"disk_encryption_key_crn": {
+							Description: "The CRN of Disk encryption Key",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"backup_encryption_key_crn": {
+							Description: "The CRN of Backup encryption Key",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+					},
+				},
 			},
 			"tags": {
 				Type:     schema.TypeSet,
@@ -493,6 +517,14 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 	d.Set("adminuser", cdb.AdminUser)
 	d.Set("version", cdb.Version)
+	if &cdb.PlatformOptions != nil {
+		platformOptions := map[string]interface{}{
+			"key_protect_key_id":        cdb.PlatformOptions.KeyProtectKey,
+			"disk_encryption_key_crn":   cdb.PlatformOptions.DiskENcryptionKeyCrn,
+			"backup_encryption_key_crn": cdb.PlatformOptions.BackUpEncryptionKeyCrn,
+		}
+		d.Set("platform_options", platformOptions)
+	}
 
 	groupList, err := icdClient.Groups().GetGroups(icdId)
 	if err != nil {
