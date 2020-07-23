@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"log"
 	"testing"
 )
 
@@ -99,15 +98,13 @@ func testAccCheckIBMDLGatewayVCDestroy(s *terraform.State) error {
 		gatewayId := parts[0]
 		ID := parts[1]
 
-		delVCOptions := &directlinkapisv1.DeleteGatewayVirtualConnectionOptions{
-			ID: &ID,
-		}
-		delVCOptions.SetGatewayID(gatewayId)
-		response, err := directLink.DeleteGatewayVirtualConnection(delVCOptions)
+		getGatewayVirtualConnectionOptions := &directlinkapisv1.GetGatewayVirtualConnectionOptions{}
+		getGatewayVirtualConnectionOptions.SetGatewayID(gatewayId)
+		getGatewayVirtualConnectionOptions.SetID(ID)
+		_, _, err = directLink.GetGatewayVirtualConnection(getGatewayVirtualConnectionOptions)
 
-		if err != nil && response.StatusCode != 404 {
-			log.Printf("testAccCheckIBMDLGatewayVCDestroy:Error deleting Direct Link Gateway (Dedicated Template) Virtual Connection: %s", response)
-			return err
+		if err == nil {
+			return fmt.Errorf("dl connection still exists: %s", rs.Primary.ID)
 		}
 	}
 	return nil
