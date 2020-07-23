@@ -201,6 +201,7 @@ func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interf
 		d.Set(tgStatus, *instance.Status)
 	}
 	d.Set(tgConnectionId, *instance.ID)
+	d.Set(tgGatewayId, gatewayId)
 
 	return nil
 }
