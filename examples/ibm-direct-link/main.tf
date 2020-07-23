@@ -17,8 +17,8 @@ resource ibm_dl_gateway test_dl_gateway {
   resource_group       = data.ibm_resource_group.rg.id
   speed_mbps           = 1000
   type                 = "dedicated"
-  cross_connect_router = "LAB-xcr01.dal09"
-  location_name        = "dal09"
+	cross_connect_router = data.ibm_dl_routers.test_dl_routers.cross_connect_routers[0].router_name
+  location_name = data.ibm_dl_routers.test_dl_routers.location_name     
   customer_name        = "Customer1"
   carrier_name         = "Carrier1"
 
@@ -59,6 +59,6 @@ data "ibm_dl_locations" "test_dl_locations"{
 
 data "ibm_dl_routers" "test_dl_routers" {
   offering_type = "dedicated"
-  location_name = "dal09"
+  location_name = "dal10"
 }
 

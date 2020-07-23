@@ -50,7 +50,10 @@ func TestAccIBMDLGatewayVC_basic(t *testing.T) {
 
 func testAccCheckIBMDLGatewayVCConfig(vctype, vcName, gatewayname, custname, carriername, vpcname string) string {
 	return fmt.Sprintf(`	  	
-	
+	data "ibm_dl_routers" "test1" {
+		offering_type = "dedicated"
+		location_name = "dal10"
+	}
 	resource "ibm_is_vpc" "test_dl_vc_vpc" {
 		name = "%s"
 		}  
@@ -62,9 +65,9 @@ func testAccCheckIBMDLGatewayVCConfig(vctype, vcName, gatewayname, custname, car
         name = "%s"
         speed_mbps = 1000
         type = "dedicated"
-        cross_connect_router = "LAB-xcr01.dal09"
-        location_name = "dal09"
-        customer_name = "%s"
+		cross_connect_router = data.ibm_dl_routers.test1.cross_connect_routers[0].router_name
+        location_name = data.ibm_dl_routers.test1.location_name
+	    customer_name = "%s"
         carrier_name = "%s"
 	  }
 	
@@ -144,6 +147,10 @@ func testAccCheckIBMDLGatewayVCExists(n string, vc string) resource.TestCheckFun
 
 func testAccCheckIBMDLGatewayVCUpdate(vctype, vcName, gatewayname, custname, carriername, vpcname string) string {
 	return fmt.Sprintf(`
+	data "ibm_dl_routers" "test1" {
+		offering_type = "dedicated"
+		location_name = "dal10"
+	}
 	resource "ibm_is_vpc" "test_dl_vc_vpc" {
 		name = "%s"
 		}  
@@ -155,9 +162,9 @@ func testAccCheckIBMDLGatewayVCUpdate(vctype, vcName, gatewayname, custname, car
         name = "%s"
         speed_mbps = 1000
         type = "dedicated"
-        cross_connect_router = "LAB-xcr01.dal09"
-        location_name = "dal09"
-        customer_name = "%s"
+		cross_connect_router = data.ibm_dl_routers.test1.cross_connect_routers[0].router_name
+        location_name = data.ibm_dl_routers.test1.location_name
+		customer_name = "%s"
         carrier_name = "%s"
 	  }
 	
