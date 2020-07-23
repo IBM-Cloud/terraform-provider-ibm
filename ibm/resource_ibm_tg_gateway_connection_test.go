@@ -82,15 +82,12 @@ func testAccCheckIBMTransitGatewayConnectionDestroy(s *terraform.State) error {
 		gatewayId := parts[0]
 		ID := parts[1]
 
-		delVCOptions := &transitgatewayapisv1.DeleteTransitGatewayConnectionOptions{
-			ID: &ID,
-		}
-		delVCOptions.SetTransitGatewayID(gatewayId)
-		response, err := client.DeleteTransitGatewayConnection(delVCOptions)
-
-		if err != nil && response.StatusCode != 404 {
-			log.Printf("testAccCheckIBMTransitGatewayConnectionDestroy:Error deleting Transit Gateway Connection: %s", response)
-			return err
+		detailTransitGatewayConnectionOptions := &transitgatewayapisv1.DetailTransitGatewayConnectionOptions{}
+		detailTransitGatewayConnectionOptions.SetTransitGatewayID(gatewayId)
+		detailTransitGatewayConnectionOptions.SetID(ID)
+		_, _, err = client.DetailTransitGatewayConnection(detailTransitGatewayConnectionOptions)
+		if err == nil {
+			return fmt.Errorf(" transit gateway connection still exists: %s", rs.Primary.ID)
 		}
 	}
 	return nil
