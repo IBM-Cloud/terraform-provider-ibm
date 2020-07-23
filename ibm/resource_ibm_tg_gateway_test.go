@@ -87,21 +87,14 @@ func testAccCheckIBMTransitGatewayDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "ibm_tg_gateway" {
 			log.Printf("Destroy called ...%s", rs.Primary.ID)
-			delOptions := &transitgatewayapisv1.DeleteTransitGatewayOptions{
-				ID: &rs.Primary.ID,
-			}
-			response, err := client.DeleteTransitGateway(delOptions)
-			if err != nil && response.StatusCode != 404 {
-				log.Printf("Error deleting transit gateway :%s", response)
-				return err
-			}
+
 			tgOptions := &transitgatewayapisv1.DetailTransitGatewayOptions{
 				ID: &rs.Primary.ID,
 			}
-			_, response, err = client.DetailTransitGateway(tgOptions)
+			_, _, err = client.DetailTransitGateway(tgOptions)
 
 			if err == nil {
-				return fmt.Errorf(" tarnsit gateway still exists: %s", rs.Primary.ID)
+				return fmt.Errorf(" transit gateway still exists: %s", rs.Primary.ID)
 			}
 		}
 	}
