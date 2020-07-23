@@ -189,6 +189,7 @@ func resourceIBMdlGatewayVCRead(d *schema.ResourceData, meta interface{}) error 
 		d.Set(dlVCStatus, *instance.Status)
 	}
 	d.Set(dlVirtualConnectionId, *instance.ID)
+	d.Set(dlGatewayId, gatewayId)
 	return nil
 }
 
