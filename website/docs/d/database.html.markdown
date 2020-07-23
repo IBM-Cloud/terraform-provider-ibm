@@ -45,6 +45,10 @@ The following attributes are exported:
 * `status` - Status of resource instance.
 * `adminuser` - userid of the default admistration user for the database, usually `admin` or `root`.
 * `version` - Database version. 
+* `platform_options` - Platform-specific options for this deployment.
+  * `key_protect_key_id` - The CRN of Key protect key.
+  * `disk_encryption_key_crn` - The CRN of Disk encryption Key.
+  * `backup_encryption_key_crn` - The CRN of Backup encryption Key.
 * `connectionstrings` - List of connection strings by userid for the database. See the IBM Cloud documentation for more details of how to use connection strings in ICD for database access: https://cloud.ibm.com/docs/services/databases-for-postgresql/howto-getting-connection-strings.html#getting-your-connection-strings. The results are returned in pairs of the userid and string:
   `connectionstrings.1.name = admin`
   `connectionstrings.1.string = postgres://admin:$PASSWORD@79226bd4-4076-4873-b5ce-b1dba48ff8c4.b8a5e798d2d04f2e860e54e5d042c915.databases.appdomain.cloud:32554/ibmclouddb?sslmode=verify-full`
