@@ -20,7 +20,10 @@ const (
 	isTransitGatewayConnectionDeleting  = "deleting"
 	isTransitGatewayConnectionDetaching = "detaching"
 	isTransitGatewayConnectionDeleted   = "detached"
-	tgConnectionId                      = "connection_id"
+	isTransitGatewayConnectionPending   = "pending"
+	isTransitGatewayConnectionAttached  = "attached"
+
+	tgConnectionId = "connection_id"
 )
 
 func resourceIBMTransitGatewayConnection() *schema.Resource {
@@ -145,9 +148,52 @@ func resourceIBMTransitGatewayConnectionCreate(d *schema.ResourceData, meta inte
 
 	d.SetId(fmt.Sprintf("%s/%s", gatewayId, *tgConnections.ID))
 	d.Set(tgConnectionId, *tgConnections.ID)
+	_, err = isWaitForTransitGatewayConnectionAvailable(client, d.Id(), d.Timeout(schema.TimeoutCreate))
+
+	if err != nil {
+		return err
+	}
 	return resourceIBMTransitGatewayConnectionRead(d, meta)
 }
+func isWaitForTransitGatewayConnectionAvailable(client *transitgatewayapisv1.TransitGatewayApisV1, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for transit gateway connection (%s) to be available.", id)
 
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", isTransitGatewayConnectionPending},
+		Target:     []string{isTransitGatewayConnectionAttached, ""},
+		Refresh:    isTransitGatewayConnectionRefreshFunc(client, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+func isTransitGatewayConnectionRefreshFunc(client *transitgatewayapisv1.TransitGatewayApisV1, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+
+		parts, err := idParts(id)
+		if err != nil {
+			return nil, "", fmt.Errorf("Error Getting Transit Gateway connection: %s", err)
+			//	return err
+		}
+
+		gatewayId := parts[0]
+		ID := parts[1]
+		detailTransitGatewayConnectionOptions := &transitgatewayapisv1.DetailTransitGatewayConnectionOptions{}
+		detailTransitGatewayConnectionOptions.SetTransitGatewayID(gatewayId)
+		detailTransitGatewayConnectionOptions.SetID(ID)
+		tgConnection, response, err := client.DetailTransitGatewayConnection(detailTransitGatewayConnectionOptions)
+		if err != nil {
+			return nil, "", fmt.Errorf("Error Getting Transit Gateway Connection (%s): %s\n%s", ID, err, response)
+		}
+		if *tgConnection.Status == "attached" || *tgConnection.Status == "failed" {
+			return tgConnection, isTransitGatewayConnectionAttached, nil
+		}
+
+		return tgConnection, isTransitGatewayConnectionPending, nil
+	}
+}
 func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interface{}) error {
 
 	client, err := transitgatewayClient(meta)
