@@ -2,6 +2,7 @@ package icdv4
 
 import (
 	"fmt"
+
 	"github.com/IBM-Cloud/bluemix-go/client"
 	"github.com/IBM-Cloud/bluemix-go/utils"
 )
@@ -20,6 +21,9 @@ type Cdb struct {
 }
 
 type PlatformOptions struct {
+	KeyProtectKey          string `json:"key_protect_key_id"`
+	DiskENcryptionKeyCrn   string `json:"disk_encryption_key_crn"`
+	BackUpEncryptionKeyCrn string `json:"backup_encryption_key_crn"`
 }
 
 type Cdbs interface {
