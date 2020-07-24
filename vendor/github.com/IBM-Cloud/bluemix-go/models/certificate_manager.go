@@ -17,6 +17,7 @@ type CertificateInfo struct {
 	HasPrevious  bool                     `json:"has_previous"`
 	IssuanceInfo *CertificateIssuanceInfo `json:"issuance_info"`
 	SerialNumber string                   `json:"serial_number,omitempty"`
+	OrderPolicy  OrderPolicy              `json:"order_policy,omitempty"`
 }
 
 //CertificateIssuanceInfo struct

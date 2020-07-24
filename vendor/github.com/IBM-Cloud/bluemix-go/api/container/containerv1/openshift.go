@@ -157,9 +157,11 @@ func (r *clusters) FetchOCTokenForKubeConfig(kubecfg []byte, cMeta *ClusterInfo,
 	clusterName, _ := NormalizeName(authEP.ServerURL[len("https://"):len(authEP.ServerURL)]) //TODO deal with http
 	ccontext := "default/" + clusterName + "/" + uname
 	uname = uname + "/" + clusterName
-
 	clusters := cfg["clusters"].([]interface{})
 	newCluster := map[string]interface{}{"name": clusterName, "cluster": map[string]interface{}{"server": authEP.ServerURL}}
+	if skipSSLVerification {
+		newCluster["cluster"].(map[string]interface{})["insecure-skip-tls-verify"] = true
+	}
 	clusters = append(clusters, newCluster)
 	cfg["clusters"] = clusters
 
