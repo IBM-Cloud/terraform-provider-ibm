@@ -1,14 +1,15 @@
-#!/usr/bin/env python
-
+#!/usr/bin/env python3
 # Terraform-Ansible dynamic inventory for IBM Cloud
-# Copyright (c) 2018, IBM UK
+# Copyright (c) 2020, IBM UK
 # steve_strutt@uk.ibm.com
-ti_version = '0.8'
+#print('hello')
+ti_version = '0.9'
 #
 # 01-10-2018 - 0.5 - Added support for Cloud Load Balancer 
 # 05-10-2018 - 0.6 - Added support for IBM Cloud Resource Instances and internet-svcs
 # 03-11-2018 - 0.7 - Fixed failure where user_metadata did not exist
 # 03-11-2018 - 0.8 - Updated to support Cloud Internet Services in IBM TF provider 0.15
+# 13-07-2020 - 0.9 - Updated to support terraform 0.12 tfstate files
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,7 +46,8 @@ ti_version = '0.8'
 
 
 import json
-import configparser
+#import ConfigParser
+import configparser as configparser
 import os
 from os import getenv
 from collections import defaultdict
@@ -123,6 +125,7 @@ def parse_list(tf_source, prefix, sep='.'):
 
 class TerraformInventory:
     def __init__(self):
+        #print('hello ansible inventory')
         self.args = parse_params()
         if self.args.version:
             print(ti_version)
@@ -153,35 +156,51 @@ class TerraformInventory:
 
     def get_tf_instances(self):
         tfstate = get_tfstate(self.args.tfstate)
-        for module in tfstate['modules']:
-            for resource in module['resources'].values():
+#        for module in tfstate['modules']:
+        for resource in tfstate['resources']:
 
-                if resource['type'] == 'ibm_compute_vm_instance':
-                    tf_attrib = resource['primary']['attributes']
-                    # print(tf_attrib)
-                    name = tf_attrib['hostname']
+            if resource['type'] == 'ibm_is_instance':
+                #print(resource['type'])
+                tf_attrib = {}
+                for instance in resource['instances']:
+                    tf_attrib = instance['attributes']
+                    #print(tf_attrib)
+                    name = tf_attrib['name']
                     group = []
+                    for resource_img in tfstate['resources']:
+                        if resource_img['type'] == 'ibm_is_image':
+                            for os in resource_img['instances']:
+                                if os['attributes']['id'] == tf_attrib['image']:
+                                    image = os['attributes']['os']
+
+                    for resource_img in tfstate['resources']:
+                        if resource_img['type'] == "ibm_is_floating_ip":
+                            for os in resource_img['instances']:
+                                for net_interface in tf_attrib["primary_network_interface"]:
+                                    if os['attributes']['target'] == net_interface['id']:
+                                        ipv4 = os['attributes']['address']
 
                     attributes = {
                         'id': tf_attrib['id'],
-                        'image': tf_attrib['os_reference_code'],
-                        'ipv4_address': tf_attrib['ipv4_address'],
+                        'image': image,
+                        'ipv4_address': ipv4,
                         #'metadata': json.loads(tf_attrib.get('user_metadata', '{}')),
-                        # 'metadata': tf_attrib['user_metadata'],
-                        'region': tf_attrib['datacenter'],
+                        'metadata': tf_attrib['user_data'],
+                        'region': tf_attrib['zone'],
                         'ram': tf_attrib['memory'],
-                        'cpu': tf_attrib['cores'],
-                        #'ssh_keys': parse_list(tf_attrib, 'ssh_key_ids'),
-                        'public_ipv4': tf_attrib['ipv4_address'],
-                        'private_ipv4': tf_attrib['ipv4_address_private'],
-                        'ansible_host': tf_attrib['ipv4_address_private'],
+                        'cpu': tf_attrib['vcpu'][0]['count'],
+                        'ssh_keys': tf_attrib['keys'],
+                        'public_ipv4': ipv4,
+                        'private_ipv4': tf_attrib['primary_network_interface'][0]['primary_ipv4_address'],
+                        'ansible_host': ipv4 ,
+                        #tf_attrib['primary_network_interface'][0]['primary_ipv4_address'],
                         'ansible_ssh_user': 'root',
                         'provider': 'ibm',
-                        'tags': parse_list(tf_attrib, 'tags'),
+                        'tags': tf_attrib['tags']
                     }
                     # user_metadata is an optional IBM provider value
-                    if 'user_metadata' in tf_attrib:
-                            attributes['metadata'] = tf_attrib['user_metadata']
+                    if 'user_data' in tf_attrib:
+                            attributes['metadata'] = tf_attrib['user_data']
                         
                     #print (attributes["tags"])
                     #tag of form group: xxxxxxx is used to define ansible host group
@@ -198,53 +217,53 @@ class TerraformInventory:
 
 
 
-                if resource['type'] == 'ibm_cis_global_load_balancer':
-                    #provider = 'ibm'
-                    tf_attrib = resource['primary']['attributes']
-                    name = tf_attrib['name']
-                    group = []
+            if resource['type'] == 'ibm_cis_global_load_balancer':
+                #provider = 'ibm'
+                tf_attrib = resource['primary']['attributes']
+                name = tf_attrib['name']
+                group = []
 
-                    attributes = {
-                        'id': tf_attrib['id'],
-                        'dns_name': tf_attrib['name'],                       
-                    }
+                attributes = {
+                    'id': tf_attrib['id'],
+                    'dns_name': tf_attrib['name'],                       
+                }
 
-                    # CIS loadbalancer's do not support tagging. So force group
-                    group.append('cisgloballoadbalancer')
-                
-                    yield name, attributes, group
-
-
+                # CIS loadbalancer's do not support tagging. So force group
+                group.append('cisgloballoadbalancer')
+            
+                yield name, attributes, group
 
 
 
 
 
 
-                if resource['type'] == 'ibm_lbaas':
-                    #provider = 'ibm'
-                    tf_attrib = resource['primary']['attributes']
-                    name = tf_attrib['name']
-                    group = []
-
-                    attributes = {
-                        'id': tf_attrib['id'],
-                        'vip': tf_attrib['vip'],                       
-                        'region': tf_attrib['datacenter'],                       
-                        'provider': 'ibm',
-                        'tags': parse_list(tf_attrib, 'tags'),
-                    }
-
-                    # cloudloadbalancer's do not support tagging. So force group
-                    group.append('cloudloadbalancer')
-                
-                    yield name, attributes, group
 
 
+            if resource['type'] == 'ibm_lbaas':
+                #provider = 'ibm'
+                tf_attrib = resource['primary']['attributes']
+                name = tf_attrib['name']
+                group = []
 
-                else:    
-                    continue        
-             
+                attributes = {
+                    'id': tf_attrib['id'],
+                    'vip': tf_attrib['vip'],                       
+                    'region': tf_attrib['datacenter'],                       
+                    'provider': 'ibm',
+                    'tags': parse_list(tf_attrib, 'tags'),
+                }
+
+                # cloudloadbalancer's do not support tagging. So force group
+                group.append('cloudloadbalancer')
+            
+                yield name, attributes, group
+
+
+
+            else:    
+                continue        
+            
 
 
 if __name__ == '__main__':
