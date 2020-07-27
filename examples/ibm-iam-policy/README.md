@@ -1,30 +1,83 @@
-# IBM IAM User Policy example
+# Example for IBM IAM User Policy
 
-This example shows how to create and assign a IAM User policy to an user in account.
+This example illustrates how to use the IAM User policy resource to assign roles and give access to certain content on cloud using policies for a particular IBM Cloud User. 
 
-A policy assigns a user a role or roles to a set of resources by using a combination of attributes to define the applicable set of resources. When you assign a policy to a user, you first specify the service. Then, you can select a role, or roles, to assign. Additional configuration options might be available, depending on the service you select.
+These types of resources are supported:
 
- In this example a cluster service is created and used to specify a service.
+* [IBM IAM User Policy](https://cloud.ibm.com/docs/terraform?topic=terraform-iam-resources#iam-user-policy)
 
+## Terraform versions
 
-To run, configure your IBM Cloud provider
+Terraform 0.12. Pin module version to `~> v1.9.0`. Branch - `master`.
 
-Running the example
+Terraform 0.11. Pin module version to `~> v0.31.0`. Branch - `terraform_v0.11.x`.
 
-For planning phase
+## Usage
 
-```shell
-terraform plan
+To run this example you need to execute:
+
+```bash
+$ terraform init
+$ terraform plan
+$ terraform apply
 ```
 
-For apply phase
+Run `terraform destroy` when you don't need these resources.
 
-```shell
-terraform apply
+
+## IAM User Policy Resource
+
+API Gateway Endpoint resource with single OpenAPI document:
+
+```hcl
+data "ibm_resource_group" "group" {
+  name = var.resource_group
+}
+
+resource "ibm_iam_user_policy" "iam_policy" {
+  ibm_id = var.ibm_id1
+  roles  = ["Viewer", "Editor"]
+
+  resources {
+    resource_type = "resource-group"
+    resource      = data.ibm_resource_group.group.id
+  }
+}
+```
+##  IAM User Policy Data Source
+Lists all Policies of a particular IBM ID user.
+
+```hcl
+data "ibm_iam_user_policy" "testacc_ds_user_policy" {
+  ibm_id = ibm_iam_user_policy.policy.ibm_id
+}
 ```
 
-For destroy
+## Examples
 
-```shell
-terraform destroy
-```
+* [IAM User Policy resource](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-iam-policy)
+
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+## Requirements
+
+| Name | Version |
+|------|---------|
+| terraform | ~> 0.12 |
+
+Single OpenAPI document or directory of documents.
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| ibm | n/a |
+
+## Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| ibm_id1 | The IBM ID of the user to which policies are to be assigned. | `string` | yes |
+| resource_group | The resource group name in which user policies are to be assigned. | `string` | yes |
+
+
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

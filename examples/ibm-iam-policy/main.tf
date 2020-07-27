@@ -2,7 +2,7 @@ provider "ibm" {
 }
 
 data "ibm_resource_group" "group" {
-  name = "Default"
+  name = var.resource_group
 }
 
 resource "ibm_iam_user_policy" "iam_policy" {
