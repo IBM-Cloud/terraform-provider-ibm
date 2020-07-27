@@ -2,14 +2,14 @@ provider "ibm" {
   generation = 1
 }
 data "ibm_resource_group" "group" {
-  name = "default"
+  name = var.name
 }
 
 resource "ibm_resource_instance" "resource_instance" {
-  name              = var.service_instance_name
-  service           = "cloud-object-storage"
-  plan              = "lite"
-  location          = "global"
+  name              = var.service_name
+  service           = var.service_type
+  plan              = var.plan
+  location          = var.location
   resource_group_id = data.ibm_resource_group.group.id
   tags              = ["tag1", "tag2"]
 
@@ -23,11 +23,4 @@ resource "ibm_resource_instance" "resource_instance" {
     delete = "15m"
   }
 }
-
-/*resource "ibm_resource_instance" "cos_instance" {
-  name     = var.service_instance_name
-  service  = "cloud-object-storage"
-  plan     = "standard"
-  location = "global"
-}*/
 

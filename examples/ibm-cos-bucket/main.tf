@@ -23,10 +23,10 @@ resource "ibm_resource_instance" "metrics_monitor" {
   location          = "us-south"
 }
 resource "ibm_cos_bucket" "standard-ams03" {
-  bucket_name          = "testbucket"
+  bucket_name          = var.bucket_name
   resource_instance_id = ibm_resource_instance.cos_instance.id
-  cross_region_location      = "us"
-  storage_class        = "standard"
+  cross_region_location      = var.region
+  storage_class        = var.storage
  activity_tracking {
     read_data_events     = true
     write_data_events    = true
