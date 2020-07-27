@@ -70,13 +70,12 @@ func resourceIBMISImage() *schema.Resource {
 			},
 
 			isImageTags: {
-				Type:             schema.TypeSet,
-				Optional:         true,
-				Computed:         true,
-				Elem:             &schema.Schema{Type: schema.TypeString},
-				Set:              resourceIBMVPCHash,
-				DiffSuppressFunc: applyOnce,
-				Description:      "Tags for the image",
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "Tags for the image",
 			},
 
 			isImageOperatingSystem: {
