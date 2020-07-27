@@ -170,6 +170,8 @@ func TestAccIBMTransitGatewayConnectionImport(t *testing.T) {
 				ResourceName:      "ibm_tg_connection.test_ibm_tg_connection",
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"updated_at"},
 			},
 		},
 	})
