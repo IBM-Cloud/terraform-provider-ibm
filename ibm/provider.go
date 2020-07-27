@@ -182,6 +182,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_container_cluster_worker":         dataSourceIBMContainerClusterWorker(),
 			"ibm_container_vpc_cluster":            dataSourceIBMContainerVPCCluster(),
 			"ibm_container_vpc_cluster_worker":     dataSourceIBMContainerVPCClusterWorker(),
+			"ibm_container_worker_pool":            dataSourceIBMContainerWorkerPool(),
 			"ibm_cos_bucket":                       dataSourceIBMCosBucket(),
 			"ibm_dns_domain_registration":          dataSourceIBMDNSDomainRegistration(),
 			"ibm_dns_domain":                       dataSourceIBMDNSDomain(),

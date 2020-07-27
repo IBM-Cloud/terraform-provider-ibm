@@ -179,7 +179,7 @@ func init() {
 
 	kubeVersion = os.Getenv("IBM_KUBE_VERSION")
 	if kubeVersion == "" {
-		kubeVersion = "1.13.10"
+		kubeVersion = "1.17.9"
 		fmt.Println("[WARN] Set the environment variable IBM_KUBE_VERSION for testing ibm_container_cluster resource else it is set to default value '1.13.10'")
 	}
 

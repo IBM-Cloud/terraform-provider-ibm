@@ -427,9 +427,14 @@ func workerPoolDeleteStateRefreshFunc(client v1.Workers, instanceID, workerPoolN
 }
 
 func getWorkerPoolTargetHeader(d *schema.ResourceData, meta interface{}) (v1.ClusterTargetHeader, error) {
-	region := d.Get("region").(string)
-	resourceGroup := d.Get("resource_group_id").(string)
 
+	region, resourceGroup := "", ""
+	if r, ok := d.GetOk("region"); ok {
+		region = r.(string)
+	}
+	if rg, ok := d.GetOk("resource_group_id"); ok {
+		resourceGroup = rg.(string)
+	}
 	sess, err := meta.(ClientSession).BluemixSession()
 	if err != nil {
 		return v1.ClusterTargetHeader{}, err
