@@ -1,0 +1,287 @@
+package ibm
+
+import (
+	"fmt"
+	"log"
+	"strconv"
+	"strings"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"gotest.tools/assert"
+)
+
+func TestAccIBMEventStreamsTopicResourceBasic(t *testing.T) {
+	instanceName := fmt.Sprintf("es_instance_%d", acctest.RandInt())
+	planID := "standard"
+	serviceName := "messagehub"
+	location := "us-south"
+	topicName := fmt.Sprintf("es_topic_%d", acctest.RandInt())
+	partitions := 1
+	cleanupPolicy := "compact,delete"
+	retentionBytes := 10485760
+	retentionMs := 3600000
+	segmentBytes := 10485760
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMEventStreamsInstanceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMEventStreamsTopicWithoutConfig(instanceName, serviceName, planID, location, topicName, partitions),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMEventStreamsTopicExists("ibm_event_streams_topic.es_topic", topicName),
+					resource.TestCheckResourceAttr("ibm_resource_instance.es_instance", "name", instanceName),
+					resource.TestCheckResourceAttr("ibm_resource_instance.es_instance", "service", serviceName),
+					resource.TestCheckResourceAttr("ibm_resource_instance.es_instance", "plan", planID),
+					resource.TestCheckResourceAttr("ibm_resource_instance.es_instance", "location", location),
+					resource.TestCheckResourceAttrSet("ibm_event_streams_topic.es_topic", "id"),
+					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "name", topicName),
+					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "partitions", strconv.Itoa(partitions)),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMEventStreamsTopicWithConfig(instanceName, serviceName, planID, location, topicName, partitions, cleanupPolicy, retentionBytes, retentionMs, segmentBytes),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMEventStreamsTopicExists("ibm_event_streams_topic.es_topic", topicName),
+					resource.TestCheckResourceAttr("ibm_resource_instance.es_instance", "name", instanceName),
+					resource.TestCheckResourceAttr("ibm_resource_instance.es_instance", "service", serviceName),
+					resource.TestCheckResourceAttr("ibm_resource_instance.es_instance", "plan", planID),
+					resource.TestCheckResourceAttr("ibm_resource_instance.es_instance", "location", location),
+					resource.TestCheckResourceAttrSet("ibm_event_streams_topic.es_topic", "id"),
+					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "name", topicName),
+					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "partitions", strconv.Itoa(partitions)),
+					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "config.cleanup.policy", cleanupPolicy),
+					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "config.retention.bytes", strconv.Itoa(retentionBytes)),
+					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "config.retention.ms", strconv.Itoa(retentionMs)),
+					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "config.segment.bytes", strconv.Itoa(segmentBytes)),
+				),
+			},
+		},
+	})
+}
+
+var existingInstanceName = "hyperion-preprod-spp-a-service"
+
+func TestAccIBMEventStreamsTopicResourceWithExistingInstance(t *testing.T) {
+	topicName := fmt.Sprintf("es_topic_%d", acctest.RandInt())
+	partitions := 1
+	cleanupPolicy := "compact,delete"
+	retentionBytes := 10485760
+	retentionMs := 3600000
+	segmentBytes := 10485760
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMEventStreamsInstanceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMEventStreamsTopicWithExistingInstanceWithoutConfig(existingInstanceName, topicName, partitions),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMEventStreamsTopicExists("ibm_event_streams_topic.es_topic", topicName),
+					resource.TestCheckResourceAttrSet("data.ibm_resource_instance.es_instance", "extensions.kafka_brokers_sasl.0"),
+					resource.TestCheckResourceAttrSet("data.ibm_resource_instance.es_instance", "extensions.kafka_http_url"),
+					resource.TestCheckResourceAttrSet("ibm_event_streams_topic.es_topic", "id"),
+					resource.TestCheckResourceAttrSet("ibm_event_streams_topic.es_topic", "kafka_brokers_sasl.0"),
+					resource.TestCheckResourceAttrSet("ibm_event_streams_topic.es_topic", "kafka_http_url"),
+					resource.TestCheckResourceAttrSet("ibm_event_streams_topic.es_topic", "id"),
+					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "name", topicName),
+					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "partitions", strconv.Itoa(partitions)),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMEventStreamsTopicWithExistingInstanceWithConfig(existingInstanceName, topicName, partitions, cleanupPolicy, retentionBytes, retentionMs, segmentBytes),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMEventStreamsTopicExists("ibm_event_streams_topic.es_topic", topicName),
+					resource.TestCheckResourceAttrSet("data.ibm_resource_instance.es_instance", "extensions.kafka_brokers_sasl.0"),
+					resource.TestCheckResourceAttrSet("data.ibm_resource_instance.es_instance", "extensions.kafka_http_url"),
+					resource.TestCheckResourceAttrSet("ibm_event_streams_topic.es_topic", "id"),
+					resource.TestCheckResourceAttrSet("ibm_event_streams_topic.es_topic", "kafka_brokers_sasl.0"),
+					resource.TestCheckResourceAttrSet("ibm_event_streams_topic.es_topic", "kafka_http_url"),
+					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "name", topicName),
+					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "partitions", strconv.Itoa(partitions)),
+					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "config.cleanup.policy", cleanupPolicy),
+					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "config.retention.bytes", strconv.Itoa(retentionBytes)),
+					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "config.retention.ms", strconv.Itoa(retentionMs)),
+					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "config.segment.bytes", strconv.Itoa(segmentBytes)),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMEventStreamsTopicImport(t *testing.T) {
+	instanceName := fmt.Sprintf("es_instance_%d", acctest.RandInt())
+	planID := "standard"
+	serviceName := "messagehub"
+	location := "us-south"
+	topicName := fmt.Sprintf("es_topic_%d", acctest.RandInt())
+	partitions := 1
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMEventStreamsInstanceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMEventStreamsTopicWithoutConfig(instanceName, serviceName, planID, location, topicName, partitions),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMEventStreamsTopicExists("ibm_event_streams_topic.es_topic", topicName),
+					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "name", topicName),
+					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "partitions", strconv.Itoa(partitions)),
+				),
+			},
+			resource.TestStep{
+				ResourceName:            "ibm_event_streams_topic.es_topic",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"wait_time_minutes"},
+			},
+		},
+	})
+}
+
+func testAccCheckIBMEventStreamsTopicWithoutConfig(instanceName, serviceName, planID, location,
+	topicName string, partitions int) string {
+	return createPlatformResources(instanceName, serviceName, planID, location) + "\n" +
+		createEventStreamsTopicResourceWithoutConfig(true, topicName, partitions)
+}
+
+func testAccCheckIBMEventStreamsTopicWithConfig(instanceName, serviceName, planID, location,
+	topicName string, partitions int, cleanupPolicy string, retentionBytes int, retentionMs int, segmentBytes int) string {
+	return createPlatformResources(instanceName, serviceName, planID, location) + "\n" +
+		createEventStreamsTopicResourceWithConfig(true, topicName, partitions, cleanupPolicy, retentionBytes, retentionMs, segmentBytes)
+}
+
+func testAccCheckIBMEventStreamsTopicWithExistingInstanceWithoutConfig(instanceName,
+	topicName string, partitions int) string {
+	return getPlantformResource(instanceName) + "\n" +
+		createEventStreamsTopicResourceWithoutConfig(false, topicName, partitions)
+}
+
+func testAccCheckIBMEventStreamsTopicWithExistingInstanceWithConfig(instanceName,
+	topicName string, partitions int, cleanupPolicy string, retentionBytes int, retentionMs int, segmentBytes int) string {
+	return getPlantformResource(instanceName) + "\n" +
+		createEventStreamsTopicResourceWithConfig(false, topicName, partitions, cleanupPolicy, retentionBytes, retentionMs, segmentBytes)
+}
+
+func getPlantformResource(instanceName string) string {
+	return fmt.Sprintf(`
+	  data "ibm_resource_group" "group" {
+		name = "Default"
+	  }
+	  data "ibm_resource_instance" "es_instance" {
+		resource_group_id = data.ibm_resource_group.group.id
+		name              = "%s"
+	  }`, instanceName)
+}
+
+func createPlatformResources(instanceName, serviceName, planID, location string) string {
+	return fmt.Sprintf(`
+	  data "ibm_resource_group" "group" {
+		name = "Default"
+	  }
+	  resource "ibm_resource_instance" "es_instance" {
+		name              = "%s"
+		service           = "%s"
+		plan              = "%s"
+		location          = "%s"
+		resource_group_id = data.ibm_resource_group.group.id
+	  }`, instanceName, serviceName, planID, location)
+}
+
+func createEventStreamsTopicResourceWithoutConfig(createInstance bool, topicName string, partitions int) string {
+	var resourceInstanceID string
+	if createInstance {
+		resourceInstanceID = "ibm_resource_instance.es_instance.id"
+	} else {
+		resourceInstanceID = "data.ibm_resource_instance.es_instance.id"
+	}
+	return fmt.Sprintf(`
+		resource "ibm_event_streams_topic" "es_topic" {
+		  resource_instance_id 	= %s
+		  name            		= "%s"
+		  partitions      		= %d
+		}`, resourceInstanceID, topicName, partitions)
+
+}
+
+func createEventStreamsTopicResourceWithConfig(createInstance bool, topicName string, partitions int, cleanupPolicy string, retentionBytes int, retentionMs int, segmentBytes int) string {
+	var resourceInstanceID string
+	if createInstance {
+		resourceInstanceID = "ibm_resource_instance.es_instance.id"
+	} else {
+		resourceInstanceID = "data.ibm_resource_instance.es_instance.id"
+	}
+	return fmt.Sprintf(`
+		resource "ibm_event_streams_topic" "es_topic" {
+			resource_instance_id = %s
+			name                 = "%s"
+			partitions           = %d
+			config = {
+			  "cleanup.policy"  = "%s"
+			  "retention.bytes" = %d
+			  "retention.ms"    = %d
+			  "segment.bytes"   = %d
+			}
+		}`, resourceInstanceID, topicName, partitions, cleanupPolicy, retentionBytes, retentionMs, segmentBytes)
+}
+
+func testAccCheckIBMEventStreamsInstanceDestroy(s *terraform.State) error {
+	rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceControllerAPI()
+	if err != nil {
+		return err
+	}
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_resource_instance" {
+			continue
+		}
+		instanceID := rs.Primary.ID
+		_, err := rsContClient.ResourceServiceInstance().GetInstance(instanceID)
+
+		if err != nil && !strings.Contains(err.Error(), "404") {
+			return fmt.Errorf("Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
+		}
+	}
+	return nil
+}
+
+func testAccCheckIBMEventStreamsTopicExists(n, topicName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		log.Printf("testAccCheckIBMEventStreamsTopicExists")
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+		topicID := rs.Primary.ID
+		if topicID == "" {
+			return fmt.Errorf("No topic ID is set")
+		}
+		if strings.HasSuffix(topicID, topicName) {
+			return nil
+		}
+		return fmt.Errorf("topic %s not found", topicName)
+	}
+}
+
+var (
+	instanceCRN = "crn:v1:staging:public:messagehub:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:c822a30e-bfff-4867-85ec-b805eeab1835::"
+	mytopicName = "mytopic"
+	topicID     = "crn:v1:staging:public:messagehub:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:c822a30e-bfff-4867-85ec-b805eeab1835:topic:mytopic"
+)
+
+func TestGetTopicID(t *testing.T) {
+	gotTopicID := getTopicID(instanceCRN, mytopicName)
+	assert.Equal(t, topicID, gotTopicID)
+}
+
+func TestGetInstanceCRN(t *testing.T) {
+	gotInstanceCRN := getInstanceCRN(topicID)
+	assert.Equal(t, instanceCRN, gotInstanceCRN)
+}
+
+func TestGetTopicName(t *testing.T) {
+	gotTopicName := getTopicName(topicID)
+	assert.Equal(t, mytopicName, gotTopicName)
+}

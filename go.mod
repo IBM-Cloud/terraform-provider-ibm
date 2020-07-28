@@ -16,6 +16,7 @@ require (
 	github.com/IBM/networking-go-sdk v0.1.1
 	github.com/IBM/vpc-go-sdk v0.0.1
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
+	github.com/Shopify/sarama v1.26.4
 	github.com/apache/incubator-openwhisk-client-go v0.0.0-20171128215515-ad814bc98c32 // indirect
 	github.com/apache/openwhisk-client-go v0.0.0-20200201143223-a804fb82d105
 	github.com/apparentlymart/go-cidr v1.0.1
@@ -27,7 +28,7 @@ require (
 	github.com/go-openapi/swag v0.19.9 // indirect
 	github.com/go-openapi/validate v0.19.8 // indirect
 	github.com/go-test/deep v1.0.4 // indirect
-	github.com/hashicorp/go-uuid v1.0.1
+	github.com/hashicorp/go-uuid v1.0.2
 	github.com/hashicorp/go-version v1.2.0
 	github.com/hashicorp/hil v0.0.0-20200423225030-a18a1cd20038 // indirect
 	github.com/hashicorp/terraform v0.12.28 // indirect
@@ -40,6 +41,7 @@ require (
 	github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22
 	github.ibm.com/ibmcloud/namespace-go-sdk v0.0.0-00010101000000-000000000000
 	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
+	gotest.tools v2.2.0+incompatible
 )
 
 replace github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22 => ./common/github.com/softlayer/softlayer-go
