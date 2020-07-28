@@ -2,7 +2,7 @@ package ibm
 
 import (
 	"fmt"
-	"github.com/IBM/networking-go-sdk/directlinkapisv1"
+	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -116,11 +116,6 @@ func dataSourceIBMDLGateway() *schema.Resource {
 				Computed:    true,
 				Description: "Cross connect router",
 			},
-			dlDedicatedHostingID: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Dedicated host id",
-			},
 			dlGlobal: {
 				Type:        schema.TypeBool,
 				Computed:    true,
@@ -192,7 +187,7 @@ func dataSourceIBMDLGatewayVirtualConnectionsRead(d *schema.ResourceData, meta i
 	if err != nil {
 		return err
 	}
-	listVcOptions := &directlinkapisv1.ListGatewayVirtualConnectionsOptions{}
+	listVcOptions := &directlinkv1.ListGatewayVirtualConnectionsOptions{}
 	dlGatewayId := d.Id()
 	listVcOptions.SetGatewayID(dlGatewayId)
 	listGatewayVirtualConnections, response, err := directLink.ListGatewayVirtualConnections(listVcOptions)
@@ -240,7 +235,7 @@ func dataSourceIBMDLGatewayRead(d *schema.ResourceData, meta interface{}) error 
 	if err != nil {
 		return err
 	}
-	listGatewaysOptionsModel := &directlinkapisv1.ListGatewaysOptions{}
+	listGatewaysOptionsModel := &directlinkv1.ListGatewaysOptions{}
 	listGateways, _, err := directLink.ListGateways(listGatewaysOptionsModel)
 	if err != nil {
 		return err
@@ -281,9 +276,7 @@ func dataSourceIBMDLGatewayRead(d *schema.ResourceData, meta interface{}) error 
 			if instance.BgpCerCidr != nil {
 				d.Set(dlBgpCerCidr, *instance.BgpCerCidr)
 			}
-			if instance.DedicatedHostingID != nil {
-				d.Set(dlDedicatedHostingID, instance.DedicatedHostingID)
-			}
+
 			if instance.ProviderApiManaged != nil {
 				d.Set(dlProviderAPIManaged, *instance.ProviderApiManaged)
 			}

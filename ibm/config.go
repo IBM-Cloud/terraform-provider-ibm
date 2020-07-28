@@ -16,7 +16,7 @@ import (
 	"github.com/IBM/go-sdk-core/v3/core"
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
-	dl "github.com/IBM/networking-go-sdk/directlinkapisv1"
+	dl "github.com/IBM/networking-go-sdk/directlinkv1"
 	tg "github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	vpcclassic "github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
@@ -172,7 +172,7 @@ type ClientSession interface {
 	APIGateway() (*apigateway.ApiGatewayControllerApiV1, error)
 	PrivateDnsClientSession() (*dns.DnsSvcsV1, error)
 	CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error)
-	DirectlinkV1API() (*dl.DirectLinkApisV1, error)
+	DirectlinkV1API() (*dl.DirectLinkV1, error)
 	TransitGatewayV1API() (*tg.TransitGatewayApisV1, error)
 }
 
@@ -269,7 +269,7 @@ type clientSession struct {
 	vpcErr error
 	vpcAPI *vpc.VpcV1
 
-	directlinkAPI *dl.DirectLinkApisV1
+	directlinkAPI *dl.DirectLinkV1
 	directlinkErr error
 
 	cosConfigErr error
@@ -421,7 +421,7 @@ func (sess clientSession) VpcV1API() (*vpc.VpcV1, error) {
 	return sess.vpcAPI, sess.vpcErr
 }
 
-func (sess clientSession) DirectlinkV1API() (*dl.DirectLinkApisV1, error) {
+func (sess clientSession) DirectlinkV1API() (*dl.DirectLinkV1, error) {
 	return sess.directlinkAPI, sess.directlinkErr
 }
 
@@ -751,16 +751,17 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.pDnsErr != nil {
 		session.pDnsErr = fmt.Errorf("Error occured while configuring PrivateDNS Service: %s", session.pDnsErr)
 	}
+	version := time.Now().Format("2006-01-02")
 
-	directlinkOptions := &dl.DirectLinkApisV1Options{
+	directlinkOptions := &dl.DirectLinkV1Options{
 		URL: envFallBack([]string{"IBMCLOUD_DL_API_ENDPOINT"}, "https://directlink.cloud.ibm.com/v1"),
 		Authenticator: &core.BearerTokenAuthenticator{
 			BearerToken: bluemixToken,
 		},
-		Version: CreateVersionDate(),
+		Version: &version,
 	}
 
-	session.directlinkAPI, session.directlinkErr = dl.NewDirectLinkApisV1(directlinkOptions)
+	session.directlinkAPI, session.directlinkErr = dl.NewDirectLinkV1(directlinkOptions)
 	if session.directlinkErr != nil {
 		session.directlinkErr = fmt.Errorf("Error occured while configuring Direct Link Service: %s", session.directlinkErr)
 	}
@@ -781,9 +782,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 }
 
 // CreateVersionDate requires mandatory version attribute. Any date from 2019-12-13 up to the currentdate may be provided. Specify the current date to request the latest version.
-func CreateVersionDate() *strfmt.Date {
-	d := strfmt.Date(time.Date(2019, time.December, 13, 0, 0, 0, 0, time.UTC))
-	return &d
+func CreateVersionDate() *string {
+	version := time.Now().Format("2006-01-02")
+	return &version
 }
 
 // CreateVersionDateTG requires mandatory version attribute.

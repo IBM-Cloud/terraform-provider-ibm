@@ -2,7 +2,7 @@ package ibm
 
 import (
 	"fmt"
-	"github.com/IBM/networking-go-sdk/directlinkapisv1"
+	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"time"
 )
@@ -97,7 +97,7 @@ func dataSourceIBMDLOfferingLocationsRead(d *schema.ResourceData, meta interface
 	if err != nil {
 		return err
 	}
-	listOfferingTypeLocationsOptions := &directlinkapisv1.ListOfferingTypeLocationsOptions{}
+	listOfferingTypeLocationsOptions := &directlinkv1.ListOfferingTypeLocationsOptions{}
 	listOfferingTypeLocationsOptions.SetOfferingType(d.Get(dlOfferingType).(string))
 	listLocations, response, err := directLink.ListOfferingTypeLocations(listOfferingTypeLocationsOptions)
 	if err != nil {

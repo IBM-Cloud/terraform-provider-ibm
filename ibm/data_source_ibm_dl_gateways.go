@@ -3,7 +3,7 @@ package ibm
 import (
 	"time"
 
-	"github.com/IBM/networking-go-sdk/directlinkapisv1"
+	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -76,11 +76,6 @@ func dataSourceIBMDLGateways() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Cross connect router",
-						},
-						dlDedicatedHostingID: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Dedicated host id",
 						},
 						dlGlobal: {
 							Type:        schema.TypeBool,
@@ -159,7 +154,7 @@ func dataSourceIBMDLGatewaysRead(d *schema.ResourceData, meta interface{}) error
 	if err != nil {
 		return err
 	}
-	listGatewaysOptionsModel := &directlinkapisv1.ListGatewaysOptions{}
+	listGatewaysOptionsModel := &directlinkv1.ListGatewaysOptions{}
 	listGateways, _, err := directLink.ListGateways(listGatewaysOptionsModel)
 	if err != nil {
 		return err
@@ -197,9 +192,7 @@ func dataSourceIBMDLGatewaysRead(d *schema.ResourceData, meta interface{}) error
 		if instance.BgpCerCidr != nil {
 			gateway[dlBgpCerCidr] = *instance.BgpCerCidr
 		}
-		if instance.DedicatedHostingID != nil {
-			gateway[dlDedicatedHostingID] = *instance.DedicatedHostingID
-		}
+
 		if instance.ProviderApiManaged != nil {
 			gateway[dlProviderAPIManaged] = *instance.ProviderApiManaged
 		}
