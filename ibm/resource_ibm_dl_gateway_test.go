@@ -6,7 +6,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/IBM/networking-go-sdk/directlinkapisv1"
+	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -82,7 +82,7 @@ func testAccCheckIBMDLGatewayExists(n string, instance string) resource.TestChec
 		if err != nil {
 			return err
 		}
-		getOptions := &directlinkapisv1.GetGatewayOptions{
+		getOptions := &directlinkv1.GetGatewayOptions{
 			ID: &rs.Primary.ID,
 		}
 		instance1, response, err := directLink.GetGateway(getOptions)
@@ -102,7 +102,7 @@ func testAccCheckIBMDLGatewayDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "ibm_dl_gateway" {
 			log.Printf("Destroy called ...%s", rs.Primary.ID)
-			getOptions := &directlinkapisv1.GetGatewayOptions{
+			getOptions := &directlinkv1.GetGatewayOptions{
 				ID: &rs.Primary.ID,
 			}
 			_, _, err = directLink.GetGateway(getOptions)

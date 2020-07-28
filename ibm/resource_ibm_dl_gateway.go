@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/IBM/networking-go-sdk/directlinkapisv1"
+	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -35,7 +35,6 @@ const (
 	dlLocationDisplayName          = "location_display_name"
 	dlBgpIbmAsn                    = "bgp_ibm_asn"
 	dlCompletionNoticeRejectReason = "completion_notice_reject_reason"
-	dlDedicatedHostingID           = "dedicated_hosting_id"
 	dlPort                         = "port"
 	dlProviderAPIManaged           = "provider_api_managed"
 	dlVlan                         = "vlan"
@@ -289,7 +288,7 @@ func resourceIBMDLGatewayValidator() *ResourceValidator {
 	return &ibmISDLGatewayResourceValidator
 }
 
-func directlinkClient(meta interface{}) (*directlinkapisv1.DirectLinkApisV1, error) {
+func directlinkClient(meta interface{}) (*directlinkv1.DirectLinkV1, error) {
 	sess, err := meta.(ClientSession).DirectlinkV1API()
 	return sess, err
 }
@@ -300,8 +299,8 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 
-	createGatewayOptionsModel := &directlinkapisv1.CreateGatewayOptions{}
-	gatewayTemplateModel := &directlinkapisv1.GatewayTemplateGatewayTypeDedicatedTemplate{}
+	createGatewayOptionsModel := &directlinkv1.CreateGatewayOptions{}
+	gatewayTemplateModel := &directlinkv1.GatewayTemplateGatewayTypeDedicatedTemplate{}
 
 	name := d.Get(dlName).(string)
 	gatewayTemplateModel.Name = &name
@@ -363,7 +362,7 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 	if _, ok := d.GetOk(dlResourceGroup); ok {
 		resourceGroup := d.Get(dlResourceGroup).(string)
-		gatewayTemplateModel.ResourceGroup = &directlinkapisv1.ResourceGroupIdentity{ID: &resourceGroup}
+		gatewayTemplateModel.ResourceGroup = &directlinkv1.ResourceGroupIdentity{ID: &resourceGroup}
 	}
 
 	createGatewayOptionsModel.GatewayTemplate = gatewayTemplateModel
@@ -399,7 +398,7 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 
 	ID := d.Id()
 
-	getOptions := &directlinkapisv1.GetGatewayOptions{
+	getOptions := &directlinkv1.GetGatewayOptions{
 		ID: &ID,
 	}
 	instance, response, err := directLink.GetGateway(getOptions)
@@ -506,7 +505,7 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	ID := d.Id()
-	getOptions := &directlinkapisv1.GetGatewayOptions{
+	getOptions := &directlinkv1.GetGatewayOptions{
 		ID: &ID,
 	}
 	instance, detail, err := directLink.GetGateway(getOptions)
@@ -516,7 +515,7 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 
-	updateGatewayOptionsModel := &directlinkapisv1.UpdateGatewayOptions{}
+	updateGatewayOptionsModel := &directlinkv1.UpdateGatewayOptions{}
 	updateGatewayOptionsModel.ID = &ID
 
 	if d.HasChange(dlTags) {
@@ -578,7 +577,7 @@ func resourceIBMdlGatewayDelete(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	ID := d.Id()
-	delOptions := &directlinkapisv1.DeleteGatewayOptions{
+	delOptions := &directlinkv1.DeleteGatewayOptions{
 		ID: &ID,
 	}
 	response, err := directLink.DeleteGateway(delOptions)
@@ -600,7 +599,7 @@ func resourceIBMdlGatewayExists(d *schema.ResourceData, meta interface{}) (bool,
 
 	ID := d.Id()
 
-	getOptions := &directlinkapisv1.GetGatewayOptions{
+	getOptions := &directlinkv1.GetGatewayOptions{
 		ID: &ID,
 	}
 	_, response, err := directLink.GetGateway(getOptions)

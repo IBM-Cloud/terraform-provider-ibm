@@ -2,7 +2,7 @@ package ibm
 
 import (
 	"fmt"
-	"github.com/IBM/networking-go-sdk/directlinkapisv1"
+	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -98,7 +98,7 @@ func testAccCheckIBMDLGatewayVCDestroy(s *terraform.State) error {
 		gatewayId := parts[0]
 		ID := parts[1]
 
-		getGatewayVirtualConnectionOptions := &directlinkapisv1.GetGatewayVirtualConnectionOptions{}
+		getGatewayVirtualConnectionOptions := &directlinkv1.GetGatewayVirtualConnectionOptions{}
 		getGatewayVirtualConnectionOptions.SetGatewayID(gatewayId)
 		getGatewayVirtualConnectionOptions.SetID(ID)
 		_, _, err = directLink.GetGatewayVirtualConnection(getGatewayVirtualConnectionOptions)
@@ -128,7 +128,7 @@ func testAccCheckIBMDLGatewayVCExists(n string, vc string) resource.TestCheckFun
 		gatewayId := parts[0]
 		ID := parts[1]
 
-		getVCOptions := &directlinkapisv1.GetGatewayVirtualConnectionOptions{
+		getVCOptions := &directlinkv1.GetGatewayVirtualConnectionOptions{
 			ID: &ID,
 		}
 		getVCOptions.SetGatewayID(gatewayId)

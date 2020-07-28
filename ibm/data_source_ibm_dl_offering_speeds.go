@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/IBM/networking-go-sdk/directlinkapisv1"
+	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -48,7 +48,7 @@ func dataSourceIBMDLOfferingSpeedsRead(d *schema.ResourceData, meta interface{})
 		return err
 	}
 	dlType := d.Get(dlOfferingType).(string)
-	listSpeedsOptionsModel := &directlinkapisv1.ListOfferingTypeSpeedsOptions{}
+	listSpeedsOptionsModel := &directlinkv1.ListOfferingTypeSpeedsOptions{}
 	listSpeedsOptionsModel.OfferingType = &dlType
 	listSpeeds, detail, err := directLink.ListOfferingTypeSpeeds(listSpeedsOptionsModel)
 

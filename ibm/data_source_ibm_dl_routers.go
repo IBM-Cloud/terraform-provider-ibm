@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/IBM/networking-go-sdk/directlinkapisv1"
+	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -60,7 +60,7 @@ func dataSourceIBMDLRoutersRead(d *schema.ResourceData, meta interface{}) error 
 	}
 	dlType := d.Get(dlOfferingType).(string)
 	dlLocName := d.Get(dlLocation).(string)
-	listRoutersOptionsModel := &directlinkapisv1.ListOfferingTypeLocationCrossConnectRoutersOptions{}
+	listRoutersOptionsModel := &directlinkv1.ListOfferingTypeLocationCrossConnectRoutersOptions{}
 	listRoutersOptionsModel.OfferingType = &dlType
 	listRoutersOptionsModel.LocationName = &dlLocName
 
