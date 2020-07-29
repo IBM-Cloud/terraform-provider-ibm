@@ -164,6 +164,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_function_package":                  dataSourceIBMFunctionPackage(),
 			"ibm_function_rule":                     dataSourceIBMFunctionRule(),
 			"ibm_function_trigger":                  dataSourceIBMFunctionTrigger(),
+			"ibm_function_namespace":                dataSourceIBMFunctionNamespace(),
 			"ibm_certificate_manager_certificates":  dataIBMCertificateManagerCertificates(),
 			"ibm_certificate_manager_certificate":   dataIBMCertificateManagerCertificate(),
 			"ibm_cis":                               dataSourceIBMCISInstance(),
@@ -283,6 +284,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_function_package":                               resourceIBMFunctionPackage(),
 			"ibm_function_rule":                                  resourceIBMFunctionRule(),
 			"ibm_function_trigger":                               resourceIBMFunctionTrigger(),
+			"ibm_function_namespace":                             resourceIBMFunctionNamespace(),
 			"ibm_cis":                                            resourceIBMCISInstance(),
 			"ibm_database":                                       resourceIBMDatabaseInstance(),
 			"ibm_certificate_manager_import":                     resourceIBMCertificateManagerImport(),
@@ -448,6 +450,7 @@ func Validator() ValidatorDict {
 				"ibm_function_action":       resourceIBMFuncActionValidator(),
 				"ibm_function_rule":         resourceIBMFuncRuleValidator(),
 				"ibm_function_trigger":      resourceIBMFuncTriggerValidator(),
+				"ibm_function_namespace":    resourceIBMFuncNamespaceValidator(),
 			},
 		}
 	})

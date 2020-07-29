@@ -239,7 +239,7 @@ func (ibmCloudFunctionsNamespaceAPI *IbmCloudFunctionsNamespaceAPIV1) CreateName
 
 // GetNamespace : Retrieve an IBM Cloud Functions namespace
 // Retrieve an IBM Cloud Functions namespace.
-func (ibmCloudFunctionsNamespaceAPI *IbmCloudFunctionsNamespaceAPIV1) GetNamespace(getNamespaceOptions *GetNamespaceOptions) (result NamespaceResponse, response *core.DetailedResponse, err error) {
+func (ibmCloudFunctionsNamespaceAPI *IbmCloudFunctionsNamespaceAPIV1) GetNamespace(getNamespaceOptions *GetNamespaceOptions) (result *NamespaceResponse, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(getNamespaceOptions, "getNamespaceOptions cannot be nil")
 	if err != nil {
 		return
@@ -249,7 +249,7 @@ func (ibmCloudFunctionsNamespaceAPI *IbmCloudFunctionsNamespaceAPIV1) GetNamespa
 		return
 	}
 
-	pathSegments := []string{"api", "v1", "namespaces"}
+	pathSegments := []string{"namespaces"}
 	pathParameters := []string{*getNamespaceOptions.ID}
 
 	builder := core.NewRequestBuilder(core.GET)
@@ -277,7 +277,7 @@ func (ibmCloudFunctionsNamespaceAPI *IbmCloudFunctionsNamespaceAPIV1) GetNamespa
 	response, err = ibmCloudFunctionsNamespaceAPI.Service.Request(request, new(NamespaceResponse))
 	if err == nil {
 		var ok bool
-		result, ok = response.Result.(NamespaceResponse)
+		result, ok = response.Result.(*NamespaceResponse)
 		if !ok {
 			err = fmt.Errorf("an error occurred while processing the operation response")
 		}
@@ -288,7 +288,7 @@ func (ibmCloudFunctionsNamespaceAPI *IbmCloudFunctionsNamespaceAPIV1) GetNamespa
 
 // DeleteNamespace : Delete an IBM Cloud Functions namespace
 // Delete an IBM Cloud Functions namespace.
-func (ibmCloudFunctionsNamespaceAPI *IbmCloudFunctionsNamespaceAPIV1) DeleteNamespace(deleteNamespaceOptions *DeleteNamespaceOptions) (result *NamespaceDeleteResponse, response *core.DetailedResponse, err error) {
+func (ibmCloudFunctionsNamespaceAPI *IbmCloudFunctionsNamespaceAPIV1) DeleteNamespace(deleteNamespaceOptions *DeleteNamespaceOptions) (response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteNamespaceOptions, "deleteNamespaceOptions cannot be nil")
 	if err != nil {
 		return
@@ -323,14 +323,14 @@ func (ibmCloudFunctionsNamespaceAPI *IbmCloudFunctionsNamespaceAPIV1) DeleteName
 		return
 	}
 
-	response, err = ibmCloudFunctionsNamespaceAPI.Service.Request(request, new(NamespaceDeleteResponse))
-	if err == nil {
-		var ok bool
-		result, ok = response.Result.(*NamespaceDeleteResponse)
-		if !ok {
-			err = fmt.Errorf("an error occurred while processing the operation response")
-		}
-	}
+	response, err = ibmCloudFunctionsNamespaceAPI.Service.Request(request, nil)
+	// err == nil {
+	// var ok bool
+	//result, ok = response.Result.(*NamespaceDeleteResponse)
+	//	if !ok {
+	//		err = fmt.Errorf("An error occurred while processing the operation response : %v\n", result)
+	//	}
+	//}
 
 	return
 }
@@ -836,6 +836,9 @@ type NamespaceResponse struct {
 
 	// Resourceplanid used - absent if namespace is NOT IAM-enabled.
 	ResourcePlanID *string `json:"resource_plan_id,omitempty"`
+
+	// Resourcegrpid used - absent if namespace is NOT IAM-enabled.
+	ResourceGroupID *string `json:"resource_group_id,omitempty"`
 
 	// Serviceid used by the namespace - absent if namespace is NOT IAM-enabled.
 	ServiceID *string `json:"service_id,omitempty"`
