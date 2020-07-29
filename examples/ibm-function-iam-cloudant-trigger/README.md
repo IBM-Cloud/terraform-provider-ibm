@@ -1,6 +1,6 @@
 # IBM Cloud Function example
 
-This example shows how IBM Cloud Functions action is triggered when documents in Cloudant NoSQL databases are changed or added.
+This example shows how IBM Cloud Functions IAM namespace created and action is triggered when documents in Cloudant NoSQL databases are changed or added.
 
 In this example a Cloudant NoSQL service instance is created. We deploy a python app which creates a database 'databasedemo' in Cloudant  NOSQL. We bind a cloudant package using IBM Cloud Function package and create an action, trigger and rule.
 
@@ -20,8 +20,18 @@ Run `terraform destroy` when you don't need these resources.
 
 ## Cloud Function Resources
 
-Package Resource:
+Namespace Resource:
+```hcl
+data "ibm_resource_group" "resource-group" {
+  name = var.resource_group
+}
 
+resource "ibm_function_namespace" "namespace" {
+  name                = var.namespace
+  resource_group_id   = data.ibm_resource_group.resource-group.id
+}
+```
+Package Resource:
 ```hcl
 resource "ibm_function_package" "package" {
   name      = var.packageName
@@ -92,8 +102,13 @@ resource "ibm_function_rule" "rule" {
 
 ## Cloud Function Data sources
 
+Namespace Data Source:
+```hcl
+data "ibm_function_namespace" "namespace" {
+    name      = var.namespace
+}
+```
 Package Data Source:
-
 ```hcl
 data "ibm_function_package" "package" {
     name      = var.packagename
@@ -124,7 +139,7 @@ data "ibm_function_rule" "rule" {
 
 ## Examples
 
-* [Cloud Functions resources](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-function-cloudant-trigger)
+* [Cloud Functions resources](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-function-iam-cloudant-trigger)
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
@@ -146,6 +161,7 @@ Single OpenAPI document or directory of documents.
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | namespace | The cloud function namespace.| `string` | yes |
+| resource_group| The resource group name.| `string` | yes |
 | packageName | The name of the Package Instance. | `string` | yes |
 | actionName | The name of the Action Instance. | `string` | yes |
 | boundPackageName | The name of the boundpackage instance. | `string` | yes |
@@ -170,6 +186,7 @@ Single OpenAPI document or directory of documents.
 
 | Name | Description |
 |------|-------------|
+| namespaceID | Namespace ID |
 | packageID | Package ID |
 | actionID | Action ID |
 | ruleID | Rule ID |

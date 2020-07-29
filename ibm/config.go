@@ -55,6 +55,7 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
+	ns "github.ibm.com/ibmcloud/namespace-go-sdk/ibmcloudfunctionsnamespaceapiv1"
 )
 
 //RetryDelay
@@ -179,6 +180,7 @@ type ClientSession interface {
 	DirectlinkV1API() (*dl.DirectLinkV1, error)
 	TransitGatewayV1API() (*tg.TransitGatewayApisV1, error)
 	HpcsEndpointAPI() (hpcs.HPCSV2, error)
+	IAMNamespaceAPI() (*ns.IbmCloudFunctionsNamespaceAPIV1, error)
 }
 
 type clientSession struct {
@@ -291,6 +293,9 @@ type clientSession struct {
 
 	transitgatewayAPI *tg.TransitGatewayApisV1
 	transitgatewayErr error
+
+	iamNamespaceAPI *ns.IbmCloudFunctionsNamespaceAPIV1
+	iamNamespaceErr error
 }
 
 // BluemixAcccountAPI ...
@@ -473,6 +478,12 @@ func (sess clientSession) PrivateDnsClientSession() (*dns.DnsSvcsV1, error) {
 	return sess.pDnsClient, sess.pDnsErr
 }
 
+// Session to the Namespace cloud function
+
+func (sess clientSession) IAMNamespaceAPI() (*ns.IbmCloudFunctionsNamespaceAPIV1, error) {
+	return sess.iamNamespaceAPI, sess.iamNamespaceErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -524,6 +535,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.directlinkErr = errEmptyBluemixCredentials
 		session.cosConfigErr = errEmptyBluemixCredentials
 		session.transitgatewayErr = errEmptyBluemixCredentials
+		session.iamNamespaceErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -834,6 +846,20 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.transitgatewayErr != nil {
 		session.transitgatewayErr = fmt.Errorf("Error occured while configuring Transit Gateway Service: %s", session.transitgatewayErr)
 	}
+
+	cfcurl := fmt.Sprintf("https://%s.functions.cloud.ibm.com/api/v1", c.Region)
+	ibmCloudFunctionsNamespaceOptions := &ns.IbmCloudFunctionsNamespaceOptions{
+		URL: envFallBack([]string{"IBMCLOUD_NAMESPACE_API_ENDPOINT"}, cfcurl),
+		Authenticator: &core.BearerTokenAuthenticator{
+			BearerToken: bluemixToken,
+		},
+	}
+
+	session.iamNamespaceAPI, err = ns.NewIbmCloudFunctionsNamespaceAPIV1(ibmCloudFunctionsNamespaceOptions)
+	if err != nil {
+		session.iamNamespaceErr = fmt.Errorf("Error occured while configuring IAM namespace service: %q", err)
+	}
+
 	return session, nil
 }
 
