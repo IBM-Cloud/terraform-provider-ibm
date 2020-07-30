@@ -34,6 +34,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	"github.com/IBM-Cloud/bluemix-go/api/globalsearch/globalsearchv2"
 	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
+	"github.com/IBM-Cloud/bluemix-go/api/hpcs"
 	"github.com/IBM-Cloud/bluemix-go/api/iam/iamv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv2"
@@ -44,6 +45,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/catalog"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
+	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/controllerv2"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
 	"github.com/IBM-Cloud/bluemix-go/api/schematics"
 	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
@@ -161,12 +163,14 @@ type ClientSession interface {
 	ResourceManagementAPI() (management.ResourceManagementAPI, error)
 	ResourceManagementAPIv2() (managementv2.ResourceManagementAPIv2, error)
 	ResourceControllerAPI() (controller.ResourceControllerAPI, error)
+	ResourceControllerAPIV2() (controllerv2.ResourceControllerAPIV2, error)
 	SoftLayerSession() *slsession.Session
 	IBMPISession() (*ibmpisession.IBMPISession, error)
 	SchematicsAPI() (schematics.SchematicsServiceAPI, error)
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
 	CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error)
 	keyProtectAPI() (*kp.Client, error)
+	keyManagementAPI() (*kp.Client, error)
 	VpcClassicV1API() (*vpcclassic.VpcClassicV1, error)
 	VpcV1API() (*vpc.VpcV1, error)
 	APIGateway() (*apigateway.ApiGatewayControllerApiV1, error)
@@ -174,6 +178,7 @@ type ClientSession interface {
 	CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error)
 	DirectlinkV1API() (*dl.DirectLinkV1, error)
 	TransitGatewayV1API() (*tg.TransitGatewayApisV1, error)
+	HpcsEndpointAPI() (hpcs.HPCSV2, error)
 }
 
 type clientSession struct {
@@ -242,6 +247,9 @@ type clientSession struct {
 	resourceControllerConfigErr  error
 	resourceControllerServiceAPI controller.ResourceControllerAPI
 
+	resourceControllerConfigErrv2  error
+	resourceControllerServiceAPIv2 controllerv2.ResourceControllerAPIV2
+
 	resourceManagementConfigErr  error
 	resourceManagementServiceAPI management.ResourceManagementAPI
 
@@ -257,6 +265,12 @@ type clientSession struct {
 
 	kpErr error
 	kpAPI *kp.API
+
+	kmsErr error
+	kmsAPI *kp.API
+
+	hpcsEndpointErr error
+	hpcsEndpointAPI hpcs.HPCSV2
 
 	pDnsClient *dns.DnsSvcsV1
 	pDnsErr    error
@@ -334,6 +348,11 @@ func (sess clientSession) GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServi
 	return sess.globalTaggingServiceAPI, sess.globalTaggingConfigErr
 }
 
+// HpcsEndpointAPI provides Hpcs Endpoint generator APIs ...
+func (sess clientSession) HpcsEndpointAPI() (hpcs.HPCSV2, error) {
+	return sess.hpcsEndpointAPI, sess.hpcsEndpointErr
+}
+
 // IAMAPI provides IAM PAP APIs ...
 func (sess clientSession) IAMAPI() (iamv1.IAMServiceAPI, error) {
 	return sess.iamServiceAPI, sess.iamConfigErr
@@ -394,6 +413,11 @@ func (sess clientSession) ResourceControllerAPI() (controller.ResourceController
 	return sess.resourceControllerServiceAPI, sess.resourceControllerConfigErr
 }
 
+// ResourceControllerAPIv2 ...
+func (sess clientSession) ResourceControllerAPIV2() (controllerv2.ResourceControllerAPIV2, error) {
+	return sess.resourceControllerServiceAPIv2, sess.resourceControllerConfigErrv2
+}
+
 // SoftLayerSession providers SoftLayer Session
 func (sess clientSession) SoftLayerSession() *slsession.Session {
 	return sess.session.SoftLayerSession
@@ -411,6 +435,10 @@ func (sess clientSession) APIGateway() (*apigateway.ApiGatewayControllerApiV1, e
 
 func (sess clientSession) keyProtectAPI() (*kp.Client, error) {
 	return sess.kpAPI, sess.kpErr
+}
+
+func (sess clientSession) keyManagementAPI() (*kp.Client, error) {
+	return sess.kmsAPI, sess.kmsErr
 }
 
 func (sess clientSession) VpcClassicV1API() (*vpcclassic.VpcClassicV1, error) {
@@ -465,12 +493,14 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.csConfigErr = errEmptyBluemixCredentials
 		session.csv2ConfigErr = errEmptyBluemixCredentials
 		session.kpErr = errEmptyBluemixCredentials
+		session.kmsErr = errEmptyBluemixCredentials
 		session.stxConfigErr = errEmptyBluemixCredentials
 		session.cfConfigErr = errEmptyBluemixCredentials
 		session.cisConfigErr = errEmptyBluemixCredentials
 		session.functionConfigErr = errEmptyBluemixCredentials
 		session.globalSearchConfigErr = errEmptyBluemixCredentials
 		session.globalTaggingConfigErr = errEmptyBluemixCredentials
+		session.hpcsEndpointErr = errEmptyBluemixCredentials
 		session.iamConfigErr = errEmptyBluemixCredentials
 		session.iamPAPConfigErr = errEmptyBluemixCredentials
 		session.iamPAPConfigErrv2 = errEmptyBluemixCredentials
@@ -481,6 +511,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.resourceManagementConfigErr = errEmptyBluemixCredentials
 		session.resourceManagementConfigErrv2 = errEmptyBluemixCredentials
 		session.resourceControllerConfigErr = errEmptyBluemixCredentials
+		session.resourceControllerConfigErrv2 = errEmptyBluemixCredentials
 		session.powerConfigErr = errEmptyBluemixCredentials
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
 		session.userManagementErr = errEmptyBluemixCredentials
@@ -563,6 +594,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.csv2ServiceAPI = v2clusterAPI
 
+	hpcsAPI, err := hpcs.New(sess.BluemixSession)
+	if err != nil {
+		session.hpcsEndpointErr = fmt.Errorf("Error occured while configuring hpcs Endpoint: %q", err)
+	}
+	session.hpcsEndpointAPI = hpcsAPI
+
 	kpurl := fmt.Sprintf("https://%s.kms.cloud.ibm.com", c.Region)
 	options := kp.ClientConfig{
 		BaseURL:       envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kpurl),
@@ -575,6 +612,19 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.kpErr = fmt.Errorf("Error occured while configuring Key Protect Service: %q", err)
 	}
 	session.kpAPI = kpAPIclient
+
+	kmsurl := fmt.Sprintf("https://%s.kms.cloud.ibm.com", c.Region)
+	kmsOptions := kp.ClientConfig{
+		BaseURL:       envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kmsurl),
+		Authorization: sess.BluemixSession.Config.IAMAccessToken,
+		// InstanceID:    "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8",
+		Verbose: kp.VerboseFailOnly,
+	}
+	kmsAPIclient, err := kp.New(kmsOptions, kp.DefaultTransport())
+	if err != nil {
+		session.kmsErr = fmt.Errorf("Error occured while configuring key Service: %q", err)
+	}
+	session.kmsAPI = kmsAPIclient
 
 	var authenticator *core.BearerTokenAuthenticator
 	if strings.HasPrefix(sess.BluemixSession.Config.IAMAccessToken, "Bearer") {
@@ -702,6 +752,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.resourceControllerConfigErr = fmt.Errorf("Error occured while configuring Resource Controller service: %q", err)
 	}
 	session.resourceControllerServiceAPI = resourceControllerAPI
+
+	ResourceControllerAPIv2, err := controllerv2.New(sess.BluemixSession)
+	if err != nil {
+		session.resourceControllerConfigErrv2 = fmt.Errorf("Error occured while configuring Resource Controller v2 service: %q", err)
+	}
+	session.resourceControllerServiceAPIv2 = ResourceControllerAPIv2
 
 	userManagementAPI, err := usermanagementv2.New(sess.BluemixSession)
 	if err != nil {
