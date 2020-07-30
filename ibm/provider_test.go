@@ -58,6 +58,7 @@ var workspaceID string
 var templateID string
 var imageName string
 var functionNamespace string
+var hpcsInstanceID string
 
 // For Power Colo
 
@@ -407,6 +408,12 @@ func init() {
 	functionNamespace = os.Getenv("IBM_FUNCTION_NAMESPACE")
 	if functionNamespace == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_FUNCTION_NAMESPACE for testing ibm_function_package, ibm_function_action, ibm_function_rule, ibm_function_trigger resource else  tests will fail if this is not set correctly")
+	}
+
+	hpcsInstanceID = os.Getenv("HPCS_INSTANCE_ID")
+	if hpcsInstanceID == "" {
+		hpcsInstanceID = "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8"
+		fmt.Println("[INFO] Set the environment variable HPCS_INSTANCE_ID for testing data_source_ibm_kms_key_test else it is set to default value")
 	}
 }
 
