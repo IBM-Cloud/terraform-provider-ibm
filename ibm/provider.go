@@ -189,6 +189,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_iam_access_group":                 dataSourceIBMIAMAccessGroup(),
 			"ibm_iam_auth_token":                   dataSourceIBMIAMAuthToken(),
 			"ibm_iam_role_actions":                 datasourceIBMIAMRoleAction(),
+			"ibm_iam_users":                        dataSourceIBMIAMUsers(),
 			"ibm_iam_roles":                        datasourceIBMIAMRole(),
 			"ibm_iam_user_policy":                  dataSourceIBMIAMUserPolicy(),
 			"ibm_iam_user_profile":                 dataSourceIBMIAMUserProfile(),
