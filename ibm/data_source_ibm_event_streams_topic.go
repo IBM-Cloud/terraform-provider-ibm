@@ -14,7 +14,7 @@ func dataSourceIBMEventStreamsTopic() *schema.Resource {
 			"resource_instance_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The CRN of the resource instance",
+				Description: "The CRN of the Event Streams instance",
 			},
 			"kafka_http_url": {
 				Type:        schema.TypeString,
@@ -35,38 +35,37 @@ func dataSourceIBMEventStreamsTopic() *schema.Resource {
 			"partitions": &schema.Schema{
 				Type:        schema.TypeInt,
 				Description: "The number of partitions of the topic",
-				Optional:    true,
-				Default:     1,
+				Computed:    true,
 			},
 			"config": &schema.Schema{
 				Type:        schema.TypeMap,
 				Description: "The configuration parameters of the topic.",
-				Optional:    true,
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"cleanup.policy": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Computed: true,
 						},
 						"retention.ms": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Computed: true,
 						},
 						"retention.bytes": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Computed: true,
 						},
 						"segment.bytes": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Computed: true,
 						},
 						"segment.ms": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Computed: true,
 						},
 						"segment.index.bytes": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Computed: true,
 						},
 					},
 				},
