@@ -88,3 +88,14 @@ The following attributes are exported:
 - `id` (string) - The ID of the topic in CRN format. eg. `crn:v1:bluemix:public:messagehub:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:cb5a0252-8b8d-4390-b017-80b743d32839:topic:my-es-topic`
 - `kafka_http_url` (string) - The API endpoint for interacting with Event Streams REST API.
 - `kafka_brokers_sasl` (array of strings) - Kafka brokers addresses for interacting with Kafka native API.
+
+
+## Import
+
+The `ibm_event_streams_topic` resource can be imported using the `id`. The ID is the `CRN` (Cloud Resource Name), the `resource type` is `topic`, `resource` is the name of the topic.
+
+```
+$ terraform import ibm_event_streams_topic.es_topic <crn>
+
+$ terraform import ibm_event_streams_topic.es_topic crn:v1:bluemix:public:messagehub:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:cb5a0252-8b8d-4390-b017-80b743d32839:topic:my-es-topic
+```

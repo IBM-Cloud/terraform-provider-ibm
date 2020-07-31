@@ -133,10 +133,9 @@ func TestAccIBMEventStreamsTopicImport(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:            "ibm_event_streams_topic.es_topic",
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"wait_time_minutes"},
+				ResourceName:      "ibm_event_streams_topic.es_topic",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -156,17 +155,17 @@ func testAccCheckIBMEventStreamsTopicWithConfig(instanceName, serviceName, planI
 
 func testAccCheckIBMEventStreamsTopicWithExistingInstanceWithoutConfig(instanceName,
 	topicName string, partitions int) string {
-	return getPlantformResource(instanceName) + "\n" +
+	return getPlatformResource(instanceName) + "\n" +
 		createEventStreamsTopicResourceWithoutConfig(false, topicName, partitions)
 }
 
 func testAccCheckIBMEventStreamsTopicWithExistingInstanceWithConfig(instanceName,
 	topicName string, partitions int, cleanupPolicy string, retentionBytes int, retentionMs int, segmentBytes int) string {
-	return getPlantformResource(instanceName) + "\n" +
+	return getPlatformResource(instanceName) + "\n" +
 		createEventStreamsTopicResourceWithConfig(false, topicName, partitions, cleanupPolicy, retentionBytes, retentionMs, segmentBytes)
 }
 
-func getPlantformResource(instanceName string) string {
+func getPlatformResource(instanceName string) string {
 	return fmt.Sprintf(`
 	  data "ibm_resource_group" "group" {
 		name = "Default"

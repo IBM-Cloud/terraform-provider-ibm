@@ -48,7 +48,7 @@ func resourceIBMEventStreamsTopic() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"resource_instance_id": &schema.Schema{
 				Type:        schema.TypeString,
-				Description: "The CRN of the resource instance",
+				Description: "The CRN of the Event Streams instance",
 				Required:    true,
 			},
 			"kafka_http_url": {
@@ -218,7 +218,7 @@ func resourceIBMEventStreamsTopicUpdate(d *schema.ResourceData, meta interface{}
 		d.Set("config", topicDetail2Config(configEntries))
 		log.Printf("[INFO]resourceIBMEventStreamsTopicUpdate config is set to %v", topicDetail2Config(configEntries))
 	}
-	return nil
+	return resourceIBMEventStreamsTopicRead(d, meta)
 }
 
 func resourceIBMEventStreamsTopicDelete(d *schema.ResourceData, meta interface{}) error {
