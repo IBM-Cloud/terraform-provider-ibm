@@ -96,7 +96,7 @@ Single OpenAPI document or directory of documents.
 | zone1 | The zone in which route1, addprefix1, subnet1, instance1, vol1, vol2, publicgateway1 are created . Default: `us-south-1`| `string` | yes |
 | zone2 | The zone in which subnet2, instance2 are created . Default: `us-south-2`| `string` | yes |
 | ssh\_public\_key | The name of the API Gateway Endpoint resource. Default: `~/.ssh/id_rsa.pub`| `string` | yes |
-| image | ID of the virtual server Image used in instance1, instance2. Default: `7eb4e35b-4257-56f8-d7da-326d85452591` | `string` | yes |
+| image | ID of the virtual server Image used in instance1, instance2. Default: `fc538f61-7dd6-4408-978c-c6b85b69fe76` | `string` | yes |
 | profile | Name of the profile that is to be associated with instances Default: `b-2x8`| `string` | yes |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
