@@ -48,8 +48,8 @@ func TestAccIBMISVPCDatasource_securityGroup(t *testing.T) {
 					testAccCheckIBMISVPCExists("ibm_is_vpc.testacc_vpc", vpc),
 					resource.TestCheckResourceAttr(
 						"data.ibm_is_vpc.testacc_vpc", "name", vpcname),
-					resource.TestCheckResourceAttr(
-						"data.ibm_is_vpc.testacc_vpc", "security_group.#", "1"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_is_vpc.testacc_vpc", "security_group.#"),
 				),
 			},
 		},

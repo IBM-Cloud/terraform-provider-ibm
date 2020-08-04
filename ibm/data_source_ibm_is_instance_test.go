@@ -69,7 +69,7 @@ resource "ibm_is_instance" "testacc_instance" {
   tags = ["tag1"]
 }
 data "ibm_is_instance" "ds_instance" {
-  name        = "${ibm_is_instance.testacc_instance.name}"
+  name        = ibm_is_instance.testacc_instance.name
   private_key = file("test-fixtures/.ssh/id_rsa")
   passphrase  = ""
 }`, vpcname, subnetname, ISZoneName, ISCIDR, sshname, instanceName, isWinImage, instanceProfileName, ISZoneName)

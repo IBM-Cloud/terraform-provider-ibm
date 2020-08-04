@@ -11,7 +11,7 @@ variable "ssh_public_key" {
 }
 
 variable "image" {
-  default = "99edcc54-c513-4d46-9f5b-36243a1e50e2"
+  default = "r006-ed3f775f-ad7e-4e37-ae62-7199b4988b00"
 }
 
 variable "profile" {
