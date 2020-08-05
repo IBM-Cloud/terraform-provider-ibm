@@ -181,6 +181,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_container_cluster_config":         dataSourceIBMContainerClusterConfig(),
 			"ibm_container_cluster_versions":       dataSourceIBMContainerClusterVersions(),
 			"ibm_container_cluster_worker":         dataSourceIBMContainerClusterWorker(),
+			"ibm_container_vpc_cluster_alb":        dataSourceIBMContainerVPCClusterALB(),
 			"ibm_container_vpc_cluster":            dataSourceIBMContainerVPCCluster(),
 			"ibm_container_vpc_cluster_worker":     dataSourceIBMContainerVPCClusterWorker(),
 			"ibm_container_worker_pool":            dataSourceIBMContainerWorkerPool(),

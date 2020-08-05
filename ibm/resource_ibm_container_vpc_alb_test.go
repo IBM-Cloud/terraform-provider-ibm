@@ -5,10 +5,11 @@ import (
 	"strings"
 	"testing"
 
-	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+
+	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 )
 
 func TestAccIBMContainerVPCClusterALB_Basic(t *testing.T) {
@@ -81,18 +82,18 @@ func testAccCheckIBMVpcContainerALB_basic(enable bool, flavor string, worker_cou
 	  }
 	  
 	  resource "ibm_is_vpc" "vpc1" {
-		name = "terraform_vpc-${var.name1}"
+		name = "terraform-vpc-${var.name1}"
 	  }
 	  
 	  resource "ibm_is_subnet" "subnet1" {
-		name                     = "terraform_subnet-${var.name1}"
+		name                     = "terraform-subnet-${var.name1}"
 		vpc                      = "${ibm_is_vpc.vpc1.id}"
 		zone                     = "${local.ZONE1}"
 		total_ipv4_address_count = 256
 	  }
 	  
 	  resource "ibm_is_subnet" "subnet2" {
-		name                     = "terraform_subnet-${var.name2}"
+		name                     = "terraform-subnet-${var.name2}"
 		vpc                      = "${ibm_is_vpc.vpc1.id}"
 		zone                     = "${local.ZONE2}"
 		total_ipv4_address_count = 256
@@ -108,7 +109,7 @@ func testAccCheckIBMVpcContainerALB_basic(enable bool, flavor string, worker_cou
 		flavor            = "%s"
 		worker_count      = "%d"
 		resource_group_id = "${data.ibm_resource_group.resource_group.id}"
-	  
+		
 		zones {
 			subnet_id = "${ibm_is_subnet.subnet1.id}"
 			name      = "${local.ZONE1}"
