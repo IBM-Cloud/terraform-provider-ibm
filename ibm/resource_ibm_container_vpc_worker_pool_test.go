@@ -146,7 +146,7 @@ func testAccCheckIBMVpcContainerWorkerPool_basic(flavor string, worker_count, na
 		flavor            = "%s"
 		worker_count      = "%d"
 		resource_group_id = "${data.ibm_resource_group.resource_group.id}"
-	  
+		wait_till         = "oneWorkerNodeReady"
 		zones {
 			subnet_id = "${ibm_is_subnet.subnet1.id}"
 			name      = "${local.ZONE1}"
