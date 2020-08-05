@@ -44,6 +44,7 @@ github.com/IBM/go-sdk-core/v3 v3.0.0/go.mod h1:JI5NS2+iCoY/D8Oq3JNEZNA7qO42agu6f
 github.com/IBM/go-sdk-core/v3 v3.2.4/go.mod h1:lk9eOzNbNltPf3CBpcg1Ewkhw4qC3u2QCCKDRsUA2M0=
 github.com/IBM/go-sdk-core/v3 v3.3.1 h1:DoXjP1+Wm8Yd4XJsvBMRcYLvQwSLFnzKlMjSrg3Rzpw=
 github.com/IBM/go-sdk-core/v3 v3.3.1/go.mod h1:lk9eOzNbNltPf3CBpcg1Ewkhw4qC3u2QCCKDRsUA2M0=
+github.com/IBM/go-sdk-core/v4 v4.0.3/go.mod h1:lTUXbqIX6/aAbSCkP6q59+dyFsTwZAc0ewRS2vJWVbg=
 github.com/IBM/go-sdk-core/v4 v4.0.4 h1:HP5NEwifM9G4RWaUM8ZvvjJ8haGrjRAi4WnPdmTCyak=
 github.com/IBM/go-sdk-core/v4 v4.0.4/go.mod h1:lTUXbqIX6/aAbSCkP6q59+dyFsTwZAc0ewRS2vJWVbg=
 github.com/IBM/ibm-cos-sdk-go v1.3.1 h1:6SHueqFpznp7S/9b39/WiJ9mt3TgD322j2pArzyd/c8=
@@ -438,11 +439,13 @@ github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI
 github.com/oklog/run v1.0.0 h1:Ru7dDtJNOyC66gQ5dQmaCa0qIsAUFY3sFpK1Xk8igrw=
 github.com/oklog/run v1.0.0/go.mod h1:dlhp/R75TPv97u0XWUtDeV/lRKWPKSdTuV0TZvrmrQA=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
+github.com/onsi/ginkgo v1.10.2/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.10.3/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.12.0/go.mod h1:oUhWkIvk5aDxtKvDDuw8gItl8pKl42LzjC9KZE0HfGg=
 github.com/onsi/ginkgo v1.12.1/go.mod h1:zj2OWP4+oCPe1qIXoGWkgMRwljMUYCdkwsT2108oapk=
 github.com/onsi/ginkgo v1.12.3/go.mod h1:iSB4RoI2tjJc9BBv4NKIKWKya62Rps+oPG/Lv9klQyY=
 github.com/onsi/ginkgo v1.13.0/go.mod h1:+REjRxOmWfHCjfv9TTWB1jD1Frx4XydAD3zm1lskyM0=
+github.com/onsi/gomega v1.7.0/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1CpauHY=
 github.com/onsi/gomega v1.7.1/go.mod h1:XdKZgCCFLUoM/7CFJVPcG8C1xQ1AJ0vpAezJrB7JYyY=
 github.com/onsi/gomega v1.9.0/go.mod h1:Ho0h+IUsWyvy1OpqCwxlQ/21gkhVunqlU8fDGcoTdcA=
 github.com/onsi/gomega v1.10.1/go.mod h1:iN09h71vgCQne3DLsj+A5owkum+a2tYe+TOCB1ybHNo=

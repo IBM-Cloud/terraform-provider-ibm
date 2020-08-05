@@ -39,9 +39,12 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22
 	github.ibm.com/ibmcloud/namespace-go-sdk v0.0.0-00010101000000-000000000000
+	github.ibm.com/ibmcloud/vpc-go-sdk v0.0.0-00010101000000-000000000000
 	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
 )
 
 replace github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22 => ./common/github.com/softlayer/softlayer-go
 
 replace github.ibm.com/ibmcloud/namespace-go-sdk => ./common/github.ibm.com/ibmcloud/namespace-go-sdk
+
+replace github.ibm.com/ibmcloud/vpc-go-sdk => ./common/github.ibm.com/ibmcloud/vpc-go-sdk

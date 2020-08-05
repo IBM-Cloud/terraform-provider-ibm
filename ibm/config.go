@@ -55,6 +55,7 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
+	vpcscoped "github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
 
 //RetryDelay
@@ -62,6 +63,9 @@ const RetryAPIDelay = 5 * time.Second
 
 //BluemixRegion ...
 var BluemixRegion string
+
+// ScopedVPCAPIVersion ...
+var ScopedVPCAPIVersion = "2020-07-28"
 
 var (
 	errEmptySoftLayerCredentials = errors.New("iaas_classic_username and iaas_classic_api_key must be provided. Please see the documentation on how to configure them")
@@ -173,6 +177,7 @@ type ClientSession interface {
 	keyManagementAPI() (*kp.Client, error)
 	VpcClassicV1API() (*vpcclassic.VpcClassicV1, error)
 	VpcV1API() (*vpc.VpcV1, error)
+	VpcV1APIScoped() (*vpcscoped.VpcV1, error)
 	APIGateway() (*apigateway.ApiGatewayControllerApiV1, error)
 	PrivateDnsClientSession() (*dns.DnsSvcsV1, error)
 	CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error)
@@ -282,6 +287,9 @@ type clientSession struct {
 
 	vpcErr error
 	vpcAPI *vpc.VpcV1
+
+	vpcScopedErr error
+	vpcScopedAPI *vpcscoped.VpcV1
 
 	directlinkAPI *dl.DirectLinkV1
 	directlinkErr error
@@ -449,6 +457,10 @@ func (sess clientSession) VpcV1API() (*vpc.VpcV1, error) {
 	return sess.vpcAPI, sess.vpcErr
 }
 
+func (sess clientSession) VpcV1APIScoped() (*vpcscoped.VpcV1, error) {
+	return sess.vpcScopedAPI, sess.vpcScopedErr
+}
+
 func (sess clientSession) DirectlinkV1API() (*dl.DirectLinkV1, error) {
 	return sess.directlinkAPI, sess.directlinkErr
 }
@@ -518,6 +530,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.certManagementErr = errEmptyBluemixCredentials
 		session.vpcClassicErr = errEmptyBluemixCredentials
 		session.vpcErr = errEmptyBluemixCredentials
+		session.vpcScopedErr = errEmptyBluemixCredentials
 		session.apigatewayErr = errEmptyBluemixCredentials
 		session.pDnsErr = errEmptyBluemixCredentials
 		session.bmxUserFetchErr = errEmptyBluemixCredentials
@@ -658,6 +671,18 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.vpcErr = fmt.Errorf("Error occured while configuring vpc service: %q", err)
 	}
 	session.vpcAPI = vpcclient
+
+	vpcScopedurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", c.Region)
+	vpcScopedOptions := &vpcscoped.VpcV1Options{
+		URL:           envFallBack([]string{"IBMCLOUD_IS_NG_API_ENDPOINT"}, vpcScopedurl),
+		Version:       &ScopedVPCAPIVersion,
+		Authenticator: authenticator,
+	}
+	vpcScopedClient, err := vpcscoped.NewVpcV1(vpcScopedOptions)
+	if err != nil {
+		session.vpcErr = fmt.Errorf("Error occured while configuring vpc service: %q", err)
+	}
+	session.vpcScopedAPI = vpcScopedClient
 
 	//cosconfigurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", c.Region)
 	cosconfigoptions := &cosconfig.ResourceConfigurationV1Options{
