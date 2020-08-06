@@ -14,28 +14,35 @@ func dataSourceIBMISSSHKey() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			isKeyName: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The name of the ssh key",
 			},
+
 			isKeyType: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ssh key type",
 			},
 
 			isKeyFingerprint: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ssh key Fingerprint",
 			},
 
 			isKeyLength: {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The ssh key length",
 			},
+
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
 			},
+
 			ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,

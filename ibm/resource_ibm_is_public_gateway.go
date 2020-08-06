@@ -70,7 +70,7 @@ func resourceIBMISPublicGateway() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
-							Description: "Plublic gateway floating IP ID",
+							Description: "Public gateway floating IP ID",
 						},
 						isPublicGatewayFloatingIPAddress: {
 							Type:        schema.TypeString,
