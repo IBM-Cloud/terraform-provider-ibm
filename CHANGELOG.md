@@ -1,3 +1,77 @@
+## 1.10.0 (Aug 06, 2020)
+
+FEATURES:
+
+**Transist Gateway**: 
+* Support for Trasist Gateway Service ([#1021](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1021))
+    * resource/ibm_tg_gateway
+    * resource/ibm_tg_connection
+    * data/ibm_tg_gateway
+    * data/ibm_tg_gateways
+    * data/ibm_tg_locations
+    * data/ibm_tg_location
+
+**DirectLink Gateway**: 
+* Support for DirectLink Gateway Service ([#1349](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1349))
+    * resource/ibm_dl_gateway
+    * resource/ibm_dl_virtual_connection
+    * data/ibm_dl_gateways
+    * data/ibm_dl_offering_speeds
+    * data/ibm_dl_port
+    * data/ibm_dl_ports
+    * data/ibm_dl_gateway
+    * data/ibm_dl_locations
+    * data/ibm_dl_routers
+
+**CloudFunction**		
+* Support for Cloud Function Namespace ([#682](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/682))
+    * resource/ibm_function_namespace
+    * data/ibm_function_namespace
+
+**KMS (keyprotect/hpcs crypto)**
+* Support for Key management (key protect/HPCS Crypto Service) ([#1353](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1353))
+    * resource/ibm_kms_key
+    * data/ibm_kms_key
+    * data/ibm_kms_keys
+
+**IAM User Setting**
+* Support for IAM User Management settings ([#1780](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1780))
+    * resource/ibm_iam_user_settings
+    * data/ibm_iam_users
+    * data/ibm_iam_user_profile
+
+**Event Stream**
+* Support for IBM Event Stream Topic ([#1781](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1781))
+    * resource/ibm_event_streams_topic
+    * data/ibm_event_streams_topic
+
+* data/ibm_is_security_group: Support for ibm_is_security_group ([#1223](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1223))
+
+* data/ibm_container_worker_pool: Support for ibm_container_worker_pool ([#1751](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1751))
+
+* data/ibm_container_vpc_cluster_worker_pool: Support for ibm_container_vpc_cluster_worker_pool ([#1773](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1773))
+
+* data/ibm_container_vpc_cluster_alb: Support for ibm_container_vpc_cluster_alb  ([#1775](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1775))
+
+* data/ibm_certificate_manager_certificate: Support for ibm_certificate_manager_certificate  ([#1679](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1679))
+
+ENHANCEMENTS:
+
+* resource: Support configure geo routes in cis_glb ([#985] (https://github.com/IBM-Cloud/terraform-provider-ibm/issues/985))
+
+* data: Retrieve icd disk encryption details ([#1742] (https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1742))
+
+* resource: auto_renew_enabled support for ibm_certificate_manager_order ([#1657] (https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1657))
+
+* resource: ibm_container_alb_cert destroy not synchronous ([#1712] (https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1712))
+
+
+BUGFIXES
+
+* Fix ibm_container_vpc_worker_pool resource forces a replace if resource_group_id not set ([#1748] (https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1748))
+
+* Fix IBM Container VPC Cluster with no default worker pool crashes on destroy ([#1733] (https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1733))
+
 ## 1.9.0 (July 22, 2020)
 
 FEATURES:
