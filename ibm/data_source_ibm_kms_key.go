@@ -10,9 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func dataSourceIBMKMSkeys() *schema.Resource {
+func dataSourceIBMKMSkey() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMKMSKeysRead,
+		Read: dataSourceIBMKMSKeyRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": {
@@ -22,7 +22,7 @@ func dataSourceIBMKMSkeys() *schema.Resource {
 			},
 			"key_name": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "The name of the key to be fetched",
 			},
 			"endpoint_type": {
@@ -30,7 +30,6 @@ func dataSourceIBMKMSkeys() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"public", "private"}),
 				Description:  "public or private",
-				ForceNew:     true,
 				Default:      "public",
 			},
 			"keys": {
@@ -62,7 +61,7 @@ func dataSourceIBMKMSkeys() *schema.Resource {
 
 }
 
-func dataSourceIBMKMSKeysRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMKMSKeyRead(d *schema.ResourceData, meta interface{}) error {
 	api, err := meta.(ClientSession).keyManagementAPI()
 	if err != nil {
 		return err
