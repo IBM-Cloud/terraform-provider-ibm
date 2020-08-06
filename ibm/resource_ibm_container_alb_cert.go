@@ -22,6 +22,7 @@ func resourceIBMContainerALBCert() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
 			Update: schema.DefaultTimeout(5 * time.Minute),
+			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -174,8 +175,31 @@ func resourceIBMContainerALBCertDelete(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return err
 	}
+	_, albCertDeletionError := waitForALBCertDelete(d, meta)
+	if albCertDeletionError != nil {
+		return albCertDeletionError
+	}
 	d.SetId("")
 	return nil
+}
+
+func waitForALBCertDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"exists"},
+		Target:  []string{"deleted"},
+		Refresh: func() (interface{}, string, error) {
+			resp, err := resourceIBMContainerALBCertExists(d, meta)
+			if resp {
+				return resp, "exists", nil
+			}
+			return resp, "deleted", err
+		},
+		Timeout:    d.Timeout(schema.TimeoutDelete),
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }
 
 func resourceIBMContainerALBCertUpdate(d *schema.ResourceData, meta interface{}) error {

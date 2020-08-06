@@ -29,6 +29,7 @@ ibm_container_alb_cert provides the following [Timeouts](https://www.terraform.i
 
 * `create` - (Default 5 minutes) Used for creating Instance.
 * `update` - (Default 5 minutes) Used for updating Instance.
+* `delete` - (Default 5 minutes) Used for deleting Instance.
 
 ## Argument Reference
 
