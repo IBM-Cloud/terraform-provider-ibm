@@ -123,7 +123,7 @@ func Provider() terraform.ResourceProvider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The IBM Cloud Function namespace",
-				DefaultFunc: schema.EnvDefaultFunc("FUNCTION_NAMESPACE", ""),
+				DefaultFunc: schema.EnvDefaultFunc("FUNCTION_NAMESPACE", nil),
 				Deprecated:  "This field will be deprecated soon",
 			},
 			"riaas_endpoint": {
