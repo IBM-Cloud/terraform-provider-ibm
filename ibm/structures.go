@@ -1113,11 +1113,11 @@ func flattenAccessGroupMembers(list []models.AccessGroupMemberV2, users []accoun
 func flattenUserIds(accountID string, users []string, meta interface{}) ([]string, error) {
 	userids := make([]string, len(users))
 	for i, name := range users {
-		user, err := getAccountUser(accountID, name, meta)
+		iamID, err := getIBMUniqueId(accountID, name, meta)
 		if err != nil {
 			return nil, err
 		}
-		userids[i] = user.IbmUniqueId
+		userids[i] = iamID
 	}
 	return userids, nil
 }

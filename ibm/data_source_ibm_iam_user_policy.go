@@ -94,14 +94,14 @@ func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) er
 
 	accountID := userDetails.userAccount
 
-	user, err := getAccountUser(accountID, userEmail, meta)
+	ibmUniqueID, err := getIBMUniqueId(accountID, userEmail, meta)
 	if err != nil {
 		return err
 	}
 
 	policies, err := iampapClient.V1Policy().List(iampapv1.SearchParams{
 		AccountID: accountID,
-		IAMID:     user.IbmUniqueId,
+		IAMID:     ibmUniqueID,
 		Type:      iampapv1.AccessPolicyType,
 	})
 	if err != nil {

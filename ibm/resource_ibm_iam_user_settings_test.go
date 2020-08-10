@@ -56,18 +56,10 @@ func testAccCheckIBMIAMUserSettingsDestroy(s *terraform.State) error {
 
 		accountID := userDetails.userAccount
 
-		accountv1Client, err := testAccProvider.Meta().(ClientSession).BluemixAcccountv1API()
+		iamID, err := getIBMUniqueId(accountID, usermail, testAccProvider.Meta())
 		if err != nil {
 			return err
 		}
-		accUser, err := accountv1Client.Accounts().FindAccountUserByUserId(accountID, usermail)
-		if err != nil {
-			return err
-		} else if accUser == nil {
-			return fmt.Errorf("User %s is not found under current account", usermail)
-		}
-
-		iamID := accUser.IbmUniqueId
 
 		UserSetting, UserSettingError := client.GetUserSettings(accountID, iamID)
 		if UserSettingError == nil && UserSetting.AllowedIPAddresses != "" {
@@ -106,18 +98,10 @@ func testAccCheckIBMIAMUserSettingsExists(n string, ip string) resource.TestChec
 
 		accountID := userDetails.userAccount
 
-		accountv1Client, err := testAccProvider.Meta().(ClientSession).BluemixAcccountv1API()
+		iamID, err := getIBMUniqueId(accountID, usermail, testAccProvider.Meta())
 		if err != nil {
 			return err
 		}
-		accUser, err := accountv1Client.Accounts().FindAccountUserByUserId(accountID, usermail)
-		if err != nil {
-			return err
-		} else if accUser == nil {
-			return fmt.Errorf("User %s is not found under current account", usermail)
-		}
-
-		iamID := accUser.IbmUniqueId
 
 		UserSetting, UserSettingError := client.GetUserSettings(accountID, iamID)
 		if UserSettingError != nil {

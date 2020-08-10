@@ -3,7 +3,6 @@ package ibm
 import (
 	"fmt"
 
-	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -133,7 +132,7 @@ func resourceIBMIAMUserPolicyCreate(d *schema.ResourceData, meta interface{}) er
 
 	policy.Type = iampapv1.AccessPolicyType
 
-	user, err := getAccountUser(accountID, userEmail, meta)
+	ibmUniqueID, err := getIBMUniqueId(accountID, userEmail, meta)
 	if err != nil {
 		return err
 	}
@@ -143,7 +142,7 @@ func resourceIBMIAMUserPolicyCreate(d *schema.ResourceData, meta interface{}) er
 			Attributes: []iampapv1.Attribute{
 				{
 					Name:  "iam_id",
-					Value: user.IbmUniqueId,
+					Value: ibmUniqueID,
 				},
 			},
 		},
@@ -225,7 +224,10 @@ func resourceIBMIAMUserPolicyUpdate(d *schema.ResourceData, meta interface{}) er
 			return err
 		}
 
-		user, err := getAccountUser(accountID, userEmail, meta)
+		ibmUniqueID, err := getIBMUniqueId(accountID, userEmail, meta)
+		if err != nil {
+			return err
+		}
 
 		policy.Resources[0].SetAccountID(accountID)
 
@@ -234,7 +236,7 @@ func resourceIBMIAMUserPolicyUpdate(d *schema.ResourceData, meta interface{}) er
 				Attributes: []iampapv1.Attribute{
 					{
 						Name:  "iam_id",
-						Value: user.IbmUniqueId,
+						Value: ibmUniqueID,
 					},
 				},
 			},
@@ -300,18 +302,20 @@ func resourceIBMIAMUserPolicyExists(d *schema.ResourceData, meta interface{}) (b
 
 }
 
-func getAccountUser(accountID, userEmail string, meta interface{}) (*accountv1.AccountUser, error) {
-
-	accountv1Client, err := meta.(ClientSession).BluemixAcccountv1API()
+func getIBMUniqueId(accountID, userEmail string, meta interface{}) (string, error) {
+	userManagement, err := meta.(ClientSession).UserManagementAPI()
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	accUser, err := accountv1Client.Accounts().FindAccountUserByUserId(accountID, userEmail)
+	client := userManagement.UserInvite()
+	res, err := client.GetUsers(accountID)
 	if err != nil {
-		return nil, err
-	} else if accUser == nil {
-		return nil, fmt.Errorf("User %s is not found under current account", userEmail)
+		return "", err
 	}
-
-	return accUser, nil
+	for _, userInfo := range res.Resources {
+		if userInfo.Email == userEmail {
+			return userInfo.IamID, nil
+		}
+	}
+	return "", fmt.Errorf("User %s is not found under account %s", userEmail, accountID)
 }
