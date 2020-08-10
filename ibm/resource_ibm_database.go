@@ -185,6 +185,12 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 			},
+			"backup_encryption_key_crn": {
+				Description: "The Backup Encryption Key CRN",
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+			},
 			"tags": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -480,17 +486,18 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 }
 
 type Params struct {
-	Version            string `json:"version,omitempty"`
-	KeyProtectKey      string `json:"key_protect_key,omitempty"`
-	Memory             int    `json:"members_memory_allocation_mb,omitempty"`
-	Disk               int    `json:"members_disk_allocation_mb,omitempty"`
-	CPU                int    `json:"members_cpu_allocation_count,omitempty"`
-	KeyProtectInstance string `json:"key_protect_instance,omitempty"`
-	ServiceEndpoints   string `json:"service-endpoints,omitempty"`
-	BackupID           string `json:"backup-id,omitempty"`
-	RemoteLeaderID     string `json:"remote_leader_id,omitempty"`
-	PITRDeploymentID   string `json:"point_in_time_recovery_deployment_id,omitempty"`
-	PITRTimeStamp      string `json:"point_in_time_recovery_time,omitempty"`
+	Version             string `json:"version,omitempty"`
+	KeyProtectKey       string `json:"key_protect_key,omitempty"`
+	BackUpEncryptionCRN string `json:"backup_encryption_key_crn,omitempty"`
+	Memory              int    `json:"members_memory_allocation_mb,omitempty"`
+	Disk                int    `json:"members_disk_allocation_mb,omitempty"`
+	CPU                 int    `json:"members_cpu_allocation_count,omitempty"`
+	KeyProtectInstance  string `json:"key_protect_instance,omitempty"`
+	ServiceEndpoints    string `json:"service-endpoints,omitempty"`
+	BackupID            string `json:"backup-id,omitempty"`
+	RemoteLeaderID      string `json:"remote_leader_id,omitempty"`
+	PITRDeploymentID    string `json:"point_in_time_recovery_deployment_id,omitempty"`
+	PITRTimeStamp       string `json:"point_in_time_recovery_time,omitempty"`
 }
 
 // Replace with func wrapper for resourceIBMResourceInstanceCreate specifying serviceName := "database......."
@@ -583,6 +590,9 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 	}
 	if backupID, ok := d.GetOk("backup_id"); ok {
 		params.BackupID = backupID.(string)
+	}
+	if backUpEncryptionKey, ok := d.GetOk("backup_encryption_key_crn"); ok {
+		params.BackUpEncryptionCRN = backUpEncryptionKey.(string)
 	}
 	if remoteLeader, ok := d.GetOk("remote_leader_id"); ok {
 		params.RemoteLeaderID = remoteLeader.(string)

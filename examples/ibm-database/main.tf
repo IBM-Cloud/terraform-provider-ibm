@@ -45,3 +45,36 @@ resource "ibm_database" "test_acc" {
   }
 }
 
+# // Key Protect Integration
+# resource "ibm_resource_instance" "kp_instance" {
+#     name              = "test"
+#     service           = "kms"
+#     plan              = "tiered-pricing"
+#     location          = "us-south"
+# }
+# resource "ibm_kp_key" "test" {
+#     key_protect_id = ibm_resource_instance.kp_instance.guid
+#     key_name = "testkey"
+# }
+# //Using the Key Protect Key for disk encryption
+# resource "ibm_database" "redis" {
+#     resource_group_id            = data.ibm_resource_group.group.id
+#     name                         = "redis-test"
+#     service                      = "databases-for-redis"
+#     plan                         = "standard"
+#     location                     = "us-south"
+#     service_endpoints            = "private"
+#     key_protect_instance        = ibm_resource_instance.kp_instance.guid
+#     key_protect_key             = ibm_kp_key.test.id
+# }
+# //Using the Key Protect Key to encrypt disk that holds deployment backups
+# resource "ibm_database" "redistest" {
+#     resource_group_id            = data.ibm_resource_group.test_acc.id
+#     name                         = "redis-test-key"
+#     service                      = "databases-for-redis"
+#     plan                         = "standard"
+#     location                     = "us-south"
+#     service_endpoints            = "private"
+#     backup_encryption_key_crn    = ibm_kp_key.test.id
+    
+# }  
