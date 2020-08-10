@@ -57,12 +57,10 @@ func resourceIBMIAMUserSettingsCreate(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 
-	user, err := getAccountUser(accountID, userEmail, meta)
+	iamID, err := getIBMUniqueId(accountID, userEmail, meta)
 	if err != nil {
 		return err
 	}
-
-	iamID := user.IbmUniqueId
 
 	UserSettingsPayload := v2.UserSettingOptions{}
 
@@ -106,12 +104,10 @@ func resourceIBMIAMUserSettingsRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	user, err := getAccountUser(accountID, d.Id(), meta)
+	iamID, err := getIBMUniqueId(accountID, d.Id(), meta)
 	if err != nil {
 		return err
 	}
-
-	iamID := user.IbmUniqueId
 
 	UserSettings, UserSettingError := client.GetUserSettings(accountID, iamID)
 	if UserSettingError != nil {
@@ -138,12 +134,10 @@ func resourceIBMIAMUserSettingsUpdate(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 
-	user, err := getAccountUser(accountID, d.Id(), meta)
+	iamID, err := getIBMUniqueId(accountID, d.Id(), meta)
 	if err != nil {
 		return err
 	}
-
-	iamID := user.IbmUniqueId
 
 	hasChanged := false
 
@@ -183,12 +177,10 @@ func resourceIBMIAMUserSettingsDelete(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 
-	user, err := getAccountUser(accountID, d.Id(), meta)
+	iamID, err := getIBMUniqueId(accountID, d.Id(), meta)
 	if err != nil {
 		return err
 	}
-
-	iamID := user.IbmUniqueId
 
 	userSettingPayload := v2.UserSettingOptions{}
 
@@ -212,12 +204,10 @@ func resourceIBMIAMUserSettingsExists(d *schema.ResourceData, meta interface{}) 
 		return false, err
 	}
 
-	user, err := getAccountUser(accountID, d.Id(), meta)
+	iamID, err := getIBMUniqueId(accountID, d.Id(), meta)
 	if err != nil {
 		return false, err
 	}
-
-	iamID := user.IbmUniqueId
 
 	_, settingErr := client.GetUserSettings(accountID, iamID)
 

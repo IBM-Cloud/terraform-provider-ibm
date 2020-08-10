@@ -90,12 +90,10 @@ func dataSourceIBMIAMUserProfileRead(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 
-	user, err := getAccountUser(accountID, userEmail, meta)
+	iamID, err := getIBMUniqueId(accountID, userEmail, meta)
 	if err != nil {
 		return err
 	}
-
-	iamID := user.IbmUniqueId
 
 	userInfo, error := client.GetUserProfile(accountID, iamID)
 	if error != nil {

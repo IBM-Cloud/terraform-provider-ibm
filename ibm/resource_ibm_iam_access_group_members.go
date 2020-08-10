@@ -222,11 +222,11 @@ func resourceIBMIAMAccessGroupMembersUpdate(d *schema.ResourceData, meta interfa
 			return err
 		}
 		for _, u := range removeUsers {
-			user, err := getAccountUser(accountID, u, meta)
+			ibmUniqueId, err := getIBMUniqueId(accountID, u, meta)
 			if err != nil {
 				return err
 			}
-			err = iamuumClient.AccessGroupMember().Remove(grpID, user.IbmUniqueId)
+			err = iamuumClient.AccessGroupMember().Remove(grpID, ibmUniqueId)
 			if err != nil {
 				return err
 			}
@@ -271,11 +271,12 @@ func resourceIBMIAMAccessGroupMembersDelete(d *schema.ResourceData, meta interfa
 	users := expandStringList(d.Get("ibm_ids").(*schema.Set).List())
 
 	for _, name := range users {
-		user, err := getAccountUser(userDetails.userAccount, name, meta)
+
+		ibmUniqueID, err := getIBMUniqueId(userDetails.userAccount, name, meta)
 		if err != nil {
 			return err
 		}
-		err = iamuumClient.AccessGroupMember().Remove(grpID, user.IbmUniqueId)
+		err = iamuumClient.AccessGroupMember().Remove(grpID, ibmUniqueID)
 		if err != nil {
 			return err
 		}
