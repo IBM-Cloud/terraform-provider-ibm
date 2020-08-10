@@ -104,6 +104,36 @@ func TestAccIBMDatabaseInstance_Redis_import(t *testing.T) {
 	})
 }
 
+func TestAccIBMDatabaseInstance_Redis_KP_Encrypt(t *testing.T) {
+	t.Parallel()
+	databaseResourceGroup := "Default"
+	var databaseInstanceOne string
+	rnd := fmt.Sprintf("tf_test_acc_%d", acctest.RandIntRange(10, 100))
+	testName := rnd
+	kpInstanceName := fmt.Sprintf("tf_kp_instance_%d", acctest.RandIntRange(10, 100))
+	kpKeyName := fmt.Sprintf("tf_kp_key_%d", acctest.RandIntRange(10, 100))
+	kpByokName := fmt.Sprintf("tf_kp_byok_key_%d", acctest.RandIntRange(10, 100))
+	// name := "ibm_database." + testName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMDatabaseInstance_Redis_KPEncrypt(databaseResourceGroup, kpInstanceName, kpKeyName, kpByokName, testName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists("ibm_database.database", &databaseInstanceOne),
+					resource.TestCheckResourceAttr("ibm_database.database", "name", testName),
+					resource.TestCheckResourceAttr("ibm_database.database", "service", "databases-for-redis"),
+					resource.TestCheckResourceAttrSet("ibm_database.database", "key_protect_key"),
+					resource.TestCheckResourceAttrSet("ibm_database.database", "backup_encryption_key_crn"),
+				),
+			},
+		},
+	})
+}
+
 // func testAccCheckIBMDatabaseInstanceDestroy(s *terraform.State) etc in resource_ibm_database_postgresql_test.go
 
 func testAccCheckIBMDatabaseInstance_Redis_basic(databaseResourceGroup string, name string) string {
@@ -193,4 +223,38 @@ func testAccCheckIBMDatabaseInstance_Redis_import(databaseResourceGroup string, 
 		location          = "us-south"
 	  }
 				`, databaseResourceGroup, name)
+}
+func testAccCheckIBMDatabaseInstance_Redis_KPEncrypt(databaseResourceGroup string, kpInstanceName, kpKeyName, kpByokName, name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+		# name = "%s"
+	  }
+	resource "ibm_resource_instance" "kp_instance" {
+		name              = "%s"
+		service           = "kms"
+		plan              = "tiered-pricing"
+		location          = "us-south"
+	}
+	resource "ibm_kp_key" "test" {
+		key_protect_id 	 = ibm_resource_instance.kp_instance.guid
+		key_name		 = "%s"
+		force_delete	 = true
+	}
+	resource "ibm_kp_key" "test1" {
+		key_protect_id 	= ibm_resource_instance.kp_instance.guid
+		key_name 		= "%s"
+		force_delete	= true
+	}
+	resource "ibm_database" "database" {
+		resource_group_id 			= data.ibm_resource_group.test_acc.id
+		name              			= "%s"
+		service           			= "databases-for-redis"
+		plan              			= "standard"
+		location         			= "us-south"
+		key_protect_instance        = ibm_resource_instance.kp_instance.guid
+		key_protect_key             = ibm_kp_key.test.id
+		backup_encryption_key_crn   = ibm_kp_key.test1.id
+	}
+				`, databaseResourceGroup, kpInstanceName, kpKeyName, kpByokName, name)
 }
