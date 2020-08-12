@@ -38,9 +38,41 @@ func TestAccIBMTransitGatewayConnection_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_tg_connection.test_ibm_tg_connection", "name", updateVcName),
 				),
 			},
+			// tg cross account test
+			resource.TestStep{
+				//Create test case
+				Config: testAccCheckIBMTransitGatewayCrossAccConnectionConfig(tgConnectionName, gatewayName, vpcName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMTransitGatewayConnectionExists("ibm_tg_connection.test_ibm_tg_connection", tgConnection),
+					resource.TestCheckResourceAttr("ibm_tg_connection.test_ibm_tg_connection", "name", tgConnectionName),
+				),
+			},
 		},
 	},
 	)
+}
+
+func testAccCheckIBMTransitGatewayCrossAccConnectionConfig(vcName, gatewayName, vpcName string) string {
+	return fmt.Sprintf(`	
+	resource "ibm_is_vpc" "test_tg_vpc" {
+		name = "%s"
+		}    	
+resource "ibm_tg_gateway" "test_tg_gateway"{
+		name="%s"
+		location="us-south"
+		global=true
+		}
+	 
+	
+resource "ibm_tg_connection" "test_ibm_tg_connection"{
+		gateway = "${ibm_tg_gateway.test_tg_gateway.id}"
+		network_type = "vpc"
+		name = "%s"
+		network_id = "%s"
+		network_account_id = "%s"
+}	   
+	  `, vpcName, gatewayName, vcName, tg_cross_network_id, tg_cross_network_account_id)
+
 }
 
 func testAccCheckIBMTransitGatewayConnectionConfig(vcName, gatewayName, vpcName string) string {
@@ -82,10 +114,10 @@ func testAccCheckIBMTransitGatewayConnectionDestroy(s *terraform.State) error {
 		gatewayId := parts[0]
 		ID := parts[1]
 
-		detailTransitGatewayConnectionOptions := &transitgatewayapisv1.DetailTransitGatewayConnectionOptions{}
+		detailTransitGatewayConnectionOptions := &transitgatewayapisv1.GetTransitGatewayConnectionOptions{}
 		detailTransitGatewayConnectionOptions.SetTransitGatewayID(gatewayId)
 		detailTransitGatewayConnectionOptions.SetID(ID)
-		_, _, err = client.DetailTransitGatewayConnection(detailTransitGatewayConnectionOptions)
+		_, _, err = client.GetTransitGatewayConnection(detailTransitGatewayConnectionOptions)
 		if err == nil {
 			return fmt.Errorf(" transit gateway connection still exists: %s", rs.Primary.ID)
 		}
@@ -111,11 +143,11 @@ func testAccCheckIBMTransitGatewayConnectionExists(n string, vc string) resource
 		gatewayId := parts[0]
 		ID := parts[1]
 
-		getVCOptions := &transitgatewayapisv1.DetailTransitGatewayConnectionOptions{
+		getVCOptions := &transitgatewayapisv1.GetTransitGatewayConnectionOptions{
 			ID: &ID,
 		}
 		getVCOptions.SetTransitGatewayID(gatewayId)
-		r, response, err := client.DetailTransitGatewayConnection(getVCOptions)
+		r, response, err := client.GetTransitGatewayConnection(getVCOptions)
 		if err != nil {
 			return fmt.Errorf("testAccCheckIBMTransitGatewayConnectionExists: Error Getting Transit Gateway  Connection: %s\n%s", err, response)
 		}

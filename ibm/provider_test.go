@@ -77,6 +77,10 @@ var isWinImage string
 var image_cos_url string
 var image_operating_system string
 
+// Transit Gateway cross account
+var tg_cross_network_account_id string
+var tg_cross_network_id string
+
 func init() {
 	cfOrganization = os.Getenv("IBM_ORG")
 	if cfOrganization == "" {
@@ -415,6 +419,15 @@ func init() {
 		hpcsInstanceID = "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8"
 		fmt.Println("[INFO] Set the environment variable HPCS_INSTANCE_ID for testing data_source_ibm_kms_key_test else it is set to default value")
 	}
+	tg_cross_network_account_id = os.Getenv("IBM_TG_CROSS_ACCOUNT_ID")
+	if tg_cross_network_account_id == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_TG_CROSS_ACCOUNT_ID for testing ibm_tg_connection resource else  tests will fail if this is not set correctly")
+	}
+	tg_cross_network_id = os.Getenv("IBM_TG_CROSS_NETWORK_ID")
+	if tg_cross_network_id == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_TG_CROSS_NETWORK_ID for testing ibm_tg_connection resource else  tests will fail if this is not set correctly")
+	}
+
 }
 
 var testAccProviders map[string]terraform.ResourceProvider

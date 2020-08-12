@@ -22,7 +22,6 @@ import (
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/go-openapi/strfmt"
 	slsession "github.com/softlayer/softlayer-go/session"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
@@ -839,7 +838,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		Authenticator: &core.BearerTokenAuthenticator{
 			BearerToken: bluemixToken,
 		},
-		Version: CreateVersionDateTG(),
+		Version: CreateVersionDate(),
 	}
 
 	session.transitgatewayAPI, session.transitgatewayErr = tg.NewTransitGatewayApisV1(transitgatewayOptions)
@@ -869,11 +868,6 @@ func CreateVersionDate() *string {
 	return &version
 }
 
-// CreateVersionDateTG requires mandatory version attribute.
-func CreateVersionDateTG() *strfmt.Date {
-	d := strfmt.Date(time.Date(2020, time.June, 13, 0, 0, 0, 0, time.UTC))
-	return &d
-}
 func newSession(c *Config) (*Session, error) {
 	ibmSession := &Session{}
 

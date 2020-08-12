@@ -28,7 +28,9 @@ The following arguments are supported:
 * `gateway` - (Required, Forces new resource, string) The Transit Gateway identifier.
 * `name` - (Optional, string) The user-defined name for this transit gateway. If unspecified, the name will be the network name (the name of the VPC in the case of network type 'vpc', and the word Classic, in the case of network type 'classic').
 * `network_type` - (Required, Forces new resource, string) Defines what type of network is connected via this connection.Allowable values: [classic,vpc]. Example: vpc
-* `network_id` - (Optional,Forces new resource,string) The ID of the network being connected via this connection. This field is required for some types, such as 'vpc'. For network type 'vpc' this is the CRN of the VPC to be connected. This field is required to be unspecified for network type 'classic'. Example: crn:v1:bluemix:public:is:us-south:a/123456::vpc:4727d842-f94f-4a2d-824a-9bc9b02c523b
+* `network_id` - (Optional,Forces new resource,string) The ID of the network being connected via this connection. This field is required for some types, such as 'vpc'. For network type 'vpc' this is the CRN of the VPC to be connected. This field is required to be unspecified for network type 'classic'. Example: crn:v1:bluemix:public:is:us-south:a/123456::vpc:4727d842-f94f-4a2d-824a-9bc9b02c523b   
+* `network_account_id` (Optional,Forces new resource,string) - The ID of the account which owns the network that is being connected. Generally only used if the network is in a different account than the gateway.
+
 
 ## Attribute Reference
 
@@ -41,6 +43,7 @@ The following attributes are exported:
 * `status` - What is the current configuration state of this connection
 Possible values: [attached,failed,pending,deleting]
 
+**NOTE** If the the user is provisioning the cross-account gateway/connection the resource doesn't wait for the available status. It goes into provisioning status where the user need to complete the manual approval process
 
 ## Import
 

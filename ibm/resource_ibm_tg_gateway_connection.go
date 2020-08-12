@@ -5,7 +5,6 @@ import (
 	"github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-
 	"log"
 	"time"
 )
@@ -14,6 +13,7 @@ const (
 	tgGatewayConnections                = "gateway_connections"
 	tgNetworkId                         = "network_id"
 	tgNetworkType                       = "network_type"
+	tgNetworkAccountID                  = "network_account_id"
 	tgConectionCreatedAt                = "created_at"
 	tgConnectionStatus                  = "status"
 	tgGatewayId                         = "gateway"
@@ -73,6 +73,12 @@ func resourceIBMTransitGatewayConnection() *schema.Resource {
 				Computed:    true,
 				ForceNew:    true,
 				Description: "The ID of the network being connected via this connection. This field is required for some types, such as 'vpc'. For network type 'vpc' this is the CRN of the VPC to be connected. This field is required to be unspecified for network type 'classic'.",
+			},
+			tgNetworkAccountID: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The ID of the account which owns the network that is being connected. Generally only used if the network is in a different account than the gateway.",
 			},
 			tgCreatedAt: {
 				Type:        schema.TypeString,
@@ -135,10 +141,13 @@ func resourceIBMTransitGatewayConnectionCreate(d *schema.ResourceData, meta inte
 
 	networkType := d.Get(tgNetworkType).(string)
 	createTransitGatewayConnectionOptions.SetNetworkType(networkType)
-
 	if _, ok := d.GetOk(tgNetworkId); ok {
-		networkId := d.Get(tgNetworkId).(string)
-		createTransitGatewayConnectionOptions.SetNetworkID(networkId)
+		networkID := d.Get(tgNetworkId).(string)
+		createTransitGatewayConnectionOptions.SetNetworkID(networkID)
+	}
+	if _, ok := d.GetOk(tgNetworkAccountID); ok {
+		networkAccId := d.Get(tgNetworkAccountID).(string)
+		createTransitGatewayConnectionOptions.SetNetworkAccountID(networkAccId)
 	}
 
 	tgConnections, response, err := client.CreateTransitGatewayConnection(createTransitGatewayConnectionOptions)
@@ -148,6 +157,9 @@ func resourceIBMTransitGatewayConnectionCreate(d *schema.ResourceData, meta inte
 
 	d.SetId(fmt.Sprintf("%s/%s", gatewayId, *tgConnections.ID))
 	d.Set(tgConnectionId, *tgConnections.ID)
+	if _, ok := d.GetOk(tgNetworkAccountID); ok {
+		return resourceIBMTransitGatewayConnectionRead(d, meta)
+	}
 	_, err = isWaitForTransitGatewayConnectionAvailable(client, d.Id(), d.Timeout(schema.TimeoutCreate))
 
 	if err != nil {
@@ -180,10 +192,10 @@ func isTransitGatewayConnectionRefreshFunc(client *transitgatewayapisv1.TransitG
 
 		gatewayId := parts[0]
 		ID := parts[1]
-		detailTransitGatewayConnectionOptions := &transitgatewayapisv1.DetailTransitGatewayConnectionOptions{}
-		detailTransitGatewayConnectionOptions.SetTransitGatewayID(gatewayId)
-		detailTransitGatewayConnectionOptions.SetID(ID)
-		tgConnection, response, err := client.DetailTransitGatewayConnection(detailTransitGatewayConnectionOptions)
+		getTransitGatewayConnectionOptions := &transitgatewayapisv1.GetTransitGatewayConnectionOptions{}
+		getTransitGatewayConnectionOptions.SetTransitGatewayID(gatewayId)
+		getTransitGatewayConnectionOptions.SetID(ID)
+		tgConnection, response, err := client.GetTransitGatewayConnection(getTransitGatewayConnectionOptions)
 		if err != nil {
 			return nil, "", fmt.Errorf("Error Getting Transit Gateway Connection (%s): %s\n%s", ID, err, response)
 		}
@@ -208,10 +220,10 @@ func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interf
 	gatewayId := parts[0]
 	ID := parts[1]
 
-	detailTransitGatewayConnectionOptions := &transitgatewayapisv1.DetailTransitGatewayConnectionOptions{}
-	detailTransitGatewayConnectionOptions.SetTransitGatewayID(gatewayId)
-	detailTransitGatewayConnectionOptions.SetID(ID)
-	instance, response, err := client.DetailTransitGatewayConnection(detailTransitGatewayConnectionOptions)
+	getTransitGatewayConnectionOptions := &transitgatewayapisv1.GetTransitGatewayConnectionOptions{}
+	getTransitGatewayConnectionOptions.SetTransitGatewayID(gatewayId)
+	getTransitGatewayConnectionOptions.SetID(ID)
+	instance, response, err := client.GetTransitGatewayConnection(getTransitGatewayConnectionOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -238,6 +250,9 @@ func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interf
 	if instance.Status != nil {
 		d.Set(tgStatus, *instance.Status)
 	}
+	if instance.NetworkAccountID != nil {
+		d.Set(tgNetworkAccountID, *instance.NetworkAccountID)
+	}
 	d.Set(tgConnectionId, *instance.ID)
 	d.Set(tgGatewayId, gatewayId)
 
@@ -258,11 +273,12 @@ func resourceIBMTransitGatewayConnectionUpdate(d *schema.ResourceData, meta inte
 	gatewayId := parts[0]
 	ID := parts[1]
 
-	detailTransitGatewayConnectionOptions := &transitgatewayapisv1.DetailTransitGatewayConnectionOptions{
+	getTransitGatewayConnectionOptions := &transitgatewayapisv1.GetTransitGatewayConnectionOptions{
 		ID: &ID,
 	}
-	detailTransitGatewayConnectionOptions.SetTransitGatewayID(gatewayId)
-	_, response, err := client.DetailTransitGatewayConnection(detailTransitGatewayConnectionOptions)
+	getTransitGatewayConnectionOptions.SetTransitGatewayID(gatewayId)
+
+	_, response, err := client.GetTransitGatewayConnection(getTransitGatewayConnectionOptions)
 	if err != nil {
 		return fmt.Errorf("Error Getting Transit Gateway Connection: %s\n%s", err, response)
 	}
@@ -344,10 +360,10 @@ func isTransitGatewayConnectionDeleteRefreshFunc(client *transitgatewayapisv1.Tr
 
 		gatewayId := parts[0]
 		ID := parts[1]
-		detailTransitGatewayConnectionOptions := &transitgatewayapisv1.DetailTransitGatewayConnectionOptions{}
-		detailTransitGatewayConnectionOptions.SetTransitGatewayID(gatewayId)
-		detailTransitGatewayConnectionOptions.SetID(ID)
-		tgConnection, response, err := client.DetailTransitGatewayConnection(detailTransitGatewayConnectionOptions)
+		getTransitGatewayConnectionOptions := &transitgatewayapisv1.GetTransitGatewayConnectionOptions{}
+		getTransitGatewayConnectionOptions.SetTransitGatewayID(gatewayId)
+		getTransitGatewayConnectionOptions.SetID(ID)
+		tgConnection, response, err := client.GetTransitGatewayConnection(getTransitGatewayConnectionOptions)
 
 		if err != nil {
 
@@ -373,11 +389,11 @@ func resourceIBMTransitGatewayConnectionExists(d *schema.ResourceData, meta inte
 	gatewayId := parts[0]
 	ID := parts[1]
 
-	detailTransitGatewayConnectionOptions := &transitgatewayapisv1.DetailTransitGatewayConnectionOptions{
+	getTransitGatewayConnectionOptions := &transitgatewayapisv1.GetTransitGatewayConnectionOptions{
 		ID: &ID,
 	}
-	detailTransitGatewayConnectionOptions.SetTransitGatewayID(gatewayId)
-	_, response, err := client.DetailTransitGatewayConnection(detailTransitGatewayConnectionOptions)
+	getTransitGatewayConnectionOptions.SetTransitGatewayID(gatewayId)
+	_, response, err := client.GetTransitGatewayConnection(getTransitGatewayConnectionOptions)
 	if err != nil {
 		return false, fmt.Errorf("Error Getting Transit Gateway Connection: %s\n%s", err, response)
 	}
