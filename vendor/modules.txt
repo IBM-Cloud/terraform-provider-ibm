@@ -83,7 +83,7 @@ github.com/IBM/dns-svcs-go-sdk/dnssvcsv1
 github.com/IBM/go-sdk-core/core
 # github.com/IBM/go-sdk-core/v3 v3.3.1
 github.com/IBM/go-sdk-core/v3/core
-# github.com/IBM/go-sdk-core/v4 v4.0.4
+# github.com/IBM/go-sdk-core/v4 v4.0.6
 github.com/IBM/go-sdk-core/v4/core
 # github.com/IBM/ibm-cos-sdk-go v1.3.1
 github.com/IBM/ibm-cos-sdk-go/aws
@@ -131,7 +131,7 @@ github.com/IBM/keyprotect-go-client/iam
 github.com/IBM/networking-go-sdk/common
 github.com/IBM/networking-go-sdk/directlinkv1
 github.com/IBM/networking-go-sdk/transitgatewayapisv1
-# github.com/IBM/vpc-go-sdk v0.0.1
+# github.com/IBM/vpc-go-sdk v0.0.3
 github.com/IBM/vpc-go-sdk/common
 github.com/IBM/vpc-go-sdk/vpcclassicv1
 github.com/IBM/vpc-go-sdk/vpcv1

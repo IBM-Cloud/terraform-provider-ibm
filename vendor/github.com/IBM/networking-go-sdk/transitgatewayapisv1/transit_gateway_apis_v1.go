@@ -459,8 +459,6 @@ func (transitGatewayApis *TransitGatewayApisV1) CreateTransitGatewayConnection(c
 	if err != nil {
 		return
 	}
-	fmt.Printf("err = %s",err)
-	
 	err = core.ValidateStruct(createTransitGatewayConnectionOptions, "createTransitGatewayConnectionOptions")
 	if err != nil {
 		return
@@ -485,10 +483,8 @@ func (transitGatewayApis *TransitGatewayApisV1) CreateTransitGatewayConnection(c
 	}
 	builder.AddHeader("Accept", "application/json")
 	builder.AddHeader("Content-Type", "application/json")
-	fmt.Printf("err = %s",err)
 
 	builder.AddQuery("version", fmt.Sprint(*transitGatewayApis.Version))
-	fmt.Printf("version = %s",*transitGatewayApis.Version)
 
 	body := make(map[string]interface{})
 	if createTransitGatewayConnectionOptions.NetworkType != nil {
@@ -503,8 +499,6 @@ func (transitGatewayApis *TransitGatewayApisV1) CreateTransitGatewayConnection(c
 	if createTransitGatewayConnectionOptions.NetworkAccountID != nil {
 		body["network_account_id"] = createTransitGatewayConnectionOptions.NetworkAccountID
 	}
-
-	fmt.Printf("netaccid = %s",createTransitGatewayConnectionOptions.NetworkAccountID)
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
 		return

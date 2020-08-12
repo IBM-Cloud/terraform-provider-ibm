@@ -91,5 +91,5 @@ func (response *DetailedResponse) String() string {
 	if err == nil {
 		return fmt.Sprintf("%+v\n", string(output))
 	}
-	return fmt.Sprintf("Response")
+	return fmt.Sprintf("Error marshalling DetailedResponse instance: %s", err.Error())
 }
