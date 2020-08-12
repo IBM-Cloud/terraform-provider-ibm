@@ -379,7 +379,7 @@ func isTransitGatewayDeleteRefreshFunc(client *transitgatewayapisv1.TransitGatew
 		transitGateway, response, err := client.GetTransitGateway(gettgwoptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
-				return client, isTransitGatewayDeleted, nil
+				return transitGateway, isTransitGatewayDeleted, nil
 			}
 			return nil, "", fmt.Errorf("Error Getting Transit Gateway: %s\n%s", err, response)
 		}
