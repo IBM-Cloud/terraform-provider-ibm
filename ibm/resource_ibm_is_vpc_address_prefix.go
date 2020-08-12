@@ -59,6 +59,12 @@ func resourceIBMISVpcAddressPrefix() *schema.Resource {
 				Computed:    true,
 				Description: "Boolean value, set to true if VPC instance have subnets",
 			},
+
+			RelatedCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the VPC resource",
+			},
 		},
 	}
 }
@@ -189,6 +195,14 @@ func classicVpcAddressPrefixGet(d *schema.ResourceData, meta interface{}, vpcID,
 	}
 	d.Set(isVPCAddressPrefixCIDR, *addrPrefix.CIDR)
 	d.Set(isVPCAddressPrefixHasSubnets, *addrPrefix.HasSubnets)
+	getVPCOptions := &vpcclassicv1.GetVPCOptions{
+		ID: &vpcID,
+	}
+	vpc, response, err := sess.GetVPC(getVPCOptions)
+	if err != nil {
+		return fmt.Errorf("Error Getting VPC : %s\n%s", err, response)
+	}
+	d.Set(RelatedCRN, *vpc.CRN)
 
 	return nil
 }
@@ -216,6 +230,14 @@ func vpcAddressPrefixGet(d *schema.ResourceData, meta interface{}, vpcID, addrPr
 	}
 	d.Set(isVPCAddressPrefixCIDR, *addrPrefix.CIDR)
 	d.Set(isVPCAddressPrefixHasSubnets, *addrPrefix.HasSubnets)
+	getVPCOptions := &vpcv1.GetVPCOptions{
+		ID: &vpcID,
+	}
+	vpc, response, err := sess.GetVPC(getVPCOptions)
+	if err != nil {
+		return fmt.Errorf("Error Getting VPC : %s\n%s", err, response)
+	}
+	d.Set(RelatedCRN, *vpc.CRN)
 
 	return nil
 }

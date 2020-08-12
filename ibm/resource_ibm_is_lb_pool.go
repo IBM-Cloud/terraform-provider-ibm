@@ -105,15 +105,17 @@ func resourceIBMISLBPool() *schema.Resource {
 			},
 
 			isLBPoolHealthMonitorURL: {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Health monitor URL of LB Pool",
 			},
 
 			isLBPoolHealthMonitorPort: {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "Health monitor Port the LB Pool",
 			},
 
 			isLBPoolSessPersistenceType: {
@@ -130,13 +132,21 @@ func resourceIBMISLBPool() *schema.Resource {
 			},
 
 			isLBPoolProvisioningStatus: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Status of the LB Pool",
 			},
 
 			isLBPool: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The LB Pool id",
+			},
+
+			RelatedCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the LB resource",
 			},
 		},
 	}
@@ -377,6 +387,14 @@ func classicLBPoolGet(d *schema.ResourceData, meta interface{}, lbID, lbPoolID s
 		// d.Set(isLBPoolSessPersistenceCookieName, *lbPool.SessionPersistence.CookieName)
 	}
 	d.Set(isLBPoolProvisioningStatus, *lbPool.ProvisioningStatus)
+	getLoadBalancerOptions := &vpcclassicv1.GetLoadBalancerOptions{
+		ID: &lbID,
+	}
+	lb, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
+	if err != nil {
+		return fmt.Errorf("Error Getting Load Balancer : %s\n%s", err, response)
+	}
+	d.Set(RelatedCRN, *lb.CRN)
 	return nil
 }
 
@@ -420,6 +438,14 @@ func lbPoolGet(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) 
 		// d.Set(isLBPoolSessPersistenceCookieName, *lbPool.SessionPersistence.CookieName)
 	}
 	d.Set(isLBPoolProvisioningStatus, *lbPool.ProvisioningStatus)
+	getLoadBalancerOptions := &vpcv1.GetLoadBalancerOptions{
+		ID: &lbID,
+	}
+	lb, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
+	if err != nil {
+		return fmt.Errorf("Error Getting Load Balancer : %s\n%s", err, response)
+	}
+	d.Set(RelatedCRN, *lb.CRN)
 	return nil
 }
 

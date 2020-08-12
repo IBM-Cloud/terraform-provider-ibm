@@ -110,6 +110,12 @@ func resourceIBMISLBPoolMember() *schema.Resource {
 				Computed:    true,
 				Description: "LB pool member Href value",
 			},
+
+			RelatedCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the LB resource",
+			},
 		},
 	}
 }
@@ -401,6 +407,14 @@ func classiclbpmemberGet(d *schema.ResourceData, meta interface{}, lbID, lbPoolI
 	d.Set(isLBPoolMemberProvisioningStatus, *lbPoolMem.ProvisioningStatus)
 	d.Set(isLBPoolMemberHealth, *lbPoolMem.Health)
 	d.Set(isLBPoolMemberHref, *lbPoolMem.Href)
+	getLoadBalancerOptions := &vpcclassicv1.GetLoadBalancerOptions{
+		ID: &lbID,
+	}
+	lb, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
+	if err != nil {
+		return fmt.Errorf("Error Getting Load Balancer : %s\n%s", err, response)
+	}
+	d.Set(RelatedCRN, *lb.CRN)
 	return nil
 }
 
@@ -432,6 +446,14 @@ func lbpmemberGet(d *schema.ResourceData, meta interface{}, lbID, lbPoolID, lbPo
 	d.Set(isLBPoolMemberProvisioningStatus, *lbPoolMem.ProvisioningStatus)
 	d.Set(isLBPoolMemberHealth, *lbPoolMem.Health)
 	d.Set(isLBPoolMemberHref, *lbPoolMem.Href)
+	getLoadBalancerOptions := &vpcv1.GetLoadBalancerOptions{
+		ID: &lbID,
+	}
+	lb, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
+	if err != nil {
+		return fmt.Errorf("Error Getting Load Balancer : %s\n%s", err, response)
+	}
+	d.Set(RelatedCRN, *lb.CRN)
 	return nil
 }
 

@@ -154,6 +154,12 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 					},
 				},
 			},
+
+			RelatedCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the Security Group",
+			},
 		},
 	}
 }
@@ -316,6 +322,14 @@ func classicSgRuleGet(d *schema.ResourceData, meta interface{}, secgrpID, ruleID
 	}
 
 	d.Set(isSecurityGroupID, secgrpID)
+	getSecurityGroupOptions := &vpcclassicv1.GetSecurityGroupOptions{
+		ID: &secgrpID,
+	}
+	sg, response, err := sess.GetSecurityGroup(getSecurityGroupOptions)
+	if err != nil {
+		return fmt.Errorf("Error Getting Security Group : %s\n%s", err, response)
+	}
+	d.Set(RelatedCRN, *sg.CRN)
 	switch reflect.TypeOf(sgrule).String() {
 	case "*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp":
 		{
@@ -422,6 +436,14 @@ func sgRuleGet(d *schema.ResourceData, meta interface{}, secgrpID, ruleID string
 		return fmt.Errorf("Error Getting Security Group Rule (%s): %s\n%s", ruleID, err, response)
 	}
 	d.Set(isSecurityGroupID, secgrpID)
+	getSecurityGroupOptions := &vpcv1.GetSecurityGroupOptions{
+		ID: &secgrpID,
+	}
+	sg, response, err := sess.GetSecurityGroup(getSecurityGroupOptions)
+	if err != nil {
+		return fmt.Errorf("Error Getting Security Group : %s\n%s", err, response)
+	}
+	d.Set(RelatedCRN, *sg.CRN)
 	switch reflect.TypeOf(sgrule).String() {
 	case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp":
 		{
