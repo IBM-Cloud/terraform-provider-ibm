@@ -111,19 +111,19 @@ func testAccCheckIBMISSecurityGroupRuleExists(n, securityGroupRuleID string) res
 				return err
 			}
 			switch reflect.TypeOf(foundSecurityGroupRule).String() {
-			case "*vpcclassicv1.SecurityGroupRuleProtocolIcmp":
+			case "*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp":
 				{
-					sgr := foundSecurityGroupRule.(*vpcclassicv1.SecurityGroupRuleProtocolIcmp)
+					sgr := foundSecurityGroupRule.(*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp)
 					securityGroupRuleID = *sgr.ID
 				}
-			case "*vpcclassicv1.SecurityGroupRuleProtocolAll":
+			case "*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolAll":
 				{
-					sgr := foundSecurityGroupRule.(*vpcclassicv1.SecurityGroupRuleProtocolAll)
+					sgr := foundSecurityGroupRule.(*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolAll)
 					securityGroupRuleID = *sgr.ID
 				}
-			case "*vpcclassicv1.SecurityGroupRuleProtocolTcpudp":
+			case "*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp":
 				{
-					sgr := foundSecurityGroupRule.(*vpcclassicv1.SecurityGroupRuleProtocolTcpudp)
+					sgr := foundSecurityGroupRule.(*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
 					securityGroupRuleID = *sgr.ID
 				}
 			}
@@ -138,19 +138,19 @@ func testAccCheckIBMISSecurityGroupRuleExists(n, securityGroupRuleID string) res
 				return err
 			}
 			switch reflect.TypeOf(foundSecurityGroupRule).String() {
-			case "*vpcv1.SecurityGroupRuleProtocolIcmp":
+			case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp":
 				{
-					sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleProtocolIcmp)
+					sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp)
 					securityGroupRuleID = *sgr.ID
 				}
-			case "*vpcv1.SecurityGroupRuleProtocolAll":
+			case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll":
 				{
-					sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleProtocolAll)
+					sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll)
 					securityGroupRuleID = *sgr.ID
 				}
-			case "*vpcv1.SecurityGroupRuleProtocolTcpudp":
+			case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp":
 				{
-					sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleProtocolTcpudp)
+					sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
 					securityGroupRuleID = *sgr.ID
 				}
 			}
