@@ -263,12 +263,12 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 	}
 	volTemplate := options.VolumePrototype.(*vpcv1.VolumePrototype)
 
-	// if key, ok := d.GetOk(isVolumeEncryptionKey); ok {
-	// 	encryptionKey := key.(string)
-	// 	volTemplate.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
-	// 		Crn: &encryptionKey,
-	// 	}
-	// }
+	if key, ok := d.GetOk(isVolumeEncryptionKey); ok {
+		encryptionKey := key.(string)
+		volTemplate.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
+			CRN: &encryptionKey,
+		}
+	}
 
 	if rgrp, ok := d.GetOk(isVolumeResourceGroup); ok {
 		rg := rgrp.(string)
@@ -393,9 +393,9 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isVolumeName, *vol.Name)
 	d.Set(isVolumeProfileName, *vol.Profile.Name)
 	d.Set(isVolumeZone, *vol.Zone.Name)
-	// if vol.EncryptionKey != nil {
-	// 	d.Set(isVolumeEncryptionKey, vol.EncryptionKey.Crn)
-	// }
+	if vol.EncryptionKey != nil {
+		d.Set(isVolumeEncryptionKey, vol.EncryptionKey.CRN)
+	}
 	d.Set(isVolumeIops, *vol.Iops)
 	d.Set(isVolumeCapacity, *vol.Capacity)
 	d.Set(isVolumeCrn, *vol.CRN)

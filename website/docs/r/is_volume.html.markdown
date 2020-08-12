@@ -53,7 +53,7 @@ The following arguments are supported:
 * `zone` - (Required, Forces new resource, string) The location of the volume.
 * `iops` - (Optional, Forces new resource, int) The bandwidth for the volume. This is required only for the `custom` profile volume.
 * `capacity` - (Optional, Forces new resource, int) The capacity of the volume in gigabytes. This defaults to `100`.
-* `encryption_key` - (Optional, Forces new resource, string) The key to use for encrypting this volume. This is supported only in `Gen 1`
+* `encryption_key` - (Optional, Forces new resource, string) The key to use for encrypting this volume.
 * `resource_group` - (Optional, Forces new resource, string) The resource group ID for this volume.
 * `tags` - (Optional, array of strings) Tags associated with the volume.
 
