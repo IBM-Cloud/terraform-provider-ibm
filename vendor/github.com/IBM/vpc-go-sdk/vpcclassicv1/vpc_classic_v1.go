@@ -30,7 +30,7 @@ import (
 // VpcClassicV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage
 // infrastructure resources, including virtual server instances, subnets, volumes, and load balancers.
 //
-// Version: 2020-06-02
+// Version: 2020-07-28
 type VpcClassicV1 struct {
 	Service *core.BaseService
 
@@ -107,7 +107,7 @@ func NewVpcClassicV1(options *VpcClassicV1Options) (service *VpcClassicV1, err e
 	}
 
 	if options.Version == nil {
-		options.Version = core.StringPtr("2020-06-02")
+		options.Version = core.StringPtr("2020-07-28")
 	}
 
 	if options.URL != "" {
@@ -1254,7 +1254,8 @@ func (vpcClassic *VpcClassicV1) CreateInstance(createInstanceOptions *CreateInst
 
 // DeleteInstance : Delete specified instance
 // This request deletes an instance. This operation cannot be reversed. Any floating IPs associated with the instance's
-// network interfaces are implicitly disassociated.
+// network interfaces are implicitly disassociated. All flow log collectors with `auto_delete` set to `true` targeting
+// the instance and/or the instance's network interfaces are automatically deleted.
 func (vpcClassic *VpcClassicV1) DeleteInstance(deleteInstanceOptions *DeleteInstanceOptions) (response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteInstanceOptions, "deleteInstanceOptions cannot be nil")
 	if err != nil {
@@ -1536,7 +1537,7 @@ func (vpcClassic *VpcClassicV1) CreateInstanceAction(createInstanceActionOptions
 // network interface card and connects an instance to a subnet. While each network interface can attach to only one
 // subnet, multiple network interfaces can be created to attach to multiple subnets. Multiple interfaces may also attach
 // to the same subnet.
-func (vpcClassic *VpcClassicV1) ListInstanceNetworkInterfaces(listInstanceNetworkInterfacesOptions *ListInstanceNetworkInterfacesOptions) (result *NetworkInterfaceCollection, response *core.DetailedResponse, err error) {
+func (vpcClassic *VpcClassicV1) ListInstanceNetworkInterfaces(listInstanceNetworkInterfacesOptions *ListInstanceNetworkInterfacesOptions) (result *NetworkInterfaceUnpaginatedCollection, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(listInstanceNetworkInterfacesOptions, "listInstanceNetworkInterfacesOptions cannot be nil")
 	if err != nil {
 		return
@@ -1578,7 +1579,7 @@ func (vpcClassic *VpcClassicV1) ListInstanceNetworkInterfaces(listInstanceNetwor
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalNetworkInterfaceCollection)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalNetworkInterfaceUnpaginatedCollection)
 	if err != nil {
 		return
 	}
@@ -4626,10 +4627,12 @@ func (vpcClassic *VpcClassicV1) ListPublicGateways(listPublicGatewaysOptions *Li
 }
 
 // CreatePublicGateway : Create a public gateway
-// This request creates a new public gateway from a public gateway prototype object. If a floating IP is provided, it
-// must be unbound. If a floating IP is not provided, one will be created and bound to the public gateway. Once a public
-// gateway has been created, its floating IP cannot be unbound. A public gateway must be explicitly attached to each
-// subnet it will provide connectivity for.
+// This request creates a new public gateway from a public gateway prototype object. For this to succeed, the VPC must
+// not already have a public gateway in the specified zone.
+//
+// If a floating IP is provided, it must be unbound. If a floating IP is not provided, one will be created and bound to
+// the public gateway. Once a public gateway has been created, its floating IP cannot be unbound. A public gateway must
+// be explicitly attached to each subnet it will provide connectivity for.
 func (vpcClassic *VpcClassicV1) CreatePublicGateway(createPublicGatewayOptions *CreatePublicGatewayOptions) (result *PublicGateway, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(createPublicGatewayOptions, "createPublicGatewayOptions cannot be nil")
 	if err != nil {
@@ -6056,7 +6059,9 @@ func (vpcClassic *VpcClassicV1) CreateSubnet(createSubnetOptions *CreateSubnetOp
 // DeleteSubnet : Delete specified subnet
 // This request deletes a subnet. This operation cannot be reversed. For this request to succeed, the subnet must not be
 // referenced by any network interfaces, VPN gateways, or load balancers. A delete operation automatically detaches the
-// subnet from any network ACLs and public gateways.
+// subnet from any network ACLs, public gateways, or endpoint gateways. All flow log collectors with `auto_delete` set
+// to
+// `true` targeting the subnet or any resource in the subnet are automatically deleted.
 func (vpcClassic *VpcClassicV1) DeleteSubnet(deleteSubnetOptions *DeleteSubnetOptions) (response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteSubnetOptions, "deleteSubnetOptions cannot be nil")
 	if err != nil {
@@ -7230,14 +7235,14 @@ func (vpcClassic *VpcClassicV1) CreateVPCRoute(createVPCRouteOptions *CreateVPCR
 	if createVPCRouteOptions.Destination != nil {
 		body["destination"] = createVPCRouteOptions.Destination
 	}
+	if createVPCRouteOptions.NextHop != nil {
+		body["next_hop"] = createVPCRouteOptions.NextHop
+	}
 	if createVPCRouteOptions.Zone != nil {
 		body["zone"] = createVPCRouteOptions.Zone
 	}
 	if createVPCRouteOptions.Name != nil {
 		body["name"] = createVPCRouteOptions.Name
-	}
-	if createVPCRouteOptions.NextHop != nil {
-		body["next_hop"] = createVPCRouteOptions.NextHop
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
@@ -8272,7 +8277,7 @@ func (vpcClassic *VpcClassicV1) CreateVPNGateway(createVPNGatewayOptions *Create
 
 // DeleteVPNGateway : Delete a VPN gateway
 // This request deletes a VPN gateway. A VPN gateway with a `status` of `pending` cannot be deleted. This operation
-// deletes all VPN connections associated with this VPN gateway.  This operation cannot be reversed.
+// deletes all VPN gateway connections associated with this VPN gateway.  This operation cannot be reversed.
 func (vpcClassic *VpcClassicV1) DeleteVPNGateway(deleteVPNGatewayOptions *DeleteVPNGatewayOptions) (response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteVPNGatewayOptions, "deleteVPNGatewayOptions cannot be nil")
 	if err != nil {
@@ -8486,8 +8491,8 @@ func (vpcClassic *VpcClassicV1) ListVPNGatewayConnections(listVPNGatewayConnecti
 	return
 }
 
-// CreateVPNGatewayConnection : Create a VPN connection
-// This request creates a new VPN connection.
+// CreateVPNGatewayConnection : Create a VPN gateway connection
+// This request creates a new VPN gateway connection.
 func (vpcClassic *VpcClassicV1) CreateVPNGatewayConnection(createVPNGatewayConnectionOptions *CreateVPNGatewayConnectionOptions) (result *VPNGatewayConnection, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(createVPNGatewayConnectionOptions, "createVPNGatewayConnectionOptions cannot be nil")
 	if err != nil {
@@ -8540,14 +8545,14 @@ func (vpcClassic *VpcClassicV1) CreateVPNGatewayConnection(createVPNGatewayConne
 	if createVPNGatewayConnectionOptions.IpsecPolicy != nil {
 		body["ipsec_policy"] = createVPNGatewayConnectionOptions.IpsecPolicy
 	}
-	if createVPNGatewayConnectionOptions.LocalCidrs != nil {
-		body["local_cidrs"] = createVPNGatewayConnectionOptions.LocalCidrs
+	if createVPNGatewayConnectionOptions.LocalCIDRs != nil {
+		body["local_cidrs"] = createVPNGatewayConnectionOptions.LocalCIDRs
 	}
 	if createVPNGatewayConnectionOptions.Name != nil {
 		body["name"] = createVPNGatewayConnectionOptions.Name
 	}
-	if createVPNGatewayConnectionOptions.PeerCidrs != nil {
-		body["peer_cidrs"] = createVPNGatewayConnectionOptions.PeerCidrs
+	if createVPNGatewayConnectionOptions.PeerCIDRs != nil {
+		body["peer_cidrs"] = createVPNGatewayConnectionOptions.PeerCIDRs
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
@@ -8573,8 +8578,8 @@ func (vpcClassic *VpcClassicV1) CreateVPNGatewayConnection(createVPNGatewayConne
 	return
 }
 
-// DeleteVPNGatewayConnection : Delete a VPN connection
-// This request deletes a VPN connection. This operation cannot be reversed.
+// DeleteVPNGatewayConnection : Delete a VPN gateway connection
+// This request deletes a VPN gateway connection. This operation cannot be reversed.
 func (vpcClassic *VpcClassicV1) DeleteVPNGatewayConnection(deleteVPNGatewayConnectionOptions *DeleteVPNGatewayConnectionOptions) (response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteVPNGatewayConnectionOptions, "deleteVPNGatewayConnectionOptions cannot be nil")
 	if err != nil {
@@ -8616,8 +8621,8 @@ func (vpcClassic *VpcClassicV1) DeleteVPNGatewayConnection(deleteVPNGatewayConne
 	return
 }
 
-// GetVPNGatewayConnection : Retrieve the specified VPN connection
-// This request retrieves a single VPN connection specified by the identifier in the URL.
+// GetVPNGatewayConnection : Retrieve the specified VPN gateway connection
+// This request retrieves a single VPN gateway connection specified by the identifier in the URL.
 func (vpcClassic *VpcClassicV1) GetVPNGatewayConnection(getVPNGatewayConnectionOptions *GetVPNGatewayConnectionOptions) (result *VPNGatewayConnection, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(getVPNGatewayConnectionOptions, "getVPNGatewayConnectionOptions cannot be nil")
 	if err != nil {
@@ -8669,8 +8674,8 @@ func (vpcClassic *VpcClassicV1) GetVPNGatewayConnection(getVPNGatewayConnectionO
 	return
 }
 
-// UpdateVPNGatewayConnection : Update a VPN connection
-// This request updates the properties of an existing VPN connection.
+// UpdateVPNGatewayConnection : Update a VPN gateway connection
+// This request updates the properties of an existing VPN gateway connection.
 func (vpcClassic *VpcClassicV1) UpdateVPNGatewayConnection(updateVPNGatewayConnectionOptions *UpdateVPNGatewayConnectionOptions) (result *VPNGatewayConnection, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(updateVPNGatewayConnectionOptions, "updateVPNGatewayConnectionOptions cannot be nil")
 	if err != nil {
@@ -8750,20 +8755,20 @@ func (vpcClassic *VpcClassicV1) UpdateVPNGatewayConnection(updateVPNGatewayConne
 	return
 }
 
-// ListVPNGatewayConnectionLocalCidrs : List all local CIDRs for a VPN gateway connection
+// ListVPNGatewayConnectionLocalCIDRs : List all local CIDRs for a VPN gateway connection
 // This request lists all local CIDRs for a VPN gateway connection specified by the identifier in the URL.
-func (vpcClassic *VpcClassicV1) ListVPNGatewayConnectionLocalCidrs(listVPNGatewayConnectionLocalCidrsOptions *ListVPNGatewayConnectionLocalCidrsOptions) (result *VPNGatewayConnectionLocalCidrs, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(listVPNGatewayConnectionLocalCidrsOptions, "listVPNGatewayConnectionLocalCidrsOptions cannot be nil")
+func (vpcClassic *VpcClassicV1) ListVPNGatewayConnectionLocalCIDRs(listVPNGatewayConnectionLocalCIDRsOptions *ListVPNGatewayConnectionLocalCIDRsOptions) (result *VPNGatewayConnectionLocalCIDRs, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listVPNGatewayConnectionLocalCIDRsOptions, "listVPNGatewayConnectionLocalCIDRsOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(listVPNGatewayConnectionLocalCidrsOptions, "listVPNGatewayConnectionLocalCidrsOptions")
+	err = core.ValidateStruct(listVPNGatewayConnectionLocalCIDRsOptions, "listVPNGatewayConnectionLocalCIDRsOptions")
 	if err != nil {
 		return
 	}
 
 	pathSegments := []string{"vpn_gateways", "connections", "local_cidrs"}
-	pathParameters := []string{*listVPNGatewayConnectionLocalCidrsOptions.VPNGatewayID, *listVPNGatewayConnectionLocalCidrsOptions.ID}
+	pathParameters := []string{*listVPNGatewayConnectionLocalCIDRsOptions.VPNGatewayID, *listVPNGatewayConnectionLocalCIDRsOptions.ID}
 
 	builder := core.NewRequestBuilder(core.GET)
 	_, err = builder.ConstructHTTPURL(vpcClassic.Service.Options.URL, pathSegments, pathParameters)
@@ -8771,11 +8776,11 @@ func (vpcClassic *VpcClassicV1) ListVPNGatewayConnectionLocalCidrs(listVPNGatewa
 		return
 	}
 
-	for headerName, headerValue := range listVPNGatewayConnectionLocalCidrsOptions.Headers {
+	for headerName, headerValue := range listVPNGatewayConnectionLocalCIDRsOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc_classic", "V1", "ListVPNGatewayConnectionLocalCidrs")
+	sdkHeaders := common.GetSdkHeaders("vpc_classic", "V1", "ListVPNGatewayConnectionLocalCIDRs")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -8794,7 +8799,7 @@ func (vpcClassic *VpcClassicV1) ListVPNGatewayConnectionLocalCidrs(listVPNGatewa
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVPNGatewayConnectionLocalCidrs)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVPNGatewayConnectionLocalCIDRs)
 	if err != nil {
 		return
 	}
@@ -8933,20 +8938,20 @@ func (vpcClassic *VpcClassicV1) AddVPNGatewayConnectionLocalCIDR(addVPNGatewayCo
 	return
 }
 
-// ListVPNGatewayConnectionPeerCidrs : List all peer CIDRs for a VPN gateway connection
+// ListVPNGatewayConnectionPeerCIDRs : List all peer CIDRs for a VPN gateway connection
 // This request lists all peer CIDRs for a VPN gateway connection specified by the identifier in the URL.
-func (vpcClassic *VpcClassicV1) ListVPNGatewayConnectionPeerCidrs(listVPNGatewayConnectionPeerCidrsOptions *ListVPNGatewayConnectionPeerCidrsOptions) (result *VPNGatewayConnectionPeerCidrs, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(listVPNGatewayConnectionPeerCidrsOptions, "listVPNGatewayConnectionPeerCidrsOptions cannot be nil")
+func (vpcClassic *VpcClassicV1) ListVPNGatewayConnectionPeerCIDRs(listVPNGatewayConnectionPeerCIDRsOptions *ListVPNGatewayConnectionPeerCIDRsOptions) (result *VPNGatewayConnectionPeerCIDRs, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listVPNGatewayConnectionPeerCIDRsOptions, "listVPNGatewayConnectionPeerCIDRsOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(listVPNGatewayConnectionPeerCidrsOptions, "listVPNGatewayConnectionPeerCidrsOptions")
+	err = core.ValidateStruct(listVPNGatewayConnectionPeerCIDRsOptions, "listVPNGatewayConnectionPeerCIDRsOptions")
 	if err != nil {
 		return
 	}
 
 	pathSegments := []string{"vpn_gateways", "connections", "peer_cidrs"}
-	pathParameters := []string{*listVPNGatewayConnectionPeerCidrsOptions.VPNGatewayID, *listVPNGatewayConnectionPeerCidrsOptions.ID}
+	pathParameters := []string{*listVPNGatewayConnectionPeerCIDRsOptions.VPNGatewayID, *listVPNGatewayConnectionPeerCIDRsOptions.ID}
 
 	builder := core.NewRequestBuilder(core.GET)
 	_, err = builder.ConstructHTTPURL(vpcClassic.Service.Options.URL, pathSegments, pathParameters)
@@ -8954,11 +8959,11 @@ func (vpcClassic *VpcClassicV1) ListVPNGatewayConnectionPeerCidrs(listVPNGateway
 		return
 	}
 
-	for headerName, headerValue := range listVPNGatewayConnectionPeerCidrsOptions.Headers {
+	for headerName, headerValue := range listVPNGatewayConnectionPeerCIDRsOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc_classic", "V1", "ListVPNGatewayConnectionPeerCidrs")
+	sdkHeaders := common.GetSdkHeaders("vpc_classic", "V1", "ListVPNGatewayConnectionPeerCIDRs")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -8977,7 +8982,7 @@ func (vpcClassic *VpcClassicV1) ListVPNGatewayConnectionPeerCidrs(listVPNGateway
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVPNGatewayConnectionPeerCidrs)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVPNGatewayConnectionPeerCIDRs)
 	if err != nil {
 		return
 	}
@@ -9599,7 +9604,7 @@ type AddVPNGatewayConnectionLocalCIDROptions struct {
 	// The VPN gateway identifier.
 	VPNGatewayID *string `json:"vpn_gateway_id" validate:"required"`
 
-	// The VPN connection identifier.
+	// The VPN gateway connection identifier.
 	ID *string `json:"id" validate:"required"`
 
 	// The address prefix part of the CIDR.
@@ -9657,7 +9662,7 @@ type AddVPNGatewayConnectionPeerCIDROptions struct {
 	// The VPN gateway identifier.
 	VPNGatewayID *string `json:"vpn_gateway_id" validate:"required"`
 
-	// The VPN connection identifier.
+	// The VPN gateway connection identifier.
 	ID *string `json:"id" validate:"required"`
 
 	// The address prefix part of the CIDR.
@@ -9900,7 +9905,7 @@ type CheckVPNGatewayConnectionLocalCIDROptions struct {
 	// The VPN gateway identifier.
 	VPNGatewayID *string `json:"vpn_gateway_id" validate:"required"`
 
-	// The VPN connection identifier.
+	// The VPN gateway connection identifier.
 	ID *string `json:"id" validate:"required"`
 
 	// The address prefix part of the CIDR.
@@ -9958,7 +9963,7 @@ type CheckVPNGatewayConnectionPeerCIDROptions struct {
 	// The VPN gateway identifier.
 	VPNGatewayID *string `json:"vpn_gateway_id" validate:"required"`
 
-	// The VPN connection identifier.
+	// The VPN gateway connection identifier.
 	ID *string `json:"id" validate:"required"`
 
 	// The address prefix part of the CIDR.
@@ -10775,7 +10780,8 @@ type CreateLoadBalancerOptions struct {
 	// The pools of this load balancer.
 	Pools []LoadBalancerPoolPrototype `json:"pools,omitempty"`
 
-	// The resource group for this load balancer.
+	// The resource group to use. If unspecified, the account's [default resource
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -11424,8 +11430,12 @@ type CreateVPCRouteOptions struct {
 	VPCID *string `json:"vpc_id" validate:"required"`
 
 	// The destination of the route. At most two routes per `zone` in a table can have the same destination, and only if
-	// both routes have an `action` of `deliver`.
+	// both routes have an `action` of `deliver` and the
+	// `next_hop` is an IP address.
 	Destination *string `json:"destination" validate:"required"`
+
+	// The next hop that packets will be delivered to.
+	NextHop RouteNextHopPrototypeIntf `json:"next_hop" validate:"required"`
 
 	// The zone to apply the route to. (Traffic from subnets in this zone will be
 	// subject to this route.).
@@ -11435,18 +11445,16 @@ type CreateVPCRouteOptions struct {
 	// Names must be unique within the VPC routing table the route resides in.
 	Name *string `json:"name,omitempty"`
 
-	// The next hop that packets will be delivered to.
-	NextHop RouteNextHopPrototypeIntf `json:"next_hop,omitempty"`
-
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
 
 // NewCreateVPCRouteOptions : Instantiate CreateVPCRouteOptions
-func (*VpcClassicV1) NewCreateVPCRouteOptions(vpcID string, destination string, zone ZoneIdentityIntf) *CreateVPCRouteOptions {
+func (*VpcClassicV1) NewCreateVPCRouteOptions(vpcID string, destination string, nextHop RouteNextHopPrototypeIntf, zone ZoneIdentityIntf) *CreateVPCRouteOptions {
 	return &CreateVPCRouteOptions{
 		VPCID:       core.StringPtr(vpcID),
 		Destination: core.StringPtr(destination),
+		NextHop:     nextHop,
 		Zone:        zone,
 	}
 }
@@ -11463,6 +11471,12 @@ func (options *CreateVPCRouteOptions) SetDestination(destination string) *Create
 	return options
 }
 
+// SetNextHop : Allow user to set NextHop
+func (options *CreateVPCRouteOptions) SetNextHop(nextHop RouteNextHopPrototypeIntf) *CreateVPCRouteOptions {
+	options.NextHop = nextHop
+	return options
+}
+
 // SetZone : Allow user to set Zone
 func (options *CreateVPCRouteOptions) SetZone(zone ZoneIdentityIntf) *CreateVPCRouteOptions {
 	options.Zone = zone
@@ -11472,12 +11486,6 @@ func (options *CreateVPCRouteOptions) SetZone(zone ZoneIdentityIntf) *CreateVPCR
 // SetName : Allow user to set Name
 func (options *CreateVPCRouteOptions) SetName(name string) *CreateVPCRouteOptions {
 	options.Name = core.StringPtr(name)
-	return options
-}
-
-// SetNextHop : Allow user to set NextHop
-func (options *CreateVPCRouteOptions) SetNextHop(nextHop RouteNextHopPrototypeIntf) *CreateVPCRouteOptions {
-	options.NextHop = nextHop
 	return options
 }
 
@@ -11512,13 +11520,13 @@ type CreateVPNGatewayConnectionOptions struct {
 	IpsecPolicy IPsecPolicyIdentityIntf `json:"ipsec_policy,omitempty"`
 
 	// A collection of local CIDRs for this resource.
-	LocalCidrs []string `json:"local_cidrs,omitempty"`
+	LocalCIDRs []string `json:"local_cidrs,omitempty"`
 
-	// The user-defined name for this VPN connection.
+	// The user-defined name for this VPN gateway connection.
 	Name *string `json:"name,omitempty"`
 
 	// A collection of peer CIDRs for this resource.
-	PeerCidrs []string `json:"peer_cidrs,omitempty"`
+	PeerCIDRs []string `json:"peer_cidrs,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -11575,9 +11583,9 @@ func (options *CreateVPNGatewayConnectionOptions) SetIpsecPolicy(ipsecPolicy IPs
 	return options
 }
 
-// SetLocalCidrs : Allow user to set LocalCidrs
-func (options *CreateVPNGatewayConnectionOptions) SetLocalCidrs(localCidrs []string) *CreateVPNGatewayConnectionOptions {
-	options.LocalCidrs = localCidrs
+// SetLocalCIDRs : Allow user to set LocalCIDRs
+func (options *CreateVPNGatewayConnectionOptions) SetLocalCIDRs(localCIDRs []string) *CreateVPNGatewayConnectionOptions {
+	options.LocalCIDRs = localCIDRs
 	return options
 }
 
@@ -11587,9 +11595,9 @@ func (options *CreateVPNGatewayConnectionOptions) SetName(name string) *CreateVP
 	return options
 }
 
-// SetPeerCidrs : Allow user to set PeerCidrs
-func (options *CreateVPNGatewayConnectionOptions) SetPeerCidrs(peerCidrs []string) *CreateVPNGatewayConnectionOptions {
-	options.PeerCidrs = peerCidrs
+// SetPeerCIDRs : Allow user to set PeerCIDRs
+func (options *CreateVPNGatewayConnectionOptions) SetPeerCIDRs(peerCIDRs []string) *CreateVPNGatewayConnectionOptions {
+	options.PeerCIDRs = peerCIDRs
 	return options
 }
 
@@ -12497,7 +12505,7 @@ type DeleteVPNGatewayConnectionOptions struct {
 	// The VPN gateway identifier.
 	VPNGatewayID *string `json:"vpn_gateway_id" validate:"required"`
 
-	// The VPN connection identifier.
+	// The VPN gateway connection identifier.
 	ID *string `json:"id" validate:"required"`
 
 	// Allows users to set headers on API requests
@@ -12688,6 +12696,41 @@ func UnmarshalFloatingIP(m map[string]json.RawMessage, result interface{}) (err 
 	return
 }
 
+// FloatingIPByTargetTarget : The network interface this floating IP is to be bound to.
+// Models which "extend" this model:
+// - FloatingIPByTargetTargetNetworkInterfaceIdentityByID
+// - FloatingIPByTargetTargetNetworkInterfaceIdentityByHref
+type FloatingIPByTargetTarget struct {
+	// The unique identifier for this network interface.
+	ID *string `json:"id,omitempty"`
+
+	// The URL for this network interface.
+	Href *string `json:"href,omitempty"`
+}
+
+func (*FloatingIPByTargetTarget) isaFloatingIPByTargetTarget() bool {
+	return true
+}
+
+type FloatingIPByTargetTargetIntf interface {
+	isaFloatingIPByTargetTarget() bool
+}
+
+// UnmarshalFloatingIPByTargetTarget unmarshals an instance of FloatingIPByTargetTarget from the specified map of raw messages.
+func UnmarshalFloatingIPByTargetTarget(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(FloatingIPByTargetTarget)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // FloatingIPCollection : FloatingIPCollection struct
 type FloatingIPCollection struct {
 	// A reference to the first page of resources.
@@ -12761,6 +12804,42 @@ func UnmarshalFloatingIPCollectionNext(m map[string]json.RawMessage, result inte
 	return
 }
 
+// FloatingIPPatchTargetNetworkInterfaceIdentity : A new network interface to bind this floating IP to, replacing any existing binding. For this request to succeed, the
+// existing floating IP must not be required by another resource, such as a public gateway.
+// Models which "extend" this model:
+// - FloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID
+// - FloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref
+type FloatingIPPatchTargetNetworkInterfaceIdentity struct {
+	// The unique identifier for this network interface.
+	ID *string `json:"id,omitempty"`
+
+	// The URL for this network interface.
+	Href *string `json:"href,omitempty"`
+}
+
+func (*FloatingIPPatchTargetNetworkInterfaceIdentity) isaFloatingIPPatchTargetNetworkInterfaceIdentity() bool {
+	return true
+}
+
+type FloatingIPPatchTargetNetworkInterfaceIdentityIntf interface {
+	isaFloatingIPPatchTargetNetworkInterfaceIdentity() bool
+}
+
+// UnmarshalFloatingIPPatchTargetNetworkInterfaceIdentity unmarshals an instance of FloatingIPPatchTargetNetworkInterfaceIdentity from the specified map of raw messages.
+func UnmarshalFloatingIPPatchTargetNetworkInterfaceIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(FloatingIPPatchTargetNetworkInterfaceIdentity)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // FloatingIPPrototype : FloatingIPPrototype struct
 // Models which "extend" this model:
 // - FloatingIPPrototypeFloatingIPByZone
@@ -12773,8 +12852,8 @@ type FloatingIPPrototype struct {
 	// The identity of the zone to provision a floating IP in.
 	Zone ZoneIdentityIntf `json:"zone,omitempty"`
 
-	// The target this address is to be bound to.
-	Target NetworkInterfaceIdentityIntf `json:"target,omitempty"`
+	// The network interface this floating IP is to be bound to.
+	Target FloatingIPByTargetTargetIntf `json:"target,omitempty"`
 }
 
 func (*FloatingIPPrototype) isaFloatingIPPrototype() bool {
@@ -12796,7 +12875,7 @@ func UnmarshalFloatingIPPrototype(m map[string]json.RawMessage, result interface
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "target", &obj.Target, UnmarshalNetworkInterfaceIdentity)
+	err = core.UnmarshalModel(m, "target", &obj.Target, UnmarshalFloatingIPByTargetTarget)
 	if err != nil {
 		return
 	}
@@ -12866,7 +12945,7 @@ type FloatingIPTarget struct {
 	// The primary IPv4 address.
 	PrimaryIpv4Address *string `json:"primary_ipv4_address,omitempty"`
 
-	// The type of resource referenced.
+	// The resource type.
 	ResourceType *string `json:"resource_type,omitempty"`
 
 	// The CRN for this public gateway.
@@ -12874,7 +12953,7 @@ type FloatingIPTarget struct {
 }
 
 // Constants associated with the FloatingIPTarget.ResourceType property.
-// The type of resource referenced.
+// The resource type.
 const (
 	FloatingIPTargetResourceTypeNetworkInterfaceConst = "network_interface"
 )
@@ -14138,7 +14217,7 @@ type GetVPNGatewayConnectionOptions struct {
 	// The VPN gateway identifier.
 	VPNGatewayID *string `json:"vpn_gateway_id" validate:"required"`
 
-	// The VPN connection identifier.
+	// The VPN gateway connection identifier.
 	ID *string `json:"id" validate:"required"`
 
 	// Allows users to set headers on API requests
@@ -14204,7 +14283,7 @@ type IkePolicy struct {
 	// The authentication algorithm.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm" validate:"required"`
 
-	// Collection of references to VPN connections that use this IKE policy.
+	// Collection of references to VPN gateway connections that use this IKE policy.
 	Connections []VPNGatewayConnectionReference `json:"connections" validate:"required"`
 
 	// The date and time that this IKE policy was created.
@@ -14396,6 +14475,37 @@ func UnmarshalIkePolicyIdentity(m map[string]json.RawMessage, result interface{}
 	return
 }
 
+// IkePolicyReference : IkePolicyReference struct
+type IkePolicyReference struct {
+	// The IKE policy's canonical URL.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this IKE policy.
+	ID *string `json:"id" validate:"required"`
+
+	// The user-defined name for this IKE policy.
+	Name *string `json:"name" validate:"required"`
+}
+
+// UnmarshalIkePolicyReference unmarshals an instance of IkePolicyReference from the specified map of raw messages.
+func UnmarshalIkePolicyReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(IkePolicyReference)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // IP : IP struct
 type IP struct {
 	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
@@ -14420,7 +14530,7 @@ type IPsecPolicy struct {
 	// The authentication algorithm.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm" validate:"required"`
 
-	// Collection of references to VPN connections that use this IPsec policy.
+	// Collection of references to VPN gateway connections that use this IPsec policy.
 	Connections []VPNGatewayConnectionReference `json:"connections" validate:"required"`
 
 	// The date and time that this IPsec policy was created.
@@ -14654,6 +14764,37 @@ func UnmarshalIPsecPolicyIdentity(m map[string]json.RawMessage, result interface
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// IPsecPolicyReference : IPsecPolicyReference struct
+type IPsecPolicyReference struct {
+	// The IPsec policy's canonical URL.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this IPsec policy.
+	ID *string `json:"id" validate:"required"`
+
+	// The user-defined name for this IPsec policy.
+	Name *string `json:"name" validate:"required"`
+}
+
+// UnmarshalIPsecPolicyReference unmarshals an instance of IPsecPolicyReference from the specified map of raw messages.
+func UnmarshalIPsecPolicyReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(IPsecPolicyReference)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -15735,9 +15876,12 @@ func UnmarshalInstanceProfileReference(m map[string]json.RawMessage, result inte
 // Models which "extend" this model:
 // - InstancePrototypeInstanceByImage
 type InstancePrototype struct {
-	// The public SSH keys to install on the virtual server instance. Up to 10 keys may be provided; if no keys are
-	// provided the instance will be inaccessible unless the image used provides a means of access. For Windows instances,
-	// one of the keys will be used to encrypt the administrator password.
+	// The public SSH keys for the administrative user of the virtual server instance. Up to 10 keys may be provided; if no
+	// keys are provided the instance will be inaccessible unless the image used provides another means of access. For
+	// Windows instances, one of the keys will be used to encrypt the administrator password.
+	//
+	// Keys will be made available to the virtual server instance as cloud-init vendor data. For cloud-init enabled images,
+	// these keys will also be added as SSH authorized keys for the administrative user.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
 	// The user-defined name for this virtual server instance (and default system hostname). If unspecified, the name will
@@ -16074,7 +16218,7 @@ func UnmarshalKeyCollectionNext(m map[string]json.RawMessage, result interface{}
 // - KeyIdentityByID
 // - KeyIdentityByCRN
 // - KeyIdentityByHref
-// - KeyIdentityByFingerprint
+// - KeyIdentityKeyIdentityByFingerprint
 type KeyIdentity struct {
 	// The unique identifier for this key.
 	ID *string `json:"id,omitempty"`
@@ -17398,78 +17542,78 @@ func (options *ListVpcsOptions) SetHeaders(param map[string]string) *ListVpcsOpt
 	return options
 }
 
-// ListVPNGatewayConnectionLocalCidrsOptions : The ListVPNGatewayConnectionLocalCidrs options.
-type ListVPNGatewayConnectionLocalCidrsOptions struct {
+// ListVPNGatewayConnectionLocalCIDRsOptions : The ListVPNGatewayConnectionLocalCIDRs options.
+type ListVPNGatewayConnectionLocalCIDRsOptions struct {
 	// The VPN gateway identifier.
 	VPNGatewayID *string `json:"vpn_gateway_id" validate:"required"`
 
-	// The VPN connection identifier.
+	// The VPN gateway connection identifier.
 	ID *string `json:"id" validate:"required"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
 
-// NewListVPNGatewayConnectionLocalCidrsOptions : Instantiate ListVPNGatewayConnectionLocalCidrsOptions
-func (*VpcClassicV1) NewListVPNGatewayConnectionLocalCidrsOptions(vpnGatewayID string, id string) *ListVPNGatewayConnectionLocalCidrsOptions {
-	return &ListVPNGatewayConnectionLocalCidrsOptions{
+// NewListVPNGatewayConnectionLocalCIDRsOptions : Instantiate ListVPNGatewayConnectionLocalCIDRsOptions
+func (*VpcClassicV1) NewListVPNGatewayConnectionLocalCIDRsOptions(vpnGatewayID string, id string) *ListVPNGatewayConnectionLocalCIDRsOptions {
+	return &ListVPNGatewayConnectionLocalCIDRsOptions{
 		VPNGatewayID: core.StringPtr(vpnGatewayID),
 		ID:           core.StringPtr(id),
 	}
 }
 
 // SetVPNGatewayID : Allow user to set VPNGatewayID
-func (options *ListVPNGatewayConnectionLocalCidrsOptions) SetVPNGatewayID(vpnGatewayID string) *ListVPNGatewayConnectionLocalCidrsOptions {
+func (options *ListVPNGatewayConnectionLocalCIDRsOptions) SetVPNGatewayID(vpnGatewayID string) *ListVPNGatewayConnectionLocalCIDRsOptions {
 	options.VPNGatewayID = core.StringPtr(vpnGatewayID)
 	return options
 }
 
 // SetID : Allow user to set ID
-func (options *ListVPNGatewayConnectionLocalCidrsOptions) SetID(id string) *ListVPNGatewayConnectionLocalCidrsOptions {
+func (options *ListVPNGatewayConnectionLocalCIDRsOptions) SetID(id string) *ListVPNGatewayConnectionLocalCIDRsOptions {
 	options.ID = core.StringPtr(id)
 	return options
 }
 
 // SetHeaders : Allow user to set Headers
-func (options *ListVPNGatewayConnectionLocalCidrsOptions) SetHeaders(param map[string]string) *ListVPNGatewayConnectionLocalCidrsOptions {
+func (options *ListVPNGatewayConnectionLocalCIDRsOptions) SetHeaders(param map[string]string) *ListVPNGatewayConnectionLocalCIDRsOptions {
 	options.Headers = param
 	return options
 }
 
-// ListVPNGatewayConnectionPeerCidrsOptions : The ListVPNGatewayConnectionPeerCidrs options.
-type ListVPNGatewayConnectionPeerCidrsOptions struct {
+// ListVPNGatewayConnectionPeerCIDRsOptions : The ListVPNGatewayConnectionPeerCIDRs options.
+type ListVPNGatewayConnectionPeerCIDRsOptions struct {
 	// The VPN gateway identifier.
 	VPNGatewayID *string `json:"vpn_gateway_id" validate:"required"`
 
-	// The VPN connection identifier.
+	// The VPN gateway connection identifier.
 	ID *string `json:"id" validate:"required"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
 
-// NewListVPNGatewayConnectionPeerCidrsOptions : Instantiate ListVPNGatewayConnectionPeerCidrsOptions
-func (*VpcClassicV1) NewListVPNGatewayConnectionPeerCidrsOptions(vpnGatewayID string, id string) *ListVPNGatewayConnectionPeerCidrsOptions {
-	return &ListVPNGatewayConnectionPeerCidrsOptions{
+// NewListVPNGatewayConnectionPeerCIDRsOptions : Instantiate ListVPNGatewayConnectionPeerCIDRsOptions
+func (*VpcClassicV1) NewListVPNGatewayConnectionPeerCIDRsOptions(vpnGatewayID string, id string) *ListVPNGatewayConnectionPeerCIDRsOptions {
+	return &ListVPNGatewayConnectionPeerCIDRsOptions{
 		VPNGatewayID: core.StringPtr(vpnGatewayID),
 		ID:           core.StringPtr(id),
 	}
 }
 
 // SetVPNGatewayID : Allow user to set VPNGatewayID
-func (options *ListVPNGatewayConnectionPeerCidrsOptions) SetVPNGatewayID(vpnGatewayID string) *ListVPNGatewayConnectionPeerCidrsOptions {
+func (options *ListVPNGatewayConnectionPeerCIDRsOptions) SetVPNGatewayID(vpnGatewayID string) *ListVPNGatewayConnectionPeerCIDRsOptions {
 	options.VPNGatewayID = core.StringPtr(vpnGatewayID)
 	return options
 }
 
 // SetID : Allow user to set ID
-func (options *ListVPNGatewayConnectionPeerCidrsOptions) SetID(id string) *ListVPNGatewayConnectionPeerCidrsOptions {
+func (options *ListVPNGatewayConnectionPeerCIDRsOptions) SetID(id string) *ListVPNGatewayConnectionPeerCIDRsOptions {
 	options.ID = core.StringPtr(id)
 	return options
 }
 
 // SetHeaders : Allow user to set Headers
-func (options *ListVPNGatewayConnectionPeerCidrsOptions) SetHeaders(param map[string]string) *ListVPNGatewayConnectionPeerCidrsOptions {
+func (options *ListVPNGatewayConnectionPeerCIDRsOptions) SetHeaders(param map[string]string) *ListVPNGatewayConnectionPeerCIDRsOptions {
 	options.Headers = param
 	return options
 }
@@ -17479,7 +17623,7 @@ type ListVPNGatewayConnectionsOptions struct {
 	// The VPN gateway identifier.
 	VPNGatewayID *string `json:"vpn_gateway_id" validate:"required"`
 
-	// Filters the collection to VPN connections with the specified status.
+	// Filters the collection to VPN gateway connections with the specified status.
 	Status *string `json:"status,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -18678,10 +18822,6 @@ type LoadBalancerPoolHealthMonitorPatch struct {
 	Timeout *int64 `json:"timeout" validate:"required"`
 
 	// The protocol type of this load balancer pool health monitor.
-	//
-	// The enumerated values for this property are expected to expand in the future. When processing this property, check
-	// for and log unknown values. Optionally halt processing and surface the error, or bypass the health monitor on which
-	// the unexpected property value was encountered.
 	Type *string `json:"type" validate:"required"`
 
 	// The health check URL. This is applicable only to `http` type of health monitor.
@@ -18690,10 +18830,6 @@ type LoadBalancerPoolHealthMonitorPatch struct {
 
 // Constants associated with the LoadBalancerPoolHealthMonitorPatch.Type property.
 // The protocol type of this load balancer pool health monitor.
-//
-// The enumerated values for this property are expected to expand in the future. When processing this property, check
-// for and log unknown values. Optionally halt processing and surface the error, or bypass the health monitor on which
-// the unexpected property value was encountered.
 const (
 	LoadBalancerPoolHealthMonitorPatchTypeHTTPConst  = "http"
 	LoadBalancerPoolHealthMonitorPatchTypeHTTPSConst = "https"
@@ -18758,10 +18894,6 @@ type LoadBalancerPoolHealthMonitorPrototype struct {
 	Timeout *int64 `json:"timeout" validate:"required"`
 
 	// The protocol type of this load balancer pool health monitor.
-	//
-	// The enumerated values for this property are expected to expand in the future. When processing this property, check
-	// for and log unknown values. Optionally halt processing and surface the error, or bypass the health monitor on which
-	// the unexpected property value was encountered.
 	Type *string `json:"type" validate:"required"`
 
 	// The health check URL. This is applicable only to `http` type of health monitor.
@@ -18770,10 +18902,6 @@ type LoadBalancerPoolHealthMonitorPrototype struct {
 
 // Constants associated with the LoadBalancerPoolHealthMonitorPrototype.Type property.
 // The protocol type of this load balancer pool health monitor.
-//
-// The enumerated values for this property are expected to expand in the future. When processing this property, check
-// for and log unknown values. Optionally halt processing and surface the error, or bypass the health monitor on which
-// the unexpected property value was encountered.
 const (
 	LoadBalancerPoolHealthMonitorPrototypeTypeHTTPConst  = "http"
 	LoadBalancerPoolHealthMonitorPrototypeTypeHTTPSConst = "https"
@@ -19593,9 +19721,9 @@ func UnmarshalNetworkACLReference(m map[string]json.RawMessage, result interface
 
 // NetworkACLRule : NetworkACLRule struct
 // Models which "extend" this model:
-// - NetworkACLRuleProtocolTcpudp
-// - NetworkACLRuleProtocolIcmp
-// - NetworkACLRuleProtocolAll
+// - NetworkACLRuleNetworkACLRuleProtocolTcpudp
+// - NetworkACLRuleNetworkACLRuleProtocolIcmp
+// - NetworkACLRuleNetworkACLRuleProtocolAll
 type NetworkACLRule struct {
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
@@ -19626,7 +19754,7 @@ type NetworkACLRule struct {
 	Name *string `json:"name" validate:"required"`
 
 	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Source *string `json:"source" validate:"required"`
@@ -19703,13 +19831,13 @@ func UnmarshalNetworkACLRule(m map[string]json.RawMessage, result interface{}) (
 		return
 	}
 	if discValue == "all" {
-		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleProtocolAll)
+		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolAll)
 	} else if discValue == "icmp" {
-		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleProtocolIcmp)
+		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIcmp)
 	} else if discValue == "tcp" {
-		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleProtocolTcpudp)
+		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolTcpudp)
 	} else if discValue == "udp" {
-		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleProtocolTcpudp)
+		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolTcpudp)
 	} else {
 		err = fmt.Errorf("unrecognized value for discriminator property 'protocol': %s", discValue)
 	}
@@ -19789,6 +19917,41 @@ func UnmarshalNetworkACLRuleCollectionNext(m map[string]json.RawMessage, result 
 	return
 }
 
+// NetworkACLRuleIdentity : Identifies a network ACL rule by a unique property.
+// Models which "extend" this model:
+// - NetworkACLRuleIdentityByID
+// - NetworkACLRuleIdentityByHref
+type NetworkACLRuleIdentity struct {
+	// The unique identifier for this Network ACL rule.
+	ID *string `json:"id,omitempty"`
+
+	// The URL for this Network ACL rule.
+	Href *string `json:"href,omitempty"`
+}
+
+func (*NetworkACLRuleIdentity) isaNetworkACLRuleIdentity() bool {
+	return true
+}
+
+type NetworkACLRuleIdentityIntf interface {
+	isaNetworkACLRuleIdentity() bool
+}
+
+// UnmarshalNetworkACLRuleIdentity unmarshals an instance of NetworkACLRuleIdentity from the specified map of raw messages.
+func UnmarshalNetworkACLRuleIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(NetworkACLRuleIdentity)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // NetworkACLRuleItem : NetworkACLRuleItem struct
 // Models which "extend" this model:
 // - NetworkACLRuleItemNetworkACLRuleProtocolTcpudp
@@ -19825,7 +19988,7 @@ type NetworkACLRuleItem struct {
 	Name *string `json:"name" validate:"required"`
 
 	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Source *string `json:"source" validate:"required"`
@@ -19926,7 +20089,7 @@ type NetworkACLRulePatch struct {
 
 	// The rule to move this rule immediately before. Specify `null` to move this rule after
 	// all existing rules.
-	Before NetworkACLRulePatchBeforeIntf `json:"before,omitempty"`
+	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
 
 	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Destination *string `json:"destination,omitempty"`
@@ -19942,18 +20105,6 @@ type NetworkACLRulePatch struct {
 
 	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
 	Source *string `json:"source,omitempty"`
-
-	// The date and time that the rule was created.
-	CreatedAt *strfmt.DateTime `json:"created_at,omitempty"`
-
-	// The URL for this Network ACL rule.
-	Href *string `json:"href,omitempty"`
-
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id,omitempty"`
-
-	// The IP version for this rule.
-	IPVersion *string `json:"ip_version,omitempty"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
 	PortMax *int64 `json:"port_max,omitempty"`
@@ -19998,13 +20149,6 @@ const (
 	NetworkACLRulePatchProtocolUDPConst  = "udp"
 )
 
-// Constants associated with the NetworkACLRulePatch.IPVersion property.
-// The IP version for this rule.
-const (
-	NetworkACLRulePatchIPVersionIpv4Const = "ipv4"
-	NetworkACLRulePatchIPVersionIpv6Const = "ipv6"
-)
-
 func (*NetworkACLRulePatch) isaNetworkACLRulePatch() bool {
 	return true
 }
@@ -20040,41 +20184,6 @@ func UnmarshalNetworkACLRulePatch(m map[string]json.RawMessage, result interface
 	return
 }
 
-// NetworkACLRulePatchBefore : The rule to move this rule immediately before. Specify `null` to move this rule after all existing rules.
-// Models which "extend" this model:
-// - NetworkACLRulePatchBeforeNetworkACLRuleIdentityByID
-// - NetworkACLRulePatchBeforeNetworkACLRuleIdentityByHref
-type NetworkACLRulePatchBefore struct {
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id,omitempty"`
-
-	// The URL for this Network ACL rule.
-	Href *string `json:"href,omitempty"`
-}
-
-func (*NetworkACLRulePatchBefore) isaNetworkACLRulePatchBefore() bool {
-	return true
-}
-
-type NetworkACLRulePatchBeforeIntf interface {
-	isaNetworkACLRulePatchBefore() bool
-}
-
-// UnmarshalNetworkACLRulePatchBefore unmarshals an instance of NetworkACLRulePatchBefore from the specified map of raw messages.
-func UnmarshalNetworkACLRulePatchBefore(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(NetworkACLRulePatchBefore)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // NetworkACLRulePrototype : NetworkACLRulePrototype struct
 // Models which "extend" this model:
 // - NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp
@@ -20086,7 +20195,7 @@ type NetworkACLRulePrototype struct {
 
 	// The rule to insert this rule immediately before. If omitted, this rule will be
 	// inserted after all existing rules.
-	Before NetworkACLRulePrototypeBeforeIntf `json:"before,omitempty"`
+	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
 
 	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Destination *string `json:"destination" validate:"required"`
@@ -20099,22 +20208,10 @@ type NetworkACLRulePrototype struct {
 	Name *string `json:"name,omitempty"`
 
 	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
 	Source *string `json:"source" validate:"required"`
-
-	// The date and time that the rule was created.
-	CreatedAt *strfmt.DateTime `json:"created_at,omitempty"`
-
-	// The URL for this Network ACL rule.
-	Href *string `json:"href,omitempty"`
-
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id,omitempty"`
-
-	// The IP version for this rule.
-	IPVersion *string `json:"ip_version,omitempty"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
 	PortMax *int64 `json:"port_max,omitempty"`
@@ -20159,13 +20256,6 @@ const (
 	NetworkACLRulePrototypeProtocolUDPConst  = "udp"
 )
 
-// Constants associated with the NetworkACLRulePrototype.IPVersion property.
-// The IP version for this rule.
-const (
-	NetworkACLRulePrototypeIPVersionIpv4Const = "ipv4"
-	NetworkACLRulePrototypeIPVersionIpv6Const = "ipv6"
-)
-
 func (*NetworkACLRulePrototype) isaNetworkACLRulePrototype() bool {
 	return true
 }
@@ -20201,41 +20291,6 @@ func UnmarshalNetworkACLRulePrototype(m map[string]json.RawMessage, result inter
 	return
 }
 
-// NetworkACLRulePrototypeBefore : The rule to insert this rule immediately before. If omitted, this rule will be inserted after all existing rules.
-// Models which "extend" this model:
-// - NetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByID
-// - NetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByHref
-type NetworkACLRulePrototypeBefore struct {
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id,omitempty"`
-
-	// The URL for this Network ACL rule.
-	Href *string `json:"href,omitempty"`
-}
-
-func (*NetworkACLRulePrototypeBefore) isaNetworkACLRulePrototypeBefore() bool {
-	return true
-}
-
-type NetworkACLRulePrototypeBeforeIntf interface {
-	isaNetworkACLRulePrototypeBefore() bool
-}
-
-// UnmarshalNetworkACLRulePrototypeBefore unmarshals an instance of NetworkACLRulePrototypeBefore from the specified map of raw messages.
-func UnmarshalNetworkACLRulePrototypeBefore(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(NetworkACLRulePrototypeBefore)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // NetworkACLRulePrototypeNetworkACLContext : NetworkACLRulePrototypeNetworkACLContext struct
 // Models which "extend" this model:
 // - NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp
@@ -20256,25 +20311,10 @@ type NetworkACLRulePrototypeNetworkACLContext struct {
 	Name *string `json:"name,omitempty"`
 
 	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
 	Source *string `json:"source" validate:"required"`
-
-	// The rule that this rule is immediately before. If absent, this is the last rule.
-	Before *NetworkACLRuleReference `json:"before,omitempty"`
-
-	// The date and time that the rule was created.
-	CreatedAt *strfmt.DateTime `json:"created_at,omitempty"`
-
-	// The URL for this Network ACL rule.
-	Href *string `json:"href,omitempty"`
-
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id,omitempty"`
-
-	// The IP version for this rule.
-	IPVersion *string `json:"ip_version,omitempty"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
 	PortMax *int64 `json:"port_max,omitempty"`
@@ -20317,13 +20357,6 @@ const (
 	NetworkACLRulePrototypeNetworkACLContextProtocolIcmpConst = "icmp"
 	NetworkACLRulePrototypeNetworkACLContextProtocolTCPConst  = "tcp"
 	NetworkACLRulePrototypeNetworkACLContextProtocolUDPConst  = "udp"
-)
-
-// Constants associated with the NetworkACLRulePrototypeNetworkACLContext.IPVersion property.
-// The IP version for this rule.
-const (
-	NetworkACLRulePrototypeNetworkACLContextIPVersionIpv4Const = "ipv4"
-	NetworkACLRulePrototypeNetworkACLContextIPVersionIpv6Const = "ipv6"
 )
 
 func (*NetworkACLRulePrototypeNetworkACLContext) isaNetworkACLRulePrototypeNetworkACLContext() bool {
@@ -20373,17 +20406,6 @@ type NetworkACLRuleReference struct {
 	Name *string `json:"name" validate:"required"`
 }
 
-// NewNetworkACLRuleReference : Instantiate NetworkACLRuleReference (Generic Model Constructor)
-func (*VpcClassicV1) NewNetworkACLRuleReference(href string, id string, name string) (model *NetworkACLRuleReference, err error) {
-	model = &NetworkACLRuleReference{
-		Href: core.StringPtr(href),
-		ID:   core.StringPtr(id),
-		Name: core.StringPtr(name),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
 // UnmarshalNetworkACLRuleReference unmarshals an instance of NetworkACLRuleReference from the specified map of raw messages.
 func UnmarshalNetworkACLRuleReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRuleReference)
@@ -20426,7 +20448,7 @@ type NetworkInterface struct {
 	// The primary IPv4 address.
 	PrimaryIpv4Address *string `json:"primary_ipv4_address" validate:"required"`
 
-	// The type of resource referenced.
+	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
 
 	// Collection of security groups.
@@ -20443,7 +20465,7 @@ type NetworkInterface struct {
 }
 
 // Constants associated with the NetworkInterface.ResourceType property.
-// The type of resource referenced.
+// The resource type.
 const (
 	NetworkInterfaceResourceTypeNetworkInterfaceConst = "network_interface"
 )
@@ -20535,41 +20557,6 @@ func UnmarshalNetworkInterfaceCollection(m map[string]json.RawMessage, result in
 	return
 }
 
-// NetworkInterfaceIdentity : Identifies a network interface by a unique property.
-// Models which "extend" this model:
-// - NetworkInterfaceIdentityByID
-// - NetworkInterfaceIdentityByHref
-type NetworkInterfaceIdentity struct {
-	// The unique identifier for this network interface.
-	ID *string `json:"id,omitempty"`
-
-	// The URL for this network interface.
-	Href *string `json:"href,omitempty"`
-}
-
-func (*NetworkInterfaceIdentity) isaNetworkInterfaceIdentity() bool {
-	return true
-}
-
-type NetworkInterfaceIdentityIntf interface {
-	isaNetworkInterfaceIdentity() bool
-}
-
-// UnmarshalNetworkInterfaceIdentity unmarshals an instance of NetworkInterfaceIdentity from the specified map of raw messages.
-func UnmarshalNetworkInterfaceIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(NetworkInterfaceIdentity)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // NetworkInterfaceInstanceContextReference : NetworkInterfaceInstanceContextReference struct
 type NetworkInterfaceInstanceContextReference struct {
 	// The URL for this network interface.
@@ -20584,7 +20571,7 @@ type NetworkInterfaceInstanceContextReference struct {
 	// The primary IPv4 address.
 	PrimaryIpv4Address *string `json:"primary_ipv4_address" validate:"required"`
 
-	// The type of resource referenced.
+	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
 
 	// The associated subnet.
@@ -20592,7 +20579,7 @@ type NetworkInterfaceInstanceContextReference struct {
 }
 
 // Constants associated with the NetworkInterfaceInstanceContextReference.ResourceType property.
-// The type of resource referenced.
+// The resource type.
 const (
 	NetworkInterfaceInstanceContextReferenceResourceTypeNetworkInterfaceConst = "network_interface"
 )
@@ -20634,7 +20621,8 @@ type NetworkInterfacePrototype struct {
 	// randomly-selected words.
 	Name *string `json:"name,omitempty"`
 
-	// The primary IPv4 address.
+	// The primary IPv4 address. If specified, it must be an available address on the network interface's subnet. If
+	// unspecified, an available address on the subnet will be automatically selected.
 	PrimaryIpv4Address *string `json:"primary_ipv4_address,omitempty"`
 
 	// Collection of security groups.
@@ -20690,12 +20678,12 @@ type NetworkInterfaceReference struct {
 	// The primary IPv4 address.
 	PrimaryIpv4Address *string `json:"primary_ipv4_address" validate:"required"`
 
-	// The type of resource referenced.
+	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
 }
 
 // Constants associated with the NetworkInterfaceReference.ResourceType property.
-// The type of resource referenced.
+// The resource type.
 const (
 	NetworkInterfaceReferenceResourceTypeNetworkInterfaceConst = "network_interface"
 )
@@ -20720,6 +20708,23 @@ func UnmarshalNetworkInterfaceReference(m map[string]json.RawMessage, result int
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// NetworkInterfaceUnpaginatedCollection : NetworkInterfaceUnpaginatedCollection struct
+type NetworkInterfaceUnpaginatedCollection struct {
+	// Collection of network interfaces.
+	NetworkInterfaces []NetworkInterface `json:"network_interfaces" validate:"required"`
+}
+
+// UnmarshalNetworkInterfaceUnpaginatedCollection unmarshals an instance of NetworkInterfaceUnpaginatedCollection from the specified map of raw messages.
+func UnmarshalNetworkInterfaceUnpaginatedCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(NetworkInterfaceUnpaginatedCollection)
+	err = core.UnmarshalModel(m, "network_interfaces", &obj.NetworkInterfaces, UnmarshalNetworkInterface)
 	if err != nil {
 		return
 	}
@@ -20914,7 +20919,7 @@ type PublicGateway struct {
 	// The user-defined name for this public gateway.
 	Name *string `json:"name" validate:"required"`
 
-	// The type of resource referenced.
+	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
 
 	// The status of the volume.
@@ -20928,7 +20933,7 @@ type PublicGateway struct {
 }
 
 // Constants associated with the PublicGateway.ResourceType property.
-// The type of resource referenced.
+// The resource type.
 const (
 	PublicGatewayResourceTypePublicGatewayConst = "public_gateway"
 )
@@ -21221,12 +21226,12 @@ type PublicGatewayReference struct {
 	// The user-defined name for this public gateway.
 	Name *string `json:"name" validate:"required"`
 
-	// The type of resource referenced.
+	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
 }
 
 // Constants associated with the PublicGatewayReference.ResourceType property.
-// The type of resource referenced.
+// The resource type.
 const (
 	PublicGatewayReferenceResourceTypePublicGatewayConst = "public_gateway"
 )
@@ -21435,7 +21440,7 @@ type RemoveVPNGatewayConnectionLocalCIDROptions struct {
 	// The VPN gateway identifier.
 	VPNGatewayID *string `json:"vpn_gateway_id" validate:"required"`
 
-	// The VPN connection identifier.
+	// The VPN gateway connection identifier.
 	ID *string `json:"id" validate:"required"`
 
 	// The address prefix part of the CIDR.
@@ -21493,7 +21498,7 @@ type RemoveVPNGatewayConnectionPeerCIDROptions struct {
 	// The VPN gateway identifier.
 	VPNGatewayID *string `json:"vpn_gateway_id" validate:"required"`
 
-	// The VPN connection identifier.
+	// The VPN gateway connection identifier.
 	ID *string `json:"id" validate:"required"`
 
 	// The address prefix part of the CIDR.
@@ -21715,13 +21720,14 @@ type Route struct {
 // Constants associated with the Route.LifecycleState property.
 // The lifecycle state of the route.
 const (
-	RouteLifecycleStateDeletedConst  = "deleted"
-	RouteLifecycleStateDeletingConst = "deleting"
-	RouteLifecycleStateFailedConst   = "failed"
-	RouteLifecycleStatePendingConst  = "pending"
-	RouteLifecycleStateStableConst   = "stable"
-	RouteLifecycleStateUpdatingConst = "updating"
-	RouteLifecycleStateWaitingConst  = "waiting"
+	RouteLifecycleStateDeletedConst   = "deleted"
+	RouteLifecycleStateDeletingConst  = "deleting"
+	RouteLifecycleStateFailedConst    = "failed"
+	RouteLifecycleStatePendingConst   = "pending"
+	RouteLifecycleStateStableConst    = "stable"
+	RouteLifecycleStateSuspendedConst = "suspended"
+	RouteLifecycleStateUpdatingConst  = "updating"
+	RouteLifecycleStateWaitingConst   = "waiting"
 )
 
 // UnmarshalRoute unmarshals an instance of Route from the specified map of raw messages.
@@ -21809,7 +21815,7 @@ func UnmarshalRouteNextHop(m map[string]json.RawMessage, result interface{}) (er
 	return
 }
 
-// RouteNextHopPrototype : RouteNextHopPrototype struct
+// RouteNextHopPrototype : The next hop packets will be routed to.
 // Models which "extend" this model:
 // - RouteNextHopPrototypeRouteNextHopIP
 type RouteNextHopPrototype struct {
@@ -22011,9 +22017,9 @@ func UnmarshalSecurityGroupReference(m map[string]json.RawMessage, result interf
 
 // SecurityGroupRule : SecurityGroupRule struct
 // Models which "extend" this model:
-// - SecurityGroupRuleProtocolAll
-// - SecurityGroupRuleProtocolIcmp
-// - SecurityGroupRuleProtocolTcpudp
+// - SecurityGroupRuleSecurityGroupRuleProtocolAll
+// - SecurityGroupRuleSecurityGroupRuleProtocolIcmp
+// - SecurityGroupRuleSecurityGroupRuleProtocolTcpudp
 type SecurityGroupRule struct {
 	// The direction of traffic to enforce, either `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
@@ -22094,13 +22100,13 @@ func UnmarshalSecurityGroupRule(m map[string]json.RawMessage, result interface{}
 		return
 	}
 	if discValue == "all" {
-		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolAll)
+		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolAll)
 	} else if discValue == "icmp" {
-		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIcmp)
+		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolIcmp)
 	} else if discValue == "tcp" {
-		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolTcpudp)
+		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
 	} else if discValue == "udp" {
-		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolTcpudp)
+		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
 	} else {
 		err = fmt.Errorf("unrecognized value for discriminator property 'protocol': %s", discValue)
 	}
@@ -22258,195 +22264,6 @@ type SecurityGroupRulePatchRemoteIntf interface {
 // UnmarshalSecurityGroupRulePatchRemote unmarshals an instance of SecurityGroupRulePatchRemote from the specified map of raw messages.
 func UnmarshalSecurityGroupRulePatchRemote(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SecurityGroupRulePatchRemote)
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemote : The IP addresses or security groups from which this rule will allow traffic (or to which, for outbound rules). Can be
-// specified as an IP address, a CIDR block, or a security group. If omitted, then traffic will be allowed from any
-// source (or to any source, for outbound rules).
-// Models which "extend" this model:
-// - SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteIP
-// - SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteCIDR
-// - SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity
-type SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemote struct {
-	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
-	// property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing
-	// and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-	Address *string `json:"address,omitempty"`
-
-	// The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this
-	// property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt
-	// processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
-	CIDRBlock *string `json:"cidr_block,omitempty"`
-
-	// The unique identifier for this security group.
-	ID *string `json:"id,omitempty"`
-
-	// The security group's CRN.
-	CRN *string `json:"crn,omitempty"`
-
-	// The security group's canonical URL.
-	Href *string `json:"href,omitempty"`
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemote) isaSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemote() bool {
-	return true
-}
-
-type SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteIntf interface {
-	isaSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemote() bool
-}
-
-// UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemote unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemote from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemote(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemote)
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemote : The IP addresses or security groups from which this rule will allow traffic (or to which, for outbound rules). Can be
-// specified as an IP address, a CIDR block, or a security group. If omitted, then traffic will be allowed from any
-// source (or to any source, for outbound rules).
-// Models which "extend" this model:
-// - SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteIP
-// - SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteCIDR
-// - SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity
-type SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemote struct {
-	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
-	// property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing
-	// and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-	Address *string `json:"address,omitempty"`
-
-	// The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this
-	// property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt
-	// processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
-	CIDRBlock *string `json:"cidr_block,omitempty"`
-
-	// The unique identifier for this security group.
-	ID *string `json:"id,omitempty"`
-
-	// The security group's CRN.
-	CRN *string `json:"crn,omitempty"`
-
-	// The security group's canonical URL.
-	Href *string `json:"href,omitempty"`
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemote) isaSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemote() bool {
-	return true
-}
-
-type SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteIntf interface {
-	isaSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemote() bool
-}
-
-// UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemote unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemote from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemote(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemote)
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemote : The IP addresses or security groups from which this rule will allow traffic (or to which, for outbound rules). Can be
-// specified as an IP address, a CIDR block, or a security group. If omitted, then traffic will be allowed from any
-// source (or to any source, for outbound rules).
-// Models which "extend" this model:
-// - SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteIP
-// - SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteCIDR
-// - SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity
-type SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemote struct {
-	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
-	// property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing
-	// and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-	Address *string `json:"address,omitempty"`
-
-	// The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this
-	// property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt
-	// processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
-	CIDRBlock *string `json:"cidr_block,omitempty"`
-
-	// The unique identifier for this security group.
-	ID *string `json:"id,omitempty"`
-
-	// The security group's CRN.
-	CRN *string `json:"crn,omitempty"`
-
-	// The security group's canonical URL.
-	Href *string `json:"href,omitempty"`
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemote) isaSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemote() bool {
-	return true
-}
-
-type SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteIntf interface {
-	isaSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemote() bool
-}
-
-// UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemote unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemote from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemote(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemote)
 	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
 	if err != nil {
 		return
@@ -22629,195 +22446,6 @@ func UnmarshalSecurityGroupRulePrototypeRemote(m map[string]json.RawMessage, res
 	return
 }
 
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemote : The IP addresses or security groups from which this rule will allow traffic (or to which, for outbound rules). Can be
-// specified as an IP address, a CIDR block, or a security group. If omitted, then traffic will be allowed from any
-// source (or to any source, for outbound rules).
-// Models which "extend" this model:
-// - SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteIP
-// - SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteCIDR
-// - SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemote struct {
-	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
-	// property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing
-	// and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-	Address *string `json:"address,omitempty"`
-
-	// The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this
-	// property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt
-	// processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
-	CIDRBlock *string `json:"cidr_block,omitempty"`
-
-	// The unique identifier for this security group.
-	ID *string `json:"id,omitempty"`
-
-	// The security group's CRN.
-	CRN *string `json:"crn,omitempty"`
-
-	// The security group's canonical URL.
-	Href *string `json:"href,omitempty"`
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemote) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemote() bool {
-	return true
-}
-
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteIntf interface {
-	isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemote() bool
-}
-
-// UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemote unmarshals an instance of SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemote from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemote(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemote)
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemote : The IP addresses or security groups from which this rule will allow traffic (or to which, for outbound rules). Can be
-// specified as an IP address, a CIDR block, or a security group. If omitted, then traffic will be allowed from any
-// source (or to any source, for outbound rules).
-// Models which "extend" this model:
-// - SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteIP
-// - SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteCIDR
-// - SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemote struct {
-	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
-	// property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing
-	// and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-	Address *string `json:"address,omitempty"`
-
-	// The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this
-	// property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt
-	// processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
-	CIDRBlock *string `json:"cidr_block,omitempty"`
-
-	// The unique identifier for this security group.
-	ID *string `json:"id,omitempty"`
-
-	// The security group's CRN.
-	CRN *string `json:"crn,omitempty"`
-
-	// The security group's canonical URL.
-	Href *string `json:"href,omitempty"`
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemote) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemote() bool {
-	return true
-}
-
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteIntf interface {
-	isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemote() bool
-}
-
-// UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemote unmarshals an instance of SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemote from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemote(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemote)
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemote : The IP addresses or security groups from which this rule will allow traffic (or to which, for outbound rules). Can be
-// specified as an IP address, a CIDR block, or a security group. If omitted, then traffic will be allowed from any
-// source (or to any source, for outbound rules).
-// Models which "extend" this model:
-// - SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteIP
-// - SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteCIDR
-// - SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemote struct {
-	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
-	// property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing
-	// and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-	Address *string `json:"address,omitempty"`
-
-	// The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this
-	// property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt
-	// processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
-	CIDRBlock *string `json:"cidr_block,omitempty"`
-
-	// The unique identifier for this security group.
-	ID *string `json:"id,omitempty"`
-
-	// The security group's CRN.
-	CRN *string `json:"crn,omitempty"`
-
-	// The security group's canonical URL.
-	Href *string `json:"href,omitempty"`
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemote) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemote() bool {
-	return true
-}
-
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteIntf interface {
-	isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemote() bool
-}
-
-// UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemote unmarshals an instance of SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemote from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemote(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemote)
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // SecurityGroupRuleRemote : The IP addresses or security groups from which this rule allows traffic (or to which, for outbound rules). Can be
 // specified as an IP address, a CIDR block, or a security group. If omitted, then traffic is allowed from any source
 // (or to any source, for outbound rules).
@@ -22945,7 +22573,7 @@ type Subnet struct {
 	ID *string `json:"id" validate:"required"`
 
 	// The IPv4 range of the subnet, expressed in CIDR format.
-	Ipv4CIDRBlock *string `json:"ipv4_cidr_block,omitempty"`
+	Ipv4CIDRBlock *string `json:"ipv4_cidr_block" validate:"required"`
 
 	// The user-defined name for this subnet.
 	Name *string `json:"name" validate:"required"`
@@ -23305,10 +22933,10 @@ type UpdateFloatingIPOptions struct {
 	// The unique user-defined name for this floating IP.
 	Name *string `json:"name,omitempty"`
 
-	// A new target to bind this floating IP with, replacing any existing binding.
+	// A new network interface to bind this floating IP to, replacing any existing binding.
 	// For this request to succeed, the existing floating IP must not be required by another
 	// resource, such as a public gateway.
-	Target NetworkInterfaceIdentityIntf `json:"target,omitempty"`
+	Target FloatingIPPatchTargetNetworkInterfaceIdentityIntf `json:"target,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -23334,7 +22962,7 @@ func (options *UpdateFloatingIPOptions) SetName(name string) *UpdateFloatingIPOp
 }
 
 // SetTarget : Allow user to set Target
-func (options *UpdateFloatingIPOptions) SetTarget(target NetworkInterfaceIdentityIntf) *UpdateFloatingIPOptions {
+func (options *UpdateFloatingIPOptions) SetTarget(target FloatingIPPatchTargetNetworkInterfaceIdentityIntf) *UpdateFloatingIPOptions {
 	options.Target = target
 	return options
 }
@@ -24654,7 +24282,7 @@ type UpdateVPNGatewayConnectionOptions struct {
 	// The VPN gateway identifier.
 	VPNGatewayID *string `json:"vpn_gateway_id" validate:"required"`
 
-	// The VPN connection identifier.
+	// The VPN gateway connection identifier.
 	ID *string `json:"id" validate:"required"`
 
 	// If set to false, the VPN connection is shut down.
@@ -24670,7 +24298,7 @@ type UpdateVPNGatewayConnectionOptions struct {
 	// autonegotiation.
 	IpsecPolicy IPsecPolicyIdentityIntf `json:"ipsec_policy,omitempty"`
 
-	// The user-defined name for this VPN connection.
+	// The user-defined name for this VPN gateway connection.
 	Name *string `json:"name,omitempty"`
 
 	// The IP address of the peer VPN gateway.
@@ -25067,7 +24695,7 @@ func UnmarshalVPCReference(m map[string]json.RawMessage, result interface{}) (er
 
 // VPNGateway : VPNGateway struct
 type VPNGateway struct {
-	// Collection of references to VPN connections.
+	// Collection of references to VPN gateway connections.
 	Connections []VPNGatewayConnectionReference `json:"connections" validate:"required"`
 
 	// The date and time that this VPN gateway was created.
@@ -25241,7 +24869,7 @@ type VPNGatewayConnection struct {
 	// The authentication mode. Only `psk` is currently supported.
 	AuthenticationMode *string `json:"authentication_mode" validate:"required"`
 
-	// The date and time that this VPN connection was created.
+	// The date and time that this VPN gateway connection was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The Dead Peer Detection settings.
@@ -25254,23 +24882,23 @@ type VPNGatewayConnection struct {
 	ID *string `json:"id" validate:"required"`
 
 	// Optional IKE policy configuration. The absence of a policy indicates autonegotiation.
-	IkePolicy IkePolicyIdentityIntf `json:"ike_policy,omitempty"`
+	IkePolicy *IkePolicyReference `json:"ike_policy,omitempty"`
 
 	// Optional IPsec policy configuration. The absence of a policy indicates
 	// autonegotiation.
-	IpsecPolicy IPsecPolicyIdentityIntf `json:"ipsec_policy,omitempty"`
+	IpsecPolicy *IPsecPolicyReference `json:"ipsec_policy,omitempty"`
 
 	// A collection of local CIDRs for this resource.
-	LocalCidrs []string `json:"local_cidrs" validate:"required"`
+	LocalCIDRs []string `json:"local_cidrs" validate:"required"`
 
-	// The user-defined name for this VPN connection.
+	// The user-defined name for this VPN gateway connection.
 	Name *string `json:"name" validate:"required"`
 
 	// The IP address of the peer VPN gateway.
 	PeerAddress *string `json:"peer_address" validate:"required"`
 
 	// A collection of peer CIDRs for this resource.
-	PeerCidrs []string `json:"peer_cidrs" validate:"required"`
+	PeerCIDRs []string `json:"peer_cidrs" validate:"required"`
 
 	// The preshared key.
 	Psk *string `json:"psk" validate:"required"`
@@ -25328,15 +24956,15 @@ func UnmarshalVPNGatewayConnection(m map[string]json.RawMessage, result interfac
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "ike_policy", &obj.IkePolicy, UnmarshalIkePolicyIdentity)
+	err = core.UnmarshalModel(m, "ike_policy", &obj.IkePolicy, UnmarshalIkePolicyReference)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "ipsec_policy", &obj.IpsecPolicy, UnmarshalIPsecPolicyIdentity)
+	err = core.UnmarshalModel(m, "ipsec_policy", &obj.IpsecPolicy, UnmarshalIPsecPolicyReference)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.LocalCidrs)
+	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.LocalCIDRs)
 	if err != nil {
 		return
 	}
@@ -25348,7 +24976,7 @@ func UnmarshalVPNGatewayConnection(m map[string]json.RawMessage, result interfac
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "peer_cidrs", &obj.PeerCidrs)
+	err = core.UnmarshalPrimitive(m, "peer_cidrs", &obj.PeerCIDRs)
 	if err != nil {
 		return
 	}
@@ -25368,9 +24996,9 @@ func UnmarshalVPNGatewayConnection(m map[string]json.RawMessage, result interfac
 	return
 }
 
-// VPNGatewayConnectionCollection : Collection of VPN connections in a VPN gateway.
+// VPNGatewayConnectionCollection : Collection of VPN gateway connections in a VPN gateway.
 type VPNGatewayConnectionCollection struct {
-	// Array of VPN connections.
+	// Array of VPN gateway connections.
 	Connections []VPNGatewayConnection `json:"connections" validate:"required"`
 }
 
@@ -25465,16 +25093,16 @@ func UnmarshalVPNGatewayConnectionDpdPrototype(m map[string]json.RawMessage, res
 	return
 }
 
-// VPNGatewayConnectionLocalCidrs : VPNGatewayConnectionLocalCidrs struct
-type VPNGatewayConnectionLocalCidrs struct {
+// VPNGatewayConnectionLocalCIDRs : VPNGatewayConnectionLocalCIDRs struct
+type VPNGatewayConnectionLocalCIDRs struct {
 	// A collection of local CIDRs for this resource.
-	LocalCidrs []string `json:"local_cidrs,omitempty"`
+	LocalCIDRs []string `json:"local_cidrs,omitempty"`
 }
 
-// UnmarshalVPNGatewayConnectionLocalCidrs unmarshals an instance of VPNGatewayConnectionLocalCidrs from the specified map of raw messages.
-func UnmarshalVPNGatewayConnectionLocalCidrs(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VPNGatewayConnectionLocalCidrs)
-	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.LocalCidrs)
+// UnmarshalVPNGatewayConnectionLocalCIDRs unmarshals an instance of VPNGatewayConnectionLocalCIDRs from the specified map of raw messages.
+func UnmarshalVPNGatewayConnectionLocalCIDRs(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayConnectionLocalCIDRs)
+	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.LocalCIDRs)
 	if err != nil {
 		return
 	}
@@ -25482,16 +25110,16 @@ func UnmarshalVPNGatewayConnectionLocalCidrs(m map[string]json.RawMessage, resul
 	return
 }
 
-// VPNGatewayConnectionPeerCidrs : VPNGatewayConnectionPeerCidrs struct
-type VPNGatewayConnectionPeerCidrs struct {
+// VPNGatewayConnectionPeerCIDRs : VPNGatewayConnectionPeerCIDRs struct
+type VPNGatewayConnectionPeerCIDRs struct {
 	// A collection of peer CIDRs for this resource.
-	PeerCidrs []string `json:"peer_cidrs,omitempty"`
+	PeerCIDRs []string `json:"peer_cidrs,omitempty"`
 }
 
-// UnmarshalVPNGatewayConnectionPeerCidrs unmarshals an instance of VPNGatewayConnectionPeerCidrs from the specified map of raw messages.
-func UnmarshalVPNGatewayConnectionPeerCidrs(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VPNGatewayConnectionPeerCidrs)
-	err = core.UnmarshalPrimitive(m, "peer_cidrs", &obj.PeerCidrs)
+// UnmarshalVPNGatewayConnectionPeerCIDRs unmarshals an instance of VPNGatewayConnectionPeerCIDRs from the specified map of raw messages.
+func UnmarshalVPNGatewayConnectionPeerCIDRs(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayConnectionPeerCIDRs)
+	err = core.UnmarshalPrimitive(m, "peer_cidrs", &obj.PeerCIDRs)
 	if err != nil {
 		return
 	}
@@ -25887,7 +25515,7 @@ func UnmarshalVolumeAttachmentPrototypeInstanceContext(m map[string]json.RawMess
 // Models which "extend" this model:
 // - VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContext
 type VolumeAttachmentPrototypeInstanceContextVolume struct {
-	// A reference to the root key to use to wrap the data encryption key for the volume.
+	// The identity of the root key to use to wrap the data encryption key for the volume.
 	//
 	// If this property is not provided, the `encryption` type for the volume will be
 	// `provider_managed`.
@@ -26340,7 +25968,7 @@ func UnmarshalVolumeProfileReference(m map[string]json.RawMessage, result interf
 // Models which "extend" this model:
 // - VolumePrototypeVolumeByCapacity
 type VolumePrototype struct {
-	// A reference to the root key to use to wrap the data encryption key for the volume.
+	// The identity of the root key to use to wrap the data encryption key for the volume.
 	//
 	// If this property is not provided, the `encryption` type for the volume will be
 	// `provider_managed`.
@@ -26416,7 +26044,7 @@ type VolumePrototypeInstanceByImageContext struct {
 	// updating volumes may expand in the future.
 	Capacity *int64 `json:"capacity,omitempty"`
 
-	// A reference to the root key to use to wrap the data encryption key for the volume.
+	// The identity of the root key to use to wrap the data encryption key for the volume.
 	//
 	// If this property is not provided, the `encryption` type for the volume will be
 	// `provider_managed`.
@@ -26692,6 +26320,130 @@ func UnmarshalEncryptionKeyIdentityByCRN(m map[string]json.RawMessage, result in
 	return
 }
 
+// FloatingIPByTargetTargetNetworkInterfaceIdentityByHref : FloatingIPByTargetTargetNetworkInterfaceIdentityByHref struct
+// This model "extends" FloatingIPByTargetTarget
+type FloatingIPByTargetTargetNetworkInterfaceIdentityByHref struct {
+	// The URL for this network interface.
+	Href *string `json:"href" validate:"required"`
+}
+
+// NewFloatingIPByTargetTargetNetworkInterfaceIdentityByHref : Instantiate FloatingIPByTargetTargetNetworkInterfaceIdentityByHref (Generic Model Constructor)
+func (*VpcClassicV1) NewFloatingIPByTargetTargetNetworkInterfaceIdentityByHref(href string) (model *FloatingIPByTargetTargetNetworkInterfaceIdentityByHref, err error) {
+	model = &FloatingIPByTargetTargetNetworkInterfaceIdentityByHref{
+		Href: core.StringPtr(href),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*FloatingIPByTargetTargetNetworkInterfaceIdentityByHref) isaFloatingIPByTargetTarget() bool {
+	return true
+}
+
+// UnmarshalFloatingIPByTargetTargetNetworkInterfaceIdentityByHref unmarshals an instance of FloatingIPByTargetTargetNetworkInterfaceIdentityByHref from the specified map of raw messages.
+func UnmarshalFloatingIPByTargetTargetNetworkInterfaceIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(FloatingIPByTargetTargetNetworkInterfaceIdentityByHref)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// FloatingIPByTargetTargetNetworkInterfaceIdentityByID : FloatingIPByTargetTargetNetworkInterfaceIdentityByID struct
+// This model "extends" FloatingIPByTargetTarget
+type FloatingIPByTargetTargetNetworkInterfaceIdentityByID struct {
+	// The unique identifier for this network interface.
+	ID *string `json:"id" validate:"required"`
+}
+
+// NewFloatingIPByTargetTargetNetworkInterfaceIdentityByID : Instantiate FloatingIPByTargetTargetNetworkInterfaceIdentityByID (Generic Model Constructor)
+func (*VpcClassicV1) NewFloatingIPByTargetTargetNetworkInterfaceIdentityByID(id string) (model *FloatingIPByTargetTargetNetworkInterfaceIdentityByID, err error) {
+	model = &FloatingIPByTargetTargetNetworkInterfaceIdentityByID{
+		ID: core.StringPtr(id),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*FloatingIPByTargetTargetNetworkInterfaceIdentityByID) isaFloatingIPByTargetTarget() bool {
+	return true
+}
+
+// UnmarshalFloatingIPByTargetTargetNetworkInterfaceIdentityByID unmarshals an instance of FloatingIPByTargetTargetNetworkInterfaceIdentityByID from the specified map of raw messages.
+func UnmarshalFloatingIPByTargetTargetNetworkInterfaceIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(FloatingIPByTargetTargetNetworkInterfaceIdentityByID)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// FloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref : FloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref struct
+// This model "extends" FloatingIPPatchTargetNetworkInterfaceIdentity
+type FloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref struct {
+	// The URL for this network interface.
+	Href *string `json:"href" validate:"required"`
+}
+
+// NewFloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref : Instantiate FloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref (Generic Model Constructor)
+func (*VpcClassicV1) NewFloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref(href string) (model *FloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref, err error) {
+	model = &FloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref{
+		Href: core.StringPtr(href),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*FloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref) isaFloatingIPPatchTargetNetworkInterfaceIdentity() bool {
+	return true
+}
+
+// UnmarshalFloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref unmarshals an instance of FloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref from the specified map of raw messages.
+func UnmarshalFloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(FloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// FloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID : FloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID struct
+// This model "extends" FloatingIPPatchTargetNetworkInterfaceIdentity
+type FloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID struct {
+	// The unique identifier for this network interface.
+	ID *string `json:"id" validate:"required"`
+}
+
+// NewFloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID : Instantiate FloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID (Generic Model Constructor)
+func (*VpcClassicV1) NewFloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID(id string) (model *FloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID, err error) {
+	model = &FloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID{
+		ID: core.StringPtr(id),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*FloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID) isaFloatingIPPatchTargetNetworkInterfaceIdentity() bool {
+	return true
+}
+
+// UnmarshalFloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID unmarshals an instance of FloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID from the specified map of raw messages.
+func UnmarshalFloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(FloatingIPPatchTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // FloatingIPPrototypeFloatingIPByTarget : FloatingIPPrototypeFloatingIPByTarget struct
 // This model "extends" FloatingIPPrototype
 type FloatingIPPrototypeFloatingIPByTarget struct {
@@ -26699,12 +26451,12 @@ type FloatingIPPrototypeFloatingIPByTarget struct {
 	// randomly-selected words.
 	Name *string `json:"name,omitempty"`
 
-	// The target this address is to be bound to.
-	Target NetworkInterfaceIdentityIntf `json:"target" validate:"required"`
+	// The network interface this floating IP is to be bound to.
+	Target FloatingIPByTargetTargetIntf `json:"target" validate:"required"`
 }
 
 // NewFloatingIPPrototypeFloatingIPByTarget : Instantiate FloatingIPPrototypeFloatingIPByTarget (Generic Model Constructor)
-func (*VpcClassicV1) NewFloatingIPPrototypeFloatingIPByTarget(target NetworkInterfaceIdentityIntf) (model *FloatingIPPrototypeFloatingIPByTarget, err error) {
+func (*VpcClassicV1) NewFloatingIPPrototypeFloatingIPByTarget(target FloatingIPByTargetTargetIntf) (model *FloatingIPPrototypeFloatingIPByTarget, err error) {
 	model = &FloatingIPPrototypeFloatingIPByTarget{
 		Target: target,
 	}
@@ -26723,7 +26475,7 @@ func UnmarshalFloatingIPPrototypeFloatingIPByTarget(m map[string]json.RawMessage
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "target", &obj.Target, UnmarshalNetworkInterfaceIdentity)
+	err = core.UnmarshalModel(m, "target", &obj.Target, UnmarshalFloatingIPByTargetTarget)
 	if err != nil {
 		return
 	}
@@ -26785,12 +26537,12 @@ type FloatingIPTargetNetworkInterfaceReference struct {
 	// The primary IPv4 address.
 	PrimaryIpv4Address *string `json:"primary_ipv4_address" validate:"required"`
 
-	// The type of resource referenced.
+	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
 }
 
 // Constants associated with the FloatingIPTargetNetworkInterfaceReference.ResourceType property.
-// The type of resource referenced.
+// The resource type.
 const (
 	FloatingIPTargetNetworkInterfaceReferenceResourceTypeNetworkInterfaceConst = "network_interface"
 )
@@ -26841,12 +26593,12 @@ type FloatingIPTargetPublicGatewayReference struct {
 	// The user-defined name for this public gateway.
 	Name *string `json:"name" validate:"required"`
 
-	// The type of resource referenced.
+	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
 }
 
 // Constants associated with the FloatingIPTargetPublicGatewayReference.ResourceType property.
-// The type of resource referenced.
+// The resource type.
 const (
 	FloatingIPTargetPublicGatewayReferenceResourceTypePublicGatewayConst = "public_gateway"
 )
@@ -27477,9 +27229,12 @@ func UnmarshalInstanceProfilePortSpeedFixed(m map[string]json.RawMessage, result
 // InstancePrototypeInstanceByImage : InstancePrototypeInstanceByImage struct
 // This model "extends" InstancePrototype
 type InstancePrototypeInstanceByImage struct {
-	// The public SSH keys to install on the virtual server instance. Up to 10 keys may be provided; if no keys are
-	// provided the instance will be inaccessible unless the image used provides a means of access. For Windows instances,
-	// one of the keys will be used to encrypt the administrator password.
+	// The public SSH keys for the administrative user of the virtual server instance. Up to 10 keys may be provided; if no
+	// keys are provided the instance will be inaccessible unless the image used provides another means of access. For
+	// Windows instances, one of the keys will be used to encrypt the administrator password.
+	//
+	// Keys will be made available to the virtual server instance as cloud-init vendor data. For cloud-init enabled images,
+	// these keys will also be added as SSH authorized keys for the administrative user.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
 	// The user-defined name for this virtual server instance (and default system hostname). If unspecified, the name will
@@ -27620,38 +27375,6 @@ func UnmarshalKeyIdentityByCRN(m map[string]json.RawMessage, result interface{})
 	return
 }
 
-// KeyIdentityByFingerprint : KeyIdentityByFingerprint struct
-// This model "extends" KeyIdentity
-type KeyIdentityByFingerprint struct {
-	// The fingerprint for this key.  The value is returned base64-encoded and prefixed with the hash algorithm (always
-	// `SHA256`).
-	Fingerprint *string `json:"fingerprint" validate:"required"`
-}
-
-// NewKeyIdentityByFingerprint : Instantiate KeyIdentityByFingerprint (Generic Model Constructor)
-func (*VpcClassicV1) NewKeyIdentityByFingerprint(fingerprint string) (model *KeyIdentityByFingerprint, err error) {
-	model = &KeyIdentityByFingerprint{
-		Fingerprint: core.StringPtr(fingerprint),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*KeyIdentityByFingerprint) isaKeyIdentity() bool {
-	return true
-}
-
-// UnmarshalKeyIdentityByFingerprint unmarshals an instance of KeyIdentityByFingerprint from the specified map of raw messages.
-func UnmarshalKeyIdentityByFingerprint(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(KeyIdentityByFingerprint)
-	err = core.UnmarshalPrimitive(m, "fingerprint", &obj.Fingerprint)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // KeyIdentityByHref : KeyIdentityByHref struct
 // This model "extends" KeyIdentity
 type KeyIdentityByHref struct {
@@ -27707,6 +27430,38 @@ func (*KeyIdentityByID) isaKeyIdentity() bool {
 func UnmarshalKeyIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(KeyIdentityByID)
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// KeyIdentityKeyIdentityByFingerprint : KeyIdentityKeyIdentityByFingerprint struct
+// This model "extends" KeyIdentity
+type KeyIdentityKeyIdentityByFingerprint struct {
+	// The fingerprint for this key.  The value is returned base64-encoded and prefixed with the hash algorithm (always
+	// `SHA256`).
+	Fingerprint *string `json:"fingerprint" validate:"required"`
+}
+
+// NewKeyIdentityKeyIdentityByFingerprint : Instantiate KeyIdentityKeyIdentityByFingerprint (Generic Model Constructor)
+func (*VpcClassicV1) NewKeyIdentityKeyIdentityByFingerprint(fingerprint string) (model *KeyIdentityKeyIdentityByFingerprint, err error) {
+	model = &KeyIdentityKeyIdentityByFingerprint{
+		Fingerprint: core.StringPtr(fingerprint),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*KeyIdentityKeyIdentityByFingerprint) isaKeyIdentity() bool {
+	return true
+}
+
+// UnmarshalKeyIdentityKeyIdentityByFingerprint unmarshals an instance of KeyIdentityKeyIdentityByFingerprint from the specified map of raw messages.
+func UnmarshalKeyIdentityKeyIdentityByFingerprint(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(KeyIdentityKeyIdentityByFingerprint)
+	err = core.UnmarshalPrimitive(m, "fingerprint", &obj.Fingerprint)
 	if err != nil {
 		return
 	}
@@ -28254,13 +28009,76 @@ func UnmarshalNetworkACLPrototypeNetworkACLBySourceNetworkACL(m map[string]json.
 	return
 }
 
+// NetworkACLRuleIdentityByHref : NetworkACLRuleIdentityByHref struct
+// This model "extends" NetworkACLRuleIdentity
+type NetworkACLRuleIdentityByHref struct {
+	// The URL for this Network ACL rule.
+	Href *string `json:"href" validate:"required"`
+}
+
+// NewNetworkACLRuleIdentityByHref : Instantiate NetworkACLRuleIdentityByHref (Generic Model Constructor)
+func (*VpcClassicV1) NewNetworkACLRuleIdentityByHref(href string) (model *NetworkACLRuleIdentityByHref, err error) {
+	model = &NetworkACLRuleIdentityByHref{
+		Href: core.StringPtr(href),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*NetworkACLRuleIdentityByHref) isaNetworkACLRuleIdentity() bool {
+	return true
+}
+
+// UnmarshalNetworkACLRuleIdentityByHref unmarshals an instance of NetworkACLRuleIdentityByHref from the specified map of raw messages.
+func UnmarshalNetworkACLRuleIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(NetworkACLRuleIdentityByHref)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// NetworkACLRuleIdentityByID : NetworkACLRuleIdentityByID struct
+// This model "extends" NetworkACLRuleIdentity
+type NetworkACLRuleIdentityByID struct {
+	// The unique identifier for this Network ACL rule.
+	ID *string `json:"id" validate:"required"`
+}
+
+// NewNetworkACLRuleIdentityByID : Instantiate NetworkACLRuleIdentityByID (Generic Model Constructor)
+func (*VpcClassicV1) NewNetworkACLRuleIdentityByID(id string) (model *NetworkACLRuleIdentityByID, err error) {
+	model = &NetworkACLRuleIdentityByID{
+		ID: core.StringPtr(id),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*NetworkACLRuleIdentityByID) isaNetworkACLRuleIdentity() bool {
+	return true
+}
+
+// UnmarshalNetworkACLRuleIdentityByID unmarshals an instance of NetworkACLRuleIdentityByID from the specified map of raw messages.
+func UnmarshalNetworkACLRuleIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(NetworkACLRuleIdentityByID)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // NetworkACLRuleItemNetworkACLRuleProtocolAll : NetworkACLRuleItemNetworkACLRuleProtocolAll struct
 // This model "extends" NetworkACLRuleItem
 type NetworkACLRuleItemNetworkACLRuleProtocolAll struct {
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
 
-	// The rule that this rule is immediately before. If absent, this is the last rule.
+	// The rule that this rule is immediately before. In a rule collection, this always
+	// refers to the next item in the collection. If absent, this is the last rule.
 	Before *NetworkACLRuleReference `json:"before,omitempty"`
 
 	// The date and time that the rule was created.
@@ -28286,7 +28104,7 @@ type NetworkACLRuleItemNetworkACLRuleProtocolAll struct {
 	Name *string `json:"name" validate:"required"`
 
 	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Source *string `json:"source" validate:"required"`
@@ -28383,7 +28201,8 @@ type NetworkACLRuleItemNetworkACLRuleProtocolIcmp struct {
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
 
-	// The rule that this rule is immediately before. If absent, this is the last rule.
+	// The rule that this rule is immediately before. In a rule collection, this always
+	// refers to the next item in the collection. If absent, this is the last rule.
 	Before *NetworkACLRuleReference `json:"before,omitempty"`
 
 	// The date and time that the rule was created.
@@ -28409,7 +28228,7 @@ type NetworkACLRuleItemNetworkACLRuleProtocolIcmp struct {
 	Name *string `json:"name" validate:"required"`
 
 	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Source *string `json:"source" validate:"required"`
@@ -28521,7 +28340,8 @@ type NetworkACLRuleItemNetworkACLRuleProtocolTcpudp struct {
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
 
-	// The rule that this rule is immediately before. If absent, this is the last rule.
+	// The rule that this rule is immediately before. In a rule collection, this always
+	// refers to the next item in the collection. If absent, this is the last rule.
 	Before *NetworkACLRuleReference `json:"before,omitempty"`
 
 	// The date and time that the rule was created.
@@ -28547,7 +28367,7 @@ type NetworkACLRuleItemNetworkACLRuleProtocolTcpudp struct {
 	Name *string `json:"name" validate:"required"`
 
 	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Source *string `json:"source" validate:"required"`
@@ -28666,104 +28486,30 @@ func UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolTcpudp(m map[string]json.R
 	return
 }
 
-// NetworkACLRulePatchBeforeNetworkACLRuleIdentityByHref : NetworkACLRulePatchBeforeNetworkACLRuleIdentityByHref struct
-// This model "extends" NetworkACLRulePatchBefore
-type NetworkACLRulePatchBeforeNetworkACLRuleIdentityByHref struct {
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-}
-
-// NewNetworkACLRulePatchBeforeNetworkACLRuleIdentityByHref : Instantiate NetworkACLRulePatchBeforeNetworkACLRuleIdentityByHref (Generic Model Constructor)
-func (*VpcClassicV1) NewNetworkACLRulePatchBeforeNetworkACLRuleIdentityByHref(href string) (model *NetworkACLRulePatchBeforeNetworkACLRuleIdentityByHref, err error) {
-	model = &NetworkACLRulePatchBeforeNetworkACLRuleIdentityByHref{
-		Href: core.StringPtr(href),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*NetworkACLRulePatchBeforeNetworkACLRuleIdentityByHref) isaNetworkACLRulePatchBefore() bool {
-	return true
-}
-
-// UnmarshalNetworkACLRulePatchBeforeNetworkACLRuleIdentityByHref unmarshals an instance of NetworkACLRulePatchBeforeNetworkACLRuleIdentityByHref from the specified map of raw messages.
-func UnmarshalNetworkACLRulePatchBeforeNetworkACLRuleIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(NetworkACLRulePatchBeforeNetworkACLRuleIdentityByHref)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// NetworkACLRulePatchBeforeNetworkACLRuleIdentityByID : NetworkACLRulePatchBeforeNetworkACLRuleIdentityByID struct
-// This model "extends" NetworkACLRulePatchBefore
-type NetworkACLRulePatchBeforeNetworkACLRuleIdentityByID struct {
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-}
-
-// NewNetworkACLRulePatchBeforeNetworkACLRuleIdentityByID : Instantiate NetworkACLRulePatchBeforeNetworkACLRuleIdentityByID (Generic Model Constructor)
-func (*VpcClassicV1) NewNetworkACLRulePatchBeforeNetworkACLRuleIdentityByID(id string) (model *NetworkACLRulePatchBeforeNetworkACLRuleIdentityByID, err error) {
-	model = &NetworkACLRulePatchBeforeNetworkACLRuleIdentityByID{
-		ID: core.StringPtr(id),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*NetworkACLRulePatchBeforeNetworkACLRuleIdentityByID) isaNetworkACLRulePatchBefore() bool {
-	return true
-}
-
-// UnmarshalNetworkACLRulePatchBeforeNetworkACLRuleIdentityByID unmarshals an instance of NetworkACLRulePatchBeforeNetworkACLRuleIdentityByID from the specified map of raw messages.
-func UnmarshalNetworkACLRulePatchBeforeNetworkACLRuleIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(NetworkACLRulePatchBeforeNetworkACLRuleIdentityByID)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // NetworkACLRulePatchNetworkACLRuleProtocolAll : NetworkACLRulePatchNetworkACLRuleProtocolAll struct
 // This model "extends" NetworkACLRulePatch
 type NetworkACLRulePatchNetworkACLRuleProtocolAll struct {
 	// Whether to allow or deny matching traffic.
-	Action *string `json:"action" validate:"required"`
+	Action *string `json:"action,omitempty"`
 
-	// The rule that this rule is immediately before. If absent, this is the last rule.
-	Before *NetworkACLRuleReference `json:"before,omitempty"`
+	// The rule to move this rule immediately before. Specify `null` to move this rule after
+	// all existing rules.
+	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
 
-	// The date and time that the rule was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Destination *string `json:"destination" validate:"required"`
+	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Destination *string `json:"destination,omitempty"`
 
 	// Whether the traffic to be matched is `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
+	Direction *string `json:"direction,omitempty"`
 
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The IP version for this rule.
-	IPVersion *string `json:"ip_version" validate:"required"`
-
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in.
+	Name *string `json:"name,omitempty"`
 
 	// The protocol to enforce.
 	Protocol *string `json:"protocol,omitempty"`
 
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
+	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source,omitempty"`
 }
 
 // Constants associated with the NetworkACLRulePatchNetworkACLRuleProtocolAll.Action property.
@@ -28780,13 +28526,6 @@ const (
 	NetworkACLRulePatchNetworkACLRuleProtocolAllDirectionOutboundConst = "outbound"
 )
 
-// Constants associated with the NetworkACLRulePatchNetworkACLRuleProtocolAll.IPVersion property.
-// The IP version for this rule.
-const (
-	NetworkACLRulePatchNetworkACLRuleProtocolAllIPVersionIpv4Const = "ipv4"
-	NetworkACLRulePatchNetworkACLRuleProtocolAllIPVersionIpv6Const = "ipv6"
-)
-
 // Constants associated with the NetworkACLRulePatchNetworkACLRuleProtocolAll.Protocol property.
 // The protocol to enforce.
 const (
@@ -28795,23 +28534,6 @@ const (
 	NetworkACLRulePatchNetworkACLRuleProtocolAllProtocolTCPConst  = "tcp"
 	NetworkACLRulePatchNetworkACLRuleProtocolAllProtocolUDPConst  = "udp"
 )
-
-// NewNetworkACLRulePatchNetworkACLRuleProtocolAll : Instantiate NetworkACLRulePatchNetworkACLRuleProtocolAll (Generic Model Constructor)
-func (*VpcClassicV1) NewNetworkACLRulePatchNetworkACLRuleProtocolAll(action string, createdAt *strfmt.DateTime, destination string, direction string, href string, id string, ipVersion string, name string, source string) (model *NetworkACLRulePatchNetworkACLRuleProtocolAll, err error) {
-	model = &NetworkACLRulePatchNetworkACLRuleProtocolAll{
-		Action:      core.StringPtr(action),
-		CreatedAt:   createdAt,
-		Destination: core.StringPtr(destination),
-		Direction:   core.StringPtr(direction),
-		Href:        core.StringPtr(href),
-		ID:          core.StringPtr(id),
-		IPVersion:   core.StringPtr(ipVersion),
-		Name:        core.StringPtr(name),
-		Source:      core.StringPtr(source),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
 
 func (*NetworkACLRulePatchNetworkACLRuleProtocolAll) isaNetworkACLRulePatch() bool {
 	return true
@@ -28824,11 +28546,7 @@ func UnmarshalNetworkACLRulePatchNetworkACLRuleProtocolAll(m map[string]json.Raw
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleIdentity)
 	if err != nil {
 		return
 	}
@@ -28837,18 +28555,6 @@ func UnmarshalNetworkACLRulePatchNetworkACLRuleProtocolAll(m map[string]json.Raw
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
 	if err != nil {
 		return
 	}
@@ -28872,38 +28578,26 @@ func UnmarshalNetworkACLRulePatchNetworkACLRuleProtocolAll(m map[string]json.Raw
 // This model "extends" NetworkACLRulePatch
 type NetworkACLRulePatchNetworkACLRuleProtocolIcmp struct {
 	// Whether to allow or deny matching traffic.
-	Action *string `json:"action" validate:"required"`
+	Action *string `json:"action,omitempty"`
 
-	// The rule that this rule is immediately before. If absent, this is the last rule.
-	Before *NetworkACLRuleReference `json:"before,omitempty"`
+	// The rule to move this rule immediately before. Specify `null` to move this rule after
+	// all existing rules.
+	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
 
-	// The date and time that the rule was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Destination *string `json:"destination" validate:"required"`
+	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Destination *string `json:"destination,omitempty"`
 
 	// Whether the traffic to be matched is `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
+	Direction *string `json:"direction,omitempty"`
 
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The IP version for this rule.
-	IPVersion *string `json:"ip_version" validate:"required"`
-
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in.
+	Name *string `json:"name,omitempty"`
 
 	// The protocol to enforce.
 	Protocol *string `json:"protocol,omitempty"`
 
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
+	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source,omitempty"`
 
 	// The ICMP traffic code to allow. If unspecified, all codes are allowed. This can only be specified if type is also
 	// specified.
@@ -28927,13 +28621,6 @@ const (
 	NetworkACLRulePatchNetworkACLRuleProtocolIcmpDirectionOutboundConst = "outbound"
 )
 
-// Constants associated with the NetworkACLRulePatchNetworkACLRuleProtocolIcmp.IPVersion property.
-// The IP version for this rule.
-const (
-	NetworkACLRulePatchNetworkACLRuleProtocolIcmpIPVersionIpv4Const = "ipv4"
-	NetworkACLRulePatchNetworkACLRuleProtocolIcmpIPVersionIpv6Const = "ipv6"
-)
-
 // Constants associated with the NetworkACLRulePatchNetworkACLRuleProtocolIcmp.Protocol property.
 // The protocol to enforce.
 const (
@@ -28942,23 +28629,6 @@ const (
 	NetworkACLRulePatchNetworkACLRuleProtocolIcmpProtocolTCPConst  = "tcp"
 	NetworkACLRulePatchNetworkACLRuleProtocolIcmpProtocolUDPConst  = "udp"
 )
-
-// NewNetworkACLRulePatchNetworkACLRuleProtocolIcmp : Instantiate NetworkACLRulePatchNetworkACLRuleProtocolIcmp (Generic Model Constructor)
-func (*VpcClassicV1) NewNetworkACLRulePatchNetworkACLRuleProtocolIcmp(action string, createdAt *strfmt.DateTime, destination string, direction string, href string, id string, ipVersion string, name string, source string) (model *NetworkACLRulePatchNetworkACLRuleProtocolIcmp, err error) {
-	model = &NetworkACLRulePatchNetworkACLRuleProtocolIcmp{
-		Action:      core.StringPtr(action),
-		CreatedAt:   createdAt,
-		Destination: core.StringPtr(destination),
-		Direction:   core.StringPtr(direction),
-		Href:        core.StringPtr(href),
-		ID:          core.StringPtr(id),
-		IPVersion:   core.StringPtr(ipVersion),
-		Name:        core.StringPtr(name),
-		Source:      core.StringPtr(source),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
 
 func (*NetworkACLRulePatchNetworkACLRuleProtocolIcmp) isaNetworkACLRulePatch() bool {
 	return true
@@ -28971,11 +28641,7 @@ func UnmarshalNetworkACLRulePatchNetworkACLRuleProtocolIcmp(m map[string]json.Ra
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleIdentity)
 	if err != nil {
 		return
 	}
@@ -28984,18 +28650,6 @@ func UnmarshalNetworkACLRulePatchNetworkACLRuleProtocolIcmp(m map[string]json.Ra
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
 	if err != nil {
 		return
 	}
@@ -29027,38 +28681,26 @@ func UnmarshalNetworkACLRulePatchNetworkACLRuleProtocolIcmp(m map[string]json.Ra
 // This model "extends" NetworkACLRulePatch
 type NetworkACLRulePatchNetworkACLRuleProtocolTcpudp struct {
 	// Whether to allow or deny matching traffic.
-	Action *string `json:"action" validate:"required"`
+	Action *string `json:"action,omitempty"`
 
-	// The rule that this rule is immediately before. If absent, this is the last rule.
-	Before *NetworkACLRuleReference `json:"before,omitempty"`
+	// The rule to move this rule immediately before. Specify `null` to move this rule after
+	// all existing rules.
+	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
 
-	// The date and time that the rule was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Destination *string `json:"destination" validate:"required"`
+	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Destination *string `json:"destination,omitempty"`
 
 	// Whether the traffic to be matched is `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
+	Direction *string `json:"direction,omitempty"`
 
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The IP version for this rule.
-	IPVersion *string `json:"ip_version" validate:"required"`
-
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in.
+	Name *string `json:"name,omitempty"`
 
 	// The protocol to enforce.
 	Protocol *string `json:"protocol,omitempty"`
 
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
+	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source,omitempty"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
 	PortMax *int64 `json:"port_max,omitempty"`
@@ -29087,13 +28729,6 @@ const (
 	NetworkACLRulePatchNetworkACLRuleProtocolTcpudpDirectionOutboundConst = "outbound"
 )
 
-// Constants associated with the NetworkACLRulePatchNetworkACLRuleProtocolTcpudp.IPVersion property.
-// The IP version for this rule.
-const (
-	NetworkACLRulePatchNetworkACLRuleProtocolTcpudpIPVersionIpv4Const = "ipv4"
-	NetworkACLRulePatchNetworkACLRuleProtocolTcpudpIPVersionIpv6Const = "ipv6"
-)
-
 // Constants associated with the NetworkACLRulePatchNetworkACLRuleProtocolTcpudp.Protocol property.
 // The protocol to enforce.
 const (
@@ -29102,23 +28737,6 @@ const (
 	NetworkACLRulePatchNetworkACLRuleProtocolTcpudpProtocolTCPConst  = "tcp"
 	NetworkACLRulePatchNetworkACLRuleProtocolTcpudpProtocolUDPConst  = "udp"
 )
-
-// NewNetworkACLRulePatchNetworkACLRuleProtocolTcpudp : Instantiate NetworkACLRulePatchNetworkACLRuleProtocolTcpudp (Generic Model Constructor)
-func (*VpcClassicV1) NewNetworkACLRulePatchNetworkACLRuleProtocolTcpudp(action string, createdAt *strfmt.DateTime, destination string, direction string, href string, id string, ipVersion string, name string, source string) (model *NetworkACLRulePatchNetworkACLRuleProtocolTcpudp, err error) {
-	model = &NetworkACLRulePatchNetworkACLRuleProtocolTcpudp{
-		Action:      core.StringPtr(action),
-		CreatedAt:   createdAt,
-		Destination: core.StringPtr(destination),
-		Direction:   core.StringPtr(direction),
-		Href:        core.StringPtr(href),
-		ID:          core.StringPtr(id),
-		IPVersion:   core.StringPtr(ipVersion),
-		Name:        core.StringPtr(name),
-		Source:      core.StringPtr(source),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
 
 func (*NetworkACLRulePatchNetworkACLRuleProtocolTcpudp) isaNetworkACLRulePatch() bool {
 	return true
@@ -29131,11 +28749,7 @@ func UnmarshalNetworkACLRulePatchNetworkACLRuleProtocolTcpudp(m map[string]json.
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleIdentity)
 	if err != nil {
 		return
 	}
@@ -29144,18 +28758,6 @@ func UnmarshalNetworkACLRulePatchNetworkACLRuleProtocolTcpudp(m map[string]json.
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
 	if err != nil {
 		return
 	}
@@ -29184,480 +28786,6 @@ func UnmarshalNetworkACLRulePatchNetworkACLRuleProtocolTcpudp(m map[string]json.
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "source_port_min", &obj.SourcePortMin)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// NetworkACLRuleProtocolAll : NetworkACLRuleProtocolAll struct
-// This model "extends" NetworkACLRule
-type NetworkACLRuleProtocolAll struct {
-	// Whether to allow or deny matching traffic.
-	Action *string `json:"action" validate:"required"`
-
-	// The rule that this rule is immediately before. If absent, this is the last rule.
-	Before *NetworkACLRuleReference `json:"before,omitempty"`
-
-	// The date and time that the rule was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Destination *string `json:"destination" validate:"required"`
-
-	// Whether the traffic to be matched is `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
-
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The IP version for this rule.
-	IPVersion *string `json:"ip_version" validate:"required"`
-
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
-
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
-}
-
-// Constants associated with the NetworkACLRuleProtocolAll.Action property.
-// Whether to allow or deny matching traffic.
-const (
-	NetworkACLRuleProtocolAllActionAllowConst = "allow"
-	NetworkACLRuleProtocolAllActionDenyConst  = "deny"
-)
-
-// Constants associated with the NetworkACLRuleProtocolAll.Direction property.
-// Whether the traffic to be matched is `inbound` or `outbound`.
-const (
-	NetworkACLRuleProtocolAllDirectionInboundConst  = "inbound"
-	NetworkACLRuleProtocolAllDirectionOutboundConst = "outbound"
-)
-
-// Constants associated with the NetworkACLRuleProtocolAll.IPVersion property.
-// The IP version for this rule.
-const (
-	NetworkACLRuleProtocolAllIPVersionIpv4Const = "ipv4"
-	NetworkACLRuleProtocolAllIPVersionIpv6Const = "ipv6"
-)
-
-// Constants associated with the NetworkACLRuleProtocolAll.Protocol property.
-// The protocol to enforce.
-const (
-	NetworkACLRuleProtocolAllProtocolAllConst  = "all"
-	NetworkACLRuleProtocolAllProtocolIcmpConst = "icmp"
-	NetworkACLRuleProtocolAllProtocolTCPConst  = "tcp"
-	NetworkACLRuleProtocolAllProtocolUDPConst  = "udp"
-)
-
-func (*NetworkACLRuleProtocolAll) isaNetworkACLRule() bool {
-	return true
-}
-
-// UnmarshalNetworkACLRuleProtocolAll unmarshals an instance of NetworkACLRuleProtocolAll from the specified map of raw messages.
-func UnmarshalNetworkACLRuleProtocolAll(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(NetworkACLRuleProtocolAll)
-	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// NetworkACLRuleProtocolIcmp : NetworkACLRuleProtocolIcmp struct
-// This model "extends" NetworkACLRule
-type NetworkACLRuleProtocolIcmp struct {
-	// Whether to allow or deny matching traffic.
-	Action *string `json:"action" validate:"required"`
-
-	// The rule that this rule is immediately before. If absent, this is the last rule.
-	Before *NetworkACLRuleReference `json:"before,omitempty"`
-
-	// The date and time that the rule was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Destination *string `json:"destination" validate:"required"`
-
-	// Whether the traffic to be matched is `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
-
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The IP version for this rule.
-	IPVersion *string `json:"ip_version" validate:"required"`
-
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
-
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
-
-	// The ICMP traffic code to allow. If unspecified, all codes are allowed. This can only be specified if type is also
-	// specified.
-	Code *int64 `json:"code,omitempty"`
-
-	// The ICMP traffic type to allow. If unspecified, all types are allowed by this rule.
-	Type *int64 `json:"type,omitempty"`
-}
-
-// Constants associated with the NetworkACLRuleProtocolIcmp.Action property.
-// Whether to allow or deny matching traffic.
-const (
-	NetworkACLRuleProtocolIcmpActionAllowConst = "allow"
-	NetworkACLRuleProtocolIcmpActionDenyConst  = "deny"
-)
-
-// Constants associated with the NetworkACLRuleProtocolIcmp.Direction property.
-// Whether the traffic to be matched is `inbound` or `outbound`.
-const (
-	NetworkACLRuleProtocolIcmpDirectionInboundConst  = "inbound"
-	NetworkACLRuleProtocolIcmpDirectionOutboundConst = "outbound"
-)
-
-// Constants associated with the NetworkACLRuleProtocolIcmp.IPVersion property.
-// The IP version for this rule.
-const (
-	NetworkACLRuleProtocolIcmpIPVersionIpv4Const = "ipv4"
-	NetworkACLRuleProtocolIcmpIPVersionIpv6Const = "ipv6"
-)
-
-// Constants associated with the NetworkACLRuleProtocolIcmp.Protocol property.
-// The protocol to enforce.
-const (
-	NetworkACLRuleProtocolIcmpProtocolAllConst  = "all"
-	NetworkACLRuleProtocolIcmpProtocolIcmpConst = "icmp"
-	NetworkACLRuleProtocolIcmpProtocolTCPConst  = "tcp"
-	NetworkACLRuleProtocolIcmpProtocolUDPConst  = "udp"
-)
-
-func (*NetworkACLRuleProtocolIcmp) isaNetworkACLRule() bool {
-	return true
-}
-
-// UnmarshalNetworkACLRuleProtocolIcmp unmarshals an instance of NetworkACLRuleProtocolIcmp from the specified map of raw messages.
-func UnmarshalNetworkACLRuleProtocolIcmp(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(NetworkACLRuleProtocolIcmp)
-	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// NetworkACLRuleProtocolTcpudp : NetworkACLRuleProtocolTcpudp struct
-// This model "extends" NetworkACLRule
-type NetworkACLRuleProtocolTcpudp struct {
-	// Whether to allow or deny matching traffic.
-	Action *string `json:"action" validate:"required"`
-
-	// The rule that this rule is immediately before. If absent, this is the last rule.
-	Before *NetworkACLRuleReference `json:"before,omitempty"`
-
-	// The date and time that the rule was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Destination *string `json:"destination" validate:"required"`
-
-	// Whether the traffic to be matched is `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
-
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The IP version for this rule.
-	IPVersion *string `json:"ip_version" validate:"required"`
-
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
-
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
-
-	// The inclusive upper bound of TCP/UDP destination port range.
-	PortMax *int64 `json:"port_max,omitempty"`
-
-	// The inclusive lower bound of TCP/UDP destination port range.
-	PortMin *int64 `json:"port_min,omitempty"`
-
-	// The inclusive upper bound of TCP/UDP source port range.
-	SourcePortMax *int64 `json:"source_port_max,omitempty"`
-
-	// The inclusive lower bound of TCP/UDP source port range.
-	SourcePortMin *int64 `json:"source_port_min,omitempty"`
-}
-
-// Constants associated with the NetworkACLRuleProtocolTcpudp.Action property.
-// Whether to allow or deny matching traffic.
-const (
-	NetworkACLRuleProtocolTcpudpActionAllowConst = "allow"
-	NetworkACLRuleProtocolTcpudpActionDenyConst  = "deny"
-)
-
-// Constants associated with the NetworkACLRuleProtocolTcpudp.Direction property.
-// Whether the traffic to be matched is `inbound` or `outbound`.
-const (
-	NetworkACLRuleProtocolTcpudpDirectionInboundConst  = "inbound"
-	NetworkACLRuleProtocolTcpudpDirectionOutboundConst = "outbound"
-)
-
-// Constants associated with the NetworkACLRuleProtocolTcpudp.IPVersion property.
-// The IP version for this rule.
-const (
-	NetworkACLRuleProtocolTcpudpIPVersionIpv4Const = "ipv4"
-	NetworkACLRuleProtocolTcpudpIPVersionIpv6Const = "ipv6"
-)
-
-// Constants associated with the NetworkACLRuleProtocolTcpudp.Protocol property.
-// The protocol to enforce.
-const (
-	NetworkACLRuleProtocolTcpudpProtocolAllConst  = "all"
-	NetworkACLRuleProtocolTcpudpProtocolIcmpConst = "icmp"
-	NetworkACLRuleProtocolTcpudpProtocolTCPConst  = "tcp"
-	NetworkACLRuleProtocolTcpudpProtocolUDPConst  = "udp"
-)
-
-func (*NetworkACLRuleProtocolTcpudp) isaNetworkACLRule() bool {
-	return true
-}
-
-// UnmarshalNetworkACLRuleProtocolTcpudp unmarshals an instance of NetworkACLRuleProtocolTcpudp from the specified map of raw messages.
-func UnmarshalNetworkACLRuleProtocolTcpudp(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(NetworkACLRuleProtocolTcpudp)
-	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "port_max", &obj.PortMax)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "port_min", &obj.PortMin)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "source_port_max", &obj.SourcePortMax)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "source_port_min", &obj.SourcePortMin)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// NetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByHref : NetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByHref struct
-// This model "extends" NetworkACLRulePrototypeBefore
-type NetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByHref struct {
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-}
-
-// NewNetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByHref : Instantiate NetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByHref (Generic Model Constructor)
-func (*VpcClassicV1) NewNetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByHref(href string) (model *NetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByHref, err error) {
-	model = &NetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByHref{
-		Href: core.StringPtr(href),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*NetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByHref) isaNetworkACLRulePrototypeBefore() bool {
-	return true
-}
-
-// UnmarshalNetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByHref unmarshals an instance of NetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByHref from the specified map of raw messages.
-func UnmarshalNetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(NetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByHref)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// NetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByID : NetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByID struct
-// This model "extends" NetworkACLRulePrototypeBefore
-type NetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByID struct {
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-}
-
-// NewNetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByID : Instantiate NetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByID (Generic Model Constructor)
-func (*VpcClassicV1) NewNetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByID(id string) (model *NetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByID, err error) {
-	model = &NetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByID{
-		ID: core.StringPtr(id),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*NetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByID) isaNetworkACLRulePrototypeBefore() bool {
-	return true
-}
-
-// UnmarshalNetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByID unmarshals an instance of NetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByID from the specified map of raw messages.
-func UnmarshalNetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(NetworkACLRulePrototypeBeforeNetworkACLRuleIdentityByID)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -29671,35 +28799,20 @@ type NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll struct {
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
 
-	// The rule that this rule is immediately before. If absent, this is the last rule.
-	Before *NetworkACLRuleReference `json:"before,omitempty"`
-
-	// The date and time that the rule was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Destination *string `json:"destination" validate:"required"`
 
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The IP version for this rule.
-	IPVersion *string `json:"ip_version" validate:"required"`
-
 	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
 	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
+	Name *string `json:"name,omitempty"`
 
 	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
+	Protocol *string `json:"protocol" validate:"required"`
 
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
 	Source *string `json:"source" validate:"required"`
 }
 
@@ -29717,13 +28830,6 @@ const (
 	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAllDirectionOutboundConst = "outbound"
 )
 
-// Constants associated with the NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll.IPVersion property.
-// The IP version for this rule.
-const (
-	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAllIPVersionIpv4Const = "ipv4"
-	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAllIPVersionIpv6Const = "ipv6"
-)
-
 // Constants associated with the NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll.Protocol property.
 // The protocol to enforce.
 const (
@@ -29734,16 +28840,12 @@ const (
 )
 
 // NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll : Instantiate NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll (Generic Model Constructor)
-func (*VpcClassicV1) NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll(action string, createdAt *strfmt.DateTime, destination string, direction string, href string, id string, ipVersion string, name string, source string) (model *NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll, err error) {
+func (*VpcClassicV1) NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll(action string, destination string, direction string, protocol string, source string) (model *NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll, err error) {
 	model = &NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll{
 		Action:      core.StringPtr(action),
-		CreatedAt:   createdAt,
 		Destination: core.StringPtr(destination),
 		Direction:   core.StringPtr(direction),
-		Href:        core.StringPtr(href),
-		ID:          core.StringPtr(id),
-		IPVersion:   core.StringPtr(ipVersion),
-		Name:        core.StringPtr(name),
+		Protocol:    core.StringPtr(protocol),
 		Source:      core.StringPtr(source),
 	}
 	err = core.ValidateStruct(model, "required parameters")
@@ -29761,31 +28863,11 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll(
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
 	if err != nil {
 		return
 	}
@@ -29811,35 +28893,20 @@ type NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp struct {
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
 
-	// The rule that this rule is immediately before. If absent, this is the last rule.
-	Before *NetworkACLRuleReference `json:"before,omitempty"`
-
-	// The date and time that the rule was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Destination *string `json:"destination" validate:"required"`
 
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The IP version for this rule.
-	IPVersion *string `json:"ip_version" validate:"required"`
-
 	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
 	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
+	Name *string `json:"name,omitempty"`
 
 	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
+	Protocol *string `json:"protocol" validate:"required"`
 
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
 	Source *string `json:"source" validate:"required"`
 
 	// The ICMP traffic code to allow. If unspecified, all codes are allowed. This can only be specified if type is also
@@ -29864,13 +28931,6 @@ const (
 	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmpDirectionOutboundConst = "outbound"
 )
 
-// Constants associated with the NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp.IPVersion property.
-// The IP version for this rule.
-const (
-	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmpIPVersionIpv4Const = "ipv4"
-	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmpIPVersionIpv6Const = "ipv6"
-)
-
 // Constants associated with the NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp.Protocol property.
 // The protocol to enforce.
 const (
@@ -29881,16 +28941,12 @@ const (
 )
 
 // NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp : Instantiate NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp (Generic Model Constructor)
-func (*VpcClassicV1) NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp(action string, createdAt *strfmt.DateTime, destination string, direction string, href string, id string, ipVersion string, name string, source string) (model *NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp, err error) {
+func (*VpcClassicV1) NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp(action string, destination string, direction string, protocol string, source string) (model *NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp, err error) {
 	model = &NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp{
 		Action:      core.StringPtr(action),
-		CreatedAt:   createdAt,
 		Destination: core.StringPtr(destination),
 		Direction:   core.StringPtr(direction),
-		Href:        core.StringPtr(href),
-		ID:          core.StringPtr(id),
-		IPVersion:   core.StringPtr(ipVersion),
-		Name:        core.StringPtr(name),
+		Protocol:    core.StringPtr(protocol),
 		Source:      core.StringPtr(source),
 	}
 	err = core.ValidateStruct(model, "required parameters")
@@ -29908,31 +28964,11 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
 	if err != nil {
 		return
 	}
@@ -29966,35 +29002,20 @@ type NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp struct
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
 
-	// The rule that this rule is immediately before. If absent, this is the last rule.
-	Before *NetworkACLRuleReference `json:"before,omitempty"`
-
-	// The date and time that the rule was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Destination *string `json:"destination" validate:"required"`
 
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The IP version for this rule.
-	IPVersion *string `json:"ip_version" validate:"required"`
-
 	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
 	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
+	Name *string `json:"name,omitempty"`
 
 	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
+	Protocol *string `json:"protocol" validate:"required"`
 
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
 	Source *string `json:"source" validate:"required"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
@@ -30024,13 +29045,6 @@ const (
 	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudpDirectionOutboundConst = "outbound"
 )
 
-// Constants associated with the NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp.IPVersion property.
-// The IP version for this rule.
-const (
-	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudpIPVersionIpv4Const = "ipv4"
-	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudpIPVersionIpv6Const = "ipv6"
-)
-
 // Constants associated with the NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp.Protocol property.
 // The protocol to enforce.
 const (
@@ -30041,16 +29055,12 @@ const (
 )
 
 // NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp : Instantiate NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp (Generic Model Constructor)
-func (*VpcClassicV1) NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp(action string, createdAt *strfmt.DateTime, destination string, direction string, href string, id string, ipVersion string, name string, source string) (model *NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp, err error) {
+func (*VpcClassicV1) NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp(action string, destination string, direction string, protocol string, source string) (model *NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp, err error) {
 	model = &NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp{
 		Action:      core.StringPtr(action),
-		CreatedAt:   createdAt,
 		Destination: core.StringPtr(destination),
 		Direction:   core.StringPtr(direction),
-		Href:        core.StringPtr(href),
-		ID:          core.StringPtr(id),
-		IPVersion:   core.StringPtr(ipVersion),
-		Name:        core.StringPtr(name),
+		Protocol:    core.StringPtr(protocol),
 		Source:      core.StringPtr(source),
 	}
 	err = core.ValidateStruct(model, "required parameters")
@@ -30068,31 +29078,11 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpu
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
 	if err != nil {
 		return
 	}
@@ -30134,6 +29124,355 @@ type NetworkACLRulePrototypeNetworkACLRuleProtocolAll struct {
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
 
+	// The rule to insert this rule immediately before. If omitted, this rule will be
+	// inserted after all existing rules.
+	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
+
+	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Destination *string `json:"destination" validate:"required"`
+
+	// Whether the traffic to be matched is `inbound` or `outbound`.
+	Direction *string `json:"direction" validate:"required"`
+
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
+
+	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
+}
+
+// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolAll.Action property.
+// Whether to allow or deny matching traffic.
+const (
+	NetworkACLRulePrototypeNetworkACLRuleProtocolAllActionAllowConst = "allow"
+	NetworkACLRulePrototypeNetworkACLRuleProtocolAllActionDenyConst  = "deny"
+)
+
+// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolAll.Direction property.
+// Whether the traffic to be matched is `inbound` or `outbound`.
+const (
+	NetworkACLRulePrototypeNetworkACLRuleProtocolAllDirectionInboundConst  = "inbound"
+	NetworkACLRulePrototypeNetworkACLRuleProtocolAllDirectionOutboundConst = "outbound"
+)
+
+// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolAll.Protocol property.
+// The protocol to enforce.
+const (
+	NetworkACLRulePrototypeNetworkACLRuleProtocolAllProtocolAllConst  = "all"
+	NetworkACLRulePrototypeNetworkACLRuleProtocolAllProtocolIcmpConst = "icmp"
+	NetworkACLRulePrototypeNetworkACLRuleProtocolAllProtocolTCPConst  = "tcp"
+	NetworkACLRulePrototypeNetworkACLRuleProtocolAllProtocolUDPConst  = "udp"
+)
+
+// NewNetworkACLRulePrototypeNetworkACLRuleProtocolAll : Instantiate NetworkACLRulePrototypeNetworkACLRuleProtocolAll (Generic Model Constructor)
+func (*VpcClassicV1) NewNetworkACLRulePrototypeNetworkACLRuleProtocolAll(action string, destination string, direction string, protocol string, source string) (model *NetworkACLRulePrototypeNetworkACLRuleProtocolAll, err error) {
+	model = &NetworkACLRulePrototypeNetworkACLRuleProtocolAll{
+		Action:      core.StringPtr(action),
+		Destination: core.StringPtr(destination),
+		Direction:   core.StringPtr(direction),
+		Protocol:    core.StringPtr(protocol),
+		Source:      core.StringPtr(source),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*NetworkACLRulePrototypeNetworkACLRuleProtocolAll) isaNetworkACLRulePrototype() bool {
+	return true
+}
+
+// UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolAll unmarshals an instance of NetworkACLRulePrototypeNetworkACLRuleProtocolAll from the specified map of raw messages.
+func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolAll(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(NetworkACLRulePrototypeNetworkACLRuleProtocolAll)
+	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp : NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp struct
+// This model "extends" NetworkACLRulePrototype
+type NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp struct {
+	// Whether to allow or deny matching traffic.
+	Action *string `json:"action" validate:"required"`
+
+	// The rule to insert this rule immediately before. If omitted, this rule will be
+	// inserted after all existing rules.
+	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
+
+	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Destination *string `json:"destination" validate:"required"`
+
+	// Whether the traffic to be matched is `inbound` or `outbound`.
+	Direction *string `json:"direction" validate:"required"`
+
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
+
+	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
+
+	// The ICMP traffic code to allow. If unspecified, all codes are allowed. This can only be specified if type is also
+	// specified.
+	Code *int64 `json:"code,omitempty"`
+
+	// The ICMP traffic type to allow. If unspecified, all types are allowed by this rule.
+	Type *int64 `json:"type,omitempty"`
+}
+
+// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp.Action property.
+// Whether to allow or deny matching traffic.
+const (
+	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpActionAllowConst = "allow"
+	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpActionDenyConst  = "deny"
+)
+
+// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp.Direction property.
+// Whether the traffic to be matched is `inbound` or `outbound`.
+const (
+	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpDirectionInboundConst  = "inbound"
+	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpDirectionOutboundConst = "outbound"
+)
+
+// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp.Protocol property.
+// The protocol to enforce.
+const (
+	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpProtocolAllConst  = "all"
+	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpProtocolIcmpConst = "icmp"
+	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpProtocolTCPConst  = "tcp"
+	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpProtocolUDPConst  = "udp"
+)
+
+// NewNetworkACLRulePrototypeNetworkACLRuleProtocolIcmp : Instantiate NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp (Generic Model Constructor)
+func (*VpcClassicV1) NewNetworkACLRulePrototypeNetworkACLRuleProtocolIcmp(action string, destination string, direction string, protocol string, source string) (model *NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp, err error) {
+	model = &NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp{
+		Action:      core.StringPtr(action),
+		Destination: core.StringPtr(destination),
+		Direction:   core.StringPtr(direction),
+		Protocol:    core.StringPtr(protocol),
+		Source:      core.StringPtr(source),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp) isaNetworkACLRulePrototype() bool {
+	return true
+}
+
+// UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolIcmp unmarshals an instance of NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp from the specified map of raw messages.
+func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolIcmp(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp)
+	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp : NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp struct
+// This model "extends" NetworkACLRulePrototype
+type NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp struct {
+	// Whether to allow or deny matching traffic.
+	Action *string `json:"action" validate:"required"`
+
+	// The rule to insert this rule immediately before. If omitted, this rule will be
+	// inserted after all existing rules.
+	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
+
+	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Destination *string `json:"destination" validate:"required"`
+
+	// Whether the traffic to be matched is `inbound` or `outbound`.
+	Direction *string `json:"direction" validate:"required"`
+
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
+
+	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
+
+	// The inclusive upper bound of TCP/UDP destination port range.
+	PortMax *int64 `json:"port_max,omitempty"`
+
+	// The inclusive lower bound of TCP/UDP destination port range.
+	PortMin *int64 `json:"port_min,omitempty"`
+
+	// The inclusive upper bound of TCP/UDP source port range.
+	SourcePortMax *int64 `json:"source_port_max,omitempty"`
+
+	// The inclusive lower bound of TCP/UDP source port range.
+	SourcePortMin *int64 `json:"source_port_min,omitempty"`
+}
+
+// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp.Action property.
+// Whether to allow or deny matching traffic.
+const (
+	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpActionAllowConst = "allow"
+	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpActionDenyConst  = "deny"
+)
+
+// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp.Direction property.
+// Whether the traffic to be matched is `inbound` or `outbound`.
+const (
+	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpDirectionInboundConst  = "inbound"
+	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpDirectionOutboundConst = "outbound"
+)
+
+// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp.Protocol property.
+// The protocol to enforce.
+const (
+	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpProtocolAllConst  = "all"
+	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpProtocolIcmpConst = "icmp"
+	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpProtocolTCPConst  = "tcp"
+	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpProtocolUDPConst  = "udp"
+)
+
+// NewNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp : Instantiate NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp (Generic Model Constructor)
+func (*VpcClassicV1) NewNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp(action string, destination string, direction string, protocol string, source string) (model *NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp, err error) {
+	model = &NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp{
+		Action:      core.StringPtr(action),
+		Destination: core.StringPtr(destination),
+		Direction:   core.StringPtr(direction),
+		Protocol:    core.StringPtr(protocol),
+		Source:      core.StringPtr(source),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp) isaNetworkACLRulePrototype() bool {
+	return true
+}
+
+// UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp unmarshals an instance of NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp from the specified map of raw messages.
+func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp)
+	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "port_max", &obj.PortMax)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "port_min", &obj.PortMin)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "source_port_max", &obj.SourcePortMax)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "source_port_min", &obj.SourcePortMin)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// NetworkACLRuleNetworkACLRuleProtocolAll : NetworkACLRuleNetworkACLRuleProtocolAll struct
+// This model "extends" NetworkACLRule
+type NetworkACLRuleNetworkACLRuleProtocolAll struct {
+	// Whether to allow or deny matching traffic.
+	Action *string `json:"action" validate:"required"`
+
 	// The rule that this rule is immediately before. If absent, this is the last rule.
 	Before *NetworkACLRuleReference `json:"before,omitempty"`
 
@@ -30160,66 +29499,49 @@ type NetworkACLRulePrototypeNetworkACLRuleProtocolAll struct {
 	Name *string `json:"name" validate:"required"`
 
 	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Source *string `json:"source" validate:"required"`
 }
 
-// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolAll.Action property.
+// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolAll.Action property.
 // Whether to allow or deny matching traffic.
 const (
-	NetworkACLRulePrototypeNetworkACLRuleProtocolAllActionAllowConst = "allow"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolAllActionDenyConst  = "deny"
+	NetworkACLRuleNetworkACLRuleProtocolAllActionAllowConst = "allow"
+	NetworkACLRuleNetworkACLRuleProtocolAllActionDenyConst  = "deny"
 )
 
-// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolAll.Direction property.
+// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolAll.Direction property.
 // Whether the traffic to be matched is `inbound` or `outbound`.
 const (
-	NetworkACLRulePrototypeNetworkACLRuleProtocolAllDirectionInboundConst  = "inbound"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolAllDirectionOutboundConst = "outbound"
+	NetworkACLRuleNetworkACLRuleProtocolAllDirectionInboundConst  = "inbound"
+	NetworkACLRuleNetworkACLRuleProtocolAllDirectionOutboundConst = "outbound"
 )
 
-// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolAll.IPVersion property.
+// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolAll.IPVersion property.
 // The IP version for this rule.
 const (
-	NetworkACLRulePrototypeNetworkACLRuleProtocolAllIPVersionIpv4Const = "ipv4"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolAllIPVersionIpv6Const = "ipv6"
+	NetworkACLRuleNetworkACLRuleProtocolAllIPVersionIpv4Const = "ipv4"
+	NetworkACLRuleNetworkACLRuleProtocolAllIPVersionIpv6Const = "ipv6"
 )
 
-// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolAll.Protocol property.
+// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolAll.Protocol property.
 // The protocol to enforce.
 const (
-	NetworkACLRulePrototypeNetworkACLRuleProtocolAllProtocolAllConst  = "all"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolAllProtocolIcmpConst = "icmp"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolAllProtocolTCPConst  = "tcp"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolAllProtocolUDPConst  = "udp"
+	NetworkACLRuleNetworkACLRuleProtocolAllProtocolAllConst  = "all"
+	NetworkACLRuleNetworkACLRuleProtocolAllProtocolIcmpConst = "icmp"
+	NetworkACLRuleNetworkACLRuleProtocolAllProtocolTCPConst  = "tcp"
+	NetworkACLRuleNetworkACLRuleProtocolAllProtocolUDPConst  = "udp"
 )
 
-// NewNetworkACLRulePrototypeNetworkACLRuleProtocolAll : Instantiate NetworkACLRulePrototypeNetworkACLRuleProtocolAll (Generic Model Constructor)
-func (*VpcClassicV1) NewNetworkACLRulePrototypeNetworkACLRuleProtocolAll(action string, createdAt *strfmt.DateTime, destination string, direction string, href string, id string, ipVersion string, name string, source string) (model *NetworkACLRulePrototypeNetworkACLRuleProtocolAll, err error) {
-	model = &NetworkACLRulePrototypeNetworkACLRuleProtocolAll{
-		Action:      core.StringPtr(action),
-		CreatedAt:   createdAt,
-		Destination: core.StringPtr(destination),
-		Direction:   core.StringPtr(direction),
-		Href:        core.StringPtr(href),
-		ID:          core.StringPtr(id),
-		IPVersion:   core.StringPtr(ipVersion),
-		Name:        core.StringPtr(name),
-		Source:      core.StringPtr(source),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*NetworkACLRulePrototypeNetworkACLRuleProtocolAll) isaNetworkACLRulePrototype() bool {
+func (*NetworkACLRuleNetworkACLRuleProtocolAll) isaNetworkACLRule() bool {
 	return true
 }
 
-// UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolAll unmarshals an instance of NetworkACLRulePrototypeNetworkACLRuleProtocolAll from the specified map of raw messages.
-func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolAll(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(NetworkACLRulePrototypeNetworkACLRuleProtocolAll)
+// UnmarshalNetworkACLRuleNetworkACLRuleProtocolAll unmarshals an instance of NetworkACLRuleNetworkACLRuleProtocolAll from the specified map of raw messages.
+func UnmarshalNetworkACLRuleNetworkACLRuleProtocolAll(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(NetworkACLRuleNetworkACLRuleProtocolAll)
 	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
 	if err != nil {
 		return
@@ -30268,9 +29590,9 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolAll(m map[string]json
 	return
 }
 
-// NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp : NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp struct
-// This model "extends" NetworkACLRulePrototype
-type NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp struct {
+// NetworkACLRuleNetworkACLRuleProtocolIcmp : NetworkACLRuleNetworkACLRuleProtocolIcmp struct
+// This model "extends" NetworkACLRule
+type NetworkACLRuleNetworkACLRuleProtocolIcmp struct {
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
 
@@ -30300,7 +29622,7 @@ type NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp struct {
 	Name *string `json:"name" validate:"required"`
 
 	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Source *string `json:"source" validate:"required"`
@@ -30313,60 +29635,43 @@ type NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp struct {
 	Type *int64 `json:"type,omitempty"`
 }
 
-// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp.Action property.
+// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolIcmp.Action property.
 // Whether to allow or deny matching traffic.
 const (
-	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpActionAllowConst = "allow"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpActionDenyConst  = "deny"
+	NetworkACLRuleNetworkACLRuleProtocolIcmpActionAllowConst = "allow"
+	NetworkACLRuleNetworkACLRuleProtocolIcmpActionDenyConst  = "deny"
 )
 
-// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp.Direction property.
+// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolIcmp.Direction property.
 // Whether the traffic to be matched is `inbound` or `outbound`.
 const (
-	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpDirectionInboundConst  = "inbound"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpDirectionOutboundConst = "outbound"
+	NetworkACLRuleNetworkACLRuleProtocolIcmpDirectionInboundConst  = "inbound"
+	NetworkACLRuleNetworkACLRuleProtocolIcmpDirectionOutboundConst = "outbound"
 )
 
-// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp.IPVersion property.
+// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolIcmp.IPVersion property.
 // The IP version for this rule.
 const (
-	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpIPVersionIpv4Const = "ipv4"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpIPVersionIpv6Const = "ipv6"
+	NetworkACLRuleNetworkACLRuleProtocolIcmpIPVersionIpv4Const = "ipv4"
+	NetworkACLRuleNetworkACLRuleProtocolIcmpIPVersionIpv6Const = "ipv6"
 )
 
-// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp.Protocol property.
+// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolIcmp.Protocol property.
 // The protocol to enforce.
 const (
-	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpProtocolAllConst  = "all"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpProtocolIcmpConst = "icmp"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpProtocolTCPConst  = "tcp"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpProtocolUDPConst  = "udp"
+	NetworkACLRuleNetworkACLRuleProtocolIcmpProtocolAllConst  = "all"
+	NetworkACLRuleNetworkACLRuleProtocolIcmpProtocolIcmpConst = "icmp"
+	NetworkACLRuleNetworkACLRuleProtocolIcmpProtocolTCPConst  = "tcp"
+	NetworkACLRuleNetworkACLRuleProtocolIcmpProtocolUDPConst  = "udp"
 )
 
-// NewNetworkACLRulePrototypeNetworkACLRuleProtocolIcmp : Instantiate NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp (Generic Model Constructor)
-func (*VpcClassicV1) NewNetworkACLRulePrototypeNetworkACLRuleProtocolIcmp(action string, createdAt *strfmt.DateTime, destination string, direction string, href string, id string, ipVersion string, name string, source string) (model *NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp, err error) {
-	model = &NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp{
-		Action:      core.StringPtr(action),
-		CreatedAt:   createdAt,
-		Destination: core.StringPtr(destination),
-		Direction:   core.StringPtr(direction),
-		Href:        core.StringPtr(href),
-		ID:          core.StringPtr(id),
-		IPVersion:   core.StringPtr(ipVersion),
-		Name:        core.StringPtr(name),
-		Source:      core.StringPtr(source),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp) isaNetworkACLRulePrototype() bool {
+func (*NetworkACLRuleNetworkACLRuleProtocolIcmp) isaNetworkACLRule() bool {
 	return true
 }
 
-// UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolIcmp unmarshals an instance of NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp from the specified map of raw messages.
-func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolIcmp(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp)
+// UnmarshalNetworkACLRuleNetworkACLRuleProtocolIcmp unmarshals an instance of NetworkACLRuleNetworkACLRuleProtocolIcmp from the specified map of raw messages.
+func UnmarshalNetworkACLRuleNetworkACLRuleProtocolIcmp(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(NetworkACLRuleNetworkACLRuleProtocolIcmp)
 	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
 	if err != nil {
 		return
@@ -30423,9 +29728,9 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolIcmp(m map[string]jso
 	return
 }
 
-// NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp : NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp struct
-// This model "extends" NetworkACLRulePrototype
-type NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp struct {
+// NetworkACLRuleNetworkACLRuleProtocolTcpudp : NetworkACLRuleNetworkACLRuleProtocolTcpudp struct
+// This model "extends" NetworkACLRule
+type NetworkACLRuleNetworkACLRuleProtocolTcpudp struct {
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
 
@@ -30455,7 +29760,7 @@ type NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp struct {
 	Name *string `json:"name" validate:"required"`
 
 	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Source *string `json:"source" validate:"required"`
@@ -30473,60 +29778,43 @@ type NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp struct {
 	SourcePortMin *int64 `json:"source_port_min,omitempty"`
 }
 
-// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp.Action property.
+// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolTcpudp.Action property.
 // Whether to allow or deny matching traffic.
 const (
-	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpActionAllowConst = "allow"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpActionDenyConst  = "deny"
+	NetworkACLRuleNetworkACLRuleProtocolTcpudpActionAllowConst = "allow"
+	NetworkACLRuleNetworkACLRuleProtocolTcpudpActionDenyConst  = "deny"
 )
 
-// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp.Direction property.
+// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolTcpudp.Direction property.
 // Whether the traffic to be matched is `inbound` or `outbound`.
 const (
-	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpDirectionInboundConst  = "inbound"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpDirectionOutboundConst = "outbound"
+	NetworkACLRuleNetworkACLRuleProtocolTcpudpDirectionInboundConst  = "inbound"
+	NetworkACLRuleNetworkACLRuleProtocolTcpudpDirectionOutboundConst = "outbound"
 )
 
-// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp.IPVersion property.
+// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolTcpudp.IPVersion property.
 // The IP version for this rule.
 const (
-	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpIPVersionIpv4Const = "ipv4"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpIPVersionIpv6Const = "ipv6"
+	NetworkACLRuleNetworkACLRuleProtocolTcpudpIPVersionIpv4Const = "ipv4"
+	NetworkACLRuleNetworkACLRuleProtocolTcpudpIPVersionIpv6Const = "ipv6"
 )
 
-// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp.Protocol property.
+// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolTcpudp.Protocol property.
 // The protocol to enforce.
 const (
-	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpProtocolAllConst  = "all"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpProtocolIcmpConst = "icmp"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpProtocolTCPConst  = "tcp"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpProtocolUDPConst  = "udp"
+	NetworkACLRuleNetworkACLRuleProtocolTcpudpProtocolAllConst  = "all"
+	NetworkACLRuleNetworkACLRuleProtocolTcpudpProtocolIcmpConst = "icmp"
+	NetworkACLRuleNetworkACLRuleProtocolTcpudpProtocolTCPConst  = "tcp"
+	NetworkACLRuleNetworkACLRuleProtocolTcpudpProtocolUDPConst  = "udp"
 )
 
-// NewNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp : Instantiate NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp (Generic Model Constructor)
-func (*VpcClassicV1) NewNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp(action string, createdAt *strfmt.DateTime, destination string, direction string, href string, id string, ipVersion string, name string, source string) (model *NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp, err error) {
-	model = &NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp{
-		Action:      core.StringPtr(action),
-		CreatedAt:   createdAt,
-		Destination: core.StringPtr(destination),
-		Direction:   core.StringPtr(direction),
-		Href:        core.StringPtr(href),
-		ID:          core.StringPtr(id),
-		IPVersion:   core.StringPtr(ipVersion),
-		Name:        core.StringPtr(name),
-		Source:      core.StringPtr(source),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp) isaNetworkACLRulePrototype() bool {
+func (*NetworkACLRuleNetworkACLRuleProtocolTcpudp) isaNetworkACLRule() bool {
 	return true
 }
 
-// UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp unmarshals an instance of NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp from the specified map of raw messages.
-func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp)
+// UnmarshalNetworkACLRuleNetworkACLRuleProtocolTcpudp unmarshals an instance of NetworkACLRuleNetworkACLRuleProtocolTcpudp from the specified map of raw messages.
+func UnmarshalNetworkACLRuleNetworkACLRuleProtocolTcpudp(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(NetworkACLRuleNetworkACLRuleProtocolTcpudp)
 	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
 	if err != nil {
 		return
@@ -30584,68 +29872,6 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp(m map[string]j
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "source_port_min", &obj.SourcePortMin)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// NetworkInterfaceIdentityByHref : NetworkInterfaceIdentityByHref struct
-// This model "extends" NetworkInterfaceIdentity
-type NetworkInterfaceIdentityByHref struct {
-	// The URL for this network interface.
-	Href *string `json:"href" validate:"required"`
-}
-
-// NewNetworkInterfaceIdentityByHref : Instantiate NetworkInterfaceIdentityByHref (Generic Model Constructor)
-func (*VpcClassicV1) NewNetworkInterfaceIdentityByHref(href string) (model *NetworkInterfaceIdentityByHref, err error) {
-	model = &NetworkInterfaceIdentityByHref{
-		Href: core.StringPtr(href),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*NetworkInterfaceIdentityByHref) isaNetworkInterfaceIdentity() bool {
-	return true
-}
-
-// UnmarshalNetworkInterfaceIdentityByHref unmarshals an instance of NetworkInterfaceIdentityByHref from the specified map of raw messages.
-func UnmarshalNetworkInterfaceIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(NetworkInterfaceIdentityByHref)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// NetworkInterfaceIdentityByID : NetworkInterfaceIdentityByID struct
-// This model "extends" NetworkInterfaceIdentity
-type NetworkInterfaceIdentityByID struct {
-	// The unique identifier for this network interface.
-	ID *string `json:"id" validate:"required"`
-}
-
-// NewNetworkInterfaceIdentityByID : Instantiate NetworkInterfaceIdentityByID (Generic Model Constructor)
-func (*VpcClassicV1) NewNetworkInterfaceIdentityByID(id string) (model *NetworkInterfaceIdentityByID, err error) {
-	model = &NetworkInterfaceIdentityByID{
-		ID: core.StringPtr(id),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*NetworkInterfaceIdentityByID) isaNetworkInterfaceIdentity() bool {
-	return true
-}
-
-// UnmarshalNetworkInterfaceIdentityByID unmarshals an instance of NetworkInterfaceIdentityByID from the specified map of raw messages.
-func UnmarshalNetworkInterfaceIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(NetworkInterfaceIdentityByID)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -31184,351 +30410,6 @@ func UnmarshalSecurityGroupRulePatchRemoteSecurityGroupIdentity(m map[string]jso
 	return
 }
 
-// SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteCIDR : SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteCIDR struct
-// This model "extends" SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemote
-type SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteCIDR struct {
-	// The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this
-	// property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt
-	// processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
-	CIDRBlock *string `json:"cidr_block" validate:"required"`
-}
-
-// NewSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteCIDR : Instantiate SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteCIDR (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteCIDR(cidrBlock string) (model *SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteCIDR, err error) {
-	model = &SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteCIDR{
-		CIDRBlock: core.StringPtr(cidrBlock),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteCIDR) isaSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteCIDR unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteCIDR from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteCIDR(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteCIDR)
-	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteIP : SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteIP struct
-// This model "extends" SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemote
-type SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteIP struct {
-	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
-	// property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing
-	// and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-	Address *string `json:"address" validate:"required"`
-}
-
-// NewSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteIP : Instantiate SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteIP (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteIP(address string) (model *SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteIP, err error) {
-	model = &SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteIP{
-		Address: core.StringPtr(address),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteIP) isaSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteIP unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteIP from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteIP(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteIP)
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity : Identifies a security group by a unique property.
-// Models which "extend" this model:
-// - SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID
-// - SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN
-// - SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref
-// This model "extends" SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemote
-type SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity struct {
-	// The unique identifier for this security group.
-	ID *string `json:"id,omitempty"`
-
-	// The security group's CRN.
-	CRN *string `json:"crn,omitempty"`
-
-	// The security group's canonical URL.
-	Href *string `json:"href,omitempty"`
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity) isaSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-type SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentityIntf interface {
-	SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteIntf
-	isaSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity() bool
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity) isaSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteCIDR : SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteCIDR struct
-// This model "extends" SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemote
-type SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteCIDR struct {
-	// The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this
-	// property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt
-	// processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
-	CIDRBlock *string `json:"cidr_block" validate:"required"`
-}
-
-// NewSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteCIDR : Instantiate SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteCIDR (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteCIDR(cidrBlock string) (model *SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteCIDR, err error) {
-	model = &SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteCIDR{
-		CIDRBlock: core.StringPtr(cidrBlock),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteCIDR) isaSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteCIDR unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteCIDR from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteCIDR(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteCIDR)
-	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteIP : SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteIP struct
-// This model "extends" SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemote
-type SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteIP struct {
-	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
-	// property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing
-	// and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-	Address *string `json:"address" validate:"required"`
-}
-
-// NewSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteIP : Instantiate SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteIP (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteIP(address string) (model *SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteIP, err error) {
-	model = &SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteIP{
-		Address: core.StringPtr(address),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteIP) isaSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteIP unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteIP from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteIP(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteIP)
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity : Identifies a security group by a unique property.
-// Models which "extend" this model:
-// - SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID
-// - SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN
-// - SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref
-// This model "extends" SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemote
-type SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity struct {
-	// The unique identifier for this security group.
-	ID *string `json:"id,omitempty"`
-
-	// The security group's CRN.
-	CRN *string `json:"crn,omitempty"`
-
-	// The security group's canonical URL.
-	Href *string `json:"href,omitempty"`
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity) isaSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-type SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentityIntf interface {
-	SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteIntf
-	isaSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity() bool
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity) isaSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteCIDR : SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteCIDR struct
-// This model "extends" SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemote
-type SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteCIDR struct {
-	// The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this
-	// property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt
-	// processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
-	CIDRBlock *string `json:"cidr_block" validate:"required"`
-}
-
-// NewSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteCIDR : Instantiate SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteCIDR (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteCIDR(cidrBlock string) (model *SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteCIDR, err error) {
-	model = &SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteCIDR{
-		CIDRBlock: core.StringPtr(cidrBlock),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteCIDR) isaSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteCIDR unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteCIDR from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteCIDR(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteCIDR)
-	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteIP : SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteIP struct
-// This model "extends" SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemote
-type SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteIP struct {
-	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
-	// property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing
-	// and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-	Address *string `json:"address" validate:"required"`
-}
-
-// NewSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteIP : Instantiate SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteIP (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteIP(address string) (model *SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteIP, err error) {
-	model = &SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteIP{
-		Address: core.StringPtr(address),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteIP) isaSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteIP unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteIP from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteIP(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteIP)
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity : Identifies a security group by a unique property.
-// Models which "extend" this model:
-// - SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID
-// - SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN
-// - SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref
-// This model "extends" SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemote
-type SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity struct {
-	// The unique identifier for this security group.
-	ID *string `json:"id,omitempty"`
-
-	// The security group's CRN.
-	CRN *string `json:"crn,omitempty"`
-
-	// The security group's canonical URL.
-	Href *string `json:"href,omitempty"`
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity) isaSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-type SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentityIntf interface {
-	SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteIntf
-	isaSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity() bool
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity) isaSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // SecurityGroupRulePatchSecurityGroupRuleProtocolAll : When `protocol` is `all`, then it's invalid to specify `port_min`, `port_max`, `type` or
 // `code`.
 // This model "extends" SecurityGroupRulePatch
@@ -31548,7 +30429,7 @@ type SecurityGroupRulePatchSecurityGroupRuleProtocolAll struct {
 	// which, for outbound rules). Can be specified as an IP address, a CIDR block, or a
 	// security group. If omitted, then traffic will be allowed from any source (or to any
 	// source, for outbound rules).
-	Remote SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteIntf `json:"remote,omitempty"`
+	Remote SecurityGroupRulePatchRemoteIntf `json:"remote,omitempty"`
 }
 
 // Constants associated with the SecurityGroupRulePatchSecurityGroupRuleProtocolAll.Direction property.
@@ -31594,7 +30475,7 @@ func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolAll(m map[string]js
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemote)
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRulePatchRemote)
 	if err != nil {
 		return
 	}
@@ -31623,7 +30504,7 @@ type SecurityGroupRulePatchSecurityGroupRuleProtocolIcmp struct {
 	// which, for outbound rules). Can be specified as an IP address, a CIDR block, or a
 	// security group. If omitted, then traffic will be allowed from any source (or to any
 	// source, for outbound rules).
-	Remote SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteIntf `json:"remote,omitempty"`
+	Remote SecurityGroupRulePatchRemoteIntf `json:"remote,omitempty"`
 
 	// The ICMP traffic code to allow.
 	Code *int64 `json:"code,omitempty"`
@@ -31675,7 +30556,7 @@ func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolIcmp(m map[string]j
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemote)
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRulePatchRemote)
 	if err != nil {
 		return
 	}
@@ -31711,7 +30592,7 @@ type SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudp struct {
 	// which, for outbound rules). Can be specified as an IP address, a CIDR block, or a
 	// security group. If omitted, then traffic will be allowed from any source (or to any
 	// source, for outbound rules).
-	Remote SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteIntf `json:"remote,omitempty"`
+	Remote SecurityGroupRulePatchRemoteIntf `json:"remote,omitempty"`
 
 	// The inclusive upper bound of TCP/UDP port range.
 	PortMax *int64 `json:"port_max,omitempty"`
@@ -31763,275 +30644,7 @@ func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudp(m map[string
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemote)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "port_max", &obj.PortMax)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "port_min", &obj.PortMin)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRuleProtocolAll : When `protocol` is `all`, then it's invalid to specify `port_min`, `port_max`, `type` or
-// `code`.
-// This model "extends" SecurityGroupRule
-type SecurityGroupRuleProtocolAll struct {
-	// The direction of traffic to enforce, either `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
-
-	// The unique identifier for this security group rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this field, if they are
-	// used. Alternatively, if `remote` references a security group, then this rule only applies to IP addresses (network
-	// interfaces) in that group matching this IP version.
-	IPVersion *string `json:"ip_version,omitempty"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
-
-	// The IP addresses or security groups from which this rule allows traffic (or to which, for outbound rules). Can be
-	// specified as an IP address, a CIDR block, or a security group. If omitted, then traffic is allowed from any source
-	// (or to any source, for outbound rules).
-	Remote interface{} `json:"remote,omitempty"`
-}
-
-// Constants associated with the SecurityGroupRuleProtocolAll.Direction property.
-// The direction of traffic to enforce, either `inbound` or `outbound`.
-const (
-	SecurityGroupRuleProtocolAllDirectionInboundConst  = "inbound"
-	SecurityGroupRuleProtocolAllDirectionOutboundConst = "outbound"
-)
-
-// Constants associated with the SecurityGroupRuleProtocolAll.IPVersion property.
-// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this field, if they are
-// used. Alternatively, if `remote` references a security group, then this rule only applies to IP addresses (network
-// interfaces) in that group matching this IP version.
-const (
-	SecurityGroupRuleProtocolAllIPVersionIpv4Const = "ipv4"
-)
-
-// Constants associated with the SecurityGroupRuleProtocolAll.Protocol property.
-// The protocol to enforce.
-const (
-	SecurityGroupRuleProtocolAllProtocolAllConst  = "all"
-	SecurityGroupRuleProtocolAllProtocolIcmpConst = "icmp"
-	SecurityGroupRuleProtocolAllProtocolTCPConst  = "tcp"
-	SecurityGroupRuleProtocolAllProtocolUDPConst  = "udp"
-)
-
-func (*SecurityGroupRuleProtocolAll) isaSecurityGroupRule() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRuleProtocolAll unmarshals an instance of SecurityGroupRuleProtocolAll from the specified map of raw messages.
-func UnmarshalSecurityGroupRuleProtocolAll(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRuleProtocolAll)
-	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "remote", &obj.Remote)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRuleProtocolIcmp : When `protocol` is `icmp`, then the rule may also contain fields to specify an ICMP `type` and `code`. Field `code`
-// may only be specified if `type` is also specified. If type is not specified, then traffic is allowed for all types
-// and codes. If type is specified and code is not specified, then traffic is allowed with the specified type for all
-// codes.
-// This model "extends" SecurityGroupRule
-type SecurityGroupRuleProtocolIcmp struct {
-	// The direction of traffic to enforce, either `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
-
-	// The unique identifier for this security group rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this field, if they are
-	// used. Alternatively, if `remote` references a security group, then this rule only applies to IP addresses (network
-	// interfaces) in that group matching this IP version.
-	IPVersion *string `json:"ip_version,omitempty"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
-
-	// The IP addresses or security groups from which this rule allows traffic (or to which, for outbound rules). Can be
-	// specified as an IP address, a CIDR block, or a security group. If omitted, then traffic is allowed from any source
-	// (or to any source, for outbound rules).
-	Remote interface{} `json:"remote,omitempty"`
-
-	// The ICMP traffic code to allow.
-	Code *int64 `json:"code,omitempty"`
-
-	// The ICMP traffic type to allow.
-	Type *int64 `json:"type,omitempty"`
-}
-
-// Constants associated with the SecurityGroupRuleProtocolIcmp.Direction property.
-// The direction of traffic to enforce, either `inbound` or `outbound`.
-const (
-	SecurityGroupRuleProtocolIcmpDirectionInboundConst  = "inbound"
-	SecurityGroupRuleProtocolIcmpDirectionOutboundConst = "outbound"
-)
-
-// Constants associated with the SecurityGroupRuleProtocolIcmp.IPVersion property.
-// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this field, if they are
-// used. Alternatively, if `remote` references a security group, then this rule only applies to IP addresses (network
-// interfaces) in that group matching this IP version.
-const (
-	SecurityGroupRuleProtocolIcmpIPVersionIpv4Const = "ipv4"
-)
-
-// Constants associated with the SecurityGroupRuleProtocolIcmp.Protocol property.
-// The protocol to enforce.
-const (
-	SecurityGroupRuleProtocolIcmpProtocolAllConst  = "all"
-	SecurityGroupRuleProtocolIcmpProtocolIcmpConst = "icmp"
-	SecurityGroupRuleProtocolIcmpProtocolTCPConst  = "tcp"
-	SecurityGroupRuleProtocolIcmpProtocolUDPConst  = "udp"
-)
-
-func (*SecurityGroupRuleProtocolIcmp) isaSecurityGroupRule() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRuleProtocolIcmp unmarshals an instance of SecurityGroupRuleProtocolIcmp from the specified map of raw messages.
-func UnmarshalSecurityGroupRuleProtocolIcmp(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRuleProtocolIcmp)
-	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "remote", &obj.Remote)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRuleProtocolTcpudp : If `protocol` is either `tcp` or `udp`, then the rule may also contain `port_min` and
-// `port_max`. Either both should be set, or neither. When neither is set then traffic is allowed on all ports. For a
-// single port, set both to the same value.
-// This model "extends" SecurityGroupRule
-type SecurityGroupRuleProtocolTcpudp struct {
-	// The direction of traffic to enforce, either `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
-
-	// The unique identifier for this security group rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this field, if they are
-	// used. Alternatively, if `remote` references a security group, then this rule only applies to IP addresses (network
-	// interfaces) in that group matching this IP version.
-	IPVersion *string `json:"ip_version,omitempty"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
-
-	// The IP addresses or security groups from which this rule allows traffic (or to which, for outbound rules). Can be
-	// specified as an IP address, a CIDR block, or a security group. If omitted, then traffic is allowed from any source
-	// (or to any source, for outbound rules).
-	Remote interface{} `json:"remote,omitempty"`
-
-	// The inclusive upper bound of TCP/UDP port range.
-	PortMax *int64 `json:"port_max,omitempty"`
-
-	// The inclusive lower bound of TCP/UDP port range.
-	PortMin *int64 `json:"port_min,omitempty"`
-}
-
-// Constants associated with the SecurityGroupRuleProtocolTcpudp.Direction property.
-// The direction of traffic to enforce, either `inbound` or `outbound`.
-const (
-	SecurityGroupRuleProtocolTcpudpDirectionInboundConst  = "inbound"
-	SecurityGroupRuleProtocolTcpudpDirectionOutboundConst = "outbound"
-)
-
-// Constants associated with the SecurityGroupRuleProtocolTcpudp.IPVersion property.
-// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this field, if they are
-// used. Alternatively, if `remote` references a security group, then this rule only applies to IP addresses (network
-// interfaces) in that group matching this IP version.
-const (
-	SecurityGroupRuleProtocolTcpudpIPVersionIpv4Const = "ipv4"
-)
-
-// Constants associated with the SecurityGroupRuleProtocolTcpudp.Protocol property.
-// The protocol to enforce.
-const (
-	SecurityGroupRuleProtocolTcpudpProtocolAllConst  = "all"
-	SecurityGroupRuleProtocolTcpudpProtocolIcmpConst = "icmp"
-	SecurityGroupRuleProtocolTcpudpProtocolTCPConst  = "tcp"
-	SecurityGroupRuleProtocolTcpudpProtocolUDPConst  = "udp"
-)
-
-func (*SecurityGroupRuleProtocolTcpudp) isaSecurityGroupRule() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRuleProtocolTcpudp unmarshals an instance of SecurityGroupRuleProtocolTcpudp from the specified map of raw messages.
-func UnmarshalSecurityGroupRuleProtocolTcpudp(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRuleProtocolTcpudp)
-	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "remote", &obj.Remote)
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRulePatchRemote)
 	if err != nil {
 		return
 	}
@@ -32162,351 +30775,6 @@ func UnmarshalSecurityGroupRulePrototypeRemoteSecurityGroupIdentity(m map[string
 	return
 }
 
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteCIDR : SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteCIDR struct
-// This model "extends" SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemote
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteCIDR struct {
-	// The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this
-	// property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt
-	// processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
-	CIDRBlock *string `json:"cidr_block" validate:"required"`
-}
-
-// NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteCIDR : Instantiate SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteCIDR (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteCIDR(cidrBlock string) (model *SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteCIDR, err error) {
-	model = &SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteCIDR{
-		CIDRBlock: core.StringPtr(cidrBlock),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteCIDR) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteCIDR unmarshals an instance of SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteCIDR from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteCIDR(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteCIDR)
-	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteIP : SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteIP struct
-// This model "extends" SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemote
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteIP struct {
-	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
-	// property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing
-	// and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-	Address *string `json:"address" validate:"required"`
-}
-
-// NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteIP : Instantiate SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteIP (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteIP(address string) (model *SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteIP, err error) {
-	model = &SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteIP{
-		Address: core.StringPtr(address),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteIP) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteIP unmarshals an instance of SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteIP from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteIP(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteIP)
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity : Identifies a security group by a unique property.
-// Models which "extend" this model:
-// - SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID
-// - SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN
-// - SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref
-// This model "extends" SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemote
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity struct {
-	// The unique identifier for this security group.
-	ID *string `json:"id,omitempty"`
-
-	// The security group's CRN.
-	CRN *string `json:"crn,omitempty"`
-
-	// The security group's canonical URL.
-	Href *string `json:"href,omitempty"`
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentityIntf interface {
-	SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteIntf
-	isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity() bool
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity unmarshals an instance of SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteCIDR : SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteCIDR struct
-// This model "extends" SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemote
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteCIDR struct {
-	// The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this
-	// property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt
-	// processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
-	CIDRBlock *string `json:"cidr_block" validate:"required"`
-}
-
-// NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteCIDR : Instantiate SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteCIDR (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteCIDR(cidrBlock string) (model *SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteCIDR, err error) {
-	model = &SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteCIDR{
-		CIDRBlock: core.StringPtr(cidrBlock),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteCIDR) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteCIDR unmarshals an instance of SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteCIDR from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteCIDR(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteCIDR)
-	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteIP : SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteIP struct
-// This model "extends" SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemote
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteIP struct {
-	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
-	// property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing
-	// and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-	Address *string `json:"address" validate:"required"`
-}
-
-// NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteIP : Instantiate SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteIP (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteIP(address string) (model *SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteIP, err error) {
-	model = &SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteIP{
-		Address: core.StringPtr(address),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteIP) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteIP unmarshals an instance of SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteIP from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteIP(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteIP)
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity : Identifies a security group by a unique property.
-// Models which "extend" this model:
-// - SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID
-// - SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN
-// - SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref
-// This model "extends" SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemote
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity struct {
-	// The unique identifier for this security group.
-	ID *string `json:"id,omitempty"`
-
-	// The security group's CRN.
-	CRN *string `json:"crn,omitempty"`
-
-	// The security group's canonical URL.
-	Href *string `json:"href,omitempty"`
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentityIntf interface {
-	SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteIntf
-	isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity() bool
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity unmarshals an instance of SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteCIDR : SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteCIDR struct
-// This model "extends" SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemote
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteCIDR struct {
-	// The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this
-	// property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt
-	// processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
-	CIDRBlock *string `json:"cidr_block" validate:"required"`
-}
-
-// NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteCIDR : Instantiate SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteCIDR (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteCIDR(cidrBlock string) (model *SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteCIDR, err error) {
-	model = &SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteCIDR{
-		CIDRBlock: core.StringPtr(cidrBlock),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteCIDR) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteCIDR unmarshals an instance of SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteCIDR from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteCIDR(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteCIDR)
-	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteIP : SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteIP struct
-// This model "extends" SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemote
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteIP struct {
-	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
-	// property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing
-	// and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-	Address *string `json:"address" validate:"required"`
-}
-
-// NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteIP : Instantiate SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteIP (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteIP(address string) (model *SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteIP, err error) {
-	model = &SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteIP{
-		Address: core.StringPtr(address),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteIP) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteIP unmarshals an instance of SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteIP from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteIP(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteIP)
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity : Identifies a security group by a unique property.
-// Models which "extend" this model:
-// - SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID
-// - SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN
-// - SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref
-// This model "extends" SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemote
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity struct {
-	// The unique identifier for this security group.
-	ID *string `json:"id,omitempty"`
-
-	// The security group's CRN.
-	CRN *string `json:"crn,omitempty"`
-
-	// The security group's canonical URL.
-	Href *string `json:"href,omitempty"`
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentityIntf interface {
-	SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteIntf
-	isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity() bool
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity unmarshals an instance of SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // SecurityGroupRulePrototypeSecurityGroupRuleProtocolAll : When `protocol` is `all`, then it's invalid to specify `port_min`, `port_max`, `type` or
 // `code`.
 // This model "extends" SecurityGroupRulePrototype
@@ -32526,7 +30794,7 @@ type SecurityGroupRulePrototypeSecurityGroupRuleProtocolAll struct {
 	// which, for outbound rules). Can be specified as an IP address, a CIDR block, or a
 	// security group. If omitted, then traffic will be allowed from any source (or to any
 	// source, for outbound rules).
-	Remote SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteIntf `json:"remote,omitempty"`
+	Remote SecurityGroupRulePrototypeRemoteIntf `json:"remote,omitempty"`
 }
 
 // Constants associated with the SecurityGroupRulePrototypeSecurityGroupRuleProtocolAll.Direction property.
@@ -32581,7 +30849,7 @@ func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolAll(m map[strin
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemote)
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRulePrototypeRemote)
 	if err != nil {
 		return
 	}
@@ -32610,7 +30878,7 @@ type SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp struct {
 	// which, for outbound rules). Can be specified as an IP address, a CIDR block, or a
 	// security group. If omitted, then traffic will be allowed from any source (or to any
 	// source, for outbound rules).
-	Remote SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteIntf `json:"remote,omitempty"`
+	Remote SecurityGroupRulePrototypeRemoteIntf `json:"remote,omitempty"`
 
 	// The ICMP traffic code to allow.
 	Code *int64 `json:"code,omitempty"`
@@ -32671,7 +30939,7 @@ func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp(m map[stri
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemote)
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRulePrototypeRemote)
 	if err != nil {
 		return
 	}
@@ -32707,7 +30975,7 @@ type SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp struct {
 	// which, for outbound rules). Can be specified as an IP address, a CIDR block, or a
 	// security group. If omitted, then traffic will be allowed from any source (or to any
 	// source, for outbound rules).
-	Remote SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteIntf `json:"remote,omitempty"`
+	Remote SecurityGroupRulePrototypeRemoteIntf `json:"remote,omitempty"`
 
 	// The inclusive upper bound of TCP/UDP port range.
 	PortMax *int64 `json:"port_max,omitempty"`
@@ -32768,7 +31036,7 @@ func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp(m map[st
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemote)
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRulePrototypeRemote)
 	if err != nil {
 		return
 	}
@@ -32868,6 +31136,277 @@ func UnmarshalSecurityGroupRuleRemoteSecurityGroupReference(m map[string]json.Ra
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SecurityGroupRuleSecurityGroupRuleProtocolAll : When `protocol` is `all`, then it's invalid to specify `port_min`, `port_max`, `type` or
+// `code`.
+// This model "extends" SecurityGroupRule
+type SecurityGroupRuleSecurityGroupRuleProtocolAll struct {
+	// The direction of traffic to enforce, either `inbound` or `outbound`.
+	Direction *string `json:"direction" validate:"required"`
+
+	// The unique identifier for this security group rule.
+	ID *string `json:"id" validate:"required"`
+
+	// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this field, if they are
+	// used. Alternatively, if `remote` references a security group, then this rule only applies to IP addresses (network
+	// interfaces) in that group matching this IP version.
+	IPVersion *string `json:"ip_version,omitempty"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol,omitempty"`
+
+	// The IP addresses or security groups from which this rule allows traffic (or to
+	// which, for outbound rules). Can be specified as an IP address, a CIDR block, or a
+	// security group. If omitted, then traffic is allowed from any source (or to any
+	// source, for outbound rules).
+	Remote SecurityGroupRuleRemoteIntf `json:"remote,omitempty"`
+}
+
+// Constants associated with the SecurityGroupRuleSecurityGroupRuleProtocolAll.Direction property.
+// The direction of traffic to enforce, either `inbound` or `outbound`.
+const (
+	SecurityGroupRuleSecurityGroupRuleProtocolAllDirectionInboundConst  = "inbound"
+	SecurityGroupRuleSecurityGroupRuleProtocolAllDirectionOutboundConst = "outbound"
+)
+
+// Constants associated with the SecurityGroupRuleSecurityGroupRuleProtocolAll.IPVersion property.
+// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this field, if they are
+// used. Alternatively, if `remote` references a security group, then this rule only applies to IP addresses (network
+// interfaces) in that group matching this IP version.
+const (
+	SecurityGroupRuleSecurityGroupRuleProtocolAllIPVersionIpv4Const = "ipv4"
+)
+
+// Constants associated with the SecurityGroupRuleSecurityGroupRuleProtocolAll.Protocol property.
+// The protocol to enforce.
+const (
+	SecurityGroupRuleSecurityGroupRuleProtocolAllProtocolAllConst  = "all"
+	SecurityGroupRuleSecurityGroupRuleProtocolAllProtocolIcmpConst = "icmp"
+	SecurityGroupRuleSecurityGroupRuleProtocolAllProtocolTCPConst  = "tcp"
+	SecurityGroupRuleSecurityGroupRuleProtocolAllProtocolUDPConst  = "udp"
+)
+
+func (*SecurityGroupRuleSecurityGroupRuleProtocolAll) isaSecurityGroupRule() bool {
+	return true
+}
+
+// UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolAll unmarshals an instance of SecurityGroupRuleSecurityGroupRuleProtocolAll from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolAll(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleSecurityGroupRuleProtocolAll)
+	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRuleRemote)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SecurityGroupRuleSecurityGroupRuleProtocolIcmp : When `protocol` is `icmp`, then the rule may also contain fields to specify an ICMP `type` and `code`. Field `code`
+// may only be specified if `type` is also specified. If type is not specified, then traffic is allowed for all types
+// and codes. If type is specified and code is not specified, then traffic is allowed with the specified type for all
+// codes.
+// This model "extends" SecurityGroupRule
+type SecurityGroupRuleSecurityGroupRuleProtocolIcmp struct {
+	// The direction of traffic to enforce, either `inbound` or `outbound`.
+	Direction *string `json:"direction" validate:"required"`
+
+	// The unique identifier for this security group rule.
+	ID *string `json:"id" validate:"required"`
+
+	// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this field, if they are
+	// used. Alternatively, if `remote` references a security group, then this rule only applies to IP addresses (network
+	// interfaces) in that group matching this IP version.
+	IPVersion *string `json:"ip_version,omitempty"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol,omitempty"`
+
+	// The IP addresses or security groups from which this rule allows traffic (or to
+	// which, for outbound rules). Can be specified as an IP address, a CIDR block, or a
+	// security group. If omitted, then traffic is allowed from any source (or to any
+	// source, for outbound rules).
+	Remote SecurityGroupRuleRemoteIntf `json:"remote,omitempty"`
+
+	// The ICMP traffic code to allow.
+	Code *int64 `json:"code,omitempty"`
+
+	// The ICMP traffic type to allow.
+	Type *int64 `json:"type,omitempty"`
+}
+
+// Constants associated with the SecurityGroupRuleSecurityGroupRuleProtocolIcmp.Direction property.
+// The direction of traffic to enforce, either `inbound` or `outbound`.
+const (
+	SecurityGroupRuleSecurityGroupRuleProtocolIcmpDirectionInboundConst  = "inbound"
+	SecurityGroupRuleSecurityGroupRuleProtocolIcmpDirectionOutboundConst = "outbound"
+)
+
+// Constants associated with the SecurityGroupRuleSecurityGroupRuleProtocolIcmp.IPVersion property.
+// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this field, if they are
+// used. Alternatively, if `remote` references a security group, then this rule only applies to IP addresses (network
+// interfaces) in that group matching this IP version.
+const (
+	SecurityGroupRuleSecurityGroupRuleProtocolIcmpIPVersionIpv4Const = "ipv4"
+)
+
+// Constants associated with the SecurityGroupRuleSecurityGroupRuleProtocolIcmp.Protocol property.
+// The protocol to enforce.
+const (
+	SecurityGroupRuleSecurityGroupRuleProtocolIcmpProtocolAllConst  = "all"
+	SecurityGroupRuleSecurityGroupRuleProtocolIcmpProtocolIcmpConst = "icmp"
+	SecurityGroupRuleSecurityGroupRuleProtocolIcmpProtocolTCPConst  = "tcp"
+	SecurityGroupRuleSecurityGroupRuleProtocolIcmpProtocolUDPConst  = "udp"
+)
+
+func (*SecurityGroupRuleSecurityGroupRuleProtocolIcmp) isaSecurityGroupRule() bool {
+	return true
+}
+
+// UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolIcmp unmarshals an instance of SecurityGroupRuleSecurityGroupRuleProtocolIcmp from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolIcmp(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleSecurityGroupRuleProtocolIcmp)
+	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRuleRemote)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SecurityGroupRuleSecurityGroupRuleProtocolTcpudp : If `protocol` is either `tcp` or `udp`, then the rule may also contain `port_min` and
+// `port_max`. Either both should be set, or neither. When neither is set then traffic is allowed on all ports. For a
+// single port, set both to the same value.
+// This model "extends" SecurityGroupRule
+type SecurityGroupRuleSecurityGroupRuleProtocolTcpudp struct {
+	// The direction of traffic to enforce, either `inbound` or `outbound`.
+	Direction *string `json:"direction" validate:"required"`
+
+	// The unique identifier for this security group rule.
+	ID *string `json:"id" validate:"required"`
+
+	// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this field, if they are
+	// used. Alternatively, if `remote` references a security group, then this rule only applies to IP addresses (network
+	// interfaces) in that group matching this IP version.
+	IPVersion *string `json:"ip_version,omitempty"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol,omitempty"`
+
+	// The IP addresses or security groups from which this rule allows traffic (or to
+	// which, for outbound rules). Can be specified as an IP address, a CIDR block, or a
+	// security group. If omitted, then traffic is allowed from any source (or to any
+	// source, for outbound rules).
+	Remote SecurityGroupRuleRemoteIntf `json:"remote,omitempty"`
+
+	// The inclusive upper bound of TCP/UDP port range.
+	PortMax *int64 `json:"port_max,omitempty"`
+
+	// The inclusive lower bound of TCP/UDP port range.
+	PortMin *int64 `json:"port_min,omitempty"`
+}
+
+// Constants associated with the SecurityGroupRuleSecurityGroupRuleProtocolTcpudp.Direction property.
+// The direction of traffic to enforce, either `inbound` or `outbound`.
+const (
+	SecurityGroupRuleSecurityGroupRuleProtocolTcpudpDirectionInboundConst  = "inbound"
+	SecurityGroupRuleSecurityGroupRuleProtocolTcpudpDirectionOutboundConst = "outbound"
+)
+
+// Constants associated with the SecurityGroupRuleSecurityGroupRuleProtocolTcpudp.IPVersion property.
+// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this field, if they are
+// used. Alternatively, if `remote` references a security group, then this rule only applies to IP addresses (network
+// interfaces) in that group matching this IP version.
+const (
+	SecurityGroupRuleSecurityGroupRuleProtocolTcpudpIPVersionIpv4Const = "ipv4"
+)
+
+// Constants associated with the SecurityGroupRuleSecurityGroupRuleProtocolTcpudp.Protocol property.
+// The protocol to enforce.
+const (
+	SecurityGroupRuleSecurityGroupRuleProtocolTcpudpProtocolAllConst  = "all"
+	SecurityGroupRuleSecurityGroupRuleProtocolTcpudpProtocolIcmpConst = "icmp"
+	SecurityGroupRuleSecurityGroupRuleProtocolTcpudpProtocolTCPConst  = "tcp"
+	SecurityGroupRuleSecurityGroupRuleProtocolTcpudpProtocolUDPConst  = "udp"
+)
+
+func (*SecurityGroupRuleSecurityGroupRuleProtocolTcpudp) isaSecurityGroupRule() bool {
+	return true
+}
+
+// UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolTcpudp unmarshals an instance of SecurityGroupRuleSecurityGroupRuleProtocolTcpudp from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolTcpudp(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
+	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRuleRemote)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "port_max", &obj.PortMax)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "port_min", &obj.PortMin)
 	if err != nil {
 		return
 	}
@@ -33207,7 +31746,7 @@ func UnmarshalVPCIdentityByID(m map[string]json.RawMessage, result interface{}) 
 // - VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity
 // This model "extends" VolumeAttachmentPrototypeInstanceContextVolume
 type VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContext struct {
-	// A reference to the root key to use to wrap the data encryption key for the volume.
+	// The identity of the root key to use to wrap the data encryption key for the volume.
 	//
 	// If this property is not provided, the `encryption` type for the volume will be
 	// `provider_managed`.
@@ -33425,7 +31964,7 @@ func UnmarshalVolumeProfileIdentityByName(m map[string]json.RawMessage, result i
 // VolumePrototypeVolumeByCapacity : VolumePrototypeVolumeByCapacity struct
 // This model "extends" VolumePrototype
 type VolumePrototypeVolumeByCapacity struct {
-	// A reference to the root key to use to wrap the data encryption key for the volume.
+	// The identity of the root key to use to wrap the data encryption key for the volume.
 	//
 	// If this property is not provided, the `encryption` type for the volume will be
 	// `provider_managed`.
@@ -33949,321 +32488,6 @@ func UnmarshalSecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIden
 	return
 }
 
-// SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN : SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN struct
-// This model "extends" SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity
-type SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN struct {
-	// The security group's CRN.
-	CRN *string `json:"crn" validate:"required"`
-}
-
-// NewSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN : Instantiate SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN(crn string) (model *SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN, err error) {
-	model = &SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN{
-		CRN: core.StringPtr(crn),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN) isaSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN) isaSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN)
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref : SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref struct
-// This model "extends" SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity
-type SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref struct {
-	// The security group's canonical URL.
-	Href *string `json:"href" validate:"required"`
-}
-
-// NewSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref : Instantiate SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref(href string) (model *SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref, err error) {
-	model = &SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref{
-		Href: core.StringPtr(href),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref) isaSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref) isaSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID : SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID struct
-// This model "extends" SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity
-type SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID struct {
-	// The unique identifier for this security group.
-	ID *string `json:"id" validate:"required"`
-}
-
-// NewSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID : Instantiate SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID(id string) (model *SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID, err error) {
-	model = &SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID{
-		ID: core.StringPtr(id),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID) isaSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID) isaSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN : SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN struct
-// This model "extends" SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity
-type SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN struct {
-	// The security group's CRN.
-	CRN *string `json:"crn" validate:"required"`
-}
-
-// NewSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN : Instantiate SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN(crn string) (model *SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN, err error) {
-	model = &SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN{
-		CRN: core.StringPtr(crn),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN) isaSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN) isaSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN)
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref : SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref struct
-// This model "extends" SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity
-type SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref struct {
-	// The security group's canonical URL.
-	Href *string `json:"href" validate:"required"`
-}
-
-// NewSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref : Instantiate SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref(href string) (model *SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref, err error) {
-	model = &SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref{
-		Href: core.StringPtr(href),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref) isaSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref) isaSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID : SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID struct
-// This model "extends" SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity
-type SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID struct {
-	// The unique identifier for this security group.
-	ID *string `json:"id" validate:"required"`
-}
-
-// NewSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID : Instantiate SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID(id string) (model *SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID, err error) {
-	model = &SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID{
-		ID: core.StringPtr(id),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID) isaSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID) isaSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN : SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN struct
-// This model "extends" SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity
-type SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN struct {
-	// The security group's CRN.
-	CRN *string `json:"crn" validate:"required"`
-}
-
-// NewSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN : Instantiate SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN(crn string) (model *SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN, err error) {
-	model = &SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN{
-		CRN: core.StringPtr(crn),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN) isaSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN) isaSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN)
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref : SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref struct
-// This model "extends" SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity
-type SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref struct {
-	// The security group's canonical URL.
-	Href *string `json:"href" validate:"required"`
-}
-
-// NewSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref : Instantiate SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref(href string) (model *SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref, err error) {
-	model = &SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref{
-		Href: core.StringPtr(href),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref) isaSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref) isaSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID : SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID struct
-// This model "extends" SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity
-type SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID struct {
-	// The unique identifier for this security group.
-	ID *string `json:"id" validate:"required"`
-}
-
-// NewSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID : Instantiate SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID(id string) (model *SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID, err error) {
-	model = &SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID{
-		ID: core.StringPtr(id),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID) isaSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-func (*SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID) isaSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN : SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN struct
 // This model "extends" SecurityGroupRulePrototypeRemoteSecurityGroupIdentity
 type SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN struct {
@@ -34369,325 +32593,10 @@ func UnmarshalSecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroup
 	return
 }
 
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN : SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN struct
-// This model "extends" SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN struct {
-	// The security group's CRN.
-	CRN *string `json:"crn" validate:"required"`
-}
-
-// NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN : Instantiate SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN(crn string) (model *SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN, err error) {
-	model = &SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN{
-		CRN: core.StringPtr(crn),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN unmarshals an instance of SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN)
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref : SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref struct
-// This model "extends" SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref struct {
-	// The security group's canonical URL.
-	Href *string `json:"href" validate:"required"`
-}
-
-// NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref : Instantiate SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref(href string) (model *SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref, err error) {
-	model = &SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref{
-		Href: core.StringPtr(href),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref unmarshals an instance of SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByHref)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID : SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID struct
-// This model "extends" SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID struct {
-	// The unique identifier for this security group.
-	ID *string `json:"id" validate:"required"`
-}
-
-// NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID : Instantiate SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID(id string) (model *SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID, err error) {
-	model = &SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID{
-		ID: core.StringPtr(id),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID unmarshals an instance of SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllRemoteSecurityGroupIdentitySecurityGroupIdentityByID)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN : SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN struct
-// This model "extends" SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN struct {
-	// The security group's CRN.
-	CRN *string `json:"crn" validate:"required"`
-}
-
-// NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN : Instantiate SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN(crn string) (model *SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN, err error) {
-	model = &SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN{
-		CRN: core.StringPtr(crn),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN unmarshals an instance of SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN)
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref : SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref struct
-// This model "extends" SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref struct {
-	// The security group's canonical URL.
-	Href *string `json:"href" validate:"required"`
-}
-
-// NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref : Instantiate SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref(href string) (model *SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref, err error) {
-	model = &SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref{
-		Href: core.StringPtr(href),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref unmarshals an instance of SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID : SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID struct
-// This model "extends" SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID struct {
-	// The unique identifier for this security group.
-	ID *string `json:"id" validate:"required"`
-}
-
-// NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID : Instantiate SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID(id string) (model *SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID, err error) {
-	model = &SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID{
-		ID: core.StringPtr(id),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID unmarshals an instance of SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpRemoteSecurityGroupIdentitySecurityGroupIdentityByID)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN : SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN struct
-// This model "extends" SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN struct {
-	// The security group's CRN.
-	CRN *string `json:"crn" validate:"required"`
-}
-
-// NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN : Instantiate SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN(crn string) (model *SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN, err error) {
-	model = &SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN{
-		CRN: core.StringPtr(crn),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN unmarshals an instance of SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN)
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref : SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref struct
-// This model "extends" SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref struct {
-	// The security group's canonical URL.
-	Href *string `json:"href" validate:"required"`
-}
-
-// NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref : Instantiate SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref(href string) (model *SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref, err error) {
-	model = &SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref{
-		Href: core.StringPtr(href),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref unmarshals an instance of SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByHref)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID : SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID struct
-// This model "extends" SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity
-type SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID struct {
-	// The unique identifier for this security group.
-	ID *string `json:"id" validate:"required"`
-}
-
-// NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID : Instantiate SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID(id string) (model *SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID, err error) {
-	model = &SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID{
-		ID: core.StringPtr(id),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID) isaSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID unmarshals an instance of SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpRemoteSecurityGroupIdentitySecurityGroupIdentityByID)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity : VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity struct
 // This model "extends" VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContext
 type VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity struct {
-	// A reference to the root key to use to wrap the data encryption key for the volume.
+	// The identity of the root key to use to wrap the data encryption key for the volume.
 	//
 	// If this property is not provided, the `encryption` type for the volume will be
 	// `provider_managed`.
