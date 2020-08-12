@@ -209,11 +209,11 @@ func classicVpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatew
 
 	if _, ok := d.GetOk(isVPNGatewayConnectionLocalCIDRS); ok {
 		localCidrs := expandStringList((d.Get(isVPNGatewayConnectionLocalCIDRS).(*schema.Set)).List())
-		options.LocalCidrs = localCidrs
+		options.LocalCIDRs = localCidrs
 	}
 	if _, ok := d.GetOk(isVPNGatewayConnectionPeerCIDRS); ok {
 		peerCidrs := expandStringList((d.Get(isVPNGatewayConnectionPeerCIDRS).(*schema.Set)).List())
-		options.PeerCidrs = peerCidrs
+		options.PeerCIDRs = peerCidrs
 	}
 
 	var ikePolicyIdentity, ipsecPolicyIdentity string
@@ -260,11 +260,11 @@ func vpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatewayID, p
 
 	if _, ok := d.GetOk(isVPNGatewayConnectionLocalCIDRS); ok {
 		localCidrs := expandStringList((d.Get(isVPNGatewayConnectionLocalCIDRS).(*schema.Set)).List())
-		options.LocalCidrs = localCidrs
+		options.LocalCIDRs = localCidrs
 	}
 	if _, ok := d.GetOk(isVPNGatewayConnectionPeerCIDRS); ok {
 		peerCidrs := expandStringList((d.Get(isVPNGatewayConnectionPeerCIDRS).(*schema.Set)).List())
-		options.PeerCidrs = peerCidrs
+		options.PeerCIDRs = peerCidrs
 	}
 
 	var ikePolicyIdentity, ipsecPolicyIdentity string
@@ -345,15 +345,13 @@ func classicVpngwconGet(d *schema.ResourceData, meta interface{}, gID, gConnID s
 	d.Set(isVPNGatewayConnectionAdminStateup, *vpnGatewayConnection.AdminStateUp)
 	d.Set(isVPNGatewayConnectionPeerAddress, *vpnGatewayConnection.PeerAddress)
 	d.Set(isVPNGatewayConnectionPreSharedKey, *vpnGatewayConnection.Psk)
-	d.Set(isVPNGatewayConnectionLocalCIDRS, flattenStringList(vpnGatewayConnection.LocalCidrs))
-	d.Set(isVPNGatewayConnectionPeerCIDRS, flattenStringList(vpnGatewayConnection.PeerCidrs))
+	d.Set(isVPNGatewayConnectionLocalCIDRS, flattenStringList(vpnGatewayConnection.LocalCIDRs))
+	d.Set(isVPNGatewayConnectionPeerCIDRS, flattenStringList(vpnGatewayConnection.PeerCIDRs))
 	if vpnGatewayConnection.IkePolicy != nil {
-		ikepolicy := vpnGatewayConnection.IkePolicy.(*vpcclassicv1.IkePolicyIdentity)
-		d.Set(isVPNGatewayConnectionIKEPolicy, *ikepolicy.ID)
+		d.Set(isVPNGatewayConnectionIKEPolicy, *vpnGatewayConnection.IkePolicy.ID)
 	}
 	if vpnGatewayConnection.IpsecPolicy != nil {
-		ipsecpolicy := vpnGatewayConnection.IpsecPolicy.(*vpcclassicv1.IPsecPolicyIdentity)
-		d.Set(isVPNGatewayConnectionIPSECPolicy, *ipsecpolicy.ID)
+		d.Set(isVPNGatewayConnectionIPSECPolicy, *vpnGatewayConnection.IpsecPolicy.ID)
 	}
 	d.Set(isVPNGatewayConnectionDeadPeerDetectionAction, *vpnGatewayConnection.DeadPeerDetection.Action)
 	d.Set(isVPNGatewayConnectionDeadPeerDetectionInterval, *vpnGatewayConnection.DeadPeerDetection.Interval)
@@ -383,15 +381,13 @@ func vpngwconGet(d *schema.ResourceData, meta interface{}, gID, gConnID string) 
 	d.Set(isVPNGatewayConnectionAdminStateup, *vpnGatewayConnection.AdminStateUp)
 	d.Set(isVPNGatewayConnectionPeerAddress, *vpnGatewayConnection.PeerAddress)
 	d.Set(isVPNGatewayConnectionPreSharedKey, *vpnGatewayConnection.Psk)
-	d.Set(isVPNGatewayConnectionLocalCIDRS, flattenStringList(vpnGatewayConnection.LocalCidrs))
-	d.Set(isVPNGatewayConnectionPeerCIDRS, flattenStringList(vpnGatewayConnection.PeerCidrs))
+	d.Set(isVPNGatewayConnectionLocalCIDRS, flattenStringList(vpnGatewayConnection.LocalCIDRs))
+	d.Set(isVPNGatewayConnectionPeerCIDRS, flattenStringList(vpnGatewayConnection.PeerCIDRs))
 	if vpnGatewayConnection.IkePolicy != nil {
-		ikepolicy := vpnGatewayConnection.IkePolicy.(*vpcv1.IkePolicyIdentity)
-		d.Set(isVPNGatewayConnectionIKEPolicy, *ikepolicy.ID)
+		d.Set(isVPNGatewayConnectionIKEPolicy, *vpnGatewayConnection.IkePolicy.ID)
 	}
 	if vpnGatewayConnection.IpsecPolicy != nil {
-		ipsecpolicy := vpnGatewayConnection.IpsecPolicy.(*vpcv1.IPsecPolicyIdentity)
-		d.Set(isVPNGatewayConnectionIPSECPolicy, *ipsecpolicy.ID)
+		d.Set(isVPNGatewayConnectionIPSECPolicy, *vpnGatewayConnection.IpsecPolicy.ID)
 	}
 	d.Set(isVPNGatewayConnectionDeadPeerDetectionAction, *vpnGatewayConnection.DeadPeerDetection.Action)
 	d.Set(isVPNGatewayConnectionDeadPeerDetectionInterval, *vpnGatewayConnection.DeadPeerDetection.Interval)

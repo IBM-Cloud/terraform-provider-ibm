@@ -1003,7 +1003,7 @@ func classicCreateInlineRules(nwaclC *vpcclassicv1.VpcClassicV1, nwaclid string,
 		}
 
 		if before != "" {
-			ruleTemplate.Before = &vpcclassicv1.NetworkACLRulePrototypeBefore{
+			ruleTemplate.Before = &vpcclassicv1.NetworkACLRuleIdentity{
 				ID: &before,
 			}
 		}
@@ -1110,7 +1110,7 @@ func createInlineRules(nwaclC *vpcv1.VpcV1, nwaclid string, rules []interface{})
 		}
 
 		if before != "" {
-			ruleTemplate.Before = &vpcv1.NetworkACLRulePrototypeBefore{
+			ruleTemplate.Before = &vpcv1.NetworkACLRuleIdentity{
 				ID: &before,
 			}
 		}
