@@ -150,6 +150,12 @@ func resourceIBMISSecurityGroupNetworkInterfaceAttachment() *schema.Resource {
 					},
 				},
 			},
+
+			RelatedCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the Security Group",
+			},
 		},
 	}
 }
@@ -285,6 +291,14 @@ func classicSgnicGet(d *schema.ResourceData, meta interface{}, sgID, nicID strin
 	d.Set(isSGNICAFloatingIps, fps)
 
 	// d.Set(isSGNICASecondaryAddresses, *instanceNic.SecondaryAddresses)
+	getSecurityGroupOptions := &vpcclassicv1.GetSecurityGroupOptions{
+		ID: &sgID,
+	}
+	sg, response, err := sess.GetSecurityGroup(getSecurityGroupOptions)
+	if err != nil {
+		return fmt.Errorf("Error Getting Security Group : %s\n%s", err, response)
+	}
+	d.Set(RelatedCRN, *sg.CRN)
 	return nil
 }
 
@@ -337,6 +351,14 @@ func sgnicGet(d *schema.ResourceData, meta interface{}, sgID, nicID string) erro
 	d.Set(isSGNICAFloatingIps, fps)
 
 	// d.Set(isSGNICASecondaryAddresses, *instanceNic.SecondaryAddresses)
+	getSecurityGroupOptions := &vpcv1.GetSecurityGroupOptions{
+		ID: &sgID,
+	}
+	sg, response, err := sess.GetSecurityGroup(getSecurityGroupOptions)
+	if err != nil {
+		return fmt.Errorf("Error Getting Security Group : %s\n%s", err, response)
+	}
+	d.Set(RelatedCRN, *sg.CRN)
 	return nil
 }
 

@@ -144,6 +144,12 @@ func resourceIBMISLBListenerPolicyRule() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+
+			RelatedCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the LB resource",
+			},
 		},
 	}
 }
@@ -941,6 +947,14 @@ func classicLbListenerPolicyRuleGet(d *schema.ResourceData, meta interface{}, lb
 	d.Set(isLBListenerPolicyRulevalue, rule.Value)
 	d.Set(isLBListenerPolicyRulefield, rule.Field)
 	d.Set(isLBListenerPolicyRuleStatus, rule.ProvisioningStatus)
+	getLoadBalancerOptions := &vpcclassicv1.GetLoadBalancerOptions{
+		ID: &lbID,
+	}
+	lb, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
+	if err != nil {
+		return fmt.Errorf("Error Getting Load Balancer : %s\n%s", err, response)
+	}
+	d.Set(RelatedCRN, *lb.CRN)
 
 	return nil
 }
@@ -980,6 +994,14 @@ func lbListenerPolicyRuleGet(d *schema.ResourceData, meta interface{}, lbID, lis
 	d.Set(isLBListenerPolicyRulevalue, rule.Value)
 	d.Set(isLBListenerPolicyRulefield, rule.Field)
 	d.Set(isLBListenerPolicyRuleStatus, rule.ProvisioningStatus)
+	getLoadBalancerOptions := &vpcv1.GetLoadBalancerOptions{
+		ID: &lbID,
+	}
+	lb, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
+	if err != nil {
+		return fmt.Errorf("Error Getting Load Balancer : %s\n%s", err, response)
+	}
+	d.Set(RelatedCRN, *lb.CRN)
 
 	return nil
 }

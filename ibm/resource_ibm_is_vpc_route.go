@@ -82,6 +82,12 @@ func resourceIBMISVpcRoute() *schema.Resource {
 				ForceNew:    true,
 				Description: "VPC route next hop value",
 			},
+
+			RelatedCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the VPC resource",
+			},
 		},
 	}
 }
@@ -281,6 +287,14 @@ func classicVpcRouteGet(d *schema.ResourceData, meta interface{}, vpcID, routeID
 	nexthop := route.NextHop.(*vpcclassicv1.RouteNextHop)
 	d.Set(isVPCRouteNextHop, *nexthop.Address)
 	d.Set(isVPCRouteState, *route.LifecycleState)
+	getVPCOptions := &vpcclassicv1.GetVPCOptions{
+		ID: &vpcID,
+	}
+	vpc, response, err := sess.GetVPC(getVPCOptions)
+	if err != nil {
+		return fmt.Errorf("Error Getting VPC : %s\n%s", err, response)
+	}
+	d.Set(RelatedCRN, *vpc.CRN)
 	return nil
 }
 
@@ -310,6 +324,14 @@ func vpcRouteGet(d *schema.ResourceData, meta interface{}, vpcID, routeID string
 	nexthop := route.NextHop.(*vpcv1.RouteNextHop)
 	d.Set(isVPCRouteNextHop, *nexthop.Address)
 	d.Set(isVPCRouteState, *route.LifecycleState)
+	getVPCOptions := &vpcv1.GetVPCOptions{
+		ID: &vpcID,
+	}
+	vpc, response, err := sess.GetVPC(getVPCOptions)
+	if err != nil {
+		return fmt.Errorf("Error Getting VPC : %s\n%s", err, response)
+	}
+	d.Set(RelatedCRN, *vpc.CRN)
 
 	return nil
 }

@@ -136,6 +136,12 @@ func resourceIBMISVPNGatewayConnection() *schema.Resource {
 				Computed:    true,
 				Description: "VPN gateway connection status",
 			},
+
+			RelatedCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the VPN Gateway resource",
+			},
 		},
 	}
 }
@@ -358,6 +364,14 @@ func classicVpngwconGet(d *schema.ResourceData, meta interface{}, gID, gConnID s
 	d.Set(isVPNGatewayConnectionDeadPeerDetectionAction, *vpnGatewayConnection.DeadPeerDetection.Action)
 	d.Set(isVPNGatewayConnectionDeadPeerDetectionInterval, *vpnGatewayConnection.DeadPeerDetection.Interval)
 	d.Set(isVPNGatewayConnectionDeadPeerDetectionTimeout, *vpnGatewayConnection.DeadPeerDetection.Timeout)
+	getVPNGatewayOptions := &vpcclassicv1.GetVPNGatewayOptions{
+		ID: &gID,
+	}
+	vpngateway, response, err := sess.GetVPNGateway(getVPNGatewayOptions)
+	if err != nil {
+		return fmt.Errorf("Error Getting VPN Gateway : %s\n%s", err, response)
+	}
+	d.Set(RelatedCRN, *vpngateway.CRN)
 	return nil
 }
 
@@ -396,6 +410,14 @@ func vpngwconGet(d *schema.ResourceData, meta interface{}, gID, gConnID string) 
 	d.Set(isVPNGatewayConnectionDeadPeerDetectionAction, *vpnGatewayConnection.DeadPeerDetection.Action)
 	d.Set(isVPNGatewayConnectionDeadPeerDetectionInterval, *vpnGatewayConnection.DeadPeerDetection.Interval)
 	d.Set(isVPNGatewayConnectionDeadPeerDetectionTimeout, *vpnGatewayConnection.DeadPeerDetection.Timeout)
+	getVPNGatewayOptions := &vpcv1.GetVPNGatewayOptions{
+		ID: &gID,
+	}
+	vpngateway, response, err := sess.GetVPNGateway(getVPNGatewayOptions)
+	if err != nil {
+		return fmt.Errorf("Error Getting VPN Gateway : %s\n%s", err, response)
+	}
+	d.Set(RelatedCRN, *vpngateway.CRN)
 	return nil
 }
 
