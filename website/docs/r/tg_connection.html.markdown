@@ -6,7 +6,7 @@ description: |-
   Manages IBM Transit Gateway Connection.
 ---
 
-# ibm\_dl_gateway
+# ibm\_tg_connection
 
 Provides a transit gateway connection resource. This allows transit gateway's connection to be created, and updated and deleted.
 
