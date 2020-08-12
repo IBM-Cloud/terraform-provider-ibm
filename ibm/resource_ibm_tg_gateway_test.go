@@ -67,10 +67,10 @@ func testAccCheckIBMTransitGatewayExists(n string, instance string) resource.Tes
 		if err != nil {
 			return err
 		}
-		tgOptions := &transitgatewayapisv1.DetailTransitGatewayOptions{
+		tgOptions := &transitgatewayapisv1.GetTransitGatewayOptions{
 			ID: &rs.Primary.ID,
 		}
-		instance1, response, err := client.DetailTransitGateway(tgOptions)
+		instance1, response, err := client.GetTransitGateway(tgOptions)
 		if err != nil {
 			return fmt.Errorf("Error Getting Transit Gateway: %s\n%s", err, response)
 		}
@@ -88,10 +88,10 @@ func testAccCheckIBMTransitGatewayDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_tg_gateway" {
 			log.Printf("Destroy called ...%s", rs.Primary.ID)
 
-			tgOptions := &transitgatewayapisv1.DetailTransitGatewayOptions{
+			tgOptions := &transitgatewayapisv1.GetTransitGatewayOptions{
 				ID: &rs.Primary.ID,
 			}
-			_, _, err = client.DetailTransitGateway(tgOptions)
+			_, _, err = client.GetTransitGateway(tgOptions)
 
 			if err == nil {
 				return fmt.Errorf(" transit gateway still exists: %s", rs.Primary.ID)
