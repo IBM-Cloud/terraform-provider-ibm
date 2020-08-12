@@ -61,6 +61,11 @@ func dataSourceIBMTransitGateway() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						tgNetworkAccountID: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the account which owns the network that is being connected. Generally only used if the network is in a different account than the gateway.",
+						},
 						tgNetworkId: {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -171,6 +176,10 @@ func dataSourceIBMTransitGatewayConnectionsRead(d *schema.ResourceData, meta int
 		if instance.NetworkID != nil {
 			tgConn[tgNetworkId] = *instance.NetworkID
 		}
+		if instance.NetworkAccountID != nil {
+			tgConn[tgNetworkAccountID] = *instance.NetworkAccountID
+		}
+
 		if instance.CreatedAt != nil {
 			tgConn[tgConectionCreatedAt] = instance.CreatedAt.String()
 

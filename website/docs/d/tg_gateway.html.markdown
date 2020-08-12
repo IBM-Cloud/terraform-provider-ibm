@@ -48,9 +48,12 @@ The following attributes are exported:
   * `connections` 
     * `name` - The user-defined name for this transit gateway connection.
     * `network_type` -  Defines what type of network is connected via this connection.Possible values: [classic,vpc]. 
+    * `network_account_id` - The ID of the account which owns the network that is being connected. Generally only used if the network is in a different account than the gateway.
     * `network_id` -  The ID of the network being connected via this connection. 
     * `id` - The unique identifier for this Transit Gateway Connection to Network (vpc/classic). 
     * `created_at` - The date and time that this connection was created.
     * `updated_at` - The date and time that this connection was last updated.
     * `status` - What is the current configuration state of this connection
+  
+   
     Possible values: [attached,failed,pending,deleting]

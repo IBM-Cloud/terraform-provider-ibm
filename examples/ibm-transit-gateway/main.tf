@@ -36,3 +36,12 @@ resource "ibm_tg_connection" "test_ibm_tg_connection"{
 		name= "myconnection"
 		network_id = ibm_is_vpc.test_tg_vpc.resource_crn
 }
+// cross account
+resource "ibm_tg_connection" "test_ibm_tg_connection"{
+		gateway = "${ibm_tg_gateway.new_tg_gw.id}"
+		network_type = "vpc"
+		name= "mycrossconnection"
+		// vpc crn from other account
+		network_id = var.network_id
+		network_account_id = var.network_account_id
+}
