@@ -14,7 +14,7 @@ require (
 	github.com/IBM/ibm-cos-sdk-go-config v1.0.0
 	github.com/IBM/keyprotect-go-client v0.3.5-0.20200325142150-b63163832e26
 	github.com/IBM/networking-go-sdk v0.2.0
-	github.com/IBM/vpc-go-sdk v0.0.1
+	github.com/IBM/vpc-go-sdk v0.0.3
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.26.4
 	github.com/apache/incubator-openwhisk-client-go v0.0.0-20171128215515-ad814bc98c32 // indirect
@@ -24,7 +24,6 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/runtime v0.19.15 // indirect
-	github.com/go-openapi/strfmt v0.19.5
 	github.com/go-openapi/swag v0.19.9 // indirect
 	github.com/go-openapi/validate v0.19.8 // indirect
 	github.com/go-test/deep v1.0.4 // indirect
