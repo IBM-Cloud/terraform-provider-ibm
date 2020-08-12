@@ -189,7 +189,7 @@ func classicFipCreate(d *schema.ResourceData, meta interface{}, name string) err
 
 	if tgt, ok := d.GetOk(isFloatingIPTarget); ok {
 		target = tgt.(string)
-		floatingIPPrototype.Target = &vpcclassicv1.NetworkInterfaceIdentity{
+		floatingIPPrototype.Target = &vpcclassicv1.FloatingIPByTargetTarget{
 			ID: &target,
 		}
 	}
@@ -242,7 +242,7 @@ func fipCreate(d *schema.ResourceData, meta interface{}, name string) error {
 
 	if tgt, ok := d.GetOk(isFloatingIPTarget); ok {
 		target = tgt.(string)
-		floatingIPPrototype.Target = &vpcv1.NetworkInterfaceIdentity{
+		floatingIPPrototype.Target = &vpcv1.FloatingIPByTargetTarget{
 			ID: &target,
 		}
 	}
@@ -446,7 +446,7 @@ func classicFipUpdate(d *schema.ResourceData, meta interface{}, id string) error
 
 	if d.HasChange(isFloatingIPTarget) {
 		target := d.Get(isFloatingIPTarget).(string)
-		options.Target = &vpcclassicv1.NetworkInterfaceIdentity{
+		options.Target = &vpcclassicv1.FloatingIPPatchTargetNetworkInterfaceIdentity{
 			ID: &target,
 		}
 		hasChanged = true
@@ -492,7 +492,7 @@ func fipUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 
 	if d.HasChange(isFloatingIPTarget) {
 		target := d.Get(isFloatingIPTarget).(string)
-		options.Target = &vpcv1.NetworkInterfaceIdentity{
+		options.Target = &vpcv1.FloatingIPPatchTargetNetworkInterfaceIdentity{
 			ID: &target,
 		}
 		hasChanged = true

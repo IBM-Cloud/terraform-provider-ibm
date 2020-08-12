@@ -201,23 +201,23 @@ func classicSgRuleCreate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error while creating Security Group Rule %s\n%s", err, response)
 	}
 	switch reflect.TypeOf(rule).String() {
-	case "*vpcclassicv1.SecurityGroupRuleProtocolIcmp":
+	case "*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp":
 		{
-			sgrule := rule.(*vpcclassicv1.SecurityGroupRuleProtocolIcmp)
+			sgrule := rule.(*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp)
 			d.Set(isSecurityGroupRuleID, *sgrule.ID)
 			tfID := makeTerraformRuleID(parsed.secgrpID, *sgrule.ID)
 			d.SetId(tfID)
 		}
-	case "*vpcclassicv1.SecurityGroupRuleProtocolAll":
+	case "*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolAll":
 		{
-			sgrule := rule.(*vpcclassicv1.SecurityGroupRuleProtocolAll)
+			sgrule := rule.(*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolAll)
 			d.Set(isSecurityGroupRuleID, *sgrule.ID)
 			tfID := makeTerraformRuleID(parsed.secgrpID, *sgrule.ID)
 			d.SetId(tfID)
 		}
-	case "*vpcclassicv1.SecurityGroupRuleProtocolTcpudp":
+	case "*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp":
 		{
-			sgrule := rule.(*vpcclassicv1.SecurityGroupRuleProtocolTcpudp)
+			sgrule := rule.(*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
 			d.Set(isSecurityGroupRuleID, *sgrule.ID)
 			tfID := makeTerraformRuleID(parsed.secgrpID, *sgrule.ID)
 			d.SetId(tfID)
@@ -249,23 +249,23 @@ func sgRuleCreate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error while creating Security Group Rule %s\n%s", err, response)
 	}
 	switch reflect.TypeOf(rule).String() {
-	case "*vpcv1.SecurityGroupRuleProtocolIcmp":
+	case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp":
 		{
-			sgrule := rule.(*vpcv1.SecurityGroupRuleProtocolIcmp)
+			sgrule := rule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp)
 			d.Set(isSecurityGroupRuleID, *sgrule.ID)
 			tfID := makeTerraformRuleID(parsed.secgrpID, *sgrule.ID)
 			d.SetId(tfID)
 		}
-	case "*vpcv1.SecurityGroupRuleProtocolAll":
+	case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll":
 		{
-			sgrule := rule.(*vpcv1.SecurityGroupRuleProtocolAll)
+			sgrule := rule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll)
 			d.Set(isSecurityGroupRuleID, *sgrule.ID)
 			tfID := makeTerraformRuleID(parsed.secgrpID, *sgrule.ID)
 			d.SetId(tfID)
 		}
-	case "*vpcv1.SecurityGroupRuleProtocolTcpudp":
+	case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp":
 		{
-			sgrule := rule.(*vpcv1.SecurityGroupRuleProtocolTcpudp)
+			sgrule := rule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
 			d.Set(isSecurityGroupRuleID, *sgrule.ID)
 			tfID := makeTerraformRuleID(parsed.secgrpID, *sgrule.ID)
 			d.SetId(tfID)
@@ -317,9 +317,9 @@ func classicSgRuleGet(d *schema.ResourceData, meta interface{}, secgrpID, ruleID
 
 	d.Set(isSecurityGroupID, secgrpID)
 	switch reflect.TypeOf(sgrule).String() {
-	case "*vpcclassicv1.SecurityGroupRuleProtocolIcmp":
+	case "*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp":
 		{
-			rule := sgrule.(*vpcclassicv1.SecurityGroupRuleProtocolIcmp)
+			rule := sgrule.(*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp)
 			d.Set(isSecurityGroupRuleID, *rule.ID)
 			tfID := makeTerraformRuleID(secgrpID, *rule.ID)
 			d.SetId(tfID)
@@ -336,35 +336,39 @@ func classicSgRuleGet(d *schema.ResourceData, meta interface{}, secgrpID, ruleID
 			protocolList := make([]map[string]interface{}, 0)
 			protocolList = append(protocolList, icmpProtocol)
 			d.Set(isSecurityGroupRuleProtocolICMP, protocolList)
-			if rule.Remote != nil && reflect.ValueOf(rule.Remote).IsNil() == false {
-				for k, v := range rule.Remote.(map[string]interface{}) {
-					if k == "id" || k == "address" || k == "cidr_block" {
-						d.Set(isSecurityGroupRuleRemote, v.(string))
-						break
-					}
+			remote := rule.Remote.(*vpcclassicv1.SecurityGroupRuleRemote)
+			if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+				if remote.ID != nil {
+					d.Set(isSecurityGroupRuleRemote, remote.ID)
+				} else if remote.Address != nil {
+					d.Set(isSecurityGroupRuleRemote, remote.Address)
+				} else if remote.CIDRBlock != nil {
+					d.Set(isSecurityGroupRuleRemote, remote.CIDRBlock)
 				}
 			}
 		}
-	case "*vpcclassicv1.SecurityGroupRuleProtocolAll":
+	case "*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolAll":
 		{
-			rule := sgrule.(*vpcclassicv1.SecurityGroupRuleProtocolAll)
+			rule := sgrule.(*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolAll)
 			d.Set(isSecurityGroupRuleID, *rule.ID)
 			tfID := makeTerraformRuleID(secgrpID, *rule.ID)
 			d.SetId(tfID)
 			d.Set(isSecurityGroupRuleIPVersion, *rule.IPVersion)
 			d.Set(isSecurityGroupRuleProtocol, *rule.Protocol)
-			if rule.Remote != nil && reflect.ValueOf(rule.Remote).IsNil() == false {
-				for k, v := range rule.Remote.(map[string]interface{}) {
-					if k == "id" || k == "address" || k == "cidr_block" {
-						d.Set(isSecurityGroupRuleRemote, v.(string))
-						break
-					}
+			remote := rule.Remote.(*vpcclassicv1.SecurityGroupRuleRemote)
+			if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+				if remote.ID != nil {
+					d.Set(isSecurityGroupRuleRemote, remote.ID)
+				} else if remote.Address != nil {
+					d.Set(isSecurityGroupRuleRemote, remote.Address)
+				} else if remote.CIDRBlock != nil {
+					d.Set(isSecurityGroupRuleRemote, remote.CIDRBlock)
 				}
 			}
 		}
-	case "*vpcclassicv1.SecurityGroupRuleProtocolTcpudp":
+	case "*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp":
 		{
-			rule := sgrule.(*vpcclassicv1.SecurityGroupRuleProtocolTcpudp)
+			rule := sgrule.(*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
 			d.Set(isSecurityGroupRuleID, *rule.ID)
 			tfID := makeTerraformRuleID(secgrpID, *rule.ID)
 			d.SetId(tfID)
@@ -385,12 +389,14 @@ func classicSgRuleGet(d *schema.ResourceData, meta interface{}, secgrpID, ruleID
 			} else {
 				d.Set(isSecurityGroupRuleProtocolUDP, protocolList)
 			}
-			if rule.Remote != nil && reflect.ValueOf(rule.Remote).IsNil() == false {
-				for k, v := range rule.Remote.(map[string]interface{}) {
-					if k == "id" || k == "address" || k == "cidr_block" {
-						d.Set(isSecurityGroupRuleRemote, v.(string))
-						break
-					}
+			remote := rule.Remote.(*vpcclassicv1.SecurityGroupRuleRemote)
+			if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+				if remote.ID != nil {
+					d.Set(isSecurityGroupRuleRemote, remote.ID)
+				} else if remote.Address != nil {
+					d.Set(isSecurityGroupRuleRemote, remote.Address)
+				} else if remote.CIDRBlock != nil {
+					d.Set(isSecurityGroupRuleRemote, remote.CIDRBlock)
 				}
 			}
 		}
@@ -417,9 +423,9 @@ func sgRuleGet(d *schema.ResourceData, meta interface{}, secgrpID, ruleID string
 	}
 	d.Set(isSecurityGroupID, secgrpID)
 	switch reflect.TypeOf(sgrule).String() {
-	case "*vpcv1.SecurityGroupRuleProtocolIcmp":
+	case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp":
 		{
-			rule := sgrule.(*vpcv1.SecurityGroupRuleProtocolIcmp)
+			rule := sgrule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp)
 			d.Set(isSecurityGroupRuleID, *rule.ID)
 			tfID := makeTerraformRuleID(secgrpID, *rule.ID)
 			d.SetId(tfID)
@@ -436,35 +442,39 @@ func sgRuleGet(d *schema.ResourceData, meta interface{}, secgrpID, ruleID string
 			protocolList := make([]map[string]interface{}, 0)
 			protocolList = append(protocolList, icmpProtocol)
 			d.Set(isSecurityGroupRuleProtocolICMP, protocolList)
-			if rule.Remote != nil && reflect.ValueOf(rule.Remote).IsNil() == false {
-				for k, v := range rule.Remote.(map[string]interface{}) {
-					if k == "id" || k == "address" || k == "cidr_block" {
-						d.Set(isSecurityGroupRuleRemote, v.(string))
-						break
-					}
+			remote := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
+			if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+				if remote.ID != nil {
+					d.Set(isSecurityGroupRuleRemote, remote.ID)
+				} else if remote.Address != nil {
+					d.Set(isSecurityGroupRuleRemote, remote.Address)
+				} else if remote.CIDRBlock != nil {
+					d.Set(isSecurityGroupRuleRemote, remote.CIDRBlock)
 				}
 			}
 		}
-	case "*vpcv1.SecurityGroupRuleProtocolAll":
+	case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll":
 		{
-			rule := sgrule.(*vpcv1.SecurityGroupRuleProtocolAll)
+			rule := sgrule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll)
 			d.Set(isSecurityGroupRuleID, *rule.ID)
 			tfID := makeTerraformRuleID(secgrpID, *rule.ID)
 			d.SetId(tfID)
 			d.Set(isSecurityGroupRuleIPVersion, *rule.IPVersion)
 			d.Set(isSecurityGroupRuleProtocol, *rule.Protocol)
-			if rule.Remote != nil && reflect.ValueOf(rule.Remote).IsNil() == false {
-				for k, v := range rule.Remote.(map[string]interface{}) {
-					if k == "id" || k == "address" || k == "cidr_block" {
-						d.Set(isSecurityGroupRuleRemote, v.(string))
-						break
-					}
+			remote := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
+			if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+				if remote.ID != nil {
+					d.Set(isSecurityGroupRuleRemote, remote.ID)
+				} else if remote.Address != nil {
+					d.Set(isSecurityGroupRuleRemote, remote.Address)
+				} else if remote.CIDRBlock != nil {
+					d.Set(isSecurityGroupRuleRemote, remote.CIDRBlock)
 				}
 			}
 		}
-	case "*vpcv1.SecurityGroupRuleProtocolTcpudp":
+	case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp":
 		{
-			rule := sgrule.(*vpcv1.SecurityGroupRuleProtocolTcpudp)
+			rule := sgrule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
 			d.Set(isSecurityGroupRuleID, *rule.ID)
 			tfID := makeTerraformRuleID(secgrpID, *rule.ID)
 			d.SetId(tfID)
@@ -485,12 +495,14 @@ func sgRuleGet(d *schema.ResourceData, meta interface{}, secgrpID, ruleID string
 			} else {
 				d.Set(isSecurityGroupRuleProtocolUDP, protocolList)
 			}
-			if rule.Remote != nil && reflect.ValueOf(rule.Remote).IsNil() == false {
-				for k, v := range rule.Remote.(map[string]interface{}) {
-					if k == "id" || k == "address" || k == "cidr_block" {
-						d.Set(isSecurityGroupRuleRemote, v.(string))
-						break
-					}
+			remote := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
+			if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+				if remote.ID != nil {
+					d.Set(isSecurityGroupRuleRemote, remote.ID)
+				} else if remote.Address != nil {
+					d.Set(isSecurityGroupRuleRemote, remote.Address)
+				} else if remote.CIDRBlock != nil {
+					d.Set(isSecurityGroupRuleRemote, remote.CIDRBlock)
 				}
 			}
 		}
