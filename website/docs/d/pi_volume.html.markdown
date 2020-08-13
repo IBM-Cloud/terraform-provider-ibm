@@ -35,3 +35,4 @@ The following attributes are exported:
 * `state` - The state of the volume.
 * `bootable` - If this volume is bootable or not.
 * `size` - The size of this volume.
+* `wwn` - The wwn of the volume.

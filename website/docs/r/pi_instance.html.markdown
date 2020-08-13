@@ -58,6 +58,8 @@ The following arguments are supported:
 * `pi_replication_scheme` - (Optional, string) Specifies the replicate scheme (prefix/suffix).
 * `pi_pin_policy` - (Optional,string) Specifies the pin policy for the lpar (none/soft/hard) - This is dependent on the cloud instance capabilities.
 * `pi_health_status` - (Optional,string) Specifies if terraform should poll for the Health Status to be OK or WARNING.  Default is OK. 
+* `pi_virtual_cores_assigned` - (Optional,integer) Specifies the number of virtual cores to be assigned 
+
 ## Attribute Reference
 
 The following attributes are exported:
@@ -80,6 +82,8 @@ The following attributes are exported:
   * `type` - The type of the network
   * `external_ip` - The externalIP address of the instance.
 * `pin_policy` - The pin policy of the instance
+* `max_virtual_cores` - The maximum number of virtual cores
+* `min_virtual_cores` - The minimum number of virtual cores
 ## Import
 
 ibm_pi_instance can be imported using `power_instance_id` and `instance_id`, eg

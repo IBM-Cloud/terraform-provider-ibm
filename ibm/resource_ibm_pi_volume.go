@@ -84,6 +84,11 @@ func resourceIBMPIVolume() *schema.Resource {
 				Computed:    true,
 				Description: "Should the volume be deleted during termination",
 			},
+			"wwn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "WWN Of the volume",
+			},
 		},
 	}
 }
@@ -145,6 +150,7 @@ func resourceIBMPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("volume_id", vol.VolumeID)
 	d.Set(helpers.PICloudInstanceId, powerinstanceid)
 	d.Set("delete_on_termination", vol.DeleteOnTermination)
+	d.Set("wwn", vol.Wwn)
 
 	return nil
 }
