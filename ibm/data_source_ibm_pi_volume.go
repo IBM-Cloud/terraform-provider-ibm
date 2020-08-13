@@ -59,6 +59,10 @@ func dataSourceIBMPIVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"wwn": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -83,7 +87,7 @@ func dataSourceIBMPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("disk_type", volumedata.DiskType)
 	d.Set("bootable", volumedata.Bootable)
 	d.Set("state", volumedata.State)
-
+	d.Set("wwn", volumedata.Wwn)
 	return nil
 
 }

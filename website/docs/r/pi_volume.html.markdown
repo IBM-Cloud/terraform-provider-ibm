@@ -48,6 +48,7 @@ The following attributes are exported:
 * `id` - The unique identifier of the network.The id is composed of \<power_instance_id\>/\<volume_id\>.
 * `volume_id` - The unique identifier of the volume.
 * `status` - The status of the volume.
+* `wwn` - The wwn of the volume
 
 ## Import
 

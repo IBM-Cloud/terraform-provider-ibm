@@ -42,7 +42,10 @@ The following attributes are exported:
 * `min_memory` - Minimum memory  that was allocated (for resize)
 * `max_processors` - Maximumx number of processors that can be allocated (for resize) without a shutdown/reboot of the lpar
 * `max_memory` - Maximum amount of memory that can be allocated (for resize) without a shutdown/reboot of the lpar
-* `addresses` - The addresses associated with this instance.  Nested `addresses` blocks have the following structure:
+* `virtual_cores_assigned` - The virtual cores that are assigned to the instance
+* `max_virtual_cores` - The max value that we are increase to without a reboot
+* `min_virutal_cores` - The min cores assigned to the instance
+ * `addresses` - The addresses associated with this instance.  Nested `addresses` blocks have the following structure:
 	* `ip` - IP of the instance.
   * `macaddress` - The macaddress of the instance.
   * `network_id` - The networkID of the instance.
