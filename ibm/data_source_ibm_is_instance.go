@@ -700,248 +700,250 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 		}
 	}
 	for _, instance := range allrecs {
-		d.SetId(*instance.ID)
-		id := *instance.ID
-		d.Set("id", *instance.ID)
-		d.Set(isInstanceName, *instance.Name)
-		if instance.Profile != nil {
-			d.Set(isInstanceProfile, *instance.Profile.Name)
-		}
-		cpuList := make([]map[string]interface{}, 0)
-		if instance.Vcpu != nil {
-			currentCPU := map[string]interface{}{}
-			currentCPU[isInstanceCPUArch] = *instance.Vcpu.Architecture
-			currentCPU[isInstanceCPUCount] = *instance.Vcpu.Count
-			cpuList = append(cpuList, currentCPU)
-		}
-		d.Set(isInstanceCPU, cpuList)
-
-		d.Set(isInstanceMemory, *instance.Memory)
-		gpuList := make([]map[string]interface{}, 0)
-		d.Set(isInstanceGpu, gpuList)
-
-		if instance.PrimaryNetworkInterface != nil {
-			primaryNicList := make([]map[string]interface{}, 0)
-			currentPrimNic := map[string]interface{}{}
-			currentPrimNic["id"] = *instance.PrimaryNetworkInterface.ID
-			currentPrimNic[isInstanceNicName] = *instance.PrimaryNetworkInterface.Name
-			currentPrimNic[isInstanceNicPrimaryIpv4Address] = *instance.PrimaryNetworkInterface.PrimaryIpv4Address
-			getnicoptions := &vpcv1.GetInstanceNetworkInterfaceOptions{
-				InstanceID: &id,
-				ID:         instance.PrimaryNetworkInterface.ID,
+		if *instance.Name == name {
+			d.SetId(*instance.ID)
+			id := *instance.ID
+			d.Set("id", *instance.ID)
+			d.Set(isInstanceName, *instance.Name)
+			if instance.Profile != nil {
+				d.Set(isInstanceProfile, *instance.Profile.Name)
 			}
-			insnic, response, err := sess.GetInstanceNetworkInterface(getnicoptions)
-			if err != nil {
-				return fmt.Errorf("Error getting network interfaces attached to the instance %s\n%s", err, response)
+			cpuList := make([]map[string]interface{}, 0)
+			if instance.Vcpu != nil {
+				currentCPU := map[string]interface{}{}
+				currentCPU[isInstanceCPUArch] = *instance.Vcpu.Architecture
+				currentCPU[isInstanceCPUCount] = *instance.Vcpu.Count
+				cpuList = append(cpuList, currentCPU)
 			}
-			currentPrimNic[isInstanceNicSubnet] = *insnic.Subnet.ID
-			if len(insnic.SecurityGroups) != 0 {
-				secgrpList := []string{}
-				for i := 0; i < len(insnic.SecurityGroups); i++ {
-					secgrpList = append(secgrpList, string(*(insnic.SecurityGroups[i].ID)))
+			d.Set(isInstanceCPU, cpuList)
+
+			d.Set(isInstanceMemory, *instance.Memory)
+			gpuList := make([]map[string]interface{}, 0)
+			d.Set(isInstanceGpu, gpuList)
+
+			if instance.PrimaryNetworkInterface != nil {
+				primaryNicList := make([]map[string]interface{}, 0)
+				currentPrimNic := map[string]interface{}{}
+				currentPrimNic["id"] = *instance.PrimaryNetworkInterface.ID
+				currentPrimNic[isInstanceNicName] = *instance.PrimaryNetworkInterface.Name
+				currentPrimNic[isInstanceNicPrimaryIpv4Address] = *instance.PrimaryNetworkInterface.PrimaryIpv4Address
+				getnicoptions := &vpcv1.GetInstanceNetworkInterfaceOptions{
+					InstanceID: &id,
+					ID:         instance.PrimaryNetworkInterface.ID,
 				}
-				currentPrimNic[isInstanceNicSecurityGroups] = newStringSet(schema.HashString, secgrpList)
-			}
-
-			primaryNicList = append(primaryNicList, currentPrimNic)
-			d.Set(isInstancePrimaryNetworkInterface, primaryNicList)
-		}
-
-		if instance.NetworkInterfaces != nil {
-			interfacesList := make([]map[string]interface{}, 0)
-			for _, intfc := range instance.NetworkInterfaces {
-				if *intfc.ID != *instance.PrimaryNetworkInterface.ID {
-					currentNic := map[string]interface{}{}
-					currentNic["id"] = *intfc.ID
-					currentNic[isInstanceNicName] = *intfc.Name
-					currentNic[isInstanceNicPrimaryIpv4Address] = *intfc.PrimaryIpv4Address
-					getnicoptions := &vpcv1.GetInstanceNetworkInterfaceOptions{
-						InstanceID: &id,
-						ID:         intfc.ID,
-					}
-					insnic, response, err := sess.GetInstanceNetworkInterface(getnicoptions)
-					if err != nil {
-						return fmt.Errorf("Error getting network interfaces attached to the instance %s\n%s", err, response)
-					}
-					currentNic[isInstanceNicSubnet] = *insnic.Subnet.ID
-					if len(insnic.SecurityGroups) != 0 {
-						secgrpList := []string{}
-						for i := 0; i < len(insnic.SecurityGroups); i++ {
-							secgrpList = append(secgrpList, string(*(insnic.SecurityGroups[i].ID)))
-						}
-						currentNic[isInstanceNicSecurityGroups] = newStringSet(schema.HashString, secgrpList)
-					}
-					interfacesList = append(interfacesList, currentNic)
-
-				}
-			}
-
-			d.Set(isInstanceNetworkInterfaces, interfacesList)
-		}
-
-		var rsaKey *rsa.PrivateKey
-		if instance.Image != nil {
-			d.Set(isInstanceImage, *instance.Image.ID)
-			image := *instance.Image.Name
-			res := strings.Contains(image, "windows")
-			if res {
-				if privatekey, ok := d.GetOk(isInstancePEM); ok {
-					keyFlag := privatekey.(string)
-					keybytes := []byte(keyFlag)
-
-					if keyFlag != "" {
-						block, err := pem.Decode(keybytes)
-						if block == nil {
-							return fmt.Errorf("Failed to load the private key from the given key contents. Instead of the key file path, please make sure the private key is pem format")
-						}
-						isEncrypted := false
-						switch block.Type {
-						case "RSA PRIVATE KEY":
-							isEncrypted = x509.IsEncryptedPEMBlock(block)
-						case "OPENSSH PRIVATE KEY":
-							var err error
-							isEncrypted, err = isOpenSSHPrivKeyEncrypted(block.Bytes)
-							if err != nil {
-								return fmt.Errorf("Failed to check if the provided open ssh key is encrypted or not %s", err)
-							}
-						default:
-							return fmt.Errorf("PEM and OpenSSH private key formats with RSA key type are supported, can not support this key file type: %s", err)
-						}
-						passphrase := ""
-						var privateKey interface{}
-						if isEncrypted {
-							if pass, ok := d.GetOk(isInstancePassphrase); ok {
-								passphrase = pass.(string)
-							} else {
-								return fmt.Errorf("Mandatory field 'passphrase' not provided")
-							}
-							var err error
-							privateKey, err = sshkeys.ParseEncryptedRawPrivateKey(keybytes, []byte(passphrase))
-							if err != nil {
-								return fmt.Errorf("Fail to decrypting the private key: %s", err)
-							}
-						} else {
-							var err error
-							privateKey, err = sshkeys.ParseEncryptedRawPrivateKey(keybytes, nil)
-							if err != nil {
-								return fmt.Errorf("Fail to decrypting the private key: %s", err)
-							}
-						}
-						var ok bool
-						rsaKey, ok = privateKey.(*rsa.PrivateKey)
-						if !ok {
-							return fmt.Errorf("Failed to convert to RSA private key")
-						}
-					}
-				}
-			}
-		}
-
-		getInstanceInitializationOptions := &vpcv1.GetInstanceInitializationOptions{
-			ID: &id,
-		}
-		initParms, response, err := sess.GetInstanceInitialization(getInstanceInitializationOptions)
-		if err != nil {
-			return fmt.Errorf("Error Getting instance Initialization: %s\n%s", err, response)
-		}
-		if initParms.Keys != nil {
-			initKeyList := make([]map[string]interface{}, 0)
-			for _, key := range initParms.Keys {
-				key := key.(*vpcv1.KeyReferenceInstanceInitializationContext)
-				initKey := map[string]interface{}{}
-				id := ""
-				if key.ID != nil {
-					id = *key.ID
-				}
-				initKey["id"] = id
-				name := ""
-				if key.Name != nil {
-					name = *key.Name
-				}
-				initKey["name"] = name
-				initKeyList = append(initKeyList, initKey)
-				break
-
-			}
-			d.Set(isInstanceInitKeys, initKeyList)
-		}
-		if initParms.Password != nil && initParms.Password.EncryptedPassword != nil {
-			ciphertext := *initParms.Password.EncryptedPassword
-			password := base64.StdEncoding.EncodeToString(ciphertext)
-			if rsaKey != nil {
-				rng := rand.Reader
-				clearPassword, err := rsa.DecryptPKCS1v15(rng, rsaKey, ciphertext)
+				insnic, response, err := sess.GetInstanceNetworkInterface(getnicoptions)
 				if err != nil {
-					return fmt.Errorf("Can not decrypt the password with the given key, %s", err)
+					return fmt.Errorf("Error getting network interfaces attached to the instance %s\n%s", err, response)
 				}
-				password = string(clearPassword)
+				currentPrimNic[isInstanceNicSubnet] = *insnic.Subnet.ID
+				if len(insnic.SecurityGroups) != 0 {
+					secgrpList := []string{}
+					for i := 0; i < len(insnic.SecurityGroups); i++ {
+						secgrpList = append(secgrpList, string(*(insnic.SecurityGroups[i].ID)))
+					}
+					currentPrimNic[isInstanceNicSecurityGroups] = newStringSet(schema.HashString, secgrpList)
+				}
+
+				primaryNicList = append(primaryNicList, currentPrimNic)
+				d.Set(isInstancePrimaryNetworkInterface, primaryNicList)
 			}
-			d.Set(isInstanceInitPassword, password)
-		}
 
-		d.Set(isInstanceStatus, *instance.Status)
-		d.Set(isInstanceVPC, *instance.VPC.ID)
-		d.Set(isInstanceZone, *instance.Zone.Name)
+			if instance.NetworkInterfaces != nil {
+				interfacesList := make([]map[string]interface{}, 0)
+				for _, intfc := range instance.NetworkInterfaces {
+					if *intfc.ID != *instance.PrimaryNetworkInterface.ID {
+						currentNic := map[string]interface{}{}
+						currentNic["id"] = *intfc.ID
+						currentNic[isInstanceNicName] = *intfc.Name
+						currentNic[isInstanceNicPrimaryIpv4Address] = *intfc.PrimaryIpv4Address
+						getnicoptions := &vpcv1.GetInstanceNetworkInterfaceOptions{
+							InstanceID: &id,
+							ID:         intfc.ID,
+						}
+						insnic, response, err := sess.GetInstanceNetworkInterface(getnicoptions)
+						if err != nil {
+							return fmt.Errorf("Error getting network interfaces attached to the instance %s\n%s", err, response)
+						}
+						currentNic[isInstanceNicSubnet] = *insnic.Subnet.ID
+						if len(insnic.SecurityGroups) != 0 {
+							secgrpList := []string{}
+							for i := 0; i < len(insnic.SecurityGroups); i++ {
+								secgrpList = append(secgrpList, string(*(insnic.SecurityGroups[i].ID)))
+							}
+							currentNic[isInstanceNicSecurityGroups] = newStringSet(schema.HashString, secgrpList)
+						}
+						interfacesList = append(interfacesList, currentNic)
 
-		var volumes []string
-		volumes = make([]string, 0)
-		if instance.VolumeAttachments != nil {
-			for _, volume := range instance.VolumeAttachments {
-				if volume.Volume != nil && *volume.Volume.ID != *instance.BootVolumeAttachment.Volume.ID {
-					volumes = append(volumes, *volume.Volume.ID)
+					}
+				}
+
+				d.Set(isInstanceNetworkInterfaces, interfacesList)
+			}
+
+			var rsaKey *rsa.PrivateKey
+			if instance.Image != nil {
+				d.Set(isInstanceImage, *instance.Image.ID)
+				image := *instance.Image.Name
+				res := strings.Contains(image, "windows")
+				if res {
+					if privatekey, ok := d.GetOk(isInstancePEM); ok {
+						keyFlag := privatekey.(string)
+						keybytes := []byte(keyFlag)
+
+						if keyFlag != "" {
+							block, err := pem.Decode(keybytes)
+							if block == nil {
+								return fmt.Errorf("Failed to load the private key from the given key contents. Instead of the key file path, please make sure the private key is pem format")
+							}
+							isEncrypted := false
+							switch block.Type {
+							case "RSA PRIVATE KEY":
+								isEncrypted = x509.IsEncryptedPEMBlock(block)
+							case "OPENSSH PRIVATE KEY":
+								var err error
+								isEncrypted, err = isOpenSSHPrivKeyEncrypted(block.Bytes)
+								if err != nil {
+									return fmt.Errorf("Failed to check if the provided open ssh key is encrypted or not %s", err)
+								}
+							default:
+								return fmt.Errorf("PEM and OpenSSH private key formats with RSA key type are supported, can not support this key file type: %s", err)
+							}
+							passphrase := ""
+							var privateKey interface{}
+							if isEncrypted {
+								if pass, ok := d.GetOk(isInstancePassphrase); ok {
+									passphrase = pass.(string)
+								} else {
+									return fmt.Errorf("Mandatory field 'passphrase' not provided")
+								}
+								var err error
+								privateKey, err = sshkeys.ParseEncryptedRawPrivateKey(keybytes, []byte(passphrase))
+								if err != nil {
+									return fmt.Errorf("Fail to decrypting the private key: %s", err)
+								}
+							} else {
+								var err error
+								privateKey, err = sshkeys.ParseEncryptedRawPrivateKey(keybytes, nil)
+								if err != nil {
+									return fmt.Errorf("Fail to decrypting the private key: %s", err)
+								}
+							}
+							var ok bool
+							rsaKey, ok = privateKey.(*rsa.PrivateKey)
+							if !ok {
+								return fmt.Errorf("Failed to convert to RSA private key")
+							}
+						}
+					}
 				}
 			}
-		}
-		d.Set(isInstanceVolumes, newStringSet(schema.HashString, volumes))
-		if instance.VolumeAttachments != nil {
-			volList := make([]map[string]interface{}, 0)
-			for _, volume := range instance.VolumeAttachments {
-				vol := map[string]interface{}{}
-				if volume.Volume != nil {
-					vol["id"] = *volume.ID
-					vol["volume_id"] = *volume.Volume.ID
-					vol["name"] = *volume.Name
-					vol["volume_name"] = *volume.Volume.Name
-					vol["volume_crn"] = *volume.Volume.CRN
-					volList = append(volList, vol)
+
+			getInstanceInitializationOptions := &vpcv1.GetInstanceInitializationOptions{
+				ID: &id,
+			}
+			initParms, response, err := sess.GetInstanceInitialization(getInstanceInitializationOptions)
+			if err != nil {
+				return fmt.Errorf("Error Getting instance Initialization: %s\n%s", err, response)
+			}
+			if initParms.Keys != nil {
+				initKeyList := make([]map[string]interface{}, 0)
+				for _, key := range initParms.Keys {
+					key := key.(*vpcv1.KeyReferenceInstanceInitializationContext)
+					initKey := map[string]interface{}{}
+					id := ""
+					if key.ID != nil {
+						id = *key.ID
+					}
+					initKey["id"] = id
+					name := ""
+					if key.Name != nil {
+						name = *key.Name
+					}
+					initKey["name"] = name
+					initKeyList = append(initKeyList, initKey)
+					break
+
+				}
+				d.Set(isInstanceInitKeys, initKeyList)
+			}
+			if initParms.Password != nil && initParms.Password.EncryptedPassword != nil {
+				ciphertext := *initParms.Password.EncryptedPassword
+				password := base64.StdEncoding.EncodeToString(ciphertext)
+				if rsaKey != nil {
+					rng := rand.Reader
+					clearPassword, err := rsa.DecryptPKCS1v15(rng, rsaKey, ciphertext)
+					if err != nil {
+						return fmt.Errorf("Can not decrypt the password with the given key, %s", err)
+					}
+					password = string(clearPassword)
+				}
+				d.Set(isInstanceInitPassword, password)
+			}
+
+			d.Set(isInstanceStatus, *instance.Status)
+			d.Set(isInstanceVPC, *instance.VPC.ID)
+			d.Set(isInstanceZone, *instance.Zone.Name)
+
+			var volumes []string
+			volumes = make([]string, 0)
+			if instance.VolumeAttachments != nil {
+				for _, volume := range instance.VolumeAttachments {
+					if volume.Volume != nil && *volume.Volume.ID != *instance.BootVolumeAttachment.Volume.ID {
+						volumes = append(volumes, *volume.Volume.ID)
+					}
 				}
 			}
-			d.Set(isInstanceVolumeAttachments, volList)
-		}
-		if instance.BootVolumeAttachment != nil {
-			bootVolList := make([]map[string]interface{}, 0)
-			bootVol := map[string]interface{}{}
-			bootVol["id"] = *instance.BootVolumeAttachment.ID
-			bootVol["name"] = *instance.BootVolumeAttachment.Name
-			bootVol["device"] = *instance.BootVolumeAttachment.Device.ID
-			if instance.BootVolumeAttachment.Volume != nil {
-				bootVol["volume_name"] = *instance.BootVolumeAttachment.Volume.Name
-				bootVol["volume_id"] = *instance.BootVolumeAttachment.Volume.ID
-				bootVol["volume_crn"] = *instance.BootVolumeAttachment.Volume.CRN
+			d.Set(isInstanceVolumes, newStringSet(schema.HashString, volumes))
+			if instance.VolumeAttachments != nil {
+				volList := make([]map[string]interface{}, 0)
+				for _, volume := range instance.VolumeAttachments {
+					vol := map[string]interface{}{}
+					if volume.Volume != nil {
+						vol["id"] = *volume.ID
+						vol["volume_id"] = *volume.Volume.ID
+						vol["name"] = *volume.Name
+						vol["volume_name"] = *volume.Volume.Name
+						vol["volume_crn"] = *volume.Volume.CRN
+						volList = append(volList, vol)
+					}
+				}
+				d.Set(isInstanceVolumeAttachments, volList)
 			}
-			bootVolList = append(bootVolList, bootVol)
-			d.Set(isInstanceBootVolume, bootVolList)
-		}
-		tags, err := GetTagsUsingCRN(meta, *instance.CRN)
-		if err != nil {
-			log.Printf(
-				"Error on get of resource vpc Instance (%s) tags: %s", d.Id(), err)
-		}
-		d.Set(isInstanceTags, tags)
+			if instance.BootVolumeAttachment != nil {
+				bootVolList := make([]map[string]interface{}, 0)
+				bootVol := map[string]interface{}{}
+				bootVol["id"] = *instance.BootVolumeAttachment.ID
+				bootVol["name"] = *instance.BootVolumeAttachment.Name
+				bootVol["device"] = *instance.BootVolumeAttachment.Device.ID
+				if instance.BootVolumeAttachment.Volume != nil {
+					bootVol["volume_name"] = *instance.BootVolumeAttachment.Volume.Name
+					bootVol["volume_id"] = *instance.BootVolumeAttachment.Volume.ID
+					bootVol["volume_crn"] = *instance.BootVolumeAttachment.Volume.CRN
+				}
+				bootVolList = append(bootVolList, bootVol)
+				d.Set(isInstanceBootVolume, bootVolList)
+			}
+			tags, err := GetTagsUsingCRN(meta, *instance.CRN)
+			if err != nil {
+				log.Printf(
+					"Error on get of resource vpc Instance (%s) tags: %s", d.Id(), err)
+			}
+			d.Set(isInstanceTags, tags)
 
-		controller, err := getBaseController(meta)
-		if err != nil {
-			return err
+			controller, err := getBaseController(meta)
+			if err != nil {
+				return err
+			}
+			d.Set(ResourceControllerURL, controller+"/vpc-ext/compute/vs")
+			d.Set(ResourceName, instance.Name)
+			d.Set(ResourceCRN, instance.CRN)
+			d.Set(ResourceStatus, instance.Status)
+			if instance.ResourceGroup != nil {
+				d.Set(isInstanceResourceGroup, instance.ResourceGroup.ID)
+				d.Set(ResourceGroupName, instance.ResourceGroup.Name)
+			}
+			return nil
 		}
-		d.Set(ResourceControllerURL, controller+"/vpc-ext/compute/vs")
-		d.Set(ResourceName, instance.Name)
-		d.Set(ResourceCRN, instance.CRN)
-		d.Set(ResourceStatus, instance.Status)
-		if instance.ResourceGroup != nil {
-			d.Set(isInstanceResourceGroup, instance.ResourceGroup.ID)
-			d.Set(ResourceGroupName, instance.ResourceGroup.Name)
-		}
-		return nil
 	}
 	return fmt.Errorf("No Instance found with name %s", name)
 }
