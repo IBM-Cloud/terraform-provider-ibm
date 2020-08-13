@@ -57,7 +57,7 @@ func resourceIBMISNetworkACL() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLName),
 				Description:  "Network ACL name",
 			},
 			isNetworkACLVPC: {
@@ -106,35 +106,39 @@ func resourceIBMISNetworkACL() *schema.Resource {
 							Computed: true,
 						},
 						isNetworkACLRuleName: {
-							Type:     schema.TypeString,
-							Required: true,
-							ForceNew: false,
+							Type:         schema.TypeString,
+							Required:     true,
+							ForceNew:     false,
+							ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRuleName),
 						},
 						isNetworkACLRuleAction: {
-							Type:     schema.TypeString,
-							Required: true,
-							ForceNew: false,
+							Type:         schema.TypeString,
+							Required:     true,
+							ForceNew:     false,
+							ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRuleAction),
 						},
 						isNetworkACLRuleIPVersion: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 						isNetworkACLRuleSource: {
-							Type:     schema.TypeString,
-							Required: true,
-							ForceNew: false,
+							Type:         schema.TypeString,
+							Required:     true,
+							ForceNew:     false,
+							ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRuleSource),
 						},
 						isNetworkACLRuleDestination: {
-							Type:     schema.TypeString,
-							Required: true,
-							ForceNew: false,
+							Type:         schema.TypeString,
+							Required:     true,
+							ForceNew:     false,
+							ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRuleDestination),
 						},
 						isNetworkACLRuleDirection: {
 							Type:         schema.TypeString,
 							Required:     true,
 							ForceNew:     false,
 							Description:  "Direction of traffic to enforce, either inbound or outbound",
-							ValidateFunc: validateIsNetworkAclRuleDirection,
+							ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRuleDirection),
 						},
 						isNetworkACLSubnets: {
 							Type:     schema.TypeInt,
@@ -148,12 +152,14 @@ func resourceIBMISNetworkACL() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									isNetworkACLRuleICMPCode: {
-										Type:     schema.TypeInt,
-										Optional: true,
+										Type:         schema.TypeInt,
+										Optional:     true,
+										ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRuleICMPCode),
 									},
 									isNetworkACLRuleICMPType: {
-										Type:     schema.TypeInt,
-										Optional: true,
+										Type:         schema.TypeInt,
+										Optional:     true,
+										ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRuleICMPType),
 									},
 								},
 							},
@@ -167,24 +173,28 @@ func resourceIBMISNetworkACL() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									isNetworkACLRulePortMax: {
-										Type:     schema.TypeInt,
-										Optional: true,
-										Default:  65535,
+										Type:         schema.TypeInt,
+										Optional:     true,
+										Default:      65535,
+										ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRulePortMax),
 									},
 									isNetworkACLRulePortMin: {
-										Type:     schema.TypeInt,
-										Optional: true,
-										Default:  1,
+										Type:         schema.TypeInt,
+										Optional:     true,
+										Default:      1,
+										ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRulePortMin),
 									},
 									isNetworkACLRuleSourcePortMax: {
-										Type:     schema.TypeInt,
-										Optional: true,
-										Default:  65535,
+										Type:         schema.TypeInt,
+										Optional:     true,
+										Default:      65535,
+										ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRuleSourcePortMax),
 									},
 									isNetworkACLRuleSourcePortMin: {
-										Type:     schema.TypeInt,
-										Optional: true,
-										Default:  1,
+										Type:         schema.TypeInt,
+										Optional:     true,
+										Default:      1,
+										ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRuleSourcePortMin),
 									},
 								},
 							},
@@ -198,24 +208,28 @@ func resourceIBMISNetworkACL() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									isNetworkACLRulePortMax: {
-										Type:     schema.TypeInt,
-										Optional: true,
-										Default:  65535,
+										Type:         schema.TypeInt,
+										Optional:     true,
+										Default:      65535,
+										ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRulePortMax),
 									},
 									isNetworkACLRulePortMin: {
-										Type:     schema.TypeInt,
-										Optional: true,
-										Default:  1,
+										Type:         schema.TypeInt,
+										Optional:     true,
+										Default:      1,
+										ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRulePortMin),
 									},
 									isNetworkACLRuleSourcePortMax: {
-										Type:     schema.TypeInt,
-										Optional: true,
-										Default:  65535,
+										Type:         schema.TypeInt,
+										Optional:     true,
+										Default:      65535,
+										ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRuleSourcePortMax),
 									},
 									isNetworkACLRuleSourcePortMin: {
-										Type:     schema.TypeInt,
-										Optional: true,
-										Default:  1,
+										Type:         schema.TypeInt,
+										Optional:     true,
+										Default:      1,
+										ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRuleSourcePortMin),
 									},
 								},
 							},
@@ -225,6 +239,103 @@ func resourceIBMISNetworkACL() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISNetworkACLValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	direction := "inbound, outbound"
+	action := "allow, deny"
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isNetworkACLRuleAction,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              action})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isNetworkACLRuleDirection,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              direction})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isNetworkACLName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isNetworkACLRuleName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isNetworkACLRuleDestination,
+			ValidateFunctionIdentifier: ValidateIPorCIDR,
+			Type:                       TypeString,
+			Required:                   true})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isNetworkACLRuleSource,
+			ValidateFunctionIdentifier: ValidateIPorCIDR,
+			Type:                       TypeString,
+			Required:                   true})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isNetworkACLRuleICMPType,
+			ValidateFunctionIdentifier: IntBetween,
+			Type:                       TypeInt,
+			MinValue:                   "0",
+			MaxValue:                   "254"})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isNetworkACLRuleICMPCode,
+			ValidateFunctionIdentifier: IntBetween,
+			Type:                       TypeInt,
+			MinValue:                   "0",
+			MaxValue:                   "255"})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isNetworkACLRulePortMin,
+			ValidateFunctionIdentifier: IntBetween,
+			Type:                       TypeInt,
+			MinValue:                   "1",
+			MaxValue:                   "65535"})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isNetworkACLRulePortMax,
+			ValidateFunctionIdentifier: IntBetween,
+			Type:                       TypeInt,
+			MinValue:                   "1",
+			MaxValue:                   "65535"})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isNetworkACLRuleSourcePortMin,
+			ValidateFunctionIdentifier: IntBetween,
+			Type:                       TypeInt,
+			MinValue:                   "1",
+			MaxValue:                   "65535"})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isNetworkACLRuleSourcePortMax,
+			ValidateFunctionIdentifier: IntBetween,
+			Type:                       TypeInt,
+			MinValue:                   "1",
+			MaxValue:                   "65535"})
+
+	ibmISNetworkACLResourceValidator := ResourceValidator{ResourceName: "ibm_is_network_acl", Schema: validateSchema}
+	return &ibmISNetworkACLResourceValidator
 }
 
 func resourceIBMISNetworkACLCreate(d *schema.ResourceData, meta interface{}) error {

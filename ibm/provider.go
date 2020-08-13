@@ -442,6 +442,7 @@ func Validator() ValidatorDict {
 			ResourceValidatorDictionary: map[string]*ResourceValidator{
 				"ibm_is_vpc":                resourceIBMISVPCValidator(),
 				"ibm_is_ike_policy":         resourceIBMISIKEValidator(),
+				"ibm_is_network_acl":        resourceIBMISNetworkACLValidator(),
 				"ibm_iam_custom_role":       resourceIBMIAMCustomRoleValidator(),
 				"ibm_cis_rate_limit":        resourceIBMCISRateLimitValidator(),
 				"ibm_tg_gateway":            resourceIBMTGValidator(),

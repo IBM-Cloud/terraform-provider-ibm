@@ -345,26 +345,6 @@ func validateSecurityRuleDirection(v interface{}, k string) (ws []string, errors
 	return
 }
 
-func validateIsNetworkAclRuleDirection(v interface{}, k string) (ws []string, errors []error) {
-	validDirections := map[string]bool{
-		"inbound":  true,
-		"outbound": true,
-	}
-
-	value := v.(string)
-	_, found := validDirections[value]
-	if !found {
-		strarray := make([]string, 0, len(validDirections))
-		for key := range validDirections {
-			strarray = append(strarray, key)
-		}
-		errors = append(errors, fmt.Errorf(
-			"%q contains an invalid Network Acls direction %q. Valid types are %q.",
-			k, value, strings.Join(strarray, ",")))
-	}
-	return
-}
-
 func validateIsSecurityRuleDirection(v interface{}, k string) (ws []string, errors []error) {
 	validDirections := map[string]bool{
 		"inbound":  true,
@@ -439,6 +419,21 @@ func validateRemoteIP(v interface{}, k string) (ws []string, errors []error) {
 			k))
 	}
 	return
+}
+
+//validateIPorCIDR...
+func validateIPorCIDR() schema.SchemaValidateFunc {
+	return func(v interface{}, k string) (ws []string, errors []error) {
+		_, err1 := validateCIDR(v, k)
+		_, err2 := validateIP(v, k)
+
+		if len(err1) != 0 && len(err2) != 0 {
+			errors = append(errors, fmt.Errorf(
+				"%q must be a valid remote ip address (cidr or ip)",
+				k))
+		}
+		return
+	}
 }
 
 func validateSecurityRuleProtocol(v interface{}, k string) (ws []string, errors []error) {
@@ -833,6 +828,7 @@ func validateAuthProtocol(v interface{}, k string) (ws []string, errors []error)
 	return
 }
 
+//ValidateIPVersion
 func validateIPVersion(v interface{}, k string) (ws []string, errors []error) {
 	validVersions := map[string]bool{
 		"ipv4": true,
@@ -1031,6 +1027,7 @@ func validateLBListenerConnectionLimit(v interface{}, k string) (ws []string, er
 	return
 }
 
+//ValidateISName
 func validateISName(v interface{}, k string) (ws []string, errors []error) {
 	name := v.(string)
 	acceptedcharacters, _ := regexp.MatchString(`^[a-z][-a-z0-9]*$`, name)
@@ -1072,7 +1069,7 @@ const (
 	IntAtMost
 	ValidateAllowedStringValue
 	StringLenBetween
-	ValidateCIDR
+	ValidateIPorCIDR
 	ValidateAllowedIntValue
 	ValidateRegexpLen
 	ValidateRegexp
@@ -1203,8 +1200,8 @@ func invokeValidatorInternal(schema ValidateSchema) schema.SchemaValidateFunc {
 		return validateAllowedStringValue(allowedValues.([]string))
 	case StringLenBetween:
 		return validation.StringLenBetween(schema.MinValueLength, schema.MaxValueLength)
-	case ValidateCIDR:
-		return nil
+	case ValidateIPorCIDR:
+		return validateIPorCIDR()
 	case ValidateAllowedIntValue:
 		allowedValues := schema.GetValue(AllowedValues)
 		return validateAllowedIntValue(allowedValues.([]int))
