@@ -10,6 +10,7 @@ import (
 )
 
 func TestAccIBMIAMUserSettings_Basic(t *testing.T) {
+	t.Skip()
 	var allowedIP string
 
 	resource.Test(t, resource.TestCase{

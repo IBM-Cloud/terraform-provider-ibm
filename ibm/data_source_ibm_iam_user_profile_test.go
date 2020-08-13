@@ -8,7 +8,7 @@ import (
 )
 
 func TestAccIBMIAMUserProfileDataSource_Basic(t *testing.T) {
-
+	t.Skip()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
