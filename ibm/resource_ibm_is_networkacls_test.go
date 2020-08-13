@@ -167,7 +167,7 @@ func testAccCheckIBMISNetworkACLConfig() string {
 func testAccCheckIBMISNetworkACLConfig1() string {
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {
-		name = "vpctest"
+		name = "tf-nwacl-vpc"
 	  }
 
 	resource "ibm_is_network_acl" "isExampleACL" {
