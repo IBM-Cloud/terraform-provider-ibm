@@ -46,7 +46,9 @@ The following arguments are supported:
 
 
 * `ipv4_cidr_block` - (Optional, Forces new resource, string)   The IPv4 range of the subnet.
+    **NOTE**: Conflicts with `total_ipv4_address_count`
 * `total_ipv4_address_count` - (Optional, Forces new resource, string) The total number of IPv4 addresses.
+    **NOTE**: Conflicts with `ipv4_cidr_block` and one of `ipv4_cidr_block`, `total_ipv4_address_count` is mandatory.
 * `ip_version` - (Optional, Forces new resource, string) The Ip Version. The default is `ipv4`.
 * `name` - (Required, string) The name of the subnet.
 * `network_acl` - (Optional, string) The ID of the network ACL for the subnet.
