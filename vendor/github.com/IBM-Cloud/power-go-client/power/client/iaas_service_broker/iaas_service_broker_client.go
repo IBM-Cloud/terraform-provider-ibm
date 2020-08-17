@@ -81,6 +81,34 @@ func (a *Client) ServiceBrokerHealthHead(params *ServiceBrokerHealthHeadParams) 
 }
 
 /*
+ServiceBrokerTestTimeout gets current server version
+*/
+func (a *Client) ServiceBrokerTestTimeout(params *ServiceBrokerTestTimeoutParams) (*ServiceBrokerTestTimeoutOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewServiceBrokerTestTimeoutParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "serviceBroker.test.timeout",
+		Method:             "GET",
+		PathPattern:        "/broker/v1/test/timeout",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &ServiceBrokerTestTimeoutReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*ServiceBrokerTestTimeoutOK), nil
+
+}
+
+/*
 ServiceBrokerVersion gets current server version
 */
 func (a *Client) ServiceBrokerVersion(params *ServiceBrokerVersionParams, authInfo runtime.ClientAuthInfoWriter) (*ServiceBrokerVersionOK, error) {

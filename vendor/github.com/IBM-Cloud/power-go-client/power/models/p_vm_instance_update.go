@@ -35,11 +35,17 @@ type PVMInstanceUpdate struct {
 	// Number of processors allocated
 	Processors float64 `json:"processors,omitempty"`
 
+	// If an SAP pvm-instance, the SAP profile ID to switch to (only while shutdown)
+	SapProfileID string `json:"sapProfileID,omitempty"`
+
 	// Name of the server to create
 	ServerName string `json:"serverName,omitempty"`
 
 	// The pvm instance Software Licenses
 	SoftwareLicenses *SoftwareLicenses `json:"softwareLicenses,omitempty"`
+
+	// The pvm instance virtual CPU information
+	VirtualCores *VirtualCores `json:"virtualCores,omitempty"`
 }
 
 // Validate validates this p VM instance update
@@ -55,6 +61,10 @@ func (m *PVMInstanceUpdate) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSoftwareLicenses(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVirtualCores(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -136,6 +146,24 @@ func (m *PVMInstanceUpdate) validateSoftwareLicenses(formats strfmt.Registry) er
 		if err := m.SoftwareLicenses.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("softwareLicenses")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *PVMInstanceUpdate) validateVirtualCores(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.VirtualCores) { // not required
+		return nil
+	}
+
+	if m.VirtualCores != nil {
+		if err := m.VirtualCores.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("virtualCores")
 			}
 			return err
 		}

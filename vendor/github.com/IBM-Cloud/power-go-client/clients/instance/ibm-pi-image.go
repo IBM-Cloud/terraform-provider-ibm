@@ -80,3 +80,17 @@ func (f *IBMPIImageClient) Delete(id string, powerinstanceid string) error {
 	}
 	return nil
 }
+
+//Get stock images
+
+func (f *IBMPIImageClient) GetStockImages(powerinstanceid string) (*models.Images, error) {
+
+	params := p_cloud_images.NewPcloudImagesGetallParams()
+	resp, err := f.session.Power.PCloudImages.PcloudImagesGetall(params, ibmpisession.NewAuth(f.session, f.powerinstanceid))
+
+	if err != nil || resp.Payload == nil {
+		log.Printf("Failed to perform the operation... %v", err)
+		return nil, errors.ToError(err)
+	}
+	return resp.Payload, nil
+}

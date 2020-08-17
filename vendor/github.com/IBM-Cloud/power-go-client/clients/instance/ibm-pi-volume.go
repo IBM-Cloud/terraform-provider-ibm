@@ -46,7 +46,46 @@ func (f *IBMPIVolumeClient) Get(id, powerinstanceid string, timeout time.Duratio
 	return resp.Payload, nil
 }
 
+// CreateVolume
+func (f *IBMPIVolumeClient) CreateVolume(create_vol_defs *p_cloud_volumes.PcloudCloudinstancesVolumesPostParams, powerinstanceid string, timeout time.Duration) (*models.Volume, error) {
+
+	log.Printf("Calling the Create Volume method ")
+	params := p_cloud_volumes.NewPcloudCloudinstancesVolumesPostParamsWithTimeout(timeout).WithCloudInstanceID(powerinstanceid).WithBody(create_vol_defs.Body)
+	resp, err := f.session.Power.PCloudVolumes.PcloudCloudinstancesVolumesPost(params, ibmpisession.NewAuth(f.session, powerinstanceid))
+
+	if err != nil {
+		return nil, errors.ToError(err)
+	}
+	return resp.Payload, nil
+}
+
+// UpdateVolume
+
+func (f *IBMPIVolumeClient) UpdateVolume(update_vol_defs *p_cloud_volumes.PcloudCloudinstancesVolumesPutParams, volumeid, powerinstanceid string, timeout time.Duration) (*models.Volume, error) {
+
+	log.Printf("Calling the Create Volume method ")
+	params := p_cloud_volumes.NewPcloudCloudinstancesVolumesPutParamsWithTimeout(timeout).WithCloudInstanceID(powerinstanceid).WithBody(update_vol_defs.Body).WithVolumeID(volumeid)
+	resp, err := f.session.Power.PCloudVolumes.PcloudCloudinstancesVolumesPut(params, ibmpisession.NewAuth(f.session, powerinstanceid))
+
+	if err != nil {
+		return nil, errors.ToError(err)
+	}
+	return resp.Payload, nil
+}
+
+// DeleteVolume
+func (f *IBMPIVolumeClient) DeleteVolume(id string, powerinstanceid string, timeout time.Duration) error {
+
+	params := p_cloud_volumes.NewPcloudCloudinstancesVolumesDeleteParamsWithTimeout(timeout).WithCloudInstanceID(powerinstanceid).WithVolumeID(id)
+	_, err := f.session.Power.PCloudVolumes.PcloudCloudinstancesVolumesDelete(params, ibmpisession.NewAuth(f.session, powerinstanceid))
+	if err != nil {
+		return errors.ToError(err)
+	}
+	return nil
+}
+
 //Create
+// TO be Deprecated
 
 func (f *IBMPIVolumeClient) Create(volumename string, volumesize float64, volumetype string, volumeshareable bool, powerinstanceid string, timeout time.Duration) (*models.Volume, error) {
 

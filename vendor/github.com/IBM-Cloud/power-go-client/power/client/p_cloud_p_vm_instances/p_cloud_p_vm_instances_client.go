@@ -25,7 +25,7 @@ type Client struct {
 }
 
 /*
-PcloudPvminstancesActionPost performs an action start stop reboot immediate shutdown on a p VM instance
+PcloudPvminstancesActionPost performs an action start stop reboot immediate shutdown reset on a p VM instance
 */
 func (a *Client) PcloudPvminstancesActionPost(params *PcloudPvminstancesActionPostParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudPvminstancesActionPostOK, error) {
 	// TODO: Validate the params before sending
@@ -346,6 +346,35 @@ func (a *Client) PcloudPvminstancesNetworksPost(params *PcloudPvminstancesNetwor
 		return nil, err
 	}
 	return result.(*PcloudPvminstancesNetworksPostCreated), nil
+
+}
+
+/*
+PcloudPvminstancesOperationsPost performs an operation on a p VM instance
+*/
+func (a *Client) PcloudPvminstancesOperationsPost(params *PcloudPvminstancesOperationsPostParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudPvminstancesOperationsPostOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPcloudPvminstancesOperationsPostParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "pcloud.pvminstances.operations.post",
+		Method:             "POST",
+		PathPattern:        "/pcloud/v1/cloud-instances/{cloud_instance_id}/pvm-instances/{pvm_instance_id}/operations",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PcloudPvminstancesOperationsPostReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PcloudPvminstancesOperationsPostOK), nil
 
 }
 

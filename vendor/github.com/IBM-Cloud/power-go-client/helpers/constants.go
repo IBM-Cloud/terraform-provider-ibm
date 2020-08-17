@@ -26,6 +26,9 @@ const (
 	PIInstanceMaxMem          = "pi_maxmem"
 	PIInstanceReboot          = "pi_reboot"
 	PITenantId                = "pi_tenant_id"
+	PIVirtualCoresAssigned    = "pi_virtual_cores_assigned"
+	PIVirtualCoresMax         = "pi_virtual_cores_max"
+	PIVirtualCoresMin         = "pi_virutal_cores_min"
 
 	PIInstanceHealthStatus      = "pi_health_status"
 	PIInstanceReplicants        = "pi_replicants"
@@ -36,11 +39,19 @@ const (
 	PIInstancePinPolicy         = "pi_pin_policy"
 
 	// IBM PI Volume
-	PIVolumeName      = "pi_volume_name"
-	PIVolumeSize      = "pi_volume_size"
-	PIVolumeType      = "pi_volume_type"
-	PIVolumeShareable = "pi_volume_shareable"
-	PIVolumeId        = "pi_volume_id"
+	PIVolumeName              = "pi_volume_name"
+	PIVolumeSize              = "pi_volume_size"
+	PIVolumeType              = "pi_volume_type"
+	PIVolumeShareable         = "pi_volume_shareable"
+	PIVolumeId                = "pi_volume_id"
+	PIVolumeStatus            = "pi_volume_status"
+	PIVolumeWWN               = "pi_volume_wwn"
+	PIVolumeDeleteOnTerminate = "pi_volume_delete_on_terminate"
+	PIVolumeCreateDate        = "pi_volume_create_date"
+	PIVolumeLastUpdate        = "pi_last_updated_date"
+	PIVolumePool              = "pi_volume_pool"
+	PIAffinityPolicy          = "pi_volume_affinity_policy"
+	PIAffinityVolume          = "pi_volume_affinity"
 
 	// IBM PI Snapshots
 
@@ -52,15 +63,17 @@ const (
 
 	// IBM PI Image
 
-	PIImageName         = "pi_image_name"
-	PIImageQueStatus    = "queued"
-	PIImageActiveStatus = "active"
-	PIImageAccessKey    = "pi_image_access_key"
-	PIImageSecretKey    = "pi_image_secret_key"
-	PIImageSource       = "pi_image_source"
-	PIImageBucketName   = "pi_image_bucket_name"
-	PIImageFileName     = "pi_image_file_name"
-	PIImageRegion       = "pi_image_region"
+	PIImageName       = "pi_image_name"
+	PIImageAccessKey  = "pi_image_access_key"
+	PIImageSecretKey  = "pi_image_secret_key"
+	PIImageSource     = "pi_image_source"
+	PIImageBucketName = "pi_image_bucket_name"
+	PIImageFileName   = "pi_image_file_name"
+	PIImageRegion     = "pi_image_region"
+	PIImageDisk       = "pi_image_disk"
+	PIImageCopyID     = "pi_image_copy_id"
+	PIImagePath       = "pi_image_path"
+	PIImageOsType     = "pi_image_os_type"
 
 	// IBM PI Key
 
@@ -109,7 +122,6 @@ const (
 
 	// Status For all the resources
 
-	PIVolumeStatus           = "pi_volume_status"
 	PIVolumeDeleting         = "deleting"
 	PIVolumeDeleted          = "done"
 	PIVolumeProvisioning     = "creating"
@@ -120,4 +132,6 @@ const (
 	PIInstanceBuilding       = "BUILD"
 	PIInstanceDeleting       = "DELETING"
 	PIInstanceNotFound       = "Not Found"
+	PIImageQueStatus         = "queued"
+	PIImageActiveStatus      = "active"
 )
