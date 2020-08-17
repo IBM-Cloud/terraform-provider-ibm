@@ -236,6 +236,9 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dns_zones":              dataSourceIBMPrivateDNSZones(),
 			"ibm_dns_permitted_networks": dataSourceIBMPrivateDNSPermittedNetworks(),
 			"ibm_dns_resource_records":   dataSourceIBMPrivateDNSResourceRecords(),
+
+			// Aded for CIS resources
+			"ibm_network_cis_dns_records": dataSourceIBMNetworkCISDNSRecords(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -376,6 +379,9 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dns_zone":              resourceIBMPrivateDNSZone(),
 			"ibm_dns_permitted_network": resourceIBMPrivateDNSPermittedNetwork(),
 			"ibm_dns_resource_record":   resourceIBMPrivateDNSResourceRecord(),
+
+			// CIS related resources
+			"ibm_network_cis_dns_record": resourceIBMNetworkCISDNSRecords(),
 		},
 
 		ConfigureFunc: providerConfigure,

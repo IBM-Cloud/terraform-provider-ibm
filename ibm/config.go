@@ -49,6 +49,7 @@ import (
 	dns "github.com/IBM/dns-svcs-go-sdk/dnssvcsv1"
 	"github.com/IBM/go-sdk-core/v3/core"
 	kp "github.com/IBM/keyprotect-go-client"
+	cisdnsrecordsv1 "github.com/IBM/networking-go-sdk/dnsrecordsv1"
 	vpcclassic "github.ibm.com/ibmcloud/vpc-go-sdk/vpcclassicv1"
 	vpc "github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 )
@@ -173,6 +174,7 @@ type ClientSession interface {
 	VpcV1API() (*vpc.VpcV1, error)
 	APIGateway() (*apigateway.ApiGatewayControllerApiV1, error)
 	PrivateDnsClientSession() (*dns.DnsSvcsV1, error)
+	CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecordsV1, error)
 }
 
 type clientSession struct {
@@ -270,6 +272,10 @@ type clientSession struct {
 
 	vpcErr error
 	vpcAPI *vpc.VpcV1
+
+	// CIS dns service options
+	cisDNSErr           error
+	cisDNSRecordsClient *cisdnsrecordsv1.DnsRecordsV1
 }
 
 // BluemixAcccountAPI ...
@@ -431,6 +437,11 @@ func (sess clientSession) PrivateDnsClientSession() (*dns.DnsSvcsV1, error) {
 	return sess.pDnsClient, sess.pDnsErr
 }
 
+// CIS DNS Service
+func (sess clientSession) CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecordsV1, error) {
+	return sess.cisDNSRecordsClient, sess.cisDNSErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -476,6 +487,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.apigatewayErr = errEmptyBluemixCredentials
 		session.pDnsErr = errEmptyBluemixCredentials
 		session.bmxUserFetchErr = errEmptyBluemixCredentials
+		session.cisDNSErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -726,6 +738,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.pDnsClient, session.pDnsErr = dns.NewDnsSvcsV1(dnsOptions)
 	if session.pDnsErr != nil {
 		session.pDnsErr = fmt.Errorf("Error occured while configuring PrivateDNS Service: %s", err)
+	}
+
+	// IBM Network CIS DNS Record service
+	if sess.BluemixSession.Config != nil && len(sess.BluemixSession.Config.IAMAccessToken) == 0 {
+		log.Println("Access token is empty!")
+		err = fmt.Errorf("Access token is %s", "empty!")
+		return nil, err
+	}
+	// Removed bearer keyword, since, CIS work without bearer keyword
+	token := sess.BluemixSession.Config.IAMAccessToken[7:]
+	cisDNSRecordsOpt := &cisdnsrecordsv1.DnsRecordsV1Options{
+		URL:            envFallBack([]string{"IBMCLOUD_NETWORK_CIS_ENDPOINT"}, "https://api.cis.cloud.ibm.com"),
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator: &core.BearerTokenAuthenticator{
+			BearerToken: token,
+		},
+	}
+	session.cisDNSRecordsClient, session.cisDNSErr = cisdnsrecordsv1.NewDnsRecordsV1(cisDNSRecordsOpt)
+	if session.cisDNSErr != nil {
+		session.cisDNSErr = fmt.Errorf("Error occured while configuring CIS DNS Service: %s", err)
 	}
 
 	return session, nil
