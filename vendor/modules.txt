@@ -43,7 +43,7 @@ github.com/IBM-Cloud/bluemix-go/rest
 github.com/IBM-Cloud/bluemix-go/session
 github.com/IBM-Cloud/bluemix-go/trace
 github.com/IBM-Cloud/bluemix-go/utils
-# github.com/IBM-Cloud/power-go-client v1.0.37
+# github.com/IBM-Cloud/power-go-client v1.0.46
 github.com/IBM-Cloud/power-go-client/clients/instance
 github.com/IBM-Cloud/power-go-client/errors
 github.com/IBM-Cloud/power-go-client/helpers

@@ -6,6 +6,7 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"strconv"
 
 	strfmt "github.com/go-openapi/strfmt"
@@ -26,6 +27,10 @@ type PVMInstanceReference struct {
 	// Format: date-time
 	CreationDate strfmt.DateTime `json:"creationDate,omitempty"`
 
+	// Size of allocated disk (in GB)
+	// Required: true
+	DiskSize *float64 `json:"diskSize"`
+
 	// fault
 	Fault *PVMInstanceFault `json:"fault,omitempty"`
 
@@ -40,8 +45,43 @@ type PVMInstanceReference struct {
 	// Required: true
 	ImageID *string `json:"imageID"`
 
+	// Maximum amount of memory that can be allocated (in GB, for resize)
+	Maxmem float64 `json:"maxmem,omitempty"`
+
+	// Maximum number of processors that can be allocated (for resize)
+	Maxproc float64 `json:"maxproc,omitempty"`
+
+	// Amount of memory allocated (in GB)
+	// Required: true
+	Memory *float64 `json:"memory"`
+
+	// Minimum amount of memory that can be allocated (in GB, for resize)
+	Minmem float64 `json:"minmem,omitempty"`
+
+	// Minimum number of processors that can be allocated (for resize)
+	Minproc float64 `json:"minproc,omitempty"`
+
 	// The list of addresses and their network information
 	Networks []*PVMInstanceNetwork `json:"networks"`
+
+	// OS system information (usually version and build)
+	OperatingSystem string `json:"operatingSystem,omitempty"`
+
+	// Type of the OS [aix, ibmi, redhat, sles]
+	// Required: true
+	OsType *string `json:"osType"`
+
+	// VM pinning policy to use [none, soft, hard]
+	PinPolicy string `json:"pinPolicy,omitempty"`
+
+	// Processor type (dedicated, shared, capped)
+	// Required: true
+	// Enum: [dedicated shared capped]
+	ProcType *string `json:"procType"`
+
+	// Number of processors allocated
+	// Required: true
+	Processors *float64 `json:"processors"`
 
 	// The progress of an operation
 	Progress float64 `json:"progress,omitempty"`
@@ -60,6 +100,9 @@ type PVMInstanceReference struct {
 	// The pvm instance Software Licenses
 	SoftwareLicenses *SoftwareLicenses `json:"softwareLicenses,omitempty"`
 
+	// The pvm instance SRC lists
+	Srcs [][]*SRC `json:"srcs"`
+
 	// The status of the instance
 	// Required: true
 	Status *string `json:"status"`
@@ -70,6 +113,9 @@ type PVMInstanceReference struct {
 	// Date/Time of PVM last update
 	// Format: date-time
 	UpdatedDate strfmt.DateTime `json:"updatedDate,omitempty"`
+
+	// The pvm instance virtual CPU information
+	VirtualCores *VirtualCores `json:"virtualCores,omitempty"`
 }
 
 // Validate validates this p VM instance reference
@@ -81,6 +127,10 @@ func (m *PVMInstanceReference) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateCreationDate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDiskSize(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -100,7 +150,23 @@ func (m *PVMInstanceReference) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateMemory(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateNetworks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateOsType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateProcType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateProcessors(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,11 +186,19 @@ func (m *PVMInstanceReference) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateSrcs(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateStatus(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateUpdatedDate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVirtualCores(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -166,6 +240,15 @@ func (m *PVMInstanceReference) validateCreationDate(formats strfmt.Registry) err
 	}
 
 	if err := validate.FormatOf("creationDate", "body", "date-time", m.CreationDate.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PVMInstanceReference) validateDiskSize(formats strfmt.Registry) error {
+
+	if err := validate.Required("diskSize", "body", m.DiskSize); err != nil {
 		return err
 	}
 
@@ -226,6 +309,15 @@ func (m *PVMInstanceReference) validateImageID(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *PVMInstanceReference) validateMemory(formats strfmt.Registry) error {
+
+	if err := validate.Required("memory", "body", m.Memory); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *PVMInstanceReference) validateNetworks(formats strfmt.Registry) error {
 
 	if swag.IsZero(m.Networks) { // not required
@@ -246,6 +338,70 @@ func (m *PVMInstanceReference) validateNetworks(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *PVMInstanceReference) validateOsType(formats strfmt.Registry) error {
+
+	if err := validate.Required("osType", "body", m.OsType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var pVmInstanceReferenceTypeProcTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["dedicated","shared","capped"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		pVmInstanceReferenceTypeProcTypePropEnum = append(pVmInstanceReferenceTypeProcTypePropEnum, v)
+	}
+}
+
+const (
+
+	// PVMInstanceReferenceProcTypeDedicated captures enum value "dedicated"
+	PVMInstanceReferenceProcTypeDedicated string = "dedicated"
+
+	// PVMInstanceReferenceProcTypeShared captures enum value "shared"
+	PVMInstanceReferenceProcTypeShared string = "shared"
+
+	// PVMInstanceReferenceProcTypeCapped captures enum value "capped"
+	PVMInstanceReferenceProcTypeCapped string = "capped"
+)
+
+// prop value enum
+func (m *PVMInstanceReference) validateProcTypeEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, pVmInstanceReferenceTypeProcTypePropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *PVMInstanceReference) validateProcType(formats strfmt.Registry) error {
+
+	if err := validate.Required("procType", "body", m.ProcType); err != nil {
+		return err
+	}
+
+	// value enum
+	if err := m.validateProcTypeEnum("procType", "body", *m.ProcType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PVMInstanceReference) validateProcessors(formats strfmt.Registry) error {
+
+	if err := validate.Required("processors", "body", m.Processors); err != nil {
+		return err
 	}
 
 	return nil
@@ -305,6 +461,35 @@ func (m *PVMInstanceReference) validateSoftwareLicenses(formats strfmt.Registry)
 	return nil
 }
 
+func (m *PVMInstanceReference) validateSrcs(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Srcs) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Srcs); i++ {
+
+		for ii := 0; ii < len(m.Srcs[i]); ii++ {
+			if swag.IsZero(m.Srcs[i][ii]) { // not required
+				continue
+			}
+
+			if m.Srcs[i][ii] != nil {
+				if err := m.Srcs[i][ii].Validate(formats); err != nil {
+					if ve, ok := err.(*errors.Validation); ok {
+						return ve.ValidateName("srcs" + "." + strconv.Itoa(i) + "." + strconv.Itoa(ii))
+					}
+					return err
+				}
+			}
+
+		}
+
+	}
+
+	return nil
+}
+
 func (m *PVMInstanceReference) validateStatus(formats strfmt.Registry) error {
 
 	if err := validate.Required("status", "body", m.Status); err != nil {
@@ -322,6 +507,24 @@ func (m *PVMInstanceReference) validateUpdatedDate(formats strfmt.Registry) erro
 
 	if err := validate.FormatOf("updatedDate", "body", "date-time", m.UpdatedDate.String(), formats); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *PVMInstanceReference) validateVirtualCores(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.VirtualCores) { // not required
+		return nil
+	}
+
+	if m.VirtualCores != nil {
+		if err := m.VirtualCores.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("virtualCores")
+			}
+			return err
+		}
 	}
 
 	return nil

@@ -46,7 +46,7 @@ type Volume struct {
 	// List of PCloud PVM Instance attached to the volume
 	PvmInstanceIds []string `json:"pvmInstanceIDs"`
 
-	// Indicates if the volume is hareable between VMs
+	// Indicates if the volume is shareable between VMs
 	Shareable *bool `json:"shareable,omitempty"`
 
 	// Volume Size
@@ -59,6 +59,9 @@ type Volume struct {
 	// Volume ID
 	// Required: true
 	VolumeID *string `json:"volumeID"`
+
+	// Volume world wide name
+	Wwn string `json:"wwn,omitempty"`
 }
 
 // Validate validates this volume

@@ -103,6 +103,9 @@ type PVMInstance struct {
 	// The pvm instance Software Licenses
 	SoftwareLicenses *SoftwareLicenses `json:"softwareLicenses,omitempty"`
 
+	// The pvm instance SRC lists
+	Srcs [][]*SRC `json:"srcs"`
+
 	// The status of the instance
 	// Required: true
 	Status *string `json:"status"`
@@ -117,6 +120,9 @@ type PVMInstance struct {
 	// Date/Time of PVM last update
 	// Format: date-time
 	UpdatedDate strfmt.DateTime `json:"updatedDate,omitempty"`
+
+	// The pvm instance virtual CPU information
+	VirtualCores *VirtualCores `json:"virtualCores,omitempty"`
 
 	// List of volume IDs
 	// Required: true
@@ -191,6 +197,10 @@ func (m *PVMInstance) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateSrcs(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateStatus(formats); err != nil {
 		res = append(res, err)
 	}
@@ -200,6 +210,10 @@ func (m *PVMInstance) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateUpdatedDate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVirtualCores(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -466,6 +480,35 @@ func (m *PVMInstance) validateSoftwareLicenses(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *PVMInstance) validateSrcs(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Srcs) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Srcs); i++ {
+
+		for ii := 0; ii < len(m.Srcs[i]); ii++ {
+			if swag.IsZero(m.Srcs[i][ii]) { // not required
+				continue
+			}
+
+			if m.Srcs[i][ii] != nil {
+				if err := m.Srcs[i][ii].Validate(formats); err != nil {
+					if ve, ok := err.(*errors.Validation); ok {
+						return ve.ValidateName("srcs" + "." + strconv.Itoa(i) + "." + strconv.Itoa(ii))
+					}
+					return err
+				}
+			}
+
+		}
+
+	}
+
+	return nil
+}
+
 func (m *PVMInstance) validateStatus(formats strfmt.Registry) error {
 
 	if err := validate.Required("status", "body", m.Status); err != nil {
@@ -492,6 +535,24 @@ func (m *PVMInstance) validateUpdatedDate(formats strfmt.Registry) error {
 
 	if err := validate.FormatOf("updatedDate", "body", "date-time", m.UpdatedDate.String(), formats); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *PVMInstance) validateVirtualCores(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.VirtualCores) { // not required
+		return nil
+	}
+
+	if m.VirtualCores != nil {
+		if err := m.VirtualCores.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("virtualCores")
+			}
+			return err
+		}
 	}
 
 	return nil

@@ -67,6 +67,10 @@ type VolumeReference struct {
 	// Volume ID
 	// Required: true
 	VolumeID *string `json:"volumeID"`
+
+	// Volume world wide name
+	// Required: true
+	Wwn *string `json:"wwn"`
 }
 
 // Validate validates this volume reference
@@ -110,6 +114,10 @@ func (m *VolumeReference) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateVolumeID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateWwn(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -211,6 +219,15 @@ func (m *VolumeReference) validateState(formats strfmt.Registry) error {
 func (m *VolumeReference) validateVolumeID(formats strfmt.Registry) error {
 
 	if err := validate.Required("volumeID", "body", m.VolumeID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeReference) validateWwn(formats strfmt.Registry) error {
+
+	if err := validate.Required("wwn", "body", m.Wwn); err != nil {
 		return err
 	}
 

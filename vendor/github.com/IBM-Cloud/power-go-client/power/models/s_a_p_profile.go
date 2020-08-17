@@ -37,7 +37,7 @@ type SAPProfile struct {
 
 	// Type of profile
 	// Required: true
-	// Enum: [balanced compute memory]
+	// Enum: [balanced compute memory non-production ultra-memory]
 	Type *string `json:"type"`
 }
 
@@ -111,7 +111,7 @@ var sAPProfileTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["balanced","compute","memory"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["balanced","compute","memory","non-production","ultra-memory"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -129,6 +129,12 @@ const (
 
 	// SAPProfileTypeMemory captures enum value "memory"
 	SAPProfileTypeMemory string = "memory"
+
+	// SAPProfileTypeNonProduction captures enum value "non-production"
+	SAPProfileTypeNonProduction string = "non-production"
+
+	// SAPProfileTypeUltraMemory captures enum value "ultra-memory"
+	SAPProfileTypeUltraMemory string = "ultra-memory"
 )
 
 // prop value enum

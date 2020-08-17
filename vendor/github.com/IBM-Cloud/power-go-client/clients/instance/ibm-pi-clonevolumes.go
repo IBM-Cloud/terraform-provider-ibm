@@ -6,6 +6,7 @@ import (
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_volumes"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"log"
+	"time"
 )
 
 type IBMPICloneVolumeClient struct {
@@ -21,11 +22,11 @@ func NewIBMPICloneVolumeClient(sess *ibmpisession.IBMPISession, powerinstanceid 
 }
 
 //Create a clone volume
-func (f *IBMPICloneVolumeClient) Create(id, powerinstanceid string) (*models.VolumesCloneResponse, error) {
+func (f *IBMPICloneVolumeClient) Create(clone_params *p_cloud_volumes.PcloudVolumesClonePostParams, id, powerinstanceid string, timeout time.Duration) (*models.VolumesCloneResponse, error) {
 
-	log.Printf("Calling the CloneVolume Create Method..")
+	log.Printf("Calling the CloneVolume Create Method with provided time out value of [%f]", timeout.Minutes())
 	log.Printf("The input clone name is %s and  to the cloudinstance id %s", id, powerinstanceid)
-	params := p_cloud_volumes.NewPcloudVolumesClonePostParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid)
+	params := p_cloud_volumes.NewPcloudVolumesClonePostParamsWithTimeout(timeout).WithCloudInstanceID(powerinstanceid).WithBody(clone_params.Body)
 
 	resp, err := f.session.Power.PCloudVolumes.PcloudVolumesClonePost(params, ibmpisession.NewAuth(f.session, powerinstanceid))
 
