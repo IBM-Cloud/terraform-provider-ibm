@@ -74,14 +74,18 @@ func newZoneAPI(c *client.Client) Zones {
 
 func (r *zones) ListZones(cisId string) ([]Zone, error) {
 	zoneResults := ZoneResults{}
-	rawURL := fmt.Sprintf("/v1/%s/zones/", cisId)
-	_, err := r.client.Get(rawURL, &zoneResults)
-	if err != nil {
-		return nil, err
+	rawURL := fmt.Sprintf("/v1/%s/zones?page=1", cisId)
+	if _, err := r.client.GetPaginated(rawURL, NewDNSPaginatedResources(Zone{}), func(resource interface{}) bool {
+		if zone, ok := resource.(Zone); ok {
+			zoneResults.ZoneList = append(zoneResults.ZoneList, zone)
+			return true
+		}
+		return false
+	}); err != nil {
+		return nil, fmt.Errorf("failed to list paginated dns records: %s", err)
 	}
-	return zoneResults.ZoneList, err
+	return zoneResults.ZoneList, nil
 }
-
 func (r *zones) GetZone(cisId string, zoneId string) (*Zone, error) {
 	zoneResult := ZoneResult{}
 	rawURL := fmt.Sprintf("/v1/%s/zones/%s", cisId, zoneId)
