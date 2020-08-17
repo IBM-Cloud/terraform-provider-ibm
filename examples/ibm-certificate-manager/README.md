@@ -106,6 +106,7 @@ data "ibm_certificate_manager_certificate" "certificate"{
 
 * [ Certificate Manager Import Certificates ](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-certificate-manager/ibm-certificate-manager-import)
 * [ Certificate Manager Order Certificates ](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-certificate-manager/ibm-certificate-manager-order)
+* [ Import Certificates across IBM-Cloud Accounts] (https://github.com/IBM-Cloud/terraform-provider-ibm/blob/master/examples/ibm-certificate-manager/ibm-cross-account-cms-certificate-import/main.tf)
 
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
