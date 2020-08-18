@@ -48,3 +48,5 @@ The following attributes are exported:
     * `components` - The list of fully qualified actions.
 * `publish` - Action visibility.
 * `action_id` - action ID.
+* `target_endpoint_url` - Target endpoint URL of the action.
+

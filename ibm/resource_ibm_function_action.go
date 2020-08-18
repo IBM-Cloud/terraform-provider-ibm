@@ -164,6 +164,11 @@ func resourceIBMFunctionAction() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"target_endpoint_url": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Action target endpoint URL.",
+			},
 		},
 	}
 }
@@ -327,8 +332,10 @@ func resourceIBMFunctionActionRead(d *schema.ResourceData, meta interface{}) err
 	d.Set("parameters", parameters)
 
 	temp := strings.Split(action.Namespace, "/")
+	pkgName := ""
 	if len(temp) == 2 {
-		d.Set("name", fmt.Sprintf("%s/%s", temp[1], action.Name))
+		pkgName = temp[1]
+		d.Set("name", fmt.Sprintf("%s/%s", pkgName, action.Name))
 		c, err := whisk.NewClient(http.DefaultClient, &whisk.Config{
 			Namespace:         wskClient.Namespace,
 			AuthToken:         wskClient.AuthToken,
@@ -336,9 +343,9 @@ func resourceIBMFunctionActionRead(d *schema.ResourceData, meta interface{}) err
 			AdditionalHeaders: wskClient.AdditionalHeaders,
 		})
 
-		pkg, _, err := c.Packages.Get(temp[1])
+		pkg, _, err := c.Packages.Get(pkgName)
 		if err != nil {
-			return fmt.Errorf("Error retrieving package IBM Cloud Function package %s : %s", temp[1], err)
+			return fmt.Errorf("Error retrieving package IBM Cloud Function package %s : %s", pkgName, err)
 		}
 
 		userAnnotations, err := flattenAnnotations(filterInheritedAnnotations(pkg.Annotations, action.Annotations))
@@ -366,6 +373,14 @@ func resourceIBMFunctionActionRead(d *schema.ResourceData, meta interface{}) err
 		}
 		d.Set("user_defined_parameters", userDefinedParameters)
 	}
+
+	targetUrl, err := action.ActionURL(wskClient.Config.Host, "/api", wskClient.Config.Version, pkgName)
+	if err != nil {
+		log.Printf(
+			"Error creating target endpoint URL for action (%s) targetURL : %s", d.Id(), err)
+
+	}
+	d.Set("target_endpoint_url", targetUrl)
 
 	return nil
 }
