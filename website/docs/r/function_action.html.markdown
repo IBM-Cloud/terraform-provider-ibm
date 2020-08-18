@@ -91,8 +91,9 @@ resource "ibm_function_action" "swifthello" {
   namespace = "function-namespace-name"
 
   exec {
-    kind  = "janesmith/blackboxdemo"
-    image = file("helloSwift.swift")
+    kind   = "blackbox"	
+    image  = "janesmith/blackboxdemo"
+    code   = file("helloSwift.swift")
   }
 }
 
