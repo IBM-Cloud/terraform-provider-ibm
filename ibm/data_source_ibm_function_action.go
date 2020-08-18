@@ -110,6 +110,11 @@ func dataSourceIBMFunctionAction() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"target_endpoint_url": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Action target endpoint URL.",
+			},
 		},
 	}
 }
@@ -140,9 +145,11 @@ func dataSourceIBMFunctionActionRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	temp := strings.Split(action.Namespace, "/")
+	pkgName := ""
 	if len(temp) == 2 {
-		d.SetId(fmt.Sprintf("%s/%s", temp[1], action.Name))
-		d.Set("name", fmt.Sprintf("%s/%s", temp[1], action.Name))
+		pkgName = temp[1]
+		d.SetId(fmt.Sprintf("%s/%s", pkgName, action.Name))
+		d.Set("name", fmt.Sprintf("%s/%s", pkgName, action.Name))
 	} else {
 		d.SetId(action.Name)
 		d.Set("name", action.Name)
@@ -166,5 +173,13 @@ func dataSourceIBMFunctionActionRead(d *schema.ResourceData, meta interface{}) e
 			"An error occured during reading of action (%s) parameters : %s", d.Id(), err)
 	}
 	d.Set("parameters", parameters)
+
+	targetUrl, err := action.ActionURL(wskClient.Config.Host, "/api", wskClient.Config.Version, pkgName)
+	if err != nil {
+		log.Printf(
+			"An error occured during reading of action (%s) targetURL : %s", d.Id(), err)
+	}
+	d.Set("target_endpoint_url", targetUrl)
+
 	return nil
 }

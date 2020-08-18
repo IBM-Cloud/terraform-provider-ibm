@@ -134,6 +134,7 @@ The following attributes are exported:
 * `annotations` - All annotations to describe the action, including those set by you or by IBM Cloud Functions.
 * `parameters` - All parameters passed to the action when the action is invoked, including those set by you or by IBM Cloud Functions.
 * `action_id` - Action ID	
+* `target_endpoint_url` - Target endpoint URL of the action.
 
 ## Import
 
