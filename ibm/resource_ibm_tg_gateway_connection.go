@@ -2,11 +2,12 @@ package ibm
 
 import (
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"log"
-	"time"
 )
 
 const (
@@ -94,6 +95,12 @@ func resourceIBMTransitGatewayConnection() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Status of the virtual connection.Possible values: [pending,attached,approval_pending,rejected,expired,deleting,detached_by_network_pending,detached_by_network]",
+			},
+
+			RelatedCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the transit gateway",
 			},
 		},
 	}
@@ -255,6 +262,14 @@ func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interf
 	}
 	d.Set(tgConnectionId, *instance.ID)
 	d.Set(tgGatewayId, gatewayId)
+	getTransitGatewayOptions := &transitgatewayapisv1.GetTransitGatewayOptions{
+		ID: &gatewayId,
+	}
+	tgw, response, err := client.GetTransitGateway(getTransitGatewayOptions)
+	if err != nil {
+		return fmt.Errorf("Error Getting Transit Gateway : %s\n%s", err, response)
+	}
+	d.Set(RelatedCRN, *tgw.Crn)
 
 	return nil
 }

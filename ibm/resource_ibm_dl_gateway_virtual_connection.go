@@ -2,10 +2,11 @@ package ibm
 
 import (
 	"fmt"
-	"github.com/IBM/networking-go-sdk/directlinkv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"log"
 	"time"
+
+	"github.com/IBM/networking-go-sdk/directlinkv1"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 const (
@@ -84,6 +85,12 @@ func resourceIBMDLGatewayVC() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The Direct Gateway virtual connection identifier",
+			},
+
+			RelatedCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the Direct link gateway",
 			},
 		},
 	}
@@ -190,6 +197,14 @@ func resourceIBMdlGatewayVCRead(d *schema.ResourceData, meta interface{}) error 
 	}
 	d.Set(dlVirtualConnectionId, *instance.ID)
 	d.Set(dlGatewayId, gatewayId)
+	getGatewayOptions := &directlinkv1.GetGatewayOptions{
+		ID: &gatewayId,
+	}
+	dlgw, response, err := directLink.GetGateway(getGatewayOptions)
+	if err != nil {
+		return fmt.Errorf("Error Getting Direct Link Gateway (Dedicated Template): %s\n%s", err, response)
+	}
+	d.Set(RelatedCRN, *dlgw.Crn)
 	return nil
 }
 
