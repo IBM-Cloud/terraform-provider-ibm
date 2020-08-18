@@ -1,6 +1,6 @@
 # CIS DNS record example
 
-This example shows how to create/delete/get/update dns records/
+This example shows how to create/delete/get/update dns records
 
 To run, configure your IBM Cloud provider
 

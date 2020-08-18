@@ -12,7 +12,7 @@ const (
 	cisDNSRecords = "cis_dns_records"
 )
 
-func dataSourceIBMNetworkCISDNSRecords() *schema.Resource {
+func dataSourceIBMCISDNSRecords() *schema.Resource {
 	return &schema.Resource{
 		Read:     dataSourceIBMCISDNSRecordsRead,
 		Importer: &schema.ResourceImporter{},
@@ -21,12 +21,12 @@ func dataSourceIBMNetworkCISDNSRecords() *schema.Resource {
 			Read: schema.DefaultTimeout(10 * time.Minute),
 		},
 		Schema: map[string]*schema.Schema{
-			cisCRN: {
+			cisID: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "DNS Zone CRN",
 			},
-			pdnsZoneID: {
+			cisDomainID: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Zone Id",
@@ -39,6 +39,11 @@ func dataSourceIBMNetworkCISDNSRecords() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "DNS record id",
+						},
+						cisDNSRecordID: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "DNS record id",
@@ -113,8 +118,8 @@ func dataSourceIBMCISDNSRecordsRead(d *schema.ResourceData, meta interface{}) er
 	}
 
 	// session options
-	crn = d.Get(cisCRN).(string)
-	zoneID = d.Get(cisZoneID).(string)
+	crn = d.Get(cisID).(string)
+	zoneID = d.Get(cisDomainID).(string)
 	sess.Crn = core.StringPtr(crn)
 	sess.ZoneIdentifier = core.StringPtr(zoneID)
 
@@ -129,6 +134,7 @@ func dataSourceIBMCISDNSRecordsRead(d *schema.ResourceData, meta interface{}) er
 	for _, instance := range result.Result {
 		record := map[string]interface{}{}
 		record["id"] = *instance.ID
+		record[cisDNSRecordID] = *instance.ID
 		record[cisZoneName] = *instance.ZoneName
 		record[cisDNSRecordCreatedOn] = *instance.CreatedOn
 		record[cisDNSRecordModifiedOn] = *instance.ModifiedOn
@@ -146,12 +152,12 @@ func dataSourceIBMCISDNSRecordsRead(d *schema.ResourceData, meta interface{}) er
 		}
 		records = append(records, record)
 	}
-	d.SetId(dataSourceIBMNetworkCISDNSRecordsID(d))
+	d.SetId(dataSourceIBMCISDNSRecordID(d))
 	d.Set(cisDNSRecords, records)
 	return nil
 }
 
-// dataSourceIBMCISDNSRecordsID returns a reasonable ID for dns zones list.
-func dataSourceIBMNetworkCISDNSRecordsID(d *schema.ResourceData) string {
+// dataSourceIBMCISDNSRecordID returns a reasonable ID for dns zones list.
+func dataSourceIBMCISDNSRecordID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
