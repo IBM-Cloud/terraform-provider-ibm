@@ -10,10 +10,9 @@ description: |-
 
 Provides a IBM CIS DNS Record resource. This resource is associated with an IBM Cloud Internet Services instance and a CIS Domain resource.
 
-## Example Usage
+## Example Usage 1 : Create A Record
 
 ```hcl
-
 resource "ibm_cis_dns_record" "test_dns_a_record" {
   crn     = var.cis_crn
   zone_id = var.zone_id
@@ -26,7 +25,11 @@ resource "ibm_cis_dns_record" "test_dns_a_record" {
 output "a_record_output" {
   value = ibm_cis_dns_record.test_dns_a_record
 }
+```
 
+## Example Usage 2 : Create AAAA record
+
+```hcl
 resource "ibm_cis_dns_record" "test_dns_aaaa_record" {
   crn     = var.cis_crn
   zone_id = var.zone_id
@@ -39,7 +42,11 @@ resource "ibm_cis_dns_record" "test_dns_aaaa_record" {
 output "aaaa_record_output" {
   value = ibm_cis_dns_record.test_dns_aaaa_record
 }
+```
 
+## Example Usage 3 : Create CNAME record
+
+```hcl
 resource "ibm_cis_dns_record" "test_dns_cname_record" {
   crn     = var.cis_crn
   zone_id = var.zone_id
@@ -52,7 +59,11 @@ resource "ibm_cis_dns_record" "test_dns_cname_record" {
 output "cname_record_output" {
   value = ibm_cis_dns_record.test_dns_cname_record
 }
+```
 
+## Example Usage 4 : Create MX record
+
+```hcl
 resource "ibm_cis_dns_record" "test_dns_mx_record" {
   crn      = var.cis_crn
   zone_id  = var.zone_id
@@ -66,7 +77,11 @@ resource "ibm_cis_dns_record" "test_dns_mx_record" {
 output "mx_record_output" {
   value = ibm_cis_dns_record.test_dns_mx_record
 }
+```
 
+## Example Usage 5 : Create LOC record
+
+```hcl
 resource "ibm_cis_dns_record" "test_dns_loc_record" {
   crn     = var.cis_crn
   zone_id = var.zone_id
@@ -92,7 +107,11 @@ resource "ibm_cis_dns_record" "test_dns_loc_record" {
 output "loc_record_output" {
   value = ibm_cis_dns_record.test_dns_loc_record
 }
+```
 
+## Example Usage 6 : Create CAA record
+
+```hcl
 resource "ibm_cis_dns_record" "test_dns_caa_record" {
   crn     = var.cis_crn
   zone_id = var.zone_id
@@ -108,7 +127,11 @@ resource "ibm_cis_dns_record" "test_dns_caa_record" {
 output "caa_record_output" {
   value = ibm_cis_dns_record.test_dns_caa_record
 }
+```
 
+## Example Usage 7 : Create SRV record
+
+```hcl
 resource "ibm_cis_dns_record" "test_dns_srv_record" {
   crn     = var.cis_crn
   zone_id = var.zone_id
@@ -128,7 +151,11 @@ resource "ibm_cis_dns_record" "test_dns_srv_record" {
 output "srv_record_output" {
   value = ibm_cis_dns_record.test_dns_srv_record
 }
+```
 
+## Example Usage 8 : Create SPF record
+
+```hcl
 resource "ibm_cis_dns_record" "test_dns_spf_record" {
   crn     = var.cis_crn
   zone_id = var.zone_id
@@ -140,7 +167,11 @@ resource "ibm_cis_dns_record" "test_dns_spf_record" {
 output "spf_record_output" {
   value = ibm_cis_dns_record.test_dns_spf_record
 }
+```
 
+## Example Usage 9 : Create TXT record
+
+```hcl
 resource "ibm_cis_dns_record" "test_dns_txt_record" {
   crn     = var.cis_crn
   zone_id = var.zone_id
@@ -152,7 +183,11 @@ resource "ibm_cis_dns_record" "test_dns_txt_record" {
 output "txt_record_output" {
   value = ibm_cis_dns_record.test_dns_txt_record
 }
+```
 
+## Example Usage 10 : Create NS record
+
+```hcl
 resource "ibm_cis_dns_record" "test_dns_ns_record" {
   crn     = var.cis_crn
   zone_id = var.zone_id
@@ -164,7 +199,6 @@ resource "ibm_cis_dns_record" "test_dns_ns_record" {
 output "ns_record_output" {
   value = ibm_cis_dns_record.test_dns_ns_record
 }
-
 ```
 
 ## Argument Reference

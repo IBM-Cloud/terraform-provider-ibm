@@ -8,8 +8,6 @@ import (
 
 	"github.com/IBM/go-sdk-core/v3/core"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-
-	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 )
 
 const (
@@ -319,83 +317,6 @@ func resourceIBMCISDnsRecord() *schema.Resource {
 	}
 }
 
-func classicDNSRecordCreate(d *schema.ResourceData, meta interface{}) error {
-	cisClient, err := meta.(ClientSession).CisAPI()
-	cisID := d.Get(cisID).(string)
-	zoneID, _, err := convertTftoCisTwoVar(d.Get("domain_id").(string))
-	if err != nil {
-		return err
-	}
-
-	newRecord := v1.DnsBody{
-		DnsType: d.Get("type").(string),
-	}
-
-	name, nameOk := d.GetOk("name")
-	if nameOk {
-		newRecord.Name = name.(string)
-	}
-	content, contentOk := d.GetOk("content")
-	if contentOk {
-		newRecord.Content = content.(string)
-	}
-
-	data, dataOk := d.GetOk("data")
-
-	newDataMap := make(map[string]interface{})
-
-	if dataOk {
-		for id, content := range data.(map[string]interface{}) {
-			newData, err := transformToIBMCISDnsData(newRecord.DnsType, id, content)
-			if err != nil {
-				return err
-			} else if newData == nil {
-				continue
-			}
-			newDataMap[id] = newData
-		}
-
-		newRecord.Data = newDataMap
-	}
-
-	if contentOk == dataOk {
-		return fmt.Errorf(
-			"either 'content' (present: %t) or 'data' (present: %t) must be provided",
-			contentOk, dataOk)
-	}
-
-	if priority, ok := d.GetOk("priority"); ok {
-		newRecord.Priority = priority.(int)
-	}
-	if ttl, ok := d.GetOk("ttl"); ok {
-		newRecord.Ttl = ttl.(int)
-	}
-
-	if err := validateRecordName(newRecord.DnsType, newRecord.Content); err != nil {
-		return fmt.Errorf("Error validating record name %q: %s", newRecord.Name, err)
-	}
-
-	var recordPtr *v1.DnsRecord
-	recordPtr, err = cisClient.Dns().CreateDns(cisID, zoneID, newRecord)
-	if err != nil {
-		return fmt.Errorf("Failed to create record: %s", err)
-	}
-
-	// In the Event that the API returns an empty DNS Record, we verify that the
-	// ID returned is not the default ""
-
-	record := *recordPtr
-
-	if record.Id == "" {
-		return fmt.Errorf("Failed to find record in Create response; Record was empty")
-	}
-
-	d.SetId(convertCisToTfThreeVar(record.Id, zoneID, cisID))
-
-	return classicDNSRecordUpdate(d, meta)
-
-}
-
 func resourceIBMCISDnsRecordCreate(d *schema.ResourceData, meta interface{}) error {
 
 	sess, err := meta.(ClientSession).CisDNSRecordClientSession()
@@ -622,7 +543,46 @@ func resourceIBMCISDnsRecordCreate(d *schema.ResourceData, meta interface{}) err
 		opt.SetData(recordData)
 
 	default:
-		return classicDNSRecordCreate(d, meta)
+		name, nameOk := d.GetOk("name")
+		if nameOk {
+			opt.SetName(name.(string))
+		}
+		content, contentOk := d.GetOk("content")
+		if contentOk {
+			opt.SetContent(content.(string))
+		}
+
+		data, dataOk := d.GetOk("data")
+
+		newDataMap := make(map[string]interface{})
+
+		if dataOk {
+			for id, content := range data.(map[string]interface{}) {
+				newData, err := transformToIBMCISDnsData(recordType, id, content)
+				if err != nil {
+					return err
+				} else if newData == nil {
+					continue
+				}
+				newDataMap[id] = newData
+			}
+
+			opt.SetData(newDataMap)
+		}
+
+		if contentOk == dataOk {
+			return fmt.Errorf(
+				"either 'content' (present: %t) or 'data' (present: %t) must be provided",
+				contentOk, dataOk)
+		}
+
+		if priority, ok := d.GetOk("priority"); ok {
+			opt.SetPriority(priority.(int64))
+		}
+		if ttl, ok := d.GetOk("ttl"); ok {
+			opt.SetTTL(ttl.(int64))
+		}
+
 	}
 
 	result, response, err := sess.CreateDnsRecord(opt)
@@ -705,78 +665,6 @@ func resourceIBMCISDnsRecordRead(d *schema.ResourceData, meta interface{}) error
 		d.Set(cisDNSRecordData, result.Result.Data)
 	}
 	return nil
-}
-
-func classicDNSRecordUpdate(d *schema.ResourceData, meta interface{}) error {
-	cisClient, err := meta.(ClientSession).CisAPI()
-	if err != nil {
-		return err
-	}
-	dnsID, zoneID, cisID, _ := convertTfToCisThreeVar(d.Id())
-	if err != nil {
-		return err
-	}
-	updateRecord := v1.DnsBody{
-		DnsType: d.Get("type").(string),
-	}
-	if d.HasChange("name") || d.HasChange("content") || d.HasChange("proxied") || d.HasChange("ttl") || d.HasChange("priority") || d.HasChange("data") {
-		if name, ok := d.Get("name").(string); ok {
-			updateRecord.Name = name
-		}
-		content, contentOk := d.GetOk("content")
-		if contentOk {
-			updateRecord.Content = content.(string)
-		}
-		proxied, proxiedOk := d.GetOk("proxied")
-		ttl, ttlOK := d.GetOk("ttl")
-		if proxiedOk {
-			updateRecord.Proxied = proxied.(bool)
-		}
-		if ttlOK {
-			updateRecord.Ttl = ttl.(int)
-		}
-		if ttl != 1 && proxied == true {
-			return fmt.Errorf("To enable proxy TTL should be Automatic %s",
-				"i.e it should be set to 1. For the the values other than Automatic, proxy should be disabled.")
-		}
-		priority, priorityOk := d.GetOk("priority")
-		if priorityOk {
-			updateRecord.Priority = priority.(int)
-		}
-		if updateRecord.DnsType == "SRV" {
-			updateRecord.Priority = 0
-		}
-		data, dataOk := d.GetOk("data")
-		newDataMap := make(map[string]interface{})
-		if dataOk {
-			for id, content := range data.(map[string]interface{}) {
-				newData, err := transformToIBMCISDnsData(updateRecord.DnsType, id, content)
-				if err != nil {
-					return err
-				} else if newData == nil {
-					continue
-				}
-				newDataMap[id] = newData
-			}
-
-			updateRecord.Data = newDataMap
-		}
-		if contentOk == dataOk {
-			return fmt.Errorf(
-				"either 'content' (present: %t) or 'data' (present: %t) must be provided",
-				contentOk, dataOk)
-		}
-
-		if err := validateRecordName(updateRecord.DnsType, updateRecord.Content); err != nil {
-			return fmt.Errorf("Error validating record name %q: %s", updateRecord.Name, err)
-		}
-
-		_, err = cisClient.Dns().UpdateDns(cisID, zoneID, dnsID, updateRecord)
-		if err != nil {
-			return fmt.Errorf("Failed to updating record: %s", err)
-		}
-	}
-	return resourceIBMCISDnsRecordRead(d, meta)
 }
 
 func resourceIBMCISDnsRecordUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -1036,7 +924,58 @@ func resourceIBMCISDnsRecordUpdate(d *schema.ResourceData, meta interface{}) err
 			opt.SetData(recordData)
 		}
 	default:
-		return classicDNSRecordUpdate(d, meta)
+		if d.HasChange(cisDNSRecordName) ||
+			d.HasChange(cisDNSRecordContent) ||
+			d.HasChange(cisDNSRecordProxied) ||
+			d.HasChange(cisDNSRecordTTL) ||
+			d.HasChange(cisDNSRecordPriority) ||
+			d.HasChange(cisDNSRecordData) {
+
+			if name, ok := d.Get(cisDNSRecordName).(string); ok {
+				opt.SetName(name)
+			}
+			content, contentOk := d.GetOk(cisDNSRecordContent)
+			if contentOk {
+				opt.SetContent(content.(string))
+			}
+			proxied, proxiedOk := d.GetOk(cisDNSRecordProxied)
+			ttl, ttlOK := d.GetOk(cisDNSRecordTTL)
+			if proxiedOk {
+				opt.SetProxied(proxied.(bool))
+			}
+			if ttlOK {
+				opt.SetTTL(ttl.(int64))
+			}
+			if ttl != 1 && proxied == true {
+				return fmt.Errorf("To enable proxy TTL should be Automatic %s",
+					"i.e it should be set to 1. For the the values other than Automatic, proxy should be disabled.")
+			}
+			priority, priorityOk := d.GetOk(cisDNSRecordPriority)
+			if priorityOk {
+				opt.SetPriority(priority.(int64))
+			}
+
+			data, dataOk := d.GetOk(cisDNSRecordData)
+			newDataMap := make(map[string]interface{})
+			if dataOk {
+				for id, content := range data.(map[string]interface{}) {
+					newData, err := transformToIBMCISDnsData(recordType, id, content)
+					if err != nil {
+						return err
+					} else if newData == nil {
+						continue
+					}
+					newDataMap[id] = newData
+				}
+
+				opt.SetData(newDataMap)
+			}
+			if contentOk == dataOk {
+				return fmt.Errorf(
+					"either 'content' (present: %t) or 'data' (present: %t) must be provided",
+					contentOk, dataOk)
+			}
+		}
 	}
 
 	result, response, err := sess.UpdateDnsRecord(opt)
@@ -1179,28 +1118,6 @@ func suppressNameDiff(k, old, new string, d *schema.ResourceData) bool {
 func suppressDataDiff(k, old, new string, d *schema.ResourceData) bool {
 	// Tuncate after .
 	if strings.SplitN(old, ".", 2)[0] == strings.SplitN(new, ".", 2)[0] {
-		return true
-	}
-	return false
-}
-
-func checkCisRecordDeleted(d *schema.ResourceData, meta interface{}, errCheck error, record *v1.DnsRecord) bool {
-	// Check if error is due to removal of Cis resource and hence all subresources
-	if strings.Contains(errCheck.Error(), "Object not found") ||
-		strings.Contains(errCheck.Error(), "status code: 404") ||
-		strings.Contains(errCheck.Error(), "status code: 400") ||
-		strings.Contains(errCheck.Error(), "Invalid dns record identifier") {
-		log.Printf("[WARN] Removing resource from state because it's not found via the CIS API")
-		return true
-	}
-	_, _, cisID, _ := convertTfToCisThreeVar(d.Id())
-	exists, errNew := rcInstanceExists(cisID, "ibm_cis", meta)
-	if errNew != nil {
-		log.Printf("resourceCISDnsRecordRead - Failure validating service exists %s\n", errNew)
-		return false
-	}
-	if !exists {
-		log.Printf("[WARN] Removing Dns Record from state because parent cis instance is in removed state")
 		return true
 	}
 	return false

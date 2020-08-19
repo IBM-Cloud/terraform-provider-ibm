@@ -872,11 +872,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// IBM Network CIS DNS Record service
-	if sess.BluemixSession.Config != nil && len(sess.BluemixSession.Config.IAMAccessToken) == 0 {
-		log.Println("Access token is empty!")
-		err = fmt.Errorf("Access token is %s", "empty!")
-		return nil, err
-	}
 	// Removed bearer keyword, since, CIS work without bearer keyword
 	token := sess.BluemixSession.Config.IAMAccessToken[7:]
 	cisDNSRecordsOpt := &cisdnsrecordsv1.DnsRecordsV1Options{
@@ -889,7 +884,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.cisDNSRecordsClient, session.cisDNSErr = cisdnsrecordsv1.NewDnsRecordsV1(cisDNSRecordsOpt)
 	if session.cisDNSErr != nil {
-		session.cisDNSErr = fmt.Errorf("Error occured while configuring CIS DNS Service: %s", err)
+		session.cisDNSErr = fmt.Errorf("Error occured while configuring CIS DNS Service: %s", session.cisDNSErr)
 	}
 
 	return session, nil
