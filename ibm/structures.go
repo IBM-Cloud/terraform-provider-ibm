@@ -1390,8 +1390,8 @@ func convertCisToTfTwoVar(Id string, cisId string) (buildId string) {
 // Cloud Internet Services
 func convertTftoCisTwoVar(tfId string) (Id string, cisId string, err error) {
 	g := strings.SplitN(tfId, ":", 2)
+	Id = g[0]
 	if len(g) > 1 {
-		Id = g[0]
 		cisId = g[1]
 	} else {
 		err = errors.New(" cis_id or zone_id not passed")
