@@ -26,9 +26,15 @@ output "a_record_output" {
   value = ibm_cis_dns_record.test_dns_a_record
 }
 ```
+<<<<<<< HEAD
 
 ## Example Usage 2 : Create AAAA record
 
+=======
+
+## Example Usage 2 : Create AAAA record
+
+>>>>>>> aee0203a... Removed example files and old DNS record code
 ```hcl
 resource "ibm_cis_dns_record" "test_dns_aaaa_record" {
   crn     = var.cis_crn
@@ -60,9 +66,15 @@ output "cname_record_output" {
   value = ibm_cis_dns_record.test_dns_cname_record
 }
 ```
+<<<<<<< HEAD
 
 ## Example Usage 4 : Create MX record
 
+=======
+
+## Example Usage 4 : Create MX record
+
+>>>>>>> aee0203a... Removed example files and old DNS record code
 ```hcl
 resource "ibm_cis_dns_record" "test_dns_mx_record" {
   crn      = var.cis_crn
@@ -78,9 +90,15 @@ output "mx_record_output" {
   value = ibm_cis_dns_record.test_dns_mx_record
 }
 ```
+<<<<<<< HEAD
 
 ## Example Usage 5 : Create LOC record
 
+=======
+
+## Example Usage 5 : Create LOC record
+
+>>>>>>> aee0203a... Removed example files and old DNS record code
 ```hcl
 resource "ibm_cis_dns_record" "test_dns_loc_record" {
   crn     = var.cis_crn
@@ -108,9 +126,15 @@ output "loc_record_output" {
   value = ibm_cis_dns_record.test_dns_loc_record
 }
 ```
+<<<<<<< HEAD
 
 ## Example Usage 6 : Create CAA record
 
+=======
+
+## Example Usage 6 : Create CAA record
+
+>>>>>>> aee0203a... Removed example files and old DNS record code
 ```hcl
 resource "ibm_cis_dns_record" "test_dns_caa_record" {
   crn     = var.cis_crn
@@ -128,6 +152,84 @@ output "caa_record_output" {
   value = ibm_cis_dns_record.test_dns_caa_record
 }
 ```
+<<<<<<< HEAD
+
+## Example Usage 7 : Create SRV record
+
+```hcl
+resource "ibm_cis_dns_record" "test_dns_srv_record" {
+  crn     = var.cis_crn
+  zone_id = var.zone_id
+  type = "SRV"
+  ttl  = 900
+  data = {
+    name     = "test-example.srv"
+    port     = 1
+    priority = 1
+    proto    = "_udp"
+    service  = "_sip"
+    target   = "domain.com"
+    weight   = 1
+  }
+}
+
+output "srv_record_output" {
+  value = ibm_cis_dns_record.test_dns_srv_record
+}
+```
+
+## Example Usage 8 : Create SPF record
+
+```hcl
+resource "ibm_cis_dns_record" "test_dns_spf_record" {
+  crn     = var.cis_crn
+  zone_id = var.zone_id
+  name    = "test-exmple.spf"
+  type    = "SPF"
+  content = "test"
+}
+
+output "spf_record_output" {
+  value = ibm_cis_dns_record.test_dns_spf_record
+}
+```
+
+## Example Usage 9 : Create TXT record
+
+```hcl
+resource "ibm_cis_dns_record" "test_dns_txt_record" {
+  crn     = var.cis_crn
+  zone_id = var.zone_id
+  name    = "test-exmple.txt"
+  type    = "TXT"
+  content = "test"
+}
+
+output "txt_record_output" {
+  value = ibm_cis_dns_record.test_dns_txt_record
+}
+```
+
+## Example Usage 10 : Create NS record
+
+```hcl
+resource "ibm_cis_dns_record" "test_dns_ns_record" {
+  crn     = var.cis_crn
+  zone_id = var.zone_id
+  name    = "test-exmple.ns"
+  type    = "NS"
+  content = "ns1.name.ibm.com"
+}
+
+output "ns_record_output" {
+  value = ibm_cis_dns_record.test_dns_ns_record
+}
+
+output "caa_record_output" {
+  value = ibm_cis_dns_record.test_dns_caa_record
+}
+=======
+>>>>>>> aee0203a... Removed example files and old DNS record code
 
 ## Example Usage 7 : Create SRV record
 

@@ -62,6 +62,11 @@ func resourceIBMCISDnsRecord() *schema.Resource {
 				Description: "Associated CIS domain",
 				Required:    true,
 			},
+			cisZoneName: {
+				Type:        schema.TypeString,
+				Description: "zone name",
+				Computed:    true,
+			},
 			cisDNSRecordName: {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -629,7 +634,6 @@ func resourceIBMCISDnsRecordRead(d *schema.ResourceData, meta interface{}) error
 	d.Set(cisDNSRecordName, *result.Result.Name)
 	d.Set(cisDNSRecordType, *result.Result.Type)
 	d.Set(cisDNSRecordContent, *result.Result.Content)
-	d.Set(cisDomainID, *result.Result.ZoneID)
 	d.Set(cisDNSRecordProxiable, *result.Result.Proxiable)
 	d.Set(cisDNSRecordProxied, *result.Result.Proxied)
 	d.Set(cisDNSRecordTTL, *result.Result.TTL)
@@ -964,9 +968,9 @@ func resourceIBMCISDnsRecordDelete(d *schema.ResourceData, meta interface{}) err
 	)
 	sess, err := meta.(ClientSession).CisDNSRecordClientSession()
 	if err != nil {
+		log.Printf("Error: %s", err)
 		return err
 	}
-
 	// session options
 	recordID, zoneID, crn, _ = convertTfToCisThreeVar(d.Id())
 	if err != nil {
