@@ -132,12 +132,12 @@ func resourceIBMIAMAccessGroupMembersRead(d *schema.ResourceData, meta interface
 
 	accountID := userDetails.userAccount
 
-	accountv1Client, err := meta.(ClientSession).BluemixAcccountv1API()
+	userManagement, err := meta.(ClientSession).UserManagementAPI()
 	if err != nil {
 		return err
 	}
-
-	users, err := accountv1Client.Accounts().GetAccountUsers(accountID)
+	client := userManagement.UserInvite()
+	res, err := client.GetUsers(accountID)
 	if err != nil {
 		return err
 	}
@@ -156,7 +156,7 @@ func resourceIBMIAMAccessGroupMembersRead(d *schema.ResourceData, meta interface
 		return err
 	}
 
-	d.Set("members", flattenAccessGroupMembers(members, users, serviceIDs))
+	d.Set("members", flattenAccessGroupMembers(members, res.Resources, serviceIDs))
 
 	return nil
 }
