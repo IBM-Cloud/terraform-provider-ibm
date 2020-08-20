@@ -332,13 +332,14 @@ func resourceIBMCISDnsRecordCreate(d *schema.ResourceData, meta interface{}) err
 		recordContent  string
 		recordPriority int
 		ttl            int
-		ok             bool
+		ok             interface{}
 		data           interface{}
+		v              interface{}
 		recordData     map[string]interface{}
 	)
 	// session options
 	crn = d.Get(cisID).(string)
-	zoneID = d.Get(cisDomainID).(string)
+	zoneID, _, err = convertTftoCisTwoVar(d.Get(cisDomainID).(string))
 	sess.Crn = core.StringPtr(crn)
 	sess.ZoneIdentifier = core.StringPtr(zoneID)
 
@@ -392,16 +393,16 @@ func resourceIBMCISDnsRecordCreate(d *schema.ResourceData, meta interface{}) err
 		var dataMap map[string]interface{} = data.(map[string]interface{})
 
 		// altitude
-		v, ok := strconv.Atoi(dataMap["altitude"].(string))
+		v, ok = strconv.ParseFloat(dataMap["altitude"].(string), 64)
 		if ok != nil {
-			return ok
+			return fmt.Errorf("data input error")
 		}
 		recordData["altitude"] = v
 
 		// lat_degrees
 		v, ok = strconv.Atoi(dataMap["lat_degrees"].(string))
 		if ok != nil {
-			return ok
+			return fmt.Errorf("data input error")
 		}
 		recordData["lat_degrees"] = v
 
@@ -414,19 +415,20 @@ func resourceIBMCISDnsRecordCreate(d *schema.ResourceData, meta interface{}) err
 		// lat_minutes
 		v, ok = strconv.Atoi(dataMap["lat_minutes"].(string))
 		if ok != nil {
-			return ok
+			return fmt.Errorf("data input error")
 		}
 		recordData["lat_minutes"] = v
 
 		// lat_seconds
-		v, ok = strconv.Atoi(dataMap["lat_seconds"].(string))
+		v, ok = strconv.ParseFloat(dataMap["lat_seconds"].(string), 64)
 		if ok != nil {
-			return ok
+			return fmt.Errorf("data input error")
+
 		}
 		recordData["lat_seconds"] = v
 
 		// long_degrees
-		v, ok = strconv.Atoi(dataMap["long_degrees"].(string))
+		v, ok := strconv.Atoi(dataMap["long_degrees"].(string))
 		if ok != nil {
 			return ok
 		}
@@ -440,32 +442,32 @@ func resourceIBMCISDnsRecordCreate(d *schema.ResourceData, meta interface{}) err
 		recordData["long_minutes"] = v
 
 		// long_seconds
-		v, ok = strconv.Atoi(dataMap["long_seconds"].(string))
+		i, ok := strconv.ParseFloat(dataMap["long_seconds"].(string), 64)
 		if ok != nil {
 			return ok
 		}
-		recordData["long_seconds"] = v
+		recordData["long_seconds"] = i
 
 		// percision_horz
-		v, ok = strconv.Atoi(dataMap["precision_horz"].(string))
+		i, ok = strconv.ParseFloat(dataMap["precision_horz"].(string), 64)
 		if ok != nil {
 			return ok
 		}
 		recordData["precision_horz"] = v
 
 		// precision_vert
-		v, ok = strconv.Atoi(dataMap["precision_vert"].(string))
+		i, ok = strconv.ParseFloat(dataMap["precision_vert"].(string), 64)
 		if ok != nil {
 			return ok
 		}
-		recordData["precision_vert"] = v
+		recordData["precision_vert"] = i
 
 		// size
-		v, ok = strconv.Atoi(dataMap["size"].(string))
+		i, ok = strconv.ParseFloat(dataMap["size"].(string), 64)
 		if ok != nil {
 			return ok
 		}
-		recordData["size"] = v
+		recordData["size"] = i
 
 		opt.SetData(recordData)
 
@@ -591,7 +593,6 @@ func resourceIBMCISDnsRecordCreate(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 	d.Set(cisDNSRecordID, *result.Result.ID)
-	d.SetId(*result.Result.ID)
 	d.Set(cisZoneName, *result.Result.ZoneName)
 	d.Set(cisDNSRecordCreatedOn, *result.Result.CreatedOn)
 	d.Set(cisDNSRecordModifiedOn, *result.Result.ModifiedOn)
@@ -601,7 +602,6 @@ func resourceIBMCISDnsRecordCreate(d *schema.ResourceData, meta interface{}) err
 	d.Set(cisDomainID, *result.Result.ZoneID)
 	d.Set(cisDNSRecordZoneName, *result.Result.ZoneName)
 	d.Set(cisDNSRecordProxiable, *result.Result.Proxiable)
-	d.Set(cisDNSRecordProxied, *result.Result.Proxied)
 	d.Set(cisDNSRecordTTL, *result.Result.TTL)
 
 	switch recordType {
@@ -613,7 +613,8 @@ func resourceIBMCISDnsRecordCreate(d *schema.ResourceData, meta interface{}) err
 		d.Set(cisDNSRecordData, result.Result.Data)
 	}
 
-	return err
+	d.SetId(convertCisToTfThreeVar(*result.Result.ID, zoneID, crn))
+	return resourceIBMCISDnsRecordUpdate(d, meta)
 
 }
 
@@ -628,13 +629,13 @@ func resourceIBMCISDnsRecordRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	// session options
-	crn = d.Get(cisID).(string)
-	zoneID = d.Get(cisDomainID).(string)
+	recordID, zoneID, crn, _ = convertTfToCisThreeVar(d.Id())
+	if err != nil {
+		return err
+	}
 	sess.Crn = core.StringPtr(crn)
 	sess.ZoneIdentifier = core.StringPtr(zoneID)
 
-	recordID = d.Id()
 	opt := sess.NewGetDnsRecordOptions(recordID)
 	result, response, err := sess.GetDnsRecord(opt)
 	if err != nil {
@@ -642,7 +643,6 @@ func resourceIBMCISDnsRecordRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	d.SetId(*result.Result.ID)
 	d.Set(cisDNSRecordID, *result.Result.ID)
 	d.Set(cisZoneName, *result.Result.ZoneName)
 	d.Set(cisDNSRecordCreatedOn, *result.Result.CreatedOn)
@@ -683,11 +683,12 @@ func resourceIBMCISDnsRecordUpdate(d *schema.ResourceData, meta interface{}) err
 		recordPriority int
 		ttl            int
 		ok             bool
+		proxied        bool
 		data           interface{}
 		recordData     map[string]interface{}
 	)
 	// session options
-	recordID, zoneID, crn, _ = convertTfToCisThreeVar(d.Id())
+	recordID, zoneID, crn, err = convertTfToCisThreeVar(d.Id())
 	if err != nil {
 		log.Println("Error in reading input")
 		return err
@@ -698,66 +699,62 @@ func resourceIBMCISDnsRecordUpdate(d *schema.ResourceData, meta interface{}) err
 	// Input options
 	opt := sess.NewUpdateDnsRecordOptions(recordID)
 
-	// set record type
-	if d.HasChange(cisDNSRecordType) {
+	if d.HasChange(cisDNSRecordName) ||
+		d.HasChange(cisDNSRecordType) ||
+		d.HasChange(cisDNSRecordContent) ||
+		d.HasChange(cisDNSRecordProxiable) ||
+		d.HasChange(cisDNSRecordProxied) ||
+		d.HasChange(cisDNSRecordTTL) ||
+		d.HasChange(cisDNSRecordPriority) ||
+		d.HasChange(cisDNSRecordData) {
+
+		// set record type
 		recordType = d.Get(cisDNSRecordType).(string)
 		opt.SetType(recordType)
-	}
-	// set ttl value
-	if d.HasChange(cisDNSRecordTTL) {
+		// set ttl value
 		ttl = d.Get(cisDNSRecordTTL).(int)
 		opt.SetTTL(int64(ttl))
-	}
 
-	switch recordType {
-	// A, AAAA, CNAME, SPF, TXT & NS records inputs
-	case cisDNSRecordTypeA,
-		cisDNSRecordTypeAAAA,
-		cisDNSRecordTypeCNAME,
-		cisDNSRecordTypeSPF,
-		cisDNSRecordTypeTXT,
-		cisDNSRecordTypeNS:
-		// set record name & content
-		if d.HasChange(cisDNSRecordName) {
+		// set proxied
+		proxied = d.Get(cisDNSRecordProxied).(bool)
+		opt.SetProxied(proxied)
+
+		switch recordType {
+		// A, AAAA, CNAME, SPF, TXT & NS records inputs
+		case cisDNSRecordTypeA,
+			cisDNSRecordTypeAAAA,
+			cisDNSRecordTypeCNAME,
+			cisDNSRecordTypeSPF,
+			cisDNSRecordTypeTXT,
+			cisDNSRecordTypeNS:
+			// set record name & content
 			recordName = d.Get(cisDNSRecordName).(string)
 			opt.SetName(recordName)
-		}
-		if d.HasChange(cisDNSRecordContent) {
 			recordContent = d.Get(cisDNSRecordContent).(string)
 			opt.SetContent(recordContent)
-		}
 
-	// MX Record inputs
-	case cisDNSRecordTypeMX:
+		// MX Record inputs
+		case cisDNSRecordTypeMX:
 
-		// set record name
-		if d.HasChange(cisDNSRecordName) {
+			// set record name
 			recordName = d.Get(cisDNSRecordName).(string)
 			opt.SetName(recordName)
-		}
 
-		// set content
-		if d.HasChange(cisDNSRecordContent) {
+			// set content
 			recordContent = d.Get(cisDNSRecordContent).(string)
 			opt.SetContent(recordContent)
-		}
 
-		// set priority
-		if d.HasChange(cisDNSRecordPriority) {
+			// set priority
 			recordPriority = d.Get(cisDNSRecordPriority).(int)
 			opt.SetPriority(int64(recordPriority))
-		}
 
-	// LOC Record inputs
-	case cisDNSRecordTypeLOC:
+		// LOC Record inputs
+		case cisDNSRecordTypeLOC:
 
-		// set record name
-		if d.HasChange(cisDNSRecordName) {
+			// set record name
 			recordName = d.Get(cisDNSRecordName).(string)
 			opt.SetName(recordName)
-		}
 
-		if d.HasChange(cisDNSRecordData) {
 			data, ok = d.GetOk(cisDNSRecordData)
 			if ok == false {
 				log.Printf("Error in getting data")
@@ -767,18 +764,18 @@ func resourceIBMCISDnsRecordUpdate(d *schema.ResourceData, meta interface{}) err
 			var dataMap map[string]interface{} = data.(map[string]interface{})
 
 			// altitude
-			v, ok := strconv.Atoi(dataMap["altitude"].(string))
+			v, ok := strconv.ParseFloat(dataMap["altitude"].(string), 64)
 			if ok != nil {
 				return ok
 			}
 			recordData["altitude"] = v
 
 			// lat_degrees
-			v, ok = strconv.Atoi(dataMap["lat_degrees"].(string))
+			i, ok := strconv.Atoi(dataMap["lat_degrees"].(string))
 			if ok != nil {
 				return ok
 			}
-			recordData["lat_degrees"] = v
+			recordData["lat_degrees"] = i
 
 			// lat_direction
 			recordData["lat_direction"] = dataMap["lat_direction"].(string)
@@ -787,73 +784,69 @@ func resourceIBMCISDnsRecordUpdate(d *schema.ResourceData, meta interface{}) err
 			recordData["long_direction"] = dataMap["long_direction"].(string)
 
 			// lat_minutes
-			v, ok = strconv.Atoi(dataMap["lat_minutes"].(string))
+			i, ok = strconv.Atoi(dataMap["lat_minutes"].(string))
 			if ok != nil {
 				return ok
 			}
-			recordData["lat_minutes"] = v
+			recordData["lat_minutes"] = i
 
 			// lat_seconds
-			v, ok = strconv.Atoi(dataMap["lat_seconds"].(string))
+			v, ok = strconv.ParseFloat(dataMap["lat_seconds"].(string), 64)
 			if ok != nil {
 				return ok
 			}
 			recordData["lat_seconds"] = v
 
 			// long_degrees
-			v, ok = strconv.Atoi(dataMap["long_degrees"].(string))
+			i, ok = strconv.Atoi(dataMap["long_degrees"].(string))
 			if ok != nil {
 				return ok
 			}
-			recordData["long_degrees"] = v
+			recordData["long_degrees"] = i
 
 			// long_minutes
-			v, ok = strconv.Atoi(dataMap["long_minutes"].(string))
+			i, ok = strconv.Atoi(dataMap["long_minutes"].(string))
 			if ok != nil {
 				return ok
 			}
-			recordData["long_minutes"] = v
+			recordData["long_minutes"] = i
 
 			// long_seconds
-			v, ok = strconv.Atoi(dataMap["long_seconds"].(string))
+			v, ok = strconv.ParseFloat(dataMap["long_seconds"].(string), 64)
 			if ok != nil {
 				return ok
 			}
 			recordData["long_seconds"] = v
 
 			// percision_horz
-			v, ok = strconv.Atoi(dataMap["precision_horz"].(string))
+			v, ok = strconv.ParseFloat(dataMap["precision_horz"].(string), 64)
 			if ok != nil {
 				return ok
 			}
 			recordData["precision_horz"] = v
 
 			// precision_vert
-			v, ok = strconv.Atoi(dataMap["precision_vert"].(string))
+			v, ok = strconv.ParseFloat(dataMap["precision_vert"].(string), 64)
 			if ok != nil {
 				return ok
 			}
 			recordData["precision_vert"] = v
 
 			// size
-			v, ok = strconv.Atoi(dataMap["size"].(string))
+			v, ok = strconv.ParseFloat(dataMap["size"].(string), 64)
 			if ok != nil {
 				return ok
 			}
 			recordData["size"] = v
 
 			opt.SetData(recordData)
-		}
 
-	// CAA Record inputs
-	case cisDNSRecordTypeCAA:
+		// CAA Record inputs
+		case cisDNSRecordTypeCAA:
 
-		// set record name
-		if d.HasChange(cisDNSRecordName) {
+			// set record name
 			recordName = d.Get(cisDNSRecordName).(string)
 			opt.SetName(recordName)
-		}
-		if d.HasChange(cisDNSRecordData) {
 			data, ok = d.GetOk(cisDNSRecordData)
 			if ok == false {
 				log.Printf("Error in getting data")
@@ -871,11 +864,9 @@ func resourceIBMCISDnsRecordUpdate(d *schema.ResourceData, meta interface{}) err
 			recordData["value"] = v
 
 			opt.SetData(recordData)
-		}
 
-	// SRV record input
-	case cisDNSRecordTypeSRV:
-		if d.HasChange(cisDNSRecordData) {
+		// SRV record input
+		case cisDNSRecordTypeSRV:
 			data, ok = d.GetOk(cisDNSRecordData)
 			if ok == false {
 				log.Printf("Error in getting data")
@@ -922,89 +913,88 @@ func resourceIBMCISDnsRecordUpdate(d *schema.ResourceData, meta interface{}) err
 			}
 			recordData["weight"] = s
 			opt.SetData(recordData)
-		}
-	default:
-		if d.HasChange(cisDNSRecordName) ||
-			d.HasChange(cisDNSRecordContent) ||
-			d.HasChange(cisDNSRecordProxied) ||
-			d.HasChange(cisDNSRecordTTL) ||
-			d.HasChange(cisDNSRecordPriority) ||
-			d.HasChange(cisDNSRecordData) {
+		default:
+			if d.HasChange(cisDNSRecordName) ||
+				d.HasChange(cisDNSRecordContent) ||
+				d.HasChange(cisDNSRecordProxied) ||
+				d.HasChange(cisDNSRecordTTL) ||
+				d.HasChange(cisDNSRecordPriority) ||
+				d.HasChange(cisDNSRecordData) {
 
-			if name, ok := d.Get(cisDNSRecordName).(string); ok {
-				opt.SetName(name)
-			}
-			content, contentOk := d.GetOk(cisDNSRecordContent)
-			if contentOk {
-				opt.SetContent(content.(string))
-			}
-			proxied, proxiedOk := d.GetOk(cisDNSRecordProxied)
-			ttl, ttlOK := d.GetOk(cisDNSRecordTTL)
-			if proxiedOk {
-				opt.SetProxied(proxied.(bool))
-			}
-			if ttlOK {
-				opt.SetTTL(ttl.(int64))
-			}
-			if ttl != 1 && proxied == true {
-				return fmt.Errorf("To enable proxy TTL should be Automatic %s",
-					"i.e it should be set to 1. For the the values other than Automatic, proxy should be disabled.")
-			}
-			priority, priorityOk := d.GetOk(cisDNSRecordPriority)
-			if priorityOk {
-				opt.SetPriority(priority.(int64))
-			}
-
-			data, dataOk := d.GetOk(cisDNSRecordData)
-			newDataMap := make(map[string]interface{})
-			if dataOk {
-				for id, content := range data.(map[string]interface{}) {
-					newData, err := transformToIBMCISDnsData(recordType, id, content)
-					if err != nil {
-						return err
-					} else if newData == nil {
-						continue
-					}
-					newDataMap[id] = newData
+				if name, ok := d.Get(cisDNSRecordName).(string); ok {
+					opt.SetName(name)
+				}
+				content, contentOk := d.GetOk(cisDNSRecordContent)
+				if contentOk {
+					opt.SetContent(content.(string))
+				}
+				proxied, proxiedOk := d.GetOk(cisDNSRecordProxied)
+				ttl, ttlOK := d.GetOk(cisDNSRecordTTL)
+				if proxiedOk {
+					opt.SetProxied(proxied.(bool))
+				}
+				if ttlOK {
+					opt.SetTTL(ttl.(int64))
+				}
+				if ttl != 1 && proxied == true {
+					return fmt.Errorf("To enable proxy TTL should be Automatic %s",
+						"i.e it should be set to 1. For the the values other than Automatic, proxy should be disabled.")
+				}
+				priority, priorityOk := d.GetOk(cisDNSRecordPriority)
+				if priorityOk {
+					opt.SetPriority(priority.(int64))
 				}
 
-				opt.SetData(newDataMap)
-			}
-			if contentOk == dataOk {
-				return fmt.Errorf(
-					"either 'content' (present: %t) or 'data' (present: %t) must be provided",
-					contentOk, dataOk)
+				data, dataOk := d.GetOk(cisDNSRecordData)
+				newDataMap := make(map[string]interface{})
+				if dataOk {
+					for id, content := range data.(map[string]interface{}) {
+						newData, err := transformToIBMCISDnsData(recordType, id, content)
+						if err != nil {
+							return err
+						} else if newData == nil {
+							continue
+						}
+						newDataMap[id] = newData
+					}
+
+					opt.SetData(newDataMap)
+				}
+				if contentOk == dataOk {
+					return fmt.Errorf(
+						"either 'content' (present: %t) or 'data' (present: %t) must be provided",
+						contentOk, dataOk)
+				}
 			}
 		}
-	}
 
-	result, response, err := sess.UpdateDnsRecord(opt)
-	if err != nil {
-		log.Printf("Error creating dns record: %s, error %s", response, err)
-		return err
-	}
-	d.SetId(*result.Result.ID)
-	d.Set(cisDNSRecordID, *result.Result.ID)
-	d.Set(cisZoneName, *result.Result.ZoneName)
-	d.Set(cisDNSRecordCreatedOn, *result.Result.CreatedOn)
-	d.Set(cisDNSRecordModifiedOn, *result.Result.ModifiedOn)
-	d.Set(cisDNSRecordName, *result.Result.Name)
-	d.Set(cisDNSRecordType, *result.Result.Type)
-	d.Set(cisDNSRecordContent, *result.Result.Content)
-	d.Set(cisDomainID, *result.Result.ZoneID)
-	d.Set(cisDNSRecordZoneName, *result.Result.ZoneName)
-	d.Set(cisDNSRecordProxiable, *result.Result.Proxiable)
-	d.Set(cisDNSRecordProxied, *result.Result.Proxied)
-	d.Set(cisDNSRecordTTL, *result.Result.TTL)
+		result, response, err := sess.UpdateDnsRecord(opt)
+		if err != nil {
+			log.Printf("Error creating dns record: %s, error %s", response, err)
+			return err
+		}
+		d.Set(cisDNSRecordID, *result.Result.ID)
+		d.Set(cisZoneName, *result.Result.ZoneName)
+		d.Set(cisDNSRecordCreatedOn, *result.Result.CreatedOn)
+		d.Set(cisDNSRecordModifiedOn, *result.Result.ModifiedOn)
+		d.Set(cisDNSRecordName, *result.Result.Name)
+		d.Set(cisDNSRecordType, *result.Result.Type)
+		d.Set(cisDNSRecordContent, *result.Result.Content)
+		d.Set(cisDomainID, *result.Result.ZoneID)
+		d.Set(cisDNSRecordZoneName, *result.Result.ZoneName)
+		d.Set(cisDNSRecordProxiable, *result.Result.Proxiable)
+		d.Set(cisDNSRecordTTL, *result.Result.TTL)
 
-	switch recordType {
-	// for MX & SRV records ouptut
-	case cisDNSRecordTypeMX, cisDNSRecordTypeSRV:
-		d.Set(cisDNSRecordPriority, *result.Result.Priority)
-	// for LOC & CAA records output
-	case cisDNSRecordTypeLOC, cisDNSRecordTypeCAA:
-		d.Set(cisDNSRecordData, result.Result.Data)
+		switch recordType {
+		// for MX & SRV records ouptut
+		case cisDNSRecordTypeMX, cisDNSRecordTypeSRV:
+			d.Set(cisDNSRecordPriority, *result.Result.Priority)
+		// for LOC & CAA records output
+		case cisDNSRecordTypeLOC, cisDNSRecordTypeCAA:
+			d.Set(cisDNSRecordData, result.Result.Data)
+		}
 	}
+	d.Set(cisDNSRecordProxied, proxied)
 
 	return nil
 }
@@ -1021,11 +1011,13 @@ func resourceIBMCISDnsRecordDelete(d *schema.ResourceData, meta interface{}) err
 	}
 
 	// session options
-	crn = d.Get(cisID).(string)
-	zoneID = d.Get(cisDomainID).(string)
+	recordID, zoneID, crn, _ = convertTfToCisThreeVar(d.Id())
+	if err != nil {
+		log.Println("Error in reading input")
+		return err
+	}
 	sess.Crn = core.StringPtr(crn)
 	sess.ZoneIdentifier = core.StringPtr(zoneID)
-	recordID = d.Id()
 
 	opt := sess.NewDeleteDnsRecordOptions(recordID)
 	result, response, err := sess.DeleteDnsRecord(opt)
@@ -1045,9 +1037,11 @@ func resourceIBMCISDnsRecordExist(d *schema.ResourceData, meta interface{}) (boo
 	}
 
 	// session options
-	crn := d.Get(cisID).(string)
-	zoneID := d.Get(cisDomainID).(string)
-	recordID := d.Id()
+	recordID, zoneID, crn, _ := convertTfToCisThreeVar(d.Id())
+	if err != nil {
+		log.Println("Error in reading input")
+		return false, err
+	}
 
 	sess.Crn = core.StringPtr(crn)
 	sess.ZoneIdentifier = core.StringPtr(zoneID)
