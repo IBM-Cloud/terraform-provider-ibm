@@ -970,7 +970,7 @@ func resourceIBMCISDnsRecordUpdate(d *schema.ResourceData, meta interface{}) err
 
 		result, response, err := sess.UpdateDnsRecord(opt)
 		if err != nil {
-			log.Printf("Error creating dns record: %s, error %s", response, err)
+			log.Printf("Error updating dns record: %s, error %s", response, err)
 			return err
 		}
 		d.Set(cisDNSRecordID, *result.Result.ID)
