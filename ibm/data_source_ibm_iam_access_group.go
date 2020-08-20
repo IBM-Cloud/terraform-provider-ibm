@@ -117,12 +117,12 @@ func dataIBMIAMAccessGroupRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	accountID := userDetails.userAccount
-	accountv1Client, err := meta.(ClientSession).BluemixAcccountv1API()
+	userManagement, err := meta.(ClientSession).UserManagementAPI()
 	if err != nil {
 		return err
 	}
-
-	users, err := accountv1Client.Accounts().GetAccountUsers(accountID)
+	client := userManagement.UserInvite()
+	res, err := client.GetUsers(accountID)
 	if err != nil {
 		return err
 	}
@@ -176,7 +176,7 @@ func dataIBMIAMAccessGroupRead(d *schema.ResourceData, meta interface{}) error {
 		if err != nil {
 			log.Println("Error retrieving access group rules: ", err)
 		}
-		ibmID, serviceID := flattenMembersData(members, users, serviceIDs)
+		ibmID, serviceID := flattenMembersData(members, res.Resources, serviceIDs)
 
 		grpInstance := map[string]interface{}{
 			"id":              grp.ID,
