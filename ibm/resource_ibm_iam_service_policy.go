@@ -207,7 +207,7 @@ func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) e
 
 func resourceIBMIAMServicePolicyUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	if d.HasChange("roles") || d.HasChange("resources") {
+	if d.HasChange("roles") || d.HasChange("resources") || d.HasChange("account_management") {
 
 		iamClient, err := meta.(ClientSession).IAMAPI()
 		if err != nil {

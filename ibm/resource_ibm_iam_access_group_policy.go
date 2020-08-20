@@ -208,7 +208,7 @@ func resourceIBMIAMAccessGroupPolicyUpdate(d *schema.ResourceData, meta interfac
 	if err != nil {
 		return err
 	}
-	if d.HasChange("roles") || d.HasChange("resources") {
+	if d.HasChange("roles") || d.HasChange("resources") || d.HasChange("account_management") {
 		parts, err := idParts(d.Id())
 		if err != nil {
 			return err
