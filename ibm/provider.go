@@ -169,6 +169,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_certificate_manager_certificate":   dataIBMCertificateManagerCertificate(),
 			"ibm_cis":                               dataSourceIBMCISInstance(),
 			"ibm_cis_dns_records":                   dataSourceIBMCISDNSRecord(),
+			"ibm_cis_glb_health_checks":             dataSourceIBMCISGLBHealthCheck(),
 			"ibm_cis_domain":                        dataSourceIBMCISDomain(),
 			"ibm_cis_firewall":                      dataIBMCISFirewallRecord(),
 			"ibm_cis_rate_limit":                    dataSourceIBMCISRateLimit(),

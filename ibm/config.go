@@ -55,6 +55,7 @@ import (
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 	cisdnsrecordsv1 "github.com/IBM/networking-go-sdk/dnsrecordsv1"
+	cisglbhealthcheckv1 "github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1"
 	ns "github.ibm.com/ibmcloud/namespace-go-sdk/ibmcloudfunctionsnamespaceapiv1"
 )
 
@@ -182,6 +183,7 @@ type ClientSession interface {
 	HpcsEndpointAPI() (hpcs.HPCSV2, error)
 	IAMNamespaceAPI() (*ns.IbmCloudFunctionsNamespaceAPIV1, error)
 	CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecordsV1, error)
+	CisGLBHealthCheckClientSession() (*cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1, error)
 }
 
 type clientSession struct {
@@ -301,6 +303,10 @@ type clientSession struct {
 	// CIS dns service options
 	cisDNSErr           error
 	cisDNSRecordsClient *cisdnsrecordsv1.DnsRecordsV1
+
+	// CIS GLB health check service options
+	cisGLBHealthCheckErr    error
+	cisGLBHealthCheckClient *cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1
 }
 
 // BluemixAcccountAPI ...
@@ -494,6 +500,11 @@ func (sess clientSession) CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecor
 	return sess.cisDNSRecordsClient, sess.cisDNSErr
 }
 
+// CIS GLB Health Check Service
+func (sess clientSession) CisGLBHealthCheckClientSession() (*cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1, error) {
+	return sess.cisGLBHealthCheckClient, sess.cisGLBHealthCheckErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -547,6 +558,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.transitgatewayErr = errEmptyBluemixCredentials
 		session.iamNamespaceErr = errEmptyBluemixCredentials
 		session.cisDNSErr = errEmptyBluemixCredentials
+		session.cisGLBHealthCheckErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -872,24 +884,26 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// IBM Network CIS DNS Record service
-	if sess.BluemixSession.Config != nil && len(sess.BluemixSession.Config.IAMAccessToken) == 0 {
-		log.Println("Access token is empty!")
-		err = fmt.Errorf("Access token is %s", "empty!")
-		return nil, err
-	}
-	// Removed bearer keyword, since, CIS work without bearer keyword
-	token := sess.BluemixSession.Config.IAMAccessToken[7:]
 	cisDNSRecordsOpt := &cisdnsrecordsv1.DnsRecordsV1Options{
 		URL:            envFallBack([]string{"IBMCLOUD_NETWORK_CIS_ENDPOINT"}, "https://api.cis.cloud.ibm.com"),
 		Crn:            core.StringPtr(""),
 		ZoneIdentifier: core.StringPtr(""),
-		Authenticator: &core.BearerTokenAuthenticator{
-			BearerToken: token,
-		},
+		Authenticator:  authenticator,
 	}
 	session.cisDNSRecordsClient, session.cisDNSErr = cisdnsrecordsv1.NewDnsRecordsV1(cisDNSRecordsOpt)
 	if session.cisDNSErr != nil {
 		session.cisDNSErr = fmt.Errorf("Error occured while configuring CIS DNS Service: %s", err)
+	}
+
+	// IBM Network CIS Global load balancer health check/monitor
+	cisGLBHealthCheckOpt := &cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1Options{
+		URL:           envFallBack([]string{"IBMCLOUD_NETWORK_CIS_ENDPOINT"}, "https://api.cis.cloud.ibm.com"),
+		Crn:           core.StringPtr(""),
+		Authenticator: authenticator,
+	}
+	session.cisGLBHealthCheckClient, session.cisGLBHealthCheckErr = cisglbhealthcheckv1.NewGlobalLoadBalancerMonitorV1(cisGLBHealthCheckOpt)
+	if session.cisGLBHealthCheckErr != nil {
+		session.cisGLBHealthCheckErr = fmt.Errorf("Error occured while configuring CIS GLB Health Check Service: %s", session.cisGLBHealthCheckErr)
 	}
 
 	return session, nil
