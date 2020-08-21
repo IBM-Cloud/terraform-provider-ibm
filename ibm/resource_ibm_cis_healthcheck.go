@@ -2,122 +2,134 @@ package ibm
 
 import (
 	"log"
-	"reflect"
-	"strings"
 
+	"github.com/IBM/go-sdk-core/v3/core"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+)
 
-	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
+const (
+	cisGLBHealthCheckID              = "monitor_id"
+	cisGLBHealthCheckPath            = "path"
+	cisGLBHealthCheckPort            = "port"
+	cisGLBHealthCheckExpectedBody    = "expected_body"
+	cisGLBHealthCheckExpectedCodes   = "expected_codes"
+	cisGLBHealthCheckDesc            = "description"
+	cisGLBHealthCheckType            = "type"
+	cisGLBHealthCheckMethod          = "method"
+	cisGLBHealthCheckTimeout         = "timeout"
+	cisGLBHealthCheckRetries         = "retries"
+	cisGLBHealthCheckInterval        = "interval"
+	cisGLBHealthCheckFollowRedirects = "follow_redirects"
+	cisGLBHealthCheckAllowInsecure   = "allow_insecure"
+	cisGLBHealthCheckCreatedOn       = "create_on"
+	cisGLBHealthCheckModifiedOn      = "modified_on"
 )
 
 func resourceIBMCISHealthCheck() *schema.Resource {
 	return &schema.Resource{
 
-		Create:   resourceCIShealthCheckCreate,
-		Read:     resourceCIShealthCheckRead,
-		Update:   resourceCIShealthCheckUpdate,
-		Delete:   resourceCIShealthCheckDelete,
+		Create:   resourceCISHealthCheckCreate,
+		Read:     resourceCISHealthCheckRead,
+		Update:   resourceCISHealthCheckUpdate,
+		Delete:   resourceCISHealthCheckDelete,
+		Exists:   resourceCISHealthCheckExists,
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"cis_id": {
+			cisID: {
 				Type:        schema.TypeString,
 				Description: "CIS instance crn",
 				Required:    true,
 			},
-			"path": {
+			cisGLBHealthCheckID: {
 				Type:        schema.TypeString,
-				Description: "path",
-				Optional:    true,
+				Computed:    true,
+				Description: "GLB Monitor/Health check id",
 			},
-			"expected_body": {
+			cisGLBHealthCheckPath: {
+				Type:         schema.TypeString,
+				Description:  "path",
+				Optional:     true,
+				ValidateFunc: validateURLPath,
+			},
+			cisGLBHealthCheckExpectedBody: {
 				Type:        schema.TypeString,
 				Description: "expected_body",
 				Optional:    true,
 			},
-			"expected_codes": {
+			cisGLBHealthCheckExpectedCodes: {
 				Type:        schema.TypeString,
 				Description: "expected_codes",
 				Optional:    true,
 			},
-			"description": {
+			cisGLBHealthCheckDesc: {
 				Type:        schema.TypeString,
 				Description: "description",
 				Optional:    true,
 			},
-			"type": {
-				Type:         schema.TypeString,
-				Description:  "type",
-				Optional:     true,
-				Default:      "http",
-				ValidateFunc: validateAllowedStringValue([]string{"http", "https", "tcp"}),
-			},
-			"method": {
-				Type:         schema.TypeString,
-				Description:  "method",
-				Optional:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"GET", "HEAD"}),
-			},
-			"timeout": {
-				Type:        schema.TypeInt,
-				Description: "timeout",
+			cisGLBHealthCheckType: {
+				Type:        schema.TypeString,
+				Description: "type",
 				Optional:    true,
-				Default:     5,
-				//ValidateFunc: validation.IntBetween(1, 10),
+				Default:     "http",
+				ValidateFunc: validateAllowedStringValue(
+					[]string{
+						"http",
+						"https",
+						"tcp",
+					},
+				),
 			},
-			"retries": {
+			cisGLBHealthCheckMethod: {
+				Type:        schema.TypeString,
+				Description: "method",
+				Optional:    true,
+				ValidateFunc: validateAllowedStringValue(
+					[]string{
+						"GET",
+						"HEAD",
+					},
+				),
+			},
+			cisGLBHealthCheckTimeout: {
+				Type:         schema.TypeInt,
+				Description:  "timeout",
+				Optional:     true,
+				Default:      2,
+				ValidateFunc: validateTimeout,
+			},
+			cisGLBHealthCheckRetries: {
 				Type:        schema.TypeInt,
 				Description: "retries",
 				Optional:    true,
-				Default:     2,
-				//ValidateFunc: validation.IntBetween(1, 5),
+				Default:     1,
 			},
-			"interval": {
+			cisGLBHealthCheckInterval: {
 				Type:        schema.TypeInt,
 				Description: "interval",
 				Optional:    true,
-				Default:     60,
+				Default:     validateInterval,
 			},
-			"follow_redirects": {
+			cisGLBHealthCheckFollowRedirects: {
 				Type:        schema.TypeBool,
 				Description: "follow_redirects",
 				Optional:    true,
 			},
-			"allow_insecure": {
+			cisGLBHealthCheckAllowInsecure: {
 				Type:        schema.TypeBool,
 				Description: "allow_insecure",
 				Optional:    true,
 				Default:     false,
 			},
-			"created_on": {
+			cisGLBHealthCheckCreatedOn: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"modified_on": {
+			cisGLBHealthCheckModifiedOn: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			// "header": {
-			// 	Type:     schema.TypeMap,
-			// 	Optional: true,
-			// 	Elem: &schema.Resource{
-			// 		Schema: map[string]*schema.Schema{
-			// 			"header": {
-			// 				Type:     schema.TypeString,
-			// 				Required: true,
-			// 			},
-			// 			"values": {
-			// 				Type:     schema.TypeSet,
-			// 				Required: true,
-			// 				Elem: &schema.Schema{
-			// 					Type: schema.TypeString,
-			// 				},
-			// 			},
-			// 		},
-			// 	},
-			// 	Set: HashByMapKey("header"),
-			// },
-			"port": {
+			cisGLBHealthCheckPort: {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
@@ -125,208 +137,246 @@ func resourceIBMCISHealthCheck() *schema.Resource {
 	}
 }
 
-func resourceCIShealthCheckCreate(d *schema.ResourceData, meta interface{}) error {
-	cisClient, err := meta.(ClientSession).CisAPI()
+func resourceCISHealthCheckCreate(d *schema.ResourceData, meta interface{}) error {
+	sess, err := meta.(ClientSession).CisGLBHealthCheckClientSession()
 	if err != nil {
 		return err
 	}
-	cisId := d.Get("cis_id").(string)
 
-	monitorNew := v1.MonitorBody{
-		MonType: d.Get("type").(string),
-	}
-	if expCodes, ok := d.GetOk("expected_codes"); ok {
-		monitorNew.ExpCodes = expCodes.(string)
-	}
-	if expBody, ok := d.GetOk("expected_body"); ok {
-		monitorNew.ExpBody = expBody.(string)
-	}
-	if monPath, ok := d.GetOk("path"); ok {
-		monitorNew.Path = monPath.(string)
-	}
-	if description, ok := d.GetOk("description"); ok {
-		monitorNew.Description = description.(string)
-	}
-	if method, ok := d.GetOk("method"); ok {
-		monitorNew.Method = method.(string)
-	}
-	if timeout, ok := d.GetOk("timeout"); ok {
-		monitorNew.Timeout = timeout.(int)
-	}
-	if retries, ok := d.GetOk("retries"); ok {
-		monitorNew.Retries = retries.(int)
-	}
-	if interval, ok := d.GetOk("interval"); ok {
-		monitorNew.Interval = interval.(int)
-	}
-	if follow_redirects, ok := d.GetOk("follow_redirects"); ok {
-		monitorNew.FollowRedirects = follow_redirects.(bool)
-	}
-	if allow_insecure, ok := d.GetOk("allow_insecure"); ok {
-		monitorNew.AllowInsecure = allow_insecure.(bool)
-	}
-	if port, ok := d.GetOk("port"); ok {
-		monitorNew.Port = port.(int)
-	}
-	var monitor *v1.Monitor
-	var monitorObj v1.Monitor
+	crn := d.Get(cisID).(string)
+	log.Printf("\n\n crn : %s \n\n", crn)
+	sess.Crn = core.StringPtr(crn)
 
-	monitor, err = cisClient.Monitors().CreateMonitor(cisId, monitorNew)
-	if err != nil {
-		log.Printf("CreateMonitors Failed %s\n", err)
-		return err
-	}
-	monitorObj = *monitor
-	//Set unique TF Id from concatenated CIS Ids
-	d.SetId(monitorObj.Id + ":" + cisId)
-	d.Set("path", monitorObj.Path)
+	opt := sess.NewCreateLoadBalancerMonitorOptions()
 
-	return resourceCIShealthCheckRead(d, meta)
-}
+	if expCodes, ok := d.GetOk(cisGLBHealthCheckExpectedCodes); ok {
+		opt.SetExpectedCodes(expCodes.(string))
+	}
+	if expBody, ok := d.GetOk(cisGLBHealthCheckExpectedBody); ok {
+		opt.SetExpectedBody(expBody.(string))
+	}
+	if monPath, ok := d.GetOk(cisGLBHealthCheckPath); ok {
+		opt.SetPath(monPath.(string))
+	}
+	if description, ok := d.GetOk(cisGLBHealthCheckDesc); ok {
+		opt.SetDescription(description.(string))
+	}
+	if method, ok := d.GetOk(cisGLBHealthCheckMethod); ok {
+		opt.SetMethod(method.(string))
+	}
+	if timeout, ok := d.GetOk(cisGLBHealthCheckTimeout); ok {
+		opt.SetTimeout(int64(timeout.(int)))
+	}
+	if retries, ok := d.GetOk(cisGLBHealthCheckRetries); ok {
+		opt.SetRetries(int64(retries.(int)))
+	}
+	if interval, ok := d.GetOk(cisGLBHealthCheckInterval); ok {
+		opt.SetInterval(int64(interval.(int)))
+	}
+	if followRedirects, ok := d.GetOk(cisGLBHealthCheckFollowRedirects); ok {
+		opt.SetFollowRedirects(followRedirects.(bool))
+	}
+	if allowInsecure, ok := d.GetOk(cisGLBHealthCheckAllowInsecure); ok {
+		opt.SetAllowInsecure(allowInsecure.(bool))
+	}
+	if port, ok := d.GetOk(cisGLBHealthCheckPort); ok {
+		opt.SetPort(int64(port.(int)))
+	}
 
-func resourceCIShealthCheckRead(d *schema.ResourceData, meta interface{}) error {
-	cisClient, err := meta.(ClientSession).CisAPI()
+	result, resp, err := sess.CreateLoadBalancerMonitor(opt)
 	if err != nil {
+		log.Printf("create global load balancer health check failed %s", resp)
 		return err
 	}
-	monitorId, cisId, err := convertTftoCisTwoVar(d.Id())
-	if err != nil {
-		return err
-	}
-	var monitor *v1.Monitor
-	monitor, err = cisClient.Monitors().GetMonitor(cisId, monitorId)
-	if err != nil {
-		if checkCisMonitorDeleted(d, meta, err, monitor) {
-			d.SetId("")
-			return nil
-		}
-		log.Printf("[WARN] Error getting zone during MonitorRead %v\n", err)
-		return err
-	}
-	monitorObj := *monitor
-	d.Set("cis_id", cisId)
-	d.Set("description", monitorObj.Description)
-	d.Set("path", monitorObj.Path)
-	d.Set("expected_body", monitorObj.ExpBody)
-	d.Set("expected_codes", monitorObj.ExpCodes)
-	d.Set("type", monitorObj.MonType)
-	d.Set("method", monitorObj.Method)
-	d.Set("timeout", monitorObj.Timeout)
-	d.Set("retries", monitorObj.Retries)
-	d.Set("interval", monitorObj.Interval)
-	d.Set("follow_redirects", monitorObj.FollowRedirects)
-	d.Set("allow_insecure", monitorObj.AllowInsecure)
-	d.Set("port", monitorObj.Port)
+	d.SetId(convertCisToTfTwoVar(*result.Result.ID, crn))
+	d.Set(cisGLBHealthCheckID, result.Result.ID)
+	d.Set(cisID, crn)
+	d.Set(cisGLBHealthCheckDesc, result.Result.Description)
+	d.Set(cisGLBHealthCheckPath, result.Result.Path)
+	d.Set(cisGLBHealthCheckExpectedBody, result.Result.ExpectedBody)
+	d.Set(cisGLBHealthCheckExpectedCodes, result.Result.ExpectedCodes)
+	d.Set(cisGLBHealthCheckType, result.Result.Type)
+	d.Set(cisGLBHealthCheckMethod, result.Result.Method)
+	d.Set(cisGLBHealthCheckTimeout, result.Result.Timeout)
+	d.Set(cisGLBHealthCheckRetries, result.Result.Retries)
+	d.Set(cisGLBHealthCheckInterval, result.Result.Interval)
+	d.Set(cisGLBHealthCheckFollowRedirects, result.Result.FollowRedirects)
+	d.Set(cisGLBHealthCheckAllowInsecure, result.Result.AllowInsecure)
+	d.Set(cisGLBHealthCheckCreatedOn, result.Result.CreatedOn)
+	d.Set(cisGLBHealthCheckModifiedOn, result.Result.ModifiedOn)
+	d.Set(cisGLBHealthCheckPort, result.Result.Port)
+
 	return nil
 }
 
-func resourceCIShealthCheckUpdate(d *schema.ResourceData, meta interface{}) error {
-	cisClient, err := meta.(ClientSession).CisAPI()
+func resourceCISHealthCheckRead(d *schema.ResourceData, meta interface{}) error {
+	sess, err := meta.(ClientSession).CisGLBHealthCheckClientSession()
 	if err != nil {
-		return err
-	}
-	monitorId, cisId, err := convertTftoCisTwoVar(d.Id())
-	if err != nil {
-		return err
-	}
-	monitorUpdate := v1.MonitorBody{}
-	if d.HasChange("type") || d.HasChange("description") || d.HasChange("path") || d.HasChange("expected_body") || d.HasChange("expected_codes") || d.HasChange("method") || d.HasChange("timeout") || d.HasChange("retries") || d.HasChange("interval") || d.HasChange("follow_redirects") || d.HasChange("allow_insecure") || d.HasChange("port") {
-		if monType, ok := d.GetOk("type"); ok {
-			monitorUpdate.MonType = monType.(string)
-		}
-		if expCodes, ok := d.GetOk("expected_codes"); ok {
-			monitorUpdate.ExpCodes = expCodes.(string)
-		}
-		if expBody, ok := d.GetOk("expected_body"); ok {
-			monitorUpdate.ExpBody = expBody.(string)
-		}
-		if monPath, ok := d.GetOk("path"); ok {
-			monitorUpdate.Path = monPath.(string)
-		}
-		if description, ok := d.GetOk("description"); ok {
-			monitorUpdate.Description = description.(string)
-		}
-		if method, ok := d.GetOk("method"); ok {
-			monitorUpdate.Method = method.(string)
-		}
-		if timeout, ok := d.GetOk("timeout"); ok {
-			monitorUpdate.Timeout = timeout.(int)
-		}
-		if retries, ok := d.GetOk("retries"); ok {
-			monitorUpdate.Retries = retries.(int)
-		}
-		if interval, ok := d.GetOk("interval"); ok {
-			monitorUpdate.Interval = interval.(int)
-		}
-		if follow_redirects, ok := d.GetOk("follow_redirects"); ok {
-			monitorUpdate.FollowRedirects = follow_redirects.(bool)
-		}
-		if allow_insecure, ok := d.GetOk("allow_insecure"); ok {
-			monitorUpdate.AllowInsecure = allow_insecure.(bool)
-		}
-		if port, ok := d.GetOk("port"); ok {
-			monitorUpdate.Port = port.(int)
-		}
-		_, err = cisClient.Monitors().UpdateMonitor(cisId, monitorId, monitorUpdate)
-		if err != nil {
-			log.Printf("[WARN] Error getting zone during MonitorUpdate %v \n", err)
-			return err
-		}
-	}
-	return resourceCIShealthCheckRead(d, meta)
-}
-
-func resourceCIShealthCheckDelete(d *schema.ResourceData, meta interface{}) error {
-	cisClient, err := meta.(ClientSession).CisAPI()
-	if err != nil {
-		return err
-	}
-	monitorId, cisId, err := convertTftoCisTwoVar(d.Id())
-	if err != nil {
-		return err
-	}
-	var monitor *v1.Monitor
-	emptyMonitor := new(v1.Monitor)
-	monitor, err = cisClient.Monitors().GetMonitor(cisId, monitorId)
-	if err != nil {
-		if checkCisMonitorDeleted(d, meta, err, monitor) {
-			d.SetId("")
-			return nil
-		}
-		log.Printf("[WARN] Error getting zone during MonitorRead %v\n", err)
 		return err
 	}
 
-	monitorObj := *monitor
-	if !reflect.DeepEqual(emptyMonitor, monitorObj) {
-		err = cisClient.Monitors().DeleteMonitor(cisId, monitorId)
-		if err != nil {
-			log.Printf("[WARN] DeleteMonitor Failed %s\n", err)
-			return err
-		}
+	monitorID, crn, err := convertTftoCisTwoVar(d.Id())
+	if err != nil {
+		return err
 	}
+	sess.Crn = core.StringPtr(crn)
 
-	d.SetId("")
+	opt := sess.NewGetLoadBalancerMonitorOptions(monitorID)
+
+	result, resp, err := sess.GetLoadBalancerMonitor(opt)
+	if err != nil {
+		log.Printf("Error reading global load balancer health check detail: %s", resp)
+		return err
+	}
+	d.Set(cisGLBHealthCheckID, result.Result.ID)
+	d.Set(cisID, crn)
+	d.Set(cisGLBHealthCheckDesc, result.Result.Description)
+	d.Set(cisGLBHealthCheckPath, result.Result.Path)
+	d.Set(cisGLBHealthCheckExpectedBody, result.Result.ExpectedBody)
+	d.Set(cisGLBHealthCheckExpectedCodes, result.Result.ExpectedCodes)
+	d.Set(cisGLBHealthCheckType, result.Result.Type)
+	d.Set(cisGLBHealthCheckMethod, result.Result.Method)
+	d.Set(cisGLBHealthCheckTimeout, result.Result.Timeout)
+	d.Set(cisGLBHealthCheckRetries, result.Result.Retries)
+	d.Set(cisGLBHealthCheckInterval, result.Result.Interval)
+	d.Set(cisGLBHealthCheckFollowRedirects, result.Result.FollowRedirects)
+	d.Set(cisGLBHealthCheckAllowInsecure, result.Result.AllowInsecure)
+	d.Set(cisGLBHealthCheckPort, result.Result.Port)
+	d.Set(cisGLBHealthCheckCreatedOn, result.Result.CreatedOn)
+	d.Set(cisGLBHealthCheckModifiedOn, result.Result.ModifiedOn)
+
 	return nil
 }
 
-func checkCisMonitorDeleted(d *schema.ResourceData, meta interface{}, errCheck error, monitor *v1.Monitor) bool {
-	// Check if error is due to removal of Cis resource and hence all subresources
-	if strings.Contains(errCheck.Error(), "Object not found") ||
-		strings.Contains(errCheck.Error(), "status code: 404") ||
-		strings.Contains(errCheck.Error(), "Invalid zone identifier") { //code 400
-		log.Printf("[WARN] Removing resource from state because it's not found via the CIS API")
-		return true
+func resourceCISHealthCheckUpdate(d *schema.ResourceData, meta interface{}) error {
+	sess, err := meta.(ClientSession).CisGLBHealthCheckClientSession()
+	if err != nil {
+		return err
 	}
-	_, cisId, _ := convertTftoCisTwoVar(d.Id())
-	exists, errNew := rcInstanceExists(cisId, "ibm_cis", meta)
-	if errNew != nil {
-		log.Printf("resourceCISmonitorRead - Failure validating service exists %s\n", errNew)
-		return false
+
+	monitorID, crn, err := convertTftoCisTwoVar(d.Id())
+	if err != nil {
+		return err
 	}
-	if !exists {
-		log.Printf("[WARN] Removing monitor from state because parent cis instance is in removed state")
-		return true
+	sess.Crn = core.StringPtr(crn)
+
+	opt := sess.NewEditLoadBalancerMonitorOptions(monitorID)
+	if d.HasChange(cisGLBHealthCheckType) ||
+		d.HasChange(cisGLBHealthCheckDesc) ||
+		d.HasChange(cisGLBHealthCheckPort) ||
+		d.HasChange(cisGLBHealthCheckExpectedCodes) ||
+		d.HasChange(cisGLBHealthCheckExpectedCodes) ||
+		d.HasChange(cisGLBHealthCheckMethod) ||
+		d.HasChange(cisGLBHealthCheckTimeout) ||
+		d.HasChange(cisGLBHealthCheckRetries) ||
+		d.HasChange(cisGLBHealthCheckInterval) ||
+		d.HasChange(cisGLBHealthCheckFollowRedirects) ||
+		d.HasChange(cisGLBHealthCheckAllowInsecure) ||
+		d.HasChange(cisGLBHealthCheckPort) {
+		if monType, ok := d.GetOk(cisGLBHealthCheckType); ok {
+			opt.SetType(monType.(string))
+		}
+		if expCodes, ok := d.GetOk(cisGLBHealthCheckExpectedCodes); ok {
+			opt.SetExpectedCodes(expCodes.(string))
+		}
+		if expBody, ok := d.GetOk(cisGLBHealthCheckExpectedBody); ok {
+			opt.SetExpectedBody(expBody.(string))
+		}
+		if monPath, ok := d.GetOk(cisGLBHealthCheckPath); ok {
+			opt.SetPath(monPath.(string))
+		}
+		if description, ok := d.GetOk(cisGLBHealthCheckDesc); ok {
+			opt.SetDescription(description.(string))
+		}
+		if method, ok := d.GetOk(cisGLBHealthCheckMethod); ok {
+			opt.SetMethod(method.(string))
+		}
+		if timeout, ok := d.GetOk(cisGLBHealthCheckTimeout); ok {
+			opt.SetTimeout(int64(timeout.(int)))
+		}
+		if retries, ok := d.GetOk(cisGLBHealthCheckRetries); ok {
+			opt.SetRetries(int64(retries.(int)))
+		}
+		if interval, ok := d.GetOk(cisGLBHealthCheckInterval); ok {
+			opt.SetInterval(int64(interval.(int)))
+		}
+		if followRedirects, ok := d.GetOk(cisGLBHealthCheckFollowRedirects); ok {
+			opt.SetFollowRedirects(followRedirects.(bool))
+		}
+		if allowInsecure, ok := d.GetOk(cisGLBHealthCheckAllowInsecure); ok {
+			opt.SetAllowInsecure(allowInsecure.(bool))
+		}
+		if port, ok := d.GetOk(cisGLBHealthCheckPort); ok {
+			opt.SetPort(int64(port.(int)))
+		}
+		result, resp, err := sess.EditLoadBalancerMonitor(opt)
+		if err != nil {
+			log.Printf("Error updating global load balancer health check detail: %s", resp)
+			return err
+		}
+		d.Set(cisGLBHealthCheckID, result.Result.ID)
+		d.Set(cisID, crn)
+		d.Set(cisGLBHealthCheckDesc, result.Result.Description)
+		d.Set(cisGLBHealthCheckPath, result.Result.Path)
+		d.Set(cisGLBHealthCheckExpectedBody, result.Result.ExpectedBody)
+		d.Set(cisGLBHealthCheckExpectedCodes, result.Result.ExpectedCodes)
+		d.Set(cisGLBHealthCheckType, result.Result.Type)
+		d.Set(cisGLBHealthCheckMethod, result.Result.Method)
+		d.Set(cisGLBHealthCheckTimeout, result.Result.Timeout)
+		d.Set(cisGLBHealthCheckRetries, result.Result.Retries)
+		d.Set(cisGLBHealthCheckInterval, result.Result.Interval)
+		d.Set(cisGLBHealthCheckFollowRedirects, result.Result.FollowRedirects)
+		d.Set(cisGLBHealthCheckAllowInsecure, result.Result.AllowInsecure)
+		d.Set(cisGLBHealthCheckPort, result.Result.Port)
+		d.Set(cisGLBHealthCheckCreatedOn, result.Result.CreatedOn)
+		d.Set(cisGLBHealthCheckModifiedOn, result.Result.ModifiedOn)
 	}
-	return false
+
+	return nil
+}
+
+func resourceCISHealthCheckDelete(d *schema.ResourceData, meta interface{}) error {
+	sess, err := meta.(ClientSession).CisGLBHealthCheckClientSession()
+	if err != nil {
+		return err
+	}
+
+	monitorID, crn, err := convertTftoCisTwoVar(d.Id())
+	if err != nil {
+		return err
+	}
+	sess.Crn = core.StringPtr(crn)
+
+	opt := sess.NewDeleteLoadBalancerMonitorOptions(monitorID)
+
+	result, resp, err := sess.DeleteLoadBalancerMonitor(opt)
+	if err != nil {
+		log.Printf("Error deleting global load balancer health check detail: %s", resp)
+		return err
+	}
+	log.Printf("Monitor ID: %s", *result.Result.ID)
+	return nil
+}
+
+func resourceCISHealthCheckExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	sess, err := meta.(ClientSession).CisGLBHealthCheckClientSession()
+	if err != nil {
+		return false, err
+	}
+
+	monitorID, crn, err := convertTftoCisTwoVar(d.Id())
+	if err != nil {
+		return false, err
+	}
+	sess.Crn = core.StringPtr(crn)
+
+	opt := sess.NewGetLoadBalancerMonitorOptions(monitorID)
+
+	result, resp, err := sess.GetLoadBalancerMonitor(opt)
+	if err != nil {
+		log.Printf("global load balancer health check does not exist: %s", resp)
+		return false, err
+	}
+	log.Printf("global load balancer health check exists: %s", *result.Result.ID)
+	return true, nil
 }
