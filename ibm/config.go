@@ -872,15 +872,11 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// IBM Network CIS DNS Record service
-	// Removed bearer keyword, since, CIS work without bearer keyword
-	token := sess.BluemixSession.Config.IAMAccessToken[7:]
 	cisDNSRecordsOpt := &cisdnsrecordsv1.DnsRecordsV1Options{
 		URL:            envFallBack([]string{"IBMCLOUD_NETWORK_CIS_ENDPOINT"}, "https://api.cis.cloud.ibm.com"),
 		Crn:            core.StringPtr(""),
 		ZoneIdentifier: core.StringPtr(""),
-		Authenticator: &core.BearerTokenAuthenticator{
-			BearerToken: token,
-		},
+		Authenticator:  authenticator,
 	}
 	session.cisDNSRecordsClient, session.cisDNSErr = cisdnsrecordsv1.NewDnsRecordsV1(cisDNSRecordsOpt)
 	if session.cisDNSErr != nil {
