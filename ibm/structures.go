@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
 	"github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
@@ -22,6 +21,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Cloud/bluemix-go/api/schematics"
+	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	"github.com/apache/openwhisk-client-go/whisk"
@@ -1054,14 +1054,14 @@ func contains(s []int, e int) bool {
 	return false
 }
 
-func flattenMembersData(list []models.AccessGroupMemberV2, users []accountv1.AccountUser, serviceids []models.ServiceID) ([]string, []string) {
+func flattenMembersData(list []models.AccessGroupMemberV2, users []usermanagementv2.UserInfo, serviceids []models.ServiceID) ([]string, []string) {
 	var ibmid []string
 	var serviceid []string
 	for _, m := range list {
 		if m.Type == iamuumv2.AccessGroupMemberUser {
 			for _, user := range users {
-				if user.IbmUniqueId == m.ID {
-					ibmid = append(ibmid, user.UserId)
+				if user.IamID == m.ID {
+					ibmid = append(ibmid, user.Email)
 					break
 				}
 			}
@@ -1080,15 +1080,15 @@ func flattenMembersData(list []models.AccessGroupMemberV2, users []accountv1.Acc
 	return ibmid, serviceid
 }
 
-func flattenAccessGroupMembers(list []models.AccessGroupMemberV2, users []accountv1.AccountUser, serviceids []models.ServiceID) []map[string]interface{} {
+func flattenAccessGroupMembers(list []models.AccessGroupMemberV2, users []usermanagementv2.UserInfo, serviceids []models.ServiceID) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, m := range list {
 		var value, vtype string
 		if m.Type == iamuumv2.AccessGroupMemberUser {
 			vtype = iamuumv2.AccessGroupMemberUser
 			for _, user := range users {
-				if user.IbmUniqueId == m.ID {
-					value = user.UserId
+				if user.IamID == m.ID {
+					value = user.Email
 					break
 				}
 			}
