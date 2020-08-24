@@ -26,15 +26,9 @@ output "a_record_output" {
   value = ibm_cis_dns_record.test_dns_a_record
 }
 ```
-<<<<<<< HEAD
 
 ## Example Usage 2 : Create AAAA record
 
-=======
-
-## Example Usage 2 : Create AAAA record
-
->>>>>>> aee0203a... Removed example files and old DNS record code
 ```hcl
 resource "ibm_cis_dns_record" "test_dns_aaaa_record" {
   crn     = var.cis_crn
@@ -66,15 +60,9 @@ output "cname_record_output" {
   value = ibm_cis_dns_record.test_dns_cname_record
 }
 ```
-<<<<<<< HEAD
 
 ## Example Usage 4 : Create MX record
 
-=======
-
-## Example Usage 4 : Create MX record
-
->>>>>>> aee0203a... Removed example files and old DNS record code
 ```hcl
 resource "ibm_cis_dns_record" "test_dns_mx_record" {
   crn      = var.cis_crn
@@ -90,15 +78,9 @@ output "mx_record_output" {
   value = ibm_cis_dns_record.test_dns_mx_record
 }
 ```
-<<<<<<< HEAD
 
 ## Example Usage 5 : Create LOC record
 
-=======
-
-## Example Usage 5 : Create LOC record
-
->>>>>>> aee0203a... Removed example files and old DNS record code
 ```hcl
 resource "ibm_cis_dns_record" "test_dns_loc_record" {
   crn     = var.cis_crn
@@ -126,15 +108,9 @@ output "loc_record_output" {
   value = ibm_cis_dns_record.test_dns_loc_record
 }
 ```
-<<<<<<< HEAD
 
 ## Example Usage 6 : Create CAA record
 
-=======
-
-## Example Usage 6 : Create CAA record
-
->>>>>>> aee0203a... Removed example files and old DNS record code
 ```hcl
 resource "ibm_cis_dns_record" "test_dns_caa_record" {
   crn     = var.cis_crn
@@ -152,7 +128,6 @@ output "caa_record_output" {
   value = ibm_cis_dns_record.test_dns_caa_record
 }
 ```
-<<<<<<< HEAD
 
 ## Example Usage 7 : Create SRV record
 
@@ -228,8 +203,6 @@ output "ns_record_output" {
 output "caa_record_output" {
   value = ibm_cis_dns_record.test_dns_caa_record
 }
-=======
->>>>>>> aee0203a... Removed example files and old DNS record code
 
 ## Example Usage 7 : Create SRV record
 
