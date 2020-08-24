@@ -20,7 +20,6 @@ const (
 	cisDNSRecordName       = "name"
 	cisDNSRecordType       = "type"
 	cisDNSRecordContent    = "content"
-	cisDNSRecordZoneName   = "zone_name"
 	cisDNSRecordProxiable  = "proxiable"
 	cisDNSRecordProxied    = "proxied"
 	cisDNSRecordTTL        = "ttl"
@@ -631,7 +630,6 @@ func resourceIBMCISDnsRecordRead(d *schema.ResourceData, meta interface{}) error
 	d.Set(cisDNSRecordType, *result.Result.Type)
 	d.Set(cisDNSRecordContent, *result.Result.Content)
 	d.Set(cisDomainID, *result.Result.ZoneID)
-	d.Set(cisDNSRecordZoneName, *result.Result.ZoneName)
 	d.Set(cisDNSRecordProxiable, *result.Result.Proxiable)
 	d.Set(cisDNSRecordProxied, *result.Result.Proxied)
 	d.Set(cisDNSRecordTTL, *result.Result.TTL)

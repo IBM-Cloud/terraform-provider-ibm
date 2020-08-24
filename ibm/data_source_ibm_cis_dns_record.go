@@ -1,6 +1,7 @@
 package ibm
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -133,7 +134,7 @@ func dataSourceIBMCISDNSRecordsRead(d *schema.ResourceData, meta interface{}) er
 	records = make([]map[string]interface{}, 0)
 	for _, instance := range result.Result {
 		record := map[string]interface{}{}
-		record["id"] = *instance.ID
+		record["id"] = convertCisToTfThreeVar(*instance.ID, zoneID, crn)
 		record[cisDNSRecordID] = *instance.ID
 		record[cisZoneName] = *instance.ZoneName
 		record[cisDNSRecordCreatedOn] = *instance.CreatedOn
@@ -159,5 +160,7 @@ func dataSourceIBMCISDNSRecordsRead(d *schema.ResourceData, meta interface{}) er
 
 // dataSourceIBMCISDNSRecordID returns a reasonable ID for dns zones list.
 func dataSourceIBMCISDNSRecordID(d *schema.ResourceData) string {
-	return time.Now().UTC().String()
+	zoneID := d.Get(cisDomainID)
+	crn := d.Get(cisID)
+	return fmt.Sprintf("%s:%s", zoneID, crn)
 }
