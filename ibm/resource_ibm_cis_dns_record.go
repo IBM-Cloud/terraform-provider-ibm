@@ -592,26 +592,6 @@ func resourceIBMCISDnsRecordCreate(d *schema.ResourceData, meta interface{}) err
 		log.Printf("Error creating dns record: %s, error %s", response, err)
 		return err
 	}
-	d.Set(cisDNSRecordID, *result.Result.ID)
-	d.Set(cisZoneName, *result.Result.ZoneName)
-	d.Set(cisDNSRecordCreatedOn, *result.Result.CreatedOn)
-	d.Set(cisDNSRecordModifiedOn, *result.Result.ModifiedOn)
-	d.Set(cisDNSRecordName, *result.Result.Name)
-	d.Set(cisDNSRecordType, *result.Result.Type)
-	d.Set(cisDNSRecordContent, *result.Result.Content)
-	d.Set(cisDomainID, *result.Result.ZoneID)
-	d.Set(cisDNSRecordZoneName, *result.Result.ZoneName)
-	d.Set(cisDNSRecordProxiable, *result.Result.Proxiable)
-	d.Set(cisDNSRecordTTL, *result.Result.TTL)
-
-	switch recordType {
-	// for MX & SRV records ouptut
-	case cisDNSRecordTypeMX, cisDNSRecordTypeSRV:
-		d.Set(cisDNSRecordPriority, *result.Result.Priority)
-	// for LOC & CAA records output
-	case cisDNSRecordTypeLOC, cisDNSRecordTypeCAA:
-		d.Set(cisDNSRecordData, result.Result.Data)
-	}
 
 	d.SetId(convertCisToTfThreeVar(*result.Result.ID, zoneID, crn))
 	return resourceIBMCISDnsRecordUpdate(d, meta)
@@ -973,30 +953,9 @@ func resourceIBMCISDnsRecordUpdate(d *schema.ResourceData, meta interface{}) err
 			log.Printf("Error updating dns record: %s, error %s", response, err)
 			return err
 		}
-		d.Set(cisDNSRecordID, *result.Result.ID)
-		d.Set(cisZoneName, *result.Result.ZoneName)
-		d.Set(cisDNSRecordCreatedOn, *result.Result.CreatedOn)
-		d.Set(cisDNSRecordModifiedOn, *result.Result.ModifiedOn)
-		d.Set(cisDNSRecordName, *result.Result.Name)
-		d.Set(cisDNSRecordType, *result.Result.Type)
-		d.Set(cisDNSRecordContent, *result.Result.Content)
-		d.Set(cisDomainID, *result.Result.ZoneID)
-		d.Set(cisDNSRecordZoneName, *result.Result.ZoneName)
-		d.Set(cisDNSRecordProxiable, *result.Result.Proxiable)
-		d.Set(cisDNSRecordTTL, *result.Result.TTL)
-
-		switch recordType {
-		// for MX & SRV records ouptut
-		case cisDNSRecordTypeMX, cisDNSRecordTypeSRV:
-			d.Set(cisDNSRecordPriority, *result.Result.Priority)
-		// for LOC & CAA records output
-		case cisDNSRecordTypeLOC, cisDNSRecordTypeCAA:
-			d.Set(cisDNSRecordData, result.Result.Data)
-		}
+		log.Printf("record id: %s", *result.Result.ID)
 	}
-	d.Set(cisDNSRecordProxied, proxied)
-
-	return nil
+	return resourceIBMCISDnsRecordRead(d, meta)
 }
 
 func resourceIBMCISDnsRecordDelete(d *schema.ResourceData, meta interface{}) error {
