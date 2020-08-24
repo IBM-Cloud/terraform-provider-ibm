@@ -280,7 +280,7 @@ func testAccCheckIBMCisDNSRecordConfigCisDS_Basic(resourceId string, cisDomain s
 	resource "ibm_cis_dns_record" "%[1]s" {
 		cis_id    = data.ibm_cis.cis.id
 		domain_id = data.ibm_cis_domain.cis_domain.id
-	  
+
 		name    = "%[1]s"
 		content = "192.168.0.10"
 		type    = "A"
@@ -293,7 +293,6 @@ func testAccCheckIBMCisDNSRecordConfigCisRI_Basic(resourceId string, cisDomain s
 	resource "ibm_cis_dns_record" "%[1]s" {
 		cis_id    = ibm_cis.cis.id
 		domain_id = ibm_cis_domain.cis_domain.id
-	  
 		name    = "%[1]s"
 		content = "192.168.0.10"
 		type    = "A"
@@ -306,7 +305,6 @@ func testAccCheckIBMCisDNSRecordConfigCaseSensitive(resourceId string, cisDomain
 	resource "ibm_cis_dns_record" "%[1]s" {
 		cis_id    = data.ibm_cis.cis.id
 		domain_id = data.ibm_cis_domain.cis_domain.id
-	  
 		name    = "%[1]s"
 		content = "192.168.0.10"
 		type    = "A"
@@ -375,7 +373,7 @@ func testAccCheckIBMCisDNSRecordConfigProxied(resourceId string, cisDomainStatic
 	resource "ibm_cis_dns_record" "%[1]s" {
 		cis_id    = data.ibm_cis.cis.id
 		domain_id = data.ibm_cis_domain.cis_domain.id
-	  
+
 		name    = "%[1]s"
 		content = "%[1]s"
 		type    = "CNAME"
