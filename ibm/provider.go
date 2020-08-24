@@ -344,6 +344,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_iam_user_invite":                                resourceIBMUserInvite(),
 			"ibm_ipsec_vpn":                                      resourceIBMIPSecVPN(),
 			"ibm_is_floating_ip":                                 resourceIBMISFloatingIP(),
+			"ibm_is_flow_log":                                    resourceIBMISFlowLog(),
 			"ibm_is_instance":                                    resourceIBMISInstance(),
 			"ibm_is_ike_policy":                                  resourceIBMISIKEPolicy(),
 			"ibm_is_ipsec_policy":                                resourceIBMISIPSecPolicy(),
@@ -457,6 +458,7 @@ func Validator() ValidatorDict {
 				"ibm_function_rule":         resourceIBMFuncRuleValidator(),
 				"ibm_function_trigger":      resourceIBMFuncTriggerValidator(),
 				"ibm_function_namespace":    resourceIBMFuncNamespaceValidator(),
+				"ibm_is_flow_log":           resourceIBMISFlowLogValidator(),
 			},
 		}
 	})
