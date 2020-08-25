@@ -34,6 +34,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
+- `cis_dns_records` - The list of DNS records.
 - `id` - The identifier which consists of record id, zone id and crn with `:` seperator.
 - `record_id` - The DNS record identifier.
 - `name` - The name of a DNS record.
