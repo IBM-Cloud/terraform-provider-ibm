@@ -199,8 +199,9 @@ func resourceIBMISFlowLogCreate(d *schema.ResourceData, meta interface{}) error 
 		resourceGroupIdentityModel.ID = &group
 		createFlowLogCollectorOptionsModel.ResourceGroup = resourceGroupIdentityModel
 	}
-	if _, ok := d.GetOk(isFlowLogActive); ok {
-		active := d.Get(isFlowLogActive).(bool)
+
+	if v, ok := d.GetOkExists(isFlowLogActive); ok {
+		active := v.(bool)
 		createFlowLogCollectorOptionsModel.Active = &active
 	}
 
