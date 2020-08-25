@@ -90,7 +90,7 @@ func testAccCheckIBMISFlowLogConfig(vpcname, name, flowlogname, sshname, publicK
 	  }
 
 	data "ibm_resource_group" "cos_group" {
-		name = "Default"
+		name = "default"
 	}
 	  
 	resource "ibm_resource_instance" "instance2" {
@@ -177,7 +177,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
-	bucketRegion := "us"
+	bucketRegion := "us-south"
 	bucketClass := "standard"
 	bucketRegionType := "cross_region_location"
 
