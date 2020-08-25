@@ -169,11 +169,13 @@ func resourceIBMCISDnsRecord() *schema.Resource {
 						// LOC record properties
 						"size": {
 							Type:             schema.TypeFloat,
+							Computed:         true,
 							Optional:         true,
 							DiffSuppressFunc: suppressDataDiff,
 						},
 						"altitude": {
 							Type:             schema.TypeFloat,
+							Computed:         true,
 							Optional:         true,
 							DiffSuppressFunc: suppressDataDiff,
 						},
@@ -187,11 +189,13 @@ func resourceIBMCISDnsRecord() *schema.Resource {
 						},
 						"precision_horz": {
 							Type:             schema.TypeFloat,
+							Computed:         true,
 							Optional:         true,
 							DiffSuppressFunc: suppressDataDiff,
 						},
 						"precision_vert": {
 							Type:             schema.TypeFloat,
+							Computed:         true,
 							Optional:         true,
 							DiffSuppressFunc: suppressDataDiff,
 						},
@@ -205,6 +209,7 @@ func resourceIBMCISDnsRecord() *schema.Resource {
 						},
 						"long_seconds": {
 							Type:             schema.TypeFloat,
+							Computed:         true,
 							Optional:         true,
 							DiffSuppressFunc: suppressDataDiff,
 						},
@@ -218,6 +223,7 @@ func resourceIBMCISDnsRecord() *schema.Resource {
 						},
 						"lat_seconds": {
 							Type:             schema.TypeFloat,
+							Computed:         true,
 							Optional:         true,
 							DiffSuppressFunc: suppressDataDiff,
 						},
@@ -976,8 +982,19 @@ func resourceIBMCISDnsRecordDelete(d *schema.ResourceData, meta interface{}) err
 	sess.Crn = core.StringPtr(crn)
 	sess.ZoneIdentifier = core.StringPtr(zoneID)
 
-	opt := sess.NewDeleteDnsRecordOptions(recordID)
-	result, response, err := sess.DeleteDnsRecord(opt)
+	getOpt := sess.NewGetDnsRecordOptions(recordID)
+	_, getResponse, err := sess.GetDnsRecord(getOpt)
+	if err != nil {
+		if checkCisRecordDeleted(d, meta, err) {
+			log.Printf("Error deleting dns record: %s", getResponse)
+			d.SetId("")
+			return nil
+		}
+		log.Printf("[WARN] Error getting zone during DNS Record Read %v\n", err)
+	}
+
+	delOpt := sess.NewDeleteDnsRecordOptions(recordID)
+	result, response, err := sess.DeleteDnsRecord(delOpt)
 	if err != nil {
 		log.Printf("Error deleting dns record: %s", response)
 		return err
@@ -1069,6 +1086,28 @@ func suppressNameDiff(k, old, new string, d *schema.ResourceData) bool {
 func suppressDataDiff(k, old, new string, d *schema.ResourceData) bool {
 	// Tuncate after .
 	if strings.SplitN(old, ".", 2)[0] == strings.SplitN(new, ".", 2)[0] {
+		return true
+	}
+	return false
+}
+
+func checkCisRecordDeleted(d *schema.ResourceData, meta interface{}, errCheck error) bool {
+	// Check if error is due to removal of Cis resource and hence all subresources
+	if strings.Contains(errCheck.Error(), "Object not found") ||
+		strings.Contains(errCheck.Error(), "status code: 404") ||
+		strings.Contains(errCheck.Error(), "status code: 400") ||
+		strings.Contains(errCheck.Error(), "Invalid dns record identifier") {
+		log.Printf("[WARN] Removing resource from state because it's not found via the CIS API")
+		return true
+	}
+	_, _, cisID, _ := convertTfToCisThreeVar(d.Id())
+	exists, errNew := rcInstanceExists(cisID, "ibm_cis", meta)
+	if errNew != nil {
+		log.Printf("resourceCISDnsRecordRead - Failure validating service exists %s\n", errNew)
+		return false
+	}
+	if !exists {
+		log.Printf("[WARN] Removing Dns Record from state because parent cis instance is in removed state")
 		return true
 	}
 	return false
