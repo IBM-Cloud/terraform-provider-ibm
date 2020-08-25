@@ -51,7 +51,7 @@ func resourceIBMPINetworkPort() *schema.Resource {
 			    "portID": "6c9d0e42-73f3-492f-840d-3d4a7a573014",
 			*/
 
-			"ipaddress": {
+			helpers.PINetworkPortIPAddress: {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
@@ -82,8 +82,8 @@ func resourceIBMPINetworkPortCreate(d *schema.ResourceData, meta interface{}) er
 	}
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	networkname := d.Get(helpers.PINetworkName).(string)
-	description := d.Get("description").(string)
-	ipaddress := d.Get("ipaddress").(string)
+	description := d.Get(helpers.PINetworkPortDescription).(string)
+	ipaddress := d.Get(helpers.PINetworkPortIPAddress).(string)
 
 	nwportBody := &models.NetworkPortCreate{Description: description}
 
@@ -138,7 +138,7 @@ func resourceIBMPINetworkPortRead(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 
-	d.Set("ipaddress", networkdata.IPAddress)
+	d.Set(helpers.PINetworkPortIPAddress, networkdata.IPAddress)
 	d.Set("macaddress", networkdata.MacAddress)
 	d.Set("status", networkdata.Status)
 	d.Set("portid", networkdata.PortID)
