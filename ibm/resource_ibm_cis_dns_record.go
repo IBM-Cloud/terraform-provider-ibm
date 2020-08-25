@@ -668,7 +668,7 @@ func resourceIBMCISDnsRecordUpdate(d *schema.ResourceData, meta interface{}) err
 	// session options
 	recordID, zoneID, crn, err = convertTfToCisThreeVar(d.Id())
 	if err != nil {
-		log.Println("Error in reading input")
+		log.Println("Error in reading record id")
 		return err
 	}
 	sess.Crn = core.StringPtr(crn)
