@@ -1,11 +1,13 @@
 package ibm
 
 import (
-	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"log"
 	"reflect"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
+	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 )
 
 func resourceIBMCISDomain() *schema.Resource {
@@ -38,6 +40,10 @@ func resourceIBMCISDomain() *schema.Resource {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"domain_id": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 		Create:   resourceCISdomainCreate,
@@ -97,6 +103,7 @@ func resourceCISdomainRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("paused", zoneObj.Paused)
 	d.Set("name_servers", zoneObj.NameServers)
 	d.Set("original_name_servers", zoneObj.OriginalNameServer)
+	d.Set("domain_id", zoneObj.Id)
 
 	return nil
 }
