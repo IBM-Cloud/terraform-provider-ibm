@@ -126,9 +126,18 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 			},
 
 			"os_reference_code": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ForceNew:      true,
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
+					if strings.HasSuffix(n, "_LATEST") {
+						t := strings.Trim(n, "_LATEST")
+						if strings.Contains(o, t) {
+							return true
+						}
+					}
+					return o == n
+				},
 				ConflictsWith: []string{"image_id"},
 			},
 
@@ -1094,10 +1103,7 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 	if result.BlockDeviceTemplateGroup != nil {
 		d.Set("image_id", result.BlockDeviceTemplateGroup.Id)
 	} else {
-		//Provided only for the sake of importing os_reference_Code
-		//In other flows when user gives say UBUNTU_LATEST in the configuration file, the value read back from API might be UBUNTU_16_64
-		//which is the actual Ubuntu version which gets provisioned. So we simply avoid writing back the value received to avoid creating diff
-		if _, ok := d.GetOk("os_reference_code"); !ok {
+		if result.OperatingSystemReferenceCode != nil {
 			d.Set("os_reference_code", result.OperatingSystemReferenceCode)
 		}
 	}
