@@ -281,7 +281,7 @@ output "ns_record_output" {
 The following arguments are supported:
 
 - `cis_id` - (Required,string) The ID of the CIS service instance
-- `domain_id` - (Required,string) The ID of the domain to add the DNS record to.
+- `domain_id` - (Required,string) The ID of the domain to add the DNS record to. IT can either be a combination of <domain_id>:<cis_id> or <domain_id>
 - `type` - (Required, string) The type of the DNS record to be created. Supported Record types are: A, AAAA, CNAME, LOC, TXT, MX, SRV, SPF, NS, CAA.
 - `name` - (Required, string) The name of a DNS record.
 - `content` - (Optional,string) The (string) value of the record, e.g. "192.168.127.127". Either this or `data` must be specified

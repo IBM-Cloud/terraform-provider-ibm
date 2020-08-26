@@ -81,7 +81,6 @@ func dataSourceIBMCISDNSRecord() *schema.Resource {
 						},
 						cisDNSRecordPriority: {
 							Type:        schema.TypeInt,
-							Optional:    true,
 							Computed:    true,
 							Description: "DNS Record MX priority",
 						},
@@ -99,6 +98,11 @@ func dataSourceIBMCISDNSRecord() *schema.Resource {
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "DNS Record Time To Live",
+						},
+						cisDNSRecordData: {
+							Type:        schema.TypeMap,
+							Computed:    true,
+							Description: "DNS Record Data",
 						},
 					},
 				},
@@ -141,19 +145,24 @@ func dataSourceIBMCISDNSRecordsRead(d *schema.ResourceData, meta interface{}) er
 		record[cisDNSRecordModifiedOn] = *instance.ModifiedOn
 		record[cisDNSRecordName] = *instance.Name
 		record[cisDNSRecordType] = *instance.Type
-		record[cisDNSRecordContent] = *instance.Content
+		if instance.Priority != nil {
+			record[cisDNSRecordPriority] = *instance.Priority
+		}
+		if instance.Content != nil {
+			record[cisDNSRecordContent] = *instance.Content
+		}
 		record[cisDNSRecordProxiable] = *instance.Proxiable
 		record[cisDNSRecordProxied] = *instance.Proxied
 		record[cisDNSRecordTTL] = *instance.TTL
-
-		switch *instance.Type {
-		// for MX & SRV records ouptut
-		case cisDNSRecordTypeMX, cisDNSRecordTypeSRV:
-			record[cisDNSRecordPriority] = *instance.Priority
+		if instance.Data != nil {
+			d.Set(cisDNSRecordData, flattenData(instance.Data, *instance.ZoneName))
 		}
+
 		records = append(records, record)
 	}
 	d.SetId(dataSourceIBMCISDNSRecordID(d))
+	d.Set(cisID, crn)
+	d.Set(cisDomainID, zoneID)
 	d.Set(cisDNSRecords, records)
 	return nil
 }

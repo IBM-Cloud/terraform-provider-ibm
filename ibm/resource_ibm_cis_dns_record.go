@@ -58,9 +58,10 @@ func resourceIBMCISDnsRecord() *schema.Resource {
 				Required:    true,
 			},
 			cisDomainID: {
-				Type:        schema.TypeString,
-				Description: "Associated CIS domain",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "Associated CIS domain",
+				Required:         true,
+				DiffSuppressFunc: suppressDomainIDDiff,
 			},
 			cisZoneName: {
 				Type:        schema.TypeString,
@@ -82,10 +83,11 @@ func resourceIBMCISDnsRecord() *schema.Resource {
 				Description: "Record type",
 			},
 			cisDNSRecordContent: {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ConflictsWith: []string{cisDNSRecordData},
-				Description:   "DNS record content",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ConflictsWith:    []string{cisDNSRecordData},
+				DiffSuppressFunc: suppressContentDiff,
+				Description:      "DNS record content",
 			},
 			cisDNSRecordData: {
 				Type:          schema.TypeMap,
@@ -627,26 +629,25 @@ func resourceIBMCISDnsRecordRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	domainID := fmt.Sprintf("%s:%s", *result.Result.ZoneID, crn)
-	d.Set(cisDomainID, domainID)
+	d.Set(cisID, crn)
+	d.Set(cisDomainID, *result.Result.ZoneID)
 	d.Set(cisDNSRecordID, *result.Result.ID)
 	d.Set(cisZoneName, *result.Result.ZoneName)
 	d.Set(cisDNSRecordCreatedOn, *result.Result.CreatedOn)
 	d.Set(cisDNSRecordModifiedOn, *result.Result.ModifiedOn)
 	d.Set(cisDNSRecordName, *result.Result.Name)
 	d.Set(cisDNSRecordType, *result.Result.Type)
-	d.Set(cisDNSRecordContent, *result.Result.Content)
+	if result.Result.Content != nil {
+		d.Set(cisDNSRecordContent, *result.Result.Content)
+	}
 	d.Set(cisDNSRecordProxiable, *result.Result.Proxiable)
 	d.Set(cisDNSRecordProxied, *result.Result.Proxied)
 	d.Set(cisDNSRecordTTL, *result.Result.TTL)
-
-	switch *result.Result.Type {
-	// for MX & SRV records ouptut
-	case cisDNSRecordTypeMX, cisDNSRecordTypeSRV:
+	if result.Result.Priority != nil {
 		d.Set(cisDNSRecordPriority, *result.Result.Priority)
-	// for LOC & CAA records output
-	case cisDNSRecordTypeLOC, cisDNSRecordTypeCAA:
-		d.Set(cisDNSRecordData, result.Result.Data)
+	}
+	if result.Result.Data != nil {
+		d.Set(cisDNSRecordData, flattenData(result.Result.Data, *result.Result.ZoneName))
 	}
 	return nil
 }
@@ -982,25 +983,14 @@ func resourceIBMCISDnsRecordDelete(d *schema.ResourceData, meta interface{}) err
 	sess.Crn = core.StringPtr(crn)
 	sess.ZoneIdentifier = core.StringPtr(zoneID)
 
-	getOpt := sess.NewGetDnsRecordOptions(recordID)
-	_, getResponse, err := sess.GetDnsRecord(getOpt)
-	if err != nil {
-		if checkCisRecordDeleted(d, meta, err) {
-			log.Printf("Error deleting dns record: %s", getResponse)
-			d.SetId("")
-			return nil
-		}
-		log.Printf("[WARN] Error getting zone during DNS Record Read %v\n", err)
-	}
-
 	delOpt := sess.NewDeleteDnsRecordOptions(recordID)
 	result, response, err := sess.DeleteDnsRecord(delOpt)
-	if err != nil {
-		log.Printf("Error deleting dns record: %s", response)
+
+	if err != nil && !strings.Contains(err.Error(), "Request failed with status code: 404") {
+		log.Printf("Error deleting dns record %s: %s", *result.Result.ID, response)
 		return err
 	}
-	log.Printf("record id: %s", *result.Result.ID)
-	return err
+	return nil
 }
 
 func resourceIBMCISDnsRecordExist(d *schema.ResourceData, meta interface{}) (bool, error) {
@@ -1082,6 +1072,12 @@ func suppressNameDiff(k, old, new string, d *schema.ResourceData) bool {
 
 	return false
 }
+func suppressContentDiff(k, old, new string, d *schema.ResourceData) bool {
+	if new == "" && old != "" {
+		return true
+	}
+	return false
+}
 
 func suppressDataDiff(k, old, new string, d *schema.ResourceData) bool {
 	// Tuncate after .
@@ -1091,24 +1087,25 @@ func suppressDataDiff(k, old, new string, d *schema.ResourceData) bool {
 	return false
 }
 
-func checkCisRecordDeleted(d *schema.ResourceData, meta interface{}, errCheck error) bool {
-	// Check if error is due to removal of Cis resource and hence all subresources
-	if strings.Contains(errCheck.Error(), "Object not found") ||
-		strings.Contains(errCheck.Error(), "status code: 404") ||
-		strings.Contains(errCheck.Error(), "status code: 400") ||
-		strings.Contains(errCheck.Error(), "Invalid dns record identifier") {
-		log.Printf("[WARN] Removing resource from state because it's not found via the CIS API")
-		return true
-	}
-	_, _, cisID, _ := convertTfToCisThreeVar(d.Id())
-	exists, errNew := rcInstanceExists(cisID, "ibm_cis", meta)
-	if errNew != nil {
-		log.Printf("resourceCISDnsRecordRead - Failure validating service exists %s\n", errNew)
-		return false
-	}
-	if !exists {
-		log.Printf("[WARN] Removing Dns Record from state because parent cis instance is in removed state")
+func suppressDomainIDDiff(k, old, new string, d *schema.ResourceData) bool {
+	// TF concantenates domain_id with cis_id. So just check when <domain_id> is passed as input it is same as domai_id in the combination that is Set.
+	if strings.Split(new, ":")[0] == old {
 		return true
 	}
 	return false
+}
+func flattenData(inVal interface{}, zone string) map[string]string {
+	outVal := make(map[string]string)
+	if inVal == nil {
+		return outVal
+	}
+	for k, v := range inVal.(map[string]interface{}) {
+		strValue := fmt.Sprintf("%v", v)
+		if k == "name" {
+			strValue = strings.Replace(strValue, "."+zone, "", -1)
+		}
+		outVal[k] = strValue
+
+	}
+	return outVal
 }
