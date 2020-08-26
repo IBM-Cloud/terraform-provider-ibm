@@ -108,6 +108,13 @@ func testAccCheckIBMISFlowLogConfig(vpcname, name, flowlogname, sshname, publicK
 		storage_class        = "%s"
 	}	  
 
+	resource "ibm_iam_authorization_policy" "policy" {
+		source_service_name  = "is"
+		source_resource_type = "flow-log-collector"
+		target_service_name  = "cloud-object-storage"
+		roles                = ["Writer"]
+	  }
+
 	resource "ibm_is_flow_log" "test_flow_log" {
 		name    = "%s"
 		target = ibm_is_instance.testacc_instance.id
