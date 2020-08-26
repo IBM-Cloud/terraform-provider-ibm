@@ -207,6 +207,8 @@ func resourceIBMISInstance() *schema.Resource {
 						},
 						isInstanceNicPrimaryIpv4Address: {
 							Type:     schema.TypeString,
+							ForceNew: true,
+							Optional: true,
 							Computed: true,
 						},
 						isInstanceNicSecurityGroups: {
@@ -241,6 +243,8 @@ func resourceIBMISInstance() *schema.Resource {
 						},
 						isInstanceNicPrimaryIpv4Address: {
 							Type:     schema.TypeString,
+							ForceNew: true,
+							Optional: true,
 							Computed: true,
 						},
 						isInstanceNicSecurityGroups: {
@@ -487,6 +491,11 @@ func classicInstanceCreate(d *schema.ResourceData, meta interface{}, profile, na
 		if ok {
 			primnicobj.Name = &namestr
 		}
+		ipv4, _ := primnic[isInstanceNicPrimaryIpv4Address]
+		ipv4str := ipv4.(string)
+		if ipv4str != "" {
+			primnicobj.PrimaryIpv4Address = &ipv4str
+		}
 		secgrpintf, ok := primnic[isInstanceNicSecurityGroups]
 		if ok {
 			secgrpSet := secgrpintf.(*schema.Set)
@@ -520,6 +529,11 @@ func classicInstanceCreate(d *schema.ResourceData, meta interface{}, profile, na
 			namestr := name.(string)
 			if ok && namestr != "" {
 				nwInterface.Name = &namestr
+			}
+			ipv4, _ := nic[isInstanceNicPrimaryIpv4Address]
+			ipv4str := ipv4.(string)
+			if ipv4str != "" {
+				nwInterface.PrimaryIpv4Address = &ipv4str
 			}
 			secgrpintf, ok := nic[isInstanceNicSecurityGroups]
 			if ok {
@@ -623,13 +637,13 @@ func instanceCreate(d *schema.ResourceData, meta interface{}, profile, name, vpc
 		if ok {
 			volTemplate.Name = &namestr
 		}
-		// enc, ok := bootvol[isInstanceBootEncryption]
-		// encstr := enc.(string)
-		// if ok && encstr != "" {
-		// 	volTemplate.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
-		// 		Crn: &encstr,
-		// 	}
-		// }
+		enc, ok := bootvol[isInstanceBootEncryption]
+		encstr := enc.(string)
+		if ok && encstr != "" {
+			volTemplate.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
+				CRN: &encstr,
+			}
+		}
 		volcap := 100
 		volcapint64 := int64(volcap)
 		volprof := "general-purpose"
@@ -656,6 +670,11 @@ func instanceCreate(d *schema.ResourceData, meta interface{}, profile, name, vpc
 		namestr := name.(string)
 		if namestr != "" {
 			primnicobj.Name = &namestr
+		}
+		ipv4, _ := primnic[isInstanceNicPrimaryIpv4Address]
+		ipv4str := ipv4.(string)
+		if ipv4str != "" {
+			primnicobj.PrimaryIpv4Address = &ipv4str
 		}
 		secgrpintf, ok := primnic[isInstanceNicSecurityGroups]
 		if ok {
@@ -689,6 +708,11 @@ func instanceCreate(d *schema.ResourceData, meta interface{}, profile, name, vpc
 			namestr := name.(string)
 			if ok && namestr != "" {
 				nwInterface.Name = &namestr
+			}
+			ipv4, _ := nic[isInstanceNicPrimaryIpv4Address]
+			ipv4str := ipv4.(string)
+			if ipv4str != "" {
+				nwInterface.PrimaryIpv4Address = &ipv4str
 			}
 			secgrpintf, ok := nic[isInstanceNicSecurityGroups]
 			if ok {

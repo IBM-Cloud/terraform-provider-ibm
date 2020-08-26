@@ -164,11 +164,13 @@ The following arguments are supported:
 Nested `primary_network_interface` block have the following structure:
   * `name` - (Optional, string) The name of the network interface.
   * `port_speed` - (Deprecated, int) Speed of the network interface.
+  * `primary_ipv4_address` - (Optional, Forces new resource, string) The IPV4 address of the interface
   * `subnet` -  (Required, string) ID of the subnet.
   * `security_groups` - (Optional, list) Comma separated IDs of security groups.
 * `network_interfaces` - (Optional, Forces new resource, list) A nested block describing the additional network interface of this instance.
 Nested `network_interfaces` block have the following structure:
   * `name` - (Optional, string) The name of the network interface.
+  * `primary_ipv4_address` - (Optional, Forces new resource, string) The IPV4 address of the interface
   * `subnet` -  (Required, string) ID of the subnet.
   * `security_groups` - (Optional, list) Comma separated IDs of security groups.
 
