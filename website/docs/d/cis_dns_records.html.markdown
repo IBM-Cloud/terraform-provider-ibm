@@ -43,3 +43,8 @@ The following attributes are exported:
   - `created_on` - The DNS record created date.
   - `modified_on`- The DNS record modified date.
   - `zone_name` - The DNS zone name.
+  - `type` - The type of the DNS record to be created. Supported Record types are: A, AAAA, CNAME, LOC, TXT, MX, SRV, SPF, NS, CAA.
+  - `content` - The (string) value of the record.
+  - `ttl`-TTL of the record. It should be automatic(i.e ttl=1) if the record is proxied. Terraform provider takes ttl in unit seconds.
+  - `priority` - The priority of the record. Mandatory field for SRV record type.
+  - `data` - Map of attributes that constitute the record value. Only for LOC, CAA and SRV record types.

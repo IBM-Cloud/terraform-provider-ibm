@@ -17,12 +17,14 @@ import (
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
 	dl "github.com/IBM/networking-go-sdk/directlinkv1"
+	cisdnsrecordsv1 "github.com/IBM/networking-go-sdk/dnsrecordsv1"
 	tg "github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	vpcclassic "github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
 	jwt "github.com/dgrijalva/jwt-go"
 	slsession "github.com/softlayer/softlayer-go/session"
+	ns "github.ibm.com/ibmcloud/namespace-go-sdk/ibmcloudfunctionsnamespaceapiv1"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
@@ -54,8 +56,6 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
-	cisdnsrecordsv1 "github.com/IBM/networking-go-sdk/dnsrecordsv1"
-	ns "github.ibm.com/ibmcloud/namespace-go-sdk/ibmcloudfunctionsnamespaceapiv1"
 )
 
 //RetryDelay
@@ -873,7 +873,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// IBM Network CIS DNS Record service
 	cisDNSRecordsOpt := &cisdnsrecordsv1.DnsRecordsV1Options{
-		URL:            envFallBack([]string{"IBMCLOUD_NETWORK_CIS_ENDPOINT"}, "https://api.cis.cloud.ibm.com"),
+		URL:            envFallBack([]string{"IBMCLOUD_CIS_API_ENDPOINT"}, "https://api.cis.cloud.ibm.com"),
 		Crn:            core.StringPtr(""),
 		ZoneIdentifier: core.StringPtr(""),
 		Authenticator:  authenticator,
