@@ -341,7 +341,7 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	}
 
 	assigned_virtual_cores := int64(d.Get(helpers.PIVirtualCoresAssigned).(int))
-	if d.Get(helpers.PIVirtualCoresAssigned) != nil {
+	if assigned_virtual_cores != 0 {
 		body.VirtualCores = &models.VirtualCores{Assigned: &assigned_virtual_cores}
 	} else {
 		log.Printf("virutal cores is not provided")
