@@ -169,6 +169,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_certificate_manager_certificate":   dataIBMCertificateManagerCertificate(),
 			"ibm_cis":                               dataSourceIBMCISInstance(),
 			"ibm_cis_dns_records":                   dataSourceIBMCISDNSRecord(),
+			"ibm_cis_healthchecks":                  dataSourceIBMCISHealthChecks(),
 			"ibm_cis_domain":                        dataSourceIBMCISDomain(),
 			"ibm_cis_firewall":                      dataIBMCISFirewallRecord(),
 			"ibm_cis_rate_limit":                    dataSourceIBMCISRateLimit(),
@@ -441,6 +442,7 @@ func Provider() terraform.ResourceProvider {
 var globalValidatorDict ValidatorDict
 var initOnce sync.Once
 
+// Validator return validator
 func Validator() ValidatorDict {
 	initOnce.Do(func() {
 		globalValidatorDict = ValidatorDict{
@@ -449,6 +451,7 @@ func Validator() ValidatorDict {
 				"ibm_is_ike_policy":         resourceIBMISIKEValidator(),
 				"ibm_is_network_acl":        resourceIBMISNetworkACLValidator(),
 				"ibm_iam_custom_role":       resourceIBMIAMCustomRoleValidator(),
+				"ibm_cis_healthcheck":       resourceIBMCISHealthCheckValidator(),
 				"ibm_cis_rate_limit":        resourceIBMCISRateLimitValidator(),
 				"ibm_tg_gateway":            resourceIBMTGValidator(),
 				"ibm_tg_connection":         resourceIBMTransitGatewayConnectionValidator(),
