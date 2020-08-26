@@ -187,17 +187,18 @@ func classicSecurityGroupGet(d *schema.ResourceData, meta interface{}, name stri
 							r[isSgRuleProtocol] = *rule.Protocol
 						}
 						r[isSgRuleID] = *rule.ID
-						remote := rule.Remote.(*vpcclassicv1.SecurityGroupRuleRemote)
-						if remote != nil && reflect.ValueOf(remote).IsNil() == false {
-							if remote.ID != nil {
-								r[isSgRuleRemote] = remote.ID
-							} else if remote.Address != nil {
-								r[isSgRuleRemote] = remote.Address
-							} else if remote.CIDRBlock != nil {
-								r[isSgRuleRemote] = remote.CIDRBlock
+						remote, ok := rule.Remote.(*vpcclassicv1.SecurityGroupRuleRemote)
+						if ok {
+							if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+								if remote.ID != nil {
+									r[isSgRuleRemote] = remote.ID
+								} else if remote.Address != nil {
+									r[isSgRuleRemote] = remote.Address
+								} else if remote.CIDRBlock != nil {
+									r[isSgRuleRemote] = remote.CIDRBlock
+								}
 							}
 						}
-
 						rules = append(rules, r)
 					}
 
@@ -212,14 +213,16 @@ func classicSecurityGroupGet(d *schema.ResourceData, meta interface{}, name stri
 							r[isSgRuleProtocol] = *rule.Protocol
 						}
 						r[isSgRuleID] = *rule.ID
-						remote := rule.Remote.(*vpcclassicv1.SecurityGroupRuleRemote)
-						if remote != nil && reflect.ValueOf(remote).IsNil() == false {
-							if remote.ID != nil {
-								r[isSgRuleRemote] = remote.ID
-							} else if remote.Address != nil {
-								r[isSgRuleRemote] = remote.Address
-							} else if remote.CIDRBlock != nil {
-								r[isSgRuleRemote] = remote.CIDRBlock
+						remote, ok := rule.Remote.(*vpcclassicv1.SecurityGroupRuleRemote)
+						if ok {
+							if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+								if remote.ID != nil {
+									r[isSgRuleRemote] = remote.ID
+								} else if remote.Address != nil {
+									r[isSgRuleRemote] = remote.Address
+								} else if remote.CIDRBlock != nil {
+									r[isSgRuleRemote] = remote.CIDRBlock
+								}
 							}
 						}
 						rules = append(rules, r)
@@ -242,17 +245,18 @@ func classicSecurityGroupGet(d *schema.ResourceData, meta interface{}, name stri
 						}
 
 						r[isSgRuleID] = *rule.ID
-						remote := rule.Remote.(*vpcclassicv1.SecurityGroupRuleRemote)
-						if remote != nil && reflect.ValueOf(remote).IsNil() == false {
-							if remote.ID != nil {
-								r[isSgRuleRemote] = remote.ID
-							} else if remote.Address != nil {
-								r[isSgRuleRemote] = remote.Address
-							} else if remote.CIDRBlock != nil {
-								r[isSgRuleRemote] = remote.CIDRBlock
+						remote, ok := rule.Remote.(*vpcclassicv1.SecurityGroupRuleRemote)
+						if ok {
+							if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+								if remote.ID != nil {
+									r[isSgRuleRemote] = remote.ID
+								} else if remote.Address != nil {
+									r[isSgRuleRemote] = remote.Address
+								} else if remote.CIDRBlock != nil {
+									r[isSgRuleRemote] = remote.CIDRBlock
+								}
 							}
 						}
-
 						rules = append(rules, r)
 					}
 				}
@@ -329,17 +333,18 @@ func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) err
 							r[isSgRuleProtocol] = *rule.Protocol
 						}
 						r[isSgRuleID] = *rule.ID
-						remote := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
-						if remote != nil && reflect.ValueOf(remote).IsNil() == false {
-							if remote.ID != nil {
-								r[isSgRuleRemote] = remote.ID
-							} else if remote.Address != nil {
-								r[isSgRuleRemote] = remote.Address
-							} else if remote.CIDRBlock != nil {
-								r[isSgRuleRemote] = remote.CIDRBlock
+						remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
+						if ok {
+							if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+								if remote.ID != nil {
+									r[isSgRuleRemote] = remote.ID
+								} else if remote.Address != nil {
+									r[isSgRuleRemote] = remote.Address
+								} else if remote.CIDRBlock != nil {
+									r[isSgRuleRemote] = remote.CIDRBlock
+								}
 							}
 						}
-
 						rules = append(rules, r)
 					}
 
@@ -353,14 +358,16 @@ func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) err
 							r[isSgRuleProtocol] = *rule.Protocol
 						}
 						r[isSgRuleID] = *rule.ID
-						remote := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
-						if remote != nil && reflect.ValueOf(remote).IsNil() == false {
-							if remote.ID != nil {
-								r[isSgRuleRemote] = remote.ID
-							} else if remote.Address != nil {
-								r[isSgRuleRemote] = remote.Address
-							} else if remote.CIDRBlock != nil {
-								r[isSgRuleRemote] = remote.CIDRBlock
+						remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
+						if ok {
+							if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+								if remote.ID != nil {
+									r[isSgRuleRemote] = remote.ID
+								} else if remote.Address != nil {
+									r[isSgRuleRemote] = remote.Address
+								} else if remote.CIDRBlock != nil {
+									r[isSgRuleRemote] = remote.CIDRBlock
+								}
 							}
 						}
 						rules = append(rules, r)
@@ -381,17 +388,18 @@ func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) err
 						if rule.Protocol != nil {
 							r[isSgRuleProtocol] = *rule.Protocol
 						}
-						remote := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
-						if remote != nil && reflect.ValueOf(remote).IsNil() == false {
-							if remote.ID != nil {
-								r[isSgRuleRemote] = remote.ID
-							} else if remote.Address != nil {
-								r[isSgRuleRemote] = remote.Address
-							} else if remote.CIDRBlock != nil {
-								r[isSgRuleRemote] = remote.CIDRBlock
+						remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
+						if ok {
+							if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+								if remote.ID != nil {
+									r[isSgRuleRemote] = remote.ID
+								} else if remote.Address != nil {
+									r[isSgRuleRemote] = remote.Address
+								} else if remote.CIDRBlock != nil {
+									r[isSgRuleRemote] = remote.CIDRBlock
+								}
 							}
 						}
-
 						rules = append(rules, r)
 					}
 				}

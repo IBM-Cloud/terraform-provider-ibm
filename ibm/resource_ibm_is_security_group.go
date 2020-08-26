@@ -222,14 +222,16 @@ func classicSgGet(d *schema.ResourceData, meta interface{}, id string) error {
 					if rule.Protocol != nil {
 						r[isSecurityGroupRuleProtocol] = *rule.Protocol
 					}
-					remote := rule.Remote.(*vpcclassicv1.SecurityGroupRuleRemote)
-					if remote != nil && reflect.ValueOf(remote).IsNil() == false {
-						if remote.ID != nil {
-							r[isSecurityGroupRuleRemote] = remote.ID
-						} else if remote.Address != nil {
-							r[isSecurityGroupRuleRemote] = remote.Address
-						} else if remote.CIDRBlock != nil {
-							r[isSecurityGroupRuleRemote] = remote.CIDRBlock
+					remote, ok := rule.Remote.(*vpcclassicv1.SecurityGroupRuleRemote)
+					if ok {
+						if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+							if remote.ID != nil {
+								r[isSecurityGroupRuleRemote] = remote.ID
+							} else if remote.Address != nil {
+								r[isSecurityGroupRuleRemote] = remote.Address
+							} else if remote.CIDRBlock != nil {
+								r[isSecurityGroupRuleRemote] = remote.CIDRBlock
+							}
 						}
 					}
 					rules = append(rules, r)
@@ -243,14 +245,16 @@ func classicSgGet(d *schema.ResourceData, meta interface{}, id string) error {
 					if rule.Protocol != nil {
 						r[isSecurityGroupRuleProtocol] = *rule.Protocol
 					}
-					remote := rule.Remote.(*vpcclassicv1.SecurityGroupRuleRemote)
-					if remote != nil && reflect.ValueOf(remote).IsNil() == false {
-						if remote.ID != nil {
-							r[isSecurityGroupRuleRemote] = remote.ID
-						} else if remote.Address != nil {
-							r[isSecurityGroupRuleRemote] = remote.Address
-						} else if remote.CIDRBlock != nil {
-							r[isSecurityGroupRuleRemote] = remote.CIDRBlock
+					remote, ok := rule.Remote.(*vpcclassicv1.SecurityGroupRuleRemote)
+					if ok {
+						if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+							if remote.ID != nil {
+								r[isSecurityGroupRuleRemote] = remote.ID
+							} else if remote.Address != nil {
+								r[isSecurityGroupRuleRemote] = remote.Address
+							} else if remote.CIDRBlock != nil {
+								r[isSecurityGroupRuleRemote] = remote.CIDRBlock
+							}
 						}
 					}
 					rules = append(rules, r)
@@ -270,14 +274,16 @@ func classicSgGet(d *schema.ResourceData, meta interface{}, id string) error {
 					if rule.Protocol != nil {
 						r[isSecurityGroupRuleProtocol] = *rule.Protocol
 					}
-					remote := rule.Remote.(*vpcclassicv1.SecurityGroupRuleRemote)
-					if remote != nil && reflect.ValueOf(remote).IsNil() == false {
-						if remote.ID != nil {
-							r[isSecurityGroupRuleRemote] = remote.ID
-						} else if remote.Address != nil {
-							r[isSecurityGroupRuleRemote] = remote.Address
-						} else if remote.CIDRBlock != nil {
-							r[isSecurityGroupRuleRemote] = remote.CIDRBlock
+					remote, ok := rule.Remote.(*vpcclassicv1.SecurityGroupRuleRemote)
+					if ok {
+						if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+							if remote.ID != nil {
+								r[isSecurityGroupRuleRemote] = remote.ID
+							} else if remote.Address != nil {
+								r[isSecurityGroupRuleRemote] = remote.Address
+							} else if remote.CIDRBlock != nil {
+								r[isSecurityGroupRuleRemote] = remote.CIDRBlock
+							}
 						}
 					}
 					rules = append(rules, r)
@@ -346,14 +352,16 @@ func sgGet(d *schema.ResourceData, meta interface{}, id string) error {
 					if rule.Protocol != nil {
 						r[isSecurityGroupRuleProtocol] = *rule.Protocol
 					}
-					remote := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
-					if remote != nil && reflect.ValueOf(remote).IsNil() == false {
-						if remote.ID != nil {
-							r[isSecurityGroupRuleRemote] = remote.ID
-						} else if remote.Address != nil {
-							r[isSecurityGroupRuleRemote] = remote.Address
-						} else if remote.CIDRBlock != nil {
-							r[isSecurityGroupRuleRemote] = remote.CIDRBlock
+					remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
+					if ok {
+						if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+							if remote.ID != nil {
+								r[isSecurityGroupRuleRemote] = remote.ID
+							} else if remote.Address != nil {
+								r[isSecurityGroupRuleRemote] = remote.Address
+							} else if remote.CIDRBlock != nil {
+								r[isSecurityGroupRuleRemote] = remote.CIDRBlock
+							}
 						}
 					}
 					rules = append(rules, r)
@@ -367,14 +375,16 @@ func sgGet(d *schema.ResourceData, meta interface{}, id string) error {
 					if rule.Protocol != nil {
 						r[isSecurityGroupRuleProtocol] = *rule.Protocol
 					}
-					remote := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
-					if remote != nil && reflect.ValueOf(remote).IsNil() == false {
-						if remote.ID != nil {
-							r[isSecurityGroupRuleRemote] = remote.ID
-						} else if remote.Address != nil {
-							r[isSecurityGroupRuleRemote] = remote.Address
-						} else if remote.CIDRBlock != nil {
-							r[isSecurityGroupRuleRemote] = remote.CIDRBlock
+					remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
+					if ok {
+						if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+							if remote.ID != nil {
+								r[isSecurityGroupRuleRemote] = remote.ID
+							} else if remote.Address != nil {
+								r[isSecurityGroupRuleRemote] = remote.Address
+							} else if remote.CIDRBlock != nil {
+								r[isSecurityGroupRuleRemote] = remote.CIDRBlock
+							}
 						}
 					}
 					rules = append(rules, r)
@@ -394,14 +404,16 @@ func sgGet(d *schema.ResourceData, meta interface{}, id string) error {
 					if rule.Protocol != nil {
 						r[isSecurityGroupRuleProtocol] = *rule.Protocol
 					}
-					remote := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
-					if remote != nil && reflect.ValueOf(remote).IsNil() == false {
-						if remote.ID != nil {
-							r[isSecurityGroupRuleRemote] = remote.ID
-						} else if remote.Address != nil {
-							r[isSecurityGroupRuleRemote] = remote.Address
-						} else if remote.CIDRBlock != nil {
-							r[isSecurityGroupRuleRemote] = remote.CIDRBlock
+					remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
+					if ok {
+						if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+							if remote.ID != nil {
+								r[isSecurityGroupRuleRemote] = remote.ID
+							} else if remote.Address != nil {
+								r[isSecurityGroupRuleRemote] = remote.Address
+							} else if remote.CIDRBlock != nil {
+								r[isSecurityGroupRuleRemote] = remote.CIDRBlock
+							}
 						}
 					}
 					rules = append(rules, r)
