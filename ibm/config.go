@@ -18,6 +18,7 @@ import (
 	kp "github.com/IBM/keyprotect-go-client"
 	dl "github.com/IBM/networking-go-sdk/directlinkv1"
 	cisdnsrecordsv1 "github.com/IBM/networking-go-sdk/dnsrecordsv1"
+	cisglbhealthcheckv1 "github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1"
 	tg "github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	vpcclassic "github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
@@ -182,6 +183,7 @@ type ClientSession interface {
 	HpcsEndpointAPI() (hpcs.HPCSV2, error)
 	IAMNamespaceAPI() (*ns.IbmCloudFunctionsNamespaceAPIV1, error)
 	CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecordsV1, error)
+	CisGLBHealthCheckClientSession() (*cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1, error)
 }
 
 type clientSession struct {
@@ -301,6 +303,10 @@ type clientSession struct {
 	// CIS dns service options
 	cisDNSErr           error
 	cisDNSRecordsClient *cisdnsrecordsv1.DnsRecordsV1
+
+	// CIS GLB health check service options
+	cisGLBHealthCheckErr    error
+	cisGLBHealthCheckClient *cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1
 }
 
 // BluemixAcccountAPI ...
@@ -494,6 +500,11 @@ func (sess clientSession) CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecor
 	return sess.cisDNSRecordsClient, sess.cisDNSErr
 }
 
+// CIS GLB Health Check/Monitor
+func (sess clientSession) CisGLBHealthCheckClientSession() (*cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1, error) {
+	return sess.cisGLBHealthCheckClient, sess.cisGLBHealthCheckErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -547,6 +558,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.transitgatewayErr = errEmptyBluemixCredentials
 		session.iamNamespaceErr = errEmptyBluemixCredentials
 		session.cisDNSErr = errEmptyBluemixCredentials
+		session.cisGLBHealthCheckErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -872,8 +884,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// IBM Network CIS DNS Record service
+	cisEndPoint := envFallBack([]string{"IBMCLOUD_CIS_API_ENDPOINT"}, "https://api.cis.cloud.ibm.com")
 	cisDNSRecordsOpt := &cisdnsrecordsv1.DnsRecordsV1Options{
-		URL:            envFallBack([]string{"IBMCLOUD_CIS_API_ENDPOINT"}, "https://api.cis.cloud.ibm.com"),
+		URL:            cisEndPoint,
 		Crn:            core.StringPtr(""),
 		ZoneIdentifier: core.StringPtr(""),
 		Authenticator:  authenticator,
@@ -881,6 +894,20 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.cisDNSRecordsClient, session.cisDNSErr = cisdnsrecordsv1.NewDnsRecordsV1(cisDNSRecordsOpt)
 	if session.cisDNSErr != nil {
 		session.cisDNSErr = fmt.Errorf("Error occured while configuring CIS DNS Service: %s", session.cisDNSErr)
+	}
+
+	// IBM Network CIS Global load balancer health check/monitor
+	cisGLBHealthCheckOpt := &cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		Authenticator: authenticator,
+	}
+	session.cisGLBHealthCheckClient, session.cisGLBHealthCheckErr =
+		cisglbhealthcheckv1.NewGlobalLoadBalancerMonitorV1(cisGLBHealthCheckOpt)
+	if session.cisGLBHealthCheckErr != nil {
+		session.cisGLBHealthCheckErr =
+			fmt.Errorf("Error occured while configuring CIS GLB Health Check service: %s",
+				session.cisGLBHealthCheckErr)
 	}
 
 	return session, nil
