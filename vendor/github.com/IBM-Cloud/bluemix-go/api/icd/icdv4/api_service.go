@@ -22,6 +22,7 @@ type ICDServiceAPI interface {
 	Groups() Groups
 	Tasks() Tasks
 	Connections() Connections
+	AutoScaling() AutoScaling
 }
 
 //ICDService holds the client
@@ -95,4 +96,9 @@ func (c *icdService) Tasks() Tasks {
 //Tasks implements tasks API
 func (c *icdService) Connections() Connections {
 	return newConnectionAPI(c.Client)
+}
+
+//AutoScaling implements AutoScaling API
+func (c *icdService) AutoScaling() AutoScaling {
+	return newAutoScalingAPI(c.Client)
 }

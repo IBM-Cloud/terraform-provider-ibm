@@ -90,6 +90,7 @@ var regionToEndpoint = map[string]map[string]string{
 		"au-syd":   "https://api.au-syd.databases.cloud.ibm.com",
 		"jp-tok":   "https://api.jp-tok.databases.cloud.ibm.com",
 		"osl01":    "https://api.osl01.databases.cloud.ibm.com",
+		"seo01":    "https://api.seo01.databases.cloud.ibm.com",
 	},
 	"mccp": {
 		"us-south": "https://mccp.us-south.cf.cloud.ibm.com",
