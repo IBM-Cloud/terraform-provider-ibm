@@ -82,7 +82,7 @@ func TestAccIBMCisHealthcheck_FullySpecified(t *testing.T) {
 }
 
 func TestAccIBMCisHealthcheck_CreateAfterManualDestroy(t *testing.T) {
-	t.Parallel()
+	t.Skip()
 	var monitorOne, monitorTwo string
 	name := "ibm_cis_healthcheck.health_check"
 
@@ -117,7 +117,7 @@ func TestAccIBMCisHealthcheck_CreateAfterManualDestroy(t *testing.T) {
 }
 
 func TestAccIBMCisHealthcheck_CreateAfterCisRIManualDestroy(t *testing.T) {
-	t.Parallel()
+	t.Skip()
 	var monitorOne, monitorTwo string
 	name := "ibm_cis_healthcheck.health_check"
 
@@ -226,7 +226,7 @@ func testAccCheckCisHealthcheckExists(n string, tfMonitorId *string) resource.Te
 }
 
 func testAccCheckCisHealthcheckConfigCisDS_Basic(resourceId string, cisDomain string) string {
-	return testAccCheckIBMCisDomainDataSourceConfig_basic1(resourceId, cisDomain) + fmt.Sprintf(`
+	return testAccCheckIBMCisDomainDataSourceConfig_basic1() + fmt.Sprintf(`
 	resource "ibm_cis_healthcheck" "health_check" {
 		cis_id         = data.ibm_cis.cis.id
 		expected_body  = "alive"
@@ -246,7 +246,7 @@ func testAccCheckCisHealthcheckConfigCisRI_Basic(resourceId string, cisDomain st
 }
 
 func testAccCheckCisHealthcheckConfigFullySpecified(resourceId string, cisDomain string) string {
-	return testAccCheckIBMCisDomainDataSourceConfig_basic1(resourceId, cisDomain) + fmt.Sprintf(`
+	return testAccCheckIBMCisDomainDataSourceConfig_basic1() + fmt.Sprintf(`
 	resource "ibm_cis_healthcheck" "health_check" {
 		cis_id         = data.ibm_cis.cis.id
 		expected_body  = "dead"

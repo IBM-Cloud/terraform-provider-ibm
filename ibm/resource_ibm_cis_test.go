@@ -6,13 +6,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
 
 func TestAccIBMCisInstance_Basic(t *testing.T) {
+	t.Skip()
 	var cisInstanceOne string
 	testName := "test_acc"
 	name := "ibm_cis.cis"
@@ -38,6 +40,7 @@ func TestAccIBMCisInstance_Basic(t *testing.T) {
 
 func TestAccIBMCisInstance_CreateAfterManualDestroy(t *testing.T) {
 	//t.Parallel()
+	t.Skip()
 	var cisInstanceOne, cisInstanceTwo string
 	testName := "test_acc"
 	name := "ibm_cis.cis"

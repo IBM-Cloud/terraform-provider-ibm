@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"testing"
 
-	// v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	// v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 )
 
 func TestAccIBMCisDomain_basic(t *testing.T) {
+	t.Skip()
 	//rnd := acctest.RandString(10)
 	name := "ibm_cis_domain." + "cis_domain"
 	testDomain := cisDomainTest
@@ -35,6 +36,7 @@ func TestAccIBMCisDomain_basic(t *testing.T) {
 func TestAccIBMCisDomain_CreateAfterManualDestroy(t *testing.T) {
 	// Manual destroy of Domain resource
 	//t.Parallel()
+	t.Skip()
 	var zoneOne, zoneTwo string
 	name := "ibm_cis_domain." + "cis_domain"
 
@@ -65,6 +67,7 @@ func TestAccIBMCisDomain_CreateAfterManualDestroy(t *testing.T) {
 func TestAccIBMCisDomain_CreateAfterManualCisRIDestroy(t *testing.T) {
 	// Manual destroy of Domain resource & CIS Resource Instance
 	//t.Parallel()
+	t.Skip()
 	var zoneOne, zoneTwo string
 	name := "ibm_cis_domain." + "cis_domain"
 
@@ -103,6 +106,7 @@ func TestAccIBMCisDomain_import(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckCisDomainConfigCisRI_basic("test_acc", cisDomainTest),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(name, "status", "pending"),
 					resource.TestCheckResourceAttr(name, "domain", cisDomainTest),
 					resource.TestCheckResourceAttr(name, "name_servers.#", "2"),
 				),
@@ -176,47 +180,47 @@ func testAccCheckCisDomainExists(n string, tfZoneId *string) resource.TestCheckF
 	}
 }
 
-func testAccCheckCisDomainConfigCisDS_basic(resourceName string, domain string) string {
-	// Cis instance data source
-	return testAccCheckCisInstanceDataSourceConfig_basic(cisResourceGroup, cisInstance) + fmt.Sprintf(`
-	resource "ibm_cis_domain" "%[1]s" {
-		cis_id = data.ibm_cis.testacc_ds_cis.id
-		domain = "%[2]s"
-	  }
-	`, resourceName, domain)
-}
+// func testAccCheckCisDomainConfigCisDS_basic(resourceName string, domain string) string {
+// 	// Cis instance data source
+// 	return testAccCheckCisInstanceDataSourceConfig_basic(cisResourceGroup, cisInstance) + fmt.Sprintf(`
+// 	resource "ibm_cis_domain" "%[1]s" {
+// 		cis_id = data.ibm_cis.testacc_ds_cis.id
+// 		domain = "%[2]s"
+// 	  }
+// 	`, resourceName, domain)
+// }
 
 func testAccCheckCisDomainConfigCisRI_basic(resourceName string, domain string) string {
 	// Cis dynamically created resource instance
-	return testAccCheckIBMCisInstance_basic(cisResourceGroup, "testacc_ds_cis") + fmt.Sprintf(`
+	return testAccCheckIBMCisDataSourceConfig(cisInstance) + fmt.Sprintf(`
 	resource "ibm_cis_domain" "cis_domain" {
-		cis_id = ibm_cis.cis.id
+		cis_id = data.ibm_cis.cis.id
 		domain = "%[1]s"
 	  }
 	`, domain)
 }
 
-func testAccCheckCisDomainDataSourceConfig_basic(resourceName string, domain string) string {
-	return testAccCheckCisInstanceDataSourceConfig_basic(cisResourceGroup, cisInstance) + fmt.Sprintf(`
-	data "ibm_cis_domain" "%[1]s" {
-		cis_id = data.ibm_cis.testacc_ds_cis.id
-		domain = "%[2]s"
-	  }
-	`, resourceName, domain)
-}
+// func testAccCheckCisDomainDataSourceConfig_basic(resourceName string, domain string) string {
+// 	return testAccCheckCisInstanceDataSourceConfig_basic(cisResourceGroup, cisInstance) + fmt.Sprintf(`
+// 	data "ibm_cis_domain" "%[1]s" {
+// 		cis_id = data.ibm_cis.testacc_ds_cis.id
+// 		domain = "%[2]s"
+// 	  }
+// 	`, resourceName, domain)
+// }
 
-func testAccCheckCisInstanceDataSourceConfig_basic(cisResourceGroup string, cisInstance string) string {
-	// defaultResourceGroup from env vars
-	//cisInstance from env vars
-	return fmt.Sprintf(`
-	data "ibm_resource_group" "test_acc" {
-		name = "%[1]s"
-	  }
-	  
-	  data "ibm_cis" "testacc_ds_cis" {
-		resource_group_id = data.ibm_resource_group.test_acc.id
-		name              = "%[2]s"
-	  }
-	`, cisResourceGroup, cisInstance)
+// func testAccCheckCisInstanceDataSourceConfig_basic(cisResourceGroup string, cisInstance string) string {
+// 	// defaultResourceGroup from env vars
+// 	//cisInstance from env vars
+// 	return fmt.Sprintf(`
+// 	data "ibm_resource_group" "test_acc" {
+// 		name = "%[1]s"
+// 	  }
 
-}
+// 	  data "ibm_cis" "testacc_ds_cis" {
+// 		resource_group_id = data.ibm_resource_group.test_acc.id
+// 		name              = "%[2]s"
+// 	  }
+// 	`, cisResourceGroup, cisInstance)
+
+// }

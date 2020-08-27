@@ -13,9 +13,9 @@ func TestAccIBMCisDomainDataSource_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCisDomainDataSourceConfig_basic1("test_acc", cisDomainStatic),
+				Config: testAccCheckIBMCisDomainDataSourceConfig_basic1(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.ibm_cis_domain.cis_domain", "status", "pending"),
+					resource.TestCheckResourceAttr("data.ibm_cis_domain.cis_domain", "status", "active"),
 					resource.TestCheckResourceAttr("data.ibm_cis_domain.cis_domain", "original_name_servers.#", "2"),
 					resource.TestCheckResourceAttr("data.ibm_cis_domain.cis_domain", "name_servers.#", "2"),
 				),
@@ -24,7 +24,7 @@ func TestAccIBMCisDomainDataSource_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCisDomainDataSourceConfig_basic1(resourceName string, domain string) string {
+func testAccCheckIBMCisDomainDataSourceConfig_basic1() string {
 	return fmt.Sprintf(`
 	
 	data "ibm_cis_domain" "cis_domain" {

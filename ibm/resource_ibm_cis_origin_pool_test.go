@@ -36,13 +36,13 @@ func TestAccIBMCisPool_Basic(t *testing.T) {
 
 func TestAccIBMCisPool_import(t *testing.T) {
 	name := "ibm_cis_origin_pool.origin_pool"
-
+	rnd := acctest.RandString(10)
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckCisPoolConfigCisDS_Basic("test", cisDomainStatic),
+				Config: testAccCheckCisPoolConfigCisDS_Basic(rnd, cisDomainStatic),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "check_regions.#", "1"),
 					resource.TestCheckResourceAttr(name, "origins.#", "1"),
@@ -87,6 +87,7 @@ func TestAccIBMCisPool_FullySpecified(t *testing.T) {
 
 func TestAccIBMCisPool_CreateAfterManualDestroy(t *testing.T) {
 	//t.Parallel()
+	t.Skip()
 	var poolOne, poolTwo string
 	testName := "test_acc"
 	name := "ibm_cis_origin_pool.origin_pool"
@@ -123,6 +124,7 @@ func TestAccIBMCisPool_CreateAfterManualDestroy(t *testing.T) {
 
 func TestAccIBMCisPool_CreateAfterCisRIManualDestroy(t *testing.T) {
 	//t.Parallel()
+	t.Skip()
 	var poolOne, poolTwo string
 	testName := "test"
 	name := "ibm_cis_origin_pool.origin_pool"
@@ -245,7 +247,7 @@ func testAccCisPoolManuallyDelete(tfPoolId *string) resource.TestCheckFunc {
 }
 
 func testAccCheckCisPoolConfigCisDS_Basic(resourceId string, cisDomainStatic string) string {
-	return testAccCheckIBMCisDomainDataSourceConfig_basic1(resourceId, cisDomainStatic) + fmt.Sprintf(`
+	return testAccCheckIBMCisDomainDataSourceConfig_basic1() + fmt.Sprintf(`
 	resource "ibm_cis_origin_pool" "origin_pool" {
 		cis_id        = data.ibm_cis.cis.id
 		name          = "my-tf-pool-basic-%[1]s"
@@ -298,7 +300,7 @@ func testAccCheckCisPoolConfigFullySpecified(resourceId string, cisDomainStatic 
 		}
 		check_regions   = ["WEU"]
 		description     = "tfacc-fully-specified"
-		enabled         = true
+		enabled         = false
 		minimum_origins = 2
 		monitor         = ibm_cis_healthcheck.health_check.id
 	  }
