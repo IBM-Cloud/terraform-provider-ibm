@@ -116,6 +116,7 @@ func testAccCheckIBMISFlowLogConfig(vpcname, name, flowlogname, sshname, publicK
 	  }
 
 	resource "ibm_is_flow_log" "test_flow_log" {
+		depends_on = [ibm_iam_authorization_policy.policy]
 		name    = "%s"
 		target = ibm_is_instance.testacc_instance.id
 		storage_bucket = ibm_cos_bucket.bucket2.bucket_name

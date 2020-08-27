@@ -30,3 +30,6 @@ resource ibm_is_flow_log test_flowlog {
   storage_bucket = ibm_cos_bucket.bucket1.bucket_name
 }
 
+data ibm_is_flow_logs "test_flow_logs" {
+
+}
