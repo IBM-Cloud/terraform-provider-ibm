@@ -107,9 +107,17 @@ func testAccCheckIBMISFlowLogsDataSourceConfig(vpcname, name, flowlogname, sshna
 		region_location      = "%s"
 		storage_class        = "%s"
 	}	  
+        
+         resource "ibm_iam_authorization_policy" "cos_policy" {
+		source_service_name  = "is"
+		source_resource_type = "flow-log-collector"
+		target_service_name  = "cloud-object-storage"
+		roles                = ["Writer"]
+	  }
 
 	resource "ibm_is_flow_log" "test_flow_log" {
-		name    = "%s"
+		depends_on = [ibm_iam_authorization_policy.cos_policy]
+                name    = "%s"
 		target = ibm_is_instance.testacc_instance.id
 		storage_bucket = ibm_cos_bucket.bucket2.bucket_name
 		active = %v
