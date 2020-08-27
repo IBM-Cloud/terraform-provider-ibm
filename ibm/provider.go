@@ -203,6 +203,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_iam_service_id":                    dataSourceIBMIAMServiceID(),
 			"ibm_iam_service_policy":                dataSourceIBMIAMServicePolicy(),
 			"ibm_is_floating_ip":                    dataSourceIBMISFloatingIP(),
+			"ibm_is_flow_logs":                      dataSourceIBMISFlowLogs(),
 			"ibm_is_image":                          dataSourceIBMISImage(),
 			"ibm_is_images":                         dataSourceIBMISImages(),
 			"ibm_is_instance_profile":               dataSourceIBMISInstanceProfile(),
