@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"testing"
+
 	//"regexp"
 
 	//"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -54,6 +55,7 @@ func TestAccIBMCisGlb_Basic(t *testing.T) {
 
 func TestAccIBMCisGlb_CreateAfterManualDestroy(t *testing.T) {
 	//t.Parallel()
+	t.Skip()
 	var glbOne, glbTwo string
 	name := "ibm_cis_global_load_balancer." + "test"
 
@@ -89,6 +91,7 @@ func TestAccIBMCisGlb_CreateAfterManualDestroy(t *testing.T) {
 
 func TestAccIBMCisGlb_CreateAfterManualCisRIDestroy(t *testing.T) {
 	//t.Parallel()
+	t.Skip()
 	var glbOne, glbTwo string
 	name := "ibm_cis_global_load_balancer." + "test"
 

@@ -18,10 +18,10 @@ func TestAccIBMCisDataSource_basic(t *testing.T) {
 				Config:  testAccCheckIBMCisDataSourceConfig(instanceName),
 				Destroy: true,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.ibm_cis.testacc_ds_cis", "name", instanceName),
-					resource.TestCheckResourceAttr("data.ibm_cis.testacc_ds_cis", "service", "internet-svcs"),
-					resource.TestCheckResourceAttr("data.ibm_cis.testacc_ds_cis", "plan", "enterprise-usage"),
-					resource.TestCheckResourceAttr("data.ibm_cis.testacc_ds_cis", "location", "global"),
+					resource.TestCheckResourceAttr("data.ibm_cis.cis", "name", instanceName),
+					resource.TestCheckResourceAttr("data.ibm_cis.cis", "service", "internet-svcs"),
+					resource.TestCheckResourceAttr("data.ibm_cis.cis", "plan", "enterprise-usage"),
+					resource.TestCheckResourceAttr("data.ibm_cis.cis", "location", "global"),
 				),
 			},
 		},
@@ -34,7 +34,7 @@ func testAccCheckIBMCisDataSourceConfig(instanceName string) string {
 		name = "%[1]s"
 	}
 	  
-	  data "ibm_cis" "testacc_ds_cis" {
+	  data "ibm_cis" "cis" {
 		resource_group_id = data.ibm_resource_group.test_acc.id
 		name              = "%[2]s"
 	}
