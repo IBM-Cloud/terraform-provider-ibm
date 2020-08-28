@@ -20,7 +20,7 @@ func TestAccIBMCisSettings_Basic(t *testing.T) {
 			{
 				Config: testAccCheckCisSettingsConfigBasic3("test", cisDomainStatic),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(name, "waf", "on"),
+					resource.TestCheckResourceAttr(name, "waf", "off"),
 					resource.TestCheckResourceAttr(name, "min_tls_version", "1.1"),
 				),
 			},
