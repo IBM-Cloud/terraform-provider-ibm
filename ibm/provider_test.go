@@ -81,6 +81,8 @@ var image_operating_system string
 var tg_cross_network_account_id string
 var tg_cross_network_id string
 
+//
+
 func init() {
 	cfOrganization = os.Getenv("IBM_ORG")
 	if cfOrganization == "" {

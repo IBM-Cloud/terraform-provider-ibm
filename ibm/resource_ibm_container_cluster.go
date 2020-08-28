@@ -112,6 +112,33 @@ func resourceIBMContainerCluster() *schema.Resource {
 				},
 			},
 
+			"kms_config": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Enables KMS on a given cluster ",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"instance_id": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "ID of the KMS instance to use to encrypt the cluster.",
+						},
+						"crk_id": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "ID of the customer root key.",
+						},
+						"private_endpoint": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Specify this option to use the KMS public service endpoint.",
+						},
+					},
+				},
+			},
+
 			"worker_num": {
 				Type:          schema.TypeInt,
 				Optional:      true,
@@ -525,6 +552,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 }
 
 func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{}) error {
+
 	csClient, err := meta.(ClientSession).ContainerAPI()
 	if err != nil {
 		return err
@@ -768,6 +796,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{}) error {
+
 	csClient, err := meta.(ClientSession).ContainerAPI()
 	if err != nil {
 		return err
@@ -782,6 +811,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 	whkAPI := csClient.WebHooks()
 	wrkAPI := csClient.Workers()
 	clusterAPI := csClient.Clusters()
+	kmsAPI := csClient.Kms()
 
 	clusterID := d.Id()
 
@@ -832,6 +862,41 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 					}
 				}
 			}
+		}
+	}
+
+	if d.HasChange("kms_config") {
+		kmsConfig := v1.KmsEnableReq{}
+		kmsConfig.Cluster = clusterID
+		targetEnv := v1.ClusterHeader{}
+		if kms, ok := d.GetOk("kms_config"); ok {
+
+			kmsConfiglist := kms.([]interface{})
+
+			for _, l := range kmsConfiglist {
+				kmsMap, _ := l.(map[string]interface{})
+
+				//instance_id - Required field
+				instanceID := kmsMap["instance_id"].(string)
+				kmsConfig.Kms = instanceID
+
+				//crk_id - Required field
+				crk := kmsMap["crk_id"].(string)
+				kmsConfig.Crk = crk
+
+				//Read event - as its optional check for existence
+				if privateEndpoint := kmsMap["private_endpoint"]; privateEndpoint != nil {
+					endpoint := privateEndpoint.(bool)
+					kmsConfig.PrivateEndpoint = endpoint
+				}
+			}
+		}
+
+		err := kmsAPI.EnableKms(kmsConfig, targetEnv)
+		if err != nil {
+			log.Printf(
+				"An error occured during EnableKms (cluster: %s) error: %s", d.Id(), err)
+			return err
 		}
 	}
 
@@ -1207,6 +1272,7 @@ func getID(d *schema.ResourceData, meta interface{}, clusterID string, oldWorker
 }
 
 func resourceIBMContainerClusterDelete(d *schema.ResourceData, meta interface{}) error {
+
 	targetEnv, err := getClusterTargetHeader(d, meta)
 	if err != nil {
 		return err
@@ -1442,6 +1508,7 @@ func clusterVersionRefreshFunc(client v1.Clusters, instanceID string, d *schema.
 }
 
 func resourceIBMContainerClusterExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+
 	csClient, err := meta.(ClientSession).ContainerAPI()
 	if err != nil {
 		return false, err

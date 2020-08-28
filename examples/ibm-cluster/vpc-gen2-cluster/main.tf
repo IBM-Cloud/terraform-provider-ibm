@@ -37,6 +37,20 @@ data "ibm_resource_group" "resource_group" {
   name = var.resource_group
 }
 
+resource "ibm_resource_instance" "kms_instance1" {
+    name              = "test_kms"
+    service           = "kms"
+    plan              = "tiered-pricing"
+    location          = "us-south"
+}
+  
+resource "ibm_kms_key" "test" {
+    instance_id = "${ibm_resource_instance.kms_instance1.guid}"
+    key_name = "test_root_key"
+    standard_key =  false
+    force_delete = true
+}
+
 resource "ibm_container_vpc_cluster" "cluster" {
   name              = "${var.cluster_name}${random_id.name1.hex}"
   vpc_id            = ibm_is_vpc.vpc1.id
@@ -48,6 +62,12 @@ resource "ibm_container_vpc_cluster" "cluster" {
   zones {
     subnet_id = ibm_is_subnet.subnet1.id
     name      = local.ZONE1
+  }
+
+  kms_config {
+    instance_id = ibm_resource_instance.kms_instance1.guid
+    crk_id = ibm_kms_key.test.id
+    private_endpoint = false
   }
 }
 

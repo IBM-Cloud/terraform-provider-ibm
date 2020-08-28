@@ -14,6 +14,20 @@ data "ibm_account" "account" {
   org_guid = data.ibm_org.org.id
 }
 
+resource "ibm_resource_instance" "kms_instance1" {
+    name              = "test_kms"
+    service           = "kms"
+    plan              = "tiered-pricing"
+    location          = "us-south"
+}
+  
+resource "ibm_kms_key" "test" {
+    instance_id = "${ibm_resource_instance.kms_instance1.guid}"
+    key_name = "test_root_key"
+    standard_key =  false
+    force_delete = true
+}
+
 resource "ibm_container_cluster" "cluster" {
   name       = "${var.cluster_name}${random_id.name.hex}"
   datacenter = var.datacenter
@@ -34,6 +48,11 @@ resource "ibm_container_cluster" "cluster" {
   public_vlan_id  = var.public_vlan_id
   private_vlan_id = var.private_vlan_id
   hardware        = "shared"
+  kms_config {
+    instance_id = ibm_resource_instance.kms_instance1.guid
+    crk_id = ibm_kms_key.test.id
+    private_endpoint = false
+  }
 }
 
 resource "ibm_service_instance" "service" {
