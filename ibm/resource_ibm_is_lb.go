@@ -22,6 +22,8 @@ const (
 	isLBHostName         = "hostname"
 	isLBPublicIPs        = "public_ips"
 	isLBPrivateIPs       = "private_ips"
+	isLBListeners        = "listeners"
+	isLBPools            = "pools"
 	isLBOperatingStatus  = "operating_status"
 	isLBDeleting         = "deleting"
 	isLBDeleted          = "done"
@@ -107,7 +109,7 @@ func resourceIBMISLB() *schema.Resource {
 				Set:      resourceIBMVPCHash,
 			},
 
-			isVPNGatewayResourceGroup: {
+			isLBResourceGroup: {
 				Type:     schema.TypeString,
 				ForceNew: true,
 				Optional: true,
@@ -207,7 +209,7 @@ func classicLBCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg 
 		return fmt.Errorf("Error while creating Load Balancer err %s\n%s", err, response)
 	}
 	d.SetId(*lb.ID)
-	log.Printf("[INFO] VPC : %s", *lb.ID)
+	log.Printf("[INFO] Load Balancer : %s", *lb.ID)
 	_, err = isWaitForClassicLBAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
@@ -254,7 +256,7 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 		return fmt.Errorf("Error while creating Load Balancer err %s\n%s", err, response)
 	}
 	d.SetId(*lb.ID)
-	log.Printf("[INFO] VPC : %s", *lb.ID)
+	log.Printf("[INFO] Load Balancer : %s", *lb.ID)
 	_, err = isWaitForLBAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err

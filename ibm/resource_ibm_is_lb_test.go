@@ -15,7 +15,7 @@ import (
 func TestAccIBMISLB_basic(t *testing.T) {
 	var lb string
 	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
-	subnetname := fmt.Sprintf("tflb-create-name-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
 	name1 := fmt.Sprintf("tfupdate%d", acctest.RandIntRange(10, 100))
 
@@ -166,13 +166,13 @@ func testAccCheckIBMISLBConfig(vpcname, subnetname, zone, cidr, name string) str
 	
 	resource "ibm_is_subnet" "testacc_subnet" {
 		name = "%s"
-		vpc = "${ibm_is_vpc.testacc_vpc.id}"
+		vpc = ibm_is_vpc.testacc_vpc.id
 		zone = "%s"
 		ipv4_cidr_block = "%s"
 	}
 	resource "ibm_is_lb" "testacc_LB" {
 		name = "%s"
-		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
+		subnets = [ibm_is_subnet.testacc_subnet.id]
 }`, vpcname, subnetname, zone, cidr, name)
 
 }
@@ -186,13 +186,13 @@ func testAccCheckIBMISLBConfigPrivate(vpcname, subnetname, zone, cidr, name stri
 	
 	resource "ibm_is_subnet" "testacc_subnet" {
 		name = "%s"
-		vpc = "${ibm_is_vpc.testacc_vpc.id}"
+		vpc = ibm_is_vpc.testacc_vpc.id
 		zone = "%s"
 		ipv4_cidr_block = "%s"
 	}
 	resource "ibm_is_lb" "testacc_LB" {
 		name = "%s"
-		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
+		subnets = [ibm_is_subnet.testacc_subnet.id]
 		type = "private"
 }`, vpcname, subnetname, zone, cidr, name)
 
