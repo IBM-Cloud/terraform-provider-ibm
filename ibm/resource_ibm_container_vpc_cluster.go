@@ -69,6 +69,33 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				Description: "The vpc id where the cluster is",
 			},
 
+			"kms_config": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Enables KMS on a given cluster ",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"instance_id": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "ID of the KMS instance to use to encrypt the cluster.",
+						},
+						"crk_id": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "ID of the customer root key.",
+						},
+						"private_endpoint": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Specify this option to use the KMS public service endpoint.",
+						},
+					},
+				},
+			},
+
 			"zones": {
 				Type:        schema.TypeSet,
 				Required:    true,
@@ -465,6 +492,42 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		}
 	}
 
+	if d.HasChange("kms_config") {
+		kmsConfig := v2.KmsEnableReq{}
+		kmsConfig.Cluster = clusterID
+		targetEnv := v2.ClusterHeader{}
+		if kms, ok := d.GetOk("kms_config"); ok {
+
+			kmsConfiglist := kms.([]interface{})
+
+			for _, l := range kmsConfiglist {
+				kmsMap, _ := l.(map[string]interface{})
+
+				//instance_id - Required field
+				instanceID := kmsMap["instance_id"].(string)
+				kmsConfig.Kms = instanceID
+
+				//crk_id - Required field
+				crk := kmsMap["crk_id"].(string)
+				kmsConfig.Crk = crk
+
+				//Read event - as its optional check for existence
+				if privateEndpoint := kmsMap["private_endpoint"]; privateEndpoint != nil {
+					endpoint := privateEndpoint.(bool)
+					kmsConfig.PrivateEndpoint = endpoint
+				}
+			}
+		}
+
+		err := csClient.Kms().EnableKms(kmsConfig, targetEnv)
+		if err != nil {
+			log.Printf(
+				"An error occured during EnableKms (cluster: %s) error: %s", d.Id(), err)
+			return err
+		}
+
+	}
+
 	if d.HasChange("kube_version") && !d.IsNewResource() {
 		ClusterClient, err := meta.(ClientSession).ContainerAPI()
 		if err != nil {
@@ -716,6 +779,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 }
 
 func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface{}) error {
+
 	targetEnv, err := getVpcClusterTargetHeader(d, meta)
 	if err != nil {
 		return err
@@ -1022,6 +1086,7 @@ func getVpcClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v2.Clu
 }
 
 func resourceIBMContainerVpcClusterExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+
 	csClient, err := meta.(ClientSession).VpcContainerAPI()
 	if err != nil {
 		return false, err

@@ -99,6 +99,27 @@ func TestAccIBMContainerCluster_trusted(t *testing.T) {
 	})
 }
 
+func TestAccIBMContainerCluster_KmsEnable(t *testing.T) {
+	clusterName := fmt.Sprintf("terraform1_%d", acctest.RandIntRange(10, 100))
+	kmsInstanceName := fmt.Sprintf("kmsInstance_%d", acctest.RandIntRange(10, 100))
+	rootKeyName := fmt.Sprintf("rootKey_%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMContainerClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerClusterKmsEnable(clusterName, kmsInstanceName, rootKeyName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "name", clusterName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "kms_config.#", "1"),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMContainerCluster_nosubnet_false(t *testing.T) {
 	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
@@ -413,6 +434,47 @@ resource "ibm_container_cluster" "testacc_cluster" {
   no_subnet       = true
   region          = "%s"
 }	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, kubeVersion, machineType, publicVlanID, privateVlanID, csRegion)
+}
+
+func testAccCheckIBMContainerClusterKmsEnable(clusterName, kmsInstanceName, rootKeyName string) string {
+	return fmt.Sprintf(`
+	
+	data "ibm_resource_group" "testacc_ds_resource_group" {
+		name = "Default"
+	}
+	
+	resource "ibm_resource_instance" "kms_instance1" {
+		name              = "%s"
+		service           = "kms"
+		plan              = "tiered-pricing"
+		location          = "us-south"
+	}
+	  
+	resource "ibm_kms_key" "test" {
+		instance_id = "${ibm_resource_instance.kms_instance1.guid}"
+		key_name = "%s"
+		standard_key =  false
+		force_delete = true
+	}
+	
+	resource "ibm_container_cluster" "testacc_cluster" {
+		name              = "%s"
+		datacenter        = "%s"
+		no_subnet         = true
+		default_pool_size = 2
+		hardware          = "shared"
+		resource_group_id = data.ibm_resource_group.testacc_ds_resource_group.id
+		machine_type      = "%s"
+		public_vlan_id    = "%s"
+		private_vlan_id   = "%s"
+		kms_config {
+			instance_id = ibm_resource_instance.kms_instance1.guid
+			crk_id = ibm_kms_key.test.key_id
+			private_endpoint = false
+		}
+	}
+
+`, kmsInstanceName, rootKeyName, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
 }
 
 func testAccCheckIBMContainerClusterTrusted(clusterName string) string {

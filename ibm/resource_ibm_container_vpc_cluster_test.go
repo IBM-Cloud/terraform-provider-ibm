@@ -118,12 +118,35 @@ func TestAccIBMContainerVpcCluster_importBasic(t *testing.T) {
 						"ibm_container_vpc_cluster.cluster", "zones.#", "2"),
 				),
 			},
+
 			resource.TestStep{
 				ResourceName:      "ibm_container_vpc_cluster.cluster",
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
 					"wait_till", "update_all_workers"},
+			},
+		},
+	})
+}
+
+func TestAccIBMContainerVpcCluster_KmsEnable(t *testing.T) {
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	kmsInstanceName := fmt.Sprintf("kmsInstance_%d", acctest.RandIntRange(10, 100))
+	rootKeyName := fmt.Sprintf("rootKey_%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVpcCluster_KmsEnable(clusterName, kmsInstanceName, rootKeyName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.testacc_cluster", "name", clusterName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.testacc_cluster", "kms_config.#", "1"),
+				),
 			},
 		},
 	})
@@ -220,6 +243,20 @@ resource "ibm_is_subnet" "subnet1" {
 	total_ipv4_address_count = 256
 }
 
+resource "ibm_resource_instance" "kms_instance1" {
+    name              = "test_kms"
+    service           = "kms"
+    plan              = "tiered-pricing"
+    location          = "us-south"
+}
+  
+resource "ibm_kms_key" "test" {
+    instance_id = "${ibm_resource_instance.kms_instance1.id}"
+    key_name = "test_root_key"
+    standard_key =  false
+    force_delete = true
+}
+
 resource "ibm_container_vpc_cluster" "cluster" {
 	name              = "%s"
 	vpc_id            = "${ibm_is_vpc.vpc1.id}"
@@ -232,6 +269,65 @@ resource "ibm_container_vpc_cluster" "cluster" {
 		 name      = "${local.ZONE1}"
 	  }
   }`, zone, vpc, subnet, clusterName, flavor, workerCount)
+
+}
+
+func testAccCheckIBMContainerVpcCluster_KmsEnable(clusterName, KmsInstance, rootKey string) string {
+	return fmt.Sprintf(`
+provider "ibm" {
+        generation =2
+}
+data "ibm_resource_group" "resource_group" {
+        is_default = "true"
+}
+
+locals {
+        ZONE1 = "us-south-1"
+}
+
+resource "ibm_is_vpc" "vpc1" {
+        name = "testvpc"
+}
+
+resource "ibm_is_subnet" "subnet1" {
+        name                     = "testsubnet"
+        vpc                      = "${ibm_is_vpc.vpc1.id}"
+        zone                     = "us-south-1"
+        total_ipv4_address_count = 256
+}
+
+resource "ibm_resource_instance" "kms_instance1" {
+	name              = "%s"
+	service           = "kms"
+	plan              = "tiered-pricing"
+	location          = "us-south"
+}
+  
+resource "ibm_kms_key" "test" {
+	instance_id = "${ibm_resource_instance.kms_instance1.guid}"
+	key_name = "%s"
+	standard_key =  false
+	force_delete = true
+}
+
+resource "ibm_container_vpc_cluster" "testacc_cluster" {
+        name              = "%s"
+        vpc_id            = "${ibm_is_vpc.vpc1.id}"
+        flavor            = "bx2.2x8"
+        worker_count      = "1"
+        wait_till         = "OneWorkerNodeReady"
+        resource_group_id = "${data.ibm_resource_group.resource_group.id}"
+        zones {
+                 subnet_id = "${ibm_is_subnet.subnet1.id}"
+                 name      = "us-south-1"
+          }
+
+		kms_config {
+			instance_id = ibm_resource_instance.kms_instance1.guid
+			crk_id = ibm_kms_key.test.key_id
+			private_endpoint = false
+		}		
+}`, KmsInstance, rootKey, clusterName)
 
 }
 
@@ -309,6 +405,21 @@ resource "ibm_is_subnet" "subnet1" {
 	total_ipv4_address_count = 256
 }
 
+resource "ibm_resource_instance" "kms_instance1" {
+    name              = "test_kms"
+    service           = "kms"
+    plan              = "tiered-pricing"
+    location          = "us-south"
+}
+  
+resource "ibm_kms_key" "test" {
+    instance_id = "${ibm_resource_instance.kms_instance1.guid}"
+    key_name = "test_root_key"
+    standard_key =  false
+    force_delete = true
+}
+
+
 resource "ibm_container_vpc_cluster" "clustergen2" {
 	name              = "%s"
 	vpc_id            = "${ibm_is_vpc.vpc1.id}"
@@ -321,6 +432,7 @@ resource "ibm_container_vpc_cluster" "clustergen2" {
 		 subnet_id = "${ibm_is_subnet.subnet1.id}"
 		 name      = "${local.ZONE1}"
 	  }
+	
   }`, zone, vpc, subnet, clusterName, flavor, workerCount)
 
 }
