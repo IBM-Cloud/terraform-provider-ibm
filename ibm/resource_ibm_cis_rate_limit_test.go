@@ -119,18 +119,7 @@ func testAccCheckIBMCisRateLimitExists(n string, tfRecordID *string) resource.Te
 }
 
 func testAccCheckIBMCisRateLimitConfigBasic() string {
-	return fmt.Sprintf(` 
-	data "ibm_resource_group" "test_acc" {
-		name = "Default"
-	}
-	data "ibm_cis" "cis" {
-		resource_group_id = data.ibm_resource_group.test_acc.id
-		name              = "CISTest"
-	}
-	data "ibm_cis_domain" "cis_domain" {
-		cis_id = data.ibm_cis.cis.id
-		domain = "cis-terraform.com"
-	}
+	return testAccCheckIBMCisDomainDataSourceConfig_basic1() + fmt.Sprintf(`
 	
 	resource "ibm_cis_rate_limit" "ratelimit" {
 		cis_id = data.ibm_cis.cis.id
@@ -171,18 +160,7 @@ func testAccCheckIBMCisRateLimitConfigBasic() string {
 }
 
 func testAccCheckIBMCisRateLimitConfigUpdate() string {
-	return fmt.Sprintf(`
-	data "ibm_resource_group" "test_acc" {
-		name = "Default"
-	}
-	data "ibm_cis" "cis" {
-		resource_group_id = data.ibm_resource_group.test_acc.id
-		name              = "CISTest"
-	}
-	data "ibm_cis_domain" "cis_domain" {
-		cis_id = data.ibm_cis.cis.id
-		domain = "cis-terraform.com"
-	}
+	return testAccCheckIBMCisDomainDataSourceConfig_basic1() + fmt.Sprintf(`
 	
 	resource "ibm_cis_rate_limit" "ratelimit" {
 		cis_id = data.ibm_cis.cis.id
