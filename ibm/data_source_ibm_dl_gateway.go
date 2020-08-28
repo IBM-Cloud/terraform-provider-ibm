@@ -2,6 +2,8 @@ package ibm
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -236,8 +238,9 @@ func dataSourceIBMDLGatewayRead(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 	listGatewaysOptionsModel := &directlinkv1.ListGatewaysOptions{}
-	listGateways, _, err := directLink.ListGateways(listGatewaysOptionsModel)
+	listGateways, response, err := directLink.ListGateways(listGatewaysOptionsModel)
 	if err != nil {
+		log.Println("[WARN] Error listing dl Gateway", response, err)
 		return err
 	}
 	var found bool

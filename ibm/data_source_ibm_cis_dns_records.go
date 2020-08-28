@@ -13,7 +13,7 @@ const (
 	cisDNSRecords = "cis_dns_records"
 )
 
-func dataSourceIBMCISDNSRecord() *schema.Resource {
+func dataSourceIBMCISDNSRecords() *schema.Resource {
 	return &schema.Resource{
 		Read:     dataSourceIBMCISDNSRecordsRead,
 		Importer: &schema.ResourceImporter{},

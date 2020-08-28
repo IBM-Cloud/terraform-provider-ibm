@@ -403,6 +403,10 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	instance, response, err := directLink.GetGateway(getOptions)
 	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error Getting Direct Link Gateway (Dedicated Template): %s\n%s", err, response)
 	}
 	if instance.ID != nil {
@@ -604,6 +608,10 @@ func resourceIBMdlGatewayExists(d *schema.ResourceData, meta interface{}) (bool,
 	}
 	_, response, err := directLink.GetGateway(getOptions)
 	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return false, nil
+		}
 		return false, fmt.Errorf("Error Getting Direct Link Gateway (Dedicated Template): %s\n%s", err, response)
 	}
 

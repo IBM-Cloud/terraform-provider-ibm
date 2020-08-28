@@ -239,8 +239,12 @@ func resourceIBMTransitGatewayRead(d *schema.ResourceData, meta interface{}) err
 		tgOptions.ID = &id
 	}
 
-	tgw, _, err := client.GetTransitGateway(tgOptions)
+	tgw, response, err := client.GetTransitGateway(tgOptions)
 	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 
@@ -402,12 +406,12 @@ func resourceIBMTransitGatewayExists(d *schema.ResourceData, meta interface{}) (
 	}
 	_, response, err := client.GetTransitGateway(tgOptions)
 	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return false, nil
+		}
 		return false, fmt.Errorf("Error Getting Transit Gateway: %s\n%s", err, response)
 	}
 
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return false, nil
-	}
 	return true, nil
 }

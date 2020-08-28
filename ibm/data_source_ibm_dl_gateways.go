@@ -1,6 +1,7 @@
 package ibm
 
 import (
+	"log"
 	"time"
 
 	"github.com/IBM/networking-go-sdk/directlinkv1"
@@ -155,8 +156,9 @@ func dataSourceIBMDLGatewaysRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 	listGatewaysOptionsModel := &directlinkv1.ListGatewaysOptions{}
-	listGateways, _, err := directLink.ListGateways(listGatewaysOptionsModel)
+	listGateways, response, err := directLink.ListGateways(listGatewaysOptionsModel)
 	if err != nil {
+		log.Println("[WARN] Error listing dl Gateway", response, err)
 		return err
 	}
 	gateways := make([]map[string]interface{}, 0)
