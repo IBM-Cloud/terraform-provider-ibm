@@ -12,9 +12,17 @@ func dataSourceIBMSpace() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"space": {
-				Description: "Space name, for example dev",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:  "Space name, for example dev",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Deprecated:   "use name instead",
+				ExactlyOneOf: []string{"space", "name"},
+			},
+			"name": {
+				Description:  "Space name, for example dev",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"space", "name"},
 			},
 			"org": {
 				Description: "The org this space belongs to",
@@ -50,8 +58,14 @@ func dataSourceIBMSpaceRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	orgAPI := cfClient.Organizations()
 	spaceAPI := cfClient.Spaces()
+	var space string
+	if v, ok := d.GetOk("name"); ok {
+		space = v.(string)
+	}
+	if v, ok := d.GetOk("space"); ok {
+		space = v.(string)
+	}
 
-	space := d.Get("space").(string)
 	org := d.Get("org").(string)
 
 	orgFields, err := orgAPI.FindByName(org, BluemixRegion)
