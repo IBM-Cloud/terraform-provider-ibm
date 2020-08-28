@@ -625,6 +625,10 @@ func resourceIBMCISDnsRecordRead(d *schema.ResourceData, meta interface{}) error
 	opt := sess.NewGetDnsRecordOptions(recordID)
 	result, response, err := sess.GetDnsRecord(opt)
 	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		log.Printf("Error reading dns record: %s", response)
 		return err
 	}
@@ -990,6 +994,7 @@ func resourceIBMCISDnsRecordDelete(d *schema.ResourceData, meta interface{}) err
 		log.Printf("Error deleting dns record %s: %s", *result.Result.ID, response)
 		return err
 	}
+	d.SetId("")
 	return nil
 }
 

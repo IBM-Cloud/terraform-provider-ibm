@@ -1,6 +1,7 @@
 package ibm
 
 import (
+	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -85,8 +86,9 @@ func dataSourceIBMDirectLinkPortsRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	listPortsOptions := sess.NewListPortsOptions()
-	response, _, err := sess.ListPorts(listPortsOptions)
+	response, resp, err := sess.ListPorts(listPortsOptions)
 	if err != nil {
+		log.Println("[WARN] Error listing dl ports", resp, err)
 		return err
 	}
 

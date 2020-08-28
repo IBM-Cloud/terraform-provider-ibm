@@ -1,6 +1,8 @@
 package ibm
 
 import (
+	"log"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -58,8 +60,9 @@ func dataSourceIBMDirectLinkPortRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	getPortsOptions := sess.NewGetPortOptions(d.Get(dlPortID).(string))
-	response, _, err := sess.GetPort(getPortsOptions)
+	response, resp, err := sess.GetPort(getPortsOptions)
 	if err != nil {
+		log.Println("[WARN] Error getting port", resp, err)
 		return err
 	}
 

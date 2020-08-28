@@ -299,6 +299,10 @@ func resourceIBMdlGatewayVCExists(d *schema.ResourceData, meta interface{}) (boo
 	getVCOptions.SetGatewayID(gatewayId)
 	_, response, err := directLink.GetGatewayVirtualConnection(getVCOptions)
 	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return false, nil
+		}
 		return false, fmt.Errorf("Error Getting Direct Link Gateway (Dedicated Template) Virtual Connection: %s\n%s", err, response)
 	}
 

@@ -410,12 +410,12 @@ func resourceIBMTransitGatewayConnectionExists(d *schema.ResourceData, meta inte
 	getTransitGatewayConnectionOptions.SetTransitGatewayID(gatewayId)
 	_, response, err := client.GetTransitGatewayConnection(getTransitGatewayConnectionOptions)
 	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return false, nil
+		}
 		return false, fmt.Errorf("Error Getting Transit Gateway Connection: %s\n%s", err, response)
 	}
 
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return false, nil
-	}
 	return true, nil
 }
