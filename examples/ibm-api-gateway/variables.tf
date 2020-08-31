@@ -16,10 +16,6 @@ variable "managed" {
   description = "Indicates if endpoint to be online or offline"
   default     = false
 }
-variable "file_path" {
-  type        = string
-  description = "OpenAPI swagger document that defines api endpoint"
-}
 variable "action_type" {
   type        = string
   description = "Update actions manage,unmanage,share,unshare"
@@ -49,3 +45,8 @@ variable "generate_secret" {
   type        = bool
   description = "Indicates if secret has to be auto-generated or not"
 }
+# variable "file_path" {
+#   type        = string
+#   description = "OpenAPI swagger document that defines api endpoint"
+#   default = "ibm/test-fixtures/SDK-test.json"
+# }
