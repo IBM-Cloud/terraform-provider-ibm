@@ -354,6 +354,164 @@ func dataSourceIBMDatabaseInstance() *schema.Resource {
 					},
 				},
 			},
+			"auto_scaling": {
+				Type:        schema.TypeList,
+				Description: "ICD Auto Scaling",
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"disk": {
+							Type:        schema.TypeList,
+							Description: "Disk Auto Scaling",
+							Computed:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"capacity_enabled": {
+										Description: "Auto Scaling Scalar: Capacity Enabled",
+										Type:        schema.TypeBool,
+										Computed:    true,
+									},
+									"free_space_remaining_percent": {
+										Description: "Auto Scaling Scalar: Capacity Free Space Remaining Percent",
+										Type:        schema.TypeInt,
+										Computed:    true,
+									},
+									"free_space_less_than_percent": {
+										Description: "Auto Scaling Scalar: Capacity Free Space Less Than Percent",
+										Type:        schema.TypeInt,
+										Computed:    true,
+									},
+									"io_enabled": {
+										Description: "Auto Scaling Scalar: IO Utilization Enabled",
+										Type:        schema.TypeBool,
+										Computed:    true,
+									},
+
+									"io_over_period": {
+										Description: "Auto Scaling Scalar: IO Utilization Over Period",
+										Type:        schema.TypeString,
+										Computed:    true,
+									},
+									"io_above_percent": {
+										Description: "Auto Scaling Scalar: IO Utilization Above Percent",
+										Type:        schema.TypeInt,
+										Computed:    true,
+									},
+									"rate_increase_percent": {
+										Description: "Auto Scaling Rate: Increase Percent",
+										Type:        schema.TypeInt,
+										Computed:    true,
+									},
+									"rate_period_seconds": {
+										Description: "Auto Scaling Rate: Period Seconds",
+										Type:        schema.TypeInt,
+										Computed:    true,
+									},
+									"rate_limit_mb_per_member": {
+										Description: "Auto Scaling Rate: Limit mb per member",
+										Type:        schema.TypeInt,
+										Computed:    true,
+									},
+									"rate_limit_count_per_member": {
+										Description: "Auto Scaling Rate: Limit count per number",
+										Type:        schema.TypeInt,
+										Computed:    true,
+									},
+									"rate_units": {
+										Description: "Auto Scaling Rate: Units ",
+										Type:        schema.TypeString,
+										Computed:    true,
+									},
+								},
+							},
+						},
+						"memory": {
+							Type:        schema.TypeList,
+							Description: "Memory Auto Scaling",
+							Computed:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"io_enabled": {
+										Description: "Auto Scaling Scalar: IO Utilization Enabled",
+										Type:        schema.TypeBool,
+										Computed:    true,
+									},
+
+									"io_over_period": {
+										Description: "Auto Scaling Scalar: IO Utilization Over Period",
+										Type:        schema.TypeString,
+										Computed:    true,
+									},
+									"io_above_percent": {
+										Description: "Auto Scaling Scalar: IO Utilization Above Percent",
+										Type:        schema.TypeInt,
+										Computed:    true,
+									},
+									"rate_increase_percent": {
+										Description: "Auto Scaling Rate: Increase Percent",
+										Type:        schema.TypeInt,
+										Computed:    true,
+									},
+									"rate_period_seconds": {
+										Description: "Auto Scaling Rate: Period Seconds",
+										Type:        schema.TypeInt,
+										Computed:    true,
+									},
+									"rate_limit_mb_per_member": {
+										Description: "Auto Scaling Rate: Limit mb per member",
+										Type:        schema.TypeInt,
+										Computed:    true,
+									},
+									"rate_limit_count_per_member": {
+										Description: "Auto Scaling Rate: Limit count per number",
+										Type:        schema.TypeInt,
+										Computed:    true,
+									},
+									"rate_units": {
+										Description: "Auto Scaling Rate: Units ",
+										Type:        schema.TypeString,
+										Computed:    true,
+									},
+								},
+							},
+						},
+						"cpu": {
+							Type:        schema.TypeList,
+							Description: "CPU Auto Scaling",
+							Computed:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"rate_increase_percent": {
+										Description: "Auto Scaling Rate: Increase Percent",
+										Type:        schema.TypeInt,
+										Computed:    true,
+									},
+									"rate_period_seconds": {
+										Description: "Auto Scaling Rate: Period Seconds",
+										Type:        schema.TypeInt,
+										Computed:    true,
+									},
+									"rate_limit_mb_per_member": {
+										Description: "Auto Scaling Rate: Limit mb per member",
+										Type:        schema.TypeInt,
+										Computed:    true,
+									},
+									"rate_limit_count_per_member": {
+										Description: "Auto Scaling Rate: Limit count per number",
+										Type:        schema.TypeInt,
+										Computed:    true,
+									},
+									"rate_units": {
+										Description: "Auto Scaling Rate: Units ",
+										Type:        schema.TypeString,
+										Computed:    true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -533,6 +691,12 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set("groups", flattenIcdGroups(groupList))
 	d.Set("members_memory_allocation_mb", groupList.Groups[0].Memory.AllocationMb)
 	d.Set("members_disk_allocation_mb", groupList.Groups[0].Disk.AllocationMb)
+
+	autoSclaingGroup, err := icdClient.AutoScaling().GetAutoScaling(icdId, "member")
+	if err != nil {
+		return fmt.Errorf("Error getting database groups: %s", err)
+	}
+	d.Set("auto_scaling", flattenICDAutoScalingGroup(autoSclaingGroup))
 
 	whitelist, err := icdClient.Whitelists().GetWhitelist(icdId)
 	if err != nil {

@@ -64,6 +64,46 @@ resource "ibm_database" "test_acc" {
   point_in_time_recovery_deployment_id = "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/4448261269a14562b839e0a3019ed980:0b8c37b0-0f01-421a-bb32-056c6565b461::"
 }
 ```
+## Example Usage using  auto_scaling
+
+```hcl
+resource "ibm_database" "autoscale" {
+    resource_group_id            = data.ibm_resource_group.group.id
+    name                         = "redis"
+    service                      = "databases-for-redis"
+    plan                         = "standard"
+    location                     = "us-south"
+    service_endpoints            = "private"
+    auto_scaling {
+        cpu {
+            rate_increase_percent       = 20
+            rate_limit_count_per_member = 20
+            rate_period_seconds         = 900
+            rate_units                  = "count"
+        }
+        disk {
+            capacity_enabled             = true
+            free_space_less_than_percent = 15
+            io_above_percent             = 85
+            io_enabled                   = true
+            io_over_period               = "15m"
+            rate_increase_percent        = 15
+            rate_limit_mb_per_member     = 3670016
+            rate_period_seconds          = 900
+            rate_units                   = "mb"
+        }
+         memory {
+            io_above_percent         = 90
+            io_enabled               = true
+            io_over_period           = "15m"
+            rate_increase_percent    = 10
+            rate_limit_mb_per_member = 114688
+            rate_period_seconds      = 900
+            rate_units               = "mb"
+        }
+    }
+}
+```
 
 provider.tf
 
@@ -123,6 +163,30 @@ The following arguments are supported:
   * `description` -  Unique description for white list range
 * `guid` - Unique identifier of resource instance.
 
+* `auto_scaling` - (Optional, List) Configure rules to allow your database to automatically increase its resources. Single block of autoscaling is allowed at once.
+  * `cpu` - (Optional, List) CPU AutoScaling. Single block of cpu is allowed at once.
+    * `rate_increase_percent` - (Optional,int) Auto Scaling Rate: Increase Percent
+    * `rate_limit_count_per_member` - (Optional,int) Auto Scaling Rate: Limit count per number
+    * `rate_period_seconds` - (Optional,int) Auto Scaling Rate: Period Seconds
+    * `rate_units` - (Optional,string) Auto Scaling Rate: Units
+  * `disk` - (Optional, List) Disk Auto Scaling. Single block of disk is allowed at once.
+    * `capacity_enabled` - (Optional,bool) Auto Scaling Scalar: Enables or disable the capacity scalar
+    * `free_space_less_than_percent` - (Optional,int) Auto Scaling Scalar: Capacity Free Space Less Than Percent
+    * `io_above_percent` - (Optional,int) Auto Scaling Scalar: IO Utilization Above Percent
+    * `io_enabled` - (Optional,bool) Auto Scaling Scalar: IO Utilization Enabled
+    * `io_over_period` - (Optional,string) Auto Scaling Scalar: IO Utilization Over Period
+    * `rate_increase_percent` -  (Optional,int) Auto Scaling Rate: Increase Percent
+    * `rate_limit_mb_per_member` - (Optional,int) Auto Scaling Rate: Limit mb per member
+    * `rate_period_seconds` - (Optional,int) Auto Scaling Rate: Period Seconds
+    * `rate_units` -  (Optional,string) Auto Scaling Rate: Units
+  * `memory` -(Optional, List) Memory Auto Scaling. Single block of memory is allowed at once.
+    * `io_above_percent` - (Optional,int) Auto Scaling Scalar: IO Utilization Above Percent
+    * `io_enabled` - (Optional,bool) Auto Scaling Scalar: IO Utilization Enabled
+    * `io_over_period` - (Optional,string) Auto Scaling Scalar: IO Utilization Over Period
+    * `rate_increase_percent` -(Optional,int) Auto Scaling Rate: Increase Percent
+    * `rate_limit_mb_per_member` - (Optional,int) Auto Scaling Rate: Limit mb per member
+    * `rate_period_seconds` - (Optional,int) Auto Scaling Rate: Period Seconds
+    * `rate_units` - (Optional,string) Auto Scaling Rate: Units
 
 
 ## Attribute Reference

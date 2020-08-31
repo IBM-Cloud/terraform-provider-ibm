@@ -54,6 +54,30 @@ The following attributes are exported:
   `connectionstrings.1.string = postgres://admin:$PASSWORD@79226bd4-4076-4873-b5ce-b1dba48ff8c4.b8a5e798d2d04f2e860e54e5d042c915.databases.appdomain.cloud:32554/ibmclouddb?sslmode=verify-full`
 * `whitelist` - List of whitelisted IP addresses or ranges.
 * `guid` - Unique identifier of resource instance.
+* `auto_scaling` -  Configure rules to allow your database to automatically increase its resources. 
+  * `cpu` - CPU AutoScaling
+    * `rate_increase_percent` - Auto Scaling Rate: Increase Percent
+    * `rate_limit_count_per_member` - Auto Scaling Rate: Limit count per number
+    * `rate_period_seconds` - Auto Scaling Rate: Period Seconds
+    * `rate_units` - Auto Scaling Rate: Units
+  * `disk` - Disk AutoScaling
+    * `capacity_enabled` - Auto Scaling Scalar: Enables or disable the capacity scalar
+    * `free_space_less_than_percent` - Auto Scaling Scalar: Capacity Free Space Less Than Percent
+    * `io_above_percent` - Auto Scaling Scalar: IO Utilization Above Percent
+    * `io_enabled` - Auto Scaling Scalar: IO Utilization Enabled
+    * `io_over_period` - Auto Scaling Scalar: IO Utilization Over Period
+    * `rate_increase_percent` - Auto Scaling Rate: Increase Percent
+    * `rate_limit_mb_per_member` - Auto Scaling Rate: Limit mb per member
+    * `rate_period_seconds` - Auto Scaling Rate: Period Seconds
+    * `rate_units` - Auto Scaling Rate: Units
+  * `memory` - Memory AutoScaling
+    * `io_above_percent` - Auto Scaling Scalar: IO Utilization Above Percent
+    * `io_enabled` - Auto Scaling Scalar: IO Utilization Enabled
+    * `io_over_period` - Auto Scaling Scalar: IO Utilization Over Period
+    * `rate_increase_percent` - Auto Scaling Rate: Increase Percent
+    * `rate_limit_mb_per_member` - Auto Scaling Rate: Limit mb per member
+    * `rate_period_seconds` - Auto Scaling Rate: Period Seconds
+    * `rate_units` - Auto Scaling Rate: Units
 
 Note that the provider only exports the admin userid and associated connectionstring. It does not export any userids additionally configured for the instance. This is due to a lack of ICD function. 
 

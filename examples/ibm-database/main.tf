@@ -78,3 +78,41 @@ resource "ibm_database" "test_acc" {
 #     backup_encryption_key_crn    = ibm_kp_key.test.id
     
 # }  
+
+// Setting Auto-Scaling Groups for database
+resource "ibm_database" "autoscale" {
+  resource_group_id        = data.ibm_resource_group.test_acc.id
+  name                     = "redis-test-key"
+  service                  = "databases-for-redis"
+  plan                     = "standard"
+  location                 = "us-south"
+  service_endpoints        = "private"
+  auto_scaling {
+    cpu {
+      rate_increase_percent       = 20
+      rate_limit_count_per_member = 20
+      rate_period_seconds         = 900
+      rate_units                  = "count"
+    }
+    disk {
+      capacity_enabled             = true
+      free_space_less_than_percent = 15
+      io_above_percent             = 85
+      io_enabled                   = true
+      io_over_period               = "15m"
+      rate_increase_percent        = 15
+      rate_limit_mb_per_member     = 3670016
+      rate_period_seconds          = 900
+      rate_units                   = "mb"
+    }
+      memory {
+      io_above_percent         = 90
+      io_enabled               = true
+      io_over_period           = "15m"
+      rate_increase_percent    = 10
+      rate_limit_mb_per_member = 114688
+      rate_period_seconds      = 900
+      rate_units               = "mb"
+    }
+  }
+}
