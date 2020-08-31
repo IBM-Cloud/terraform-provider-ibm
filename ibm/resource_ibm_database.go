@@ -453,6 +453,172 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 					},
 				},
 			},
+			"auto_scaling": {
+				Type:        schema.TypeList,
+				Description: "ICD Auto Scaling",
+				Optional:    true,
+				Computed:    true,
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"disk": {
+							Type:        schema.TypeList,
+							Description: "Disk Auto Scaling",
+							Optional:    true,
+							Computed:    true,
+							MaxItems:    1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"capacity_enabled": {
+										Description: "Auto Scaling Scalar: Capacity Enabled",
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Computed:    true,
+									},
+									"free_space_less_than_percent": {
+										Description: "Auto Scaling Scalar: Capacity Free Space Less Than Percent",
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Computed:    true,
+									},
+									"io_enabled": {
+										Description: "Auto Scaling Scalar: IO Utilization Enabled",
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Computed:    true,
+									},
+
+									"io_over_period": {
+										Description: "Auto Scaling Scalar: IO Utilization Over Period",
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+									},
+									"io_above_percent": {
+										Description: "Auto Scaling Scalar: IO Utilization Above Percent",
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Computed:    true,
+									},
+									"rate_increase_percent": {
+										Description: "Auto Scaling Rate: Increase Percent",
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Computed:    true,
+									},
+									"rate_period_seconds": {
+										Description: "Auto Scaling Rate: Period Seconds",
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Computed:    true,
+									},
+									"rate_limit_mb_per_member": {
+										Description: "Auto Scaling Rate: Limit mb per member",
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Computed:    true,
+									},
+									"rate_units": {
+										Description: "Auto Scaling Rate: Units ",
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+									},
+								},
+							},
+						},
+						"memory": {
+							Type:        schema.TypeList,
+							Description: "Memory Auto Scaling",
+							Optional:    true,
+							Computed:    true,
+							MaxItems:    1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"io_enabled": {
+										Description: "Auto Scaling Scalar: IO Utilization Enabled",
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Computed:    true,
+									},
+
+									"io_over_period": {
+										Description: "Auto Scaling Scalar: IO Utilization Over Period",
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+									},
+									"io_above_percent": {
+										Description: "Auto Scaling Scalar: IO Utilization Above Percent",
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Computed:    true,
+									},
+									"rate_increase_percent": {
+										Description: "Auto Scaling Rate: Increase Percent",
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Computed:    true,
+									},
+									"rate_period_seconds": {
+										Description: "Auto Scaling Rate: Period Seconds",
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Computed:    true,
+									},
+									"rate_limit_mb_per_member": {
+										Description: "Auto Scaling Rate: Limit mb per member",
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Computed:    true,
+									},
+									"rate_units": {
+										Description: "Auto Scaling Rate: Units ",
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+									},
+								},
+							},
+						},
+						"cpu": {
+							Type:        schema.TypeList,
+							Description: "CPU Auto Scaling",
+							Optional:    true,
+							Computed:    true,
+							MaxItems:    1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"rate_increase_percent": {
+										Description: "Auto Scaling Rate: Increase Percent",
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Computed:    true,
+									},
+									"rate_period_seconds": {
+										Description: "Auto Scaling Rate: Period Seconds",
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Computed:    true,
+									},
+									"rate_limit_count_per_member": {
+										Description: "Auto Scaling Rate: Limit count per number",
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Computed:    true,
+									},
+									"rate_units": {
+										Description: "Auto Scaling Rate: Units ",
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -685,6 +851,60 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 		}
 		d.SetPartial("whitelist")
 	}
+	if cpuRecord, ok := d.GetOk("auto_scaling.0.cpu"); ok {
+		params := icdv4.AutoscalingSetGroup{}
+		cpuBody, err := expandICDAutoScalingGroup(d, cpuRecord, "cpu")
+		if err != nil {
+			return fmt.Errorf("Error in getting cpuBody from expandICDAutoScalingGroup %s", err)
+		}
+		params.Autoscaling.CPU = &cpuBody
+		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
+		if err != nil {
+			return fmt.Errorf("Error updating database scaling group: %s", err)
+		}
+		_, err = waitForDatabaseTaskComplete(task.Id, d, meta)
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for database (%s) scaling group update task to complete: %s", icdId, err)
+		}
+
+	}
+	if diskRecord, ok := d.GetOk("auto_scaling.0.disk"); ok {
+		params := icdv4.AutoscalingSetGroup{}
+		diskBody, err := expandICDAutoScalingGroup(d, diskRecord, "disk")
+		if err != nil {
+			return fmt.Errorf("Error in getting diskBody from expandICDAutoScalingGroup %s", err)
+		}
+		params.Autoscaling.Disk = &diskBody
+		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
+		if err != nil {
+			return fmt.Errorf("Error updating database scaling group: %s", err)
+		}
+		_, err = waitForDatabaseTaskComplete(task.Id, d, meta)
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for database (%s) scaling group update task to complete: %s", icdId, err)
+		}
+
+	}
+	if memoryRecord, ok := d.GetOk("auto_scaling.0.memory"); ok {
+		params := icdv4.AutoscalingSetGroup{}
+		memoryBody, err := expandICDAutoScalingGroup(d, memoryRecord, "memory")
+		if err != nil {
+			return fmt.Errorf("Error in getting memoryBody from expandICDAutoScalingGroup %s", err)
+		}
+		params.Autoscaling.Memory = &memoryBody
+		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
+		if err != nil {
+			return fmt.Errorf("Error updating database scaling group: %s", err)
+		}
+		_, err = waitForDatabaseTaskComplete(task.Id, d, meta)
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for database (%s) scaling group update task to complete: %s", icdId, err)
+		}
+
+	}
 
 	if userlist, ok := d.GetOk("users"); ok {
 		users := expandUsers(userlist.(*schema.Set))
@@ -812,6 +1032,12 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("members_disk_allocation_mb", groupList.Groups[0].Disk.AllocationMb)
 	d.Set("members_cpu_allocation_count", groupList.Groups[0].Cpu.AllocationCount)
 
+	autoSclaingGroup, err := icdClient.AutoScaling().GetAutoScaling(icdId, "member")
+	if err != nil {
+		return fmt.Errorf("Error getting database groups: %s", err)
+	}
+	d.Set("auto_scaling", flattenICDAutoScalingGroup(autoSclaingGroup))
+
 	whitelist, err := icdClient.Whitelists().GetWhitelist(icdId)
 	if err != nil {
 		return fmt.Errorf("Error getting database whitelist: %s", err)
@@ -908,6 +1134,63 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 			params.GroupBdy.Cpu = &cpuReq
 		}
 		task, err := icdClient.Groups().UpdateGroup(icdId, "member", params)
+		if err != nil {
+			return fmt.Errorf("Error updating database scaling group: %s", err)
+		}
+		_, err = waitForDatabaseTaskComplete(task.Id, d, meta)
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for database (%s) scaling group update task to complete: %s", icdId, err)
+		}
+
+	}
+	if d.HasChange("auto_scaling.0.cpu") {
+		cpuRecord := d.Get("auto_scaling.0.cpu")
+		params := icdv4.AutoscalingSetGroup{}
+		cpuBody, err := expandICDAutoScalingGroup(d, cpuRecord, "cpu")
+		if err != nil {
+			return fmt.Errorf("Error in getting cpuBody from expandICDAutoScalingGroup %s", err)
+		}
+		params.Autoscaling.CPU = &cpuBody
+		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
+		if err != nil {
+			return fmt.Errorf("Error updating database scaling group: %s", err)
+		}
+		_, err = waitForDatabaseTaskComplete(task.Id, d, meta)
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for database (%s) scaling group update task to complete: %s", icdId, err)
+		}
+
+	}
+	if d.HasChange("auto_scaling.0.disk") {
+		diskRecord := d.Get("auto_scaling.0.disk")
+		params := icdv4.AutoscalingSetGroup{}
+		diskBody, err := expandICDAutoScalingGroup(d, diskRecord, "disk")
+		if err != nil {
+			return fmt.Errorf("Error in getting diskBody from expandICDAutoScalingGroup %s", err)
+		}
+		params.Autoscaling.Disk = &diskBody
+		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
+		if err != nil {
+			return fmt.Errorf("Error updating database scaling group: %s", err)
+		}
+		_, err = waitForDatabaseTaskComplete(task.Id, d, meta)
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for database (%s) scaling group update task to complete: %s", icdId, err)
+		}
+
+	}
+	if d.HasChange("auto_scaling.0.memory") {
+		memoryRecord := d.Get("auto_scaling.0.memory")
+		params := icdv4.AutoscalingSetGroup{}
+		memoryBody, err := expandICDAutoScalingGroup(d, memoryRecord, "memory")
+		if err != nil {
+			return fmt.Errorf("Error in getting memoryBody from expandICDAutoScalingGroup %s", err)
+		}
+		params.Autoscaling.Memory = &memoryBody
+		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
 		if err != nil {
 			return fmt.Errorf("Error updating database scaling group: %s", err)
 		}
@@ -1326,4 +1609,126 @@ func filterDatabaseDeployments(deployments []models.ServiceDeployment, location 
 		}
 	}
 	return supportedDeployments, supportedLocations
+}
+
+func expandICDAutoScalingGroup(d *schema.ResourceData, asRecord interface{}, asType string) (asgBody icdv4.ASGBody, err error) {
+
+	asgRecord := asRecord.([]interface{})[0].(map[string]interface{})
+	asgCapacity := icdv4.CapacityBody{}
+	if _, ok := asgRecord["capacity_enabled"]; ok {
+		asgCapacity.Enabled = asgRecord["capacity_enabled"].(bool)
+		asgBody.Scalers.Capacity = &asgCapacity
+	}
+	if _, ok := asgRecord["free_space_less_than_percent"]; ok {
+		asgCapacity.FreeSpaceLessThanPercent = asgRecord["free_space_less_than_percent"].(int)
+		asgBody.Scalers.Capacity = &asgCapacity
+	}
+
+	// IO Payload
+	asgIO := icdv4.IOBody{}
+	if _, ok := asgRecord["io_enabled"]; ok {
+		asgIO.Enabled = asgRecord["io_enabled"].(bool)
+		asgBody.Scalers.IO = &asgIO
+	}
+	if _, ok := asgRecord["io_over_period"]; ok {
+		asgIO.OverPeriod = asgRecord["io_over_period"].(string)
+		asgBody.Scalers.IO = &asgIO
+	}
+	if _, ok := asgRecord["io_above_percent"]; ok {
+		asgIO.AbovePercent = asgRecord["io_above_percent"].(int)
+		asgBody.Scalers.IO = &asgIO
+	}
+
+	// Rate Payload
+	asgRate := icdv4.RateBody{}
+	if _, ok := asgRecord["rate_increase_percent"]; ok {
+		asgRate.IncreasePercent = asgRecord["rate_increase_percent"].(int)
+		asgBody.Rate = asgRate
+	}
+	if _, ok := asgRecord["rate_period_seconds"]; ok {
+		asgRate.PeriodSeconds = asgRecord["rate_period_seconds"].(int)
+		asgBody.Rate = asgRate
+	}
+	if _, ok := asgRecord["rate_limit_mb_per_member"]; ok {
+		asgRate.LimitMBPerMember = asgRecord["rate_limit_mb_per_member"].(int)
+		asgBody.Rate = asgRate
+	}
+	if _, ok := asgRecord["rate_limit_count_per_member"]; ok {
+		asgRate.LimitCountPerMember = asgRecord["rate_limit_count_per_member"].(int)
+		asgBody.Rate = asgRate
+	}
+	if _, ok := asgRecord["rate_units"]; ok {
+		asgRate.Units = asgRecord["rate_units"].(string)
+		asgBody.Rate = asgRate
+	}
+
+	return asgBody, nil
+}
+
+func flattenICDAutoScalingGroup(autoScalingGroup icdv4.AutoscalingGetGroup) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0)
+
+	memorys := make([]map[string]interface{}, 0)
+	memory := make(map[string]interface{})
+
+	if autoScalingGroup.Autoscaling.Memory.Scalers.IO != nil {
+		memoryIO := *autoScalingGroup.Autoscaling.Memory.Scalers.IO
+		memory["io_enabled"] = memoryIO.Enabled
+		memory["io_over_period"] = memoryIO.OverPeriod
+		memory["io_above_percent"] = memoryIO.AbovePercent
+	}
+	if &autoScalingGroup.Autoscaling.Memory.Rate != nil {
+		ip, _ := autoScalingGroup.Autoscaling.Memory.Rate.IncreasePercent.Float64()
+		memory["rate_increase_percent"] = int(ip)
+		memory["rate_period_seconds"] = autoScalingGroup.Autoscaling.Memory.Rate.PeriodSeconds
+		lmp, _ := autoScalingGroup.Autoscaling.Memory.Rate.LimitMBPerMember.Float64()
+		memory["rate_limit_mb_per_member"] = int(lmp)
+		memory["rate_units"] = autoScalingGroup.Autoscaling.Memory.Rate.Units
+	}
+	memorys = append(memorys, memory)
+
+	cpus := make([]map[string]interface{}, 0)
+	cpu := make(map[string]interface{})
+
+	if &autoScalingGroup.Autoscaling.CPU.Rate != nil {
+
+		ip, _ := autoScalingGroup.Autoscaling.CPU.Rate.IncreasePercent.Float64()
+		cpu["rate_increase_percent"] = int(ip)
+		cpu["rate_period_seconds"] = autoScalingGroup.Autoscaling.CPU.Rate.PeriodSeconds
+		cpu["rate_limit_count_per_member"] = autoScalingGroup.Autoscaling.CPU.Rate.LimitCountPerMember
+		cpu["rate_units"] = autoScalingGroup.Autoscaling.CPU.Rate.Units
+	}
+	cpus = append(cpus, cpu)
+
+	disks := make([]map[string]interface{}, 0)
+	disk := make(map[string]interface{})
+	if autoScalingGroup.Autoscaling.Disk.Scalers.Capacity != nil {
+		diskCapacity := *autoScalingGroup.Autoscaling.Disk.Scalers.Capacity
+		disk["capacity_enabled"] = diskCapacity.Enabled
+		disk["free_space_less_than_percent"] = diskCapacity.FreeSpaceLessThanPercent
+	}
+	if autoScalingGroup.Autoscaling.Disk.Scalers.IO != nil {
+		diskIO := *autoScalingGroup.Autoscaling.Disk.Scalers.IO
+		disk["io_enabled"] = diskIO.Enabled
+		disk["io_over_period"] = diskIO.OverPeriod
+		disk["io_above_percent"] = diskIO.AbovePercent
+	}
+	if &autoScalingGroup.Autoscaling.Disk.Rate != nil {
+
+		ip, _ := autoScalingGroup.Autoscaling.Disk.Rate.IncreasePercent.Float64()
+		disk["rate_increase_percent"] = int(ip)
+		disk["rate_period_seconds"] = autoScalingGroup.Autoscaling.Disk.Rate.PeriodSeconds
+		lpm, _ := autoScalingGroup.Autoscaling.Disk.Rate.LimitMBPerMember.Float64()
+		disk["rate_limit_mb_per_member"] = int(lpm)
+		disk["rate_units"] = autoScalingGroup.Autoscaling.Disk.Rate.Units
+	}
+
+	disks = append(disks, disk)
+	as := map[string]interface{}{
+		"memory": memorys,
+		"cpu":    cpus,
+		"disk":   disks,
+	}
+	result = append(result, as)
+	return result
 }

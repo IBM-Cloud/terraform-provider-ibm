@@ -91,6 +91,10 @@ func TestAccIBMDatabaseInstance_Redis_import(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "service", "databases-for-redis"),
 					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
 					resource.TestCheckResourceAttr(resourceName, "location", "us-south"),
+					resource.TestCheckResourceAttr(resourceName, "auto_scaling.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "auto_scaling.0.disk.0.capacity_enabled", "true"),
+					resource.TestCheckResourceAttr(resourceName, "auto_scaling.0.memory.0.io_enabled", "true"),
+					resource.TestCheckResourceAttr(resourceName, "auto_scaling.0.cpu.0.rate_increase_percent", "20"),
 				),
 			},
 			resource.TestStep{
@@ -221,6 +225,34 @@ func testAccCheckIBMDatabaseInstance_Redis_import(databaseResourceGroup string, 
 		service           = "databases-for-redis"
 		plan              = "standard"
 		location          = "us-south"
+		auto_scaling {
+			cpu {
+			  rate_increase_percent       = 20
+			  rate_limit_count_per_member = 20
+			  rate_period_seconds         = 900
+			  rate_units                  = "count"
+			}
+			disk {
+			  capacity_enabled             = true
+			  free_space_less_than_percent = 15
+			  io_above_percent             = 85
+			  io_enabled                   = true
+			  io_over_period               = "15m"
+			  rate_increase_percent        = 15
+			  rate_limit_mb_per_member     = 3670016
+			  rate_period_seconds          = 900
+			  rate_units                   = "mb"
+			}
+			  memory {
+			  io_above_percent         = 90
+			  io_enabled               = true
+			  io_over_period           = "15m"
+			  rate_increase_percent    = 10
+			  rate_limit_mb_per_member = 114688
+			  rate_period_seconds      = 900
+			  rate_units               = "mb"
+			}
+		}
 	  }
 				`, databaseResourceGroup, name)
 }
