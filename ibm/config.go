@@ -1,6 +1,7 @@
 package ibm
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"log"
@@ -655,7 +656,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		// InstanceID:    "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8",
 		Verbose: kp.VerboseFailOnly,
 	}
-	kmsAPIclient, err := kp.New(kmsOptions, kp.DefaultTransport())
+	kmsAPIclient, err := kp.New(kmsOptions, DefaultTransport())
 	if err != nil {
 		session.kmsErr = fmt.Errorf("Error occured while configuring key Service: %q", err)
 	}
@@ -1081,4 +1082,17 @@ func envFallBack(envs []string, defaultValue string) string {
 		}
 	}
 	return defaultValue
+}
+
+// DefaultTransport ...
+func DefaultTransport() gohttp.RoundTripper {
+	transport := &gohttp.Transport{
+		Proxy:               gohttp.ProxyFromEnvironment,
+		DisableKeepAlives:   true,
+		MaxIdleConnsPerHost: -1,
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: false,
+		},
+	}
+	return transport
 }
