@@ -23,7 +23,9 @@ data "ibm_org" "orgdata" {
 
 The following arguments are supported:
 
-* `org` - (Required, string) The name of the IBM Cloud organization. You can retrieve the value by running the `ibmcloud iam orgs` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
+* `org` - (Deprecated, string) The name of the IBM Cloud organization. You can retrieve the value by running the `ibmcloud iam orgs` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
+* `name` - (Optional, string) The name of the IBM Cloud organization.
+
 
 ## Attribute Reference
 
