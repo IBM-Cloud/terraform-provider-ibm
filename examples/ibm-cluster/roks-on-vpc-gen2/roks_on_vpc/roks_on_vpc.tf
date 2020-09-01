@@ -87,7 +87,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
 
   kms_config {
     instance_id = ibm_resource_instance.kms_instance1.guid
-    crk_id = ibm_kms_key.test.id
+    crk_id = ibm_kms_key.test.key_id
     private_endpoint = false
   }
 
