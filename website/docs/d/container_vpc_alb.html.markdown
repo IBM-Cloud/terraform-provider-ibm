@@ -1,7 +1,7 @@
 ---
 layout: "ibm"
-page_title: "IBM: container_vpc_cluster_alb"
-sidebar_current: "docs-ibm-datasource-container-vpc-cluster-alb"
+page_title: "IBM: container_vpc_alb"
+sidebar_current: "docs-ibm-datasource-container-vpc-alb"
 description: |-
   Get information about a Kubernetes container vpc ALB.
 ---
@@ -15,7 +15,7 @@ Import the details of a Kubernetes cluster ALB on IBM Cloud as a read-only data 
 In the following example, you can configure a alb:
 
 ```hcl
-data "ibm_container_vpc_cluster_alb" "alb" {
+data "ibm_container_vpc_alb" "alb" {
   alb_id = "public-cr083d810e501d4c73b42184eab5a7ad56-alb"
 }
 
