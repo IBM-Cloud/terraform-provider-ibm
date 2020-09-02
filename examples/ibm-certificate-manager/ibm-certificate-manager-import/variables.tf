@@ -1,3 +1,13 @@
+variable ca_cert_validity_period_days {
+  default     = 3660
+  description = "ca certificate validity, in days"
+}
+
+variable ca_cert_early_renewal_days {
+  default     = 180
+  description = "ca early certificate renewal, in days"
+}
+
 variable "region" {
   description = "Region in which resource has to be provisioned."
   type        = string
@@ -11,26 +21,26 @@ variable "import_name" {
   type        = string
   description = "Name of certificate that has to be imported"
 }
-variable "cert_file_path" {
-  type        = string
-  description = "Path of the certificate file that has to be imported"
-}
-//used while creating certificate using null resource and importing it into CMS
-variable "ssl_region" {
-  type        = string
-  description = "Region of SSL certificate that is been created"
-}
-variable "host" {
-  type        = string
-  description = "Host of SSL certificate that is been created"
-}
-variable "ssl_key" {
-  type        = string
-  description = "Private Key file name of SSL certificate."
-  default = "private_key.key"
-}
-variable "ssl_cert" {
-  type        = string
-  description = "SSL Certificate file name"
-  default = "certificate.pem"
-}
+# variable "cert_file_path" {
+#   type        = string
+#   description = "Path of the certificate file that has to be imported"
+# }
+# //used while creating certificate using null resource and importing it into CMS
+# variable "ssl_region" {
+#   type        = string
+#   description = "Region of SSL certificate that is been created"
+# }
+# variable "host" {
+#   type        = string
+#   description = "Host of SSL certificate that is been created"
+# }
+# variable "ssl_key" {
+#   type        = string
+#   description = "Private Key file name of SSL certificate."
+#   default = "private_key.key"
+# }
+# variable "ssl_cert" {
+#   type        = string
+#   description = "SSL Certificate file name"
+#   default = "certificate.pem"
+# }

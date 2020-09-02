@@ -11,11 +11,6 @@ variable "cis_name" {
   type        = string
   description = "CIS Service instance name"
 }
-variable "cis_plan" {
-  type        = string
-  description = "CIS Service instance plan"
-  default     = "standard"
-}
 variable "domain" {
   type        = string
   description = "CIS Domain name"

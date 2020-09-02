@@ -7,24 +7,23 @@ resource "ibm_resource_instance" "cm" {
   service  = "cloudcerts"
   plan     = "free"
 }
-//creating CIS resource
-resource "ibm_cis" "instance" {
+//Getting existing CIS resource
+data "ibm_cis" "instance" {
   name = var.cis_name
-  plan = var.cis_plan
 }
 //Creating CIS domain
-resource "ibm_cis_domain" "example" {
+data "ibm_cis_domain" "domain" {
   domain = var.domain
-  cis_id = ibm_cis.instance.id
+  cis_id = data.ibm_cis.instance.id
 }
 //ordering certificate on CMS using CIS
 resource "ibm_certificate_manager_order" "cert" {
   certificate_manager_instance_id = ibm_resource_instance.cm.id
   name                            = var.order_name
   description                     = var.order_description
-  domains                         = [ibm_cis_domain.example.domain]
+  domains                         = [data.ibm_cis_domain.domain.domain]
   rotate_keys                     = var.rotate_key
   domain_validation_method        = var.dvm
-  dns_provider_instance_crn       = ibm_cis.instance.id
+  dns_provider_instance_crn       = data.ibm_cis.instance.id
 }
 
