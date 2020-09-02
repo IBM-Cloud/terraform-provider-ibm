@@ -1,7 +1,7 @@
-output "cert_order_id" {
-  value = ibm_certificate_manager_order.cert.id
+output "cert_order" {
+  value = ibm_certificate_manager_order.cert
 }
-output "expires_on" {
-  value = ibm_certificate_manager_order.cert.expires_on
+output "cis_domain" {
+  value = data.ibm_cis_domain.domain
 }
 

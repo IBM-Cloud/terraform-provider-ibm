@@ -101,6 +101,7 @@ data "ibm_certificate_manager_certificate" "certificate"{
 
 1. Terraform IBM provider v1.4.0 (via Terraform 0.12) doesn't supports ordering certificates using `Other DNS provider`.
 2. With `auto_renew_enabled`, certificates are automatically renewed 31 days before they expire. If your certificate expires in less than 31 days, you must renew it by updating `rotate_keys`. After you do so, your future certificates are renewed automatically.
+3. Certificates generated using `tls_private_key` and `tls_self_signed_cert` [tls resources](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/self_signed_cert) can also be imported using `ibm_certificate_manager_import` resource.
 
 ## Examples
 
