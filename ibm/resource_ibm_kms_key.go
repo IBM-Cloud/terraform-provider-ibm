@@ -132,11 +132,6 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	hpcsEndpointApi, err := meta.(ClientSession).HpcsEndpointAPI()
-	if err != nil {
-		return err
-	}
-
 	rContollerClient, err := meta.(ClientSession).ResourceControllerAPIV2()
 	if err != nil {
 		return err
@@ -157,7 +152,12 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	var hpcsEndpointURL string
 
 	if crnData[4] == "hs-crypto" {
-		resp, err := hpcsEndpointApi.Endpoint().GetAPIEndpoint(instanceID)
+		hpcsEndpointAPI, err := meta.(ClientSession).HpcsEndpointAPI()
+		if err != nil {
+			return err
+		}
+
+		resp, err := hpcsEndpointAPI.Endpoint().GetAPIEndpoint(instanceID)
 		if err != nil {
 			return err
 		}
@@ -249,17 +249,17 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 	instanceID := crnData[len(crnData)-3]
 	keyid := crnData[len(crnData)-1]
 
-	hpcsEndpointApi, err := meta.(ClientSession).HpcsEndpointAPI()
-	if err != nil {
-		return err
-	}
-
 	var instanceType string
 	var hpcsEndpointURL string
 
 	if crnData[4] == "hs-crypto" {
 		instanceType = "hs-crypto"
-		resp, err := hpcsEndpointApi.Endpoint().GetAPIEndpoint(instanceID)
+		hpcsEndpointAPI, err := meta.(ClientSession).HpcsEndpointAPI()
+		if err != nil {
+			return err
+		}
+
+		resp, err := hpcsEndpointAPI.Endpoint().GetAPIEndpoint(instanceID)
 		if err != nil {
 			return err
 		}
@@ -341,14 +341,15 @@ func resourceIBMKmsKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	keyid := crnData[len(crnData)-1]
 	kpAPI.Config.InstanceID = instanceID
 
-	hpcsEndpointApi, err := meta.(ClientSession).HpcsEndpointAPI()
-	if err != nil {
-		return err
-	}
 	var hpcsEndpointURL string
 
 	if crnData[4] == "hs-crypto" {
-		resp, err := hpcsEndpointApi.Endpoint().GetAPIEndpoint(instanceID)
+		hpcsEndpointAPI, err := meta.(ClientSession).HpcsEndpointAPI()
+		if err != nil {
+			return err
+		}
+
+		resp, err := hpcsEndpointAPI.Endpoint().GetAPIEndpoint(instanceID)
 		if err != nil {
 			return err
 		}
@@ -394,11 +395,6 @@ func resourceIBMKmsKeyExists(d *schema.ResourceData, meta interface{}) (bool, er
 		return false, err
 	}
 
-	hpcsEndpointApi, err := meta.(ClientSession).HpcsEndpointAPI()
-	if err != nil {
-		return false, err
-	}
-
 	crn := d.Id()
 	crnData := strings.Split(crn, ":")
 	endpointType := crnData[3]
@@ -409,7 +405,12 @@ func resourceIBMKmsKeyExists(d *schema.ResourceData, meta interface{}) (bool, er
 	var hpcsEndpointURL string
 
 	if crnData[4] == "hs-crypto" {
-		resp, err := hpcsEndpointApi.Endpoint().GetAPIEndpoint(instanceID)
+		hpcsEndpointAPI, err := meta.(ClientSession).HpcsEndpointAPI()
+		if err != nil {
+			return false, err
+		}
+
+		resp, err := hpcsEndpointAPI.Endpoint().GetAPIEndpoint(instanceID)
 		if err != nil {
 			return false, err
 		}
