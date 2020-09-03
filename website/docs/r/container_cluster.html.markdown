@@ -183,6 +183,8 @@ The following arguments are supported:
 	* `instance_id` - The guid of the key protect instance.
 	* `crk_id` - Id of the customer root key (CRK).
 	* `private_endpoint` - Set this to true to configure the KMS private service endpoint. Default is false.
+* `force_delete_storage` - (Optional, bool) If set to true, force the removal of persistent storage associated with the cluster during cluster deletion. Default: false
+    **NOTE**: Before doing terraform destroy if force_delete_storage param is introduced after provisioning the cluster, a terraform apply must be done before terraform destroy for force_delete_storage param to take effect.
 ## Attribute Reference
 
 The following attributes are exported:
