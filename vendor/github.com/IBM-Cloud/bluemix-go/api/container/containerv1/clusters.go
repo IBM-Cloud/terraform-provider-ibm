@@ -256,7 +256,7 @@ type Clusters interface {
 	Update(name string, params ClusterUpdateParam, target ClusterTargetHeader) error
 	UpdateClusterWorker(clusterNameOrID string, workerID string, params UpdateWorkerCommand, target ClusterTargetHeader) error
 	UpdateClusterWorkers(clusterNameOrID string, workerIDs []string, params UpdateWorkerCommand, target ClusterTargetHeader) error
-	Delete(name string, target ClusterTargetHeader) error
+	Delete(name string, target ClusterTargetHeader, deleteDependencies ...bool) error
 	Find(name string, target ClusterTargetHeader) (ClusterInfo, error)
 	FindWithOutShowResources(name string, target ClusterTargetHeader) (ClusterInfo, error)
 	FindWithOutShowResourcesCompatible(name string, target ClusterTargetHeader) (ClusterInfo, error)
@@ -327,8 +327,13 @@ func (r *clusters) UpdateClusterWorkers(clusterNameOrID string, workerIDs []stri
 }
 
 //Delete ...
-func (r *clusters) Delete(name string, target ClusterTargetHeader) error {
-	rawURL := fmt.Sprintf("/v1/clusters/%s", name)
+func (r *clusters) Delete(name string, target ClusterTargetHeader, deleteDependencies ...bool) error {
+	var rawURL string
+	if len(deleteDependencies) != 0 {
+		rawURL = fmt.Sprintf("/v1/clusters/%s?deleteResources=%t", name, deleteDependencies[0])
+	} else {
+		rawURL = fmt.Sprintf("/v1/clusters/%s", name)
+	}
 	_, err := r.client.Delete(rawURL, target.ToMap())
 	return err
 }
