@@ -215,6 +215,13 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				Description:      "A standard cloud object storage instance CRN to back up the internal registry in your OpenShift on VPC Gen 2 cluster",
 			},
 
+			"force_delete_storage": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Force the removal of a cluster and its persistent storage. Deleted data cannot be recovered",
+			},
+
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -643,6 +650,14 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		}
 	}
 
+	if d.HasChange("force_delete_storage") {
+		var forceDeleteStorage bool
+		if v, ok := d.GetOk("force_delete_storage"); ok {
+			forceDeleteStorage = v.(bool)
+		}
+		d.Set("force_delete_storage", forceDeleteStorage)
+	}
+
 	return resourceIBMContainerVpcClusterRead(d, meta)
 }
 func WaitForV2WorkerZoneDeleted(clusterNameOrID, workerPoolNameOrID, zone string, meta interface{}, timeout time.Duration, target v2.ClusterTargetHeader) (interface{}, error) {
@@ -826,7 +841,8 @@ func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface
 		}
 	}
 
-	err = csClient.Clusters().Delete(clusterID, targetEnv)
+	forceDeleteStorage := d.Get("force_delete_storage").(bool)
+	err = csClient.Clusters().Delete(clusterID, targetEnv, forceDeleteStorage)
 	if err != nil {
 		return fmt.Errorf("Error deleting cluster: %s", err)
 	}

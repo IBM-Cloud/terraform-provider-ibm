@@ -339,6 +339,13 @@ func resourceIBMContainerCluster() *schema.Resource {
 				},
 			},
 
+			"force_delete_storage": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Force the removal of a cluster and its persistent storage. Deleted data cannot be recovered",
+			},
+
 			"resource_group_id": {
 				Type:             schema.TypeString,
 				Optional:         true,
@@ -631,6 +638,7 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf(
 			"Error waiting for cluster (%s) to become ready: %s", d.Id(), err)
 	}
+	d.Set("force_delete_storage", d.Get("force_delete_storage").(bool))
 
 	return resourceIBMContainerClusterUpdate(d, meta)
 }
@@ -898,6 +906,14 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 				"An error occured during EnableKms (cluster: %s) error: %s", d.Id(), err)
 			return err
 		}
+	}
+
+	if d.HasChange("force_delete_storage") {
+		var forceDeleteStorage bool
+		if v, ok := d.GetOk("force_delete_storage"); ok {
+			forceDeleteStorage = v.(bool)
+		}
+		d.Set("force_delete_storage", forceDeleteStorage)
 	}
 
 	if d.HasChange("default_pool_size") && !d.IsNewResource() {
@@ -1282,7 +1298,8 @@ func resourceIBMContainerClusterDelete(d *schema.ResourceData, meta interface{})
 		return err
 	}
 	clusterID := d.Id()
-	err = csClient.Clusters().Delete(clusterID, targetEnv)
+	forceDeleteStorage := d.Get("force_delete_storage").(bool)
+	err = csClient.Clusters().Delete(clusterID, targetEnv, forceDeleteStorage)
 	if err != nil {
 		return fmt.Errorf("Error deleting cluster: %s", err)
 	}
