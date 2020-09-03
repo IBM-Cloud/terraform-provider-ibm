@@ -147,6 +147,8 @@ Resource will wait for only the specified stage and complete execution. The supp
   - *IngressReady*: resource will wait till the ingress-host and ingress-secret are available.
 
   Default value: IngressReady
+* `force_delete_storage` - (Optional, bool) If set to true, force the removal of persistent storage associated with the cluster during cluster deletion. Default: false
+    **NOTE**: Before doing terraform destroy if force_delete_storage param is introduced after provisioning the cluster, a terraform apply must be done before terraform destroy for force_delete_storage param to take effect.
 
 **NOTE**:
 1. For users on account to add tags to a resource, they must be assigned the appropriate access. Learn more about tags permission [here](https://cloud.ibm.com/docs/resources?topic=resources-access)
