@@ -19,10 +19,9 @@ package globalloadbalancermonitorv1
 
 import (
 	"encoding/json"
-	"reflect"
-
 	"github.com/IBM/go-sdk-core/v4/core"
 	common "github.com/IBM/networking-go-sdk/common"
+	"reflect"
 )
 
 // GlobalLoadBalancerMonitorV1 : Global Load Balancer Monitor
@@ -106,7 +105,7 @@ func NewGlobalLoadBalancerMonitorV1(options *GlobalLoadBalancerMonitorV1Options)
 
 	service = &GlobalLoadBalancerMonitorV1{
 		Service: baseService,
-		Crn:     options.Crn,
+		Crn: options.Crn,
 	}
 
 	return
@@ -163,7 +162,7 @@ func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) ListAllLoadBalance
 	return
 }
 
-// CreateLoadBalancerMonitor : Create a load balancer monitor
+// CreateLoadBalancerMonitor : Create load balancer monitor
 // Create a load balancer monitor for a given service instance.
 func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) CreateLoadBalancerMonitor(createLoadBalancerMonitorOptions *CreateLoadBalancerMonitorOptions) (result *MonitorResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(createLoadBalancerMonitorOptions, "createLoadBalancerMonitorOptions")
@@ -228,6 +227,9 @@ func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) CreateLoadBalancer
 	if createLoadBalancerMonitorOptions.AllowInsecure != nil {
 		body["allow_insecure"] = createLoadBalancerMonitorOptions.AllowInsecure
 	}
+	if createLoadBalancerMonitorOptions.Header != nil {
+		body["header"] = createLoadBalancerMonitorOptions.Header
+	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
 		return
@@ -252,7 +254,7 @@ func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) CreateLoadBalancer
 	return
 }
 
-// EditLoadBalancerMonitor : Edit a load balancer monitor
+// EditLoadBalancerMonitor : Edit load balancer monitor
 // Edit porperties of an existing load balancer monitor.
 func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) EditLoadBalancerMonitor(editLoadBalancerMonitorOptions *EditLoadBalancerMonitorOptions) (result *MonitorResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(editLoadBalancerMonitorOptions, "editLoadBalancerMonitorOptions cannot be nil")
@@ -321,6 +323,9 @@ func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) EditLoadBalancerMo
 	if editLoadBalancerMonitorOptions.AllowInsecure != nil {
 		body["allow_insecure"] = editLoadBalancerMonitorOptions.AllowInsecure
 	}
+	if editLoadBalancerMonitorOptions.Header != nil {
+		body["header"] = editLoadBalancerMonitorOptions.Header
+	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
 		return
@@ -345,7 +350,7 @@ func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) EditLoadBalancerMo
 	return
 }
 
-// DeleteLoadBalancerMonitor : Delete a load balancer monitor
+// DeleteLoadBalancerMonitor : Delete load balancer monitor
 // Delete a load balancer monitor.
 func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) DeleteLoadBalancerMonitor(deleteLoadBalancerMonitorOptions *DeleteLoadBalancerMonitorOptions) (result *DeleteMonitorResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteLoadBalancerMonitorOptions, "deleteLoadBalancerMonitorOptions cannot be nil")
@@ -395,7 +400,7 @@ func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) DeleteLoadBalancer
 	return
 }
 
-// GetLoadBalancerMonitor : Get a load balancer monitor
+// GetLoadBalancerMonitor : Get load balancer monitor
 // For a given service instance and load balancer monitor id, get the monitor details.
 func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) GetLoadBalancerMonitor(getLoadBalancerMonitorOptions *GetLoadBalancerMonitorOptions) (result *MonitorResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(getLoadBalancerMonitorOptions, "getLoadBalancerMonitorOptions cannot be nil")
@@ -483,6 +488,9 @@ type CreateLoadBalancerMonitorOptions struct {
 	// allow insecure.
 	AllowInsecure *bool `json:"allow_insecure,omitempty"`
 
+	// header.
+	Header map[string][]string `json:"header,omitempty"`
+
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
@@ -564,6 +572,12 @@ func (options *CreateLoadBalancerMonitorOptions) SetAllowInsecure(allowInsecure 
 	return options
 }
 
+// SetHeader : Allow user to set Header
+func (options *CreateLoadBalancerMonitorOptions) SetHeader(header map[string][]string) *CreateLoadBalancerMonitorOptions {
+	options.Header = header
+	return options
+}
+
 // SetHeaders : Allow user to set Headers
 func (options *CreateLoadBalancerMonitorOptions) SetHeaders(param map[string]string) *CreateLoadBalancerMonitorOptions {
 	options.Headers = param
@@ -603,6 +617,7 @@ type DeleteMonitorRespResult struct {
 	// identifier.
 	ID *string `json:"id" validate:"required"`
 }
+
 
 // UnmarshalDeleteMonitorRespResult unmarshals an instance of DeleteMonitorRespResult from the specified map of raw messages.
 func UnmarshalDeleteMonitorRespResult(m map[string]json.RawMessage, result interface{}) (err error) {
@@ -655,6 +670,9 @@ type EditLoadBalancerMonitorOptions struct {
 
 	// allow insecure.
 	AllowInsecure *bool `json:"allow_insecure,omitempty"`
+
+	// header.
+	Header map[string][]string `json:"header,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -745,6 +763,12 @@ func (options *EditLoadBalancerMonitorOptions) SetAllowInsecure(allowInsecure bo
 	return options
 }
 
+// SetHeader : Allow user to set Header
+func (options *EditLoadBalancerMonitorOptions) SetHeader(header map[string][]string) *EditLoadBalancerMonitorOptions {
+	options.Header = header
+	return options
+}
+
 // SetHeaders : Allow user to set Headers
 func (options *EditLoadBalancerMonitorOptions) SetHeaders(param map[string]string) *EditLoadBalancerMonitorOptions {
 	options.Headers = param
@@ -812,6 +836,7 @@ type DeleteMonitorResp struct {
 	Result *DeleteMonitorRespResult `json:"result" validate:"required"`
 }
 
+
 // UnmarshalDeleteMonitorResp unmarshals an instance of DeleteMonitorResp from the specified map of raw messages.
 func UnmarshalDeleteMonitorResp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(DeleteMonitorResp)
@@ -852,6 +877,7 @@ type ListMonitorResp struct {
 	// result information.
 	ResultInfo *ResultInfo `json:"result_info" validate:"required"`
 }
+
 
 // UnmarshalListMonitorResp unmarshals an instance of ListMonitorResp from the specified map of raw messages.
 func UnmarshalListMonitorResp(m map[string]json.RawMessage, result interface{}) (err error) {
@@ -927,6 +953,7 @@ type MonitorPack struct {
 	// allow insecure.
 	AllowInsecure *bool `json:"allow_insecure,omitempty"`
 }
+
 
 // UnmarshalMonitorPack unmarshals an instance of MonitorPack from the specified map of raw messages.
 func UnmarshalMonitorPack(m map[string]json.RawMessage, result interface{}) (err error) {
@@ -1010,6 +1037,7 @@ type MonitorResp struct {
 	Result *MonitorPack `json:"result" validate:"required"`
 }
 
+
 // UnmarshalMonitorResp unmarshals an instance of MonitorResp from the specified map of raw messages.
 func UnmarshalMonitorResp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(MonitorResp)
@@ -1047,6 +1075,7 @@ type ResultInfo struct {
 	// total count.
 	TotalCount *int64 `json:"total_count" validate:"required"`
 }
+
 
 // UnmarshalResultInfo unmarshals an instance of ResultInfo from the specified map of raw messages.
 func UnmarshalResultInfo(m map[string]json.RawMessage, result interface{}) (err error) {
