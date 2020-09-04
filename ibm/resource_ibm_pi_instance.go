@@ -277,7 +277,6 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-
 	name := d.Get(helpers.PIInstanceName).(string)
 	sshkey := d.Get(helpers.PIInstanceSSHKeyName).(string)
 	mem := d.Get(helpers.PIInstanceMemory).(float64)
@@ -340,11 +339,15 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		body.PinPolicy = models.PinPolicy(pinpolicy)
 	}
 
-	assigned_virtual_cores := int64(d.Get(helpers.PIVirtualCoresAssigned).(int))
-	if assigned_virtual_cores != 0 {
+	if d.Get(helpers.PIVirtualCoresAssigned) != "" && d.Get(helpers.PIVirtualCoresAssigned) != 0 {
+		//cores, err := strconv.Atoi(d.Get(helpers.PIVirtualCoresAssigned).(string))
+		//if err != nil {
+		//	fmt.Errorf("failed to convert %v", err)
+		//}
+		assigned_virtual_cores := int64(d.Get(helpers.PIVirtualCoresAssigned).(int))
 		body.VirtualCores = &models.VirtualCores{Assigned: &assigned_virtual_cores}
 	} else {
-		log.Printf("virutal cores is not provided")
+		log.Printf("Virtual cores is not provided")
 	}
 
 	client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
