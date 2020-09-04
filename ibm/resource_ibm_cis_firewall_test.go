@@ -127,7 +127,7 @@ func testAccCheckIBMCisFirewallExists(n string, tfRecordID *string) resource.Tes
 }
 
 func testAccCheckIBMCisFirewallConfigCisDS_Basic(name string) string {
-	return testAccCheckIBMCisDomainDataSourceConfig_basic1() + fmt.Sprintf(`
+	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 	resource "ibm_cis_firewall" "lockdown" {
 		cis_id        = data.ibm_cis.cis.id
 		domain_id     = data.ibm_cis_domain.cis_domain.id
@@ -147,7 +147,7 @@ func testAccCheckIBMCisFirewallConfigCisDS_Basic(name string) string {
 }
 
 func testAccCheckIBMCisFirewallConfigCisDS_Update(name string) string {
-	return testAccCheckIBMCisDomainDataSourceConfig_basic1() + fmt.Sprintf(`
+	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 	resource "ibm_cis_firewall" "lockdown" {
 		cis_id        = data.ibm_cis.cis.id
 		domain_id     = data.ibm_cis_domain.cis_domain.id

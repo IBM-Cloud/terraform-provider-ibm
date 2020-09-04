@@ -2,18 +2,18 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 	"testing"
 
+	"github.com/IBM/go-sdk-core/v3/core"
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	// v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 )
 
 func TestAccIBMCisDomain_basic(t *testing.T) {
-	t.Skip()
-	//rnd := acctest.RandString(10)
 	name := "ibm_cis_domain." + "cis_domain"
-	testDomain := cisDomainTest
+	testDomain := uuid.New().String() + cisDomainTest
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheckCis(t) },
@@ -23,7 +23,7 @@ func TestAccIBMCisDomain_basic(t *testing.T) {
 		// will fail if this resource is not correctly deleted.
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCisDomainConfigCisRI_basic("test_acc", testDomain),
+				Config: testAccCheckCisDomainConfigCisRIbasic("test_acc", testDomain),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "domain", testDomain),
 					resource.TestCheckResourceAttr(name, "name_servers.#", "2"),
@@ -46,7 +46,7 @@ func TestAccIBMCisDomain_CreateAfterManualDestroy(t *testing.T) {
 		CheckDestroy: testAccCheckCisDomainDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCisDomainConfigCisRI_basic("test", cisDomainTest),
+				Config: testAccCheckCisDomainConfigCisRIbasic("test", cisDomainTest),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisDomainExists(name, &zoneOne),
 					testAccCisDomainManuallyDelete(&zoneOne),
@@ -54,7 +54,7 @@ func TestAccIBMCisDomain_CreateAfterManualDestroy(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccCheckCisDomainConfigCisRI_basic("test", cisDomainTest),
+				Config: testAccCheckCisDomainConfigCisRIbasic("test", cisDomainTest),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisDomainExists(name, &zoneTwo),
 					// No check for change in ID as CIS retains the same domainid across create/delete for a domain
@@ -70,23 +70,22 @@ func TestAccIBMCisDomain_CreateAfterManualCisRIDestroy(t *testing.T) {
 	t.Skip()
 	var zoneOne, zoneTwo string
 	name := "ibm_cis_domain." + "cis_domain"
-
+	testDomain := uuid.New().String() + cisDomainTest
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckCisDomainDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCisDomainConfigCisRI_basic("test", cisDomainTest),
+				Config: testAccCheckCisDomainConfigCisRIbasic("test", testDomain),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisDomainExists(name, &zoneOne),
 					testAccCisDomainManuallyDelete(&zoneOne),
-					testAccCisInstanceManuallyDelete(&zoneOne),
 				),
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccCheckCisDomainConfigCisRI_basic("test", cisDomainTest),
+				Config: testAccCheckCisDomainConfigCisRIbasic("test", testDomain),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisDomainExists(name, &zoneTwo),
 					// No check for change in ID as CIS retains the same domainid across create/delete for a domain
@@ -98,20 +97,20 @@ func TestAccIBMCisDomain_CreateAfterManualCisRIDestroy(t *testing.T) {
 
 func TestAccIBMCisDomain_import(t *testing.T) {
 	name := "ibm_cis_domain.cis_domain"
-
+	testDomain := uuid.New().String() + cisDomainTest
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckCisDomainConfigCisRI_basic("test_acc", cisDomainTest),
+			{
+				Config: testAccCheckCisDomainConfigCisRIbasic("test_acc", testDomain),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "status", "pending"),
-					resource.TestCheckResourceAttr(name, "domain", cisDomainTest),
+					resource.TestCheckResourceAttr(name, "domain", testDomain),
 					resource.TestCheckResourceAttr(name, "name_servers.#", "2"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      name,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -122,24 +121,31 @@ func TestAccIBMCisDomain_import(t *testing.T) {
 	})
 }
 
-func testAccCisDomainManuallyDelete(tfZoneId *string) resource.TestCheckFunc {
+func testAccCisDomainManuallyDelete(tfZoneID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		cisClient, err := testAccProvider.Meta().(ClientSession).CisAPI()
+		tfZone := *tfZoneID
+
+		cisClient, err := testAccProvider.Meta().(ClientSession).CisZonesV1ClientSession()
 		if err != nil {
 			return err
 		}
-		tfZone := *tfZoneId
-		zoneId, cisId, _ := convertTftoCisTwoVar(tfZone)
-		err = cisClient.Zones().DeleteZone(cisId, zoneId)
+
+		zoneID, crn, err := convertTftoCisTwoVar(tfZone)
 		if err != nil {
-			return fmt.Errorf("Error deleting IBMCISZone Record: %s", err)
+			return err
+		}
+		cisClient.Crn = core.StringPtr(crn)
+		delOpt := cisClient.NewDeleteZoneOptions(zoneID)
+		_, resp, err := cisClient.DeleteZone(delOpt)
+		if err != nil {
+			return fmt.Errorf("[ERR] Error deleting zone %v", resp)
 		}
 		return nil
 	}
 }
 
 func testAccCheckCisDomainDestroy(s *terraform.State) error {
-	cisClient, err := testAccProvider.Meta().(ClientSession).CisAPI()
+	cisClient, err := testAccProvider.Meta().(ClientSession).CisZonesV1ClientSession()
 	if err != nil {
 		return err
 	}
@@ -147,17 +153,23 @@ func testAccCheckCisDomainDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_cis_domain" {
 			continue
 		}
-		zoneId, cisId, _ := convertTftoCisTwoVar(rs.Primary.ID)
-		_, err = cisClient.Zones().GetZone(cisId, zoneId)
+		log.Println("check domain destroy : ", rs.Primary.ID)
+		zoneID, crn, err := convertTftoCisTwoVar(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+		cisClient.Crn = core.StringPtr(crn)
+		opt := cisClient.NewGetZoneOptions(zoneID)
+		_, _, err = cisClient.GetZone(opt)
 		if err == nil {
-			return fmt.Errorf("Domain still exists")
+			return fmt.Errorf("Domain still exists when destroying")
 		}
 	}
 
 	return nil
 }
 
-func testAccCheckCisDomainExists(n string, tfZoneId *string) resource.TestCheckFunc {
+func testAccCheckCisDomainExists(n string, tfZoneID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -168,14 +180,21 @@ func testAccCheckCisDomainExists(n string, tfZoneId *string) resource.TestCheckF
 			return fmt.Errorf("No Domain ID is set")
 		}
 
-		cisClient, err := testAccProvider.Meta().(ClientSession).CisAPI()
-		zoneId, cisId, _ := convertTftoCisTwoVar(rs.Primary.ID)
-		foundZone, err := cisClient.Zones().GetZone(cisId, zoneId)
+		cisClient, err := testAccProvider.Meta().(ClientSession).CisZonesV1ClientSession()
 		if err != nil {
 			return err
 		}
-
-		*tfZoneId = convertCisToTfTwoVar(foundZone.Id, cisId)
+		zoneID, crn, err := convertTftoCisTwoVar(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+		cisClient.Crn = core.StringPtr(crn)
+		opt := cisClient.NewGetZoneOptions(zoneID)
+		foundZone, resp, err := cisClient.GetZone(opt)
+		if err != nil {
+			return fmt.Errorf("Domain does not exists: %v", resp)
+		}
+		*tfZoneID = convertCisToTfTwoVar(*foundZone.Result.ID, crn)
 		return nil
 	}
 }
@@ -190,7 +209,7 @@ func testAccCheckCisDomainExists(n string, tfZoneId *string) resource.TestCheckF
 // 	`, resourceName, domain)
 // }
 
-func testAccCheckCisDomainConfigCisRI_basic(resourceName string, domain string) string {
+func testAccCheckCisDomainConfigCisRIbasic(resourceName string, domain string) string {
 	// Cis dynamically created resource instance
 	return testAccCheckIBMCisDataSourceConfig(cisInstance) + fmt.Sprintf(`
 	resource "ibm_cis_domain" "cis_domain" {

@@ -51,6 +51,7 @@ func resourceIBMCISHealthCheck() *schema.Resource {
 				Type:         schema.TypeString,
 				Description:  "path",
 				Optional:     true,
+				Default:      "/",
 				ValidateFunc: validateURLPath,
 			},
 			cisGLBHealthCheckExpectedBody: {
@@ -66,6 +67,7 @@ func resourceIBMCISHealthCheck() *schema.Resource {
 			cisGLBHealthCheckDesc: {
 				Type:        schema.TypeString,
 				Description: "description",
+				Default:     " ",
 				Optional:    true,
 			},
 			cisGLBHealthCheckType: {
@@ -106,6 +108,7 @@ func resourceIBMCISHealthCheck() *schema.Resource {
 			cisGLBHealthCheckFollowRedirects: {
 				Type:        schema.TypeBool,
 				Description: "follow_redirects",
+				Default:     false,
 				Optional:    true,
 			},
 			cisGLBHealthCheckAllowInsecure: {

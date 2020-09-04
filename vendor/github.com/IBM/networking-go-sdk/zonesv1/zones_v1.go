@@ -19,6 +19,7 @@ package zonesv1
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/IBM/go-sdk-core/v4/core"
 	common "github.com/IBM/networking-go-sdk/common"
 	"reflect"
@@ -143,6 +144,13 @@ func (zones *ZonesV1) ListZones(listZonesOptions *ListZonesOptions) (result *Lis
 	}
 	builder.AddHeader("Accept", "application/json")
 
+	if listZonesOptions.Page != nil {
+		builder.AddQuery("page", fmt.Sprint(*listZonesOptions.Page))
+	}
+	if listZonesOptions.PerPage != nil {
+		builder.AddQuery("per_page", fmt.Sprint(*listZonesOptions.PerPage))
+	}
+
 	request, err := builder.Build()
 	if err != nil {
 		return
@@ -162,7 +170,7 @@ func (zones *ZonesV1) ListZones(listZonesOptions *ListZonesOptions) (result *Lis
 	return
 }
 
-// CreateZone : Create a zone
+// CreateZone : Create zone
 // Add a new zone for a given service instance.
 func (zones *ZonesV1) CreateZone(createZoneOptions *CreateZoneOptions) (result *ZoneResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(createZoneOptions, "createZoneOptions")
@@ -218,7 +226,7 @@ func (zones *ZonesV1) CreateZone(createZoneOptions *CreateZoneOptions) (result *
 	return
 }
 
-// DeleteZone : Delete a zone
+// DeleteZone : Delete zone
 // Delete a zone given its id.
 func (zones *ZonesV1) DeleteZone(deleteZoneOptions *DeleteZoneOptions) (result *DeleteZoneResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteZoneOptions, "deleteZoneOptions cannot be nil")
@@ -268,7 +276,7 @@ func (zones *ZonesV1) DeleteZone(deleteZoneOptions *DeleteZoneOptions) (result *
 	return
 }
 
-// GetZone : Get a zone
+// GetZone : Get zone
 // Get the details of a zone for a given service instance and given zone id.
 func (zones *ZonesV1) GetZone(getZoneOptions *GetZoneOptions) (result *ZoneResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(getZoneOptions, "getZoneOptions cannot be nil")
@@ -318,7 +326,7 @@ func (zones *ZonesV1) GetZone(getZoneOptions *GetZoneOptions) (result *ZoneResp,
 	return
 }
 
-// UpdateZone : Update a zone's paused field
+// UpdateZone : Update zone
 // Update the paused field of the zone.
 func (zones *ZonesV1) UpdateZone(updateZoneOptions *UpdateZoneOptions) (result *ZoneResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(updateZoneOptions, "updateZoneOptions cannot be nil")
@@ -378,7 +386,7 @@ func (zones *ZonesV1) UpdateZone(updateZoneOptions *UpdateZoneOptions) (result *
 	return
 }
 
-// ZoneActivationCheck : Check activation status of zone
+// ZoneActivationCheck : Check zone
 // Perform activation check on zone for status.
 func (zones *ZonesV1) ZoneActivationCheck(zoneActivationCheckOptions *ZoneActivationCheckOptions) (result *ZoneActivationcheckResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(zoneActivationCheckOptions, "zoneActivationCheckOptions cannot be nil")
@@ -530,6 +538,11 @@ func (options *GetZoneOptions) SetHeaders(param map[string]string) *GetZoneOptio
 
 // ListZonesOptions : The ListZones options.
 type ListZonesOptions struct {
+	// Page number of paginated results.
+	Page *int64 `json:"page,omitempty"`
+
+	// Maximum number of zones per page.
+	PerPage *int64 `json:"per_page,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -538,6 +551,18 @@ type ListZonesOptions struct {
 // NewListZonesOptions : Instantiate ListZonesOptions
 func (*ZonesV1) NewListZonesOptions() *ListZonesOptions {
 	return &ListZonesOptions{}
+}
+
+// SetPage : Allow user to set Page
+func (options *ListZonesOptions) SetPage(page int64) *ListZonesOptions {
+	options.Page = core.Int64Ptr(page)
+	return options
+}
+
+// SetPerPage : Allow user to set PerPage
+func (options *ListZonesOptions) SetPerPage(perPage int64) *ListZonesOptions {
+	options.PerPage = core.Int64Ptr(perPage)
+	return options
 }
 
 // SetHeaders : Allow user to set Headers

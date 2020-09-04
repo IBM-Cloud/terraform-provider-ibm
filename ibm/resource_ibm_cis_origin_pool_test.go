@@ -247,7 +247,7 @@ func testAccCisPoolManuallyDelete(tfPoolId *string) resource.TestCheckFunc {
 }
 
 func testAccCheckCisPoolConfigCisDS_Basic(resourceId string, cisDomainStatic string) string {
-	return testAccCheckIBMCisDomainDataSourceConfig_basic1() + fmt.Sprintf(`
+	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 	resource "ibm_cis_origin_pool" "origin_pool" {
 		cis_id        = data.ibm_cis.cis.id
 		name          = "my-tf-pool-basic-%[1]s"
@@ -265,7 +265,7 @@ func testAccCheckCisPoolConfigCisDS_Basic(resourceId string, cisDomainStatic str
 }
 
 func testAccCheckCisPoolConfigCisRI_Basic(resourceId string, cisDomain string) string {
-	return testAccCheckCisDomainConfigCisRI_basic(resourceId, cisDomain) + fmt.Sprintf(`
+	return testAccCheckCisDomainConfigCisRIbasic(resourceId, cisDomain) + fmt.Sprintf(`
 	resource "ibm_cis_origin_pool" "origin_pool" {
 		cis_id        = ibm_cis.cis.id
 		name          = "my-tf-pool-basic-%[1]s"
@@ -283,7 +283,7 @@ func testAccCheckCisPoolConfigCisRI_Basic(resourceId string, cisDomain string) s
 }
 
 func testAccCheckCisPoolConfigFullySpecified(resourceId string, cisDomainStatic string) string {
-	return testAccCheckCisHealthcheckConfigCisDS_Basic(resourceId, cisDomainStatic) + fmt.Sprintf(`
+	return testAccCheckCisHealthcheckConfigCisDSBasic(resourceId, cisDomainStatic) + fmt.Sprintf(`
 	resource "ibm_cis_origin_pool" "origin_pool" {
 		cis_id             = data.ibm_cis.cis.id
 		name               = "my-tf-pool-basic-%[1]s"

@@ -2,52 +2,59 @@ package ibm
 
 import (
 	"log"
-	"reflect"
-	"strings"
 
+	"github.com/IBM/go-sdk-core/v3/core"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+)
 
-	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
+const (
+	cisDomain                    = "domain"
+	cisDomainName                = "name"
+	cisDomainPaused              = "paused"
+	cisDomainStatus              = "status"
+	cisDomainNameServers         = "name_servers"
+	cisDomainOriginalNameServers = "original_name_servers"
 )
 
 func resourceIBMCISDomain() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
-			"cis_id": {
+			cisID: {
 				Type:        schema.TypeString,
 				Description: "CIS object id",
 				Required:    true,
 			},
-			"domain": {
+			cisDomain: {
 				Type:        schema.TypeString,
 				Description: "CISzone - Domain",
 				Required:    true,
 			},
-			"paused": {
+			cisDomainPaused: {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"status": {
+			cisDomainStatus: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"name_servers": {
+			cisDomainNameServers: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"original_name_servers": {
+			cisDomainOriginalNameServers: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"domain_id": {
+			cisDomainID: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 		},
 		Create:   resourceCISdomainCreate,
 		Read:     resourceCISdomainRead,
+		Exists:   resourceCISdomainExists,
 		Update:   resourceCISdomainUpdate,
 		Delete:   resourceCISdomainDelete,
 		Importer: &schema.ResourceImporter{},
@@ -55,78 +62,78 @@ func resourceIBMCISDomain() *schema.Resource {
 }
 
 func resourceCISdomainCreate(d *schema.ResourceData, meta interface{}) error {
-	cisClient, err := meta.(ClientSession).CisAPI()
+	cisClient, err := meta.(ClientSession).CisZonesV1ClientSession()
 	if err != nil {
 		return err
 	}
 
-	cisId := d.Get("cis_id").(string)
-	zoneName := d.Get("domain").(string)
+	crn := d.Get(cisID).(string)
+	cisClient.Crn = core.StringPtr(crn)
+	zoneName := d.Get(cisDomain).(string)
 
-	zoneNew := v1.ZoneBody{Name: zoneName}
-	var zoneObj v1.Zone
-	var zone *v1.Zone
-	zone, err = cisClient.Zones().CreateZone(cisId, zoneNew)
+	opt := cisClient.NewCreateZoneOptions()
+	opt.SetName(zoneName)
+	result, resp, err := cisClient.CreateZone(opt)
 	if err != nil {
-		log.Printf("CreateZones Failed %s\n", err)
+		log.Printf("CreateZones Failed %s", resp)
 		return err
 	}
-	zoneObj = *zone
-	d.SetId(convertCisToTfTwoVar(zoneObj.Id, cisId))
+	d.SetId(convertCisToTfTwoVar(*result.Result.ID, crn))
 	return resourceCISdomainRead(d, meta)
 }
 
 func resourceCISdomainRead(d *schema.ResourceData, meta interface{}) error {
-	cisClient, err := meta.(ClientSession).CisAPI()
+	cisClient, err := meta.(ClientSession).CisZonesV1ClientSession()
 	if err != nil {
 		return err
 	}
-	zoneId, cisId, err := convertTftoCisTwoVar(d.Id())
+
+	zoneID, crn, err := convertTftoCisTwoVar(d.Id())
 	if err != nil {
 		return err
 	}
-	var zone *v1.Zone
-	zone, err = cisClient.Zones().GetZone(cisId, zoneId)
+	cisClient.Crn = core.StringPtr(crn)
+	opt := cisClient.NewGetZoneOptions(zoneID)
+	result, resp, err := cisClient.GetZone(opt)
 	if err != nil {
-		if checkCisZoneDeleted(d, meta, err, zone) {
-			d.SetId("")
-			return nil
-		}
-		log.Printf("[WARN] Error getting zone during DomainRead %v\n", err)
+		log.Printf("[WARN] Error getting zone %v\n", resp)
 		return err
 	}
-	zoneObj := *zone
-	d.Set("cis_id", cisId)
-	d.Set("name", zoneObj.Name)
-	d.Set("domain", zoneObj.Name)
-	d.Set("status", zoneObj.Status)
-	d.Set("paused", zoneObj.Paused)
-	d.Set("name_servers", zoneObj.NameServers)
-	d.Set("original_name_servers", zoneObj.OriginalNameServer)
-	d.Set("domain_id", zoneObj.Id)
+	d.Set(cisID, crn)
+	d.Set(cisDomainID, result.Result.ID)
+	d.Set(cisDomain, result.Result.Name)
+	d.Set(cisDomainName, result.Result.Name)
+	d.Set(cisDomainStatus, result.Result.Status)
+	d.Set(cisDomainPaused, result.Result.Paused)
+	d.Set(cisDomainNameServers, result.Result.NameServers)
+	d.Set(cisDomainOriginalNameServers, result.Result.OriginalNameServers)
 
 	return nil
 }
-func checkCisZoneDeleted(d *schema.ResourceData, meta interface{}, errCheck error, zone *v1.Zone) bool {
-	// Check if error is due to removal of Cis resource and hence all subresources
-	if strings.Contains(errCheck.Error(), "Object not found") ||
-		strings.Contains(errCheck.Error(), "status code: 404") ||
-		strings.Contains(errCheck.Error(), "status code: 400") ||
-		strings.Contains(errCheck.Error(), "Invalid zone identifier") {
-		log.Printf("[WARN] Removing resource from state because it's not found via the CIS API")
-		return true
+func resourceCISdomainExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	cisClient, err := meta.(ClientSession).CisZonesV1ClientSession()
+	if err != nil {
+		return false, err
 	}
-	_, cisId, _ := convertTftoCisTwoVar(d.Id())
-	exists, errNew := rcInstanceExists(cisId, "ibm_cis", meta)
-	if errNew != nil {
-		log.Printf("resourceCISdomainRead - Failure validating service exists %s\n", errNew)
-		return false
+
+	zoneID, crn, err := convertTftoCisTwoVar(d.Id())
+	log.Println("resource exist :", d.Id())
+	if err != nil {
+		return false, err
 	}
-	if !exists {
-		log.Printf("[WARN] Removing domain from state because parent cis instance is in removed state")
-		return true
+	log.Println("resource exist :", d.Id())
+	cisClient.Crn = core.StringPtr(crn)
+	opt := cisClient.NewGetZoneOptions(zoneID)
+	_, resp, err := cisClient.GetZone(opt)
+	if err != nil {
+		if resp != nil && resp.StatusCode == 404 {
+			log.Printf("[WARN] zone is not found")
+			return false, nil
+		}
+		log.Printf("[WARN] Error getting zone %v\n", resp)
+		return false, err
 	}
-	return false
+	return true, nil
 }
 
 func resourceCISdomainUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -134,34 +141,29 @@ func resourceCISdomainUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceCISdomainDelete(d *schema.ResourceData, meta interface{}) error {
-	cisClient, err := meta.(ClientSession).CisAPI()
+	cisClient, err := meta.(ClientSession).CisZonesV1ClientSession()
 	if err != nil {
 		return err
 	}
-	zoneId, cisId, _ := convertTftoCisTwoVar(d.Id())
-	var zone *v1.Zone
-	emptyZone := new(v1.Zone)
 
-	//Get Zone to delete
-	zone, err = cisClient.Zones().GetZone(cisId, zoneId)
+	zoneID, crn, err := convertTftoCisTwoVar(d.Id())
+	log.Println("resource delete :", d.Id())
+
 	if err != nil {
-		if checkCisZoneDeleted(d, meta, err, zone) {
-			d.SetId("")
-			return nil
-		}
-		log.Printf("[WARN] Error getting zone during DomainRead %v\n", err)
 		return err
 	}
-
-	zoneObj := *zone
-	if !reflect.DeepEqual(emptyZone, zoneObj) {
-		err = cisClient.Zones().DeleteZone(cisId, zoneId)
-		if err != nil {
-			log.Printf("DeleteZone Failed %s\n", err)
-			return err
-		}
+	cisClient.Crn = core.StringPtr(crn)
+	opt := cisClient.NewGetZoneOptions(zoneID)
+	_, resp, err := cisClient.GetZone(opt)
+	if err != nil {
+		log.Printf("[WARN] Error getting zone %v\n", resp)
+		return err
 	}
-
-	d.SetId("")
+	delOpt := cisClient.NewDeleteZoneOptions(zoneID)
+	_, resp, err = cisClient.DeleteZone(delOpt)
+	if err != nil {
+		log.Printf("[ERR] Error deleting zone %v\n", resp)
+		return err
+	}
 	return nil
 }

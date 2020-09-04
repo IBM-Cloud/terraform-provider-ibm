@@ -5,12 +5,12 @@ import (
 	"log"
 	"testing"
 
+	"github.com/IBM/go-sdk-core/v3/core"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccIBMCisHealthcheck_Basic(t *testing.T) {
-	//t.Parallel()
 	var monitor string
 	name := "ibm_cis_healthcheck.health_check"
 
@@ -20,13 +20,10 @@ func TestAccIBMCisHealthcheck_Basic(t *testing.T) {
 		// No requirement for CheckDestory of this resource as by reaching this point it must have already been deleted from CIS.
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCisHealthcheckConfigCisDS_Basic("test", cisDomainStatic),
+				Config: testAccCheckCisHealthcheckConfigCisDSBasic("test", cisDomainStatic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisHealthcheckExists(name, &monitor),
 					resource.TestCheckResourceAttr(name, "expected_body", "alive"),
-					//resource.TestCheckResourceAttr(name, "header.#", "0"),
-					// also expect api to generate some values
-					//testAccCheckCisHealthcheckDates(name, &monitor, testStartTime),
 				),
 			},
 		},
@@ -41,13 +38,13 @@ func TestAccIBMCisHealthcheck_import(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckCisMonitorDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckCisHealthcheckConfigCisDS_Basic("test", cisDomainStatic),
+			{
+				Config: testAccCheckCisHealthcheckConfigCisDSBasic("test", cisDomainStatic),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "expected_body", "alive"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      name,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -59,7 +56,6 @@ func TestAccIBMCisHealthcheck_import(t *testing.T) {
 }
 
 func TestAccIBMCisHealthcheck_FullySpecified(t *testing.T) {
-	//t.Parallel()
 	var monitor string
 	name := "ibm_cis_healthcheck.health_check"
 
@@ -73,7 +69,7 @@ func TestAccIBMCisHealthcheck_FullySpecified(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisHealthcheckExists(name, &monitor),
 					resource.TestCheckResourceAttr(name, "path", "/custom"),
-					resource.TestCheckResourceAttr(name, "retries", "5"),
+					resource.TestCheckResourceAttr(name, "retries", "3"),
 					resource.TestCheckResourceAttr(name, "expected_codes", "5xx"),
 				),
 			},
@@ -82,7 +78,6 @@ func TestAccIBMCisHealthcheck_FullySpecified(t *testing.T) {
 }
 
 func TestAccIBMCisHealthcheck_CreateAfterManualDestroy(t *testing.T) {
-	t.Skip()
 	var monitorOne, monitorTwo string
 	name := "ibm_cis_healthcheck.health_check"
 
@@ -92,7 +87,7 @@ func TestAccIBMCisHealthcheck_CreateAfterManualDestroy(t *testing.T) {
 		CheckDestroy: testAccCheckCisMonitorDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCisHealthcheckConfigCisDS_Basic("test", cisDomainStatic),
+				Config: testAccCheckCisHealthcheckConfigCisDSBasic("test", cisDomainStatic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisHealthcheckExists(name, &monitorOne),
 					testAccCisMonitorManuallyDelete(&monitorOne),
@@ -100,7 +95,7 @@ func TestAccIBMCisHealthcheck_CreateAfterManualDestroy(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccCheckCisHealthcheckConfigCisDS_Basic("test", cisDomainStatic),
+				Config: testAccCheckCisHealthcheckConfigCisDSBasic("test", cisDomainStatic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisHealthcheckExists(name, &monitorTwo),
 					func(state *terraform.State) error {
@@ -127,7 +122,7 @@ func TestAccIBMCisHealthcheck_CreateAfterCisRIManualDestroy(t *testing.T) {
 		CheckDestroy: testAccCheckCisMonitorDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCisHealthcheckConfigCisRI_Basic("test", cisDomainTest),
+				Config: testAccCheckCisHealthcheckConfigCisRIBasic("test", cisDomainTest),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisHealthcheckExists(name, &monitorOne),
 					testAccCisMonitorManuallyDelete(&monitorOne),
@@ -139,9 +134,9 @@ func TestAccIBMCisHealthcheck_CreateAfterCisRIManualDestroy(t *testing.T) {
 						for _, r := range state.RootModule().Resources {
 							if r.Type == "ibm_cis_domain" {
 								log.Printf("[WARN] Manually removing domain")
-								zoneId, cisId, _ := convertTftoCisTwoVar(r.Primary.ID)
-								_ = cisClient.Zones().DeleteZone(cisId, zoneId)
-								cisPtr := &cisId
+								zoneID, cisID, _ := convertTftoCisTwoVar(r.Primary.ID)
+								_ = cisClient.Zones().DeleteZone(cisID, zoneID)
+								cisPtr := &cisID
 								log.Printf("[WARN]  Manually removing Cis Instance")
 								_ = testAccCisInstanceManuallyDeleteUnwrapped(state, cisPtr)
 							}
@@ -153,7 +148,7 @@ func TestAccIBMCisHealthcheck_CreateAfterCisRIManualDestroy(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccCheckCisHealthcheckConfigCisRI_Basic("test", cisDomainTest),
+				Config: testAccCheckCisHealthcheckConfigCisRIBasic("test", cisDomainTest),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisHealthcheckExists(name, &monitorTwo),
 					func(state *terraform.State) error {
@@ -169,15 +164,17 @@ func TestAccIBMCisHealthcheck_CreateAfterCisRIManualDestroy(t *testing.T) {
 	})
 }
 
-func testAccCisMonitorManuallyDelete(tfMonitorId *string) resource.TestCheckFunc {
+func testAccCisMonitorManuallyDelete(tfMonitorID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		cisClient, err := testAccProvider.Meta().(ClientSession).CisAPI()
+		cisClient, err := testAccProvider.Meta().(ClientSession).CisGLBHealthCheckClientSession()
 		if err != nil {
 			return err
 		}
-		tfMonitor := *tfMonitorId
-		monitorId, cisId, _ := convertTftoCisTwoVar(tfMonitor)
-		err = cisClient.Monitors().DeleteMonitor(cisId, monitorId)
+		tfMonitor := *tfMonitorID
+		healthcheckID, cisID, _ := convertTftoCisTwoVar(tfMonitor)
+		cisClient.Crn = core.StringPtr(cisID)
+		opt := cisClient.NewDeleteLoadBalancerMonitorOptions(healthcheckID)
+		_, _, err = cisClient.DeleteLoadBalancerMonitor(opt)
 		if err != nil {
 			return fmt.Errorf("Error deleting IBMCISMonitor Record: %s", err)
 		}
@@ -186,7 +183,7 @@ func testAccCisMonitorManuallyDelete(tfMonitorId *string) resource.TestCheckFunc
 }
 
 func testAccCheckCisMonitorDestroy(s *terraform.State) error {
-	cisClient, err := testAccProvider.Meta().(ClientSession).CisAPI()
+	cisClient, err := testAccProvider.Meta().(ClientSession).CisGLBHealthCheckClientSession()
 	if err != nil {
 		return err
 	}
@@ -194,8 +191,10 @@ func testAccCheckCisMonitorDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_cis_healthcheck" {
 			continue
 		}
-		healthcheckId, cisId, _ := convertTftoCisTwoVar(rs.Primary.ID)
-		_, err = cisClient.Monitors().GetMonitor(cisId, healthcheckId)
+		healthcheckID, cisID, _ := convertTftoCisTwoVar(rs.Primary.ID)
+		cisClient.Crn = core.StringPtr(cisID)
+		opt := cisClient.NewGetLoadBalancerMonitorOptions(healthcheckID)
+		_, _, err = cisClient.GetLoadBalancerMonitor(opt)
 		if err == nil {
 			return fmt.Errorf("Load balancer Monitor still exists")
 		}
@@ -204,7 +203,7 @@ func testAccCheckCisMonitorDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckCisHealthcheckExists(n string, tfMonitorId *string) resource.TestCheckFunc {
+func testAccCheckCisHealthcheckExists(n string, tfMonitorID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -214,19 +213,24 @@ func testAccCheckCisHealthcheckExists(n string, tfMonitorId *string) resource.Te
 			return fmt.Errorf("No Load Balancer Monitor ID is set")
 		}
 
-		cisClient, err := testAccProvider.Meta().(ClientSession).CisAPI()
-		healthcheckId, cisId, _ := convertTftoCisTwoVar(rs.Primary.ID)
-		foundHealthcheck, err := cisClient.Monitors().GetMonitor(cisId, healthcheckId)
+		cisClient, err := testAccProvider.Meta().(ClientSession).CisGLBHealthCheckClientSession()
 		if err != nil {
 			return err
 		}
-		*tfMonitorId = convertCisToTfTwoVar(foundHealthcheck.Id, cisId)
+		healthcheckID, cisID, _ := convertTftoCisTwoVar(rs.Primary.ID)
+		cisClient.Crn = core.StringPtr(cisID)
+		opt := cisClient.NewGetLoadBalancerMonitorOptions(healthcheckID)
+		foundHealthcheck, _, err := cisClient.GetLoadBalancerMonitor(opt)
+		if err != nil {
+			return fmt.Errorf("Load balancer Monitor still exists")
+		}
+		*tfMonitorID = convertCisToTfTwoVar(*foundHealthcheck.Result.ID, cisID)
 		return nil
 	}
 }
 
-func testAccCheckCisHealthcheckConfigCisDS_Basic(resourceId string, cisDomain string) string {
-	return testAccCheckIBMCisDomainDataSourceConfig_basic1() + fmt.Sprintf(`
+func testAccCheckCisHealthcheckConfigCisDSBasic(resourceID string, cisDomain string) string {
+	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 	resource "ibm_cis_healthcheck" "health_check" {
 		cis_id         = data.ibm_cis.cis.id
 		expected_body  = "alive"
@@ -235,8 +239,8 @@ func testAccCheckCisHealthcheckConfigCisDS_Basic(resourceId string, cisDomain st
 	`)
 }
 
-func testAccCheckCisHealthcheckConfigCisRI_Basic(resourceId string, cisDomain string) string {
-	return testAccCheckCisDomainConfigCisRI_basic(resourceId, cisDomain) + fmt.Sprintf(`
+func testAccCheckCisHealthcheckConfigCisRIBasic(resourceID string, cisDomain string) string {
+	return testAccCheckCisDomainConfigCisRIbasic(resourceID, cisDomain) + fmt.Sprintf(`
 	resource "ibm_cis_healthcheck" "health_check" {
 		cis_id         = ibm_cis.cis.id
 		expected_body  = "alive"
@@ -245,8 +249,8 @@ func testAccCheckCisHealthcheckConfigCisRI_Basic(resourceId string, cisDomain st
 	`)
 }
 
-func testAccCheckCisHealthcheckConfigFullySpecified(resourceId string, cisDomain string) string {
-	return testAccCheckIBMCisDomainDataSourceConfig_basic1() + fmt.Sprintf(`
+func testAccCheckCisHealthcheckConfigFullySpecified(resourceID string, cisDomain string) string {
+	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 	resource "ibm_cis_healthcheck" "health_check" {
 		cis_id         = data.ibm_cis.cis.id
 		expected_body  = "dead"
@@ -255,7 +259,7 @@ func testAccCheckCisHealthcheckConfigFullySpecified(resourceId string, cisDomain
 		timeout        = 9
 		path           = "/custom"
 		interval       = 60
-		retries        = 5
+		retries        = 3
 		description    = "this is a very weird load balancer"
 	  }
 	`)

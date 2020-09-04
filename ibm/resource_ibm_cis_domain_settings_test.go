@@ -45,7 +45,7 @@ func TestAccIBMCisSettings_Basic(t *testing.T) {
 }
 
 func testAccCheckCisSettingsConfigBasic3(id string, cisDomainStatic string) string {
-	return testAccCheckIBMCisDomainDataSourceConfig_basic1() + fmt.Sprintf(`
+	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 	resource "ibm_cis_domain_settings" "%[1]s" {
 		cis_id          = data.ibm_cis.cis.id
 		domain_id       = data.ibm_cis_domain.cis_domain.id
@@ -54,7 +54,7 @@ func testAccCheckCisSettingsConfigBasic3(id string, cisDomainStatic string) stri
 }
 
 func testAccCheckCisSettingsConfigBasic1(id string, cisDomainStatic string) string {
-	return testAccCheckIBMCisDomainDataSourceConfig_basic1() + fmt.Sprintf(`
+	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 	resource "ibm_cis_domain_settings" "%[1]s" {
 		cis_id          = data.ibm_cis.cis.id
 		domain_id       = data.ibm_cis_domain.cis_domain.id
@@ -66,7 +66,7 @@ func testAccCheckCisSettingsConfigBasic1(id string, cisDomainStatic string) stri
 }
 
 func testAccCheckCisSettingsConfigBasic2(id string, cisDomainStatic string) string {
-	return testAccCheckIBMCisDomainDataSourceConfig_basic1() + fmt.Sprintf(`
+	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 	resource "ibm_cis_domain_settings" "%[1]s" {
 		cis_id          = data.ibm_cis.cis.id
 		domain_id       = data.ibm_cis_domain.cis_domain.id

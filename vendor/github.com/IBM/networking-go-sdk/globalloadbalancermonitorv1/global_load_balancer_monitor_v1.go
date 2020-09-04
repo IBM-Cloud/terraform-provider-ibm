@@ -952,6 +952,9 @@ type MonitorPack struct {
 
 	// allow insecure.
 	AllowInsecure *bool `json:"allow_insecure,omitempty"`
+
+	// header.
+	Header map[string][]string `json:"header,omitempty"`
 }
 
 
@@ -1015,6 +1018,10 @@ func UnmarshalMonitorPack(m map[string]json.RawMessage, result interface{}) (err
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "allow_insecure", &obj.AllowInsecure)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "header", &obj.Header)
 	if err != nil {
 		return
 	}

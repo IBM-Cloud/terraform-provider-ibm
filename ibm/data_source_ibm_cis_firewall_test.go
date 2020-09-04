@@ -22,7 +22,7 @@ func TestAccIBMCisFirewallDataSource_Basic(t *testing.T) {
 }
 
 func testAccCheckIBMCisFirewallDataSourceConfig_basic1() string {
-	return testAccCheckIBMCisDomainDataSourceConfig_basic1() + fmt.Sprintf(`
+	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 
 	data "ibm_cis_firewall" "lockdown"{
 		cis_id    = data.ibm_cis.cis.id
