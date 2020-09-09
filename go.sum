@@ -51,9 +51,12 @@ github.com/IBM/go-sdk-core/v3 v3.0.0/go.mod h1:JI5NS2+iCoY/D8Oq3JNEZNA7qO42agu6f
 github.com/IBM/go-sdk-core/v3 v3.2.4/go.mod h1:lk9eOzNbNltPf3CBpcg1Ewkhw4qC3u2QCCKDRsUA2M0=
 github.com/IBM/go-sdk-core/v3 v3.3.1 h1:DoXjP1+Wm8Yd4XJsvBMRcYLvQwSLFnzKlMjSrg3Rzpw=
 github.com/IBM/go-sdk-core/v3 v3.3.1/go.mod h1:lk9eOzNbNltPf3CBpcg1Ewkhw4qC3u2QCCKDRsUA2M0=
+github.com/IBM/go-sdk-core/v4 v4.0.4 h1:HP5NEwifM9G4RWaUM8ZvvjJ8haGrjRAi4WnPdmTCyak=
 github.com/IBM/go-sdk-core/v4 v4.0.4/go.mod h1:lTUXbqIX6/aAbSCkP6q59+dyFsTwZAc0ewRS2vJWVbg=
 github.com/IBM/go-sdk-core/v4 v4.0.6 h1:87OcgjuoUpgEZXygcV94C1xUSZ1Iav+RvARZrVwAve8=
 github.com/IBM/go-sdk-core/v4 v4.0.6/go.mod h1:lTUXbqIX6/aAbSCkP6q59+dyFsTwZAc0ewRS2vJWVbg=
+github.com/IBM/go-sdk-core/v4 v4.3.0 h1:gWfy8HpptwpgKqXaDPwgomcRTED7wJLkd+nDoz3undo=
+github.com/IBM/go-sdk-core/v4 v4.3.0/go.mod h1:lTUXbqIX6/aAbSCkP6q59+dyFsTwZAc0ewRS2vJWVbg=
 github.com/IBM/ibm-cos-sdk-go v1.3.1 h1:6SHueqFpznp7S/9b39/WiJ9mt3TgD322j2pArzyd/c8=
 github.com/IBM/ibm-cos-sdk-go v1.3.1/go.mod h1:YLBAYobEA8bD27P7xpMwSQeNQu6W3DNBtBComXrRzRY=
 github.com/IBM/ibm-cos-sdk-go-config v1.0.0 h1:Sx6vIGr6U+NibFVhuesr4TKtDrWpGB3Q1/KxLBmG3b0=
@@ -64,6 +67,8 @@ github.com/IBM/networking-go-sdk v0.4.0 h1:3cNDxnIBv8hQElfmraOdz8OnS+K8wjVPoere+
 github.com/IBM/networking-go-sdk v0.4.0/go.mod h1:WB/PjK7LA6VuIOsGjv1gm6WS/Ki6nF8KmycwMU0bgIs=
 github.com/IBM/vpc-go-sdk v0.0.3 h1:oQut2AUKH1TlWx56hYbHSdRjo62Vyi8bZ8OzYNi7Md4=
 github.com/IBM/vpc-go-sdk v0.0.3/go.mod h1:M9ySi10spyYi2oK6gqR7S2AXqZiNXasuyWeTtAgNgIg=
+github.com/IBM/vpc-go-sdk v0.1.0 h1:RzuflgtHT0J1G6ImkkSVt0cFKJ2rRhw3xD2c1Vt3rSA=
+github.com/IBM/vpc-go-sdk v0.1.0/go.mod h1:P0B/btm8+wm2gkTg1FgN2uwtjztEIJc7Kqq7HeZdBp4=
 github.com/PuerkitoBio/purell v1.1.0/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/purell v1.1.1 h1:WEQqlqaGbrPkxLJWfBwQmfEAE1Z7ONdDLqrN38tNFfI=
 github.com/PuerkitoBio/purell v1.1.1/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
