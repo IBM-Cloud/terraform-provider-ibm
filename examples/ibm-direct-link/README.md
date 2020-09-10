@@ -4,17 +4,13 @@ This example shows how to create Direct Link resources.
 
 Following types of resources are supported:
 
-* [Direct Link Gateways](https://cloud.ibm.com/docs/terraform)
-* [Direct Link Virtual Connections](https://cloud.ibm.com/docs/terraform)
-* [Direct Link Offering Information](https://cloud.ibm.com/docs/terraform)
-* [Direct Link Ports](https://cloud.ibm.com/docs/terraform)
+* [Direct Link Gateway](https://cloud.ibm.com/docs/terraform?topic=terraform-dl-gateway-resource#dl-gwy)
+* [Direct Link Virtual Connection](https://cloud.ibm.com/docs/terraform?topic=terraform-dl-gateway-resource#dl-vc)
 
 
 ## Terraform versions
 
 Terraform 0.12. Pin module version to `~> v1.5.1`. Branch - `master`.
-
-Terraform 0.11. Pin module version to `~> v0.27.0`. Branch - `terraform_v0.11.x`.
 
 ## Usage
 
@@ -28,31 +24,84 @@ $ terraform apply
 
 Run `terraform destroy` when you don't need these resources.
 
-## Example Usage
+## Direct Link Resources
 
-Create a direct link gateway:
+Direct Link gateway resource :
+
+```hcl
+
+resource ibm_dl_gateway test_dl_gateway {
+  bgp_asn              = var.bgp_asn
+  bgp_base_cidr        = var.bgp_base_cidr
+  bgp_ibm_cidr         = var.bgp_ibm_cidr
+  bgp_cer_cidr         =  var.bgp_cer_cidr
+  global               = true
+  metered              = false
+  name                 = var.name
+  resource_group       = data.ibm_resource_group.rg.id
+  speed_mbps           = var.speed_mbps
+  type                 = var.type
+  cross_connect_router = data.ibm_dl_routers.test_dl_routers.cross_connect_routers[0].router_name
+  location_name = data.ibm_dl_routers.test_dl_routers.location_name
+  customer_name        = var.customer_name
+  carrier_name         = var.carrier_name
+
+}  
+```
+
+Create a virtual connection to the specified network :
+
+```hcl
+resource "ibm_is_vpc" "test_dl_vc_vpc" {
+  name = var.vpc_name
+}
+resource "ibm_dl_virtual_connection" "test_dl_gateway_vc" {
+  depends_on = [ibm_is_vpc.test_dl_vc_vpc, ibm_dl_gateway.test_dl_gateway]
+  gateway    = ibm_dl_gateway.test_dl_gateway.id
+  name       = var.vc_name
+  type       = var.vc_type
+  network_id = ibm_is_vpc.test_dl_vc_vpc.resource_crn
+}   
+```
+
+
+## Direct Link Data Sources
+
+Retrieve location specific cross connect router information. Only valid for offering_type=dedicated locations :
 
 ```hcl
 data "ibm_dl_routers" "test_dl_routers" {
   offering_type = "dedicated"
   location_name = "dal10"
 }
-resource ibm_dl_gateway test_dl_gateway {
-  bgp_asn =  64999
-  bgp_base_cidr =  "169.254.0.0/16"
-  bgp_ibm_cidr =  "169.254.0.29/30"
-  bgp_cer_cidr =  "169.254.0.30/30"
-  global = true 
-  metered = false
-  name = "terraformtestGateway"
-  resource_group = data.ibm_resource_group.rg.id
-  speed_mbps = 1000 
-  type =  "dedicated" 
-	cross_connect_router = data.ibm_dl_routers.test_dl_routers.cross_connect_routers[0].router_name
-  location_name = data.ibm_dl_routers.test_dl_routers.location_name     
-  customer_name = "Customer1" 
-  carrier_name = "Carrier1"
-}   
+```
+
+List available locations :
+
+```hcl
+data "ibm_dl_locations" "test_dl_locations"{
+ 		offering_type = "dedicated"
+}
+```
+
+List speed options :
+
+```hcl
+data "ibm_dl_offering_speeds" "test_dl_speeds" {
+  offering_type = "dedicated"
+ }
+```
+List ports :
+```hcl
+data "ibm_dl_ports" "test_ds_dl_ports" {
+ }
+```
+
+Get port :
+```hcl
+data "ibm_dl_port" "test_ds_dl_port" {
+ port_id = data.ibm_dl_ports.test_ds_dl_ports.ports[0].port_id
+ }
 ```
 
 ## Examples
@@ -92,6 +141,8 @@ resource ibm_dl_gateway test_dl_gateway {
 | location\_name |  Gateway location. | `string` | yes | 
 | loa\_reject_reason | Use this field during LOA rejection to provide the reason for the rejection. | `string` | no |
 | operational\_status | ateway operational status. For gateways pending LOA approval, patch operational_status to the appropriate value to approve or reject its LOA. When rejecting an LOA, provide reject reasoning in loa_reject_reason. | `string` | no | 
+| vc\_name | Virtual Connection name. | `string` | yes |
+| vc\_type | The type of virtual connection.Allowable values: [classic,vpc]. | `string` | yes |
 
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
