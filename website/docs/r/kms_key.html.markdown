@@ -12,7 +12,7 @@ Provides a key management resource for hs-crypto and key-protect services. This 
  **NOTE**: After creating an hs-crypto service instance we need to  initialise the instance properly with the crypto units, in order to create/manage hs-crypto keys. To initialise the service instance refer https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-initialize-hsm. (Only for hs-crypto instances).
 
 
-## Example Usage
+## Example usage to provision Key Protect service and Key Management
 
 ```hcl
 resource "ibm_resource_instance" "kms_instance" {
@@ -33,6 +33,39 @@ resource "ibm_cos_bucket" "flex-us-south" {
   region_location      = "us-south"
   storage_class        = "flex"
   key_protect          = ibm_kms_key.test.id
+}
+```
+
+## Example usage to provision HPCS service and Key Management
+
+Below steps explains how to provision a HPCS service , intialize the service and key mangament.
+
+Step 1: Provision the service using `ibm_resource_instance`
+
+```hcl
+resource "ibm_resource_instance" "hpcs"{
+  name = "hpcsservice"
+  service = "hs-crypto"
+  plan = "standard"
+  location = "us-south"
+  parameters = {
+      units = 2
+  }
+}
+```
+
+Step 2: Initialize your service instance manually
+
+To manage your keys, you need to initialize your service instance first. Two options are provided for initializing a service instance. You can use the IBM Hyper Protect Crypto Services Management Utilities to initialize a service instance by using master key parts stored on smart cards. This provides the highest level of security. You can also use the IBM Cloud Trusted Key Entry (TKE) command-line interface (CLI) plug-in to initialize your service instance. For more details refer [here(https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started#initialize-crypto)]
+
+Step 3: Manage your keys using `ibm_kms_key`
+
+```hcl
+resource "ibm_kms_key" "key" {
+  instance_id  = ibm_resource_instance.hpcs.guid
+  key_name     = var.key_name
+  standard_key = false
+  force_delete = true
 }
 ```
 

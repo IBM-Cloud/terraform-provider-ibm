@@ -36,7 +36,8 @@ resource "ibm_service_instance" "service_instance" {
 The following arguments are supported:
 
 * `org` - (Required) The name of your IBM Cloud organization. You can retrieve the value by running the `ibmcloud iam orgs` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
-* `space` - (Required) The name of your space. You can retrieve the value by running the `ibmcloud iam spaces` command in the IBM Cloud CLI.
+* `space` - (Deprecated) The name of your space. You can retrieve the value by running the `ibmcloud iam spaces` command in the IBM Cloud CLI.
+* `name` - (Optional, string) The name of your space.
 
 ## Attribute Reference
 

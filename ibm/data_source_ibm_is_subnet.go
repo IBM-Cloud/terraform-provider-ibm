@@ -15,8 +15,9 @@ func dataSourceIBMISSubnet() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"identifier": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{isSubnetName, "identifier"},
 			},
 
 			isSubnetIpv4CidrBlock: {
@@ -40,8 +41,10 @@ func dataSourceIBMISSubnet() *schema.Resource {
 			},
 
 			isSubnetName: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:         schema.TypeString,
+				Computed:     true,
+				Optional:     true,
+				ExactlyOneOf: []string{isSubnetName, "identifier"},
 			},
 
 			isSubnetNetworkACL: {
@@ -112,14 +115,13 @@ func dataSourceIBMISSubnetRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	id := d.Get("identifier").(string)
 	if userDetails.generation == 1 {
-		err := classicSubnetGetByID(d, meta, id)
+		err := classicSubnetGetByNameOrID(d, meta)
 		if err != nil {
 			return err
 		}
 	} else {
-		err := subnetGetByID(d, meta, id)
+		err := subnetGetByNameOrID(d, meta)
 		if err != nil {
 			return err
 		}
@@ -127,17 +129,37 @@ func dataSourceIBMISSubnetRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func classicSubnetGetByID(d *schema.ResourceData, meta interface{}, id string) error {
+func classicSubnetGetByNameOrID(d *schema.ResourceData, meta interface{}) error {
 	sess, err := classicVpcClient(meta)
 	if err != nil {
 		return err
 	}
-	getSubnetOptions := &vpcclassicv1.GetSubnetOptions{
-		ID: &id,
+	var subnet *vpcclassicv1.Subnet
+
+	if v, ok := d.GetOk("identifier"); ok {
+		id := v.(string)
+		getSubnetOptions := &vpcclassicv1.GetSubnetOptions{
+			ID: &id,
+		}
+		subnetinfo, response, err := sess.GetSubnet(getSubnetOptions)
+		if err != nil {
+			return fmt.Errorf("Error Getting Subnet (%s): %s\n%s", id, err, response)
+		}
+		subnet = subnetinfo
 	}
-	subnet, response, err := sess.GetSubnet(getSubnetOptions)
-	if err != nil {
-		return fmt.Errorf("Error Getting Subnet (%s): %s\n%s", id, err, response)
+	if v, ok := d.GetOk(isSubnetName); ok {
+		name := v.(string)
+		getSubnetsListOptions := &vpcclassicv1.ListSubnetsOptions{}
+		subnetsCollection, response, err := sess.ListSubnets(getSubnetsListOptions)
+		if err != nil {
+			return fmt.Errorf("Error Getting Subnets List : %s\n%s", err, response)
+		}
+		for _, subnetInfo := range subnetsCollection.Subnets {
+			if *subnetInfo.Name == name {
+				subnet = &subnetInfo
+				break
+			}
+		}
 	}
 	d.SetId(*subnet.ID)
 	d.Set("id", *subnet.ID)
@@ -168,18 +190,38 @@ func classicSubnetGetByID(d *schema.ResourceData, meta interface{}, id string) e
 	return nil
 }
 
-func subnetGetByID(d *schema.ResourceData, meta interface{}, id string) error {
+func subnetGetByNameOrID(d *schema.ResourceData, meta interface{}) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
 	}
-	getSubnetOptions := &vpcv1.GetSubnetOptions{
-		ID: &id,
+	var subnet *vpcv1.Subnet
+
+	if v, ok := d.GetOk("identifier"); ok {
+		id := v.(string)
+		getSubnetOptions := &vpcv1.GetSubnetOptions{
+			ID: &id,
+		}
+		subnetinfo, response, err := sess.GetSubnet(getSubnetOptions)
+		if err != nil {
+			return fmt.Errorf("Error Getting Subnet (%s): %s\n%s", id, err, response)
+		}
+		subnet = subnetinfo
+	} else if v, ok := d.GetOk(isSubnetName); ok {
+		name := v.(string)
+		getSubnetsListOptions := &vpcv1.ListSubnetsOptions{}
+		subnetsCollection, response, err := sess.ListSubnets(getSubnetsListOptions)
+		if err != nil {
+			return fmt.Errorf("Error Getting Subnets List : %s\n%s", err, response)
+		}
+		for _, subnetInfo := range subnetsCollection.Subnets {
+			if *subnetInfo.Name == name {
+				subnet = &subnetInfo
+				break
+			}
+		}
 	}
-	subnet, response, err := sess.GetSubnet(getSubnetOptions)
-	if err != nil {
-		return fmt.Errorf("Error Getting Subnet (%s): %s\n%s", id, err, response)
-	}
+
 	d.SetId(*subnet.ID)
 	d.Set("id", *subnet.ID)
 	d.Set(isSubnetName, *subnet.Name)

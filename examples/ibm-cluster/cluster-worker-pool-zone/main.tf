@@ -32,7 +32,7 @@ resource "ibm_container_cluster" "cluster" {
   private_vlan_id   = var.private_vlan_id
   kms_config {
     instance_id = ibm_resource_instance.kms_instance1.guid
-    crk_id = ibm_kms_key.test.id
+    crk_id = ibm_kms_key.test.key_id
     private_endpoint = false
   }
 }
