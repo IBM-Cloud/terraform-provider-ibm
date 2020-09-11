@@ -47,7 +47,7 @@ func resourceIBMPINetworkPort() *schema.Resource {
 
 			//Computed Attributes
 
-			"ipaddress": {
+			helpers.PINetworkPortIPAddress: {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
@@ -77,12 +77,12 @@ func resourceIBMPINetworkPortCreate(d *schema.ResourceData, meta interface{}) er
 	networkname := d.Get(helpers.PINetworkName).(string)
 	description := d.Get(helpers.PINetworkPortDescription).(string)
 
-	ipaddress := d.Get("ipaddress").(string)
+	ipaddress := d.Get(helpers.PINetworkPortIPAddress).(string)
 
 	nwportBody := &models.NetworkPortCreate{Description: description}
 
 	if ipaddress != "" {
-		log.Printf("No IP address provided. ")
+		log.Printf("IP address provided. ")
 		nwportBody.IPAddress = ipaddress
 	}
 
@@ -132,7 +132,7 @@ func resourceIBMPINetworkPortRead(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 
-	d.Set("ipaddress", networkdata.IPAddress)
+	d.Set(helpers.PINetworkPortIPAddress, networkdata.IPAddress)
 	d.Set("macaddress", networkdata.MacAddress)
 	d.Set("status", networkdata.Status)
 	d.Set("portid", networkdata.PortID)

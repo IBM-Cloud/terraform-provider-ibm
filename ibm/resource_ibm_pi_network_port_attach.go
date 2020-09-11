@@ -51,10 +51,11 @@ func resourceIBMPINetworkPortAttach() *schema.Resource {
 				Description: "Network Name - This is the subnet name  in the Cloud instance",
 			},
 
-			"description": {
+			helpers.PINetworkPortDescription: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "A human readable description for this network Port",
+				Default:     "Port Created via Terraform",
 			},
 		},
 	}
@@ -70,7 +71,7 @@ func resourceIBMPINetworkPortAttachCreate(d *schema.ResourceData, meta interface
 	networkname := d.Get(helpers.PINetworkName).(string)
 	portid := d.Get("port_id").(string)
 	instancename := d.Get(helpers.PIInstanceName).(string)
-	description := d.Get("description").(string)
+	description := d.Get(helpers.PINetworkPortDescription).(string)
 	client := st.NewIBMPINetworkClient(sess, powerinstanceid)
 
 	log.Printf("Printing the input to the resource powerinstance [%s] and network name [%s] and the portid [%s]", powerinstanceid, networkname, portid)
