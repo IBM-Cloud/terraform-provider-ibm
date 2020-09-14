@@ -3,6 +3,7 @@ resource "null_resource" "prepare_app_zip" {
     app_version = var.app_version
     git_repo    = var.git_repo
   }
+
   provisioner "local-exec" {
     command = <<EOF
         mkdir -p ${var.dir_to_clone}
@@ -18,9 +19,22 @@ EOF
   }
 }
 
-data "ibm_space" "space" {
-  org   = var.org
+data "ibm_space" "spacedata" {
   space = var.space
+  org   = var.org
+}
+
+resource "ibm_service_instance" "service-instance" {
+  name       = var.service_instance_name
+  space_guid = data.ibm_space.spacedata.id
+  service    = var.service
+  plan       = var.plan
+  tags       = ["cluster-service", "cluster-bind"]
+}
+
+resource "ibm_service_key" "serviceKey" {
+  name                  = var.service_key_name
+  service_instance_guid = ibm_service_instance.service-instance.id
 }
 
 data "ibm_app_domain_shared" "domain" {
@@ -29,47 +43,27 @@ data "ibm_app_domain_shared" "domain" {
 
 resource "ibm_app_route" "route" {
   domain_guid = data.ibm_app_domain_shared.domain.id
-  space_guid  = data.ibm_space.space.id
+  space_guid  = data.ibm_space.spacedata.id
   host        = var.route
-}
-
-resource "ibm_service_instance" "service" {
-  name       = var.service_instance_name
-  space_guid = data.ibm_space.space.id
-  service    = var.service_offering
-  plan       = var.plan
-  tags       = ["my-service"]
-}
-
-resource "ibm_service_key" "key" {
-  name                  = "%s"
-  service_instance_guid = ibm_service_instance.service.id
 }
 
 resource "ibm_app" "app" {
   depends_on = [
-    ibm_service_key.key,
+    ibm_service_key.serviceKey,
     null_resource.prepare_app_zip,
   ]
   name              = var.app_name
-  space_guid        = data.ibm_space.space.id
+  space_guid        = data.ibm_space.spacedata.id
   app_path          = var.app_zip
   wait_time_minutes = 10
 
   buildpack  = var.buildpack
-  disk_quota = 512
-
-  command               = var.command
+  
   memory                = 256
   instances             = 2
   disk_quota            = 512
   route_guid            = [ibm_app_route.route.id]
-  service_instance_guid = [ibm_service_instance.service.id]
-
-  environment_json = {
-    "somejson" = "somevalue"
-  }
-
-  app_version = var.app_version
+  service_instance_guid = [ibm_service_instance.service-instance.id]
+  app_version           = var.app_version
+  command               = var.app_command
 }
-
