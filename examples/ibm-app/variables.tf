@@ -1,9 +1,33 @@
+variable "space" {
+  default = "space"
+}
+
+variable "org" {
+  default = "org"
+}
+
+variable "service" {
+  default = "cloudantNoSQLDB"
+}
+
+variable "plan" {
+  default = "standard"
+}
+
+variable "service_instance_name" {
+  default = "mycloudantdb183"
+}
+
+variable "service_key_name" {
+  default = "mycloudantdbkey"
+}
+
 variable "app_version" {
   default = "1"
 }
 
 variable "git_repo" {
-  default = "https://github.com/IBM-Bluemix/nodejs-cloudantdb-crud-example"
+  default = "https://github.com/hkantare/cf-cloudant-python.git"
 }
 
 variable "dir_to_clone" {
@@ -14,36 +38,16 @@ variable "app_zip" {
   default = "/tmp/myzip.zip"
 }
 
-variable "org" {
-  default = ""
-}
-
-variable "space" {
-  default = ""
-}
-
 variable "route" {
-  default = "my-e2e-app-route"
-}
-
-variable "service_instance_name" {
-  default = "myservice"
-}
-
-variable "service_offering" {
-  default = "speech_to_text"
-}
-
-variable "plan" {
-  default = "lite"
+  default = "my-app-cloudant182"
 }
 
 variable "app_name" {
-  default = "myapp"
+  default = "myapp178"
 }
 
-variable "command" {
-  default = ""
+variable "app_command" {
+  default = "python app.py"
 }
 
 variable "buildpack" {
