@@ -34,6 +34,33 @@ func TestAccIBMCisRateLimit_Basic(t *testing.T) {
 		},
 	})
 }
+
+func TestAccIBMCisRateLimitWithoutMatchRequest_Basic(t *testing.T) {
+	var record string
+	resource.Test(t, resource.TestCase{
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMCisRateLimitDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCisRateLimitConfigWithoutRequestBasic1(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMCisRateLimitExists("ibm_cis_rate_limit.ratelimit", &record),
+					resource.TestCheckResourceAttr(
+						"ibm_cis_rate_limit.ratelimit", "action.0.mode", "simulate"),
+				),
+			},
+			{
+				Config: testAccCheckIBMCisRateLimitConfigUpdate(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMCisRateLimitExists("ibm_cis_rate_limit.ratelimit", &record),
+					resource.TestCheckResourceAttr(
+						"ibm_cis_rate_limit.ratelimit", "action.0.mode", "ban"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMCisRateLimit_Import(t *testing.T) {
 
 	var record string
@@ -151,6 +178,30 @@ func testAccCheckIBMCisRateLimitConfigBasic() string {
 				}
 			}
 		}
+		action {
+			mode = "simulate"
+			timeout = 43200
+			response {
+				content_type = "text/plain"
+				body = "custom response body"
+			}
+		}
+		correlate {
+			by = "nat"
+		}
+		disabled = false
+		description = "example rate limit for a zone"
+	}
+	  `)
+}
+
+func testAccCheckIBMCisRateLimitConfigWithoutRequestBasic1() string {
+	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
+	resource "ibm_cis_rate_limit" "ratelimit" {
+		cis_id = data.ibm_cis.cis.id
+		domain_id = data.ibm_cis_domain.cis_domain.id
+		threshold = 20
+		period = 900
 		action {
 			mode = "simulate"
 			timeout = 43200

@@ -13,9 +13,17 @@ func dataSourceIBMContainerCluster() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"cluster_name_id": {
-				Description: "Name or id of the cluster",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:  "Name or id of the cluster",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"cluster_name_id", "name"},
+				Deprecated:   "use name instead",
+			},
+			"name": {
+				Description:  "Name or id of the cluster",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"cluster_name_id", "name"},
 			},
 			"worker_count": {
 				Description: "Number of workers",
@@ -323,8 +331,15 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return err
 	}
-	name := d.Get("cluster_name_id").(string)
 
+	var name string
+
+	if v, ok := d.GetOk("cluster_name_id"); ok {
+		name = v.(string)
+	}
+	if v, ok := d.GetOk("name"); ok {
+		name = v.(string)
+	}
 	clusterFields, err := csAPI.Find(name, targetEnv)
 	if err != nil {
 		return fmt.Errorf("Error retrieving cluster: %s", err)

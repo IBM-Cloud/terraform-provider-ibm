@@ -78,6 +78,26 @@ resource "ibm_container_cluster" "testacc_cluster" {
   no_subnet = false
 }
 ```
+Create a Kms Enabled Kubernetes cluster:
+
+```hcl
+resource "ibm_container_cluster" "cluster" {
+  name              = "myContainerClsuter"
+  datacenter        = "dal10"
+  no_subnet         = true
+  default_pool_size = 2
+  hardware          = "shared"
+  resource_group_id = data.ibm_resource_group.testacc_ds_resource_group.id
+  machine_type      = "b2c.16x64"
+  public_vlan_id    = "2771174"
+  private_vlan_id   = "2771176"
+  kms_config {
+    instance_id = "12043812-757f-4e1e-8436-6af3245e6a69"
+    crk_id = "0792853c-b9f9-4b35-9d9e-ffceab51d3c1"
+    private_endpoint = false
+  }
+}
+```
 
 Create the Openshift Cluster with default worker Pool entitlement:
 
@@ -159,7 +179,12 @@ The following arguments are supported:
   **NOTE**:
   1. It is set only for the first time creation of the cluster, modification in the further runs will not have any impacts.
   2. Set this argument to 'cloud_pak' only if you use this cluster with a Cloud Pak that has an OpenShift entitlement
-
+* `kms_config` -  (Optional, list) Used to attach a key protect instance to a cluster. Nested `kms_config` block has the following structure:
+	* `instance_id` - The guid of the key protect instance.
+	* `crk_id` - Id of the customer root key (CRK).
+	* `private_endpoint` - Set this to true to configure the KMS private service endpoint. Default is false.
+* `force_delete_storage` - (Optional, bool) If set to true, force the removal of persistent storage associated with the cluster during cluster deletion. Default: false
+    **NOTE**: Before doing terraform destroy if force_delete_storage param is introduced after provisioning the cluster, a terraform apply must be done before terraform destroy for force_delete_storage param to take effect.
 ## Attribute Reference
 
 The following attributes are exported:

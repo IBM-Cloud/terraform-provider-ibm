@@ -1,3 +1,10 @@
+## 1.11.2 (Sep 01, 2020)
+
+ENHANCEMENTS:
+* resource: Support ProxyFromEnvironment for honouring for HPCS service.
+* resource: Support auto scaling for IBM Cloud database service.
+
+
 ## 1.11.1 (Aug 26, 2020)
 
 ENHANCEMENTS:

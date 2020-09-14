@@ -49,7 +49,6 @@ func resourceIBMPISnapshot() *schema.Resource {
 			helpers.PIInstanceVolumeIds: {
 				Type:             schema.TypeSet,
 				Optional:         true,
-				Computed:         true,
 				Elem:             &schema.Schema{Type: schema.TypeString},
 				Set:              schema.HashString,
 				DiffSuppressFunc: applyOnce,
@@ -116,6 +115,8 @@ func resourceIBMPISnapshotCreate(d *schema.ResourceData, meta interface{}) error
 
 	if len(volids) > 0 {
 		snapshotBody.VolumeIds = volids
+	} else {
+		log.Printf("no volumeids provided. Will snapshot the entire instance")
 	}
 
 	snapshotResponse, err := client.CreatePvmSnapShot(&p_cloud_p_vm_instances.PcloudPvminstancesSnapshotsPostParams{
@@ -130,10 +131,15 @@ func resourceIBMPISnapshotCreate(d *schema.ResourceData, meta interface{}) error
 	d.SetId(fmt.Sprintf("%s/%s", powerinstanceid, *snapshotResponse.SnapshotID))
 	if err != nil {
 		log.Printf("[DEBUG]  err %s", err)
+		return fmt.Errorf("failed to get the snapshotid %v", err)
+	}
+
+	pisnapclient := st.NewIBMPISnapshotClient(sess, powerinstanceid)
+	_, err = isWaitForPIInstanceSnapshotAvailable(pisnapclient, *snapshotResponse.SnapshotID, d.Timeout(schema.TimeoutCreate), powerinstanceid)
+	if err != nil {
 		return err
 	}
 
-	//return nil
 	return resourceIBMPISnapshotRead(d, meta)
 }
 
@@ -168,34 +174,34 @@ func resourceIBMPISnapshotRead(d *schema.ResourceData, meta interface{}) error {
 
 func resourceIBMPISnapshotUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	log.Printf("Calling the IBM Power Volume update call")
+	log.Printf("Calling the IBM Power Snapshot  update call")
 	sess, _ := meta.(ClientSession).IBMPISession()
 	parts, err := idParts(d.Id())
 	if err != nil {
 		return err
 	}
 	powerinstanceid := parts[0]
-	client := st.NewIBMPIVolumeClient(sess, powerinstanceid)
+	client := st.NewIBMPISnapshotClient(sess, powerinstanceid)
 
-	//name := ""
-	//if d.HasChange(helpers.PIVolumeName) {
-	name := d.Get(helpers.PIVolumeName).(string)
-	//}
+	if d.HasChange(helpers.PISnapshotName) || d.HasChange("description") {
+		name := d.Get(helpers.PISnapshotName).(string)
+		description := d.Get("description").(string)
+		snapshotBody := &models.SnapshotUpdate{Name: name, Description: description}
 
-	size := float64(d.Get(helpers.PIVolumeSize).(float64))
-	shareable := bool(d.Get(helpers.PIVolumeShareable).(bool))
+		_, err := client.Update(parts[1], powerinstanceid, snapshotBody, 60)
 
-	volrequest, err := client.Update(parts[1], name, size, shareable, powerinstanceid, postTimeOut)
-	if err != nil {
-		return err
+		if err != nil {
+			return fmt.Errorf("failed to update the snapshot request %v", err)
+
+		}
+
+		_, err = isWaitForPIInstanceSnapshotAvailable(client, parts[1], d.Timeout(schema.TimeoutCreate), powerinstanceid)
+		if err != nil {
+			return err
+		}
 	}
 
-	_, err = isWaitForIBMPIVolumeAvailable(client, *volrequest.VolumeID, powerinstanceid, d.Timeout(schema.TimeoutUpdate))
-	if err != nil {
-		return err
-	}
-
-	return resourceIBMPIVolumeRead(d, meta)
+	return resourceIBMPISnapshotRead(d, meta)
 }
 
 func resourceIBMPISnapshotDelete(d *schema.ResourceData, meta interface{}) error {
@@ -215,13 +221,15 @@ func resourceIBMPISnapshotDelete(d *schema.ResourceData, meta interface{}) error
 	}
 
 	log.Printf("The snapshot  to be deleted is in the following state .. %s", snapshot.Status)
-	//_, err = isWaitForIBMPIVolumeAvailable(client, parts[1], powerinstanceid, d.Timeout(schema.TimeoutDelete))
-	//if err != nil {
-	//	return err
-	//}
+
 	snapshotdel_err := client.Delete(parts[1], powerinstanceid, deleteTimeOut)
 	if snapshotdel_err != nil {
 		return snapshotdel_err
+	}
+
+	_, err = isWaitForPIInstanceSnapshotDeleted(client, parts[1], d.Timeout(schema.TimeoutDelete), powerinstanceid)
+	if err != nil {
+		return err
 	}
 
 	d.SetId("")
@@ -257,47 +265,12 @@ func resourceIBMPISnapshotExists(d *schema.ResourceData, meta interface{}) (bool
 	return volumeid == parts[1], nil
 }
 
-/*
-func isWaitForIBMPIVolumeDeleted(vol *st.IBMPIVolumeClient, id string, timeout time.Duration) (interface{}, error) {
-	log.Printf("Waiting for  (%s) to be deleted.", id)
-
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", isVolumeDeleting},
-		Target:     []string{},
-		Refresh:    isIBMPIVolumeDeleteRefreshFunc(vol, id),
-		Timeout:    timeout,
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-
-	return stateConf.WaitForState()
-}*/
-
-/*func isIBMPIVolumeDeleteRefreshFunc(vol *st.IBMPIVolumeClient, id string) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-		vol, err := vol.Get(id)
-		if err == nil {
-			return vol, isVolumeDeleting, nil
-		}
-
-		iserror, ok := err.(iserrors.Power)
-		if ok {
-			log.Printf("[DEBUG] %s", iserror.Error())
-			if len(iserror.Payload.Errors) == 1 &&
-				iserror.Payload.Errors[0].Code == "volume_not_found" {
-				return nil, isVolumeDeleted, nil
-			}
-		}
-		return nil, isVolumeDeleting, err
-	}
-}
-
-*/
 func isWaitForPIInstanceSnapshotAvailable(client *st.IBMPISnapshotClient, id string, timeout time.Duration, powerinstanceid string) (interface{}, error) {
+
 	log.Printf("Waiting for PIInstance Snapshot (%s) to be available and active ", id)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"creating_snapshot", "BUILD"},
+		Pending:    []string{"in_progress", "BUILD"},
 		Target:     []string{"available", "ACTIVE"},
 		Refresh:    isPIInstanceSnapshotRefreshFunc(client, id, powerinstanceid),
 		Delay:      30 * time.Second,
@@ -323,5 +296,36 @@ func isPIInstanceSnapshotRefreshFunc(client *st.IBMPISnapshotClient, id, powerin
 
 		}
 		return snapshotInfo, "in_progress", nil
+	}
+}
+
+// Delete Snapshot
+
+func isWaitForPIInstanceSnapshotDeleted(client *st.IBMPISnapshotClient, id string, timeout time.Duration, powerinstanceid string) (interface{}, error) {
+
+	log.Printf("Waiting for  (%s) to be deleted.", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", helpers.PIInstanceDeleting},
+		Target:     []string{"Not Found"},
+		Refresh:    isPIInstanceSnapshotDeleteRefreshFunc(client, id, powerinstanceid),
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+		Timeout:    10 * time.Minute,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isPIInstanceSnapshotDeleteRefreshFunc(client *st.IBMPISnapshotClient, id, powerinstanceid string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		snapshot, err := client.Get(id, powerinstanceid, getTimeOut)
+		if err != nil {
+			log.Printf("The snapshot is not found.")
+			return snapshot, helpers.PIInstanceNotFound, nil
+
+		}
+		return snapshot, helpers.PIInstanceNotFound, nil
+
 	}
 }

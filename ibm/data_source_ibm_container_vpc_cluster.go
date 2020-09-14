@@ -18,9 +18,17 @@ func dataSourceIBMContainerVPCCluster() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"cluster_name_id": {
-				Description: "Name of the cluster",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:  "Name or id of the cluster",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"cluster_name_id", "name"},
+				Deprecated:   "use name instead",
+			},
+			"name": {
+				Description:  "Name or id of the cluster",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"cluster_name_id", "name"},
 			},
 			"worker_count": {
 				Description: "Number of workers",
@@ -260,7 +268,15 @@ func dataSourceIBMContainerClusterVPCRead(d *schema.ResourceData, meta interface
 		return err
 	}
 
-	clusterID := d.Get("cluster_name_id").(string)
+	var clusterID string
+
+	if v, ok := d.GetOk("cluster_name_id"); ok {
+		clusterID = v.(string)
+	}
+	if v, ok := d.GetOk("name"); ok {
+		clusterID = v.(string)
+	}
+
 	cls, err := csClient.Clusters().GetCluster(clusterID, targetEnv)
 	if err != nil {
 		return fmt.Errorf("Error retrieving conatiner vpc cluster: %s", err)

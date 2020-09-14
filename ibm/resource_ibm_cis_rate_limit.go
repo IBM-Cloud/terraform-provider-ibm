@@ -146,14 +146,16 @@ func resourceIBMCISRateLimit() *schema.Resource {
 			},
 			"match": {
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				MaxItems:    1,
+				Computed:    true,
 				Description: "Rate Limiting Match",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"request": {
 							Type:        schema.TypeList,
 							Optional:    true,
+							Computed:    true,
 							MinItems:    1,
 							MaxItems:    1,
 							Description: "Rate Limiting Match Request",
@@ -162,6 +164,7 @@ func resourceIBMCISRateLimit() *schema.Resource {
 									"methods": {
 										Type:        schema.TypeSet,
 										Optional:    true,
+										Computed:    true,
 										Description: "HTTP Methos of matching request. It can be one or many. Example methods 'POST', 'PUT'",
 										Elem: &schema.Schema{
 											Type:         schema.TypeString,
@@ -171,6 +174,7 @@ func resourceIBMCISRateLimit() *schema.Resource {
 									"schemes": {
 										Type:        schema.TypeSet,
 										Optional:    true,
+										Computed:    true,
 										Description: "HTTP Schemes of matching request. It can be one or many. Example schemes 'HTTP', 'HTTPS'.",
 										Elem: &schema.Schema{
 											Type:         schema.TypeString,
@@ -180,6 +184,7 @@ func resourceIBMCISRateLimit() *schema.Resource {
 									"url": {
 										Type:         schema.TypeString,
 										Optional:     true,
+										Computed:     true,
 										Description:  "URL pattern of matching request",
 										ValidateFunc: InvokeValidator("ibm_cis_rate_limit", cisRLURL),
 									},
@@ -561,18 +566,29 @@ func expandRateLimitAction(d *schema.ResourceData) (
 }
 
 func expandRateLimitMatch(d *schema.ResourceData) (match *zoneratelimitsv1.RatelimitInputMatch, err error) {
-	match = &zoneratelimitsv1.RatelimitInputMatch{}
-	m, ok := d.GetOk("match")
-	if !ok {
-		return
+	match = new(zoneratelimitsv1.RatelimitInputMatch)
+	m := d.Get("match")
+	if len(m.([]interface{})) == 0 {
+		// Match Request is a mondatory property. So, setting default if none provided.
+		match.Request = &zoneratelimitsv1.RatelimitInputMatchRequest{
+			Methods: []string{"_ALL_"},
+			Schemes: []string{"_ALL_"},
+			URL:     core.StringPtr("*"),
+		}
+		return match, nil
 	}
 	matchRecord := m.([]interface{})[0].(map[string]interface{})
 
 	if matchReqRecord, ok := matchRecord["request"]; ok && len(matchReqRecord.([]interface{})) > 0 {
 		matchRequestRecord := matchReqRecord.([]interface{})[0].(map[string]interface{})
 
+		url := matchRequestRecord["url"].(string)
+		// If url is not provided, then set it with *
+		if len(url) == 0 {
+			url = "*"
+		}
 		matchRequest := &zoneratelimitsv1.RatelimitInputMatchRequest{
-			URL: core.StringPtr(matchRequestRecord["url"].(string)),
+			URL: core.StringPtr(url),
 		}
 		if methodsRecord, ok := matchRequestRecord["methods"]; ok {
 			methods := make([]string, methodsRecord.(*schema.Set).Len())

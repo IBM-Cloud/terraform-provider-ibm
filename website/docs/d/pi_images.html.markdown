@@ -31,3 +31,4 @@ The following attributes are exported:
   * `id` - The unique identifier for this image
   * `state` - The state of the operating system.
   * `href` - The href  of this image.
+  * `storage_type` - The storage type for this image

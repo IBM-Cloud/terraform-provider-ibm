@@ -5,6 +5,20 @@ data "ibm_resource_group" "testacc_ds_resource_group" {
   name = var.resource_group
 }
 
+resource "ibm_resource_instance" "kms_instance1" {
+    name              = "test_kms"
+    service           = "kms"
+    plan              = "tiered-pricing"
+    location          = "us-south"
+}
+  
+resource "ibm_kms_key" "test" {
+    instance_id = "${ibm_resource_instance.kms_instance1.guid}"
+    key_name = "test_root_key"
+    standard_key =  false
+    force_delete = true
+}
+
 resource "ibm_container_cluster" "cluster" {
   name              = "${var.cluster_name}${random_id.name.hex}"
   datacenter        = var.datacenter
@@ -16,6 +30,11 @@ resource "ibm_container_cluster" "cluster" {
   machine_type      = var.machine_type
   public_vlan_id    = var.public_vlan_id
   private_vlan_id   = var.private_vlan_id
+  kms_config {
+    instance_id = ibm_resource_instance.kms_instance1.guid
+    crk_id = ibm_kms_key.test.key_id
+    private_endpoint = false
+  }
 }
 
 resource "ibm_container_worker_pool_zone_attachment" "default_zone" {

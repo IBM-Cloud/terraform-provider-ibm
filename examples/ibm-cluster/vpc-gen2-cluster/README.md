@@ -51,6 +51,19 @@ resource "ibm_is_subnet" "subnet1" {
   zone                     = var.zone
   total_ipv4_address_count = 256
 }
+resource "ibm_resource_instance" "kms_instance1" {
+    name              = "test_kms"
+    service           = "kms"
+    plan              = "tiered-pricing"
+    location          = "us-south"
+}
+  
+resource "ibm_kms_key" "test" {
+    instance_id = "${ibm_resource_instance.kms_instance1.guid}"
+    key_name = "test_root_key"
+    standard_key =  false
+    force_delete = true
+}
 
 resource "ibm_container_vpc_cluster" "cluster" {
   name              = var.name
@@ -62,6 +75,12 @@ resource "ibm_container_vpc_cluster" "cluster" {
   zones {
     subnet_id = ibm_is_subnet.subnet1.id
     name      = "us-south-1"
+  }
+
+  kms_config {
+    instance_id = ibm_resource_instance.kms_instance1.guid
+    crk_id = ibm_kms_key.test.id
+    private_endpoint = false
   }
 }
 ```

@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"log"
 	"time"
 
@@ -44,12 +45,7 @@ func resourceIBMPINetworkPort() *schema.Resource {
 				Optional: true,
 			},
 
-			/*
-			 "description": "",
-			    "ipAddress": "172.31.96.93",
-			    "macAddress": "fa:16:3e:30:b9:64",
-			    "portID": "6c9d0e42-73f3-492f-840d-3d4a7a573014",
-			*/
+			//Computed Attributes
 
 			helpers.PINetworkPortIPAddress: {
 				Type:     schema.TypeString,
@@ -68,9 +64,6 @@ func resourceIBMPINetworkPort() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
-			//Computed Attributes
-
 		},
 	}
 }
@@ -83,12 +76,13 @@ func resourceIBMPINetworkPortCreate(d *schema.ResourceData, meta interface{}) er
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	networkname := d.Get(helpers.PINetworkName).(string)
 	description := d.Get(helpers.PINetworkPortDescription).(string)
+
 	ipaddress := d.Get(helpers.PINetworkPortIPAddress).(string)
 
 	nwportBody := &models.NetworkPortCreate{Description: description}
 
 	if ipaddress != "" {
-		log.Printf("No IP address provided. ")
+		log.Printf("IP address provided. ")
 		nwportBody.IPAddress = ipaddress
 	}
 
@@ -154,12 +148,13 @@ func resourceIBMPINetworkPortUpdate(data *schema.ResourceData, meta interface{})
 func resourceIBMPINetworkPortDelete(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("Calling the network delete functions. ")
+	powernetworkname := d.Get(helpers.PINetworkName).(string)
 	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
 		return err
 	}
 	parts, err := idParts(d.Id())
-	powernetworkname := d.Get(helpers.PINetworkName).(string)
+
 	if err != nil {
 		return err
 	}
@@ -198,4 +193,38 @@ func resourceIBMPINetworkPortExists(d *schema.ResourceData, meta interface{}) (b
 		return false, err
 	}
 	return *network.NetworkID == parts[1], nil
+}
+
+func isWaitForIBMPINetworkPortAvailable(client *st.IBMPINetworkClient, id string, timeout time.Duration, powerinstanceid, networkname string) (interface{}, error) {
+	log.Printf("Waiting for Power Network (%s) that was created for Network Zone (%s) to be available.", id, networkname)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", helpers.PINetworkProvisioning},
+		Target:     []string{"DOWN"},
+		Refresh:    isIBMPINetworkPortRefreshFunc(client, id, powerinstanceid, networkname),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Minute,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isIBMPINetworkPortRefreshFunc(client *st.IBMPINetworkClient, id, powerinstanceid, networkname string) resource.StateRefreshFunc {
+
+	log.Printf("Calling the IsIBMPINetwork Refresh Function....with the following id (%s) for network port and following id (%s) for network name and waiting for network to be READY", id, networkname)
+	return func() (interface{}, string, error) {
+		network, err := client.GetPort(networkname, powerinstanceid, id, getTimeOut)
+		if err != nil {
+			return nil, "", err
+		}
+
+		if &network.PortID != nil {
+			//if network.State == "available" {
+			log.Printf(" The port has been created with the following ip address and attached to an instance ")
+			return network, "DOWN", nil
+		}
+
+		return network, helpers.PINetworkProvisioning, nil
+	}
 }

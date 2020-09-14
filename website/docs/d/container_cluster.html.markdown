@@ -16,7 +16,7 @@ Import the details of a Kubernetes cluster on IBM Cloud as a read-only data sour
 
 ```hcl
 data "ibm_container_cluster" "cluster_foo" {
-  cluster_name_id = "FOO"
+  name = "FOO"
 }
 ```
 
@@ -24,7 +24,8 @@ data "ibm_container_cluster" "cluster_foo" {
 
 The following arguments are supported:
 
-* `cluster_name_id` - (Required, string) The name or ID of the cluster.
+* `cluster_name_id` - (Deprecated, string) Name of the Cluster
+* `name` - (Optional, string) Name or ID of the cluster.
 * `alb_type` - (Optional, string) Used to filter the albs based on type. Valid values are `private`, `public` and `all`. The default value is `all`.
 * `org_guid` - (Deprecated, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from the `ibm_org` data source or by running the `ibmcloud iam orgs --guid` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
 * `space_guid` - (Deprecated, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from the `ibm_space` data source or by running the `ibmcloud iam space <space-name> --guid` command in the IBM Cloud CLI.

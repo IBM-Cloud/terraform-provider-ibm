@@ -89,6 +89,28 @@ resource "ibm_container_vpc_cluster" "cluster" {
 
 ```
 
+Create a Kms Enabled Kubernetes cluster:
+
+```hcl
+resource "ibm_container_vpc_cluster" "cluster" {
+  name              = "cluster2"
+  vpc_id            = "${ibm_is_vpc.vpc1.id}"
+  flavor            = "bx2.2x8"
+  worker_count      = "1"
+  wait_till         = "OneWorkerNodeReady"
+  resource_group_id = "${data.ibm_resource_group.resource_group.id}"
+  zones {
+    subnet_id = "${ibm_is_subnet.subnet1.id}"
+    name      = "us-south-1"
+  }
+
+  kms_config {
+      instance_id = "12043812-757f-4e1e-8436-6af3245e6a69"
+      crk_id = "0792853c-b9f9-4b35-9d9e-ffceab51d3c1"
+      private_endpoint = false
+  }
+}
+```
 
 ## Argument Reference
 
@@ -109,6 +131,10 @@ The following arguments are supported:
 * `worker_labels` - (Optional, map) Labels on all the workers in the default worker pool.
 * `resource_group_id` - (Optional, Forces new resource, string) The ID of the resource group. You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
 * `tags` - (Optional, array of strings) Tags associated with the container cluster instance.
+* `kms_config` -  (Optional, list) Used to attach a key protect instance to a cluster. Nested `kms_config` block has the following structure:
+	* `instance_id` - The guid of the key protect instance.
+	* `crk_id` - Id of the customer root key (CRK).
+	* `private_endpoint` - Set this to true to configure the KMS private service endpoint. Default is false.
 * `entitlement` - (Optional, String) The openshift cluster entitlement avoids the OCP licence charges incurred. Use cloud paks with OCP Licence entitlement to create the Openshift cluster.
   **NOTE**:
   1. It is set only for the first time creation of the cluster, modification in the further runs will not have any impacts.
@@ -121,6 +147,8 @@ Resource will wait for only the specified stage and complete execution. The supp
   - *IngressReady*: resource will wait till the ingress-host and ingress-secret are available.
 
   Default value: IngressReady
+* `force_delete_storage` - (Optional, bool) If set to true, force the removal of persistent storage associated with the cluster during cluster deletion. Default: false
+    **NOTE**: Before doing terraform destroy if force_delete_storage param is introduced after provisioning the cluster, a terraform apply must be done before terraform destroy for force_delete_storage param to take effect.
 
 **NOTE**:
 1. For users on account to add tags to a resource, they must be assigned the appropriate access. Learn more about tags permission [here](https://cloud.ibm.com/docs/resources?topic=resources-access)

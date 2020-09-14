@@ -46,6 +46,20 @@ data "ibm_resource_group" "resource_group" {
   name = var.name
 }
 
+resource "ibm_resource_instance" "kms_instance1" {
+    name              = "test_kms"
+    service           = "kms"
+    plan              = "tiered-pricing"
+    location          = "us-south"
+}
+  
+resource "ibm_kms_key" "test" {
+    instance_id = "${ibm_resource_instance.kms_instance1.guid}"
+    key_name = "test_root_key"
+    standard_key =  false
+    force_delete = true
+}
+
 resource "ibm_container_cluster" "cluster" {
   name              = "mycluster"
   datacenter        = "dal12"
@@ -55,6 +69,11 @@ resource "ibm_container_cluster" "cluster" {
   hardware          = "shared"
   resource_group_id = data.ibm_resource_group.resource_group.id
   machine_type      = "u2c.2x4"
+  kms_config {
+    instance_id = ibm_resource_instance.kms_instance1.guid
+    crk_id = ibm_kms_key.test.id
+    private_endpoint = false
+  }
 }
 
 resource "ibm_container_worker_pool" "test_pool" {

@@ -12,9 +12,17 @@ func dataSourceIBMOrg() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"org": {
-				Description: "Org name, for example myorg@domain",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:  "Org name, for example myorg@domain",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Deprecated:   "use name instead",
+				ExactlyOneOf: []string{"org", "name"},
+			},
+			"name": {
+				Description:  "Org name, for example myorg@domain",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"org", "name"},
 			},
 		},
 	}
@@ -26,12 +34,18 @@ func dataSourceIBMOrgRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	orgAPI := cfAPI.Organizations()
-	org := d.Get("org").(string)
+	var org string
+	if v, ok := d.GetOk("name"); ok {
+		org = v.(string)
+	}
+	if v, ok := d.GetOk("org"); ok {
+		org = v.(string)
+	}
+
 	orgFields, err := orgAPI.FindByName(org, BluemixRegion)
 	if err != nil {
 		return fmt.Errorf("Error retrieving organisation: %s", err)
 	}
-
 	d.SetId(orgFields.GUID)
 
 	return nil

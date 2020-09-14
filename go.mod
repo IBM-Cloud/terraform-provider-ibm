@@ -4,8 +4,8 @@ go 1.12
 
 require (
 	github.com/Bowery/prompt v0.0.0-20190916142128-fa8279994f75 // indirect
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20200826105524-338a070b12f9
-	github.com/IBM-Cloud/power-go-client v1.0.46
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20200903083903-3b405c2db0da
+	github.com/IBM-Cloud/power-go-client v1.0.48
 	github.com/IBM/apigateway-go-sdk v0.0.0-20200414212859-416e5948678a
 	github.com/IBM/dns-svcs-go-sdk v0.0.3
 	github.com/IBM/go-sdk-core v1.1.0
@@ -14,7 +14,7 @@ require (
 	github.com/IBM/ibm-cos-sdk-go-config v1.0.0
 	github.com/IBM/keyprotect-go-client v0.3.5-0.20200325142150-b63163832e26
 	github.com/IBM/networking-go-sdk v0.7.0
-	github.com/IBM/vpc-go-sdk v0.0.3
+	github.com/IBM/vpc-go-sdk v0.1.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.26.4
 	github.com/apache/incubator-openwhisk-client-go v0.0.0-20171128215515-ad814bc98c32 // indirect

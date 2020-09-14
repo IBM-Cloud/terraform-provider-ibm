@@ -1,5 +1,5 @@
 output "roles" {
-  value = ibm_iam_roles.test.roles.*
+  value = data.ibm_iam_roles.test.roles.*
 }
 
 
