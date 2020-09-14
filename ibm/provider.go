@@ -427,15 +427,17 @@ func Provider() terraform.ResourceProvider {
 
 			//Added for Power Colo
 
-			"ibm_pi_key":           resourceIBMPIKey(),
-			"ibm_pi_volume":        resourceIBMPIVolume(),
-			"ibm_pi_network":       resourceIBMPINetwork(),
-			"ibm_pi_instance":      resourceIBMPIInstance(),
-			"ibm_pi_operations":    resourceIBMPIIOperations(),
-			"ibm_pi_volume_attach": resourceIBMPIVolumeAttach(),
-			"ibm_pi_capture":       resourceIBMPICapture(),
-			"ibm_pi_image":         resourceIBMPIImage(),
-			"ibm_pi_network_port":  resourceIBMPINetworkPort(),
+			"ibm_pi_key":                 resourceIBMPIKey(),
+			"ibm_pi_volume":              resourceIBMPIVolume(),
+			"ibm_pi_network":             resourceIBMPINetwork(),
+			"ibm_pi_instance":            resourceIBMPIInstance(),
+			"ibm_pi_operations":          resourceIBMPIIOperations(),
+			"ibm_pi_volume_attach":       resourceIBMPIVolumeAttach(),
+			"ibm_pi_capture":             resourceIBMPICapture(),
+			"ibm_pi_image":               resourceIBMPIImage(),
+			"ibm_pi_network_port":        resourceIBMPINetworkPort(),
+			"ibm_pi_snapshot":            resourceIBMPISnapshot(),
+			"ibm_pi_network_port_attach": resourceIBMPINetworkPortAttach(),
 
 			//Private DNS related resources
 			"ibm_dns_zone":              resourceIBMPrivateDNSZone(),

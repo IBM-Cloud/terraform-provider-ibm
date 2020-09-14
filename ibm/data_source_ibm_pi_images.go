@@ -55,7 +55,12 @@ func dataSourceIBMPIImages() *schema.Resource {
 						},
 						"state": {
 							Type:     schema.TypeString,
-							Computed: true},
+							Computed: true,
+						},
+						"storage_type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 					},
 				},
 			},
@@ -94,10 +99,11 @@ func flattenStockImages(list []*models.ImageReference) []map[string]interface{} 
 	for _, i := range list {
 
 		l := map[string]interface{}{
-			"id":    *i.ImageID,
-			"state": *i.State,
-			"href":  *i.Href,
-			"name":  *i.Name,
+			"id":           *i.ImageID,
+			"state":        *i.State,
+			"href":         *i.Href,
+			"name":         *i.Name,
+			"storage_type": *i.StorageType,
 		}
 
 		result = append(result, l)
