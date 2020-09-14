@@ -1,3 +1,58 @@
+## 1.12.0 (Sep14, 2020)
+
+FEATURES:
+
+**VPC Flow Logs**: 
+* Support for IBM Cloud VPC Flow Logs ([#1356](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1356))
+    * resource/ibm_is_flow_logs
+    * data/ibm_is_flow_logs
+
+**VPC Auto Scale**: 
+* Support for IBM Cloud VPC Auto Scale ([#1357](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1357))
+    * resource/ibm_is_instance_group
+    * resource/ibm_is_instance_group_manager
+    * resource/ibm_is_instance_group_manager_policy
+    * resource/ibm_is_instance_template
+    * data/ibm_is_instance_group
+    * data/ibm_is_instance_group_manager
+    * data/ibm_is_instance_group_managers
+    * data/ibm_is_instance_group_manager_policies
+    * data/ibm_is_instance_group_manager_policy
+    * data/ibm_is_instance_templates
+    * data/ibm_is_instance_profiles
+    * data/ibm_is_instance_profile
+
+**Power Instance**:
+* Support for IBM Cloud Power Instance network port attachement and snapshot ([#1867](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1867))
+    * resource/ibm_pi_snapshot
+    * resource/ibm_pi_network_port_attach
+
+**Cluster Addons**:
+* Support for addons for container cluster ([#721](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/721))
+    * resource/ibm_container_addons
+    * data/ibm_container_addons
+
+* data/ibm_is_lb: Support for ibm_is_lb [#1849](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1849))
+
+* data/ibm_container_alb: Support for ibm_container_alb [#1850](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1849))
+
+* data/ibm_container_alb_cert: Support for ibm_container_alb_cert [#1850](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1849))
+
+* data/ibm_container_bind_service: Support for ibm_container_bind_service [#1850](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1849))
+
+
+ENHANCEMENTS:
+
+* resource: Support key protect configuraton for Container clusters ([#673] (https://github.com/IBM-Cloud/terraform-provider-ibm/issues/673))
+
+* resource: Support delete of PVC Storage for Container clusters([#1847] (https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1847))
+
+* resource: Support eu-fr2 region for ICD [#1870](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1870))
+
+BUGFIXES
+
+* Fix the diff on classsic VM instance ([#1828] (https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1828))
+
 ## 1.11.2 (Sep 01, 2020)
 
 ENHANCEMENTS:
