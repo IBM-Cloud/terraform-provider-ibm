@@ -13,9 +13,9 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// VolumesCloneAsyncRequest volumes clone async request
-// swagger:model VolumesCloneAsyncRequest
-type VolumesCloneAsyncRequest struct {
+// VolumesCloneExecute volumes clone execute
+// swagger:model VolumesCloneExecute
+type VolumesCloneExecute struct {
 
 	// Base name of the new cloned volume(s).
 	// Cloned Volume names will be prefixed with 'clone-'
@@ -28,20 +28,17 @@ type VolumesCloneAsyncRequest struct {
 	// Required: true
 	Name *string `json:"name"`
 
-	// List of volumes to be cloned
-	// Required: true
-	VolumeIds []string `json:"volumeIDs"`
+	// default False, Execute failure rolls back clone activity but leaves prepared snapshot
+	// True, Execute failure rolls back clone activity and removes the prepared snapshot
+	//
+	RollbackPrepare bool `json:"rollbackPrepare,omitempty"`
 }
 
-// Validate validates this volumes clone async request
-func (m *VolumesCloneAsyncRequest) Validate(formats strfmt.Registry) error {
+// Validate validates this volumes clone execute
+func (m *VolumesCloneExecute) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateVolumeIds(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -51,7 +48,7 @@ func (m *VolumesCloneAsyncRequest) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VolumesCloneAsyncRequest) validateName(formats strfmt.Registry) error {
+func (m *VolumesCloneExecute) validateName(formats strfmt.Registry) error {
 
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
@@ -60,17 +57,8 @@ func (m *VolumesCloneAsyncRequest) validateName(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VolumesCloneAsyncRequest) validateVolumeIds(formats strfmt.Registry) error {
-
-	if err := validate.Required("volumeIDs", "body", m.VolumeIds); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // MarshalBinary interface implementation
-func (m *VolumesCloneAsyncRequest) MarshalBinary() ([]byte, error) {
+func (m *VolumesCloneExecute) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -78,8 +66,8 @@ func (m *VolumesCloneAsyncRequest) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumesCloneAsyncRequest) UnmarshalBinary(b []byte) error {
-	var res VolumesCloneAsyncRequest
+func (m *VolumesCloneExecute) UnmarshalBinary(b []byte) error {
+	var res VolumesCloneExecute
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

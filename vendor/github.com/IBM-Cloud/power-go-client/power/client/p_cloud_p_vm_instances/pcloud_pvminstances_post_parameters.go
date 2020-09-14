@@ -13,6 +13,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
+	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -73,6 +74,11 @@ type PcloudPvminstancesPostParams struct {
 
 	*/
 	CloudInstanceID string
+	/*SkipHostValidation
+	  Option to skip host validation on PVMInstance Create API
+
+	*/
+	SkipHostValidation *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -134,6 +140,17 @@ func (o *PcloudPvminstancesPostParams) SetCloudInstanceID(cloudInstanceID string
 	o.CloudInstanceID = cloudInstanceID
 }
 
+// WithSkipHostValidation adds the skipHostValidation to the pcloud pvminstances post params
+func (o *PcloudPvminstancesPostParams) WithSkipHostValidation(skipHostValidation *bool) *PcloudPvminstancesPostParams {
+	o.SetSkipHostValidation(skipHostValidation)
+	return o
+}
+
+// SetSkipHostValidation adds the skipHostValidation to the pcloud pvminstances post params
+func (o *PcloudPvminstancesPostParams) SetSkipHostValidation(skipHostValidation *bool) {
+	o.SkipHostValidation = skipHostValidation
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *PcloudPvminstancesPostParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -151,6 +168,22 @@ func (o *PcloudPvminstancesPostParams) WriteToRequest(r runtime.ClientRequest, r
 	// path param cloud_instance_id
 	if err := r.SetPathParam("cloud_instance_id", o.CloudInstanceID); err != nil {
 		return err
+	}
+
+	if o.SkipHostValidation != nil {
+
+		// query param skipHostValidation
+		var qrSkipHostValidation bool
+		if o.SkipHostValidation != nil {
+			qrSkipHostValidation = *o.SkipHostValidation
+		}
+		qSkipHostValidation := swag.FormatBool(qrSkipHostValidation)
+		if qSkipHostValidation != "" {
+			if err := r.SetQueryParam("skipHostValidation", qSkipHostValidation); err != nil {
+				return err
+			}
+		}
+
 	}
 
 	if len(res) > 0 {

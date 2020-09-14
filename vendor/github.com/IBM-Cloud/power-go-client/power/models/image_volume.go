@@ -28,6 +28,10 @@ type ImageVolume struct {
 	// Volume Size
 	// Required: true
 	Size *float64 `json:"size"`
+
+	// Volume ID
+	// Required: true
+	VolumeID *string `json:"volumeID"`
 }
 
 // Validate validates this image volume
@@ -43,6 +47,10 @@ func (m *ImageVolume) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVolumeID(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -73,6 +81,15 @@ func (m *ImageVolume) validateName(formats strfmt.Registry) error {
 func (m *ImageVolume) validateSize(formats strfmt.Registry) error {
 
 	if err := validate.Required("size", "body", m.Size); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ImageVolume) validateVolumeID(formats strfmt.Registry) error {
+
+	if err := validate.Required("volumeID", "body", m.VolumeID); err != nil {
 		return err
 	}
 

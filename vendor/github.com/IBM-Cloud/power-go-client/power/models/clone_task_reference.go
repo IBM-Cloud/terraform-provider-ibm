@@ -17,24 +17,24 @@ import (
 // swagger:model CloneTaskReference
 type CloneTaskReference struct {
 
-	// Link to PowerVC clone task resource
-	// Required: true
-	CloneTaskHref *string `json:"cloneTaskHref"`
-
 	// ID of a long running PowerVC clone task
 	// Required: true
 	CloneTaskID *string `json:"cloneTaskID"`
+
+	// Link to PowerVC clone task resource
+	// Required: true
+	Href *string `json:"href"`
 }
 
 // Validate validates this clone task reference
 func (m *CloneTaskReference) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateCloneTaskHref(formats); err != nil {
+	if err := m.validateCloneTaskID(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateCloneTaskID(formats); err != nil {
+	if err := m.validateHref(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -44,18 +44,18 @@ func (m *CloneTaskReference) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CloneTaskReference) validateCloneTaskHref(formats strfmt.Registry) error {
+func (m *CloneTaskReference) validateCloneTaskID(formats strfmt.Registry) error {
 
-	if err := validate.Required("cloneTaskHref", "body", m.CloneTaskHref); err != nil {
+	if err := validate.Required("cloneTaskID", "body", m.CloneTaskID); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *CloneTaskReference) validateCloneTaskID(formats strfmt.Registry) error {
+func (m *CloneTaskReference) validateHref(formats strfmt.Registry) error {
 
-	if err := validate.Required("cloneTaskID", "body", m.CloneTaskID); err != nil {
+	if err := validate.Required("href", "body", m.Href); err != nil {
 		return err
 	}
 

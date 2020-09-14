@@ -431,6 +431,209 @@ func (a *Client) PcloudV2VolumesPost(params *PcloudV2VolumesPostParams, authInfo
 }
 
 /*
+PcloudV2VolumescloneCancelPost cancels a volumes clone request initiates the cleanup action cleanup action performs the cleanup of the preparatory clones and snapshot volumes
+*/
+func (a *Client) PcloudV2VolumescloneCancelPost(params *PcloudV2VolumescloneCancelPostParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudV2VolumescloneCancelPostAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPcloudV2VolumescloneCancelPostParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "pcloud.v2.volumesclone.cancel.post",
+		Method:             "POST",
+		PathPattern:        "/pcloud/v2/cloud-instances/{cloud_instance_id}/volumes-clone/{volumes_clone_id}/cancel",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PcloudV2VolumescloneCancelPostReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PcloudV2VolumescloneCancelPostAccepted), nil
+
+}
+
+/*
+PcloudV2VolumescloneDelete deletes a volumes clone request
+*/
+func (a *Client) PcloudV2VolumescloneDelete(params *PcloudV2VolumescloneDeleteParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudV2VolumescloneDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPcloudV2VolumescloneDeleteParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "pcloud.v2.volumesclone.delete",
+		Method:             "DELETE",
+		PathPattern:        "/pcloud/v2/cloud-instances/{cloud_instance_id}/volumes-clone/{volumes_clone_id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PcloudV2VolumescloneDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PcloudV2VolumescloneDeleteOK), nil
+
+}
+
+/*
+PcloudV2VolumescloneExecutePost initiates the execute action for a volumes clone request execute action creates the cloned volumes using the volume snapshots
+*/
+func (a *Client) PcloudV2VolumescloneExecutePost(params *PcloudV2VolumescloneExecutePostParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudV2VolumescloneExecutePostAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPcloudV2VolumescloneExecutePostParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "pcloud.v2.volumesclone.execute.post",
+		Method:             "POST",
+		PathPattern:        "/pcloud/v2/cloud-instances/{cloud_instance_id}/volumes-clone/{volumes_clone_id}/execute",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PcloudV2VolumescloneExecutePostReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PcloudV2VolumescloneExecutePostAccepted), nil
+
+}
+
+/*
+PcloudV2VolumescloneGet gets the details for a volumes clone request
+*/
+func (a *Client) PcloudV2VolumescloneGet(params *PcloudV2VolumescloneGetParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudV2VolumescloneGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPcloudV2VolumescloneGetParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "pcloud.v2.volumesclone.get",
+		Method:             "GET",
+		PathPattern:        "/pcloud/v2/cloud-instances/{cloud_instance_id}/volumes-clone/{volumes_clone_id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PcloudV2VolumescloneGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PcloudV2VolumescloneGetOK), nil
+
+}
+
+/*
+PcloudV2VolumescloneGetall gets the list of volumes clone request for a cloud instance
+*/
+func (a *Client) PcloudV2VolumescloneGetall(params *PcloudV2VolumescloneGetallParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudV2VolumescloneGetallOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPcloudV2VolumescloneGetallParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "pcloud.v2.volumesclone.getall",
+		Method:             "GET",
+		PathPattern:        "/pcloud/v2/cloud-instances/{cloud_instance_id}/volumes-clone",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PcloudV2VolumescloneGetallReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PcloudV2VolumescloneGetallOK), nil
+
+}
+
+/*
+PcloudV2VolumesclonePost creates a new volumes clone request and initiates the prepare action requires a minimum of two volumes requires a minimum of one volume to be in the in use state requires a unique volumes clone name prepare action does the preparatory work for creating the snapshot volumes
+*/
+func (a *Client) PcloudV2VolumesclonePost(params *PcloudV2VolumesclonePostParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudV2VolumesclonePostAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPcloudV2VolumesclonePostParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "pcloud.v2.volumesclone.post",
+		Method:             "POST",
+		PathPattern:        "/pcloud/v2/cloud-instances/{cloud_instance_id}/volumes-clone",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PcloudV2VolumesclonePostReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PcloudV2VolumesclonePostAccepted), nil
+
+}
+
+/*
+PcloudV2VolumescloneStartPost initiates the start action for a volumes clone request start action starts the consistency group to initiate the flash copy
+*/
+func (a *Client) PcloudV2VolumescloneStartPost(params *PcloudV2VolumescloneStartPostParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudV2VolumescloneStartPostOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPcloudV2VolumescloneStartPostParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "pcloud.v2.volumesclone.start.post",
+		Method:             "POST",
+		PathPattern:        "/pcloud/v2/cloud-instances/{cloud_instance_id}/volumes-clone/{volumes_clone_id}/start",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PcloudV2VolumescloneStartPostReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PcloudV2VolumescloneStartPostOK), nil
+
+}
+
+/*
 PcloudVolumesClonePost creates a volume clone for specified volumes
 */
 func (a *Client) PcloudVolumesClonePost(params *PcloudVolumesClonePostParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudVolumesClonePostOK, error) {

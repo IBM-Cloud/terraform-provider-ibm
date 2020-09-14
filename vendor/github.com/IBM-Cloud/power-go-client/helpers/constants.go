@@ -96,6 +96,9 @@ const (
 	PINetworkProvisioning    = "build"
 	PINetworkPortDescription = "pi_network_port_description"
 	PINetworkPortIPAddress   = "pi_network_port_ipaddress"
+	PINetworkPortMacAddress  = "pi_network_port_macaddress"
+	PINetworkPortStatus      = "pi_network_port_status"
+	PINetworkPortPortID      = "pi_network_port_portid"
 
 	// IBM PI Operations
 	PIInstanceOperationType       = "pi_operation"
