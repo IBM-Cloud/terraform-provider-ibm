@@ -22,6 +22,7 @@ import (
 	"reflect"
 	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
@@ -30,6 +31,7 @@ import (
 
 // Validate is a shared validator instance used to perform validation of structs.
 var Validate *validator.Validate
+var re = regexp.MustCompile(`(?s)\[(\S*)\]`)
 
 func init() {
 	Validate = validator.New()
@@ -40,16 +42,15 @@ const (
 	jsonPatchMimePattern = "(?i)^application\\/json\\-patch\\+json(;.*)?$"
 )
 
-// isNil checks if the specified object is nil or not.
-func isNil(object interface{}) bool {
+// IsNil checks if the specified object is nil or not.
+func IsNil(object interface{}) bool {
 	if object == nil {
 		return true
 	}
 
-	value := reflect.ValueOf(object)
-	kind := value.Kind()
-	if kind >= reflect.Chan && kind <= reflect.Slice && value.IsNil() {
-		return true
+	switch reflect.TypeOf(object).Kind() {
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Ptr, reflect.Slice:
+		return reflect.ValueOf(object).IsNil()
 	}
 
 	return false
@@ -57,24 +58,29 @@ func isNil(object interface{}) bool {
 
 // ValidateNotNil returns the specified error if 'object' is nil, nil otherwise.
 func ValidateNotNil(object interface{}, errorMsg string) error {
-	if isNil(object) {
+	if IsNil(object) {
 		return errors.New(errorMsg)
 	}
 	return nil
 }
 
-// ValidateStruct validates 'param' (assumed to be a struct) according to the
+// ValidateStruct validates 'param' (assumed to be a ptr to a struct) according to the
 // annotations attached to its fields.
 func ValidateStruct(param interface{}, paramName string) error {
-	if param != nil {
-		if err := Validate.Struct(param); err != nil {
-			// If there were validation errors then return an error containing the field errors
-			if fieldErrors, ok := err.(validator.ValidationErrors); ok {
-				return fmt.Errorf("%s failed validation:\n%s", paramName, fieldErrors.Error())
-			}
-			return fmt.Errorf("An unexpected system error occurred while validating %s\n%s", paramName, err.Error())
-		}
+	err := ValidateNotNil(param, paramName+" cannot be nil")
+	if err != nil {
+		return err
 	}
+
+	err = Validate.Struct(param)
+	if err != nil {
+		// If there were validation errors then return an error containing the field errors
+		if fieldErrors, ok := err.(validator.ValidationErrors); ok {
+			return fmt.Errorf("%s failed validation:\n%s", paramName, fieldErrors.Error())
+		}
+		return err
+	}
+
 	return nil
 }
 
@@ -174,4 +180,68 @@ func PrettyPrint(result interface{}, resultName string) {
 // GetCurrentTime returns the current Unix time.
 func GetCurrentTime() int64 {
 	return time.Now().Unix()
+}
+
+// ConvertSlice Marshals 'slice' to a json string, performs
+// string manipulation on the resulting string, and converts
+// the string to a '[]string'. If 'slice' is nil, not a 'slice' type,
+// or an error occurred during conversion, an error will be returned
+func ConvertSlice(slice interface{}) (s []string, err error) {
+	inputIsSlice := false
+
+	if IsNil(slice) {
+		err = fmt.Errorf(ERRORMSG_NIL_SLICE)
+		return
+	}
+
+	// Reflect on 'slice' to validate the input is in fact a slice
+	rResultType := reflect.TypeOf(slice)
+
+	switch rResultType.Kind() {
+	case reflect.Slice:
+		inputIsSlice = true
+	default:
+	}
+
+	// If it's not a slice, just return an error
+	if !inputIsSlice {
+		err = fmt.Errorf(ERRORMSG_PARAM_NOT_SLICE)
+		return
+	} else if reflect.ValueOf(slice).Len() == 0 {
+		s = []string{}
+		return
+	}
+
+	jsonBuffer, err := json.Marshal(slice)
+	if err != nil {
+		err = fmt.Errorf(ERRORMSG_MARSHAL_SLICE, err.Error())
+		return
+	}
+
+	jsonString := string(jsonBuffer)
+
+	// Use regex to convert the json string to a string slice
+	match := re.FindStringSubmatch(jsonString)
+	if match != nil && match[1] != "" {
+		newString := match[1]
+		s = strings.Split(newString, ",")
+		// For each slice element, attempt to remove any surrounding quotes
+		// added by marshaling into a json string
+		for i := range s {
+			unquotedString, unquoteErr := strconv.Unquote(s[i])
+			if unquoteErr == nil && unquotedString != "" {
+				s[i] = unquotedString
+			}
+		}
+		return
+	}
+
+	// If we returned a plain string that's not in "slice format",
+	// then attempt to just convert it to a string slice.
+	if jsonString != "" {
+		s = strings.Split(jsonString, ",")
+		return
+	}
+
+	return nil, fmt.Errorf(ERRORMSG_CONVERT_SLICE)
 }

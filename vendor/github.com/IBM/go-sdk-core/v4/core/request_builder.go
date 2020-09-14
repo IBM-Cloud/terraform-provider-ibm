@@ -264,12 +264,12 @@ func (requestBuilder *RequestBuilder) Build() (*http.Request, error) {
 // SetBodyContent sets the body content from one of three different sources.
 func (requestBuilder *RequestBuilder) SetBodyContent(contentType string, jsonContent interface{}, jsonPatchContent interface{},
 	nonJSONContent interface{}) (builder *RequestBuilder, err error) {
-	if !isNil(jsonContent) {
+	if !IsNil(jsonContent) {
 		builder, err = requestBuilder.SetBodyContentJSON(jsonContent)
 		if err != nil {
 			return
 		}
-	} else if !isNil(jsonPatchContent) {
+	} else if !IsNil(jsonPatchContent) {
 		builder, err = requestBuilder.SetBodyContentJSON(jsonPatchContent)
 		if err != nil {
 			return
@@ -290,5 +290,19 @@ func (requestBuilder *RequestBuilder) SetBodyContent(contentType string, jsonCon
 			err = fmt.Errorf("Invalid type for non-JSON body content: %s", reflect.TypeOf(nonJSONContent).String())
 		}
 	}
+	return
+}
+
+// AddQuerySlice converts the passed in slice 'slice' by calling the ConverSlice method,
+// and adds the converted slice to the request's query string. An error is returned when
+// conversion fails.
+func (requestBuilder *RequestBuilder) AddQuerySlice(param string, slice interface{}) (err error) {
+	convertedSlice, err := ConvertSlice(slice)
+	if err != nil {
+		return
+	}
+
+	requestBuilder.AddQuery(param, strings.Join(convertedSlice, ","))
+
 	return
 }

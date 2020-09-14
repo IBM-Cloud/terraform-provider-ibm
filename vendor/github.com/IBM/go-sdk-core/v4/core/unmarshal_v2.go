@@ -478,7 +478,7 @@ func unmarshalModelSliceMap(rawInput interface{}, propertyName string, result in
 
 	if foundInput && rawMap != nil {
 		for k, v := range rawMap {
-			
+
 			// Make sure our slice raw message isn't an explicit JSON null value.
 			if !isJsonNull(v) {
 				// Each value in 'rawMap' should contain an instance of []<model>.
